@@ -9,6 +9,7 @@ export default function PostForm({ onSubmit }: PostFormProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,6 +19,7 @@ export default function PostForm({ onSubmit }: PostFormProps) {
       await onSubmit(title, content);
       setTitle('');
       setContent('');
+      setExpanded(false);
       toast.success('Post created');
     } catch {
       toast.error('Failed to create post');
@@ -27,28 +29,42 @@ export default function PostForm({ onSubmit }: PostFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-gray-900 rounded-lg p-6 space-y-3">
+    <form onSubmit={handleSubmit} className="bg-gray-900 border border-gray-800 rounded-xl p-4">
       <input
         type="text"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Title"
-        className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:border-blue-500"
-      />
-      <textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
+        onFocus={() => setExpanded(true)}
         placeholder="What did you learn today?"
-        rows={3}
-        className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:border-blue-500"
+        className="w-full px-3 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
       />
-      <button
-        type="submit"
-        disabled={loading}
-        className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-md font-medium text-sm transition-colors"
-      >
-        {loading ? 'Posting...' : 'Post'}
-      </button>
+      {expanded && (
+        <>
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="Share your thoughts..."
+            rows={3}
+            className="w-full mt-3 px-3 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow resize-none"
+          />
+          <div className="flex justify-end mt-3 gap-2">
+            <button
+              type="button"
+              onClick={() => { setExpanded(false); setTitle(''); setContent(''); }}
+              className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading || !title.trim() || !content.trim()}
+              className="px-5 py-2 bg-green-600 hover:bg-green-500 disabled:opacity-40 disabled:hover:bg-green-600 text-white rounded-lg font-medium text-sm transition-colors"
+            >
+              {loading ? 'Posting...' : 'Post'}
+            </button>
+          </div>
+        </>
+      )}
     </form>
   );
 }

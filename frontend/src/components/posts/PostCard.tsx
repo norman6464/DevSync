@@ -34,40 +34,46 @@ export default function PostCard({ post, onUpdate }: PostCardProps) {
   };
 
   return (
-    <div className="bg-gray-900 rounded-lg p-6">
+    <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-gray-700 transition-colors">
       <div className="flex items-center gap-3 mb-3">
         <Link to={`/profile/${post.user_id}`}>
           <Avatar name={post.user?.name || 'U'} avatarUrl={post.user?.avatar_url} size="sm" />
         </Link>
-        <div>
-          <Link to={`/profile/${post.user_id}`} className="font-medium hover:text-blue-400 text-sm">
+        <div className="min-w-0">
+          <Link to={`/profile/${post.user_id}`} className="font-medium text-sm hover:text-blue-400 transition-colors">
             {post.user?.name}
           </Link>
           <p className="text-xs text-gray-500">
-            {format(new Date(post.created_at), 'MMM d, yyyy HH:mm')}
+            {format(new Date(post.created_at), 'MMM d, yyyy')}
           </p>
         </div>
       </div>
 
-      <Link to={`/posts/${post.id}`}>
-        <h3 className="text-lg font-semibold mb-2 hover:text-blue-400">{post.title}</h3>
+      <Link to={`/posts/${post.id}`} className="block group">
+        <h3 className="text-base font-semibold mb-1.5 group-hover:text-blue-400 transition-colors">{post.title}</h3>
+        <p className="text-gray-400 text-sm leading-relaxed whitespace-pre-wrap line-clamp-4">{post.content}</p>
       </Link>
-      <p className="text-gray-300 text-sm whitespace-pre-wrap">{post.content}</p>
 
       <div className="flex items-center gap-4 mt-4 pt-3 border-t border-gray-800">
         <button
           onClick={handleLike}
-          className={`flex items-center gap-1 text-sm transition-colors ${
-            liked ? 'text-red-400' : 'text-gray-400 hover:text-red-400'
+          className={`flex items-center gap-1.5 text-sm transition-colors ${
+            liked ? 'text-red-400' : 'text-gray-500 hover:text-red-400'
           }`}
         >
-          {liked ? '\u2665' : '\u2661'} {likeCount}
+          <svg className="w-4 h-4" fill={liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+          </svg>
+          {likeCount}
         </button>
         <Link
           to={`/posts/${post.id}`}
-          className="text-sm text-gray-400 hover:text-blue-400 transition-colors"
+          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-blue-400 transition-colors"
         >
-          Comments ({post.comment_count})
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337Z" />
+          </svg>
+          {post.comment_count}
         </Link>
       </div>
     </div>
