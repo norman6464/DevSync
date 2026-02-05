@@ -30,6 +30,13 @@ func (s *GitHubService) GetOAuthURL(state string) string {
 	)
 }
 
+func (s *GitHubService) GetLoginOAuthURL(state string) string {
+	return fmt.Sprintf(
+		"https://github.com/login/oauth/authorize?client_id=%s&redirect_uri=%s&scope=read:user,user:email,repo&state=%s",
+		s.cfg.GitHubClientID, s.cfg.GitHubLoginRedirectURL, state,
+	)
+}
+
 func (s *GitHubService) ExchangeCode(code string) (string, error) {
 	body, _ := json.Marshal(map[string]string{
 		"client_id":     s.cfg.GitHubClientID,
@@ -60,25 +67,63 @@ func (s *GitHubService) ExchangeCode(code string) (string, error) {
 	return result.AccessToken, nil
 }
 
-func (s *GitHubService) GetGitHubUser(token string) (string, string, error) {
+type GitHubUserInfo struct {
+	ID        int64  `json:"id"`
+	Login     string `json:"login"`
+	Email     string `json:"email"`
+	Name      string `json:"name"`
+	AvatarURL string `json:"avatar_url"`
+}
+
+func (s *GitHubService) GetGitHubUser(token string) (*GitHubUserInfo, error) {
 	req, _ := http.NewRequest("GET", "https://api.github.com/user", nil)
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Accept", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
-	var user struct {
-		Login     string `json:"login"`
-		AvatarURL string `json:"avatar_url"`
-	}
+	var user GitHubUserInfo
 	if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {
-		return "", "", err
+		return nil, err
 	}
-	return user.Login, user.AvatarURL, nil
+
+	// GitHub may not return email from /user if it's private, try /user/emails
+	if user.Email == "" {
+		user.Email = s.fetchPrimaryEmail(token)
+	}
+
+	return &user, nil
+}
+
+func (s *GitHubService) fetchPrimaryEmail(token string) string {
+	req, _ := http.NewRequest("GET", "https://api.github.com/user/emails", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return ""
+	}
+	defer resp.Body.Close()
+
+	var emails []struct {
+		Email    string `json:"email"`
+		Primary  bool   `json:"primary"`
+		Verified bool   `json:"verified"`
+	}
+	if err := json.Unmarshal(func() []byte { b, _ := io.ReadAll(resp.Body); return b }(), &emails); err != nil {
+		return ""
+	}
+	for _, e := range emails {
+		if e.Primary && e.Verified {
+			return e.Email
+		}
+	}
+	return ""
 }
 
 func (s *GitHubService) SyncData(user *model.User) error {
