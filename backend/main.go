@@ -7,6 +7,7 @@ import (
 	"github.com/norman6464/devsync/backend/internal/config"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/router"
+	"github.com/norman6464/devsync/backend/internal/service"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -21,11 +22,25 @@ func main() {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 
-	if err := db.AutoMigrate(&model.User{}); err != nil {
+	if err := db.AutoMigrate(
+		&model.User{},
+		&model.Follow{},
+		&model.GitHubContribution{},
+		&model.GitHubLanguageStat{},
+		&model.GitHubRepository{},
+		&model.Post{},
+		&model.Like{},
+		&model.Comment{},
+		&model.Message{},
+	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}
 
-	r := router.Setup(db, cfg)
+	// Start WebSocket hub
+	hub := service.NewHub()
+	go hub.Run()
+
+	r := router.Setup(db, cfg, hub)
 
 	log.Printf("Server starting on :%s", cfg.Port)
 	if err := r.Run(":" + cfg.Port); err != nil {

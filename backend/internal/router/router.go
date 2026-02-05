@@ -13,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
+func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	r := gin.Default()
 
 	origins := strings.Split(cfg.CORSOrigins, ",")
@@ -26,16 +26,31 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 
 	// Repositories
 	userRepo := repository.NewUserRepository(db)
+	followRepo := repository.NewFollowRepository(db)
+	githubRepo := repository.NewGitHubRepository(db)
+	postRepo := repository.NewPostRepository(db)
+	messageRepo := repository.NewMessageRepository(db)
+	rankingRepo := repository.NewRankingRepository(db)
 
 	// Services
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
+	githubService := service.NewGitHubService(cfg, userRepo, githubRepo)
 
 	// Handlers
 	authHandler := handler.NewAuthHandler(authService, userRepo)
 	userHandler := handler.NewUserHandler(userRepo)
+	followHandler := handler.NewFollowHandler(followRepo)
+	githubHandler := handler.NewGitHubHandler(githubService, authService, userRepo, githubRepo)
+	postHandler := handler.NewPostHandler(postRepo)
+	rankingHandler := handler.NewRankingHandler(rankingRepo)
+	messageHandler := handler.NewMessageHandler(messageRepo)
+	wsHandler := handler.NewWebSocketHandler(hub, authService)
 
 	// Public routes
 	r.GET("/health", handler.HealthCheck)
+
+	// WebSocket (auth via query param)
+	r.GET("/ws", wsHandler.HandleWebSocket)
 
 	api := r.Group("/api/v1")
 
@@ -45,6 +60,9 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 		auth.POST("/register", authHandler.Register)
 		auth.POST("/login", authHandler.Login)
 	}
+
+	// GitHub callback (public - called by frontend after OAuth redirect)
+	api.GET("/github/callback", githubHandler.Callback)
 
 	// Protected routes
 	protected := api.Group("")
@@ -59,6 +77,54 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			users.GET("", userHandler.GetAll)
 			users.GET("/:id", userHandler.GetByID)
 			users.PUT("/:id", userHandler.Update)
+			users.GET("/:id/followers", followHandler.GetFollowers)
+			users.GET("/:id/following", followHandler.GetFollowing)
+			users.POST("/:id/follow", followHandler.Follow)
+			users.DELETE("/:id/follow", followHandler.Unfollow)
+			users.GET("/:id/posts", postHandler.GetUserPosts)
+		}
+
+		// GitHub
+		github := protected.Group("/github")
+		{
+			github.GET("/connect", githubHandler.Connect)
+			github.POST("/sync", githubHandler.Sync)
+			github.DELETE("/disconnect", githubHandler.Disconnect)
+			github.GET("/contributions/:userId", githubHandler.GetContributions)
+			github.GET("/languages/:userId", githubHandler.GetLanguages)
+			github.GET("/repos/:userId", githubHandler.GetRepos)
+		}
+
+		// Posts
+		posts := protected.Group("/posts")
+		{
+			posts.POST("", postHandler.Create)
+			posts.GET("", postHandler.GetAll)
+			posts.GET("/timeline", postHandler.Timeline)
+			posts.GET("/:id", postHandler.GetByID)
+			posts.PUT("/:id", postHandler.Update)
+			posts.DELETE("/:id", postHandler.Delete)
+			posts.POST("/:id/like", postHandler.Like)
+			posts.DELETE("/:id/like", postHandler.Unlike)
+			posts.GET("/:id/comments", postHandler.GetComments)
+			posts.POST("/:id/comments", postHandler.CreateComment)
+			posts.DELETE("/:id/comments/:commentId", postHandler.DeleteComment)
+		}
+
+		// Rankings
+		rankings := protected.Group("/rankings")
+		{
+			rankings.GET("/contributions", rankingHandler.ContributionRanking)
+			rankings.GET("/languages/:lang", rankingHandler.LanguageRanking)
+			rankings.GET("/languages", rankingHandler.AvailableLanguages)
+		}
+
+		// Messages
+		messages := protected.Group("/messages")
+		{
+			messages.GET("", messageHandler.GetConversations)
+			messages.GET("/:userId", messageHandler.GetMessages)
+			messages.POST("/:userId", messageHandler.SendMessage)
 		}
 	}
 

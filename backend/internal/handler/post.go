@@ -67,7 +67,6 @@ func (h *PostHandler) GetByID(c *gin.Context) {
 	}
 
 	userID := c.GetUint("userID")
-	post.LikeCount = post.LikeCount // already set
 	// Check if current user liked
 	type postWithLiked struct {
 		model.Post
@@ -244,14 +243,14 @@ func (h *PostHandler) CreateComment(c *gin.Context) {
 }
 
 func (h *PostHandler) DeleteComment(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	commentID, err := strconv.ParseUint(c.Param("commentId"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid comment id"})
 		return
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.repo.DeleteComment(uint(id), userID); err != nil {
+	if err := h.repo.DeleteComment(uint(commentID), userID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
