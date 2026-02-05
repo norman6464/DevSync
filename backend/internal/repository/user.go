@@ -28,6 +28,21 @@ func (r *UserRepository) FindByID(id uint) (*model.User, error) {
 	return &user, nil
 }
 
+func (r *UserRepository) FindByEmail(email string) (*model.User, error) {
+	var user model.User
+	result := r.db.Where("email = ?", email).First(&user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &user, nil
+}
+
+func (r *UserRepository) Search(query string) ([]model.User, error) {
+	var users []model.User
+	result := r.db.Where("name ILIKE ? OR email ILIKE ?", "%"+query+"%", "%"+query+"%").Limit(50).Find(&users)
+	return users, result.Error
+}
+
 func (r *UserRepository) Create(user *model.User) error {
 	return r.db.Create(user).Error
 }

@@ -1,37 +1,45 @@
-import { useEffect, useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { useAuthStore } from './store/authStore';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import Layout from './components/layout/Layout';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import DashboardPage from './pages/DashboardPage';
+import ProfilePage from './pages/ProfilePage';
+import SearchPage from './pages/SearchPage';
+import SettingsPage from './pages/SettingsPage';
+import RankingsPage from './pages/RankingsPage';
+import ChatPage from './pages/ChatPage';
+import PostDetailPage from './pages/PostDetailPage';
+import GitHubCallbackPage from './pages/GitHubCallbackPage';
 
-function App() {
-  const [health, setHealth] = useState<string>('checking...')
+export default function App() {
+  const { isAuthenticated, loadUser } = useAuthStore();
 
   useEffect(() => {
-    fetch('/health')
-      .then((res) => res.json())
-      .then((data) => setHealth(data.status))
-      .catch(() => setHealth('unreachable'))
-  }, [])
+    if (isAuthenticated) {
+      loadUser();
+    }
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>DevSync</h1>
-      <div className="card">
-        <p>Backend status: <strong>{health}</strong></p>
-      </div>
-      <p className="read-the-docs">
-        React + Gin + PostgreSQL
-      </p>
-    </>
-  )
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/github/callback" element={<GitHubCallbackPage />} />
+      <Route element={<ProtectedRoute />}>
+        <Route element={<Layout />}>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/profile/:id" element={<ProfilePage />} />
+          <Route path="/search" element={<SearchPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/rankings" element={<RankingsPage />} />
+          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/chat/:userId" element={<ChatPage />} />
+          <Route path="/posts/:id" element={<PostDetailPage />} />
+        </Route>
+      </Route>
+    </Routes>
+  );
 }
-
-export default App

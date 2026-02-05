@@ -25,7 +25,7 @@ func main() {
 		log.Fatalf("failed to run migrations: %v", err)
 	}
 
-	r := router.Setup(db)
+	r := router.Setup(db, cfg)
 
 	log.Printf("Server starting on :%s", cfg.Port)
 	if err := r.Run(":" + cfg.Port); err != nil {
