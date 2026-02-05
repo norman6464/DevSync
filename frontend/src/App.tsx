@@ -12,6 +12,7 @@ import SettingsPage from './pages/SettingsPage';
 import RankingsPage from './pages/RankingsPage';
 import ChatPage from './pages/ChatPage';
 import PostDetailPage from './pages/PostDetailPage';
+import FollowListPage from './pages/FollowListPage';
 import GitHubCallbackPage from './pages/GitHubCallbackPage';
 
 export default function App() {
@@ -32,6 +33,8 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/profile/:id" element={<ProfilePage />} />
+          <Route path="/profile/:id/followers" element={<FollowListPage />} />
+          <Route path="/profile/:id/following" element={<FollowListPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/rankings" element={<RankingsPage />} />
