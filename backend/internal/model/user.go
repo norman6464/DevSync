@@ -6,10 +6,11 @@ type User struct {
 	ID              uint      `json:"id" gorm:"primaryKey"`
 	Name            string    `json:"name" gorm:"not null"`
 	Email           string    `json:"email" gorm:"uniqueIndex;not null"`
-	Password        string    `json:"-" gorm:"not null"`
+	Password        string    `json:"-"`
 	AvatarURL       string    `json:"avatar_url"`
 	Bio             string    `json:"bio"`
-	GitHubUsername  string    `json:"github_username" gorm:"uniqueIndex"`
+	GitHubID        int64     `json:"github_id" gorm:"uniqueIndex"`
+	GitHubUsername  string    `json:"github_username"`
 	GitHubToken     string    `json:"-"`
 	GitHubConnected bool      `json:"github_connected" gorm:"default:false"`
 	CreatedAt       time.Time `json:"created_at"`

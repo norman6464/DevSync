@@ -4,6 +4,7 @@ export interface User {
   email: string;
   avatar_url: string;
   bio: string;
+  github_id: number;
   github_username: string;
   github_connected: boolean;
   created_at: string;

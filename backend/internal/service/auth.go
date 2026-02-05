@@ -109,6 +109,103 @@ func (s *AuthService) ValidateToken(tokenString string) (uint, error) {
 	return uint(userID), nil
 }
 
+func (s *AuthService) GenerateLoginState() (string, error) {
+	claims := jwt.MapClaims{
+		"purpose": "github_login",
+		"exp":     time.Now().Add(5 * time.Minute).Unix(),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(s.jwtSecret)
+}
+
+func (s *AuthService) ValidateLoginState(state string) error {
+	token, err := jwt.Parse(state, func(token *jwt.Token) (interface{}, error) {
+		return s.jwtSecret, nil
+	})
+	if err != nil {
+		return err
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return errors.New("invalid state")
+	}
+	purpose, _ := claims["purpose"].(string)
+	if purpose != "github_login" {
+		return errors.New("invalid state purpose")
+	}
+	return nil
+}
+
+func (s *AuthService) GitHubLogin(ghUser *GitHubUserInfo, accessToken string) (*AuthResponse, error) {
+	// 1. Try to find by GitHub ID
+	user, err := s.userRepo.FindByGitHubID(ghUser.ID)
+	if err == nil && user != nil {
+		user.GitHubToken = accessToken
+		user.GitHubUsername = ghUser.Login
+		if ghUser.AvatarURL != "" {
+			user.AvatarURL = ghUser.AvatarURL
+		}
+		s.userRepo.Update(user)
+
+		token, err := s.generateToken(user.ID)
+		if err != nil {
+			return nil, err
+		}
+		return &AuthResponse{Token: token, User: *user}, nil
+	}
+
+	// 2. Try to find by email and link
+	if ghUser.Email != "" {
+		user, err = s.userRepo.FindByEmail(ghUser.Email)
+		if err == nil && user != nil {
+			user.GitHubID = ghUser.ID
+			user.GitHubToken = accessToken
+			user.GitHubUsername = ghUser.Login
+			user.GitHubConnected = true
+			if user.AvatarURL == "" {
+				user.AvatarURL = ghUser.AvatarURL
+			}
+			s.userRepo.Update(user)
+
+			token, err := s.generateToken(user.ID)
+			if err != nil {
+				return nil, err
+			}
+			return &AuthResponse{Token: token, User: *user}, nil
+		}
+	}
+
+	// 3. Create new user
+	name := ghUser.Name
+	if name == "" {
+		name = ghUser.Login
+	}
+	email := ghUser.Email
+	if email == "" {
+		email = ghUser.Login + "@github.local"
+	}
+
+	newUser := &model.User{
+		Name:            name,
+		Email:           email,
+		GitHubID:        ghUser.ID,
+		GitHubUsername:  ghUser.Login,
+		GitHubToken:     accessToken,
+		GitHubConnected: true,
+		AvatarURL:       ghUser.AvatarURL,
+	}
+
+	if err := s.userRepo.Create(newUser); err != nil {
+		return nil, err
+	}
+
+	token, err := s.generateToken(newUser.ID)
+	if err != nil {
+		return nil, err
+	}
+	return &AuthResponse{Token: token, User: *newUser}, nil
+}
+
 func (s *AuthService) GenerateOAuthState(userID uint) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,

@@ -37,7 +37,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	githubService := service.NewGitHubService(cfg, userRepo, githubRepo)
 
 	// Handlers
-	authHandler := handler.NewAuthHandler(authService, userRepo)
+	authHandler := handler.NewAuthHandler(authService, githubService, userRepo)
 	userHandler := handler.NewUserHandler(userRepo)
 	followHandler := handler.NewFollowHandler(followRepo)
 	githubHandler := handler.NewGitHubHandler(githubService, authService, userRepo, githubRepo)
@@ -59,9 +59,11 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	{
 		auth.POST("/register", authHandler.Register)
 		auth.POST("/login", authHandler.Login)
+		auth.GET("/github", authHandler.GitHubLogin)
+		auth.GET("/github/callback", authHandler.GitHubLoginCallback)
 	}
 
-	// GitHub callback (public - called by frontend after OAuth redirect)
+	// GitHub data-connect callback (public - called by frontend after OAuth redirect)
 	api.GET("/github/callback", githubHandler.Callback)
 
 	// Protected routes

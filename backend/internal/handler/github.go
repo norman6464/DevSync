@@ -62,7 +62,7 @@ func (h *GitHubHandler) Callback(c *gin.Context) {
 		return
 	}
 
-	username, avatarURL, err := h.githubService.GetGitHubUser(accessToken)
+	ghUser, err := h.githubService.GetGitHubUser(accessToken)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get github user"})
 		return
@@ -75,10 +75,11 @@ func (h *GitHubHandler) Callback(c *gin.Context) {
 	}
 
 	user.GitHubToken = accessToken
-	user.GitHubUsername = username
+	user.GitHubID = ghUser.ID
+	user.GitHubUsername = ghUser.Login
 	user.GitHubConnected = true
 	if user.AvatarURL == "" {
-		user.AvatarURL = avatarURL
+		user.AvatarURL = ghUser.AvatarURL
 	}
 
 	if err := h.userRepo.Update(user); err != nil {
