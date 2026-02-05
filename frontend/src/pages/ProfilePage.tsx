@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { getUser, getFollowers, getFollowing } from '../api/users';
 import { getUserPosts } from '../api/posts';
 import { getContributions, getLanguages } from '../api/github';
@@ -85,8 +85,12 @@ export default function ProfilePage() {
               </div>
             )}
             <div className="flex gap-4 mt-3 text-sm">
-              <span className="text-gray-400"><strong className="text-white">{followerCount}</strong> followers</span>
-              <span className="text-gray-400"><strong className="text-white">{followingCount}</strong> following</span>
+              <Link to={`/profile/${user.id}/followers`} className="text-gray-400 hover:text-blue-400 transition-colors">
+                <strong className="text-white">{followerCount}</strong> followers
+              </Link>
+              <Link to={`/profile/${user.id}/following`} className="text-gray-400 hover:text-blue-400 transition-colors">
+                <strong className="text-white">{followingCount}</strong> following
+              </Link>
             </div>
           </div>
         </div>
