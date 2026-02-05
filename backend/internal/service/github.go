@@ -33,7 +33,7 @@ func (s *GitHubService) GetOAuthURL(state string) string {
 func (s *GitHubService) GetLoginOAuthURL(state string) string {
 	return fmt.Sprintf(
 		"https://github.com/login/oauth/authorize?client_id=%s&redirect_uri=%s&scope=read:user,user:email,repo&state=%s",
-		s.cfg.GitHubClientID, s.cfg.GitHubLoginRedirectURL, state,
+		s.cfg.GitHubClientID, s.cfg.GitHubRedirectURL, state,
 	)
 }
 

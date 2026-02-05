@@ -16,9 +16,8 @@ type Config struct {
 	JWTSecret         string
 	GitHubClientID    string
 	GitHubClientSecret string
-	GitHubRedirectURL      string
-	GitHubLoginRedirectURL string
-	CORSOrigins            string
+	GitHubRedirectURL string
+	CORSOrigins       string
 }
 
 func Load() *Config {
@@ -33,9 +32,8 @@ func Load() *Config {
 		JWTSecret:          getEnv("JWT_SECRET", "devsync-dev-secret-change-me"),
 		GitHubClientID:     getEnv("GITHUB_CLIENT_ID", ""),
 		GitHubClientSecret: getEnv("GITHUB_CLIENT_SECRET", ""),
-		GitHubRedirectURL:      getEnv("GITHUB_REDIRECT_URL", "http://localhost:5173/github/callback"),
-		GitHubLoginRedirectURL: getEnv("GITHUB_LOGIN_REDIRECT_URL", "http://localhost:5173/auth/github/callback"),
-		CORSOrigins:            getEnv("CORS_ORIGINS", "http://localhost:5173"),
+		GitHubRedirectURL: getEnv("GITHUB_REDIRECT_URL", "http://localhost:5173/github/callback"),
+		CORSOrigins:       getEnv("CORS_ORIGINS", "http://localhost:5173"),
 	}
 }
 
