@@ -22,6 +22,7 @@
     "rankings": "ランキング",
     "chat": "チャット",
     "goals": "目標",
+    "reports": "レポート",
     "settings": "設定",
     "profile": "プロフィール",
     "signOut": "ログアウト"
@@ -293,5 +294,27 @@
       "completedCount": "完了",
       "avgProgress": "平均進捗"
     }
+  },
+  "reports": {
+    "title": "アクティビティレポート",
+    "weekly": "週間",
+    "monthly": "月間",
+    "contributions": "コントリビューション",
+    "posts": "投稿",
+    "comments": "コメント",
+    "newFollowers": "新規フォロワー",
+    "goalsCompleted": "達成した目標",
+    "likesReceived": "もらったいいね",
+    "messages": "メッセージ",
+    "trend": "アクティビティ推移",
+    "trendUp": "前期間と比較",
+    "trendDown": "前期間と比較",
+    "trendStable": "前期間と同じ",
+    "dailyActivity": "日別アクティビティ",
+    "topLanguages": "よく使う言語",
+    "repos": "リポジトリ",
+    "goalsProgress": "学習目標の進捗",
+    "avgProgress": "アクティブな目標の平均進捗",
+    "goalsCompletedThisPeriod": "今期達成した目標数"
   }
 }

@@ -22,6 +22,7 @@
     "rankings": "Рейтинги",
     "chat": "Чат",
     "goals": "Цели",
+    "reports": "Отчёты",
     "settings": "Настройки",
     "profile": "Профиль",
     "signOut": "Выйти"
@@ -293,5 +294,27 @@
       "completedCount": "Завершённых",
       "avgProgress": "Средний прогресс"
     }
+  },
+  "reports": {
+    "title": "Отчёты об Активности",
+    "weekly": "Еженедельный",
+    "monthly": "Ежемесячный",
+    "contributions": "Вклады",
+    "posts": "Посты",
+    "comments": "Комментарии",
+    "newFollowers": "Новые подписчики",
+    "goalsCompleted": "Завершённые цели",
+    "likesReceived": "Полученные лайки",
+    "messages": "Сообщения",
+    "trend": "Тренд активности",
+    "trendUp": "по сравнению с прошлым периодом",
+    "trendDown": "по сравнению с прошлым периодом",
+    "trendStable": "так же как в прошлом периоде",
+    "dailyActivity": "Ежедневная активность",
+    "topLanguages": "Самые используемые языки",
+    "repos": "репозиториев",
+    "goalsProgress": "Прогресс целей",
+    "avgProgress": "Средний прогресс активных целей",
+    "goalsCompletedThisPeriod": "целей завершено за этот период"
   }
 }

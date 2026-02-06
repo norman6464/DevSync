@@ -50,6 +50,9 @@ export default function Header() {
           <Link to="/goals" className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${isActive('/goals')}`}>
             {t('nav.goals')}
           </Link>
+          <Link to="/reports" className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${isActive('/reports')}`}>
+            {t('nav.reports')}
+          </Link>
         </nav>
 
         {/* Right side */}

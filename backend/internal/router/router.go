@@ -36,6 +36,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	zennRepo := repository.NewZennRepository(db)
 	qiitaRepo := repository.NewQiitaRepository(db)
 	learningGoalRepo := repository.NewLearningGoalRepository(db)
+	activityReportRepo := repository.NewActivityReportRepository(db)
 
 	// Services
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
@@ -57,6 +58,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	zennHandler := handler.NewZennHandler(zennRepo, userRepo, zennService)
 	qiitaHandler := handler.NewQiitaHandler(qiitaRepo, userRepo, qiitaService)
 	learningGoalHandler := handler.NewLearningGoalHandler(learningGoalRepo)
+	activityReportHandler := handler.NewActivityReportHandler(activityReportRepo)
 
 	// Static file serving for uploads
 	r.Static("/uploads", "./uploads")
@@ -194,6 +196,16 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			goals.DELETE("/:id", learningGoalHandler.Delete)
 			goals.GET("/user/:userId", learningGoalHandler.GetByUserID)
 			goals.GET("/stats/:userId", learningGoalHandler.GetStats)
+		}
+
+		// Activity Reports
+		reports := protected.Group("/reports")
+		{
+			reports.GET("/weekly", activityReportHandler.GetMyWeeklyReport)
+			reports.GET("/monthly", activityReportHandler.GetMyMonthlyReport)
+			reports.GET("/weekly/:userId", activityReportHandler.GetWeeklyReport)
+			reports.GET("/monthly/:userId", activityReportHandler.GetMonthlyReport)
+			reports.GET("/comparison", activityReportHandler.GetComparison)
 		}
 	}
 

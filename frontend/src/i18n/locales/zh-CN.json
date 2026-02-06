@@ -22,6 +22,7 @@
     "rankings": "排行榜",
     "chat": "聊天",
     "goals": "目标",
+    "reports": "报告",
     "settings": "设置",
     "profile": "个人资料",
     "signOut": "退出登录"
@@ -293,5 +294,27 @@
       "completedCount": "已完成",
       "avgProgress": "平均进度"
     }
+  },
+  "reports": {
+    "title": "活动报告",
+    "weekly": "周报",
+    "monthly": "月报",
+    "contributions": "贡献",
+    "posts": "帖子",
+    "comments": "评论",
+    "newFollowers": "新粉丝",
+    "goalsCompleted": "完成的目标",
+    "likesReceived": "收到的点赞",
+    "messages": "消息",
+    "trend": "活动趋势",
+    "trendUp": "与上期相比",
+    "trendDown": "与上期相比",
+    "trendStable": "与上期持平",
+    "dailyActivity": "日活动",
+    "topLanguages": "常用语言",
+    "repos": "仓库",
+    "goalsProgress": "学习目标进度",
+    "avgProgress": "活跃目标的平均进度",
+    "goalsCompletedThisPeriod": "本期完成的目标数"
   }
 }

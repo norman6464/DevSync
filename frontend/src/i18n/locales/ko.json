@@ -22,6 +22,7 @@
     "rankings": "랭킹",
     "chat": "채팅",
     "goals": "목표",
+    "reports": "리포트",
     "settings": "설정",
     "profile": "프로필",
     "signOut": "로그아웃"
@@ -293,5 +294,27 @@
       "completedCount": "완료",
       "avgProgress": "평균 진행률"
     }
+  },
+  "reports": {
+    "title": "활동 리포트",
+    "weekly": "주간",
+    "monthly": "월간",
+    "contributions": "기여",
+    "posts": "게시물",
+    "comments": "댓글",
+    "newFollowers": "새 팔로워",
+    "goalsCompleted": "완료한 목표",
+    "likesReceived": "받은 좋아요",
+    "messages": "메시지",
+    "trend": "활동 추이",
+    "trendUp": "지난 기간 대비",
+    "trendDown": "지난 기간 대비",
+    "trendStable": "지난 기간과 동일",
+    "dailyActivity": "일별 활동",
+    "topLanguages": "자주 사용하는 언어",
+    "repos": "저장소",
+    "goalsProgress": "학습 목표 진행률",
+    "avgProgress": "활성 목표의 평균 진행률",
+    "goalsCompletedThisPeriod": "이번 기간에 완료한 목표 수"
   }
 }
