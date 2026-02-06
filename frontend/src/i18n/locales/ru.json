@@ -23,6 +23,7 @@
     "chat": "Чат",
     "goals": "Цели",
     "reports": "Отчёты",
+    "books": "Книги",
     "settings": "Настройки",
     "profile": "Профиль",
     "signOut": "Выйти"
@@ -326,5 +327,28 @@
     "downloaded": "Изображение скачано!",
     "downloadFailed": "Не удалось скачать изображение",
     "twitterText": "Посмотрите профиль разработчика {{name}} на DevSync!"
+  },
+  "bookReviews": {
+    "title": "Обзоры технических книг",
+    "description": "Поделитесь впечатлениями о прочитанных технических книгах",
+    "addReview": "Добавить обзор",
+    "newReview": "Новый обзор",
+    "editReview": "Редактировать обзор",
+    "bookTitle": "Название книги",
+    "titlePlaceholder": "Например: Чистый код",
+    "bookAuthor": "Автор",
+    "authorPlaceholder": "Например: Robert C. Martin",
+    "coverUrl": "URL обложки",
+    "coverUrlPlaceholder": "https://...",
+    "rating": "Рейтинг",
+    "reviewContent": "Содержание обзора",
+    "contentPlaceholder": "Что вы думаете об этой книге?",
+    "submit": "Опубликовать обзор",
+    "noReviews": "Пока нет обзоров. Будьте первым!",
+    "titleAuthorRequired": "Название и автор обязательны",
+    "createSuccess": "Обзор успешно опубликован",
+    "updateSuccess": "Обзор успешно обновлён",
+    "deleteSuccess": "Обзор успешно удалён",
+    "confirmDelete": "Вы уверены, что хотите удалить этот обзор?"
   }
 }

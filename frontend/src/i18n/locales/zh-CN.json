@@ -23,6 +23,7 @@
     "chat": "聊天",
     "goals": "目标",
     "reports": "报告",
+    "books": "技术书",
     "settings": "设置",
     "profile": "个人资料",
     "signOut": "退出登录"
@@ -326,5 +327,28 @@
     "downloaded": "图片已下载！",
     "downloadFailed": "下载图片失败",
     "twitterText": "在DevSync上查看{{name}}的开发者资料！"
+  },
+  "bookReviews": {
+    "title": "技术书评论",
+    "description": "分享您读过的技术书籍的感想",
+    "addReview": "添加评论",
+    "newReview": "新评论",
+    "editReview": "编辑评论",
+    "bookTitle": "书名",
+    "titlePlaceholder": "例如：代码整洁之道",
+    "bookAuthor": "作者",
+    "authorPlaceholder": "例如：Robert C. Martin",
+    "coverUrl": "封面图片URL",
+    "coverUrlPlaceholder": "https://...",
+    "rating": "评分",
+    "reviewContent": "评论内容",
+    "contentPlaceholder": "您对这本书有什么看法？",
+    "submit": "发布评论",
+    "noReviews": "还没有评论。发布第一条评论吧！",
+    "titleAuthorRequired": "书名和作者是必填项",
+    "createSuccess": "评论发布成功",
+    "updateSuccess": "评论更新成功",
+    "deleteSuccess": "评论删除成功",
+    "confirmDelete": "确定要删除这条评论吗？"
   }
 }

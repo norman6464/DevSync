@@ -37,6 +37,8 @@ func main() {
 		&model.ZennArticle{},
 		&model.QiitaArticle{},
 		&model.LearningGoal{},
+		&model.BookReview{},
+		&model.BookReviewLike{},
 	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}

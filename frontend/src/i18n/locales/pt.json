@@ -23,6 +23,7 @@
     "chat": "Chat",
     "goals": "Metas",
     "reports": "Relatórios",
+    "books": "Livros",
     "settings": "Configurações",
     "profile": "Perfil",
     "signOut": "Sair"
@@ -326,5 +327,28 @@
     "downloaded": "Imagem baixada!",
     "downloadFailed": "Falha ao baixar imagem",
     "twitterText": "Confira o perfil de desenvolvedor de {{name}} no DevSync!"
+  },
+  "bookReviews": {
+    "title": "Resenhas de Livros Técnicos",
+    "description": "Compartilhe suas impressões sobre os livros técnicos que você leu",
+    "addReview": "Adicionar Resenha",
+    "newReview": "Nova Resenha",
+    "editReview": "Editar Resenha",
+    "bookTitle": "Título do Livro",
+    "titlePlaceholder": "Ex: Código Limpo",
+    "bookAuthor": "Autor",
+    "authorPlaceholder": "Ex: Robert C. Martin",
+    "coverUrl": "URL da Capa",
+    "coverUrlPlaceholder": "https://...",
+    "rating": "Avaliação",
+    "reviewContent": "Conteúdo da Resenha",
+    "contentPlaceholder": "O que você achou deste livro?",
+    "submit": "Publicar Resenha",
+    "noReviews": "Ainda não há resenhas. Seja o primeiro a publicar uma!",
+    "titleAuthorRequired": "Título e autor são obrigatórios",
+    "createSuccess": "Resenha publicada com sucesso",
+    "updateSuccess": "Resenha atualizada com sucesso",
+    "deleteSuccess": "Resenha excluída com sucesso",
+    "confirmDelete": "Tem certeza de que deseja excluir esta resenha?"
   }
 }

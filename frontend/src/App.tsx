@@ -19,6 +19,7 @@ import FollowListPage from './pages/FollowListPage';
 import GitHubCallbackPage from './pages/GitHubCallbackPage';
 import GoalsPage from './pages/GoalsPage';
 import ReportsPage from './pages/ReportsPage';
+import BookReviewsPage from './pages/BookReviewsPage';
 
 export default function App() {
   const { isAuthenticated, loadUser } = useAuthStore();
@@ -62,6 +63,7 @@ export default function App() {
           <Route path="/posts/:id" element={<PostDetailPage />} />
           <Route path="/goals" element={<GoalsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/books" element={<BookReviewsPage />} />
         </Route>
       </Route>
     </Routes>

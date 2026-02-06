@@ -23,6 +23,7 @@
     "chat": "Chat",
     "goals": "Objectifs",
     "reports": "Rapports",
+    "books": "Livres",
     "settings": "Paramètres",
     "profile": "Profil",
     "signOut": "Déconnexion"
@@ -326,5 +327,28 @@
     "downloaded": "Image téléchargée !",
     "downloadFailed": "Échec du téléchargement de l'image",
     "twitterText": "Découvrez le profil développeur de {{name}} sur DevSync !"
+  },
+  "bookReviews": {
+    "title": "Critiques de Livres Techniques",
+    "description": "Partagez vos impressions sur les livres techniques que vous avez lus",
+    "addReview": "Ajouter une Critique",
+    "newReview": "Nouvelle Critique",
+    "editReview": "Modifier la Critique",
+    "bookTitle": "Titre du Livre",
+    "titlePlaceholder": "Ex: Clean Code",
+    "bookAuthor": "Auteur",
+    "authorPlaceholder": "Ex: Robert C. Martin",
+    "coverUrl": "URL de la Couverture",
+    "coverUrlPlaceholder": "https://...",
+    "rating": "Note",
+    "reviewContent": "Contenu de la Critique",
+    "contentPlaceholder": "Que pensez-vous de ce livre ?",
+    "submit": "Publier la Critique",
+    "noReviews": "Pas encore de critiques. Soyez le premier à en publier une !",
+    "titleAuthorRequired": "Le titre et l'auteur sont obligatoires",
+    "createSuccess": "Critique publiée avec succès",
+    "updateSuccess": "Critique mise à jour avec succès",
+    "deleteSuccess": "Critique supprimée avec succès",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette critique ?"
   }
 }

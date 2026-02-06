@@ -23,6 +23,7 @@
     "chat": "Chat",
     "goals": "Goals",
     "reports": "Reports",
+    "books": "Books",
     "settings": "Settings",
     "profile": "Profile",
     "signOut": "Sign out"
@@ -326,5 +327,28 @@
     "downloaded": "Image downloaded!",
     "downloadFailed": "Failed to download image",
     "twitterText": "Check out {{name}}'s developer profile on DevSync!"
+  },
+  "bookReviews": {
+    "title": "Tech Book Reviews",
+    "description": "Share your thoughts on technical books you've read",
+    "addReview": "Add Review",
+    "newReview": "New Book Review",
+    "editReview": "Edit Review",
+    "bookTitle": "Book Title",
+    "titlePlaceholder": "e.g., Clean Code",
+    "bookAuthor": "Author",
+    "authorPlaceholder": "e.g., Robert C. Martin",
+    "coverUrl": "Cover Image URL",
+    "coverUrlPlaceholder": "https://...",
+    "rating": "Rating",
+    "reviewContent": "Your Review",
+    "contentPlaceholder": "What did you think about this book?",
+    "submit": "Submit Review",
+    "noReviews": "No book reviews yet. Be the first to share!",
+    "titleAuthorRequired": "Title and author are required",
+    "createSuccess": "Review submitted successfully",
+    "updateSuccess": "Review updated successfully",
+    "deleteSuccess": "Review deleted successfully",
+    "confirmDelete": "Are you sure you want to delete this review?"
   }
 }

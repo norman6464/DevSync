@@ -37,6 +37,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	qiitaRepo := repository.NewQiitaRepository(db)
 	learningGoalRepo := repository.NewLearningGoalRepository(db)
 	activityReportRepo := repository.NewActivityReportRepository(db)
+	bookReviewRepo := repository.NewBookReviewRepository(db)
 
 	// Services
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
@@ -59,6 +60,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	qiitaHandler := handler.NewQiitaHandler(qiitaRepo, userRepo, qiitaService)
 	learningGoalHandler := handler.NewLearningGoalHandler(learningGoalRepo)
 	activityReportHandler := handler.NewActivityReportHandler(activityReportRepo)
+	bookReviewHandler := handler.NewBookReviewHandler(bookReviewRepo)
 
 	// Static file serving for uploads
 	r.Static("/uploads", "./uploads")
@@ -206,6 +208,19 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			reports.GET("/weekly/:userId", activityReportHandler.GetWeeklyReport)
 			reports.GET("/monthly/:userId", activityReportHandler.GetMonthlyReport)
 			reports.GET("/comparison", activityReportHandler.GetComparison)
+		}
+
+		// Book Reviews
+		bookReviews := protected.Group("/book-reviews")
+		{
+			bookReviews.POST("", bookReviewHandler.Create)
+			bookReviews.GET("", bookReviewHandler.GetAll)
+			bookReviews.GET("/:id", bookReviewHandler.GetByID)
+			bookReviews.PUT("/:id", bookReviewHandler.Update)
+			bookReviews.DELETE("/:id", bookReviewHandler.Delete)
+			bookReviews.POST("/:id/like", bookReviewHandler.Like)
+			bookReviews.DELETE("/:id/like", bookReviewHandler.Unlike)
+			bookReviews.GET("/user/:userId", bookReviewHandler.GetByUserID)
 		}
 	}
 

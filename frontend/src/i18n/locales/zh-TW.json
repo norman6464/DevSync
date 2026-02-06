@@ -23,6 +23,7 @@
     "chat": "聊天",
     "goals": "目標",
     "reports": "報告",
+    "books": "技術書",
     "settings": "設定",
     "profile": "個人資料",
     "signOut": "登出"
@@ -326,5 +327,28 @@
     "downloaded": "圖片已下載！",
     "downloadFailed": "下載圖片失敗",
     "twitterText": "在DevSync上查看{{name}}的開發者資料！"
+  },
+  "bookReviews": {
+    "title": "技術書評論",
+    "description": "分享您讀過的技術書籍的感想",
+    "addReview": "新增評論",
+    "newReview": "新評論",
+    "editReview": "編輯評論",
+    "bookTitle": "書名",
+    "titlePlaceholder": "例如：代碼整潔之道",
+    "bookAuthor": "作者",
+    "authorPlaceholder": "例如：Robert C. Martin",
+    "coverUrl": "封面圖片URL",
+    "coverUrlPlaceholder": "https://...",
+    "rating": "評分",
+    "reviewContent": "評論內容",
+    "contentPlaceholder": "您對這本書有什麼看法？",
+    "submit": "發布評論",
+    "noReviews": "還沒有評論。發布第一條評論吧！",
+    "titleAuthorRequired": "書名和作者是必填項",
+    "createSuccess": "評論發布成功",
+    "updateSuccess": "評論更新成功",
+    "deleteSuccess": "評論刪除成功",
+    "confirmDelete": "確定要刪除這條評論嗎？"
   }
 }

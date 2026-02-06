@@ -23,6 +23,7 @@
     "chat": "채팅",
     "goals": "목표",
     "reports": "리포트",
+    "books": "기술서",
     "settings": "설정",
     "profile": "프로필",
     "signOut": "로그아웃"
@@ -326,5 +327,28 @@
     "downloaded": "이미지가 다운로드되었습니다!",
     "downloadFailed": "이미지 다운로드에 실패했습니다",
     "twitterText": "DevSync에서 {{name}}님의 개발자 프로필을 확인하세요!"
+  },
+  "bookReviews": {
+    "title": "기술서 리뷰",
+    "description": "읽은 기술서에 대한 감상을 공유하세요",
+    "addReview": "리뷰 추가",
+    "newReview": "새 리뷰",
+    "editReview": "리뷰 편집",
+    "bookTitle": "책 제목",
+    "titlePlaceholder": "예: 클린 코드",
+    "bookAuthor": "저자",
+    "authorPlaceholder": "예: Robert C. Martin",
+    "coverUrl": "표지 이미지 URL",
+    "coverUrlPlaceholder": "https://...",
+    "rating": "평점",
+    "reviewContent": "리뷰 내용",
+    "contentPlaceholder": "이 책에 대해 어떻게 생각하시나요?",
+    "submit": "리뷰 게시",
+    "noReviews": "아직 리뷰가 없습니다. 첫 번째 리뷰를 작성해보세요!",
+    "titleAuthorRequired": "제목과 저자는 필수입니다",
+    "createSuccess": "리뷰가 게시되었습니다",
+    "updateSuccess": "리뷰가 업데이트되었습니다",
+    "deleteSuccess": "리뷰가 삭제되었습니다",
+    "confirmDelete": "이 리뷰를 삭제하시겠습니까?"
   }
 }

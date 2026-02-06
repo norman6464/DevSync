@@ -23,6 +23,7 @@
     "chat": "Chat",
     "goals": "Ziele",
     "reports": "Berichte",
+    "books": "Bücher",
     "settings": "Einstellungen",
     "profile": "Profil",
     "signOut": "Abmelden"
@@ -326,5 +327,28 @@
     "downloaded": "Bild heruntergeladen!",
     "downloadFailed": "Bild konnte nicht heruntergeladen werden",
     "twitterText": "Schau dir das Entwicklerprofil von {{name}} auf DevSync an!"
+  },
+  "bookReviews": {
+    "title": "Technische Buchrezensionen",
+    "description": "Teilen Sie Ihre Eindrücke zu gelesenen technischen Büchern",
+    "addReview": "Rezension Hinzufügen",
+    "newReview": "Neue Rezension",
+    "editReview": "Rezension Bearbeiten",
+    "bookTitle": "Buchtitel",
+    "titlePlaceholder": "z.B.: Clean Code",
+    "bookAuthor": "Autor",
+    "authorPlaceholder": "z.B.: Robert C. Martin",
+    "coverUrl": "Cover-Bild URL",
+    "coverUrlPlaceholder": "https://...",
+    "rating": "Bewertung",
+    "reviewContent": "Rezensionsinhalt",
+    "contentPlaceholder": "Was halten Sie von diesem Buch?",
+    "submit": "Rezension Veröffentlichen",
+    "noReviews": "Noch keine Rezensionen. Veröffentlichen Sie die erste!",
+    "titleAuthorRequired": "Titel und Autor sind erforderlich",
+    "createSuccess": "Rezension erfolgreich veröffentlicht",
+    "updateSuccess": "Rezension erfolgreich aktualisiert",
+    "deleteSuccess": "Rezension erfolgreich gelöscht",
+    "confirmDelete": "Sind Sie sicher, dass Sie diese Rezension löschen möchten?"
   }
 }

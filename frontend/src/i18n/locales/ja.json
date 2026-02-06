@@ -23,6 +23,7 @@
     "chat": "チャット",
     "goals": "目標",
     "reports": "レポート",
+    "books": "技術書",
     "settings": "設定",
     "profile": "プロフィール",
     "signOut": "ログアウト"
@@ -326,5 +327,28 @@
     "downloaded": "画像をダウンロードしました！",
     "downloadFailed": "画像のダウンロードに失敗しました",
     "twitterText": "{{name}}さんの開発者プロフィールをDevSyncでチェック！"
+  },
+  "bookReviews": {
+    "title": "技術書レビュー",
+    "description": "読んだ技術書の感想を共有しましょう",
+    "addReview": "レビューを追加",
+    "newReview": "新しいレビュー",
+    "editReview": "レビューを編集",
+    "bookTitle": "書籍タイトル",
+    "titlePlaceholder": "例: リーダブルコード",
+    "bookAuthor": "著者",
+    "authorPlaceholder": "例: Dustin Boswell",
+    "coverUrl": "表紙画像URL",
+    "coverUrlPlaceholder": "https://...",
+    "rating": "評価",
+    "reviewContent": "レビュー内容",
+    "contentPlaceholder": "この本の感想は？",
+    "submit": "レビューを投稿",
+    "noReviews": "まだレビューがありません。最初のレビューを投稿しましょう！",
+    "titleAuthorRequired": "タイトルと著者は必須です",
+    "createSuccess": "レビューを投稿しました",
+    "updateSuccess": "レビューを更新しました",
+    "deleteSuccess": "レビューを削除しました",
+    "confirmDelete": "このレビューを削除しますか？"
   }
 }
