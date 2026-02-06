@@ -93,7 +93,9 @@
     "frameworks": "框架和库",
     "zennArticles": "Zenn文章",
     "articles": "文章",
-    "viewAllOnZenn": "在Zenn上查看全部"
+    "viewAllOnZenn": "在Zenn上查看全部",
+    "qiitaArticles": "Qiita文章",
+    "viewAllOnQiita": "在Qiita上查看全部"
   },
   "settings": {
     "title": "设置",
@@ -127,7 +129,12 @@
     "zennDescription": "连接您的Zenn账户以显示您的文章。",
     "zennUsername": "Zenn用户名",
     "zennConnected": "Zenn连接成功",
-    "zennInvalidUsername": "无效的Zenn用户名"
+    "zennInvalidUsername": "无效的Zenn用户名",
+    "qiita": "Qiita",
+    "qiitaDescription": "连接您的Qiita账户以显示您的文章。",
+    "qiitaUsername": "Qiita用户名",
+    "qiitaConnected": "Qiita连接成功",
+    "qiitaInvalidUsername": "无效的Qiita用户名"
   },
   "explore": {
     "title": "探索",

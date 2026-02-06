@@ -93,7 +93,9 @@
     "frameworks": "프레임워크 및 라이브러리",
     "zennArticles": "Zenn 기사",
     "articles": "기사",
-    "viewAllOnZenn": "Zenn에서 모두 보기"
+    "viewAllOnZenn": "Zenn에서 모두 보기",
+    "qiitaArticles": "Qiita 기사",
+    "viewAllOnQiita": "Qiita에서 모두 보기"
   },
   "settings": {
     "title": "설정",
@@ -127,7 +129,12 @@
     "zennDescription": "Zenn 계정을 연결하여 기사를 표시합니다.",
     "zennUsername": "Zenn 사용자 이름",
     "zennConnected": "Zenn이 성공적으로 연결되었습니다",
-    "zennInvalidUsername": "유효하지 않은 Zenn 사용자 이름"
+    "zennInvalidUsername": "유효하지 않은 Zenn 사용자 이름",
+    "qiita": "Qiita",
+    "qiitaDescription": "Qiita 계정을 연결하여 기사를 표시합니다.",
+    "qiitaUsername": "Qiita 사용자 이름",
+    "qiitaConnected": "Qiita가 성공적으로 연결되었습니다",
+    "qiitaInvalidUsername": "유효하지 않은 Qiita 사용자 이름"
   },
   "explore": {
     "title": "탐색",

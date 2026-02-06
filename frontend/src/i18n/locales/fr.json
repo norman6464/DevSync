@@ -93,7 +93,9 @@
     "frameworks": "Frameworks et Bibliothèques",
     "zennArticles": "Articles Zenn",
     "articles": "articles",
-    "viewAllOnZenn": "Voir tout sur Zenn"
+    "viewAllOnZenn": "Voir tout sur Zenn",
+    "qiitaArticles": "Articles Qiita",
+    "viewAllOnQiita": "Voir tout sur Qiita"
   },
   "settings": {
     "title": "Paramètres",
@@ -127,7 +129,12 @@
     "zennDescription": "Connectez votre compte Zenn pour afficher vos articles.",
     "zennUsername": "Nom d'utilisateur Zenn",
     "zennConnected": "Zenn connecté avec succès",
-    "zennInvalidUsername": "Nom d'utilisateur Zenn invalide"
+    "zennInvalidUsername": "Nom d'utilisateur Zenn invalide",
+    "qiita": "Qiita",
+    "qiitaDescription": "Connectez votre compte Qiita pour afficher vos articles.",
+    "qiitaUsername": "Nom d'utilisateur Qiita",
+    "qiitaConnected": "Qiita connecté avec succès",
+    "qiitaInvalidUsername": "Nom d'utilisateur Qiita invalide"
   },
   "explore": {
     "title": "Explorer",

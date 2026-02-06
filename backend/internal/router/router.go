@@ -34,11 +34,13 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	notificationRepo := repository.NewNotificationRepository(db)
 	passwordResetRepo := repository.NewPasswordResetRepository(db)
 	zennRepo := repository.NewZennRepository(db)
+	qiitaRepo := repository.NewQiitaRepository(db)
 
 	// Services
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
 	githubService := service.NewGitHubService(cfg, userRepo, githubRepo)
 	zennService := service.NewZennService()
+	qiitaService := service.NewQiitaService()
 
 	// Handlers
 	authHandler := handler.NewAuthHandler(authService, githubService, userRepo, passwordResetRepo)
@@ -52,6 +54,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	uploadHandler := handler.NewUploadHandler()
 	notificationHandler := handler.NewNotificationHandler(notificationRepo)
 	zennHandler := handler.NewZennHandler(zennRepo, userRepo, zennService)
+	qiitaHandler := handler.NewQiitaHandler(qiitaRepo, userRepo, qiitaService)
 
 	// Static file serving for uploads
 	r.Static("/uploads", "./uploads")
@@ -167,6 +170,16 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			zenn.POST("/sync", zennHandler.Sync)
 			zenn.GET("/articles/:userId", zennHandler.GetArticles)
 			zenn.GET("/stats/:userId", zennHandler.GetStats)
+		}
+
+		// Qiita
+		qiita := protected.Group("/qiita")
+		{
+			qiita.POST("/connect", qiitaHandler.Connect)
+			qiita.DELETE("/disconnect", qiitaHandler.Disconnect)
+			qiita.POST("/sync", qiitaHandler.Sync)
+			qiita.GET("/articles/:userId", qiitaHandler.GetArticles)
+			qiita.GET("/stats/:userId", qiitaHandler.GetStats)
 		}
 	}
 

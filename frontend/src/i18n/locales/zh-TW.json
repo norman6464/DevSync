@@ -93,7 +93,9 @@
     "frameworks": "框架和函式庫",
     "zennArticles": "Zenn文章",
     "articles": "文章",
-    "viewAllOnZenn": "在Zenn上查看全部"
+    "viewAllOnZenn": "在Zenn上查看全部",
+    "qiitaArticles": "Qiita文章",
+    "viewAllOnQiita": "在Qiita上查看全部"
   },
   "settings": {
     "title": "設定",
@@ -127,7 +129,12 @@
     "zennDescription": "連接您的Zenn帳戶以顯示您的文章。",
     "zennUsername": "Zenn使用者名稱",
     "zennConnected": "Zenn連接成功",
-    "zennInvalidUsername": "無效的Zenn使用者名稱"
+    "zennInvalidUsername": "無效的Zenn使用者名稱",
+    "qiita": "Qiita",
+    "qiitaDescription": "連接您的Qiita帳戶以顯示您的文章。",
+    "qiitaUsername": "Qiita使用者名稱",
+    "qiitaConnected": "Qiita連接成功",
+    "qiitaInvalidUsername": "無效的Qiita使用者名稱"
   },
   "explore": {
     "title": "探索",

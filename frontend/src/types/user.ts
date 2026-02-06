@@ -8,6 +8,7 @@ export interface User {
   github_username: string;
   github_connected: boolean;
   zenn_username: string;
+  qiita_username: string;
   skills_languages: string;
   skills_frameworks: string;
   created_at: string;
