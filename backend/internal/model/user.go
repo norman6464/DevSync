@@ -12,7 +12,9 @@ type User struct {
 	GitHubID        int64     `json:"github_id" gorm:"uniqueIndex"`
 	GitHubUsername  string    `json:"github_username"`
 	GitHubToken     string    `json:"-"`
-	GitHubConnected bool      `json:"github_connected" gorm:"default:false"`
-	CreatedAt       time.Time `json:"created_at"`
-	UpdatedAt       time.Time `json:"updated_at"`
+	GitHubConnected  bool      `json:"github_connected" gorm:"default:false"`
+	SkillsLanguages  string    `json:"skills_languages"`
+	SkillsFrameworks string    `json:"skills_frameworks"`
+	CreatedAt        time.Time `json:"created_at"`
+	UpdatedAt        time.Time `json:"updated_at"`
 }
