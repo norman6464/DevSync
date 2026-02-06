@@ -30,7 +30,8 @@
     "reports": "報告",
     "settings": "設定",
     "profile": "個人資料",
-    "signOut": "登出"
+    "signOut": "登出",
+    "bookReviews": "書評"
   },
   "auth": {
     "login": "登入",
@@ -417,5 +418,29 @@
     "updateFailed": "更新資源失敗",
     "deleteFailed": "刪除資源失敗",
     "confirmDelete": "確定要刪除這個資源嗎？"
+  },
+  "bookReviews": {
+    "title": "書評",
+    "subtitle": "分享你對技術書籍的看法",
+    "addReview": "新增書評",
+    "newReview": "新書評",
+    "editReview": "編輯書評",
+    "noReviews": "暫無書評",
+    "addFirstReview": "新增你的第一篇書評",
+    "bookTitle": "書名",
+    "bookTitlePlaceholder": "輸入書名",
+    "author": "作者",
+    "authorPlaceholder": "輸入作者姓名",
+    "rating": "評分",
+    "review": "評論",
+    "reviewPlaceholder": "分享你對這本書的看法...",
+    "coverImage": "封面圖片連結",
+    "createSuccess": "書評建立成功",
+    "updateSuccess": "書評更新成功",
+    "deleteSuccess": "書評刪除成功",
+    "createFailed": "建立書評失敗",
+    "updateFailed": "更新書評失敗",
+    "deleteFailed": "刪除書評失敗",
+    "confirmDelete": "確定要刪除這篇書評嗎？"
   }
 }

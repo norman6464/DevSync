@@ -30,7 +30,8 @@
     "reports": "Informes",
     "settings": "Configuración",
     "profile": "Perfil",
-    "signOut": "Cerrar sesión"
+    "signOut": "Cerrar sesión",
+    "bookReviews": "Reseñas de Libros"
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -417,5 +418,29 @@
     "updateFailed": "Error al actualizar recurso",
     "deleteFailed": "Error al eliminar recurso",
     "confirmDelete": "¿Estás seguro de que deseas eliminar este recurso?"
+  },
+  "bookReviews": {
+    "title": "Reseñas de Libros",
+    "subtitle": "Comparte tus opiniones sobre libros de tecnología",
+    "addReview": "Agregar Reseña",
+    "newReview": "Nueva Reseña",
+    "editReview": "Editar Reseña",
+    "noReviews": "Aún no hay reseñas de libros",
+    "addFirstReview": "Agrega tu primera reseña",
+    "bookTitle": "Título del Libro",
+    "bookTitlePlaceholder": "Ingresa el título del libro",
+    "author": "Autor",
+    "authorPlaceholder": "Ingresa el nombre del autor",
+    "rating": "Calificación",
+    "review": "Reseña",
+    "reviewPlaceholder": "Comparte tus pensamientos sobre este libro...",
+    "coverImage": "URL de la Portada",
+    "createSuccess": "Reseña creada exitosamente",
+    "updateSuccess": "Reseña actualizada exitosamente",
+    "deleteSuccess": "Reseña eliminada exitosamente",
+    "createFailed": "Error al crear reseña",
+    "updateFailed": "Error al actualizar reseña",
+    "deleteFailed": "Error al eliminar reseña",
+    "confirmDelete": "¿Estás seguro de que deseas eliminar esta reseña?"
   }
 }

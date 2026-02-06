@@ -21,6 +21,7 @@ import GoalsPage from './pages/GoalsPage';
 import ReportsPage from './pages/ReportsPage';
 import ProjectsPage from './pages/ProjectsPage';
 import ResourcesPage from './pages/ResourcesPage';
+import BookReviewsPage from './pages/BookReviewsPage';
 
 export default function App() {
   const { isAuthenticated, loadUser } = useAuthStore();
@@ -66,6 +67,7 @@ export default function App() {
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/resources" element={<ResourcesPage />} />
+          <Route path="/book-reviews" element={<BookReviewsPage />} />
         </Route>
       </Route>
     </Routes>

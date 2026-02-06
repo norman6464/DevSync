@@ -28,6 +28,7 @@
     "reports": "レポート",
     "projects": "プロジェクト",
     "resources": "リソース",
+    "bookReviews": "技術書レビュー",
     "settings": "設定",
     "profile": "プロフィール",
     "signOut": "ログアウト"
@@ -417,5 +418,29 @@
     "updateFailed": "リソースの更新に失敗しました",
     "deleteFailed": "リソースの削除に失敗しました",
     "confirmDelete": "このリソースを削除してもよろしいですか？"
+  },
+  "bookReviews": {
+    "title": "技術書レビュー",
+    "subtitle": "読んだ技術書の感想を共有しましょう",
+    "addReview": "レビューを追加",
+    "newReview": "新規レビュー",
+    "editReview": "レビューを編集",
+    "noReviews": "レビューがまだありません",
+    "addFirstReview": "最初のレビューを追加",
+    "bookTitle": "書籍タイトル",
+    "bookTitlePlaceholder": "書籍のタイトルを入力",
+    "author": "著者",
+    "authorPlaceholder": "著者名を入力",
+    "rating": "評価",
+    "review": "レビュー",
+    "reviewPlaceholder": "この本についての感想を共有...",
+    "coverImage": "表紙画像URL",
+    "createSuccess": "レビューを作成しました",
+    "updateSuccess": "レビューを更新しました",
+    "deleteSuccess": "レビューを削除しました",
+    "createFailed": "レビューの作成に失敗しました",
+    "updateFailed": "レビューの更新に失敗しました",
+    "deleteFailed": "レビューの削除に失敗しました",
+    "confirmDelete": "このレビューを削除してもよろしいですか？"
   }
 }

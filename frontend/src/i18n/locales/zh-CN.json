@@ -30,7 +30,8 @@
     "reports": "报告",
     "settings": "设置",
     "profile": "个人资料",
-    "signOut": "退出登录"
+    "signOut": "退出登录",
+    "bookReviews": "书评"
   },
   "auth": {
     "login": "登录",
@@ -417,5 +418,29 @@
     "updateFailed": "更新资源失败",
     "deleteFailed": "删除资源失败",
     "confirmDelete": "确定要删除这个资源吗？"
+  },
+  "bookReviews": {
+    "title": "书评",
+    "subtitle": "分享你对技术书籍的看法",
+    "addReview": "添加书评",
+    "newReview": "新书评",
+    "editReview": "编辑书评",
+    "noReviews": "暂无书评",
+    "addFirstReview": "添加你的第一篇书评",
+    "bookTitle": "书名",
+    "bookTitlePlaceholder": "输入书名",
+    "author": "作者",
+    "authorPlaceholder": "输入作者姓名",
+    "rating": "评分",
+    "review": "评论",
+    "reviewPlaceholder": "分享你对这本书的看法...",
+    "coverImage": "封面图片链接",
+    "createSuccess": "书评创建成功",
+    "updateSuccess": "书评更新成功",
+    "deleteSuccess": "书评删除成功",
+    "createFailed": "创建书评失败",
+    "updateFailed": "更新书评失败",
+    "deleteFailed": "删除书评失败",
+    "confirmDelete": "确定要删除这篇书评吗？"
   }
 }

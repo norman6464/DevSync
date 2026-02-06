@@ -30,7 +30,8 @@
     "reports": "Rapports",
     "settings": "Paramètres",
     "profile": "Profil",
-    "signOut": "Déconnexion"
+    "signOut": "Déconnexion",
+    "bookReviews": "Critiques de Livres"
   },
   "auth": {
     "login": "Connexion",
@@ -417,5 +418,29 @@
     "updateFailed": "Échec de la mise à jour de la ressource",
     "deleteFailed": "Échec de la suppression de la ressource",
     "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette ressource ?"
+  },
+  "bookReviews": {
+    "title": "Critiques de Livres",
+    "subtitle": "Partagez vos avis sur les livres techniques",
+    "addReview": "Ajouter une Critique",
+    "newReview": "Nouvelle Critique",
+    "editReview": "Modifier la Critique",
+    "noReviews": "Pas encore de critiques de livres",
+    "addFirstReview": "Ajoutez votre première critique",
+    "bookTitle": "Titre du Livre",
+    "bookTitlePlaceholder": "Entrez le titre du livre",
+    "author": "Auteur",
+    "authorPlaceholder": "Entrez le nom de l'auteur",
+    "rating": "Note",
+    "review": "Critique",
+    "reviewPlaceholder": "Partagez vos réflexions sur ce livre...",
+    "coverImage": "URL de la Couverture",
+    "createSuccess": "Critique créée avec succès",
+    "updateSuccess": "Critique mise à jour avec succès",
+    "deleteSuccess": "Critique supprimée avec succès",
+    "createFailed": "Échec de la création de la critique",
+    "updateFailed": "Échec de la mise à jour de la critique",
+    "deleteFailed": "Échec de la suppression de la critique",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette critique ?"
   }
 }
