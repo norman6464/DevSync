@@ -21,6 +21,7 @@
     "explore": "探索",
     "rankings": "ランキング",
     "chat": "チャット",
+    "goals": "目標",
     "settings": "設定",
     "profile": "プロフィール",
     "signOut": "ログアウト"
@@ -253,5 +254,44 @@
     "serverError": "サーバーエラー",
     "networkError": "ネットワークエラー",
     "tryAgain": "もう一度お試しください"
+  },
+  "goals": {
+    "title": "学習目標",
+    "myGoals": "学習目標",
+    "description": "学習の進捗を追跡し、目標を設定しましょう",
+    "addGoal": "目標を追加",
+    "editGoal": "目標を編集",
+    "newGoal": "新しい目標",
+    "goalTitle": "タイトル",
+    "goalTitlePlaceholder": "例：TypeScriptを学ぶ",
+    "goalDescription": "説明",
+    "goalDescriptionPlaceholder": "目標を説明してください...",
+    "category": "カテゴリ",
+    "targetDate": "目標日",
+    "progress": "進捗",
+    "status": "ステータス",
+    "active": "進行中",
+    "completed": "完了",
+    "paused": "一時停止",
+    "language": "言語",
+    "framework": "フレームワーク",
+    "skill": "スキル",
+    "project": "プロジェクト",
+    "other": "その他",
+    "noGoals": "学習目標がまだありません。最初の目標を追加しましょう！",
+    "manageGoals": "目標を管理",
+    "createSuccess": "目標を作成しました",
+    "updateSuccess": "目標を更新しました",
+    "deleteSuccess": "目標を削除しました",
+    "createFailed": "目標の作成に失敗しました",
+    "updateFailed": "目標の更新に失敗しました",
+    "deleteFailed": "目標の削除に失敗しました",
+    "confirmDelete": "この目標を削除してもよろしいですか？",
+    "stats": {
+      "total": "合計目標",
+      "activeCount": "進行中",
+      "completedCount": "完了",
+      "avgProgress": "平均進捗"
+    }
   }
 }

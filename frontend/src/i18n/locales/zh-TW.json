@@ -21,6 +21,7 @@
     "explore": "探索",
     "rankings": "排行榜",
     "chat": "聊天",
+    "goals": "目標",
     "settings": "設定",
     "profile": "個人資料",
     "signOut": "登出"
@@ -253,5 +254,44 @@
     "serverError": "伺服器錯誤",
     "networkError": "網路錯誤",
     "tryAgain": "請重試"
+  },
+  "goals": {
+    "title": "學習目標",
+    "myGoals": "我的學習目標",
+    "description": "追蹤學習進度並設定目標",
+    "addGoal": "新增目標",
+    "editGoal": "編輯目標",
+    "newGoal": "新目標",
+    "goalTitle": "標題",
+    "goalTitlePlaceholder": "例如：學習 TypeScript",
+    "goalDescription": "描述",
+    "goalDescriptionPlaceholder": "描述你的目標...",
+    "category": "類別",
+    "targetDate": "目標日期",
+    "progress": "進度",
+    "status": "狀態",
+    "active": "進行中",
+    "completed": "已完成",
+    "paused": "已暫停",
+    "language": "語言",
+    "framework": "框架",
+    "skill": "技能",
+    "project": "專案",
+    "other": "其他",
+    "noGoals": "還沒有學習目標。開始新增你的第一個目標吧！",
+    "manageGoals": "管理目標",
+    "createSuccess": "目標建立成功",
+    "updateSuccess": "目標更新成功",
+    "deleteSuccess": "目標刪除成功",
+    "createFailed": "建立目標失敗",
+    "updateFailed": "更新目標失敗",
+    "deleteFailed": "刪除目標失敗",
+    "confirmDelete": "確定要刪除這個目標嗎？",
+    "stats": {
+      "total": "總目標",
+      "activeCount": "進行中",
+      "completedCount": "已完成",
+      "avgProgress": "平均進度"
+    }
   }
 }

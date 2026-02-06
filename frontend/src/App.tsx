@@ -17,6 +17,7 @@ import ChatPage from './pages/ChatPage';
 import PostDetailPage from './pages/PostDetailPage';
 import FollowListPage from './pages/FollowListPage';
 import GitHubCallbackPage from './pages/GitHubCallbackPage';
+import GoalsPage from './pages/GoalsPage';
 
 export default function App() {
   const { isAuthenticated, loadUser } = useAuthStore();
@@ -58,6 +59,7 @@ export default function App() {
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/chat/:userId" element={<ChatPage />} />
           <Route path="/posts/:id" element={<PostDetailPage />} />
+          <Route path="/goals" element={<GoalsPage />} />
         </Route>
       </Route>
     </Routes>

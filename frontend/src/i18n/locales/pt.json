@@ -21,6 +21,7 @@
     "explore": "Explorar",
     "rankings": "Rankings",
     "chat": "Chat",
+    "goals": "Metas",
     "settings": "Configurações",
     "profile": "Perfil",
     "signOut": "Sair"
@@ -253,5 +254,44 @@
     "serverError": "Erro do servidor",
     "networkError": "Erro de rede",
     "tryAgain": "Por favor, tente novamente"
+  },
+  "goals": {
+    "title": "Metas de Aprendizado",
+    "myGoals": "Minhas Metas de Aprendizado",
+    "description": "Acompanhe seu progresso e defina metas",
+    "addGoal": "Adicionar Meta",
+    "editGoal": "Editar Meta",
+    "newGoal": "Nova Meta",
+    "goalTitle": "Título",
+    "goalTitlePlaceholder": "Ex: Aprender TypeScript",
+    "goalDescription": "Descrição",
+    "goalDescriptionPlaceholder": "Descreva sua meta...",
+    "category": "Categoria",
+    "targetDate": "Data Alvo",
+    "progress": "Progresso",
+    "status": "Status",
+    "active": "Ativo",
+    "completed": "Concluído",
+    "paused": "Pausado",
+    "language": "Linguagem",
+    "framework": "Framework",
+    "skill": "Habilidade",
+    "project": "Projeto",
+    "other": "Outro",
+    "noGoals": "Nenhuma meta de aprendizado ainda. Comece adicionando sua primeira meta!",
+    "manageGoals": "Gerenciar Metas",
+    "createSuccess": "Meta criada com sucesso",
+    "updateSuccess": "Meta atualizada com sucesso",
+    "deleteSuccess": "Meta excluída com sucesso",
+    "createFailed": "Falha ao criar meta",
+    "updateFailed": "Falha ao atualizar meta",
+    "deleteFailed": "Falha ao excluir meta",
+    "confirmDelete": "Tem certeza de que deseja excluir esta meta?",
+    "stats": {
+      "total": "Total de Metas",
+      "activeCount": "Ativas",
+      "completedCount": "Concluídas",
+      "avgProgress": "Progresso Médio"
+    }
   }
 }
