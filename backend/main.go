@@ -33,6 +33,7 @@ func main() {
 		&model.Comment{},
 		&model.Message{},
 		&model.Notification{},
+		&model.PasswordResetToken{},
 	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}

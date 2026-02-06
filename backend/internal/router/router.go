@@ -32,13 +32,14 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	messageRepo := repository.NewMessageRepository(db)
 	rankingRepo := repository.NewRankingRepository(db)
 	notificationRepo := repository.NewNotificationRepository(db)
+	passwordResetRepo := repository.NewPasswordResetRepository(db)
 
 	// Services
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
 	githubService := service.NewGitHubService(cfg, userRepo, githubRepo)
 
 	// Handlers
-	authHandler := handler.NewAuthHandler(authService, githubService, userRepo)
+	authHandler := handler.NewAuthHandler(authService, githubService, userRepo, passwordResetRepo)
 	userHandler := handler.NewUserHandler(userRepo)
 	followHandler := handler.NewFollowHandler(followRepo)
 	githubHandler := handler.NewGitHubHandler(githubService, authService, userRepo, githubRepo)
@@ -67,6 +68,8 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		auth.POST("/login", authHandler.Login)
 		auth.GET("/github", authHandler.GitHubLogin)
 		auth.GET("/github/callback", authHandler.GitHubLoginCallback)
+		auth.POST("/password-reset/request", authHandler.RequestPasswordReset)
+		auth.POST("/password-reset/confirm", authHandler.ResetPassword)
 	}
 
 	// GitHub data-connect callback (public - called by frontend after OAuth redirect)
@@ -78,6 +81,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	{
 		// Auth
 		protected.GET("/auth/me", authHandler.Me)
+		protected.DELETE("/auth/account", authHandler.DeleteAccount)
 
 		// Users
 		users := protected.Group("/users")
