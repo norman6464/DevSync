@@ -419,6 +419,22 @@
     "deleteFailed": "リソースの削除に失敗しました",
     "confirmDelete": "このリソースを削除してもよろしいですか？"
   },
+  "portfolio": {
+    "generate": "ポートフォリオ",
+    "title": "ポートフォリオを生成",
+    "description": "プロフィールから静的HTMLポートフォリオを作成",
+    "theme": "テーマ",
+    "minimal": "ミニマル",
+    "modern": "モダン",
+    "gradient": "グラデーション",
+    "preview": "プレビュー",
+    "download": "HTMLをダウンロード",
+    "copy": "HTMLをコピー",
+    "openInNewTab": "新しいタブで開く",
+    "copied": "HTMLをコピーしました！",
+    "showCode": "HTMLコードを表示",
+    "hideCode": "HTMLコードを非表示"
+  },
   "bookReviews": {
     "title": "技術書レビュー",
     "subtitle": "読んだ技術書の感想を共有しましょう",

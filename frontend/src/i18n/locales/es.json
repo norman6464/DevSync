@@ -419,6 +419,22 @@
     "deleteFailed": "Error al eliminar recurso",
     "confirmDelete": "¿Estás seguro de que deseas eliminar este recurso?"
   },
+  "portfolio": {
+    "generate": "Portafolio",
+    "title": "Generar Portafolio",
+    "description": "Crea un portafolio HTML estático desde tu perfil",
+    "theme": "Tema",
+    "minimal": "Minimalista",
+    "modern": "Moderno",
+    "gradient": "Degradado",
+    "preview": "Vista previa",
+    "download": "Descargar HTML",
+    "copy": "Copiar HTML",
+    "openInNewTab": "Abrir en nueva pestaña",
+    "copied": "¡HTML copiado al portapapeles!",
+    "showCode": "Mostrar código HTML",
+    "hideCode": "Ocultar código HTML"
+  },
   "bookReviews": {
     "title": "Reseñas de Libros",
     "subtitle": "Comparte tus opiniones sobre libros de tecnología",

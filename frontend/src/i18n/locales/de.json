@@ -419,6 +419,22 @@
     "deleteFailed": "Ressource konnte nicht gelöscht werden",
     "confirmDelete": "Bist du sicher, dass du diese Ressource löschen möchtest?"
   },
+  "portfolio": {
+    "generate": "Portfolio",
+    "title": "Portfolio generieren",
+    "description": "Erstellen Sie ein statisches HTML-Portfolio aus Ihrem Profil",
+    "theme": "Thema",
+    "minimal": "Minimal",
+    "modern": "Modern",
+    "gradient": "Farbverlauf",
+    "preview": "Vorschau",
+    "download": "HTML herunterladen",
+    "copy": "HTML kopieren",
+    "openInNewTab": "In neuem Tab öffnen",
+    "copied": "HTML in Zwischenablage kopiert!",
+    "showCode": "HTML-Code anzeigen",
+    "hideCode": "HTML-Code ausblenden"
+  },
   "bookReviews": {
     "title": "Buchrezensionen",
     "subtitle": "Teile deine Meinung zu Technikbüchern",

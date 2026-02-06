@@ -419,6 +419,22 @@
     "deleteFailed": "Échec de la suppression de la ressource",
     "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette ressource ?"
   },
+  "portfolio": {
+    "generate": "Portfolio",
+    "title": "Générer un Portfolio",
+    "description": "Créez un portfolio HTML statique à partir de votre profil",
+    "theme": "Thème",
+    "minimal": "Minimal",
+    "modern": "Moderne",
+    "gradient": "Dégradé",
+    "preview": "Aperçu",
+    "download": "Télécharger HTML",
+    "copy": "Copier HTML",
+    "openInNewTab": "Ouvrir dans un nouvel onglet",
+    "copied": "HTML copié dans le presse-papiers !",
+    "showCode": "Afficher le code HTML",
+    "hideCode": "Masquer le code HTML"
+  },
   "bookReviews": {
     "title": "Critiques de Livres",
     "subtitle": "Partagez vos avis sur les livres techniques",

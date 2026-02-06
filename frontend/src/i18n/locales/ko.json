@@ -419,6 +419,22 @@
     "deleteFailed": "리소스 삭제에 실패했습니다",
     "confirmDelete": "이 리소스를 삭제하시겠습니까?"
   },
+  "portfolio": {
+    "generate": "포트폴리오",
+    "title": "포트폴리오 생성",
+    "description": "프로필에서 정적 HTML 포트폴리오를 만듭니다",
+    "theme": "테마",
+    "minimal": "미니멀",
+    "modern": "모던",
+    "gradient": "그라데이션",
+    "preview": "미리보기",
+    "download": "HTML 다운로드",
+    "copy": "HTML 복사",
+    "openInNewTab": "새 탭에서 열기",
+    "copied": "HTML이 클립보드에 복사되었습니다!",
+    "showCode": "HTML 코드 보기",
+    "hideCode": "HTML 코드 숨기기"
+  },
   "bookReviews": {
     "title": "도서 리뷰",
     "subtitle": "기술 서적에 대한 생각을 공유하세요",
