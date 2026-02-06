@@ -47,25 +47,71 @@ export default function ContributionCalendar({ contributions }: ContributionCale
 
   const totalContributions = contributions.reduce((sum, c) => sum + c.count, 0);
 
+  // Calculate month labels for header
+  const monthLabels: { label: string; weekIndex: number }[] = [];
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  let lastMonth = -1;
+
+  weeks.forEach((week, weekIndex) => {
+    if (week.length > 0) {
+      const firstDayOfWeek = new Date(week[0].date);
+      const month = firstDayOfWeek.getMonth();
+      if (month !== lastMonth) {
+        monthLabels.push({ label: months[month], weekIndex });
+        lastMonth = month;
+      }
+    }
+  });
+
+  const dayLabels = ['', 'Mon', '', 'Wed', '', 'Fri', ''];
+
   return (
     <div>
       <div className="overflow-x-auto">
-        <div className="inline-flex gap-[3px]">
-          {weeks.map((week, wi) => (
-            <div key={wi} className="flex flex-col gap-[3px]">
-              {week.map((day, di) => (
-                <div
-                  key={di}
-                  title={`${day.date}: ${day.count} contributions`}
-                  className="w-3 h-3 rounded-sm"
-                  style={{ backgroundColor: getColor(day.count) }}
-                />
+        <div className="flex">
+          {/* Day labels column */}
+          <div className="flex flex-col gap-[3px] mr-2 text-xs text-gray-500">
+            <div className="h-4" /> {/* Spacer for month header */}
+            {dayLabels.map((label, i) => (
+              <div key={i} className="h-3 flex items-center justify-end pr-1 text-[10px]">
+                {label}
+              </div>
+            ))}
+          </div>
+
+          {/* Calendar grid */}
+          <div>
+            {/* Month labels row */}
+            <div className="flex h-4 text-xs text-gray-500 mb-[3px]">
+              {weeks.map((_, wi) => {
+                const monthLabel = monthLabels.find(m => m.weekIndex === wi);
+                return (
+                  <div key={wi} className="w-3 mr-[3px] text-[10px]">
+                    {monthLabel?.label || ''}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Contribution squares */}
+            <div className="inline-flex gap-[3px]">
+              {weeks.map((week, wi) => (
+                <div key={wi} className="flex flex-col gap-[3px]">
+                  {week.map((day, di) => (
+                    <div
+                      key={di}
+                      title={`${day.date}: ${day.count} contributions`}
+                      className="w-3 h-3 rounded-sm"
+                      style={{ backgroundColor: getColor(day.count) }}
+                    />
+                  ))}
+                </div>
               ))}
             </div>
-          ))}
+          </div>
         </div>
       </div>
-      <p className="text-sm text-gray-400 mt-3">
+      <p className="text-sm text-gray-500 mt-3">
         {totalContributions.toLocaleString()} contributions in the last year
       </p>
     </div>
