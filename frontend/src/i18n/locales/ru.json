@@ -30,7 +30,8 @@
     "reports": "Отчёты",
     "settings": "Настройки",
     "profile": "Профиль",
-    "signOut": "Выйти"
+    "signOut": "Выйти",
+    "bookReviews": "Обзоры книг"
   },
   "auth": {
     "login": "Войти",
@@ -417,5 +418,29 @@
     "updateFailed": "Не удалось обновить ресурс",
     "deleteFailed": "Не удалось удалить ресурс",
     "confirmDelete": "Вы уверены, что хотите удалить этот ресурс?"
+  },
+  "bookReviews": {
+    "title": "Обзоры книг",
+    "subtitle": "Поделитесь своим мнением о технических книгах",
+    "addReview": "Добавить обзор",
+    "newReview": "Новый обзор",
+    "editReview": "Редактировать обзор",
+    "noReviews": "Пока нет обзоров книг",
+    "addFirstReview": "Добавьте свой первый обзор",
+    "bookTitle": "Название книги",
+    "bookTitlePlaceholder": "Введите название книги",
+    "author": "Автор",
+    "authorPlaceholder": "Введите имя автора",
+    "rating": "Оценка",
+    "review": "Обзор",
+    "reviewPlaceholder": "Поделитесь своими мыслями об этой книге...",
+    "coverImage": "URL обложки",
+    "createSuccess": "Обзор успешно создан",
+    "updateSuccess": "Обзор успешно обновлён",
+    "deleteSuccess": "Обзор успешно удалён",
+    "createFailed": "Не удалось создать обзор",
+    "updateFailed": "Не удалось обновить обзор",
+    "deleteFailed": "Не удалось удалить обзор",
+    "confirmDelete": "Вы уверены, что хотите удалить этот обзор?"
   }
 }

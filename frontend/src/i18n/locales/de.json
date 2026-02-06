@@ -30,7 +30,8 @@
     "reports": "Berichte",
     "settings": "Einstellungen",
     "profile": "Profil",
-    "signOut": "Abmelden"
+    "signOut": "Abmelden",
+    "bookReviews": "Buchrezensionen"
   },
   "auth": {
     "login": "Anmelden",
@@ -417,5 +418,29 @@
     "updateFailed": "Ressource konnte nicht aktualisiert werden",
     "deleteFailed": "Ressource konnte nicht gelöscht werden",
     "confirmDelete": "Bist du sicher, dass du diese Ressource löschen möchtest?"
+  },
+  "bookReviews": {
+    "title": "Buchrezensionen",
+    "subtitle": "Teile deine Meinung zu Technikbüchern",
+    "addReview": "Rezension hinzufügen",
+    "newReview": "Neue Rezension",
+    "editReview": "Rezension bearbeiten",
+    "noReviews": "Noch keine Buchrezensionen",
+    "addFirstReview": "Füge deine erste Rezension hinzu",
+    "bookTitle": "Buchtitel",
+    "bookTitlePlaceholder": "Gib den Buchtitel ein",
+    "author": "Autor",
+    "authorPlaceholder": "Gib den Autorennamen ein",
+    "rating": "Bewertung",
+    "review": "Rezension",
+    "reviewPlaceholder": "Teile deine Gedanken zu diesem Buch...",
+    "coverImage": "Cover-Bild-URL",
+    "createSuccess": "Rezension erfolgreich erstellt",
+    "updateSuccess": "Rezension erfolgreich aktualisiert",
+    "deleteSuccess": "Rezension erfolgreich gelöscht",
+    "createFailed": "Rezension konnte nicht erstellt werden",
+    "updateFailed": "Rezension konnte nicht aktualisiert werden",
+    "deleteFailed": "Rezension konnte nicht gelöscht werden",
+    "confirmDelete": "Bist du sicher, dass du diese Rezension löschen möchtest?"
   }
 }

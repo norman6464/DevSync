@@ -28,6 +28,7 @@
     "reports": "Reports",
     "projects": "Projects",
     "resources": "Resources",
+    "bookReviews": "Book Reviews",
     "settings": "Settings",
     "profile": "Profile",
     "signOut": "Sign out"
@@ -417,5 +418,29 @@
     "updateFailed": "Failed to update resource",
     "deleteFailed": "Failed to delete resource",
     "confirmDelete": "Are you sure you want to delete this resource?"
+  },
+  "bookReviews": {
+    "title": "Book Reviews",
+    "subtitle": "Share your thoughts on tech books",
+    "addReview": "Add Review",
+    "newReview": "New Review",
+    "editReview": "Edit Review",
+    "noReviews": "No book reviews yet",
+    "addFirstReview": "Add your first review",
+    "bookTitle": "Book Title",
+    "bookTitlePlaceholder": "Enter the book title",
+    "author": "Author",
+    "authorPlaceholder": "Enter the author name",
+    "rating": "Rating",
+    "review": "Review",
+    "reviewPlaceholder": "Share your thoughts about this book...",
+    "coverImage": "Cover Image URL",
+    "createSuccess": "Review created successfully",
+    "updateSuccess": "Review updated successfully",
+    "deleteSuccess": "Review deleted successfully",
+    "createFailed": "Failed to create review",
+    "updateFailed": "Failed to update review",
+    "deleteFailed": "Failed to delete review",
+    "confirmDelete": "Are you sure you want to delete this review?"
   }
 }

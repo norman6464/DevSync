@@ -30,7 +30,8 @@
     "reports": "리포트",
     "settings": "설정",
     "profile": "프로필",
-    "signOut": "로그아웃"
+    "signOut": "로그아웃",
+    "bookReviews": "도서 리뷰"
   },
   "auth": {
     "login": "로그인",
@@ -417,5 +418,29 @@
     "updateFailed": "리소스 업데이트에 실패했습니다",
     "deleteFailed": "리소스 삭제에 실패했습니다",
     "confirmDelete": "이 리소스를 삭제하시겠습니까?"
+  },
+  "bookReviews": {
+    "title": "도서 리뷰",
+    "subtitle": "기술 서적에 대한 생각을 공유하세요",
+    "addReview": "리뷰 추가",
+    "newReview": "새 리뷰",
+    "editReview": "리뷰 편집",
+    "noReviews": "아직 도서 리뷰가 없습니다",
+    "addFirstReview": "첫 번째 리뷰를 추가하세요",
+    "bookTitle": "책 제목",
+    "bookTitlePlaceholder": "책 제목을 입력하세요",
+    "author": "저자",
+    "authorPlaceholder": "저자 이름을 입력하세요",
+    "rating": "평점",
+    "review": "리뷰",
+    "reviewPlaceholder": "이 책에 대한 생각을 공유하세요...",
+    "coverImage": "표지 이미지 URL",
+    "createSuccess": "리뷰가 생성되었습니다",
+    "updateSuccess": "리뷰가 업데이트되었습니다",
+    "deleteSuccess": "리뷰가 삭제되었습니다",
+    "createFailed": "리뷰 생성에 실패했습니다",
+    "updateFailed": "리뷰 업데이트에 실패했습니다",
+    "deleteFailed": "리뷰 삭제에 실패했습니다",
+    "confirmDelete": "이 리뷰를 삭제하시겠습니까?"
   }
 }

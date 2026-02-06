@@ -39,6 +39,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	activityReportRepo := repository.NewActivityReportRepository(db)
 	projectRepo := repository.NewProjectRepository(db)
 	learningResourceRepo := repository.NewLearningResourceRepository(db)
+	bookReviewRepo := repository.NewBookReviewRepository(db)
 
 	// Services
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
@@ -63,6 +64,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	activityReportHandler := handler.NewActivityReportHandler(activityReportRepo)
 	projectHandler := handler.NewProjectHandler(projectRepo)
 	learningResourceHandler := handler.NewLearningResourceHandler(learningResourceRepo)
+	bookReviewHandler := handler.NewBookReviewHandler(bookReviewRepo)
 
 	// Static file serving for uploads
 	r.Static("/uploads", "./uploads")
@@ -239,6 +241,17 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			resources.POST("/:id/save", learningResourceHandler.SaveResource)
 			resources.DELETE("/:id/save", learningResourceHandler.UnsaveResource)
 			resources.GET("/user/:userId", learningResourceHandler.GetByUserID)
+		}
+
+		// Book Reviews
+		bookReviews := protected.Group("/book-reviews")
+		{
+			bookReviews.POST("", bookReviewHandler.Create)
+			bookReviews.GET("", bookReviewHandler.GetAll)
+			bookReviews.GET("/:id", bookReviewHandler.GetByID)
+			bookReviews.PUT("/:id", bookReviewHandler.Update)
+			bookReviews.DELETE("/:id", bookReviewHandler.Delete)
+			bookReviews.GET("/user/:userId", bookReviewHandler.GetByUserID)
 		}
 	}
 
