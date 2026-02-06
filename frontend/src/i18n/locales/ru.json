@@ -90,7 +90,10 @@
     "locked": "Заблокировано",
     "startContributing": "Начните вносить вклад чтобы получить значки!",
     "skills": "Навыки",
-    "frameworks": "Фреймворки и Библиотеки"
+    "frameworks": "Фреймворки и Библиотеки",
+    "zennArticles": "Статьи Zenn",
+    "articles": "статей",
+    "viewAllOnZenn": "Смотреть все на Zenn"
   },
   "settings": {
     "title": "Настройки",
@@ -119,7 +122,12 @@
     "skills": "Навыки",
     "selectLanguages": "Выберите языки программирования",
     "selectFrameworks": "Выберите фреймворки и библиотеки",
-    "preview": "Предпросмотр"
+    "preview": "Предпросмотр",
+    "zenn": "Zenn",
+    "zennDescription": "Подключите свой аккаунт Zenn для отображения ваших статей.",
+    "zennUsername": "Имя пользователя Zenn",
+    "zennConnected": "Zenn успешно подключен",
+    "zennInvalidUsername": "Недействительное имя пользователя Zenn"
   },
   "explore": {
     "title": "Обзор",

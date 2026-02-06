@@ -33,10 +33,12 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	rankingRepo := repository.NewRankingRepository(db)
 	notificationRepo := repository.NewNotificationRepository(db)
 	passwordResetRepo := repository.NewPasswordResetRepository(db)
+	zennRepo := repository.NewZennRepository(db)
 
 	// Services
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
 	githubService := service.NewGitHubService(cfg, userRepo, githubRepo)
+	zennService := service.NewZennService()
 
 	// Handlers
 	authHandler := handler.NewAuthHandler(authService, githubService, userRepo, passwordResetRepo)
@@ -49,6 +51,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	wsHandler := handler.NewWebSocketHandler(hub, authService)
 	uploadHandler := handler.NewUploadHandler()
 	notificationHandler := handler.NewNotificationHandler(notificationRepo)
+	zennHandler := handler.NewZennHandler(zennRepo, userRepo, zennService)
 
 	// Static file serving for uploads
 	r.Static("/uploads", "./uploads")
@@ -154,6 +157,16 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			notifications.PUT("/:id/read", notificationHandler.MarkAsRead)
 			notifications.PUT("/read-all", notificationHandler.MarkAllAsRead)
 			notifications.DELETE("/:id", notificationHandler.Delete)
+		}
+
+		// Zenn
+		zenn := protected.Group("/zenn")
+		{
+			zenn.POST("/connect", zennHandler.Connect)
+			zenn.DELETE("/disconnect", zennHandler.Disconnect)
+			zenn.POST("/sync", zennHandler.Sync)
+			zenn.GET("/articles/:userId", zennHandler.GetArticles)
+			zenn.GET("/stats/:userId", zennHandler.GetStats)
 		}
 	}
 

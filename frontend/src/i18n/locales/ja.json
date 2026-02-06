@@ -90,7 +90,10 @@
     "locked": "未解除",
     "startContributing": "コントリビューションしてバッジを獲得しよう！",
     "skills": "スキル",
-    "frameworks": "フレームワーク＆ライブラリ"
+    "frameworks": "フレームワーク＆ライブラリ",
+    "zennArticles": "Zenn記事",
+    "articles": "記事",
+    "viewAllOnZenn": "Zennで全て見る"
   },
   "settings": {
     "title": "設定",
@@ -119,7 +122,12 @@
     "skills": "スキル",
     "selectLanguages": "プログラミング言語を選択",
     "selectFrameworks": "フレームワーク＆ライブラリを選択",
-    "preview": "プレビュー"
+    "preview": "プレビュー",
+    "zenn": "Zenn",
+    "zennDescription": "Zennアカウントを連携して記事を表示します。",
+    "zennUsername": "Zennユーザー名",
+    "zennConnected": "Zennが正常に連携されました",
+    "zennInvalidUsername": "無効なZennユーザー名です"
   },
   "explore": {
     "title": "探索",

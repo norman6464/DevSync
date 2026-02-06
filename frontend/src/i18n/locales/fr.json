@@ -90,7 +90,10 @@
     "locked": "Bloqués",
     "startContributing": "Commencez à contribuer pour gagner des badges !",
     "skills": "Compétences",
-    "frameworks": "Frameworks et Bibliothèques"
+    "frameworks": "Frameworks et Bibliothèques",
+    "zennArticles": "Articles Zenn",
+    "articles": "articles",
+    "viewAllOnZenn": "Voir tout sur Zenn"
   },
   "settings": {
     "title": "Paramètres",
@@ -119,7 +122,12 @@
     "skills": "Compétences",
     "selectLanguages": "Sélectionner les langages de programmation",
     "selectFrameworks": "Sélectionner les frameworks et bibliothèques",
-    "preview": "Aperçu"
+    "preview": "Aperçu",
+    "zenn": "Zenn",
+    "zennDescription": "Connectez votre compte Zenn pour afficher vos articles.",
+    "zennUsername": "Nom d'utilisateur Zenn",
+    "zennConnected": "Zenn connecté avec succès",
+    "zennInvalidUsername": "Nom d'utilisateur Zenn invalide"
   },
   "explore": {
     "title": "Explorer",
