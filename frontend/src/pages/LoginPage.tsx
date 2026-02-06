@@ -101,6 +101,12 @@ export default function LoginPage() {
               {loading ? t('common.loading') : t('auth.login')}
             </button>
           </form>
+
+          <div className="text-center">
+            <Link to="/forgot-password" className="text-sm text-gray-400 hover:text-gray-300">
+              {t('auth.forgotPassword')}
+            </Link>
+          </div>
         </div>
 
         {/* Bottom link */}

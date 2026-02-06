@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
 import { updateUser } from '../api/users';
 import { getGitHubConnectURL, disconnectGitHub, syncGitHub } from '../api/github';
+import { deleteAccount } from '../api/auth';
 import toast from 'react-hot-toast';
 
 // skillicons.dev supported icons
@@ -21,7 +23,8 @@ const FRAMEWORKS = [
 
 export default function SettingsPage() {
   const { t } = useTranslation();
-  const { user, setUser } = useAuthStore();
+  const navigate = useNavigate();
+  const { user, setUser, logout } = useAuthStore();
   const [name, setName] = useState(user?.name || '');
   const [bio, setBio] = useState(user?.bio || '');
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url || '');
@@ -34,6 +37,9 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [savingSkills, setSavingSkills] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   if (!user) return null;
 
@@ -107,6 +113,20 @@ export default function SettingsPage() {
       toast.error(t('errors.somethingWrong'));
     } finally {
       setSyncing(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      await deleteAccount(deletePassword || undefined);
+      logout();
+      navigate('/login');
+      toast.success(t('accountManagement.accountDeleted'));
+    } catch {
+      toast.error(t('accountManagement.deleteFailed'));
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -285,6 +305,73 @@ export default function SettingsPage() {
           )}
         </div>
       </div>
+
+      {/* Danger Zone - Account Deletion */}
+      <div className="bg-gray-900 border border-red-500/30 rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-red-500/30 bg-red-500/5">
+          <h2 className="text-base font-semibold text-red-400">{t('accountManagement.dangerZone')}</h2>
+        </div>
+        <div className="p-6">
+          <p className="text-gray-400 text-sm mb-4">
+            {t('accountManagement.deleteWarning')}
+          </p>
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            {t('accountManagement.deleteAccount')}
+          </button>
+        </div>
+      </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
+          <div className="bg-gray-900 border border-gray-700 rounded-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-white mb-2">
+              {t('accountManagement.confirmDelete')}
+            </h3>
+            <p className="text-gray-400 text-sm mb-4">
+              {t('accountManagement.deleteConfirmText')}
+            </p>
+
+            {/* Show password field for non-GitHub-only users */}
+            {!user.github_connected && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                  {t('auth.password')}
+                </label>
+                <input
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  className={inputClass}
+                  placeholder="••••••••"
+                />
+              </div>
+            )}
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeletePassword('');
+                }}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleting}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                {deleting ? t('common.loading') : t('accountManagement.deleteAccount')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
