@@ -45,7 +45,7 @@ func (r *UserRepository) Search(query string) ([]model.User, error) {
 
 func (r *UserRepository) FindByGitHubID(githubID int64) (*model.User, error) {
 	var user model.User
-	result := r.db.Where("github_id = ?", githubID).First(&user)
+	result := r.db.Where("git_hub_id = ?", githubID).First(&user)
 	if result.Error != nil {
 		return nil, result.Error
 	}
