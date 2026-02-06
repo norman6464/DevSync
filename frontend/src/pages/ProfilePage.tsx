@@ -12,6 +12,7 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import FollowButton from '../components/profile/FollowButton';
 import ContributionCalendar from '../components/profile/ContributionCalendar';
 import LanguageChart from '../components/profile/LanguageChart';
+import BadgeDisplay from '../components/profile/BadgeDisplay';
 import PostCard from '../components/posts/PostCard';
 
 export default function ProfilePage() {
@@ -165,6 +166,14 @@ export default function ProfilePage() {
           )}
         </div>
       )}
+
+      {/* Badges / Achievements */}
+      <BadgeDisplay
+        contributions={contributions}
+        posts={posts}
+        followerCount={followerCount}
+        followingCount={followingCount}
+      />
 
       {/* Repositories */}
       {user.github_connected && repos.length > 0 && (
