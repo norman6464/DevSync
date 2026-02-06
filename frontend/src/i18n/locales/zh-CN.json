@@ -419,6 +419,22 @@
     "deleteFailed": "删除资源失败",
     "confirmDelete": "确定要删除这个资源吗？"
   },
+  "portfolio": {
+    "generate": "作品集",
+    "title": "生成作品集",
+    "description": "从您的个人资料创建静态HTML作品集",
+    "theme": "主题",
+    "minimal": "简约",
+    "modern": "现代",
+    "gradient": "渐变",
+    "preview": "预览",
+    "download": "下载HTML",
+    "copy": "复制HTML",
+    "openInNewTab": "在新标签页打开",
+    "copied": "HTML已复制到剪贴板！",
+    "showCode": "显示HTML代码",
+    "hideCode": "隐藏HTML代码"
+  },
   "bookReviews": {
     "title": "书评",
     "subtitle": "分享你对技术书籍的看法",

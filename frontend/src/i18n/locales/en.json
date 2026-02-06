@@ -419,6 +419,22 @@
     "deleteFailed": "Failed to delete resource",
     "confirmDelete": "Are you sure you want to delete this resource?"
   },
+  "portfolio": {
+    "generate": "Portfolio",
+    "title": "Generate Portfolio",
+    "description": "Create a static HTML portfolio from your profile",
+    "theme": "Theme",
+    "minimal": "Minimal",
+    "modern": "Modern",
+    "gradient": "Gradient",
+    "preview": "Preview",
+    "download": "Download HTML",
+    "copy": "Copy HTML",
+    "openInNewTab": "Open in New Tab",
+    "copied": "HTML copied to clipboard!",
+    "showCode": "Show HTML Code",
+    "hideCode": "Hide HTML Code"
+  },
   "bookReviews": {
     "title": "Book Reviews",
     "subtitle": "Share your thoughts on tech books",

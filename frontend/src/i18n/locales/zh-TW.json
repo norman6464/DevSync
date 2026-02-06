@@ -419,6 +419,22 @@
     "deleteFailed": "刪除資源失敗",
     "confirmDelete": "確定要刪除這個資源嗎？"
   },
+  "portfolio": {
+    "generate": "作品集",
+    "title": "生成作品集",
+    "description": "從您的個人資料建立靜態HTML作品集",
+    "theme": "主題",
+    "minimal": "簡約",
+    "modern": "現代",
+    "gradient": "漸層",
+    "preview": "預覽",
+    "download": "下載HTML",
+    "copy": "複製HTML",
+    "openInNewTab": "在新分頁開啟",
+    "copied": "HTML已複製到剪貼簿！",
+    "showCode": "顯示HTML程式碼",
+    "hideCode": "隱藏HTML程式碼"
+  },
   "bookReviews": {
     "title": "書評",
     "subtitle": "分享你對技術書籍的看法",
