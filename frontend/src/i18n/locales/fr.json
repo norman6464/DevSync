@@ -326,5 +326,24 @@
     "downloaded": "Image téléchargée !",
     "downloadFailed": "Échec du téléchargement de l'image",
     "twitterText": "Découvrez le profil développeur de {{name}} sur DevSync !"
+  },
+  "portfolio": {
+    "title": "Générer Portfolio",
+    "generate": "Générer Portfolio",
+    "selectTheme": "Choisir un Thème",
+    "preview": "Aperçu",
+    "showCode": "Afficher HTML",
+    "hideCode": "Masquer HTML",
+    "openInNewTab": "Ouvrir dans un Nouvel Onglet",
+    "download": "Télécharger HTML",
+    "copyHTML": "Copier HTML",
+    "downloaded": "Portfolio téléchargé !",
+    "htmlCopied": "HTML copié !",
+    "included": "Contenu Inclus",
+    "includesProfile": "Informations de profil et bio",
+    "includesStats": "Statistiques et contributions GitHub",
+    "includesSkills": "Compétences et technologies",
+    "includesRepos": "Dépôts en vedette",
+    "includesGoals": "Objectifs d'apprentissage"
   }
 }

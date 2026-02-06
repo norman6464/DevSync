@@ -326,5 +326,24 @@
     "downloaded": "Imagem baixada!",
     "downloadFailed": "Falha ao baixar imagem",
     "twitterText": "Confira o perfil de desenvolvedor de {{name}} no DevSync!"
+  },
+  "portfolio": {
+    "title": "Gerar Portfólio",
+    "generate": "Gerar Portfólio",
+    "selectTheme": "Selecionar Tema",
+    "preview": "Pré-visualização",
+    "showCode": "Mostrar HTML",
+    "hideCode": "Ocultar HTML",
+    "openInNewTab": "Abrir em Nova Aba",
+    "download": "Baixar HTML",
+    "copyHTML": "Copiar HTML",
+    "downloaded": "Portfólio baixado!",
+    "htmlCopied": "HTML copiado!",
+    "included": "Conteúdo Incluído",
+    "includesProfile": "Informações de perfil e bio",
+    "includesStats": "Estatísticas e contribuições do GitHub",
+    "includesSkills": "Habilidades e tecnologias",
+    "includesRepos": "Repositórios em destaque",
+    "includesGoals": "Metas de aprendizado"
   }
 }

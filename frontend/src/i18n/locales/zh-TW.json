@@ -326,5 +326,24 @@
     "downloaded": "圖片已下載！",
     "downloadFailed": "下載圖片失敗",
     "twitterText": "在DevSync上查看{{name}}的開發者資料！"
+  },
+  "portfolio": {
+    "title": "生成作品集",
+    "generate": "生成作品集",
+    "selectTheme": "選擇主題",
+    "preview": "預覽",
+    "showCode": "顯示HTML",
+    "hideCode": "隱藏HTML",
+    "openInNewTab": "在新分頁開啟",
+    "download": "下載HTML",
+    "copyHTML": "複製HTML",
+    "downloaded": "作品集已下載！",
+    "htmlCopied": "HTML已複製！",
+    "included": "包含內容",
+    "includesProfile": "個人資料和簡介",
+    "includesStats": "GitHub統計和貢獻",
+    "includesSkills": "技能和技術",
+    "includesRepos": "精選儲存庫",
+    "includesGoals": "學習目標"
   }
 }

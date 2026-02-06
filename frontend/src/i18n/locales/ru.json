@@ -326,5 +326,24 @@
     "downloaded": "Изображение скачано!",
     "downloadFailed": "Не удалось скачать изображение",
     "twitterText": "Посмотрите профиль разработчика {{name}} на DevSync!"
+  },
+  "portfolio": {
+    "title": "Создать Портфолио",
+    "generate": "Создать Портфолио",
+    "selectTheme": "Выбрать Тему",
+    "preview": "Предпросмотр",
+    "showCode": "Показать HTML",
+    "hideCode": "Скрыть HTML",
+    "openInNewTab": "Открыть в Новой Вкладке",
+    "download": "Скачать HTML",
+    "copyHTML": "Копировать HTML",
+    "downloaded": "Портфолио скачано!",
+    "htmlCopied": "HTML скопирован!",
+    "included": "Включённое Содержимое",
+    "includesProfile": "Информация профиля и био",
+    "includesStats": "Статистика и вклады GitHub",
+    "includesSkills": "Навыки и технологии",
+    "includesRepos": "Избранные репозитории",
+    "includesGoals": "Цели обучения"
   }
 }

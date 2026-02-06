@@ -326,5 +326,24 @@
     "downloaded": "Bild heruntergeladen!",
     "downloadFailed": "Bild konnte nicht heruntergeladen werden",
     "twitterText": "Schau dir das Entwicklerprofil von {{name}} auf DevSync an!"
+  },
+  "portfolio": {
+    "title": "Portfolio Generieren",
+    "generate": "Portfolio Generieren",
+    "selectTheme": "Thema Auswählen",
+    "preview": "Vorschau",
+    "showCode": "HTML Anzeigen",
+    "hideCode": "HTML Ausblenden",
+    "openInNewTab": "In Neuem Tab Öffnen",
+    "download": "HTML Herunterladen",
+    "copyHTML": "HTML Kopieren",
+    "downloaded": "Portfolio heruntergeladen!",
+    "htmlCopied": "HTML kopiert!",
+    "included": "Enthaltene Inhalte",
+    "includesProfile": "Profilinformationen und Bio",
+    "includesStats": "GitHub Statistiken und Beiträge",
+    "includesSkills": "Fähigkeiten und Technologien",
+    "includesRepos": "Ausgewählte Repositories",
+    "includesGoals": "Lernziele"
   }
 }

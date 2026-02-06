@@ -19,6 +19,7 @@ import LanguageChart from '../components/profile/LanguageChart';
 import BadgeDisplay from '../components/profile/BadgeDisplay';
 import PostCard from '../components/posts/PostCard';
 import ShareModal from '../components/profile/ShareModal';
+import PortfolioModal from '../components/profile/PortfolioModal';
 
 export default function ProfilePage() {
   const { t } = useTranslation();
@@ -39,6 +40,7 @@ export default function ProfilePage() {
   const [followingCount, setFollowingCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [portfolioModalOpen, setPortfolioModalOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -130,6 +132,17 @@ export default function ProfilePage() {
                 </svg>
                 {t('sharing.share')}
               </button>
+              {isOwnProfile && (
+                <button
+                  onClick={() => setPortfolioModalOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white text-sm rounded-lg transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                  </svg>
+                  {t('portfolio.generate')}
+                </button>
+              )}
             </div>
             {user.bio && <p className="text-gray-400 mt-1 text-sm">{user.bio}</p>}
             <div className="flex flex-wrap gap-3 mt-2">
@@ -567,6 +580,21 @@ export default function ProfilePage() {
         totalContributions={contributions.reduce((sum, c) => sum + c.count, 0)}
         languages={languages}
         postCount={posts.length}
+      />
+
+      {/* Portfolio Modal */}
+      <PortfolioModal
+        isOpen={portfolioModalOpen}
+        onClose={() => setPortfolioModalOpen(false)}
+        data={{
+          user,
+          languages,
+          repos,
+          goals,
+          totalContributions: contributions.reduce((sum, c) => sum + c.count, 0),
+          followerCount,
+          followingCount,
+        }}
       />
     </div>
   );

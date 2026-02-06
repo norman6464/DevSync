@@ -326,5 +326,24 @@
     "downloaded": "Image downloaded!",
     "downloadFailed": "Failed to download image",
     "twitterText": "Check out {{name}}'s developer profile on DevSync!"
+  },
+  "portfolio": {
+    "title": "Generate Portfolio",
+    "generate": "Generate Portfolio",
+    "selectTheme": "Select Theme",
+    "preview": "Preview",
+    "showCode": "Show HTML",
+    "hideCode": "Hide HTML",
+    "openInNewTab": "Open in New Tab",
+    "download": "Download HTML",
+    "copyHTML": "Copy HTML",
+    "downloaded": "Portfolio downloaded!",
+    "htmlCopied": "HTML copied to clipboard!",
+    "included": "What's Included",
+    "includesProfile": "Profile information and bio",
+    "includesStats": "GitHub statistics and contributions",
+    "includesSkills": "Skills and technologies",
+    "includesRepos": "Featured repositories",
+    "includesGoals": "Learning goals"
   }
 }

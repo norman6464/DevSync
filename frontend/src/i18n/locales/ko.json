@@ -326,5 +326,24 @@
     "downloaded": "이미지가 다운로드되었습니다!",
     "downloadFailed": "이미지 다운로드에 실패했습니다",
     "twitterText": "DevSync에서 {{name}}님의 개발자 프로필을 확인하세요!"
+  },
+  "portfolio": {
+    "title": "포트폴리오 생성",
+    "generate": "포트폴리오 생성",
+    "selectTheme": "테마 선택",
+    "preview": "미리보기",
+    "showCode": "HTML 보기",
+    "hideCode": "HTML 숨기기",
+    "openInNewTab": "새 탭에서 열기",
+    "download": "HTML 다운로드",
+    "copyHTML": "HTML 복사",
+    "downloaded": "포트폴리오가 다운로드되었습니다!",
+    "htmlCopied": "HTML이 복사되었습니다!",
+    "included": "포함된 내용",
+    "includesProfile": "프로필 정보 및 자기소개",
+    "includesStats": "GitHub 통계 및 기여",
+    "includesSkills": "스킬 및 기술",
+    "includesRepos": "주요 저장소",
+    "includesGoals": "학습 목표"
   }
 }

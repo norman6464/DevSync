@@ -326,5 +326,24 @@
     "downloaded": "画像をダウンロードしました！",
     "downloadFailed": "画像のダウンロードに失敗しました",
     "twitterText": "{{name}}さんの開発者プロフィールをDevSyncでチェック！"
+  },
+  "portfolio": {
+    "title": "ポートフォリオ生成",
+    "generate": "ポートフォリオを生成",
+    "selectTheme": "テーマを選択",
+    "preview": "プレビュー",
+    "showCode": "HTMLを表示",
+    "hideCode": "HTMLを隠す",
+    "openInNewTab": "新しいタブで開く",
+    "download": "HTMLをダウンロード",
+    "copyHTML": "HTMLをコピー",
+    "downloaded": "ポートフォリオをダウンロードしました！",
+    "htmlCopied": "HTMLをコピーしました！",
+    "included": "含まれる内容",
+    "includesProfile": "プロフィール情報と自己紹介",
+    "includesStats": "GitHub統計とコントリビューション",
+    "includesSkills": "スキルと技術",
+    "includesRepos": "主要リポジトリ",
+    "includesGoals": "学習目標"
   }
 }
