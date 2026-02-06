@@ -12,6 +12,7 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import FollowButton from '../components/profile/FollowButton';
 import ContributionCalendar from '../components/profile/ContributionCalendar';
 import LanguageChart from '../components/profile/LanguageChart';
+import ActivityReport from '../components/profile/ActivityReport';
 import PostCard from '../components/posts/PostCard';
 
 export default function ProfilePage() {
@@ -164,6 +165,15 @@ export default function ProfilePage() {
             </div>
           )}
         </div>
+      )}
+
+      {/* Activity Report */}
+      {user.github_connected && (
+        <ActivityReport
+          contributions={contributions}
+          posts={posts}
+          followerCount={followerCount}
+        />
       )}
 
       {/* Repositories */}
