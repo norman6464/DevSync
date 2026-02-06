@@ -51,7 +51,7 @@ func (r *GitHubRepository) UpsertRepos(repos []model.GitHubRepository) error {
 		return nil
 	}
 	return r.db.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "github_repo_id"}},
+		Columns:   []clause.Column{{Name: "git_hub_repo_id"}},
 		DoUpdates: clause.AssignmentColumns([]string{"name", "full_name", "description", "language", "stars", "forks", "is_private", "updated_at"}),
 	}).Create(&repos).Error
 }
