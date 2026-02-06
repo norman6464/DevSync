@@ -21,6 +21,7 @@
     "explore": "Обзор",
     "rankings": "Рейтинги",
     "chat": "Чат",
+    "goals": "Цели",
     "settings": "Настройки",
     "profile": "Профиль",
     "signOut": "Выйти"
@@ -253,5 +254,44 @@
     "serverError": "Ошибка сервера",
     "networkError": "Ошибка сети",
     "tryAgain": "Пожалуйста, попробуйте снова"
+  },
+  "goals": {
+    "title": "Цели обучения",
+    "myGoals": "Мои цели обучения",
+    "description": "Отслеживайте свой прогресс и ставьте цели",
+    "addGoal": "Добавить цель",
+    "editGoal": "Редактировать цель",
+    "newGoal": "Новая цель",
+    "goalTitle": "Название",
+    "goalTitlePlaceholder": "Например: Изучить TypeScript",
+    "goalDescription": "Описание",
+    "goalDescriptionPlaceholder": "Опишите свою цель...",
+    "category": "Категория",
+    "targetDate": "Целевая дата",
+    "progress": "Прогресс",
+    "status": "Статус",
+    "active": "Активная",
+    "completed": "Завершена",
+    "paused": "Приостановлена",
+    "language": "Язык",
+    "framework": "Фреймворк",
+    "skill": "Навык",
+    "project": "Проект",
+    "other": "Другое",
+    "noGoals": "Пока нет целей обучения. Начните с добавления первой цели!",
+    "manageGoals": "Управление целями",
+    "createSuccess": "Цель успешно создана",
+    "updateSuccess": "Цель успешно обновлена",
+    "deleteSuccess": "Цель успешно удалена",
+    "createFailed": "Не удалось создать цель",
+    "updateFailed": "Не удалось обновить цель",
+    "deleteFailed": "Не удалось удалить цель",
+    "confirmDelete": "Вы уверены, что хотите удалить эту цель?",
+    "stats": {
+      "total": "Всего целей",
+      "activeCount": "Активных",
+      "completedCount": "Завершённых",
+      "avgProgress": "Средний прогресс"
+    }
   }
 }

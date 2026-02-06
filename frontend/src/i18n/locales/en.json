@@ -21,6 +21,7 @@
     "explore": "Explore",
     "rankings": "Rankings",
     "chat": "Chat",
+    "goals": "Goals",
     "settings": "Settings",
     "profile": "Profile",
     "signOut": "Sign out"
@@ -253,5 +254,44 @@
     "serverError": "Server error",
     "networkError": "Network error",
     "tryAgain": "Please try again"
+  },
+  "goals": {
+    "title": "Learning Goals",
+    "myGoals": "My Learning Goals",
+    "description": "Track your learning progress and set goals",
+    "addGoal": "Add Goal",
+    "editGoal": "Edit Goal",
+    "newGoal": "New Goal",
+    "goalTitle": "Title",
+    "goalTitlePlaceholder": "e.g., Learn TypeScript",
+    "goalDescription": "Description",
+    "goalDescriptionPlaceholder": "Describe your goal...",
+    "category": "Category",
+    "targetDate": "Target Date",
+    "progress": "Progress",
+    "status": "Status",
+    "active": "Active",
+    "completed": "Completed",
+    "paused": "Paused",
+    "language": "Language",
+    "framework": "Framework",
+    "skill": "Skill",
+    "project": "Project",
+    "other": "Other",
+    "noGoals": "No learning goals yet. Start by adding your first goal!",
+    "manageGoals": "Manage Goals",
+    "createSuccess": "Goal created successfully",
+    "updateSuccess": "Goal updated successfully",
+    "deleteSuccess": "Goal deleted successfully",
+    "createFailed": "Failed to create goal",
+    "updateFailed": "Failed to update goal",
+    "deleteFailed": "Failed to delete goal",
+    "confirmDelete": "Are you sure you want to delete this goal?",
+    "stats": {
+      "total": "Total Goals",
+      "activeCount": "Active",
+      "completedCount": "Completed",
+      "avgProgress": "Avg. Progress"
+    }
   }
 }

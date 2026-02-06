@@ -21,6 +21,7 @@
     "explore": "Entdecken",
     "rankings": "Ranglisten",
     "chat": "Chat",
+    "goals": "Ziele",
     "settings": "Einstellungen",
     "profile": "Profil",
     "signOut": "Abmelden"
@@ -253,5 +254,44 @@
     "serverError": "Serverfehler",
     "networkError": "Netzwerkfehler",
     "tryAgain": "Bitte erneut versuchen"
+  },
+  "goals": {
+    "title": "Lernziele",
+    "myGoals": "Meine Lernziele",
+    "description": "Verfolgen Sie Ihren Lernfortschritt und setzen Sie Ziele",
+    "addGoal": "Ziel hinzufügen",
+    "editGoal": "Ziel bearbeiten",
+    "newGoal": "Neues Ziel",
+    "goalTitle": "Titel",
+    "goalTitlePlaceholder": "z.B. TypeScript lernen",
+    "goalDescription": "Beschreibung",
+    "goalDescriptionPlaceholder": "Beschreiben Sie Ihr Ziel...",
+    "category": "Kategorie",
+    "targetDate": "Zieldatum",
+    "progress": "Fortschritt",
+    "status": "Status",
+    "active": "Aktiv",
+    "completed": "Abgeschlossen",
+    "paused": "Pausiert",
+    "language": "Sprache",
+    "framework": "Framework",
+    "skill": "Fähigkeit",
+    "project": "Projekt",
+    "other": "Sonstiges",
+    "noGoals": "Noch keine Lernziele. Beginnen Sie damit, Ihr erstes Ziel hinzuzufügen!",
+    "manageGoals": "Ziele verwalten",
+    "createSuccess": "Ziel erfolgreich erstellt",
+    "updateSuccess": "Ziel erfolgreich aktualisiert",
+    "deleteSuccess": "Ziel erfolgreich gelöscht",
+    "createFailed": "Ziel konnte nicht erstellt werden",
+    "updateFailed": "Ziel konnte nicht aktualisiert werden",
+    "deleteFailed": "Ziel konnte nicht gelöscht werden",
+    "confirmDelete": "Sind Sie sicher, dass Sie dieses Ziel löschen möchten?",
+    "stats": {
+      "total": "Gesamtziele",
+      "activeCount": "Aktiv",
+      "completedCount": "Abgeschlossen",
+      "avgProgress": "Durchschn. Fortschritt"
+    }
   }
 }

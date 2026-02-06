@@ -36,6 +36,7 @@ func main() {
 		&model.PasswordResetToken{},
 		&model.ZennArticle{},
 		&model.QiitaArticle{},
+		&model.LearningGoal{},
 	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}

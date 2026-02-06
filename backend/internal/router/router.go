@@ -35,6 +35,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	passwordResetRepo := repository.NewPasswordResetRepository(db)
 	zennRepo := repository.NewZennRepository(db)
 	qiitaRepo := repository.NewQiitaRepository(db)
+	learningGoalRepo := repository.NewLearningGoalRepository(db)
 
 	// Services
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
@@ -55,6 +56,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	notificationHandler := handler.NewNotificationHandler(notificationRepo)
 	zennHandler := handler.NewZennHandler(zennRepo, userRepo, zennService)
 	qiitaHandler := handler.NewQiitaHandler(qiitaRepo, userRepo, qiitaService)
+	learningGoalHandler := handler.NewLearningGoalHandler(learningGoalRepo)
 
 	// Static file serving for uploads
 	r.Static("/uploads", "./uploads")
@@ -180,6 +182,18 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			qiita.POST("/sync", qiitaHandler.Sync)
 			qiita.GET("/articles/:userId", qiitaHandler.GetArticles)
 			qiita.GET("/stats/:userId", qiitaHandler.GetStats)
+		}
+
+		// Learning Goals
+		goals := protected.Group("/goals")
+		{
+			goals.POST("", learningGoalHandler.Create)
+			goals.GET("", learningGoalHandler.GetMyGoals)
+			goals.GET("/:id", learningGoalHandler.GetByID)
+			goals.PUT("/:id", learningGoalHandler.Update)
+			goals.DELETE("/:id", learningGoalHandler.Delete)
+			goals.GET("/user/:userId", learningGoalHandler.GetByUserID)
+			goals.GET("/stats/:userId", learningGoalHandler.GetStats)
 		}
 	}
 

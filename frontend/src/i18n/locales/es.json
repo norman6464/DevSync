@@ -21,6 +21,7 @@
     "explore": "Explorar",
     "rankings": "Rankings",
     "chat": "Chat",
+    "goals": "Objetivos",
     "settings": "Configuración",
     "profile": "Perfil",
     "signOut": "Cerrar sesión"
@@ -253,5 +254,44 @@
     "serverError": "Error del servidor",
     "networkError": "Error de red",
     "tryAgain": "Por favor, inténtalo de nuevo"
+  },
+  "goals": {
+    "title": "Objetivos de Aprendizaje",
+    "myGoals": "Mis Objetivos de Aprendizaje",
+    "description": "Rastrea tu progreso de aprendizaje y establece metas",
+    "addGoal": "Agregar Objetivo",
+    "editGoal": "Editar Objetivo",
+    "newGoal": "Nuevo Objetivo",
+    "goalTitle": "Título",
+    "goalTitlePlaceholder": "Ej: Aprender TypeScript",
+    "goalDescription": "Descripción",
+    "goalDescriptionPlaceholder": "Describe tu objetivo...",
+    "category": "Categoría",
+    "targetDate": "Fecha Objetivo",
+    "progress": "Progreso",
+    "status": "Estado",
+    "active": "Activo",
+    "completed": "Completado",
+    "paused": "Pausado",
+    "language": "Lenguaje",
+    "framework": "Framework",
+    "skill": "Habilidad",
+    "project": "Proyecto",
+    "other": "Otro",
+    "noGoals": "No tienes objetivos de aprendizaje. ¡Comienza agregando tu primer objetivo!",
+    "manageGoals": "Gestionar Objetivos",
+    "createSuccess": "Objetivo creado exitosamente",
+    "updateSuccess": "Objetivo actualizado exitosamente",
+    "deleteSuccess": "Objetivo eliminado exitosamente",
+    "createFailed": "Error al crear objetivo",
+    "updateFailed": "Error al actualizar objetivo",
+    "deleteFailed": "Error al eliminar objetivo",
+    "confirmDelete": "¿Estás seguro de que deseas eliminar este objetivo?",
+    "stats": {
+      "total": "Total de Objetivos",
+      "activeCount": "Activos",
+      "completedCount": "Completados",
+      "avgProgress": "Progreso Promedio"
+    }
   }
 }

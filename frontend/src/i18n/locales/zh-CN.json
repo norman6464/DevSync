@@ -21,6 +21,7 @@
     "explore": "探索",
     "rankings": "排行榜",
     "chat": "聊天",
+    "goals": "目标",
     "settings": "设置",
     "profile": "个人资料",
     "signOut": "退出登录"
@@ -253,5 +254,44 @@
     "serverError": "服务器错误",
     "networkError": "网络错误",
     "tryAgain": "请重试"
+  },
+  "goals": {
+    "title": "学习目标",
+    "myGoals": "我的学习目标",
+    "description": "追踪学习进度并设定目标",
+    "addGoal": "添加目标",
+    "editGoal": "编辑目标",
+    "newGoal": "新目标",
+    "goalTitle": "标题",
+    "goalTitlePlaceholder": "例如：学习 TypeScript",
+    "goalDescription": "描述",
+    "goalDescriptionPlaceholder": "描述你的目标...",
+    "category": "类别",
+    "targetDate": "目标日期",
+    "progress": "进度",
+    "status": "状态",
+    "active": "进行中",
+    "completed": "已完成",
+    "paused": "已暂停",
+    "language": "语言",
+    "framework": "框架",
+    "skill": "技能",
+    "project": "项目",
+    "other": "其他",
+    "noGoals": "还没有学习目标。开始添加你的第一个目标吧！",
+    "manageGoals": "管理目标",
+    "createSuccess": "目标创建成功",
+    "updateSuccess": "目标更新成功",
+    "deleteSuccess": "目标删除成功",
+    "createFailed": "创建目标失败",
+    "updateFailed": "更新目标失败",
+    "deleteFailed": "删除目标失败",
+    "confirmDelete": "确定要删除这个目标吗？",
+    "stats": {
+      "total": "总目标",
+      "activeCount": "进行中",
+      "completedCount": "已完成",
+      "avgProgress": "平均进度"
+    }
   }
 }

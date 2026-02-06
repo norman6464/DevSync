@@ -21,6 +21,7 @@
     "explore": "탐색",
     "rankings": "랭킹",
     "chat": "채팅",
+    "goals": "목표",
     "settings": "설정",
     "profile": "프로필",
     "signOut": "로그아웃"
@@ -253,5 +254,44 @@
     "serverError": "서버 오류",
     "networkError": "네트워크 오류",
     "tryAgain": "다시 시도해주세요"
+  },
+  "goals": {
+    "title": "학습 목표",
+    "myGoals": "내 학습 목표",
+    "description": "학습 진행 상황을 추적하고 목표를 설정하세요",
+    "addGoal": "목표 추가",
+    "editGoal": "목표 편집",
+    "newGoal": "새 목표",
+    "goalTitle": "제목",
+    "goalTitlePlaceholder": "예: TypeScript 배우기",
+    "goalDescription": "설명",
+    "goalDescriptionPlaceholder": "목표를 설명하세요...",
+    "category": "카테고리",
+    "targetDate": "목표 날짜",
+    "progress": "진행률",
+    "status": "상태",
+    "active": "진행 중",
+    "completed": "완료",
+    "paused": "일시 중지",
+    "language": "언어",
+    "framework": "프레임워크",
+    "skill": "스킬",
+    "project": "프로젝트",
+    "other": "기타",
+    "noGoals": "학습 목표가 없습니다. 첫 번째 목표를 추가해보세요!",
+    "manageGoals": "목표 관리",
+    "createSuccess": "목표가 생성되었습니다",
+    "updateSuccess": "목표가 업데이트되었습니다",
+    "deleteSuccess": "목표가 삭제되었습니다",
+    "createFailed": "목표 생성에 실패했습니다",
+    "updateFailed": "목표 업데이트에 실패했습니다",
+    "deleteFailed": "목표 삭제에 실패했습니다",
+    "confirmDelete": "이 목표를 삭제하시겠습니까?",
+    "stats": {
+      "total": "총 목표",
+      "activeCount": "진행 중",
+      "completedCount": "완료",
+      "avgProgress": "평균 진행률"
+    }
   }
 }
