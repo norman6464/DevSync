@@ -22,6 +22,7 @@
     "rankings": "Classements",
     "chat": "Chat",
     "goals": "Objectifs",
+    "reports": "Rapports",
     "settings": "Paramètres",
     "profile": "Profil",
     "signOut": "Déconnexion"
@@ -293,5 +294,27 @@
       "completedCount": "Terminés",
       "avgProgress": "Progression moyenne"
     }
+  },
+  "reports": {
+    "title": "Rapports d'Activité",
+    "weekly": "Hebdomadaire",
+    "monthly": "Mensuel",
+    "contributions": "Contributions",
+    "posts": "Publications",
+    "comments": "Commentaires",
+    "newFollowers": "Nouveaux Abonnés",
+    "goalsCompleted": "Objectifs Terminés",
+    "likesReceived": "J'aime Reçus",
+    "messages": "Messages",
+    "trend": "Tendance d'Activité",
+    "trendUp": "par rapport à la période précédente",
+    "trendDown": "par rapport à la période précédente",
+    "trendStable": "identique à la période précédente",
+    "dailyActivity": "Activité Quotidienne",
+    "topLanguages": "Langages Les Plus Utilisés",
+    "repos": "repos",
+    "goalsProgress": "Progression des Objectifs",
+    "avgProgress": "Progression moyenne des objectifs actifs",
+    "goalsCompletedThisPeriod": "objectifs terminés cette période"
   }
 }

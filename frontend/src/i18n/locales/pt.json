@@ -22,6 +22,7 @@
     "rankings": "Rankings",
     "chat": "Chat",
     "goals": "Metas",
+    "reports": "Relatórios",
     "settings": "Configurações",
     "profile": "Perfil",
     "signOut": "Sair"
@@ -293,5 +294,27 @@
       "completedCount": "Concluídas",
       "avgProgress": "Progresso Médio"
     }
+  },
+  "reports": {
+    "title": "Relatórios de Atividade",
+    "weekly": "Semanal",
+    "monthly": "Mensal",
+    "contributions": "Contribuições",
+    "posts": "Publicações",
+    "comments": "Comentários",
+    "newFollowers": "Novos Seguidores",
+    "goalsCompleted": "Metas Concluídas",
+    "likesReceived": "Curtidas Recebidas",
+    "messages": "Mensagens",
+    "trend": "Tendência de Atividade",
+    "trendUp": "comparado ao período anterior",
+    "trendDown": "comparado ao período anterior",
+    "trendStable": "igual ao período anterior",
+    "dailyActivity": "Atividade Diária",
+    "topLanguages": "Linguagens Mais Usadas",
+    "repos": "repos",
+    "goalsProgress": "Progresso das Metas",
+    "avgProgress": "Progresso médio das metas ativas",
+    "goalsCompletedThisPeriod": "metas concluídas neste período"
   }
 }

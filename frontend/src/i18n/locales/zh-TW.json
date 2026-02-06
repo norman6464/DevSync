@@ -22,6 +22,7 @@
     "rankings": "排行榜",
     "chat": "聊天",
     "goals": "目標",
+    "reports": "報告",
     "settings": "設定",
     "profile": "個人資料",
     "signOut": "登出"
@@ -293,5 +294,27 @@
       "completedCount": "已完成",
       "avgProgress": "平均進度"
     }
+  },
+  "reports": {
+    "title": "活動報告",
+    "weekly": "週報",
+    "monthly": "月報",
+    "contributions": "貢獻",
+    "posts": "貼文",
+    "comments": "留言",
+    "newFollowers": "新追蹤者",
+    "goalsCompleted": "完成的目標",
+    "likesReceived": "收到的按讚",
+    "messages": "訊息",
+    "trend": "活動趨勢",
+    "trendUp": "與上期相比",
+    "trendDown": "與上期相比",
+    "trendStable": "與上期持平",
+    "dailyActivity": "每日活動",
+    "topLanguages": "常用語言",
+    "repos": "儲存庫",
+    "goalsProgress": "學習目標進度",
+    "avgProgress": "進行中目標的平均進度",
+    "goalsCompletedThisPeriod": "本期完成的目標數"
   }
 }
