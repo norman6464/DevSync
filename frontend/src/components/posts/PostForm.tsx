@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import MarkdownEditor from './MarkdownEditor';
 
@@ -7,6 +8,7 @@ interface PostFormProps {
 }
 
 export default function PostForm({ onSubmit }: PostFormProps) {
+  const { t } = useTranslation();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [imageUrls, setImageUrls] = useState<string[]>([]);
@@ -24,9 +26,9 @@ export default function PostForm({ onSubmit }: PostFormProps) {
       setContent('');
       setImageUrls([]);
       setExpanded(false);
-      toast.success('Post created');
+      toast.success(t('post.postCreated'));
     } catch {
-      toast.error('Failed to create post');
+      toast.error(t('post.postFailed'));
     } finally {
       setLoading(false);
     }
@@ -39,7 +41,7 @@ export default function PostForm({ onSubmit }: PostFormProps) {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         onFocus={() => setExpanded(true)}
-        placeholder="What did you learn today?"
+        placeholder={t('post.createTitle')}
         className="w-full px-3 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
       />
       {expanded && (
@@ -48,14 +50,14 @@ export default function PostForm({ onSubmit }: PostFormProps) {
             <MarkdownEditor
               value={content}
               onChange={setContent}
-              placeholder="Share your thoughts... (Markdown supported)"
+              placeholder={t('post.createContent')}
               minHeight="150px"
               onImagesChange={setImageUrls}
             />
           </div>
           <div className="flex justify-between items-center mt-3">
             <div className="text-xs text-gray-500">
-              Supports **bold**, *italic*, `code`, and more
+              {t('post.markdownSupported')}
             </div>
             <div className="flex gap-2">
               <button
@@ -68,14 +70,14 @@ export default function PostForm({ onSubmit }: PostFormProps) {
                 }}
                 className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors rounded-lg"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
                 disabled={loading || !title.trim() || !content.trim()}
                 className="px-5 py-2 bg-green-600 hover:bg-green-500 disabled:opacity-40 disabled:hover:bg-green-600 text-white rounded-lg font-medium text-sm transition-colors"
               >
-                {loading ? 'Posting...' : 'Post'}
+                {loading ? t('post.posting') : t('post.post')}
               </button>
             </div>
           </div>
