@@ -81,17 +81,17 @@ DevSyncは、これらの課題を解決するために開発しました。
 
 ### ホーム画面
 <p align="center">
-  <img src="docs/images/screenshots/home.png" alt="Home" width="800">
+  <img width="1339" height="962" alt="スクリーンショット 2026-02-06 12 45 49" src="https://github.com/user-attachments/assets/36d42c6e-60f1-449e-bdd4-ad35d51a130d" />
 </p>
 
 ### プロフィール画面
 <p align="center">
-  <img src="docs/images/screenshots/profile.png" alt="Profile" width="800">
+  <img width="1369" height="956" alt="スクリーンショット 2026-02-06 12 46 47" src="https://github.com/user-attachments/assets/dae59013-a6b2-4597-a23d-f87fd63365d3" />
 </p>
 
 ### ランキング画面
 <p align="center">
-  <img src="docs/images/screenshots/ranking.png" alt="Ranking" width="800">
+  <img width="1396" height="816" alt="スクリーンショット 2026-02-06 12 47 26" src="https://github.com/user-attachments/assets/ae1e3837-0a20-44f1-885d-d28fa9d0faef" />
 </p>
 
 ---
