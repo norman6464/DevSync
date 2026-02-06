@@ -316,5 +316,15 @@
     "goalsProgress": "Прогресс целей",
     "avgProgress": "Средний прогресс активных целей",
     "goalsCompletedThisPeriod": "целей завершено за этот период"
+  },
+  "sharing": {
+    "title": "Поделиться профилем",
+    "share": "Поделиться",
+    "download": "Скачать",
+    "copyLink": "Копировать ссылку",
+    "linkCopied": "Ссылка скопирована!",
+    "downloaded": "Изображение скачано!",
+    "downloadFailed": "Не удалось скачать изображение",
+    "twitterText": "Посмотрите профиль разработчика {{name}} на DevSync!"
   }
 }

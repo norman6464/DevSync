@@ -316,5 +316,15 @@
     "goalsProgress": "学習目標の進捗",
     "avgProgress": "アクティブな目標の平均進捗",
     "goalsCompletedThisPeriod": "今期達成した目標数"
+  },
+  "sharing": {
+    "title": "プロフィールを共有",
+    "share": "共有",
+    "download": "ダウンロード",
+    "copyLink": "リンクをコピー",
+    "linkCopied": "リンクをコピーしました！",
+    "downloaded": "画像をダウンロードしました！",
+    "downloadFailed": "画像のダウンロードに失敗しました",
+    "twitterText": "{{name}}さんの開発者プロフィールをDevSyncでチェック！"
   }
 }
