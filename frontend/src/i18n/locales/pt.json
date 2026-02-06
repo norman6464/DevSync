@@ -194,6 +194,17 @@
     "daysAgo": "há {{count}} dia",
     "daysAgo_other": "há {{count}} dias"
   },
+  "notifications": {
+    "title": "Notificações",
+    "empty": "Sem notificações",
+    "markAllRead": "Marcar tudo como lido",
+    "newPost": "{{name}} publicou uma nova postagem",
+    "newMessage": "{{name}} te enviou uma mensagem",
+    "justNow": "agora mesmo",
+    "minutesAgo": "há {{count}}m",
+    "hoursAgo": "há {{count}}h",
+    "daysAgo": "há {{count}}d"
+  },
   "errors": {
     "somethingWrong": "Algo deu errado",
     "notFound": "Não encontrado",

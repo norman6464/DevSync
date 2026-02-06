@@ -194,6 +194,17 @@
     "daysAgo": "{{count}} день назад",
     "daysAgo_other": "{{count}} дней назад"
   },
+  "notifications": {
+    "title": "Уведомления",
+    "empty": "Нет уведомлений",
+    "markAllRead": "Отметить все как прочитанное",
+    "newPost": "{{name}} опубликовал новый пост",
+    "newMessage": "{{name}} отправил вам сообщение",
+    "justNow": "только что",
+    "minutesAgo": "{{count}}м назад",
+    "hoursAgo": "{{count}}ч назад",
+    "daysAgo": "{{count}}д назад"
+  },
   "errors": {
     "somethingWrong": "Что-то пошло не так",
     "notFound": "Не найдено",

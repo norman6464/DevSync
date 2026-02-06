@@ -4,6 +4,7 @@ import { useAuthStore } from '../../store/authStore';
 import Avatar from '../common/Avatar';
 import ThemeToggle from '../common/ThemeToggle';
 import LanguageSelector from '../common/LanguageSelector';
+import NotificationDropdown from '../notifications/NotificationDropdown';
 
 export default function Header() {
   const { t } = useTranslation();
@@ -52,6 +53,7 @@ export default function Header() {
         <div className="flex items-center gap-2 ml-auto">
           <LanguageSelector />
           <ThemeToggle />
+          <NotificationDropdown />
 
           <Link
             to="/settings"

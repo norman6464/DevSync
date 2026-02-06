@@ -10,11 +10,12 @@ import (
 )
 
 type MessageHandler struct {
-	repo *repository.MessageRepository
+	repo             *repository.MessageRepository
+	notificationRepo *repository.NotificationRepository
 }
 
-func NewMessageHandler(repo *repository.MessageRepository) *MessageHandler {
-	return &MessageHandler{repo: repo}
+func NewMessageHandler(repo *repository.MessageRepository, notificationRepo *repository.NotificationRepository) *MessageHandler {
+	return &MessageHandler{repo: repo, notificationRepo: notificationRepo}
 }
 
 func (h *MessageHandler) GetConversations(c *gin.Context) {
@@ -74,6 +75,16 @@ func (h *MessageHandler) SendMessage(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	// Create notification for message receiver
+	go func(senderID, receiverID uint) {
+		notification := &model.Notification{
+			UserID:  receiverID,
+			Type:    model.NotificationTypeMessage,
+			ActorID: senderID,
+		}
+		h.notificationRepo.Create(notification)
+	}(userID, uint(receiverID))
 
 	c.JSON(http.StatusCreated, msg)
 }
