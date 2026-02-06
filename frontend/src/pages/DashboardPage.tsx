@@ -30,8 +30,8 @@ export default function DashboardPage() {
     fetchPosts();
   }, [tab]);
 
-  const handleCreatePost = async (title: string, content: string) => {
-    await createPost({ title, content });
+  const handleCreatePost = async (title: string, content: string, imageUrls?: string) => {
+    await createPost({ title, content, image_urls: imageUrls });
     fetchPosts();
   };
 

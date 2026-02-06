@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { likePost, unlikePost } from '../../api/posts';
-import { useAuthStore } from '../../store/authStore';
 import type { Post } from '../../types/post';
 import Avatar from '../common/Avatar';
 import { format } from 'date-fns';
@@ -12,7 +13,6 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post, onUpdate }: PostCardProps) {
-  const currentUser = useAuthStore((s) => s.user);
   const [liked, setLiked] = useState(post.liked || false);
   const [likeCount, setLikeCount] = useState(post.like_count);
 
@@ -33,6 +33,16 @@ export default function PostCard({ post, onUpdate }: PostCardProps) {
     }
   };
 
+  // Parse image URLs
+  let imageUrls: string[] = [];
+  try {
+    if (post.image_urls) {
+      imageUrls = JSON.parse(post.image_urls);
+    }
+  } catch {
+    // ignore parse error
+  }
+
   return (
     <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-gray-700 transition-colors">
       <div className="flex items-center gap-3 mb-3">
@@ -51,8 +61,41 @@ export default function PostCard({ post, onUpdate }: PostCardProps) {
 
       <Link to={`/posts/${post.id}`} className="block group">
         <h3 className="text-base font-semibold mb-1.5 group-hover:text-blue-400 transition-colors">{post.title}</h3>
-        <p className="text-gray-400 text-sm leading-relaxed whitespace-pre-wrap line-clamp-4">{post.content}</p>
+        <div className="text-gray-400 text-sm leading-relaxed prose prose-sm prose-invert max-w-none line-clamp-4">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              img: () => null,
+              p: ({ children }) => <p className="mb-2">{children}</p>,
+              a: ({ children }) => (
+                <span className="text-blue-400 hover:underline">{children}</span>
+              ),
+            }}
+          >
+            {post.content}
+          </ReactMarkdown>
+        </div>
       </Link>
+
+      {/* Image preview */}
+      {imageUrls.length > 0 && (
+        <div className="mt-3 flex gap-2 overflow-hidden">
+          {imageUrls.slice(0, 4).map((url, i) => (
+            <div key={i} className="relative">
+              <img
+                src={url}
+                alt=""
+                className="w-20 h-20 object-cover rounded-lg border border-gray-700"
+              />
+              {i === 3 && imageUrls.length > 4 && (
+                <div className="absolute inset-0 bg-black/60 rounded-lg flex items-center justify-center text-white text-sm font-medium">
+                  +{imageUrls.length - 4}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="flex items-center gap-4 mt-4 pt-3 border-t border-gray-800">
         <button

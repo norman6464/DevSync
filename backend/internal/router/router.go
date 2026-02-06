@@ -45,6 +45,10 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	rankingHandler := handler.NewRankingHandler(rankingRepo)
 	messageHandler := handler.NewMessageHandler(messageRepo)
 	wsHandler := handler.NewWebSocketHandler(hub, authService)
+	uploadHandler := handler.NewUploadHandler()
+
+	// Static file serving for uploads
+	r.Static("/uploads", "./uploads")
 
 	// Public routes
 	r.GET("/health", handler.HealthCheck)
@@ -127,6 +131,13 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			messages.GET("", messageHandler.GetConversations)
 			messages.GET("/:userId", messageHandler.GetMessages)
 			messages.POST("/:userId", messageHandler.SendMessage)
+		}
+
+		// Upload
+		upload := protected.Group("/upload")
+		{
+			upload.POST("/image", uploadHandler.UploadImage)
+			upload.POST("/images", uploadHandler.UploadMultipleImages)
 		}
 	}
 
