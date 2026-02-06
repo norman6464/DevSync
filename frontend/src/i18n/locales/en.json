@@ -194,6 +194,17 @@
     "daysAgo": "{{count}} day ago",
     "daysAgo_other": "{{count}} days ago"
   },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications",
+    "markAllRead": "Mark all as read",
+    "newPost": "{{name}} published a new post",
+    "newMessage": "{{name}} sent you a message",
+    "justNow": "just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago"
+  },
   "errors": {
     "somethingWrong": "Something went wrong",
     "notFound": "Not found",

@@ -31,6 +31,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	postRepo := repository.NewPostRepository(db)
 	messageRepo := repository.NewMessageRepository(db)
 	rankingRepo := repository.NewRankingRepository(db)
+	notificationRepo := repository.NewNotificationRepository(db)
 
 	// Services
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
@@ -41,11 +42,12 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	userHandler := handler.NewUserHandler(userRepo)
 	followHandler := handler.NewFollowHandler(followRepo)
 	githubHandler := handler.NewGitHubHandler(githubService, authService, userRepo, githubRepo)
-	postHandler := handler.NewPostHandler(postRepo)
+	postHandler := handler.NewPostHandler(postRepo, notificationRepo)
 	rankingHandler := handler.NewRankingHandler(rankingRepo)
-	messageHandler := handler.NewMessageHandler(messageRepo)
+	messageHandler := handler.NewMessageHandler(messageRepo, notificationRepo)
 	wsHandler := handler.NewWebSocketHandler(hub, authService)
 	uploadHandler := handler.NewUploadHandler()
+	notificationHandler := handler.NewNotificationHandler(notificationRepo)
 
 	// Static file serving for uploads
 	r.Static("/uploads", "./uploads")
@@ -138,6 +140,16 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		{
 			upload.POST("/image", uploadHandler.UploadImage)
 			upload.POST("/images", uploadHandler.UploadMultipleImages)
+		}
+
+		// Notifications
+		notifications := protected.Group("/notifications")
+		{
+			notifications.GET("", notificationHandler.GetAll)
+			notifications.GET("/unread-count", notificationHandler.GetUnreadCount)
+			notifications.PUT("/:id/read", notificationHandler.MarkAsRead)
+			notifications.PUT("/read-all", notificationHandler.MarkAllAsRead)
+			notifications.DELETE("/:id", notificationHandler.Delete)
 		}
 	}
 

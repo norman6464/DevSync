@@ -194,6 +194,17 @@
     "daysAgo": "vor {{count}} Tag",
     "daysAgo_other": "vor {{count}} Tagen"
   },
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "empty": "Keine Benachrichtigungen",
+    "markAllRead": "Alle als gelesen markieren",
+    "newPost": "{{name}} hat einen neuen Beitrag veröffentlicht",
+    "newMessage": "{{name}} hat dir eine Nachricht gesendet",
+    "justNow": "gerade eben",
+    "minutesAgo": "vor {{count}}m",
+    "hoursAgo": "vor {{count}}h",
+    "daysAgo": "vor {{count}}T"
+  },
   "errors": {
     "somethingWrong": "Etwas ist schief gelaufen",
     "notFound": "Nicht gefunden",

@@ -32,6 +32,7 @@ func main() {
 		&model.Like{},
 		&model.Comment{},
 		&model.Message{},
+		&model.Notification{},
 	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}

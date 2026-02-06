@@ -10,11 +10,12 @@ import (
 )
 
 type PostHandler struct {
-	repo *repository.PostRepository
+	repo             *repository.PostRepository
+	notificationRepo *repository.NotificationRepository
 }
 
-func NewPostHandler(repo *repository.PostRepository) *PostHandler {
-	return &PostHandler{repo: repo}
+func NewPostHandler(repo *repository.PostRepository, notificationRepo *repository.NotificationRepository) *PostHandler {
+	return &PostHandler{repo: repo, notificationRepo: notificationRepo}
 }
 
 func (h *PostHandler) Create(c *gin.Context) {
@@ -39,6 +40,24 @@ func (h *PostHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	// Create notifications for followers
+	go func(postID, actorID uint) {
+		followerIDs, err := h.notificationRepo.GetFollowerIDs(actorID)
+		if err != nil || len(followerIDs) == 0 {
+			return
+		}
+		var notifications []*model.Notification
+		for _, followerID := range followerIDs {
+			notifications = append(notifications, &model.Notification{
+				UserID:  followerID,
+				Type:    model.NotificationTypePost,
+				ActorID: actorID,
+				PostID:  &postID,
+			})
+		}
+		h.notificationRepo.CreateBatch(notifications)
+	}(post.ID, userID)
 
 	post, _ = h.repo.FindByID(post.ID)
 	c.JSON(http.StatusCreated, post)

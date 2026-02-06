@@ -194,6 +194,17 @@
     "daysAgo": "{{count}} 天前",
     "daysAgo_other": "{{count}} 天前"
   },
+  "notifications": {
+    "title": "通知",
+    "empty": "没有通知",
+    "markAllRead": "全部标为已读",
+    "newPost": "{{name}} 发布了新帖子",
+    "newMessage": "{{name}} 给你发了消息",
+    "justNow": "刚刚",
+    "minutesAgo": "{{count}}分钟前",
+    "hoursAgo": "{{count}}小时前",
+    "daysAgo": "{{count}}天前"
+  },
   "errors": {
     "somethingWrong": "出错了",
     "notFound": "未找到",

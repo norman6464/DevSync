@@ -194,6 +194,17 @@
     "daysAgo": "{{count}}日前",
     "daysAgo_other": "{{count}}日前"
   },
+  "notifications": {
+    "title": "通知",
+    "empty": "通知はありません",
+    "markAllRead": "すべて既読にする",
+    "newPost": "{{name}}さんが新しい投稿をしました",
+    "newMessage": "{{name}}さんからメッセージが届きました",
+    "justNow": "たった今",
+    "minutesAgo": "{{count}}分前",
+    "hoursAgo": "{{count}}時間前",
+    "daysAgo": "{{count}}日前"
+  },
   "errors": {
     "somethingWrong": "エラーが発生しました",
     "notFound": "見つかりませんでした",
