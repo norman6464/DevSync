@@ -71,9 +71,11 @@ func (h *UserHandler) Update(c *gin.Context) {
 	}
 
 	var input struct {
-		Name      string `json:"name"`
-		Bio       string `json:"bio"`
-		AvatarURL string `json:"avatar_url"`
+		Name             string  `json:"name"`
+		Bio              string  `json:"bio"`
+		AvatarURL        string  `json:"avatar_url"`
+		SkillsLanguages  *string `json:"skills_languages"`
+		SkillsFrameworks *string `json:"skills_frameworks"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -85,6 +87,12 @@ func (h *UserHandler) Update(c *gin.Context) {
 	}
 	existing.Bio = input.Bio
 	existing.AvatarURL = input.AvatarURL
+	if input.SkillsLanguages != nil {
+		existing.SkillsLanguages = *input.SkillsLanguages
+	}
+	if input.SkillsFrameworks != nil {
+		existing.SkillsFrameworks = *input.SkillsFrameworks
+	}
 
 	if err := h.repo.Update(existing); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

@@ -107,6 +107,40 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* Skills */}
+      {(user.skills_languages || user.skills_frameworks) && (
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-4">
+          {user.skills_languages && (
+            <div>
+              <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
+                <span>✨</span> Languages
+              </h3>
+              <a href="https://skillicons.dev" target="_blank" rel="noopener noreferrer">
+                <img
+                  src={`https://skillicons.dev/icons?i=${user.skills_languages}&theme=dark`}
+                  alt="Languages"
+                  className="h-12"
+                />
+              </a>
+            </div>
+          )}
+          {user.skills_frameworks && (
+            <div>
+              <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
+                <span>🚀</span> Frameworks & Libraries
+              </h3>
+              <a href="https://skillicons.dev" target="_blank" rel="noopener noreferrer">
+                <img
+                  src={`https://skillicons.dev/icons?i=${user.skills_frameworks}&theme=dark`}
+                  alt="Frameworks"
+                  className="h-12"
+                />
+              </a>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* GitHub Data */}
       {user.github_connected && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
