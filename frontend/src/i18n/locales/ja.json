@@ -93,7 +93,9 @@
     "frameworks": "フレームワーク＆ライブラリ",
     "zennArticles": "Zenn記事",
     "articles": "記事",
-    "viewAllOnZenn": "Zennで全て見る"
+    "viewAllOnZenn": "Zennで全て見る",
+    "qiitaArticles": "Qiita記事",
+    "viewAllOnQiita": "Qiitaで全て見る"
   },
   "settings": {
     "title": "設定",
@@ -127,7 +129,12 @@
     "zennDescription": "Zennアカウントを連携して記事を表示します。",
     "zennUsername": "Zennユーザー名",
     "zennConnected": "Zennが正常に連携されました",
-    "zennInvalidUsername": "無効なZennユーザー名です"
+    "zennInvalidUsername": "無効なZennユーザー名です",
+    "qiita": "Qiita",
+    "qiitaDescription": "Qiitaアカウントを連携して記事を表示します。",
+    "qiitaUsername": "Qiitaユーザー名",
+    "qiitaConnected": "Qiitaが正常に連携されました",
+    "qiitaInvalidUsername": "無効なQiitaユーザー名です"
   },
   "explore": {
     "title": "探索",

@@ -5,6 +5,7 @@ import { useAuthStore } from '../store/authStore';
 import { updateUser } from '../api/users';
 import { getGitHubConnectURL, disconnectGitHub, syncGitHub } from '../api/github';
 import { connectZenn, disconnectZenn, syncZenn } from '../api/zenn';
+import { connectQiita, disconnectQiita, syncQiita } from '../api/qiita';
 import { deleteAccount } from '../api/auth';
 import toast from 'react-hot-toast';
 
@@ -41,6 +42,9 @@ export default function SettingsPage() {
   const [zennUsername, setZennUsername] = useState('');
   const [connectingZenn, setConnectingZenn] = useState(false);
   const [syncingZenn, setSyncingZenn] = useState(false);
+  const [qiitaUsername, setQiitaUsername] = useState('');
+  const [connectingQiita, setConnectingQiita] = useState(false);
+  const [syncingQiita, setSyncingQiita] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [deleting, setDeleting] = useState(false);
@@ -169,6 +173,44 @@ export default function SettingsPage() {
       toast.error(t('errors.somethingWrong'));
     } finally {
       setSyncingZenn(false);
+    }
+  };
+
+  const handleConnectQiita = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!qiitaUsername.trim()) return;
+    setConnectingQiita(true);
+    try {
+      await connectQiita(qiitaUsername.trim());
+      setUser({ ...user, qiita_username: qiitaUsername.trim() });
+      setQiitaUsername('');
+      toast.success(t('settings.qiitaConnected'));
+    } catch {
+      toast.error(t('settings.qiitaInvalidUsername'));
+    } finally {
+      setConnectingQiita(false);
+    }
+  };
+
+  const handleDisconnectQiita = async () => {
+    try {
+      await disconnectQiita();
+      setUser({ ...user, qiita_username: '' });
+      toast.success(t('settings.saved'));
+    } catch {
+      toast.error(t('errors.somethingWrong'));
+    }
+  };
+
+  const handleSyncQiita = async () => {
+    setSyncingQiita(true);
+    try {
+      await syncQiita();
+      toast.success(t('settings.saved'));
+    } catch {
+      toast.error(t('errors.somethingWrong'));
+    } finally {
+      setSyncingQiita(false);
     }
   };
 
@@ -401,6 +443,65 @@ export default function SettingsPage() {
                 className="w-full px-5 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors"
               >
                 {connectingZenn ? t('common.loading') : t('settings.connect')}
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+
+      {/* Qiita Integration */}
+      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-800">
+          <h2 className="text-base font-semibold">{t('settings.qiita')}</h2>
+        </div>
+        <div className="p-6">
+          {user.qiita_username ? (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center text-white font-bold text-sm">Q</div>
+                <div>
+                  <p className="text-sm font-medium text-green-400">{t('settings.connected')}</p>
+                  <p className="text-sm text-gray-400">@{user.qiita_username}</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleSyncQiita}
+                  disabled={syncingQiita}
+                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 text-white rounded-lg text-sm font-medium border border-gray-700 transition-colors"
+                >
+                  {syncingQiita ? t('settings.syncing') : t('settings.sync')}
+                </button>
+                <button
+                  onClick={handleDisconnectQiita}
+                  className="px-4 py-2 text-red-400 hover:text-red-300 border border-red-400/30 hover:border-red-400/50 rounded-lg text-sm font-medium transition-colors"
+                >
+                  {t('settings.disconnect')}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleConnectQiita} className="space-y-4">
+              <div className="text-center py-2">
+                <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center text-green-400 font-bold text-xl mx-auto mb-3">Q</div>
+                <p className="text-gray-400 text-sm mb-4">{t('settings.qiitaDescription')}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1.5">{t('settings.qiitaUsername')}</label>
+                <input
+                  type="text"
+                  value={qiitaUsername}
+                  onChange={(e) => setQiitaUsername(e.target.value)}
+                  placeholder="your-qiita-username"
+                  className={inputClass}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={connectingQiita || !qiitaUsername.trim()}
+                className="w-full px-5 py-2.5 bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors"
+              >
+                {connectingQiita ? t('common.loading') : t('settings.connect')}
               </button>
             </form>
           )}

@@ -35,6 +35,7 @@ func main() {
 		&model.Notification{},
 		&model.PasswordResetToken{},
 		&model.ZennArticle{},
+		&model.QiitaArticle{},
 	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}

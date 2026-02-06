@@ -93,7 +93,9 @@
     "frameworks": "Фреймворки и Библиотеки",
     "zennArticles": "Статьи Zenn",
     "articles": "статей",
-    "viewAllOnZenn": "Смотреть все на Zenn"
+    "viewAllOnZenn": "Смотреть все на Zenn",
+    "qiitaArticles": "Статьи Qiita",
+    "viewAllOnQiita": "Смотреть все на Qiita"
   },
   "settings": {
     "title": "Настройки",
@@ -127,7 +129,12 @@
     "zennDescription": "Подключите свой аккаунт Zenn для отображения ваших статей.",
     "zennUsername": "Имя пользователя Zenn",
     "zennConnected": "Zenn успешно подключен",
-    "zennInvalidUsername": "Недействительное имя пользователя Zenn"
+    "zennInvalidUsername": "Недействительное имя пользователя Zenn",
+    "qiita": "Qiita",
+    "qiitaDescription": "Подключите свой аккаунт Qiita для отображения ваших статей.",
+    "qiitaUsername": "Имя пользователя Qiita",
+    "qiitaConnected": "Qiita успешно подключен",
+    "qiitaInvalidUsername": "Недействительное имя пользователя Qiita"
   },
   "explore": {
     "title": "Обзор",
