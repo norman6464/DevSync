@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { getContributionRanking, getLanguageRanking, getAvailableLanguages } from '../api/rankings';
 import type { RankingEntry } from '../types/ranking';
 import Avatar from '../components/common/Avatar';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
 export default function RankingsPage() {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<'contributions' | 'languages'>('contributions');
   const [period, setPeriod] = useState<'weekly' | 'monthly'>('weekly');
   const [language, setLanguage] = useState('');
@@ -51,7 +53,7 @@ export default function RankingsPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold">Rankings</h1>
+      <h1 className="text-2xl font-bold">{t('rankings.title')}</h1>
 
       {/* Tab & Period Controls */}
       <div className="flex items-center gap-3">
@@ -68,7 +70,7 @@ export default function RankingsPage() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
               </svg>
-              Contributions
+              {t('rankings.contributions')}
             </span>
           </button>
           <button
@@ -83,7 +85,7 @@ export default function RankingsPage() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
               </svg>
-              By Language
+              {t('rankings.byLanguage')}
             </span>
           </button>
         </div>
@@ -97,7 +99,7 @@ export default function RankingsPage() {
                 : 'text-gray-400 hover:text-white'
             }`}
           >
-            Weekly
+            {t('rankings.thisWeek')}
           </button>
           <button
             onClick={() => setPeriod('monthly')}
@@ -141,9 +143,9 @@ export default function RankingsPage() {
       ) : (
         <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
           <div className="px-6 py-3 border-b border-gray-800 grid grid-cols-[3rem_1fr_auto] gap-4 text-xs font-medium text-gray-500 uppercase tracking-wider">
-            <span className="text-center">Rank</span>
-            <span>Developer</span>
-            <span className="text-right">{tab === 'contributions' ? 'Contributions' : 'Score'}</span>
+            <span className="text-center">{t('rankings.rank')}</span>
+            <span>{t('rankings.developer')}</span>
+            <span className="text-right">{tab === 'contributions' ? t('rankings.contributions') : t('rankings.total')}</span>
           </div>
           {rankings.map((entry, index) => (
             <Link

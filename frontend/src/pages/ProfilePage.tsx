@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { getUser, getFollowers, getFollowing } from '../api/users';
 import { getUserPosts } from '../api/posts';
 import { getContributions, getLanguages, getRepos } from '../api/github';
@@ -16,6 +17,7 @@ import BadgeDisplay from '../components/profile/BadgeDisplay';
 import PostCard from '../components/posts/PostCard';
 
 export default function ProfilePage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const currentUser = useAuthStore((s) => s.user);
   const [user, setUser] = useState<User | null>(null);
@@ -66,7 +68,7 @@ export default function ProfilePage() {
   }, [id]);
 
   if (loading) return <div className="py-12"><LoadingSpinner /></div>;
-  if (!user) return <div className="text-center text-gray-400 py-12">User not found</div>;
+  if (!user) return <div className="text-center text-gray-400 py-12">{t('errors.notFound')}</div>;
 
   const isOwnProfile = currentUser?.id === user.id;
 
@@ -98,10 +100,10 @@ export default function ProfilePage() {
             )}
             <div className="flex gap-4 mt-3 text-sm">
               <Link to={`/profile/${user.id}/followers`} className="text-gray-400 hover:text-blue-400 transition-colors">
-                <strong className="text-white">{followerCount}</strong> followers
+                <strong className="text-white">{followerCount}</strong> {t('profile.followers')}
               </Link>
               <Link to={`/profile/${user.id}/following`} className="text-gray-400 hover:text-blue-400 transition-colors">
-                <strong className="text-white">{followingCount}</strong> following
+                <strong className="text-white">{followingCount}</strong> {t('profile.following')}
               </Link>
             </div>
           </div>
@@ -114,7 +116,7 @@ export default function ProfilePage() {
           {user.skills_languages && (
             <div>
               <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
-                <span>✨</span> Languages
+                <span>✨</span> {t('profile.languages')}
               </h3>
               <a href="https://skillicons.dev" target="_blank" rel="noopener noreferrer">
                 <img
@@ -128,7 +130,7 @@ export default function ProfilePage() {
           {user.skills_frameworks && (
             <div>
               <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
-                <span>🚀</span> Frameworks & Libraries
+                <span>🚀</span> {t('profile.frameworks')}
               </h3>
               <a href="https://skillicons.dev" target="_blank" rel="noopener noreferrer">
                 <img
@@ -147,7 +149,7 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-800">
-              <h2 className="text-sm font-semibold">Contribution activity</h2>
+              <h2 className="text-sm font-semibold">{t('profile.contributions')}</h2>
             </div>
             <div className="p-6">
               <ContributionCalendar contributions={contributions} />
@@ -157,7 +159,7 @@ export default function ProfilePage() {
           {languages.length > 0 && (
             <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-800">
-                <h2 className="text-sm font-semibold">Languages</h2>
+                <h2 className="text-sm font-semibold">{t('profile.languages')}</h2>
               </div>
               <div className="p-6">
                 <LanguageChart languages={languages} />
@@ -180,7 +182,7 @@ export default function ProfilePage() {
         <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide">
-              Repositories
+              {t('profile.repositories')}
             </h2>
             {user.github_username && (
               <a
@@ -189,7 +191,7 @@ export default function ProfilePage() {
                 rel="noopener noreferrer"
                 className="text-xs text-gray-500 hover:text-blue-400 transition-colors flex items-center gap-1"
               >
-                View all on GitHub
+                {t('profile.viewAllOnGitHub')}
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                 </svg>
@@ -250,10 +252,10 @@ export default function ProfilePage() {
 
       {/* Posts */}
       <div>
-        <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-3">Posts</h2>
+        <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-3">{t('profile.posts')}</h2>
         {posts.length === 0 ? (
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-12 text-center text-gray-400 text-sm">
-            No posts yet
+            {t('profile.noPosts')}
           </div>
         ) : (
           <div className="space-y-3">
