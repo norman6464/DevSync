@@ -1,1 +1,135 @@
 @import "tailwindcss";
+
+/* Dark theme (default) */
+:root,
+.dark {
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #111111;
+  --bg-tertiary: #1a1a1a;
+  --bg-card: #111827;
+  --bg-card-hover: #1f2937;
+  --border-color: #1f2937;
+  --border-color-hover: #374151;
+  --text-primary: #ffffff;
+  --text-secondary: #9ca3af;
+  --text-tertiary: #6b7280;
+  --text-muted: #4b5563;
+  color-scheme: dark;
+}
+
+/* Light theme */
+.light {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-tertiary: #f3f4f6;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f9fafb;
+  --border-color: #e5e7eb;
+  --border-color-hover: #d1d5db;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-tertiary: #6b7280;
+  --text-muted: #9ca3af;
+  color-scheme: light;
+}
+
+/* Apply theme colors */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Theme-aware utility classes */
+.light .bg-gray-950 { background-color: #ffffff; }
+.light .bg-gray-900 { background-color: #ffffff; }
+.light .bg-gray-800 { background-color: #f9fafb; }
+.light .bg-gray-800\/50 { background-color: rgba(249, 250, 251, 0.5); }
+.light .bg-gray-800\/30 { background-color: rgba(249, 250, 251, 0.3); }
+.light .bg-gray-700 { background-color: #f3f4f6; }
+
+.light .border-gray-900 { border-color: #e5e7eb; }
+.light .border-gray-800 { border-color: #e5e7eb; }
+.light .border-gray-700 { border-color: #d1d5db; }
+.light .border-gray-700\/50 { border-color: rgba(209, 213, 219, 0.5); }
+.light .border-gray-600 { border-color: #9ca3af; }
+
+.light .text-white { color: #111827; }
+.light .text-gray-100 { color: #1f2937; }
+.light .text-gray-200 { color: #374151; }
+.light .text-gray-300 { color: #4b5563; }
+.light .text-gray-400 { color: #6b7280; }
+.light .text-gray-500 { color: #9ca3af; }
+
+.light .hover\:bg-gray-800:hover { background-color: #f3f4f6; }
+.light .hover\:bg-gray-700:hover { background-color: #e5e7eb; }
+.light .hover\:border-gray-600:hover { border-color: #9ca3af; }
+.light .hover\:border-gray-700:hover { border-color: #d1d5db; }
+.light .hover\:text-white:hover { color: #111827; }
+
+.light .focus\:ring-gray-700:focus { --tw-ring-color: #d1d5db; }
+.light .focus\:border-gray-600:focus { border-color: #9ca3af; }
+
+/* Input fields */
+.light input,
+.light textarea,
+.light select {
+  background-color: #f9fafb;
+  border-color: #e5e7eb;
+  color: #111827;
+}
+
+.light input::placeholder,
+.light textarea::placeholder {
+  color: #9ca3af;
+}
+
+.light input:focus,
+.light textarea:focus,
+.light select:focus {
+  border-color: #3b82f6;
+  outline-color: #3b82f6;
+}
+
+/* Scrollbar theming */
+.light ::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+
+.light ::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+}
+
+.light ::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Keep accent colors consistent */
+.light .text-blue-400 { color: #3b82f6; }
+.light .text-blue-500 { color: #2563eb; }
+.light .text-green-400 { color: #22c55e; }
+.light .text-green-500 { color: #16a34a; }
+.light .text-red-400 { color: #f87171; }
+.light .text-red-500 { color: #ef4444; }
+.light .text-yellow-400 { color: #facc15; }
+.light .text-orange-400 { color: #fb923c; }
+.light .text-purple-400 { color: #a855f7; }
+.light .text-pink-400 { color: #f472b6; }
+
+/* Badge backgrounds in light mode */
+.light .bg-green-500\/10 { background-color: rgba(34, 197, 94, 0.1); }
+.light .bg-blue-500\/10 { background-color: rgba(59, 130, 246, 0.1); }
+.light .bg-purple-500\/10 { background-color: rgba(168, 85, 247, 0.1); }
+.light .bg-yellow-500\/10 { background-color: rgba(250, 204, 21, 0.1); }
+.light .bg-orange-500\/10 { background-color: rgba(251, 146, 60, 0.1); }
+.light .bg-cyan-500\/10 { background-color: rgba(6, 182, 212, 0.1); }
+.light .bg-indigo-500\/10 { background-color: rgba(99, 102, 241, 0.1); }
+.light .bg-pink-500\/10 { background-color: rgba(244, 114, 182, 0.1); }
+.light .bg-rose-500\/10 { background-color: rgba(251, 113, 133, 0.1); }
+.light .bg-teal-500\/10 { background-color: rgba(20, 184, 166, 0.1); }
+.light .bg-violet-500\/10 { background-color: rgba(139, 92, 246, 0.1); }
+.light .bg-amber-500\/10 { background-color: rgba(245, 158, 11, 0.1); }
+
+/* Shadow adjustments */
+.light .shadow-lg {
+  --tw-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}

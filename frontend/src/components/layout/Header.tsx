@@ -1,6 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import Avatar from '../common/Avatar';
+import ThemeToggle from '../common/ThemeToggle';
 
 export default function Header() {
   const { user, logout } = useAuthStore();
@@ -46,6 +47,8 @@ export default function Header() {
 
         {/* Right side */}
         <div className="flex items-center gap-2 ml-auto">
+          <ThemeToggle />
+
           <Link
             to="/settings"
             className="p-2 text-gray-400 hover:text-white transition-colors rounded-md"

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
+import { useThemeStore } from './store/themeStore';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Layout from './components/layout/Layout';
 import LoginPage from './pages/LoginPage';
@@ -17,6 +18,18 @@ import GitHubCallbackPage from './pages/GitHubCallbackPage';
 
 export default function App() {
   const { isAuthenticated, loadUser } = useAuthStore();
+  const { theme, resolvedTheme } = useThemeStore();
+
+  // Initialize theme on mount
+  useEffect(() => {
+    if (resolvedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    } else {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+    }
+  }, [resolvedTheme]);
 
   useEffect(() => {
     if (isAuthenticated) {
