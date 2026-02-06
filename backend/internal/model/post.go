@@ -8,6 +8,7 @@ type Post struct {
 	User         User      `json:"user" gorm:"foreignKey:UserID"`
 	Title        string    `json:"title" gorm:"not null"`
 	Content      string    `json:"content" gorm:"type:text;not null"`
+	ImageURLs    string    `json:"image_urls" gorm:"type:text"`
 	LikeCount    int       `json:"like_count" gorm:"default:0"`
 	CommentCount int       `json:"comment_count" gorm:"default:0"`
 	CreatedAt    time.Time `json:"created_at"`

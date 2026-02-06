@@ -6,6 +6,7 @@ export interface Post {
   user: User;
   title: string;
   content: string;
+  image_urls: string;
   like_count: number;
   comment_count: number;
   liked?: boolean;

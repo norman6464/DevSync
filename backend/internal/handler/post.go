@@ -20,15 +20,21 @@ func NewPostHandler(repo *repository.PostRepository) *PostHandler {
 func (h *PostHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 	var input struct {
-		Title   string `json:"title" binding:"required"`
-		Content string `json:"content" binding:"required"`
+		Title     string `json:"title" binding:"required"`
+		Content   string `json:"content" binding:"required"`
+		ImageURLs string `json:"image_urls"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	post := &model.Post{UserID: userID, Title: input.Title, Content: input.Content}
+	post := &model.Post{
+		UserID:    userID,
+		Title:     input.Title,
+		Content:   input.Content,
+		ImageURLs: input.ImageURLs,
+	}
 	if err := h.repo.Create(post); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
