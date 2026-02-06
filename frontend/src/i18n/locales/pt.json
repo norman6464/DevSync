@@ -147,7 +147,10 @@
     "rank": "Posição",
     "developer": "Desenvolvedor",
     "total": "Total",
-    "thisWeek": "Esta semana"
+    "thisWeek": "Esta semana",
+    "thisMonth": "Este mês",
+    "selectLanguage": "Selecionar linguagem",
+    "noData": "Sem dados de ranking"
   },
   "badges": {
     "firstCommit": "Primeiro Commit",

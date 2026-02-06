@@ -147,7 +147,10 @@
     "rank": "排名",
     "developer": "開發者",
     "total": "總計",
-    "thisWeek": "本週"
+    "thisWeek": "本週",
+    "thisMonth": "本月",
+    "selectLanguage": "選擇語言",
+    "noData": "暫無排名資料"
   },
   "badges": {
     "firstCommit": "首次提交",
