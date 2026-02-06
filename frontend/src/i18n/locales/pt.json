@@ -316,5 +316,15 @@
     "goalsProgress": "Progresso das Metas",
     "avgProgress": "Progresso médio das metas ativas",
     "goalsCompletedThisPeriod": "metas concluídas neste período"
+  },
+  "sharing": {
+    "title": "Compartilhar Perfil",
+    "share": "Compartilhar",
+    "download": "Baixar",
+    "copyLink": "Copiar Link",
+    "linkCopied": "Link copiado!",
+    "downloaded": "Imagem baixada!",
+    "downloadFailed": "Falha ao baixar imagem",
+    "twitterText": "Confira o perfil de desenvolvedor de {{name}} no DevSync!"
   }
 }

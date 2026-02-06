@@ -316,5 +316,15 @@
     "goalsProgress": "學習目標進度",
     "avgProgress": "進行中目標的平均進度",
     "goalsCompletedThisPeriod": "本期完成的目標數"
+  },
+  "sharing": {
+    "title": "分享個人資料",
+    "share": "分享",
+    "download": "下載",
+    "copyLink": "複製連結",
+    "linkCopied": "連結已複製！",
+    "downloaded": "圖片已下載！",
+    "downloadFailed": "下載圖片失敗",
+    "twitterText": "在DevSync上查看{{name}}的開發者資料！"
   }
 }

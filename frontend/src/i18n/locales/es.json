@@ -316,5 +316,15 @@
     "goalsProgress": "Progreso de Objetivos",
     "avgProgress": "Progreso promedio de objetivos activos",
     "goalsCompletedThisPeriod": "objetivos completados este período"
+  },
+  "sharing": {
+    "title": "Compartir Perfil",
+    "share": "Compartir",
+    "download": "Descargar",
+    "copyLink": "Copiar Enlace",
+    "linkCopied": "¡Enlace copiado!",
+    "downloaded": "¡Imagen descargada!",
+    "downloadFailed": "Error al descargar la imagen",
+    "twitterText": "¡Mira el perfil de desarrollador de {{name}} en DevSync!"
   }
 }

@@ -18,6 +18,7 @@ import ContributionCalendar from '../components/profile/ContributionCalendar';
 import LanguageChart from '../components/profile/LanguageChart';
 import BadgeDisplay from '../components/profile/BadgeDisplay';
 import PostCard from '../components/posts/PostCard';
+import ShareModal from '../components/profile/ShareModal';
 
 export default function ProfilePage() {
   const { t } = useTranslation();
@@ -37,6 +38,7 @@ export default function ProfilePage() {
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -119,6 +121,15 @@ export default function ProfilePage() {
             <div className="flex items-center gap-3 flex-wrap">
               <h1 className="text-2xl font-bold">{user.name}</h1>
               {!isOwnProfile && <FollowButton userId={user.id} />}
+              <button
+                onClick={() => setShareModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm rounded-lg transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
+                </svg>
+                {t('sharing.share')}
+              </button>
             </div>
             {user.bio && <p className="text-gray-400 mt-1 text-sm">{user.bio}</p>}
             <div className="flex flex-wrap gap-3 mt-2">
@@ -545,6 +556,18 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        user={user}
+        followerCount={followerCount}
+        followingCount={followingCount}
+        totalContributions={contributions.reduce((sum, c) => sum + c.count, 0)}
+        languages={languages}
+        postCount={posts.length}
+      />
     </div>
   );
 }

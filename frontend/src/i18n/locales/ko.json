@@ -316,5 +316,15 @@
     "goalsProgress": "학습 목표 진행률",
     "avgProgress": "활성 목표의 평균 진행률",
     "goalsCompletedThisPeriod": "이번 기간에 완료한 목표 수"
+  },
+  "sharing": {
+    "title": "프로필 공유",
+    "share": "공유",
+    "download": "다운로드",
+    "copyLink": "링크 복사",
+    "linkCopied": "링크가 복사되었습니다!",
+    "downloaded": "이미지가 다운로드되었습니다!",
+    "downloadFailed": "이미지 다운로드에 실패했습니다",
+    "twitterText": "DevSync에서 {{name}}님의 개발자 프로필을 확인하세요!"
   }
 }

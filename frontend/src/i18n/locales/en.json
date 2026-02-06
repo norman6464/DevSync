@@ -316,5 +316,15 @@
     "goalsProgress": "Learning Goals Progress",
     "avgProgress": "Average progress of active goals",
     "goalsCompletedThisPeriod": "goals completed this period"
+  },
+  "sharing": {
+    "title": "Share Profile",
+    "share": "Share",
+    "download": "Download",
+    "copyLink": "Copy Link",
+    "linkCopied": "Link copied to clipboard!",
+    "downloaded": "Image downloaded!",
+    "downloadFailed": "Failed to download image",
+    "twitterText": "Check out {{name}}'s developer profile on DevSync!"
   }
 }
