@@ -147,7 +147,10 @@
     "rank": "Место",
     "developer": "Разработчик",
     "total": "Всего",
-    "thisWeek": "На этой неделе"
+    "thisWeek": "На этой неделе",
+    "thisMonth": "В этом месяце",
+    "selectLanguage": "Выбрать язык",
+    "noData": "Нет данных рейтинга"
   },
   "badges": {
     "firstCommit": "Первый коммит",

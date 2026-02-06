@@ -6,22 +6,32 @@ import type { RankingEntry } from '../types/ranking';
 import Avatar from '../components/common/Avatar';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
+// Default popular programming languages for ranking filter
+const DEFAULT_LANGUAGES = [
+  'JavaScript', 'TypeScript', 'Python', 'Java', 'Go', 'Rust', 'C++', 'C#',
+  'Ruby', 'PHP', 'Swift', 'Kotlin', 'Scala', 'C', 'Shell', 'HTML', 'CSS'
+];
+
 export default function RankingsPage() {
   const { t } = useTranslation();
   const [tab, setTab] = useState<'contributions' | 'languages'>('contributions');
   const [period, setPeriod] = useState<'weekly' | 'monthly'>('weekly');
-  const [language, setLanguage] = useState('');
-  const [languages, setLanguages] = useState<string[]>([]);
+  const [language, setLanguage] = useState('JavaScript');
+  const [languages, setLanguages] = useState<string[]>(DEFAULT_LANGUAGES);
   const [rankings, setRankings] = useState<RankingEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getAvailableLanguages()
       .then(({ data }) => {
-        setLanguages(data || []);
-        if (data && data.length > 0) setLanguage(data[0]);
+        if (data && data.length > 0) {
+          setLanguages(data);
+          setLanguage(data[0]);
+        }
       })
-      .catch(() => {});
+      .catch(() => {
+        // Keep using default languages on error
+      });
   }, []);
 
   useEffect(() => {
@@ -109,27 +119,32 @@ export default function RankingsPage() {
                 : 'text-gray-400 hover:text-white'
             }`}
           >
-            Monthly
+            {t('rankings.thisMonth')}
           </button>
         </div>
       </div>
 
       {/* Language Filter */}
       {tab === 'languages' && (
-        <div className="flex flex-wrap gap-2">
-          {languages.map((lang) => (
-            <button
-              key={lang}
-              onClick={() => setLanguage(lang)}
-              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors border ${
-                language === lang
-                  ? 'bg-purple-600/20 text-purple-300 border-purple-500/40'
-                  : 'bg-gray-900 text-gray-400 border-gray-800 hover:text-white hover:border-gray-600'
-              }`}
-            >
-              {lang}
-            </button>
-          ))}
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">
+            {t('rankings.selectLanguage')}
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {languages.map((lang) => (
+              <button
+                key={lang}
+                onClick={() => setLanguage(lang)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+                  language === lang
+                    ? 'bg-purple-600 text-white border-purple-500 shadow-lg shadow-purple-500/20'
+                    : 'bg-gray-800 text-gray-400 border-gray-700 hover:text-white hover:border-gray-500 hover:bg-gray-700'
+                }`}
+              >
+                {lang}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -138,7 +153,7 @@ export default function RankingsPage() {
         <div className="py-12"><LoadingSpinner /></div>
       ) : rankings.length === 0 ? (
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-12 text-center text-gray-400 text-sm">
-          No ranking data yet
+          {t('rankings.noData')}
         </div>
       ) : (
         <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">

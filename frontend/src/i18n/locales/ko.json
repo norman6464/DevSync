@@ -147,7 +147,10 @@
     "rank": "순위",
     "developer": "개발자",
     "total": "총계",
-    "thisWeek": "이번 주"
+    "thisWeek": "이번 주",
+    "thisMonth": "이번 달",
+    "selectLanguage": "언어 선택",
+    "noData": "랭킹 데이터가 없습니다"
   },
   "badges": {
     "firstCommit": "첫 커밋",

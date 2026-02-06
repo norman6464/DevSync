@@ -147,7 +147,10 @@
     "rank": "Rank",
     "developer": "Developer",
     "total": "Total",
-    "thisWeek": "This Week"
+    "thisWeek": "This Week",
+    "thisMonth": "This Month",
+    "selectLanguage": "Select Language",
+    "noData": "No ranking data yet"
   },
   "badges": {
     "firstCommit": "First Commit",
