@@ -4,7 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
 import { useChatStore } from '../store/chatStore';
 import { getConversations, getMessages, sendMessage as sendMessageApi } from '../api/messages';
+import { getFollowing } from '../api/users';
 import type { Conversation, Message } from '../types/message';
+import type { User } from '../types/user';
 import Avatar from '../components/common/Avatar';
 import { format } from 'date-fns';
 
@@ -15,9 +17,11 @@ export default function ChatPage() {
   const token = useAuthStore((s) => s.token);
   const { socket, connect, activeMessages, setActiveMessages } = useChatStore();
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [followingUsers, setFollowingUsers] = useState<User[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(
     userId ? parseInt(userId) : null
   );
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newMessage, setNewMessage] = useState('');
 
   useEffect(() => {
@@ -27,18 +31,36 @@ export default function ChatPage() {
   }, [token, socket, connect]);
 
   useEffect(() => {
+    // Load conversations
     getConversations()
       .then(({ data }) => setConversations(data || []))
       .catch(() => {});
-  }, []);
+
+    // Load following users
+    if (currentUser) {
+      getFollowing(currentUser.id)
+        .then(({ data }) => setFollowingUsers(data || []))
+        .catch(() => {});
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     if (selectedUserId) {
       getMessages(selectedUserId)
         .then(({ data }) => setActiveMessages(data || []))
         .catch(() => setActiveMessages([]));
+
+      // Find user info from conversations or following
+      const convUser = conversations.find((c) => c.user.id === selectedUserId)?.user;
+      const followUser = followingUsers.find((u) => u.id === selectedUserId);
+      setSelectedUser(convUser || followUser || null);
     }
-  }, [selectedUserId, setActiveMessages]);
+  }, [selectedUserId, setActiveMessages, conversations, followingUsers]);
+
+  // Filter following users that don't have existing conversations
+  const followingWithoutConversation = followingUsers.filter(
+    (user) => !conversations.some((conv) => conv.user.id === user.id)
+  );
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,8 +82,6 @@ export default function ChatPage() {
     }
   };
 
-  const selectedConversation = conversations.find((c) => c.user.id === selectedUserId);
-
   return (
     <div className="flex h-[calc(100vh-7rem)] bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
       {/* Sidebar */}
@@ -75,35 +95,70 @@ export default function ChatPage() {
           </h2>
         </div>
         <div className="flex-1 overflow-y-auto">
-          {conversations.length === 0 ? (
+          {/* Existing Conversations */}
+          {conversations.length > 0 && (
+            <div>
+              <div className="px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {t('chat.recentChats')}
+              </div>
+              {conversations.map((conv) => (
+                <button
+                  key={conv.user.id}
+                  onClick={() => setSelectedUserId(conv.user.id)}
+                  className={`w-full flex items-center gap-3 px-5 py-3 transition-colors text-left border-l-2 ${
+                    selectedUserId === conv.user.id
+                      ? 'bg-gray-800/70 border-l-blue-500'
+                      : 'border-l-transparent hover:bg-gray-800/40'
+                  }`}
+                >
+                  <Avatar name={conv.user.name} avatarUrl={conv.user.avatar_url} size="sm" />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sm">{conv.user.name}</div>
+                    {conv.last_message && (
+                      <div className="text-xs text-gray-500 truncate mt-0.5">{conv.last_message.content}</div>
+                    )}
+                  </div>
+                  {conv.unread_count > 0 && (
+                    <span className="bg-blue-600 text-white text-xs font-medium rounded-full min-w-[1.25rem] h-5 flex items-center justify-center px-1.5">
+                      {conv.unread_count}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Following Users without Conversation */}
+          {followingWithoutConversation.length > 0 && (
+            <div>
+              <div className="px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border-t border-gray-800 mt-2 pt-3">
+                {t('chat.following')}
+              </div>
+              {followingWithoutConversation.map((user) => (
+                <button
+                  key={user.id}
+                  onClick={() => setSelectedUserId(user.id)}
+                  className={`w-full flex items-center gap-3 px-5 py-3 transition-colors text-left border-l-2 ${
+                    selectedUserId === user.id
+                      ? 'bg-gray-800/70 border-l-green-500'
+                      : 'border-l-transparent hover:bg-gray-800/40'
+                  }`}
+                >
+                  <Avatar name={user.name} avatarUrl={user.avatar_url} size="sm" />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sm">{user.name}</div>
+                    <div className="text-xs text-gray-500 mt-0.5">{t('chat.startNewChat')}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Empty State */}
+          {conversations.length === 0 && followingWithoutConversation.length === 0 && (
             <div className="p-6 text-center text-gray-500 text-sm">
               {t('chat.noConversations')}
             </div>
-          ) : (
-            conversations.map((conv) => (
-              <button
-                key={conv.user.id}
-                onClick={() => setSelectedUserId(conv.user.id)}
-                className={`w-full flex items-center gap-3 px-5 py-3 transition-colors text-left border-l-2 ${
-                  selectedUserId === conv.user.id
-                    ? 'bg-gray-800/70 border-l-blue-500'
-                    : 'border-l-transparent hover:bg-gray-800/40'
-                }`}
-              >
-                <Avatar name={conv.user.name} avatarUrl={conv.user.avatar_url} size="sm" />
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-sm">{conv.user.name}</div>
-                  {conv.last_message && (
-                    <div className="text-xs text-gray-500 truncate mt-0.5">{conv.last_message.content}</div>
-                  )}
-                </div>
-                {conv.unread_count > 0 && (
-                  <span className="bg-blue-600 text-white text-xs font-medium rounded-full min-w-[1.25rem] h-5 flex items-center justify-center px-1.5">
-                    {conv.unread_count}
-                  </span>
-                )}
-              </button>
-            ))
           )}
         </div>
       </div>
@@ -114,15 +169,15 @@ export default function ChatPage() {
           <>
             {/* Chat Header */}
             <div className="px-6 py-3 border-b border-gray-800 flex items-center gap-3">
-              {selectedConversation && (
+              {selectedUser && (
                 <>
                   <Avatar
-                    name={selectedConversation.user.name}
-                    avatarUrl={selectedConversation.user.avatar_url}
+                    name={selectedUser.name}
+                    avatarUrl={selectedUser.avatar_url}
                     size="sm"
                   />
                   <div>
-                    <div className="font-medium text-sm">{selectedConversation.user.name}</div>
+                    <div className="font-medium text-sm">{selectedUser.name}</div>
                   </div>
                 </>
               )}

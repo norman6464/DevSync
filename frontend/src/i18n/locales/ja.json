@@ -132,6 +132,9 @@
   },
   "chat": {
     "title": "メッセージ",
+    "recentChats": "最近のチャット",
+    "following": "フォロー中",
+    "startNewChat": "新しいチャットを開始",
     "noConversations": "まだ会話がありません",
     "startConversation": "会話を始める",
     "typeMessage": "メッセージを入力...",

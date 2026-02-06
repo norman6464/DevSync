@@ -132,6 +132,9 @@
   },
   "chat": {
     "title": "Messages",
+    "recentChats": "Conversations récentes",
+    "following": "Abonnements",
+    "startNewChat": "Nouvelle conversation",
     "noConversations": "Pas encore de conversations",
     "startConversation": "Démarrer une conversation",
     "typeMessage": "Tapez un message...",

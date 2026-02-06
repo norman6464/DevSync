@@ -138,7 +138,10 @@
     "send": "Send",
     "online": "Online",
     "offline": "Offline",
-    "typing": "typing..."
+    "typing": "typing...",
+    "recentChats": "Recent Chats",
+    "following": "Following",
+    "startNewChat": "Start a new chat"
   },
   "rankings": {
     "title": "Rankings",

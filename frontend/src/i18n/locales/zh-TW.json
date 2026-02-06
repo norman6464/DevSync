@@ -132,6 +132,9 @@
   },
   "chat": {
     "title": "訊息",
+    "recentChats": "最近聊天",
+    "following": "追蹤中",
+    "startNewChat": "開始新聊天",
     "noConversations": "暫無對話",
     "startConversation": "開始對話",
     "typeMessage": "輸入訊息...",

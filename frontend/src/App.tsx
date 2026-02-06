@@ -18,7 +18,7 @@ import GitHubCallbackPage from './pages/GitHubCallbackPage';
 
 export default function App() {
   const { isAuthenticated, loadUser } = useAuthStore();
-  const { theme, resolvedTheme } = useThemeStore();
+  const { resolvedTheme } = useThemeStore();
 
   // Initialize theme on mount
   useEffect(() => {
