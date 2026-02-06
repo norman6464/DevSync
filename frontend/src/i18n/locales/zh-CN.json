@@ -90,7 +90,10 @@
     "locked": "未解锁",
     "startContributing": "开始贡献以获得徽章！",
     "skills": "技能",
-    "frameworks": "框架和库"
+    "frameworks": "框架和库",
+    "zennArticles": "Zenn文章",
+    "articles": "文章",
+    "viewAllOnZenn": "在Zenn上查看全部"
   },
   "settings": {
     "title": "设置",
@@ -119,7 +122,12 @@
     "skills": "技能",
     "selectLanguages": "选择编程语言",
     "selectFrameworks": "选择框架和库",
-    "preview": "预览"
+    "preview": "预览",
+    "zenn": "Zenn",
+    "zennDescription": "连接您的Zenn账户以显示您的文章。",
+    "zennUsername": "Zenn用户名",
+    "zennConnected": "Zenn连接成功",
+    "zennInvalidUsername": "无效的Zenn用户名"
   },
   "explore": {
     "title": "探索",

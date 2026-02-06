@@ -13,6 +13,7 @@ type User struct {
 	GitHubUsername  string    `json:"github_username"`
 	GitHubToken     string    `json:"-"`
 	GitHubConnected  bool      `json:"github_connected" gorm:"default:false"`
+	ZennUsername     string    `json:"zenn_username"`
 	SkillsLanguages  string    `json:"skills_languages"`
 	SkillsFrameworks string    `json:"skills_frameworks"`
 	CreatedAt        time.Time `json:"created_at"`

@@ -7,6 +7,7 @@ export interface User {
   github_id: number;
   github_username: string;
   github_connected: boolean;
+  zenn_username: string;
   skills_languages: string;
   skills_frameworks: string;
   created_at: string;

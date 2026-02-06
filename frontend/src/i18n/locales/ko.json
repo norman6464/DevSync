@@ -90,7 +90,10 @@
     "locked": "잠김",
     "startContributing": "기여를 시작하여 배지를 획득하세요!",
     "skills": "스킬",
-    "frameworks": "프레임워크 및 라이브러리"
+    "frameworks": "프레임워크 및 라이브러리",
+    "zennArticles": "Zenn 기사",
+    "articles": "기사",
+    "viewAllOnZenn": "Zenn에서 모두 보기"
   },
   "settings": {
     "title": "설정",
@@ -119,7 +122,12 @@
     "skills": "스킬",
     "selectLanguages": "프로그래밍 언어 선택",
     "selectFrameworks": "프레임워크 및 라이브러리 선택",
-    "preview": "미리보기"
+    "preview": "미리보기",
+    "zenn": "Zenn",
+    "zennDescription": "Zenn 계정을 연결하여 기사를 표시합니다.",
+    "zennUsername": "Zenn 사용자 이름",
+    "zennConnected": "Zenn이 성공적으로 연결되었습니다",
+    "zennInvalidUsername": "유효하지 않은 Zenn 사용자 이름"
   },
   "explore": {
     "title": "탐색",

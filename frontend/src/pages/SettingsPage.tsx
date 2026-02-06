@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
 import { updateUser } from '../api/users';
 import { getGitHubConnectURL, disconnectGitHub, syncGitHub } from '../api/github';
+import { connectZenn, disconnectZenn, syncZenn } from '../api/zenn';
 import { deleteAccount } from '../api/auth';
 import toast from 'react-hot-toast';
 
@@ -37,6 +38,9 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [savingSkills, setSavingSkills] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [zennUsername, setZennUsername] = useState('');
+  const [connectingZenn, setConnectingZenn] = useState(false);
+  const [syncingZenn, setSyncingZenn] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [deleting, setDeleting] = useState(false);
@@ -127,6 +131,44 @@ export default function SettingsPage() {
       toast.error(t('accountManagement.deleteFailed'));
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleConnectZenn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!zennUsername.trim()) return;
+    setConnectingZenn(true);
+    try {
+      await connectZenn(zennUsername.trim());
+      setUser({ ...user, zenn_username: zennUsername.trim() });
+      setZennUsername('');
+      toast.success(t('settings.zennConnected'));
+    } catch {
+      toast.error(t('settings.zennInvalidUsername'));
+    } finally {
+      setConnectingZenn(false);
+    }
+  };
+
+  const handleDisconnectZenn = async () => {
+    try {
+      await disconnectZenn();
+      setUser({ ...user, zenn_username: '' });
+      toast.success(t('settings.saved'));
+    } catch {
+      toast.error(t('errors.somethingWrong'));
+    }
+  };
+
+  const handleSyncZenn = async () => {
+    setSyncingZenn(true);
+    try {
+      await syncZenn();
+      toast.success(t('settings.saved'));
+    } catch {
+      toast.error(t('errors.somethingWrong'));
+    } finally {
+      setSyncingZenn(false);
     }
   };
 
@@ -302,6 +344,65 @@ export default function SettingsPage() {
                 {t('settings.connect')} GitHub
               </button>
             </div>
+          )}
+        </div>
+      </div>
+
+      {/* Zenn Integration */}
+      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-800">
+          <h2 className="text-base font-semibold">{t('settings.zenn')}</h2>
+        </div>
+        <div className="p-6">
+          {user.zenn_username ? (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-sm">Z</div>
+                <div>
+                  <p className="text-sm font-medium text-green-400">{t('settings.connected')}</p>
+                  <p className="text-sm text-gray-400">@{user.zenn_username}</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleSyncZenn}
+                  disabled={syncingZenn}
+                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 text-white rounded-lg text-sm font-medium border border-gray-700 transition-colors"
+                >
+                  {syncingZenn ? t('settings.syncing') : t('settings.sync')}
+                </button>
+                <button
+                  onClick={handleDisconnectZenn}
+                  className="px-4 py-2 text-red-400 hover:text-red-300 border border-red-400/30 hover:border-red-400/50 rounded-lg text-sm font-medium transition-colors"
+                >
+                  {t('settings.disconnect')}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleConnectZenn} className="space-y-4">
+              <div className="text-center py-2">
+                <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center text-blue-400 font-bold text-xl mx-auto mb-3">Z</div>
+                <p className="text-gray-400 text-sm mb-4">{t('settings.zennDescription')}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1.5">{t('settings.zennUsername')}</label>
+                <input
+                  type="text"
+                  value={zennUsername}
+                  onChange={(e) => setZennUsername(e.target.value)}
+                  placeholder="your-zenn-username"
+                  className={inputClass}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={connectingZenn || !zennUsername.trim()}
+                className="w-full px-5 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors"
+              >
+                {connectingZenn ? t('common.loading') : t('settings.connect')}
+              </button>
+            </form>
           )}
         </div>
       </div>
