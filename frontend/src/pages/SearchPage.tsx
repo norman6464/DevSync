@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getUsers, getFollowers, getFollowing } from '../api/users';
+import { getUsers } from '../api/users';
 import { useAuthStore } from '../store/authStore';
 import type { User } from '../types/user';
 import Avatar from '../components/common/Avatar';

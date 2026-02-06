@@ -132,6 +132,9 @@
   },
   "chat": {
     "title": "Сообщения",
+    "recentChats": "Недавние чаты",
+    "following": "Подписки",
+    "startNewChat": "Начать новый чат",
     "noConversations": "Пока нет разговоров",
     "startConversation": "Начать разговор",
     "typeMessage": "Введите сообщение...",

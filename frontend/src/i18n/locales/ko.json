@@ -132,6 +132,9 @@
   },
   "chat": {
     "title": "메시지",
+    "recentChats": "최근 채팅",
+    "following": "팔로잉",
+    "startNewChat": "새 채팅 시작",
     "noConversations": "대화가 없습니다",
     "startConversation": "대화 시작하기",
     "typeMessage": "메시지 입력...",
