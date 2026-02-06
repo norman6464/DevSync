@@ -37,6 +37,10 @@ func main() {
 		&model.ZennArticle{},
 		&model.QiitaArticle{},
 		&model.LearningGoal{},
+		&model.Project{},
+		&model.LearningResource{},
+		&model.ResourceLike{},
+		&model.ResourceSave{},
 	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}

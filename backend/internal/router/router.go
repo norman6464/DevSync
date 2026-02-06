@@ -37,6 +37,8 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	qiitaRepo := repository.NewQiitaRepository(db)
 	learningGoalRepo := repository.NewLearningGoalRepository(db)
 	activityReportRepo := repository.NewActivityReportRepository(db)
+	projectRepo := repository.NewProjectRepository(db)
+	learningResourceRepo := repository.NewLearningResourceRepository(db)
 
 	// Services
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
@@ -59,6 +61,8 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	qiitaHandler := handler.NewQiitaHandler(qiitaRepo, userRepo, qiitaService)
 	learningGoalHandler := handler.NewLearningGoalHandler(learningGoalRepo)
 	activityReportHandler := handler.NewActivityReportHandler(activityReportRepo)
+	projectHandler := handler.NewProjectHandler(projectRepo)
+	learningResourceHandler := handler.NewLearningResourceHandler(learningResourceRepo)
 
 	// Static file serving for uploads
 	r.Static("/uploads", "./uploads")
@@ -206,6 +210,35 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			reports.GET("/weekly/:userId", activityReportHandler.GetWeeklyReport)
 			reports.GET("/monthly/:userId", activityReportHandler.GetMonthlyReport)
 			reports.GET("/comparison", activityReportHandler.GetComparison)
+		}
+
+		// Projects (Showcase)
+		projects := protected.Group("/projects")
+		{
+			projects.POST("", projectHandler.Create)
+			projects.GET("", projectHandler.GetAll)
+			projects.GET("/:id", projectHandler.GetByID)
+			projects.PUT("/:id", projectHandler.Update)
+			projects.DELETE("/:id", projectHandler.Delete)
+			projects.GET("/user/:userId", projectHandler.GetByUserID)
+			projects.GET("/user/:userId/featured", projectHandler.GetFeatured)
+		}
+
+		// Learning Resources
+		resources := protected.Group("/resources")
+		{
+			resources.POST("", learningResourceHandler.Create)
+			resources.GET("", learningResourceHandler.GetPublic)
+			resources.GET("/search", learningResourceHandler.Search)
+			resources.GET("/saved", learningResourceHandler.GetSaved)
+			resources.GET("/:id", learningResourceHandler.GetByID)
+			resources.PUT("/:id", learningResourceHandler.Update)
+			resources.DELETE("/:id", learningResourceHandler.Delete)
+			resources.POST("/:id/like", learningResourceHandler.Like)
+			resources.DELETE("/:id/like", learningResourceHandler.Unlike)
+			resources.POST("/:id/save", learningResourceHandler.SaveResource)
+			resources.DELETE("/:id/save", learningResourceHandler.UnsaveResource)
+			resources.GET("/user/:userId", learningResourceHandler.GetByUserID)
 		}
 	}
 
