@@ -1,49 +1,16 @@
-import { useEffect, useState } from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
-import { getUser, getFollowers, getFollowing } from '../api/users';
+import { useParams, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import type { User } from '../types/user';
+import { useFollowList } from '../hooks';
 import Avatar from '../components/common/Avatar';
 import FollowButton from '../components/profile/FollowButton';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
-type Tab = 'followers' | 'following';
-
 export default function FollowListPage() {
   const { id } = useParams<{ id: string }>();
-  const location = useLocation();
   const currentUser = useAuthStore((s) => s.user);
+  const { profileUser, users, tab, loading, profileLoading } = useFollowList(id);
 
-  const initialTab: Tab = location.pathname.endsWith('/following') ? 'following' : 'followers';
-  const [tab, setTab] = useState<Tab>(initialTab);
-  const [profileUser, setProfileUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!id) return;
-    getUser(parseInt(id))
-      .then(({ data }) => setProfileUser(data))
-      .catch(() => {});
-  }, [id]);
-
-  useEffect(() => {
-    const newTab: Tab = location.pathname.endsWith('/following') ? 'following' : 'followers';
-    setTab(newTab);
-  }, [location.pathname]);
-
-  useEffect(() => {
-    if (!id) return;
-    const userId = parseInt(id);
-    setLoading(true);
-    const fetcher = tab === 'followers' ? getFollowers : getFollowing;
-    fetcher(userId)
-      .then(({ data }) => setUsers(data || []))
-      .catch(() => setUsers([]))
-      .finally(() => setLoading(false));
-  }, [id, tab]);
-
-  if (!profileUser && loading) return <div className="py-12"><LoadingSpinner /></div>;
+  if (!profileUser && profileLoading) return <div className="py-12"><LoadingSpinner /></div>;
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">

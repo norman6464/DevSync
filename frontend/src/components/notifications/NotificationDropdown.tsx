@@ -1,16 +1,18 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getNotifications, getUnreadCount, markAsRead, markAllAsRead } from '../../api/notifications';
+import { useNotifications } from '../../hooks';
 import type { Notification } from '../../types/notification';
 import Avatar from '../common/Avatar';
 
 export default function NotificationDropdown() {
   const { t } = useTranslation();
+  const {
+    notifications, unreadCount, loading,
+    fetchNotifications, markAsRead, markAllAsRead,
+  } = useNotifications();
+
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -24,55 +26,10 @@ export default function NotificationDropdown() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Fetch unread count on mount and periodically
-  useEffect(() => {
-    const fetchUnreadCount = async () => {
-      try {
-        const response = await getUnreadCount();
-        setUnreadCount(response.data.count);
-      } catch (error) {
-        console.error('Failed to fetch unread count:', error);
-      }
-    };
-    fetchUnreadCount();
-    const interval = setInterval(fetchUnreadCount, 30000); // Poll every 30 seconds
-    return () => clearInterval(interval);
-  }, []);
-
   const handleOpen = async () => {
     setIsOpen(!isOpen);
     if (!isOpen) {
-      setLoading(true);
-      try {
-        const response = await getNotifications();
-        setNotifications(response.data);
-      } catch (error) {
-        console.error('Failed to fetch notifications:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
-
-  const handleMarkAsRead = async (id: number) => {
-    try {
-      await markAsRead(id);
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-      );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
-    } catch (error) {
-      console.error('Failed to mark as read:', error);
-    }
-  };
-
-  const handleMarkAllAsRead = async () => {
-    try {
-      await markAllAsRead();
-      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-      setUnreadCount(0);
-    } catch (error) {
-      console.error('Failed to mark all as read:', error);
+      await fetchNotifications();
     }
   };
 
@@ -131,7 +88,7 @@ export default function NotificationDropdown() {
             <h3 className="font-semibold text-white">{t('notifications.title')}</h3>
             {unreadCount > 0 && (
               <button
-                onClick={handleMarkAllAsRead}
+                onClick={markAllAsRead}
                 className="text-xs text-blue-400 hover:text-blue-300"
               >
                 {t('notifications.markAllRead')}
@@ -154,7 +111,7 @@ export default function NotificationDropdown() {
                   key={notification.id}
                   to={getNotificationLink(notification)}
                   onClick={() => {
-                    if (!notification.read) handleMarkAsRead(notification.id);
+                    if (!notification.read) markAsRead(notification.id);
                     setIsOpen(false);
                   }}
                   className={`flex items-start gap-3 p-3 hover:bg-gray-700/50 transition-colors border-b border-gray-700/50 last:border-0 ${

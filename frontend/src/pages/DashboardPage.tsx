@@ -1,9 +1,7 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
-import { getTimeline, getPosts, createPost } from '../api/posts';
-import type { Post } from '../types/post';
+import { usePosts } from '../hooks';
 import PostCard from '../components/posts/PostCard';
 import PostForm from '../components/posts/PostForm';
 import { PostCardSkeleton } from '../components/common/Skeleton';
@@ -12,29 +10,10 @@ import Avatar from '../components/common/Avatar';
 export default function DashboardPage() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<'timeline' | 'all'>('timeline');
-
-  const fetchPosts = async () => {
-    setLoading(true);
-    try {
-      const { data } = tab === 'timeline' ? await getTimeline() : await getPosts();
-      setPosts(data || []);
-    } catch {
-      setPosts([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchPosts();
-  }, [tab]);
+  const { posts, loading, tab, setTab, createPost, refetch } = usePosts();
 
   const handleCreatePost = async (title: string, content: string, imageUrls?: string) => {
-    await createPost({ title, content, image_urls: imageUrls });
-    fetchPosts();
+    await createPost(title, content, imageUrls);
   };
 
   return (
@@ -100,7 +79,7 @@ export default function DashboardPage() {
         ) : (
           <div className="space-y-3">
             {posts.map((post) => (
-              <PostCard key={post.id} post={post} onUpdate={fetchPosts} />
+              <PostCard key={post.id} post={post} onUpdate={refetch} />
             ))}
           </div>
         )}

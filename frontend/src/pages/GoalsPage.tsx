@@ -1,15 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  getMyGoals,
-  createGoal,
-  updateGoal,
-  deleteGoal,
-  type LearningGoal,
-  type GoalCategory,
-  type GoalStatus,
-} from '../api/goals';
-import toast from 'react-hot-toast';
+import { type GoalCategory, type GoalStatus, type LearningGoal } from '../api/goals';
+import { useGoals } from '../hooks';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const CATEGORIES: { value: GoalCategory; label: string; icon: string }[] = [
@@ -22,32 +14,19 @@ const CATEGORIES: { value: GoalCategory; label: string; icon: string }[] = [
 
 export default function GoalsPage() {
   const { t } = useTranslation();
-  const [goals, setGoals] = useState<LearningGoal[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    goals, loading, saving, activeGoals, completedGoals, pausedGoals,
+    createGoal, updateGoal, deleteGoal,
+  } = useGoals();
+
   const [showForm, setShowForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState<LearningGoal | null>(null);
-  const [saving, setSaving] = useState(false);
 
   // Form state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<GoalCategory>('other');
   const [targetDate, setTargetDate] = useState('');
-
-  useEffect(() => {
-    fetchGoals();
-  }, []);
-
-  const fetchGoals = async () => {
-    try {
-      const { data } = await getMyGoals();
-      setGoals(data || []);
-    } catch {
-      toast.error(t('errors.somethingWrong'));
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const resetForm = () => {
     setTitle('');
@@ -62,32 +41,22 @@ export default function GoalsPage() {
     e.preventDefault();
     if (!title.trim()) return;
 
-    setSaving(true);
-    try {
-      if (editingGoal) {
-        const { data } = await updateGoal(editingGoal.id, {
-          title,
-          description,
-          category,
-          target_date: targetDate || undefined,
-        });
-        setGoals(goals.map((g) => (g.id === data.id ? data : g)));
-        toast.success(t('goals.updated'));
-      } else {
-        const { data } = await createGoal({
-          title,
-          description,
-          category,
-          target_date: targetDate || undefined,
-        });
-        setGoals([data, ...goals]);
-        toast.success(t('goals.created'));
-      }
-      resetForm();
-    } catch {
-      toast.error(t('errors.somethingWrong'));
-    } finally {
-      setSaving(false);
+    if (editingGoal) {
+      const result = await updateGoal(editingGoal.id, {
+        title,
+        description,
+        category,
+        target_date: targetDate || undefined,
+      });
+      if (result) resetForm();
+    } else {
+      const result = await createGoal({
+        title,
+        description,
+        category,
+        target_date: targetDate || undefined,
+      });
+      if (result) resetForm();
     }
   };
 
@@ -100,37 +69,12 @@ export default function GoalsPage() {
     setShowForm(true);
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm(t('goals.confirmDelete'))) return;
-    try {
-      await deleteGoal(id);
-      setGoals(goals.filter((g) => g.id !== id));
-      toast.success(t('goals.deleted'));
-    } catch {
-      toast.error(t('errors.somethingWrong'));
-    }
-  };
-
   const handleProgressChange = async (goal: LearningGoal, newProgress: number) => {
-    try {
-      const { data } = await updateGoal(goal.id, { progress: newProgress });
-      setGoals(goals.map((g) => (g.id === data.id ? data : g)));
-      if (newProgress === 100) {
-        toast.success(t('goals.completed'));
-      }
-    } catch {
-      toast.error(t('errors.somethingWrong'));
-    }
+    await updateGoal(goal.id, { progress: newProgress });
   };
 
   const handleStatusChange = async (goal: LearningGoal, newStatus: GoalStatus) => {
-    try {
-      const { data } = await updateGoal(goal.id, { status: newStatus });
-      setGoals(goals.map((g) => (g.id === data.id ? data : g)));
-      toast.success(t('goals.updated'));
-    } catch {
-      toast.error(t('errors.somethingWrong'));
-    }
+    await updateGoal(goal.id, { status: newStatus });
   };
 
   const getCategoryInfo = (cat: GoalCategory) => {
@@ -147,10 +91,6 @@ export default function GoalsPage() {
         return 'text-yellow-400 bg-yellow-400/10';
     }
   };
-
-  const activeGoals = goals.filter((g) => g.status === 'active');
-  const completedGoals = goals.filter((g) => g.status === 'completed');
-  const pausedGoals = goals.filter((g) => g.status === 'paused');
 
   if (loading) return <div className="py-12"><LoadingSpinner /></div>;
 
@@ -282,7 +222,6 @@ export default function GoalsPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {/* Active Goals */}
           {activeGoals.length > 0 && (
             <div>
               <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-3">
@@ -294,7 +233,7 @@ export default function GoalsPage() {
                     key={goal.id}
                     goal={goal}
                     onEdit={handleEdit}
-                    onDelete={handleDelete}
+                    onDelete={deleteGoal}
                     onProgressChange={handleProgressChange}
                     onStatusChange={handleStatusChange}
                     getCategoryInfo={getCategoryInfo}
@@ -306,7 +245,6 @@ export default function GoalsPage() {
             </div>
           )}
 
-          {/* Paused Goals */}
           {pausedGoals.length > 0 && (
             <div>
               <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-3">
@@ -318,7 +256,7 @@ export default function GoalsPage() {
                     key={goal.id}
                     goal={goal}
                     onEdit={handleEdit}
-                    onDelete={handleDelete}
+                    onDelete={deleteGoal}
                     onProgressChange={handleProgressChange}
                     onStatusChange={handleStatusChange}
                     getCategoryInfo={getCategoryInfo}
@@ -330,7 +268,6 @@ export default function GoalsPage() {
             </div>
           )}
 
-          {/* Completed Goals */}
           {completedGoals.length > 0 && (
             <div>
               <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-3">
@@ -342,7 +279,7 @@ export default function GoalsPage() {
                     key={goal.id}
                     goal={goal}
                     onEdit={handleEdit}
-                    onDelete={handleDelete}
+                    onDelete={deleteGoal}
                     onProgressChange={handleProgressChange}
                     onStatusChange={handleStatusChange}
                     getCategoryInfo={getCategoryInfo}

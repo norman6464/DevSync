@@ -1,43 +1,10 @@
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  getMyWeeklyReport,
-  getMyMonthlyReport,
-  getComparison,
-  type ActivityReport,
-  type ReportComparison,
-} from '../api/reports';
-import toast from 'react-hot-toast';
+import { useReport } from '../hooks';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-
-type Period = 'weekly' | 'monthly';
 
 export default function ReportsPage() {
   const { t } = useTranslation();
-  const [period, setPeriod] = useState<Period>('weekly');
-  const [report, setReport] = useState<ActivityReport | null>(null);
-  const [comparison, setComparison] = useState<ReportComparison | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchReport();
-  }, [period]);
-
-  const fetchReport = async () => {
-    setLoading(true);
-    try {
-      const [reportRes, comparisonRes] = await Promise.all([
-        period === 'weekly' ? getMyWeeklyReport() : getMyMonthlyReport(),
-        getComparison(period),
-      ]);
-      setReport(reportRes.data);
-      setComparison(comparisonRes.data);
-    } catch {
-      toast.error(t('errors.somethingWrong'));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { report, comparison, loading, period, setPeriod } = useReport();
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -56,7 +23,6 @@ export default function ReportsPage() {
     return 'text-gray-400';
   };
 
-  // Calculate max contribution for chart scaling
   const maxContribution = report?.daily_contributions
     ? Math.max(...report.daily_contributions.map((d) => d.contributions), 1)
     : 1;

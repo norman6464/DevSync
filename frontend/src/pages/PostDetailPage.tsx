@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getPost, getComments, createComment } from '../api/posts';
-import type { Post, Comment } from '../types/post';
+import { usePostDetail } from '../hooks';
 import PostCard from '../components/posts/PostCard';
 import Avatar from '../components/common/Avatar';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -9,46 +8,14 @@ import { format } from 'date-fns';
 
 export default function PostDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const [post, setPost] = useState<Post | null>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
+  const { post, comments, loading, submitting, submitComment, refetch } = usePostDetail(id);
   const [newComment, setNewComment] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  const fetchData = async () => {
-    if (!id) return;
-    setLoading(true);
-    try {
-      const [postRes, commentsRes] = await Promise.all([
-        getPost(parseInt(id)),
-        getComments(parseInt(id)),
-      ]);
-      setPost(postRes.data);
-      setComments(commentsRes.data || []);
-    } catch {
-      // handle error
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, [id]);
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.trim() || !id) return;
-    setSubmitting(true);
-    try {
-      await createComment(parseInt(id), newComment);
-      setNewComment('');
-      fetchData();
-    } catch {
-      // handle error
-    } finally {
-      setSubmitting(false);
-    }
+    if (!newComment.trim()) return;
+    const success = await submitComment(newComment);
+    if (success) setNewComment('');
   };
 
   if (loading) return <div className="py-12"><LoadingSpinner /></div>;
@@ -56,7 +23,7 @@ export default function PostDetailPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <PostCard post={post} onUpdate={fetchData} />
+      <PostCard post={post} onUpdate={refetch} />
 
       {/* Comments Section */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">

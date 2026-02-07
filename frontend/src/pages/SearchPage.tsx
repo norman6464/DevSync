@@ -1,53 +1,16 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getUsers } from '../api/users';
-import { useAuthStore } from '../store/authStore';
+import { useUserSearch } from '../hooks';
 import type { User } from '../types/user';
 import Avatar from '../components/common/Avatar';
 import FollowButton from '../components/profile/FollowButton';
 import { UserCardSkeleton } from '../components/common/Skeleton';
+import { useAuthStore } from '../store/authStore';
 
 export default function SearchPage() {
   const { t } = useTranslation();
   const currentUser = useAuthStore((s) => s.user);
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<User[]>([]);
-  const [allUsers, setAllUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searched, setSearched] = useState(false);
-
-  // Load all users on mount
-  useEffect(() => {
-    getUsers()
-      .then(({ data }) => {
-        setAllUsers(data || []);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
-
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) {
-      setResults([]);
-      setSearched(false);
-      return;
-    }
-    setLoading(true);
-    try {
-      const { data } = await getUsers(query);
-      setResults(data || []);
-      setSearched(true);
-    } catch {
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const displayUsers = searched ? results : allUsers;
-  const filteredUsers = displayUsers.filter((u) => u.id !== currentUser?.id);
+  const { query, setQuery, filteredUsers, loading, searched, handleSearch } = useUserSearch();
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -66,13 +29,7 @@ export default function SearchPage() {
           <input
             type="text"
             value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              if (!e.target.value.trim()) {
-                setSearched(false);
-                setResults([]);
-              }
-            }}
+            onChange={(e) => setQuery(e.target.value)}
             placeholder={t('explore.searchPlaceholder')}
             className="w-full pl-10 pr-3 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
           />
