@@ -102,7 +102,7 @@ export default function GoalsPage() {
         <h1 className="text-2xl font-bold">{t('goals.title')}</h1>
         <button
           onClick={() => setShowForm(true)}
-          className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg font-medium text-sm transition-colors"
+          className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium text-sm transition-colors"
         >
           {t('goals.addGoal')}
         </button>
@@ -199,7 +199,7 @@ export default function GoalsPage() {
                 <button
                   type="submit"
                   disabled={saving || !title.trim()}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
+                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
                 >
                   {saving ? t('common.loading') : editingGoal ? t('common.save') : t('goals.create')}
                 </button>
@@ -215,7 +215,7 @@ export default function GoalsPage() {
           <p className="text-gray-400 text-sm mb-4">{t('goals.noGoals')}</p>
           <button
             onClick={() => setShowForm(true)}
-            className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg font-medium text-sm transition-colors"
+            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium text-sm transition-colors"
           >
             {t('goals.createFirst')}
           </button>

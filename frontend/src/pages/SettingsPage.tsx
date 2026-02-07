@@ -243,7 +243,7 @@ export default function SettingsPage() {
           <button
             type="submit"
             disabled={saving}
-            className="px-5 py-2 bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors"
+            className="px-5 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors"
           >
             {saving ? t('common.loading') : t('common.save')}
           </button>
@@ -336,7 +336,7 @@ export default function SettingsPage() {
             type="button"
             onClick={handleSaveSkills}
             disabled={savingSkills}
-            className="px-5 py-2 bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors"
+            className="px-5 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors"
           >
             {savingSkills ? t('common.loading') : t('common.save')}
           </button>
@@ -499,7 +499,7 @@ export default function SettingsPage() {
               <button
                 type="submit"
                 disabled={connectingQiita || !qiitaUsername.trim()}
-                className="w-full px-5 py-2.5 bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors"
+                className="w-full px-5 py-2.5 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors"
               >
                 {connectingQiita ? t('common.loading') : t('settings.connect')}
               </button>

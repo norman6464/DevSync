@@ -68,7 +68,7 @@ export default function BookReviewForm({ review, onSubmit, onCancel, loading }: 
           onChange={(e) => setTitle(e.target.value)}
           required
           maxLength={300}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
           placeholder={t('bookReviews.bookTitlePlaceholder')}
         />
       </div>
@@ -83,7 +83,7 @@ export default function BookReviewForm({ review, onSubmit, onCancel, loading }: 
           value={author}
           onChange={(e) => setAuthor(e.target.value)}
           maxLength={200}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
           placeholder={t('bookReviews.authorPlaceholder')}
         />
       </div>
@@ -98,7 +98,7 @@ export default function BookReviewForm({ review, onSubmit, onCancel, loading }: 
           value={isbn}
           onChange={(e) => setIsbn(e.target.value)}
           maxLength={20}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
           placeholder="978-4-..."
         />
       </div>
@@ -120,7 +120,7 @@ export default function BookReviewForm({ review, onSubmit, onCancel, loading }: 
           value={reviewText}
           onChange={(e) => setReviewText(e.target.value)}
           rows={4}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent resize-none"
           placeholder={t('bookReviews.reviewPlaceholder')}
         />
       </div>
@@ -134,7 +134,7 @@ export default function BookReviewForm({ review, onSubmit, onCancel, loading }: 
           type="url"
           value={imageUrl}
           onChange={(e) => setImageUrl(e.target.value)}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
           placeholder="https://..."
         />
       </div>
@@ -151,7 +151,7 @@ export default function BookReviewForm({ review, onSubmit, onCancel, loading }: 
         <button
           type="submit"
           disabled={loading || !title.trim()}
-          className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-500 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+          className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
         >
           {loading ? t('common.saving') : t('common.save')}
         </button>

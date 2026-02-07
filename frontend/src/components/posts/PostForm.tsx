@@ -75,7 +75,7 @@ export default function PostForm({ onSubmit }: PostFormProps) {
               <button
                 type="submit"
                 disabled={loading || !title.trim() || !content.trim()}
-                className="px-5 py-2 bg-green-600 hover:bg-green-500 disabled:opacity-40 disabled:hover:bg-green-600 text-white rounded-lg font-medium text-sm transition-colors"
+                className="px-5 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:hover:bg-gray-700 text-white rounded-lg font-medium text-sm transition-colors"
               >
                 {loading ? t('post.posting') : t('post.post')}
               </button>

@@ -37,7 +37,7 @@ export default function ResourcesPage() {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -51,7 +51,7 @@ export default function ResourcesPage() {
         <button
           onClick={() => setTab('explore')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            tab === 'explore' ? 'bg-green-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
+            tab === 'explore' ? 'bg-gray-700 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
           }`}
         >
           {t('resources.explore')}
@@ -59,7 +59,7 @@ export default function ResourcesPage() {
         <button
           onClick={() => setTab('saved')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            tab === 'saved' ? 'bg-green-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
+            tab === 'saved' ? 'bg-gray-700 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
           }`}
         >
           {t('resources.savedTab')}
@@ -67,7 +67,7 @@ export default function ResourcesPage() {
         <button
           onClick={() => setTab('mine')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            tab === 'mine' ? 'bg-green-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
+            tab === 'mine' ? 'bg-gray-700 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
           }`}
         >
           {t('resources.myResources')}
@@ -85,7 +85,7 @@ export default function ResourcesPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                 placeholder={t('resources.searchPlaceholder')}
-                className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
               />
               <button
                 onClick={handleSearch}
@@ -98,7 +98,7 @@ export default function ResourcesPage() {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value as ResourceCategory | '')}
-            className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-gray-500 focus:border-transparent"
           >
             <option value="">{t('resources.allCategories')}</option>
             {categories.slice(1).map(cat => (
@@ -110,7 +110,7 @@ export default function ResourcesPage() {
           <select
             value={difficultyFilter}
             onChange={(e) => setDifficultyFilter(e.target.value as ResourceDifficulty | '')}
-            className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-gray-500 focus:border-transparent"
           >
             <option value="">{t('resources.allDifficulties')}</option>
             {difficulties.slice(1).map(diff => (
@@ -170,7 +170,7 @@ export default function ResourcesPage() {
           {tab !== 'saved' && (
             <button
               onClick={() => setShowForm(true)}
-              className="mt-4 px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors"
+              className="mt-4 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
             >
               {t('resources.addFirstResource')}
             </button>

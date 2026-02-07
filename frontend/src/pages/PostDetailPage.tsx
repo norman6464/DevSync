@@ -47,7 +47,7 @@ export default function PostDetailPage() {
             <button
               type="submit"
               disabled={submitting || !newComment.trim()}
-              className="px-5 py-2.5 bg-green-600 hover:bg-green-500 disabled:opacity-40 disabled:hover:bg-green-600 text-white rounded-lg font-medium text-sm transition-colors"
+              className="px-5 py-2.5 bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:hover:bg-gray-700 text-white rounded-lg font-medium text-sm transition-colors"
             >
               {submitting ? 'Posting...' : 'Comment'}
             </button>

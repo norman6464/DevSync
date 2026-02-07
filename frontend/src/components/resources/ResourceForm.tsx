@@ -71,7 +71,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
           onChange={(e) => setTitle(e.target.value)}
           required
           maxLength={300}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
           placeholder={t('resources.titlePlaceholder')}
         />
       </div>
@@ -85,7 +85,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
           type="url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
           placeholder="https://..."
         />
       </div>
@@ -99,7 +99,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as ResourceCategory)}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-gray-500 focus:border-transparent"
           >
             {categories.map(cat => (
               <option key={cat} value={cat}>
@@ -115,7 +115,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
           <select
             value={difficulty}
             onChange={(e) => setDifficulty(e.target.value as ResourceDifficulty | '')}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-gray-500 focus:border-transparent"
           >
             <option value="">{t('resources.selectDifficulty')}</option>
             {difficulties.map(diff => (
@@ -136,7 +136,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent resize-none"
           placeholder={t('resources.descriptionPlaceholder')}
         />
       </div>
@@ -152,7 +152,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-            className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
             placeholder={t('resources.tagsPlaceholder')}
           />
           <button
@@ -195,7 +195,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
           type="url"
           value={imageUrl}
           onChange={(e) => setImageUrl(e.target.value)}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
           placeholder="https://..."
         />
       </div>
@@ -207,7 +207,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
           id="isPublic"
           checked={isPublic}
           onChange={(e) => setIsPublic(e.target.checked)}
-          className="w-4 h-4 rounded bg-gray-700 border-gray-600 text-green-500 focus:ring-green-500"
+          className="w-4 h-4 rounded bg-gray-700 border-gray-600 text-green-500 focus:ring-gray-500"
         />
         <label htmlFor="isPublic" className="text-sm text-gray-300">
           {t('resources.makePublic')}
@@ -226,7 +226,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
         <button
           type="submit"
           disabled={loading || !title.trim()}
-          className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-500 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+          className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
         >
           {loading ? t('common.saving') : t('common.save')}
         </button>

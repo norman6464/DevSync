@@ -62,7 +62,7 @@ export default function RankingsPage() {
             onClick={() => setPeriod('weekly')}
             className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
               period === 'weekly'
-                ? 'bg-green-600 text-white'
+                ? 'bg-gray-700 text-white'
                 : 'text-gray-400 hover:text-white'
             }`}
           >
@@ -72,7 +72,7 @@ export default function RankingsPage() {
             onClick={() => setPeriod('monthly')}
             className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
               period === 'monthly'
-                ? 'bg-green-600 text-white'
+                ? 'bg-gray-700 text-white'
                 : 'text-gray-400 hover:text-white'
             }`}
           >
