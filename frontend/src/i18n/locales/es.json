@@ -17,7 +17,9 @@
     "yes": "Sí",
     "no": "No",
     "or": "o",
-    "and": "y"
+    "and": "y",
+    "menu": "Menú",
+    "scrollToTop": "Volver arriba"
   },
   "nav": {
     "dashboard": "Panel",

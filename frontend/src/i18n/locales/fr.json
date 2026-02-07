@@ -17,7 +17,9 @@
     "yes": "Oui",
     "no": "Non",
     "or": "ou",
-    "and": "et"
+    "and": "et",
+    "menu": "Menu",
+    "scrollToTop": "Retour en haut"
   },
   "nav": {
     "dashboard": "Tableau de bord",

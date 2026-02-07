@@ -17,7 +17,9 @@
     "yes": "예",
     "no": "아니오",
     "or": "또는",
-    "and": "그리고"
+    "and": "그리고",
+    "menu": "메뉴",
+    "scrollToTop": "맨 위로"
   },
   "nav": {
     "dashboard": "대시보드",

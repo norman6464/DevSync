@@ -17,7 +17,9 @@
     "yes": "是",
     "no": "否",
     "or": "或",
-    "and": "和"
+    "and": "和",
+    "menu": "菜单",
+    "scrollToTop": "返回顶部"
   },
   "nav": {
     "dashboard": "仪表板",
