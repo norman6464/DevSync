@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Sparkles, Rocket, FileText, Monitor, Target, FolderOpen } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useProfile } from '../hooks';
 import Avatar from '../components/common/Avatar';
@@ -103,13 +104,13 @@ export default function ProfilePage() {
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-4">
           {user.skills_languages && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2"><span>✨</span> {t('profile.languages')}</h3>
+              <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2"><Sparkles className="w-4 h-4 text-yellow-400" /> {t('profile.languages')}</h3>
               <a href="https://skillicons.dev" target="_blank" rel="noopener noreferrer"><img src={`https://skillicons.dev/icons?i=${user.skills_languages}&theme=dark`} alt="Languages" className="h-12" /></a>
             </div>
           )}
           {user.skills_frameworks && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2"><span>🚀</span> {t('profile.frameworks')}</h3>
+              <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2"><Rocket className="w-4 h-4 text-blue-400" /> {t('profile.frameworks')}</h3>
               <a href="https://skillicons.dev" target="_blank" rel="noopener noreferrer"><img src={`https://skillicons.dev/icons?i=${user.skills_frameworks}&theme=dark`} alt="Frameworks" className="h-12" /></a>
             </div>
           )}
@@ -213,7 +214,7 @@ export default function ProfilePage() {
             {qiitaArticles.slice(0, 6).map((article) => (
               <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-gray-600 transition-colors group">
                 <div className="flex items-start gap-3">
-                  <span className="text-2xl">📝</span>
+                  <FileText className="w-6 h-6 text-green-400 flex-shrink-0" />
                   <div className="min-w-0 flex-1">
                     <div className="font-medium text-sm text-green-400 group-hover:text-green-300 line-clamp-2">{article.title}</div>
                     <div className="flex items-center gap-3 mt-2">
@@ -244,12 +245,13 @@ export default function ProfilePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {goals.slice(0, 4).map((goal) => {
-              const categoryIcons: Record<string, string> = { language: '💻', framework: '🚀', skill: '🎯', project: '📁', other: '📝' };
+              const categoryIcons: Record<string, typeof Monitor> = { language: Monitor, framework: Rocket, skill: Target, project: FolderOpen, other: FileText };
               const statusColors: Record<string, string> = { active: 'text-green-400 bg-green-400/10', completed: 'text-blue-400 bg-blue-400/10', paused: 'text-yellow-400 bg-yellow-400/10' };
+              const CategoryIcon = categoryIcons[goal.category] || FileText;
               return (
                 <div key={goal.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4">
                   <div className="flex items-start gap-3">
-                    <span className="text-2xl">{categoryIcons[goal.category] || '📝'}</span>
+                    <CategoryIcon className="w-6 h-6 text-purple-400 flex-shrink-0 mt-0.5" />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <div className="font-medium text-sm text-white truncate flex-1">{goal.title}</div>
