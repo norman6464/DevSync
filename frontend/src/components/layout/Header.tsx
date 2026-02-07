@@ -15,6 +15,7 @@ const navItems = [
   { path: '/goals', key: 'nav.goals' },
   { path: '/reports', key: 'nav.reports' },
   { path: '/qa', key: 'nav.qa' },
+  { path: '/roadmaps', key: 'nav.roadmaps' },
 ] as const;
 
 export default function Header() {
