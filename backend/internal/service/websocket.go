@@ -12,7 +12,9 @@ type WSMessage struct {
 	Type       string `json:"type"`
 	SenderID   uint   `json:"sender_id"`
 	ReceiverID uint   `json:"receiver_id"`
+	RoomID     uint   `json:"room_id,omitempty"`
 	Content    string `json:"content"`
+	SenderName string `json:"sender_name,omitempty"`
 }
 
 type Client struct {
@@ -23,10 +25,11 @@ type Client struct {
 }
 
 type Hub struct {
-	clients    map[uint]*Client
-	register   chan *Client
-	unregister chan *Client
-	mu         sync.RWMutex
+	clients        map[uint]*Client
+	register       chan *Client
+	unregister     chan *Client
+	mu             sync.RWMutex
+	GetRoomMembers func(roomID uint) []uint
 }
 
 func NewHub() *Hub {
@@ -77,6 +80,18 @@ func (h *Hub) SendToUser(userID uint, message []byte) {
 	}
 }
 
+func (h *Hub) SendToRoom(roomID uint, senderID uint, message []byte) {
+	if h.GetRoomMembers == nil {
+		return
+	}
+	memberIDs := h.GetRoomMembers(roomID)
+	for _, memberID := range memberIDs {
+		if memberID != senderID {
+			h.SendToUser(memberID, message)
+		}
+	}
+}
+
 func (c *Client) ReadPump() {
 	defer func() {
 		c.Hub.Unregister(c)
@@ -96,7 +111,11 @@ func (c *Client) ReadPump() {
 		msg.SenderID = c.UserID
 
 		data, _ := json.Marshal(msg)
-		c.Hub.SendToUser(msg.ReceiverID, data)
+		if msg.Type == "group_message" && msg.RoomID > 0 {
+			c.Hub.SendToRoom(msg.RoomID, c.UserID, data)
+		} else {
+			c.Hub.SendToUser(msg.ReceiverID, data)
+		}
 	}
 }
 

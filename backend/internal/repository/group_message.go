@@ -28,6 +28,10 @@ func (r *GroupMessageRepository) FindByRoomID(roomID uint, page, limit int) ([]m
 	return messages, err
 }
 
+func (r *GroupMessageRepository) FindSenderByID(msg *model.GroupMessage) {
+	r.db.Model(&model.User{}).First(msg.Sender, msg.SenderID)
+}
+
 func (r *GroupMessageRepository) GetMemberUserIDs(roomID uint) []uint {
 	var userIDs []uint
 	r.db.Model(&model.ChatRoomMember{}).
