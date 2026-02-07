@@ -586,5 +586,24 @@
     "noSteps": "Пока нет шагов",
     "addFirstStep": "Добавьте первый шаг",
     "stepsReordered": "Порядок шагов изменён"
+  },
+  "onboarding": {
+    "welcomeTitle": "Добро пожаловать в DevSync!",
+    "welcomeDescription": "Давайте настроим ваш профиль.",
+    "namePlaceholder": "Введите отображаемое имя",
+    "bioPlaceholder": "Расскажите о себе",
+    "skillsTitle": "Выберите навыки",
+    "skillsDescription": "Выберите языки и фреймворки, которые вы используете.",
+    "integrationsTitle": "Подключить сервисы",
+    "integrationsDescription": "Подключите сервисы для автоматического отслеживания активности. (Необязательно)",
+    "githubDescription": "Синхронизация вкладов, репозиториев и языковой статистики",
+    "zennDescription": "Синхронизация статей Zenn",
+    "qiitaDescription": "Синхронизация статей Qiita",
+    "completeTitle": "Настройка завершена!",
+    "completeDescription": "Всё готово. Начните работу с панели управления.",
+    "next": "Далее",
+    "back": "Назад",
+    "skip": "Пропустить",
+    "goToDashboard": "Перейти к панели"
   }
 }
