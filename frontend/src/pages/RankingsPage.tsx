@@ -1,58 +1,15 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getContributionRanking, getLanguageRanking, getAvailableLanguages } from '../api/rankings';
-import type { RankingEntry } from '../types/ranking';
+import { useRankings } from '../hooks';
 import Avatar from '../components/common/Avatar';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
-// Default popular programming languages for ranking filter
-const DEFAULT_LANGUAGES = [
-  'JavaScript', 'TypeScript', 'Python', 'Java', 'Go', 'Rust', 'C++', 'C#',
-  'Ruby', 'PHP', 'Swift', 'Kotlin', 'Scala', 'C', 'Shell', 'HTML', 'CSS'
-];
-
 export default function RankingsPage() {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<'contributions' | 'languages'>('contributions');
-  const [period, setPeriod] = useState<'weekly' | 'monthly'>('weekly');
-  const [language, setLanguage] = useState('JavaScript');
-  const [languages, setLanguages] = useState<string[]>(DEFAULT_LANGUAGES);
-  const [rankings, setRankings] = useState<RankingEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    getAvailableLanguages()
-      .then(({ data }) => {
-        if (data && data.length > 0) {
-          setLanguages(data);
-          setLanguage(data[0]);
-        }
-      })
-      .catch(() => {
-        // Keep using default languages on error
-      });
-  }, []);
-
-  useEffect(() => {
-    const fetchRankings = async () => {
-      setLoading(true);
-      try {
-        if (tab === 'contributions') {
-          const { data } = await getContributionRanking(period);
-          setRankings(data || []);
-        } else if (language) {
-          const { data } = await getLanguageRanking(language, period);
-          setRankings(data || []);
-        }
-      } catch {
-        setRankings([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchRankings();
-  }, [tab, period, language]);
+  const {
+    rankings, languages, loading,
+    tab, setTab, period, setPeriod, language, setLanguage,
+  } = useRankings();
 
   const medalColor = (index: number) => {
     if (index === 0) return 'text-yellow-400';

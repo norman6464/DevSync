@@ -1,25 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
 import { useAuthStore } from '../store/authStore';
-import type { LearningResource, CreateResourceRequest, ResourceCategory, ResourceDifficulty } from '../types/resource';
-import {
-  getPublicResources,
-  getSavedResources,
-  searchResources,
-  createResource,
-  updateResource,
-  deleteResource,
-  likeResource,
-  unlikeResource,
-  saveResource,
-  unsaveResource,
-} from '../api/resources';
+import type { LearningResource, ResourceCategory, ResourceDifficulty } from '../types/resource';
+import { useResources } from '../hooks';
 import ResourceCard from '../components/resources/ResourceCard';
 import ResourceForm from '../components/resources/ResourceForm';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-
-type TabType = 'explore' | 'saved' | 'mine';
 
 const categories: (ResourceCategory | '')[] = ['', 'book', 'video', 'article', 'course', 'tutorial', 'podcast', 'tool', 'other'];
 const difficulties: (ResourceDifficulty | '')[] = ['', 'beginner', 'intermediate', 'advanced'];
@@ -27,131 +13,20 @@ const difficulties: (ResourceDifficulty | '')[] = ['', 'beginner', 'intermediate
 export default function ResourcesPage() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
-  const [tab, setTab] = useState<TabType>('explore');
-  const [resources, setResources] = useState<LearningResource[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const {
+    resources, total, loading, saving,
+    tab, setTab,
+    searchQuery, setSearchQuery,
+    categoryFilter, setCategoryFilter,
+    difficultyFilter, setDifficultyFilter,
+    page, setPage, limit,
+    handleSearch,
+    createResource, updateResource, deleteResource,
+    likeResource, unlikeResource, saveResource, unsaveResource,
+  } = useResources();
+
   const [showForm, setShowForm] = useState(false);
   const [editingResource, setEditingResource] = useState<LearningResource | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<ResourceCategory | ''>('');
-  const [difficultyFilter, setDifficultyFilter] = useState<ResourceDifficulty | ''>('');
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(0);
-  const limit = 20;
-
-  useEffect(() => {
-    fetchResources();
-  }, [tab, categoryFilter, difficultyFilter, page]);
-
-  const fetchResources = async () => {
-    setLoading(true);
-    try {
-      let data: { resources: LearningResource[]; total: number };
-
-      if (tab === 'saved') {
-        data = await getSavedResources(limit, page * limit);
-      } else if (tab === 'mine' && user) {
-        const res = await import('../api/resources');
-        const myResources = await res.getResourcesByUserId(user.id);
-        data = { resources: myResources, total: myResources.length };
-      } else {
-        if (searchQuery.trim()) {
-          data = await searchResources(searchQuery, limit, page * limit);
-        } else {
-          data = await getPublicResources(limit, page * limit, categoryFilter, difficultyFilter);
-        }
-      }
-
-      setResources(data.resources);
-      setTotal(data.total);
-    } catch (error) {
-      console.error('Failed to fetch resources:', error);
-      toast.error(t('errors.somethingWrong'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSearch = () => {
-    setPage(0);
-    fetchResources();
-  };
-
-  const handleCreate = async (data: CreateResourceRequest) => {
-    setSaving(true);
-    try {
-      const newResource = await createResource(data);
-      setResources([newResource, ...resources]);
-      setShowForm(false);
-      toast.success(t('resources.createSuccess'));
-    } catch (error) {
-      console.error('Failed to create resource:', error);
-      toast.error(t('resources.createFailed'));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleUpdate = async (data: CreateResourceRequest) => {
-    if (!editingResource) return;
-    setSaving(true);
-    try {
-      const updated = await updateResource(editingResource.id, data);
-      setResources(resources.map(r => r.id === updated.id ? updated : r));
-      setEditingResource(null);
-      toast.success(t('resources.updateSuccess'));
-    } catch (error) {
-      console.error('Failed to update resource:', error);
-      toast.error(t('resources.updateFailed'));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleDelete = async (resource: LearningResource) => {
-    if (!confirm(t('resources.confirmDelete'))) return;
-    try {
-      await deleteResource(resource.id);
-      setResources(resources.filter(r => r.id !== resource.id));
-      toast.success(t('resources.deleteSuccess'));
-    } catch (error) {
-      console.error('Failed to delete resource:', error);
-      toast.error(t('resources.deleteFailed'));
-    }
-  };
-
-  const handleLike = async (id: number) => {
-    try {
-      await likeResource(id);
-    } catch (error) {
-      console.error('Failed to like resource:', error);
-    }
-  };
-
-  const handleUnlike = async (id: number) => {
-    try {
-      await unlikeResource(id);
-    } catch (error) {
-      console.error('Failed to unlike resource:', error);
-    }
-  };
-
-  const handleSave = async (id: number) => {
-    try {
-      await saveResource(id);
-    } catch (error) {
-      console.error('Failed to save resource:', error);
-    }
-  };
-
-  const handleUnsave = async (id: number) => {
-    try {
-      await unsaveResource(id);
-    } catch (error) {
-      console.error('Failed to unsave resource:', error);
-    }
-  };
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -174,7 +49,7 @@ export default function ResourcesPage() {
       {/* Tabs */}
       <div className="flex gap-2 mb-6">
         <button
-          onClick={() => { setTab('explore'); setPage(0); }}
+          onClick={() => setTab('explore')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             tab === 'explore' ? 'bg-green-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
           }`}
@@ -182,7 +57,7 @@ export default function ResourcesPage() {
           {t('resources.explore')}
         </button>
         <button
-          onClick={() => { setTab('saved'); setPage(0); }}
+          onClick={() => setTab('saved')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             tab === 'saved' ? 'bg-green-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
           }`}
@@ -190,7 +65,7 @@ export default function ResourcesPage() {
           {t('resources.savedTab')}
         </button>
         <button
-          onClick={() => { setTab('mine'); setPage(0); }}
+          onClick={() => setTab('mine')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             tab === 'mine' ? 'bg-green-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
           }`}
@@ -222,7 +97,7 @@ export default function ResourcesPage() {
           </div>
           <select
             value={categoryFilter}
-            onChange={(e) => { setCategoryFilter(e.target.value as ResourceCategory | ''); setPage(0); }}
+            onChange={(e) => setCategoryFilter(e.target.value as ResourceCategory | '')}
             className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
           >
             <option value="">{t('resources.allCategories')}</option>
@@ -234,7 +109,7 @@ export default function ResourcesPage() {
           </select>
           <select
             value={difficultyFilter}
-            onChange={(e) => { setDifficultyFilter(e.target.value as ResourceDifficulty | ''); setPage(0); }}
+            onChange={(e) => setDifficultyFilter(e.target.value as ResourceDifficulty | '')}
             className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
           >
             <option value="">{t('resources.allDifficulties')}</option>
@@ -256,7 +131,15 @@ export default function ResourcesPage() {
             </h2>
             <ResourceForm
               resource={editingResource || undefined}
-              onSubmit={editingResource ? handleUpdate : handleCreate}
+              onSubmit={async (data) => {
+                if (editingResource) {
+                  const result = await updateResource(editingResource.id, data);
+                  if (result) setEditingResource(null);
+                } else {
+                  const result = await createResource(data);
+                  if (result) setShowForm(false);
+                }
+              }}
               onCancel={() => {
                 setShowForm(false);
                 setEditingResource(null);
@@ -302,12 +185,12 @@ export default function ResourcesPage() {
                 resource={resource}
                 isOwner={user?.id === resource.user_id}
                 showUser={tab !== 'mine'}
-                onLike={() => handleLike(resource.id)}
-                onUnlike={() => handleUnlike(resource.id)}
-                onSave={() => handleSave(resource.id)}
-                onUnsave={() => handleUnsave(resource.id)}
+                onLike={() => likeResource(resource.id)}
+                onUnlike={() => unlikeResource(resource.id)}
+                onSave={() => saveResource(resource.id)}
+                onUnsave={() => unsaveResource(resource.id)}
                 onEdit={() => setEditingResource(resource)}
-                onDelete={() => handleDelete(resource)}
+                onDelete={() => deleteResource(resource)}
               />
             ))}
           </div>

@@ -1,91 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
-import { useAuthStore } from '../store/authStore';
-import type { Project, CreateProjectRequest } from '../types/project';
-import type { GitHubRepository } from '../types/github';
-import { getProjectsByUserId, createProject, updateProject, deleteProject } from '../api/projects';
-import { getRepos } from '../api/github';
+import type { Project } from '../types/project';
+import { useProjects } from '../hooks';
 import ProjectCard from '../components/projects/ProjectCard';
 import ProjectForm from '../components/projects/ProjectForm';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
 export default function ProjectsPage() {
   const { t } = useTranslation();
-  const user = useAuthStore((s) => s.user);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [repos, setRepos] = useState<GitHubRepository[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const {
+    projects, repos, loading, saving,
+    createProject, updateProject, deleteProject,
+  } = useProjects();
+
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
-
-  useEffect(() => {
-    if (user) {
-      fetchData();
-    }
-  }, [user]);
-
-  const fetchData = async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      const [projectsData, reposResponse] = await Promise.all([
-        getProjectsByUserId(user.id),
-        user.github_connected ? getRepos(user.id) : Promise.resolve({ data: [] }),
-      ]);
-      setProjects(projectsData);
-      setRepos(reposResponse.data);
-    } catch (error) {
-      console.error('Failed to fetch data:', error);
-      toast.error(t('errors.somethingWrong'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreate = async (data: CreateProjectRequest) => {
-    setSaving(true);
-    try {
-      const newProject = await createProject(data);
-      setProjects([newProject, ...projects]);
-      setShowForm(false);
-      toast.success(t('projects.createSuccess'));
-    } catch (error) {
-      console.error('Failed to create project:', error);
-      toast.error(t('projects.createFailed'));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleUpdate = async (data: CreateProjectRequest) => {
-    if (!editingProject) return;
-    setSaving(true);
-    try {
-      const updated = await updateProject(editingProject.id, data);
-      setProjects(projects.map(p => p.id === updated.id ? updated : p));
-      setEditingProject(null);
-      toast.success(t('projects.updateSuccess'));
-    } catch (error) {
-      console.error('Failed to update project:', error);
-      toast.error(t('projects.updateFailed'));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleDelete = async (project: Project) => {
-    if (!confirm(t('projects.confirmDelete'))) return;
-    try {
-      await deleteProject(project.id);
-      setProjects(projects.filter(p => p.id !== project.id));
-      toast.success(t('projects.deleteSuccess'));
-    } catch (error) {
-      console.error('Failed to delete project:', error);
-      toast.error(t('projects.deleteFailed'));
-    }
-  };
 
   if (loading) {
     return (
@@ -123,7 +52,15 @@ export default function ProjectsPage() {
             <ProjectForm
               project={editingProject || undefined}
               repos={repos}
-              onSubmit={editingProject ? handleUpdate : handleCreate}
+              onSubmit={async (data) => {
+                if (editingProject) {
+                  const result = await updateProject(editingProject.id, data);
+                  if (result) setEditingProject(null);
+                } else {
+                  const result = await createProject(data);
+                  if (result) setShowForm(false);
+                }
+              }}
               onCancel={() => {
                 setShowForm(false);
                 setEditingProject(null);
@@ -158,7 +95,7 @@ export default function ProjectsPage() {
               project={project}
               isOwner
               onEdit={() => setEditingProject(project)}
-              onDelete={() => handleDelete(project)}
+              onDelete={() => deleteProject(project)}
             />
           ))}
         </div>

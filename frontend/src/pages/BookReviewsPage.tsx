@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
 import { useAuthStore } from '../store/authStore';
-import type { BookReview, CreateBookReviewRequest } from '../types/bookReview';
-import { getBookReviews, createBookReview, updateBookReview, deleteBookReview } from '../api/bookReviews';
+import type { BookReview } from '../types/bookReview';
+import { useBookReviews } from '../hooks';
 import BookReviewCard from '../components/bookReviews/BookReviewCard';
 import BookReviewForm from '../components/bookReviews/BookReviewForm';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -11,75 +10,13 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 export default function BookReviewsPage() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
-  const [reviews, setReviews] = useState<BookReview[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const {
+    reviews, total, loading, saving, page, setPage, limit,
+    createReview, updateReview, deleteReview,
+  } = useBookReviews();
+
   const [showForm, setShowForm] = useState(false);
   const [editingReview, setEditingReview] = useState<BookReview | null>(null);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(0);
-  const limit = 20;
-
-  useEffect(() => {
-    fetchReviews();
-  }, [page]);
-
-  const fetchReviews = async () => {
-    setLoading(true);
-    try {
-      const data = await getBookReviews(limit, page * limit);
-      setReviews(data.reviews);
-      setTotal(data.total);
-    } catch (error) {
-      console.error('Failed to fetch reviews:', error);
-      toast.error(t('errors.somethingWrong'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreate = async (data: CreateBookReviewRequest) => {
-    setSaving(true);
-    try {
-      const newReview = await createBookReview(data);
-      setReviews([newReview, ...reviews]);
-      setShowForm(false);
-      toast.success(t('bookReviews.createSuccess'));
-    } catch (error) {
-      console.error('Failed to create review:', error);
-      toast.error(t('bookReviews.createFailed'));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleUpdate = async (data: CreateBookReviewRequest) => {
-    if (!editingReview) return;
-    setSaving(true);
-    try {
-      const updated = await updateBookReview(editingReview.id, data);
-      setReviews(reviews.map(r => r.id === updated.id ? updated : r));
-      setEditingReview(null);
-      toast.success(t('bookReviews.updateSuccess'));
-    } catch (error) {
-      console.error('Failed to update review:', error);
-      toast.error(t('bookReviews.updateFailed'));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleDelete = async (review: BookReview) => {
-    if (!confirm(t('bookReviews.confirmDelete'))) return;
-    try {
-      await deleteBookReview(review.id);
-      setReviews(reviews.filter(r => r.id !== review.id));
-      toast.success(t('bookReviews.deleteSuccess'));
-    } catch (error) {
-      console.error('Failed to delete review:', error);
-      toast.error(t('bookReviews.deleteFailed'));
-    }
-  };
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -108,7 +45,15 @@ export default function BookReviewsPage() {
             </h2>
             <BookReviewForm
               review={editingReview || undefined}
-              onSubmit={editingReview ? handleUpdate : handleCreate}
+              onSubmit={async (data) => {
+                if (editingReview) {
+                  const result = await updateReview(editingReview.id, data);
+                  if (result) setEditingReview(null);
+                } else {
+                  const result = await createReview(data);
+                  if (result) setShowForm(false);
+                }
+              }}
               onCancel={() => {
                 setShowForm(false);
                 setEditingReview(null);
@@ -149,7 +94,7 @@ export default function BookReviewsPage() {
                 isOwner={user?.id === review.user_id}
                 showUser={true}
                 onEdit={() => setEditingReview(review)}
-                onDelete={() => handleDelete(review)}
+                onDelete={() => deleteReview(review)}
               />
             ))}
           </div>
