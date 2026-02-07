@@ -21,13 +21,13 @@
   },
   "nav": {
     "dashboard": "儀表板",
-    "explore": "探索",
+    "explore": "探索開發者",
     "rankings": "排行榜",
     "chat": "聊天",
-    "goals": "目標",
+    "goals": "學習目標",
     "projects": "專案",
-    "resources": "資源",
-    "reports": "報告",
+    "resources": "學習資源",
+    "reports": "活動報告",
     "settings": "設定",
     "profile": "個人資料",
     "signOut": "登出",
@@ -145,7 +145,7 @@
     "qiitaInvalidUsername": "無效的Qiita使用者名稱"
   },
   "explore": {
-    "title": "探索",
+    "title": "探索開發者",
     "searchPlaceholder": "搜尋開發者...",
     "noResults": "未找到開發者",
     "tryDifferent": "嘗試其他搜尋詞",
