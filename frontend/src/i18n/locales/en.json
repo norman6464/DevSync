@@ -17,7 +17,9 @@
     "no": "No",
     "or": "or",
     "and": "and",
-    "add": "Add"
+    "add": "Add",
+    "menu": "Menu",
+    "scrollToTop": "Back to top"
   },
   "nav": {
     "dashboard": "Dashboard",

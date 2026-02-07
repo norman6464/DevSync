@@ -17,7 +17,9 @@
     "yes": "Sim",
     "no": "Não",
     "or": "ou",
-    "and": "e"
+    "and": "e",
+    "menu": "Menu",
+    "scrollToTop": "Voltar ao topo"
   },
   "nav": {
     "dashboard": "Painel",

@@ -6,7 +6,7 @@ import { getTimeline, getPosts, createPost } from '../api/posts';
 import type { Post } from '../types/post';
 import PostCard from '../components/posts/PostCard';
 import PostForm from '../components/posts/PostForm';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { PostCardSkeleton } from '../components/common/Skeleton';
 import Avatar from '../components/common/Avatar';
 
 export default function DashboardPage() {
@@ -70,16 +70,29 @@ export default function DashboardPage() {
         </div>
 
         {loading ? (
-          <div className="py-12"><LoadingSpinner /></div>
+          <div className="space-y-3">
+            <PostCardSkeleton />
+            <PostCardSkeleton />
+            <PostCardSkeleton />
+          </div>
         ) : posts.length === 0 ? (
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-12 text-center">
-            <p className="text-gray-400 mb-2">
+            <svg className="w-16 h-16 mx-auto mb-4 text-gray-700" fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+            </svg>
+            <p className="text-gray-400 mb-4">
               {tab === 'timeline'
                 ? t('dashboard.noPostsFollowing')
                 : t('dashboard.noPostsAll')}
             </p>
             {tab === 'timeline' && (
-              <Link to="/search" className="text-blue-400 hover:text-blue-300 text-sm font-medium">
+              <Link
+                to="/search"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                </svg>
                 {t('dashboard.findPeople')}
               </Link>
             )}

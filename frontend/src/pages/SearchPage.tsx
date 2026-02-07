@@ -6,7 +6,7 @@ import { useAuthStore } from '../store/authStore';
 import type { User } from '../types/user';
 import Avatar from '../components/common/Avatar';
 import FollowButton from '../components/profile/FollowButton';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { UserCardSkeleton } from '../components/common/Skeleton';
 
 export default function SearchPage() {
   const { t } = useTranslation();
@@ -87,10 +87,19 @@ export default function SearchPage() {
 
       {/* Results */}
       {loading ? (
-        <div className="py-12"><LoadingSpinner /></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <UserCardSkeleton />
+          <UserCardSkeleton />
+          <UserCardSkeleton />
+          <UserCardSkeleton />
+        </div>
       ) : searched && filteredUsers.length === 0 ? (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-12 text-center text-gray-500 text-sm">
-          {t('explore.noResults')} "{query}"
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-12 text-center">
+          <svg className="w-16 h-16 mx-auto mb-4 text-gray-700" fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+          </svg>
+          <p className="text-gray-400 mb-1">{t('explore.noResults')}</p>
+          <p className="text-gray-500 text-sm">"{query}" - {t('explore.tryDifferent')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
