@@ -21,13 +21,13 @@
   },
   "nav": {
     "dashboard": "仪表板",
-    "explore": "探索",
+    "explore": "发现",
     "rankings": "排行榜",
     "chat": "聊天",
-    "goals": "目标",
+    "goals": "学习目标",
     "projects": "项目",
-    "resources": "资源",
-    "reports": "报告",
+    "resources": "学习资料",
+    "reports": "活动报告",
     "settings": "设置",
     "profile": "个人资料",
     "signOut": "退出登录",
@@ -145,7 +145,7 @@
     "qiitaInvalidUsername": "无效的Qiita用户名"
   },
   "explore": {
-    "title": "探索",
+    "title": "发现开发者",
     "searchPlaceholder": "搜索开发者...",
     "noResults": "未找到开发者",
     "tryDifferent": "尝试其他搜索词",

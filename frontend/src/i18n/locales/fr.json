@@ -21,13 +21,13 @@
   },
   "nav": {
     "dashboard": "Tableau de bord",
-    "explore": "Explorer",
+    "explore": "Découvrir",
     "rankings": "Classements",
     "chat": "Chat",
-    "goals": "Objectifs",
+    "goals": "Objectifs d'apprentissage",
     "projects": "Projets",
     "resources": "Ressources",
-    "reports": "Rapports",
+    "reports": "Activité",
     "settings": "Paramètres",
     "profile": "Profil",
     "signOut": "Déconnexion",
@@ -145,7 +145,7 @@
     "qiitaInvalidUsername": "Nom d'utilisateur Qiita invalide"
   },
   "explore": {
-    "title": "Explorer",
+    "title": "Découvrir des Développeurs",
     "searchPlaceholder": "Rechercher des développeurs...",
     "noResults": "Aucun développeur trouvé",
     "tryDifferent": "Essayez un autre terme de recherche",

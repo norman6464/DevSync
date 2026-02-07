@@ -21,11 +21,11 @@
   },
   "nav": {
     "dashboard": "Dashboard",
-    "explore": "Explore",
+    "explore": "Discover",
     "rankings": "Rankings",
     "chat": "Chat",
-    "goals": "Goals",
-    "reports": "Reports",
+    "goals": "Learning Goals",
+    "reports": "Activity",
     "projects": "Projects",
     "resources": "Resources",
     "bookReviews": "Book Reviews",
@@ -145,7 +145,7 @@
     "qiitaInvalidUsername": "Invalid Qiita username"
   },
   "explore": {
-    "title": "Explore",
+    "title": "Discover Developers",
     "searchPlaceholder": "Search developers...",
     "noResults": "No developers found",
     "tryDifferent": "Try a different search term",

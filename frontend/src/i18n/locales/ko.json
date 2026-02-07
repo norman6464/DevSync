@@ -21,13 +21,13 @@
   },
   "nav": {
     "dashboard": "대시보드",
-    "explore": "탐색",
+    "explore": "개발자 찾기",
     "rankings": "랭킹",
     "chat": "채팅",
-    "goals": "목표",
+    "goals": "학습 목표",
     "projects": "프로젝트",
-    "resources": "리소스",
-    "reports": "리포트",
+    "resources": "학습 자료",
+    "reports": "활동 리포트",
     "settings": "설정",
     "profile": "프로필",
     "signOut": "로그아웃",
@@ -145,7 +145,7 @@
     "qiitaInvalidUsername": "유효하지 않은 Qiita 사용자 이름"
   },
   "explore": {
-    "title": "탐색",
+    "title": "개발자 찾기",
     "searchPlaceholder": "개발자 검색...",
     "noResults": "개발자를 찾을 수 없습니다",
     "tryDifferent": "다른 검색어를 시도해보세요",

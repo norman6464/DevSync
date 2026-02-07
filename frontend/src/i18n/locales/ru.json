@@ -21,13 +21,13 @@
   },
   "nav": {
     "dashboard": "Панель",
-    "explore": "Обзор",
+    "explore": "Поиск",
     "rankings": "Рейтинги",
     "chat": "Чат",
-    "goals": "Цели",
+    "goals": "Цели обучения",
     "projects": "Проекты",
-    "resources": "Ресурсы",
-    "reports": "Отчёты",
+    "resources": "Материалы",
+    "reports": "Активность",
     "settings": "Настройки",
     "profile": "Профиль",
     "signOut": "Выйти",
@@ -145,7 +145,7 @@
     "qiitaInvalidUsername": "Недействительное имя пользователя Qiita"
   },
   "explore": {
-    "title": "Обзор",
+    "title": "Найти разработчиков",
     "searchPlaceholder": "Поиск разработчиков...",
     "noResults": "Разработчики не найдены",
     "tryDifferent": "Попробуйте другой запрос",

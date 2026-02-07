@@ -24,10 +24,10 @@
     "explore": "Entdecken",
     "rankings": "Ranglisten",
     "chat": "Chat",
-    "goals": "Ziele",
+    "goals": "Lernziele",
     "projects": "Projekte",
-    "resources": "Ressourcen",
-    "reports": "Berichte",
+    "resources": "Lernmaterialien",
+    "reports": "Aktivität",
     "settings": "Einstellungen",
     "profile": "Profil",
     "signOut": "Abmelden",
@@ -145,7 +145,7 @@
     "qiitaInvalidUsername": "Ungültiger Qiita Benutzername"
   },
   "explore": {
-    "title": "Entdecken",
+    "title": "Entwickler entdecken",
     "searchPlaceholder": "Entwickler suchen...",
     "noResults": "Keine Entwickler gefunden",
     "tryDifferent": "Versuche einen anderen Suchbegriff",
