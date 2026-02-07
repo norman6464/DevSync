@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Sparkles } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { updateUser } from '../api/users';
 import { getGitHubConnectURL, disconnectGitHub, syncGitHub } from '../api/github';
@@ -254,7 +255,7 @@ export default function SettingsPage() {
       <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-800">
           <h2 className="text-base font-semibold flex items-center gap-2">
-            <span>✨</span> {t('settings.skills')}
+            <Sparkles className="w-5 h-5 text-yellow-400" /> {t('settings.skills')}
           </h2>
           <p className="text-xs text-gray-500 mt-1">{t('settings.selectLanguages')}</p>
         </div>

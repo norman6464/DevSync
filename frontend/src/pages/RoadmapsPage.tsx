@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Monitor, Rocket, Target, FolderOpen, FileText, type LucideIcon } from 'lucide-react';
 import { type RoadmapCategory, type Roadmap } from '../api/roadmaps';
 import { useRoadmaps } from '../hooks';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
-const CATEGORIES: { value: RoadmapCategory; label: string; icon: string }[] = [
-  { value: 'language', label: 'roadmaps.categoryLanguage', icon: '💻' },
-  { value: 'framework', label: 'roadmaps.categoryFramework', icon: '🚀' },
-  { value: 'skill', label: 'roadmaps.categorySkill', icon: '🎯' },
-  { value: 'project', label: 'roadmaps.categoryProject', icon: '📁' },
-  { value: 'other', label: 'roadmaps.categoryOther', icon: '📝' },
+const CATEGORIES: { value: RoadmapCategory; label: string; icon: string; Icon: LucideIcon }[] = [
+  { value: 'language', label: 'roadmaps.categoryLanguage', icon: '💻', Icon: Monitor },
+  { value: 'framework', label: 'roadmaps.categoryFramework', icon: '🚀', Icon: Rocket },
+  { value: 'skill', label: 'roadmaps.categorySkill', icon: '🎯', Icon: Target },
+  { value: 'project', label: 'roadmaps.categoryProject', icon: '📁', Icon: FolderOpen },
+  { value: 'other', label: 'roadmaps.categoryOther', icon: '📝', Icon: FileText },
 ];
 
 export default function RoadmapsPage() {
@@ -255,10 +256,11 @@ function RoadmapCard({
   onView: () => void;
   onEdit: (r: Roadmap) => void;
   onDelete: (id: number) => void;
-  getCategoryInfo: (cat: RoadmapCategory) => { icon: string; label: string };
+  getCategoryInfo: (cat: RoadmapCategory) => { icon: string; label: string; Icon: LucideIcon };
   t: (key: string) => string;
 }) {
   const catInfo = getCategoryInfo(roadmap.category);
+  const CategoryIcon = catInfo.Icon;
 
   return (
     <div
@@ -267,7 +269,7 @@ function RoadmapCard({
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3 min-w-0 flex-1">
-          <span className="text-2xl mt-0.5">{catInfo.icon}</span>
+          <CategoryIcon className="w-6 h-6 text-purple-400 flex-shrink-0 mt-0.5" />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-medium text-white">{roadmap.title}</h3>
