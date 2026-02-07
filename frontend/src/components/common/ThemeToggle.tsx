@@ -54,7 +54,7 @@ export default function ThemeToggle() {
           className={`p-2 rounded-md transition-all ${
             theme === t.value
               ? 'bg-gray-700 dark:bg-gray-700 light:bg-white text-white dark:text-white light:text-gray-900 shadow-sm'
-              : 'text-gray-400 hover:text-white dark:text-gray-400 dark:hover:text-white light:text-gray-500 light:hover:text-gray-900'
+              : 'text-gray-400 hover:text-white dark:text-gray-400 dark:hover:text-white light:text-gray-600 light:hover:text-gray-900'
           }`}
           title={t.label}
           aria-label={`Set ${t.label} theme`}
