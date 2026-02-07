@@ -129,6 +129,20 @@ body {
 .light .bg-violet-500\/10 { background-color: rgba(139, 92, 246, 0.1); }
 .light .bg-amber-500\/10 { background-color: rgba(245, 158, 11, 0.1); }
 
+/* Header stays dark in light theme */
+.light header {
+  background-color: rgba(17, 24, 39, 0.8) !important;
+  border-color: #1f2937 !important;
+}
+.light header .text-white { color: #ffffff !important; }
+.light header .text-gray-300 { color: #d1d5db !important; }
+.light header .text-gray-400 { color: #9ca3af !important; }
+.light header .hover\:text-white:hover { color: #ffffff !important; }
+.light header .hover\:bg-gray-700:hover { background-color: #374151 !important; }
+.light header .bg-gray-800 { background-color: #1f2937 !important; }
+.light header .bg-gray-900\/95 { background-color: rgba(17, 24, 39, 0.95) !important; }
+.light header .border-gray-800 { border-color: #1f2937 !important; }
+
 /* Shadow adjustments */
 .light .shadow-lg {
   --tw-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
