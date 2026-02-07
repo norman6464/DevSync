@@ -209,7 +209,7 @@ export default function ReportsPage() {
                       {day.posts} {t('reports.posts')}
                     </div>
                   </div>
-                  <span className="text-[10px] text-gray-500 rotate-45 origin-left">
+                  <span className="text-[10px] text-gray-500">
                     {new Date(day.date).toLocaleDateString(undefined, {
                       weekday: 'short',
                     })}
