@@ -586,5 +586,24 @@
     "noSteps": "Pas encore d'étapes",
     "addFirstStep": "Ajoutez la première étape",
     "stepsReordered": "Ordre des étapes modifié"
+  },
+  "onboarding": {
+    "welcomeTitle": "Bienvenue sur DevSync !",
+    "welcomeDescription": "Configurons votre profil pour commencer.",
+    "namePlaceholder": "Entrez votre nom d'affichage",
+    "bioPlaceholder": "Parlez-nous de vous",
+    "skillsTitle": "Sélectionnez vos compétences",
+    "skillsDescription": "Choisissez les langages et frameworks que vous utilisez.",
+    "integrationsTitle": "Connecter des services",
+    "integrationsDescription": "Connectez vos services pour suivre automatiquement votre activité. (Facultatif)",
+    "githubDescription": "Synchroniser les contributions, repos et statistiques de langages",
+    "zennDescription": "Synchroniser les articles Zenn",
+    "qiitaDescription": "Synchroniser les articles Qiita",
+    "completeTitle": "Configuration terminée !",
+    "completeDescription": "Tout est prêt. Explorez votre tableau de bord.",
+    "next": "Suivant",
+    "back": "Retour",
+    "skip": "Passer",
+    "goToDashboard": "Aller au tableau de bord"
   }
 }

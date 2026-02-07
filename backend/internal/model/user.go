@@ -16,7 +16,8 @@ type User struct {
 	ZennUsername     string    `json:"zenn_username"`
 	QiitaUsername    string    `json:"qiita_username"`
 	SkillsLanguages  string    `json:"skills_languages"`
-	SkillsFrameworks string    `json:"skills_frameworks"`
-	CreatedAt        time.Time `json:"created_at"`
+	SkillsFrameworks    string    `json:"skills_frameworks"`
+	OnboardingCompleted bool      `json:"onboarding_completed" gorm:"default:false"`
+	CreatedAt           time.Time `json:"created_at"`
 	UpdatedAt        time.Time `json:"updated_at"`
 }

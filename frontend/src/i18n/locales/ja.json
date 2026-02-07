@@ -586,5 +586,24 @@
     "noSteps": "ステップがまだありません",
     "addFirstStep": "最初のステップを追加",
     "stepsReordered": "ステップの順序を変更しました"
+  },
+  "onboarding": {
+    "welcomeTitle": "DevSyncへようこそ！",
+    "welcomeDescription": "まずはプロフィールを設定しましょう。",
+    "namePlaceholder": "表示名を入力",
+    "bioPlaceholder": "自己紹介を入力",
+    "skillsTitle": "スキルを選択",
+    "skillsDescription": "使用している言語やフレームワークを選択してください。",
+    "integrationsTitle": "外部サービス連携",
+    "integrationsDescription": "お使いのサービスを連携して、活動を自動で記録しましょう。（任意）",
+    "githubDescription": "コントリビューション・リポジトリ・言語統計を同期",
+    "zennDescription": "Zennの記事を同期",
+    "qiitaDescription": "Qiitaの記事を同期",
+    "completeTitle": "セットアップ完了！",
+    "completeDescription": "準備が整いました。ダッシュボードで活動を始めましょう。",
+    "next": "次へ",
+    "back": "戻る",
+    "skip": "スキップ",
+    "goToDashboard": "ダッシュボードへ"
   }
 }

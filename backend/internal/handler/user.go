@@ -71,11 +71,12 @@ func (h *UserHandler) Update(c *gin.Context) {
 	}
 
 	var input struct {
-		Name             string  `json:"name"`
-		Bio              string  `json:"bio"`
-		AvatarURL        string  `json:"avatar_url"`
-		SkillsLanguages  *string `json:"skills_languages"`
-		SkillsFrameworks *string `json:"skills_frameworks"`
+		Name                string  `json:"name"`
+		Bio                 string  `json:"bio"`
+		AvatarURL           string  `json:"avatar_url"`
+		SkillsLanguages     *string `json:"skills_languages"`
+		SkillsFrameworks    *string `json:"skills_frameworks"`
+		OnboardingCompleted *bool   `json:"onboarding_completed"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -92,6 +93,9 @@ func (h *UserHandler) Update(c *gin.Context) {
 	}
 	if input.SkillsFrameworks != nil {
 		existing.SkillsFrameworks = *input.SkillsFrameworks
+	}
+	if input.OnboardingCompleted != nil {
+		existing.OnboardingCompleted = *input.OnboardingCompleted
 	}
 
 	if err := h.repo.Update(existing); err != nil {

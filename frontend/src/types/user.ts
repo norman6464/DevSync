@@ -11,6 +11,7 @@ export interface User {
   qiita_username: string;
   skills_languages: string;
   skills_frameworks: string;
+  onboarding_completed: boolean;
   created_at: string;
   updated_at: string;
 }

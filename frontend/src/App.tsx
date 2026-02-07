@@ -26,6 +26,7 @@ import QAPage from './pages/QAPage';
 import QADetailPage from './pages/QADetailPage';
 import RoadmapsPage from './pages/RoadmapsPage';
 import RoadmapDetailPage from './pages/RoadmapDetailPage';
+import OnboardingPage from './pages/OnboardingPage';
 
 export default function App() {
   const { isAuthenticated, loadUser } = useAuthStore();
@@ -56,6 +57,7 @@ export default function App() {
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/github/callback" element={<GitHubCallbackPage />} />
       <Route element={<ProtectedRoute />}>
+        <Route path="/onboarding" element={<OnboardingPage />} />
         <Route element={<Layout />}>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/profile/:id" element={<ProfilePage />} />

@@ -50,7 +50,13 @@ export default function GitHubCallbackPage() {
         .then(async () => {
           await loadUser();
           toast.success('GitHub connected successfully!');
-          navigate('/settings');
+          const onboardingRedirect = localStorage.getItem('onboarding_redirect');
+          if (onboardingRedirect) {
+            localStorage.removeItem('onboarding_redirect');
+            navigate('/onboarding');
+          } else {
+            navigate('/settings');
+          }
         })
         .catch(() => {
           setError('Failed to connect GitHub');
