@@ -26,6 +26,7 @@ import QAPage from './pages/QAPage';
 import QADetailPage from './pages/QADetailPage';
 import RoadmapsPage from './pages/RoadmapsPage';
 import RoadmapDetailPage from './pages/RoadmapDetailPage';
+import NotificationsPage from './pages/NotificationsPage';
 import OnboardingPage from './pages/OnboardingPage';
 
 export default function App() {
@@ -68,6 +69,7 @@ export default function App() {
           <Route path="/rankings" element={<RankingsPage />} />
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/chat/:userId" element={<ChatPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/posts/:id" element={<PostDetailPage />} />
           <Route path="/goals" element={<GoalsPage />} />
           <Route path="/reports" element={<ReportsPage />} />

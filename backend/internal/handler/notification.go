@@ -20,16 +20,27 @@ func (h *NotificationHandler) GetAll(c *gin.Context) {
 	userID := c.GetUint("userID")
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
+	notificationType := c.DefaultQuery("type", "")
 	if page < 1 {
 		page = 1
 	}
 
-	notifications, err := h.repo.FindByUserID(userID, page, limit)
+	notifications, err := h.repo.FindByUserID(userID, page, limit, notificationType)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, notifications)
+
+	total, err := h.repo.CountByUserID(userID, notificationType)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"notifications": notifications,
+		"total":         total,
+	})
 }
 
 func (h *NotificationHandler) GetUnreadCount(c *gin.Context) {
