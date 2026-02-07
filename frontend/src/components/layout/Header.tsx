@@ -85,12 +85,12 @@ export default function Header() {
         </button>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-1 ml-2">
+        <nav className="hidden md:flex items-center gap-1 ml-2 overflow-x-auto scrollbar-hide">
           {navItems.map(({ path, key }) => (
             <Link
               key={path}
               to={path}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${isActive(path)}`}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${isActive(path)}`}
             >
               {t(key)}
             </Link>
