@@ -39,37 +39,71 @@ body {
   color: var(--text-primary);
 }
 
-/* Theme-aware utility classes */
+/* ============================================
+   Light mode overrides - Gray backgrounds
+   ============================================ */
 .light .bg-gray-950 { background-color: #ffffff; }
 .light .bg-gray-900 { background-color: #ffffff; }
 .light .bg-gray-800 { background-color: #f9fafb; }
+.light .bg-gray-700 { background-color: #f3f4f6; }
+.light .bg-gray-600 { background-color: #e5e7eb; }
+
+/* Gray backgrounds with opacity */
+.light .bg-gray-900\/80 { background-color: rgba(255, 255, 255, 0.85); }
+.light .bg-gray-900\/95 { background-color: rgba(255, 255, 255, 0.95); }
+.light .bg-gray-900\/50 { background-color: rgba(255, 255, 255, 0.5); }
 .light .bg-gray-800\/50 { background-color: rgba(249, 250, 251, 0.5); }
 .light .bg-gray-800\/30 { background-color: rgba(249, 250, 251, 0.3); }
-.light .bg-gray-700 { background-color: #f3f4f6; }
+.light .bg-gray-700\/50 { background-color: rgba(243, 244, 246, 0.5); }
+.light .bg-gray-700\/30 { background-color: rgba(243, 244, 246, 0.3); }
 
+/* ============================================
+   Light mode overrides - Borders
+   ============================================ */
 .light .border-gray-900 { border-color: #e5e7eb; }
 .light .border-gray-800 { border-color: #e5e7eb; }
 .light .border-gray-700 { border-color: #d1d5db; }
 .light .border-gray-700\/50 { border-color: rgba(209, 213, 219, 0.5); }
 .light .border-gray-600 { border-color: #9ca3af; }
+.light .border-gray-500 { border-color: #d1d5db; }
 
+/* ============================================
+   Light mode overrides - Text colors
+   ============================================ */
 .light .text-white { color: #111827; }
+.light .text-white\/70 { color: rgba(17, 24, 39, 0.7); }
 .light .text-gray-100 { color: #1f2937; }
 .light .text-gray-200 { color: #374151; }
 .light .text-gray-300 { color: #4b5563; }
 .light .text-gray-400 { color: #6b7280; }
 .light .text-gray-500 { color: #9ca3af; }
 
+/* ============================================
+   Light mode overrides - Hover states
+   ============================================ */
 .light .hover\:bg-gray-800:hover { background-color: #f3f4f6; }
+.light .hover\:bg-gray-750:hover { background-color: #e5e7eb; }
 .light .hover\:bg-gray-700:hover { background-color: #e5e7eb; }
-.light .hover\:border-gray-600:hover { border-color: #9ca3af; }
+.light .hover\:bg-gray-600:hover { background-color: #d1d5db; }
+.light .hover\:bg-gray-500:hover { background-color: #e5e7eb; }
 .light .hover\:border-gray-700:hover { border-color: #d1d5db; }
+.light .hover\:border-gray-600:hover { border-color: #9ca3af; }
+.light .hover\:border-gray-500:hover { border-color: #9ca3af; }
 .light .hover\:text-white:hover { color: #111827; }
+.light .hover\:text-red-300:hover { color: #fca5a5; }
+.light .hover\:text-amber-300:hover { color: #fde047; }
+.light .hover\:opacity-80:hover { opacity: 0.8; }
 
+/* ============================================
+   Light mode overrides - Focus states
+   ============================================ */
 .light .focus\:ring-gray-700:focus { --tw-ring-color: #d1d5db; }
+.light .focus\:ring-gray-500:focus { --tw-ring-color: #9ca3af; }
 .light .focus\:border-gray-600:focus { border-color: #9ca3af; }
 
-/* Input fields */
+/* ============================================
+   Light mode overrides - Input fields
+   ============================================ */
 .light input,
 .light textarea,
 .light select {
@@ -90,7 +124,9 @@ body {
   outline-color: #3b82f6;
 }
 
-/* Scrollbar theming */
+/* ============================================
+   Light mode overrides - Scrollbar
+   ============================================ */
 .light ::-webkit-scrollbar-track {
   background: #f3f4f6;
 }
@@ -103,19 +139,35 @@ body {
   background: #9ca3af;
 }
 
-/* Keep accent colors consistent */
+/* ============================================
+   Light mode overrides - Accent text colors
+   ============================================ */
+.light .text-blue-300 { color: #2563eb; }
 .light .text-blue-400 { color: #3b82f6; }
 .light .text-blue-500 { color: #2563eb; }
+.light .text-green-300 { color: #16a34a; }
 .light .text-green-400 { color: #22c55e; }
 .light .text-green-500 { color: #16a34a; }
+.light .text-red-300 { color: #dc2626; }
 .light .text-red-400 { color: #f87171; }
 .light .text-red-500 { color: #ef4444; }
+.light .text-yellow-300 { color: #ca8a04; }
 .light .text-yellow-400 { color: #facc15; }
 .light .text-orange-400 { color: #fb923c; }
+.light .text-purple-300 { color: #7c3aed; }
 .light .text-purple-400 { color: #a855f7; }
 .light .text-pink-400 { color: #f472b6; }
+.light .text-amber-400 { color: #f59e0b; }
+.light .text-cyan-400 { color: #06b6d4; }
+.light .text-indigo-400 { color: #6366f1; }
+.light .text-rose-400 { color: #fb7185; }
+.light .text-teal-400 { color: #14b8a6; }
+.light .text-violet-400 { color: #8b5cf6; }
 
-/* Badge backgrounds in light mode */
+/* ============================================
+   Light mode overrides - Badge/tag backgrounds
+   ============================================ */
+/* 10% opacity badges */
 .light .bg-green-500\/10 { background-color: rgba(34, 197, 94, 0.1); }
 .light .bg-blue-500\/10 { background-color: rgba(59, 130, 246, 0.1); }
 .light .bg-purple-500\/10 { background-color: rgba(168, 85, 247, 0.1); }
@@ -129,16 +181,62 @@ body {
 .light .bg-violet-500\/10 { background-color: rgba(139, 92, 246, 0.1); }
 .light .bg-amber-500\/10 { background-color: rgba(245, 158, 11, 0.1); }
 
-/* Hide scrollbar utility */
+/* 20% opacity badges */
+.light .bg-green-500\/20 { background-color: rgba(34, 197, 94, 0.15); }
+.light .bg-blue-600\/20 { background-color: rgba(37, 99, 235, 0.15); }
+.light .bg-purple-600\/20 { background-color: rgba(147, 51, 234, 0.15); }
+.light .bg-red-500\/20 { background-color: rgba(239, 68, 68, 0.15); }
+.light .bg-yellow-500\/20 { background-color: rgba(234, 179, 8, 0.15); }
+
+/* Badge/tag borders with opacity */
+.light .border-green-500\/30 { border-color: rgba(34, 197, 94, 0.3); }
+.light .border-blue-500\/50 { border-color: rgba(59, 130, 246, 0.5); }
+.light .border-blue-500\/20 { border-color: rgba(59, 130, 246, 0.2); }
+.light .border-purple-500\/50 { border-color: rgba(147, 51, 234, 0.5); }
+.light .border-red-400\/30 { border-color: rgba(248, 113, 113, 0.3); }
+.light .border-red-500\/30 { border-color: rgba(239, 68, 68, 0.3); }
+.light .hover\:border-red-400\/50:hover { border-color: rgba(248, 113, 113, 0.5); }
+
+/* ============================================
+   Light mode overrides - Markdown prose
+   ============================================ */
+.light .prose-invert {
+  --tw-prose-body: #374151;
+  --tw-prose-headings: #111827;
+  --tw-prose-lead: #4b5563;
+  --tw-prose-links: #2563eb;
+  --tw-prose-bold: #111827;
+  --tw-prose-counters: #6b7280;
+  --tw-prose-bullets: #9ca3af;
+  --tw-prose-hr: #e5e7eb;
+  --tw-prose-quotes: #111827;
+  --tw-prose-quote-borders: #e5e7eb;
+  --tw-prose-captions: #6b7280;
+  --tw-prose-code: #111827;
+  --tw-prose-pre-code: #e5e7eb;
+  --tw-prose-pre-bg: #1f2937;
+  --tw-prose-th-borders: #d1d5db;
+  --tw-prose-td-borders: #e5e7eb;
+}
+
+/* ============================================
+   Light mode overrides - Shadow
+   ============================================ */
+.light .shadow-lg {
+  --tw-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+.light .shadow-sm {
+  --tw-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* ============================================
+   Utility classes
+   ============================================ */
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
-}
-
-/* Shadow adjustments */
-.light .shadow-lg {
-  --tw-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
 }
