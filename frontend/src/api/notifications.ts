@@ -1,8 +1,15 @@
 import client from './client';
 import type { Notification } from '../types/notification';
 
-export const getNotifications = (page = 1, limit = 20) =>
-  client.get<Notification[]>('/notifications', { params: { page, limit } });
+interface NotificationsResponse {
+  notifications: Notification[];
+  total: number;
+}
+
+export const getNotifications = (page = 1, limit = 20, type?: string) =>
+  client.get<NotificationsResponse>('/notifications', {
+    params: { page, limit, ...(type && { type }) },
+  });
 
 export const getUnreadCount = () =>
   client.get<{ count: number }>('/notifications/unread-count');
