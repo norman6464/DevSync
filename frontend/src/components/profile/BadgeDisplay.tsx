@@ -1,3 +1,4 @@
+import { Sprout, Monitor, Swords, Crown, Trophy, Flame, Zap, PenLine, FileText, Heart, Star, Handshake, Megaphone, StarIcon, Medal, type LucideIcon } from 'lucide-react';
 import type { GitHubContribution } from '../../types/github';
 import type { Post } from '../../types/post';
 
@@ -12,7 +13,7 @@ interface Badge {
   id: string;
   name: string;
   description: string;
-  icon: string;
+  Icon: LucideIcon;
   color: string;
   bgColor: string;
   earned: boolean;
@@ -66,7 +67,7 @@ export default function BadgeDisplay({
       id: 'first-commit',
       name: 'First Commit',
       description: 'Made your first contribution',
-      icon: '🌱',
+      Icon: Sprout,
       color: 'text-green-400',
       bgColor: 'bg-green-500/10 border-green-500/30',
       earned: totalContributions >= 1,
@@ -75,7 +76,7 @@ export default function BadgeDisplay({
       id: 'contributor',
       name: 'Contributor',
       description: '50+ contributions',
-      icon: '💻',
+      Icon: Monitor,
       color: 'text-blue-400',
       bgColor: 'bg-blue-500/10 border-blue-500/30',
       earned: totalContributions >= 50,
@@ -84,7 +85,7 @@ export default function BadgeDisplay({
       id: 'code-warrior',
       name: 'Code Warrior',
       description: '200+ contributions',
-      icon: '⚔️',
+      Icon: Swords,
       color: 'text-purple-400',
       bgColor: 'bg-purple-500/10 border-purple-500/30',
       earned: totalContributions >= 200,
@@ -93,7 +94,7 @@ export default function BadgeDisplay({
       id: 'commit-master',
       name: 'Commit Master',
       description: '500+ contributions',
-      icon: '👑',
+      Icon: Crown,
       color: 'text-yellow-400',
       bgColor: 'bg-yellow-500/10 border-yellow-500/30',
       earned: totalContributions >= 500,
@@ -102,7 +103,7 @@ export default function BadgeDisplay({
       id: 'legend',
       name: 'Legend',
       description: '1000+ contributions',
-      icon: '🏆',
+      Icon: Trophy,
       color: 'text-orange-400',
       bgColor: 'bg-orange-500/10 border-orange-500/30',
       earned: totalContributions >= 1000,
@@ -113,7 +114,7 @@ export default function BadgeDisplay({
       id: 'week-streak',
       name: 'Week Warrior',
       description: '7-day streak',
-      icon: '🔥',
+      Icon: Flame,
       color: 'text-orange-400',
       bgColor: 'bg-orange-500/10 border-orange-500/30',
       earned: streak >= 7,
@@ -122,7 +123,7 @@ export default function BadgeDisplay({
       id: 'month-streak',
       name: 'Consistency King',
       description: '30-day streak',
-      icon: '⚡',
+      Icon: Zap,
       color: 'text-yellow-400',
       bgColor: 'bg-yellow-500/10 border-yellow-500/30',
       earned: streak >= 30,
@@ -133,7 +134,7 @@ export default function BadgeDisplay({
       id: 'first-post',
       name: 'Writer',
       description: 'Published first post',
-      icon: '✍️',
+      Icon: PenLine,
       color: 'text-cyan-400',
       bgColor: 'bg-cyan-500/10 border-cyan-500/30',
       earned: totalPosts >= 1,
@@ -142,7 +143,7 @@ export default function BadgeDisplay({
       id: 'blogger',
       name: 'Blogger',
       description: '10+ posts',
-      icon: '📝',
+      Icon: FileText,
       color: 'text-indigo-400',
       bgColor: 'bg-indigo-500/10 border-indigo-500/30',
       earned: totalPosts >= 10,
@@ -153,7 +154,7 @@ export default function BadgeDisplay({
       id: 'liked',
       name: 'Liked',
       description: 'Received 10+ likes',
-      icon: '❤️',
+      Icon: Heart,
       color: 'text-pink-400',
       bgColor: 'bg-pink-500/10 border-pink-500/30',
       earned: totalLikes >= 10,
@@ -162,7 +163,7 @@ export default function BadgeDisplay({
       id: 'popular',
       name: 'Popular',
       description: 'Received 50+ likes',
-      icon: '🌟',
+      Icon: Star,
       color: 'text-rose-400',
       bgColor: 'bg-rose-500/10 border-rose-500/30',
       earned: totalLikes >= 50,
@@ -173,7 +174,7 @@ export default function BadgeDisplay({
       id: 'friendly',
       name: 'Friendly',
       description: 'Following 5+ developers',
-      icon: '🤝',
+      Icon: Handshake,
       color: 'text-teal-400',
       bgColor: 'bg-teal-500/10 border-teal-500/30',
       earned: followingCount >= 5,
@@ -182,7 +183,7 @@ export default function BadgeDisplay({
       id: 'influencer',
       name: 'Influencer',
       description: '10+ followers',
-      icon: '📢',
+      Icon: Megaphone,
       color: 'text-violet-400',
       bgColor: 'bg-violet-500/10 border-violet-500/30',
       earned: followerCount >= 10,
@@ -191,7 +192,7 @@ export default function BadgeDisplay({
       id: 'star',
       name: 'Rising Star',
       description: '50+ followers',
-      icon: '⭐',
+      Icon: StarIcon,
       color: 'text-amber-400',
       bgColor: 'bg-amber-500/10 border-amber-500/30',
       earned: followerCount >= 50,
@@ -237,7 +238,7 @@ export default function BadgeDisplay({
                   className={`group relative px-3 py-2 rounded-lg border ${badge.bgColor} cursor-pointer transition-all hover:scale-105`}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-lg">{badge.icon}</span>
+                    <badge.Icon className={`w-5 h-5 ${badge.color}`} />
                     <span className={`text-sm font-medium ${badge.color}`}>{badge.name}</span>
                   </div>
                   {/* Tooltip */}
@@ -263,7 +264,7 @@ export default function BadgeDisplay({
                   className="group relative px-3 py-2 rounded-lg border border-gray-700/50 bg-gray-800/30 cursor-pointer transition-all hover:border-gray-600"
                 >
                   <div className="flex items-center gap-2 opacity-40">
-                    <span className="text-lg grayscale">{badge.icon}</span>
+                    <badge.Icon className="w-5 h-5 text-gray-500" />
                     <span className="text-sm font-medium text-gray-500">{badge.name}</span>
                   </div>
                   {/* Tooltip */}
@@ -281,7 +282,7 @@ export default function BadgeDisplay({
         {/* Empty State */}
         {earnedBadges.length === 0 && (
           <div className="text-center text-gray-500 py-4">
-            <div className="text-3xl mb-2">🏅</div>
+            <Medal className="w-8 h-8 text-gray-500 mx-auto mb-2" />
             <p className="text-sm">Start contributing to earn badges!</p>
           </div>
         )}

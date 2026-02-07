@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Monitor, Rocket, Target, FolderOpen, FileText, type LucideIcon } from 'lucide-react';
 import { type GoalCategory, type GoalStatus, type LearningGoal } from '../api/goals';
 import { useGoals } from '../hooks';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
-const CATEGORIES: { value: GoalCategory; label: string; icon: string }[] = [
-  { value: 'language', label: 'goals.categoryLanguage', icon: '💻' },
-  { value: 'framework', label: 'goals.categoryFramework', icon: '🚀' },
-  { value: 'skill', label: 'goals.categorySkill', icon: '🎯' },
-  { value: 'project', label: 'goals.categoryProject', icon: '📁' },
-  { value: 'other', label: 'goals.categoryOther', icon: '📝' },
+const CATEGORIES: { value: GoalCategory; label: string; icon: string; Icon: LucideIcon }[] = [
+  { value: 'language', label: 'goals.categoryLanguage', icon: '💻', Icon: Monitor },
+  { value: 'framework', label: 'goals.categoryFramework', icon: '🚀', Icon: Rocket },
+  { value: 'skill', label: 'goals.categorySkill', icon: '🎯', Icon: Target },
+  { value: 'project', label: 'goals.categoryProject', icon: '📁', Icon: FolderOpen },
+  { value: 'other', label: 'goals.categoryOther', icon: '📝', Icon: FileText },
 ];
 
 export default function GoalsPage() {
@@ -302,7 +303,7 @@ interface GoalCardProps {
   onDelete: (id: number) => void;
   onProgressChange: (goal: LearningGoal, progress: number) => void;
   onStatusChange: (goal: LearningGoal, status: GoalStatus) => void;
-  getCategoryInfo: (cat: GoalCategory) => { value: GoalCategory; label: string; icon: string };
+  getCategoryInfo: (cat: GoalCategory) => { value: GoalCategory; label: string; icon: string; Icon: LucideIcon };
   getStatusColor: (status: GoalStatus) => string;
   t: (key: string) => string;
 }
@@ -318,12 +319,13 @@ function GoalCard({
   t,
 }: GoalCardProps) {
   const categoryInfo = getCategoryInfo(goal.category);
+  const CategoryIcon = categoryInfo.Icon;
 
   return (
     <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3 min-w-0 flex-1">
-          <span className="text-2xl">{categoryInfo.icon}</span>
+          <CategoryIcon className="w-6 h-6 text-purple-400 flex-shrink-0 mt-0.5" />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-medium">{goal.title}</h3>

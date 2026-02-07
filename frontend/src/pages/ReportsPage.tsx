@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { BarChart3, FileText, Users, Target, MessageCircle, Heart, type LucideIcon } from 'lucide-react';
 import { useReport } from '../hooks';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
@@ -78,25 +79,25 @@ export default function ReportsPage() {
             label={t('reports.contributions')}
             value={report.total_contributions}
             diff={comparison?.contributions_diff || 0}
-            icon="📊"
+            icon={BarChart3}
           />
           <StatCard
             label={t('reports.posts')}
             value={report.posts_created}
             diff={comparison?.posts_diff || 0}
-            icon="📝"
+            icon={FileText}
           />
           <StatCard
             label={t('reports.newFollowers')}
             value={report.new_followers}
             diff={comparison?.followers_diff || 0}
-            icon="👥"
+            icon={Users}
           />
           <StatCard
             label={t('reports.goalsCompleted')}
             value={report.goals_completed}
             diff={comparison?.goals_diff || 0}
-            icon="🎯"
+            icon={Target}
           />
         </div>
       )}
@@ -106,21 +107,21 @@ export default function ReportsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
-              <span>💬</span>
+              <MessageCircle className="w-5 h-5 text-gray-400" />
               <span className="text-sm text-gray-400">{t('reports.comments')}</span>
             </div>
             <p className="text-2xl font-bold">{report.comments_created}</p>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
-              <span>❤️</span>
+              <Heart className="w-5 h-5 text-gray-400" />
               <span className="text-sm text-gray-400">{t('reports.likesReceived')}</span>
             </div>
             <p className="text-2xl font-bold">{report.likes_received}</p>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
-              <span>💬</span>
+              <MessageCircle className="w-5 h-5 text-gray-400" />
               <span className="text-sm text-gray-400">{t('reports.messages')}</span>
             </div>
             <p className="text-2xl font-bold">{report.messages_exchanged}</p>
@@ -265,10 +266,10 @@ interface StatCardProps {
   label: string;
   value: number;
   diff: number;
-  icon: string;
+  icon: LucideIcon;
 }
 
-function StatCard({ label, value, diff, icon }: StatCardProps) {
+function StatCard({ label, value, diff, icon: Icon }: StatCardProps) {
   const getTrendIcon = (d: number) => {
     if (d > 0) return '↑';
     if (d < 0) return '↓';
@@ -284,7 +285,7 @@ function StatCard({ label, value, diff, icon }: StatCardProps) {
   return (
     <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
       <div className="flex items-center gap-2 mb-2">
-        <span>{icon}</span>
+        <Icon className="w-5 h-5 text-gray-400" />
         <span className="text-sm text-gray-400">{label}</span>
       </div>
       <div className="flex items-end gap-2">

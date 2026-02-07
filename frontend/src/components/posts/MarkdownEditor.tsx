@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Link2, Image } from 'lucide-react';
 import { uploadImage } from '../../api/posts';
 
 interface MarkdownEditorProps {
@@ -152,8 +153,8 @@ export default function MarkdownEditor({
     { action: 'italic', icon: 'I', title: 'Italic', className: 'italic' },
     { action: 'strikethrough', icon: 'S', title: 'Strikethrough', className: 'line-through' },
     { action: 'divider' },
-    { action: 'link', icon: '🔗', title: 'Link' },
-    { action: 'image', icon: '🖼️', title: 'Image' },
+    { action: 'link', icon: <Link2 className="w-3.5 h-3.5" />, title: 'Link' },
+    { action: 'image', icon: <Image className="w-3.5 h-3.5" />, title: 'Image' },
     { action: 'divider' },
     { action: 'code', icon: '<>', title: 'Inline Code' },
     { action: 'codeblock', icon: '{}', title: 'Code Block' },

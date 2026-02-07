@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { BookOpen, Video, FileText, GraduationCap, BookMarked, Mic, Wrench, Pin, type LucideIcon } from 'lucide-react';
 import type { LearningResource, ResourceCategory, ResourceDifficulty } from '../../types/resource';
 import Avatar from '../common/Avatar';
 
@@ -18,15 +19,15 @@ interface ResourceCardProps {
   showUser?: boolean;
 }
 
-const categoryIcons: Record<ResourceCategory, string> = {
-  book: '📚',
-  video: '🎥',
-  article: '📄',
-  course: '🎓',
-  tutorial: '📝',
-  podcast: '🎙️',
-  tool: '🔧',
-  other: '📌',
+const categoryIcons: Record<ResourceCategory, LucideIcon> = {
+  book: BookOpen,
+  video: Video,
+  article: FileText,
+  course: GraduationCap,
+  tutorial: BookMarked,
+  podcast: Mic,
+  tool: Wrench,
+  other: Pin,
 };
 
 const difficultyColors: Record<ResourceDifficulty, string> = {
@@ -86,7 +87,7 @@ export default function ResourceCard({
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">{categoryIcons[resource.category]}</span>
+            {(() => { const Icon = categoryIcons[resource.category]; return <Icon className="w-6 h-6 text-gray-400" />; })()}
             <div>
               <span className="text-xs text-gray-400 uppercase">
                 {t(`resources.categories.${resource.category}`)}
