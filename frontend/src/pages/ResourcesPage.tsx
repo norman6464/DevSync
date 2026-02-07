@@ -37,7 +37,7 @@ export default function ResourcesPage() {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -51,7 +51,7 @@ export default function ResourcesPage() {
         <button
           onClick={() => setTab('explore')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            tab === 'explore' ? 'bg-green-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
+            tab === 'explore' ? 'bg-gray-700 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
           }`}
         >
           {t('resources.explore')}
@@ -59,7 +59,7 @@ export default function ResourcesPage() {
         <button
           onClick={() => setTab('saved')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            tab === 'saved' ? 'bg-green-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
+            tab === 'saved' ? 'bg-gray-700 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
           }`}
         >
           {t('resources.savedTab')}
@@ -67,7 +67,7 @@ export default function ResourcesPage() {
         <button
           onClick={() => setTab('mine')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            tab === 'mine' ? 'bg-green-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
+            tab === 'mine' ? 'bg-gray-700 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
           }`}
         >
           {t('resources.myResources')}
@@ -170,7 +170,7 @@ export default function ResourcesPage() {
           {tab !== 'saved' && (
             <button
               onClick={() => setShowForm(true)}
-              className="mt-4 px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors"
+              className="mt-4 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
             >
               {t('resources.addFirstResource')}
             </button>

@@ -36,7 +36,7 @@ export default function SearchPage() {
         </div>
         <button
           type="submit"
-          className="px-5 py-2.5 bg-green-600 hover:bg-green-500 text-white rounded-lg font-medium text-sm transition-colors"
+          className="px-5 py-2.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium text-sm transition-colors"
         >
           {t('common.search')}
         </button>
