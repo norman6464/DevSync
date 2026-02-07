@@ -30,7 +30,7 @@ export default function Header() {
   };
 
   const isActive = (path: string) =>
-    location.pathname === path ? 'text-white bg-gray-800' : 'text-gray-400 hover:text-white';
+    location.pathname === path ? 'text-white bg-gray-800' : 'text-gray-300 hover:text-white';
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -64,7 +64,7 @@ export default function Header() {
 
         {/* Mobile hamburger button */}
         <button
-          className="md:hidden p-2 text-gray-400 hover:text-white transition-colors rounded-md"
+          className="md:hidden p-2 text-gray-300 hover:text-white transition-colors rounded-md"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? t('common.close') : t('common.menu')}
           aria-expanded={mobileOpen}
@@ -101,7 +101,7 @@ export default function Header() {
 
           <Link
             to="/settings"
-            className="p-2 text-gray-400 hover:text-white transition-colors rounded-md"
+            className="p-2 text-gray-300 hover:text-white transition-colors rounded-md"
             title={t('nav.settings')}
             aria-label={t('nav.settings')}
           >
@@ -123,7 +123,7 @@ export default function Header() {
 
           <button
             onClick={handleLogout}
-            className="p-2 text-gray-400 hover:text-white transition-colors rounded-md"
+            className="p-2 text-gray-300 hover:text-white transition-colors rounded-md"
             title={t('nav.signOut')}
             aria-label={t('nav.signOut')}
           >
