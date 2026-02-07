@@ -24,6 +24,8 @@ import ResourcesPage from './pages/ResourcesPage';
 import BookReviewsPage from './pages/BookReviewsPage';
 import QAPage from './pages/QAPage';
 import QADetailPage from './pages/QADetailPage';
+import RoadmapsPage from './pages/RoadmapsPage';
+import RoadmapDetailPage from './pages/RoadmapDetailPage';
 
 export default function App() {
   const { isAuthenticated, loadUser } = useAuthStore();
@@ -72,6 +74,8 @@ export default function App() {
           <Route path="/book-reviews" element={<BookReviewsPage />} />
           <Route path="/qa" element={<QAPage />} />
           <Route path="/qa/:id" element={<QADetailPage />} />
+          <Route path="/roadmaps" element={<RoadmapsPage />} />
+          <Route path="/roadmaps/:id" element={<RoadmapDetailPage />} />
         </Route>
       </Route>
     </Routes>
