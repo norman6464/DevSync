@@ -52,6 +52,9 @@ func main() {
 		log.Fatalf("failed to run migrations: %v", err)
 	}
 
+	// Mark existing users as onboarding completed
+	db.Model(&model.User{}).Where("onboarding_completed = ?", false).Update("onboarding_completed", true)
+
 	// Start WebSocket hub
 	hub := service.NewHub()
 	go hub.Run()
