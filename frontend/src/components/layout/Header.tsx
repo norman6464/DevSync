@@ -30,7 +30,9 @@ export default function Header() {
   };
 
   const isActive = (path: string) =>
-    location.pathname === path ? 'text-white bg-gray-800' : 'text-gray-300 hover:text-white';
+    location.pathname === path
+      ? 'text-white bg-gray-800'
+      : 'text-white/70 hover:text-white';
 
   // Close mobile menu on route change
   useEffect(() => {
