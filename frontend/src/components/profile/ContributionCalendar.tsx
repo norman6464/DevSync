@@ -1,11 +1,12 @@
 import type { GitHubContribution } from '../../types/github';
+import { useThemeStore } from '../../store/themeStore';
 
 interface ContributionCalendarProps {
   contributions: GitHubContribution[];
 }
 
-function getColor(count: number): string {
-  if (count === 0) return '#1e293b';
+function getColor(count: number, resolvedTheme: 'dark' | 'light'): string {
+  if (count === 0) return resolvedTheme === 'dark' ? '#1e293b' : '#ebedf0';
   if (count <= 3) return '#166534';
   if (count <= 6) return '#16a34a';
   if (count <= 9) return '#22c55e';
@@ -13,6 +14,7 @@ function getColor(count: number): string {
 }
 
 export default function ContributionCalendar({ contributions }: ContributionCalendarProps) {
+  const resolvedTheme = useThemeStore((state) => state.resolvedTheme);
   const contributionMap = new Map(
     contributions.map((c) => [c.date.split('T')[0], c.count])
   );
@@ -102,7 +104,7 @@ export default function ContributionCalendar({ contributions }: ContributionCale
                       key={di}
                       title={`${day.date}: ${day.count} contributions`}
                       className="w-3 h-3 rounded-sm"
-                      style={{ backgroundColor: getColor(day.count) }}
+                      style={{ backgroundColor: getColor(day.count, resolvedTheme) }}
                     />
                   ))}
                 </div>
