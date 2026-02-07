@@ -85,7 +85,7 @@ export default function ResourcesPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                 placeholder={t('resources.searchPlaceholder')}
-                className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
               />
               <button
                 onClick={handleSearch}
@@ -98,7 +98,7 @@ export default function ResourcesPage() {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value as ResourceCategory | '')}
-            className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-gray-500 focus:border-transparent"
           >
             <option value="">{t('resources.allCategories')}</option>
             {categories.slice(1).map(cat => (
@@ -110,7 +110,7 @@ export default function ResourcesPage() {
           <select
             value={difficultyFilter}
             onChange={(e) => setDifficultyFilter(e.target.value as ResourceDifficulty | '')}
-            className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-gray-500 focus:border-transparent"
           >
             <option value="">{t('resources.allDifficulties')}</option>
             {difficulties.slice(1).map(diff => (

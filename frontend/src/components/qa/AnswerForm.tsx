@@ -28,7 +28,7 @@ export default function AnswerForm({ initialBody = '', onSubmit, onCancel, loadi
         onChange={(e) => setBody(e.target.value)}
         required
         rows={isEdit ? 4 : 6}
-        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent resize-none"
         placeholder={t('qa.answerPlaceholder')}
       />
       <div className="flex gap-3 justify-end">
@@ -44,7 +44,7 @@ export default function AnswerForm({ initialBody = '', onSubmit, onCancel, loadi
         <button
           type="submit"
           disabled={loading || !body.trim()}
-          className="px-6 py-2 bg-green-600 hover:bg-green-500 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+          className="px-6 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
         >
           {loading
             ? t('common.saving')

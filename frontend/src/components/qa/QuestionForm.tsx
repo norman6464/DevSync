@@ -46,7 +46,7 @@ export default function QuestionForm({ question, onSubmit, onCancel, loading }: 
           onChange={(e) => setTitle(e.target.value)}
           required
           maxLength={500}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
           placeholder={t('qa.questionTitlePlaceholder')}
         />
       </div>
@@ -61,7 +61,7 @@ export default function QuestionForm({ question, onSubmit, onCancel, loading }: 
           onChange={(e) => setBody(e.target.value)}
           required
           rows={8}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent resize-none"
           placeholder={t('qa.questionBodyPlaceholder')}
         />
       </div>
@@ -75,7 +75,7 @@ export default function QuestionForm({ question, onSubmit, onCancel, loading }: 
           type="text"
           value={tagsInput}
           onChange={(e) => setTagsInput(e.target.value)}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
           placeholder={t('qa.tagsPlaceholder')}
         />
         <p className="text-xs text-gray-500 mt-1">{t('qa.tagsHint')}</p>
@@ -93,7 +93,7 @@ export default function QuestionForm({ question, onSubmit, onCancel, loading }: 
         <button
           type="submit"
           disabled={loading || !title.trim() || !body.trim()}
-          className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-500 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+          className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
         >
           {loading ? t('common.saving') : t('common.save')}
         </button>

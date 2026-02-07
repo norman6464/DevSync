@@ -87,7 +87,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
           <select
             value={githubRepoId || ''}
             onChange={(e) => e.target.value && handleRepoSelect(parseInt(e.target.value))}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-gray-500 focus:border-transparent"
           >
             <option value="">{t('projects.selectRepo')}</option>
             {repos.map(repo => (
@@ -110,7 +110,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
           onChange={(e) => setTitle(e.target.value)}
           required
           maxLength={200}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
           placeholder={t('projects.titlePlaceholder')}
         />
       </div>
@@ -124,7 +124,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent resize-none"
           placeholder={t('projects.descriptionPlaceholder')}
         />
       </div>
@@ -140,7 +140,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
             value={techStackInput}
             onChange={(e) => setTechStackInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTech())}
-            className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
             placeholder={t('projects.techStackPlaceholder')}
           />
           <button
@@ -184,7 +184,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
             type="url"
             value={demoUrl}
             onChange={(e) => setDemoUrl(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
             placeholder="https://..."
           />
         </div>
@@ -196,7 +196,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
             type="url"
             value={githubUrl}
             onChange={(e) => setGithubUrl(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
             placeholder="https://github.com/..."
           />
         </div>
@@ -211,7 +211,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
           type="url"
           value={imageUrl}
           onChange={(e) => setImageUrl(e.target.value)}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
           placeholder="https://..."
         />
       </div>
@@ -226,7 +226,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
           value={role}
           onChange={(e) => setRole(e.target.value)}
           maxLength={100}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
           placeholder={t('projects.rolePlaceholder')}
         />
       </div>
@@ -241,7 +241,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-gray-500 focus:border-transparent"
           />
         </div>
         <div>
@@ -252,7 +252,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-gray-500 focus:border-transparent"
           />
         </div>
       </div>
@@ -264,7 +264,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
           id="featured"
           checked={featured}
           onChange={(e) => setFeatured(e.target.checked)}
-          className="w-4 h-4 rounded bg-gray-700 border-gray-600 text-green-500 focus:ring-green-500"
+          className="w-4 h-4 rounded bg-gray-700 border-gray-600 text-green-500 focus:ring-gray-500"
         />
         <label htmlFor="featured" className="text-sm text-gray-300">
           {t('projects.markFeatured')}
@@ -283,7 +283,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
         <button
           type="submit"
           disabled={loading || !title.trim()}
-          className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-500 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+          className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
         >
           {loading ? t('common.saving') : t('common.save')}
         </button>
