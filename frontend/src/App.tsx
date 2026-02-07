@@ -22,6 +22,8 @@ import ReportsPage from './pages/ReportsPage';
 import ProjectsPage from './pages/ProjectsPage';
 import ResourcesPage from './pages/ResourcesPage';
 import BookReviewsPage from './pages/BookReviewsPage';
+import QAPage from './pages/QAPage';
+import QADetailPage from './pages/QADetailPage';
 
 export default function App() {
   const { isAuthenticated, loadUser } = useAuthStore();
@@ -68,6 +70,8 @@ export default function App() {
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/resources" element={<ResourcesPage />} />
           <Route path="/book-reviews" element={<BookReviewsPage />} />
+          <Route path="/qa" element={<QAPage />} />
+          <Route path="/qa/:id" element={<QADetailPage />} />
         </Route>
       </Route>
     </Routes>

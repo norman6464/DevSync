@@ -42,6 +42,10 @@ func main() {
 		&model.ResourceLike{},
 		&model.ResourceSave{},
 		&model.BookReview{},
+		&model.Question{},
+		&model.QuestionVote{},
+		&model.Answer{},
+		&model.AnswerVote{},
 	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}

@@ -11,3 +11,5 @@ export { useProjects } from './useProjects';
 export { useResources } from './useResources';
 export { useFollowList } from './useFollowList';
 export { useNotifications } from './useNotifications';
+export { useQuestions } from './useQuestions';
+export { useQuestionDetail } from './useQuestionDetail';

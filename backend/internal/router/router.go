@@ -40,6 +40,8 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	projectRepo := repository.NewProjectRepository(db)
 	learningResourceRepo := repository.NewLearningResourceRepository(db)
 	bookReviewRepo := repository.NewBookReviewRepository(db)
+	questionRepo := repository.NewQuestionRepository(db)
+	answerRepo := repository.NewAnswerRepository(db)
 
 	// Services
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
@@ -65,6 +67,8 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	projectHandler := handler.NewProjectHandler(projectRepo)
 	learningResourceHandler := handler.NewLearningResourceHandler(learningResourceRepo)
 	bookReviewHandler := handler.NewBookReviewHandler(bookReviewRepo)
+	questionHandler := handler.NewQuestionHandler(questionRepo)
+	answerHandler := handler.NewAnswerHandler(answerRepo, questionRepo)
 
 	// Static file serving for uploads
 	r.Static("/uploads", "./uploads")
@@ -241,6 +245,29 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			resources.POST("/:id/save", learningResourceHandler.SaveResource)
 			resources.DELETE("/:id/save", learningResourceHandler.UnsaveResource)
 			resources.GET("/user/:userId", learningResourceHandler.GetByUserID)
+		}
+
+		// Questions (Q&A)
+		questions := protected.Group("/questions")
+		{
+			questions.POST("", questionHandler.Create)
+			questions.GET("", questionHandler.GetAll)
+			questions.GET("/search", questionHandler.Search)
+			questions.GET("/:id", questionHandler.GetByID)
+			questions.PUT("/:id", questionHandler.Update)
+			questions.DELETE("/:id", questionHandler.Delete)
+			questions.POST("/:id/vote", questionHandler.Vote)
+			questions.DELETE("/:id/vote", questionHandler.RemoveVote)
+			questions.GET("/user/:userId", questionHandler.GetByUserID)
+
+			// Answers (nested under questions)
+			questions.GET("/:id/answers", answerHandler.GetByQuestionID)
+			questions.POST("/:id/answers", answerHandler.Create)
+			questions.PUT("/:id/answers/:answerId", answerHandler.Update)
+			questions.DELETE("/:id/answers/:answerId", answerHandler.Delete)
+			questions.PUT("/:id/answers/:answerId/best", answerHandler.SetBestAnswer)
+			questions.POST("/:id/answers/:answerId/vote", answerHandler.Vote)
+			questions.DELETE("/:id/answers/:answerId/vote", answerHandler.RemoveVote)
 		}
 
 		// Book Reviews
