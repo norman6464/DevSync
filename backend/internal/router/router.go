@@ -42,6 +42,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	bookReviewRepo := repository.NewBookReviewRepository(db)
 	questionRepo := repository.NewQuestionRepository(db)
 	answerRepo := repository.NewAnswerRepository(db)
+	roadmapRepo := repository.NewRoadmapRepository(db)
 
 	// Services
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
@@ -69,6 +70,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	bookReviewHandler := handler.NewBookReviewHandler(bookReviewRepo)
 	questionHandler := handler.NewQuestionHandler(questionRepo)
 	answerHandler := handler.NewAnswerHandler(answerRepo, questionRepo)
+	roadmapHandler := handler.NewRoadmapHandler(roadmapRepo)
 
 	// Static file serving for uploads
 	r.Static("/uploads", "./uploads")
@@ -268,6 +270,24 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			questions.PUT("/:id/answers/:answerId/best", answerHandler.SetBestAnswer)
 			questions.POST("/:id/answers/:answerId/vote", answerHandler.Vote)
 			questions.DELETE("/:id/answers/:answerId/vote", answerHandler.RemoveVote)
+		}
+
+		// Learning Roadmaps
+		roadmaps := protected.Group("/roadmaps")
+		{
+			roadmaps.POST("", roadmapHandler.Create)
+			roadmaps.GET("", roadmapHandler.GetMyRoadmaps)
+			roadmaps.GET("/public", roadmapHandler.GetPublicRoadmaps)
+			roadmaps.GET("/:id", roadmapHandler.GetByID)
+			roadmaps.PUT("/:id", roadmapHandler.Update)
+			roadmaps.DELETE("/:id", roadmapHandler.Delete)
+			roadmaps.POST("/:id/copy", roadmapHandler.CopyRoadmap)
+
+			// Steps
+			roadmaps.POST("/:id/steps", roadmapHandler.CreateStep)
+			roadmaps.PUT("/:id/steps/:stepId", roadmapHandler.UpdateStep)
+			roadmaps.DELETE("/:id/steps/:stepId", roadmapHandler.DeleteStep)
+			roadmaps.PUT("/:id/steps/reorder", roadmapHandler.ReorderSteps)
 		}
 
 		// Book Reviews
