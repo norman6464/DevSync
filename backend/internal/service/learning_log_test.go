@@ -1,0 +1,140 @@
+package service
+
+import (
+	"errors"
+	"testing"
+
+	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/stretchr/testify/assert"
+)
+
+func newTestLearningLogService() (*LearningLogService, *MockLearningLogRepository) {
+	repo := new(MockLearningLogRepository)
+	svc := NewLearningLogService(repo)
+	return svc, repo
+}
+
+// ============================================================
+// Create
+// ============================================================
+
+func TestLearningLogCreate_Success(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	log := &model.LearningLog{Title: "Go勉強", UserID: 1, Duration: 60}
+	repo.On("Create", log).Return(nil)
+
+	err := svc.Create(log)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// Update
+// ============================================================
+
+func TestLearningLogUpdate_Success(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	existing := &model.LearningLog{Title: "Old", Content: "Old Content", UserID: 1, Duration: 30}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	updates := &model.LearningLog{Title: "New", Duration: 60}
+	result, err := svc.Update(1, 1, updates)
+	assert.NoError(t, err)
+	assert.Equal(t, "New", result.Title)
+	assert.Equal(t, 60, result.Duration)
+	assert.Equal(t, "Old Content", result.Content) // 変更なし
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogUpdate_Forbidden(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	existing := &model.LearningLog{UserID: 1}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	updates := &model.LearningLog{Title: "New"}
+	result, err := svc.Update(1, 999, updates)
+	assert.ErrorIs(t, err, ErrForbidden)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogUpdate_NotFound(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	repo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	updates := &model.LearningLog{Title: "New"}
+	result, err := svc.Update(999, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// Delete
+// ============================================================
+
+func TestLearningLogDelete_Success(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	existing := &model.LearningLog{UserID: 1}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Delete", uint(1), uint(1)).Return(nil)
+
+	err := svc.Delete(1, 1)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogDelete_Forbidden(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	existing := &model.LearningLog{UserID: 1}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	err := svc.Delete(1, 999)
+	assert.ErrorIs(t, err, ErrForbidden)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// GetStreakInfo / GetCalendarData
+// ============================================================
+
+func TestLearningLogGetStreakInfo_Success(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	streak := &model.StreakInfo{CurrentStreak: 5, LongestStreak: 10}
+	repo.On("GetStreakInfo", uint(1)).Return(streak, nil)
+
+	result, err := svc.GetStreakInfo(1)
+	assert.NoError(t, err)
+	assert.Equal(t, 5, result.CurrentStreak)
+	assert.Equal(t, 10, result.LongestStreak)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogGetCalendarData_Success(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	entries := []model.CalendarEntry{{Date: "2024-01-01", Count: 3}}
+	repo.On("GetCalendarData", uint(1)).Return(entries, nil)
+
+	result, err := svc.GetCalendarData(1)
+	assert.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, 3, result[0].Count)
+	repo.AssertExpectations(t)
+}
