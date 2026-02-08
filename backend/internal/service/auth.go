@@ -182,7 +182,7 @@ func (s *AuthService) GitHubLogin(ghUser *GitHubUserInfo, accessToken string) (*
 			user.GitHubToken = accessToken
 			user.GitHubUsername = ghUser.Login
 			user.GitHubConnected = true
-			if user.AvatarURL == "" {
+			if ghUser.AvatarURL != "" {
 				user.AvatarURL = ghUser.AvatarURL
 			}
 			s.userRepo.Update(user)
