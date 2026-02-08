@@ -27,6 +27,7 @@ import QADetailPage from './pages/QADetailPage';
 import RoadmapsPage from './pages/RoadmapsPage';
 import RoadmapDetailPage from './pages/RoadmapDetailPage';
 import NotificationsPage from './pages/NotificationsPage';
+import LearningLogsPage from './pages/LearningLogsPage';
 import OnboardingPage from './pages/OnboardingPage';
 import { ToastProvider } from './contexts/ToastContext';
 
@@ -74,6 +75,7 @@ export default function App() {
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/posts/:id" element={<PostDetailPage />} />
           <Route path="/goals" element={<GoalsPage />} />
+          <Route path="/learning-logs" element={<LearningLogsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/resources" element={<ResourcesPage />} />
