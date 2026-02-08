@@ -352,6 +352,7 @@ CREATE TABLE IF NOT EXISTS roadmaps (
     description          TEXT,
     category             TEXT         DEFAULT 'other'::text,
     is_public            BOOLEAN      DEFAULT false,
+    is_template          BOOLEAN      DEFAULT false,
     step_count           BIGINT       DEFAULT 0,
     completed_step_count BIGINT       DEFAULT 0,
     progress             BIGINT       DEFAULT 0,
@@ -361,8 +362,9 @@ CREATE TABLE IF NOT EXISTS roadmaps (
     completed_at         TIMESTAMPTZ,
     CONSTRAINT fk_roadmaps_user FOREIGN KEY (user_id) REFERENCES users (id)
 );
-CREATE INDEX IF NOT EXISTS idx_roadmaps_user_id   ON roadmaps (user_id);
-CREATE INDEX IF NOT EXISTS idx_roadmaps_is_public ON roadmaps (is_public);
+CREATE INDEX IF NOT EXISTS idx_roadmaps_user_id     ON roadmaps (user_id);
+CREATE INDEX IF NOT EXISTS idx_roadmaps_is_public   ON roadmaps (is_public);
+CREATE INDEX IF NOT EXISTS idx_roadmaps_is_template ON roadmaps (is_template);
 
 -- 25. roadmap_steps（CASCADE削除）
 CREATE TABLE IF NOT EXISTS roadmap_steps (

@@ -445,6 +445,7 @@ CREATE TABLE roadmaps (
     description          TEXT,
     category             TEXT         DEFAULT 'other'::text,
     is_public            BOOLEAN      DEFAULT false,
+    is_template          BOOLEAN      DEFAULT false,
     step_count           BIGINT       DEFAULT 0,
     completed_step_count BIGINT       DEFAULT 0,
     progress             BIGINT       DEFAULT 0,
