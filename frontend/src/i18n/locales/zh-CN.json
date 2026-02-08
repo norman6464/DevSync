@@ -698,5 +698,33 @@
     "back": "返回",
     "skip": "跳过",
     "goToDashboard": "前往仪表板"
+  },
+  "streak": {
+    "title": "学习连续记录",
+    "currentStreak": "当前连续",
+    "longestStreak": "最长记录",
+    "totalDays": "总学习天数",
+    "lastLogDate": "最后记录",
+    "days": "天",
+    "daysConsecutive": "天连续",
+    "noStreak": "从今天开始学习吧！",
+    "keepItUp": "继续加油！"
+  },
+  "dailyChallenge": {
+    "title": "每日挑战",
+    "completed": "已完成！",
+    "markComplete": "标记完成",
+    "challenges": {
+      "writeTIL": "在学习日志中写下今天学到的东西",
+      "studyMinutes": "专注学习30分钟",
+      "readArticle": "阅读一篇技术文章",
+      "writeCode": "编写10行以上的新代码",
+      "reviewCode": "审查他人的代码",
+      "learnNewConcept": "学习一个新概念",
+      "shareKnowledge": "在帖子中分享所学内容",
+      "solveAlgorithm": "解决一道算法题",
+      "readDocs": "阅读官方文档",
+      "pairProgram": "与人结对编程"
+    }
   }
 }

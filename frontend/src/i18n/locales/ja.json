@@ -698,5 +698,33 @@
     "back": "戻る",
     "skip": "スキップ",
     "goToDashboard": "ダッシュボードへ"
+  },
+  "streak": {
+    "title": "学習ストリーク",
+    "currentStreak": "現在のストリーク",
+    "longestStreak": "最長記録",
+    "totalDays": "合計学習日数",
+    "lastLogDate": "最終ログ日",
+    "days": "日",
+    "daysConsecutive": "日連続",
+    "noStreak": "今日から学習を始めよう！",
+    "keepItUp": "この調子で頑張ろう！"
+  },
+  "dailyChallenge": {
+    "title": "デイリーチャレンジ",
+    "completed": "完了済み！",
+    "markComplete": "完了にする",
+    "challenges": {
+      "writeTIL": "今日学んだことを学習ログに書こう",
+      "studyMinutes": "30分間集中して学習しよう",
+      "readArticle": "技術記事を1本読もう",
+      "writeCode": "新しいコードを10行以上書こう",
+      "reviewCode": "他の人のコードをレビューしよう",
+      "learnNewConcept": "新しい概念を1つ学ぼう",
+      "shareKnowledge": "学んだことを投稿でシェアしよう",
+      "solveAlgorithm": "アルゴリズム問題を1問解こう",
+      "readDocs": "公式ドキュメントを読もう",
+      "pairProgram": "誰かとペアプログラミングしよう"
+    }
   }
 }

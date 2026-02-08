@@ -698,5 +698,33 @@
     "back": "뒤로",
     "skip": "건너뛰기",
     "goToDashboard": "대시보드로 이동"
+  },
+  "streak": {
+    "title": "학습 스트릭",
+    "currentStreak": "현재 스트릭",
+    "longestStreak": "최장 기록",
+    "totalDays": "총 학습일",
+    "lastLogDate": "마지막 기록",
+    "days": "일",
+    "daysConsecutive": "일 연속",
+    "noStreak": "오늘부터 학습을 시작하세요!",
+    "keepItUp": "이 조자로 계속 가세요!"
+  },
+  "dailyChallenge": {
+    "title": "오늘의 챌린지",
+    "completed": "완료됨!",
+    "markComplete": "완료하기",
+    "challenges": {
+      "writeTIL": "오늘 배운 것을 학습 로그에 기록하세요",
+      "studyMinutes": "30분 동안 집중해서 학습하세요",
+      "readArticle": "기술 기사를 한 편 읽으세요",
+      "writeCode": "새로운 코드를 10줄 이상 작성하세요",
+      "reviewCode": "다른 사람의 코드를 리뷰하세요",
+      "learnNewConcept": "새로운 개념을 하나 배우세요",
+      "shareKnowledge": "배운 내용을 포스트로 공유하세요",
+      "solveAlgorithm": "알고리즘 문제를 한 문제 풀어보세요",
+      "readDocs": "공식 문서를 읽어보세요",
+      "pairProgram": "누군가와 페어 프로그래밍을 하세요"
+    }
   }
 }

@@ -698,5 +698,33 @@
     "back": "Back",
     "skip": "Skip",
     "goToDashboard": "Go to Dashboard"
+  },
+  "streak": {
+    "title": "Learning Streak",
+    "currentStreak": "Current Streak",
+    "longestStreak": "Longest Streak",
+    "totalDays": "Total Days",
+    "lastLogDate": "Last Log",
+    "days": "days",
+    "daysConsecutive": "days in a row",
+    "noStreak": "Start learning today!",
+    "keepItUp": "Keep it up!"
+  },
+  "dailyChallenge": {
+    "title": "Daily Challenge",
+    "completed": "Completed!",
+    "markComplete": "Mark Complete",
+    "challenges": {
+      "writeTIL": "Write a TIL in your learning log",
+      "studyMinutes": "Study for 30 minutes straight",
+      "readArticle": "Read a tech article",
+      "writeCode": "Write 10+ lines of new code",
+      "reviewCode": "Review someone else's code",
+      "learnNewConcept": "Learn one new concept",
+      "shareKnowledge": "Share what you learned in a post",
+      "solveAlgorithm": "Solve an algorithm problem",
+      "readDocs": "Read official documentation",
+      "pairProgram": "Pair program with someone"
+    }
   }
 }
