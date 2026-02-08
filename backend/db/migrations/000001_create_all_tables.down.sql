@@ -52,9 +52,9 @@ DROP TABLE IF EXISTS likes;
 DROP TABLE IF EXISTS posts;
 
 -- GitHub関連（5→3）
-DROP TABLE IF EXISTS github_repositories;
-DROP TABLE IF EXISTS github_language_stats;
-DROP TABLE IF EXISTS github_contributions;
+DROP TABLE IF EXISTS git_hub_repositories;
+DROP TABLE IF EXISTS git_hub_language_stats;
+DROP TABLE IF EXISTS git_hub_contributions;
 
 -- フォロー（2）
 DROP TABLE IF EXISTS follows;

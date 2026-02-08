@@ -479,7 +479,8 @@ API仕様はOpenAPI (Swagger)で管理しています。
 ### Phase 3.8（データベーススキーマ管理）✅
 - [x] 全29テーブルのDDL定義（`backend/db/migrations/000001_create_all_tables.up.sql`）
 - [x] ロールバック用SQL（`000001_create_all_tables.down.sql`）
-- [x] 外部キー制約・インデックス・論理削除・CASCADE削除の完全定義
+- [x] 実DBスキーマと完全一致する`schema.sql`（`backend/db/schema.sql`）
+- [x] 外部キー制約24件・インデックス79件・論理削除5テーブルの完全定義
 
 ### Phase 4（将来）📋
 - [ ] AI補完
