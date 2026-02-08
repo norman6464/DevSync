@@ -103,17 +103,22 @@ DevSyncは、これらの課題を解決するために開発しました。
 
 ### ホーム画面
 <p align="center">
-  <img width="1339" height="962" alt="スクリーンショット 2026-02-06 12 45 49" src="https://github.com/user-attachments/assets/36d42c6e-60f1-449e-bdd4-ad35d51a130d" />
+  <img width="1914" height="978" alt="スクリーンショット 2026-02-08 10 46 47" src="https://github.com/user-attachments/assets/e8c018f3-c1ca-4cc3-a382-6afcfa0d1808" />
 </p>
 
 ### プロフィール画面
 <p align="center">
-  <img width="1369" height="956" alt="スクリーンショット 2026-02-06 12 46 47" src="https://github.com/user-attachments/assets/dae59013-a6b2-4597-a23d-f87fd63365d3" />
+  <img width="1897" height="819" alt="スクリーンショット 2026-02-08 10 47 56" src="https://github.com/user-attachments/assets/b2c582d5-715f-4f10-af4f-a37994ed4a4f" />
 </p>
+
+<p align="center">
+  <img width="1895" height="977" alt="スクリーンショット 2026-02-08 10 48 33" src="https://github.com/user-attachments/assets/8fa32ea2-f2e6-45ff-bbf8-b691a004de87" />
+</p>
+
 
 ### ランキング画面
 <p align="center">
-  <img width="1396" height="816" alt="スクリーンショット 2026-02-06 12 47 26" src="https://github.com/user-attachments/assets/ae1e3837-0a20-44f1-885d-d28fa9d0faef" />
+  <img width="1895" height="972" alt="スクリーンショット 2026-02-08 10 49 00" src="https://github.com/user-attachments/assets/81701201-335d-4c09-86b8-68c4a2733898" />
 </p>
 
 ---
