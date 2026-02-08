@@ -1,20 +1,21 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
+	"github.com/norman6464/devsync/backend/internal/service"
 )
 
 type LearningResourceHandler struct {
-	repo *repository.LearningResourceRepository
+	service *service.LearningResourceService
 }
 
-func NewLearningResourceHandler(repo *repository.LearningResourceRepository) *LearningResourceHandler {
-	return &LearningResourceHandler{repo: repo}
+func NewLearningResourceHandler(s *service.LearningResourceService) *LearningResourceHandler {
+	return &LearningResourceHandler{service: s}
 }
 
 type CreateResourceRequest struct {
@@ -65,7 +66,7 @@ func (h *LearningResourceHandler) Create(c *gin.Context) {
 		IsPublic:    isPublic,
 	}
 
-	if err := h.repo.Create(resource); err != nil {
+	if err := h.service.Create(resource); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create resource"})
 		return
 	}
@@ -80,22 +81,21 @@ func (h *LearningResourceHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	resource, err := h.repo.FindByID(uint(id))
+	userID := c.GetUint("userID")
+
+	resource, err := h.service.GetByID(uint(id), userID)
 	if err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to view this resource"})
+			return
+		}
 		c.JSON(http.StatusNotFound, gin.H{"error": "Resource not found"})
 		return
 	}
 
-	// Check if resource is private and user is not owner
-	userID := c.GetUint("userID")
-	if !resource.IsPublic && resource.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to view this resource"})
-		return
-	}
-
 	// Check if current user has liked/saved
-	hasLiked, _ := h.repo.HasLiked(userID, uint(id))
-	hasSaved, _ := h.repo.HasSaved(userID, uint(id))
+	hasLiked, _ := h.service.HasLiked(userID, uint(id))
+	hasSaved, _ := h.service.HasSaved(userID, uint(id))
 
 	c.JSON(http.StatusOK, gin.H{
 		"resource":  resource,
@@ -112,9 +112,8 @@ func (h *LearningResourceHandler) GetByUserID(c *gin.Context) {
 	}
 
 	currentUserID := c.GetUint("userID")
-	includePrivate := currentUserID == uint(targetUserID)
 
-	resources, err := h.repo.FindByUserID(uint(targetUserID), includePrivate)
+	resources, err := h.service.GetByUserID(uint(targetUserID), currentUserID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch resources"})
 		return
@@ -133,7 +132,7 @@ func (h *LearningResourceHandler) GetPublic(c *gin.Context) {
 		limit = 100
 	}
 
-	resources, total, err := h.repo.FindPublic(limit, offset, category, difficulty)
+	resources, total, err := h.service.GetPublic(limit, offset, category, difficulty)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch resources"})
 		return
@@ -156,7 +155,7 @@ func (h *LearningResourceHandler) Search(c *gin.Context) {
 		limit = 100
 	}
 
-	resources, total, err := h.repo.Search(query, limit, offset)
+	resources, total, err := h.service.Search(query, limit, offset)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to search resources"})
 		return
@@ -178,51 +177,52 @@ func (h *LearningResourceHandler) Update(c *gin.Context) {
 		return
 	}
 
-	resource, err := h.repo.FindByID(uint(id))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Resource not found"})
-		return
-	}
-
-	if resource.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to update this resource"})
-		return
-	}
-
 	var req UpdateResourceRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	updates := &model.LearningResource{}
 	if req.Title != "" {
-		resource.Title = req.Title
+		updates.Title = req.Title
 	}
 	if req.Description != "" {
-		resource.Description = req.Description
+		updates.Description = req.Description
 	}
 	if req.URL != "" {
-		resource.URL = req.URL
+		updates.URL = req.URL
 	}
 	if req.Category != "" {
-		resource.Category = model.ResourceCategory(req.Category)
+		updates.Category = model.ResourceCategory(req.Category)
 	}
 	if req.Difficulty != "" {
-		resource.Difficulty = model.ResourceDifficulty(req.Difficulty)
+		updates.Difficulty = model.ResourceDifficulty(req.Difficulty)
 	}
 	if req.Tags != "" {
-		resource.Tags = req.Tags
+		updates.Tags = req.Tags
 	}
 	if req.ImageURL != "" {
-		resource.ImageURL = req.ImageURL
-	}
-	if req.IsPublic != nil {
-		resource.IsPublic = *req.IsPublic
+		updates.ImageURL = req.ImageURL
 	}
 
-	if err := h.repo.Update(resource); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update resource"})
+	resource, err := h.service.Update(uint(id), userID, updates)
+	if err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to update this resource"})
+			return
+		}
+		c.JSON(http.StatusNotFound, gin.H{"error": "Resource not found"})
 		return
+	}
+
+	// Handle IsPublic separately if provided
+	if req.IsPublic != nil {
+		resource, err = h.service.UpdateVisibility(uint(id), userID, *req.IsPublic)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update resource"})
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, resource)
@@ -236,19 +236,12 @@ func (h *LearningResourceHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	resource, err := h.repo.FindByID(uint(id))
-	if err != nil {
+	if err := h.service.Delete(uint(id), userID); err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to delete this resource"})
+			return
+		}
 		c.JSON(http.StatusNotFound, gin.H{"error": "Resource not found"})
-		return
-	}
-
-	if resource.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to delete this resource"})
-		return
-	}
-
-	if err := h.repo.Delete(uint(id)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete resource"})
 		return
 	}
 
@@ -263,7 +256,7 @@ func (h *LearningResourceHandler) Like(c *gin.Context) {
 		return
 	}
 
-	if err := h.repo.Like(userID, uint(id)); err != nil {
+	if err := h.service.Like(userID, uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to like resource"})
 		return
 	}
@@ -279,7 +272,7 @@ func (h *LearningResourceHandler) Unlike(c *gin.Context) {
 		return
 	}
 
-	if err := h.repo.Unlike(userID, uint(id)); err != nil {
+	if err := h.service.Unlike(userID, uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unlike resource"})
 		return
 	}
@@ -295,7 +288,7 @@ func (h *LearningResourceHandler) SaveResource(c *gin.Context) {
 		return
 	}
 
-	if err := h.repo.Save(userID, uint(id)); err != nil {
+	if err := h.service.Save(userID, uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save resource"})
 		return
 	}
@@ -311,7 +304,7 @@ func (h *LearningResourceHandler) UnsaveResource(c *gin.Context) {
 		return
 	}
 
-	if err := h.repo.Unsave(userID, uint(id)); err != nil {
+	if err := h.service.Unsave(userID, uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unsave resource"})
 		return
 	}
@@ -328,7 +321,7 @@ func (h *LearningResourceHandler) GetSaved(c *gin.Context) {
 		limit = 100
 	}
 
-	resources, total, err := h.repo.FindSavedByUserID(userID, limit, offset)
+	resources, total, err := h.service.GetSavedByUserID(userID, limit, offset)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch saved resources"})
 		return
