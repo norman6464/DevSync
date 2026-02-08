@@ -7,8 +7,9 @@ import {
   updateLog,
   deleteLog,
   getCalendarData,
+  getStreakInfo,
 } from '../api/learningLogs';
-import type { LearningLog, CalendarEntry, LogCategory } from '../types/learningLog';
+import type { LearningLog, CalendarEntry, LogCategory, StreakInfo } from '../types/learningLog';
 import { useAsyncData } from './useAsyncData';
 
 export function useLearningLogs() {
@@ -92,6 +93,19 @@ export function useLearningLogs() {
     deleteLog: handleDelete,
     refetch,
   };
+}
+
+export function useStreak(userId: number | undefined) {
+  const { data: streakInfo, loading, refetch } = useAsyncData(
+    async () => {
+      if (!userId) return null;
+      const { data } = await getStreakInfo(userId);
+      return data || null;
+    },
+    { initialData: null as StreakInfo | null, deps: [userId] }
+  );
+
+  return { streakInfo, loading, refetchStreak: refetch };
 }
 
 export function useLearningLogCalendar(userId: number | undefined) {

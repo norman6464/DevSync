@@ -11,6 +11,7 @@ import (
 type BadgeStats struct {
 	TotalContributions int
 	CurrentStreak      int
+	LearningLogStreak  int
 	TotalPosts         int
 	TotalLikesReceived int
 	FollowerCount      int
@@ -60,6 +61,12 @@ func GetBadgeStats(db *gorm.DB, userID uint) (*BadgeStats, error) {
 	// Completed goals
 	db.Raw("SELECT COUNT(*) FROM learning_goals WHERE user_id = ? AND status = ?", userID, "completed").Scan(&stats.CompletedGoals)
 
+	// Learning log streak
+	logStreak, err := calculateLearningLogStreak(db, userID)
+	if err == nil {
+		stats.LearningLogStreak = logStreak
+	}
+
 	return stats, nil
 }
 
@@ -101,8 +108,54 @@ func calculateStreak(db *gorm.DB, userID uint) (int, error) {
 	return streak, nil
 }
 
+// calculateLearningLogStreak calculates the current streak from learning logs.
+func calculateLearningLogStreak(db *gorm.DB, userID uint) (int, error) {
+	var dates []struct {
+		Date time.Time
+	}
+	err := db.Raw("SELECT DISTINCT DATE(created_at) as date FROM learning_logs WHERE user_id = ? ORDER BY date DESC", userID).Scan(&dates).Error
+	if err != nil {
+		return 0, err
+	}
+	if len(dates) == 0 {
+		return 0, nil
+	}
+
+	sort.Slice(dates, func(i, j int) bool {
+		return dates[i].Date.After(dates[j].Date)
+	})
+
+	today := time.Now().UTC().Truncate(24 * time.Hour)
+	firstDate := dates[0].Date.UTC().Truncate(24 * time.Hour)
+	diffToToday := today.Sub(firstDate)
+
+	if diffToToday >= 48*time.Hour {
+		return 0, nil
+	}
+
+	streak := 1
+	for i := 1; i < len(dates); i++ {
+		prev := dates[i-1].Date.UTC().Truncate(24 * time.Hour)
+		curr := dates[i].Date.UTC().Truncate(24 * time.Hour)
+		diff := prev.Sub(curr)
+		if diff >= 24*time.Hour && diff < 48*time.Hour {
+			streak++
+		} else {
+			break
+		}
+	}
+
+	return streak, nil
+}
+
 // EvaluateBadges evaluates all badges based on the given stats.
 func EvaluateBadges(stats *BadgeStats) []BadgeResult {
+	// Use the best streak from either GitHub contributions or learning logs
+	combinedStreak := stats.CurrentStreak
+	if stats.LearningLogStreak > combinedStreak {
+		combinedStreak = stats.LearningLogStreak
+	}
+
 	return []BadgeResult{
 		// Contribution badges
 		{ID: "first-commit", Name: "badges.firstCommit", Description: "badges.firstCommitDesc", Category: "contribution", Earned: stats.TotalContributions >= 1},
@@ -111,9 +164,9 @@ func EvaluateBadges(stats *BadgeStats) []BadgeResult {
 		{ID: "commit-master", Name: "badges.commitMaster", Description: "badges.commitMasterDesc", Category: "contribution", Earned: stats.TotalContributions >= 500},
 		{ID: "legend", Name: "badges.legend", Description: "badges.legendDesc", Category: "contribution", Earned: stats.TotalContributions >= 1000},
 
-		// Streak badges
-		{ID: "week-streak", Name: "badges.weekStreak", Description: "badges.weekStreakDesc", Category: "streak", Earned: stats.CurrentStreak >= 7},
-		{ID: "month-streak", Name: "badges.monthStreak", Description: "badges.monthStreakDesc", Category: "streak", Earned: stats.CurrentStreak >= 30},
+		// Streak badges (GitHub contributions OR learning logs)
+		{ID: "week-streak", Name: "badges.weekStreak", Description: "badges.weekStreakDesc", Category: "streak", Earned: combinedStreak >= 7},
+		{ID: "month-streak", Name: "badges.monthStreak", Description: "badges.monthStreakDesc", Category: "streak", Earned: combinedStreak >= 30},
 
 		// Post badges
 		{ID: "first-post", Name: "badges.firstPost", Description: "badges.firstPostDesc", Category: "post", Earned: stats.TotalPosts >= 1},

@@ -1,5 +1,5 @@
 import client from './client';
-import type { LearningLog, CalendarEntry, CreateLogRequest, UpdateLogRequest } from '../types/learningLog';
+import type { LearningLog, CalendarEntry, CreateLogRequest, UpdateLogRequest, StreakInfo } from '../types/learningLog';
 
 export const createLog = (data: CreateLogRequest) =>
   client.post<LearningLog>('/learning-logs', data);
@@ -21,3 +21,6 @@ export const getUserLogs = (userId: number) =>
 
 export const getCalendarData = (userId: number) =>
   client.get<CalendarEntry[]>(`/learning-logs/calendar/${userId}`);
+
+export const getStreakInfo = (userId: number) =>
+  client.get<StreakInfo>(`/learning-logs/streak/${userId}`);

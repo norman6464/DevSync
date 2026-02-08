@@ -698,5 +698,33 @@
     "back": "Atrás",
     "skip": "Omitir",
     "goToDashboard": "Ir al panel"
+  },
+  "streak": {
+    "title": "Racha de Aprendizaje",
+    "currentStreak": "Racha Actual",
+    "longestStreak": "Racha Más Larga",
+    "totalDays": "Días Totales",
+    "lastLogDate": "Último Registro",
+    "days": "días",
+    "daysConsecutive": "días consecutivos",
+    "noStreak": "¡Empieza a aprender hoy!",
+    "keepItUp": "¡Sigue así!"
+  },
+  "dailyChallenge": {
+    "title": "Desafío Diario",
+    "completed": "¡Completado!",
+    "markComplete": "Marcar Completado",
+    "challenges": {
+      "writeTIL": "Escribe un TIL en tu registro de aprendizaje",
+      "studyMinutes": "Estudia 30 minutos seguidos",
+      "readArticle": "Lee un artículo técnico",
+      "writeCode": "Escribe más de 10 líneas de código nuevo",
+      "reviewCode": "Revisa el código de otra persona",
+      "learnNewConcept": "Aprende un concepto nuevo",
+      "shareKnowledge": "Comparte lo aprendido en una publicación",
+      "solveAlgorithm": "Resuelve un problema de algoritmo",
+      "readDocs": "Lee la documentación oficial",
+      "pairProgram": "Programa en pareja con alguien"
+    }
   }
 }

@@ -698,5 +698,33 @@
     "back": "Назад",
     "skip": "Пропустить",
     "goToDashboard": "Перейти к панели"
+  },
+  "streak": {
+    "title": "Серия Обучения",
+    "currentStreak": "Текущая Серия",
+    "longestStreak": "Лучшая Серия",
+    "totalDays": "Всего Дней",
+    "lastLogDate": "Последняя Запись",
+    "days": "дней",
+    "daysConsecutive": "дней подряд",
+    "noStreak": "Начните учиться сегодня!",
+    "keepItUp": "Так держать!"
+  },
+  "dailyChallenge": {
+    "title": "Ежедневный Вызов",
+    "completed": "Выполнено!",
+    "markComplete": "Отметить Выполненным",
+    "challenges": {
+      "writeTIL": "Напишите TIL в журнале обучения",
+      "studyMinutes": "Учитесь 30 минут подряд",
+      "readArticle": "Прочитайте техническую статью",
+      "writeCode": "Напишите 10+ строк нового кода",
+      "reviewCode": "Проверьте чужой код",
+      "learnNewConcept": "Изучите одну новую концепцию",
+      "shareKnowledge": "Поделитесь изученным в публикации",
+      "solveAlgorithm": "Решите задачу на алгоритм",
+      "readDocs": "Прочитайте официальную документацию",
+      "pairProgram": "Программируйте в паре с кем-нибудь"
+    }
   }
 }

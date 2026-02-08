@@ -30,3 +30,11 @@ type CalendarEntry struct {
 	Date  string `json:"date"`
 	Count int    `json:"count"`
 }
+
+// StreakInfo represents streak data calculated from learning logs
+type StreakInfo struct {
+	CurrentStreak int    `json:"current_streak"`
+	LongestStreak int    `json:"longest_streak"`
+	TotalDays     int    `json:"total_days"`
+	LastLogDate   string `json:"last_log_date"`
+}

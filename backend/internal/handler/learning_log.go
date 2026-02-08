@@ -182,6 +182,24 @@ func (h *LearningLogHandler) GetByUserID(c *gin.Context) {
 	c.JSON(http.StatusOK, logs)
 }
 
+// GetStreakInfo returns streak data for a user
+func (h *LearningLogHandler) GetStreakInfo(c *gin.Context) {
+	userIDParam := c.Param("userId")
+	userID, err := strconv.ParseUint(userIDParam, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
+		return
+	}
+
+	info, err := h.logRepo.GetStreakInfo(uint(userID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get streak info"})
+		return
+	}
+
+	c.JSON(http.StatusOK, info)
+}
+
 // GetCalendarData returns daily log counts for calendar visualization
 func (h *LearningLogHandler) GetCalendarData(c *gin.Context) {
 	userIDParam := c.Param("userId")

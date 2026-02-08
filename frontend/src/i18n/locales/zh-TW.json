@@ -698,5 +698,33 @@
     "back": "返回",
     "skip": "跳過",
     "goToDashboard": "前往儀表板"
+  },
+  "streak": {
+    "title": "學習連續紀錄",
+    "currentStreak": "目前連續",
+    "longestStreak": "最長紀錄",
+    "totalDays": "總學習天數",
+    "lastLogDate": "最後紀錄",
+    "days": "天",
+    "daysConsecutive": "天連續",
+    "noStreak": "從今天開始學習吧！",
+    "keepItUp": "繼續加油！"
+  },
+  "dailyChallenge": {
+    "title": "每日挑戰",
+    "completed": "已完成！",
+    "markComplete": "標記完成",
+    "challenges": {
+      "writeTIL": "在學習日誌中寫下今天學到的東西",
+      "studyMinutes": "專注學習30分鐘",
+      "readArticle": "閱讀一篇技術文章",
+      "writeCode": "撰寫10行以上的新程式碼",
+      "reviewCode": "審查他人的程式碼",
+      "learnNewConcept": "學習一個新概念",
+      "shareKnowledge": "在貼文中分享所學內容",
+      "solveAlgorithm": "解決一道演算法題",
+      "readDocs": "閱讀官方文件",
+      "pairProgram": "與人進行配對程式設計"
+    }
   }
 }

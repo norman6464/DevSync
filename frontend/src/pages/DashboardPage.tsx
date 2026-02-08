@@ -11,6 +11,8 @@ import PostForm from '../components/posts/PostForm';
 import { PostCardSkeleton } from '../components/common/Skeleton';
 import Avatar from '../components/common/Avatar';
 import { formatDistanceToNow } from '../utils/timeFormat';
+import StreakWidget from '../components/dashboard/StreakWidget';
+import DailyChallengeWidget from '../components/dashboard/DailyChallengeWidget';
 
 export default function DashboardPage() {
   const { t } = useTranslation();
@@ -161,6 +163,12 @@ export default function DashboardPage() {
             )}
           </div>
         )}
+
+        {/* Streak Widget */}
+        <StreakWidget />
+
+        {/* Daily Challenge Widget */}
+        <DailyChallengeWidget />
 
         {/* Goals Progress Widget */}
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
