@@ -74,6 +74,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	answerHandler := handler.NewAnswerHandler(answerRepo, questionRepo)
 	roadmapHandler := handler.NewRoadmapHandler(roadmapRepo)
 	chatRoomHandler := handler.NewChatRoomHandler(chatRoomRepo, groupMessageRepo, hub)
+	badgeHandler := handler.NewBadgeHandler(db, notificationRepo)
 
 	// Set up Hub's GetRoomMembers callback
 	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs
@@ -320,6 +321,13 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			bookReviews.PUT("/:id", bookReviewHandler.Update)
 			bookReviews.DELETE("/:id", bookReviewHandler.Delete)
 			bookReviews.GET("/user/:userId", bookReviewHandler.GetByUserID)
+		}
+
+		// Badges
+		badges := protected.Group("/badges")
+		{
+			badges.GET("/:userId", badgeHandler.GetUserBadges)
+			badges.POST("/notify", badgeHandler.NotifyBadgeEarned)
 		}
 	}
 
