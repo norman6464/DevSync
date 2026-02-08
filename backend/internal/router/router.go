@@ -135,6 +135,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	{
 		// 認証
 		protected.GET("/auth/me", authHandler.Me)
+		protected.POST("/auth/logout", authHandler.Logout)
 		protected.DELETE("/auth/account", authHandler.DeleteAccount)
 
 		// ユーザー

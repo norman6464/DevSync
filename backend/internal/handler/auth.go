@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/service"
@@ -23,6 +24,23 @@ func NewAuthHandler(authService *service.AuthService, githubService *service.Git
 	}
 }
 
+// cookieMaxAge はJWTトークンの有効期限と同じ72時間（秒単位）。
+const cookieMaxAge = 72 * 60 * 60
+
+// setAuthCookie はJWTトークンをhttpOnly Cookieとしてレスポンスにセットする。
+// 本番環境（ENVIRONMENT=production）ではSecure属性をtrueに設定する。
+func setAuthCookie(c *gin.Context, token string) {
+	secure := os.Getenv("ENVIRONMENT") == "production"
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie("token", token, cookieMaxAge, "/", "", secure, true)
+}
+
+// clearAuthCookie は認証Cookieをクリアする（MaxAge=-1で即時削除）。
+func clearAuthCookie(c *gin.Context) {
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie("token", "", -1, "/", "", false, true)
+}
+
 // Register はユーザー新規登録を処理する。
 func (h *AuthHandler) Register(c *gin.Context) {
 	var input service.RegisterInput
@@ -37,7 +55,8 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, resp)
+	setAuthCookie(c, resp.Token)
+	c.JSON(http.StatusCreated, gin.H{"user": resp.User})
 }
 
 // Login はメール・パスワードによるログインを処理する。
@@ -54,7 +73,8 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, resp)
+	setAuthCookie(c, resp.Token)
+	c.JSON(http.StatusOK, gin.H{"user": resp.User})
 }
 
 // GitHubLogin はGitHub OAuthログインのURLを生成して返す。
@@ -106,7 +126,8 @@ func (h *AuthHandler) GitHubLoginCallback(c *gin.Context) {
 	// バックグラウンドでGitHubデータを同期
 	go h.githubService.SyncUserData(resp.User.ID)
 
-	c.JSON(http.StatusOK, resp)
+	setAuthCookie(c, resp.Token)
+	c.JSON(http.StatusOK, gin.H{"user": resp.User})
 }
 
 // Me は認証済みユーザーの情報を返す。
@@ -176,7 +197,7 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 
 // Logout はユーザーのログアウトを処理し、認証Cookieをクリアする。
 func (h *AuthHandler) Logout(c *gin.Context) {
-	// TODO: コミット4でCookieクリアを実装
+	clearAuthCookie(c)
 	c.JSON(http.StatusOK, gin.H{"message": "logged out successfully"})
 }
 
