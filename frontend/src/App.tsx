@@ -28,6 +28,7 @@ import RoadmapsPage from './pages/RoadmapsPage';
 import RoadmapDetailPage from './pages/RoadmapDetailPage';
 import NotificationsPage from './pages/NotificationsPage';
 import OnboardingPage from './pages/OnboardingPage';
+import { ToastProvider } from './contexts/ToastContext';
 
 export default function App() {
   const { isAuthenticated, loadUser } = useAuthStore();
@@ -51,6 +52,7 @@ export default function App() {
   }, []);
 
   return (
+    <ToastProvider>
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
@@ -83,5 +85,6 @@ export default function App() {
         </Route>
       </Route>
     </Routes>
+    </ToastProvider>
   );
 }
