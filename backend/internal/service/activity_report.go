@@ -5,27 +5,28 @@ import (
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
-// ActivityReportService handles activity report business logic.
+// ActivityReportService はアクティビティレポートのビジネスロジックを提供する。
+// リポジトリ層に処理を委譲する薄いラッパー。
 type ActivityReportService struct {
 	repo repository.ActivityReportRepositoryInterface
 }
 
-// NewActivityReportService creates a new ActivityReportService.
+// NewActivityReportService は新しいActivityReportServiceインスタンスを生成する。
 func NewActivityReportService(repo repository.ActivityReportRepositoryInterface) *ActivityReportService {
 	return &ActivityReportService{repo: repo}
 }
 
-// GetWeeklyReport returns the weekly activity report for a user.
+// GetWeeklyReport は指定ユーザーの週次アクティビティレポートを返す。
 func (s *ActivityReportService) GetWeeklyReport(userID uint) (*model.ActivityReport, error) {
 	return s.repo.GetWeeklyReport(userID)
 }
 
-// GetMonthlyReport returns the monthly activity report for a user.
+// GetMonthlyReport は指定ユーザーの月次アクティビティレポートを返す。
 func (s *ActivityReportService) GetMonthlyReport(userID uint) (*model.ActivityReport, error) {
 	return s.repo.GetMonthlyReport(userID)
 }
 
-// GetComparison returns the comparison between current and previous period.
+// GetComparison は現在期間と前期間の比較データを返す。
 func (s *ActivityReportService) GetComparison(userID uint, period model.ReportPeriod) (*model.ReportComparison, error) {
 	return s.repo.GetComparison(userID, period)
 }

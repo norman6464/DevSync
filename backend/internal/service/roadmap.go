@@ -7,25 +7,27 @@ import (
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
-// StepOrder represents the order of a step (used in reordering).
+// StepOrder はステップの並び替え情報を表す型エイリアス。
 type StepOrder = repository.StepOrder
 
-// RoadmapService handles roadmap business logic.
+// RoadmapService は学習ロードマップのビジネスロジックを提供する。
+// ロードマップとステップのCRUD操作、可視性制御、コピー機能を担当する。
 type RoadmapService struct {
 	repo repository.RoadmapRepositoryInterface
 }
 
-// NewRoadmapService creates a new RoadmapService.
+// NewRoadmapService は新しいRoadmapServiceインスタンスを生成する。
 func NewRoadmapService(repo repository.RoadmapRepositoryInterface) *RoadmapService {
 	return &RoadmapService{repo: repo}
 }
 
-// Create creates a new roadmap.
+// Create は新しいロードマップを作成する。
 func (s *RoadmapService) Create(roadmap *model.Roadmap) error {
 	return s.repo.Create(roadmap)
 }
 
-// GetByID returns a roadmap by ID, checking visibility.
+// GetByID は指定IDのロードマップを可視性チェック付きで取得する。
+// 非公開ロードマップはオーナー以外アクセスできない。
 func (s *RoadmapService) GetByID(id, userID uint) (*model.Roadmap, error) {
 	roadmap, err := s.repo.FindByID(id)
 	if err != nil {
@@ -37,22 +39,23 @@ func (s *RoadmapService) GetByID(id, userID uint) (*model.Roadmap, error) {
 	return roadmap, nil
 }
 
-// GetByUserID returns all roadmaps for a user.
+// GetByUserID は指定ユーザーの全ロードマップを取得する。
 func (s *RoadmapService) GetByUserID(userID uint) ([]model.Roadmap, error) {
 	return s.repo.GetByUserID(userID)
 }
 
-// GetPublicRoadmaps returns paginated public roadmaps.
+// GetPublicRoadmaps は公開ロードマップをページネーション付きで取得する。
 func (s *RoadmapService) GetPublicRoadmaps(limit, offset int) ([]model.Roadmap, int64, error) {
 	return s.repo.GetPublicRoadmaps(limit, offset)
 }
 
-// GetStats returns roadmap statistics for a user.
+// GetStats は指定ユーザーのロードマップ統計情報を取得する。
 func (s *RoadmapService) GetStats(userID uint) (*model.RoadmapStats, error) {
 	return s.repo.GetStats(userID)
 }
 
-// Update updates a roadmap after verifying ownership.
+// Update は所有権を検証した後、ロードマップを更新する。
+// ステータスが「完了」に変更された場合、完了日時を自動設定する。
 func (s *RoadmapService) Update(id, userID uint, updates *model.Roadmap) (*model.Roadmap, error) {
 	roadmap, err := s.repo.FindByID(id)
 	if err != nil {
@@ -85,7 +88,7 @@ func (s *RoadmapService) Update(id, userID uint, updates *model.Roadmap) (*model
 	return roadmap, nil
 }
 
-// UpdateVisibility updates the public/private status of a roadmap after verifying ownership.
+// UpdateVisibility は所有権を検証した後、ロードマップの公開/非公開状態を更新する。
 func (s *RoadmapService) UpdateVisibility(id, userID uint, isPublic bool) (*model.Roadmap, error) {
 	roadmap, err := s.repo.FindByID(id)
 	if err != nil {
@@ -103,7 +106,7 @@ func (s *RoadmapService) UpdateVisibility(id, userID uint, isPublic bool) (*mode
 	return roadmap, nil
 }
 
-// Delete deletes a roadmap after verifying ownership.
+// Delete は所有権を検証した後、ロードマップを削除する。
 func (s *RoadmapService) Delete(id, userID uint) error {
 	roadmap, err := s.repo.FindByID(id)
 	if err != nil {
@@ -115,7 +118,8 @@ func (s *RoadmapService) Delete(id, userID uint) error {
 	return s.repo.Delete(id)
 }
 
-// CopyRoadmap copies a public roadmap as a template.
+// CopyRoadmap は公開ロードマップをテンプレートとしてコピーする。
+// 非公開かつ自分のものでないロードマップはコピーできない。
 func (s *RoadmapService) CopyRoadmap(roadmapID, userID uint) (*model.Roadmap, error) {
 	original, err := s.repo.FindByID(roadmapID)
 	if err != nil {
@@ -127,7 +131,7 @@ func (s *RoadmapService) CopyRoadmap(roadmapID, userID uint) (*model.Roadmap, er
 	return s.repo.CopyRoadmap(roadmapID, userID)
 }
 
-// CreateStep creates a new step in a roadmap after verifying ownership.
+// CreateStep は所有権を検証した後、ロードマップにステップを追加する。
 func (s *RoadmapService) CreateStep(roadmapID, userID uint, step *model.RoadmapStep) error {
 	roadmap, err := s.repo.FindByID(roadmapID)
 	if err != nil {
@@ -141,7 +145,7 @@ func (s *RoadmapService) CreateStep(roadmapID, userID uint, step *model.RoadmapS
 	return s.repo.CreateStep(step)
 }
 
-// UpdateStep updates a step after verifying roadmap ownership.
+// UpdateStep はロードマップの所有権とステップの所属を検証した後、ステップを更新する。
 func (s *RoadmapService) UpdateStep(roadmapID, stepID, userID uint, updates *model.RoadmapStep) (*model.RoadmapStep, error) {
 	roadmap, err := s.repo.FindByID(roadmapID)
 	if err != nil {
@@ -175,7 +179,8 @@ func (s *RoadmapService) UpdateStep(roadmapID, stepID, userID uint, updates *mod
 	return step, nil
 }
 
-// UpdateStepCompletion updates the completion status of a step.
+// UpdateStepCompletion はステップの完了状態を更新する。
+// 完了時にはCompletedAtを設定し、未完了に戻す場合はnilにリセットする。
 func (s *RoadmapService) UpdateStepCompletion(roadmapID, stepID, userID uint, isCompleted bool) (*model.RoadmapStep, error) {
 	roadmap, err := s.repo.FindByID(roadmapID)
 	if err != nil {
@@ -207,7 +212,7 @@ func (s *RoadmapService) UpdateStepCompletion(roadmapID, stepID, userID uint, is
 	return step, nil
 }
 
-// DeleteStep deletes a step after verifying roadmap ownership.
+// DeleteStep はロードマップの所有権とステップの所属を検証した後、ステップを削除する。
 func (s *RoadmapService) DeleteStep(roadmapID, stepID, userID uint) error {
 	roadmap, err := s.repo.FindByID(roadmapID)
 	if err != nil {
@@ -228,7 +233,7 @@ func (s *RoadmapService) DeleteStep(roadmapID, stepID, userID uint) error {
 	return s.repo.DeleteStep(stepID)
 }
 
-// ReorderSteps reorders steps within a roadmap after verifying ownership.
+// ReorderSteps は所有権を検証した後、ステップの表示順序を一括更新する。
 func (s *RoadmapService) ReorderSteps(roadmapID, userID uint, orders []repository.StepOrder) error {
 	roadmap, err := s.repo.FindByID(roadmapID)
 	if err != nil {

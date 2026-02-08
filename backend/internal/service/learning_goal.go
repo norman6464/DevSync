@@ -7,42 +7,44 @@ import (
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
-// LearningGoalService handles learning goal business logic.
+// LearningGoalService は学習目標のビジネスロジックを提供する。
+// 目標のCRUD操作と、進捗100%時の自動完了ロジックを担当する。
 type LearningGoalService struct {
 	repo repository.LearningGoalRepositoryInterface
 }
 
-// NewLearningGoalService creates a new LearningGoalService.
+// NewLearningGoalService は新しいLearningGoalServiceインスタンスを生成する。
 func NewLearningGoalService(repo repository.LearningGoalRepositoryInterface) *LearningGoalService {
 	return &LearningGoalService{repo: repo}
 }
 
-// Create creates a new learning goal.
+// Create は新しい学習目標を作成する。
 func (s *LearningGoalService) Create(goal *model.LearningGoal) error {
 	return s.repo.Create(goal)
 }
 
-// GetByID returns a learning goal by ID.
+// GetByID は指定IDの学習目標を取得する。
 func (s *LearningGoalService) GetByID(id uint) (*model.LearningGoal, error) {
 	return s.repo.FindByID(id)
 }
 
-// GetByUserID returns all learning goals for a user.
+// GetByUserID は指定ユーザーの全学習目標を取得する。
 func (s *LearningGoalService) GetByUserID(userID uint) ([]model.LearningGoal, error) {
 	return s.repo.GetByUserID(userID)
 }
 
-// GetActiveByUserID returns active learning goals for a user.
+// GetActiveByUserID は指定ユーザーのアクティブな学習目標のみを取得する。
 func (s *LearningGoalService) GetActiveByUserID(userID uint) ([]model.LearningGoal, error) {
 	return s.repo.GetActiveByUserID(userID)
 }
 
-// GetStats returns learning goal statistics for a user.
+// GetStats は指定ユーザーの学習目標統計情報を取得する。
 func (s *LearningGoalService) GetStats(userID uint) (*model.LearningGoalStats, error) {
 	return s.repo.GetStats(userID)
 }
 
-// Update updates a learning goal after verifying ownership.
+// Update は所有権を検証した後、学習目標を更新する。
+// 進捗が100%に達した場合、ステータスを自動的に「完了」に変更する。
 func (s *LearningGoalService) Update(id, userID uint, updates *model.LearningGoal) (*model.LearningGoal, error) {
 	goal, err := s.repo.FindByID(id)
 	if err != nil {
@@ -71,7 +73,7 @@ func (s *LearningGoalService) Update(id, userID uint, updates *model.LearningGoa
 		}
 		goal.Progress = progress
 
-		// Auto-complete if progress reaches 100
+		// 進捗100%達成時に自動完了
 		if progress == 100 && goal.Status == model.GoalStatusActive {
 			goal.Status = model.GoalStatusCompleted
 			now := time.Now()
@@ -92,7 +94,7 @@ func (s *LearningGoalService) Update(id, userID uint, updates *model.LearningGoa
 	return goal, nil
 }
 
-// Delete deletes a learning goal after verifying ownership.
+// Delete は所有権を検証した後、学習目標を削除する。
 func (s *LearningGoalService) Delete(id, userID uint) error {
 	goal, err := s.repo.FindByID(id)
 	if err != nil {

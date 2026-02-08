@@ -5,23 +5,24 @@ import (
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
-// AnswerService handles answer business logic.
+// AnswerService はQ&A回答のビジネスロジックを提供する。
+// 回答のCRUD操作、ベストアンサー設定、投票機能を担当する。
 type AnswerService struct {
 	answerRepo   repository.AnswerRepositoryInterface
 	questionRepo repository.QuestionRepositoryInterface
 }
 
-// NewAnswerService creates a new AnswerService.
+// NewAnswerService は新しいAnswerServiceインスタンスを生成する。
 func NewAnswerService(answerRepo repository.AnswerRepositoryInterface, questionRepo repository.QuestionRepositoryInterface) *AnswerService {
 	return &AnswerService{answerRepo: answerRepo, questionRepo: questionRepo}
 }
 
-// GetByQuestionID returns answers for a question.
+// GetByQuestionID は指定質問の全回答を取得する。
 func (s *AnswerService) GetByQuestionID(questionID uint) ([]model.Answer, error) {
 	return s.answerRepo.FindByQuestionID(questionID)
 }
 
-// Create creates a new answer after verifying the question exists.
+// Create は質問の存在を確認した後、新しい回答を作成する。
 func (s *AnswerService) Create(answer *model.Answer) error {
 	if _, err := s.questionRepo.FindByID(answer.QuestionID); err != nil {
 		return ErrNotFound
@@ -29,7 +30,7 @@ func (s *AnswerService) Create(answer *model.Answer) error {
 	return s.answerRepo.Create(answer)
 }
 
-// Update updates an answer after verifying ownership.
+// Update は所有権を検証した後、回答を更新する。
 func (s *AnswerService) Update(answerID, userID uint, body string) (*model.Answer, error) {
 	answer, err := s.answerRepo.FindByID(answerID)
 	if err != nil {
@@ -45,7 +46,7 @@ func (s *AnswerService) Update(answerID, userID uint, body string) (*model.Answe
 	return answer, nil
 }
 
-// Delete deletes an answer after verifying ownership.
+// Delete は所有権を検証した後、回答を削除する。
 func (s *AnswerService) Delete(answerID, userID uint) error {
 	answer, err := s.answerRepo.FindByID(answerID)
 	if err != nil {
@@ -57,7 +58,8 @@ func (s *AnswerService) Delete(answerID, userID uint) error {
 	return s.answerRepo.Delete(answer)
 }
 
-// SetBestAnswer sets the best answer for a question after verifying ownership.
+// SetBestAnswer は質問の所有権を検証し、指定回答をベストアンサーに設定する。
+// 回答が対象質問に属していることも検証する。
 func (s *AnswerService) SetBestAnswer(questionID, answerID, userID uint) error {
 	question, err := s.questionRepo.FindByID(questionID)
 	if err != nil {
@@ -78,17 +80,17 @@ func (s *AnswerService) SetBestAnswer(questionID, answerID, userID uint) error {
 	return s.answerRepo.SetBestAnswer(questionID, answerID)
 }
 
-// Vote votes on an answer.
+// Vote は回答に投票する。
 func (s *AnswerService) Vote(userID, answerID uint, value int) error {
 	return s.answerRepo.Vote(userID, answerID, value)
 }
 
-// RemoveVote removes a vote from an answer.
+// RemoveVote は回答への投票を取り消す。
 func (s *AnswerService) RemoveVote(userID, answerID uint) error {
 	return s.answerRepo.RemoveVote(userID, answerID)
 }
 
-// GetUserVotes returns user votes for given answer IDs.
+// GetUserVotes は指定ユーザーの複数回答への投票値をマップで取得する。
 func (s *AnswerService) GetUserVotes(userID uint, answerIDs []uint) (map[uint]int, error) {
 	return s.answerRepo.GetUserVotes(userID, answerIDs)
 }

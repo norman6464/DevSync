@@ -5,29 +5,31 @@ import (
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
-// LearningResourceService handles learning resource business logic.
+// LearningResourceService は学習リソースのビジネスロジックを提供する。
+// リソースのCRUD操作、公開/非公開制御、いいね・保存機能を担当する。
 type LearningResourceService struct {
 	repo repository.LearningResourceRepositoryInterface
 }
 
-// NewLearningResourceService creates a new LearningResourceService.
+// NewLearningResourceService は新しいLearningResourceServiceインスタンスを生成する。
 func NewLearningResourceService(repo repository.LearningResourceRepositoryInterface) *LearningResourceService {
 	return &LearningResourceService{repo: repo}
 }
 
-// Create creates a new learning resource.
+// Create は新しい学習リソースを作成する。
 func (s *LearningResourceService) Create(resource *model.LearningResource) error {
 	return s.repo.Create(resource)
 }
 
-// GetByID returns a learning resource by ID, checking visibility.
+// GetByID は指定IDの学習リソースを可視性チェック付きで取得する。
+// 非公開リソースはオーナー以外アクセスできない。
 func (s *LearningResourceService) GetByID(id, userID uint) (*model.LearningResource, error) {
 	resource, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err
 	}
 
-	// Check if resource is private and user is not owner
+	// 非公開リソースで、かつオーナーでない場合はアクセス拒否
 	if !resource.IsPublic && resource.UserID != userID {
 		return nil, ErrForbidden
 	}
@@ -35,33 +37,34 @@ func (s *LearningResourceService) GetByID(id, userID uint) (*model.LearningResou
 	return resource, nil
 }
 
-// HasLiked checks if a user has liked a resource.
+// HasLiked は指定ユーザーがリソースにいいね済みかを判定する。
 func (s *LearningResourceService) HasLiked(userID, resourceID uint) (bool, error) {
 	return s.repo.HasLiked(userID, resourceID)
 }
 
-// HasSaved checks if a user has saved a resource.
+// HasSaved は指定ユーザーがリソースを保存済みかを判定する。
 func (s *LearningResourceService) HasSaved(userID, resourceID uint) (bool, error) {
 	return s.repo.HasSaved(userID, resourceID)
 }
 
-// GetByUserID returns learning resources for a user.
+// GetByUserID は指定ユーザーの学習リソースを取得する。
+// 自分のリソースの場合は非公開も含め、他ユーザーの場合は公開のみ返す。
 func (s *LearningResourceService) GetByUserID(targetUserID, currentUserID uint) ([]model.LearningResource, error) {
 	includePrivate := currentUserID == targetUserID
 	return s.repo.FindByUserID(targetUserID, includePrivate)
 }
 
-// GetPublic returns paginated public learning resources.
+// GetPublic は公開学習リソースをページネーション・フィルタ付きで取得する。
 func (s *LearningResourceService) GetPublic(limit, offset int, category, difficulty string) ([]model.LearningResource, int64, error) {
 	return s.repo.FindPublic(limit, offset, category, difficulty)
 }
 
-// Search searches learning resources.
+// Search は学習リソースをキーワードで検索する。
 func (s *LearningResourceService) Search(query string, limit, offset int) ([]model.LearningResource, int64, error) {
 	return s.repo.Search(query, limit, offset)
 }
 
-// Update updates a learning resource after verifying ownership.
+// Update は所有権を検証した後、学習リソースを更新する。
 func (s *LearningResourceService) Update(id, userID uint, updates *model.LearningResource) (*model.LearningResource, error) {
 	resource, err := s.repo.FindByID(id)
 	if err != nil {
@@ -99,7 +102,7 @@ func (s *LearningResourceService) Update(id, userID uint, updates *model.Learnin
 	return resource, nil
 }
 
-// UpdateVisibility updates the public/private status of a resource after verifying ownership.
+// UpdateVisibility は所有権を検証した後、リソースの公開/非公開状態を更新する。
 func (s *LearningResourceService) UpdateVisibility(id, userID uint, isPublic bool) (*model.LearningResource, error) {
 	resource, err := s.repo.FindByID(id)
 	if err != nil {
@@ -117,7 +120,7 @@ func (s *LearningResourceService) UpdateVisibility(id, userID uint, isPublic boo
 	return resource, nil
 }
 
-// Delete deletes a learning resource after verifying ownership.
+// Delete は所有権を検証した後、学習リソースを削除する。
 func (s *LearningResourceService) Delete(id, userID uint) error {
 	resource, err := s.repo.FindByID(id)
 	if err != nil {
@@ -129,27 +132,27 @@ func (s *LearningResourceService) Delete(id, userID uint) error {
 	return s.repo.Delete(id)
 }
 
-// Like likes a learning resource.
+// Like は学習リソースにいいねを追加する。
 func (s *LearningResourceService) Like(userID, resourceID uint) error {
 	return s.repo.Like(userID, resourceID)
 }
 
-// Unlike unlikes a learning resource.
+// Unlike は学習リソースのいいねを取り消す。
 func (s *LearningResourceService) Unlike(userID, resourceID uint) error {
 	return s.repo.Unlike(userID, resourceID)
 }
 
-// Save saves a learning resource.
+// Save は学習リソースを保存する。
 func (s *LearningResourceService) Save(userID, resourceID uint) error {
 	return s.repo.Save(userID, resourceID)
 }
 
-// Unsave unsaves a learning resource.
+// Unsave は学習リソースの保存を取り消す。
 func (s *LearningResourceService) Unsave(userID, resourceID uint) error {
 	return s.repo.Unsave(userID, resourceID)
 }
 
-// GetSavedByUserID returns paginated saved learning resources for a user.
+// GetSavedByUserID は指定ユーザーの保存済みリソースをページネーション付きで取得する。
 func (s *LearningResourceService) GetSavedByUserID(userID uint, limit, offset int) ([]model.LearningResource, int64, error) {
 	return s.repo.FindSavedByUserID(userID, limit, offset)
 }

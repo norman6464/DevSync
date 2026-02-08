@@ -13,16 +13,20 @@ import (
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
+// GitHubService はGitHub連携のビジネスロジックを提供する。
+// OAuth認証フロー、データ同期（コントリビューション・リポジトリ・言語統計）を担当する。
 type GitHubService struct {
 	cfg        *config.Config
 	userRepo   repository.UserRepositoryInterface
 	githubRepo repository.GitHubRepositoryInterface
 }
 
+// NewGitHubService は新しいGitHubServiceインスタンスを生成する。
 func NewGitHubService(cfg *config.Config, userRepo repository.UserRepositoryInterface, githubRepo repository.GitHubRepositoryInterface) *GitHubService {
 	return &GitHubService{cfg: cfg, userRepo: userRepo, githubRepo: githubRepo}
 }
 
+// GetOAuthURL はGitHub連携用のOAuth認可URLを生成する。
 func (s *GitHubService) GetOAuthURL(state string) string {
 	return fmt.Sprintf(
 		"https://github.com/login/oauth/authorize?client_id=%s&redirect_uri=%s&scope=read:user,repo&state=%s",
@@ -30,6 +34,7 @@ func (s *GitHubService) GetOAuthURL(state string) string {
 	)
 }
 
+// GetLoginOAuthURL はGitHubログイン用のOAuth認可URLを生成する（メール取得スコープ付き）。
 func (s *GitHubService) GetLoginOAuthURL(state string) string {
 	return fmt.Sprintf(
 		"https://github.com/login/oauth/authorize?client_id=%s&redirect_uri=%s&scope=read:user,user:email,repo&state=%s",
@@ -37,6 +42,7 @@ func (s *GitHubService) GetLoginOAuthURL(state string) string {
 	)
 }
 
+// ExchangeCode はOAuth認可コードをアクセストークンに交換する。
 func (s *GitHubService) ExchangeCode(code string) (string, error) {
 	body, _ := json.Marshal(map[string]string{
 		"client_id":     s.cfg.GitHubClientID,
@@ -67,6 +73,7 @@ func (s *GitHubService) ExchangeCode(code string) (string, error) {
 	return result.AccessToken, nil
 }
 
+// GitHubUserInfo はGitHub APIから取得するユーザー情報を表す。
 type GitHubUserInfo struct {
 	ID        int64  `json:"id"`
 	Login     string `json:"login"`
@@ -75,6 +82,8 @@ type GitHubUserInfo struct {
 	AvatarURL string `json:"avatar_url"`
 }
 
+// GetGitHubUser はアクセストークンを使ってGitHubユーザー情報を取得する。
+// メールアドレスが非公開の場合は /user/emails APIから取得を試みる。
 func (s *GitHubService) GetGitHubUser(token string) (*GitHubUserInfo, error) {
 	req, _ := http.NewRequest("GET", "https://api.github.com/user", nil)
 	req.Header.Set("Authorization", "Bearer "+token)
@@ -91,7 +100,7 @@ func (s *GitHubService) GetGitHubUser(token string) (*GitHubUserInfo, error) {
 		return nil, err
 	}
 
-	// GitHub may not return email from /user if it's private, try /user/emails
+	// メールアドレスが非公開の場合、/user/emails APIからプライマリメールを取得
 	if user.Email == "" {
 		user.Email = s.fetchPrimaryEmail(token)
 	}
@@ -99,6 +108,7 @@ func (s *GitHubService) GetGitHubUser(token string) (*GitHubUserInfo, error) {
 	return &user, nil
 }
 
+// fetchPrimaryEmail はGitHub /user/emails APIから認証済みプライマリメールアドレスを取得する。
 func (s *GitHubService) fetchPrimaryEmail(token string) string {
 	req, _ := http.NewRequest("GET", "https://api.github.com/user/emails", nil)
 	req.Header.Set("Authorization", "Bearer "+token)
@@ -126,17 +136,18 @@ func (s *GitHubService) fetchPrimaryEmail(token string) string {
 	return ""
 }
 
+// SyncData はGitHubのコントリビューション、リポジトリ、言語統計を同期する。
 func (s *GitHubService) SyncData(user *model.User) error {
 	if user.GitHubToken == "" {
 		return fmt.Errorf("github not connected")
 	}
 
-	// Sync contributions
+	// コントリビューションを同期
 	if err := s.syncContributions(user); err != nil {
 		return fmt.Errorf("sync contributions: %w", err)
 	}
 
-	// Sync repos and languages
+	// リポジトリと言語統計を同期
 	if err := s.syncReposAndLanguages(user); err != nil {
 		return fmt.Errorf("sync repos: %w", err)
 	}
@@ -144,6 +155,7 @@ func (s *GitHubService) SyncData(user *model.User) error {
 	return nil
 }
 
+// syncContributions はGitHub GraphQL APIを使って過去1年のコントリビューションデータを同期する。
 func (s *GitHubService) syncContributions(user *model.User) error {
 	now := time.Now()
 	from := now.AddDate(-1, 0, 0).Format("2006-01-02T15:04:05Z")
@@ -211,6 +223,8 @@ func (s *GitHubService) syncContributions(user *model.User) error {
 	return s.githubRepo.UpsertContributions(contributions)
 }
 
+// syncReposAndLanguages はGitHub REST APIを使ってリポジトリと言語統計を同期する。
+// レート制限を考慮し、言語バイト数の取得は上位20リポジトリに限定する。
 func (s *GitHubService) syncReposAndLanguages(user *model.User) error {
 	var allRepos []struct {
 		ID          int64  `json:"id"`
@@ -261,7 +275,7 @@ func (s *GitHubService) syncReposAndLanguages(user *model.User) error {
 		page++
 	}
 
-	// Save repos
+	// リポジトリデータをモデルに変換して保存
 	var modelRepos []model.GitHubRepository
 	langMap := make(map[string]*model.GitHubLanguageStat)
 
@@ -296,7 +310,7 @@ func (s *GitHubService) syncReposAndLanguages(user *model.User) error {
 		return err
 	}
 
-	// Fetch language bytes for top repos (limit to 20 to avoid rate limiting)
+	// 上位20リポジトリの言語バイト数を取得（レート制限対策）
 	limit := 20
 	if len(allRepos) < limit {
 		limit = len(allRepos)
@@ -338,7 +352,8 @@ func (s *GitHubService) syncReposAndLanguages(user *model.User) error {
 	return s.githubRepo.UpsertLanguageStats(langStats)
 }
 
-// ConnectGitHub connects a user's GitHub account after OAuth callback.
+// ConnectGitHub はOAuthコールバック後にユーザーのGitHubアカウントを連携する。
+// 連携完了後にバックグラウンドでデータ同期を開始する。
 func (s *GitHubService) ConnectGitHub(userID uint, code, state string) error {
 	accessToken, err := s.ExchangeCode(code)
 	if err != nil {
@@ -371,7 +386,7 @@ func (s *GitHubService) ConnectGitHub(userID uint, code, state string) error {
 	return nil
 }
 
-// DisconnectGitHub disconnects a user's GitHub account.
+// DisconnectGitHub はユーザーのGitHub連携を解除し、関連データを削除する。
 func (s *GitHubService) DisconnectGitHub(userID uint) error {
 	user, err := s.userRepo.FindByID(userID)
 	if err != nil {
@@ -390,7 +405,7 @@ func (s *GitHubService) DisconnectGitHub(userID uint) error {
 	return nil
 }
 
-// SyncUserData syncs GitHub data for the given user ID.
+// SyncUserData は指定ユーザーIDのGitHubデータを同期する。
 func (s *GitHubService) SyncUserData(userID uint) error {
 	user, err := s.userRepo.FindByID(userID)
 	if err != nil {
@@ -399,17 +414,17 @@ func (s *GitHubService) SyncUserData(userID uint) error {
 	return s.SyncData(user)
 }
 
-// GetContributions returns GitHub contributions for a user.
+// GetContributions は指定ユーザーのGitHubコントリビューションデータを取得する。
 func (s *GitHubService) GetContributions(userID uint) ([]model.GitHubContribution, error) {
 	return s.githubRepo.GetContributions(userID)
 }
 
-// GetLanguages returns GitHub language stats for a user.
+// GetLanguages は指定ユーザーのGitHub言語統計を取得する。
 func (s *GitHubService) GetLanguages(userID uint) ([]model.GitHubLanguageStat, error) {
 	return s.githubRepo.GetLanguageStats(userID)
 }
 
-// GetRepos returns GitHub repos for a user.
+// GetRepos は指定ユーザーのGitHubリポジトリ一覧を取得する。
 func (s *GitHubService) GetRepos(userID uint) ([]model.GitHubRepository, error) {
 	return s.githubRepo.GetRepos(userID)
 }

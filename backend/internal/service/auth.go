@@ -12,12 +12,15 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// AuthService は認証・認可に関するビジネスロジックを提供する。
+// JWT生成・検証、パスワードハッシュ化、GitHub OAuthログインを担当する。
 type AuthService struct {
 	userRepo          repository.UserRepositoryInterface
 	passwordResetRepo repository.PasswordResetRepositoryInterface
 	jwtSecret         []byte
 }
 
+// NewAuthService は新しいAuthServiceインスタンスを生成する。
 func NewAuthService(userRepo repository.UserRepositoryInterface, passwordResetRepo repository.PasswordResetRepositoryInterface, jwtSecret string) *AuthService {
 	return &AuthService{
 		userRepo:          userRepo,
@@ -26,22 +29,27 @@ func NewAuthService(userRepo repository.UserRepositoryInterface, passwordResetRe
 	}
 }
 
+// RegisterInput はユーザー登録リクエストの入力値を表す。
 type RegisterInput struct {
 	Name     string `json:"name" binding:"required"`
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=6"`
 }
 
+// LoginInput はログインリクエストの入力値を表す。
 type LoginInput struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required"`
 }
 
+// AuthResponse は認証成功時のレスポンスを表す（JWTトークン + ユーザー情報）。
 type AuthResponse struct {
 	Token string     `json:"token"`
 	User  model.User `json:"user"`
 }
 
+// Register は新規ユーザーを登録し、JWTトークンを発行する。
+// メールアドレスの重複チェックとパスワードのbcryptハッシュ化を行う。
 func (s *AuthService) Register(input RegisterInput) (*AuthResponse, error) {
 	existing, _ := s.userRepo.FindByEmail(input.Email)
 	if existing != nil {
@@ -71,6 +79,7 @@ func (s *AuthService) Register(input RegisterInput) (*AuthResponse, error) {
 	return &AuthResponse{Token: token, User: *user}, nil
 }
 
+// Login はメールアドレスとパスワードで認証し、JWTトークンを発行する。
 func (s *AuthService) Login(input LoginInput) (*AuthResponse, error) {
 	user, err := s.userRepo.FindByEmail(input.Email)
 	if err != nil {
@@ -89,6 +98,7 @@ func (s *AuthService) Login(input LoginInput) (*AuthResponse, error) {
 	return &AuthResponse{Token: token, User: *user}, nil
 }
 
+// ValidateToken はJWTトークンを検証し、含まれるユーザーIDを返す。
 func (s *AuthService) ValidateToken(tokenString string) (uint, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -113,6 +123,7 @@ func (s *AuthService) ValidateToken(tokenString string) (uint, error) {
 	return uint(userID), nil
 }
 
+// GenerateLoginState はGitHubログイン用のCSRF防止stateトークンを生成する（有効期限5分）。
 func (s *AuthService) GenerateLoginState() (string, error) {
 	claims := jwt.MapClaims{
 		"purpose": "github_login",
@@ -122,6 +133,7 @@ func (s *AuthService) GenerateLoginState() (string, error) {
 	return token.SignedString(s.jwtSecret)
 }
 
+// ValidateLoginState はGitHubログイン用のstateトークンを検証する。
 func (s *AuthService) ValidateLoginState(state string) error {
 	token, err := jwt.Parse(state, func(token *jwt.Token) (interface{}, error) {
 		return s.jwtSecret, nil
@@ -140,8 +152,12 @@ func (s *AuthService) ValidateLoginState(state string) error {
 	return nil
 }
 
+// GitHubLogin はGitHubユーザー情報を使ってログイン/登録処理を行う。
+// 1. GitHub IDで既存ユーザーを検索 → 見つかればトークン更新してログイン
+// 2. メールアドレスで既存ユーザーを検索 → 見つかればGitHub連携してログイン
+// 3. どちらも見つからなければ新規ユーザーを作成
 func (s *AuthService) GitHubLogin(ghUser *GitHubUserInfo, accessToken string) (*AuthResponse, error) {
-	// 1. Try to find by GitHub ID
+	// 1. GitHub IDで既存ユーザーを検索
 	user, err := s.userRepo.FindByGitHubID(ghUser.ID)
 	if err == nil && user != nil {
 		user.GitHubToken = accessToken
@@ -158,7 +174,7 @@ func (s *AuthService) GitHubLogin(ghUser *GitHubUserInfo, accessToken string) (*
 		return &AuthResponse{Token: token, User: *user}, nil
 	}
 
-	// 2. Try to find by email and link
+	// 2. メールアドレスで既存ユーザーを検索してGitHub連携
 	if ghUser.Email != "" {
 		user, err = s.userRepo.FindByEmail(ghUser.Email)
 		if err == nil && user != nil {
@@ -179,7 +195,7 @@ func (s *AuthService) GitHubLogin(ghUser *GitHubUserInfo, accessToken string) (*
 		}
 	}
 
-	// 3. Create new user
+	// 3. 新規ユーザーを作成
 	name := ghUser.Name
 	if name == "" {
 		name = ghUser.Login
@@ -210,6 +226,7 @@ func (s *AuthService) GitHubLogin(ghUser *GitHubUserInfo, accessToken string) (*
 	return &AuthResponse{Token: token, User: *newUser}, nil
 }
 
+// GenerateOAuthState はGitHub連携用のOAuth stateトークンを生成する（ユーザーID埋め込み、有効期限5分）。
 func (s *AuthService) GenerateOAuthState(userID uint) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
@@ -220,6 +237,7 @@ func (s *AuthService) GenerateOAuthState(userID uint) (string, error) {
 	return token.SignedString(s.jwtSecret)
 }
 
+// ValidateOAuthState はOAuth stateトークンを検証し、埋め込まれたユーザーIDを返す。
 func (s *AuthService) ValidateOAuthState(state string) (uint, error) {
 	token, err := jwt.Parse(state, func(token *jwt.Token) (interface{}, error) {
 		return s.jwtSecret, nil
@@ -246,19 +264,20 @@ func (s *AuthService) ValidateOAuthState(state string) (uint, error) {
 	return uint(userID), nil
 }
 
-// GetMe returns the current user by ID.
+// GetMe は現在のログインユーザー情報をIDで取得する。
 func (s *AuthService) GetMe(userID uint) (*model.User, error) {
 	return s.userRepo.FindByID(userID)
 }
 
-// DeleteAccount permanently deletes a user's account after verifying password.
+// DeleteAccount はパスワード検証後にユーザーアカウントと関連データを完全削除する。
+// GitHubのみで登録したユーザー（パスワード未設定）の場合はパスワード検証をスキップする。
 func (s *AuthService) DeleteAccount(userID uint, password string) error {
 	user, err := s.userRepo.FindByID(userID)
 	if err != nil {
 		return ErrNotFound
 	}
 
-	// If user has a password (not GitHub-only), verify it
+	// パスワードが設定されている場合（GitHub専用アカウントでない場合）は検証
 	if user.Password != "" {
 		if password == "" {
 			return ErrBadRequest
@@ -271,25 +290,26 @@ func (s *AuthService) DeleteAccount(userID uint, password string) error {
 	return s.userRepo.DeleteWithRelatedData(userID)
 }
 
-// RequestPasswordReset generates a password reset token.
+// RequestPasswordReset はパスワードリセットトークンを生成する。
+// セキュリティ上、メールアドレスが存在しない場合でもエラーを返さない。
 func (s *AuthService) RequestPasswordReset(email string) (string, error) {
 	user, err := s.userRepo.FindByEmail(email)
 	if err != nil {
-		// Don't reveal if email exists
+		// メールアドレスの存在有無を漏らさない
 		return "", nil
 	}
 
-	// Invalidate any existing tokens for this user
+	// 既存トークンを無効化
 	s.passwordResetRepo.InvalidateUserTokens(user.ID)
 
-	// Generate secure random token
+	// セキュアなランダムトークンを生成
 	tokenBytes := make([]byte, 32)
 	if _, err := rand.Read(tokenBytes); err != nil {
 		return "", err
 	}
 	token := hex.EncodeToString(tokenBytes)
 
-	// Create reset token (expires in 1 hour)
+	// リセットトークンを作成（有効期限1時間）
 	resetToken := &model.PasswordResetToken{
 		UserID:    user.ID,
 		Token:     token,
@@ -302,7 +322,7 @@ func (s *AuthService) RequestPasswordReset(email string) (string, error) {
 	return token, nil
 }
 
-// ResetPassword resets the password using a valid token.
+// ResetPassword は有効なリセットトークンを使ってパスワードを再設定する。
 func (s *AuthService) ResetPassword(token string, newPassword string) error {
 	resetToken, err := s.passwordResetRepo.FindByToken(token)
 	if err != nil {
@@ -326,6 +346,7 @@ func (s *AuthService) ResetPassword(token string, newPassword string) error {
 	return nil
 }
 
+// generateToken は指定ユーザーIDのJWTトークンを生成する（有効期限72時間）。
 func (s *AuthService) generateToken(userID uint) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,

@@ -7,37 +7,38 @@ import (
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
-// ChatRoomService handles chat room business logic.
+// ChatRoomService はグループチャットのビジネスロジックを提供する。
+// チャットルームのCRUD操作、メンバーシップ管理、WebSocket経由のメッセージ配信を担当する。
 type ChatRoomService struct {
 	roomRepo    repository.ChatRoomRepositoryInterface
 	messageRepo repository.GroupMessageRepositoryInterface
 	hub         *Hub
 }
 
-// NewChatRoomService creates a new ChatRoomService.
+// NewChatRoomService は新しいChatRoomServiceインスタンスを生成する。
 func NewChatRoomService(roomRepo repository.ChatRoomRepositoryInterface, messageRepo repository.GroupMessageRepositoryInterface, hub *Hub) *ChatRoomService {
 	return &ChatRoomService{roomRepo: roomRepo, messageRepo: messageRepo, hub: hub}
 }
 
-// Create creates a new chat room and adds the owner and specified members.
+// Create は新しいチャットルームを作成し、オーナーと指定メンバーを追加する。
 func (s *ChatRoomService) Create(room *model.ChatRoom, memberIDs []uint) (*model.ChatRoom, error) {
 	if err := s.roomRepo.Create(room); err != nil {
 		return nil, err
 	}
 
-	// Add owner as member
+	// オーナーをメンバーとして追加
 	if err := s.roomRepo.AddMember(room.ID, room.OwnerID); err != nil {
 		return nil, err
 	}
 
-	// Add other members
+	// その他のメンバーを追加（オーナーの重複追加を防止）
 	for _, memberID := range memberIDs {
 		if memberID != room.OwnerID {
 			s.roomRepo.AddMember(room.ID, memberID)
 		}
 	}
 
-	// Reload with associations
+	// アソシエーション付きで再取得
 	created, err := s.roomRepo.FindByID(room.ID)
 	if err != nil {
 		return room, nil
@@ -45,12 +46,12 @@ func (s *ChatRoomService) Create(room *model.ChatRoom, memberIDs []uint) (*model
 	return created, nil
 }
 
-// GetByUserID returns all chat rooms for a user.
+// GetByUserID は指定ユーザーが参加している全チャットルームを取得する。
 func (s *ChatRoomService) GetByUserID(userID uint) ([]model.ChatRoom, error) {
 	return s.roomRepo.FindByUserID(userID)
 }
 
-// GetByID returns a chat room by ID after verifying membership.
+// GetByID はメンバーシップを検証した後、チャットルームを取得する。
 func (s *ChatRoomService) GetByID(roomID, userID uint) (*model.ChatRoom, error) {
 	isMember, err := s.roomRepo.IsMember(roomID, userID)
 	if err != nil || !isMember {
@@ -60,7 +61,7 @@ func (s *ChatRoomService) GetByID(roomID, userID uint) (*model.ChatRoom, error) 
 	return s.roomRepo.FindByID(roomID)
 }
 
-// Update updates a chat room after verifying ownership.
+// Update はオーナー権限を検証した後、チャットルーム情報を更新する。
 func (s *ChatRoomService) Update(roomID, userID uint, name, description string) (*model.ChatRoom, error) {
 	room, err := s.roomRepo.FindByID(roomID)
 	if err != nil {
@@ -81,7 +82,7 @@ func (s *ChatRoomService) Update(roomID, userID uint, name, description string) 
 	return room, nil
 }
 
-// Delete deletes a chat room after verifying ownership.
+// Delete はオーナー権限を検証した後、チャットルームを削除する。
 func (s *ChatRoomService) Delete(roomID, userID uint) error {
 	room, err := s.roomRepo.FindByID(roomID)
 	if err != nil {
@@ -93,7 +94,7 @@ func (s *ChatRoomService) Delete(roomID, userID uint) error {
 	return s.roomRepo.Delete(roomID)
 }
 
-// GetMembers returns all members of a chat room after verifying membership.
+// GetMembers はメンバーシップを検証した後、チャットルームの全メンバーを取得する。
 func (s *ChatRoomService) GetMembers(roomID, userID uint) ([]model.ChatRoomMember, error) {
 	isMember, err := s.roomRepo.IsMember(roomID, userID)
 	if err != nil || !isMember {
@@ -102,7 +103,7 @@ func (s *ChatRoomService) GetMembers(roomID, userID uint) ([]model.ChatRoomMembe
 	return s.roomRepo.GetMembers(roomID)
 }
 
-// AddMember adds a member to a chat room after verifying the requester is a member.
+// AddMember はリクエスト者のメンバーシップを検証した後、新しいメンバーを追加する。
 func (s *ChatRoomService) AddMember(roomID, userID, targetUserID uint) error {
 	isMember, err := s.roomRepo.IsMember(roomID, userID)
 	if err != nil || !isMember {
@@ -111,8 +112,8 @@ func (s *ChatRoomService) AddMember(roomID, userID, targetUserID uint) error {
 	return s.roomRepo.AddMember(roomID, targetUserID)
 }
 
-// RemoveMember removes a member from a chat room.
-// Owner can remove anyone, others can only remove themselves.
+// RemoveMember はチャットルームからメンバーを除外する。
+// オーナーは誰でも除外可能、一般メンバーは自分自身のみ退出可能。
 func (s *ChatRoomService) RemoveMember(roomID, userID, targetUserID uint) error {
 	room, err := s.roomRepo.FindByID(roomID)
 	if err != nil {
@@ -124,7 +125,7 @@ func (s *ChatRoomService) RemoveMember(roomID, userID, targetUserID uint) error 
 	return s.roomRepo.RemoveMember(roomID, targetUserID)
 }
 
-// GetMessages returns paginated messages for a chat room after verifying membership.
+// GetMessages はメンバーシップを検証した後、チャットルームのメッセージを取得する。
 func (s *ChatRoomService) GetMessages(roomID, userID uint, page, limit int) ([]model.GroupMessage, error) {
 	isMember, err := s.roomRepo.IsMember(roomID, userID)
 	if err != nil || !isMember {
@@ -133,7 +134,8 @@ func (s *ChatRoomService) GetMessages(roomID, userID uint, page, limit int) ([]m
 	return s.messageRepo.FindByRoomID(roomID, page, limit)
 }
 
-// SendMessage sends a message to a chat room after verifying membership.
+// SendMessage はメンバーシップを検証した後、メッセージを送信する。
+// WebSocket経由でルーム内の他メンバーにリアルタイム配信する。
 func (s *ChatRoomService) SendMessage(roomID, userID uint, content string) (*model.GroupMessage, error) {
 	isMember, err := s.roomRepo.IsMember(roomID, userID)
 	if err != nil || !isMember {
@@ -149,11 +151,11 @@ func (s *ChatRoomService) SendMessage(roomID, userID uint, content string) (*mod
 		return nil, err
 	}
 
-	// Reload with sender info
+	// 送信者情報を取得してセット
 	msg.Sender = &model.User{}
 	s.messageRepo.FindSenderByID(msg)
 
-	// Send via WebSocket to all room members
+	// WebSocket経由でルーム内の他メンバーに配信
 	go func() {
 		wsMsg := WSMessage{
 			Type:       "group_message",
@@ -169,7 +171,7 @@ func (s *ChatRoomService) SendMessage(roomID, userID uint, content string) (*mod
 	return msg, nil
 }
 
-// IsMember checks if a user is a member of a chat room.
+// IsMember は指定ユーザーがチャットルームのメンバーかを判定する。
 func (s *ChatRoomService) IsMember(roomID, userID uint) (bool, error) {
 	return s.roomRepo.IsMember(roomID, userID)
 }

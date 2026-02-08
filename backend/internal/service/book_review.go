@@ -5,37 +5,37 @@ import (
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
-// BookReviewService handles book review business logic.
+// BookReviewService は書籍レビューのビジネスロジックを提供する。
 type BookReviewService struct {
 	repo repository.BookReviewRepositoryInterface
 }
 
-// NewBookReviewService creates a new BookReviewService.
+// NewBookReviewService は新しいBookReviewServiceインスタンスを生成する。
 func NewBookReviewService(repo repository.BookReviewRepositoryInterface) *BookReviewService {
 	return &BookReviewService{repo: repo}
 }
 
-// Create creates a new book review.
+// Create は新しい書籍レビューを作成する。
 func (s *BookReviewService) Create(review *model.BookReview) error {
 	return s.repo.Create(review)
 }
 
-// GetByID returns a book review by ID.
+// GetByID は指定IDの書籍レビューを取得する。
 func (s *BookReviewService) GetByID(id uint) (*model.BookReview, error) {
 	return s.repo.FindByID(id)
 }
 
-// GetByUserID returns all book reviews for a user.
+// GetByUserID は指定ユーザーの全書籍レビューを取得する。
 func (s *BookReviewService) GetByUserID(userID uint) ([]model.BookReview, error) {
 	return s.repo.FindByUserID(userID)
 }
 
-// GetAll returns paginated book reviews.
+// GetAll は書籍レビュー一覧をページネーション付きで取得する。
 func (s *BookReviewService) GetAll(limit, offset int) ([]model.BookReview, int64, error) {
 	return s.repo.FindAll(limit, offset)
 }
 
-// Update updates a book review after verifying ownership.
+// Update は所有権を検証した後、書籍レビューを更新する。
 func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (*model.BookReview, error) {
 	review, err := s.repo.FindByID(id)
 	if err != nil {
@@ -70,7 +70,7 @@ func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (
 	return review, nil
 }
 
-// Delete deletes a book review after verifying ownership.
+// Delete は所有権を検証した後、書籍レビューを削除する。
 func (s *BookReviewService) Delete(id, userID uint) error {
 	review, err := s.repo.FindByID(id)
 	if err != nil {

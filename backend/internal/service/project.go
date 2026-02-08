@@ -5,42 +5,43 @@ import (
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
-// ProjectService handles project business logic.
+// ProjectService はプロジェクトショーケースのビジネスロジックを提供する。
+// プロジェクトのCRUD操作と注目（featured）ステータス管理を担当する。
 type ProjectService struct {
 	repo repository.ProjectRepositoryInterface
 }
 
-// NewProjectService creates a new ProjectService.
+// NewProjectService は新しいProjectServiceインスタンスを生成する。
 func NewProjectService(repo repository.ProjectRepositoryInterface) *ProjectService {
 	return &ProjectService{repo: repo}
 }
 
-// Create creates a new project.
+// Create は新しいプロジェクトを作成する。
 func (s *ProjectService) Create(project *model.Project) error {
 	return s.repo.Create(project)
 }
 
-// GetByID returns a project by ID.
+// GetByID は指定IDのプロジェクトを取得する。
 func (s *ProjectService) GetByID(id uint) (*model.Project, error) {
 	return s.repo.FindByID(id)
 }
 
-// GetByUserID returns all projects for a user.
+// GetByUserID は指定ユーザーの全プロジェクトを取得する。
 func (s *ProjectService) GetByUserID(userID uint) ([]model.Project, error) {
 	return s.repo.FindByUserID(userID)
 }
 
-// GetFeaturedByUserID returns featured projects for a user.
+// GetFeaturedByUserID は指定ユーザーの注目プロジェクトのみを取得する。
 func (s *ProjectService) GetFeaturedByUserID(userID uint) ([]model.Project, error) {
 	return s.repo.FindFeaturedByUserID(userID)
 }
 
-// GetAll returns paginated projects.
+// GetAll はプロジェクト一覧をページネーション付きで取得する。
 func (s *ProjectService) GetAll(limit, offset int) ([]model.Project, int64, error) {
 	return s.repo.FindAll(limit, offset)
 }
 
-// Update updates a project after verifying ownership.
+// Update は所有権を検証した後、プロジェクトを更新する。
 func (s *ProjectService) Update(id, userID uint, updates *model.Project) (*model.Project, error) {
 	project, err := s.repo.FindByID(id)
 	if err != nil {
@@ -87,7 +88,7 @@ func (s *ProjectService) Update(id, userID uint, updates *model.Project) (*model
 	return project, nil
 }
 
-// UpdateFeatured updates the featured status of a project after verifying ownership.
+// UpdateFeatured は所有権を検証した後、プロジェクトの注目ステータスを更新する。
 func (s *ProjectService) UpdateFeatured(id, userID uint, featured bool) (*model.Project, error) {
 	project, err := s.repo.FindByID(id)
 	if err != nil {
@@ -105,7 +106,7 @@ func (s *ProjectService) UpdateFeatured(id, userID uint, featured bool) (*model.
 	return project, nil
 }
 
-// Delete deletes a project after verifying ownership.
+// Delete は所有権を検証した後、プロジェクトを削除する。
 func (s *ProjectService) Delete(id, userID uint) error {
 	project, err := s.repo.FindByID(id)
 	if err != nil {

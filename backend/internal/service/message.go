@@ -5,37 +5,39 @@ import (
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
-// MessageService handles message business logic.
+// MessageService はダイレクトメッセージのビジネスロジックを提供する。
+// メッセージ送信時に受信者への通知も自動作成する。
 type MessageService struct {
 	repo                repository.MessageRepositoryInterface
 	notificationService *NotificationService
 }
 
-// NewMessageService creates a new MessageService.
+// NewMessageService は新しいMessageServiceインスタンスを生成する。
 func NewMessageService(repo repository.MessageRepositoryInterface, notificationService *NotificationService) *MessageService {
 	return &MessageService{repo: repo, notificationService: notificationService}
 }
 
-// GetConversations returns all conversations for a user.
+// GetConversations は指定ユーザーの全会話一覧を取得する。
 func (s *MessageService) GetConversations(userID uint) ([]repository.ConversationSummary, error) {
 	return s.repo.GetConversations(userID)
 }
 
-// GetConversation returns paginated messages between two users.
+// GetConversation は2ユーザー間のメッセージをページネーション付きで取得する。
+// 取得と同時に、相手からのメッセージを既読にマークする。
 func (s *MessageService) GetConversation(userID, otherUserID uint, page, limit int) ([]model.Message, error) {
-	// Mark messages as read
+	// 相手からのメッセージを既読にマーク
 	s.repo.MarkAsRead(otherUserID, userID)
 
 	return s.repo.GetConversation(userID, otherUserID, page, limit)
 }
 
-// SendMessage sends a message and notifies the receiver.
+// SendMessage はメッセージを送信し、受信者に非同期で通知を作成する。
 func (s *MessageService) SendMessage(msg *model.Message) error {
 	if err := s.repo.Create(msg); err != nil {
 		return err
 	}
 
-	// Create notification for message receiver
+	// 受信者への通知を非同期で作成
 	go func(senderID, receiverID uint) {
 		notification := &model.Notification{
 			UserID:  receiverID,
@@ -48,7 +50,7 @@ func (s *MessageService) SendMessage(msg *model.Message) error {
 	return nil
 }
 
-// MarkAsRead marks messages from a sender as read for a receiver.
+// MarkAsRead は指定送信者から受信者へのメッセージを既読にマークする。
 func (s *MessageService) MarkAsRead(senderID, receiverID uint) error {
 	return s.repo.MarkAsRead(senderID, receiverID)
 }
