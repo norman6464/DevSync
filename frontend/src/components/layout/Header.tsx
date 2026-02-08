@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ChevronDown, FolderKanban, BookOpen, Library } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import Avatar from '../common/Avatar';
 import ThemeToggle from '../common/ThemeToggle';
@@ -18,13 +19,21 @@ const navItems = [
   { path: '/roadmaps', key: 'nav.roadmaps' },
 ] as const;
 
+const moreItems = [
+  { path: '/projects', key: 'nav.projects', icon: FolderKanban },
+  { path: '/resources', key: 'nav.resources', icon: Library },
+  { path: '/book-reviews', key: 'nav.bookReviews', icon: BookOpen },
+] as const;
+
 export default function Header() {
   const { t } = useTranslation();
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const moreRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = () => {
     logout();
@@ -36,9 +45,12 @@ export default function Header() {
       ? 'text-white bg-gray-800'
       : 'text-white/70 hover:text-white';
 
+  const isMoreActive = moreItems.some((item) => location.pathname === item.path);
+
   // Close mobile menu on route change
   useEffect(() => {
     setMobileOpen(false);
+    setMoreOpen(false);
   }, [location.pathname]);
 
   // Close mobile menu on outside click
@@ -52,6 +64,18 @@ export default function Header() {
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, [mobileOpen]);
+
+  // Close more dropdown on outside click
+  useEffect(() => {
+    if (!moreOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
+        setMoreOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [moreOpen]);
 
   return (
     <header className="bg-gray-900/80 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-50">
@@ -96,6 +120,40 @@ export default function Header() {
             </Link>
           ))}
         </nav>
+
+        {/* More dropdown - outside nav to avoid overflow clipping */}
+        <div className="hidden md:block relative" ref={moreRef}>
+          <button
+            onClick={() => setMoreOpen(!moreOpen)}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
+              isMoreActive ? 'text-white bg-gray-800' : 'text-white/70 hover:text-white'
+            }`}
+            aria-expanded={moreOpen}
+          >
+            {t('nav.more')}
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${moreOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {moreOpen && (
+            <div className="absolute top-full right-0 mt-1 w-48 bg-gray-900 border border-gray-700 rounded-lg shadow-xl py-1 z-50">
+              {moreItems.map(({ path, key, icon: Icon }) => (
+                <Link
+                  key={path}
+                  to={path}
+                  className={`flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors ${
+                    location.pathname === path
+                      ? 'text-white bg-gray-800'
+                      : 'text-gray-300 hover:text-white hover:bg-gray-800/50'
+                  }`}
+                  onClick={() => setMoreOpen(false)}
+                >
+                  <Icon className="w-4 h-4" />
+                  {t(key)}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Right side */}
         <div className="flex items-center gap-2 ml-auto">
@@ -148,6 +206,19 @@ export default function Header() {
                 to={path}
                 className={`px-4 py-2.5 rounded-md text-sm font-medium transition-colors ${isActive(path)}`}
               >
+                {t(key)}
+              </Link>
+            ))}
+
+            {/* More items separator */}
+            <div className="border-t border-gray-800 my-1" />
+            {moreItems.map(({ path, key, icon: Icon }) => (
+              <Link
+                key={path}
+                to={path}
+                className={`flex items-center gap-2.5 px-4 py-2.5 rounded-md text-sm font-medium transition-colors ${isActive(path)}`}
+              >
+                <Icon className="w-4 h-4" />
                 {t(key)}
               </Link>
             ))}

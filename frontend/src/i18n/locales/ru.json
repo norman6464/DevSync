@@ -35,7 +35,8 @@
     "signOut": "Выйти",
     "bookReviews": "Обзоры книг",
     "qa": "Q&A",
-    "roadmaps": "Дорожные карты"
+    "roadmaps": "Дорожные карты",
+    "more": "Ещё"
   },
   "auth": {
     "login": "Войти",

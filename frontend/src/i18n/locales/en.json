@@ -35,7 +35,8 @@
     "profile": "Profile",
     "signOut": "Sign out",
     "qa": "Q&A",
-    "roadmaps": "Learning Roadmaps"
+    "roadmaps": "Learning Roadmaps",
+    "more": "More"
   },
   "auth": {
     "login": "Login",

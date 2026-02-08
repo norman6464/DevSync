@@ -35,7 +35,8 @@
     "profile": "プロフィール",
     "signOut": "ログアウト",
     "qa": "Q&A",
-    "roadmaps": "ロードマップ"
+    "roadmaps": "ロードマップ",
+    "more": "その他"
   },
   "auth": {
     "login": "ログイン",

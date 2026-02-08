@@ -35,7 +35,8 @@
     "signOut": "로그아웃",
     "bookReviews": "도서 리뷰",
     "qa": "Q&A",
-    "roadmaps": "학습 로드맵"
+    "roadmaps": "학습 로드맵",
+    "more": "더보기"
   },
   "auth": {
     "login": "로그인",
