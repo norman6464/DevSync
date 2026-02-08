@@ -174,6 +174,12 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Password has been reset successfully"})
 }
 
+// Logout はユーザーのログアウトを処理し、認証Cookieをクリアする。
+func (h *AuthHandler) Logout(c *gin.Context) {
+	// TODO: コミット4でCookieクリアを実装
+	c.JSON(http.StatusOK, gin.H{"message": "logged out successfully"})
+}
+
 // DeleteAccount はユーザーアカウントを完全に削除する。
 // パスワード検証を行い、関連する全データを削除する。
 func (h *AuthHandler) DeleteAccount(c *gin.Context) {
