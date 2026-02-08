@@ -231,6 +231,45 @@ body {
 }
 
 /* ============================================
+   Chat message bubbles - preserved in both themes
+   ============================================ */
+.chat-bubble-own {
+  background-color: #374151;
+  color: #ffffff;
+}
+
+.chat-bubble-other {
+  background-color: #1f2937;
+  color: #f3f4f6;
+}
+
+.chat-bubble-time-own {
+  color: #9ca3af;
+}
+
+.chat-bubble-time-other {
+  color: #6b7280;
+}
+
+.light .chat-bubble-own {
+  background-color: #e5e7eb;
+  color: #111827;
+}
+
+.light .chat-bubble-other {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+.light .chat-bubble-time-own {
+  color: #6b7280;
+}
+
+.light .chat-bubble-time-other {
+  color: #9ca3af;
+}
+
+/* ============================================
    Utility classes
    ============================================ */
 .scrollbar-hide {
