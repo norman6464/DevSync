@@ -54,11 +54,13 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	qiitaService := service.NewQiitaService()
 	notificationService := service.NewNotificationService(notificationRepo)
 	postService := service.NewPostService(postRepo, notificationService)
+	userService := service.NewUserService(userRepo)
+	followService := service.NewFollowService(followRepo)
 
 	// Handlers
 	authHandler := handler.NewAuthHandler(authService, githubService, userRepo, passwordResetRepo)
-	userHandler := handler.NewUserHandler(userRepo)
-	followHandler := handler.NewFollowHandler(followRepo)
+	userHandler := handler.NewUserHandler(userService)
+	followHandler := handler.NewFollowHandler(followService)
 	githubHandler := handler.NewGitHubHandler(githubService, authService, userRepo, githubRepo)
 	postHandler := handler.NewPostHandler(postService)
 	rankingHandler := handler.NewRankingHandler(rankingRepo)

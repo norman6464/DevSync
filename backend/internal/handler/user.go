@@ -1,34 +1,25 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/repository"
+	"github.com/norman6464/devsync/backend/internal/service"
 )
 
 type UserHandler struct {
-	repo *repository.UserRepository
+	service *service.UserService
 }
 
-func NewUserHandler(repo *repository.UserRepository) *UserHandler {
-	return &UserHandler{repo: repo}
+func NewUserHandler(s *service.UserService) *UserHandler {
+	return &UserHandler{service: s}
 }
 
 func (h *UserHandler) GetAll(c *gin.Context) {
 	q := c.Query("q")
-	if q != "" {
-		users, err := h.repo.Search(q)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(http.StatusOK, users)
-		return
-	}
-
-	users, err := h.repo.FindAll()
+	users, err := h.service.GetAll(q)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -43,7 +34,7 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	user, err := h.repo.FindByID(uint(id))
+	user, err := h.service.GetByID(uint(id))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
@@ -64,7 +55,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 		return
 	}
 
-	existing, err := h.repo.FindByID(uint(id))
+	existing, err := h.service.GetByID(uint(id))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
@@ -98,7 +89,11 @@ func (h *UserHandler) Update(c *gin.Context) {
 		existing.OnboardingCompleted = *input.OnboardingCompleted
 	}
 
-	if err := h.repo.Update(existing); err != nil {
+	if err := h.service.Update(existing); err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
