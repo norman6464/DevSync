@@ -2,7 +2,7 @@
 -- DevSync データベーススキーマ定義（schema.sql）
 -- PostgreSQL 15 | GORMのAutoMigrateが実際に生成するスキーマと完全一致
 -- 生成元: backend/internal/model/*.go（GORMモデル定義）
--- テーブル数: 29 | カラム数: 242
+-- テーブル数: 29 | カラム数: 244
 -- ============================================================================
 
 -- ============================================================================
@@ -22,6 +22,8 @@ CREATE TABLE users (
     git_hub_connected    BOOLEAN   DEFAULT false,
     zenn_username         TEXT,
     qiita_username        TEXT,
+    at_coder_username    TEXT,
+    paiza_rank           TEXT,
     skills_languages     TEXT,
     skills_frameworks    TEXT,
     onboarding_completed BOOLEAN   DEFAULT false,

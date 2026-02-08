@@ -9,6 +9,8 @@ export interface User {
   github_connected: boolean;
   zenn_username: string;
   qiita_username: string;
+  atcoder_username: string;
+  paiza_rank: string;
   skills_languages: string;
   skills_frameworks: string;
   onboarding_completed: boolean;

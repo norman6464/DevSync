@@ -122,7 +122,9 @@
     "articles": "articles",
     "viewAllOnZenn": "View all on Zenn",
     "qiitaArticles": "Qiita Articles",
-    "viewAllOnQiita": "View all on Qiita"
+    "viewAllOnQiita": "View all on Qiita",
+    "competitiveProgramming": "Competitive Programming",
+    "paizaRankLabel": "paiza Rank {{rank}}"
   },
   "settings": {
     "title": "Settings",
@@ -161,7 +163,22 @@
     "qiitaDescription": "Connect your Qiita account to display your articles.",
     "qiitaUsername": "Qiita Username",
     "qiitaConnected": "Qiita connected successfully",
-    "qiitaInvalidUsername": "Invalid Qiita username"
+    "qiitaInvalidUsername": "Invalid Qiita username",
+    "atcoder": "AtCoder",
+    "atcoderDescription": "Connect your AtCoder account to display your rating.",
+    "atcoderUsername": "AtCoder Username",
+    "atcoderConnected": "AtCoder connected successfully",
+    "atcoderInvalidUsername": "Invalid AtCoder username",
+    "paiza": "paiza",
+    "paizaDescription": "Set your paiza skill check rank.",
+    "paizaRankLabel": "paiza Rank",
+    "paizaSelectRank": "Select rank",
+    "paizaRankS": "(Highest)",
+    "paizaRankA": "(Advanced)",
+    "paizaRankB": "(Upper Intermediate)",
+    "paizaRankC": "(Intermediate)",
+    "paizaRankD": "(Lower Intermediate)",
+    "paizaRankE": "(Beginner)"
   },
   "explore": {
     "title": "Discover Developers",
@@ -692,6 +709,8 @@
     "githubDescription": "Sync contributions, repos, and language stats",
     "zennDescription": "Sync your Zenn articles",
     "qiitaDescription": "Sync your Qiita articles",
+    "atcoderDescription": "Sync your AtCoder rating",
+    "paizaDescription": "Set your paiza skill check rank",
     "completeTitle": "Setup Complete!",
     "completeDescription": "You're all set. Start exploring your dashboard.",
     "next": "Next",

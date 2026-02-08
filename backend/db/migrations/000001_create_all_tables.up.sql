@@ -18,6 +18,8 @@ CREATE TABLE IF NOT EXISTS users (
     git_hub_connected    BOOLEAN   DEFAULT false,
     zenn_username         TEXT,
     qiita_username        TEXT,
+    at_coder_username    TEXT,
+    paiza_rank           TEXT,
     skills_languages     TEXT,
     skills_frameworks    TEXT,
     onboarding_completed BOOLEAN   DEFAULT false,

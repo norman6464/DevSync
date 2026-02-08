@@ -122,7 +122,9 @@
     "articles": "статей",
     "viewAllOnZenn": "Смотреть все на Zenn",
     "qiitaArticles": "Статьи Qiita",
-    "viewAllOnQiita": "Смотреть все на Qiita"
+    "viewAllOnQiita": "Смотреть все на Qiita",
+    "competitiveProgramming": "Спортивное программирование",
+    "paizaRankLabel": "paiza Ранг {{rank}}"
   },
   "settings": {
     "title": "Настройки",
@@ -161,7 +163,22 @@
     "qiitaDescription": "Подключите свой аккаунт Qiita для отображения ваших статей.",
     "qiitaUsername": "Имя пользователя Qiita",
     "qiitaConnected": "Qiita успешно подключен",
-    "qiitaInvalidUsername": "Недействительное имя пользователя Qiita"
+    "qiitaInvalidUsername": "Недействительное имя пользователя Qiita",
+    "atcoder": "AtCoder",
+    "atcoderDescription": "Подключите свой аккаунт AtCoder для отображения вашего рейтинга.",
+    "atcoderUsername": "Имя пользователя AtCoder",
+    "atcoderConnected": "AtCoder успешно подключен",
+    "atcoderInvalidUsername": "Недействительное имя пользователя AtCoder",
+    "paiza": "paiza",
+    "paizaDescription": "Установите ваш ранг paiza skill check.",
+    "paizaRankLabel": "Ранг paiza",
+    "paizaSelectRank": "Выберите ранг",
+    "paizaRankS": "(Наивысший)",
+    "paizaRankA": "(Продвинутый)",
+    "paizaRankB": "(Выше среднего)",
+    "paizaRankC": "(Средний)",
+    "paizaRankD": "(Ниже среднего)",
+    "paizaRankE": "(Начинающий)"
   },
   "explore": {
     "title": "Найти разработчиков",
@@ -692,6 +709,8 @@
     "githubDescription": "Синхронизация вкладов, репозиториев и языковой статистики",
     "zennDescription": "Синхронизация статей Zenn",
     "qiitaDescription": "Синхронизация статей Qiita",
+    "atcoderDescription": "Синхронизация рейтинга AtCoder",
+    "paizaDescription": "Установить ранг paiza skill check",
     "completeTitle": "Настройка завершена!",
     "completeDescription": "Всё готово. Начните работу с панели управления.",
     "next": "Далее",

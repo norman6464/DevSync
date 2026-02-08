@@ -19,6 +19,8 @@ type User struct {
 	GitHubConnected     bool      `json:"github_connected" gorm:"default:false"`     // GitHub連携済みフラグ
 	ZennUsername        string    `json:"zenn_username"`
 	QiitaUsername       string    `json:"qiita_username"`
+	AtCoderUsername     string    `json:"atcoder_username"`                          // AtCoderユーザー名
+	PaizaRank           string    `json:"paiza_rank"`                                // paizaランク（S/A/B/C/D/E、自己申告）
 	SkillsLanguages     string    `json:"skills_languages"`                          // プログラミング言語スキル（カンマ区切り）
 	SkillsFrameworks    string    `json:"skills_frameworks"`                         // フレームワークスキル（カンマ区切り）
 	OnboardingCompleted bool      `json:"onboarding_completed" gorm:"default:false"` // 初回セットアップ完了フラグ

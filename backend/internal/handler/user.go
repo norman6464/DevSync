@@ -74,6 +74,8 @@ func (h *UserHandler) Update(c *gin.Context) {
 		AvatarURL           string  `json:"avatar_url"`
 		SkillsLanguages     *string `json:"skills_languages"`
 		SkillsFrameworks    *string `json:"skills_frameworks"`
+		AtCoderUsername     *string `json:"atcoder_username"`
+		PaizaRank           *string `json:"paiza_rank"`
 		OnboardingCompleted *bool   `json:"onboarding_completed"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -91,6 +93,12 @@ func (h *UserHandler) Update(c *gin.Context) {
 	}
 	if input.SkillsFrameworks != nil {
 		existing.SkillsFrameworks = *input.SkillsFrameworks
+	}
+	if input.AtCoderUsername != nil {
+		existing.AtCoderUsername = *input.AtCoderUsername
+	}
+	if input.PaizaRank != nil {
+		existing.PaizaRank = *input.PaizaRank
 	}
 	if input.OnboardingCompleted != nil {
 		existing.OnboardingCompleted = *input.OnboardingCompleted

@@ -7,6 +7,7 @@ import { updateUser } from '../api/users';
 import { getGitHubConnectURL } from '../api/github';
 import { connectZenn } from '../api/zenn';
 import { connectQiita } from '../api/qiita';
+import { connectAtCoder } from '../api/atcoder';
 import toast from 'react-hot-toast';
 
 const LANGUAGES = [
@@ -51,8 +52,11 @@ export default function OnboardingPage() {
   // Step 3: Integrations
   const [zennUsername, setZennUsername] = useState('');
   const [qiitaUsername, setQiitaUsername] = useState('');
+  const [atcoderUsername, setAtcoderUsername] = useState('');
   const [connectingZenn, setConnectingZenn] = useState(false);
   const [connectingQiita, setConnectingQiita] = useState(false);
+  const [connectingAtcoder, setConnectingAtcoder] = useState(false);
+  const [paizaRank, setPaizaRank] = useState('');
 
   if (!user) return null;
   if (user.onboarding_completed) return <Navigate to="/" replace />;
@@ -135,6 +139,32 @@ export default function OnboardingPage() {
       toast.error(t('settings.qiitaInvalidUsername'));
     } finally {
       setConnectingQiita(false);
+    }
+  };
+
+  const handleConnectAtCoder = async () => {
+    if (!atcoderUsername.trim()) return;
+    setConnectingAtcoder(true);
+    try {
+      const { data } = await connectAtCoder(atcoderUsername.trim());
+      setUser(data);
+      setAtcoderUsername('');
+      toast.success(t('settings.atcoderConnected'));
+    } catch {
+      toast.error(t('settings.atcoderInvalidUsername'));
+    } finally {
+      setConnectingAtcoder(false);
+    }
+  };
+
+  const handleSavePaizaRank = async () => {
+    if (!paizaRank) return;
+    try {
+      const { data } = await updateUser(user.id, { paiza_rank: paizaRank });
+      setUser(data);
+      toast.success(t('settings.saved'));
+    } catch {
+      toast.error(t('settings.saveFailed'));
     }
   };
 
@@ -442,6 +472,80 @@ export default function OnboardingPage() {
                         className="px-4 py-2 bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors whitespace-nowrap"
                       >
                         {connectingQiita ? t('common.loading') : t('settings.connect')}
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* AtCoder */}
+                <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-6 h-6 bg-gray-700 rounded flex items-center justify-center text-white font-bold text-xs">A</div>
+                    <div>
+                      <h3 className="text-sm font-medium text-white">AtCoder</h3>
+                      <p className="text-xs text-gray-400">{t('onboarding.atcoderDescription')}</p>
+                    </div>
+                  </div>
+                  {user.atcoder_username ? (
+                    <div className="flex items-center gap-2 text-green-400 text-sm">
+                      <CheckCircle className="w-4 h-4" />
+                      <span>{t('settings.connected')} - @{user.atcoder_username}</span>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={atcoderUsername}
+                        onChange={(e) => setAtcoderUsername(e.target.value)}
+                        placeholder={t('settings.atcoderUsername')}
+                        className={`${inputClass} flex-1`}
+                      />
+                      <button
+                        onClick={handleConnectAtCoder}
+                        disabled={connectingAtcoder || !atcoderUsername.trim()}
+                        className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors whitespace-nowrap"
+                      >
+                        {connectingAtcoder ? t('common.loading') : t('settings.connect')}
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* paiza */}
+                <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-6 h-6 bg-emerald-700 rounded flex items-center justify-center text-white font-bold text-xs">P</div>
+                    <div>
+                      <h3 className="text-sm font-medium text-white">paiza</h3>
+                      <p className="text-xs text-gray-400">{t('onboarding.paizaDescription')}</p>
+                    </div>
+                  </div>
+                  {user.paiza_rank ? (
+                    <div className="flex items-center gap-2 text-green-400 text-sm">
+                      <CheckCircle className="w-4 h-4" />
+                      <span>{t('settings.connected')} - {t('settings.paizaRankLabel')}: {user.paiza_rank}</span>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <select
+                        value={paizaRank}
+                        onChange={(e) => setPaizaRank(e.target.value)}
+                        className={`${inputClass} flex-1`}
+                      >
+                        <option value="">{t('settings.paizaSelectRank')}</option>
+                        <option value="S">S</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                        <option value="E">E</option>
+                      </select>
+                      <button
+                        onClick={handleSavePaizaRank}
+                        disabled={!paizaRank}
+                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors whitespace-nowrap"
+                      >
+                        {t('common.save')}
                       </button>
                     </div>
                   )}

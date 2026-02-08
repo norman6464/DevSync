@@ -122,7 +122,9 @@
     "articles": "Artikel",
     "viewAllOnZenn": "Alle auf Zenn anzeigen",
     "qiitaArticles": "Qiita Artikel",
-    "viewAllOnQiita": "Alle auf Qiita anzeigen"
+    "viewAllOnQiita": "Alle auf Qiita anzeigen",
+    "competitiveProgramming": "Wettbewerbsprogrammierung",
+    "paizaRankLabel": "paiza Rang {{rank}}"
   },
   "settings": {
     "title": "Einstellungen",
@@ -161,7 +163,22 @@
     "qiitaDescription": "Verbinden Sie Ihr Qiita-Konto, um Ihre Artikel anzuzeigen.",
     "qiitaUsername": "Qiita Benutzername",
     "qiitaConnected": "Qiita erfolgreich verbunden",
-    "qiitaInvalidUsername": "Ungültiger Qiita Benutzername"
+    "qiitaInvalidUsername": "Ungültiger Qiita Benutzername",
+    "atcoder": "AtCoder",
+    "atcoderDescription": "Verbinden Sie Ihr AtCoder-Konto, um Ihre Bewertung anzuzeigen.",
+    "atcoderUsername": "AtCoder Benutzername",
+    "atcoderConnected": "AtCoder erfolgreich verbunden",
+    "atcoderInvalidUsername": "Ungültiger AtCoder Benutzername",
+    "paiza": "paiza",
+    "paizaDescription": "Legen Sie Ihren paiza Skill Check Rang fest.",
+    "paizaRankLabel": "paiza Rang",
+    "paizaSelectRank": "Rang auswählen",
+    "paizaRankS": "(Höchster)",
+    "paizaRankA": "(Fortgeschritten)",
+    "paizaRankB": "(Obere Mittelstufe)",
+    "paizaRankC": "(Mittelstufe)",
+    "paizaRankD": "(Untere Mittelstufe)",
+    "paizaRankE": "(Anfänger)"
   },
   "explore": {
     "title": "Entwickler entdecken",
@@ -692,6 +709,8 @@
     "githubDescription": "Beiträge, Repos und Sprachstatistiken synchronisieren",
     "zennDescription": "Zenn-Artikel synchronisieren",
     "qiitaDescription": "Qiita-Artikel synchronisieren",
+    "atcoderDescription": "AtCoder-Bewertung synchronisieren",
+    "paizaDescription": "paiza Skill Check Rang festlegen",
     "completeTitle": "Einrichtung abgeschlossen!",
     "completeDescription": "Alles bereit. Erkunden Sie Ihr Dashboard.",
     "next": "Weiter",

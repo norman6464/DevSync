@@ -13,6 +13,8 @@ export const updateUser = (id: number, data: {
   avatar_url?: string;
   skills_languages?: string;
   skills_frameworks?: string;
+  atcoder_username?: string;
+  paiza_rank?: string;
   onboarding_completed?: boolean;
 }) =>
   client.put<User>(`/users/${id}`, data);

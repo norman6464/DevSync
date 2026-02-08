@@ -21,7 +21,7 @@ export default function ProfilePage() {
   const currentUser = useAuthStore((s) => s.user);
   const {
     user, posts, contributions, languages, repos,
-    zennArticles, zennStats, qiitaArticles, qiitaStats,
+    zennArticles, zennStats, qiitaArticles, qiitaStats, atcoderRating,
     goals, goalStats, followerCount, followingCount, badges, streakInfo, loading,
   } = useProfile(id);
 
@@ -87,6 +87,13 @@ export default function ProfilePage() {
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
                 </a>
               )}
+              {user.atcoder_username && (
+                <a href={`https://atcoder.jp/users/${user.atcoder_username}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-cyan-400 transition-colors">
+                  <span className="w-4 h-4 bg-gray-700 rounded text-white text-xs flex items-center justify-center font-bold">A</span>
+                  @{user.atcoder_username}
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
+                </a>
+              )}
             </div>
             <div className="flex gap-4 mt-3 text-sm">
               <Link to={`/profile/${user.id}/followers`} className="text-gray-400 hover:text-blue-400 transition-colors">
@@ -115,6 +122,45 @@ export default function ProfilePage() {
               <a href="https://skillicons.dev" target="_blank" rel="noopener noreferrer"><img src={`https://skillicons.dev/icons?i=${user.skills_frameworks}&theme=dark`} alt="Frameworks" className="h-12" /></a>
             </div>
           )}
+        </div>
+      )}
+
+      {/* AtCoder Rating & paiza Rank */}
+      {(atcoderRating || user.paiza_rank) && (
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+          <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2">
+            <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M18.75 4.236c.982.143 1.954.317 2.916.52A6.003 6.003 0 0 1 16.27 9.728M18.75 4.236V4.5c0 2.108-.966 3.99-2.48 5.228m0 0a6.023 6.023 0 0 1-2.52.587 6.023 6.023 0 0 1-2.52-.587" /></svg>
+            {t('profile.competitiveProgramming')}
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {atcoderRating && (
+              <a href={`https://atcoder.jp/users/${user.atcoder_username}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 bg-gray-800/50 rounded-lg border border-gray-700 hover:border-gray-600 transition-colors group">
+                <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center text-white font-bold text-lg">A</div>
+                <div>
+                  <div className="text-sm text-gray-400">AtCoder</div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xl font-bold atcoder-${atcoderRating.color}`} style={{ color: atcoderRating.color === 'gray' ? '#808080' : atcoderRating.color === 'brown' ? '#804000' : atcoderRating.color === 'green' ? '#008000' : atcoderRating.color === 'cyan' ? '#00C0C0' : atcoderRating.color === 'blue' ? '#0000FF' : atcoderRating.color === 'yellow' ? '#C0C000' : atcoderRating.color === 'orange' ? '#FF8000' : atcoderRating.color === 'red' ? '#FF0000' : '#808080' }}>
+                      {atcoderRating.rating}
+                    </span>
+                    <span className="text-xs text-gray-500">({atcoderRating.rank})</span>
+                  </div>
+                </div>
+              </a>
+            )}
+            {user.paiza_rank && (
+              <div className="flex items-center gap-4 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                <div className="w-12 h-12 bg-emerald-700 rounded-lg flex items-center justify-center text-white font-bold text-lg">P</div>
+                <div>
+                  <div className="text-sm text-gray-400">paiza</div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xl font-bold ${user.paiza_rank === 'S' ? 'text-yellow-400' : user.paiza_rank === 'A' ? 'text-red-400' : user.paiza_rank === 'B' ? 'text-blue-400' : user.paiza_rank === 'C' ? 'text-green-400' : user.paiza_rank === 'D' ? 'text-gray-300' : 'text-gray-500'}`}>
+                      {t('profile.paizaRankLabel', { rank: user.paiza_rank })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

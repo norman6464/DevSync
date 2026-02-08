@@ -7,6 +7,7 @@ import { updateUser } from '../api/users';
 import { getGitHubConnectURL, disconnectGitHub, syncGitHub } from '../api/github';
 import { connectZenn, disconnectZenn, syncZenn } from '../api/zenn';
 import { connectQiita, disconnectQiita, syncQiita } from '../api/qiita';
+import { connectAtCoder, disconnectAtCoder } from '../api/atcoder';
 import { deleteAccount } from '../api/auth';
 import toast from 'react-hot-toast';
 
@@ -46,6 +47,10 @@ export default function SettingsPage() {
   const [qiitaUsername, setQiitaUsername] = useState('');
   const [connectingQiita, setConnectingQiita] = useState(false);
   const [syncingQiita, setSyncingQiita] = useState(false);
+  const [atcoderUsername, setAtcoderUsername] = useState('');
+  const [connectingAtcoder, setConnectingAtcoder] = useState(false);
+  const [paizaRank, setPaizaRank] = useState(user?.paiza_rank || '');
+  const [savingPaiza, setSavingPaiza] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [deleting, setDeleting] = useState(false);
@@ -136,6 +141,45 @@ export default function SettingsPage() {
       toast.error(t('accountManagement.deleteFailed'));
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleConnectAtCoder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!atcoderUsername.trim()) return;
+    setConnectingAtcoder(true);
+    try {
+      const { data } = await connectAtCoder(atcoderUsername.trim());
+      setUser(data);
+      setAtcoderUsername('');
+      toast.success(t('settings.atcoderConnected'));
+    } catch {
+      toast.error(t('settings.atcoderInvalidUsername'));
+    } finally {
+      setConnectingAtcoder(false);
+    }
+  };
+
+  const handleDisconnectAtCoder = async () => {
+    try {
+      const { data } = await disconnectAtCoder();
+      setUser(data);
+      toast.success(t('settings.saved'));
+    } catch {
+      toast.error(t('errors.somethingWrong'));
+    }
+  };
+
+  const handleSavePaizaRank = async () => {
+    setSavingPaiza(true);
+    try {
+      const { data } = await updateUser(user.id, { paiza_rank: paizaRank });
+      setUser(data);
+      toast.success(t('settings.saved'));
+    } catch {
+      toast.error(t('settings.saveFailed'));
+    } finally {
+      setSavingPaiza(false);
     }
   };
 
@@ -506,6 +550,95 @@ export default function SettingsPage() {
               </button>
             </form>
           )}
+        </div>
+      </div>
+
+      {/* AtCoder Integration */}
+      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-800">
+          <h2 className="text-base font-semibold">{t('settings.atcoder')}</h2>
+        </div>
+        <div className="p-6">
+          {user.atcoder_username ? (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gray-700 rounded-lg flex items-center justify-center text-white font-bold text-sm">A</div>
+                <div>
+                  <p className="text-sm font-medium text-green-400">{t('settings.connected')}</p>
+                  <p className="text-sm text-gray-400">@{user.atcoder_username}</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDisconnectAtCoder}
+                  className="px-4 py-2 text-red-400 hover:text-red-300 border border-red-400/30 hover:border-red-400/50 rounded-lg text-sm font-medium transition-colors"
+                >
+                  {t('settings.disconnect')}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleConnectAtCoder} className="space-y-4">
+              <div className="text-center py-2">
+                <div className="w-12 h-12 bg-gray-700/50 rounded-lg flex items-center justify-center text-gray-400 font-bold text-xl mx-auto mb-3">A</div>
+                <p className="text-gray-400 text-sm mb-4">{t('settings.atcoderDescription')}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1.5">{t('settings.atcoderUsername')}</label>
+                <input
+                  type="text"
+                  value={atcoderUsername}
+                  onChange={(e) => setAtcoderUsername(e.target.value)}
+                  placeholder="your-atcoder-username"
+                  className={inputClass}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={connectingAtcoder || !atcoderUsername.trim()}
+                className="w-full px-5 py-2.5 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors"
+              >
+                {connectingAtcoder ? t('common.loading') : t('settings.connect')}
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+
+      {/* paiza Rank */}
+      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-800">
+          <h2 className="text-base font-semibold">{t('settings.paiza')}</h2>
+        </div>
+        <div className="p-6 space-y-4">
+          <div className="text-center py-2">
+            <div className="w-12 h-12 bg-emerald-700/50 rounded-lg flex items-center justify-center text-emerald-400 font-bold text-xl mx-auto mb-3">P</div>
+            <p className="text-gray-400 text-sm mb-4">{t('settings.paizaDescription')}</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">{t('settings.paizaRankLabel')}</label>
+            <select
+              value={paizaRank}
+              onChange={(e) => setPaizaRank(e.target.value)}
+              className={inputClass}
+            >
+              <option value="">{t('settings.paizaSelectRank')}</option>
+              <option value="S">S {t('settings.paizaRankS')}</option>
+              <option value="A">A {t('settings.paizaRankA')}</option>
+              <option value="B">B {t('settings.paizaRankB')}</option>
+              <option value="C">C {t('settings.paizaRankC')}</option>
+              <option value="D">D {t('settings.paizaRankD')}</option>
+              <option value="E">E {t('settings.paizaRankE')}</option>
+            </select>
+          </div>
+          <button
+            type="button"
+            onClick={handleSavePaizaRank}
+            disabled={savingPaiza}
+            className="w-full px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors"
+          >
+            {savingPaiza ? t('common.loading') : t('common.save')}
+          </button>
         </div>
       </div>
 

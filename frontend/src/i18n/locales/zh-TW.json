@@ -122,7 +122,9 @@
     "articles": "文章",
     "viewAllOnZenn": "在Zenn上查看全部",
     "qiitaArticles": "Qiita文章",
-    "viewAllOnQiita": "在Qiita上查看全部"
+    "viewAllOnQiita": "在Qiita上查看全部",
+    "competitiveProgramming": "競技程式設計",
+    "paizaRankLabel": "paiza 等級 {{rank}}"
   },
   "settings": {
     "title": "設定",
@@ -161,7 +163,22 @@
     "qiitaDescription": "連接您的Qiita帳戶以顯示您的文章。",
     "qiitaUsername": "Qiita使用者名稱",
     "qiitaConnected": "Qiita連接成功",
-    "qiitaInvalidUsername": "無效的Qiita使用者名稱"
+    "qiitaInvalidUsername": "無效的Qiita使用者名稱",
+    "atcoder": "AtCoder",
+    "atcoderDescription": "連接您的AtCoder帳戶以顯示您的評分。",
+    "atcoderUsername": "AtCoder使用者名稱",
+    "atcoderConnected": "AtCoder連接成功",
+    "atcoderInvalidUsername": "無效的AtCoder使用者名稱",
+    "paiza": "paiza",
+    "paizaDescription": "設定您的paiza技能檢定等級。",
+    "paizaRankLabel": "paiza等級",
+    "paizaSelectRank": "選擇等級",
+    "paizaRankS": "（最高級）",
+    "paizaRankA": "（高級）",
+    "paizaRankB": "（中高級）",
+    "paizaRankC": "（中級）",
+    "paizaRankD": "（初中級）",
+    "paizaRankE": "（初級）"
   },
   "explore": {
     "title": "探索開發者",
@@ -692,6 +709,8 @@
     "githubDescription": "同步貢獻、儲存庫和語言統計",
     "zennDescription": "同步 Zenn 文章",
     "qiitaDescription": "同步 Qiita 文章",
+    "atcoderDescription": "同步 AtCoder 評分",
+    "paizaDescription": "設定 paiza 技能檢定等級",
     "completeTitle": "設定完成！",
     "completeDescription": "一切就緒。開始探索您的儀表板吧。",
     "next": "下一步",
