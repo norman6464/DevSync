@@ -153,7 +153,7 @@ export default function ProfilePage() {
                 <div>
                   <div className="text-sm text-gray-400">paiza</div>
                   <div className="flex items-center gap-2">
-                    <span className={`text-xl font-bold ${user.paiza_rank === 'S' ? 'text-yellow-400' : user.paiza_rank === 'A' ? 'text-red-400' : user.paiza_rank === 'B' ? 'text-blue-400' : user.paiza_rank === 'C' ? 'text-green-400' : user.paiza_rank === 'D' ? 'text-gray-300' : 'text-gray-500'}`}>
+                    <span className="text-xl font-bold text-white">
                       {t('profile.paizaRankLabel', { rank: user.paiza_rank })}
                     </span>
                   </div>
