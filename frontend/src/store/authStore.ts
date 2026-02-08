@@ -18,7 +18,7 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
-  loading: false,
+  loading: true,
 
   login: async (email, password) => {
     const { data } = await authApi.login(email, password);
