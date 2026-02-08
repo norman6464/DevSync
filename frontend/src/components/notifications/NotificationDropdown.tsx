@@ -47,6 +47,8 @@ export default function NotificationDropdown() {
         return t('notifications.newFollow', { name: notification.actor.name });
       case 'answer':
         return t('notifications.newAnswer', { name: notification.actor.name });
+      case 'badge':
+        return t('notifications.newBadge');
       default:
         return '';
     }
@@ -64,6 +66,8 @@ export default function NotificationDropdown() {
         return '/chat';
       case 'answer':
         return notification.question_id ? `/qa/${notification.question_id}` : '/';
+      case 'badge':
+        return `/profile/${notification.actor_id}`;
       default:
         return '/';
     }

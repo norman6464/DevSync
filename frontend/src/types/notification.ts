@@ -1,7 +1,7 @@
 import type { User } from './user';
 import type { Post } from './post';
 
-export type NotificationType = 'post' | 'message' | 'like' | 'comment' | 'follow' | 'answer';
+export type NotificationType = 'post' | 'message' | 'like' | 'comment' | 'follow' | 'answer' | 'badge';
 
 export interface Notification {
   id: number;
@@ -13,6 +13,7 @@ export interface Notification {
   post?: Post;
   question_id?: number;
   question?: { id: number; title: string };
+  badge_id?: string;
   read: boolean;
   created_at: string;
 }
