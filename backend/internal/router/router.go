@@ -45,6 +45,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	roadmapRepo := repository.NewRoadmapRepository(db)
 	chatRoomRepo := repository.NewChatRoomRepository(db)
 	groupMessageRepo := repository.NewGroupMessageRepository(db)
+	learningLogRepo := repository.NewLearningLogRepository(db)
 
 	// Services
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
@@ -75,6 +76,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	roadmapHandler := handler.NewRoadmapHandler(roadmapRepo)
 	chatRoomHandler := handler.NewChatRoomHandler(chatRoomRepo, groupMessageRepo, hub)
 	badgeHandler := handler.NewBadgeHandler(db, notificationRepo)
+	learningLogHandler := handler.NewLearningLogHandler(learningLogRepo)
 
 	// Set up Hub's GetRoomMembers callback
 	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs
@@ -328,6 +330,18 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		{
 			badges.GET("/:userId", badgeHandler.GetUserBadges)
 			badges.POST("/notify", badgeHandler.NotifyBadgeEarned)
+		}
+
+		// Learning Logs
+		learningLogs := protected.Group("/learning-logs")
+		{
+			learningLogs.POST("", learningLogHandler.Create)
+			learningLogs.GET("", learningLogHandler.GetMyLogs)
+			learningLogs.GET("/:id", learningLogHandler.GetByID)
+			learningLogs.PUT("/:id", learningLogHandler.Update)
+			learningLogs.DELETE("/:id", learningLogHandler.Delete)
+			learningLogs.GET("/user/:userId", learningLogHandler.GetByUserID)
+			learningLogs.GET("/calendar/:userId", learningLogHandler.GetCalendarData)
 		}
 	}
 
