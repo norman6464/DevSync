@@ -3,6 +3,7 @@ import { getUserPosts } from '../api/posts';
 import { getContributions, getLanguages, getRepos } from '../api/github';
 import { getZennArticles, getZennStats, type ZennArticle, type ZennStats } from '../api/zenn';
 import { getQiitaArticles, getQiitaStats, type QiitaArticle, type QiitaStats } from '../api/qiita';
+import { getAtCoderRating, type AtCoderRatingInfo } from '../api/atcoder';
 import { getUserGoals, getGoalStats, type LearningGoal, type LearningGoalStats } from '../api/goals';
 import { getUserBadges } from '../api/badges';
 import { getStreakInfo } from '../api/learningLogs';
@@ -28,6 +29,7 @@ interface ProfileData {
   followerCount: number;
   followingCount: number;
   badges: BadgeResult[];
+  atcoderRating: AtCoderRatingInfo | null;
   streakInfo: StreakInfo | null;
 }
 
@@ -81,6 +83,16 @@ export function useProfile(id: string | undefined) {
         qiitaStats = statsRes.data;
       }
 
+      let atcoderRating: AtCoderRatingInfo | null = null;
+      if (userData.atcoder_username) {
+        try {
+          const atcoderRes = await getAtCoderRating(userData.atcoder_username);
+          atcoderRating = atcoderRes.data;
+        } catch {
+          // AtCoder API取得失敗時は無視
+        }
+      }
+
       const [goalsRes, goalStatsRes, badgesRes, streakRes] = await Promise.all([
         getUserGoals(userId),
         getGoalStats(userId),
@@ -98,6 +110,7 @@ export function useProfile(id: string | undefined) {
         zennStats,
         qiitaArticles,
         qiitaStats,
+        atcoderRating,
         goals: goalsRes.data || [],
         goalStats: goalStatsRes.data,
         followerCount: (followersRes.data || []).length,
@@ -124,6 +137,7 @@ export function useProfile(id: string | undefined) {
     followerCount: data?.followerCount ?? 0,
     followingCount: data?.followingCount ?? 0,
     badges: data?.badges ?? [],
+    atcoderRating: data?.atcoderRating ?? null,
     streakInfo: data?.streakInfo ?? null,
     loading,
     refetch,
