@@ -5,10 +5,12 @@ import { getZennArticles, getZennStats, type ZennArticle, type ZennStats } from 
 import { getQiitaArticles, getQiitaStats, type QiitaArticle, type QiitaStats } from '../api/qiita';
 import { getUserGoals, getGoalStats, type LearningGoal, type LearningGoalStats } from '../api/goals';
 import { getUserBadges } from '../api/badges';
+import { getStreakInfo } from '../api/learningLogs';
 import type { User } from '../types/user';
 import type { Post } from '../types/post';
 import type { GitHubContribution, GitHubLanguageStat, GitHubRepository } from '../types/github';
 import type { BadgeResult } from '../types/badge';
+import type { StreakInfo } from '../types/learningLog';
 import { useAsyncData } from './useAsyncData';
 
 interface ProfileData {
@@ -26,6 +28,7 @@ interface ProfileData {
   followerCount: number;
   followingCount: number;
   badges: BadgeResult[];
+  streakInfo: StreakInfo | null;
 }
 
 export function useProfile(id: string | undefined) {
@@ -78,10 +81,11 @@ export function useProfile(id: string | undefined) {
         qiitaStats = statsRes.data;
       }
 
-      const [goalsRes, goalStatsRes, badgesRes] = await Promise.all([
+      const [goalsRes, goalStatsRes, badgesRes, streakRes] = await Promise.all([
         getUserGoals(userId),
         getGoalStats(userId),
         getUserBadges(userId),
+        getStreakInfo(userId),
       ]);
 
       return {
@@ -99,6 +103,7 @@ export function useProfile(id: string | undefined) {
         followerCount: (followersRes.data || []).length,
         followingCount: (followingRes.data || []).length,
         badges: badgesRes.data?.badges || [],
+        streakInfo: streakRes.data || null,
       };
     },
     { deps: [userId], enabled: !!userId }
@@ -119,6 +124,7 @@ export function useProfile(id: string | undefined) {
     followerCount: data?.followerCount ?? 0,
     followingCount: data?.followingCount ?? 0,
     badges: data?.badges ?? [],
+    streakInfo: data?.streakInfo ?? null,
     loading,
     refetch,
   };
