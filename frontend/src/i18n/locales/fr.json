@@ -59,7 +59,20 @@
     "noPostsAll": "Pas encore de publications. Soyez le premier à partager !",
     "findPeople": "Trouver des personnes à suivre",
     "yourProfile": "Votre profil",
-    "connectGitHub": "Connectez GitHub pour commencer"
+    "connectGitHub": "Connectez GitHub pour commencer",
+    "goalsProgress": "Progression des objectifs",
+    "viewAll": "Tout voir",
+    "noActiveGoals": "Aucun objectif actif",
+    "createGoal": "Créer un objectif",
+    "active": "Actif",
+    "completed": "Terminé",
+    "avgProgress": "Progression moy.",
+    "moreGoals": "{{count}} objectifs de plus",
+    "recentNotifications": "Notifications récentes",
+    "noNotifications": "Aucune notification",
+    "quickStats": "Statistiques rapides",
+    "goalsCompleted": "Objectifs atteints",
+    "goalsInProgress": "Objectifs en cours"
   },
   "post": {
     "createTitle": "Qu'avez-vous appris aujourd'hui ?",

@@ -59,7 +59,20 @@
     "noPostsAll": "還沒有貼文，成為第一個分享的人吧！",
     "findPeople": "尋找更多開發者",
     "yourProfile": "你的個人資料",
-    "connectGitHub": "連接 GitHub 開始使用"
+    "connectGitHub": "連接 GitHub 開始使用",
+    "goalsProgress": "學習目標進度",
+    "viewAll": "查看全部",
+    "noActiveGoals": "沒有進行中的目標",
+    "createGoal": "建立目標",
+    "active": "進行中",
+    "completed": "已完成",
+    "avgProgress": "平均進度",
+    "moreGoals": "還有{{count}}個目標",
+    "recentNotifications": "最新通知",
+    "noNotifications": "沒有通知",
+    "quickStats": "快速統計",
+    "goalsCompleted": "已完成目標",
+    "goalsInProgress": "進行中目標"
   },
   "post": {
     "createTitle": "今天你學到了什麼？",

@@ -59,7 +59,20 @@
     "noPostsAll": "Пока нет постов. Будьте первым!",
     "findPeople": "Найти людей для подписки",
     "yourProfile": "Ваш профиль",
-    "connectGitHub": "Подключите GitHub чтобы начать"
+    "connectGitHub": "Подключите GitHub чтобы начать",
+    "goalsProgress": "Прогресс целей",
+    "viewAll": "Смотреть все",
+    "noActiveGoals": "Нет активных целей",
+    "createGoal": "Создать цель",
+    "active": "Активные",
+    "completed": "Завершённые",
+    "avgProgress": "Средний прогресс",
+    "moreGoals": "Ещё {{count}} целей",
+    "recentNotifications": "Последние уведомления",
+    "noNotifications": "Нет уведомлений",
+    "quickStats": "Быстрая статистика",
+    "goalsCompleted": "Достигнутые цели",
+    "goalsInProgress": "Цели в процессе"
   },
   "post": {
     "createTitle": "Что вы узнали сегодня?",
