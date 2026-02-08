@@ -9,7 +9,9 @@ client.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      if (window.location.pathname !== '/login') {
+      // 認証チェック（/auth/me）の401はloadUser内で処理するためスキップ
+      const url = error.config?.url || '';
+      if (!url.includes('/auth/me') && window.location.pathname !== '/login') {
         window.location.href = '/login';
       }
     }

@@ -32,7 +32,7 @@ import OnboardingPage from './pages/OnboardingPage';
 import { ToastProvider } from './contexts/ToastContext';
 
 export default function App() {
-  const { isAuthenticated, loadUser } = useAuthStore();
+  const { loadUser } = useAuthStore();
   const { resolvedTheme } = useThemeStore();
 
   // Initialize theme on mount
@@ -47,9 +47,7 @@ export default function App() {
   }, [resolvedTheme]);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      loadUser();
-    }
+    loadUser();
   }, []);
 
   return (
