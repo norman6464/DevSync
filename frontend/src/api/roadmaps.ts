@@ -28,6 +28,7 @@ export interface Roadmap {
   description: string;
   category: RoadmapCategory;
   is_public: boolean;
+  is_template: boolean;
   step_count: number;
   completed_step_count: number;
   progress: number;
@@ -118,3 +119,10 @@ export const deleteStep = (roadmapId: number, stepId: number) =>
 
 export const reorderSteps = (roadmapId: number, data: ReorderStepsRequest) =>
   client.put(`/roadmaps/${roadmapId}/steps/reorder`, data);
+
+// Template APIs
+export const getTemplates = () =>
+  client.get<Roadmap[]>('/roadmaps/templates');
+
+export const createFromTemplate = (templateId: number) =>
+  client.post<Roadmap>(`/roadmaps/templates/${templateId}/use`);
