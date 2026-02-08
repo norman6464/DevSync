@@ -11,12 +11,16 @@ import (
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
+// QiitaService はQiita連携のビジネスロジックを提供する。
+// Qiita APIを通じた記事取得・ユーザー検証・連携管理を行う。
 type QiitaService struct {
-	httpClient *http.Client
-	userRepo   repository.UserRepositoryInterface
-	qiitaRepo  repository.QiitaRepositoryInterface
+	httpClient *http.Client                      // Qiita API呼び出し用HTTPクライアント
+	userRepo   repository.UserRepositoryInterface // ユーザーリポジトリ
+	qiitaRepo  repository.QiitaRepositoryInterface // Qiita記事リポジトリ
 }
 
+// NewQiitaService は新しいQiitaServiceインスタンスを生成する。
+// HTTPクライアントは30秒タイムアウトで初期化される。
 func NewQiitaService(userRepo repository.UserRepositoryInterface, qiitaRepo repository.QiitaRepositoryInterface) *QiitaService {
 	return &QiitaService{
 		httpClient: &http.Client{Timeout: 30 * time.Second},
@@ -25,7 +29,7 @@ func NewQiitaService(userRepo repository.UserRepositoryInterface, qiitaRepo repo
 	}
 }
 
-// QiitaAPIArticle represents an article from Qiita API
+// QiitaAPIArticle はQiita APIから返される記事のレスポンス構造体。
 type QiitaAPIArticle struct {
 	ID            string          `json:"id"`
 	Title         string          `json:"title"`
@@ -36,11 +40,13 @@ type QiitaAPIArticle struct {
 	CreatedAt     time.Time       `json:"created_at"`
 }
 
+// QiitaAPITag はQiita APIのタグ情報を表す。
 type QiitaAPITag struct {
 	Name string `json:"name"`
 }
 
-// FetchArticles fetches all articles for a Qiita user
+// FetchArticles は指定ユーザーのQiita記事を全件取得する。
+// ページネーションにより100件ずつ取得し、全ページを結合して返す。
 func (s *QiitaService) FetchArticles(username string) ([]model.QiitaArticle, error) {
 	var allArticles []model.QiitaArticle
 	page := 1
@@ -69,7 +75,7 @@ func (s *QiitaService) FetchArticles(username string) ([]model.QiitaArticle, err
 		}
 
 		for _, article := range apiArticles {
-			// Extract tag names
+			// タグ名を抽出してカンマ区切り文字列に変換
 			tagNames := make([]string, len(article.Tags))
 			for i, tag := range article.Tags {
 				tagNames[i] = tag.Name
@@ -86,7 +92,7 @@ func (s *QiitaService) FetchArticles(username string) ([]model.QiitaArticle, err
 			})
 		}
 
-		// Check if there are more pages
+		// 取得件数がperPage未満なら最終ページ
 		if len(apiArticles) < perPage {
 			break
 		}
@@ -96,7 +102,7 @@ func (s *QiitaService) FetchArticles(username string) ([]model.QiitaArticle, err
 	return allArticles, nil
 }
 
-// ValidateUsername checks if a Qiita username exists
+// ValidateUsername はQiitaユーザー名が存在するかを検証する。
 func (s *QiitaService) ValidateUsername(username string) (bool, error) {
 	url := fmt.Sprintf("https://qiita.com/api/v2/users/%s", username)
 
@@ -109,7 +115,9 @@ func (s *QiitaService) ValidateUsername(username string) (bool, error) {
 	return resp.StatusCode == http.StatusOK, nil
 }
 
-// Connect sets the Qiita username and syncs articles.
+// Connect はQiitaアカウントを連携する。
+// ユーザー名を検証後、プロフィールに保存し、記事をUpsertで同期する。
+// 同期した記事数を返す。
 func (s *QiitaService) Connect(userID uint, username string) (int, error) {
 	valid, err := s.ValidateUsername(username)
 	if err != nil || !valid {
@@ -143,7 +151,8 @@ func (s *QiitaService) Connect(userID uint, username string) (int, error) {
 	return len(articles), nil
 }
 
-// Disconnect removes the Qiita username and deletes cached articles.
+// Disconnect はQiitaアカウント連携を解除する。
+// ユーザー名をクリアし、キャッシュ済み記事を削除する。
 func (s *QiitaService) Disconnect(userID uint) error {
 	user, err := s.userRepo.FindByID(userID)
 	if err != nil {
@@ -158,7 +167,8 @@ func (s *QiitaService) Disconnect(userID uint) error {
 	return s.qiitaRepo.DeleteUserArticles(userID)
 }
 
-// Sync refreshes the Qiita articles for the user.
+// Sync はQiita記事を最新状態に同期する。
+// 既存の連携ユーザー名を使用して記事を再取得し、Upsertする。
 func (s *QiitaService) Sync(userID uint) (int, error) {
 	user, err := s.userRepo.FindByID(userID)
 	if err != nil {
@@ -186,12 +196,12 @@ func (s *QiitaService) Sync(userID uint) (int, error) {
 	return len(articles), nil
 }
 
-// GetArticles returns all Qiita articles for a user.
+// GetArticles は指定ユーザーのQiita記事一覧を返す。
 func (s *QiitaService) GetArticles(userID uint) ([]model.QiitaArticle, error) {
 	return s.qiitaRepo.GetArticles(userID)
 }
 
-// GetStats returns Qiita statistics for a user.
+// GetStats は指定ユーザーのQiita統計情報を返す。
 func (s *QiitaService) GetStats(userID uint) (*model.QiitaStats, error) {
 	return s.qiitaRepo.GetStats(userID)
 }

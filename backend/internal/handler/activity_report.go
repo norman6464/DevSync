@@ -9,15 +9,18 @@ import (
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
+// ActivityReportHandler はアクティビティレポート関連のHTTPハンドラ。
+// 週次・月次レポートの取得および期間比較を処理する。
 type ActivityReportHandler struct {
 	service *service.ActivityReportService
 }
 
+// NewActivityReportHandler は新しいActivityReportHandlerインスタンスを生成する。
 func NewActivityReportHandler(s *service.ActivityReportService) *ActivityReportHandler {
 	return &ActivityReportHandler{service: s}
 }
 
-// GetWeeklyReport returns the weekly activity report for a user
+// GetWeeklyReport は指定ユーザーの週次アクティビティレポートを返す。
 func (h *ActivityReportHandler) GetWeeklyReport(c *gin.Context) {
 	userIDParam := c.Param("userId")
 	userID, err := strconv.ParseUint(userIDParam, 10, 32)
@@ -35,7 +38,7 @@ func (h *ActivityReportHandler) GetWeeklyReport(c *gin.Context) {
 	c.JSON(http.StatusOK, report)
 }
 
-// GetMonthlyReport returns the monthly activity report for a user
+// GetMonthlyReport は指定ユーザーの月次アクティビティレポートを返す。
 func (h *ActivityReportHandler) GetMonthlyReport(c *gin.Context) {
 	userIDParam := c.Param("userId")
 	userID, err := strconv.ParseUint(userIDParam, 10, 32)
@@ -53,7 +56,7 @@ func (h *ActivityReportHandler) GetMonthlyReport(c *gin.Context) {
 	c.JSON(http.StatusOK, report)
 }
 
-// GetMyWeeklyReport returns the weekly report for the current user
+// GetMyWeeklyReport は現在のユーザーの週次レポートを返す。
 func (h *ActivityReportHandler) GetMyWeeklyReport(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -66,7 +69,7 @@ func (h *ActivityReportHandler) GetMyWeeklyReport(c *gin.Context) {
 	c.JSON(http.StatusOK, report)
 }
 
-// GetMyMonthlyReport returns the monthly report for the current user
+// GetMyMonthlyReport は現在のユーザーの月次レポートを返す。
 func (h *ActivityReportHandler) GetMyMonthlyReport(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -79,7 +82,7 @@ func (h *ActivityReportHandler) GetMyMonthlyReport(c *gin.Context) {
 	c.JSON(http.StatusOK, report)
 }
 
-// GetComparison returns the comparison between current and previous period
+// GetComparison は現在の期間と前期間のアクティビティ比較を返す。
 func (h *ActivityReportHandler) GetComparison(c *gin.Context) {
 	userID := c.GetUint("userID")
 	periodParam := c.Query("period")

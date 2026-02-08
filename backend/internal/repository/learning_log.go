@@ -8,30 +8,32 @@ import (
 	"gorm.io/gorm"
 )
 
+// LearningLogRepository は学習ログデータへのアクセスを提供するリポジトリ実装。
 type LearningLogRepository struct {
 	db *gorm.DB
 }
 
+// NewLearningLogRepository は新しいLearningLogRepositoryインスタンスを生成する。
 func NewLearningLogRepository(db *gorm.DB) *LearningLogRepository {
 	return &LearningLogRepository{db: db}
 }
 
-// Create creates a new learning log
+// Create は新しい学習ログをデータベースに作成する。
 func (r *LearningLogRepository) Create(log *model.LearningLog) error {
 	return r.db.Create(log).Error
 }
 
-// Update updates an existing learning log
+// Update は既存の学習ログを更新する。
 func (r *LearningLogRepository) Update(log *model.LearningLog) error {
 	return r.db.Save(log).Error
 }
 
-// Delete deletes a learning log by ID and user ID (ownership check)
+// Delete は指定IDかつ指定ユーザーの学習ログを削除する（所有権チェック付き）。
 func (r *LearningLogRepository) Delete(id, userID uint) error {
 	return r.db.Where("id = ? AND user_id = ?", id, userID).Delete(&model.LearningLog{}).Error
 }
 
-// FindByID finds a learning log by ID
+// FindByID は指定IDの学習ログを取得する。
 func (r *LearningLogRepository) FindByID(id uint) (*model.LearningLog, error) {
 	var log model.LearningLog
 	err := r.db.First(&log, id).Error
@@ -41,14 +43,15 @@ func (r *LearningLogRepository) FindByID(id uint) (*model.LearningLog, error) {
 	return &log, nil
 }
 
-// GetByUserID gets all learning logs for a user
+// GetByUserID は指定ユーザーの全学習ログを取得する（新しい順）。
 func (r *LearningLogRepository) GetByUserID(userID uint) ([]model.LearningLog, error) {
 	var logs []model.LearningLog
 	err := r.db.Where("user_id = ?", userID).Order("created_at DESC").Find(&logs).Error
 	return logs, err
 }
 
-// GetStreakInfo calculates streak data from learning logs
+// GetStreakInfo は学習ログから連続学習情報を算出する。
+// 現在の連続日数、最長連続日数、合計学習日数、最終ログ日を返す。
 func (r *LearningLogRepository) GetStreakInfo(userID uint) (*model.StreakInfo, error) {
 	var dates []struct {
 		Date time.Time
@@ -68,12 +71,12 @@ func (r *LearningLogRepository) GetStreakInfo(userID uint) (*model.StreakInfo, e
 
 	info.LastLogDate = dates[0].Date.Format("2006-01-02")
 
-	// Sort descending
+	// 日付を降順にソート
 	sort.Slice(dates, func(i, j int) bool {
 		return dates[i].Date.After(dates[j].Date)
 	})
 
-	// Calculate current streak
+	// 現在の連続日数を計算
 	today := time.Now().UTC().Truncate(24 * time.Hour)
 	currentStreak := 0
 	startIdx := 0
@@ -81,6 +84,7 @@ func (r *LearningLogRepository) GetStreakInfo(userID uint) (*model.StreakInfo, e
 	firstDate := dates[0].Date.UTC().Truncate(24 * time.Hour)
 	diffToToday := today.Sub(firstDate)
 
+	// 今日または昨日にログがある場合のみ連続日数をカウント
 	if diffToToday < 48*time.Hour {
 		currentStreak = 1
 		startIdx = 1
@@ -98,7 +102,7 @@ func (r *LearningLogRepository) GetStreakInfo(userID uint) (*model.StreakInfo, e
 
 	info.CurrentStreak = currentStreak
 
-	// Calculate longest streak
+	// 最長連続日数を計算
 	longest := 1
 	streak := 1
 	for i := 1; i < len(dates); i++ {
@@ -119,7 +123,7 @@ func (r *LearningLogRepository) GetStreakInfo(userID uint) (*model.StreakInfo, e
 	return info, nil
 }
 
-// GetCalendarData returns daily log counts for calendar visualization
+// GetCalendarData はカレンダー表示用の日別ログ件数を取得する。
 func (r *LearningLogRepository) GetCalendarData(userID uint) ([]model.CalendarEntry, error) {
 	var entries []model.CalendarEntry
 	err := r.db.Model(&model.LearningLog{}).

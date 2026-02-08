@@ -10,12 +10,15 @@ import (
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
+// ZennService はZenn記事連携のビジネスロジックを提供する。
+// Zenn APIからの記事取得、ユーザー連携、データ同期を担当する。
 type ZennService struct {
 	httpClient *http.Client
 	userRepo   repository.UserRepositoryInterface
 	zennRepo   repository.ZennRepositoryInterface
 }
 
+// NewZennService は新しいZennServiceインスタンスを生成する。
 func NewZennService(userRepo repository.UserRepositoryInterface, zennRepo repository.ZennRepositoryInterface) *ZennService {
 	return &ZennService{
 		httpClient: &http.Client{Timeout: 30 * time.Second},
@@ -24,13 +27,13 @@ func NewZennService(userRepo repository.UserRepositoryInterface, zennRepo reposi
 	}
 }
 
-// ZennAPIResponse represents the response from Zenn API
+// ZennAPIResponse はZenn APIのレスポンス構造を表す。
 type ZennAPIResponse struct {
 	Articles []ZennAPIArticle `json:"articles"`
-	NextPage *int             `json:"next_page"`
+	NextPage *int             `json:"next_page"` // 次ページが存在しない場合はnil
 }
 
-// ZennAPIArticle represents an article from Zenn API
+// ZennAPIArticle はZenn APIから取得する記事データを表す。
 type ZennAPIArticle struct {
 	ID            int64     `json:"id"`
 	Title         string    `json:"title"`
@@ -42,7 +45,7 @@ type ZennAPIArticle struct {
 	PublishedAt   time.Time `json:"published_at"`
 }
 
-// FetchArticles fetches all articles for a Zenn user
+// FetchArticles はZenn APIから指定ユーザーの全記事を取得する（ページネーション対応）。
 func (s *ZennService) FetchArticles(username string) ([]model.ZennArticle, error) {
 	var allArticles []model.ZennArticle
 	page := 1
@@ -78,7 +81,7 @@ func (s *ZennService) FetchArticles(username string) ([]model.ZennArticle, error
 			})
 		}
 
-		// Check if there are more pages
+		// 次ページが存在しない場合は終了
 		if apiResp.NextPage == nil {
 			break
 		}
@@ -88,7 +91,7 @@ func (s *ZennService) FetchArticles(username string) ([]model.ZennArticle, error
 	return allArticles, nil
 }
 
-// ValidateUsername checks if a Zenn username exists
+// ValidateUsername はZennユーザー名が存在するかを検証する。
 func (s *ZennService) ValidateUsername(username string) (bool, error) {
 	url := fmt.Sprintf("https://zenn.dev/api/articles?username=%s&page=1", username)
 
@@ -101,7 +104,8 @@ func (s *ZennService) ValidateUsername(username string) (bool, error) {
 	return resp.StatusCode == http.StatusOK, nil
 }
 
-// Connect sets the Zenn username and syncs articles.
+// Connect はZennユーザー名を設定し、記事データを同期する。
+// 同期した記事数を返す。
 func (s *ZennService) Connect(userID uint, username string) (int, error) {
 	valid, err := s.ValidateUsername(username)
 	if err != nil || !valid {
@@ -135,7 +139,7 @@ func (s *ZennService) Connect(userID uint, username string) (int, error) {
 	return len(articles), nil
 }
 
-// Disconnect removes the Zenn username and deletes cached articles.
+// Disconnect はZenn連携を解除し、キャッシュされた記事データを削除する。
 func (s *ZennService) Disconnect(userID uint) error {
 	user, err := s.userRepo.FindByID(userID)
 	if err != nil {
@@ -150,7 +154,7 @@ func (s *ZennService) Disconnect(userID uint) error {
 	return s.zennRepo.DeleteUserArticles(userID)
 }
 
-// Sync refreshes the Zenn articles for the user.
+// Sync はZenn記事データを最新の状態に同期する。同期した記事数を返す。
 func (s *ZennService) Sync(userID uint) (int, error) {
 	user, err := s.userRepo.FindByID(userID)
 	if err != nil {
@@ -178,12 +182,12 @@ func (s *ZennService) Sync(userID uint) (int, error) {
 	return len(articles), nil
 }
 
-// GetArticles returns all Zenn articles for a user.
+// GetArticles は指定ユーザーの全Zenn記事を取得する。
 func (s *ZennService) GetArticles(userID uint) ([]model.ZennArticle, error) {
 	return s.zennRepo.GetArticles(userID)
 }
 
-// GetStats returns Zenn statistics for a user.
+// GetStats は指定ユーザーのZenn統計情報を取得する。
 func (s *ZennService) GetStats(userID uint) (*model.ZennStats, error) {
 	return s.zennRepo.GetStats(userID)
 }

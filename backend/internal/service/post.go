@@ -5,27 +5,28 @@ import (
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
-// PostService handles post business logic.
+// PostService は投稿に関するビジネスロジックを提供する。
+// 投稿のCRUD操作に加え、フォロワーへの通知連携を行う。
 type PostService struct {
 	repo                repository.PostRepositoryInterface
 	notificationService *NotificationService
 }
 
-// NewPostService creates a new PostService.
+// NewPostService は新しいPostServiceインスタンスを生成する。
 func NewPostService(repo repository.PostRepositoryInterface, notificationService *NotificationService) *PostService {
 	return &PostService{repo: repo, notificationService: notificationService}
 }
 
-// Create creates a new post and notifies followers.
+// Create は新しい投稿を作成し、フォロワーに非同期で通知する。
 func (s *PostService) Create(post *model.Post) (*model.Post, error) {
 	if err := s.repo.Create(post); err != nil {
 		return nil, err
 	}
 
-	// Notify followers asynchronously
+	// フォロワーへ非同期で通知
 	go s.notificationService.NotifyFollowers(post.UserID, post.ID, model.NotificationTypePost)
 
-	// Reload with associations
+	// アソシエーション付きで再取得
 	created, err := s.repo.FindByID(post.ID)
 	if err != nil {
 		return post, nil
@@ -33,27 +34,27 @@ func (s *PostService) Create(post *model.Post) (*model.Post, error) {
 	return created, nil
 }
 
-// GetByID returns a post by ID.
+// GetByID は指定IDの投稿を取得する。
 func (s *PostService) GetByID(id uint) (*model.Post, error) {
 	return s.repo.FindByID(id)
 }
 
-// GetAll returns paginated posts.
+// GetAll は投稿一覧をページネーション付きで取得する。
 func (s *PostService) GetAll(page, limit int) ([]model.Post, error) {
 	return s.repo.FindAll(page, limit)
 }
 
-// GetByUserID returns all posts for a user.
+// GetByUserID は指定ユーザーの全投稿を取得する。
 func (s *PostService) GetByUserID(userID uint) ([]model.Post, error) {
 	return s.repo.FindByUserID(userID)
 }
 
-// Timeline returns the timeline for a user.
+// Timeline は指定ユーザーのタイムライン（フォロー中ユーザーの投稿）を取得する。
 func (s *PostService) Timeline(userID uint, page, limit int) ([]model.Post, error) {
 	return s.repo.Timeline(userID, page, limit)
 }
 
-// Update updates a post after verifying ownership.
+// Update は所有権を検証した後、投稿を更新する。
 func (s *PostService) Update(id, userID uint, title, content string) (*model.Post, error) {
 	post, err := s.repo.FindByID(id)
 	if err != nil {
@@ -76,7 +77,7 @@ func (s *PostService) Update(id, userID uint, title, content string) (*model.Pos
 	return post, nil
 }
 
-// Delete deletes a post after verifying ownership.
+// Delete は所有権を検証した後、投稿を削除する。
 func (s *PostService) Delete(id, userID uint) error {
 	post, err := s.repo.FindByID(id)
 	if err != nil {
@@ -88,32 +89,32 @@ func (s *PostService) Delete(id, userID uint) error {
 	return s.repo.Delete(id)
 }
 
-// Like likes a post.
+// Like は投稿にいいねを追加する。
 func (s *PostService) Like(userID, postID uint) error {
 	return s.repo.Like(userID, postID)
 }
 
-// Unlike unlikes a post.
+// Unlike は投稿のいいねを取り消す。
 func (s *PostService) Unlike(userID, postID uint) error {
 	return s.repo.Unlike(userID, postID)
 }
 
-// HasLiked checks if a user has liked a post.
+// HasLiked は指定ユーザーが投稿にいいね済みかを判定する。
 func (s *PostService) HasLiked(userID, postID uint) bool {
 	return s.repo.HasLiked(userID, postID)
 }
 
-// CreateComment creates a comment on a post.
+// CreateComment は投稿にコメントを作成する。
 func (s *PostService) CreateComment(comment *model.Comment) error {
 	return s.repo.CreateComment(comment)
 }
 
-// GetComments returns all comments for a post.
+// GetComments は指定投稿の全コメントを取得する。
 func (s *PostService) GetComments(postID uint) ([]model.Comment, error) {
 	return s.repo.GetComments(postID)
 }
 
-// DeleteComment deletes a comment.
+// DeleteComment はコメントを削除する。
 func (s *PostService) DeleteComment(id, userID uint) error {
 	return s.repo.DeleteComment(id, userID)
 }

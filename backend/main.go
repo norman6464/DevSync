@@ -1,3 +1,5 @@
+// Package main はDevSyncバックエンドアプリケーションのエントリーポイント。
+// DB接続・マイグレーション・WebSocket Hub起動・HTTPサーバー起動を行う。
 package main
 
 import (
@@ -13,15 +15,18 @@ import (
 )
 
 func main() {
+	// .envファイルから環境変数を読み込み（存在しなくてもエラーにしない）
 	_ = godotenv.Load()
 
 	cfg := config.Load()
 
+	// PostgreSQLに接続
 	db, err := gorm.Open(postgres.Open(cfg.DSN()), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 
+	// 全モデルのAutoMigrationを実行
 	if err := db.AutoMigrate(
 		&model.User{},
 		&model.Follow{},
@@ -56,13 +61,14 @@ func main() {
 		log.Fatalf("failed to run migrations: %v", err)
 	}
 
-	// Mark existing users as onboarding completed
+	// 既存ユーザーのオンボーディング完了フラグを初期化
 	db.Model(&model.User{}).Where("onboarding_completed = ?", false).Update("onboarding_completed", true)
 
-	// Start WebSocket hub
+	// WebSocket Hubをバックグラウンドで起動
 	hub := service.NewHub()
 	go hub.Run()
 
+	// ルーターを構築しサーバーを起動
 	r := router.Setup(db, cfg, hub)
 
 	log.Printf("Server starting on :%s", cfg.Port)

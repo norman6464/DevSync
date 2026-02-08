@@ -9,11 +9,14 @@ import (
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
+// GitHubHandler はGitHub連携関連のHTTPハンドラ。
+// GitHub OAuth認証・データ同期・コントリビューション取得を処理する。
 type GitHubHandler struct {
 	githubService *service.GitHubService
 	authService   *service.AuthService
 }
 
+// NewGitHubHandler は新しいGitHubHandlerインスタンスを生成する。
 func NewGitHubHandler(
 	githubService *service.GitHubService,
 	authService *service.AuthService,
@@ -24,6 +27,7 @@ func NewGitHubHandler(
 	}
 }
 
+// Connect はGitHub OAuth認証のURLを生成して返す。
 func (h *GitHubHandler) Connect(c *gin.Context) {
 	userID := c.GetUint("userID")
 	state, err := h.authService.GenerateOAuthState(userID)
@@ -35,6 +39,7 @@ func (h *GitHubHandler) Connect(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"url": url})
 }
 
+// Callback はGitHub OAuthコールバックを処理してアカウントを連携する。
 func (h *GitHubHandler) Callback(c *gin.Context) {
 	code := c.Query("code")
 	state := c.Query("state")
@@ -62,6 +67,7 @@ func (h *GitHubHandler) Callback(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "github connected"})
 }
 
+// GetContributions は指定ユーザーのGitHubコントリビューション情報を取得する。
 func (h *GitHubHandler) GetContributions(c *gin.Context) {
 	userID, err := strconv.ParseUint(c.Param("userId"), 10, 64)
 	if err != nil {
@@ -77,6 +83,7 @@ func (h *GitHubHandler) GetContributions(c *gin.Context) {
 	c.JSON(http.StatusOK, contributions)
 }
 
+// GetLanguages は指定ユーザーのGitHubリポジトリの使用言語統計を取得する。
 func (h *GitHubHandler) GetLanguages(c *gin.Context) {
 	userID, err := strconv.ParseUint(c.Param("userId"), 10, 64)
 	if err != nil {
@@ -92,6 +99,7 @@ func (h *GitHubHandler) GetLanguages(c *gin.Context) {
 	c.JSON(http.StatusOK, stats)
 }
 
+// GetRepos は指定ユーザーのGitHubリポジトリ一覧を取得する。
 func (h *GitHubHandler) GetRepos(c *gin.Context) {
 	userID, err := strconv.ParseUint(c.Param("userId"), 10, 64)
 	if err != nil {
@@ -107,6 +115,7 @@ func (h *GitHubHandler) GetRepos(c *gin.Context) {
 	c.JSON(http.StatusOK, repos)
 }
 
+// Sync は現在のユーザーのGitHubデータを手動で同期する。
 func (h *GitHubHandler) Sync(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -122,6 +131,7 @@ func (h *GitHubHandler) Sync(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "sync complete"})
 }
 
+// Disconnect は現在のユーザーのGitHub連携を解除する。
 func (h *GitHubHandler) Disconnect(c *gin.Context) {
 	userID := c.GetUint("userID")
 

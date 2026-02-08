@@ -1,8 +1,10 @@
+// Package repository はDevSyncアプリケーションのデータアクセス層を提供する。
+// 各リポジトリはGORMを使用してPostgreSQLに対するCRUD操作を実装する。
 package repository
 
 import "github.com/norman6464/devsync/backend/internal/model"
 
-// UserRepositoryInterface defines the contract for user data operations.
+// UserRepositoryInterface はユーザーデータ操作の契約を定義する。
 type UserRepositoryInterface interface {
 	FindAll() ([]model.User, error)
 	FindByID(id uint) (*model.User, error)
@@ -16,7 +18,8 @@ type UserRepositoryInterface interface {
 	UpdatePassword(userID uint, hashedPassword string) error
 }
 
-// PostRepositoryInterface defines the contract for post data operations.
+// PostRepositoryInterface は投稿データ操作の契約を定義する。
+// いいね・コメント操作も含む。
 type PostRepositoryInterface interface {
 	Create(post *model.Post) error
 	FindByID(id uint) (*model.Post, error)
@@ -33,7 +36,7 @@ type PostRepositoryInterface interface {
 	DeleteComment(id, userID uint) error
 }
 
-// FollowRepositoryInterface defines the contract for follow data operations.
+// FollowRepositoryInterface はフォロー関係データ操作の契約を定義する。
 type FollowRepositoryInterface interface {
 	Follow(followerID, followeeID uint) error
 	Unfollow(followerID, followeeID uint) error
@@ -42,7 +45,8 @@ type FollowRepositoryInterface interface {
 	GetFollowing(userID uint) ([]model.User, error)
 }
 
-// NotificationRepositoryInterface defines the contract for notification data operations.
+// NotificationRepositoryInterface は通知データ操作の契約を定義する。
+// 一括作成、未読カウント、既読マーク等を含む。
 type NotificationRepositoryInterface interface {
 	Create(notification *model.Notification) error
 	CreateBatch(notifications []*model.Notification) error
@@ -55,7 +59,7 @@ type NotificationRepositoryInterface interface {
 	GetFollowerIDs(userID uint) ([]uint, error)
 }
 
-// MessageRepositoryInterface defines the contract for message data operations.
+// MessageRepositoryInterface はDMメッセージデータ操作の契約を定義する。
 type MessageRepositoryInterface interface {
 	Create(msg *model.Message) error
 	GetConversation(userID, otherUserID uint, page, limit int) ([]model.Message, error)
@@ -63,7 +67,8 @@ type MessageRepositoryInterface interface {
 	MarkAsRead(senderID, receiverID uint) error
 }
 
-// QuestionRepositoryInterface defines the contract for question data operations.
+// QuestionRepositoryInterface はQ&A質問データ操作の契約を定義する。
+// 投票操作も含む。
 type QuestionRepositoryInterface interface {
 	Create(question *model.Question) error
 	FindByID(id uint) (*model.Question, error)
@@ -77,7 +82,8 @@ type QuestionRepositoryInterface interface {
 	GetUserVote(userID, questionID uint) (int, error)
 }
 
-// AnswerRepositoryInterface defines the contract for answer data operations.
+// AnswerRepositoryInterface はQ&A回答データ操作の契約を定義する。
+// ベストアンサー設定や投票操作も含む。
 type AnswerRepositoryInterface interface {
 	Create(answer *model.Answer) error
 	FindByQuestionID(questionID uint) ([]model.Answer, error)
@@ -90,7 +96,8 @@ type AnswerRepositoryInterface interface {
 	GetUserVotes(userID uint, answerIDs []uint) (map[uint]int, error)
 }
 
-// LearningLogRepositoryInterface defines the contract for learning log data operations.
+// LearningLogRepositoryInterface は学習ログデータ操作の契約を定義する。
+// ストリーク計算やカレンダーデータ取得も含む。
 type LearningLogRepositoryInterface interface {
 	Create(log *model.LearningLog) error
 	Update(log *model.LearningLog) error
@@ -101,7 +108,8 @@ type LearningLogRepositoryInterface interface {
 	GetCalendarData(userID uint) ([]model.CalendarEntry, error)
 }
 
-// LearningGoalRepositoryInterface defines the contract for learning goal data operations.
+// LearningGoalRepositoryInterface は学習目標データ操作の契約を定義する。
+// アクティブ目標の取得や統計情報の算出も含む。
 type LearningGoalRepositoryInterface interface {
 	Create(goal *model.LearningGoal) error
 	Update(goal *model.LearningGoal) error
@@ -112,14 +120,15 @@ type LearningGoalRepositoryInterface interface {
 	GetStats(userID uint) (*model.LearningGoalStats, error)
 }
 
-// RankingRepositoryInterface defines the contract for ranking data operations.
+// RankingRepositoryInterface はランキングデータ操作の契約を定義する。
+// GitHubコントリビューションと言語別ランキングを提供する。
 type RankingRepositoryInterface interface {
 	ContributionRanking(period string) ([]RankingEntry, error)
 	LanguageRanking(language, period string) ([]RankingEntry, error)
 	AvailableLanguages() ([]string, error)
 }
 
-// ProjectRepositoryInterface defines the contract for project data operations.
+// ProjectRepositoryInterface はプロジェクトショーケースデータ操作の契約を定義する。
 type ProjectRepositoryInterface interface {
 	Create(project *model.Project) error
 	FindByID(id uint) (*model.Project, error)
@@ -130,7 +139,7 @@ type ProjectRepositoryInterface interface {
 	FindAll(limit, offset int) ([]model.Project, int64, error)
 }
 
-// BookReviewRepositoryInterface defines the contract for book review data operations.
+// BookReviewRepositoryInterface は書籍レビューデータ操作の契約を定義する。
 type BookReviewRepositoryInterface interface {
 	Create(review *model.BookReview) error
 	FindByID(id uint) (*model.BookReview, error)
@@ -140,7 +149,8 @@ type BookReviewRepositoryInterface interface {
 	Delete(id uint) error
 }
 
-// LearningResourceRepositoryInterface defines the contract for learning resource data operations.
+// LearningResourceRepositoryInterface は学習リソースデータ操作の契約を定義する。
+// いいね・ブックマーク（保存）操作も含む。
 type LearningResourceRepositoryInterface interface {
 	Create(resource *model.LearningResource) error
 	FindByID(id uint) (*model.LearningResource, error)
@@ -158,7 +168,8 @@ type LearningResourceRepositoryInterface interface {
 	FindSavedByUserID(userID uint, limit, offset int) ([]model.LearningResource, int64, error)
 }
 
-// RoadmapRepositoryInterface defines the contract for roadmap data operations.
+// RoadmapRepositoryInterface は学習ロードマップデータ操作の契約を定義する。
+// ステップのCRUD操作やコピー機能も含む。
 type RoadmapRepositoryInterface interface {
 	Create(roadmap *model.Roadmap) error
 	Update(roadmap *model.Roadmap) error
@@ -175,7 +186,8 @@ type RoadmapRepositoryInterface interface {
 	ReorderSteps(roadmapID uint, stepOrders []StepOrder) error
 }
 
-// ChatRoomRepositoryInterface defines the contract for chat room data operations.
+// ChatRoomRepositoryInterface はチャットルームデータ操作の契約を定義する。
+// メンバー管理操作も含む。
 type ChatRoomRepositoryInterface interface {
 	Create(room *model.ChatRoom) error
 	FindByID(id uint) (*model.ChatRoom, error)
@@ -188,7 +200,7 @@ type ChatRoomRepositoryInterface interface {
 	IsMember(roomID, userID uint) (bool, error)
 }
 
-// GroupMessageRepositoryInterface defines the contract for group message data operations.
+// GroupMessageRepositoryInterface はグループメッセージデータ操作の契約を定義する。
 type GroupMessageRepositoryInterface interface {
 	Create(msg *model.GroupMessage) error
 	FindByRoomID(roomID uint, page, limit int) ([]model.GroupMessage, error)
@@ -196,7 +208,8 @@ type GroupMessageRepositoryInterface interface {
 	GetMemberUserIDs(roomID uint) []uint
 }
 
-// GitHubRepositoryInterface defines the contract for GitHub data operations.
+// GitHubRepositoryInterface はGitHub連携データ操作の契約を定義する。
+// コントリビューション、言語統計、リポジトリのUpsert操作を提供する。
 type GitHubRepositoryInterface interface {
 	UpsertContributions(contributions []model.GitHubContribution) error
 	GetContributions(userID uint) ([]model.GitHubContribution, error)
@@ -207,7 +220,7 @@ type GitHubRepositoryInterface interface {
 	DeleteUserData(userID uint) error
 }
 
-// QiitaRepositoryInterface defines the contract for Qiita data operations.
+// QiitaRepositoryInterface はQiita連携データ操作の契約を定義する。
 type QiitaRepositoryInterface interface {
 	UpsertArticles(userID uint, articles []model.QiitaArticle) error
 	GetArticles(userID uint) ([]model.QiitaArticle, error)
@@ -215,7 +228,7 @@ type QiitaRepositoryInterface interface {
 	DeleteUserArticles(userID uint) error
 }
 
-// ZennRepositoryInterface defines the contract for Zenn data operations.
+// ZennRepositoryInterface はZenn連携データ操作の契約を定義する。
 type ZennRepositoryInterface interface {
 	UpsertArticles(userID uint, articles []model.ZennArticle) error
 	GetArticles(userID uint) ([]model.ZennArticle, error)
@@ -223,7 +236,7 @@ type ZennRepositoryInterface interface {
 	DeleteUserArticles(userID uint) error
 }
 
-// PasswordResetRepositoryInterface defines the contract for password reset data operations.
+// PasswordResetRepositoryInterface はパスワードリセットトークンデータ操作の契約を定義する。
 type PasswordResetRepositoryInterface interface {
 	Create(token *model.PasswordResetToken) error
 	FindByToken(token string) (*model.PasswordResetToken, error)
@@ -232,7 +245,8 @@ type PasswordResetRepositoryInterface interface {
 	DeleteExpired() error
 }
 
-// ActivityReportRepositoryInterface defines the contract for activity report data operations.
+// ActivityReportRepositoryInterface はアクティビティレポートデータ操作の契約を定義する。
+// 週次・月次レポートの生成と前期間比較を提供する。
 type ActivityReportRepositoryInterface interface {
 	GetWeeklyReport(userID uint) (*model.ActivityReport, error)
 	GetMonthlyReport(userID uint) (*model.ActivityReport, error)

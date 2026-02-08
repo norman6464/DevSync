@@ -1,3 +1,6 @@
+// Package router はDevSyncアプリケーションのルーティング設定を提供する。
+// DI（依存性注入）によるリポジトリ・サービス・ハンドラの構築と、
+// Ginルーターへのエンドポイント登録を行う。
 package router
 
 import (
@@ -13,9 +16,12 @@ import (
 	"gorm.io/gorm"
 )
 
+// Setup はGinルーターを構築し、全エンドポイントを登録して返す。
+// リポジトリ → サービス → ハンドラの依存関係を手動DIで構築する。
 func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	r := gin.Default()
 
+	// CORS設定
 	origins := strings.Split(cfg.CORSOrigins, ",")
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     origins,
@@ -24,7 +30,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		AllowCredentials: true,
 	}))
 
-	// Repositories
+	// リポジトリの初期化
 	userRepo := repository.NewUserRepository(db)
 	followRepo := repository.NewFollowRepository(db)
 	githubRepo := repository.NewGitHubRepository(db)
@@ -47,7 +53,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	groupMessageRepo := repository.NewGroupMessageRepository(db)
 	learningLogRepo := repository.NewLearningLogRepository(db)
 
-	// Services
+	// サービスの初期化
 	authService := service.NewAuthService(userRepo, passwordResetRepo, cfg.JWTSecret)
 	githubService := service.NewGitHubService(cfg, userRepo, githubRepo)
 	zennService := service.NewZennService(userRepo, zennRepo)
@@ -70,7 +76,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	activityReportService := service.NewActivityReportService(activityReportRepo)
 	badgeService := service.NewBadgeService(db, notificationService)
 
-	// Handlers
+	// ハンドラの初期化
 	authHandler := handler.NewAuthHandler(authService, githubService)
 	userHandler := handler.NewUserHandler(userService)
 	followHandler := handler.NewFollowHandler(followService)
@@ -95,21 +101,21 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	badgeHandler := handler.NewBadgeHandler(badgeService)
 	learningLogHandler := handler.NewLearningLogHandler(learningLogService)
 
-	// Set up Hub's GetRoomMembers callback
+	// HubのGetRoomMembersコールバックを設定
 	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs
 
-	// Static file serving for uploads
+	// アップロードファイルの静的配信
 	r.Static("/uploads", "./uploads")
 
-	// Public routes
+	// パブリックルート
 	r.GET("/health", handler.HealthCheck)
 
-	// WebSocket (auth via query param)
+	// WebSocket（クエリパラメータで認証）
 	r.GET("/ws", wsHandler.HandleWebSocket)
 
 	api := r.Group("/api/v1")
 
-	// Auth routes (public)
+	// 認証ルート（公開）
 	auth := api.Group("/auth")
 	{
 		auth.POST("/register", authHandler.Register)
@@ -120,18 +126,18 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		auth.POST("/password-reset/confirm", authHandler.ResetPassword)
 	}
 
-	// GitHub data-connect callback (public - called by frontend after OAuth redirect)
+	// GitHubデータ連携コールバック（公開 - フロントエンドのOAuthリダイレクト後に呼ばれる）
 	api.GET("/github/callback", githubHandler.Callback)
 
-	// Protected routes
+	// 認証必須ルート
 	protected := api.Group("")
 	protected.Use(middleware.AuthRequired(authService))
 	{
-		// Auth
+		// 認証
 		protected.GET("/auth/me", authHandler.Me)
 		protected.DELETE("/auth/account", authHandler.DeleteAccount)
 
-		// Users
+		// ユーザー
 		users := protected.Group("/users")
 		{
 			users.GET("", userHandler.GetAll)
@@ -144,7 +150,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			users.GET("/:id/posts", postHandler.GetUserPosts)
 		}
 
-		// GitHub
+		// GitHub連携
 		github := protected.Group("/github")
 		{
 			github.GET("/connect", githubHandler.Connect)
@@ -155,7 +161,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			github.GET("/repos/:userId", githubHandler.GetRepos)
 		}
 
-		// Posts
+		// 投稿
 		posts := protected.Group("/posts")
 		{
 			posts.POST("", postHandler.Create)
@@ -171,7 +177,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			posts.DELETE("/:id/comments/:commentId", postHandler.DeleteComment)
 		}
 
-		// Rankings
+		// ランキング
 		rankings := protected.Group("/rankings")
 		{
 			rankings.GET("/contributions", rankingHandler.ContributionRanking)
@@ -179,7 +185,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			rankings.GET("/languages", rankingHandler.AvailableLanguages)
 		}
 
-		// Messages
+		// メッセージ
 		messages := protected.Group("/messages")
 		{
 			messages.GET("", messageHandler.GetConversations)
@@ -187,14 +193,14 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			messages.POST("/:userId", messageHandler.SendMessage)
 		}
 
-		// Upload
+		// アップロード
 		upload := protected.Group("/upload")
 		{
 			upload.POST("/image", uploadHandler.UploadImage)
 			upload.POST("/images", uploadHandler.UploadMultipleImages)
 		}
 
-		// Notifications
+		// 通知
 		notifications := protected.Group("/notifications")
 		{
 			notifications.GET("", notificationHandler.GetAll)
@@ -204,7 +210,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			notifications.DELETE("/:id", notificationHandler.Delete)
 		}
 
-		// Zenn
+		// Zenn連携
 		zenn := protected.Group("/zenn")
 		{
 			zenn.POST("/connect", zennHandler.Connect)
@@ -214,7 +220,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			zenn.GET("/stats/:userId", zennHandler.GetStats)
 		}
 
-		// Qiita
+		// Qiita連携
 		qiita := protected.Group("/qiita")
 		{
 			qiita.POST("/connect", qiitaHandler.Connect)
@@ -224,7 +230,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			qiita.GET("/stats/:userId", qiitaHandler.GetStats)
 		}
 
-		// Learning Goals
+		// 学習目標
 		goals := protected.Group("/goals")
 		{
 			goals.POST("", learningGoalHandler.Create)
@@ -236,7 +242,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			goals.GET("/stats/:userId", learningGoalHandler.GetStats)
 		}
 
-		// Activity Reports
+		// アクティビティレポート
 		reports := protected.Group("/reports")
 		{
 			reports.GET("/weekly", activityReportHandler.GetMyWeeklyReport)
@@ -246,7 +252,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			reports.GET("/comparison", activityReportHandler.GetComparison)
 		}
 
-		// Projects (Showcase)
+		// プロジェクトショーケース
 		projects := protected.Group("/projects")
 		{
 			projects.POST("", projectHandler.Create)
@@ -258,7 +264,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			projects.GET("/user/:userId/featured", projectHandler.GetFeatured)
 		}
 
-		// Learning Resources
+		// 学習リソース
 		resources := protected.Group("/resources")
 		{
 			resources.POST("", learningResourceHandler.Create)
@@ -275,7 +281,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			resources.GET("/user/:userId", learningResourceHandler.GetByUserID)
 		}
 
-		// Questions (Q&A)
+		// Q&A（質問）
 		questions := protected.Group("/questions")
 		{
 			questions.POST("", questionHandler.Create)
@@ -288,7 +294,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			questions.DELETE("/:id/vote", questionHandler.RemoveVote)
 			questions.GET("/user/:userId", questionHandler.GetByUserID)
 
-			// Answers (nested under questions)
+			// 回答（質問の子リソース）
 			questions.GET("/:id/answers", answerHandler.GetByQuestionID)
 			questions.POST("/:id/answers", answerHandler.Create)
 			questions.PUT("/:id/answers/:answerId", answerHandler.Update)
@@ -298,7 +304,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			questions.DELETE("/:id/answers/:answerId/vote", answerHandler.RemoveVote)
 		}
 
-		// Learning Roadmaps
+		// 学習ロードマップ
 		roadmaps := protected.Group("/roadmaps")
 		{
 			roadmaps.POST("", roadmapHandler.Create)
@@ -309,14 +315,14 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			roadmaps.DELETE("/:id", roadmapHandler.Delete)
 			roadmaps.POST("/:id/copy", roadmapHandler.CopyRoadmap)
 
-			// Steps
+			// ステップ
 			roadmaps.POST("/:id/steps", roadmapHandler.CreateStep)
 			roadmaps.PUT("/:id/steps/:stepId", roadmapHandler.UpdateStep)
 			roadmaps.DELETE("/:id/steps/:stepId", roadmapHandler.DeleteStep)
 			roadmaps.PUT("/:id/steps/reorder", roadmapHandler.ReorderSteps)
 		}
 
-		// Chat Rooms
+		// チャットルーム
 		chatRooms := protected.Group("/chat-rooms")
 		{
 			chatRooms.POST("", chatRoomHandler.Create)
@@ -331,7 +337,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			chatRooms.POST("/:id/messages", chatRoomHandler.SendMessage)
 		}
 
-		// Book Reviews
+		// 書籍レビュー
 		bookReviews := protected.Group("/book-reviews")
 		{
 			bookReviews.POST("", bookReviewHandler.Create)
@@ -342,14 +348,14 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			bookReviews.GET("/user/:userId", bookReviewHandler.GetByUserID)
 		}
 
-		// Badges
+		// バッジ
 		badges := protected.Group("/badges")
 		{
 			badges.GET("/:userId", badgeHandler.GetUserBadges)
 			badges.POST("/notify", badgeHandler.NotifyBadgeEarned)
 		}
 
-		// Learning Logs
+		// 学習ログ
 		learningLogs := protected.Group("/learning-logs")
 		{
 			learningLogs.POST("", learningLogHandler.Create)

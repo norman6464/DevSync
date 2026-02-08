@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// newTestLearningResourceService はLearningResourceServiceのテスト用インスタンスを生成するヘルパー。
 func newTestLearningResourceService() (*LearningResourceService, *MockLearningResourceRepository) {
 	repo := new(MockLearningResourceRepository)
 	svc := NewLearningResourceService(repo)
@@ -110,7 +111,7 @@ func TestLearningResourceGetByUserID_Other(t *testing.T) {
 }
 
 // ============================================================
-// Update
+// 学習リソース更新テスト
 // ============================================================
 
 func TestLearningResourceUpdate_Success(t *testing.T) {
@@ -147,7 +148,7 @@ func TestLearningResourceUpdate_Forbidden(t *testing.T) {
 }
 
 // ============================================================
-// UpdateVisibility
+// 公開設定変更テスト
 // ============================================================
 
 func TestLearningResourceUpdateVisibility_Success(t *testing.T) {
@@ -180,7 +181,7 @@ func TestLearningResourceUpdateVisibility_Forbidden(t *testing.T) {
 }
 
 // ============================================================
-// Delete
+// 学習リソース削除テスト
 // ============================================================
 
 func TestLearningResourceDelete_Success(t *testing.T) {

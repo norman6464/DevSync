@@ -10,30 +10,37 @@ import (
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
+// QuestionHandler は質問関連のHTTPハンドラ。
+// 質問のCRUD・検索・投票を処理する。
 type QuestionHandler struct {
 	service *service.QuestionService
 }
 
+// NewQuestionHandler は新しいQuestionHandlerインスタンスを生成する。
 func NewQuestionHandler(s *service.QuestionService) *QuestionHandler {
 	return &QuestionHandler{service: s}
 }
 
+// CreateQuestionRequest は質問作成のリクエストボディ。
 type CreateQuestionRequest struct {
 	Title string `json:"title" binding:"required,max=500"`
 	Body  string `json:"body" binding:"required"`
 	Tags  string `json:"tags"`
 }
 
+// UpdateQuestionRequest は質問更新のリクエストボディ。
 type UpdateQuestionRequest struct {
 	Title string `json:"title" binding:"max=500"`
 	Body  string `json:"body"`
 	Tags  string `json:"tags"`
 }
 
+// VoteRequest は投票のリクエストボディ。
 type VoteRequest struct {
 	Value int `json:"value" binding:"required,oneof=1 -1"`
 }
 
+// Create は新しい質問を作成する。
 func (h *QuestionHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -58,6 +65,7 @@ func (h *QuestionHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, question)
 }
 
+// GetAll は質問一覧をページネーション・タグ・ソート付きで取得する。
 func (h *QuestionHandler) GetAll(c *gin.Context) {
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
 	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
@@ -82,6 +90,7 @@ func (h *QuestionHandler) GetAll(c *gin.Context) {
 	})
 }
 
+// Search はキーワードで質問を検索する。
 func (h *QuestionHandler) Search(c *gin.Context) {
 	q := c.Query("q")
 	if q == "" {
@@ -110,6 +119,7 @@ func (h *QuestionHandler) Search(c *gin.Context) {
 	})
 }
 
+// GetByID は指定されたIDの質問を取得する。
 func (h *QuestionHandler) GetByID(c *gin.Context) {
 	userID := c.GetUint("userID")
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -132,6 +142,7 @@ func (h *QuestionHandler) GetByID(c *gin.Context) {
 	})
 }
 
+// GetByUserID は指定されたユーザーの質問一覧を取得する。
 func (h *QuestionHandler) GetByUserID(c *gin.Context) {
 	userID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
 	if err != nil {
@@ -148,6 +159,7 @@ func (h *QuestionHandler) GetByUserID(c *gin.Context) {
 	c.JSON(http.StatusOK, questions)
 }
 
+// Update は指定された質問を更新する。
 func (h *QuestionHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -175,6 +187,7 @@ func (h *QuestionHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, question)
 }
 
+// Delete は指定された質問を削除する。
 func (h *QuestionHandler) Delete(c *gin.Context) {
 	userID := c.GetUint("userID")
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -195,6 +208,7 @@ func (h *QuestionHandler) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Question deleted successfully"})
 }
 
+// Vote は質問に投票する。
 func (h *QuestionHandler) Vote(c *gin.Context) {
 	userID := c.GetUint("userID")
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -217,6 +231,7 @@ func (h *QuestionHandler) Vote(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Voted successfully"})
 }
 
+// RemoveVote は質問への投票を取り消す。
 func (h *QuestionHandler) RemoveVote(c *gin.Context) {
 	userID := c.GetUint("userID")
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)

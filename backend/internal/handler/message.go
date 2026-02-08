@@ -9,14 +9,18 @@ import (
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
+// MessageHandler はDM（ダイレクトメッセージ）関連のHTTPハンドラ。
+// 会話一覧・メッセージ取得・メッセージ送信を処理する。
 type MessageHandler struct {
 	service *service.MessageService
 }
 
+// NewMessageHandler は新しいMessageHandlerインスタンスを生成する。
 func NewMessageHandler(s *service.MessageService) *MessageHandler {
 	return &MessageHandler{service: s}
 }
 
+// GetConversations は認証ユーザーの会話一覧を返す。
 func (h *MessageHandler) GetConversations(c *gin.Context) {
 	userID := c.GetUint("userID")
 	conversations, err := h.service.GetConversations(userID)
@@ -27,6 +31,7 @@ func (h *MessageHandler) GetConversations(c *gin.Context) {
 	c.JSON(http.StatusOK, conversations)
 }
 
+// GetMessages は指定ユーザーとの会話メッセージをページネーション付きで返す。
 func (h *MessageHandler) GetMessages(c *gin.Context) {
 	userID := c.GetUint("userID")
 	otherID, err := strconv.ParseUint(c.Param("userId"), 10, 64)
@@ -46,6 +51,7 @@ func (h *MessageHandler) GetMessages(c *gin.Context) {
 	c.JSON(http.StatusOK, messages)
 }
 
+// SendMessage は指定ユーザーにDMを送信する。
 func (h *MessageHandler) SendMessage(c *gin.Context) {
 	userID := c.GetUint("userID")
 	receiverID, err := strconv.ParseUint(c.Param("userId"), 10, 64)

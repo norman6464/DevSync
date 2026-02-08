@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// newTestAnswerService はAnswerServiceのテスト用インスタンスを生成するヘルパー。
 func newTestAnswerService() (*AnswerService, *MockAnswerRepository, *MockQuestionRepository) {
 	answerRepo := new(MockAnswerRepository)
 	questionRepo := new(MockQuestionRepository)
@@ -16,7 +17,7 @@ func newTestAnswerService() (*AnswerService, *MockAnswerRepository, *MockQuestio
 }
 
 // ============================================================
-// Create
+// 回答作成テスト
 // ============================================================
 
 func TestAnswerCreate_Success(t *testing.T) {
@@ -47,7 +48,7 @@ func TestAnswerCreate_QuestionNotFound(t *testing.T) {
 }
 
 // ============================================================
-// Update
+// 回答更新テスト
 // ============================================================
 
 func TestAnswerUpdate_Success(t *testing.T) {
@@ -80,7 +81,7 @@ func TestAnswerUpdate_Forbidden(t *testing.T) {
 }
 
 // ============================================================
-// Delete
+// 回答削除テスト
 // ============================================================
 
 func TestAnswerDelete_Success(t *testing.T) {
@@ -111,7 +112,7 @@ func TestAnswerDelete_Forbidden(t *testing.T) {
 }
 
 // ============================================================
-// SetBestAnswer
+// ベストアンサー設定テスト
 // ============================================================
 
 func TestSetBestAnswer_Success(t *testing.T) {
@@ -174,7 +175,7 @@ func TestSetBestAnswer_QuestionNotFound(t *testing.T) {
 }
 
 // ============================================================
-// Vote / RemoveVote
+// 回答投票テスト
 // ============================================================
 
 func TestAnswerVote_Success(t *testing.T) {

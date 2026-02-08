@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// newTestBookReviewService はBookReviewServiceのテスト用インスタンスを生成するヘルパー。
 func newTestBookReviewService() (*BookReviewService, *MockBookReviewRepository) {
 	repo := new(MockBookReviewRepository)
 	svc := NewBookReviewService(repo)
@@ -15,7 +16,7 @@ func newTestBookReviewService() (*BookReviewService, *MockBookReviewRepository) 
 }
 
 // ============================================================
-// Update
+// 書籍レビュー更新テスト
 // ============================================================
 
 func TestBookReviewUpdate_Success(t *testing.T) {
@@ -64,7 +65,7 @@ func TestBookReviewUpdate_NotFound(t *testing.T) {
 }
 
 // ============================================================
-// Delete
+// 書籍レビュー削除テスト
 // ============================================================
 
 func TestBookReviewDelete_Success(t *testing.T) {

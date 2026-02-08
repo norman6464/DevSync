@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// newTestUserService はUserServiceのテスト用インスタンスを生成するヘルパー。
 func newTestUserService() (*UserService, *MockUserRepository) {
 	repo := new(MockUserRepository)
 	svc := NewUserService(repo)
@@ -45,7 +46,7 @@ func TestUserGetAll_EmptyQuery(t *testing.T) {
 }
 
 // ============================================================
-// GetByID
+// ユーザーID検索テスト
 // ============================================================
 
 func TestUserGetByID_Success(t *testing.T) {
@@ -62,7 +63,7 @@ func TestUserGetByID_Success(t *testing.T) {
 }
 
 // ============================================================
-// Update
+// ユーザー更新テスト
 // ============================================================
 
 func TestUserUpdate_Success(t *testing.T) {

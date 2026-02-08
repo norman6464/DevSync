@@ -10,14 +10,18 @@ import (
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
+// BookReviewHandler は書籍レビュー関連のHTTPハンドラ。
+// 書籍レビューのCRUD・一覧取得を処理する。
 type BookReviewHandler struct {
 	service *service.BookReviewService
 }
 
+// NewBookReviewHandler は新しいBookReviewHandlerインスタンスを生成する。
 func NewBookReviewHandler(s *service.BookReviewService) *BookReviewHandler {
 	return &BookReviewHandler{service: s}
 }
 
+// CreateBookReviewRequest は書籍レビュー作成のリクエストボディ。
 type CreateBookReviewRequest struct {
 	Title    string `json:"title" binding:"required,max=300"`
 	Author   string `json:"author" binding:"max=200"`
@@ -27,6 +31,7 @@ type CreateBookReviewRequest struct {
 	ImageURL string `json:"image_url"`
 }
 
+// UpdateBookReviewRequest は書籍レビュー更新のリクエストボディ。
 type UpdateBookReviewRequest struct {
 	Title    string `json:"title" binding:"max=300"`
 	Author   string `json:"author" binding:"max=200"`
@@ -36,6 +41,7 @@ type UpdateBookReviewRequest struct {
 	ImageURL string `json:"image_url"`
 }
 
+// Create は新しい書籍レビューを作成する。
 func (h *BookReviewHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -63,6 +69,7 @@ func (h *BookReviewHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, review)
 }
 
+// GetByID は指定IDの書籍レビューを取得する。
 func (h *BookReviewHandler) GetByID(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -79,6 +86,7 @@ func (h *BookReviewHandler) GetByID(c *gin.Context) {
 	c.JSON(http.StatusOK, review)
 }
 
+// GetByUserID は指定ユーザーの書籍レビュー一覧を取得する。
 func (h *BookReviewHandler) GetByUserID(c *gin.Context) {
 	userID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
 	if err != nil {
@@ -95,6 +103,7 @@ func (h *BookReviewHandler) GetByUserID(c *gin.Context) {
 	c.JSON(http.StatusOK, reviews)
 }
 
+// GetAll は書籍レビューの一覧をページネーション付きで取得する。
 func (h *BookReviewHandler) GetAll(c *gin.Context) {
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
 	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
@@ -117,6 +126,7 @@ func (h *BookReviewHandler) GetAll(c *gin.Context) {
 	})
 }
 
+// Update は指定IDの書籍レビューを更新する。
 func (h *BookReviewHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -164,6 +174,7 @@ func (h *BookReviewHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, review)
 }
 
+// Delete は指定IDの書籍レビューを削除する。
 func (h *BookReviewHandler) Delete(c *gin.Context) {
 	userID := c.GetUint("userID")
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)

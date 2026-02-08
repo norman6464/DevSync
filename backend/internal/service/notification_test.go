@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+// newTestNotificationService はNotificationServiceのテスト用インスタンスを生成するヘルパー。
 func newTestNotificationService() (*NotificationService, *MockNotificationRepository) {
 	repo := new(MockNotificationRepository)
 	svc := NewNotificationService(repo)
@@ -15,7 +16,7 @@ func newTestNotificationService() (*NotificationService, *MockNotificationReposi
 }
 
 // ============================================================
-// NotifyFollowers
+// フォロワー通知テスト
 // ============================================================
 
 func TestNotifyFollowers_Success(t *testing.T) {
@@ -41,7 +42,7 @@ func TestNotifyFollowers_NoFollowers(t *testing.T) {
 }
 
 // ============================================================
-// CountUnread
+// 未読カウントテスト
 // ============================================================
 
 func TestNotificationCountUnread_Success(t *testing.T) {
@@ -56,7 +57,7 @@ func TestNotificationCountUnread_Success(t *testing.T) {
 }
 
 // ============================================================
-// MarkAllAsRead
+// 全件既読テスト
 // ============================================================
 
 func TestNotificationMarkAllAsRead_Success(t *testing.T) {
@@ -70,7 +71,7 @@ func TestNotificationMarkAllAsRead_Success(t *testing.T) {
 }
 
 // ============================================================
-// CreateNotification
+// 通知作成テスト
 // ============================================================
 
 func TestCreateNotification_Success(t *testing.T) {

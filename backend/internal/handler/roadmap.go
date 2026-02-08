@@ -10,17 +10,20 @@ import (
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
+// RoadmapHandler はロードマップ関連のHTTPハンドラ。
+// ロードマップとステップのCRUD・公開一覧・コピー・並べ替えを処理する。
 type RoadmapHandler struct {
 	service *service.RoadmapService
 }
 
+// NewRoadmapHandler は新しいRoadmapHandlerインスタンスを生成する。
 func NewRoadmapHandler(s *service.RoadmapService) *RoadmapHandler {
 	return &RoadmapHandler{service: s}
 }
 
-// === Roadmap Endpoints ===
+// === ロードマップエンドポイント ===
 
-// Create creates a new roadmap
+// Create は新しいロードマップを作成する。
 func (h *RoadmapHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -57,7 +60,7 @@ func (h *RoadmapHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, roadmap)
 }
 
-// GetMyRoadmaps gets all roadmaps for the current user
+// GetMyRoadmaps は現在のユーザーのロードマップ一覧を取得する。
 func (h *RoadmapHandler) GetMyRoadmaps(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -70,7 +73,7 @@ func (h *RoadmapHandler) GetMyRoadmaps(c *gin.Context) {
 	c.JSON(http.StatusOK, roadmaps)
 }
 
-// GetPublicRoadmaps gets all public roadmaps
+// GetPublicRoadmaps は公開ロードマップの一覧をページネーション付きで取得する。
 func (h *RoadmapHandler) GetPublicRoadmaps(c *gin.Context) {
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
 	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
@@ -87,7 +90,7 @@ func (h *RoadmapHandler) GetPublicRoadmaps(c *gin.Context) {
 	})
 }
 
-// GetByID gets a roadmap by ID (with steps)
+// GetByID は指定IDのロードマップをステップ付きで取得する。
 func (h *RoadmapHandler) GetByID(c *gin.Context) {
 	roadmapID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -110,7 +113,7 @@ func (h *RoadmapHandler) GetByID(c *gin.Context) {
 	c.JSON(http.StatusOK, roadmap)
 }
 
-// Update updates a roadmap
+// Update は指定IDのロードマップを更新する。
 func (h *RoadmapHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
 	roadmapID, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -156,7 +159,7 @@ func (h *RoadmapHandler) Update(c *gin.Context) {
 		return
 	}
 
-	// Handle IsPublic separately if provided
+	// IsPublicが指定されている場合は別途処理する
 	if req.IsPublic != nil {
 		roadmap, err = h.service.UpdateVisibility(uint(roadmapID), userID, *req.IsPublic)
 		if err != nil {
@@ -168,7 +171,7 @@ func (h *RoadmapHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, roadmap)
 }
 
-// Delete deletes a roadmap
+// Delete は指定IDのロードマップを削除する。
 func (h *RoadmapHandler) Delete(c *gin.Context) {
 	userID := c.GetUint("userID")
 	roadmapID, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -189,7 +192,7 @@ func (h *RoadmapHandler) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "roadmap deleted"})
 }
 
-// CopyRoadmap copies a public roadmap as a template
+// CopyRoadmap は公開ロードマップをテンプレートとしてコピーする。
 func (h *RoadmapHandler) CopyRoadmap(c *gin.Context) {
 	userID := c.GetUint("userID")
 	roadmapID, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -211,9 +214,9 @@ func (h *RoadmapHandler) CopyRoadmap(c *gin.Context) {
 	c.JSON(http.StatusCreated, copied)
 }
 
-// === RoadmapStep Endpoints ===
+// === ロードマップステップエンドポイント ===
 
-// CreateStep creates a new step
+// CreateStep はロードマップに新しいステップを作成する。
 func (h *RoadmapHandler) CreateStep(c *gin.Context) {
 	userID := c.GetUint("userID")
 	roadmapID, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -255,7 +258,7 @@ func (h *RoadmapHandler) CreateStep(c *gin.Context) {
 	c.JSON(http.StatusCreated, step)
 }
 
-// UpdateStep updates a step
+// UpdateStep はロードマップのステップを更新する。
 func (h *RoadmapHandler) UpdateStep(c *gin.Context) {
 	userID := c.GetUint("userID")
 	roadmapID, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -281,7 +284,7 @@ func (h *RoadmapHandler) UpdateStep(c *gin.Context) {
 		return
 	}
 
-	// Handle completion status change separately
+	// 完了ステータスの変更を別途処理する
 	if req.IsCompleted != nil {
 		step, err := h.service.UpdateStepCompletion(uint(roadmapID), uint(stepID), userID, *req.IsCompleted)
 		if err != nil {
@@ -296,7 +299,7 @@ func (h *RoadmapHandler) UpdateStep(c *gin.Context) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "step not found"})
 			return
 		}
-		// If only completion was updated, return early
+		// 完了ステータスのみの更新の場合は早期リターンする
 		if req.Title == nil && req.Description == nil && req.ResourceURL == nil {
 			c.JSON(http.StatusOK, step)
 			return
@@ -331,7 +334,7 @@ func (h *RoadmapHandler) UpdateStep(c *gin.Context) {
 	c.JSON(http.StatusOK, step)
 }
 
-// DeleteStep deletes a step
+// DeleteStep はロードマップのステップを削除する。
 func (h *RoadmapHandler) DeleteStep(c *gin.Context) {
 	userID := c.GetUint("userID")
 	roadmapID, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -361,7 +364,7 @@ func (h *RoadmapHandler) DeleteStep(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "step deleted"})
 }
 
-// ReorderSteps reorders steps within a roadmap
+// ReorderSteps はロードマップ内のステップの並び順を変更する。
 func (h *RoadmapHandler) ReorderSteps(c *gin.Context) {
 	userID := c.GetUint("userID")
 	roadmapID, err := strconv.ParseUint(c.Param("id"), 10, 32)

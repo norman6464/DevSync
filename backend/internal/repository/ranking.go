@@ -2,21 +2,26 @@ package repository
 
 import "gorm.io/gorm"
 
+// RankingRepository はユーザーランキングデータの集計・取得を提供するリポジトリ実装。
 type RankingRepository struct {
 	db *gorm.DB
 }
 
+// NewRankingRepository は新しいRankingRepositoryインスタンスを生成する。
 func NewRankingRepository(db *gorm.DB) *RankingRepository {
 	return &RankingRepository{db: db}
 }
 
+// RankingEntry はランキング表示用の1エントリを表す。
 type RankingEntry struct {
-	UserID    uint   `json:"user_id"`
-	Name      string `json:"name"`
-	AvatarURL string `json:"avatar_url"`
-	Score     int64  `json:"score"`
+	UserID    uint   `json:"user_id"`    // ユーザーID
+	Name      string `json:"name"`       // ユーザー名
+	AvatarURL string `json:"avatar_url"` // アバター画像URL
+	Score     int64  `json:"score"`      // ランキングスコア
 }
 
+// ContributionRanking は指定期間（weekly/monthly）のGitHubコントリビューションランキングを取得する。
+// コントリビューション数の合計で降順ソートし、上位50件を返す。
 func (r *RankingRepository) ContributionRanking(period string) ([]RankingEntry, error) {
 	interval := "7 days"
 	if period == "monthly" {
@@ -37,6 +42,8 @@ func (r *RankingRepository) ContributionRanking(period string) ([]RankingEntry, 
 	return entries, err
 }
 
+// LanguageRanking は指定プログラミング言語のバイト数ランキングを取得する。
+// GitHubの言語統計データに基づき、上位50件を返す。
 func (r *RankingRepository) LanguageRanking(language, period string) ([]RankingEntry, error) {
 	var entries []RankingEntry
 	err := r.db.Raw(`
@@ -50,6 +57,8 @@ func (r *RankingRepository) LanguageRanking(language, period string) ([]RankingE
 	return entries, err
 }
 
+// AvailableLanguages はランキング対象となるプログラミング言語の一覧を取得する。
+// GitHubの言語統計データに存在する言語をアルファベット順で返す。
 func (r *RankingRepository) AvailableLanguages() ([]string, error) {
 	var languages []string
 	err := r.db.Raw(`SELECT DISTINCT language FROM git_hub_language_stats ORDER BY language`).Scan(&languages).Error

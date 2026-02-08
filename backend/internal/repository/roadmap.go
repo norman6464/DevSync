@@ -7,32 +7,35 @@ import (
 	"gorm.io/gorm"
 )
 
+// RoadmapRepository は学習ロードマップデータへのアクセスを提供するリポジトリ実装。
 type RoadmapRepository struct {
 	db *gorm.DB
 }
 
+// NewRoadmapRepository は新しいRoadmapRepositoryインスタンスを生成する。
 func NewRoadmapRepository(db *gorm.DB) *RoadmapRepository {
 	return &RoadmapRepository{db: db}
 }
 
-// === Roadmap CRUD ===
+// === ロードマップCRUD ===
 
-// Create creates a new roadmap
+// Create は新しいロードマップをデータベースに作成する。
 func (r *RoadmapRepository) Create(roadmap *model.Roadmap) error {
 	return r.db.Create(roadmap).Error
 }
 
-// Update updates an existing roadmap
+// Update は既存のロードマップを更新する。
 func (r *RoadmapRepository) Update(roadmap *model.Roadmap) error {
 	return r.db.Save(roadmap).Error
 }
 
-// Delete deletes a roadmap (cascade deletes steps)
+// Delete は指定IDのロードマップを削除する（ステップはCASCADE削除される）。
 func (r *RoadmapRepository) Delete(id uint) error {
 	return r.db.Delete(&model.Roadmap{}, id).Error
 }
 
-// FindByID finds a roadmap by ID with steps preloaded
+// FindByID は指定IDのロードマップをステップ・ユーザー情報付きで取得する。
+// ステップはorder_index昇順でソートされる。
 func (r *RoadmapRepository) FindByID(id uint) (*model.Roadmap, error) {
 	var roadmap model.Roadmap
 	err := r.db.Preload("Steps", func(db *gorm.DB) *gorm.DB {
@@ -44,7 +47,7 @@ func (r *RoadmapRepository) FindByID(id uint) (*model.Roadmap, error) {
 	return &roadmap, nil
 }
 
-// GetByUserID gets all roadmaps for a user (without steps)
+// GetByUserID は指定ユーザーの全ロードマップを取得する（ステップなし、新しい順）。
 func (r *RoadmapRepository) GetByUserID(userID uint) ([]model.Roadmap, error) {
 	var roadmaps []model.Roadmap
 	err := r.db.Where("user_id = ?", userID).
@@ -53,7 +56,7 @@ func (r *RoadmapRepository) GetByUserID(userID uint) ([]model.Roadmap, error) {
 	return roadmaps, err
 }
 
-// GetPublicRoadmaps gets all public roadmaps with pagination
+// GetPublicRoadmaps は公開ロードマップをページネーション付きで取得する。
 func (r *RoadmapRepository) GetPublicRoadmaps(limit, offset int) ([]model.Roadmap, int64, error) {
 	var roadmaps []model.Roadmap
 	var total int64
@@ -70,7 +73,8 @@ func (r *RoadmapRepository) GetPublicRoadmaps(limit, offset int) ([]model.Roadma
 	return roadmaps, total, err
 }
 
-// CopyRoadmap creates a copy of an existing roadmap for a new user
+// CopyRoadmap は既存のロードマップを新しいユーザー用にコピーする。
+// ステップもコピーされるが、完了状態はリセットされる。タイトルに「(コピー)」が付与される。
 func (r *RoadmapRepository) CopyRoadmap(originalID, newUserID uint) (*model.Roadmap, error) {
 	original, err := r.FindByID(originalID)
 	if err != nil {
@@ -107,7 +111,7 @@ func (r *RoadmapRepository) CopyRoadmap(originalID, newUserID uint) (*model.Road
 	return r.FindByID(newRoadmap.ID)
 }
 
-// GetStats gets roadmap statistics for a user
+// GetStats は指定ユーザーのロードマップ統計情報を算出する。
 func (r *RoadmapRepository) GetStats(userID uint) (*model.RoadmapStats, error) {
 	var stats model.RoadmapStats
 
@@ -134,9 +138,9 @@ func (r *RoadmapRepository) GetStats(userID uint) (*model.RoadmapStats, error) {
 	return &stats, nil
 }
 
-// === RoadmapStep CRUD ===
+// === ロードマップステップCRUD ===
 
-// CreateStep creates a new step and increments roadmap step_count
+// CreateStep は新しいステップを作成し、ロードマップのstep_countをインクリメントする。
 func (r *RoadmapRepository) CreateStep(step *model.RoadmapStep) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(step).Error; err != nil {
@@ -147,7 +151,8 @@ func (r *RoadmapRepository) CreateStep(step *model.RoadmapStep) error {
 	})
 }
 
-// UpdateStep updates a step and recalculates roadmap progress if completion changed
+// UpdateStep はステップを更新する。
+// 完了状態が変更された場合、ロードマップのcompleted_step_count・progress・statusも再計算する。
 func (r *RoadmapRepository) UpdateStep(step *model.RoadmapStep) error {
 	oldStep := &model.RoadmapStep{}
 	if err := r.db.First(oldStep, step.ID).Error; err != nil {
@@ -159,6 +164,7 @@ func (r *RoadmapRepository) UpdateStep(step *model.RoadmapStep) error {
 			return err
 		}
 
+		// 完了状態が変更された場合、ロードマップの進捗を再計算
 		if oldStep.IsCompleted != step.IsCompleted {
 			delta := 1
 			if !step.IsCompleted {
@@ -170,7 +176,7 @@ func (r *RoadmapRepository) UpdateStep(step *model.RoadmapStep) error {
 				return err
 			}
 
-			// Recalculate progress
+			// 進捗率を再計算
 			var roadmap model.Roadmap
 			if err := tx.First(&roadmap, step.RoadmapID).Error; err != nil {
 				return err
@@ -182,6 +188,7 @@ func (r *RoadmapRepository) UpdateStep(step *model.RoadmapStep) error {
 			}
 
 			updates := map[string]interface{}{"progress": progress}
+			// 100%達成時に自動完了、100%未満時に自動アクティブ化
 			if progress == 100 && roadmap.Status == model.RoadmapStatusActive {
 				now := time.Now()
 				updates["status"] = model.RoadmapStatusCompleted
@@ -198,7 +205,7 @@ func (r *RoadmapRepository) UpdateStep(step *model.RoadmapStep) error {
 	})
 }
 
-// DeleteStep deletes a step and decrements roadmap step_count
+// DeleteStep はステップを削除し、ロードマップのstep_count・completed_step_count・progressを再計算する。
 func (r *RoadmapRepository) DeleteStep(stepID uint) error {
 	step := &model.RoadmapStep{}
 	if err := r.db.First(step, stepID).Error; err != nil {
@@ -215,6 +222,7 @@ func (r *RoadmapRepository) DeleteStep(stepID uint) error {
 			return err
 		}
 
+		// 完了済みステップの場合、completed_step_countもデクリメント
 		if step.IsCompleted {
 			if err := tx.Model(&model.Roadmap{}).Where("id = ?", step.RoadmapID).
 				UpdateColumn("completed_step_count", gorm.Expr("completed_step_count - 1")).Error; err != nil {
@@ -222,7 +230,7 @@ func (r *RoadmapRepository) DeleteStep(stepID uint) error {
 			}
 		}
 
-		// Recalculate progress
+		// 進捗率を再計算
 		var roadmap model.Roadmap
 		if err := tx.First(&roadmap, step.RoadmapID).Error; err != nil {
 			return err
@@ -237,14 +245,14 @@ func (r *RoadmapRepository) DeleteStep(stepID uint) error {
 	})
 }
 
-// FindStepByID finds a step by ID
+// FindStepByID は指定IDのステップを取得する。
 func (r *RoadmapRepository) FindStepByID(stepID uint) (*model.RoadmapStep, error) {
 	var step model.RoadmapStep
 	err := r.db.First(&step, stepID).Error
 	return &step, err
 }
 
-// ReorderSteps updates the order_index of multiple steps
+// ReorderSteps は複数ステップの表示順序を一括で更新する。
 func (r *RoadmapRepository) ReorderSteps(roadmapID uint, stepOrders []StepOrder) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		for _, order := range stepOrders {
@@ -258,8 +266,8 @@ func (r *RoadmapRepository) ReorderSteps(roadmapID uint, stepOrders []StepOrder)
 	})
 }
 
-// StepOrder represents the order of a step for reordering
+// StepOrder はステップの並び替え情報を表す。
 type StepOrder struct {
-	StepID     uint `json:"step_id"`
-	OrderIndex int  `json:"order_index"`
+	StepID     uint `json:"step_id"`     // ステップID
+	OrderIndex int  `json:"order_index"` // 新しい表示順序
 }

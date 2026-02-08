@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// newTestProjectService はProjectServiceのテスト用インスタンスを生成するヘルパー。
 func newTestProjectService() (*ProjectService, *MockProjectRepository) {
 	repo := new(MockProjectRepository)
 	svc := NewProjectService(repo)
@@ -15,7 +16,7 @@ func newTestProjectService() (*ProjectService, *MockProjectRepository) {
 }
 
 // ============================================================
-// Update
+// プロジェクト更新テスト
 // ============================================================
 
 func TestProjectUpdate_Success(t *testing.T) {
@@ -64,7 +65,7 @@ func TestProjectUpdate_NotFound(t *testing.T) {
 }
 
 // ============================================================
-// UpdateFeatured
+// 注目プロジェクト設定テスト
 // ============================================================
 
 func TestProjectUpdateFeatured_Success(t *testing.T) {
@@ -97,7 +98,7 @@ func TestProjectUpdateFeatured_Forbidden(t *testing.T) {
 }
 
 // ============================================================
-// Delete
+// プロジェクト削除テスト
 // ============================================================
 
 func TestProjectDelete_Success(t *testing.T) {

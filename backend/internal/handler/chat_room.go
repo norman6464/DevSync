@@ -10,14 +10,18 @@ import (
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
+// ChatRoomHandler はチャットルーム関連のHTTPハンドラ。
+// チャットルームのCRUD・メンバー管理・メッセージ送受信を処理する。
 type ChatRoomHandler struct {
 	service *service.ChatRoomService
 }
 
+// NewChatRoomHandler は新しいChatRoomHandlerインスタンスを生成する。
 func NewChatRoomHandler(s *service.ChatRoomService) *ChatRoomHandler {
 	return &ChatRoomHandler{service: s}
 }
 
+// Create は新しいチャットルームを作成する。
 func (h *ChatRoomHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -46,6 +50,7 @@ func (h *ChatRoomHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, created)
 }
 
+// GetMyRooms は現在のユーザーが参加しているチャットルーム一覧を取得する。
 func (h *ChatRoomHandler) GetMyRooms(c *gin.Context) {
 	userID := c.GetUint("userID")
 	rooms, err := h.service.GetByUserID(userID)
@@ -56,6 +61,7 @@ func (h *ChatRoomHandler) GetMyRooms(c *gin.Context) {
 	c.JSON(http.StatusOK, rooms)
 }
 
+// GetByID は指定IDのチャットルーム詳細を取得する。
 func (h *ChatRoomHandler) GetByID(c *gin.Context) {
 	userID := c.GetUint("userID")
 	roomID, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -76,6 +82,7 @@ func (h *ChatRoomHandler) GetByID(c *gin.Context) {
 	c.JSON(http.StatusOK, room)
 }
 
+// Update は指定IDのチャットルーム情報を更新する。
 func (h *ChatRoomHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
 	roomID, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -105,6 +112,7 @@ func (h *ChatRoomHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, room)
 }
 
+// Delete は指定IDのチャットルームを削除する。
 func (h *ChatRoomHandler) Delete(c *gin.Context) {
 	userID := c.GetUint("userID")
 	roomID, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -124,6 +132,7 @@ func (h *ChatRoomHandler) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "room deleted"})
 }
 
+// GetMembers は指定チャットルームのメンバー一覧を取得する。
 func (h *ChatRoomHandler) GetMembers(c *gin.Context) {
 	userID := c.GetUint("userID")
 	roomID, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -144,6 +153,7 @@ func (h *ChatRoomHandler) GetMembers(c *gin.Context) {
 	c.JSON(http.StatusOK, members)
 }
 
+// AddMember はチャットルームに新しいメンバーを追加する。
 func (h *ChatRoomHandler) AddMember(c *gin.Context) {
 	userID := c.GetUint("userID")
 	roomID, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -171,6 +181,7 @@ func (h *ChatRoomHandler) AddMember(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "member added"})
 }
 
+// RemoveMember はチャットルームからメンバーを削除する。
 func (h *ChatRoomHandler) RemoveMember(c *gin.Context) {
 	userID := c.GetUint("userID")
 	roomID, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -195,6 +206,7 @@ func (h *ChatRoomHandler) RemoveMember(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "member removed"})
 }
 
+// GetMessages は指定チャットルームのメッセージ一覧をページネーション付きで取得する。
 func (h *ChatRoomHandler) GetMessages(c *gin.Context) {
 	userID := c.GetUint("userID")
 	roomID, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -218,6 +230,7 @@ func (h *ChatRoomHandler) GetMessages(c *gin.Context) {
 	c.JSON(http.StatusOK, messages)
 }
 
+// SendMessage は指定チャットルームにメッセージを送信する。
 func (h *ChatRoomHandler) SendMessage(c *gin.Context) {
 	userID := c.GetUint("userID")
 	roomID, err := strconv.ParseUint(c.Param("id"), 10, 64)

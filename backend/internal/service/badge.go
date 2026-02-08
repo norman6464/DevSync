@@ -8,40 +8,42 @@ import (
 	"gorm.io/gorm"
 )
 
-// BadgeStats holds the aggregated statistics needed for badge evaluation.
+// BadgeStats はバッジ判定に必要な集計統計を保持する構造体。
 type BadgeStats struct {
-	TotalContributions int
-	CurrentStreak      int
-	LearningLogStreak  int
-	TotalPosts         int
-	TotalLikesReceived int
-	FollowerCount      int
-	FollowingCount     int
-	QAAnswerCount      int
-	CompletedGoals     int
+	TotalContributions int // GitHub総コントリビューション数
+	CurrentStreak      int // GitHub連続コントリビューション日数
+	LearningLogStreak  int // 学習ログ連続記録日数
+	TotalPosts         int // 投稿総数
+	TotalLikesReceived int // 受け取ったいいね総数
+	FollowerCount      int // フォロワー数
+	FollowingCount     int // フォロー中の数
+	QAAnswerCount      int // Q&A回答数
+	CompletedGoals     int // 完了した学習目標数
 }
 
-// BadgeResult represents a single badge with its earned status.
+// BadgeResult は個別バッジの獲得状況を表す。
 type BadgeResult struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Category    string `json:"category"`
-	Earned      bool   `json:"earned"`
+	ID          string `json:"id"`          // バッジ識別子
+	Name        string `json:"name"`        // バッジ名（i18nキー）
+	Description string `json:"description"` // バッジ説明（i18nキー）
+	Category    string `json:"category"`    // バッジカテゴリ
+	Earned      bool   `json:"earned"`      // 獲得済みフラグ
 }
 
-// BadgeService handles badge evaluation business logic.
+// BadgeService はバッジ判定のビジネスロジックを提供する。
+// 各種統計を集計し、閾値ベースでバッジの獲得状況を評価する。
 type BadgeService struct {
-	db                  *gorm.DB
-	notificationService *NotificationService
+	db                  *gorm.DB             // 統計集計用DBコネクション
+	notificationService *NotificationService // バッジ獲得通知用
 }
 
-// NewBadgeService creates a new BadgeService.
+// NewBadgeService は新しいBadgeServiceインスタンスを生成する。
 func NewBadgeService(db *gorm.DB, notificationService *NotificationService) *BadgeService {
 	return &BadgeService{db: db, notificationService: notificationService}
 }
 
-// GetUserBadges returns all badges with earned status for the given user.
+// GetUserBadges は指定ユーザーの全バッジと獲得状況を返す。
+// 統計を集計した後、全18バッジを閾値で評価する。
 func (s *BadgeService) GetUserBadges(userID uint) ([]BadgeResult, error) {
 	stats, err := s.getBadgeStats(userID)
 	if err != nil {
@@ -50,7 +52,7 @@ func (s *BadgeService) GetUserBadges(userID uint) ([]BadgeResult, error) {
 	return s.evaluateBadges(stats), nil
 }
 
-// NotifyBadgeEarned creates a notification for a newly earned badge.
+// NotifyBadgeEarned は新しいバッジ獲得の通知を作成する。
 func (s *BadgeService) NotifyBadgeEarned(userID uint, badgeID string) error {
 	notification := &model.Notification{
 		UserID:  userID,
@@ -61,39 +63,40 @@ func (s *BadgeService) NotifyBadgeEarned(userID uint, badgeID string) error {
 	return s.notificationService.CreateNotification(notification)
 }
 
-// getBadgeStats collects all statistics from the database needed for badge evaluation.
+// getBadgeStats はバッジ判定に必要な全統計をDBから集計する。
+// 複数テーブルからRaw SQLで各種カウントを取得する。
 func (s *BadgeService) getBadgeStats(userID uint) (*BadgeStats, error) {
 	stats := &BadgeStats{}
 
-	// Total contributions
+	// GitHubコントリビューション総数
 	s.db.Raw("SELECT COALESCE(SUM(count), 0) FROM git_hub_contributions WHERE user_id = ?", userID).Scan(&stats.TotalContributions)
 
-	// Current streak
+	// GitHub連続コントリビューション日数
 	streak, err := s.calculateStreak(userID)
 	if err != nil {
 		return nil, err
 	}
 	stats.CurrentStreak = streak
 
-	// Total posts
+	// 投稿総数
 	s.db.Raw("SELECT COUNT(*) FROM posts WHERE user_id = ?", userID).Scan(&stats.TotalPosts)
 
-	// Total likes received
+	// 受け取ったいいね総数
 	s.db.Raw("SELECT COALESCE(SUM(like_count), 0) FROM posts WHERE user_id = ?", userID).Scan(&stats.TotalLikesReceived)
 
-	// Follower count
+	// フォロワー数
 	s.db.Raw("SELECT COUNT(*) FROM follows WHERE followee_id = ?", userID).Scan(&stats.FollowerCount)
 
-	// Following count
+	// フォロー中の数
 	s.db.Raw("SELECT COUNT(*) FROM follows WHERE follower_id = ?", userID).Scan(&stats.FollowingCount)
 
-	// QA answer count
+	// Q&A回答数
 	s.db.Raw("SELECT COUNT(*) FROM answers WHERE user_id = ?", userID).Scan(&stats.QAAnswerCount)
 
-	// Completed goals
+	// 完了した学習目標数
 	s.db.Raw("SELECT COUNT(*) FROM learning_goals WHERE user_id = ? AND status = ?", userID, "completed").Scan(&stats.CompletedGoals)
 
-	// Learning log streak
+	// 学習ログ連続記録日数
 	logStreak, err := s.calculateLearningLogStreak(userID)
 	if err == nil {
 		stats.LearningLogStreak = logStreak
@@ -102,7 +105,8 @@ func (s *BadgeService) getBadgeStats(userID uint) (*BadgeStats, error) {
 	return stats, nil
 }
 
-// calculateStreak calculates the current contribution streak (consecutive days).
+// calculateStreak はGitHubコントリビューションの連続日数（ストリーク）を算出する。
+// 直近の日付から遡り、連続してコントリビューションがある日数をカウントする。
 func (s *BadgeService) calculateStreak(userID uint) (int, error) {
 	type DateCount struct {
 		Date  time.Time
@@ -117,6 +121,7 @@ func (s *BadgeService) calculateStreak(userID uint) (int, error) {
 		return 0, nil
 	}
 
+	// 日付の降順でソート
 	sort.Slice(contributions, func(i, j int) bool {
 		return contributions[i].Date.After(contributions[j].Date)
 	})
@@ -129,6 +134,7 @@ func (s *BadgeService) calculateStreak(userID uint) (int, error) {
 		expectedDate := today.AddDate(0, 0, -streak)
 		diff := expectedDate.Sub(cDate)
 
+		// 48時間以内の差異を許容（タイムゾーンの考慮）
 		if diff >= 0 && diff < 48*time.Hour {
 			streak++
 		} else {
@@ -139,7 +145,8 @@ func (s *BadgeService) calculateStreak(userID uint) (int, error) {
 	return streak, nil
 }
 
-// calculateLearningLogStreak calculates the current streak from learning logs.
+// calculateLearningLogStreak は学習ログの連続記録日数を算出する。
+// 直近の記録日から遡り、1日ごとに連続している日数をカウントする。
 func (s *BadgeService) calculateLearningLogStreak(userID uint) (int, error) {
 	var dates []struct {
 		Date time.Time
@@ -152,6 +159,7 @@ func (s *BadgeService) calculateLearningLogStreak(userID uint) (int, error) {
 		return 0, nil
 	}
 
+	// 日付の降順でソート
 	sort.Slice(dates, func(i, j int) bool {
 		return dates[i].Date.After(dates[j].Date)
 	})
@@ -160,6 +168,7 @@ func (s *BadgeService) calculateLearningLogStreak(userID uint) (int, error) {
 	firstDate := dates[0].Date.UTC().Truncate(24 * time.Hour)
 	diffToToday := today.Sub(firstDate)
 
+	// 最新の記録が48時間以上前ならストリークなし
 	if diffToToday >= 48*time.Hour {
 		return 0, nil
 	}
@@ -169,6 +178,7 @@ func (s *BadgeService) calculateLearningLogStreak(userID uint) (int, error) {
 		prev := dates[i-1].Date.UTC().Truncate(24 * time.Hour)
 		curr := dates[i].Date.UTC().Truncate(24 * time.Hour)
 		diff := prev.Sub(curr)
+		// 1日差（24〜48時間）なら連続とみなす
 		if diff >= 24*time.Hour && diff < 48*time.Hour {
 			streak++
 		} else {
@@ -179,43 +189,45 @@ func (s *BadgeService) calculateLearningLogStreak(userID uint) (int, error) {
 	return streak, nil
 }
 
-// evaluateBadges evaluates all badges based on the given stats.
+// evaluateBadges は統計データに基づいて全18バッジの獲得状況を評価する。
+// 7カテゴリ（contribution, streak, post, engagement, social, qa, goal）のバッジを返す。
 func (s *BadgeService) evaluateBadges(stats *BadgeStats) []BadgeResult {
+	// GitHubストリークと学習ログストリークの大きい方を使用
 	combinedStreak := stats.CurrentStreak
 	if stats.LearningLogStreak > combinedStreak {
 		combinedStreak = stats.LearningLogStreak
 	}
 
 	return []BadgeResult{
-		// Contribution badges
+		// コントリビューションバッジ（1, 50, 200, 500, 1000回）
 		{ID: "first-commit", Name: "badges.firstCommit", Description: "badges.firstCommitDesc", Category: "contribution", Earned: stats.TotalContributions >= 1},
 		{ID: "contributor", Name: "badges.contributor", Description: "badges.contributorDesc", Category: "contribution", Earned: stats.TotalContributions >= 50},
 		{ID: "code-warrior", Name: "badges.codeWarrior", Description: "badges.codeWarriorDesc", Category: "contribution", Earned: stats.TotalContributions >= 200},
 		{ID: "commit-master", Name: "badges.commitMaster", Description: "badges.commitMasterDesc", Category: "contribution", Earned: stats.TotalContributions >= 500},
 		{ID: "legend", Name: "badges.legend", Description: "badges.legendDesc", Category: "contribution", Earned: stats.TotalContributions >= 1000},
 
-		// Streak badges
+		// ストリークバッジ（7日, 30日連続）
 		{ID: "week-streak", Name: "badges.weekStreak", Description: "badges.weekStreakDesc", Category: "streak", Earned: combinedStreak >= 7},
 		{ID: "month-streak", Name: "badges.monthStreak", Description: "badges.monthStreakDesc", Category: "streak", Earned: combinedStreak >= 30},
 
-		// Post badges
+		// 投稿バッジ（1件, 10件）
 		{ID: "first-post", Name: "badges.firstPost", Description: "badges.firstPostDesc", Category: "post", Earned: stats.TotalPosts >= 1},
 		{ID: "blogger", Name: "badges.blogger", Description: "badges.bloggerDesc", Category: "post", Earned: stats.TotalPosts >= 10},
 
-		// Engagement badges
+		// エンゲージメントバッジ（いいね10, 50件）
 		{ID: "liked", Name: "badges.liked", Description: "badges.likedDesc", Category: "engagement", Earned: stats.TotalLikesReceived >= 10},
 		{ID: "popular", Name: "badges.popular", Description: "badges.popularDesc", Category: "engagement", Earned: stats.TotalLikesReceived >= 50},
 
-		// Social badges
+		// ソーシャルバッジ（フォロー5人, フォロワー10人, 50人）
 		{ID: "friendly", Name: "badges.friendly", Description: "badges.friendlyDesc", Category: "social", Earned: stats.FollowingCount >= 5},
 		{ID: "influencer", Name: "badges.influencer", Description: "badges.influencerDesc", Category: "social", Earned: stats.FollowerCount >= 10},
 		{ID: "star", Name: "badges.star", Description: "badges.starDesc", Category: "social", Earned: stats.FollowerCount >= 50},
 
-		// Q&A badges
+		// Q&Aバッジ（回答1件, 10件）
 		{ID: "qa-first-answer", Name: "badges.qaFirstAnswer", Description: "badges.qaFirstAnswerDesc", Category: "qa", Earned: stats.QAAnswerCount >= 1},
 		{ID: "qa-helper", Name: "badges.qaHelper", Description: "badges.qaHelperDesc", Category: "qa", Earned: stats.QAAnswerCount >= 10},
 
-		// Goal badges
+		// 目標達成バッジ（5件, 20件完了）
 		{ID: "goal-achiever", Name: "badges.goalAchiever", Description: "badges.goalAchieverDesc", Category: "goal", Earned: stats.CompletedGoals >= 5},
 		{ID: "goal-master", Name: "badges.goalMaster", Description: "badges.goalMasterDesc", Category: "goal", Earned: stats.CompletedGoals >= 20},
 	}

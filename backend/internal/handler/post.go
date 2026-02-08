@@ -10,14 +10,18 @@ import (
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
+// PostHandler は投稿関連のHTTPハンドラ。
+// 投稿のCRUD・いいね・コメント・タイムラインを処理する。
 type PostHandler struct {
 	service *service.PostService
 }
 
+// NewPostHandler は新しいPostHandlerインスタンスを生成する。
 func NewPostHandler(s *service.PostService) *PostHandler {
 	return &PostHandler{service: s}
 }
 
+// Create は新しい投稿を作成する。
 func (h *PostHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 	var input struct {
@@ -44,6 +48,7 @@ func (h *PostHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, created)
 }
 
+// GetAll は投稿一覧をページネーション付きで返す。
 func (h *PostHandler) GetAll(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
@@ -59,6 +64,7 @@ func (h *PostHandler) GetAll(c *gin.Context) {
 	c.JSON(http.StatusOK, posts)
 }
 
+// GetByID は指定IDの投稿を返す。いいね済みフラグも付与する。
 func (h *PostHandler) GetByID(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -83,6 +89,7 @@ func (h *PostHandler) GetByID(c *gin.Context) {
 	})
 }
 
+// Update は投稿を更新する。所有者のみ更新可能。
 func (h *PostHandler) Update(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -112,6 +119,7 @@ func (h *PostHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, post)
 }
 
+// Delete は投稿を削除する。所有者のみ削除可能。
 func (h *PostHandler) Delete(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -131,6 +139,7 @@ func (h *PostHandler) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
 }
 
+// Timeline はフォロー中ユーザーの投稿タイムラインを返す。
 func (h *PostHandler) Timeline(c *gin.Context) {
 	userID := c.GetUint("userID")
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -147,6 +156,7 @@ func (h *PostHandler) Timeline(c *gin.Context) {
 	c.JSON(http.StatusOK, posts)
 }
 
+// GetUserPosts は指定ユーザーの投稿一覧を返す。
 func (h *PostHandler) GetUserPosts(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -161,6 +171,7 @@ func (h *PostHandler) GetUserPosts(c *gin.Context) {
 	c.JSON(http.StatusOK, posts)
 }
 
+// Like は投稿にいいねする。
 func (h *PostHandler) Like(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -176,6 +187,7 @@ func (h *PostHandler) Like(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "liked"})
 }
 
+// Unlike は投稿のいいねを取り消す。
 func (h *PostHandler) Unlike(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -191,6 +203,7 @@ func (h *PostHandler) Unlike(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "unliked"})
 }
 
+// GetComments は投稿のコメント一覧を返す。
 func (h *PostHandler) GetComments(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -206,6 +219,7 @@ func (h *PostHandler) GetComments(c *gin.Context) {
 	c.JSON(http.StatusOK, comments)
 }
 
+// CreateComment は投稿にコメントを作成する。
 func (h *PostHandler) CreateComment(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -230,6 +244,7 @@ func (h *PostHandler) CreateComment(c *gin.Context) {
 	c.JSON(http.StatusCreated, comment)
 }
 
+// DeleteComment はコメントを削除する。所有者のみ削除可能。
 func (h *PostHandler) DeleteComment(c *gin.Context) {
 	commentID, err := strconv.ParseUint(c.Param("commentId"), 10, 64)
 	if err != nil {

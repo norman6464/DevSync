@@ -12,17 +12,21 @@ import (
 	"github.com/google/uuid"
 )
 
+// UploadHandler はファイルアップロード関連のHTTPハンドラ。
+// 画像の単体・複数アップロードを処理する。
 type UploadHandler struct {
 	uploadDir string
 }
 
+// NewUploadHandler は新しいUploadHandlerインスタンスを生成する。
+// アップロードディレクトリが存在しない場合は自動で作成する。
 func NewUploadHandler() *UploadHandler {
 	uploadDir := os.Getenv("UPLOAD_DIR")
 	if uploadDir == "" {
 		uploadDir = "./uploads"
 	}
 
-	// Create upload directory if not exists
+	// アップロードディレクトリが存在しない場合は作成する
 	if err := os.MkdirAll(uploadDir, 0755); err != nil {
 		panic(fmt.Sprintf("Failed to create upload directory: %v", err))
 	}
@@ -30,6 +34,8 @@ func NewUploadHandler() *UploadHandler {
 	return &UploadHandler{uploadDir: uploadDir}
 }
 
+// UploadImage は単一の画像ファイルをアップロードする。
+// 最大5MBまでのjpg/jpeg/png/gif/webp形式に対応する。
 func (h *UploadHandler) UploadImage(c *gin.Context) {
 	file, err := c.FormFile("image")
 	if err != nil {
@@ -37,13 +43,13 @@ func (h *UploadHandler) UploadImage(c *gin.Context) {
 		return
 	}
 
-	// Validate file size (max 5MB)
+	// ファイルサイズのバリデーション（最大5MB）
 	if file.Size > 5*1024*1024 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "File size exceeds 5MB limit"})
 		return
 	}
 
-	// Validate file type
+	// ファイル形式のバリデーション
 	ext := strings.ToLower(filepath.Ext(file.Filename))
 	allowedExts := map[string]bool{
 		".jpg":  true,
@@ -57,10 +63,10 @@ func (h *UploadHandler) UploadImage(c *gin.Context) {
 		return
 	}
 
-	// Generate unique filename
+	// ユニークなファイル名を生成する
 	filename := fmt.Sprintf("%s_%s%s", time.Now().Format("20060102150405"), uuid.New().String()[:8], ext)
 
-	// Create date-based subdirectory
+	// 日付ベースのサブディレクトリを作成する
 	dateDir := time.Now().Format("2006/01")
 	fullDir := filepath.Join(h.uploadDir, dateDir)
 	if err := os.MkdirAll(fullDir, 0755); err != nil {
@@ -68,14 +74,14 @@ func (h *UploadHandler) UploadImage(c *gin.Context) {
 		return
 	}
 
-	// Save file
+	// ファイルを保存する
 	filePath := filepath.Join(fullDir, filename)
 	if err := c.SaveUploadedFile(file, filePath); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
 		return
 	}
 
-	// Return URL path
+	// URLパスを返す
 	urlPath := fmt.Sprintf("/uploads/%s/%s", dateDir, filename)
 	c.JSON(http.StatusOK, gin.H{
 		"url":      urlPath,
@@ -83,6 +89,8 @@ func (h *UploadHandler) UploadImage(c *gin.Context) {
 	})
 }
 
+// UploadMultipleImages は複数の画像ファイルを一括アップロードする。
+// 最大10ファイルまで、各ファイル最大5MBまで対応する。
 func (h *UploadHandler) UploadMultipleImages(c *gin.Context) {
 	form, err := c.MultipartForm()
 	if err != nil {
@@ -118,20 +126,20 @@ func (h *UploadHandler) UploadMultipleImages(c *gin.Context) {
 	}
 
 	for _, file := range files {
-		// Validate file size
+		// ファイルサイズのバリデーション
 		if file.Size > 5*1024*1024 {
 			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("File %s exceeds 5MB limit", file.Filename)})
 			return
 		}
 
-		// Validate file type
+		// ファイル形式のバリデーション
 		ext := strings.ToLower(filepath.Ext(file.Filename))
 		if !allowedExts[ext] {
 			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid file type for %s", file.Filename)})
 			return
 		}
 
-		// Generate unique filename
+		// ユニークなファイル名を生成する
 		filename := fmt.Sprintf("%s_%s%s", time.Now().Format("20060102150405"), uuid.New().String()[:8], ext)
 		filePath := filepath.Join(fullDir, filename)
 

@@ -5,17 +5,17 @@ import (
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
-// UserService handles user business logic.
+// UserService はユーザー情報管理のビジネスロジックを提供する。
 type UserService struct {
 	repo repository.UserRepositoryInterface
 }
 
-// NewUserService creates a new UserService.
+// NewUserService は新しいUserServiceインスタンスを生成する。
 func NewUserService(repo repository.UserRepositoryInterface) *UserService {
 	return &UserService{repo: repo}
 }
 
-// GetAll returns all users, optionally filtered by search query.
+// GetAll は全ユーザーを取得する。検索クエリが指定された場合はフィルタリングする。
 func (s *UserService) GetAll(query string) ([]model.User, error) {
 	if query != "" {
 		return s.repo.Search(query)
@@ -23,17 +23,17 @@ func (s *UserService) GetAll(query string) ([]model.User, error) {
 	return s.repo.FindAll()
 }
 
-// GetByID returns a user by ID.
+// GetByID は指定IDのユーザーを取得する。
 func (s *UserService) GetByID(id uint) (*model.User, error) {
 	return s.repo.FindByID(id)
 }
 
-// FindByID returns a user by ID (alias for repository compatibility).
+// FindByID は指定IDのユーザーを取得する（リポジトリ互換エイリアス）。
 func (s *UserService) FindByID(id uint) (*model.User, error) {
 	return s.repo.FindByID(id)
 }
 
-// Update updates a user's information.
+// Update はユーザー情報を更新する。
 func (s *UserService) Update(user *model.User) error {
 	return s.repo.Update(user)
 }

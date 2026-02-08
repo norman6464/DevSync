@@ -5,47 +5,48 @@ import (
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
-// QuestionService handles question business logic.
+// QuestionService はQ&A質問のビジネスロジックを提供する。
+// 質問のCRUD操作と投票機能を担当する。
 type QuestionService struct {
 	repo repository.QuestionRepositoryInterface
 }
 
-// NewQuestionService creates a new QuestionService.
+// NewQuestionService は新しいQuestionServiceインスタンスを生成する。
 func NewQuestionService(repo repository.QuestionRepositoryInterface) *QuestionService {
 	return &QuestionService{repo: repo}
 }
 
-// Create creates a new question.
+// Create は新しい質問を作成する。
 func (s *QuestionService) Create(question *model.Question) error {
 	return s.repo.Create(question)
 }
 
-// GetAll returns paginated questions.
+// GetAll は質問一覧をフィルタ・ソート・ページネーション付きで取得する。
 func (s *QuestionService) GetAll(limit, offset int, tag, sort string) ([]model.Question, int64, error) {
 	return s.repo.FindAll(limit, offset, tag, sort)
 }
 
-// Search searches questions.
+// Search は質問をキーワードで全文検索する。
 func (s *QuestionService) Search(q string, limit, offset int) ([]model.Question, int64, error) {
 	return s.repo.Search(q, limit, offset)
 }
 
-// GetByID returns a question by ID.
+// GetByID は指定IDの質問を取得する。
 func (s *QuestionService) GetByID(id uint) (*model.Question, error) {
 	return s.repo.FindByID(id)
 }
 
-// GetByUserID returns questions by user ID.
+// GetByUserID は指定ユーザーの全質問を取得する。
 func (s *QuestionService) GetByUserID(userID uint) ([]model.Question, error) {
 	return s.repo.FindByUserID(userID)
 }
 
-// GetUserVote returns the user's vote on a question.
+// GetUserVote は指定ユーザーの質問への投票値を取得する。
 func (s *QuestionService) GetUserVote(userID, questionID uint) (int, error) {
 	return s.repo.GetUserVote(userID, questionID)
 }
 
-// Update updates a question after verifying ownership.
+// Update は所有権を検証した後、質問を更新する。
 func (s *QuestionService) Update(id, userID uint, title, body, tags string) (*model.Question, error) {
 	question, err := s.repo.FindByID(id)
 	if err != nil {
@@ -71,7 +72,7 @@ func (s *QuestionService) Update(id, userID uint, title, body, tags string) (*mo
 	return question, nil
 }
 
-// Delete deletes a question after verifying ownership.
+// Delete は所有権を検証した後、質問を削除する。
 func (s *QuestionService) Delete(id, userID uint) error {
 	question, err := s.repo.FindByID(id)
 	if err != nil {
@@ -83,12 +84,12 @@ func (s *QuestionService) Delete(id, userID uint) error {
 	return s.repo.Delete(id)
 }
 
-// Vote votes on a question.
+// Vote は質問に投票する。
 func (s *QuestionService) Vote(userID, questionID uint, value int) error {
 	return s.repo.Vote(userID, questionID, value)
 }
 
-// RemoveVote removes a vote from a question.
+// RemoveVote は質問への投票を取り消す。
 func (s *QuestionService) RemoveVote(userID, questionID uint) error {
 	return s.repo.RemoveVote(userID, questionID)
 }
