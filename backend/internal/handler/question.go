@@ -1,20 +1,21 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
+	"github.com/norman6464/devsync/backend/internal/service"
 )
 
 type QuestionHandler struct {
-	repo *repository.QuestionRepository
+	service *service.QuestionService
 }
 
-func NewQuestionHandler(repo *repository.QuestionRepository) *QuestionHandler {
-	return &QuestionHandler{repo: repo}
+func NewQuestionHandler(s *service.QuestionService) *QuestionHandler {
+	return &QuestionHandler{service: s}
 }
 
 type CreateQuestionRequest struct {
@@ -49,7 +50,7 @@ func (h *QuestionHandler) Create(c *gin.Context) {
 		Tags:   req.Tags,
 	}
 
-	if err := h.repo.Create(question); err != nil {
+	if err := h.service.Create(question); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create question"})
 		return
 	}
@@ -67,7 +68,7 @@ func (h *QuestionHandler) GetAll(c *gin.Context) {
 		limit = 100
 	}
 
-	questions, total, err := h.repo.FindAll(limit, offset, tag, sort)
+	questions, total, err := h.service.GetAll(limit, offset, tag, sort)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch questions"})
 		return
@@ -95,7 +96,7 @@ func (h *QuestionHandler) Search(c *gin.Context) {
 		limit = 100
 	}
 
-	questions, total, err := h.repo.Search(q, limit, offset)
+	questions, total, err := h.service.Search(q, limit, offset)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to search questions"})
 		return
@@ -117,13 +118,13 @@ func (h *QuestionHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	question, err := h.repo.FindByID(uint(id))
+	question, err := h.service.GetByID(uint(id))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Question not found"})
 		return
 	}
 
-	userVote, _ := h.repo.GetUserVote(userID, uint(id))
+	userVote, _ := h.service.GetUserVote(userID, uint(id))
 
 	c.JSON(http.StatusOK, gin.H{
 		"question":  question,
@@ -138,7 +139,7 @@ func (h *QuestionHandler) GetByUserID(c *gin.Context) {
 		return
 	}
 
-	questions, err := h.repo.FindByUserID(uint(userID))
+	questions, err := h.service.GetByUserID(uint(userID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch questions"})
 		return
@@ -155,35 +156,19 @@ func (h *QuestionHandler) Update(c *gin.Context) {
 		return
 	}
 
-	question, err := h.repo.FindByID(uint(id))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Question not found"})
-		return
-	}
-
-	if question.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to update this question"})
-		return
-	}
-
 	var req UpdateQuestionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if req.Title != "" {
-		question.Title = req.Title
-	}
-	if req.Body != "" {
-		question.Body = req.Body
-	}
-	if req.Tags != "" {
-		question.Tags = req.Tags
-	}
-
-	if err := h.repo.Update(question); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update question"})
+	question, err := h.service.Update(uint(id), userID, req.Title, req.Body, req.Tags)
+	if err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to update this question"})
+			return
+		}
+		c.JSON(http.StatusNotFound, gin.H{"error": "Question not found"})
 		return
 	}
 
@@ -198,19 +183,12 @@ func (h *QuestionHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	question, err := h.repo.FindByID(uint(id))
-	if err != nil {
+	if err := h.service.Delete(uint(id), userID); err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to delete this question"})
+			return
+		}
 		c.JSON(http.StatusNotFound, gin.H{"error": "Question not found"})
-		return
-	}
-
-	if question.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to delete this question"})
-		return
-	}
-
-	if err := h.repo.Delete(uint(id)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete question"})
 		return
 	}
 
@@ -231,7 +209,7 @@ func (h *QuestionHandler) Vote(c *gin.Context) {
 		return
 	}
 
-	if err := h.repo.Vote(userID, uint(id), req.Value); err != nil {
+	if err := h.service.Vote(userID, uint(id), req.Value); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to vote"})
 		return
 	}
@@ -247,7 +225,7 @@ func (h *QuestionHandler) RemoveVote(c *gin.Context) {
 		return
 	}
 
-	if err := h.repo.RemoveVote(userID, uint(id)); err != nil {
+	if err := h.service.RemoveVote(userID, uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to remove vote"})
 		return
 	}
