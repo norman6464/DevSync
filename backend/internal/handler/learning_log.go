@@ -1,20 +1,21 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
+	"github.com/norman6464/devsync/backend/internal/service"
 )
 
 type LearningLogHandler struct {
-	logRepo *repository.LearningLogRepository
+	service *service.LearningLogService
 }
 
-func NewLearningLogHandler(logRepo *repository.LearningLogRepository) *LearningLogHandler {
-	return &LearningLogHandler{logRepo: logRepo}
+func NewLearningLogHandler(s *service.LearningLogService) *LearningLogHandler {
+	return &LearningLogHandler{service: s}
 }
 
 // Create creates a new learning log
@@ -45,7 +46,7 @@ func (h *LearningLogHandler) Create(c *gin.Context) {
 		log.Category = model.LogCategoryOther
 	}
 
-	if err := h.logRepo.Create(log); err != nil {
+	if err := h.service.Create(log); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create log"})
 		return
 	}
@@ -62,17 +63,6 @@ func (h *LearningLogHandler) Update(c *gin.Context) {
 		return
 	}
 
-	log, err := h.logRepo.FindByID(uint(logID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "log not found"})
-		return
-	}
-
-	if log.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
-		return
-	}
-
 	var req struct {
 		Title    *string `json:"title"`
 		Content  *string `json:"content"`
@@ -85,21 +75,27 @@ func (h *LearningLogHandler) Update(c *gin.Context) {
 		return
 	}
 
+	updates := &model.LearningLog{}
 	if req.Title != nil {
-		log.Title = *req.Title
+		updates.Title = *req.Title
 	}
 	if req.Content != nil {
-		log.Content = *req.Content
+		updates.Content = *req.Content
 	}
 	if req.Category != nil {
-		log.Category = model.LogCategory(*req.Category)
+		updates.Category = model.LogCategory(*req.Category)
 	}
 	if req.Duration != nil {
-		log.Duration = *req.Duration
+		updates.Duration = *req.Duration
 	}
 
-	if err := h.logRepo.Update(log); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update log"})
+	log, err := h.service.Update(uint(logID), userID, updates)
+	if err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
+			return
+		}
+		c.JSON(http.StatusNotFound, gin.H{"error": "log not found"})
 		return
 	}
 
@@ -115,19 +111,12 @@ func (h *LearningLogHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	log, err := h.logRepo.FindByID(uint(logID))
-	if err != nil {
+	if err := h.service.Delete(uint(logID), userID); err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
+			return
+		}
 		c.JSON(http.StatusNotFound, gin.H{"error": "log not found"})
-		return
-	}
-
-	if log.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
-		return
-	}
-
-	if err := h.logRepo.Delete(uint(logID), userID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete log"})
 		return
 	}
 
@@ -142,7 +131,7 @@ func (h *LearningLogHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	log, err := h.logRepo.FindByID(uint(logID))
+	log, err := h.service.GetByID(uint(logID))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "log not found"})
 		return
@@ -155,7 +144,7 @@ func (h *LearningLogHandler) GetByID(c *gin.Context) {
 func (h *LearningLogHandler) GetMyLogs(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	logs, err := h.logRepo.GetByUserID(userID)
+	logs, err := h.service.GetByUserID(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get logs"})
 		return
@@ -173,7 +162,7 @@ func (h *LearningLogHandler) GetByUserID(c *gin.Context) {
 		return
 	}
 
-	logs, err := h.logRepo.GetByUserID(uint(userID))
+	logs, err := h.service.GetByUserID(uint(userID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get logs"})
 		return
@@ -191,7 +180,7 @@ func (h *LearningLogHandler) GetStreakInfo(c *gin.Context) {
 		return
 	}
 
-	info, err := h.logRepo.GetStreakInfo(uint(userID))
+	info, err := h.service.GetStreakInfo(uint(userID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get streak info"})
 		return
@@ -209,7 +198,7 @@ func (h *LearningLogHandler) GetCalendarData(c *gin.Context) {
 		return
 	}
 
-	entries, err := h.logRepo.GetCalendarData(uint(userID))
+	entries, err := h.service.GetCalendarData(uint(userID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get calendar data"})
 		return

@@ -1,21 +1,22 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
+	"github.com/norman6464/devsync/backend/internal/service"
 )
 
 type LearningGoalHandler struct {
-	goalRepo *repository.LearningGoalRepository
+	service *service.LearningGoalService
 }
 
-func NewLearningGoalHandler(goalRepo *repository.LearningGoalRepository) *LearningGoalHandler {
-	return &LearningGoalHandler{goalRepo: goalRepo}
+func NewLearningGoalHandler(s *service.LearningGoalService) *LearningGoalHandler {
+	return &LearningGoalHandler{service: s}
 }
 
 // Create creates a new learning goal
@@ -54,7 +55,7 @@ func (h *LearningGoalHandler) Create(c *gin.Context) {
 		}
 	}
 
-	if err := h.goalRepo.Create(goal); err != nil {
+	if err := h.service.Create(goal); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create goal"})
 		return
 	}
@@ -68,17 +69,6 @@ func (h *LearningGoalHandler) Update(c *gin.Context) {
 	goalID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid goal ID"})
-		return
-	}
-
-	goal, err := h.goalRepo.FindByID(uint(goalID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "goal not found"})
-		return
-	}
-
-	if goal.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
 		return
 	}
 
@@ -96,52 +86,40 @@ func (h *LearningGoalHandler) Update(c *gin.Context) {
 		return
 	}
 
+	updates := &model.LearningGoal{}
 	if req.Title != nil {
-		goal.Title = *req.Title
+		updates.Title = *req.Title
 	}
 	if req.Description != nil {
-		goal.Description = *req.Description
+		updates.Description = *req.Description
 	}
 	if req.Category != nil {
-		goal.Category = model.GoalCategory(*req.Category)
+		updates.Category = model.GoalCategory(*req.Category)
 	}
 	if req.TargetDate != nil {
 		if *req.TargetDate == "" {
-			goal.TargetDate = nil
+			updates.TargetDate = nil
 		} else {
 			targetDate, err := time.Parse("2006-01-02", *req.TargetDate)
 			if err == nil {
-				goal.TargetDate = &targetDate
+				updates.TargetDate = &targetDate
 			}
 		}
 	}
 	if req.Progress != nil {
-		progress := *req.Progress
-		if progress < 0 {
-			progress = 0
-		}
-		if progress > 100 {
-			progress = 100
-		}
-		goal.Progress = progress
-
-		// Auto-complete if progress reaches 100
-		if progress == 100 && goal.Status == model.GoalStatusActive {
-			goal.Status = model.GoalStatusCompleted
-			now := time.Now()
-			goal.CompletedAt = &now
-		}
+		updates.Progress = *req.Progress
 	}
 	if req.Status != nil {
-		goal.Status = model.GoalStatus(*req.Status)
-		if goal.Status == model.GoalStatusCompleted && goal.CompletedAt == nil {
-			now := time.Now()
-			goal.CompletedAt = &now
-		}
+		updates.Status = model.GoalStatus(*req.Status)
 	}
 
-	if err := h.goalRepo.Update(goal); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update goal"})
+	goal, err := h.service.Update(uint(goalID), userID, updates)
+	if err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
+			return
+		}
+		c.JSON(http.StatusNotFound, gin.H{"error": "goal not found"})
 		return
 	}
 
@@ -157,19 +135,12 @@ func (h *LearningGoalHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	goal, err := h.goalRepo.FindByID(uint(goalID))
-	if err != nil {
+	if err := h.service.Delete(uint(goalID), userID); err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
+			return
+		}
 		c.JSON(http.StatusNotFound, gin.H{"error": "goal not found"})
-		return
-	}
-
-	if goal.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
-		return
-	}
-
-	if err := h.goalRepo.Delete(uint(goalID)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete goal"})
 		return
 	}
 
@@ -184,7 +155,7 @@ func (h *LearningGoalHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	goal, err := h.goalRepo.FindByID(uint(goalID))
+	goal, err := h.service.GetByID(uint(goalID))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "goal not found"})
 		return
@@ -202,7 +173,7 @@ func (h *LearningGoalHandler) GetByUserID(c *gin.Context) {
 		return
 	}
 
-	goals, err := h.goalRepo.GetByUserID(uint(userID))
+	goals, err := h.service.GetByUserID(uint(userID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get goals"})
 		return
@@ -215,7 +186,7 @@ func (h *LearningGoalHandler) GetByUserID(c *gin.Context) {
 func (h *LearningGoalHandler) GetMyGoals(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	goals, err := h.goalRepo.GetByUserID(userID)
+	goals, err := h.service.GetByUserID(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get goals"})
 		return
@@ -233,7 +204,7 @@ func (h *LearningGoalHandler) GetStats(c *gin.Context) {
 		return
 	}
 
-	stats, err := h.goalRepo.GetStats(uint(userID))
+	stats, err := h.service.GetStats(uint(userID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get stats"})
 		return
