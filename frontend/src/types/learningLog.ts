@@ -29,3 +29,10 @@ export interface UpdateLogRequest {
   category?: LogCategory;
   duration?: number;
 }
+
+export interface StreakInfo {
+  current_streak: number;
+  longest_streak: number;
+  total_days: number;
+  last_log_date: string;
+}
