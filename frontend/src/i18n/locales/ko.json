@@ -59,7 +59,20 @@
     "noPostsAll": "아직 게시물이 없습니다. 첫 번째로 공유해보세요!",
     "findPeople": "팔로우할 사람 찾기",
     "yourProfile": "내 프로필",
-    "connectGitHub": "GitHub 연결하고 시작하기"
+    "connectGitHub": "GitHub 연결하고 시작하기",
+    "goalsProgress": "학습 목표 진행률",
+    "viewAll": "전체 보기",
+    "noActiveGoals": "진행 중인 목표가 없습니다",
+    "createGoal": "목표 만들기",
+    "active": "진행 중",
+    "completed": "완료",
+    "avgProgress": "평균 진행률",
+    "moreGoals": "{{count}}개 더 보기",
+    "recentNotifications": "최근 알림",
+    "noNotifications": "알림이 없습니다",
+    "quickStats": "빠른 통계",
+    "goalsCompleted": "완료한 목표",
+    "goalsInProgress": "진행 중인 목표"
   },
   "post": {
     "createTitle": "오늘 무엇을 배웠나요?",

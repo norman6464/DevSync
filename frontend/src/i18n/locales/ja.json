@@ -59,7 +59,20 @@
     "noPostsAll": "まだ投稿がありません。最初の投稿をしてみましょう！",
     "findPeople": "フォローする人を探す",
     "yourProfile": "あなたのプロフィール",
-    "connectGitHub": "GitHubを連携して始めましょう"
+    "connectGitHub": "GitHubを連携して始めましょう",
+    "goalsProgress": "学習目標の進捗",
+    "viewAll": "すべて見る",
+    "noActiveGoals": "進行中の目標がありません",
+    "createGoal": "目標を作成する",
+    "active": "進行中",
+    "completed": "完了",
+    "avgProgress": "平均進捗",
+    "moreGoals": "他{{count}}件の目標",
+    "recentNotifications": "最新の通知",
+    "noNotifications": "通知はありません",
+    "quickStats": "クイック統計",
+    "goalsCompleted": "達成した目標",
+    "goalsInProgress": "進行中の目標"
   },
   "post": {
     "createTitle": "今日学んだことは？",
