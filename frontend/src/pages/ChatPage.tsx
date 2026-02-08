@@ -309,40 +309,45 @@ export default function ChatPage() {
             </div>
 
             {/* Group Messages */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            <div className="flex-1 overflow-y-auto p-6 space-y-3">
               {groupMessages.map((msg) => {
                 const isOwn = msg.sender_id === currentUser?.id;
                 return (
                   <div
                     key={msg.id}
-                    className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+                    className={`flex items-end gap-2 ${isOwn ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className={`max-w-sm ${isOwn ? '' : 'flex items-start gap-2'}`}>
+                    {!isOwn && (
+                      <Avatar
+                        name={msg.sender?.name || ''}
+                        avatarUrl={msg.sender?.avatar_url}
+                        size="xs"
+                      />
+                    )}
+                    {isOwn && (
+                      <span className="chat-bubble-time-own text-xs mb-0.5">
+                        {format(new Date(msg.created_at), 'HH:mm')}
+                      </span>
+                    )}
+                    <div>
                       {!isOwn && (
-                        <Avatar
-                          name={msg.sender?.name || ''}
-                          avatarUrl={msg.sender?.avatar_url}
-                          size="xs"
-                        />
+                        <p className="text-xs text-gray-400 mb-1">{msg.sender?.name}</p>
                       )}
-                      <div>
-                        {!isOwn && (
-                          <p className="text-xs text-gray-400 mb-1">{msg.sender?.name}</p>
-                        )}
-                        <div
-                          className={`px-4 py-2.5 rounded-2xl ${
-                            isOwn
-                              ? 'bg-blue-600 text-white rounded-br-md'
-                              : 'bg-gray-800 text-gray-100 rounded-bl-md'
-                          }`}
-                        >
-                          <p className="text-sm leading-relaxed">{msg.content}</p>
-                          <p className={`text-xs mt-1 ${isOwn ? 'text-blue-200' : 'text-gray-500'}`}>
-                            {format(new Date(msg.created_at), 'HH:mm')}
-                          </p>
-                        </div>
+                      <div
+                        className={`px-4 py-2.5 rounded-2xl ${
+                          isOwn
+                            ? 'chat-bubble-own rounded-br-md'
+                            : 'chat-bubble-other rounded-bl-md'
+                        }`}
+                      >
+                        <p className="text-sm leading-relaxed">{msg.content}</p>
                       </div>
                     </div>
+                    {!isOwn && (
+                      <span className="chat-bubble-time-other text-xs mb-0.5">
+                        {format(new Date(msg.created_at), 'HH:mm')}
+                      </span>
+                    )}
                   </div>
                 );
               })}
@@ -386,26 +391,33 @@ export default function ChatPage() {
             </div>
 
             {/* DM Messages */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            <div className="flex-1 overflow-y-auto p-6 space-y-3">
               {activeMessages.map((msg: Message) => {
                 const isOwn = msg.sender_id === currentUser?.id;
                 return (
                   <div
                     key={msg.id}
-                    className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+                    className={`flex items-end gap-2 ${isOwn ? 'justify-end' : 'justify-start'}`}
                   >
+                    {isOwn && (
+                      <span className="chat-bubble-time-own text-xs mb-0.5">
+                        {format(new Date(msg.created_at), 'HH:mm')}
+                      </span>
+                    )}
                     <div
                       className={`max-w-sm px-4 py-2.5 rounded-2xl ${
                         isOwn
-                          ? 'bg-blue-600 text-white rounded-br-md'
-                          : 'bg-gray-800 text-gray-100 rounded-bl-md'
+                          ? 'chat-bubble-own rounded-br-md'
+                          : 'chat-bubble-other rounded-bl-md'
                       }`}
                     >
                       <p className="text-sm leading-relaxed">{msg.content}</p>
-                      <p className={`text-xs mt-1 ${isOwn ? 'text-blue-200' : 'text-gray-500'}`}>
-                        {format(new Date(msg.created_at), 'HH:mm')}
-                      </p>
                     </div>
+                    {!isOwn && (
+                      <span className="chat-bubble-time-other text-xs mb-0.5">
+                        {format(new Date(msg.created_at), 'HH:mm')}
+                      </span>
+                    )}
                   </div>
                 );
               })}
