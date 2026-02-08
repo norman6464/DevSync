@@ -16,3 +16,4 @@ export { useQuestionDetail } from './useQuestionDetail';
 export { useRoadmaps, useRoadmapDetail } from './useRoadmaps';
 export { useDashboard } from './useDashboard';
 export { useBadgeNotifier } from './useBadgeNotifier';
+export { useLearningLogs, useLearningLogCalendar } from './useLearningLogs';
