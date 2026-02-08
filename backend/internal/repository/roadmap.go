@@ -266,6 +266,18 @@ func (r *RoadmapRepository) ReorderSteps(roadmapID uint, stepOrders []StepOrder)
 	})
 }
 
+// GetTemplates はテンプレートとしてマークされた全ロードマップをステップ付きで取得する。
+func (r *RoadmapRepository) GetTemplates() ([]model.Roadmap, error) {
+	var templates []model.Roadmap
+	err := r.db.Where("is_template = ?", true).
+		Preload("Steps", func(db *gorm.DB) *gorm.DB {
+			return db.Order("order_index ASC")
+		}).
+		Order("created_at ASC").
+		Find(&templates).Error
+	return templates, err
+}
+
 // StepOrder はステップの並び替え情報を表す。
 type StepOrder struct {
 	StepID     uint `json:"step_id"`     // ステップID
