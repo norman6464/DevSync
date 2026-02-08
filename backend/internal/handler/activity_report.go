@@ -6,15 +6,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
+	"github.com/norman6464/devsync/backend/internal/service"
 )
 
 type ActivityReportHandler struct {
-	reportRepo *repository.ActivityReportRepository
+	service *service.ActivityReportService
 }
 
-func NewActivityReportHandler(reportRepo *repository.ActivityReportRepository) *ActivityReportHandler {
-	return &ActivityReportHandler{reportRepo: reportRepo}
+func NewActivityReportHandler(s *service.ActivityReportService) *ActivityReportHandler {
+	return &ActivityReportHandler{service: s}
 }
 
 // GetWeeklyReport returns the weekly activity report for a user
@@ -26,7 +26,7 @@ func (h *ActivityReportHandler) GetWeeklyReport(c *gin.Context) {
 		return
 	}
 
-	report, err := h.reportRepo.GetWeeklyReport(uint(userID))
+	report, err := h.service.GetWeeklyReport(uint(userID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate report"})
 		return
@@ -44,7 +44,7 @@ func (h *ActivityReportHandler) GetMonthlyReport(c *gin.Context) {
 		return
 	}
 
-	report, err := h.reportRepo.GetMonthlyReport(uint(userID))
+	report, err := h.service.GetMonthlyReport(uint(userID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate report"})
 		return
@@ -57,7 +57,7 @@ func (h *ActivityReportHandler) GetMonthlyReport(c *gin.Context) {
 func (h *ActivityReportHandler) GetMyWeeklyReport(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	report, err := h.reportRepo.GetWeeklyReport(userID)
+	report, err := h.service.GetWeeklyReport(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate report"})
 		return
@@ -70,7 +70,7 @@ func (h *ActivityReportHandler) GetMyWeeklyReport(c *gin.Context) {
 func (h *ActivityReportHandler) GetMyMonthlyReport(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	report, err := h.reportRepo.GetMonthlyReport(userID)
+	report, err := h.service.GetMonthlyReport(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate report"})
 		return
@@ -89,7 +89,7 @@ func (h *ActivityReportHandler) GetComparison(c *gin.Context) {
 		period = model.ReportPeriodMonthly
 	}
 
-	comparison, err := h.reportRepo.GetComparison(userID, period)
+	comparison, err := h.service.GetComparison(userID, period)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate comparison"})
 		return

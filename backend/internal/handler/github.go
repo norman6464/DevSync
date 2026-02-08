@@ -1,32 +1,26 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/repository"
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
 type GitHubHandler struct {
 	githubService *service.GitHubService
 	authService   *service.AuthService
-	userRepo      *repository.UserRepository
-	githubRepo    *repository.GitHubRepository
 }
 
 func NewGitHubHandler(
 	githubService *service.GitHubService,
 	authService *service.AuthService,
-	userRepo *repository.UserRepository,
-	githubRepo *repository.GitHubRepository,
 ) *GitHubHandler {
 	return &GitHubHandler{
 		githubService: githubService,
 		authService:   authService,
-		userRepo:      userRepo,
-		githubRepo:    githubRepo,
 	}
 }
 
@@ -56,39 +50,14 @@ func (h *GitHubHandler) Callback(c *gin.Context) {
 		return
 	}
 
-	accessToken, err := h.githubService.ExchangeCode(code)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to exchange code"})
+	if err := h.githubService.ConnectGitHub(userID, code, state); err != nil {
+		if errors.Is(err, service.ErrNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to connect github"})
 		return
 	}
-
-	ghUser, err := h.githubService.GetGitHubUser(accessToken)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get github user"})
-		return
-	}
-
-	user, err := h.userRepo.FindByID(userID)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
-		return
-	}
-
-	user.GitHubToken = accessToken
-	user.GitHubID = ghUser.ID
-	user.GitHubUsername = ghUser.Login
-	user.GitHubConnected = true
-	if user.AvatarURL == "" {
-		user.AvatarURL = ghUser.AvatarURL
-	}
-
-	if err := h.userRepo.Update(user); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update user"})
-		return
-	}
-
-	// Sync data in the background-ish (synchronous for MVP)
-	go h.githubService.SyncData(user)
 
 	c.JSON(http.StatusOK, gin.H{"message": "github connected"})
 }
@@ -100,7 +69,7 @@ func (h *GitHubHandler) GetContributions(c *gin.Context) {
 		return
 	}
 
-	contributions, err := h.githubRepo.GetContributions(uint(userID))
+	contributions, err := h.githubService.GetContributions(uint(userID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -115,7 +84,7 @@ func (h *GitHubHandler) GetLanguages(c *gin.Context) {
 		return
 	}
 
-	stats, err := h.githubRepo.GetLanguageStats(uint(userID))
+	stats, err := h.githubService.GetLanguages(uint(userID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -130,7 +99,7 @@ func (h *GitHubHandler) GetRepos(c *gin.Context) {
 		return
 	}
 
-	repos, err := h.githubRepo.GetRepos(uint(userID))
+	repos, err := h.githubService.GetRepos(uint(userID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -140,13 +109,12 @@ func (h *GitHubHandler) GetRepos(c *gin.Context) {
 
 func (h *GitHubHandler) Sync(c *gin.Context) {
 	userID := c.GetUint("userID")
-	user, err := h.userRepo.FindByID(userID)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
-		return
-	}
 
-	if err := h.githubService.SyncData(user); err != nil {
+	if err := h.githubService.SyncUserData(userID); err != nil {
+		if errors.Is(err, service.ErrNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -156,22 +124,15 @@ func (h *GitHubHandler) Sync(c *gin.Context) {
 
 func (h *GitHubHandler) Disconnect(c *gin.Context) {
 	userID := c.GetUint("userID")
-	user, err := h.userRepo.FindByID(userID)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
-		return
-	}
 
-	user.GitHubToken = ""
-	user.GitHubUsername = ""
-	user.GitHubConnected = false
-
-	if err := h.userRepo.Update(user); err != nil {
+	if err := h.githubService.DisconnectGitHub(userID); err != nil {
+		if errors.Is(err, service.ErrNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	h.githubRepo.DeleteUserData(userID)
 
 	c.JSON(http.StatusOK, gin.H{"message": "github disconnected"})
 }

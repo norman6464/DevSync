@@ -1,21 +1,21 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
+	"github.com/norman6464/devsync/backend/internal/service"
 )
 
 type PostHandler struct {
-	repo             *repository.PostRepository
-	notificationRepo *repository.NotificationRepository
+	service *service.PostService
 }
 
-func NewPostHandler(repo *repository.PostRepository, notificationRepo *repository.NotificationRepository) *PostHandler {
-	return &PostHandler{repo: repo, notificationRepo: notificationRepo}
+func NewPostHandler(s *service.PostService) *PostHandler {
+	return &PostHandler{service: s}
 }
 
 func (h *PostHandler) Create(c *gin.Context) {
@@ -36,31 +36,12 @@ func (h *PostHandler) Create(c *gin.Context) {
 		Content:   input.Content,
 		ImageURLs: input.ImageURLs,
 	}
-	if err := h.repo.Create(post); err != nil {
+	created, err := h.service.Create(post)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	// Create notifications for followers
-	go func(postID, actorID uint) {
-		followerIDs, err := h.notificationRepo.GetFollowerIDs(actorID)
-		if err != nil || len(followerIDs) == 0 {
-			return
-		}
-		var notifications []*model.Notification
-		for _, followerID := range followerIDs {
-			notifications = append(notifications, &model.Notification{
-				UserID:  followerID,
-				Type:    model.NotificationTypePost,
-				ActorID: actorID,
-				PostID:  &postID,
-			})
-		}
-		h.notificationRepo.CreateBatch(notifications)
-	}(post.ID, userID)
-
-	post, _ = h.repo.FindByID(post.ID)
-	c.JSON(http.StatusCreated, post)
+	c.JSON(http.StatusCreated, created)
 }
 
 func (h *PostHandler) GetAll(c *gin.Context) {
@@ -70,7 +51,7 @@ func (h *PostHandler) GetAll(c *gin.Context) {
 		page = 1
 	}
 
-	posts, err := h.repo.FindAll(page, limit)
+	posts, err := h.service.GetAll(page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -85,21 +66,20 @@ func (h *PostHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	post, err := h.repo.FindByID(uint(id))
+	post, err := h.service.GetByID(uint(id))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
 		return
 	}
 
 	userID := c.GetUint("userID")
-	// Check if current user liked
 	type postWithLiked struct {
 		model.Post
 		Liked bool `json:"liked"`
 	}
 	c.JSON(http.StatusOK, postWithLiked{
 		Post:  *post,
-		Liked: h.repo.HasLiked(userID, post.ID),
+		Liked: h.service.HasLiked(userID, post.ID),
 	})
 }
 
@@ -111,16 +91,6 @@ func (h *PostHandler) Update(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	post, err := h.repo.FindByID(uint(id))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
-		return
-	}
-	if post.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "not your post"})
-		return
-	}
-
 	var input struct {
 		Title   string `json:"title"`
 		Content string `json:"content"`
@@ -129,15 +99,14 @@ func (h *PostHandler) Update(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if input.Title != "" {
-		post.Title = input.Title
-	}
-	if input.Content != "" {
-		post.Content = input.Content
-	}
 
-	if err := h.repo.Update(post); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	post, err := h.service.Update(uint(id), userID, input.Title, input.Content)
+	if err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "not your post"})
+			return
+		}
+		c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
 		return
 	}
 	c.JSON(http.StatusOK, post)
@@ -151,18 +120,12 @@ func (h *PostHandler) Delete(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	post, err := h.repo.FindByID(uint(id))
-	if err != nil {
+	if err := h.service.Delete(uint(id), userID); err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "not your post"})
+			return
+		}
 		c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
-		return
-	}
-	if post.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "not your post"})
-		return
-	}
-
-	if err := h.repo.Delete(uint(id)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
@@ -176,7 +139,7 @@ func (h *PostHandler) Timeline(c *gin.Context) {
 		page = 1
 	}
 
-	posts, err := h.repo.Timeline(userID, page, limit)
+	posts, err := h.service.Timeline(userID, page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -190,7 +153,7 @@ func (h *PostHandler) GetUserPosts(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return
 	}
-	posts, err := h.repo.FindByUserID(uint(id))
+	posts, err := h.service.GetByUserID(uint(id))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -206,7 +169,7 @@ func (h *PostHandler) Like(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.repo.Like(userID, uint(id)); err != nil {
+	if err := h.service.Like(userID, uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -221,7 +184,7 @@ func (h *PostHandler) Unlike(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.repo.Unlike(userID, uint(id)); err != nil {
+	if err := h.service.Unlike(userID, uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -235,7 +198,7 @@ func (h *PostHandler) GetComments(c *gin.Context) {
 		return
 	}
 
-	comments, err := h.repo.GetComments(uint(id))
+	comments, err := h.service.GetComments(uint(id))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -260,7 +223,7 @@ func (h *PostHandler) CreateComment(c *gin.Context) {
 	}
 
 	comment := &model.Comment{UserID: userID, PostID: uint(id), Content: input.Content}
-	if err := h.repo.CreateComment(comment); err != nil {
+	if err := h.service.CreateComment(comment); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -275,7 +238,7 @@ func (h *PostHandler) DeleteComment(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.repo.DeleteComment(uint(commentID), userID); err != nil {
+	if err := h.service.DeleteComment(uint(commentID), userID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

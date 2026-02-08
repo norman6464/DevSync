@@ -1,20 +1,21 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
+	"github.com/norman6464/devsync/backend/internal/service"
 )
 
 type FollowHandler struct {
-	repo *repository.FollowRepository
+	service *service.FollowService
 }
 
-func NewFollowHandler(repo *repository.FollowRepository) *FollowHandler {
-	return &FollowHandler{repo: repo}
+func NewFollowHandler(s *service.FollowService) *FollowHandler {
+	return &FollowHandler{service: s}
 }
 
 func (h *FollowHandler) Follow(c *gin.Context) {
@@ -24,11 +25,11 @@ func (h *FollowHandler) Follow(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return
 	}
-	if userID == uint(targetID) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "cannot follow yourself"})
-		return
-	}
-	if err := h.repo.Follow(userID, uint(targetID)); err != nil {
+	if err := h.service.Follow(userID, uint(targetID)); err != nil {
+		if errors.Is(err, service.ErrBadRequest) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "cannot follow yourself"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -42,7 +43,7 @@ func (h *FollowHandler) Unfollow(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return
 	}
-	if err := h.repo.Unfollow(userID, uint(targetID)); err != nil {
+	if err := h.service.Unfollow(userID, uint(targetID)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -55,7 +56,7 @@ func (h *FollowHandler) GetFollowers(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return
 	}
-	users, err := h.repo.GetFollowers(uint(id))
+	users, err := h.service.GetFollowers(uint(id))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -72,7 +73,7 @@ func (h *FollowHandler) GetFollowing(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return
 	}
-	users, err := h.repo.GetFollowing(uint(id))
+	users, err := h.service.GetFollowing(uint(id))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

@@ -6,21 +6,20 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
+	"github.com/norman6464/devsync/backend/internal/service"
 )
 
 type MessageHandler struct {
-	repo             *repository.MessageRepository
-	notificationRepo *repository.NotificationRepository
+	service *service.MessageService
 }
 
-func NewMessageHandler(repo *repository.MessageRepository, notificationRepo *repository.NotificationRepository) *MessageHandler {
-	return &MessageHandler{repo: repo, notificationRepo: notificationRepo}
+func NewMessageHandler(s *service.MessageService) *MessageHandler {
+	return &MessageHandler{service: s}
 }
 
 func (h *MessageHandler) GetConversations(c *gin.Context) {
 	userID := c.GetUint("userID")
-	conversations, err := h.repo.GetConversations(userID)
+	conversations, err := h.service.GetConversations(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -39,10 +38,7 @@ func (h *MessageHandler) GetMessages(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "50"))
 
-	// Mark messages as read
-	h.repo.MarkAsRead(uint(otherID), userID)
-
-	messages, err := h.repo.GetConversation(userID, uint(otherID), page, limit)
+	messages, err := h.service.GetConversation(userID, uint(otherID), page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -71,20 +67,10 @@ func (h *MessageHandler) SendMessage(c *gin.Context) {
 		ReceiverID: uint(receiverID),
 		Content:    input.Content,
 	}
-	if err := h.repo.Create(msg); err != nil {
+	if err := h.service.SendMessage(msg); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	// Create notification for message receiver
-	go func(senderID, receiverID uint) {
-		notification := &model.Notification{
-			UserID:  receiverID,
-			Type:    model.NotificationTypeMessage,
-			ActorID: senderID,
-		}
-		h.notificationRepo.Create(notification)
-	}(userID, uint(receiverID))
 
 	c.JSON(http.StatusCreated, msg)
 }

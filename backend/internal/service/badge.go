@@ -4,6 +4,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/norman6464/devsync/backend/internal/model"
 	"gorm.io/gorm"
 )
 
@@ -29,40 +30,71 @@ type BadgeResult struct {
 	Earned      bool   `json:"earned"`
 }
 
-// GetBadgeStats collects all statistics from the database needed for badge evaluation.
-func GetBadgeStats(db *gorm.DB, userID uint) (*BadgeStats, error) {
+// BadgeService handles badge evaluation business logic.
+type BadgeService struct {
+	db                  *gorm.DB
+	notificationService *NotificationService
+}
+
+// NewBadgeService creates a new BadgeService.
+func NewBadgeService(db *gorm.DB, notificationService *NotificationService) *BadgeService {
+	return &BadgeService{db: db, notificationService: notificationService}
+}
+
+// GetUserBadges returns all badges with earned status for the given user.
+func (s *BadgeService) GetUserBadges(userID uint) ([]BadgeResult, error) {
+	stats, err := s.getBadgeStats(userID)
+	if err != nil {
+		return nil, err
+	}
+	return s.evaluateBadges(stats), nil
+}
+
+// NotifyBadgeEarned creates a notification for a newly earned badge.
+func (s *BadgeService) NotifyBadgeEarned(userID uint, badgeID string) error {
+	notification := &model.Notification{
+		UserID:  userID,
+		Type:    model.NotificationTypeBadge,
+		ActorID: userID,
+		BadgeID: &badgeID,
+	}
+	return s.notificationService.CreateNotification(notification)
+}
+
+// getBadgeStats collects all statistics from the database needed for badge evaluation.
+func (s *BadgeService) getBadgeStats(userID uint) (*BadgeStats, error) {
 	stats := &BadgeStats{}
 
 	// Total contributions
-	db.Raw("SELECT COALESCE(SUM(count), 0) FROM git_hub_contributions WHERE user_id = ?", userID).Scan(&stats.TotalContributions)
+	s.db.Raw("SELECT COALESCE(SUM(count), 0) FROM git_hub_contributions WHERE user_id = ?", userID).Scan(&stats.TotalContributions)
 
 	// Current streak
-	streak, err := calculateStreak(db, userID)
+	streak, err := s.calculateStreak(userID)
 	if err != nil {
 		return nil, err
 	}
 	stats.CurrentStreak = streak
 
 	// Total posts
-	db.Raw("SELECT COUNT(*) FROM posts WHERE user_id = ?", userID).Scan(&stats.TotalPosts)
+	s.db.Raw("SELECT COUNT(*) FROM posts WHERE user_id = ?", userID).Scan(&stats.TotalPosts)
 
 	// Total likes received
-	db.Raw("SELECT COALESCE(SUM(like_count), 0) FROM posts WHERE user_id = ?", userID).Scan(&stats.TotalLikesReceived)
+	s.db.Raw("SELECT COALESCE(SUM(like_count), 0) FROM posts WHERE user_id = ?", userID).Scan(&stats.TotalLikesReceived)
 
 	// Follower count
-	db.Raw("SELECT COUNT(*) FROM follows WHERE followee_id = ?", userID).Scan(&stats.FollowerCount)
+	s.db.Raw("SELECT COUNT(*) FROM follows WHERE followee_id = ?", userID).Scan(&stats.FollowerCount)
 
 	// Following count
-	db.Raw("SELECT COUNT(*) FROM follows WHERE follower_id = ?", userID).Scan(&stats.FollowingCount)
+	s.db.Raw("SELECT COUNT(*) FROM follows WHERE follower_id = ?", userID).Scan(&stats.FollowingCount)
 
 	// QA answer count
-	db.Raw("SELECT COUNT(*) FROM answers WHERE user_id = ?", userID).Scan(&stats.QAAnswerCount)
+	s.db.Raw("SELECT COUNT(*) FROM answers WHERE user_id = ?", userID).Scan(&stats.QAAnswerCount)
 
 	// Completed goals
-	db.Raw("SELECT COUNT(*) FROM learning_goals WHERE user_id = ? AND status = ?", userID, "completed").Scan(&stats.CompletedGoals)
+	s.db.Raw("SELECT COUNT(*) FROM learning_goals WHERE user_id = ? AND status = ?", userID, "completed").Scan(&stats.CompletedGoals)
 
 	// Learning log streak
-	logStreak, err := calculateLearningLogStreak(db, userID)
+	logStreak, err := s.calculateLearningLogStreak(userID)
 	if err == nil {
 		stats.LearningLogStreak = logStreak
 	}
@@ -71,13 +103,13 @@ func GetBadgeStats(db *gorm.DB, userID uint) (*BadgeStats, error) {
 }
 
 // calculateStreak calculates the current contribution streak (consecutive days).
-func calculateStreak(db *gorm.DB, userID uint) (int, error) {
+func (s *BadgeService) calculateStreak(userID uint) (int, error) {
 	type DateCount struct {
 		Date  time.Time
 		Count int
 	}
 	var contributions []DateCount
-	err := db.Raw("SELECT date, count FROM git_hub_contributions WHERE user_id = ? AND count > 0 ORDER BY date DESC", userID).Scan(&contributions).Error
+	err := s.db.Raw("SELECT date, count FROM git_hub_contributions WHERE user_id = ? AND count > 0 ORDER BY date DESC", userID).Scan(&contributions).Error
 	if err != nil {
 		return 0, err
 	}
@@ -85,7 +117,6 @@ func calculateStreak(db *gorm.DB, userID uint) (int, error) {
 		return 0, nil
 	}
 
-	// Sort descending by date (already ordered by query, but ensure)
 	sort.Slice(contributions, func(i, j int) bool {
 		return contributions[i].Date.After(contributions[j].Date)
 	})
@@ -109,11 +140,11 @@ func calculateStreak(db *gorm.DB, userID uint) (int, error) {
 }
 
 // calculateLearningLogStreak calculates the current streak from learning logs.
-func calculateLearningLogStreak(db *gorm.DB, userID uint) (int, error) {
+func (s *BadgeService) calculateLearningLogStreak(userID uint) (int, error) {
 	var dates []struct {
 		Date time.Time
 	}
-	err := db.Raw("SELECT DISTINCT DATE(created_at) as date FROM learning_logs WHERE user_id = ? ORDER BY date DESC", userID).Scan(&dates).Error
+	err := s.db.Raw("SELECT DISTINCT DATE(created_at) as date FROM learning_logs WHERE user_id = ? ORDER BY date DESC", userID).Scan(&dates).Error
 	if err != nil {
 		return 0, err
 	}
@@ -148,9 +179,8 @@ func calculateLearningLogStreak(db *gorm.DB, userID uint) (int, error) {
 	return streak, nil
 }
 
-// EvaluateBadges evaluates all badges based on the given stats.
-func EvaluateBadges(stats *BadgeStats) []BadgeResult {
-	// Use the best streak from either GitHub contributions or learning logs
+// evaluateBadges evaluates all badges based on the given stats.
+func (s *BadgeService) evaluateBadges(stats *BadgeStats) []BadgeResult {
 	combinedStreak := stats.CurrentStreak
 	if stats.LearningLogStreak > combinedStreak {
 		combinedStreak = stats.LearningLogStreak
@@ -164,7 +194,7 @@ func EvaluateBadges(stats *BadgeStats) []BadgeResult {
 		{ID: "commit-master", Name: "badges.commitMaster", Description: "badges.commitMasterDesc", Category: "contribution", Earned: stats.TotalContributions >= 500},
 		{ID: "legend", Name: "badges.legend", Description: "badges.legendDesc", Category: "contribution", Earned: stats.TotalContributions >= 1000},
 
-		// Streak badges (GitHub contributions OR learning logs)
+		// Streak badges
 		{ID: "week-streak", Name: "badges.weekStreak", Description: "badges.weekStreakDesc", Category: "streak", Earned: combinedStreak >= 7},
 		{ID: "month-streak", Name: "badges.monthStreak", Description: "badges.monthStreakDesc", Category: "streak", Earned: combinedStreak >= 30},
 
@@ -181,11 +211,11 @@ func EvaluateBadges(stats *BadgeStats) []BadgeResult {
 		{ID: "influencer", Name: "badges.influencer", Description: "badges.influencerDesc", Category: "social", Earned: stats.FollowerCount >= 10},
 		{ID: "star", Name: "badges.star", Description: "badges.starDesc", Category: "social", Earned: stats.FollowerCount >= 50},
 
-		// Q&A badges (new)
+		// Q&A badges
 		{ID: "qa-first-answer", Name: "badges.qaFirstAnswer", Description: "badges.qaFirstAnswerDesc", Category: "qa", Earned: stats.QAAnswerCount >= 1},
 		{ID: "qa-helper", Name: "badges.qaHelper", Description: "badges.qaHelperDesc", Category: "qa", Earned: stats.QAAnswerCount >= 10},
 
-		// Goal badges (new)
+		// Goal badges
 		{ID: "goal-achiever", Name: "badges.goalAchiever", Description: "badges.goalAchieverDesc", Category: "goal", Earned: stats.CompletedGoals >= 5},
 		{ID: "goal-master", Name: "badges.goalMaster", Description: "badges.goalMasterDesc", Category: "goal", Earned: stats.CompletedGoals >= 20},
 	}

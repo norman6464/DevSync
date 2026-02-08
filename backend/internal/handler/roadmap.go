@@ -1,21 +1,21 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
+	"github.com/norman6464/devsync/backend/internal/service"
 )
 
 type RoadmapHandler struct {
-	roadmapRepo *repository.RoadmapRepository
+	service *service.RoadmapService
 }
 
-func NewRoadmapHandler(roadmapRepo *repository.RoadmapRepository) *RoadmapHandler {
-	return &RoadmapHandler{roadmapRepo: roadmapRepo}
+func NewRoadmapHandler(s *service.RoadmapService) *RoadmapHandler {
+	return &RoadmapHandler{service: s}
 }
 
 // === Roadmap Endpoints ===
@@ -49,7 +49,7 @@ func (h *RoadmapHandler) Create(c *gin.Context) {
 		roadmap.Category = model.RoadmapCategoryOther
 	}
 
-	if err := h.roadmapRepo.Create(roadmap); err != nil {
+	if err := h.service.Create(roadmap); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create roadmap"})
 		return
 	}
@@ -61,7 +61,7 @@ func (h *RoadmapHandler) Create(c *gin.Context) {
 func (h *RoadmapHandler) GetMyRoadmaps(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	roadmaps, err := h.roadmapRepo.GetByUserID(userID)
+	roadmaps, err := h.service.GetByUserID(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get roadmaps"})
 		return
@@ -75,7 +75,7 @@ func (h *RoadmapHandler) GetPublicRoadmaps(c *gin.Context) {
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
 	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
 
-	roadmaps, total, err := h.roadmapRepo.GetPublicRoadmaps(limit, offset)
+	roadmaps, total, err := h.service.GetPublicRoadmaps(limit, offset)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get roadmaps"})
 		return
@@ -95,15 +95,15 @@ func (h *RoadmapHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	roadmap, err := h.roadmapRepo.FindByID(uint(roadmapID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "roadmap not found"})
-		return
-	}
-
 	userID := c.GetUint("userID")
-	if roadmap.UserID != userID && !roadmap.IsPublic {
-		c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
+
+	roadmap, err := h.service.GetByID(uint(roadmapID), userID)
+	if err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
+			return
+		}
+		c.JSON(http.StatusNotFound, gin.H{"error": "roadmap not found"})
 		return
 	}
 
@@ -116,17 +116,6 @@ func (h *RoadmapHandler) Update(c *gin.Context) {
 	roadmapID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid roadmap ID"})
-		return
-	}
-
-	roadmap, err := h.roadmapRepo.FindByID(uint(roadmapID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "roadmap not found"})
-		return
-	}
-
-	if roadmap.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
 		return
 	}
 
@@ -143,29 +132,37 @@ func (h *RoadmapHandler) Update(c *gin.Context) {
 		return
 	}
 
+	updates := &model.Roadmap{}
 	if req.Title != nil {
-		roadmap.Title = *req.Title
+		updates.Title = *req.Title
 	}
 	if req.Description != nil {
-		roadmap.Description = *req.Description
+		updates.Description = *req.Description
 	}
 	if req.Category != nil {
-		roadmap.Category = model.RoadmapCategory(*req.Category)
-	}
-	if req.IsPublic != nil {
-		roadmap.IsPublic = *req.IsPublic
+		updates.Category = model.RoadmapCategory(*req.Category)
 	}
 	if req.Status != nil {
-		roadmap.Status = model.RoadmapStatus(*req.Status)
-		if roadmap.Status == model.RoadmapStatusCompleted && roadmap.CompletedAt == nil {
-			now := time.Now()
-			roadmap.CompletedAt = &now
-		}
+		updates.Status = model.RoadmapStatus(*req.Status)
 	}
 
-	if err := h.roadmapRepo.Update(roadmap); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update roadmap"})
+	roadmap, err := h.service.Update(uint(roadmapID), userID, updates)
+	if err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
+			return
+		}
+		c.JSON(http.StatusNotFound, gin.H{"error": "roadmap not found"})
 		return
+	}
+
+	// Handle IsPublic separately if provided
+	if req.IsPublic != nil {
+		roadmap, err = h.service.UpdateVisibility(uint(roadmapID), userID, *req.IsPublic)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update roadmap"})
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, roadmap)
@@ -180,19 +177,12 @@ func (h *RoadmapHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	roadmap, err := h.roadmapRepo.FindByID(uint(roadmapID))
-	if err != nil {
+	if err := h.service.Delete(uint(roadmapID), userID); err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
+			return
+		}
 		c.JSON(http.StatusNotFound, gin.H{"error": "roadmap not found"})
-		return
-	}
-
-	if roadmap.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
-		return
-	}
-
-	if err := h.roadmapRepo.Delete(uint(roadmapID)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete roadmap"})
 		return
 	}
 
@@ -208,20 +198,13 @@ func (h *RoadmapHandler) CopyRoadmap(c *gin.Context) {
 		return
 	}
 
-	original, err := h.roadmapRepo.FindByID(uint(roadmapID))
+	copied, err := h.service.CopyRoadmap(uint(roadmapID), userID)
 	if err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
+			return
+		}
 		c.JSON(http.StatusNotFound, gin.H{"error": "roadmap not found"})
-		return
-	}
-
-	if !original.IsPublic && original.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
-		return
-	}
-
-	copied, err := h.roadmapRepo.CopyRoadmap(uint(roadmapID), userID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to copy roadmap"})
 		return
 	}
 
@@ -239,17 +222,6 @@ func (h *RoadmapHandler) CreateStep(c *gin.Context) {
 		return
 	}
 
-	roadmap, err := h.roadmapRepo.FindByID(uint(roadmapID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "roadmap not found"})
-		return
-	}
-
-	if roadmap.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
-		return
-	}
-
 	var req struct {
 		Title       string `json:"title" binding:"required"`
 		Description string `json:"description"`
@@ -262,20 +234,20 @@ func (h *RoadmapHandler) CreateStep(c *gin.Context) {
 		return
 	}
 
-	orderIndex := roadmap.StepCount
-	if req.OrderIndex != nil {
-		orderIndex = *req.OrderIndex
-	}
-
 	step := &model.RoadmapStep{
-		RoadmapID:   uint(roadmapID),
 		Title:       req.Title,
 		Description: req.Description,
 		ResourceURL: req.ResourceURL,
-		OrderIndex:  orderIndex,
+	}
+	if req.OrderIndex != nil {
+		step.OrderIndex = *req.OrderIndex
 	}
 
-	if err := h.roadmapRepo.CreateStep(step); err != nil {
+	if err := h.service.CreateStep(uint(roadmapID), userID, step); err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create step"})
 		return
 	}
@@ -297,28 +269,6 @@ func (h *RoadmapHandler) UpdateStep(c *gin.Context) {
 		return
 	}
 
-	roadmap, err := h.roadmapRepo.FindByID(uint(roadmapID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "roadmap not found"})
-		return
-	}
-
-	if roadmap.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
-		return
-	}
-
-	step, err := h.roadmapRepo.FindStepByID(uint(stepID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "step not found"})
-		return
-	}
-
-	if step.RoadmapID != uint(roadmapID) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "step does not belong to roadmap"})
-		return
-	}
-
 	var req struct {
 		Title       *string `json:"title"`
 		Description *string `json:"description"`
@@ -331,27 +281,50 @@ func (h *RoadmapHandler) UpdateStep(c *gin.Context) {
 		return
 	}
 
-	if req.Title != nil {
-		step.Title = *req.Title
-	}
-	if req.Description != nil {
-		step.Description = *req.Description
-	}
-	if req.ResourceURL != nil {
-		step.ResourceURL = *req.ResourceURL
-	}
+	// Handle completion status change separately
 	if req.IsCompleted != nil {
-		step.IsCompleted = *req.IsCompleted
-		if step.IsCompleted && step.CompletedAt == nil {
-			now := time.Now()
-			step.CompletedAt = &now
-		} else if !step.IsCompleted {
-			step.CompletedAt = nil
+		step, err := h.service.UpdateStepCompletion(uint(roadmapID), uint(stepID), userID, *req.IsCompleted)
+		if err != nil {
+			if errors.Is(err, service.ErrForbidden) {
+				c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
+				return
+			}
+			if errors.Is(err, service.ErrBadRequest) {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "step does not belong to roadmap"})
+				return
+			}
+			c.JSON(http.StatusNotFound, gin.H{"error": "step not found"})
+			return
+		}
+		// If only completion was updated, return early
+		if req.Title == nil && req.Description == nil && req.ResourceURL == nil {
+			c.JSON(http.StatusOK, step)
+			return
 		}
 	}
 
-	if err := h.roadmapRepo.UpdateStep(step); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update step"})
+	updates := &model.RoadmapStep{}
+	if req.Title != nil {
+		updates.Title = *req.Title
+	}
+	if req.Description != nil {
+		updates.Description = *req.Description
+	}
+	if req.ResourceURL != nil {
+		updates.ResourceURL = *req.ResourceURL
+	}
+
+	step, err := h.service.UpdateStep(uint(roadmapID), uint(stepID), userID, updates)
+	if err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
+			return
+		}
+		if errors.Is(err, service.ErrBadRequest) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "step does not belong to roadmap"})
+			return
+		}
+		c.JSON(http.StatusNotFound, gin.H{"error": "step not found"})
 		return
 	}
 
@@ -372,30 +345,16 @@ func (h *RoadmapHandler) DeleteStep(c *gin.Context) {
 		return
 	}
 
-	roadmap, err := h.roadmapRepo.FindByID(uint(roadmapID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "roadmap not found"})
-		return
-	}
-
-	if roadmap.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
-		return
-	}
-
-	step, err := h.roadmapRepo.FindStepByID(uint(stepID))
-	if err != nil {
+	if err := h.service.DeleteStep(uint(roadmapID), uint(stepID), userID); err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
+			return
+		}
+		if errors.Is(err, service.ErrBadRequest) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "step does not belong to roadmap"})
+			return
+		}
 		c.JSON(http.StatusNotFound, gin.H{"error": "step not found"})
-		return
-	}
-
-	if step.RoadmapID != uint(roadmapID) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "step does not belong to roadmap"})
-		return
-	}
-
-	if err := h.roadmapRepo.DeleteStep(uint(stepID)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete step"})
 		return
 	}
 
@@ -411,19 +370,8 @@ func (h *RoadmapHandler) ReorderSteps(c *gin.Context) {
 		return
 	}
 
-	roadmap, err := h.roadmapRepo.FindByID(uint(roadmapID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "roadmap not found"})
-		return
-	}
-
-	if roadmap.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
-		return
-	}
-
 	var req struct {
-		Orders []repository.StepOrder `json:"orders" binding:"required"`
+		Orders []service.StepOrder `json:"orders" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -431,7 +379,11 @@ func (h *RoadmapHandler) ReorderSteps(c *gin.Context) {
 		return
 	}
 
-	if err := h.roadmapRepo.ReorderSteps(uint(roadmapID), req.Orders); err != nil {
+	if err := h.service.ReorderSteps(uint(roadmapID), userID, req.Orders); err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to reorder steps"})
 		return
 	}

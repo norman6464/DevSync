@@ -1,20 +1,21 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
+	"github.com/norman6464/devsync/backend/internal/service"
 )
 
 type BookReviewHandler struct {
-	repo *repository.BookReviewRepository
+	service *service.BookReviewService
 }
 
-func NewBookReviewHandler(repo *repository.BookReviewRepository) *BookReviewHandler {
-	return &BookReviewHandler{repo: repo}
+func NewBookReviewHandler(s *service.BookReviewService) *BookReviewHandler {
+	return &BookReviewHandler{service: s}
 }
 
 type CreateBookReviewRequest struct {
@@ -54,7 +55,7 @@ func (h *BookReviewHandler) Create(c *gin.Context) {
 		ImageURL: req.ImageURL,
 	}
 
-	if err := h.repo.Create(review); err != nil {
+	if err := h.service.Create(review); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create book review"})
 		return
 	}
@@ -69,7 +70,7 @@ func (h *BookReviewHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	review, err := h.repo.FindByID(uint(id))
+	review, err := h.service.GetByID(uint(id))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Review not found"})
 		return
@@ -85,7 +86,7 @@ func (h *BookReviewHandler) GetByUserID(c *gin.Context) {
 		return
 	}
 
-	reviews, err := h.repo.FindByUserID(uint(userID))
+	reviews, err := h.service.GetByUserID(uint(userID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch reviews"})
 		return
@@ -102,7 +103,7 @@ func (h *BookReviewHandler) GetAll(c *gin.Context) {
 		limit = 100
 	}
 
-	reviews, total, err := h.repo.FindAll(limit, offset)
+	reviews, total, err := h.service.GetAll(limit, offset)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch reviews"})
 		return
@@ -124,44 +125,39 @@ func (h *BookReviewHandler) Update(c *gin.Context) {
 		return
 	}
 
-	review, err := h.repo.FindByID(uint(id))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Review not found"})
-		return
-	}
-
-	if review.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to update this review"})
-		return
-	}
-
 	var req UpdateBookReviewRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	updates := &model.BookReview{}
 	if req.Title != "" {
-		review.Title = req.Title
+		updates.Title = req.Title
 	}
 	if req.Author != "" {
-		review.Author = req.Author
+		updates.Author = req.Author
 	}
 	if req.ISBN != "" {
-		review.ISBN = req.ISBN
+		updates.ISBN = req.ISBN
 	}
 	if req.Rating != nil {
-		review.Rating = *req.Rating
+		updates.Rating = *req.Rating
 	}
 	if req.Review != "" {
-		review.Review = req.Review
+		updates.Review = req.Review
 	}
 	if req.ImageURL != "" {
-		review.ImageURL = req.ImageURL
+		updates.ImageURL = req.ImageURL
 	}
 
-	if err := h.repo.Update(review); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update review"})
+	review, err := h.service.Update(uint(id), userID, updates)
+	if err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to update this review"})
+			return
+		}
+		c.JSON(http.StatusNotFound, gin.H{"error": "Review not found"})
 		return
 	}
 
@@ -176,19 +172,12 @@ func (h *BookReviewHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	review, err := h.repo.FindByID(uint(id))
-	if err != nil {
+	if err := h.service.Delete(uint(id), userID); err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to delete this review"})
+			return
+		}
 		c.JSON(http.StatusNotFound, gin.H{"error": "Review not found"})
-		return
-	}
-
-	if review.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to delete this review"})
-		return
-	}
-
-	if err := h.repo.Delete(uint(id)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete review"})
 		return
 	}
 

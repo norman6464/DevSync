@@ -5,19 +5,15 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
 	"github.com/norman6464/devsync/backend/internal/service"
-	"gorm.io/gorm"
 )
 
 type BadgeHandler struct {
-	db               *gorm.DB
-	notificationRepo *repository.NotificationRepository
+	service *service.BadgeService
 }
 
-func NewBadgeHandler(db *gorm.DB, notificationRepo *repository.NotificationRepository) *BadgeHandler {
-	return &BadgeHandler{db: db, notificationRepo: notificationRepo}
+func NewBadgeHandler(s *service.BadgeService) *BadgeHandler {
+	return &BadgeHandler{service: s}
 }
 
 // GetUserBadges returns all badges with earned status for the given user.
@@ -28,13 +24,12 @@ func (h *BadgeHandler) GetUserBadges(c *gin.Context) {
 		return
 	}
 
-	stats, err := service.GetBadgeStats(h.db, uint(userID))
+	badges, err := h.service.GetUserBadges(uint(userID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	badges := service.EvaluateBadges(stats)
 	c.JSON(http.StatusOK, gin.H{"badges": badges})
 }
 
@@ -50,13 +45,7 @@ func (h *BadgeHandler) NotifyBadgeEarned(c *gin.Context) {
 		return
 	}
 
-	notification := &model.Notification{
-		UserID:  userID,
-		Type:    model.NotificationTypeBadge,
-		ActorID: userID,
-		BadgeID: &req.BadgeID,
-	}
-	if err := h.notificationRepo.Create(notification); err != nil {
+	if err := h.service.NotifyBadgeEarned(userID, req.BadgeID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

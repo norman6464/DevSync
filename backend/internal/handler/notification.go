@@ -5,15 +5,15 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/repository"
+	"github.com/norman6464/devsync/backend/internal/service"
 )
 
 type NotificationHandler struct {
-	repo *repository.NotificationRepository
+	service *service.NotificationService
 }
 
-func NewNotificationHandler(repo *repository.NotificationRepository) *NotificationHandler {
-	return &NotificationHandler{repo: repo}
+func NewNotificationHandler(s *service.NotificationService) *NotificationHandler {
+	return &NotificationHandler{service: s}
 }
 
 func (h *NotificationHandler) GetAll(c *gin.Context) {
@@ -25,13 +25,13 @@ func (h *NotificationHandler) GetAll(c *gin.Context) {
 		page = 1
 	}
 
-	notifications, err := h.repo.FindByUserID(userID, page, limit, notificationType)
+	notifications, err := h.service.GetByUserID(userID, page, limit, notificationType)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	total, err := h.repo.CountByUserID(userID, notificationType)
+	total, err := h.service.CountByUserID(userID, notificationType)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -46,7 +46,7 @@ func (h *NotificationHandler) GetAll(c *gin.Context) {
 func (h *NotificationHandler) GetUnreadCount(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	count, err := h.repo.CountUnread(userID)
+	count, err := h.service.CountUnread(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -62,7 +62,7 @@ func (h *NotificationHandler) MarkAsRead(c *gin.Context) {
 		return
 	}
 
-	if err := h.repo.MarkAsRead(uint(id), userID); err != nil {
+	if err := h.service.MarkAsRead(uint(id), userID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -72,7 +72,7 @@ func (h *NotificationHandler) MarkAsRead(c *gin.Context) {
 func (h *NotificationHandler) MarkAllAsRead(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	if err := h.repo.MarkAllAsRead(userID); err != nil {
+	if err := h.service.MarkAllAsRead(userID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -87,7 +87,7 @@ func (h *NotificationHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	if err := h.repo.Delete(uint(id), userID); err != nil {
+	if err := h.service.Delete(uint(id), userID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

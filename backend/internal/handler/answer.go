@@ -1,21 +1,21 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
+	"github.com/norman6464/devsync/backend/internal/service"
 )
 
 type AnswerHandler struct {
-	answerRepo   *repository.AnswerRepository
-	questionRepo *repository.QuestionRepository
+	service *service.AnswerService
 }
 
-func NewAnswerHandler(answerRepo *repository.AnswerRepository, questionRepo *repository.QuestionRepository) *AnswerHandler {
-	return &AnswerHandler{answerRepo: answerRepo, questionRepo: questionRepo}
+func NewAnswerHandler(s *service.AnswerService) *AnswerHandler {
+	return &AnswerHandler{service: s}
 }
 
 func (h *AnswerHandler) GetByQuestionID(c *gin.Context) {
@@ -25,7 +25,7 @@ func (h *AnswerHandler) GetByQuestionID(c *gin.Context) {
 		return
 	}
 
-	answers, err := h.answerRepo.FindByQuestionID(uint(questionID))
+	answers, err := h.service.GetByQuestionID(uint(questionID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch answers"})
 		return
@@ -50,12 +50,6 @@ func (h *AnswerHandler) Create(c *gin.Context) {
 		return
 	}
 
-	// Verify question exists
-	if _, err := h.questionRepo.FindByID(uint(questionID)); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Question not found"})
-		return
-	}
-
 	var req CreateAnswerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -68,7 +62,11 @@ func (h *AnswerHandler) Create(c *gin.Context) {
 		Body:       req.Body,
 	}
 
-	if err := h.answerRepo.Create(answer); err != nil {
+	if err := h.service.Create(answer); err != nil {
+		if errors.Is(err, service.ErrNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Question not found"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create answer"})
 		return
 	}
@@ -84,27 +82,19 @@ func (h *AnswerHandler) Update(c *gin.Context) {
 		return
 	}
 
-	answer, err := h.answerRepo.FindByID(uint(answerID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Answer not found"})
-		return
-	}
-
-	if answer.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to update this answer"})
-		return
-	}
-
 	var req UpdateAnswerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	answer.Body = req.Body
-
-	if err := h.answerRepo.Update(answer); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update answer"})
+	answer, err := h.service.Update(uint(answerID), userID, req.Body)
+	if err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to update this answer"})
+			return
+		}
+		c.JSON(http.StatusNotFound, gin.H{"error": "Answer not found"})
 		return
 	}
 
@@ -119,19 +109,12 @@ func (h *AnswerHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	answer, err := h.answerRepo.FindByID(uint(answerID))
-	if err != nil {
+	if err := h.service.Delete(uint(answerID), userID); err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to delete this answer"})
+			return
+		}
 		c.JSON(http.StatusNotFound, gin.H{"error": "Answer not found"})
-		return
-	}
-
-	if answer.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to delete this answer"})
-		return
-	}
-
-	if err := h.answerRepo.Delete(answer); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete answer"})
 		return
 	}
 
@@ -152,30 +135,19 @@ func (h *AnswerHandler) SetBestAnswer(c *gin.Context) {
 		return
 	}
 
-	// Verify question exists and user is the owner
-	question, err := h.questionRepo.FindByID(uint(questionID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Question not found"})
-		return
-	}
-
-	if question.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Only the question owner can select the best answer"})
-		return
-	}
-
-	// Verify answer belongs to this question
-	answer, err := h.answerRepo.FindByID(uint(answerID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Answer not found"})
-		return
-	}
-	if answer.QuestionID != uint(questionID) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Answer does not belong to this question"})
-		return
-	}
-
-	if err := h.answerRepo.SetBestAnswer(uint(questionID), uint(answerID)); err != nil {
+	if err := h.service.SetBestAnswer(uint(questionID), uint(answerID), userID); err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Only the question owner can select the best answer"})
+			return
+		}
+		if errors.Is(err, service.ErrBadRequest) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Answer does not belong to this question"})
+			return
+		}
+		if errors.Is(err, service.ErrNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Question or answer not found"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to set best answer"})
 		return
 	}
@@ -197,7 +169,7 @@ func (h *AnswerHandler) Vote(c *gin.Context) {
 		return
 	}
 
-	if err := h.answerRepo.Vote(userID, uint(answerID), req.Value); err != nil {
+	if err := h.service.Vote(userID, uint(answerID), req.Value); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to vote"})
 		return
 	}
@@ -213,7 +185,7 @@ func (h *AnswerHandler) RemoveVote(c *gin.Context) {
 		return
 	}
 
-	if err := h.answerRepo.RemoveVote(userID, uint(answerID)); err != nil {
+	if err := h.service.RemoveVote(userID, uint(answerID)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to remove vote"})
 		return
 	}

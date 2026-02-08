@@ -1,24 +1,21 @@
 package handler
 
 import (
-	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
 type ChatRoomHandler struct {
-	roomRepo    *repository.ChatRoomRepository
-	messageRepo *repository.GroupMessageRepository
-	hub         *service.Hub
+	service *service.ChatRoomService
 }
 
-func NewChatRoomHandler(roomRepo *repository.ChatRoomRepository, messageRepo *repository.GroupMessageRepository, hub *service.Hub) *ChatRoomHandler {
-	return &ChatRoomHandler{roomRepo: roomRepo, messageRepo: messageRepo, hub: hub}
+func NewChatRoomHandler(s *service.ChatRoomService) *ChatRoomHandler {
+	return &ChatRoomHandler{service: s}
 }
 
 func (h *ChatRoomHandler) Create(c *gin.Context) {
@@ -39,31 +36,19 @@ func (h *ChatRoomHandler) Create(c *gin.Context) {
 		Description: input.Description,
 		OwnerID:     userID,
 	}
-	if err := h.roomRepo.Create(room); err != nil {
+
+	created, err := h.service.Create(room, input.MemberIDs)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Add owner as member
-	if err := h.roomRepo.AddMember(room.ID, userID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Add other members
-	for _, memberID := range input.MemberIDs {
-		if memberID != userID {
-			h.roomRepo.AddMember(room.ID, memberID)
-		}
-	}
-
-	room, _ = h.roomRepo.FindByID(room.ID)
-	c.JSON(http.StatusCreated, room)
+	c.JSON(http.StatusCreated, created)
 }
 
 func (h *ChatRoomHandler) GetMyRooms(c *gin.Context) {
 	userID := c.GetUint("userID")
-	rooms, err := h.roomRepo.FindByUserID(userID)
+	rooms, err := h.service.GetByUserID(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -79,14 +64,12 @@ func (h *ChatRoomHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	isMember, err := h.roomRepo.IsMember(uint(roomID), userID)
-	if err != nil || !isMember {
-		c.JSON(http.StatusForbidden, gin.H{"error": "not a member"})
-		return
-	}
-
-	room, err := h.roomRepo.FindByID(uint(roomID))
+	room, err := h.service.GetByID(uint(roomID), userID)
 	if err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "not a member"})
+			return
+		}
 		c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
 		return
 	}
@@ -101,16 +84,6 @@ func (h *ChatRoomHandler) Update(c *gin.Context) {
 		return
 	}
 
-	room, err := h.roomRepo.FindByID(uint(roomID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
-		return
-	}
-	if room.OwnerID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "only owner can update"})
-		return
-	}
-
 	var input struct {
 		Name        string `json:"name"`
 		Description string `json:"description"`
@@ -120,13 +93,13 @@ func (h *ChatRoomHandler) Update(c *gin.Context) {
 		return
 	}
 
-	if input.Name != "" {
-		room.Name = input.Name
-	}
-	room.Description = input.Description
-
-	if err := h.roomRepo.Update(room); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	room, err := h.service.Update(uint(roomID), userID, input.Name, input.Description)
+	if err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "only owner can update"})
+			return
+		}
+		c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
 		return
 	}
 	c.JSON(http.StatusOK, room)
@@ -140,18 +113,12 @@ func (h *ChatRoomHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	room, err := h.roomRepo.FindByID(uint(roomID))
-	if err != nil {
+	if err := h.service.Delete(uint(roomID), userID); err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "only owner can delete"})
+			return
+		}
 		c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
-		return
-	}
-	if room.OwnerID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "only owner can delete"})
-		return
-	}
-
-	if err := h.roomRepo.Delete(uint(roomID)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "room deleted"})
@@ -165,14 +132,12 @@ func (h *ChatRoomHandler) GetMembers(c *gin.Context) {
 		return
 	}
 
-	isMember, err := h.roomRepo.IsMember(uint(roomID), userID)
-	if err != nil || !isMember {
-		c.JSON(http.StatusForbidden, gin.H{"error": "not a member"})
-		return
-	}
-
-	members, err := h.roomRepo.GetMembers(uint(roomID))
+	members, err := h.service.GetMembers(uint(roomID), userID)
 	if err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "not a member"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -187,12 +152,6 @@ func (h *ChatRoomHandler) AddMember(c *gin.Context) {
 		return
 	}
 
-	isMember, err := h.roomRepo.IsMember(uint(roomID), userID)
-	if err != nil || !isMember {
-		c.JSON(http.StatusForbidden, gin.H{"error": "not a member"})
-		return
-	}
-
 	var input struct {
 		UserID uint `json:"user_id" binding:"required"`
 	}
@@ -201,7 +160,11 @@ func (h *ChatRoomHandler) AddMember(c *gin.Context) {
 		return
 	}
 
-	if err := h.roomRepo.AddMember(uint(roomID), input.UserID); err != nil {
+	if err := h.service.AddMember(uint(roomID), userID, input.UserID); err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "not a member"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -221,20 +184,12 @@ func (h *ChatRoomHandler) RemoveMember(c *gin.Context) {
 		return
 	}
 
-	room, err := h.roomRepo.FindByID(uint(roomID))
-	if err != nil {
+	if err := h.service.RemoveMember(uint(roomID), userID, uint(targetID)); err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "only owner can remove members"})
+			return
+		}
 		c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
-		return
-	}
-
-	// Owner can remove anyone, others can only remove themselves
-	if room.OwnerID != userID && userID != uint(targetID) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "only owner can remove members"})
-		return
-	}
-
-	if err := h.roomRepo.RemoveMember(uint(roomID), uint(targetID)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "member removed"})
@@ -248,17 +203,15 @@ func (h *ChatRoomHandler) GetMessages(c *gin.Context) {
 		return
 	}
 
-	isMember, err := h.roomRepo.IsMember(uint(roomID), userID)
-	if err != nil || !isMember {
-		c.JSON(http.StatusForbidden, gin.H{"error": "not a member"})
-		return
-	}
-
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "50"))
 
-	messages, err := h.messageRepo.FindByRoomID(uint(roomID), page, limit)
+	messages, err := h.service.GetMessages(uint(roomID), userID, page, limit)
 	if err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "not a member"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -273,12 +226,6 @@ func (h *ChatRoomHandler) SendMessage(c *gin.Context) {
 		return
 	}
 
-	isMember, err := h.roomRepo.IsMember(uint(roomID), userID)
-	if err != nil || !isMember {
-		c.JSON(http.StatusForbidden, gin.H{"error": "not a member"})
-		return
-	}
-
 	var input struct {
 		Content string `json:"content" binding:"required"`
 	}
@@ -287,32 +234,15 @@ func (h *ChatRoomHandler) SendMessage(c *gin.Context) {
 		return
 	}
 
-	msg := &model.GroupMessage{
-		ChatRoomID: uint(roomID),
-		SenderID:   userID,
-		Content:    input.Content,
-	}
-	if err := h.messageRepo.Create(msg); err != nil {
+	msg, err := h.service.SendMessage(uint(roomID), userID, input.Content)
+	if err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "not a member"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	// Reload with sender info
-	msg.Sender = &model.User{}
-	h.messageRepo.FindSenderByID(msg)
-
-	// Send via WebSocket to all room members
-	go func() {
-		wsMsg := service.WSMessage{
-			Type:       "group_message",
-			SenderID:   userID,
-			RoomID:     uint(roomID),
-			Content:    input.Content,
-			SenderName: msg.Sender.Name,
-		}
-		data, _ := json.Marshal(wsMsg)
-		h.hub.SendToRoom(uint(roomID), userID, data)
-	}()
 
 	c.JSON(http.StatusCreated, msg)
 }

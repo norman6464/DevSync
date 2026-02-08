@@ -1,13 +1,14 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
+	"github.com/norman6464/devsync/backend/internal/service"
 )
 
 func parseDate(dateStr string) (time.Time, error) {
@@ -15,11 +16,11 @@ func parseDate(dateStr string) (time.Time, error) {
 }
 
 type ProjectHandler struct {
-	repo *repository.ProjectRepository
+	service *service.ProjectService
 }
 
-func NewProjectHandler(repo *repository.ProjectRepository) *ProjectHandler {
-	return &ProjectHandler{repo: repo}
+func NewProjectHandler(s *service.ProjectService) *ProjectHandler {
+	return &ProjectHandler{service: s}
 }
 
 type CreateProjectRequest struct {
@@ -85,7 +86,7 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 		}
 	}
 
-	if err := h.repo.Create(project); err != nil {
+	if err := h.service.Create(project); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create project"})
 		return
 	}
@@ -100,7 +101,7 @@ func (h *ProjectHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	project, err := h.repo.FindByID(uint(id))
+	project, err := h.service.GetByID(uint(id))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Project not found"})
 		return
@@ -116,7 +117,7 @@ func (h *ProjectHandler) GetByUserID(c *gin.Context) {
 		return
 	}
 
-	projects, err := h.repo.FindByUserID(uint(userID))
+	projects, err := h.service.GetByUserID(uint(userID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch projects"})
 		return
@@ -132,7 +133,7 @@ func (h *ProjectHandler) GetFeatured(c *gin.Context) {
 		return
 	}
 
-	projects, err := h.repo.FindFeaturedByUserID(uint(userID))
+	projects, err := h.service.GetFeaturedByUserID(uint(userID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch featured projects"})
 		return
@@ -149,66 +150,67 @@ func (h *ProjectHandler) Update(c *gin.Context) {
 		return
 	}
 
-	project, err := h.repo.FindByID(uint(id))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Project not found"})
-		return
-	}
-
-	if project.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to update this project"})
-		return
-	}
-
 	var req UpdateProjectRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	updates := &model.Project{}
 	if req.Title != "" {
-		project.Title = req.Title
+		updates.Title = req.Title
 	}
 	if req.Description != "" {
-		project.Description = req.Description
+		updates.Description = req.Description
 	}
 	if req.TechStack != "" {
-		project.TechStack = req.TechStack
+		updates.TechStack = req.TechStack
 	}
 	if req.DemoURL != "" {
-		project.DemoURL = req.DemoURL
+		updates.DemoURL = req.DemoURL
 	}
 	if req.GithubURL != "" {
-		project.GithubURL = req.GithubURL
+		updates.GithubURL = req.GithubURL
 	}
 	if req.ImageURL != "" {
-		project.ImageURL = req.ImageURL
+		updates.ImageURL = req.ImageURL
 	}
 	if req.Role != "" {
-		project.Role = req.Role
-	}
-	if req.Featured != nil {
-		project.Featured = *req.Featured
+		updates.Role = req.Role
 	}
 	if req.GithubRepoID != nil {
-		project.GithubRepoID = req.GithubRepoID
+		updates.GithubRepoID = req.GithubRepoID
 	}
 	if req.StartDate != "" {
 		startDate, err := parseDate(req.StartDate)
 		if err == nil {
-			project.StartDate = &startDate
+			updates.StartDate = &startDate
 		}
 	}
 	if req.EndDate != "" {
 		endDate, err := parseDate(req.EndDate)
 		if err == nil {
-			project.EndDate = &endDate
+			updates.EndDate = &endDate
 		}
 	}
 
-	if err := h.repo.Update(project); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update project"})
+	project, err := h.service.Update(uint(id), userID, updates)
+	if err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to update this project"})
+			return
+		}
+		c.JSON(http.StatusNotFound, gin.H{"error": "Project not found"})
 		return
+	}
+
+	// Handle featured separately if provided (since it's a bool pointer)
+	if req.Featured != nil {
+		project, err = h.service.UpdateFeatured(uint(id), userID, *req.Featured)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update project"})
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, project)
@@ -222,19 +224,12 @@ func (h *ProjectHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	project, err := h.repo.FindByID(uint(id))
-	if err != nil {
+	if err := h.service.Delete(uint(id), userID); err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to delete this project"})
+			return
+		}
 		c.JSON(http.StatusNotFound, gin.H{"error": "Project not found"})
-		return
-	}
-
-	if project.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to delete this project"})
-		return
-	}
-
-	if err := h.repo.Delete(uint(id)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete project"})
 		return
 	}
 
@@ -249,7 +244,7 @@ func (h *ProjectHandler) GetAll(c *gin.Context) {
 		limit = 100
 	}
 
-	projects, total, err := h.repo.FindAll(limit, offset)
+	projects, total, err := h.service.GetAll(limit, offset)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch projects"})
 		return
