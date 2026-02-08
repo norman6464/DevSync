@@ -7,6 +7,9 @@ import (
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
+// StepOrder represents the order of a step (used in reordering).
+type StepOrder = repository.StepOrder
+
 // RoadmapService handles roadmap business logic.
 type RoadmapService struct {
 	repo repository.RoadmapRepositoryInterface

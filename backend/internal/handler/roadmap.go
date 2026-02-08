@@ -7,7 +7,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
@@ -372,7 +371,7 @@ func (h *RoadmapHandler) ReorderSteps(c *gin.Context) {
 	}
 
 	var req struct {
-		Orders []repository.StepOrder `json:"orders" binding:"required"`
+		Orders []service.StepOrder `json:"orders" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
