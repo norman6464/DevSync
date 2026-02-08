@@ -15,11 +15,11 @@ import (
 
 type GitHubService struct {
 	cfg        *config.Config
-	userRepo   *repository.UserRepository
-	githubRepo *repository.GitHubRepository
+	userRepo   repository.UserRepositoryInterface
+	githubRepo repository.GitHubRepositoryInterface
 }
 
-func NewGitHubService(cfg *config.Config, userRepo *repository.UserRepository, githubRepo *repository.GitHubRepository) *GitHubService {
+func NewGitHubService(cfg *config.Config, userRepo repository.UserRepositoryInterface, githubRepo repository.GitHubRepositoryInterface) *GitHubService {
 	return &GitHubService{cfg: cfg, userRepo: userRepo, githubRepo: githubRepo}
 }
 
@@ -336,4 +336,80 @@ func (s *GitHubService) syncReposAndLanguages(user *model.User) error {
 	}
 
 	return s.githubRepo.UpsertLanguageStats(langStats)
+}
+
+// ConnectGitHub connects a user's GitHub account after OAuth callback.
+func (s *GitHubService) ConnectGitHub(userID uint, code, state string) error {
+	accessToken, err := s.ExchangeCode(code)
+	if err != nil {
+		return err
+	}
+
+	ghUser, err := s.GetGitHubUser(accessToken)
+	if err != nil {
+		return err
+	}
+
+	user, err := s.userRepo.FindByID(userID)
+	if err != nil {
+		return ErrNotFound
+	}
+
+	user.GitHubToken = accessToken
+	user.GitHubID = ghUser.ID
+	user.GitHubUsername = ghUser.Login
+	user.GitHubConnected = true
+	if user.AvatarURL == "" {
+		user.AvatarURL = ghUser.AvatarURL
+	}
+
+	if err := s.userRepo.Update(user); err != nil {
+		return err
+	}
+
+	go s.SyncData(user)
+	return nil
+}
+
+// DisconnectGitHub disconnects a user's GitHub account.
+func (s *GitHubService) DisconnectGitHub(userID uint) error {
+	user, err := s.userRepo.FindByID(userID)
+	if err != nil {
+		return ErrNotFound
+	}
+
+	user.GitHubToken = ""
+	user.GitHubUsername = ""
+	user.GitHubConnected = false
+
+	if err := s.userRepo.Update(user); err != nil {
+		return err
+	}
+
+	s.githubRepo.DeleteUserData(userID)
+	return nil
+}
+
+// SyncUserData syncs GitHub data for the given user ID.
+func (s *GitHubService) SyncUserData(userID uint) error {
+	user, err := s.userRepo.FindByID(userID)
+	if err != nil {
+		return ErrNotFound
+	}
+	return s.SyncData(user)
+}
+
+// GetContributions returns GitHub contributions for a user.
+func (s *GitHubService) GetContributions(userID uint) ([]model.GitHubContribution, error) {
+	return s.githubRepo.GetContributions(userID)
+}
+
+// GetLanguages returns GitHub language stats for a user.
+func (s *GitHubService) GetLanguages(userID uint) ([]model.GitHubLanguageStat, error) {
+	return s.githubRepo.GetLanguageStats(userID)
+}
+
+// GetRepos returns GitHub repos for a user.
+func (s *GitHubService) GetRepos(userID uint) ([]model.GitHubRepository, error) {
+	return s.githubRepo.GetRepos(userID)
 }

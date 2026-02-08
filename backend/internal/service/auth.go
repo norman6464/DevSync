@@ -1,6 +1,8 @@
 package service
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"time"
 
@@ -11,14 +13,16 @@ import (
 )
 
 type AuthService struct {
-	userRepo  *repository.UserRepository
-	jwtSecret []byte
+	userRepo          repository.UserRepositoryInterface
+	passwordResetRepo repository.PasswordResetRepositoryInterface
+	jwtSecret         []byte
 }
 
-func NewAuthService(userRepo *repository.UserRepository, jwtSecret string) *AuthService {
+func NewAuthService(userRepo repository.UserRepositoryInterface, passwordResetRepo repository.PasswordResetRepositoryInterface, jwtSecret string) *AuthService {
 	return &AuthService{
-		userRepo:  userRepo,
-		jwtSecret: []byte(jwtSecret),
+		userRepo:          userRepo,
+		passwordResetRepo: passwordResetRepo,
+		jwtSecret:         []byte(jwtSecret),
 	}
 }
 
@@ -240,6 +244,86 @@ func (s *AuthService) ValidateOAuthState(state string) (uint, error) {
 	}
 
 	return uint(userID), nil
+}
+
+// GetMe returns the current user by ID.
+func (s *AuthService) GetMe(userID uint) (*model.User, error) {
+	return s.userRepo.FindByID(userID)
+}
+
+// DeleteAccount permanently deletes a user's account after verifying password.
+func (s *AuthService) DeleteAccount(userID uint, password string) error {
+	user, err := s.userRepo.FindByID(userID)
+	if err != nil {
+		return ErrNotFound
+	}
+
+	// If user has a password (not GitHub-only), verify it
+	if user.Password != "" {
+		if password == "" {
+			return ErrBadRequest
+		}
+		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+			return ErrForbidden
+		}
+	}
+
+	return s.userRepo.DeleteWithRelatedData(userID)
+}
+
+// RequestPasswordReset generates a password reset token.
+func (s *AuthService) RequestPasswordReset(email string) (string, error) {
+	user, err := s.userRepo.FindByEmail(email)
+	if err != nil {
+		// Don't reveal if email exists
+		return "", nil
+	}
+
+	// Invalidate any existing tokens for this user
+	s.passwordResetRepo.InvalidateUserTokens(user.ID)
+
+	// Generate secure random token
+	tokenBytes := make([]byte, 32)
+	if _, err := rand.Read(tokenBytes); err != nil {
+		return "", err
+	}
+	token := hex.EncodeToString(tokenBytes)
+
+	// Create reset token (expires in 1 hour)
+	resetToken := &model.PasswordResetToken{
+		UserID:    user.ID,
+		Token:     token,
+		ExpiresAt: time.Now().Add(1 * time.Hour),
+	}
+	if err := s.passwordResetRepo.Create(resetToken); err != nil {
+		return "", err
+	}
+
+	return token, nil
+}
+
+// ResetPassword resets the password using a valid token.
+func (s *AuthService) ResetPassword(token string, newPassword string) error {
+	resetToken, err := s.passwordResetRepo.FindByToken(token)
+	if err != nil {
+		return ErrBadRequest
+	}
+
+	if !resetToken.IsValid() {
+		return ErrBadRequest
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	if err := s.userRepo.UpdatePassword(resetToken.UserID, string(hashedPassword)); err != nil {
+		return err
+	}
+
+	s.passwordResetRepo.MarkAsUsed(resetToken.ID)
+	return nil
 }
 
 func (s *AuthService) generateToken(userID uint) (string, error) {
