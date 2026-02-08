@@ -4,34 +4,30 @@ import * as authApi from '../api/auth';
 
 interface AuthState {
   user: User | null;
-  token: string | null;
   isAuthenticated: boolean;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   loginWithGitHub: () => Promise<void>;
   handleGitHubCallback: (code: string, state: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   loadUser: () => Promise<void>;
   setUser: (user: User) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  token: localStorage.getItem('token'),
-  isAuthenticated: !!localStorage.getItem('token'),
+  isAuthenticated: false,
   loading: false,
 
   login: async (email, password) => {
     const { data } = await authApi.login(email, password);
-    localStorage.setItem('token', data.token);
-    set({ user: data.user, token: data.token, isAuthenticated: true });
+    set({ user: data.user, isAuthenticated: true });
   },
 
   register: async (name, email, password) => {
     const { data } = await authApi.register(name, email, password);
-    localStorage.setItem('token', data.token);
-    set({ user: data.user, token: data.token, isAuthenticated: true });
+    set({ user: data.user, isAuthenticated: true });
   },
 
   loginWithGitHub: async () => {
@@ -41,13 +37,16 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   handleGitHubCallback: async (code, state) => {
     const { data } = await authApi.gitHubLoginCallback(code, state);
-    localStorage.setItem('token', data.token);
-    set({ user: data.user, token: data.token, isAuthenticated: true });
+    set({ user: data.user, isAuthenticated: true });
   },
 
-  logout: () => {
-    localStorage.removeItem('token');
-    set({ user: null, token: null, isAuthenticated: false });
+  logout: async () => {
+    try {
+      await authApi.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+    set({ user: null, isAuthenticated: false });
   },
 
   loadUser: async () => {
@@ -56,8 +55,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       const { data } = await authApi.getMe();
       set({ user: data, isAuthenticated: true, loading: false });
     } catch {
-      localStorage.removeItem('token');
-      set({ user: null, token: null, isAuthenticated: false, loading: false });
+      set({ user: null, isAuthenticated: false, loading: false });
     }
   },
 

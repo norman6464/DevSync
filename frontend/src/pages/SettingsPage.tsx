@@ -129,7 +129,7 @@ export default function SettingsPage() {
     setDeleting(true);
     try {
       await deleteAccount(deletePassword || undefined);
-      logout();
+      await logout();
       navigate('/login');
       toast.success(t('accountManagement.accountDeleted'));
     } catch {

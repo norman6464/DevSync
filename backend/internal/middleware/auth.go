@@ -10,26 +10,43 @@ import (
 )
 
 // AuthRequired はJWT認証を必須とするミドルウェアを返す。
-// AuthorizationヘッダーからBearerトークンを抽出し、検証に成功した場合は
-// コンテキストにuserIDをセットして次のハンドラに処理を委譲する。
+// 以下の優先順位でトークンを抽出する:
+//  1. httpOnly Cookie（"token"）
+//  2. Authorizationヘッダー（"Bearer <token>"）— 後方互換性のため維持
+//
+// 検証に成功した場合はコンテキストにuserIDをセットして次のハンドラに処理を委譲する。
 func AuthRequired(authService *service.AuthService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		header := c.GetHeader("Authorization")
-		if header == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "authorization header required"})
+		var tokenString string
+
+		// 1. Cookieからトークンを取得（優先）
+		if cookie, err := c.Cookie("token"); err == nil && cookie != "" {
+			tokenString = cookie
+		}
+
+		// 2. Cookieにない場合、Authorizationヘッダーにフォールバック
+		if tokenString == "" {
+			header := c.GetHeader("Authorization")
+			if header != "" {
+				parts := strings.SplitN(header, " ", 2)
+				if len(parts) == 2 && parts[0] == "Bearer" {
+					tokenString = parts[1]
+				} else {
+					c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid authorization header format"})
+					c.Abort()
+					return
+				}
+			}
+		}
+
+		// CookieもAuthorizationヘッダーもない場合
+		if tokenString == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
 			c.Abort()
 			return
 		}
 
-		// "Bearer <token>" 形式を検証
-		parts := strings.SplitN(header, " ", 2)
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid authorization header format"})
-			c.Abort()
-			return
-		}
-
-		userID, err := authService.ValidateToken(parts[1])
+		userID, err := authService.ValidateToken(tokenString)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid or expired token"})
 			c.Abort()
