@@ -22,5 +22,8 @@ export const requestPasswordReset = (email: string) =>
 export const resetPassword = (token: string, newPassword: string) =>
   client.post<{ message: string }>('/auth/password-reset/confirm', { token, new_password: newPassword });
 
+export const logout = () =>
+  client.post<{ message: string }>('/auth/logout');
+
 export const deleteAccount = (password?: string) =>
   client.delete('/auth/account', { data: { password } });
