@@ -68,6 +68,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	roadmapService := service.NewRoadmapService(roadmapRepo)
 	chatRoomService := service.NewChatRoomService(chatRoomRepo, groupMessageRepo, hub)
 	activityReportService := service.NewActivityReportService(activityReportRepo)
+	badgeService := service.NewBadgeService(db, notificationService)
 
 	// Handlers
 	authHandler := handler.NewAuthHandler(authService, githubService, userRepo, passwordResetRepo)
@@ -91,7 +92,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	answerHandler := handler.NewAnswerHandler(answerService)
 	roadmapHandler := handler.NewRoadmapHandler(roadmapService)
 	chatRoomHandler := handler.NewChatRoomHandler(chatRoomService)
-	badgeHandler := handler.NewBadgeHandler(db, notificationRepo)
+	badgeHandler := handler.NewBadgeHandler(badgeService)
 	learningLogHandler := handler.NewLearningLogHandler(learningLogService)
 
 	// Set up Hub's GetRoomMembers callback
