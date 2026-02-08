@@ -8,6 +8,7 @@ import {
   Map,
   FolderKanban,
   BookOpen,
+  BookMarked,
   Library,
   Settings,
 } from 'lucide-react';
@@ -29,6 +30,7 @@ const navItems = [
 /** 「その他」ドロップダウンに格納する項目 */
 const moreItems = [
   { path: '/goals', key: 'nav.goals', icon: Target },
+  { path: '/learning-logs', key: 'nav.learningLogs', icon: BookMarked },
   { path: '/reports', key: 'nav.reports', icon: BarChart3 },
   { path: '/roadmaps', key: 'nav.roadmaps', icon: Map },
   { path: '/projects', key: 'nav.projects', icon: FolderKanban },
