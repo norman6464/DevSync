@@ -374,7 +374,7 @@ func (s *GitHubService) ConnectGitHub(userID uint, code, state string) error {
 	user.GitHubID = ghUser.ID
 	user.GitHubUsername = ghUser.Login
 	user.GitHubConnected = true
-	if user.AvatarURL == "" {
+	if ghUser.AvatarURL != "" {
 		user.AvatarURL = ghUser.AvatarURL
 	}
 
