@@ -246,7 +246,16 @@
     "influencer": "影响者",
     "influencerDesc": "10+ 粉丝",
     "star": "新星",
-    "starDesc": "50+ 粉丝"
+    "starDesc": "50+ 粉丝",
+    "qaFirstAnswer": "首次回答",
+    "qaFirstAnswerDesc": "首次回答了Q&A问题",
+    "qaHelper": "Q&A助手",
+    "qaHelperDesc": "回答了10+个Q&A问题",
+    "goalAchiever": "目标达成者",
+    "goalAchieverDesc": "完成了5个学习目标",
+    "goalMaster": "目标大师",
+    "goalMasterDesc": "完成了20个学习目标",
+    "badgeEarned": "获得了{{name}}！"
   },
   "time": {
     "justNow": "刚刚",
@@ -267,6 +276,7 @@
     "newComment": "{{name}} 评论了你的帖子",
     "newFollow": "{{name}} 关注了你",
     "newAnswer": "{{name}} 回答了你的问题",
+    "newBadge": "获得了新徽章",
     "justNow": "刚刚",
     "minutesAgo": "{{count}}分钟前",
     "hoursAgo": "{{count}}小时前",
@@ -281,6 +291,7 @@
     "filterFollow": "关注",
     "filterMessage": "消息",
     "filterAnswer": "Q&A回答",
+    "filterBadge": "徽章",
     "deleteNotification": "删除通知",
     "deleted": "通知已删除"
   },

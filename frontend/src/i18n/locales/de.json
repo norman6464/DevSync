@@ -246,7 +246,16 @@
     "influencer": "Influencer",
     "influencerDesc": "10+ Follower",
     "star": "Aufgehender Stern",
-    "starDesc": "50+ Follower"
+    "starDesc": "50+ Follower",
+    "qaFirstAnswer": "Erste Antwort",
+    "qaFirstAnswerDesc": "Erste Q&A-Frage beantwortet",
+    "qaHelper": "Q&A-Helfer",
+    "qaHelperDesc": "10+ Q&A-Fragen beantwortet",
+    "goalAchiever": "Ziel-Erreicher",
+    "goalAchieverDesc": "5 Lernziele erreicht",
+    "goalMaster": "Ziel-Meister",
+    "goalMasterDesc": "20 Lernziele erreicht",
+    "badgeEarned": "{{name}} erhalten!"
   },
   "time": {
     "justNow": "gerade eben",
@@ -267,6 +276,7 @@
     "newComment": "{{name}} hat deinen Beitrag kommentiert",
     "newFollow": "{{name}} folgt dir jetzt",
     "newAnswer": "{{name}} hat deine Frage beantwortet",
+    "newBadge": "Neues Abzeichen erhalten",
     "justNow": "gerade eben",
     "minutesAgo": "vor {{count}}m",
     "hoursAgo": "vor {{count}}h",
@@ -281,6 +291,7 @@
     "filterFollow": "Follower",
     "filterMessage": "Nachrichten",
     "filterAnswer": "Q&A-Antworten",
+    "filterBadge": "Abzeichen",
     "deleteNotification": "Benachrichtigung löschen",
     "deleted": "Benachrichtigung gelöscht"
   },

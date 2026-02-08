@@ -246,7 +246,16 @@
     "influencer": "インフルエンサー",
     "influencerDesc": "10人以上のフォロワー",
     "star": "ライジングスター",
-    "starDesc": "50人以上のフォロワー"
+    "starDesc": "50人以上のフォロワー",
+    "qaFirstAnswer": "Q&A初回答",
+    "qaFirstAnswerDesc": "Q&Aで初めて回答した",
+    "qaHelper": "Q&Aヘルパー",
+    "qaHelperDesc": "Q&Aで10回以上回答した",
+    "goalAchiever": "目標達成者",
+    "goalAchieverDesc": "学習目標を5個達成した",
+    "goalMaster": "目標マスター",
+    "goalMasterDesc": "学習目標を20個達成した",
+    "badgeEarned": "{{name}}を獲得しました！"
   },
   "time": {
     "justNow": "たった今",
@@ -267,6 +276,7 @@
     "newComment": "{{name}}さんがあなたの投稿にコメントしました",
     "newFollow": "{{name}}さんがあなたをフォローしました",
     "newAnswer": "{{name}}さんがあなたの質問に回答しました",
+    "newBadge": "新しいバッジを獲得しました",
     "justNow": "たった今",
     "minutesAgo": "{{count}}分前",
     "hoursAgo": "{{count}}時間前",
@@ -281,6 +291,7 @@
     "filterFollow": "フォロー",
     "filterMessage": "メッセージ",
     "filterAnswer": "Q&A回答",
+    "filterBadge": "バッジ",
     "deleteNotification": "通知を削除",
     "deleted": "通知を削除しました"
   },
