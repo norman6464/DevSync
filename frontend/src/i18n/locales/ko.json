@@ -695,7 +695,16 @@
     "confirmDeleteStep": "이 단계를 삭제하시겠습니까?",
     "noSteps": "아직 단계가 없습니다",
     "addFirstStep": "첫 번째 단계를 추가하세요",
-    "stepsReordered": "단계 순서가 변경되었습니다"
+    "stepsReordered": "단계 순서가 변경되었습니다",
+    "templates": "추천 템플릿",
+    "templatesDescription": "추천 로드맵으로 학습을 시작하세요",
+    "templatesAvailable": "개 템플릿",
+    "template": "템플릿",
+    "useTemplate": "이 템플릿 사용",
+    "templateUsed": "템플릿에서 로드맵이 생성되었습니다",
+    "templateSteps": "포함된 단계",
+    "steps": "단계",
+    "viewSteps": "단계 보기"
   },
   "onboarding": {
     "welcomeTitle": "DevSync에 오신 것을 환영합니다!",

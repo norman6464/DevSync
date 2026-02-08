@@ -695,7 +695,16 @@
     "confirmDeleteStep": "Вы уверены, что хотите удалить этот шаг?",
     "noSteps": "Пока нет шагов",
     "addFirstStep": "Добавьте первый шаг",
-    "stepsReordered": "Порядок шагов изменён"
+    "stepsReordered": "Порядок шагов изменён",
+    "templates": "Рекомендуемые шаблоны",
+    "templatesDescription": "Начните обучение с рекомендуемой дорожной карты",
+    "templatesAvailable": "шаблонов",
+    "template": "Шаблон",
+    "useTemplate": "Использовать этот шаблон",
+    "templateUsed": "Дорожная карта создана из шаблона",
+    "templateSteps": "Включённые шаги",
+    "steps": "шагов",
+    "viewSteps": "Посмотреть шаги"
   },
   "onboarding": {
     "welcomeTitle": "Добро пожаловать в DevSync!",

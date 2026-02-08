@@ -695,7 +695,16 @@
     "confirmDeleteStep": "確定要刪除此步驟嗎？",
     "noSteps": "還沒有步驟",
     "addFirstStep": "新增第一個步驟",
-    "stepsReordered": "步驟順序已變更"
+    "stepsReordered": "步驟順序已變更",
+    "templates": "推薦範本",
+    "templatesDescription": "使用推薦的路線圖開始學習",
+    "templatesAvailable": "個範本",
+    "template": "範本",
+    "useTemplate": "使用此範本",
+    "templateUsed": "已從範本建立路線圖",
+    "templateSteps": "包含的步驟",
+    "steps": "個步驟",
+    "viewSteps": "查看步驟"
   },
   "onboarding": {
     "welcomeTitle": "歡迎來到 DevSync！",

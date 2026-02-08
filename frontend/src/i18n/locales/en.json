@@ -695,7 +695,16 @@
     "confirmDeleteStep": "Are you sure you want to delete this step?",
     "noSteps": "No steps yet",
     "addFirstStep": "Add your first step",
-    "stepsReordered": "Steps reordered"
+    "stepsReordered": "Steps reordered",
+    "templates": "Recommended Templates",
+    "templatesDescription": "Start your learning with a recommended roadmap",
+    "templatesAvailable": "templates",
+    "template": "Template",
+    "useTemplate": "Use this template",
+    "templateUsed": "Roadmap created from template",
+    "templateSteps": "Included steps",
+    "steps": "steps",
+    "viewSteps": "View steps"
   },
   "onboarding": {
     "welcomeTitle": "Welcome to DevSync!",
