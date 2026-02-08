@@ -22,7 +22,7 @@ export default function LearningLogsPage() {
     logs, loading, saving,
     createLog, updateLog, deleteLog,
   } = useLearningLogs();
-  const { calendarData } = useLearningLogCalendar(user?.id);
+  const { calendarData, refetchCalendar } = useLearningLogCalendar(user?.id);
 
   const [view, setView] = useState<'list' | 'calendar'>('list');
   const [showForm, setShowForm] = useState(false);
@@ -57,10 +57,16 @@ export default function LearningLogsPage() {
 
     if (editingLog) {
       const result = await updateLog(editingLog.id, data);
-      if (result) resetForm();
+      if (result) {
+        resetForm();
+        refetchCalendar();
+      }
     } else {
       const result = await createLog(data);
-      if (result) resetForm();
+      if (result) {
+        resetForm();
+        refetchCalendar();
+      }
     }
   };
 
@@ -297,7 +303,7 @@ export default function LearningLogsPage() {
                           </svg>
                         </button>
                         <button
-                          onClick={() => deleteLog(log.id)}
+                          onClick={async () => { const ok = await deleteLog(log.id); if (ok) refetchCalendar(); }}
                           className="p-2 text-gray-400 hover:text-red-400 transition-colors"
                           title={t('common.delete')}
                         >

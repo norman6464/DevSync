@@ -337,11 +337,11 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		{
 			learningLogs.POST("", learningLogHandler.Create)
 			learningLogs.GET("", learningLogHandler.GetMyLogs)
+			learningLogs.GET("/user/:userId", learningLogHandler.GetByUserID)
+			learningLogs.GET("/calendar/:userId", learningLogHandler.GetCalendarData)
 			learningLogs.GET("/:id", learningLogHandler.GetByID)
 			learningLogs.PUT("/:id", learningLogHandler.Update)
 			learningLogs.DELETE("/:id", learningLogHandler.Delete)
-			learningLogs.GET("/user/:userId", learningLogHandler.GetByUserID)
-			learningLogs.GET("/calendar/:userId", learningLogHandler.GetCalendarData)
 		}
 	}
 

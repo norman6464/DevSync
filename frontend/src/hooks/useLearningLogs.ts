@@ -95,7 +95,7 @@ export function useLearningLogs() {
 }
 
 export function useLearningLogCalendar(userId: number | undefined) {
-  const { data: calendarData, loading } = useAsyncData(
+  const { data: calendarData, loading, refetch } = useAsyncData(
     async () => {
       if (!userId) return [];
       const { data } = await getCalendarData(userId);
@@ -104,5 +104,5 @@ export function useLearningLogCalendar(userId: number | undefined) {
     { initialData: [] as CalendarEntry[], deps: [userId] }
   );
 
-  return { calendarData, loading };
+  return { calendarData, loading, refetchCalendar: refetch };
 }
