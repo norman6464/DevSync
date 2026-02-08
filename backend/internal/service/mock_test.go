@@ -1,0 +1,872 @@
+package service
+
+import (
+	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/repository"
+	"github.com/stretchr/testify/mock"
+)
+
+// ============================================================
+// MockUserRepository implements repository.UserRepositoryInterface
+// ============================================================
+
+type MockUserRepository struct {
+	mock.Mock
+}
+
+func (m *MockUserRepository) FindAll() ([]model.User, error) {
+	args := m.Called()
+	return args.Get(0).([]model.User), args.Error(1)
+}
+
+func (m *MockUserRepository) FindByID(id uint) (*model.User, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.User), args.Error(1)
+}
+
+func (m *MockUserRepository) FindByEmail(email string) (*model.User, error) {
+	args := m.Called(email)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.User), args.Error(1)
+}
+
+func (m *MockUserRepository) Search(query string) ([]model.User, error) {
+	args := m.Called(query)
+	return args.Get(0).([]model.User), args.Error(1)
+}
+
+func (m *MockUserRepository) FindByGitHubID(githubID int64) (*model.User, error) {
+	args := m.Called(githubID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.User), args.Error(1)
+}
+
+func (m *MockUserRepository) Create(user *model.User) error {
+	args := m.Called(user)
+	return args.Error(0)
+}
+
+func (m *MockUserRepository) Update(user *model.User) error {
+	args := m.Called(user)
+	return args.Error(0)
+}
+
+func (m *MockUserRepository) Delete(id uint) error {
+	args := m.Called(id)
+	return args.Error(0)
+}
+
+func (m *MockUserRepository) DeleteWithRelatedData(id uint) error {
+	args := m.Called(id)
+	return args.Error(0)
+}
+
+func (m *MockUserRepository) UpdatePassword(userID uint, hashedPassword string) error {
+	args := m.Called(userID, hashedPassword)
+	return args.Error(0)
+}
+
+// ============================================================
+// MockPostRepository implements repository.PostRepositoryInterface
+// ============================================================
+
+type MockPostRepository struct {
+	mock.Mock
+}
+
+func (m *MockPostRepository) Create(post *model.Post) error {
+	args := m.Called(post)
+	return args.Error(0)
+}
+
+func (m *MockPostRepository) FindByID(id uint) (*model.Post, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.Post), args.Error(1)
+}
+
+func (m *MockPostRepository) FindAll(page, limit int) ([]model.Post, error) {
+	args := m.Called(page, limit)
+	return args.Get(0).([]model.Post), args.Error(1)
+}
+
+func (m *MockPostRepository) FindByUserID(userID uint) ([]model.Post, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.Post), args.Error(1)
+}
+
+func (m *MockPostRepository) Timeline(userID uint, page, limit int) ([]model.Post, error) {
+	args := m.Called(userID, page, limit)
+	return args.Get(0).([]model.Post), args.Error(1)
+}
+
+func (m *MockPostRepository) Update(post *model.Post) error {
+	args := m.Called(post)
+	return args.Error(0)
+}
+
+func (m *MockPostRepository) Delete(id uint) error {
+	args := m.Called(id)
+	return args.Error(0)
+}
+
+func (m *MockPostRepository) Like(userID, postID uint) error {
+	args := m.Called(userID, postID)
+	return args.Error(0)
+}
+
+func (m *MockPostRepository) Unlike(userID, postID uint) error {
+	args := m.Called(userID, postID)
+	return args.Error(0)
+}
+
+func (m *MockPostRepository) HasLiked(userID, postID uint) bool {
+	args := m.Called(userID, postID)
+	return args.Bool(0)
+}
+
+func (m *MockPostRepository) CreateComment(comment *model.Comment) error {
+	args := m.Called(comment)
+	return args.Error(0)
+}
+
+func (m *MockPostRepository) GetComments(postID uint) ([]model.Comment, error) {
+	args := m.Called(postID)
+	return args.Get(0).([]model.Comment), args.Error(1)
+}
+
+func (m *MockPostRepository) DeleteComment(id, userID uint) error {
+	args := m.Called(id, userID)
+	return args.Error(0)
+}
+
+// ============================================================
+// MockFollowRepository implements repository.FollowRepositoryInterface
+// ============================================================
+
+type MockFollowRepository struct {
+	mock.Mock
+}
+
+func (m *MockFollowRepository) Follow(followerID, followeeID uint) error {
+	args := m.Called(followerID, followeeID)
+	return args.Error(0)
+}
+
+func (m *MockFollowRepository) Unfollow(followerID, followeeID uint) error {
+	args := m.Called(followerID, followeeID)
+	return args.Error(0)
+}
+
+func (m *MockFollowRepository) IsFollowing(followerID, followeeID uint) bool {
+	args := m.Called(followerID, followeeID)
+	return args.Bool(0)
+}
+
+func (m *MockFollowRepository) GetFollowers(userID uint) ([]model.User, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.User), args.Error(1)
+}
+
+func (m *MockFollowRepository) GetFollowing(userID uint) ([]model.User, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.User), args.Error(1)
+}
+
+// ============================================================
+// MockNotificationRepository implements repository.NotificationRepositoryInterface
+// ============================================================
+
+type MockNotificationRepository struct {
+	mock.Mock
+}
+
+func (m *MockNotificationRepository) Create(notification *model.Notification) error {
+	args := m.Called(notification)
+	return args.Error(0)
+}
+
+func (m *MockNotificationRepository) CreateBatch(notifications []*model.Notification) error {
+	args := m.Called(notifications)
+	return args.Error(0)
+}
+
+func (m *MockNotificationRepository) FindByUserID(userID uint, page, limit int, notificationType string) ([]model.Notification, error) {
+	args := m.Called(userID, page, limit, notificationType)
+	return args.Get(0).([]model.Notification), args.Error(1)
+}
+
+func (m *MockNotificationRepository) CountByUserID(userID uint, notificationType string) (int64, error) {
+	args := m.Called(userID, notificationType)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockNotificationRepository) CountUnread(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockNotificationRepository) MarkAsRead(id, userID uint) error {
+	args := m.Called(id, userID)
+	return args.Error(0)
+}
+
+func (m *MockNotificationRepository) MarkAllAsRead(userID uint) error {
+	args := m.Called(userID)
+	return args.Error(0)
+}
+
+func (m *MockNotificationRepository) Delete(id, userID uint) error {
+	args := m.Called(id, userID)
+	return args.Error(0)
+}
+
+func (m *MockNotificationRepository) GetFollowerIDs(userID uint) ([]uint, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]uint), args.Error(1)
+}
+
+// ============================================================
+// MockMessageRepository implements repository.MessageRepositoryInterface
+// ============================================================
+
+type MockMessageRepository struct {
+	mock.Mock
+}
+
+func (m *MockMessageRepository) Create(msg *model.Message) error {
+	args := m.Called(msg)
+	return args.Error(0)
+}
+
+func (m *MockMessageRepository) GetConversation(userID, otherUserID uint, page, limit int) ([]model.Message, error) {
+	args := m.Called(userID, otherUserID, page, limit)
+	return args.Get(0).([]model.Message), args.Error(1)
+}
+
+func (m *MockMessageRepository) GetConversations(userID uint) ([]repository.ConversationSummary, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]repository.ConversationSummary), args.Error(1)
+}
+
+func (m *MockMessageRepository) MarkAsRead(senderID, receiverID uint) error {
+	args := m.Called(senderID, receiverID)
+	return args.Error(0)
+}
+
+// ============================================================
+// MockQuestionRepository implements repository.QuestionRepositoryInterface
+// ============================================================
+
+type MockQuestionRepository struct {
+	mock.Mock
+}
+
+func (m *MockQuestionRepository) Create(question *model.Question) error {
+	args := m.Called(question)
+	return args.Error(0)
+}
+
+func (m *MockQuestionRepository) FindByID(id uint) (*model.Question, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.Question), args.Error(1)
+}
+
+func (m *MockQuestionRepository) FindAll(limit, offset int, tag string, sort string) ([]model.Question, int64, error) {
+	args := m.Called(limit, offset, tag, sort)
+	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
+}
+
+func (m *MockQuestionRepository) Search(q string, limit, offset int) ([]model.Question, int64, error) {
+	args := m.Called(q, limit, offset)
+	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
+}
+
+func (m *MockQuestionRepository) FindByUserID(userID uint) ([]model.Question, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.Question), args.Error(1)
+}
+
+func (m *MockQuestionRepository) Update(question *model.Question) error {
+	args := m.Called(question)
+	return args.Error(0)
+}
+
+func (m *MockQuestionRepository) Delete(id uint) error {
+	args := m.Called(id)
+	return args.Error(0)
+}
+
+func (m *MockQuestionRepository) Vote(userID, questionID uint, value int) error {
+	args := m.Called(userID, questionID, value)
+	return args.Error(0)
+}
+
+func (m *MockQuestionRepository) RemoveVote(userID, questionID uint) error {
+	args := m.Called(userID, questionID)
+	return args.Error(0)
+}
+
+func (m *MockQuestionRepository) GetUserVote(userID, questionID uint) (int, error) {
+	args := m.Called(userID, questionID)
+	return args.Int(0), args.Error(1)
+}
+
+// ============================================================
+// MockAnswerRepository implements repository.AnswerRepositoryInterface
+// ============================================================
+
+type MockAnswerRepository struct {
+	mock.Mock
+}
+
+func (m *MockAnswerRepository) Create(answer *model.Answer) error {
+	args := m.Called(answer)
+	return args.Error(0)
+}
+
+func (m *MockAnswerRepository) FindByQuestionID(questionID uint) ([]model.Answer, error) {
+	args := m.Called(questionID)
+	return args.Get(0).([]model.Answer), args.Error(1)
+}
+
+func (m *MockAnswerRepository) FindByID(id uint) (*model.Answer, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.Answer), args.Error(1)
+}
+
+func (m *MockAnswerRepository) Update(answer *model.Answer) error {
+	args := m.Called(answer)
+	return args.Error(0)
+}
+
+func (m *MockAnswerRepository) Delete(answer *model.Answer) error {
+	args := m.Called(answer)
+	return args.Error(0)
+}
+
+func (m *MockAnswerRepository) SetBestAnswer(questionID, answerID uint) error {
+	args := m.Called(questionID, answerID)
+	return args.Error(0)
+}
+
+func (m *MockAnswerRepository) Vote(userID, answerID uint, value int) error {
+	args := m.Called(userID, answerID, value)
+	return args.Error(0)
+}
+
+func (m *MockAnswerRepository) RemoveVote(userID, answerID uint) error {
+	args := m.Called(userID, answerID)
+	return args.Error(0)
+}
+
+func (m *MockAnswerRepository) GetUserVotes(userID uint, answerIDs []uint) (map[uint]int, error) {
+	args := m.Called(userID, answerIDs)
+	return args.Get(0).(map[uint]int), args.Error(1)
+}
+
+// ============================================================
+// MockLearningLogRepository implements repository.LearningLogRepositoryInterface
+// ============================================================
+
+type MockLearningLogRepository struct {
+	mock.Mock
+}
+
+func (m *MockLearningLogRepository) Create(log *model.LearningLog) error {
+	args := m.Called(log)
+	return args.Error(0)
+}
+
+func (m *MockLearningLogRepository) Update(log *model.LearningLog) error {
+	args := m.Called(log)
+	return args.Error(0)
+}
+
+func (m *MockLearningLogRepository) Delete(id, userID uint) error {
+	args := m.Called(id, userID)
+	return args.Error(0)
+}
+
+func (m *MockLearningLogRepository) FindByID(id uint) (*model.LearningLog, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.LearningLog), args.Error(1)
+}
+
+func (m *MockLearningLogRepository) GetByUserID(userID uint) ([]model.LearningLog, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.LearningLog), args.Error(1)
+}
+
+func (m *MockLearningLogRepository) GetStreakInfo(userID uint) (*model.StreakInfo, error) {
+	args := m.Called(userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.StreakInfo), args.Error(1)
+}
+
+func (m *MockLearningLogRepository) GetCalendarData(userID uint) ([]model.CalendarEntry, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.CalendarEntry), args.Error(1)
+}
+
+// ============================================================
+// MockLearningGoalRepository implements repository.LearningGoalRepositoryInterface
+// ============================================================
+
+type MockLearningGoalRepository struct {
+	mock.Mock
+}
+
+func (m *MockLearningGoalRepository) Create(goal *model.LearningGoal) error {
+	args := m.Called(goal)
+	return args.Error(0)
+}
+
+func (m *MockLearningGoalRepository) Update(goal *model.LearningGoal) error {
+	args := m.Called(goal)
+	return args.Error(0)
+}
+
+func (m *MockLearningGoalRepository) Delete(id uint) error {
+	args := m.Called(id)
+	return args.Error(0)
+}
+
+func (m *MockLearningGoalRepository) FindByID(id uint) (*model.LearningGoal, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.LearningGoal), args.Error(1)
+}
+
+func (m *MockLearningGoalRepository) GetByUserID(userID uint) ([]model.LearningGoal, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.LearningGoal), args.Error(1)
+}
+
+func (m *MockLearningGoalRepository) GetActiveByUserID(userID uint) ([]model.LearningGoal, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.LearningGoal), args.Error(1)
+}
+
+func (m *MockLearningGoalRepository) GetStats(userID uint) (*model.LearningGoalStats, error) {
+	args := m.Called(userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.LearningGoalStats), args.Error(1)
+}
+
+// ============================================================
+// MockProjectRepository implements repository.ProjectRepositoryInterface
+// ============================================================
+
+type MockProjectRepository struct {
+	mock.Mock
+}
+
+func (m *MockProjectRepository) Create(project *model.Project) error {
+	args := m.Called(project)
+	return args.Error(0)
+}
+
+func (m *MockProjectRepository) FindByID(id uint) (*model.Project, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.Project), args.Error(1)
+}
+
+func (m *MockProjectRepository) FindByUserID(userID uint) ([]model.Project, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.Project), args.Error(1)
+}
+
+func (m *MockProjectRepository) FindFeaturedByUserID(userID uint) ([]model.Project, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.Project), args.Error(1)
+}
+
+func (m *MockProjectRepository) Update(project *model.Project) error {
+	args := m.Called(project)
+	return args.Error(0)
+}
+
+func (m *MockProjectRepository) Delete(id uint) error {
+	args := m.Called(id)
+	return args.Error(0)
+}
+
+func (m *MockProjectRepository) FindAll(limit, offset int) ([]model.Project, int64, error) {
+	args := m.Called(limit, offset)
+	return args.Get(0).([]model.Project), args.Get(1).(int64), args.Error(2)
+}
+
+// ============================================================
+// MockBookReviewRepository implements repository.BookReviewRepositoryInterface
+// ============================================================
+
+type MockBookReviewRepository struct {
+	mock.Mock
+}
+
+func (m *MockBookReviewRepository) Create(review *model.BookReview) error {
+	args := m.Called(review)
+	return args.Error(0)
+}
+
+func (m *MockBookReviewRepository) FindByID(id uint) (*model.BookReview, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.BookReview), args.Error(1)
+}
+
+func (m *MockBookReviewRepository) FindByUserID(userID uint) ([]model.BookReview, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.BookReview), args.Error(1)
+}
+
+func (m *MockBookReviewRepository) FindAll(limit, offset int) ([]model.BookReview, int64, error) {
+	args := m.Called(limit, offset)
+	return args.Get(0).([]model.BookReview), args.Get(1).(int64), args.Error(2)
+}
+
+func (m *MockBookReviewRepository) Update(review *model.BookReview) error {
+	args := m.Called(review)
+	return args.Error(0)
+}
+
+func (m *MockBookReviewRepository) Delete(id uint) error {
+	args := m.Called(id)
+	return args.Error(0)
+}
+
+// ============================================================
+// MockLearningResourceRepository implements repository.LearningResourceRepositoryInterface
+// ============================================================
+
+type MockLearningResourceRepository struct {
+	mock.Mock
+}
+
+func (m *MockLearningResourceRepository) Create(resource *model.LearningResource) error {
+	args := m.Called(resource)
+	return args.Error(0)
+}
+
+func (m *MockLearningResourceRepository) FindByID(id uint) (*model.LearningResource, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.LearningResource), args.Error(1)
+}
+
+func (m *MockLearningResourceRepository) FindByUserID(userID uint, includePrivate bool) ([]model.LearningResource, error) {
+	args := m.Called(userID, includePrivate)
+	return args.Get(0).([]model.LearningResource), args.Error(1)
+}
+
+func (m *MockLearningResourceRepository) FindPublic(limit, offset int, category string, difficulty string) ([]model.LearningResource, int64, error) {
+	args := m.Called(limit, offset, category, difficulty)
+	return args.Get(0).([]model.LearningResource), args.Get(1).(int64), args.Error(2)
+}
+
+func (m *MockLearningResourceRepository) Update(resource *model.LearningResource) error {
+	args := m.Called(resource)
+	return args.Error(0)
+}
+
+func (m *MockLearningResourceRepository) Delete(id uint) error {
+	args := m.Called(id)
+	return args.Error(0)
+}
+
+func (m *MockLearningResourceRepository) Search(query string, limit, offset int) ([]model.LearningResource, int64, error) {
+	args := m.Called(query, limit, offset)
+	return args.Get(0).([]model.LearningResource), args.Get(1).(int64), args.Error(2)
+}
+
+func (m *MockLearningResourceRepository) Like(userID, resourceID uint) error {
+	args := m.Called(userID, resourceID)
+	return args.Error(0)
+}
+
+func (m *MockLearningResourceRepository) Unlike(userID, resourceID uint) error {
+	args := m.Called(userID, resourceID)
+	return args.Error(0)
+}
+
+func (m *MockLearningResourceRepository) HasLiked(userID, resourceID uint) (bool, error) {
+	args := m.Called(userID, resourceID)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockLearningResourceRepository) Save(userID, resourceID uint) error {
+	args := m.Called(userID, resourceID)
+	return args.Error(0)
+}
+
+func (m *MockLearningResourceRepository) Unsave(userID, resourceID uint) error {
+	args := m.Called(userID, resourceID)
+	return args.Error(0)
+}
+
+func (m *MockLearningResourceRepository) HasSaved(userID, resourceID uint) (bool, error) {
+	args := m.Called(userID, resourceID)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockLearningResourceRepository) FindSavedByUserID(userID uint, limit, offset int) ([]model.LearningResource, int64, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.LearningResource), args.Get(1).(int64), args.Error(2)
+}
+
+// ============================================================
+// MockPasswordResetRepository implements repository.PasswordResetRepositoryInterface
+// ============================================================
+
+type MockPasswordResetRepository struct {
+	mock.Mock
+}
+
+func (m *MockPasswordResetRepository) Create(token *model.PasswordResetToken) error {
+	args := m.Called(token)
+	return args.Error(0)
+}
+
+func (m *MockPasswordResetRepository) FindByToken(token string) (*model.PasswordResetToken, error) {
+	args := m.Called(token)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.PasswordResetToken), args.Error(1)
+}
+
+func (m *MockPasswordResetRepository) MarkAsUsed(id uint) error {
+	args := m.Called(id)
+	return args.Error(0)
+}
+
+func (m *MockPasswordResetRepository) InvalidateUserTokens(userID uint) error {
+	args := m.Called(userID)
+	return args.Error(0)
+}
+
+func (m *MockPasswordResetRepository) DeleteExpired() error {
+	args := m.Called()
+	return args.Error(0)
+}
+
+// ============================================================
+// MockRoadmapRepository implements repository.RoadmapRepositoryInterface
+// ============================================================
+
+type MockRoadmapRepository struct {
+	mock.Mock
+}
+
+func (m *MockRoadmapRepository) Create(roadmap *model.Roadmap) error {
+	args := m.Called(roadmap)
+	return args.Error(0)
+}
+
+func (m *MockRoadmapRepository) Update(roadmap *model.Roadmap) error {
+	args := m.Called(roadmap)
+	return args.Error(0)
+}
+
+func (m *MockRoadmapRepository) Delete(id uint) error {
+	args := m.Called(id)
+	return args.Error(0)
+}
+
+func (m *MockRoadmapRepository) FindByID(id uint) (*model.Roadmap, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.Roadmap), args.Error(1)
+}
+
+func (m *MockRoadmapRepository) GetByUserID(userID uint) ([]model.Roadmap, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.Roadmap), args.Error(1)
+}
+
+func (m *MockRoadmapRepository) GetPublicRoadmaps(limit, offset int) ([]model.Roadmap, int64, error) {
+	args := m.Called(limit, offset)
+	return args.Get(0).([]model.Roadmap), args.Get(1).(int64), args.Error(2)
+}
+
+func (m *MockRoadmapRepository) CopyRoadmap(originalID, newUserID uint) (*model.Roadmap, error) {
+	args := m.Called(originalID, newUserID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.Roadmap), args.Error(1)
+}
+
+func (m *MockRoadmapRepository) GetStats(userID uint) (*model.RoadmapStats, error) {
+	args := m.Called(userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.RoadmapStats), args.Error(1)
+}
+
+func (m *MockRoadmapRepository) CreateStep(step *model.RoadmapStep) error {
+	args := m.Called(step)
+	return args.Error(0)
+}
+
+func (m *MockRoadmapRepository) UpdateStep(step *model.RoadmapStep) error {
+	args := m.Called(step)
+	return args.Error(0)
+}
+
+func (m *MockRoadmapRepository) DeleteStep(stepID uint) error {
+	args := m.Called(stepID)
+	return args.Error(0)
+}
+
+func (m *MockRoadmapRepository) FindStepByID(stepID uint) (*model.RoadmapStep, error) {
+	args := m.Called(stepID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.RoadmapStep), args.Error(1)
+}
+
+func (m *MockRoadmapRepository) ReorderSteps(roadmapID uint, stepOrders []repository.StepOrder) error {
+	args := m.Called(roadmapID, stepOrders)
+	return args.Error(0)
+}
+
+// ============================================================
+// MockChatRoomRepository implements repository.ChatRoomRepositoryInterface
+// ============================================================
+
+type MockChatRoomRepository struct {
+	mock.Mock
+}
+
+func (m *MockChatRoomRepository) Create(room *model.ChatRoom) error {
+	args := m.Called(room)
+	return args.Error(0)
+}
+
+func (m *MockChatRoomRepository) FindByID(id uint) (*model.ChatRoom, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.ChatRoom), args.Error(1)
+}
+
+func (m *MockChatRoomRepository) FindByUserID(userID uint) ([]model.ChatRoom, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.ChatRoom), args.Error(1)
+}
+
+func (m *MockChatRoomRepository) Update(room *model.ChatRoom) error {
+	args := m.Called(room)
+	return args.Error(0)
+}
+
+func (m *MockChatRoomRepository) Delete(roomID uint) error {
+	args := m.Called(roomID)
+	return args.Error(0)
+}
+
+func (m *MockChatRoomRepository) AddMember(roomID, userID uint) error {
+	args := m.Called(roomID, userID)
+	return args.Error(0)
+}
+
+func (m *MockChatRoomRepository) RemoveMember(roomID, userID uint) error {
+	args := m.Called(roomID, userID)
+	return args.Error(0)
+}
+
+func (m *MockChatRoomRepository) GetMembers(roomID uint) ([]model.ChatRoomMember, error) {
+	args := m.Called(roomID)
+	return args.Get(0).([]model.ChatRoomMember), args.Error(1)
+}
+
+func (m *MockChatRoomRepository) IsMember(roomID, userID uint) (bool, error) {
+	args := m.Called(roomID, userID)
+	return args.Bool(0), args.Error(1)
+}
+
+// ============================================================
+// MockGroupMessageRepository implements repository.GroupMessageRepositoryInterface
+// ============================================================
+
+type MockGroupMessageRepository struct {
+	mock.Mock
+}
+
+func (m *MockGroupMessageRepository) Create(msg *model.GroupMessage) error {
+	args := m.Called(msg)
+	return args.Error(0)
+}
+
+func (m *MockGroupMessageRepository) FindByRoomID(roomID uint, page, limit int) ([]model.GroupMessage, error) {
+	args := m.Called(roomID, page, limit)
+	return args.Get(0).([]model.GroupMessage), args.Error(1)
+}
+
+func (m *MockGroupMessageRepository) FindSenderByID(msg *model.GroupMessage) {
+	m.Called(msg)
+}
+
+func (m *MockGroupMessageRepository) GetMemberUserIDs(roomID uint) []uint {
+	args := m.Called(roomID)
+	return args.Get(0).([]uint)
+}
+
+// ============================================================
+// インターフェース適合チェック（コンパイル時検証）
+// ============================================================
+
+var _ repository.UserRepositoryInterface = (*MockUserRepository)(nil)
+var _ repository.PostRepositoryInterface = (*MockPostRepository)(nil)
+var _ repository.FollowRepositoryInterface = (*MockFollowRepository)(nil)
+var _ repository.NotificationRepositoryInterface = (*MockNotificationRepository)(nil)
+var _ repository.MessageRepositoryInterface = (*MockMessageRepository)(nil)
+var _ repository.QuestionRepositoryInterface = (*MockQuestionRepository)(nil)
+var _ repository.AnswerRepositoryInterface = (*MockAnswerRepository)(nil)
+var _ repository.LearningLogRepositoryInterface = (*MockLearningLogRepository)(nil)
+var _ repository.LearningGoalRepositoryInterface = (*MockLearningGoalRepository)(nil)
+var _ repository.ProjectRepositoryInterface = (*MockProjectRepository)(nil)
+var _ repository.BookReviewRepositoryInterface = (*MockBookReviewRepository)(nil)
+var _ repository.LearningResourceRepositoryInterface = (*MockLearningResourceRepository)(nil)
+var _ repository.PasswordResetRepositoryInterface = (*MockPasswordResetRepository)(nil)
+var _ repository.RoadmapRepositoryInterface = (*MockRoadmapRepository)(nil)
+var _ repository.ChatRoomRepositoryInterface = (*MockChatRoomRepository)(nil)
+var _ repository.GroupMessageRepositoryInterface = (*MockGroupMessageRepository)(nil)
