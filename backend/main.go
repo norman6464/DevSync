@@ -48,6 +48,9 @@ func main() {
 		&model.AnswerVote{},
 		&model.Roadmap{},
 		&model.RoadmapStep{},
+		&model.ChatRoom{},
+		&model.ChatRoomMember{},
+		&model.GroupMessage{},
 	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}

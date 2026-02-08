@@ -43,6 +43,8 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	questionRepo := repository.NewQuestionRepository(db)
 	answerRepo := repository.NewAnswerRepository(db)
 	roadmapRepo := repository.NewRoadmapRepository(db)
+	chatRoomRepo := repository.NewChatRoomRepository(db)
+	groupMessageRepo := repository.NewGroupMessageRepository(db)
 
 	// Services
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
@@ -71,6 +73,10 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	questionHandler := handler.NewQuestionHandler(questionRepo)
 	answerHandler := handler.NewAnswerHandler(answerRepo, questionRepo)
 	roadmapHandler := handler.NewRoadmapHandler(roadmapRepo)
+	chatRoomHandler := handler.NewChatRoomHandler(chatRoomRepo, groupMessageRepo, hub)
+
+	// Set up Hub's GetRoomMembers callback
+	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs
 
 	// Static file serving for uploads
 	r.Static("/uploads", "./uploads")
@@ -288,6 +294,21 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			roadmaps.PUT("/:id/steps/:stepId", roadmapHandler.UpdateStep)
 			roadmaps.DELETE("/:id/steps/:stepId", roadmapHandler.DeleteStep)
 			roadmaps.PUT("/:id/steps/reorder", roadmapHandler.ReorderSteps)
+		}
+
+		// Chat Rooms
+		chatRooms := protected.Group("/chat-rooms")
+		{
+			chatRooms.POST("", chatRoomHandler.Create)
+			chatRooms.GET("", chatRoomHandler.GetMyRooms)
+			chatRooms.GET("/:id", chatRoomHandler.GetByID)
+			chatRooms.PUT("/:id", chatRoomHandler.Update)
+			chatRooms.DELETE("/:id", chatRoomHandler.Delete)
+			chatRooms.GET("/:id/members", chatRoomHandler.GetMembers)
+			chatRooms.POST("/:id/members", chatRoomHandler.AddMember)
+			chatRooms.DELETE("/:id/members/:userId", chatRoomHandler.RemoveMember)
+			chatRooms.GET("/:id/messages", chatRoomHandler.GetMessages)
+			chatRooms.POST("/:id/messages", chatRoomHandler.SendMessage)
 		}
 
 		// Book Reviews
