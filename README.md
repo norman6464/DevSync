@@ -156,6 +156,20 @@ DevSyncは、これらの課題を解決するために開発しました。
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
+### バックエンド内部アーキテクチャ（クリーンアーキテクチャ）
+
+```
+Handler (HTTP) → Service (ビジネスロジック) → Repository (Interface) → GORM (DB)
+```
+
+| レイヤー | 責務 | パッケージ |
+|----------|------|-----------|
+| Handler | HTTPリクエスト/レスポンス、バリデーション | `internal/handler` |
+| Service | ビジネスロジック、権限チェック、通知 | `internal/service` |
+| Repository | データアクセス抽象化（21インターフェース） | `internal/repository` |
+| Model | データ構造、ドメインオブジェクト | `internal/model` |
+| Router | DI（依存性注入）、ルーティング | `internal/router` |
+
 ### マイクロサービス構成
 
 | サービス | 責務 | 技術 |
@@ -176,6 +190,9 @@ DevSyncは、これらの課題を解決するために開発しました。
 | 技術 | バージョン | 用途 |
 |------|-----------|------|
 | Go | 1.21+ | マイクロサービス実装 |
+| Gin | 1.10 | HTTPフレームワーク |
+| GORM | 1.25 | ORM |
+| testify | 1.9 | テストフレームワーク（モック＆アサーション） |
 | gRPC | - | サービス間通信 |
 | PostgreSQL | 15 | メインデータベース |
 | Redis | 7.x | キャッシュ、ランキング |
@@ -348,17 +365,17 @@ OpenTelemetryによる分散トレーシングで、マイクロサービス間�
 ### コマンド一覧
 
 ```bash
-# Backend
-make run-user        # User Serviceを起動
-make run-github      # GitHub Serviceを起動
-make test            # テスト実行
-make lint            # Linter実行
-make proto           # Protocol Buffers生成
+# Docker Compose（全サービス起動）
+docker compose up -d --build
+
+# Backend テスト
+cd backend && go test ./internal/service/... -v        # 全テスト実行
+cd backend && go test ./internal/service/... -cover     # カバレッジ付き実行
+cd backend && go test ./internal/service/... -run TestAuth  # 特定テストのみ
 
 # Frontend
 npm run dev          # 開発サーバー起動
 npm run build        # ビルド
-npm run test         # テスト実行
 npm run lint         # Linter実行
 
 # Infrastructure
@@ -366,6 +383,37 @@ make tf-plan         # Terraform plan
 make tf-apply        # Terraform apply
 make k8s-deploy      # Kubernetesデプロイ
 ```
+
+### テスト構成
+
+Service層のユニットテストを `testify/mock` ベースで実装しています。
+全リポジトリインターフェースのモックを使用し、DB不要で高速に実行可能です。
+
+| テストファイル | 対象 | テスト数 |
+|---------------|------|---------|
+| `auth_test.go` | 認証・JWT・パスワードリセット | 26 |
+| `post_test.go` | 投稿CRUD・所有権チェック | 7 |
+| `follow_test.go` | フォロー・自己フォロー禁止 | 7 |
+| `question_test.go` | 質問CRUD・所有権チェック | 8 |
+| `answer_test.go` | 回答・ベストアンサー権限 | 12 |
+| `learning_goal_test.go` | 目標・進捗自動完了 | 8 |
+| `learning_log_test.go` | 学習ログ・ストリーク | 8 |
+| `project_test.go` | プロジェクト・Featured | 7 |
+| `book_review_test.go` | 書籍レビュー | 5 |
+| `learning_resource_test.go` | リソース・可視性制御 | 12 |
+| `roadmap_test.go` | ロードマップ・ステップ所属 | 20 |
+| `chat_room_test.go` | チャット・メンバーシップ | 16 |
+| `user_test.go` | ユーザー検索分岐 | 4 |
+| `notification_test.go` | 通知・フォロワー通知 | 5 |
+| `message_test.go` | メッセージ・既読 | 4 |
+
+### CI/CD
+
+| ワークフロー | トリガー | 内容 |
+|-------------|---------|------|
+| Backend Tests | PR / mainプッシュ | Service層ユニットテスト実行、カバレッジレポート生成 |
+
+GitHub Actionsでテストを自動実行し、PRマージ前にテスト通過を確認できます。
 
 ### コーディング規約
 
@@ -414,6 +462,12 @@ API仕様はOpenAPI (Swagger)で管理しています。
 - [x] 学習ストリーク（連続記録日数の自動追跡）
 - [x] デイリーチャレンジ（日替わりミニタスク）
 - [x] バッジシステムとの連携（GitHub + 学習ログストリーク）
+
+### Phase 3.6（品質基盤）✅
+- [x] クリーンアーキテクチャ（Handler → Service → Repository Interface）
+- [x] Service層ユニットテスト（121テストケース、15サービス対象）
+- [x] GitHub Actions CI（テスト自動実行）
+- [x] testify/mockによるモックベーステスト
 
 ### Phase 4（将来）📋
 - [ ] AI補完
