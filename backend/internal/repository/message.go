@@ -5,18 +5,22 @@ import (
 	"gorm.io/gorm"
 )
 
+// MessageRepository はDMメッセージデータへのアクセスを提供するリポジトリ実装。
 type MessageRepository struct {
 	db *gorm.DB
 }
 
+// NewMessageRepository は新しいMessageRepositoryインスタンスを生成する。
 func NewMessageRepository(db *gorm.DB) *MessageRepository {
 	return &MessageRepository{db: db}
 }
 
+// Create は新しいメッセージをデータベースに作成する。
 func (r *MessageRepository) Create(msg *model.Message) error {
 	return r.db.Create(msg).Error
 }
 
+// GetConversation は2ユーザー間の会話をページネーション付きで取得する（古い順）。
 func (r *MessageRepository) GetConversation(userID, otherUserID uint, page, limit int) ([]model.Message, error) {
 	var messages []model.Message
 	offset := (page - 1) * limit
@@ -29,15 +33,18 @@ func (r *MessageRepository) GetConversation(userID, otherUserID uint, page, limi
 	return messages, err
 }
 
+// ConversationSummary は会話一覧表示用のサマリー情報を表す。
 type ConversationSummary struct {
-	UserID      uint   `json:"user_id"`
-	Name        string `json:"name"`
-	AvatarURL   string `json:"avatar_url"`
-	LastMessage string `json:"last_message"`
-	LastTime    string `json:"last_time"`
-	UnreadCount int    `json:"unread_count"`
+	UserID      uint   `json:"user_id"`     // 会話相手のユーザーID
+	Name        string `json:"name"`        // 会話相手の名前
+	AvatarURL   string `json:"avatar_url"`  // 会話相手のアバターURL
+	LastMessage string `json:"last_message"` // 最新メッセージの内容
+	LastTime    string `json:"last_time"`   // 最新メッセージの日時
+	UnreadCount int    `json:"unread_count"` // 未読メッセージ数
 }
 
+// GetConversations はユーザーの全会話一覧をサマリー形式で取得する。
+// DISTINCT ON を使用して各会話相手との最新メッセージを1件ずつ取得する。
 func (r *MessageRepository) GetConversations(userID uint) ([]ConversationSummary, error) {
 	var conversations []ConversationSummary
 	err := r.db.Raw(`
@@ -55,6 +62,7 @@ func (r *MessageRepository) GetConversations(userID uint) ([]ConversationSummary
 	return conversations, err
 }
 
+// MarkAsRead は指定送信者からのメッセージを全て既読にする。
 func (r *MessageRepository) MarkAsRead(senderID, receiverID uint) error {
 	return r.db.Model(&model.Message{}).
 		Where("sender_id = ? AND receiver_id = ? AND read = false", senderID, receiverID).

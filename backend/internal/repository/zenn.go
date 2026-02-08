@@ -6,21 +6,24 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+// ZennRepository はZenn連携データへのアクセスを提供するリポジトリ実装。
 type ZennRepository struct {
 	db *gorm.DB
 }
 
+// NewZennRepository は新しいZennRepositoryインスタンスを生成する。
 func NewZennRepository(db *gorm.DB) *ZennRepository {
 	return &ZennRepository{db: db}
 }
 
-// UpsertArticles inserts or updates Zenn articles
+// UpsertArticles はZenn記事データを挿入または更新する。
+// zenn_idで重複判定を行い、全記事にuserIDを設定する。
 func (r *ZennRepository) UpsertArticles(userID uint, articles []model.ZennArticle) error {
 	if len(articles) == 0 {
 		return nil
 	}
 
-	// Set user ID for all articles
+	// 全記事にユーザーIDを設定
 	for i := range articles {
 		articles[i].UserID = userID
 	}
@@ -31,14 +34,14 @@ func (r *ZennRepository) UpsertArticles(userID uint, articles []model.ZennArticl
 	}).Create(&articles).Error
 }
 
-// GetArticles retrieves all Zenn articles for a user
+// GetArticles は指定ユーザーのZenn記事を公開日降順で取得する。
 func (r *ZennRepository) GetArticles(userID uint) ([]model.ZennArticle, error) {
 	var articles []model.ZennArticle
 	err := r.db.Where("user_id = ?", userID).Order("published_at DESC").Find(&articles).Error
 	return articles, err
 }
 
-// GetStats calculates Zenn statistics for a user
+// GetStats は指定ユーザーのZenn記事統計情報を算出する。
 func (r *ZennRepository) GetStats(userID uint) (*model.ZennStats, error) {
 	var stats model.ZennStats
 
@@ -54,7 +57,7 @@ func (r *ZennRepository) GetStats(userID uint) (*model.ZennStats, error) {
 	return &stats, nil
 }
 
-// DeleteUserArticles removes all Zenn articles for a user
+// DeleteUserArticles は指定ユーザーの全Zenn記事を削除する。
 func (r *ZennRepository) DeleteUserArticles(userID uint) error {
 	return r.db.Where("user_id = ?", userID).Delete(&model.ZennArticle{}).Error
 }

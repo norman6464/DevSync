@@ -5,18 +5,22 @@ import (
 	"gorm.io/gorm"
 )
 
+// QuestionRepository はQ&A質問データへのアクセスを提供するリポジトリ実装。
 type QuestionRepository struct {
 	db *gorm.DB
 }
 
+// NewQuestionRepository は新しいQuestionRepositoryインスタンスを生成する。
 func NewQuestionRepository(db *gorm.DB) *QuestionRepository {
 	return &QuestionRepository{db: db}
 }
 
+// Create は新しい質問をデータベースに作成する。
 func (r *QuestionRepository) Create(question *model.Question) error {
 	return r.db.Create(question).Error
 }
 
+// FindByID は指定IDの質問をユーザー情報付きで取得する。
 func (r *QuestionRepository) FindByID(id uint) (*model.Question, error) {
 	var question model.Question
 	err := r.db.Preload("User").First(&question, id).Error
@@ -26,6 +30,9 @@ func (r *QuestionRepository) FindByID(id uint) (*model.Question, error) {
 	return &question, nil
 }
 
+// FindAll は質問一覧をフィルタ・ソート・ページネーション付きで取得する。
+// tagが指定された場合、そのタグを含む質問にフィルタする。
+// sortが"votes"の場合は投票数降順、"unanswered"の場合は未回答のみに絞る。
 func (r *QuestionRepository) FindAll(limit, offset int, tag string, sort string) ([]model.Question, int64, error) {
 	var questions []model.Question
 	var total int64
@@ -44,7 +51,7 @@ func (r *QuestionRepository) FindAll(limit, offset int, tag string, sort string)
 		orderClause = "vote_count DESC, created_at DESC"
 	case "unanswered":
 		query = query.Where("answer_count = 0")
-		query.Count(&total) // recount after filter
+		query.Count(&total) // フィルタ後に再カウント
 	}
 
 	err := query.Preload("User").
@@ -55,6 +62,7 @@ func (r *QuestionRepository) FindAll(limit, offset int, tag string, sort string)
 	return questions, total, err
 }
 
+// Search は質問をタイトル・本文・タグで全文検索する。
 func (r *QuestionRepository) Search(q string, limit, offset int) ([]model.Question, int64, error) {
 	var questions []model.Question
 	var total int64
@@ -73,6 +81,7 @@ func (r *QuestionRepository) Search(q string, limit, offset int) ([]model.Questi
 	return questions, total, err
 }
 
+// FindByUserID は指定ユーザーの全質問を取得する（新しい順）。
 func (r *QuestionRepository) FindByUserID(userID uint) ([]model.Question, error) {
 	var questions []model.Question
 	err := r.db.Where("user_id = ?", userID).
@@ -81,21 +90,24 @@ func (r *QuestionRepository) FindByUserID(userID uint) ([]model.Question, error)
 	return questions, err
 }
 
+// Update は既存の質問を更新する。
 func (r *QuestionRepository) Update(question *model.Question) error {
 	return r.db.Save(question).Error
 }
 
+// Delete は指定IDの質問を削除する。
 func (r *QuestionRepository) Delete(id uint) error {
 	return r.db.Delete(&model.Question{}, id).Error
 }
 
-// Vote operations
+// Vote は質問に投票する。既存投票がある場合は値を更新し、ない場合は新規作成する。
+// 質問のvote_countも同時に更新する。
 func (r *QuestionRepository) Vote(userID, questionID uint, value int) error {
 	var existing model.QuestionVote
 	err := r.db.Where("user_id = ? AND question_id = ?", userID, questionID).First(&existing).Error
 
 	if err == nil {
-		// Update existing vote
+		// 既存の投票を更新
 		oldValue := existing.Value
 		existing.Value = value
 		if err := r.db.Save(&existing).Error; err != nil {
@@ -106,7 +118,7 @@ func (r *QuestionRepository) Vote(userID, questionID uint, value int) error {
 			UpdateColumn("vote_count", gorm.Expr("vote_count + ?", diff)).Error
 	}
 
-	// Create new vote
+	// 新規投票を作成
 	vote := &model.QuestionVote{
 		UserID:     userID,
 		QuestionID: questionID,
@@ -119,6 +131,7 @@ func (r *QuestionRepository) Vote(userID, questionID uint, value int) error {
 		UpdateColumn("vote_count", gorm.Expr("vote_count + ?", value)).Error
 }
 
+// RemoveVote は質問への投票を取り消し、質問のvote_countから元の値を減算する。
 func (r *QuestionRepository) RemoveVote(userID, questionID uint) error {
 	var existing model.QuestionVote
 	err := r.db.Where("user_id = ? AND question_id = ?", userID, questionID).First(&existing).Error
@@ -134,11 +147,12 @@ func (r *QuestionRepository) RemoveVote(userID, questionID uint) error {
 		UpdateColumn("vote_count", gorm.Expr("vote_count - ?", oldValue)).Error
 }
 
+// GetUserVote は指定ユーザーの指定質問への投票値を取得する（未投票の場合は0を返す）。
 func (r *QuestionRepository) GetUserVote(userID, questionID uint) (int, error) {
 	var vote model.QuestionVote
 	err := r.db.Where("user_id = ? AND question_id = ?", userID, questionID).First(&vote).Error
 	if err != nil {
-		return 0, nil // no vote
+		return 0, nil // 未投票
 	}
 	return vote.Value, nil
 }

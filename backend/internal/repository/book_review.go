@@ -5,18 +5,22 @@ import (
 	"gorm.io/gorm"
 )
 
+// BookReviewRepository は書籍レビューデータへのアクセスを提供するリポジトリ実装。
 type BookReviewRepository struct {
 	db *gorm.DB
 }
 
+// NewBookReviewRepository は新しいBookReviewRepositoryインスタンスを生成する。
 func NewBookReviewRepository(db *gorm.DB) *BookReviewRepository {
 	return &BookReviewRepository{db: db}
 }
 
+// Create は新しい書籍レビューをデータベースに作成する。
 func (r *BookReviewRepository) Create(review *model.BookReview) error {
 	return r.db.Create(review).Error
 }
 
+// FindByID は指定IDの書籍レビューをユーザー情報付きで取得する。
 func (r *BookReviewRepository) FindByID(id uint) (*model.BookReview, error) {
 	var review model.BookReview
 	err := r.db.Preload("User").First(&review, id).Error
@@ -26,6 +30,7 @@ func (r *BookReviewRepository) FindByID(id uint) (*model.BookReview, error) {
 	return &review, nil
 }
 
+// FindByUserID は指定ユーザーの全書籍レビューを取得する（新しい順）。
 func (r *BookReviewRepository) FindByUserID(userID uint) ([]model.BookReview, error) {
 	var reviews []model.BookReview
 	err := r.db.Where("user_id = ?", userID).
@@ -34,6 +39,7 @@ func (r *BookReviewRepository) FindByUserID(userID uint) ([]model.BookReview, er
 	return reviews, err
 }
 
+// FindAll は全書籍レビューをページネーション付きで取得する。
 func (r *BookReviewRepository) FindAll(limit, offset int) ([]model.BookReview, int64, error) {
 	var reviews []model.BookReview
 	var total int64
@@ -48,10 +54,12 @@ func (r *BookReviewRepository) FindAll(limit, offset int) ([]model.BookReview, i
 	return reviews, total, err
 }
 
+// Update は既存の書籍レビューを更新する。
 func (r *BookReviewRepository) Update(review *model.BookReview) error {
 	return r.db.Save(review).Error
 }
 
+// Delete は指定IDの書籍レビューを削除する。
 func (r *BookReviewRepository) Delete(id uint) error {
 	return r.db.Delete(&model.BookReview{}, id).Error
 }
