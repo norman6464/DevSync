@@ -122,7 +122,9 @@
     "articles": "기사",
     "viewAllOnZenn": "Zenn에서 모두 보기",
     "qiitaArticles": "Qiita 기사",
-    "viewAllOnQiita": "Qiita에서 모두 보기"
+    "viewAllOnQiita": "Qiita에서 모두 보기",
+    "competitiveProgramming": "경쟁 프로그래밍",
+    "paizaRankLabel": "paiza 랭크 {{rank}}"
   },
   "settings": {
     "title": "설정",
@@ -161,7 +163,22 @@
     "qiitaDescription": "Qiita 계정을 연결하여 기사를 표시합니다.",
     "qiitaUsername": "Qiita 사용자 이름",
     "qiitaConnected": "Qiita가 성공적으로 연결되었습니다",
-    "qiitaInvalidUsername": "유효하지 않은 Qiita 사용자 이름"
+    "qiitaInvalidUsername": "유효하지 않은 Qiita 사용자 이름",
+    "atcoder": "AtCoder",
+    "atcoderDescription": "AtCoder 계정을 연결하여 레이팅을 표시합니다.",
+    "atcoderUsername": "AtCoder 사용자 이름",
+    "atcoderConnected": "AtCoder가 성공적으로 연결되었습니다",
+    "atcoderInvalidUsername": "유효하지 않은 AtCoder 사용자 이름",
+    "paiza": "paiza",
+    "paizaDescription": "paiza 스킬 체크 랭크를 설정합니다.",
+    "paizaRankLabel": "paiza 랭크",
+    "paizaSelectRank": "랭크 선택",
+    "paizaRankS": "(최상위)",
+    "paizaRankA": "(상급)",
+    "paizaRankB": "(중상급)",
+    "paizaRankC": "(중급)",
+    "paizaRankD": "(초중급)",
+    "paizaRankE": "(초급)"
   },
   "explore": {
     "title": "개발자 찾기",
@@ -692,6 +709,8 @@
     "githubDescription": "기여, 저장소 및 언어 통계 동기화",
     "zennDescription": "Zenn 기사 동기화",
     "qiitaDescription": "Qiita 기사 동기화",
+    "atcoderDescription": "AtCoder 레이팅 동기화",
+    "paizaDescription": "paiza 스킬 체크 랭크 설정",
     "completeTitle": "설정 완료!",
     "completeDescription": "준비가 완료되었습니다. 대시보드를 시작하세요.",
     "next": "다음",

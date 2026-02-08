@@ -122,7 +122,9 @@
     "articles": "記事",
     "viewAllOnZenn": "Zennで全て見る",
     "qiitaArticles": "Qiita記事",
-    "viewAllOnQiita": "Qiitaで全て見る"
+    "viewAllOnQiita": "Qiitaで全て見る",
+    "competitiveProgramming": "競技プログラミング",
+    "paizaRankLabel": "paiza ランク{{rank}}"
   },
   "settings": {
     "title": "設定",
@@ -161,7 +163,22 @@
     "qiitaDescription": "Qiitaアカウントを連携して記事を表示します。",
     "qiitaUsername": "Qiitaユーザー名",
     "qiitaConnected": "Qiitaが正常に連携されました",
-    "qiitaInvalidUsername": "無効なQiitaユーザー名です"
+    "qiitaInvalidUsername": "無効なQiitaユーザー名です",
+    "atcoder": "AtCoder",
+    "atcoderDescription": "AtCoderアカウントを連携してレーティングを表示します。",
+    "atcoderUsername": "AtCoderユーザー名",
+    "atcoderConnected": "AtCoderが正常に連携されました",
+    "atcoderInvalidUsername": "無効なAtCoderユーザー名です",
+    "paiza": "paiza",
+    "paizaDescription": "paizaスキルチェックのランクを設定します。",
+    "paizaRankLabel": "paizaランク",
+    "paizaSelectRank": "ランクを選択",
+    "paizaRankS": "（最上位）",
+    "paizaRankA": "（上級）",
+    "paizaRankB": "（中上級）",
+    "paizaRankC": "（中級）",
+    "paizaRankD": "（初中級）",
+    "paizaRankE": "（初級）"
   },
   "explore": {
     "title": "開発者を見つける",
@@ -692,6 +709,8 @@
     "githubDescription": "コントリビューション・リポジトリ・言語統計を同期",
     "zennDescription": "Zennの記事を同期",
     "qiitaDescription": "Qiitaの記事を同期",
+    "atcoderDescription": "AtCoderのレーティングを同期",
+    "paizaDescription": "paizaのスキルチェックランクを設定",
     "completeTitle": "セットアップ完了！",
     "completeDescription": "準備が整いました。ダッシュボードで活動を始めましょう。",
     "next": "次へ",
