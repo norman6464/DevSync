@@ -74,6 +74,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	roadmapService := service.NewRoadmapService(roadmapRepo)
 	chatRoomService := service.NewChatRoomService(chatRoomRepo, groupMessageRepo, hub)
 	activityReportService := service.NewActivityReportService(activityReportRepo)
+	atcoderService := service.NewAtCoderService()
 	badgeService := service.NewBadgeService(db, notificationService)
 
 	// ハンドラの初期化
@@ -98,6 +99,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	answerHandler := handler.NewAnswerHandler(answerService)
 	roadmapHandler := handler.NewRoadmapHandler(roadmapService)
 	chatRoomHandler := handler.NewChatRoomHandler(chatRoomService)
+	atcoderHandler := handler.NewAtCoderHandler(atcoderService, userService)
 	badgeHandler := handler.NewBadgeHandler(badgeService)
 	learningLogHandler := handler.NewLearningLogHandler(learningLogService)
 
@@ -229,6 +231,14 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			qiita.POST("/sync", qiitaHandler.Sync)
 			qiita.GET("/articles/:userId", qiitaHandler.GetArticles)
 			qiita.GET("/stats/:userId", qiitaHandler.GetStats)
+		}
+
+		// AtCoder連携
+		atcoder := protected.Group("/atcoder")
+		{
+			atcoder.POST("/connect", atcoderHandler.Connect)
+			atcoder.DELETE("/disconnect", atcoderHandler.Disconnect)
+			atcoder.GET("/rating/:username", atcoderHandler.GetRating)
 		}
 
 		// 学習目標
