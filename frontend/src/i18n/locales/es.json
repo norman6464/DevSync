@@ -35,7 +35,8 @@
     "signOut": "Cerrar sesión",
     "bookReviews": "Reseñas de Libros",
     "qa": "Q&A",
-    "roadmaps": "Hojas de Ruta de Aprendizaje"
+    "roadmaps": "Hojas de Ruta de Aprendizaje",
+    "more": "Más"
   },
   "auth": {
     "login": "Iniciar sesión",

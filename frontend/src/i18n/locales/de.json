@@ -35,7 +35,8 @@
     "signOut": "Abmelden",
     "bookReviews": "Buchrezensionen",
     "qa": "Q&A",
-    "roadmaps": "Lern-Roadmaps"
+    "roadmaps": "Lern-Roadmaps",
+    "more": "Mehr"
   },
   "auth": {
     "login": "Anmelden",

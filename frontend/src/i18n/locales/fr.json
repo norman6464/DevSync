@@ -35,7 +35,8 @@
     "signOut": "Déconnexion",
     "bookReviews": "Critiques de Livres",
     "qa": "Q&A",
-    "roadmaps": "Feuilles de Route"
+    "roadmaps": "Feuilles de Route",
+    "more": "Plus"
   },
   "auth": {
     "login": "Connexion",

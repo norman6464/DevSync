@@ -35,7 +35,8 @@
     "signOut": "Sair",
     "bookReviews": "Resenhas de Livros",
     "qa": "Q&A",
-    "roadmaps": "Roteiros de Aprendizado"
+    "roadmaps": "Roteiros de Aprendizado",
+    "more": "Mais"
   },
   "auth": {
     "login": "Entrar",

@@ -35,7 +35,8 @@
     "signOut": "登出",
     "bookReviews": "書評",
     "qa": "Q&A",
-    "roadmaps": "學習路線圖"
+    "roadmaps": "學習路線圖",
+    "more": "更多"
   },
   "auth": {
     "login": "登入",

@@ -35,7 +35,8 @@
     "signOut": "退出登录",
     "bookReviews": "书评",
     "qa": "Q&A",
-    "roadmaps": "学习路线图"
+    "roadmaps": "学习路线图",
+    "more": "更多"
   },
   "auth": {
     "login": "登录",
