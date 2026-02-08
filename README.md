@@ -476,6 +476,11 @@ API仕様はOpenAPI (Swagger)で管理しています。
 - [x] SameSite=Lax属性によるCSRF対策
 - [x] 認証ミドルウェア・ハンドラーのユニットテスト追加
 
+### Phase 3.8（データベーススキーマ管理）✅
+- [x] 全29テーブルのDDL定義（`backend/db/migrations/000001_create_all_tables.up.sql`）
+- [x] ロールバック用SQL（`000001_create_all_tables.down.sql`）
+- [x] 外部キー制約・インデックス・論理削除・CASCADE削除の完全定義
+
 ### Phase 4（将来）📋
 - [ ] AI補完
 - [ ] モバイルアプリ
