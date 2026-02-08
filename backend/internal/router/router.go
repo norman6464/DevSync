@@ -72,6 +72,8 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	bookReviewService := service.NewBookReviewService(bookReviewRepo)
 	learningResourceService := service.NewLearningResourceService(learningResourceRepo)
 	roadmapService := service.NewRoadmapService(roadmapRepo)
+	// テンプレートロードマップの初期登録
+	go roadmapService.SeedTemplates()
 	chatRoomService := service.NewChatRoomService(chatRoomRepo, groupMessageRepo, hub)
 	activityReportService := service.NewActivityReportService(activityReportRepo)
 	atcoderService := service.NewAtCoderService()
@@ -321,6 +323,8 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			roadmaps.POST("", roadmapHandler.Create)
 			roadmaps.GET("", roadmapHandler.GetMyRoadmaps)
 			roadmaps.GET("/public", roadmapHandler.GetPublicRoadmaps)
+			roadmaps.GET("/templates", roadmapHandler.GetTemplates)
+			roadmaps.POST("/templates/:id/use", roadmapHandler.CreateFromTemplate)
 			roadmaps.GET("/:id", roadmapHandler.GetByID)
 			roadmaps.PUT("/:id", roadmapHandler.Update)
 			roadmaps.DELETE("/:id", roadmapHandler.Delete)

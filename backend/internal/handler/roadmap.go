@@ -214,6 +214,38 @@ func (h *RoadmapHandler) CopyRoadmap(c *gin.Context) {
 	c.JSON(http.StatusCreated, copied)
 }
 
+// GetTemplates はテンプレートロードマップの一覧を取得する。
+func (h *RoadmapHandler) GetTemplates(c *gin.Context) {
+	templates, err := h.service.GetTemplates()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get templates"})
+		return
+	}
+	c.JSON(http.StatusOK, templates)
+}
+
+// CreateFromTemplate はテンプレートからユーザー用ロードマップを作成する。
+func (h *RoadmapHandler) CreateFromTemplate(c *gin.Context) {
+	userID := c.GetUint("userID")
+	templateID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid template ID"})
+		return
+	}
+
+	roadmap, err := h.service.CreateFromTemplate(uint(templateID), userID)
+	if err != nil {
+		if errors.Is(err, service.ErrBadRequest) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "not a template"})
+			return
+		}
+		c.JSON(http.StatusNotFound, gin.H{"error": "template not found"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, roadmap)
+}
+
 // === ロードマップステップエンドポイント ===
 
 // CreateStep はロードマップに新しいステップを作成する。
