@@ -246,7 +246,16 @@
     "influencer": "인플루언서",
     "influencerDesc": "10명 이상 팔로워",
     "star": "라이징 스타",
-    "starDesc": "50명 이상 팔로워"
+    "starDesc": "50명 이상 팔로워",
+    "qaFirstAnswer": "첫 답변",
+    "qaFirstAnswerDesc": "Q&A에서 첫 답변을 했습니다",
+    "qaHelper": "Q&A 도우미",
+    "qaHelperDesc": "Q&A에서 10회 이상 답변했습니다",
+    "goalAchiever": "목표 달성자",
+    "goalAchieverDesc": "학습 목표를 5개 달성했습니다",
+    "goalMaster": "목표 마스터",
+    "goalMasterDesc": "학습 목표를 20개 달성했습니다",
+    "badgeEarned": "{{name}}을(를) 획득했습니다!"
   },
   "time": {
     "justNow": "방금",
@@ -267,6 +276,7 @@
     "newComment": "{{name}}님이 게시물에 댓글을 달았습니다",
     "newFollow": "{{name}}님이 팔로우했습니다",
     "newAnswer": "{{name}}님이 질문에 답변했습니다",
+    "newBadge": "새로운 배지를 획득했습니다",
     "justNow": "방금",
     "minutesAgo": "{{count}}분 전",
     "hoursAgo": "{{count}}시간 전",
@@ -281,6 +291,7 @@
     "filterFollow": "팔로우",
     "filterMessage": "메시지",
     "filterAnswer": "Q&A 답변",
+    "filterBadge": "배지",
     "deleteNotification": "알림 삭제",
     "deleted": "알림이 삭제되었습니다"
   },

@@ -246,7 +246,16 @@
     "influencer": "Инфлюенсер",
     "influencerDesc": "10+ подписчиков",
     "star": "Восходящая звезда",
-    "starDesc": "50+ подписчиков"
+    "starDesc": "50+ подписчиков",
+    "qaFirstAnswer": "Первый ответ",
+    "qaFirstAnswerDesc": "Ответил на первый вопрос Q&A",
+    "qaHelper": "Помощник Q&A",
+    "qaHelperDesc": "Ответил на 10+ вопросов Q&A",
+    "goalAchiever": "Достигатель целей",
+    "goalAchieverDesc": "Достигнуто 5 учебных целей",
+    "goalMaster": "Мастер целей",
+    "goalMasterDesc": "Достигнуто 20 учебных целей",
+    "badgeEarned": "Получен {{name}}!"
   },
   "time": {
     "justNow": "только что",
@@ -267,6 +276,7 @@
     "newComment": "{{name}} прокомментировал ваш пост",
     "newFollow": "{{name}} подписался на вас",
     "newAnswer": "{{name}} ответил на ваш вопрос",
+    "newBadge": "Получен новый значок",
     "justNow": "только что",
     "minutesAgo": "{{count}}м назад",
     "hoursAgo": "{{count}}ч назад",
@@ -281,6 +291,7 @@
     "filterFollow": "Подписки",
     "filterMessage": "Сообщения",
     "filterAnswer": "Ответы Q&A",
+    "filterBadge": "Значок",
     "deleteNotification": "Удалить уведомление",
     "deleted": "Уведомление удалено"
   },

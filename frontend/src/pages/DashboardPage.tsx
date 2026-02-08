@@ -2,7 +2,10 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Target, Bell, TrendingUp, CheckCircle2, Clock, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import { usePosts, useDashboard } from '../hooks';
+import { usePosts, useDashboard, useBadgeNotifier } from '../hooks';
+import { getUserBadges } from '../api/badges';
+import { useAsyncData } from '../hooks/useAsyncData';
+import type { BadgeResult } from '../types/badge';
 import PostCard from '../components/posts/PostCard';
 import PostForm from '../components/posts/PostForm';
 import { PostCardSkeleton } from '../components/common/Skeleton';
@@ -22,6 +25,17 @@ export default function DashboardPage() {
     notificationsLoading,
   } = useDashboard();
 
+  // Fetch badges for the current user and detect new acquisitions
+  const { data: badges } = useAsyncData(
+    async () => {
+      if (!user) return [] as BadgeResult[];
+      const res = await getUserBadges(user.id);
+      return res.data?.badges || [];
+    },
+    { initialData: [] as BadgeResult[], deps: [user?.id], enabled: !!user }
+  );
+  useBadgeNotifier(badges);
+
   const handleCreatePost = async (title: string, content: string, imageUrls?: string) => {
     await createPost(title, content, imageUrls);
   };
@@ -34,6 +48,7 @@ export default function DashboardPage() {
       comment: 'notifications.newComment',
       follow: 'notifications.newFollow',
       answer: 'notifications.newAnswer',
+      badge: 'notifications.newBadge',
     };
     return t(nameMap[notification.type] || 'notifications.newPost', {
       name: notification.actor?.name || '',

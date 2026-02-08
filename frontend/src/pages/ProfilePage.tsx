@@ -21,7 +21,7 @@ export default function ProfilePage() {
   const {
     user, posts, contributions, languages, repos,
     zennArticles, zennStats, qiitaArticles, qiitaStats,
-    goals, goalStats, followerCount, followingCount, loading,
+    goals, goalStats, followerCount, followingCount, badges, loading,
   } = useProfile(id);
 
   const [shareModalOpen, setShareModalOpen] = useState(false);
@@ -133,7 +133,7 @@ export default function ProfilePage() {
         </div>
       )}
 
-      <BadgeDisplay contributions={contributions} posts={posts} followerCount={followerCount} followingCount={followingCount} />
+      <BadgeDisplay badges={badges} />
 
       {/* Repositories */}
       {user.github_connected && repos.length > 0 && (

@@ -246,7 +246,16 @@
     "influencer": "Influenciador",
     "influencerDesc": "10+ seguidores",
     "star": "Estrela em Ascensão",
-    "starDesc": "50+ seguidores"
+    "starDesc": "50+ seguidores",
+    "qaFirstAnswer": "Primeira Resposta",
+    "qaFirstAnswerDesc": "Respondeu sua primeira pergunta Q&A",
+    "qaHelper": "Ajudante Q&A",
+    "qaHelperDesc": "Respondeu 10+ perguntas Q&A",
+    "goalAchiever": "Realizador de Metas",
+    "goalAchieverDesc": "Completou 5 metas de aprendizagem",
+    "goalMaster": "Mestre de Metas",
+    "goalMasterDesc": "Completou 20 metas de aprendizagem",
+    "badgeEarned": "Você ganhou {{name}}!"
   },
   "time": {
     "justNow": "agora mesmo",
@@ -267,6 +276,7 @@
     "newComment": "{{name}} comentou na sua publicação",
     "newFollow": "{{name}} começou a te seguir",
     "newAnswer": "{{name}} respondeu sua pergunta",
+    "newBadge": "Você ganhou um novo emblema",
     "justNow": "agora mesmo",
     "minutesAgo": "há {{count}}m",
     "hoursAgo": "há {{count}}h",
@@ -281,6 +291,7 @@
     "filterFollow": "Seguidores",
     "filterMessage": "Mensagens",
     "filterAnswer": "Respostas Q&A",
+    "filterBadge": "Emblema",
     "deleteNotification": "Excluir notificação",
     "deleted": "Notificação excluída"
   },

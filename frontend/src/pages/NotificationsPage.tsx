@@ -14,6 +14,7 @@ const FILTER_TYPES: { key: NotificationType | ''; labelKey: string }[] = [
   { key: 'follow', labelKey: 'notifications.filterFollow' },
   { key: 'message', labelKey: 'notifications.filterMessage' },
   { key: 'answer', labelKey: 'notifications.filterAnswer' },
+  { key: 'badge', labelKey: 'notifications.filterBadge' },
 ];
 
 function getNotificationLink(notification: Notification): string {
@@ -28,6 +29,8 @@ function getNotificationLink(notification: Notification): string {
       return '/chat';
     case 'answer':
       return notification.question_id ? `/qa/${notification.question_id}` : '/';
+    case 'badge':
+      return `/profile/${notification.actor_id}`;
     default:
       return '/';
   }
@@ -70,6 +73,8 @@ export default function NotificationsPage() {
         return t('notifications.newFollow', { name: notification.actor.name });
       case 'answer':
         return t('notifications.newAnswer', { name: notification.actor.name });
+      case 'badge':
+        return t('notifications.newBadge');
       default:
         return '';
     }

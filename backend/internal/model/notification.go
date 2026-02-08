@@ -11,6 +11,7 @@ const (
 	NotificationTypeComment NotificationType = "comment"
 	NotificationTypeFollow  NotificationType = "follow"
 	NotificationTypeAnswer  NotificationType = "answer"
+	NotificationTypeBadge   NotificationType = "badge"
 )
 
 type Notification struct {
@@ -24,6 +25,7 @@ type Notification struct {
 	Post       *Post            `json:"post,omitempty" gorm:"foreignKey:PostID"`
 	QuestionID *uint            `json:"question_id" gorm:"index"`
 	Question   *Question        `json:"question,omitempty" gorm:"foreignKey:QuestionID"`
+	BadgeID    *string          `json:"badge_id,omitempty" gorm:"size:50"`
 	Read       bool             `json:"read" gorm:"default:false"`
 	CreatedAt time.Time        `json:"created_at"`
 }

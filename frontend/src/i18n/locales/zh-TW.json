@@ -246,7 +246,16 @@
     "influencer": "影響者",
     "influencerDesc": "10+ 追蹤者",
     "star": "新星",
-    "starDesc": "50+ 追蹤者"
+    "starDesc": "50+ 追蹤者",
+    "qaFirstAnswer": "首次回答",
+    "qaFirstAnswerDesc": "首次回答了Q&A問題",
+    "qaHelper": "Q&A助手",
+    "qaHelperDesc": "回答了10+個Q&A問題",
+    "goalAchiever": "目標達成者",
+    "goalAchieverDesc": "完成了5個學習目標",
+    "goalMaster": "目標大師",
+    "goalMasterDesc": "完成了20個學習目標",
+    "badgeEarned": "獲得了{{name}}！"
   },
   "time": {
     "justNow": "剛剛",
@@ -267,6 +276,7 @@
     "newComment": "{{name}} 在你的貼文留言",
     "newFollow": "{{name}} 追蹤了你",
     "newAnswer": "{{name}} 回答了你的問題",
+    "newBadge": "獲得了新徽章",
     "justNow": "剛剛",
     "minutesAgo": "{{count}}分鐘前",
     "hoursAgo": "{{count}}小時前",
@@ -281,6 +291,7 @@
     "filterFollow": "追蹤",
     "filterMessage": "訊息",
     "filterAnswer": "Q&A回答",
+    "filterBadge": "徽章",
     "deleteNotification": "刪除通知",
     "deleted": "通知已刪除"
   },
