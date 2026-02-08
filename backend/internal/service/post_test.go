@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+// newTestPostService はPostServiceのテスト用インスタンスを生成するヘルパー。
 func newTestPostService() (*PostService, *MockPostRepository, *MockNotificationRepository) {
 	postRepo := new(MockPostRepository)
 	notifRepo := new(MockNotificationRepository)
@@ -18,7 +19,7 @@ func newTestPostService() (*PostService, *MockPostRepository, *MockNotificationR
 }
 
 // ============================================================
-// Create
+// 投稿作成テスト
 // ============================================================
 
 func TestPostCreate_Success(t *testing.T) {
@@ -47,7 +48,7 @@ func TestPostCreate_Success(t *testing.T) {
 }
 
 // ============================================================
-// Update
+// 投稿更新テスト
 // ============================================================
 
 func TestPostUpdate_Success(t *testing.T) {
@@ -98,7 +99,7 @@ func TestPostUpdate_PartialUpdate(t *testing.T) {
 }
 
 // ============================================================
-// Delete
+// 投稿削除テスト
 // ============================================================
 
 func TestPostDelete_Success(t *testing.T) {

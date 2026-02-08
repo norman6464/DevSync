@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+// newTestChatRoomService はChatRoomServiceのテスト用インスタンスを生成するヘルパー。
 func newTestChatRoomService() (*ChatRoomService, *MockChatRoomRepository, *MockGroupMessageRepository) {
 	roomRepo := new(MockChatRoomRepository)
 	msgRepo := new(MockGroupMessageRepository)
@@ -17,7 +18,7 @@ func newTestChatRoomService() (*ChatRoomService, *MockChatRoomRepository, *MockG
 }
 
 // ============================================================
-// Create
+// チャットルーム作成テスト
 // ============================================================
 
 func TestChatRoomCreate_Success(t *testing.T) {

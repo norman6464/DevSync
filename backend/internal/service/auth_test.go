@@ -13,6 +13,7 @@ import (
 
 const testJWTSecret = "test-secret-key-for-unit-tests"
 
+// newTestAuthService はAuthServiceのテスト用インスタンスを生成するヘルパー。
 func newTestAuthService() (*AuthService, *MockUserRepository, *MockPasswordResetRepository) {
 	userRepo := new(MockUserRepository)
 	passwordResetRepo := new(MockPasswordResetRepository)
@@ -21,7 +22,7 @@ func newTestAuthService() (*AuthService, *MockUserRepository, *MockPasswordReset
 }
 
 // ============================================================
-// Register
+// 新規登録テスト
 // ============================================================
 
 func TestRegister_Success(t *testing.T) {
@@ -63,7 +64,7 @@ func TestRegister_DuplicateEmail(t *testing.T) {
 }
 
 // ============================================================
-// Login
+// ログインテスト
 // ============================================================
 
 func TestLogin_Success(t *testing.T) {
@@ -124,7 +125,7 @@ func TestLogin_WrongPassword(t *testing.T) {
 }
 
 // ============================================================
-// ValidateToken
+// トークン検証テスト
 // ============================================================
 
 func TestValidateToken_Success(t *testing.T) {
@@ -153,7 +154,7 @@ func TestValidateToken_InvalidToken(t *testing.T) {
 }
 
 // ============================================================
-// DeleteAccount
+// アカウント削除テスト
 // ============================================================
 
 func TestDeleteAccount_Success(t *testing.T) {
@@ -188,7 +189,7 @@ func TestDeleteAccount_WrongPassword(t *testing.T) {
 func TestDeleteAccount_GitHubOnlyUser(t *testing.T) {
 	svc, userRepo, _ := newTestAuthService()
 
-	// GitHub-only user has empty password
+	// GitHubのみユーザーはパスワードが空
 	user := &model.User{Name: "GH User", Email: "gh@github.local", Password: ""}
 	user.ID = 1
 
@@ -225,7 +226,7 @@ func TestDeleteAccount_PasswordRequired(t *testing.T) {
 }
 
 // ============================================================
-// GetMe
+// ユーザー情報取得テスト
 // ============================================================
 
 func TestGetMe_Success(t *testing.T) {
@@ -243,7 +244,7 @@ func TestGetMe_Success(t *testing.T) {
 }
 
 // ============================================================
-// RequestPasswordReset
+// パスワードリセット要求テスト
 // ============================================================
 
 func TestRequestPasswordReset_Success(t *testing.T) {
@@ -275,7 +276,7 @@ func TestRequestPasswordReset_EmailNotFound(t *testing.T) {
 }
 
 // ============================================================
-// ResetPassword
+// パスワードリセット実行テスト
 // ============================================================
 
 func TestResetPassword_Success(t *testing.T) {
@@ -328,7 +329,7 @@ func TestResetPassword_ExpiredToken(t *testing.T) {
 }
 
 // ============================================================
-// GitHubLogin
+// GitHubログインテスト
 // ============================================================
 
 func TestGitHubLogin_ExistingGitHubUser(t *testing.T) {
@@ -358,9 +359,9 @@ func TestGitHubLogin_ExistingGitHubUser(t *testing.T) {
 func TestGitHubLogin_LinkByEmail(t *testing.T) {
 	svc, userRepo, _ := newTestAuthService()
 
-	// GitHub ID not found
+	// GitHub IDが見つからない
 	userRepo.On("FindByGitHubID", int64(12345)).Return(nil, errors.New("not found"))
-	// But email matches
+	// しかしメールが一致
 	user := &model.User{Name: "Existing User", Email: "existing@example.com"}
 	user.ID = 2
 	userRepo.On("FindByEmail", "existing@example.com").Return(user, nil)
@@ -383,7 +384,7 @@ func TestGitHubLogin_LinkByEmail(t *testing.T) {
 func TestGitHubLogin_CreateNewUser(t *testing.T) {
 	svc, userRepo, _ := newTestAuthService()
 
-	// Both GitHub ID and email not found
+	// GitHub IDもメールも見つからない
 	userRepo.On("FindByGitHubID", int64(12345)).Return(nil, errors.New("not found"))
 	userRepo.On("FindByEmail", "new@example.com").Return(nil, errors.New("not found"))
 	userRepo.On("Create", mock.AnythingOfType("*model.User")).Return(nil)
@@ -405,7 +406,7 @@ func TestGitHubLogin_CreateNewUser(t *testing.T) {
 func TestGitHubLogin_NoEmailFallback(t *testing.T) {
 	svc, userRepo, _ := newTestAuthService()
 
-	// GitHub ID not found, no email provided
+	// GitHub IDが見つからず、メールも未提供
 	userRepo.On("FindByGitHubID", int64(12345)).Return(nil, errors.New("not found"))
 	userRepo.On("Create", mock.AnythingOfType("*model.User")).Run(func(args mock.Arguments) {
 		user := args.Get(0).(*model.User)
@@ -428,7 +429,7 @@ func TestGitHubLogin_NoEmailFallback(t *testing.T) {
 }
 
 // ============================================================
-// GenerateOAuthState / ValidateOAuthState
+// OAuthステート検証テスト
 // ============================================================
 
 func TestOAuthState_RoundTrip(t *testing.T) {
@@ -452,7 +453,7 @@ func TestValidateOAuthState_InvalidState(t *testing.T) {
 }
 
 // ============================================================
-// GenerateLoginState / ValidateLoginState
+// ログインステート検証テスト
 // ============================================================
 
 func TestLoginState_RoundTrip(t *testing.T) {

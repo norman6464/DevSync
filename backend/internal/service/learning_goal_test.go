@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// newTestLearningGoalService はLearningGoalServiceのテスト用インスタンスを生成するヘルパー。
 func newTestLearningGoalService() (*LearningGoalService, *MockLearningGoalRepository) {
 	repo := new(MockLearningGoalRepository)
 	svc := NewLearningGoalService(repo)
@@ -15,7 +16,7 @@ func newTestLearningGoalService() (*LearningGoalService, *MockLearningGoalReposi
 }
 
 // ============================================================
-// Update
+// 学習目標更新テスト
 // ============================================================
 
 func TestLearningGoalUpdate_Success(t *testing.T) {
@@ -136,7 +137,7 @@ func TestLearningGoalUpdate_NotFound(t *testing.T) {
 }
 
 // ============================================================
-// Delete
+// 学習目標削除テスト
 // ============================================================
 
 func TestLearningGoalDelete_Success(t *testing.T) {

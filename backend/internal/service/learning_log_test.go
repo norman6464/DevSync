@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// newTestLearningLogService はLearningLogServiceのテスト用インスタンスを生成するヘルパー。
 func newTestLearningLogService() (*LearningLogService, *MockLearningLogRepository) {
 	repo := new(MockLearningLogRepository)
 	svc := NewLearningLogService(repo)
@@ -15,7 +16,7 @@ func newTestLearningLogService() (*LearningLogService, *MockLearningLogRepositor
 }
 
 // ============================================================
-// Create
+// 学習ログ作成テスト
 // ============================================================
 
 func TestLearningLogCreate_Success(t *testing.T) {
@@ -30,7 +31,7 @@ func TestLearningLogCreate_Success(t *testing.T) {
 }
 
 // ============================================================
-// Update
+// 学習ログ更新テスト
 // ============================================================
 
 func TestLearningLogUpdate_Success(t *testing.T) {
@@ -79,7 +80,7 @@ func TestLearningLogUpdate_NotFound(t *testing.T) {
 }
 
 // ============================================================
-// Delete
+// 学習ログ削除テスト
 // ============================================================
 
 func TestLearningLogDelete_Success(t *testing.T) {
@@ -110,7 +111,7 @@ func TestLearningLogDelete_Forbidden(t *testing.T) {
 }
 
 // ============================================================
-// GetStreakInfo / GetCalendarData
+// ストリーク・カレンダーデータテスト
 // ============================================================
 
 func TestLearningLogGetStreakInfo_Success(t *testing.T) {

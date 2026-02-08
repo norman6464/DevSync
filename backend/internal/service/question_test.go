@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// newTestQuestionService はQuestionServiceのテスト用インスタンスを生成するヘルパー。
 func newTestQuestionService() (*QuestionService, *MockQuestionRepository) {
 	repo := new(MockQuestionRepository)
 	svc := NewQuestionService(repo)
@@ -15,7 +16,7 @@ func newTestQuestionService() (*QuestionService, *MockQuestionRepository) {
 }
 
 // ============================================================
-// Update
+// 質問更新テスト
 // ============================================================
 
 func TestQuestionUpdate_Success(t *testing.T) {
@@ -79,7 +80,7 @@ func TestQuestionUpdate_PartialUpdate(t *testing.T) {
 }
 
 // ============================================================
-// Delete
+// 質問削除テスト
 // ============================================================
 
 func TestQuestionDelete_Success(t *testing.T) {
@@ -110,7 +111,7 @@ func TestQuestionDelete_Forbidden(t *testing.T) {
 }
 
 // ============================================================
-// Vote / RemoveVote
+// 質問投票テスト
 // ============================================================
 
 func TestQuestionVote_Success(t *testing.T) {

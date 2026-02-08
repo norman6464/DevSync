@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// newTestRoadmapService はRoadmapServiceのテスト用インスタンスを生成するヘルパー。
 func newTestRoadmapService() (*RoadmapService, *MockRoadmapRepository) {
 	repo := new(MockRoadmapRepository)
 	svc := NewRoadmapService(repo)
@@ -61,7 +62,7 @@ func TestRoadmapGetByID_PrivateForbidden(t *testing.T) {
 }
 
 // ============================================================
-// CopyRoadmap
+// ロードマップコピーテスト
 // ============================================================
 
 func TestCopyRoadmap_PublicSuccess(t *testing.T) {
@@ -116,7 +117,7 @@ func TestCopyRoadmap_PrivateOwnerCanCopy(t *testing.T) {
 }
 
 // ============================================================
-// Update
+// ロードマップ更新テスト
 // ============================================================
 
 func TestRoadmapUpdate_Success(t *testing.T) {
@@ -227,7 +228,7 @@ func TestRoadmapUpdateStep_NotOwner(t *testing.T) {
 }
 
 // ============================================================
-// DeleteStep
+// ステップ削除テスト
 // ============================================================
 
 func TestRoadmapDeleteStep_Success(t *testing.T) {
@@ -266,7 +267,7 @@ func TestRoadmapDeleteStep_StepBelongsToDifferentRoadmap(t *testing.T) {
 }
 
 // ============================================================
-// Delete
+// ロードマップ削除テスト
 // ============================================================
 
 func TestRoadmapDelete_Success(t *testing.T) {
@@ -297,7 +298,7 @@ func TestRoadmapDelete_Forbidden(t *testing.T) {
 }
 
 // ============================================================
-// UpdateStepCompletion
+// ステップ完了状態テスト
 // ============================================================
 
 func TestRoadmapUpdateStepCompletion_Complete(t *testing.T) {
@@ -341,7 +342,7 @@ func TestRoadmapUpdateStepCompletion_Uncomplete(t *testing.T) {
 }
 
 // ============================================================
-// Not Found
+// 存在しないロードマップテスト
 // ============================================================
 
 func TestRoadmapGetByID_NotFound(t *testing.T) {

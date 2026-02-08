@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// newTestFollowService はFollowServiceのテスト用インスタンスを生成するヘルパー。
 func newTestFollowService() (*FollowService, *MockFollowRepository) {
 	repo := new(MockFollowRepository)
 	svc := NewFollowService(repo)
@@ -14,7 +15,7 @@ func newTestFollowService() (*FollowService, *MockFollowRepository) {
 }
 
 // ============================================================
-// Follow
+// フォローテスト
 // ============================================================
 
 func TestFollow_Success(t *testing.T) {
@@ -35,7 +36,7 @@ func TestFollow_SelfFollow(t *testing.T) {
 }
 
 // ============================================================
-// Unfollow
+// アンフォローテスト
 // ============================================================
 
 func TestUnfollow_Success(t *testing.T) {
@@ -49,7 +50,7 @@ func TestUnfollow_Success(t *testing.T) {
 }
 
 // ============================================================
-// IsFollowing
+// フォロー状態確認テスト
 // ============================================================
 
 func TestIsFollowing_True(t *testing.T) {
@@ -73,7 +74,7 @@ func TestIsFollowing_False(t *testing.T) {
 }
 
 // ============================================================
-// GetFollowers / GetFollowing
+// フォロワー・フォロー中取得テスト
 // ============================================================
 
 func TestGetFollowers_Success(t *testing.T) {

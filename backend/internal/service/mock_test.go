@@ -1,3 +1,4 @@
+// mock_test.go はService層テスト用のモックリポジトリを定義する。
 package service
 
 import (
@@ -7,7 +8,7 @@ import (
 )
 
 // ============================================================
-// MockUserRepository implements repository.UserRepositoryInterface
+// MockUserRepository は repository.UserRepositoryInterface のテスト用モック実装。
 // ============================================================
 
 type MockUserRepository struct {
@@ -74,7 +75,7 @@ func (m *MockUserRepository) UpdatePassword(userID uint, hashedPassword string) 
 }
 
 // ============================================================
-// MockPostRepository implements repository.PostRepositoryInterface
+// MockPostRepository は repository.PostRepositoryInterface のテスト用モック実装。
 // ============================================================
 
 type MockPostRepository struct {
@@ -150,7 +151,7 @@ func (m *MockPostRepository) DeleteComment(id, userID uint) error {
 }
 
 // ============================================================
-// MockFollowRepository implements repository.FollowRepositoryInterface
+// MockFollowRepository は repository.FollowRepositoryInterface のテスト用モック実装。
 // ============================================================
 
 type MockFollowRepository struct {
@@ -183,7 +184,7 @@ func (m *MockFollowRepository) GetFollowing(userID uint) ([]model.User, error) {
 }
 
 // ============================================================
-// MockNotificationRepository implements repository.NotificationRepositoryInterface
+// MockNotificationRepository は repository.NotificationRepositoryInterface のテスト用モック実装。
 // ============================================================
 
 type MockNotificationRepository struct {
@@ -236,7 +237,7 @@ func (m *MockNotificationRepository) GetFollowerIDs(userID uint) ([]uint, error)
 }
 
 // ============================================================
-// MockMessageRepository implements repository.MessageRepositoryInterface
+// MockMessageRepository は repository.MessageRepositoryInterface のテスト用モック実装。
 // ============================================================
 
 type MockMessageRepository struct {
@@ -264,7 +265,7 @@ func (m *MockMessageRepository) MarkAsRead(senderID, receiverID uint) error {
 }
 
 // ============================================================
-// MockQuestionRepository implements repository.QuestionRepositoryInterface
+// MockQuestionRepository は repository.QuestionRepositoryInterface のテスト用モック実装。
 // ============================================================
 
 type MockQuestionRepository struct {
@@ -325,7 +326,7 @@ func (m *MockQuestionRepository) GetUserVote(userID, questionID uint) (int, erro
 }
 
 // ============================================================
-// MockAnswerRepository implements repository.AnswerRepositoryInterface
+// MockAnswerRepository は repository.AnswerRepositoryInterface のテスト用モック実装。
 // ============================================================
 
 type MockAnswerRepository struct {
@@ -381,7 +382,7 @@ func (m *MockAnswerRepository) GetUserVotes(userID uint, answerIDs []uint) (map[
 }
 
 // ============================================================
-// MockLearningLogRepository implements repository.LearningLogRepositoryInterface
+// MockLearningLogRepository は repository.LearningLogRepositoryInterface のテスト用モック実装。
 // ============================================================
 
 type MockLearningLogRepository struct {
@@ -430,7 +431,7 @@ func (m *MockLearningLogRepository) GetCalendarData(userID uint) ([]model.Calend
 }
 
 // ============================================================
-// MockLearningGoalRepository implements repository.LearningGoalRepositoryInterface
+// MockLearningGoalRepository は repository.LearningGoalRepositoryInterface のテスト用モック実装。
 // ============================================================
 
 type MockLearningGoalRepository struct {
@@ -479,7 +480,7 @@ func (m *MockLearningGoalRepository) GetStats(userID uint) (*model.LearningGoalS
 }
 
 // ============================================================
-// MockProjectRepository implements repository.ProjectRepositoryInterface
+// MockProjectRepository は repository.ProjectRepositoryInterface のテスト用モック実装。
 // ============================================================
 
 type MockProjectRepository struct {
@@ -525,7 +526,7 @@ func (m *MockProjectRepository) FindAll(limit, offset int) ([]model.Project, int
 }
 
 // ============================================================
-// MockBookReviewRepository implements repository.BookReviewRepositoryInterface
+// MockBookReviewRepository は repository.BookReviewRepositoryInterface のテスト用モック実装。
 // ============================================================
 
 type MockBookReviewRepository struct {
@@ -566,7 +567,7 @@ func (m *MockBookReviewRepository) Delete(id uint) error {
 }
 
 // ============================================================
-// MockLearningResourceRepository implements repository.LearningResourceRepositoryInterface
+// MockLearningResourceRepository は repository.LearningResourceRepositoryInterface のテスト用モック実装。
 // ============================================================
 
 type MockLearningResourceRepository struct {
@@ -647,7 +648,7 @@ func (m *MockLearningResourceRepository) FindSavedByUserID(userID uint, limit, o
 }
 
 // ============================================================
-// MockPasswordResetRepository implements repository.PasswordResetRepositoryInterface
+// MockPasswordResetRepository は repository.PasswordResetRepositoryInterface のテスト用モック実装。
 // ============================================================
 
 type MockPasswordResetRepository struct {
@@ -683,7 +684,7 @@ func (m *MockPasswordResetRepository) DeleteExpired() error {
 }
 
 // ============================================================
-// MockRoadmapRepository implements repository.RoadmapRepositoryInterface
+// MockRoadmapRepository は repository.RoadmapRepositoryInterface のテスト用モック実装。
 // ============================================================
 
 type MockRoadmapRepository struct {
@@ -768,7 +769,7 @@ func (m *MockRoadmapRepository) ReorderSteps(roadmapID uint, stepOrders []reposi
 }
 
 // ============================================================
-// MockChatRoomRepository implements repository.ChatRoomRepositoryInterface
+// MockChatRoomRepository は repository.ChatRoomRepositoryInterface のテスト用モック実装。
 // ============================================================
 
 type MockChatRoomRepository struct {
@@ -824,7 +825,7 @@ func (m *MockChatRoomRepository) IsMember(roomID, userID uint) (bool, error) {
 }
 
 // ============================================================
-// MockGroupMessageRepository implements repository.GroupMessageRepositoryInterface
+// MockGroupMessageRepository は repository.GroupMessageRepositoryInterface のテスト用モック実装。
 // ============================================================
 
 type MockGroupMessageRepository struct {

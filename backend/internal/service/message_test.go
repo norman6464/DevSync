@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+// newTestMessageService はMessageServiceのテスト用インスタンスを生成するヘルパー。
 func newTestMessageService() (*MessageService, *MockMessageRepository, *MockNotificationRepository) {
 	msgRepo := new(MockMessageRepository)
 	notifRepo := new(MockNotificationRepository)
@@ -18,7 +19,7 @@ func newTestMessageService() (*MessageService, *MockMessageRepository, *MockNoti
 }
 
 // ============================================================
-// GetConversations
+// 会話一覧取得テスト
 // ============================================================
 
 func TestMessageGetConversations_Success(t *testing.T) {
@@ -57,7 +58,7 @@ func TestMessageGetConversation_Success(t *testing.T) {
 }
 
 // ============================================================
-// SendMessage
+// メッセージ送信テスト
 // ============================================================
 
 func TestMessageSendMessage_Success(t *testing.T) {
@@ -75,7 +76,7 @@ func TestMessageSendMessage_Success(t *testing.T) {
 }
 
 // ============================================================
-// MarkAsRead
+// 既読マークテスト
 // ============================================================
 
 func TestMessageMarkAsRead_Success(t *testing.T) {
