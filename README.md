@@ -469,6 +469,13 @@ API仕様はOpenAPI (Swagger)で管理しています。
 - [x] GitHub Actions CI（テスト自動実行）
 - [x] testify/mockによるモックベーステスト
 
+### Phase 3.7（セキュリティ強化）✅
+- [x] JWT認証をhttpOnly Cookieに移行（XSS対策）
+- [x] ログアウトエンドポイント追加（`POST /api/v1/auth/logout`）
+- [x] localStorageからのトークン管理を完全廃止
+- [x] SameSite=Lax属性によるCSRF対策
+- [x] 認証ミドルウェア・ハンドラーのユニットテスト追加
+
 ### Phase 4（将来）📋
 - [ ] AI補完
 - [ ] モバイルアプリ
