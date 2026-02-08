@@ -10,15 +10,18 @@ import (
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
+// LearningLogHandler は学習ログ関連のHTTPハンドラ。
+// 学習ログのCRUD・ストリーク・カレンダーデータの取得を処理する。
 type LearningLogHandler struct {
 	service *service.LearningLogService
 }
 
+// NewLearningLogHandler は新しいLearningLogHandlerインスタンスを生成する。
 func NewLearningLogHandler(s *service.LearningLogService) *LearningLogHandler {
 	return &LearningLogHandler{service: s}
 }
 
-// Create creates a new learning log
+// Create は新しい学習ログを作成する。
 func (h *LearningLogHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -42,6 +45,7 @@ func (h *LearningLogHandler) Create(c *gin.Context) {
 		Duration: req.Duration,
 	}
 
+	// カテゴリが未指定の場合はデフォルト値を設定
 	if req.Category == "" {
 		log.Category = model.LogCategoryOther
 	}
@@ -54,7 +58,7 @@ func (h *LearningLogHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, log)
 }
 
-// Update updates a learning log
+// Update は指定された学習ログを更新する。
 func (h *LearningLogHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
 	logID, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -102,7 +106,7 @@ func (h *LearningLogHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, log)
 }
 
-// Delete deletes a learning log
+// Delete は指定された学習ログを削除する。
 func (h *LearningLogHandler) Delete(c *gin.Context) {
 	userID := c.GetUint("userID")
 	logID, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -123,7 +127,7 @@ func (h *LearningLogHandler) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "log deleted"})
 }
 
-// GetByID gets a learning log by ID
+// GetByID は指定されたIDの学習ログを取得する。
 func (h *LearningLogHandler) GetByID(c *gin.Context) {
 	logID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -140,7 +144,7 @@ func (h *LearningLogHandler) GetByID(c *gin.Context) {
 	c.JSON(http.StatusOK, log)
 }
 
-// GetMyLogs gets all learning logs for the current user
+// GetMyLogs は認証ユーザー自身の学習ログ一覧を取得する。
 func (h *LearningLogHandler) GetMyLogs(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -153,7 +157,7 @@ func (h *LearningLogHandler) GetMyLogs(c *gin.Context) {
 	c.JSON(http.StatusOK, logs)
 }
 
-// GetByUserID gets all learning logs for a user
+// GetByUserID は指定されたユーザーの学習ログ一覧を取得する。
 func (h *LearningLogHandler) GetByUserID(c *gin.Context) {
 	userIDParam := c.Param("userId")
 	userID, err := strconv.ParseUint(userIDParam, 10, 32)
@@ -171,7 +175,7 @@ func (h *LearningLogHandler) GetByUserID(c *gin.Context) {
 	c.JSON(http.StatusOK, logs)
 }
 
-// GetStreakInfo returns streak data for a user
+// GetStreakInfo は指定されたユーザーのストリーク情報を取得する。
 func (h *LearningLogHandler) GetStreakInfo(c *gin.Context) {
 	userIDParam := c.Param("userId")
 	userID, err := strconv.ParseUint(userIDParam, 10, 32)
@@ -189,7 +193,7 @@ func (h *LearningLogHandler) GetStreakInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, info)
 }
 
-// GetCalendarData returns daily log counts for calendar visualization
+// GetCalendarData はカレンダー表示用の日別学習ログ件数を取得する。
 func (h *LearningLogHandler) GetCalendarData(c *gin.Context) {
 	userIDParam := c.Param("userId")
 	userID, err := strconv.ParseUint(userIDParam, 10, 32)

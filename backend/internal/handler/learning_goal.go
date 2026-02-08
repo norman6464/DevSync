@@ -11,15 +11,18 @@ import (
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
+// LearningGoalHandler は学習目標関連のHTTPハンドラ。
+// 学習目標のCRUD・統計情報の取得を処理する。
 type LearningGoalHandler struct {
 	service *service.LearningGoalService
 }
 
+// NewLearningGoalHandler は新しいLearningGoalHandlerインスタンスを生成する。
 func NewLearningGoalHandler(s *service.LearningGoalService) *LearningGoalHandler {
 	return &LearningGoalHandler{service: s}
 }
 
-// Create creates a new learning goal
+// Create は新しい学習目標を作成する。
 func (h *LearningGoalHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -44,10 +47,12 @@ func (h *LearningGoalHandler) Create(c *gin.Context) {
 		Progress:    0,
 	}
 
+	// カテゴリが未指定の場合はデフォルト値を設定
 	if req.Category == "" {
 		goal.Category = model.GoalCategoryOther
 	}
 
+	// 目標日が指定されている場合はパースして設定
 	if req.TargetDate != "" {
 		targetDate, err := time.Parse("2006-01-02", req.TargetDate)
 		if err == nil {
@@ -63,7 +68,7 @@ func (h *LearningGoalHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, goal)
 }
 
-// Update updates a learning goal
+// Update は指定された学習目標を更新する。
 func (h *LearningGoalHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
 	goalID, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -126,7 +131,7 @@ func (h *LearningGoalHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, goal)
 }
 
-// Delete deletes a learning goal
+// Delete は指定された学習目標を削除する。
 func (h *LearningGoalHandler) Delete(c *gin.Context) {
 	userID := c.GetUint("userID")
 	goalID, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -147,7 +152,7 @@ func (h *LearningGoalHandler) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "goal deleted"})
 }
 
-// GetByID gets a learning goal by ID
+// GetByID は指定されたIDの学習目標を取得する。
 func (h *LearningGoalHandler) GetByID(c *gin.Context) {
 	goalID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -164,7 +169,7 @@ func (h *LearningGoalHandler) GetByID(c *gin.Context) {
 	c.JSON(http.StatusOK, goal)
 }
 
-// GetByUserID gets all learning goals for a user
+// GetByUserID は指定されたユーザーの学習目標一覧を取得する。
 func (h *LearningGoalHandler) GetByUserID(c *gin.Context) {
 	userIDParam := c.Param("userId")
 	userID, err := strconv.ParseUint(userIDParam, 10, 32)
@@ -182,7 +187,7 @@ func (h *LearningGoalHandler) GetByUserID(c *gin.Context) {
 	c.JSON(http.StatusOK, goals)
 }
 
-// GetMyGoals gets all learning goals for the current user
+// GetMyGoals は認証ユーザー自身の学習目標一覧を取得する。
 func (h *LearningGoalHandler) GetMyGoals(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -195,7 +200,7 @@ func (h *LearningGoalHandler) GetMyGoals(c *gin.Context) {
 	c.JSON(http.StatusOK, goals)
 }
 
-// GetStats gets learning goal statistics for a user
+// GetStats は指定されたユーザーの学習目標統計情報を取得する。
 func (h *LearningGoalHandler) GetStats(c *gin.Context) {
 	userIDParam := c.Param("userId")
 	userID, err := strconv.ParseUint(userIDParam, 10, 32)

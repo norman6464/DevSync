@@ -11,18 +11,23 @@ import (
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
+// parseDate は日付文字列を "2006-01-02" 形式でパースする。
 func parseDate(dateStr string) (time.Time, error) {
 	return time.Parse("2006-01-02", dateStr)
 }
 
+// ProjectHandler はプロジェクト関連のHTTPハンドラ。
+// プロジェクトのCRUD・注目プロジェクト取得・一覧取得を処理する。
 type ProjectHandler struct {
 	service *service.ProjectService
 }
 
+// NewProjectHandler は新しいProjectHandlerインスタンスを生成する。
 func NewProjectHandler(s *service.ProjectService) *ProjectHandler {
 	return &ProjectHandler{service: s}
 }
 
+// CreateProjectRequest はプロジェクト作成のリクエストボディ。
 type CreateProjectRequest struct {
 	Title        string `json:"title" binding:"required,max=200"`
 	Description  string `json:"description"`
@@ -37,6 +42,7 @@ type CreateProjectRequest struct {
 	GithubRepoID *uint  `json:"github_repo_id"`
 }
 
+// UpdateProjectRequest はプロジェクト更新のリクエストボディ。
 type UpdateProjectRequest struct {
 	Title        string `json:"title" binding:"max=200"`
 	Description  string `json:"description"`
@@ -51,6 +57,7 @@ type UpdateProjectRequest struct {
 	GithubRepoID *uint  `json:"github_repo_id"`
 }
 
+// Create は新しいプロジェクトを作成する。
 func (h *ProjectHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -94,6 +101,7 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, project)
 }
 
+// GetByID は指定IDのプロジェクトを取得する。
 func (h *ProjectHandler) GetByID(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -110,6 +118,7 @@ func (h *ProjectHandler) GetByID(c *gin.Context) {
 	c.JSON(http.StatusOK, project)
 }
 
+// GetByUserID は指定ユーザーのプロジェクト一覧を取得する。
 func (h *ProjectHandler) GetByUserID(c *gin.Context) {
 	userID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
 	if err != nil {
@@ -126,6 +135,7 @@ func (h *ProjectHandler) GetByUserID(c *gin.Context) {
 	c.JSON(http.StatusOK, projects)
 }
 
+// GetFeatured は指定ユーザーの注目プロジェクト一覧を取得する。
 func (h *ProjectHandler) GetFeatured(c *gin.Context) {
 	userID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
 	if err != nil {
@@ -142,6 +152,7 @@ func (h *ProjectHandler) GetFeatured(c *gin.Context) {
 	c.JSON(http.StatusOK, projects)
 }
 
+// Update は指定IDのプロジェクトを更新する。
 func (h *ProjectHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -204,7 +215,7 @@ func (h *ProjectHandler) Update(c *gin.Context) {
 		return
 	}
 
-	// Handle featured separately if provided (since it's a bool pointer)
+	// featuredはboolポインタのため別途処理する
 	if req.Featured != nil {
 		project, err = h.service.UpdateFeatured(uint(id), userID, *req.Featured)
 		if err != nil {
@@ -216,6 +227,7 @@ func (h *ProjectHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, project)
 }
 
+// Delete は指定IDのプロジェクトを削除する。
 func (h *ProjectHandler) Delete(c *gin.Context) {
 	userID := c.GetUint("userID")
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -236,6 +248,7 @@ func (h *ProjectHandler) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Project deleted successfully"})
 }
 
+// GetAll はプロジェクトの一覧をページネーション付きで取得する。
 func (h *ProjectHandler) GetAll(c *gin.Context) {
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
 	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))

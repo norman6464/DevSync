@@ -9,15 +9,18 @@ import (
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
+// QiitaHandler はQiita連携関連のHTTPハンドラ。
+// Qiitaアカウントの接続・切断・記事同期・統計情報の取得を処理する。
 type QiitaHandler struct {
 	service *service.QiitaService
 }
 
+// NewQiitaHandler は新しいQiitaHandlerインスタンスを生成する。
 func NewQiitaHandler(s *service.QiitaService) *QiitaHandler {
 	return &QiitaHandler{service: s}
 }
 
-// Connect sets the Qiita username and syncs articles
+// Connect はQiitaユーザー名を設定し、記事を同期する。
 func (h *QiitaHandler) Connect(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -50,7 +53,7 @@ func (h *QiitaHandler) Connect(c *gin.Context) {
 	})
 }
 
-// Disconnect removes the Qiita username and deletes cached articles
+// Disconnect はQiitaユーザー名を削除し、キャッシュされた記事を削除する。
 func (h *QiitaHandler) Disconnect(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -66,7 +69,7 @@ func (h *QiitaHandler) Disconnect(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Qiita disconnected successfully"})
 }
 
-// Sync refreshes the Qiita articles for the current user
+// Sync は現在のユーザーのQiita記事を再同期する。
 func (h *QiitaHandler) Sync(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -90,7 +93,7 @@ func (h *QiitaHandler) Sync(c *gin.Context) {
 	})
 }
 
-// GetArticles returns all Qiita articles for a user
+// GetArticles は指定ユーザーの全Qiita記事を返す。
 func (h *QiitaHandler) GetArticles(c *gin.Context) {
 	userID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
 	if err != nil {
@@ -107,7 +110,7 @@ func (h *QiitaHandler) GetArticles(c *gin.Context) {
 	c.JSON(http.StatusOK, articles)
 }
 
-// GetStats returns Qiita statistics for a user
+// GetStats は指定ユーザーのQiita統計情報を返す。
 func (h *QiitaHandler) GetStats(c *gin.Context) {
 	userID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
 	if err != nil {

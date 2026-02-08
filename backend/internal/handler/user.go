@@ -9,14 +9,18 @@ import (
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
+// UserHandler はユーザー関連のHTTPハンドラ。
+// ユーザー検索・詳細取得・プロフィール更新を処理する。
 type UserHandler struct {
 	service *service.UserService
 }
 
+// NewUserHandler は新しいUserHandlerインスタンスを生成する。
 func NewUserHandler(s *service.UserService) *UserHandler {
 	return &UserHandler{service: s}
 }
 
+// GetAll はユーザー一覧を返す。クエリパラメータqで検索可能。
 func (h *UserHandler) GetAll(c *gin.Context) {
 	q := c.Query("q")
 	users, err := h.service.GetAll(q)
@@ -27,6 +31,7 @@ func (h *UserHandler) GetAll(c *gin.Context) {
 	c.JSON(http.StatusOK, users)
 }
 
+// GetByID は指定IDのユーザー情報を返す。
 func (h *UserHandler) GetByID(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -42,6 +47,8 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+// Update はユーザープロフィールを更新する。
+// 本人のみ更新可能（userIDとパスパラメータのIDが一致する必要がある）。
 func (h *UserHandler) Update(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {

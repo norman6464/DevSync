@@ -10,14 +10,18 @@ import (
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
+// LearningResourceHandler は学習リソース関連のHTTPハンドラ。
+// 学習リソースのCRUD・検索・いいね・保存を処理する。
 type LearningResourceHandler struct {
 	service *service.LearningResourceService
 }
 
+// NewLearningResourceHandler は新しいLearningResourceHandlerインスタンスを生成する。
 func NewLearningResourceHandler(s *service.LearningResourceService) *LearningResourceHandler {
 	return &LearningResourceHandler{service: s}
 }
 
+// CreateResourceRequest は学習リソース作成のリクエストボディ。
 type CreateResourceRequest struct {
 	Title       string `json:"title" binding:"required,max=300"`
 	Description string `json:"description"`
@@ -29,6 +33,7 @@ type CreateResourceRequest struct {
 	IsPublic    *bool  `json:"is_public"`
 }
 
+// UpdateResourceRequest は学習リソース更新のリクエストボディ。
 type UpdateResourceRequest struct {
 	Title       string `json:"title" binding:"max=300"`
 	Description string `json:"description"`
@@ -40,6 +45,7 @@ type UpdateResourceRequest struct {
 	IsPublic    *bool  `json:"is_public"`
 }
 
+// Create は新しい学習リソースを作成する。
 func (h *LearningResourceHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -49,6 +55,7 @@ func (h *LearningResourceHandler) Create(c *gin.Context) {
 		return
 	}
 
+	// 公開設定のデフォルト値はtrue
 	isPublic := true
 	if req.IsPublic != nil {
 		isPublic = *req.IsPublic
@@ -74,6 +81,7 @@ func (h *LearningResourceHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, resource)
 }
 
+// GetByID は指定されたIDの学習リソースを取得する。
 func (h *LearningResourceHandler) GetByID(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -93,7 +101,7 @@ func (h *LearningResourceHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	// Check if current user has liked/saved
+	// 現在のユーザーがいいね・保存済みかを確認
 	hasLiked, _ := h.service.HasLiked(userID, uint(id))
 	hasSaved, _ := h.service.HasSaved(userID, uint(id))
 
@@ -104,6 +112,7 @@ func (h *LearningResourceHandler) GetByID(c *gin.Context) {
 	})
 }
 
+// GetByUserID は指定されたユーザーの学習リソース一覧を取得する。
 func (h *LearningResourceHandler) GetByUserID(c *gin.Context) {
 	targetUserID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
 	if err != nil {
@@ -122,6 +131,7 @@ func (h *LearningResourceHandler) GetByUserID(c *gin.Context) {
 	c.JSON(http.StatusOK, resources)
 }
 
+// GetPublic は公開学習リソース一覧をページネーション・フィルター付きで取得する。
 func (h *LearningResourceHandler) GetPublic(c *gin.Context) {
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
 	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
@@ -146,6 +156,7 @@ func (h *LearningResourceHandler) GetPublic(c *gin.Context) {
 	})
 }
 
+// Search はキーワードで学習リソースを検索する。
 func (h *LearningResourceHandler) Search(c *gin.Context) {
 	query := c.Query("q")
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
@@ -169,6 +180,7 @@ func (h *LearningResourceHandler) Search(c *gin.Context) {
 	})
 }
 
+// Update は指定された学習リソースを更新する。
 func (h *LearningResourceHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -216,7 +228,7 @@ func (h *LearningResourceHandler) Update(c *gin.Context) {
 		return
 	}
 
-	// Handle IsPublic separately if provided
+	// 公開設定が指定されている場合は別途更新
 	if req.IsPublic != nil {
 		resource, err = h.service.UpdateVisibility(uint(id), userID, *req.IsPublic)
 		if err != nil {
@@ -228,6 +240,7 @@ func (h *LearningResourceHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, resource)
 }
 
+// Delete は指定された学習リソースを削除する。
 func (h *LearningResourceHandler) Delete(c *gin.Context) {
 	userID := c.GetUint("userID")
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -248,6 +261,7 @@ func (h *LearningResourceHandler) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Resource deleted successfully"})
 }
 
+// Like は学習リソースにいいねする。
 func (h *LearningResourceHandler) Like(c *gin.Context) {
 	userID := c.GetUint("userID")
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -264,6 +278,7 @@ func (h *LearningResourceHandler) Like(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Resource liked"})
 }
 
+// Unlike は学習リソースのいいねを取り消す。
 func (h *LearningResourceHandler) Unlike(c *gin.Context) {
 	userID := c.GetUint("userID")
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -280,6 +295,7 @@ func (h *LearningResourceHandler) Unlike(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Resource unliked"})
 }
 
+// SaveResource は学習リソースを保存する。
 func (h *LearningResourceHandler) SaveResource(c *gin.Context) {
 	userID := c.GetUint("userID")
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -296,6 +312,7 @@ func (h *LearningResourceHandler) SaveResource(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Resource saved"})
 }
 
+// UnsaveResource は学習リソースの保存を取り消す。
 func (h *LearningResourceHandler) UnsaveResource(c *gin.Context) {
 	userID := c.GetUint("userID")
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -312,6 +329,7 @@ func (h *LearningResourceHandler) UnsaveResource(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Resource unsaved"})
 }
 
+// GetSaved は認証ユーザーの保存済み学習リソース一覧を取得する。
 func (h *LearningResourceHandler) GetSaved(c *gin.Context) {
 	userID := c.GetUint("userID")
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))

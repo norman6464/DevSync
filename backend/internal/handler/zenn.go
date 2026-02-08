@@ -9,15 +9,18 @@ import (
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
+// ZennHandler はZenn連携関連のHTTPハンドラ。
+// Zennアカウントの接続・切断・記事同期・統計情報の取得を処理する。
 type ZennHandler struct {
 	service *service.ZennService
 }
 
+// NewZennHandler は新しいZennHandlerインスタンスを生成する。
 func NewZennHandler(s *service.ZennService) *ZennHandler {
 	return &ZennHandler{service: s}
 }
 
-// Connect sets the Zenn username and syncs articles
+// Connect はZennユーザー名を設定し、記事を同期する。
 func (h *ZennHandler) Connect(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -50,7 +53,7 @@ func (h *ZennHandler) Connect(c *gin.Context) {
 	})
 }
 
-// Disconnect removes the Zenn username and deletes cached articles
+// Disconnect はZennユーザー名を削除し、キャッシュされた記事を削除する。
 func (h *ZennHandler) Disconnect(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -66,7 +69,7 @@ func (h *ZennHandler) Disconnect(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Zenn disconnected successfully"})
 }
 
-// Sync refreshes the Zenn articles for the current user
+// Sync は現在のユーザーのZenn記事を再同期する。
 func (h *ZennHandler) Sync(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -90,7 +93,7 @@ func (h *ZennHandler) Sync(c *gin.Context) {
 	})
 }
 
-// GetArticles returns all Zenn articles for a user
+// GetArticles は指定ユーザーの全Zenn記事を返す。
 func (h *ZennHandler) GetArticles(c *gin.Context) {
 	userID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
 	if err != nil {
@@ -107,7 +110,7 @@ func (h *ZennHandler) GetArticles(c *gin.Context) {
 	c.JSON(http.StatusOK, articles)
 }
 
-// GetStats returns Zenn statistics for a user
+// GetStats は指定ユーザーのZenn統計情報を返す。
 func (h *ZennHandler) GetStats(c *gin.Context) {
 	userID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
 	if err != nil {

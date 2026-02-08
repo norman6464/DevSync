@@ -10,14 +10,18 @@ import (
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
+// FollowHandler はフォロー関連のHTTPハンドラ。
+// フォロー・アンフォロー・フォロワー/フォロー中一覧の取得を処理する。
 type FollowHandler struct {
 	service *service.FollowService
 }
 
+// NewFollowHandler は新しいFollowHandlerインスタンスを生成する。
 func NewFollowHandler(s *service.FollowService) *FollowHandler {
 	return &FollowHandler{service: s}
 }
 
+// Follow は指定ユーザーをフォローする。
 func (h *FollowHandler) Follow(c *gin.Context) {
 	userID := c.GetUint("userID")
 	targetID, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -36,6 +40,7 @@ func (h *FollowHandler) Follow(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "followed"})
 }
 
+// Unfollow は指定ユーザーのフォローを解除する。
 func (h *FollowHandler) Unfollow(c *gin.Context) {
 	userID := c.GetUint("userID")
 	targetID, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -50,6 +55,7 @@ func (h *FollowHandler) Unfollow(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "unfollowed"})
 }
 
+// GetFollowers は指定ユーザーのフォロワー一覧を返す。
 func (h *FollowHandler) GetFollowers(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -67,6 +73,7 @@ func (h *FollowHandler) GetFollowers(c *gin.Context) {
 	c.JSON(http.StatusOK, users)
 }
 
+// GetFollowing は指定ユーザーのフォロー中一覧を返す。
 func (h *FollowHandler) GetFollowing(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
