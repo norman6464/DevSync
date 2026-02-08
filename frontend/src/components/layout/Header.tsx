@@ -119,41 +119,41 @@ export default function Header() {
               {t(key)}
             </Link>
           ))}
-
-          {/* More dropdown */}
-          <div className="relative" ref={moreRef}>
-            <button
-              onClick={() => setMoreOpen(!moreOpen)}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
-                isMoreActive ? 'text-white bg-gray-800' : 'text-white/70 hover:text-white'
-              }`}
-              aria-expanded={moreOpen}
-            >
-              {t('nav.more')}
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${moreOpen ? 'rotate-180' : ''}`} />
-            </button>
-
-            {moreOpen && (
-              <div className="absolute top-full left-0 mt-1 w-48 bg-gray-900 border border-gray-700 rounded-lg shadow-xl py-1 z-50">
-                {moreItems.map(({ path, key, icon: Icon }) => (
-                  <Link
-                    key={path}
-                    to={path}
-                    className={`flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors ${
-                      location.pathname === path
-                        ? 'text-white bg-gray-800'
-                        : 'text-gray-300 hover:text-white hover:bg-gray-800/50'
-                    }`}
-                    onClick={() => setMoreOpen(false)}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {t(key)}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
         </nav>
+
+        {/* More dropdown - outside nav to avoid overflow clipping */}
+        <div className="hidden md:block relative" ref={moreRef}>
+          <button
+            onClick={() => setMoreOpen(!moreOpen)}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
+              isMoreActive ? 'text-white bg-gray-800' : 'text-white/70 hover:text-white'
+            }`}
+            aria-expanded={moreOpen}
+          >
+            {t('nav.more')}
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${moreOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {moreOpen && (
+            <div className="absolute top-full right-0 mt-1 w-48 bg-gray-900 border border-gray-700 rounded-lg shadow-xl py-1 z-50">
+              {moreItems.map(({ path, key, icon: Icon }) => (
+                <Link
+                  key={path}
+                  to={path}
+                  className={`flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors ${
+                    location.pathname === path
+                      ? 'text-white bg-gray-800'
+                      : 'text-gray-300 hover:text-white hover:bg-gray-800/50'
+                  }`}
+                  onClick={() => setMoreOpen(false)}
+                >
+                  <Icon className="w-4 h-4" />
+                  {t(key)}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Right side */}
         <div className="flex items-center gap-2 ml-auto">
