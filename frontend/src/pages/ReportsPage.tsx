@@ -167,7 +167,7 @@ export default function ReportsPage() {
                 >
                   <div className="relative w-full">
                     <div
-                      className="w-full bg-purple-500/80 rounded-t hover:bg-purple-400 transition-colors cursor-pointer"
+                      className="w-full bg-blue-500/80 rounded-t hover:bg-blue-400 transition-colors cursor-pointer"
                       style={{ height: `${Math.max(height, 4)}%`, minHeight: '4px' }}
                     />
                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
@@ -206,7 +206,7 @@ export default function ReportsPage() {
                   </div>
                   <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-purple-500 to-blue-500 rounded-full transition-all"
+                      className="h-full bg-blue-500 rounded-full transition-all"
                       style={{ width: `${width}%` }}
                     />
                   </div>
@@ -241,7 +241,7 @@ export default function ReportsPage() {
                   strokeWidth="8"
                   fill="none"
                   strokeDasharray={`${report.goals_progress * 2.51} 251`}
-                  className="text-purple-500"
+                  className="text-blue-500"
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
