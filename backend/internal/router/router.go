@@ -339,6 +339,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			learningLogs.GET("", learningLogHandler.GetMyLogs)
 			learningLogs.GET("/user/:userId", learningLogHandler.GetByUserID)
 			learningLogs.GET("/calendar/:userId", learningLogHandler.GetCalendarData)
+			learningLogs.GET("/streak/:userId", learningLogHandler.GetStreakInfo)
 			learningLogs.GET("/:id", learningLogHandler.GetByID)
 			learningLogs.PUT("/:id", learningLogHandler.Update)
 			learningLogs.DELETE("/:id", learningLogHandler.Delete)
