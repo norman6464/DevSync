@@ -391,6 +391,11 @@ func TestChat_Success(t *testing.T) {
 		Content:    "Go学習の次のステップとしてWeb開発をおすすめします。",
 		TokensUsed: 150,
 	}, nil)
+	// 会話再取得
+	deps.convRepo.On("FindConversationByID", mock.AnythingOfType("uint")).Return(&model.AIConversation{
+		UserID: 1,
+		Title:  "Goの次に何を学ぶべきですか？",
+	}, nil)
 
 	conv, err := svc.Chat(1, "Goの次に何を学ぶべきですか？", 0)
 	assert.NoError(t, err)
