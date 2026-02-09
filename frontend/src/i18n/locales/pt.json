@@ -695,7 +695,16 @@
     "confirmDeleteStep": "Tem certeza de que deseja excluir esta etapa?",
     "noSteps": "Ainda não há etapas",
     "addFirstStep": "Adicione a primeira etapa",
-    "stepsReordered": "Ordem das etapas alterada"
+    "stepsReordered": "Ordem das etapas alterada",
+    "templates": "Modelos recomendados",
+    "templatesDescription": "Comece seu aprendizado com um roteiro recomendado",
+    "templatesAvailable": "modelos",
+    "template": "Modelo",
+    "useTemplate": "Usar este modelo",
+    "templateUsed": "Roteiro criado a partir do modelo",
+    "templateSteps": "Etapas incluídas",
+    "steps": "etapas",
+    "viewSteps": "Ver etapas"
   },
   "onboarding": {
     "welcomeTitle": "Bem-vindo ao DevSync!",

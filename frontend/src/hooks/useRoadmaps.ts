@@ -12,6 +12,8 @@ import {
   updateStep as updateStepApi,
   deleteStep as deleteStepApi,
   reorderSteps as reorderStepsApi,
+  getTemplates as getTemplatesApi,
+  createFromTemplate as createFromTemplateApi,
   type Roadmap,
   type CreateRoadmapRequest,
   type UpdateRoadmapRequest,
@@ -187,5 +189,39 @@ export function useRoadmapDetail(roadmapId: number | null) {
     deleteStep: handleDeleteStep,
     reorderSteps: handleReorderSteps,
     refetch,
+  };
+}
+
+export function useRoadmapTemplates() {
+  const { t } = useTranslation();
+  const [creating, setCreating] = useState(false);
+
+  const { data: templates, loading } = useAsyncData(
+    async () => {
+      const { data } = await getTemplatesApi();
+      return data || [];
+    },
+    { initialData: [] as Roadmap[] }
+  );
+
+  const handleCreateFromTemplate = useCallback(async (templateId: number) => {
+    setCreating(true);
+    try {
+      const { data: newRoadmap } = await createFromTemplateApi(templateId);
+      toast.success(t('roadmaps.templateUsed'));
+      return newRoadmap;
+    } catch {
+      toast.error(t('errors.somethingWrong'));
+      return null;
+    } finally {
+      setCreating(false);
+    }
+  }, [t]);
+
+  return {
+    templates,
+    loading,
+    creating,
+    createFromTemplate: handleCreateFromTemplate,
   };
 }

@@ -695,7 +695,16 @@
     "confirmDeleteStep": "¿Estás seguro de que quieres eliminar este paso?",
     "noSteps": "No hay pasos aún",
     "addFirstStep": "Agrega tu primer paso",
-    "stepsReordered": "Pasos reordenados"
+    "stepsReordered": "Pasos reordenados",
+    "templates": "Plantillas recomendadas",
+    "templatesDescription": "Comienza tu aprendizaje con una hoja de ruta recomendada",
+    "templatesAvailable": "plantillas",
+    "template": "Plantilla",
+    "useTemplate": "Usar esta plantilla",
+    "templateUsed": "Hoja de ruta creada desde plantilla",
+    "templateSteps": "Pasos incluidos",
+    "steps": "pasos",
+    "viewSteps": "Ver pasos"
   },
   "onboarding": {
     "welcomeTitle": "¡Bienvenido a DevSync!",

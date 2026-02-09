@@ -6,6 +6,7 @@ import (
 
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 // newTestRoadmapService はRoadmapServiceのテスト用インスタンスを生成するヘルパー。
@@ -354,4 +355,123 @@ func TestRoadmapGetByID_NotFound(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// テンプレート機能テスト
+// ============================================================
+
+func TestGetTemplates_Success(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	templates := []model.Roadmap{
+		{Title: "Webフロントエンド", IsTemplate: true, IsPublic: true, Category: "skill"},
+		{Title: "バックエンド（Go）", IsTemplate: true, IsPublic: true, Category: "language"},
+	}
+
+	repo.On("GetTemplates").Return(templates, nil)
+
+	result, err := svc.GetTemplates()
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.True(t, result[0].IsTemplate)
+	assert.True(t, result[1].IsTemplate)
+	repo.AssertExpectations(t)
+}
+
+func TestGetTemplates_Empty(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	repo.On("GetTemplates").Return([]model.Roadmap{}, nil)
+
+	result, err := svc.GetTemplates()
+	assert.NoError(t, err)
+	assert.Len(t, result, 0)
+	repo.AssertExpectations(t)
+}
+
+func TestCreateFromTemplate_Success(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	template := &model.Roadmap{Title: "Webフロントエンド", UserID: 0, IsTemplate: true, IsPublic: true}
+	template.ID = 100
+
+	copied := &model.Roadmap{Title: "Webフロントエンド", UserID: 5, IsTemplate: false}
+	copied.ID = 200
+
+	repo.On("FindByID", uint(100)).Return(template, nil)
+	repo.On("CopyRoadmap", uint(100), uint(5)).Return(copied, nil)
+
+	result, err := svc.CreateFromTemplate(100, 5)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, uint(5), result.UserID)
+	assert.Equal(t, "Webフロントエンド", result.Title)
+	repo.AssertExpectations(t)
+}
+
+func TestCreateFromTemplate_NotTemplate(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	// IsTemplateがfalseの通常ロードマップ
+	regular := &model.Roadmap{Title: "My Roadmap", UserID: 1, IsTemplate: false, IsPublic: true}
+	regular.ID = 50
+
+	repo.On("FindByID", uint(50)).Return(regular, nil)
+
+	result, err := svc.CreateFromTemplate(50, 5)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestCreateFromTemplate_TemplateNotFound(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	repo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	result, err := svc.CreateFromTemplate(999, 5)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestSeedTemplates_CreatesTemplates(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	// 既存テンプレートなし
+	repo.On("GetTemplates").Return([]model.Roadmap{}, nil)
+	// 各テンプレート作成のモック
+	repo.On("Create", mock.AnythingOfType("*model.Roadmap")).Return(nil)
+	repo.On("CreateStep", mock.AnythingOfType("*model.RoadmapStep")).Return(nil)
+
+	err := svc.SeedTemplates()
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+
+	// Createが5回以上呼ばれている（5テンプレート）
+	createCalls := 0
+	for _, call := range repo.Calls {
+		if call.Method == "Create" {
+			createCalls++
+		}
+	}
+	assert.GreaterOrEqual(t, createCalls, 5)
+}
+
+func TestSeedTemplates_SkipsIfAlreadyExist(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	// 既にテンプレートが存在する
+	existing := []model.Roadmap{
+		{Title: "Existing Template", IsTemplate: true},
+	}
+	repo.On("GetTemplates").Return(existing, nil)
+
+	err := svc.SeedTemplates()
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+
+	// Createは呼ばれない
+	repo.AssertNotCalled(t, "Create", mock.Anything)
 }

@@ -13,7 +13,7 @@ export { useFollowList } from './useFollowList';
 export { useNotifications } from './useNotifications';
 export { useQuestions } from './useQuestions';
 export { useQuestionDetail } from './useQuestionDetail';
-export { useRoadmaps, useRoadmapDetail } from './useRoadmaps';
+export { useRoadmaps, useRoadmapDetail, useRoadmapTemplates } from './useRoadmaps';
 export { useDashboard } from './useDashboard';
 export { useBadgeNotifier } from './useBadgeNotifier';
 export { useLearningLogs, useLearningLogCalendar, useStreak } from './useLearningLogs';

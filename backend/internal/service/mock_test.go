@@ -768,6 +768,11 @@ func (m *MockRoadmapRepository) ReorderSteps(roadmapID uint, stepOrders []reposi
 	return args.Error(0)
 }
 
+func (m *MockRoadmapRepository) GetTemplates() ([]model.Roadmap, error) {
+	args := m.Called()
+	return args.Get(0).([]model.Roadmap), args.Error(1)
+}
+
 // ============================================================
 // MockChatRoomRepository は repository.ChatRoomRepositoryInterface のテスト用モック実装。
 // ============================================================

@@ -34,6 +34,7 @@ type Roadmap struct {
 	Description        string          `json:"description" gorm:"type:text"`
 	Category           RoadmapCategory `json:"category" gorm:"default:'other'"`
 	IsPublic           bool            `json:"is_public" gorm:"default:false;index"`        // 公開フラグ
+	IsTemplate         bool            `json:"is_template" gorm:"default:false;index"`      // テンプレートフラグ
 	StepCount          int             `json:"step_count" gorm:"default:0"`                  // 全ステップ数
 	CompletedStepCount int             `json:"completed_step_count" gorm:"default:0"`        // 完了済みステップ数
 	Progress           int             `json:"progress" gorm:"default:0"`                    // 進捗率（0〜100、自動計算）

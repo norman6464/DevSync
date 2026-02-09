@@ -695,7 +695,16 @@
     "confirmDeleteStep": "确定要删除此步骤吗？",
     "noSteps": "还没有步骤",
     "addFirstStep": "添加第一个步骤",
-    "stepsReordered": "步骤顺序已更改"
+    "stepsReordered": "步骤顺序已更改",
+    "templates": "推荐模板",
+    "templatesDescription": "使用推荐的路线图开始学习",
+    "templatesAvailable": "个模板",
+    "template": "模板",
+    "useTemplate": "使用此模板",
+    "templateUsed": "已从模板创建路线图",
+    "templateSteps": "包含的步骤",
+    "steps": "个步骤",
+    "viewSteps": "查看步骤"
   },
   "onboarding": {
     "welcomeTitle": "欢迎来到 DevSync！",

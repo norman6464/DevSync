@@ -184,6 +184,7 @@ type RoadmapRepositoryInterface interface {
 	DeleteStep(stepID uint) error
 	FindStepByID(stepID uint) (*model.RoadmapStep, error)
 	ReorderSteps(roadmapID uint, stepOrders []StepOrder) error
+	GetTemplates() ([]model.Roadmap, error)
 }
 
 // ChatRoomRepositoryInterface はチャットルームデータ操作の契約を定義する。

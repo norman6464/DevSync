@@ -695,7 +695,16 @@
     "confirmDeleteStep": "このステップを削除してもよろしいですか？",
     "noSteps": "ステップがまだありません",
     "addFirstStep": "最初のステップを追加",
-    "stepsReordered": "ステップの順序を変更しました"
+    "stepsReordered": "ステップの順序を変更しました",
+    "templates": "おすすめテンプレート",
+    "templatesDescription": "おすすめのロードマップで学習を始めよう",
+    "templatesAvailable": "件のテンプレート",
+    "template": "テンプレート",
+    "useTemplate": "このテンプレートを使う",
+    "templateUsed": "テンプレートからロードマップを作成しました",
+    "templateSteps": "含まれるステップ",
+    "steps": "ステップ",
+    "viewSteps": "ステップを見る"
   },
   "onboarding": {
     "welcomeTitle": "DevSyncへようこそ！",
