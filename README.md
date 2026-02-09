@@ -562,11 +562,18 @@ API仕様はOpenAPI (Swagger)で管理しています。
 - [x] Duration・Category・Sourceのバリデーション追加（TDD: 5テストケース）
 - [x] 全10言語のi18n対応
 
-### Phase 3.16（セキュリティ修正）✅
+### Phase 3.16（セキュリティ修正 — Critical）✅
 - [x] パスワードリセットトークンのAPIレスポンス漏洩を修正（アカウント乗っ取り防止）
 - [x] JWTシークレットのハードコードデフォルト値を除去（トークン偽造防止）
 - [x] ポートフォリオHTML生成のXSS脆弱性を修正（HTMLエスケープ・URLサニタイズ追加）
 - [x] JWT_SECRET環境変数を必須化（未設定時にサーバー起動を阻止）
+
+### Phase 3.17（セキュリティ修正 — High）✅
+- [x] WebSocketオリジン検証の追加（CSWSH対策、CORS設定と連動）
+- [x] WebSocket認証をhttpOnly Cookieベースに変更（トークンURL露出防止）
+- [x] WebSocketグループメッセージに認可チェックを追加（ルームメンバーシップ検証）
+- [x] ファイルアップロードにマジックバイトMIMEタイプ検証を追加（Stored XSS防止）
+- [x] Markdownレンダリングにrehype-sanitizeを導入（明示的HTMLサニタイズ）
 
 ### Phase 4（将来）📋
 - [ ] モバイルアプリ
