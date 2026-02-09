@@ -4,6 +4,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -35,7 +36,7 @@ func Load() *Config {
 		DBPass:             getEnv("DB_PASSWORD", "devsync"),
 		DBName:             getEnv("DB_NAME", "devsync"),
 		DBSSLMode:          getEnv("DB_SSLMODE", "disable"),
-		JWTSecret:          getEnv("JWT_SECRET", "devsync-dev-secret-change-me"),
+		JWTSecret:          requireEnv("JWT_SECRET"),
 		GitHubClientID:     getEnv("GITHUB_CLIENT_ID", ""),
 		GitHubClientSecret: getEnv("GITHUB_CLIENT_SECRET", ""),
 		GitHubRedirectURL: getEnv("GITHUB_REDIRECT_URL", "http://localhost:5173/github/callback"),
@@ -58,4 +59,13 @@ func getEnv(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+// requireEnv は必須の環境変数を取得する。未設定の場合はログ出力してpanicする。
+func requireEnv(key string) string {
+	v := os.Getenv(key)
+	if v == "" {
+		log.Fatalf("FATAL: 必須の環境変数 %s が設定されていません", key)
+	}
+	return v
 }
