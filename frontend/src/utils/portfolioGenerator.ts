@@ -14,6 +14,35 @@ export interface PortfolioData {
   followingCount: number;
 }
 
+/**
+ * HTMLエスケープ — XSS攻撃を防ぐためにユーザー入力を安全な文字列に変換する。
+ * &, <, >, ", ' の5文字をHTMLエンティティに置換する。
+ */
+function escapeHTML(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * URL属性用のサニタイズ — javascript:プロトコル等を防ぐ。
+ * http/httpsのみ許可し、それ以外は空文字を返す。
+ */
+function sanitizeURL(url: string): string {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return escapeHTML(url);
+    }
+    return '';
+  } catch {
+    return '';
+  }
+}
+
 const languageColors: Record<string, string> = {
   JavaScript: '#f1e05a',
   TypeScript: '#3178c6',
@@ -64,12 +93,17 @@ export const generatePortfolioHTML = (data: PortfolioData, theme: PortfolioTheme
   const skills = user.skills_languages ? user.skills_languages.split(',') : [];
   const frameworks = user.skills_frameworks ? user.skills_frameworks.split(',') : [];
 
+  // ユーザー入力を事前にエスケープ
+  const safeName = escapeHTML(user.name);
+  const safeBio = user.bio ? escapeHTML(user.bio) : '';
+  const safeAvatarUrl = user.avatar_url ? sanitizeURL(user.avatar_url) : '';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${user.name} - Developer Portfolio</title>
+  <title>${safeName} - Developer Portfolio</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -110,9 +144,9 @@ export const generatePortfolioHTML = (data: PortfolioData, theme: PortfolioTheme
 <body>
   <div class="container">
     <header class="header">
-      ${user.avatar_url ? `<img src="${user.avatar_url}" alt="${user.name}" class="avatar">` : ''}
-      <h1 class="name">${user.name}</h1>
-      ${user.bio ? `<p class="bio">${user.bio}</p>` : ''}
+      ${safeAvatarUrl ? `<img src="${safeAvatarUrl}" alt="${safeName}" class="avatar">` : ''}
+      <h1 class="name">${safeName}</h1>
+      ${safeBio ? `<p class="bio">${safeBio}</p>` : ''}
       <div class="stats">
         <div class="stat">
           <div class="stat-value">${totalContributions.toLocaleString()}</div>
@@ -136,7 +170,7 @@ export const generatePortfolioHTML = (data: PortfolioData, theme: PortfolioTheme
         ${topLanguages.map(lang => `
           <div class="lang-item">
             <span class="lang-dot" style="background: ${languageColors[lang.language] || '#888'}"></span>
-            <span class="lang-name">${lang.language}</span>
+            <span class="lang-name">${escapeHTML(lang.language)}</span>
             <span class="lang-count">(${lang.repo_count})</span>
           </div>
         `).join('')}
@@ -148,8 +182,8 @@ export const generatePortfolioHTML = (data: PortfolioData, theme: PortfolioTheme
     <section class="section">
       <h2 class="section-title">Skills</h2>
       <div class="skill-tags">
-        ${skills.map((s: string) => `<span class="skill-tag">${s}</span>`).join('')}
-        ${frameworks.map((f: string) => `<span class="skill-tag">${f}</span>`).join('')}
+        ${skills.map((s: string) => `<span class="skill-tag">${escapeHTML(s.trim())}</span>`).join('')}
+        ${frameworks.map((f: string) => `<span class="skill-tag">${escapeHTML(f.trim())}</span>`).join('')}
       </div>
     </section>
     ` : ''}
@@ -160,10 +194,10 @@ export const generatePortfolioHTML = (data: PortfolioData, theme: PortfolioTheme
       <div class="grid">
         ${topRepos.map(repo => `
           <div class="card">
-            <div class="repo-name">${repo.name}</div>
-            ${repo.description ? `<p class="repo-desc">${repo.description}</p>` : ''}
+            <div class="repo-name">${escapeHTML(repo.name)}</div>
+            ${repo.description ? `<p class="repo-desc">${escapeHTML(repo.description)}</p>` : ''}
             <div class="repo-meta">
-              ${repo.language ? `<span>${repo.language}</span>` : ''}
+              ${repo.language ? `<span>${escapeHTML(repo.language)}</span>` : ''}
               <span>⭐ ${repo.stars}</span>
               <span>🍴 ${repo.forks}</span>
             </div>
@@ -179,9 +213,9 @@ export const generatePortfolioHTML = (data: PortfolioData, theme: PortfolioTheme
       <div class="card">
         ${activeGoals.map(goal => `
           <div class="goal-item">
-            <div class="goal-title">${goal.title}</div>
+            <div class="goal-title">${escapeHTML(goal.title)}</div>
             <div class="progress-bar">
-              <div class="progress-fill" style="width: ${goal.progress}%"></div>
+              <div class="progress-fill" style="width: ${Math.min(Math.max(goal.progress, 0), 100)}%"></div>
             </div>
           </div>
         `).join('')}
