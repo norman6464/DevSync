@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { usePostDetail } from '../hooks';
 import PostCard from '../components/posts/PostCard';
+import CodeSnippetViewer from '../components/posts/CodeSnippetViewer';
 import Avatar from '../components/common/Avatar';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { format } from 'date-fns';
 
 export default function PostDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { t } = useTranslation();
   const { post, comments, loading, submitting, submitComment, refetch } = usePostDetail(id);
   const [newComment, setNewComment] = useState('');
 
@@ -24,6 +27,21 @@ export default function PostDetailPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <PostCard post={post} onUpdate={refetch} />
+
+      {/* Code Snippets Section */}
+      {post.code_snippets && post.code_snippets.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
+            <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
+            </svg>
+            {t('post.codeSnippets')} ({post.code_snippets.length})
+          </h3>
+          {post.code_snippets.map((snippet) => (
+            <CodeSnippetViewer key={snippet.id} snippet={snippet} showComments />
+          ))}
+        </div>
+      )}
 
       {/* Comments Section */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
