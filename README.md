@@ -414,7 +414,7 @@ Service層のユニットテストを `testify/mock` ベースで実装してい
 | `project_test.go` | プロジェクト・Featured | 7 |
 | `book_review_test.go` | 書籍レビュー | 5 |
 | `learning_resource_test.go` | リソース・可視性制御 | 12 |
-| `roadmap_test.go` | ロードマップ・ステップ所属・テンプレート | 27 |
+| `roadmap_test.go` | ロードマップ・ステップ所属・テンプレート | 28 |
 | `chat_room_test.go` | チャット・メンバーシップ | 16 |
 | `user_test.go` | ユーザー検索分岐 | 4 |
 | `notification_test.go` | 通知・フォロワー通知 | 5 |
@@ -478,7 +478,7 @@ API仕様はOpenAPI (Swagger)で管理しています。
 
 ### Phase 3.6（品質基盤）✅
 - [x] クリーンアーキテクチャ（Handler → Service → Repository Interface）
-- [x] Service層ユニットテスト（127テストケース、15サービス対象）
+- [x] Service層ユニットテスト（128テストケース、15サービス対象）
 - [x] GitHub Actions CI（テスト自動実行）
 - [x] testify/mockによるモックベーステスト
 
@@ -517,8 +517,8 @@ API仕様はOpenAPI (Swagger)で管理しています。
 - [x] 5種類のおすすめ学習ロードマップテンプレート（Webフロントエンド、バックエンド Go、フルスタック、インフラ/DevOps、モバイル React Native）
 - [x] テンプレートからワンクリックでロードマップ作成（ステップも自動コピー）
 - [x] テンプレート一覧表示・ステップ詳細のプレビュー機能
-- [x] アプリ起動時の自動シード（既にテンプレートが存在する場合はスキップ）
-- [x] TDD（テスト駆動開発）で実装（7テストケース追加）
+- [x] アプリ起動時の自動シード（システムユーザー自動作成、既存テンプレートがある場合はスキップ）
+- [x] TDD（テスト駆動開発）で実装（8テストケース追加）
 - [x] 全10言語のi18n対応
 
 ### Phase 4（将来）📋
