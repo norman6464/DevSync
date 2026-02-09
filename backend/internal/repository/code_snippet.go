@@ -1,0 +1,80 @@
+package repository
+
+import (
+	"github.com/norman6464/devsync/backend/internal/model"
+	"gorm.io/gorm"
+)
+
+// CodeSnippetRepository はコードスニペットデータのDB操作を実装する。
+type CodeSnippetRepository struct {
+	db *gorm.DB
+}
+
+// NewCodeSnippetRepository は新しいCodeSnippetRepositoryインスタンスを生成する。
+func NewCodeSnippetRepository(db *gorm.DB) *CodeSnippetRepository {
+	return &CodeSnippetRepository{db: db}
+}
+
+// Create は新しいコードスニペットをDBに作成する。
+func (r *CodeSnippetRepository) Create(snippet *model.CodeSnippet) error {
+	return r.db.Create(snippet).Error
+}
+
+// FindByID は指定IDのコードスニペットを取得する。
+func (r *CodeSnippetRepository) FindByID(id uint) (*model.CodeSnippet, error) {
+	var snippet model.CodeSnippet
+	err := r.db.First(&snippet, id).Error
+	return &snippet, err
+}
+
+// FindByPostID は指定投稿IDに紐づくコードスニペット一覧を取得する。
+func (r *CodeSnippetRepository) FindByPostID(postID uint) ([]model.CodeSnippet, error) {
+	var snippets []model.CodeSnippet
+	err := r.db.Where("post_id = ?", postID).Order("created_at ASC").Find(&snippets).Error
+	return snippets, err
+}
+
+// Update は既存のコードスニペットを更新する。
+func (r *CodeSnippetRepository) Update(snippet *model.CodeSnippet) error {
+	return r.db.Save(snippet).Error
+}
+
+// Delete はコードスニペットを削除する。
+func (r *CodeSnippetRepository) Delete(id uint) error {
+	return r.db.Delete(&model.CodeSnippet{}, id).Error
+}
+
+// CreateComment はスニペットへのインラインコメントを作成する。
+// 同時にスニペットのcomment_countをインクリメントする。
+func (r *CodeSnippetRepository) CreateComment(comment *model.SnippetComment) error {
+	err := r.db.Create(comment).Error
+	if err != nil {
+		return err
+	}
+	return r.db.Model(&model.CodeSnippet{}).Where("id = ?", comment.SnippetID).
+		UpdateColumn("comment_count", gorm.Expr("comment_count + 1")).Error
+}
+
+// GetComments は指定スニペットIDのインラインコメント一覧を取得する。
+// 行番号→作成日時の順でソートし、Userアソシエーションもプリロードする。
+func (r *CodeSnippetRepository) GetComments(snippetID uint) ([]model.SnippetComment, error) {
+	var comments []model.SnippetComment
+	err := r.db.Preload("User").Where("snippet_id = ?", snippetID).
+		Order("line_number ASC, created_at ASC").Find(&comments).Error
+	return comments, err
+}
+
+// DeleteComment はインラインコメントを削除する。
+// 所有権を検証し、スニペットのcomment_countをデクリメントする。
+func (r *CodeSnippetRepository) DeleteComment(id, userID uint) error {
+	var comment model.SnippetComment
+	if err := r.db.First(&comment, id).Error; err != nil {
+		return err
+	}
+	if comment.UserID != userID {
+		return gorm.ErrRecordNotFound
+	}
+	r.db.Model(&model.CodeSnippet{}).Where("id = ?", comment.SnippetID).
+		UpdateColumn("comment_count", gorm.Expr("GREATEST(comment_count - 1, 0)"))
+	return r.db.Delete(&comment).Error
+}
