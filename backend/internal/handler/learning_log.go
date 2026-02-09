@@ -30,6 +30,7 @@ func (h *LearningLogHandler) Create(c *gin.Context) {
 		Content  string `json:"content" binding:"required"`
 		Category string `json:"category"`
 		Duration int    `json:"duration"`
+		Source   string `json:"source"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -43,6 +44,7 @@ func (h *LearningLogHandler) Create(c *gin.Context) {
 		Content:  req.Content,
 		Category: model.LogCategory(req.Category),
 		Duration: req.Duration,
+		Source:   model.LogSource(req.Source),
 	}
 
 	// カテゴリが未指定の場合はデフォルト値を設定
@@ -51,6 +53,10 @@ func (h *LearningLogHandler) Create(c *gin.Context) {
 	}
 
 	if err := h.service.Create(log); err != nil {
+		if errors.Is(err, service.ErrBadRequest) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request parameters"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create log"})
 		return
 	}

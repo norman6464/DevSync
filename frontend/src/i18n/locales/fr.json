@@ -813,5 +813,28 @@
     "deleteConversation": "Supprimer la conversation",
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette conversation ? Cette action est irréversible.",
     "deleted": "Conversation supprimée"
+  },
+  "pomodoro": {
+    "timer": "Minuteur Pomodoro",
+    "focus": "Concentration",
+    "shortBreak": "Pause courte",
+    "longBreak": "Pause longue",
+    "start": "Démarrer",
+    "pause": "Pause",
+    "reset": "Réinitialiser",
+    "skip": "Passer",
+    "focusComplete": "Session de concentration terminée ! Prenez une pause.",
+    "breakComplete": "Pause terminée ! Commencez la prochaine session de concentration.",
+    "cycle": "Cycle",
+    "cyclesCompleted": "{{count}} cycles terminés",
+    "autoLog": "Enregistrement automatique",
+    "autoLogEnabled": "Enregistrement automatique du journal d'apprentissage à la fin de la session de concentration",
+    "categorySelect": "Sélectionner une catégorie",
+    "minutesFormat": "{{minutes}} min",
+    "soundOn": "Son de notification ON",
+    "soundOff": "Son de notification OFF",
+    "pomodoroSession": "Session de concentration Pomodoro",
+    "sessionCompleted": "Session de concentration de {{minutes}} minutes terminée",
+    "logSaved": "Journal d'apprentissage enregistré"
   }
 }

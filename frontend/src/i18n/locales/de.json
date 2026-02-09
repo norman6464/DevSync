@@ -813,5 +813,28 @@
     "deleteConversation": "Gespräch löschen",
     "deleteConfirm": "Möchten Sie dieses Gespräch wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
     "deleted": "Gespräch gelöscht"
+  },
+  "pomodoro": {
+    "timer": "Pomodoro-Timer",
+    "focus": "Fokus",
+    "shortBreak": "Kurze Pause",
+    "longBreak": "Lange Pause",
+    "start": "Starten",
+    "pause": "Pausieren",
+    "reset": "Zurücksetzen",
+    "skip": "Überspringen",
+    "focusComplete": "Fokus-Session abgeschlossen! Machen Sie eine Pause.",
+    "breakComplete": "Pause beendet! Starten Sie die nächste Fokus-Session.",
+    "cycle": "Zyklus",
+    "cyclesCompleted": "{{count}} Zyklen abgeschlossen",
+    "autoLog": "Automatische Protokollierung",
+    "autoLogEnabled": "Lernprotokoll automatisch nach Abschluss der Fokus-Session erstellen",
+    "categorySelect": "Kategorie auswählen",
+    "minutesFormat": "{{minutes}} Min.",
+    "soundOn": "Benachrichtigungston AN",
+    "soundOff": "Benachrichtigungston AUS",
+    "pomodoroSession": "Pomodoro-Fokus-Session",
+    "sessionCompleted": "{{minutes}}-Minuten-Fokus-Session abgeschlossen",
+    "logSaved": "Lernprotokoll gespeichert"
   }
 }

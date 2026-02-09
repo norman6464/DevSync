@@ -17,7 +17,20 @@ func NewLearningLogService(repo repository.LearningLogRepositoryInterface) *Lear
 }
 
 // Create は新しい学習ログを作成する。
+// Duration、Category、Sourceのバリデーションを行う。
 func (s *LearningLogService) Create(log *model.LearningLog) error {
+	// Duration: 0以上1440以下（24時間）
+	if log.Duration < 0 || log.Duration > 1440 {
+		return ErrBadRequest
+	}
+	// Category: 空文字（デフォルト適用）または有効な値のみ許可
+	if log.Category != "" && !model.ValidCategories[log.Category] {
+		return ErrBadRequest
+	}
+	// Source: 空文字（デフォルト"manual"）または有効な値のみ許可
+	if log.Source != "" && !model.ValidSources[log.Source] {
+		return ErrBadRequest
+	}
 	return s.repo.Create(log)
 }
 

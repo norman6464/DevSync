@@ -31,6 +31,83 @@ func TestLearningLogCreate_Success(t *testing.T) {
 }
 
 // ============================================================
+// 学習ログ作成バリデーションテスト
+// ============================================================
+
+func TestLearningLogCreate_InvalidCategory(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	log := &model.LearningLog{
+		Title:    "テスト",
+		Content:  "テスト内容",
+		UserID:   1,
+		Category: model.LogCategory("invalid"),
+	}
+
+	err := svc.Create(log)
+	assert.ErrorIs(t, err, ErrBadRequest)
+}
+
+func TestLearningLogCreate_NegativeDuration(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	log := &model.LearningLog{
+		Title:    "テスト",
+		Content:  "テスト内容",
+		UserID:   1,
+		Duration: -10,
+	}
+
+	err := svc.Create(log)
+	assert.ErrorIs(t, err, ErrBadRequest)
+}
+
+func TestLearningLogCreate_ExcessiveDuration(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	log := &model.LearningLog{
+		Title:    "テスト",
+		Content:  "テスト内容",
+		UserID:   1,
+		Duration: 1500,
+	}
+
+	err := svc.Create(log)
+	assert.ErrorIs(t, err, ErrBadRequest)
+}
+
+func TestLearningLogCreate_WithSource(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	log := &model.LearningLog{
+		Title:    "ポモドーロ集中",
+		Content:  "25分の集中セッション",
+		UserID:   1,
+		Duration: 25,
+		Source:   model.LogSourcePomodoro,
+	}
+	repo.On("Create", log).Return(nil)
+
+	err := svc.Create(log)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogCreate_InvalidSource(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	log := &model.LearningLog{
+		Title:    "テスト",
+		Content:  "テスト内容",
+		UserID:   1,
+		Source:   model.LogSource("unknown"),
+	}
+
+	err := svc.Create(log)
+	assert.ErrorIs(t, err, ErrBadRequest)
+}
+
+// ============================================================
 // 学習ログ更新テスト
 // ============================================================
 

@@ -813,5 +813,28 @@
     "deleteConversation": "Excluir conversa",
     "deleteConfirm": "Tem certeza de que deseja excluir esta conversa? Esta ação não pode ser desfeita.",
     "deleted": "Conversa excluída"
+  },
+  "pomodoro": {
+    "timer": "Temporizador Pomodoro",
+    "focus": "Foco",
+    "shortBreak": "Pausa curta",
+    "longBreak": "Pausa longa",
+    "start": "Iniciar",
+    "pause": "Pausar",
+    "reset": "Reiniciar",
+    "skip": "Pular",
+    "focusComplete": "Sessão de foco concluída! Faça uma pausa.",
+    "breakComplete": "Pausa encerrada! Comece a próxima sessão de foco.",
+    "cycle": "Ciclo",
+    "cyclesCompleted": "{{count}} ciclos concluídos",
+    "autoLog": "Registro automático",
+    "autoLogEnabled": "Registrar automaticamente o aprendizado ao concluir a sessão de foco",
+    "categorySelect": "Selecionar categoria",
+    "minutesFormat": "{{minutes}} min",
+    "soundOn": "Som de notificação ON",
+    "soundOff": "Som de notificação OFF",
+    "pomodoroSession": "Sessão de foco Pomodoro",
+    "sessionCompleted": "Sessão de foco de {{minutes}} minutos concluída",
+    "logSaved": "Registro de aprendizado salvo"
   }
 }

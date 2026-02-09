@@ -813,5 +813,28 @@
     "deleteConversation": "대화 삭제",
     "deleteConfirm": "이 대화를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
     "deleted": "대화가 삭제되었습니다"
+  },
+  "pomodoro": {
+    "timer": "포모도로 타이머",
+    "focus": "집중",
+    "shortBreak": "짧은 휴식",
+    "longBreak": "긴 휴식",
+    "start": "시작",
+    "pause": "일시 정지",
+    "reset": "초기화",
+    "skip": "건너뛰기",
+    "focusComplete": "집중 세션 완료! 휴식을 취하세요.",
+    "breakComplete": "휴식 종료! 다음 집중 세션을 시작하세요.",
+    "cycle": "사이클",
+    "cyclesCompleted": "{{count}}사이클 완료",
+    "autoLog": "자동 로그 기록",
+    "autoLogEnabled": "집중 세션 완료 시 학습 로그를 자동 기록",
+    "categorySelect": "카테고리 선택",
+    "minutesFormat": "{{minutes}}분",
+    "soundOn": "알림음 ON",
+    "soundOff": "알림음 OFF",
+    "pomodoroSession": "포모도로 집중 세션",
+    "sessionCompleted": "{{minutes}}분 집중 세션 완료",
+    "logSaved": "학습 로그를 기록했습니다"
   }
 }

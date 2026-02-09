@@ -14,6 +14,30 @@ const (
 	LogCategoryOther   LogCategory = "other"   // その他
 )
 
+// ValidCategories は有効なカテゴリ値のマップ（バリデーション用）。
+var ValidCategories = map[LogCategory]bool{
+	LogCategoryCoding:  true,
+	LogCategoryReading: true,
+	LogCategoryCourse:  true,
+	LogCategoryMeetup:  true,
+	LogCategoryOther:   true,
+}
+
+// LogSource は学習ログの記録元を表す型。
+type LogSource string
+
+// 学習ログのソース定数群。
+const (
+	LogSourceManual   LogSource = "manual"   // 手動入力
+	LogSourcePomodoro LogSource = "pomodoro" // ポモドーロタイマー
+)
+
+// ValidSources は有効なソース値のマップ（バリデーション用）。
+var ValidSources = map[LogSource]bool{
+	LogSourceManual:   true,
+	LogSourcePomodoro: true,
+}
+
 // LearningLog は日々の学習記録を表す。
 type LearningLog struct {
 	ID        uint        `json:"id" gorm:"primaryKey"`
@@ -21,7 +45,8 @@ type LearningLog struct {
 	Title     string      `json:"title" gorm:"not null"`
 	Content   string      `json:"content" gorm:"type:text;not null"`
 	Category  LogCategory `json:"category" gorm:"default:'other'"`
-	Duration  int         `json:"duration" gorm:"default:0"` // 学習時間（分単位）
+	Duration  int         `json:"duration" gorm:"default:0"`      // 学習時間（分単位）
+	Source    LogSource   `json:"source" gorm:"default:'manual'"` // 記録元（manual/pomodoro）
 	CreatedAt time.Time   `json:"created_at"`
 	UpdatedAt time.Time   `json:"updated_at"`
 }

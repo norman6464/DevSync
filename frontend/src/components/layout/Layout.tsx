@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import ScrollToTop from '../common/ScrollToTop';
 import ScrollToTopOnNavigate from '../common/ScrollToTopOnNavigate';
+import PomodoroTimer from '../common/PomodoroTimer';
 
 export default function Layout() {
   return (
@@ -11,6 +12,7 @@ export default function Layout() {
       <main className="max-w-7xl mx-auto px-4 py-6">
         <Outlet />
       </main>
+      <PomodoroTimer />
       <ScrollToTop />
     </div>
   );
