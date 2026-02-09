@@ -93,6 +93,20 @@ func (h *Hub) SendToUser(userID uint, message []byte) {
 	}
 }
 
+// IsRoomMember は指定ユーザーが指定ルームのメンバーかどうかを確認する。
+func (h *Hub) IsRoomMember(roomID uint, userID uint) bool {
+	if h.GetRoomMembers == nil {
+		return false
+	}
+	memberIDs := h.GetRoomMembers(roomID)
+	for _, memberID := range memberIDs {
+		if memberID == userID {
+			return true
+		}
+	}
+	return false
+}
+
 // SendToRoom はチャットルームの全メンバー（送信者を除く）にメッセージを配信する。
 func (h *Hub) SendToRoom(roomID uint, senderID uint, message []byte) {
 	if h.GetRoomMembers == nil {
@@ -130,6 +144,11 @@ func (c *Client) ReadPump() {
 
 		data, _ := json.Marshal(msg)
 		if msg.Type == "group_message" && msg.RoomID > 0 {
+			// 送信者がルームのメンバーか検証（認可チェック）
+			if !c.Hub.IsRoomMember(msg.RoomID, c.UserID) {
+				log.Printf("websocket: ユーザー %d はルーム %d のメンバーではないため、メッセージを拒否", c.UserID, msg.RoomID)
+				continue
+			}
 			// グループメッセージ → ルーム全体に配信
 			c.Hub.SendToRoom(msg.RoomID, c.UserID, data)
 		} else {
