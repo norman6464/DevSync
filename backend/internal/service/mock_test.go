@@ -928,3 +928,160 @@ var _ repository.RoadmapRepositoryInterface = (*MockRoadmapRepository)(nil)
 var _ repository.ChatRoomRepositoryInterface = (*MockChatRoomRepository)(nil)
 var _ repository.GroupMessageRepositoryInterface = (*MockGroupMessageRepository)(nil)
 var _ repository.CodeSnippetRepositoryInterface = (*MockCodeSnippetRepository)(nil)
+var _ repository.AIAdviceRepositoryInterface = (*MockAIAdviceRepository)(nil)
+var _ repository.AIConversationRepositoryInterface = (*MockAIConversationRepository)(nil)
+var _ repository.GitHubRepositoryInterface = (*MockGitHubRepository)(nil)
+var _ LLMClientInterface = (*MockLLMClient)(nil)
+
+// ============================================================
+// MockAIAdviceRepository は repository.AIAdviceRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockAIAdviceRepository struct {
+	mock.Mock
+}
+
+func (m *MockAIAdviceRepository) Create(advice *model.AIAdvice) error {
+	args := m.Called(advice)
+	return args.Error(0)
+}
+
+func (m *MockAIAdviceRepository) CreateBatch(advices []*model.AIAdvice) error {
+	args := m.Called(advices)
+	return args.Error(0)
+}
+
+func (m *MockAIAdviceRepository) FindByUserID(userID uint, limit int) ([]model.AIAdvice, error) {
+	args := m.Called(userID, limit)
+	return args.Get(0).([]model.AIAdvice), args.Error(1)
+}
+
+func (m *MockAIAdviceRepository) FindUnreadByUserID(userID uint) ([]model.AIAdvice, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.AIAdvice), args.Error(1)
+}
+
+func (m *MockAIAdviceRepository) MarkAsRead(id, userID uint) error {
+	args := m.Called(id, userID)
+	return args.Error(0)
+}
+
+func (m *MockAIAdviceRepository) MarkAllAsRead(userID uint) error {
+	args := m.Called(userID)
+	return args.Error(0)
+}
+
+func (m *MockAIAdviceRepository) DeleteExpired() error {
+	args := m.Called()
+	return args.Error(0)
+}
+
+func (m *MockAIAdviceRepository) DeleteByUserID(userID uint) error {
+	args := m.Called(userID)
+	return args.Error(0)
+}
+
+// ============================================================
+// MockAIConversationRepository は repository.AIConversationRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockAIConversationRepository struct {
+	mock.Mock
+}
+
+func (m *MockAIConversationRepository) CreateConversation(conv *model.AIConversation) error {
+	args := m.Called(conv)
+	return args.Error(0)
+}
+
+func (m *MockAIConversationRepository) FindConversationsByUserID(userID uint, limit, offset int) ([]model.AIConversation, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.AIConversation), args.Error(1)
+}
+
+func (m *MockAIConversationRepository) FindConversationByID(id uint) (*model.AIConversation, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.AIConversation), args.Error(1)
+}
+
+func (m *MockAIConversationRepository) AddMessage(msg *model.AIMessage) error {
+	args := m.Called(msg)
+	return args.Error(0)
+}
+
+func (m *MockAIConversationRepository) GetMessages(conversationID uint) ([]model.AIMessage, error) {
+	args := m.Called(conversationID)
+	return args.Get(0).([]model.AIMessage), args.Error(1)
+}
+
+func (m *MockAIConversationRepository) CountTodayMessages(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockAIConversationRepository) DeleteConversation(id, userID uint) error {
+	args := m.Called(id, userID)
+	return args.Error(0)
+}
+
+// ============================================================
+// MockLLMClient は LLMClientInterface のテスト用モック実装。
+// ============================================================
+
+type MockLLMClient struct {
+	mock.Mock
+}
+
+func (m *MockLLMClient) Complete(messages []ChatMessage) (*ChatResponse, error) {
+	args := m.Called(messages)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*ChatResponse), args.Error(1)
+}
+
+// ============================================================
+// MockGitHubRepository は repository.GitHubRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockGitHubRepository struct {
+	mock.Mock
+}
+
+func (m *MockGitHubRepository) UpsertContributions(contributions []model.GitHubContribution) error {
+	args := m.Called(contributions)
+	return args.Error(0)
+}
+
+func (m *MockGitHubRepository) GetContributions(userID uint) ([]model.GitHubContribution, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.GitHubContribution), args.Error(1)
+}
+
+func (m *MockGitHubRepository) UpsertLanguageStats(stats []model.GitHubLanguageStat) error {
+	args := m.Called(stats)
+	return args.Error(0)
+}
+
+func (m *MockGitHubRepository) GetLanguageStats(userID uint) ([]model.GitHubLanguageStat, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.GitHubLanguageStat), args.Error(1)
+}
+
+func (m *MockGitHubRepository) UpsertRepos(repos []model.GitHubRepository) error {
+	args := m.Called(repos)
+	return args.Error(0)
+}
+
+func (m *MockGitHubRepository) GetRepos(userID uint) ([]model.GitHubRepository, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.GitHubRepository), args.Error(1)
+}
+
+func (m *MockGitHubRepository) DeleteUserData(userID uint) error {
+	args := m.Called(userID)
+	return args.Error(0)
+}
