@@ -14,8 +14,13 @@ export function usePosts() {
     { initialData: [] as Post[], deps: [tab] }
   );
 
-  const handleCreatePost = useCallback(async (title: string, content: string, imageUrls?: string) => {
-    await createPost({ title, content, image_urls: imageUrls });
+  const handleCreatePost = useCallback(async (
+    title: string,
+    content: string,
+    imageUrls?: string,
+    codeSnippets?: { language: string; file_name?: string; code: string }[]
+  ) => {
+    await createPost({ title, content, image_urls: imageUrls, code_snippets: codeSnippets });
     refetch();
   }, [refetch]);
 

@@ -17,3 +17,4 @@ export { useRoadmaps, useRoadmapDetail, useRoadmapTemplates } from './useRoadmap
 export { useDashboard } from './useDashboard';
 export { useBadgeNotifier } from './useBadgeNotifier';
 export { useLearningLogs, useLearningLogCalendar, useStreak } from './useLearningLogs';
+export { useSnippetComments } from './useSnippetComments';
