@@ -19,7 +19,7 @@ interface ChatState {
   chatRooms: ChatRoom[];
   activeRoomId: number | null;
   groupMessages: GroupMessage[];
-  connect: (token: string) => void;
+  connect: () => void;
   disconnect: () => void;
   setConversations: (conversations: Conversation[]) => void;
   setActiveMessages: (messages: Message[]) => void;
@@ -41,17 +41,18 @@ export const useChatStore = create<ChatState>((set, get) => ({
   activeRoomId: null,
   groupMessages: [],
 
-  connect: (token) => {
+  connect: () => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${protocol}//${window.location.host}/ws?token=${token}`);
+    // Cookieは自動送信されるため、URLにトークンを含めない
+    const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
 
     ws.onopen = () => set({ connected: true });
     ws.onclose = () => {
       set({ connected: false, socket: null });
       setTimeout(() => {
         const state = get();
-        if (!state.connected && token) {
-          state.connect(token);
+        if (!state.connected) {
+          state.connect();
         }
       }, 3000);
     };

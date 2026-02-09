@@ -53,10 +53,12 @@ func (h *WebSocketHandler) checkOrigin(r *http.Request) bool {
 }
 
 // HandleWebSocket はWebSocket接続を確立し、クライアントをハブに登録する。
+// 認証はhttpOnly Cookie内のJWTトークンで行う（URLにトークンを含めない）。
 func (h *WebSocketHandler) HandleWebSocket(c *gin.Context) {
-	token := c.Query("token")
-	if token == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "token required"})
+	// httpOnly Cookieからトークンを取得（URLクエリパラメータには含めない）
+	token, err := c.Cookie("token")
+	if err != nil || token == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
 		return
 	}
 
