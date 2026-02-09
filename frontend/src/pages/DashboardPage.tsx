@@ -13,6 +13,7 @@ import Avatar from '../components/common/Avatar';
 import { formatDistanceToNow } from '../utils/timeFormat';
 import StreakWidget from '../components/dashboard/StreakWidget';
 import DailyChallengeWidget from '../components/dashboard/DailyChallengeWidget';
+import AIAdviceWidget from '../components/dashboard/AIAdviceWidget';
 
 export default function DashboardPage() {
   const { t } = useTranslation();
@@ -174,6 +175,9 @@ export default function DashboardPage() {
 
         {/* Daily Challenge Widget */}
         <DailyChallengeWidget />
+
+        {/* AI Advice Widget */}
+        <AIAdviceWidget />
 
         {/* Goals Progress Widget */}
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
