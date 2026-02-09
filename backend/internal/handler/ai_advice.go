@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -100,6 +101,32 @@ func (h *AIAdviceHandler) Chat(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, conv)
+}
+
+// DeleteConversation は会話を削除する。
+func (h *AIAdviceHandler) DeleteConversation(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid conversation id"})
+		return
+	}
+	userID := c.GetUint("userID")
+
+	if err := h.service.DeleteConversation(uint(id), userID); err != nil {
+		if errors.Is(err, service.ErrForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+			return
+		}
+		if errors.Is(err, service.ErrNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "conversation not found"})
+			return
+		}
+		log.Printf("会話削除エラー: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete conversation"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "conversation deleted"})
 }
 
 // GetConversations は会話履歴一覧を取得する。
