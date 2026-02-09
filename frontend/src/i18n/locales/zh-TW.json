@@ -810,5 +810,28 @@
     "exploreResourcesMsg": "資源庫中有豐富的學習材料。",
     "tryQA": "加入Q&A社群",
     "tryQAMsg": "透過提問和回答來深化學習。"
+  },
+  "pomodoro": {
+    "timer": "番茄鐘",
+    "focus": "專注",
+    "shortBreak": "短休息",
+    "longBreak": "長休息",
+    "start": "開始",
+    "pause": "暫停",
+    "reset": "重設",
+    "skip": "跳過",
+    "focusComplete": "專注時段完成！休息一下吧。",
+    "breakComplete": "休息結束！開始下一個專注時段吧。",
+    "cycle": "循環",
+    "cyclesCompleted": "已完成{{count}}個循環",
+    "autoLog": "自動記錄日誌",
+    "autoLogEnabled": "專注時段完成時自動記錄學習日誌",
+    "categorySelect": "選擇分類",
+    "minutesFormat": "{{minutes}}分鐘",
+    "soundOn": "提示音開",
+    "soundOff": "提示音關",
+    "pomodoroSession": "番茄鐘專注時段",
+    "sessionCompleted": "完成了{{minutes}}分鐘的專注時段",
+    "logSaved": "學習日誌已記錄"
   }
 }

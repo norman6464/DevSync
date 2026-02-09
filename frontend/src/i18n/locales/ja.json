@@ -810,5 +810,28 @@
     "exploreResourcesMsg": "教材ライブラリには多くの学習リソースがあります。",
     "tryQA": "Q&Aコミュニティに参加しましょう",
     "tryQAMsg": "質問や回答を通じて、学びを深めましょう。"
+  },
+  "pomodoro": {
+    "timer": "ポモドーロタイマー",
+    "focus": "集中",
+    "shortBreak": "短い休憩",
+    "longBreak": "長い休憩",
+    "start": "開始",
+    "pause": "一時停止",
+    "reset": "リセット",
+    "skip": "スキップ",
+    "focusComplete": "集中セッション完了！休憩を取りましょう。",
+    "breakComplete": "休憩終了！次の集中セッションを始めましょう。",
+    "cycle": "サイクル",
+    "cyclesCompleted": "{{count}}サイクル完了",
+    "autoLog": "自動ログ記録",
+    "autoLogEnabled": "集中セッション完了時に学習ログを自動記録",
+    "categorySelect": "カテゴリを選択",
+    "minutesFormat": "{{minutes}}分",
+    "soundOn": "通知音ON",
+    "soundOff": "通知音OFF",
+    "pomodoroSession": "ポモドーロ集中セッション",
+    "sessionCompleted": "{{minutes}}分の集中セッションを完了",
+    "logSaved": "学習ログを記録しました"
   }
 }

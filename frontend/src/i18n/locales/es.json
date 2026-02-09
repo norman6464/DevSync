@@ -810,5 +810,28 @@
     "exploreResourcesMsg": "La biblioteca de recursos tiene muchos materiales para ayudarte.",
     "tryQA": "Únete a la comunidad Q&A",
     "tryQAMsg": "Profundiza tu aprendizaje haciendo y respondiendo preguntas."
+  },
+  "pomodoro": {
+    "timer": "Temporizador Pomodoro",
+    "focus": "Enfoque",
+    "shortBreak": "Descanso corto",
+    "longBreak": "Descanso largo",
+    "start": "Iniciar",
+    "pause": "Pausar",
+    "reset": "Reiniciar",
+    "skip": "Saltar",
+    "focusComplete": "¡Sesión de enfoque completada! Tómate un descanso.",
+    "breakComplete": "¡Descanso terminado! Comienza la siguiente sesión de enfoque.",
+    "cycle": "Ciclo",
+    "cyclesCompleted": "{{count}} ciclos completados",
+    "autoLog": "Registro automático",
+    "autoLogEnabled": "Registrar automáticamente el log de aprendizaje al completar una sesión de enfoque",
+    "categorySelect": "Seleccionar categoría",
+    "minutesFormat": "{{minutes}} min",
+    "soundOn": "Sonido activado",
+    "soundOff": "Sonido desactivado",
+    "pomodoroSession": "Sesión de enfoque Pomodoro",
+    "sessionCompleted": "Sesión de enfoque de {{minutes}} minutos completada",
+    "logSaved": "Registro de aprendizaje guardado"
   }
 }
