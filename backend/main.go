@@ -59,6 +59,9 @@ func main() {
 		&model.LearningLog{},
 		&model.CodeSnippet{},
 		&model.SnippetComment{},
+		&model.AIAdvice{},
+		&model.AIConversation{},
+		&model.AIMessage{},
 	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}

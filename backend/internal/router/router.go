@@ -55,6 +55,8 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	groupMessageRepo := repository.NewGroupMessageRepository(db)
 	learningLogRepo := repository.NewLearningLogRepository(db)
 	codeSnippetRepo := repository.NewCodeSnippetRepository(db)
+	aiAdviceRepo := repository.NewAIAdviceRepository(db)
+	aiConversationRepo := repository.NewAIConversationRepository(db)
 
 	// サービスの初期化
 	authService := service.NewAuthService(userRepo, passwordResetRepo, cfg.JWTSecret)
@@ -92,6 +94,21 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	atcoderService := service.NewAtCoderService()
 	badgeService := service.NewBadgeService(db, notificationService)
 
+	// AIアドバイスサービス（LLMクライアントはAPIキー設定時のみ初期化）
+	var llmClient service.LLMClientInterface
+	if cfg.OpenAIAPIKey != "" {
+		llmClient = service.NewOpenAIClient(cfg.OpenAIAPIKey)
+		log.Println("OpenAI APIキーが設定されています。LLMチャット機能が有効です。")
+	} else {
+		log.Println("OpenAI APIキー未設定。ルールベース推薦のみ有効です。")
+	}
+	aiAdviceService := service.NewAIAdviceService(
+		aiAdviceRepo, aiConversationRepo,
+		learningGoalRepo, learningLogRepo, roadmapRepo,
+		githubRepo, learningResourceRepo, userRepo,
+		llmClient,
+	)
+
 	// ハンドラの初期化
 	authHandler := handler.NewAuthHandler(authService, githubService)
 	userHandler := handler.NewUserHandler(userService)
@@ -118,6 +135,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	atcoderHandler := handler.NewAtCoderHandler(atcoderService, userService)
 	badgeHandler := handler.NewBadgeHandler(badgeService)
 	learningLogHandler := handler.NewLearningLogHandler(learningLogService)
+	aiAdviceHandler := handler.NewAIAdviceHandler(aiAdviceService)
 
 	// HubのGetRoomMembersコールバックを設定
 	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs
@@ -409,6 +427,16 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			learningLogs.GET("/:id", learningLogHandler.GetByID)
 			learningLogs.PUT("/:id", learningLogHandler.Update)
 			learningLogs.DELETE("/:id", learningLogHandler.Delete)
+		}
+
+		// AIアドバイス
+		advice := protected.Group("/advice")
+		{
+			advice.GET("", aiAdviceHandler.GetAdvice)
+			advice.PUT("/:id/read", aiAdviceHandler.MarkAsRead)
+			advice.POST("/chat", aiAdviceHandler.Chat)
+			advice.GET("/conversations", aiAdviceHandler.GetConversations)
+			advice.GET("/conversations/:id", aiAdviceHandler.GetConversation)
 		}
 	}
 
