@@ -266,3 +266,28 @@ type ActivityReportRepositoryInterface interface {
 	GetMonthlyReport(userID uint) (*model.ActivityReport, error)
 	GetComparison(userID uint, period model.ReportPeriod) (*model.ReportComparison, error)
 }
+
+// AIAdviceRepositoryInterface はAIアドバイスデータ操作の契約を定義する。
+// ルールエンジンが生成したアドバイスのCRUDと既読管理を含む。
+type AIAdviceRepositoryInterface interface {
+	Create(advice *model.AIAdvice) error
+	CreateBatch(advices []*model.AIAdvice) error
+	FindByUserID(userID uint, limit int) ([]model.AIAdvice, error)
+	FindUnreadByUserID(userID uint) ([]model.AIAdvice, error)
+	MarkAsRead(id, userID uint) error
+	MarkAllAsRead(userID uint) error
+	DeleteExpired() error
+	DeleteByUserID(userID uint) error
+}
+
+// AIConversationRepositoryInterface はAI会話セッションデータ操作の契約を定義する。
+// LLMとの会話管理とレート制限用のメッセージカウントを含む。
+type AIConversationRepositoryInterface interface {
+	CreateConversation(conv *model.AIConversation) error
+	FindConversationsByUserID(userID uint, limit, offset int) ([]model.AIConversation, error)
+	FindConversationByID(id uint) (*model.AIConversation, error)
+	AddMessage(msg *model.AIMessage) error
+	GetMessages(conversationID uint) ([]model.AIMessage, error)
+	CountTodayMessages(userID uint) (int64, error)
+	DeleteConversation(id, userID uint) error
+}
