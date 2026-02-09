@@ -1,22 +1,26 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Send, Loader2, Plus, MessageSquare } from 'lucide-react';
+import { Send, Loader2, Plus, MessageSquare, Trash2 } from 'lucide-react';
 import type { AIMessage } from '../../api/advice';
 
 interface AIChatPanelProps {
   messages: AIMessage[];
   sending: boolean;
   dailyChatRemaining: number;
+  conversationId?: number | null;
   onSend: (message: string) => void;
   onNewChat: () => void;
+  onDelete?: () => void;
 }
 
 export default function AIChatPanel({
   messages,
   sending,
   dailyChatRemaining,
+  conversationId,
   onSend,
   onNewChat,
+  onDelete,
 }: AIChatPanelProps) {
   const { t } = useTranslation();
   const [input, setInput] = useState('');
@@ -45,6 +49,19 @@ export default function AIChatPanel({
           <span className="text-xs text-gray-400">
             {t('advice.remainingToday', { count: dailyChatRemaining })}
           </span>
+          {conversationId && onDelete && (
+            <button
+              onClick={() => {
+                if (window.confirm(t('advice.deleteConfirm'))) {
+                  onDelete();
+                }
+              }}
+              className="text-xs text-gray-400 hover:text-red-400 flex items-center gap-1 transition-colors"
+              title={t('advice.deleteConversation')}
+            >
+              <Trash2 size={14} />
+            </button>
+          )}
           <button
             onClick={onNewChat}
             className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1"

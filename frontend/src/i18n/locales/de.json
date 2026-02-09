@@ -809,6 +809,9 @@
     "exploreResources": "Erkunden Sie Lernressourcen",
     "exploreResourcesMsg": "Die Ressourcenbibliothek hat viele Materialien zum Lernen.",
     "tryQA": "Treten Sie der Q&A-Community bei",
-    "tryQAMsg": "Vertiefen Sie Ihr Lernen durch Fragen und Antworten."
+    "tryQAMsg": "Vertiefen Sie Ihr Lernen durch Fragen und Antworten.",
+    "deleteConversation": "Gespräch löschen",
+    "deleteConfirm": "Möchten Sie dieses Gespräch wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleted": "Gespräch gelöscht"
   }
 }

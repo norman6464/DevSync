@@ -809,6 +809,9 @@
     "exploreResources": "Explore recursos de aprendizagem",
     "exploreResourcesMsg": "A biblioteca de recursos tem muitos materiais para ajudá-lo.",
     "tryQA": "Junte-se à comunidade Q&A",
-    "tryQAMsg": "Aprofunde seu aprendizado fazendo e respondendo perguntas."
+    "tryQAMsg": "Aprofunde seu aprendizado fazendo e respondendo perguntas.",
+    "deleteConversation": "Excluir conversa",
+    "deleteConfirm": "Tem certeza de que deseja excluir esta conversa? Esta ação não pode ser desfeita.",
+    "deleted": "Conversa excluída"
   }
 }

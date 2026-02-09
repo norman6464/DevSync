@@ -476,6 +476,18 @@ func (s *AIAdviceService) Chat(userID uint, message string, conversationID uint)
 	return conv, nil
 }
 
+// DeleteConversation は会話を削除する。所有者チェックを行う。
+func (s *AIAdviceService) DeleteConversation(id, userID uint) error {
+	conv, err := s.convRepo.FindConversationByID(id)
+	if err != nil {
+		return ErrNotFound
+	}
+	if conv.UserID != userID {
+		return ErrForbidden
+	}
+	return s.convRepo.DeleteConversation(id, userID)
+}
+
 // GetConversations はユーザーの会話一覧を取得する。
 func (s *AIAdviceService) GetConversations(userID uint, limit, offset int) ([]model.AIConversation, error) {
 	return s.convRepo.FindConversationsByUserID(userID, limit, offset)

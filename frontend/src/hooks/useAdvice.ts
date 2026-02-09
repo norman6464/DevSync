@@ -6,6 +6,7 @@ import {
   chatWithAI,
   getConversations,
   getConversation,
+  deleteConversation,
 } from '../api/advice';
 import type { AIAdvice, AIConversation, AIMessage } from '../api/advice';
 
@@ -104,6 +105,18 @@ export function useAIChat() {
     setMessages([]);
   }, []);
 
+  const deleteCurrentConversation = useCallback(async () => {
+    if (!conversationId) return false;
+    try {
+      await deleteConversation(conversationId);
+      setConversationId(null);
+      setMessages([]);
+      return true;
+    } catch {
+      return false;
+    }
+  }, [conversationId]);
+
   return {
     messages,
     sending,
@@ -111,6 +124,7 @@ export function useAIChat() {
     sendMessage,
     loadConversation,
     startNewChat,
+    deleteCurrentConversation,
   };
 }
 
@@ -123,5 +137,18 @@ export function useConversations() {
     { initialData: [] as AIConversation[] }
   );
 
-  return { conversations, loading, refetch };
+  const removeConversation = useCallback(
+    async (id: number) => {
+      try {
+        await deleteConversation(id);
+        await refetch();
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    [refetch]
+  );
+
+  return { conversations, loading, refetch, removeConversation };
 }

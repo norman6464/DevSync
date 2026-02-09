@@ -428,7 +428,7 @@ Service層のユニットテストを `testify/mock` ベースで実装してい
 | `notification_test.go` | 通知・フォロワー通知 | 5 |
 | `message_test.go` | メッセージ・既読 | 4 |
 | `code_snippet_test.go` | スニペットCRUD・インラインコメント | 10 |
-| `ai_advice_test.go` | ルールエンジン・LLMチャット | 14 |
+| `ai_advice_test.go` | ルールエンジン・LLMチャット・会話削除 | 17 |
 
 ### CI/CD
 
@@ -547,8 +547,9 @@ API仕様はOpenAPI (Swagger)で管理しています。
 - [x] OpenAI GPT-4o-mini連携（net/httpのみ、外部依存なし）
 - [x] `OPENAI_API_KEY`未設定時の自動縮退（ルールベースのみ、チャットボタン非表示）
 - [x] LLMチャット機能（1日5回制限、会話履歴保存）
+- [x] 会話削除機能（確認ダイアログ付き、会話リスト・チャットパネルから削除可能）
 - [x] ダッシュボードウィジェット + 専用ページ（レスポンシブ2カラム）
-- [x] TDDで実装（14テストケース追加、合計179テスト）
+- [x] TDDで実装（17テストケース追加、合計182テスト）
 - [x] 全10言語のi18n対応
 
 ### Phase 4（将来）📋

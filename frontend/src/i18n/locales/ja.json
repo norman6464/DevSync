@@ -809,6 +809,9 @@
     "exploreResources": "学習教材を探してみましょう",
     "exploreResourcesMsg": "教材ライブラリには多くの学習リソースがあります。",
     "tryQA": "Q&Aコミュニティに参加しましょう",
-    "tryQAMsg": "質問や回答を通じて、学びを深めましょう。"
+    "tryQAMsg": "質問や回答を通じて、学びを深めましょう。",
+    "deleteConversation": "会話を削除",
+    "deleteConfirm": "この会話を削除しますか？この操作は元に戻せません。",
+    "deleted": "会話を削除しました"
   }
 }

@@ -433,3 +433,45 @@ func TestIsLLMAvailable(t *testing.T) {
 	svcNoLLM, _ := newTestAIAdviceService(false)
 	assert.False(t, svcNoLLM.IsLLMAvailable())
 }
+
+// ============================================================
+// 会話削除 テスト（3ケース）
+// ============================================================
+
+func TestDeleteConversation_Success(t *testing.T) {
+	svc, deps := newTestAIAdviceService(false)
+
+	// 会話が存在し、所有者が一致 → 正常削除
+	deps.convRepo.On("FindConversationByID", uint(1)).Return(&model.AIConversation{
+		UserID: 1,
+		Title:  "テスト会話",
+	}, nil)
+	deps.convRepo.On("DeleteConversation", uint(1), uint(1)).Return(nil)
+
+	err := svc.DeleteConversation(1, 1)
+	assert.NoError(t, err)
+	deps.convRepo.AssertExpectations(t)
+}
+
+func TestDeleteConversation_NotFound(t *testing.T) {
+	svc, deps := newTestAIAdviceService(false)
+
+	// 会話が存在しない → ErrNotFound
+	deps.convRepo.On("FindConversationByID", uint(999)).Return(nil, ErrNotFound)
+
+	err := svc.DeleteConversation(999, 1)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestDeleteConversation_Forbidden(t *testing.T) {
+	svc, deps := newTestAIAdviceService(false)
+
+	// 他人の会話を削除しようとした → ErrForbidden
+	deps.convRepo.On("FindConversationByID", uint(1)).Return(&model.AIConversation{
+		UserID: 2, // 別ユーザー
+		Title:  "他人の会話",
+	}, nil)
+
+	err := svc.DeleteConversation(1, 1)
+	assert.ErrorIs(t, err, ErrForbidden)
+}
