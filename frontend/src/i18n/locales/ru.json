@@ -97,7 +97,20 @@
     "nothingToPreview": "Нечего показывать",
     "pasteOrDrag": "Вставьте или перетащите изображения",
     "uploading": "Загрузка...",
-    "attachedImages": "Прикреплённые изображения"
+    "attachedImages": "Прикреплённые изображения",
+    "addSnippet": "+ Добавить фрагмент кода",
+    "removeSnippet": "Удалить фрагмент",
+    "selectLanguage": "Выберите язык",
+    "fileName": "Имя файла",
+    "codePlaceholder": "Введите код...",
+    "copyCode": "Копировать",
+    "codeCopied": "Скопировано!",
+    "lineComment": "Комментарий к строке",
+    "addLineComment": "Добавить комментарий",
+    "lineCommentPlaceholder": "Комментарий к этой строке...",
+    "snippetComments": "{{count}} комментариев",
+    "codeSnippets": "Фрагменты Кода",
+    "moreSnippets": "дополнительных фрагментов"
   },
   "profile": {
     "followers": "подписчиков",
