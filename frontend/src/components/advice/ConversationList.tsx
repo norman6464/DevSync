@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next';
-import { MessageSquare, Clock } from 'lucide-react';
+import { MessageSquare, Clock, Trash2 } from 'lucide-react';
 import type { AIConversation } from '../../api/advice';
 
 interface ConversationListProps {
   conversations: AIConversation[];
   loading: boolean;
   onSelect: (id: number) => void;
+  onDelete: (id: number) => void;
   activeId?: number | null;
 }
 
@@ -13,6 +14,7 @@ export default function ConversationList({
   conversations,
   loading,
   onSelect,
+  onDelete,
   activeId,
 }: ConversationListProps) {
   const { t } = useTranslation();
@@ -40,28 +42,44 @@ export default function ConversationList({
         {t('advice.conversations')}
       </h4>
       {conversations.map((conv) => (
-        <button
+        <div
           key={conv.id}
-          onClick={() => onSelect(conv.id)}
-          className={`w-full text-left p-3 rounded-lg transition-colors ${
+          className={`group relative flex items-center rounded-lg transition-colors ${
             activeId === conv.id
               ? 'bg-blue-600/20 border border-blue-500/30'
               : 'bg-gray-800/50 hover:bg-gray-700/50 border border-transparent'
           }`}
         >
-          <p className="text-white text-sm truncate">{conv.title}</p>
-          <div className="flex items-center gap-1 mt-1">
-            <Clock size={12} className="text-gray-500" />
-            <span className="text-xs text-gray-500">
-              {new Date(conv.updated_at).toLocaleDateString()}
-            </span>
-            {conv.messages && (
-              <span className="text-xs text-gray-500 ml-2">
-                {conv.messages.length} {t('advice.messagesCount', { count: conv.messages.length })}
+          <button
+            onClick={() => onSelect(conv.id)}
+            className="flex-1 text-left p-3 min-w-0"
+          >
+            <p className="text-white text-sm truncate">{conv.title}</p>
+            <div className="flex items-center gap-1 mt-1">
+              <Clock size={12} className="text-gray-500" />
+              <span className="text-xs text-gray-500">
+                {new Date(conv.updated_at).toLocaleDateString()}
               </span>
-            )}
-          </div>
-        </button>
+              {conv.messages && (
+                <span className="text-xs text-gray-500 ml-2">
+                  {conv.messages.length} {t('advice.messagesCount', { count: conv.messages.length })}
+                </span>
+              )}
+            </div>
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (window.confirm(t('advice.deleteConfirm'))) {
+                onDelete(conv.id);
+              }
+            }}
+            className="opacity-0 group-hover:opacity-100 p-2 mr-1 text-gray-500 hover:text-red-400 transition-all"
+            title={t('advice.deleteConversation')}
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
       ))}
     </div>
   );
