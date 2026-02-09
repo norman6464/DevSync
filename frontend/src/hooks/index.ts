@@ -19,3 +19,4 @@ export { useBadgeNotifier } from './useBadgeNotifier';
 export { useLearningLogs, useLearningLogCalendar, useStreak } from './useLearningLogs';
 export { useSnippetComments } from './useSnippetComments';
 export { useAdvice, useAIChat, useConversations } from './useAdvice';
+export { usePomodoroTimer } from './usePomodoroTimer';

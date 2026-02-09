@@ -1,5 +1,7 @@
 export type LogCategory = 'coding' | 'reading' | 'course' | 'meetup' | 'other';
 
+export type LogSource = 'manual' | 'pomodoro';
+
 export interface LearningLog {
   id: number;
   user_id: number;
@@ -7,6 +9,7 @@ export interface LearningLog {
   content: string;
   category: LogCategory;
   duration: number;
+  source: LogSource;
   created_at: string;
   updated_at: string;
 }
@@ -21,6 +24,7 @@ export interface CreateLogRequest {
   content: string;
   category?: LogCategory;
   duration?: number;
+  source?: LogSource;
 }
 
 export interface UpdateLogRequest {
