@@ -21,6 +21,7 @@ type Config struct {
 	GitHubClientSecret string // GitHub OAuth クライアントシークレット
 	GitHubRedirectURL  string // GitHub OAuth リダイレクトURL
 	CORSOrigins        string // CORS許可オリジン（カンマ区切り）
+	OpenAIAPIKey       string // OpenAI APIキー（LLM機能用、空なら無効）
 }
 
 // Load は環境変数から設定を読み込み、Configインスタンスを返す。
@@ -39,6 +40,7 @@ func Load() *Config {
 		GitHubClientSecret: getEnv("GITHUB_CLIENT_SECRET", ""),
 		GitHubRedirectURL: getEnv("GITHUB_REDIRECT_URL", "http://localhost:5173/github/callback"),
 		CORSOrigins:       getEnv("CORS_ORIGINS", "http://localhost:5173"),
+		OpenAIAPIKey:      getEnv("OPENAI_API_KEY", ""),
 	}
 }
 
