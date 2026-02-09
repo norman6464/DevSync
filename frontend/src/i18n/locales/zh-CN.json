@@ -809,6 +809,9 @@
     "exploreResources": "探索学习资源",
     "exploreResourcesMsg": "资源库中有丰富的学习材料。",
     "tryQA": "加入Q&A社区",
-    "tryQAMsg": "通过提问和回答来深化学习。"
+    "tryQAMsg": "通过提问和回答来深化学习。",
+    "deleteConversation": "删除对话",
+    "deleteConfirm": "确定要删除这个对话吗？此操作无法撤销。",
+    "deleted": "对话已删除"
   }
 }

@@ -809,6 +809,9 @@
     "exploreResources": "探索學習資源",
     "exploreResourcesMsg": "資源庫中有豐富的學習材料。",
     "tryQA": "加入Q&A社群",
-    "tryQAMsg": "透過提問和回答來深化學習。"
+    "tryQAMsg": "透過提問和回答來深化學習。",
+    "deleteConversation": "刪除對話",
+    "deleteConfirm": "確定要刪除這個對話嗎？此操作無法撤銷。",
+    "deleted": "對話已刪除"
   }
 }
