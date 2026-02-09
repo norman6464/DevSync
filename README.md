@@ -418,7 +418,7 @@ Service層のユニットテストを `testify/mock` ベースで実装してい
 | `question_test.go` | 質問CRUD・所有権チェック | 8 |
 | `answer_test.go` | 回答・ベストアンサー権限 | 12 |
 | `learning_goal_test.go` | 目標・進捗自動完了 | 8 |
-| `learning_log_test.go` | 学習ログ・ストリーク | 8 |
+| `learning_log_test.go` | 学習ログ・ストリーク・バリデーション | 13 |
 | `project_test.go` | プロジェクト・Featured | 7 |
 | `book_review_test.go` | 書籍レビュー | 5 |
 | `learning_resource_test.go` | リソース・可視性制御 | 12 |
@@ -549,6 +549,16 @@ API仕様はOpenAPI (Swagger)で管理しています。
 - [x] LLMチャット機能（1日5回制限、会話履歴保存）
 - [x] ダッシュボードウィジェット + 専用ページ（レスポンシブ2カラム）
 - [x] TDDで実装（14テストケース追加、合計179テスト）
+- [x] 全10言語のi18n対応
+
+### Phase 3.15（ポモドーロタイマー）✅
+- [x] ポモドーロテクニックに基づく学習タイマー（25分集中→5分休憩→15分長い休憩）
+- [x] Web Audio APIによる通知音（集中完了/休憩完了で異なる音色）
+- [x] フローティングウィジェット（全ページで利用可能、最小化/展開切替）
+- [x] SVG円形プログレス表示、フェーズごとの色分け
+- [x] 集中セッション完了時の学習ログ自動記録（source='pomodoro'）
+- [x] 学習ログモデルにsourceフィールド追加（manual/pomodoro区別）
+- [x] Duration・Category・Sourceのバリデーション追加（TDD: 5テストケース）
 - [x] 全10言語のi18n対応
 
 ### Phase 4（将来）📋
