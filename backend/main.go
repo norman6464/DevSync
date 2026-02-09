@@ -57,6 +57,8 @@ func main() {
 		&model.ChatRoomMember{},
 		&model.GroupMessage{},
 		&model.LearningLog{},
+		&model.CodeSnippet{},
+		&model.SnippetComment{},
 	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}

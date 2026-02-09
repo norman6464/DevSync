@@ -11,9 +11,10 @@ type Post struct {
 	Content      string    `json:"content" gorm:"type:text;not null"`
 	ImageURLs    string    `json:"image_urls" gorm:"type:text"` // カンマ区切りの画像URL
 	LikeCount    int       `json:"like_count" gorm:"default:0"`
-	CommentCount int       `json:"comment_count" gorm:"default:0"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	CommentCount int            `json:"comment_count" gorm:"default:0"`
+	CodeSnippets []CodeSnippet  `json:"code_snippets,omitempty" gorm:"foreignKey:PostID"`
+	CreatedAt    time.Time      `json:"created_at"`
+	UpdatedAt    time.Time      `json:"updated_at"`
 }
 
 // Like は投稿への「いいね」を記録する。
