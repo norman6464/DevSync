@@ -4,6 +4,7 @@
 package router
 
 import (
+	"log"
 	"strings"
 
 	"github.com/gin-contrib/cors"
@@ -11,6 +12,7 @@ import (
 	"github.com/norman6464/devsync/backend/internal/config"
 	"github.com/norman6464/devsync/backend/internal/handler"
 	"github.com/norman6464/devsync/backend/internal/middleware"
+	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 	"github.com/norman6464/devsync/backend/internal/service"
 	"gorm.io/gorm"
@@ -72,8 +74,17 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	bookReviewService := service.NewBookReviewService(bookReviewRepo)
 	learningResourceService := service.NewLearningResourceService(learningResourceRepo)
 	roadmapService := service.NewRoadmapService(roadmapRepo)
-	// テンプレートロードマップの初期登録
-	go roadmapService.SeedTemplates()
+	// テンプレートロードマップの初期登録（システムユーザーを取得/作成して使用）
+	go func() {
+		systemUser, err := getOrCreateSystemUser(db)
+		if err != nil {
+			log.Printf("テンプレートシード用システムユーザー作成失敗: %v", err)
+			return
+		}
+		if err := roadmapService.SeedTemplates(systemUser.ID); err != nil {
+			log.Printf("テンプレートシード失敗: %v", err)
+		}
+	}()
 	chatRoomService := service.NewChatRoomService(chatRoomRepo, groupMessageRepo, hub)
 	activityReportService := service.NewActivityReportService(activityReportRepo)
 	atcoderService := service.NewAtCoderService()
@@ -385,4 +396,27 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	}
 
 	return r
+}
+
+// getOrCreateSystemUser はテンプレート用のシステムユーザーを取得または作成する。
+// "system@devsync.local" のメールアドレスで検索し、存在しなければ新規作成する。
+func getOrCreateSystemUser(db *gorm.DB) (*model.User, error) {
+	const systemEmail = "system@devsync.local"
+	var user model.User
+	err := db.Where("email = ?", systemEmail).First(&user).Error
+	if err == nil {
+		return &user, nil
+	}
+	// ユーザーが存在しない場合は作成
+	// ユニーク制約（git_hub_id, git_hub_username）の衝突を回避するため専用値を設定
+	user = model.User{
+		Name:           "DevSync System",
+		Email:          systemEmail,
+		GitHubID:       -1,
+		GitHubUsername:  "__system__",
+	}
+	if err := db.Create(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
 }

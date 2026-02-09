@@ -253,7 +253,8 @@ func (s *RoadmapService) CreateFromTemplate(templateID, userID uint) (*model.Roa
 
 // SeedTemplates はプリセットテンプレートを初期登録する。
 // 既にテンプレートが存在する場合はスキップする。
-func (s *RoadmapService) SeedTemplates() error {
+// userID にはシステムユーザーのIDを指定する（外部キー制約を満たすため）。
+func (s *RoadmapService) SeedTemplates(userID uint) error {
 	existing, err := s.repo.GetTemplates()
 	if err != nil {
 		return err
@@ -379,6 +380,7 @@ func (s *RoadmapService) SeedTemplates() error {
 
 	for _, tmpl := range templates {
 		roadmap := &model.Roadmap{
+			UserID:      userID,
 			Title:       tmpl.Title,
 			Description: tmpl.Description,
 			Category:    tmpl.Category,

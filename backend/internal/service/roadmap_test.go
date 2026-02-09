@@ -445,7 +445,8 @@ func TestSeedTemplates_CreatesTemplates(t *testing.T) {
 	repo.On("Create", mock.AnythingOfType("*model.Roadmap")).Return(nil)
 	repo.On("CreateStep", mock.AnythingOfType("*model.RoadmapStep")).Return(nil)
 
-	err := svc.SeedTemplates()
+	systemUserID := uint(1)
+	err := svc.SeedTemplates(systemUserID)
 	assert.NoError(t, err)
 	repo.AssertExpectations(t)
 
@@ -459,6 +460,27 @@ func TestSeedTemplates_CreatesTemplates(t *testing.T) {
 	assert.GreaterOrEqual(t, createCalls, 5)
 }
 
+func TestSeedTemplates_SetsUserID(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	// 既存テンプレートなし
+	repo.On("GetTemplates").Return([]model.Roadmap{}, nil)
+	repo.On("Create", mock.AnythingOfType("*model.Roadmap")).Return(nil)
+	repo.On("CreateStep", mock.AnythingOfType("*model.RoadmapStep")).Return(nil)
+
+	systemUserID := uint(42)
+	err := svc.SeedTemplates(systemUserID)
+	assert.NoError(t, err)
+
+	// Createに渡されたRoadmapのUserIDが正しく設定されていることを確認
+	for _, call := range repo.Calls {
+		if call.Method == "Create" {
+			roadmap := call.Arguments.Get(0).(*model.Roadmap)
+			assert.Equal(t, systemUserID, roadmap.UserID, "テンプレートのUserIDがシステムユーザーIDと一致すること")
+		}
+	}
+}
+
 func TestSeedTemplates_SkipsIfAlreadyExist(t *testing.T) {
 	svc, repo := newTestRoadmapService()
 
@@ -468,7 +490,7 @@ func TestSeedTemplates_SkipsIfAlreadyExist(t *testing.T) {
 	}
 	repo.On("GetTemplates").Return(existing, nil)
 
-	err := svc.SeedTemplates()
+	err := svc.SeedTemplates(uint(1))
 	assert.NoError(t, err)
 	repo.AssertExpectations(t)
 
