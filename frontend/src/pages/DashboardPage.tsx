@@ -38,8 +38,13 @@ export default function DashboardPage() {
   );
   useBadgeNotifier(badges);
 
-  const handleCreatePost = async (title: string, content: string, imageUrls?: string) => {
-    await createPost(title, content, imageUrls);
+  const handleCreatePost = async (
+    title: string,
+    content: string,
+    imageUrls?: string,
+    codeSnippets?: { language: string; file_name?: string; code: string }[]
+  ) => {
+    await createPost(title, content, imageUrls, codeSnippets);
   };
 
   const getNotificationText = (notification: { type: string; actor: { name: string } }) => {
