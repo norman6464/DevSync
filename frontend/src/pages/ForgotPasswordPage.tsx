@@ -9,7 +9,6 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
-  const [resetToken, setResetToken] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,12 +16,8 @@ export default function ForgotPasswordPage() {
     setError('');
 
     try {
-      const response = await requestPasswordReset(email);
+      await requestPasswordReset(email);
       setSuccess(true);
-      // For demo purposes, show the token (in production, this would be sent via email)
-      if (response.data.token) {
-        setResetToken(response.data.token);
-      }
     } catch (err) {
       setError(t('accountManagement.resetRequestFailed'));
     } finally {
@@ -58,19 +53,11 @@ export default function ForgotPasswordPage() {
                 {t('accountManagement.resetEmailSent')}
               </div>
 
-              {/* Demo: Show token (remove in production) */}
-              {resetToken && (
-                <div className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 px-4 py-3 rounded-lg text-sm">
-                  <p className="font-medium mb-2">Demo Mode - Reset Token:</p>
-                  <code className="break-all text-xs">{resetToken}</code>
-                </div>
-              )}
-
               <Link
-                to={resetToken ? `/reset-password?token=${resetToken}` : '/login'}
+                to="/login"
                 className="block w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-center transition-colors"
               >
-                {resetToken ? t('accountManagement.resetPassword') : t('auth.login')}
+                {t('auth.login')}
               </Link>
             </div>
           ) : (

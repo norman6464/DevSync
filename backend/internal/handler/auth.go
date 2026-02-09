@@ -159,17 +159,11 @@ func (h *AuthHandler) RequestPasswordReset(c *gin.Context) {
 		return
 	}
 
-	if token == "" {
-		// セキュリティのため、メールの存在有無を明かさない
-		c.JSON(http.StatusOK, gin.H{"message": "If the email exists, a reset link has been sent"})
-		return
-	}
-
-	// 本番ではここでメール送信を行う（デモ用にトークンを返却）
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Password reset token generated",
-		"token":   token,
-	})
+	// セキュリティのため、メールの存在有無に関わらず同一レスポンスを返す
+	// 本番ではここでメール送信を行う
+	// token変数はメール送信時に使用する（レスポンスには含めない）
+	_ = token
+	c.JSON(http.StatusOK, gin.H{"message": "If the email exists, a reset link has been sent"})
 }
 
 // ResetPassword はトークンを使ってパスワードをリセットする。
