@@ -19,7 +19,6 @@ export default function ChatPage() {
   const { t } = useTranslation();
   const { userId } = useParams<{ userId: string }>();
   const currentUser = useAuthStore((s) => s.user);
-  const token = useAuthStore((s) => s.token);
   const {
     socket, connect, activeMessages, setActiveMessages,
     activeTab, setActiveTab,
@@ -38,10 +37,10 @@ export default function ChatPage() {
   const [showRoomSettings, setShowRoomSettings] = useState(false);
 
   useEffect(() => {
-    if (token && !socket) {
-      connect(token);
+    if (!socket) {
+      connect();
     }
-  }, [token, socket, connect]);
+  }, [socket, connect]);
 
   useEffect(() => {
     // Load conversations

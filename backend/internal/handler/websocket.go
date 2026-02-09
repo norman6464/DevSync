@@ -2,36 +2,63 @@ package handler
 
 import (
 	"net/http"
+	"net/url"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
-// upgrader はHTTP接続をWebSocket接続にアップグレードするための設定。
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
-
 // WebSocketHandler はWebSocket関連のHTTPハンドラ。
 // リアルタイム通信のためのWebSocket接続確立を処理する。
 type WebSocketHandler struct {
-	hub         *service.Hub
-	authService *service.AuthService
+	hub            *service.Hub
+	authService    *service.AuthService
+	allowedOrigins map[string]bool // CORS設定と連動した許可オリジン
+	upgrader       websocket.Upgrader
 }
 
 // NewWebSocketHandler は新しいWebSocketHandlerインスタンスを生成する。
-func NewWebSocketHandler(hub *service.Hub, authService *service.AuthService) *WebSocketHandler {
-	return &WebSocketHandler{hub: hub, authService: authService}
+// allowedOriginsにはCORS設定のオリジン一覧を渡す。
+func NewWebSocketHandler(hub *service.Hub, authService *service.AuthService, allowedOrigins []string) *WebSocketHandler {
+	originsMap := make(map[string]bool, len(allowedOrigins))
+	for _, o := range allowedOrigins {
+		originsMap[o] = true
+	}
+	h := &WebSocketHandler{
+		hub:            hub,
+		authService:    authService,
+		allowedOrigins: originsMap,
+	}
+	h.upgrader = websocket.Upgrader{
+		CheckOrigin: h.checkOrigin,
+	}
+	return h
+}
+
+// checkOrigin はWebSocket接続のOriginヘッダーを検証する。
+// CORS設定で許可されたオリジンのみ接続を許可する。
+func (h *WebSocketHandler) checkOrigin(r *http.Request) bool {
+	origin := r.Header.Get("Origin")
+	if origin == "" {
+		return false
+	}
+	// オリジンをパースしてスキーム+ホスト部分で比較
+	parsed, err := url.Parse(origin)
+	if err != nil {
+		return false
+	}
+	originBase := parsed.Scheme + "://" + parsed.Host
+	return h.allowedOrigins[originBase]
 }
 
 // HandleWebSocket はWebSocket接続を確立し、クライアントをハブに登録する。
+// 認証はhttpOnly Cookie内のJWTトークンで行う（URLにトークンを含めない）。
 func (h *WebSocketHandler) HandleWebSocket(c *gin.Context) {
-	token := c.Query("token")
-	if token == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "token required"})
+	// httpOnly Cookieからトークンを取得（URLクエリパラメータには含めない）
+	token, err := c.Cookie("token")
+	if err != nil || token == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
 		return
 	}
 
@@ -43,7 +70,7 @@ func (h *WebSocketHandler) HandleWebSocket(c *gin.Context) {
 	}
 
 	// HTTP接続をWebSocketにアップグレード
-	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	conn, err := h.upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		return
 	}

@@ -118,7 +118,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	snippetHandler := handler.NewCodeSnippetHandler(codeSnippetService)
 	rankingHandler := handler.NewRankingHandler(rankingService)
 	messageHandler := handler.NewMessageHandler(messageService)
-	wsHandler := handler.NewWebSocketHandler(hub, authService)
+	wsHandler := handler.NewWebSocketHandler(hub, authService, origins)
 	uploadHandler := handler.NewUploadHandler()
 	notificationHandler := handler.NewNotificationHandler(notificationService)
 	zennHandler := handler.NewZennHandler(zennService)
@@ -140,7 +140,14 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	// HubのGetRoomMembersコールバックを設定
 	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs
 
-	// アップロードファイルの静的配信
+	// アップロードファイルの静的配信（X-Content-Type-Options: nosniffでMIMEスニッフィング防止）
+	r.Use(func(c *gin.Context) {
+		if strings.HasPrefix(c.Request.URL.Path, "/uploads/") {
+			c.Header("X-Content-Type-Options", "nosniff")
+			c.Header("Content-Security-Policy", "default-src 'none'; img-src 'self'; style-src 'none'; script-src 'none'")
+		}
+		c.Next()
+	})
 	r.Static("/uploads", "./uploads")
 
 	// パブリックルート

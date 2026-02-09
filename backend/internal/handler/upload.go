@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -11,6 +12,29 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
+
+// allowedMIMETypes はアップロードを許可するMIMEタイプの一覧。
+// ファイルのマジックバイト（先頭512バイト）から検出したMIMEタイプで検証する。
+var allowedMIMETypes = map[string]bool{
+	"image/jpeg": true,
+	"image/png":  true,
+	"image/gif":  true,
+	"image/webp": true,
+}
+
+// detectMIMEType はファイルの先頭512バイトからMIMEタイプを検出する。
+func detectMIMEType(file io.ReadSeeker) (string, error) {
+	buf := make([]byte, 512)
+	n, err := file.Read(buf)
+	if err != nil && err != io.EOF {
+		return "", err
+	}
+	// 読み取り位置をリセット
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		return "", err
+	}
+	return http.DetectContentType(buf[:n]), nil
+}
 
 // UploadHandler はファイルアップロード関連のHTTPハンドラ。
 // 画像の単体・複数アップロードを処理する。
@@ -49,7 +73,7 @@ func (h *UploadHandler) UploadImage(c *gin.Context) {
 		return
 	}
 
-	// ファイル形式のバリデーション
+	// ファイル拡張子のバリデーション
 	ext := strings.ToLower(filepath.Ext(file.Filename))
 	allowedExts := map[string]bool{
 		".jpg":  true,
@@ -60,6 +84,24 @@ func (h *UploadHandler) UploadImage(c *gin.Context) {
 	}
 	if !allowedExts[ext] {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid file type. Allowed: jpg, jpeg, png, gif, webp"})
+		return
+	}
+
+	// マジックバイトによるMIMEタイプ検証（拡張子偽装防止）
+	src, err := file.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read file"})
+		return
+	}
+	defer src.Close()
+
+	mimeType, err := detectMIMEType(src)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to detect file type"})
+		return
+	}
+	if !allowedMIMETypes[mimeType] {
+		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid file content type: %s. Only image files are allowed", mimeType)})
 		return
 	}
 
@@ -132,10 +174,27 @@ func (h *UploadHandler) UploadMultipleImages(c *gin.Context) {
 			return
 		}
 
-		// ファイル形式のバリデーション
+		// ファイル拡張子のバリデーション
 		ext := strings.ToLower(filepath.Ext(file.Filename))
 		if !allowedExts[ext] {
 			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid file type for %s", file.Filename)})
+			return
+		}
+
+		// マジックバイトによるMIMEタイプ検証（拡張子偽装防止）
+		src, err := file.Open()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read file"})
+			return
+		}
+		mimeType, err := detectMIMEType(src)
+		src.Close()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to detect file type"})
+			return
+		}
+		if !allowedMIMETypes[mimeType] {
+			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid content type for %s: %s", file.Filename, mimeType)})
 			return
 		}
 
