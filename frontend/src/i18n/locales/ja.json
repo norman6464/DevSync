@@ -97,7 +97,20 @@
     "nothingToPreview": "プレビューするものがありません",
     "pasteOrDrag": "画像をペーストまたはドラッグ",
     "uploading": "アップロード中...",
-    "attachedImages": "添付画像"
+    "attachedImages": "添付画像",
+    "addSnippet": "+ コードスニペットを追加",
+    "removeSnippet": "スニペットを削除",
+    "selectLanguage": "言語を選択",
+    "fileName": "ファイル名",
+    "codePlaceholder": "コードを入力...",
+    "copyCode": "コピー",
+    "codeCopied": "コピーしました",
+    "lineComment": "行コメント",
+    "addLineComment": "コメントを追加",
+    "lineCommentPlaceholder": "この行へのコメント...",
+    "snippetComments": "{{count}}件のコメント",
+    "codeSnippets": "コードスニペット",
+    "moreSnippets": "件のスニペット"
   },
   "profile": {
     "followers": "フォロワー",

@@ -97,7 +97,20 @@
     "nothingToPreview": "Nada para pré-visualizar",
     "pasteOrDrag": "Cole ou arraste imagens",
     "uploading": "Enviando...",
-    "attachedImages": "Imagens anexadas"
+    "attachedImages": "Imagens anexadas",
+    "addSnippet": "+ Adicionar trecho de código",
+    "removeSnippet": "Remover trecho",
+    "selectLanguage": "Selecionar idioma",
+    "fileName": "Nome do arquivo",
+    "codePlaceholder": "Digite o código...",
+    "copyCode": "Copiar",
+    "codeCopied": "Copiado!",
+    "lineComment": "Comentário de linha",
+    "addLineComment": "Adicionar comentário",
+    "lineCommentPlaceholder": "Comentar nesta linha...",
+    "snippetComments": "{{count}} comentários",
+    "codeSnippets": "Trechos de Código",
+    "moreSnippets": "trechos adicionais"
   },
   "profile": {
     "followers": "seguidores",

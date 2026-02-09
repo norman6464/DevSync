@@ -857,6 +857,57 @@ func (m *MockGroupMessageRepository) GetMemberUserIDs(roomID uint) []uint {
 }
 
 // ============================================================
+// MockCodeSnippetRepository は repository.CodeSnippetRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockCodeSnippetRepository struct {
+	mock.Mock
+}
+
+func (m *MockCodeSnippetRepository) Create(snippet *model.CodeSnippet) error {
+	args := m.Called(snippet)
+	return args.Error(0)
+}
+
+func (m *MockCodeSnippetRepository) FindByID(id uint) (*model.CodeSnippet, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.CodeSnippet), args.Error(1)
+}
+
+func (m *MockCodeSnippetRepository) FindByPostID(postID uint) ([]model.CodeSnippet, error) {
+	args := m.Called(postID)
+	return args.Get(0).([]model.CodeSnippet), args.Error(1)
+}
+
+func (m *MockCodeSnippetRepository) Update(snippet *model.CodeSnippet) error {
+	args := m.Called(snippet)
+	return args.Error(0)
+}
+
+func (m *MockCodeSnippetRepository) Delete(id uint) error {
+	args := m.Called(id)
+	return args.Error(0)
+}
+
+func (m *MockCodeSnippetRepository) CreateComment(comment *model.SnippetComment) error {
+	args := m.Called(comment)
+	return args.Error(0)
+}
+
+func (m *MockCodeSnippetRepository) GetComments(snippetID uint) ([]model.SnippetComment, error) {
+	args := m.Called(snippetID)
+	return args.Get(0).([]model.SnippetComment), args.Error(1)
+}
+
+func (m *MockCodeSnippetRepository) DeleteComment(id, userID uint) error {
+	args := m.Called(id, userID)
+	return args.Error(0)
+}
+
+// ============================================================
 // インターフェース適合チェック（コンパイル時検証）
 // ============================================================
 
@@ -876,3 +927,4 @@ var _ repository.PasswordResetRepositoryInterface = (*MockPasswordResetRepositor
 var _ repository.RoadmapRepositoryInterface = (*MockRoadmapRepository)(nil)
 var _ repository.ChatRoomRepositoryInterface = (*MockChatRoomRepository)(nil)
 var _ repository.GroupMessageRepositoryInterface = (*MockGroupMessageRepository)(nil)
+var _ repository.CodeSnippetRepositoryInterface = (*MockCodeSnippetRepository)(nil)

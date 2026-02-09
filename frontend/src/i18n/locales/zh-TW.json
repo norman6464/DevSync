@@ -97,7 +97,20 @@
     "nothingToPreview": "沒有可預覽的內容",
     "pasteOrDrag": "貼上或拖曳圖片上傳",
     "uploading": "上傳中...",
-    "attachedImages": "已附加圖片"
+    "attachedImages": "已附加圖片",
+    "addSnippet": "+ 新增程式碼片段",
+    "removeSnippet": "移除片段",
+    "selectLanguage": "選擇語言",
+    "fileName": "檔案名稱",
+    "codePlaceholder": "輸入程式碼...",
+    "copyCode": "複製",
+    "codeCopied": "已複製",
+    "lineComment": "行註解",
+    "addLineComment": "新增留言",
+    "lineCommentPlaceholder": "對這行進行留言...",
+    "snippetComments": "{{count}}則留言",
+    "codeSnippets": "程式碼片段",
+    "moreSnippets": "個片段"
   },
   "profile": {
     "followers": "追蹤者",

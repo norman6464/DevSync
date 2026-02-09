@@ -13,8 +13,12 @@ export const getPost = (id: number) =>
 export const getUserPosts = (userId: number) =>
   client.get<Post[]>(`/users/${userId}/posts`);
 
-export const createPost = (data: { title: string; content: string; image_urls?: string }) =>
-  client.post<Post>('/posts', data);
+export const createPost = (data: {
+  title: string;
+  content: string;
+  image_urls?: string;
+  code_snippets?: { language: string; file_name?: string; code: string }[];
+}) => client.post<Post>('/posts', data);
 
 export const uploadImage = async (file: File): Promise<{ url: string }> => {
   const formData = new FormData();

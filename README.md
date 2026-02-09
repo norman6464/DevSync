@@ -110,6 +110,14 @@ DevSyncは、これらの課題を解決するために開発しました。
 - paizaランク表示（S/A/B/C/D/E の自己申告制）
 - 設定画面・オンボーディングから連携設定が可能
 
+### 💻 コードスニペット共有 & レビュー
+- 投稿にコードスニペットを添付（30以上の言語に対応）
+- Prism.jsベースのシンタックスハイライト（VS Code Dark+テーマ）
+- Markdownコードブロックの自動ハイライト（エディタプレビュー・カード・詳細ページ）
+- GitHub PR風のインラインコメント（行ごとにレビューコメント可能）
+- ワンクリックでコードコピー
+- 10言語のi18n対応
+
 ### 📝 外部サービス連携
 - GitHub
 - Zenn
@@ -179,7 +187,7 @@ Handler (HTTP) → Service (ビジネスロジック) → Repository (Interface)
 |----------|------|-----------|
 | Handler | HTTPリクエスト/レスポンス、バリデーション | `internal/handler` |
 | Service | ビジネスロジック、権限チェック、通知 | `internal/service` |
-| Repository | データアクセス抽象化（21インターフェース） | `internal/repository` |
+| Repository | データアクセス抽象化（22インターフェース） | `internal/repository` |
 | Model | データ構造、ドメインオブジェクト | `internal/model` |
 | Router | DI（依存性注入）、ルーティング | `internal/router` |
 
@@ -419,6 +427,7 @@ Service層のユニットテストを `testify/mock` ベースで実装してい
 | `user_test.go` | ユーザー検索分岐 | 4 |
 | `notification_test.go` | 通知・フォロワー通知 | 5 |
 | `message_test.go` | メッセージ・既読 | 4 |
+| `code_snippet_test.go` | スニペットCRUD・インラインコメント | 10 |
 
 ### CI/CD
 
@@ -478,7 +487,7 @@ API仕様はOpenAPI (Swagger)で管理しています。
 
 ### Phase 3.6（品質基盤）✅
 - [x] クリーンアーキテクチャ（Handler → Service → Repository Interface）
-- [x] Service層ユニットテスト（128テストケース、15サービス対象）
+- [x] Service層ユニットテスト（165テストケース、16サービス対象）
 - [x] GitHub Actions CI（テスト自動実行）
 - [x] testify/mockによるモックベーステスト
 
@@ -519,6 +528,16 @@ API仕様はOpenAPI (Swagger)で管理しています。
 - [x] テンプレート一覧表示・ステップ詳細のプレビュー機能
 - [x] アプリ起動時の自動シード（システムユーザー自動作成、既存テンプレートがある場合はスキップ）
 - [x] TDD（テスト駆動開発）で実装（8テストケース追加）
+- [x] 全10言語のi18n対応
+
+### Phase 3.13（コードスニペット共有 & レビュー）✅
+- [x] コードスニペットモデル定義（CodeSnippet + SnippetComment）
+- [x] リポジトリ・サービス・ハンドラー実装（クリーンアーキテクチャ）
+- [x] TDDで実装（10テストケース追加、合計165テスト）
+- [x] 投稿作成時にスニペット一括添付（PostForm拡張）
+- [x] Markdownプレビュー・PostCard・詳細ページのシンタックスハイライト（Prism.js + VS Code Dark+テーマ）
+- [x] GitHub PR風インラインコメント（行ごとのレビュー機能）
+- [x] コードコピー・言語選択（30言語対応）
 - [x] 全10言語のi18n対応
 
 ### Phase 4（将来）📋

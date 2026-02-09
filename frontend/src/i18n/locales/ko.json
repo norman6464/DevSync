@@ -97,7 +97,20 @@
     "nothingToPreview": "미리볼 내용이 없습니다",
     "pasteOrDrag": "이미지 붙여넣기 또는 드래그",
     "uploading": "업로드 중...",
-    "attachedImages": "첨부된 이미지"
+    "attachedImages": "첨부된 이미지",
+    "addSnippet": "+ 코드 스니펫 추가",
+    "removeSnippet": "스니펫 삭제",
+    "selectLanguage": "언어 선택",
+    "fileName": "파일명",
+    "codePlaceholder": "코드를 입력...",
+    "copyCode": "복사",
+    "codeCopied": "복사되었습니다",
+    "lineComment": "라인 코멘트",
+    "addLineComment": "코멘트 추가",
+    "lineCommentPlaceholder": "이 줄에 코멘트...",
+    "snippetComments": "{{count}}개의 코멘트",
+    "codeSnippets": "코드 스니펫",
+    "moreSnippets": "개의 스니펫"
   },
   "profile": {
     "followers": "팔로워",

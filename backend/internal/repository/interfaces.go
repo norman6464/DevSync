@@ -209,6 +209,19 @@ type GroupMessageRepositoryInterface interface {
 	GetMemberUserIDs(roomID uint) []uint
 }
 
+// CodeSnippetRepositoryInterface はコードスニペットデータ操作の契約を定義する。
+// スニペットのCRUDおよびインラインコメント操作を含む。
+type CodeSnippetRepositoryInterface interface {
+	Create(snippet *model.CodeSnippet) error
+	FindByID(id uint) (*model.CodeSnippet, error)
+	FindByPostID(postID uint) ([]model.CodeSnippet, error)
+	Update(snippet *model.CodeSnippet) error
+	Delete(id uint) error
+	CreateComment(comment *model.SnippetComment) error
+	GetComments(snippetID uint) ([]model.SnippetComment, error)
+	DeleteComment(id, userID uint) error
+}
+
 // GitHubRepositoryInterface はGitHub連携データ操作の契約を定義する。
 // コントリビューション、言語統計、リポジトリのUpsert操作を提供する。
 type GitHubRepositoryInterface interface {

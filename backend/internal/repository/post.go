@@ -23,7 +23,7 @@ func (r *PostRepository) Create(post *model.Post) error {
 // FindByID は指定IDの投稿をユーザー情報付きで取得する。
 func (r *PostRepository) FindByID(id uint) (*model.Post, error) {
 	var post model.Post
-	err := r.db.Preload("User").First(&post, id).Error
+	err := r.db.Preload("User").Preload("CodeSnippets").First(&post, id).Error
 	return &post, err
 }
 
@@ -31,14 +31,14 @@ func (r *PostRepository) FindByID(id uint) (*model.Post, error) {
 func (r *PostRepository) FindAll(page, limit int) ([]model.Post, error) {
 	var posts []model.Post
 	offset := (page - 1) * limit
-	err := r.db.Preload("User").Order("created_at DESC").Offset(offset).Limit(limit).Find(&posts).Error
+	err := r.db.Preload("User").Preload("CodeSnippets").Order("created_at DESC").Offset(offset).Limit(limit).Find(&posts).Error
 	return posts, err
 }
 
 // FindByUserID は指定ユーザーの全投稿を取得する（新しい順）。
 func (r *PostRepository) FindByUserID(userID uint) ([]model.Post, error) {
 	var posts []model.Post
-	err := r.db.Preload("User").Where("user_id = ?", userID).Order("created_at DESC").Find(&posts).Error
+	err := r.db.Preload("User").Preload("CodeSnippets").Where("user_id = ?", userID).Order("created_at DESC").Find(&posts).Error
 	return posts, err
 }
 
@@ -47,7 +47,7 @@ func (r *PostRepository) FindByUserID(userID uint) ([]model.Post, error) {
 func (r *PostRepository) Timeline(userID uint, page, limit int) ([]model.Post, error) {
 	var posts []model.Post
 	offset := (page - 1) * limit
-	err := r.db.Preload("User").
+	err := r.db.Preload("User").Preload("CodeSnippets").
 		Where("user_id IN (SELECT followee_id FROM follows WHERE follower_id = ?) OR user_id = ?", userID, userID).
 		Order("created_at DESC").
 		Offset(offset).Limit(limit).

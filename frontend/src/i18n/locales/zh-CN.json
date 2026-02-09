@@ -97,7 +97,20 @@
     "nothingToPreview": "没有可预览的内容",
     "pasteOrDrag": "粘贴或拖拽图片上传",
     "uploading": "上传中...",
-    "attachedImages": "已附加图片"
+    "attachedImages": "已附加图片",
+    "addSnippet": "+ 添加代码片段",
+    "removeSnippet": "删除片段",
+    "selectLanguage": "选择语言",
+    "fileName": "文件名",
+    "codePlaceholder": "输入代码...",
+    "copyCode": "复制",
+    "codeCopied": "已复制",
+    "lineComment": "行注释",
+    "addLineComment": "添加评论",
+    "lineCommentPlaceholder": "对这行进行评论...",
+    "snippetComments": "{{count}}条评论",
+    "codeSnippets": "代码片段",
+    "moreSnippets": "个片段"
   },
   "profile": {
     "followers": "粉丝",
