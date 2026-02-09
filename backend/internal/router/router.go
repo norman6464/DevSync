@@ -118,7 +118,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	snippetHandler := handler.NewCodeSnippetHandler(codeSnippetService)
 	rankingHandler := handler.NewRankingHandler(rankingService)
 	messageHandler := handler.NewMessageHandler(messageService)
-	wsHandler := handler.NewWebSocketHandler(hub, authService)
+	wsHandler := handler.NewWebSocketHandler(hub, authService, origins)
 	uploadHandler := handler.NewUploadHandler()
 	notificationHandler := handler.NewNotificationHandler(notificationService)
 	zennHandler := handler.NewZennHandler(zennService)
