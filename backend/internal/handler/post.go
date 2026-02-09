@@ -13,12 +13,13 @@ import (
 // PostHandler は投稿関連のHTTPハンドラ。
 // 投稿のCRUD・いいね・コメント・タイムラインを処理する。
 type PostHandler struct {
-	service *service.PostService
+	service        *service.PostService
+	snippetService *service.CodeSnippetService
 }
 
 // NewPostHandler は新しいPostHandlerインスタンスを生成する。
-func NewPostHandler(s *service.PostService) *PostHandler {
-	return &PostHandler{service: s}
+func NewPostHandler(s *service.PostService, snippetService *service.CodeSnippetService) *PostHandler {
+	return &PostHandler{service: s, snippetService: snippetService}
 }
 
 // Create は新しい投稿を作成する。
@@ -28,6 +29,11 @@ func (h *PostHandler) Create(c *gin.Context) {
 		Title     string `json:"title" binding:"required"`
 		Content   string `json:"content" binding:"required"`
 		ImageURLs string `json:"image_urls"`
+		CodeSnippets []struct {
+			Language string `json:"language"`
+			FileName string `json:"file_name"`
+			Code     string `json:"code"`
+		} `json:"code_snippets"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -45,6 +51,28 @@ func (h *PostHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	// コードスニペットを一括作成
+	if len(input.CodeSnippets) > 0 && h.snippetService != nil {
+		for _, s := range input.CodeSnippets {
+			if s.Language == "" || s.Code == "" {
+				continue
+			}
+			snippet := &model.CodeSnippet{
+				PostID:   created.ID,
+				UserID:   userID,
+				Language: s.Language,
+				FileName: s.FileName,
+				Code:     s.Code,
+			}
+			h.snippetService.Create(snippet)
+		}
+		// スニペット付きで再取得
+		if updated, err := h.service.GetByID(created.ID); err == nil {
+			created = updated
+		}
+	}
+
 	c.JSON(http.StatusCreated, created)
 }
 

@@ -54,6 +54,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	chatRoomRepo := repository.NewChatRoomRepository(db)
 	groupMessageRepo := repository.NewGroupMessageRepository(db)
 	learningLogRepo := repository.NewLearningLogRepository(db)
+	codeSnippetRepo := repository.NewCodeSnippetRepository(db)
 
 	// サービスの初期化
 	authService := service.NewAuthService(userRepo, passwordResetRepo, cfg.JWTSecret)
@@ -73,6 +74,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	projectService := service.NewProjectService(projectRepo)
 	bookReviewService := service.NewBookReviewService(bookReviewRepo)
 	learningResourceService := service.NewLearningResourceService(learningResourceRepo)
+	codeSnippetService := service.NewCodeSnippetService(codeSnippetRepo, postRepo)
 	roadmapService := service.NewRoadmapService(roadmapRepo)
 	// テンプレートロードマップの初期登録（システムユーザーを取得/作成して使用）
 	go func() {
@@ -95,7 +97,8 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	userHandler := handler.NewUserHandler(userService)
 	followHandler := handler.NewFollowHandler(followService)
 	githubHandler := handler.NewGitHubHandler(githubService, authService)
-	postHandler := handler.NewPostHandler(postService)
+	postHandler := handler.NewPostHandler(postService, codeSnippetService)
+	snippetHandler := handler.NewCodeSnippetHandler(codeSnippetService)
 	rankingHandler := handler.NewRankingHandler(rankingService)
 	messageHandler := handler.NewMessageHandler(messageService)
 	wsHandler := handler.NewWebSocketHandler(hub, authService)
@@ -191,6 +194,20 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			posts.GET("/:id/comments", postHandler.GetComments)
 			posts.POST("/:id/comments", postHandler.CreateComment)
 			posts.DELETE("/:id/comments/:commentId", postHandler.DeleteComment)
+			// コードスニペット（投稿の子リソース）
+			posts.POST("/:id/snippets", snippetHandler.Create)
+			posts.GET("/:id/snippets", snippetHandler.GetByPostID)
+		}
+
+		// コードスニペット（個別操作）
+		snippets := protected.Group("/snippets")
+		{
+			snippets.GET("/:id", snippetHandler.GetByID)
+			snippets.PUT("/:id", snippetHandler.Update)
+			snippets.DELETE("/:id", snippetHandler.Delete)
+			snippets.GET("/:id/comments", snippetHandler.GetComments)
+			snippets.POST("/:id/comments", snippetHandler.CreateComment)
+			snippets.DELETE("/:id/comments/:commentId", snippetHandler.DeleteComment)
 		}
 
 		// ランキング
