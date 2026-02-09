@@ -11,6 +11,7 @@ import {
   BookMarked,
   Library,
   Settings,
+  Lightbulb,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import Avatar from '../common/Avatar';
@@ -36,6 +37,7 @@ const moreItems = [
   { path: '/projects', key: 'nav.projects', icon: FolderKanban },
   { path: '/resources', key: 'nav.resources', icon: Library },
   { path: '/book-reviews', key: 'nav.bookReviews', icon: BookOpen },
+  { path: '/advice', key: 'nav.advice', icon: Lightbulb },
   { path: '/settings', key: 'nav.settings', icon: Settings },
 ] as const;
 
