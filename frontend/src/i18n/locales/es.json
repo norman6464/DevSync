@@ -809,7 +809,10 @@
     "exploreResources": "Explora recursos de aprendizaje",
     "exploreResourcesMsg": "La biblioteca de recursos tiene muchos materiales para ayudarte.",
     "tryQA": "Únete a la comunidad Q&A",
-    "tryQAMsg": "Profundiza tu aprendizaje haciendo y respondiendo preguntas."
+    "tryQAMsg": "Profundiza tu aprendizaje haciendo y respondiendo preguntas.",
+    "deleteConversation": "Eliminar conversación",
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar esta conversación? Esta acción no se puede deshacer.",
+    "deleted": "Conversación eliminada"
   },
   "pomodoro": {
     "timer": "Temporizador Pomodoro",

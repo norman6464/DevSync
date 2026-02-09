@@ -9,8 +9,8 @@ import ConversationList from '../components/advice/ConversationList';
 export default function AdvicePage() {
   const { t } = useTranslation();
   const { advices, llmAvailable, dailyChatRemaining, loading, markRead } = useAdvice();
-  const { messages, sending, conversationId, sendMessage, loadConversation, startNewChat } = useAIChat();
-  const { conversations, loading: convsLoading, refetch: refetchConvs } = useConversations();
+  const { messages, sending, conversationId, sendMessage, loadConversation, startNewChat, deleteCurrentConversation } = useAIChat();
+  const { conversations, loading: convsLoading, refetch: refetchConvs, removeConversation } = useConversations();
   const [activeTab, setActiveTab] = useState<'advice' | 'chat'>('advice');
 
   const handleSend = async (message: string) => {
@@ -21,6 +21,20 @@ export default function AdvicePage() {
   const handleSelectConversation = (id: number) => {
     loadConversation(id);
     setActiveTab('chat');
+  };
+
+  const handleDeleteConversation = async (id: number) => {
+    const success = await removeConversation(id);
+    if (success && conversationId === id) {
+      startNewChat();
+    }
+  };
+
+  const handleDeleteCurrentConversation = async () => {
+    const success = await deleteCurrentConversation();
+    if (success) {
+      refetchConvs();
+    }
   };
 
   return (
@@ -107,13 +121,16 @@ export default function AdvicePage() {
               messages={messages}
               sending={sending}
               dailyChatRemaining={dailyChatRemaining}
+              conversationId={conversationId}
               onSend={handleSend}
               onNewChat={startNewChat}
+              onDelete={handleDeleteCurrentConversation}
             />
             <ConversationList
               conversations={conversations}
               loading={convsLoading}
               onSelect={handleSelectConversation}
+              onDelete={handleDeleteConversation}
               activeId={conversationId}
             />
           </div>

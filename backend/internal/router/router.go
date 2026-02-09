@@ -437,6 +437,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			advice.POST("/chat", aiAdviceHandler.Chat)
 			advice.GET("/conversations", aiAdviceHandler.GetConversations)
 			advice.GET("/conversations/:id", aiAdviceHandler.GetConversation)
+			advice.DELETE("/conversations/:id", aiAdviceHandler.DeleteConversation)
 		}
 	}
 

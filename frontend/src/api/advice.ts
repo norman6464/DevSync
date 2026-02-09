@@ -57,3 +57,6 @@ export const getConversations = (limit = 20, offset = 0) =>
 
 export const getConversation = (id: number) =>
   client.get<AIConversation>(`/advice/conversations/${id}`);
+
+export const deleteConversation = (id: number) =>
+  client.delete(`/advice/conversations/${id}`);
