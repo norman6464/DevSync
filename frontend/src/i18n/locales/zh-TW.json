@@ -192,7 +192,15 @@
     "paizaRankB": "（中高級）",
     "paizaRankC": "（中級）",
     "paizaRankD": "（初中級）",
-    "paizaRankE": "（初級）"
+    "paizaRankE": "（初級）",
+    "emailNotifications": "郵件通知",
+    "emailWeeklyReport": "每週報告郵件",
+    "emailWeeklyReportDesc": "每週一接收活動摘要郵件",
+    "emailLanguage": "郵件語言",
+    "emailLanguageDesc": "選擇郵件投遞語言",
+    "emailEnabled": "已啟用",
+    "emailDisabled": "已停用",
+    "emailPreferencesSaved": "郵件設定已儲存"
   },
   "explore": {
     "title": "探索開發者",

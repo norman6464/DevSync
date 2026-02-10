@@ -1085,3 +1085,52 @@ func (m *MockGitHubRepository) DeleteUserData(userID uint) error {
 	args := m.Called(userID)
 	return args.Error(0)
 }
+
+// ============================================================
+// MockEmailSender は EmailSenderInterface のテスト用モック実装。
+// ============================================================
+
+type MockEmailSender struct {
+	mock.Mock
+}
+
+func (m *MockEmailSender) Send(to, subject, htmlBody string) error {
+	args := m.Called(to, subject, htmlBody)
+	return args.Error(0)
+}
+
+// ============================================================
+// MockActivityReportRepository は repository.ActivityReportRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockActivityReportRepository struct {
+	mock.Mock
+}
+
+func (m *MockActivityReportRepository) GetWeeklyReport(userID uint) (*model.ActivityReport, error) {
+	args := m.Called(userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.ActivityReport), args.Error(1)
+}
+
+func (m *MockActivityReportRepository) GetMonthlyReport(userID uint) (*model.ActivityReport, error) {
+	args := m.Called(userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.ActivityReport), args.Error(1)
+}
+
+func (m *MockActivityReportRepository) GetComparison(userID uint, period model.ReportPeriod) (*model.ReportComparison, error) {
+	args := m.Called(userID, period)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.ReportComparison), args.Error(1)
+}
+
+// インターフェース適合チェック
+var _ EmailSenderInterface = (*MockEmailSender)(nil)
+var _ repository.ActivityReportRepositoryInterface = (*MockActivityReportRepository)(nil)

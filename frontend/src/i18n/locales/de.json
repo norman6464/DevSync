@@ -192,7 +192,15 @@
     "paizaRankB": "(Obere Mittelstufe)",
     "paizaRankC": "(Mittelstufe)",
     "paizaRankD": "(Untere Mittelstufe)",
-    "paizaRankE": "(Anfänger)"
+    "paizaRankE": "(Anfänger)",
+    "emailNotifications": "E-Mail-Benachrichtigungen",
+    "emailWeeklyReport": "Wöchentlicher Bericht per E-Mail",
+    "emailWeeklyReportDesc": "Jeden Montag eine wöchentliche Aktivitätszusammenfassung erhalten",
+    "emailLanguage": "E-Mail-Sprache",
+    "emailLanguageDesc": "Sprache für E-Mail-Zustellung wählen",
+    "emailEnabled": "Aktiviert",
+    "emailDisabled": "Deaktiviert",
+    "emailPreferencesSaved": "E-Mail-Einstellungen gespeichert"
   },
   "explore": {
     "title": "Entwickler entdecken",

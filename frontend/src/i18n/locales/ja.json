@@ -192,7 +192,15 @@
     "paizaRankB": "（中上級）",
     "paizaRankC": "（中級）",
     "paizaRankD": "（初中級）",
-    "paizaRankE": "（初級）"
+    "paizaRankE": "（初級）",
+    "emailNotifications": "メール通知",
+    "emailWeeklyReport": "ウィークリーレポートメール",
+    "emailWeeklyReportDesc": "毎週月曜日にアクティビティサマリーをメールで受け取る",
+    "emailLanguage": "メール言語",
+    "emailLanguageDesc": "メールの配信言語を選択",
+    "emailEnabled": "有効",
+    "emailDisabled": "無効",
+    "emailPreferencesSaved": "メール設定を保存しました"
   },
   "explore": {
     "title": "開発者を見つける",

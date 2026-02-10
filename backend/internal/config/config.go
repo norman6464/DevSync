@@ -23,6 +23,12 @@ type Config struct {
 	GitHubRedirectURL  string // GitHub OAuth リダイレクトURL
 	CORSOrigins        string // CORS許可オリジン（カンマ区切り）
 	OpenAIAPIKey       string // OpenAI APIキー（LLM機能用、空なら無効）
+	SMTPHost           string // SMTPサーバーホスト（空ならメール機能無効）
+	SMTPPort           string // SMTPポート番号
+	SMTPUser           string // SMTP認証ユーザー名
+	SMTPPassword       string // SMTP認証パスワード
+	EmailFrom          string // メール送信元アドレス
+	AppURL             string // アプリケーションURL（メール内リンク用）
 }
 
 // Load は環境変数から設定を読み込み、Configインスタンスを返す。
@@ -42,6 +48,12 @@ func Load() *Config {
 		GitHubRedirectURL: getEnv("GITHUB_REDIRECT_URL", "http://localhost:5173/github/callback"),
 		CORSOrigins:       getEnv("CORS_ORIGINS", "http://localhost:5173"),
 		OpenAIAPIKey:      getEnv("OPENAI_API_KEY", ""),
+		SMTPHost:          getEnv("SMTP_HOST", ""),
+		SMTPPort:          getEnv("SMTP_PORT", "587"),
+		SMTPUser:          getEnv("SMTP_USER", ""),
+		SMTPPassword:      getEnv("SMTP_PASSWORD", ""),
+		EmailFrom:         getEnv("EMAIL_FROM", "noreply@devsync.dev"),
+		AppURL:            getEnv("APP_URL", "http://localhost:5173"),
 	}
 }
 

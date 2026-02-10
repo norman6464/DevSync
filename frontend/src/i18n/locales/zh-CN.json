@@ -192,7 +192,15 @@
     "paizaRankB": "（中高级）",
     "paizaRankC": "（中级）",
     "paizaRankD": "（初中级）",
-    "paizaRankE": "（初级）"
+    "paizaRankE": "（初级）",
+    "emailNotifications": "邮件通知",
+    "emailWeeklyReport": "每周报告邮件",
+    "emailWeeklyReportDesc": "每周一接收活动摘要邮件",
+    "emailLanguage": "邮件语言",
+    "emailLanguageDesc": "选择邮件投递语言",
+    "emailEnabled": "已启用",
+    "emailDisabled": "已禁用",
+    "emailPreferencesSaved": "邮件设置已保存"
   },
   "explore": {
     "title": "发现开发者",

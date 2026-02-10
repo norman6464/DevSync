@@ -35,11 +35,25 @@ services:
       GITHUB_REDIRECT_URL: ${GITHUB_REDIRECT_URL:-http://localhost:5173/github/callback}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SMTP_HOST: ${SMTP_HOST:-mailhog}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@devsync.dev}
+      APP_URL: ${APP_URL:-http://localhost:5173}
     ports:
       - "8080:8080"
     depends_on:
       db:
         condition: service_healthy
+    restart: unless-stopped
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: devsync-mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
     restart: unless-stopped
 
   frontend:

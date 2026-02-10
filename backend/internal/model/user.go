@@ -24,6 +24,8 @@ type User struct {
 	SkillsLanguages     string    `json:"skills_languages"`                          // プログラミング言語スキル（カンマ区切り）
 	SkillsFrameworks    string    `json:"skills_frameworks"`                         // フレームワークスキル（カンマ区切り）
 	OnboardingCompleted bool      `json:"onboarding_completed" gorm:"default:false"` // 初回セットアップ完了フラグ
+	EmailWeeklyReport   bool      `json:"email_weekly_report" gorm:"default:true"`  // ウィークリーレポートメール配信フラグ
+	EmailLanguage       string    `json:"email_language" gorm:"default:'ja'"`       // メール配信言語（ja, en, ko等）
 	CreatedAt           time.Time `json:"created_at"`
 	UpdatedAt           time.Time `json:"updated_at"`
 }

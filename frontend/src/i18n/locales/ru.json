@@ -192,7 +192,15 @@
     "paizaRankB": "(Выше среднего)",
     "paizaRankC": "(Средний)",
     "paizaRankD": "(Ниже среднего)",
-    "paizaRankE": "(Начинающий)"
+    "paizaRankE": "(Начинающий)",
+    "emailNotifications": "Уведомления по Email",
+    "emailWeeklyReport": "Еженедельный Отчёт по Email",
+    "emailWeeklyReportDesc": "Получать еженедельный отчёт об активности каждый понедельник",
+    "emailLanguage": "Язык Email",
+    "emailLanguageDesc": "Выбрать язык доставки",
+    "emailEnabled": "Включено",
+    "emailDisabled": "Отключено",
+    "emailPreferencesSaved": "Настройки email сохранены"
   },
   "explore": {
     "title": "Найти разработчиков",

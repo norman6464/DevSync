@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Sparkles } from 'lucide-react';
@@ -9,6 +9,7 @@ import { connectZenn, disconnectZenn, syncZenn } from '../api/zenn';
 import { connectQiita, disconnectQiita, syncQiita } from '../api/qiita';
 import { connectAtCoder, disconnectAtCoder } from '../api/atcoder';
 import { deleteAccount } from '../api/auth';
+import { getEmailPreferences, updateEmailPreferences } from '../api/emailPreferences';
 import toast from 'react-hot-toast';
 
 // skillicons.dev supported icons
@@ -54,6 +55,22 @@ export default function SettingsPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const [emailWeeklyReport, setEmailWeeklyReport] = useState(user?.email_weekly_report ?? true);
+  const [emailLanguage, setEmailLanguage] = useState(user?.email_language || 'ja');
+  const [savingEmail, setSavingEmail] = useState(false);
+
+  useEffect(() => {
+    const loadEmailPreferences = async () => {
+      try {
+        const { data } = await getEmailPreferences();
+        setEmailWeeklyReport(data.email_weekly_report);
+        setEmailLanguage(data.email_language);
+      } catch {
+        // デフォルト値を使用
+      }
+    };
+    loadEmailPreferences();
+  }, []);
 
   if (!user) return null;
 
@@ -84,6 +101,21 @@ export default function SettingsPage() {
       toast.error(t('settings.saveFailed'));
     } finally {
       setSavingSkills(false);
+    }
+  };
+
+  const handleSaveEmailPreferences = async () => {
+    setSavingEmail(true);
+    try {
+      await updateEmailPreferences({
+        email_weekly_report: emailWeeklyReport,
+        email_language: emailLanguage,
+      });
+      toast.success(t('settings.emailPreferencesSaved'));
+    } catch {
+      toast.error(t('settings.saveFailed'));
+    } finally {
+      setSavingEmail(false);
     }
   };
 
@@ -384,6 +416,72 @@ export default function SettingsPage() {
             className="px-5 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors"
           >
             {savingSkills ? t('common.loading') : t('common.save')}
+          </button>
+        </div>
+      </div>
+
+      {/* Email Notifications */}
+      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-800">
+          <h2 className="text-base font-semibold">{t('settings.emailNotifications')}</h2>
+        </div>
+        <div className="p-6 space-y-5">
+          {/* Weekly Report Toggle */}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-200">{t('settings.emailWeeklyReport')}</p>
+              <p className="text-xs text-gray-500 mt-0.5">{t('settings.emailWeeklyReportDesc')}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setEmailWeeklyReport(!emailWeeklyReport)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                emailWeeklyReport ? 'bg-blue-600' : 'bg-gray-700'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  emailWeeklyReport ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+          <div className="text-xs">
+            <span className={emailWeeklyReport ? 'text-blue-400' : 'text-gray-500'}>
+              {emailWeeklyReport ? t('settings.emailEnabled') : t('settings.emailDisabled')}
+            </span>
+          </div>
+
+          {/* Email Language Select */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">{t('settings.emailLanguage')}</label>
+            <p className="text-xs text-gray-500 mb-2">{t('settings.emailLanguageDesc')}</p>
+            <select
+              value={emailLanguage}
+              onChange={(e) => setEmailLanguage(e.target.value)}
+              className={inputClass}
+            >
+              <option value="ja">日本語</option>
+              <option value="en">English</option>
+              <option value="ko">한국어</option>
+              <option value="zh-CN">简体中文</option>
+              <option value="zh-TW">繁體中文</option>
+              <option value="es">Español</option>
+              <option value="fr">Français</option>
+              <option value="de">Deutsch</option>
+              <option value="pt">Português</option>
+              <option value="ru">Русский</option>
+            </select>
+          </div>
+        </div>
+        <div className="px-6 py-4 border-t border-gray-800 flex justify-end">
+          <button
+            type="button"
+            onClick={handleSaveEmailPreferences}
+            disabled={savingEmail}
+            className="px-5 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors"
+          >
+            {savingEmail ? t('common.loading') : t('common.save')}
           </button>
         </div>
       </div>

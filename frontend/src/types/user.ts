@@ -14,6 +14,8 @@ export interface User {
   skills_languages: string;
   skills_frameworks: string;
   onboarding_completed: boolean;
+  email_weekly_report: boolean;
+  email_language: string;
   created_at: string;
   updated_at: string;
 }

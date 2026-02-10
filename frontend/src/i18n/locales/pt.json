@@ -192,7 +192,15 @@
     "paizaRankB": "(Intermediário Superior)",
     "paizaRankC": "(Intermediário)",
     "paizaRankD": "(Intermediário Inferior)",
-    "paizaRankE": "(Iniciante)"
+    "paizaRankE": "(Iniciante)",
+    "emailNotifications": "Notificações por E-mail",
+    "emailWeeklyReport": "Relatório Semanal por E-mail",
+    "emailWeeklyReportDesc": "Receber um resumo semanal de atividade toda segunda-feira",
+    "emailLanguage": "Idioma do E-mail",
+    "emailLanguageDesc": "Selecionar o idioma de entrega do e-mail",
+    "emailEnabled": "Ativado",
+    "emailDisabled": "Desativado",
+    "emailPreferencesSaved": "Preferências de e-mail salvas"
   },
   "explore": {
     "title": "Descobrir Desenvolvedores",

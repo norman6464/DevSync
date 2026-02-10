@@ -192,7 +192,15 @@
     "paizaRankB": "(중상급)",
     "paizaRankC": "(중급)",
     "paizaRankD": "(초중급)",
-    "paizaRankE": "(초급)"
+    "paizaRankE": "(초급)",
+    "emailNotifications": "이메일 알림",
+    "emailWeeklyReport": "주간 보고서 이메일",
+    "emailWeeklyReportDesc": "매주 월요일에 활동 요약 이메일을 받습니다",
+    "emailLanguage": "이메일 언어",
+    "emailLanguageDesc": "이메일 전송 언어 선택",
+    "emailEnabled": "활성화",
+    "emailDisabled": "비활성화",
+    "emailPreferencesSaved": "이메일 설정이 저장되었습니다"
   },
   "explore": {
     "title": "개발자 찾기",
