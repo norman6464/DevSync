@@ -431,6 +431,7 @@ Service層のユニットテストを `testify/mock` ベースで実装してい
 | `code_snippet_test.go` | スニペットCRUD・インラインコメント | 10 |
 | `ai_advice_test.go` | ルールエンジン・LLMチャット・会話削除 | 17 |
 | `email_test.go` | ウィークリーレポートメール送信・テンプレート | 6 |
+| `level_test.go` | XP計算・レベル計算・LevelInfo・Service統合 | 28 |
 
 ### CI/CD
 
@@ -584,6 +585,17 @@ API仕様はOpenAPI (Swagger)で管理しています。
 - [x] SMTP設定による柔軟なメール配送（未設定時は機能自動無効化）
 - [x] 開発用Mailhogコンテナ統合（Web UIでメール確認可能）
 - [x] TDDで実装（6テストケース追加）
+- [x] 全10言語のi18n対応
+
+### Phase 3.19（学習レベルシステム）✅
+- [x] XP（経験値）自動計算（学習ログ・投稿・GitHub・目標・コメント・いいね・ストリーク）
+- [x] レベル計算式（累計XP = 100 × N × (N+1) / 2）
+- [x] ダッシュボードLevelWidget（レベル・プログレスバー・次レベルまでのXP）
+- [x] プロフィールLevelDisplay（XP内訳バーチャート付き）
+- [x] LevelBadgeコンポーネント（レベル帯別カラー: gray/green/blue/purple/gold）
+- [x] ランキングページに「レベル別」タブ追加
+- [x] レベルアップ通知機能（CheckAndNotifyLevelUp）
+- [x] TDDで実装（28テストケース追加）
 - [x] 全10言語のi18n対応
 
 ### Phase 4（将来）📋
