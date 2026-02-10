@@ -333,7 +333,9 @@
     "filterAnswer": "Ответы Q&A",
     "filterBadge": "Значок",
     "deleteNotification": "Удалить уведомление",
-    "deleted": "Уведомление удалено"
+    "deleted": "Уведомление удалено",
+    "levelUp": "Вы достигли уровня {{level}}!",
+    "filterLevel": "Повышение уровня"
   },
   "accountManagement": {
     "forgotPassword": "Забыли пароль",
@@ -844,5 +846,26 @@
     "pomodoroSession": "Сессия фокусировки Помодоро",
     "sessionCompleted": "Сессия фокусировки {{minutes}} минут завершена",
     "logSaved": "Журнал обучения сохранён"
+  },
+  "level": {
+    "title": "Уровень обучения",
+    "level": "Уровень",
+    "totalXP": "Всего XP",
+    "nextLevel": "Следующий уровень",
+    "xpNeeded": "{{xp}} XP до следующего уровня",
+    "xpProgress": "{{current}} / {{next}} XP",
+    "levelUp": "Повышение уровня!",
+    "levelUpMessage": "Вы достигли уровня {{level}}!",
+    "breakdown": "Разбивка XP",
+    "breakdownLearningLogs": "Журналы обучения",
+    "breakdownPosts": "Публикации",
+    "breakdownGitHub": "GitHub",
+    "breakdownGoals": "Цели",
+    "breakdownComments": "Комментарии",
+    "breakdownLikes": "Лайки",
+    "breakdownStreakBonus": "Бонус за серию",
+    "xpUnit": "XP",
+    "noActivity": "Пока нет активности",
+    "rankingByLevel": "По уровню"
   }
 }

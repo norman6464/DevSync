@@ -333,7 +333,9 @@
     "filterAnswer": "Q&A回答",
     "filterBadge": "バッジ",
     "deleteNotification": "通知を削除",
-    "deleted": "通知を削除しました"
+    "deleted": "通知を削除しました",
+    "levelUp": "レベル {{level}} に到達しました！",
+    "filterLevel": "レベルアップ"
   },
   "accountManagement": {
     "forgotPassword": "パスワードをお忘れですか",
@@ -844,5 +846,26 @@
     "pomodoroSession": "ポモドーロ集中セッション",
     "sessionCompleted": "{{minutes}}分の集中セッションを完了",
     "logSaved": "学習ログを記録しました"
+  },
+  "level": {
+    "title": "学習レベル",
+    "level": "レベル",
+    "totalXP": "累計XP",
+    "nextLevel": "次のレベル",
+    "xpNeeded": "次のレベルまで {{xp}} XP",
+    "xpProgress": "{{current}} / {{next}} XP",
+    "levelUp": "レベルアップ！",
+    "levelUpMessage": "レベル {{level}} に到達しました！",
+    "breakdown": "XP内訳",
+    "breakdownLearningLogs": "学習ログ",
+    "breakdownPosts": "投稿",
+    "breakdownGitHub": "GitHub",
+    "breakdownGoals": "目標達成",
+    "breakdownComments": "コメント",
+    "breakdownLikes": "いいね",
+    "breakdownStreakBonus": "ストリークボーナス",
+    "xpUnit": "XP",
+    "noActivity": "アクティビティがありません",
+    "rankingByLevel": "レベル別"
   }
 }

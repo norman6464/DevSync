@@ -333,7 +333,9 @@
     "filterAnswer": "Respostas Q&A",
     "filterBadge": "Emblema",
     "deleteNotification": "Excluir notificação",
-    "deleted": "Notificação excluída"
+    "deleted": "Notificação excluída",
+    "levelUp": "Você alcançou o Nível {{level}}!",
+    "filterLevel": "Subida de Nível"
   },
   "accountManagement": {
     "forgotPassword": "Esqueceu a senha",
@@ -844,5 +846,26 @@
     "pomodoroSession": "Sessão de foco Pomodoro",
     "sessionCompleted": "Sessão de foco de {{minutes}} minutos concluída",
     "logSaved": "Registro de aprendizado salvo"
+  },
+  "level": {
+    "title": "Nível de Aprendizado",
+    "level": "Nível",
+    "totalXP": "XP Total",
+    "nextLevel": "Próximo Nível",
+    "xpNeeded": "{{xp}} XP para o próximo nível",
+    "xpProgress": "{{current}} / {{next}} XP",
+    "levelUp": "Subiu de Nível!",
+    "levelUpMessage": "Você alcançou o Nível {{level}}!",
+    "breakdown": "Detalhamento de XP",
+    "breakdownLearningLogs": "Registros de Aprendizado",
+    "breakdownPosts": "Publicações",
+    "breakdownGitHub": "GitHub",
+    "breakdownGoals": "Metas",
+    "breakdownComments": "Comentários",
+    "breakdownLikes": "Curtidas",
+    "breakdownStreakBonus": "Bônus de Sequência",
+    "xpUnit": "XP",
+    "noActivity": "Nenhuma atividade ainda",
+    "rankingByLevel": "Por Nível"
   }
 }

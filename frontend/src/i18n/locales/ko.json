@@ -333,7 +333,9 @@
     "filterAnswer": "Q&A 답변",
     "filterBadge": "배지",
     "deleteNotification": "알림 삭제",
-    "deleted": "알림이 삭제되었습니다"
+    "deleted": "알림이 삭제되었습니다",
+    "levelUp": "레벨 {{level}}에 도달했습니다!",
+    "filterLevel": "레벨 업"
   },
   "accountManagement": {
     "forgotPassword": "비밀번호를 잊으셨나요",
@@ -844,5 +846,26 @@
     "pomodoroSession": "포모도로 집중 세션",
     "sessionCompleted": "{{minutes}}분 집중 세션 완료",
     "logSaved": "학습 로그를 기록했습니다"
+  },
+  "level": {
+    "title": "학습 레벨",
+    "level": "레벨",
+    "totalXP": "총 XP",
+    "nextLevel": "다음 레벨",
+    "xpNeeded": "다음 레벨까지 {{xp}} XP",
+    "xpProgress": "{{current}} / {{next}} XP",
+    "levelUp": "레벨 업!",
+    "levelUpMessage": "레벨 {{level}}에 도달했습니다!",
+    "breakdown": "XP 내역",
+    "breakdownLearningLogs": "학습 로그",
+    "breakdownPosts": "게시물",
+    "breakdownGitHub": "GitHub",
+    "breakdownGoals": "목표 달성",
+    "breakdownComments": "댓글",
+    "breakdownLikes": "좋아요",
+    "breakdownStreakBonus": "연속 보너스",
+    "xpUnit": "XP",
+    "noActivity": "아직 활동이 없습니다",
+    "rankingByLevel": "레벨별"
   }
 }
