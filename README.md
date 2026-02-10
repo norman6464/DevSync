@@ -291,6 +291,7 @@ make migrate-up
 
 - Frontend: http://localhost:5173
 - API: http://localhost:8080
+- Mailhog: http://localhost:8025（開発用メールUI）
 - Grafana: http://localhost:3000
 
 ### Kubernetesへのデプロイ
@@ -429,6 +430,7 @@ Service層のユニットテストを `testify/mock` ベースで実装してい
 | `message_test.go` | メッセージ・既読 | 4 |
 | `code_snippet_test.go` | スニペットCRUD・インラインコメント | 10 |
 | `ai_advice_test.go` | ルールエンジン・LLMチャット・会話削除 | 17 |
+| `email_test.go` | ウィークリーレポートメール送信・テンプレート | 6 |
 
 ### CI/CD
 
@@ -574,6 +576,15 @@ API仕様はOpenAPI (Swagger)で管理しています。
 - [x] WebSocketグループメッセージに認可チェックを追加（ルームメンバーシップ検証）
 - [x] ファイルアップロードにマジックバイトMIMEタイプ検証を追加（Stored XSS防止）
 - [x] Markdownレンダリングにrehype-sanitizeを導入（明示的HTMLサニタイズ）
+
+### Phase 3.18（ウィークリーレポートメール）✅
+- [x] 毎週月曜9:00にアクティビティサマリーメールを自動送信（cronスケジューラ）
+- [x] HTMLメールテンプレート（ダークテーマ、レスポンシブ、10言語対応）
+- [x] Settings画面からメール配信ON/OFF・配信言語の設定
+- [x] SMTP設定による柔軟なメール配送（未設定時は機能自動無効化）
+- [x] 開発用Mailhogコンテナ統合（Web UIでメール確認可能）
+- [x] TDDで実装（6テストケース追加）
+- [x] 全10言語のi18n対応
 
 ### Phase 4（将来）📋
 - [ ] モバイルアプリ
