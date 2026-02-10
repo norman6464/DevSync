@@ -109,6 +109,23 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		llmClient,
 	)
 
+	// メールサービスの初期化（SMTP設定がある場合のみ有効化）
+	var emailSender service.EmailSenderInterface
+	if cfg.SMTPHost != "" {
+		emailSender = service.NewSMTPEmailSender(cfg)
+		log.Println("SMTP設定が検出されました。メール機能が有効です。")
+	}
+	weeklyReportEmailService := service.NewWeeklyReportEmailService(emailSender, activityReportService, userRepo)
+	weeklyReportEmailService.SetAppURL(cfg.AppURL)
+
+	// スケジューラの初期化（SMTP設定がある場合のみ起動）
+	if cfg.SMTPHost != "" {
+		scheduler := service.NewScheduler(weeklyReportEmailService)
+		go scheduler.Start()
+	} else {
+		log.Println("SMTP未設定。ウィークリーレポートメールのスケジューラは無効です。")
+	}
+
 	// ハンドラの初期化
 	authHandler := handler.NewAuthHandler(authService, githubService)
 	userHandler := handler.NewUserHandler(userService)
@@ -136,6 +153,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	badgeHandler := handler.NewBadgeHandler(badgeService)
 	learningLogHandler := handler.NewLearningLogHandler(learningLogService)
 	aiAdviceHandler := handler.NewAIAdviceHandler(aiAdviceService)
+	emailPreferencesHandler := handler.NewEmailPreferencesHandler(userService)
 
 	// HubのGetRoomMembersコールバックを設定
 	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs
@@ -435,6 +453,10 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 			learningLogs.PUT("/:id", learningLogHandler.Update)
 			learningLogs.DELETE("/:id", learningLogHandler.Delete)
 		}
+
+		// メール配信設定
+		protected.GET("/email-preferences", emailPreferencesHandler.GetPreferences)
+		protected.PUT("/email-preferences", emailPreferencesHandler.UpdatePreferences)
 
 		// AIアドバイス
 		advice := protected.Group("/advice")
