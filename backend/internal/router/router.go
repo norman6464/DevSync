@@ -93,6 +93,8 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	activityReportService := service.NewActivityReportService(activityReportRepo)
 	atcoderService := service.NewAtCoderService()
 	badgeService := service.NewBadgeService(db, notificationService)
+	levelRepo := repository.NewLevelRepository(db)
+	levelService := service.NewLevelService(levelRepo, notificationService)
 
 	// AIアドバイスサービス（LLMクライアントはAPIキー設定時のみ初期化）
 	var llmClient service.LLMClientInterface
@@ -154,6 +156,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	learningLogHandler := handler.NewLearningLogHandler(learningLogService)
 	aiAdviceHandler := handler.NewAIAdviceHandler(aiAdviceService)
 	emailPreferencesHandler := handler.NewEmailPreferencesHandler(userService)
+	levelHandler := handler.NewLevelHandler(levelService)
 
 	// HubのGetRoomMembersコールバックを設定
 	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs
@@ -439,6 +442,14 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		{
 			badges.GET("/:userId", badgeHandler.GetUserBadges)
 			badges.POST("/notify", badgeHandler.NotifyBadgeEarned)
+		}
+
+		// レベル
+		level := protected.Group("/level")
+		{
+			level.GET("/me", levelHandler.GetMyLevelInfo)
+			level.GET("/:userId", levelHandler.GetLevelInfo)
+			level.GET("/:userId/breakdown", levelHandler.GetXPBreakdown)
 		}
 
 		// 学習ログ
