@@ -20,3 +20,4 @@ export { useLearningLogs, useLearningLogCalendar, useStreak } from './useLearnin
 export { useSnippetComments } from './useSnippetComments';
 export { useAdvice, useAIChat, useConversations } from './useAdvice';
 export { usePomodoroTimer } from './usePomodoroTimer';
+export { useMyLevel, useLevel, useLevelBreakdown } from './useLevel';
