@@ -13,7 +13,8 @@ const (
 	NotificationTypeComment NotificationType = "comment" // コメント
 	NotificationTypeFollow  NotificationType = "follow"  // フォロー
 	NotificationTypeAnswer  NotificationType = "answer"  // Q&A回答
-	NotificationTypeBadge   NotificationType = "badge"   // バッジ獲得
+	NotificationTypeBadge   NotificationType = "badge"    // バッジ獲得
+	NotificationTypeLevelUp NotificationType = "level_up" // レベルアップ
 )
 
 // Notification はユーザーへの通知を表す。

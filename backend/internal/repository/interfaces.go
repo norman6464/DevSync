@@ -125,6 +125,7 @@ type LearningGoalRepositoryInterface interface {
 type RankingRepositoryInterface interface {
 	ContributionRanking(period string) ([]RankingEntry, error)
 	LanguageRanking(language, period string) ([]RankingEntry, error)
+	LevelRanking() ([]RankingEntry, error)
 	AvailableLanguages() ([]string, error)
 }
 
@@ -278,6 +279,12 @@ type AIAdviceRepositoryInterface interface {
 	MarkAllAsRead(userID uint) error
 	DeleteExpired() error
 	DeleteByUserID(userID uint) error
+}
+
+// LevelRepositoryInterface はレベルシステムのデータ操作の契約を定義する。
+// 複数テーブルからXP計算に必要な統計を集計する。
+type LevelRepositoryInterface interface {
+	GetXPStats(userID uint) (*model.XPStats, error)
 }
 
 // AIConversationRepositoryInterface はAI会話セッションデータ操作の契約を定義する。

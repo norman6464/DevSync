@@ -41,6 +41,16 @@ func (h *RankingHandler) LanguageRanking(c *gin.Context) {
 	c.JSON(http.StatusOK, entries)
 }
 
+// LevelRanking はXP合計に基づくレベルランキングを返す。
+func (h *RankingHandler) LevelRanking(c *gin.Context) {
+	entries, err := h.service.LevelRanking()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, entries)
+}
+
 // AvailableLanguages はランキング対象の利用可能な言語一覧を返す。
 func (h *RankingHandler) AvailableLanguages(c *gin.Context) {
 	languages, err := h.service.AvailableLanguages()

@@ -11,6 +11,7 @@ import ContributionCalendar from '../components/profile/ContributionCalendar';
 import LanguageChart from '../components/profile/LanguageChart';
 import BadgeDisplay from '../components/profile/BadgeDisplay';
 import StreakDisplay from '../components/profile/StreakDisplay';
+import LevelDisplay from '../components/profile/LevelDisplay';
 import PostCard from '../components/posts/PostCard';
 import ShareModal from '../components/profile/ShareModal';
 import PortfolioModal from '../components/profile/PortfolioModal';
@@ -179,6 +180,8 @@ export default function ProfilePage() {
           )}
         </div>
       )}
+
+      <LevelDisplay userId={user.id} />
 
       <StreakDisplay streakInfo={streakInfo} />
 

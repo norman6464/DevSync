@@ -11,6 +11,7 @@ import PostForm from '../components/posts/PostForm';
 import { PostCardSkeleton } from '../components/common/Skeleton';
 import Avatar from '../components/common/Avatar';
 import { formatDistanceToNow } from '../utils/timeFormat';
+import LevelWidget from '../components/dashboard/LevelWidget';
 import StreakWidget from '../components/dashboard/StreakWidget';
 import DailyChallengeWidget from '../components/dashboard/DailyChallengeWidget';
 import AIAdviceWidget from '../components/dashboard/AIAdviceWidget';
@@ -169,6 +170,9 @@ export default function DashboardPage() {
             )}
           </div>
         )}
+
+        {/* Level Widget */}
+        <LevelWidget />
 
         {/* Streak Widget */}
         <StreakWidget />

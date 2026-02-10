@@ -1131,6 +1131,23 @@ func (m *MockActivityReportRepository) GetComparison(userID uint, period model.R
 	return args.Get(0).(*model.ReportComparison), args.Error(1)
 }
 
+// ============================================================
+// MockLevelRepository は repository.LevelRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockLevelRepository struct {
+	mock.Mock
+}
+
+func (m *MockLevelRepository) GetXPStats(userID uint) (*model.XPStats, error) {
+	args := m.Called(userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.XPStats), args.Error(1)
+}
+
 // インターフェース適合チェック
 var _ EmailSenderInterface = (*MockEmailSender)(nil)
 var _ repository.ActivityReportRepositoryInterface = (*MockActivityReportRepository)(nil)
+var _ repository.LevelRepositoryInterface = (*MockLevelRepository)(nil)

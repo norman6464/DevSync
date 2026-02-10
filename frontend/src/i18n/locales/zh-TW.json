@@ -333,7 +333,9 @@
     "filterAnswer": "Q&A回答",
     "filterBadge": "徽章",
     "deleteNotification": "刪除通知",
-    "deleted": "通知已刪除"
+    "deleted": "通知已刪除",
+    "levelUp": "已達到等級 {{level}}！",
+    "filterLevel": "升級"
   },
   "accountManagement": {
     "forgotPassword": "忘記密碼",
@@ -844,5 +846,26 @@
     "pomodoroSession": "番茄鐘專注時段",
     "sessionCompleted": "完成了{{minutes}}分鐘的專注時段",
     "logSaved": "學習日誌已記錄"
+  },
+  "level": {
+    "title": "學習等級",
+    "level": "等級",
+    "totalXP": "總經驗值",
+    "nextLevel": "下一等級",
+    "xpNeeded": "距下一等級還需 {{xp}} XP",
+    "xpProgress": "{{current}} / {{next}} XP",
+    "levelUp": "升級！",
+    "levelUpMessage": "已達到等級 {{level}}！",
+    "breakdown": "經驗值明細",
+    "breakdownLearningLogs": "學習日誌",
+    "breakdownPosts": "貼文",
+    "breakdownGitHub": "GitHub",
+    "breakdownGoals": "目標完成",
+    "breakdownComments": "留言",
+    "breakdownLikes": "按讚",
+    "breakdownStreakBonus": "連續獎勵",
+    "xpUnit": "XP",
+    "noActivity": "尚無活動",
+    "rankingByLevel": "依等級"
   }
 }

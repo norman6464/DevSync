@@ -25,6 +25,11 @@ func (s *RankingService) LanguageRanking(language, period string) ([]repository.
 	return s.repo.LanguageRanking(language, period)
 }
 
+// LevelRanking はXP合計に基づくレベルランキングを返す。
+func (s *RankingService) LevelRanking() ([]repository.RankingEntry, error) {
+	return s.repo.LevelRanking()
+}
+
 // AvailableLanguages はランキング対象の言語一覧を返す。
 func (s *RankingService) AvailableLanguages() ([]string, error) {
 	return s.repo.AvailableLanguages()
