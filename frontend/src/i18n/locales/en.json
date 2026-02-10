@@ -192,7 +192,15 @@
     "paizaRankB": "(Upper Intermediate)",
     "paizaRankC": "(Intermediate)",
     "paizaRankD": "(Lower Intermediate)",
-    "paizaRankE": "(Beginner)"
+    "paizaRankE": "(Beginner)",
+    "emailNotifications": "Email Notifications",
+    "emailWeeklyReport": "Weekly Report Email",
+    "emailWeeklyReportDesc": "Receive a weekly activity summary email every Monday",
+    "emailLanguage": "Email Language",
+    "emailLanguageDesc": "Select the language for email delivery",
+    "emailEnabled": "Enabled",
+    "emailDisabled": "Disabled",
+    "emailPreferencesSaved": "Email preferences saved"
   },
   "explore": {
     "title": "Discover Developers",
