@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getContributionRanking, getLanguageRanking, getAvailableLanguages } from '../api/rankings';
+import { getContributionRanking, getLanguageRanking, getLevelRanking, getAvailableLanguages } from '../api/rankings';
 import type { RankingEntry } from '../types/ranking';
 import { useAsyncData } from './useAsyncData';
 
@@ -9,7 +9,7 @@ const DEFAULT_LANGUAGES = [
 ];
 
 export function useRankings() {
-  const [tab, setTab] = useState<'contributions' | 'languages'>('contributions');
+  const [tab, setTab] = useState<'contributions' | 'languages' | 'level'>('contributions');
   const [period, setPeriod] = useState<'weekly' | 'monthly'>('weekly');
   const [language, setLanguage] = useState('JavaScript');
 
@@ -29,6 +29,10 @@ export function useRankings() {
     async () => {
       if (tab === 'contributions') {
         const { data } = await getContributionRanking(period);
+        return data || [];
+      }
+      if (tab === 'level') {
+        const { data } = await getLevelRanking();
         return data || [];
       }
       if (language) {

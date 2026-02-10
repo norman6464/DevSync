@@ -260,6 +260,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		rankings := protected.Group("/rankings")
 		{
 			rankings.GET("/contributions", rankingHandler.ContributionRanking)
+			rankings.GET("/level", rankingHandler.LevelRanking)
 			rankings.GET("/languages/:lang", rankingHandler.LanguageRanking)
 			rankings.GET("/languages", rankingHandler.AvailableLanguages)
 		}

@@ -7,5 +7,8 @@ export const getContributionRanking = (period: 'weekly' | 'monthly' = 'weekly') 
 export const getLanguageRanking = (language: string, period: 'weekly' | 'monthly' = 'weekly') =>
   client.get<RankingEntry[]>(`/rankings/languages/${language}`, { params: { period } });
 
+export const getLevelRanking = () =>
+  client.get<RankingEntry[]>('/rankings/level');
+
 export const getAvailableLanguages = () =>
   client.get<string[]>('/rankings/languages');

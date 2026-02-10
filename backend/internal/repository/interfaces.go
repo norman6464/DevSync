@@ -125,6 +125,7 @@ type LearningGoalRepositoryInterface interface {
 type RankingRepositoryInterface interface {
 	ContributionRanking(period string) ([]RankingEntry, error)
 	LanguageRanking(language, period string) ([]RankingEntry, error)
+	LevelRanking() ([]RankingEntry, error)
 	AvailableLanguages() ([]string, error)
 }
 
