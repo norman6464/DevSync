@@ -38,6 +38,7 @@
     "qa": "Q&A",
     "roadmaps": "Feuilles de Route",
     "advice": "Conseiller IA",
+    "analytics": "Analytique",
     "more": "Plus"
   },
   "auth": {
@@ -867,5 +868,32 @@
     "xpUnit": "XP",
     "noActivity": "Aucune activité",
     "rankingByLevel": "Par Niveau"
+  },
+  "analytics": {
+    "pageTitle": "Tableau de Bord Analytique",
+    "pageDescription": "Visualisez vos habitudes d'apprentissage et votre progression",
+    "heatmapTitle": "Activité d'Apprentissage",
+    "categoryTitle": "Répartition par Catégorie",
+    "productivityTitle": "Score de Productivité",
+    "trendTitle": "Tendances Hebdomadaires",
+    "insightsTitle": "Perspectives IA",
+    "overallScore": "Score Global",
+    "pomodoroRate": "Achèvement Pomodoro",
+    "goalRate": "Atteinte des Objectifs",
+    "streakConsistency": "Régularité de la Série",
+    "noData": "Pas encore de données. Commencez à enregistrer vos apprentissages pour voir les analyses !",
+    "noInsights": "Les perspectives IA apparaîtront une fois suffisamment de données collectées",
+    "dayLabels": ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
+    "hours": "heures",
+    "min": "min",
+    "minutes": "minutes",
+    "logs": "entrées",
+    "less": "Moins",
+    "more": "Plus",
+    "category_coding": "Programmation",
+    "category_reading": "Lecture",
+    "category_course": "Cours",
+    "category_meetup": "Rencontre",
+    "category_other": "Autre"
   }
 }

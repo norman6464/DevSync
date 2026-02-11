@@ -38,6 +38,7 @@
     "qa": "Q&A",
     "roadmaps": "Hojas de Ruta de Aprendizaje",
     "advice": "Asesor IA",
+    "analytics": "Análisis",
     "more": "Más"
   },
   "auth": {
@@ -867,5 +868,32 @@
     "xpUnit": "XP",
     "noActivity": "Sin actividad aún",
     "rankingByLevel": "Por Nivel"
+  },
+  "analytics": {
+    "pageTitle": "Panel de Análisis de Aprendizaje",
+    "pageDescription": "Visualiza tus patrones de aprendizaje y progreso",
+    "heatmapTitle": "Actividad de Aprendizaje",
+    "categoryTitle": "Desglose por Categoría",
+    "productivityTitle": "Puntuación de Productividad",
+    "trendTitle": "Tendencias Semanales",
+    "insightsTitle": "Perspectivas de IA",
+    "overallScore": "Puntuación General",
+    "pomodoroRate": "Finalización de Pomodoro",
+    "goalRate": "Logro de Objetivos",
+    "streakConsistency": "Consistencia de Racha",
+    "noData": "Sin datos aún. ¡Comienza a registrar tu aprendizaje para ver análisis!",
+    "noInsights": "Las perspectivas de IA aparecerán cuando se recopilen suficientes datos",
+    "dayLabels": ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
+    "hours": "horas",
+    "min": "min",
+    "minutes": "minutos",
+    "logs": "registros",
+    "less": "Menos",
+    "more": "Más",
+    "category_coding": "Programación",
+    "category_reading": "Lectura",
+    "category_course": "Curso",
+    "category_meetup": "Encuentro",
+    "category_other": "Otro"
   }
 }

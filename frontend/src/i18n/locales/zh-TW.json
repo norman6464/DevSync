@@ -38,6 +38,7 @@
     "qa": "Q&A",
     "roadmaps": "學習路線圖",
     "advice": "AI顧問",
+    "analytics": "學習分析",
     "more": "更多"
   },
   "auth": {
@@ -867,5 +868,32 @@
     "xpUnit": "XP",
     "noActivity": "尚無活動",
     "rankingByLevel": "依等級"
+  },
+  "analytics": {
+    "pageTitle": "學習分析儀表板",
+    "pageDescription": "視覺化您的學習模式和進度",
+    "heatmapTitle": "學習活動",
+    "categoryTitle": "分類細分",
+    "productivityTitle": "生產力評分",
+    "trendTitle": "每週趨勢",
+    "insightsTitle": "AI洞察",
+    "overallScore": "綜合評分",
+    "pomodoroRate": "番茄鐘完成率",
+    "goalRate": "目標達成率",
+    "streakConsistency": "連續一致性",
+    "noData": "尚無數據。開始記錄學習日誌以查看分析！",
+    "noInsights": "收集足夠數據後將顯示AI洞察",
+    "dayLabels": ["日", "一", "二", "三", "四", "五", "六"],
+    "hours": "小時",
+    "min": "分鐘",
+    "minutes": "分鐘",
+    "logs": "條",
+    "less": "少",
+    "more": "多",
+    "category_coding": "程式設計",
+    "category_reading": "閱讀",
+    "category_course": "課程",
+    "category_meetup": "聚會",
+    "category_other": "其他"
   }
 }

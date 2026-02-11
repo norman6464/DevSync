@@ -38,6 +38,7 @@
     "qa": "Q&A",
     "roadmaps": "Дорожные карты",
     "advice": "ИИ-советник",
+    "analytics": "Аналитика",
     "more": "Ещё"
   },
   "auth": {
@@ -867,5 +868,32 @@
     "xpUnit": "XP",
     "noActivity": "Пока нет активности",
     "rankingByLevel": "По уровню"
+  },
+  "analytics": {
+    "pageTitle": "Панель Аналитики Обучения",
+    "pageDescription": "Визуализируйте свои учебные паттерны и прогресс",
+    "heatmapTitle": "Учебная Активность",
+    "categoryTitle": "Разбивка по Категориям",
+    "productivityTitle": "Оценка Продуктивности",
+    "trendTitle": "Еженедельные Тренды",
+    "insightsTitle": "ИИ-Аналитика",
+    "overallScore": "Общая Оценка",
+    "pomodoroRate": "Завершение Помодоро",
+    "goalRate": "Достижение Целей",
+    "streakConsistency": "Постоянство Серии",
+    "noData": "Данных пока нет. Начните вести журнал обучения, чтобы увидеть аналитику!",
+    "noInsights": "ИИ-аналитика появится после сбора достаточного количества данных",
+    "dayLabels": ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+    "hours": "часов",
+    "min": "мин",
+    "minutes": "минут",
+    "logs": "записей",
+    "less": "Меньше",
+    "more": "Больше",
+    "category_coding": "Программирование",
+    "category_reading": "Чтение",
+    "category_course": "Курс",
+    "category_meetup": "Встреча",
+    "category_other": "Другое"
   }
 }

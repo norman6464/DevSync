@@ -38,6 +38,7 @@
     "qa": "Q&A",
     "roadmaps": "학습 로드맵",
     "advice": "AI 어드바이저",
+    "analytics": "학습 분석",
     "more": "더보기"
   },
   "auth": {
@@ -867,5 +868,32 @@
     "xpUnit": "XP",
     "noActivity": "아직 활동이 없습니다",
     "rankingByLevel": "레벨별"
+  },
+  "analytics": {
+    "pageTitle": "학습 분석 대시보드",
+    "pageDescription": "학습 패턴과 진행 상황을 시각화합니다",
+    "heatmapTitle": "학습 활동",
+    "categoryTitle": "카테고리별 분석",
+    "productivityTitle": "생산성 점수",
+    "trendTitle": "주간 트렌드",
+    "insightsTitle": "AI 인사이트",
+    "overallScore": "종합 점수",
+    "pomodoroRate": "포모도로 완료율",
+    "goalRate": "목표 달성률",
+    "streakConsistency": "연속 일관성",
+    "noData": "아직 데이터가 없습니다. 학습 로그를 기록하여 분석을 시작하세요!",
+    "noInsights": "충분한 데이터가 수집되면 AI 인사이트가 표시됩니다",
+    "dayLabels": ["일", "월", "화", "수", "목", "금", "토"],
+    "hours": "시간",
+    "min": "분",
+    "minutes": "분",
+    "logs": "건",
+    "less": "적음",
+    "more": "많음",
+    "category_coding": "코딩",
+    "category_reading": "독서",
+    "category_course": "코스",
+    "category_meetup": "밋업",
+    "category_other": "기타"
   }
 }

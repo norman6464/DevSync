@@ -38,6 +38,7 @@
     "qa": "Q&A",
     "roadmaps": "学习路线图",
     "advice": "AI顾问",
+    "analytics": "学习分析",
     "more": "更多"
   },
   "auth": {
@@ -867,5 +868,32 @@
     "xpUnit": "XP",
     "noActivity": "暂无活动",
     "rankingByLevel": "按等级"
+  },
+  "analytics": {
+    "pageTitle": "学习分析仪表盘",
+    "pageDescription": "可视化您的学习模式和进度",
+    "heatmapTitle": "学习活动",
+    "categoryTitle": "分类细分",
+    "productivityTitle": "生产力评分",
+    "trendTitle": "每周趋势",
+    "insightsTitle": "AI洞察",
+    "overallScore": "综合评分",
+    "pomodoroRate": "番茄钟完成率",
+    "goalRate": "目标达成率",
+    "streakConsistency": "连续一致性",
+    "noData": "暂无数据。开始记录学习日志以查看分析！",
+    "noInsights": "收集足够数据后将显示AI洞察",
+    "dayLabels": ["日", "一", "二", "三", "四", "五", "六"],
+    "hours": "小时",
+    "min": "分钟",
+    "minutes": "分钟",
+    "logs": "条",
+    "less": "少",
+    "more": "多",
+    "category_coding": "编程",
+    "category_reading": "阅读",
+    "category_course": "课程",
+    "category_meetup": "聚会",
+    "category_other": "其他"
   }
 }

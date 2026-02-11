@@ -38,6 +38,7 @@
     "qa": "Q&A",
     "roadmaps": "Learning Roadmaps",
     "advice": "AI Advisor",
+    "analytics": "Analytics",
     "more": "More"
   },
   "auth": {
@@ -867,5 +868,32 @@
     "xpUnit": "XP",
     "noActivity": "No activity yet",
     "rankingByLevel": "By Level"
+  },
+  "analytics": {
+    "pageTitle": "Learning Analytics",
+    "pageDescription": "Visualize your learning patterns and progress",
+    "heatmapTitle": "Learning Activity",
+    "categoryTitle": "Category Breakdown",
+    "productivityTitle": "Productivity Score",
+    "trendTitle": "Weekly Trends",
+    "insightsTitle": "AI Insights",
+    "overallScore": "Overall Score",
+    "pomodoroRate": "Pomodoro Completion",
+    "goalRate": "Goal Achievement",
+    "streakConsistency": "Streak Consistency",
+    "noData": "No data yet. Start logging your learning to see analytics!",
+    "noInsights": "AI insights will appear once enough data is collected",
+    "dayLabels": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    "hours": "hours",
+    "min": "min",
+    "minutes": "minutes",
+    "logs": "logs",
+    "less": "Less",
+    "more": "More",
+    "category_coding": "Coding",
+    "category_reading": "Reading",
+    "category_course": "Course",
+    "category_meetup": "Meetup",
+    "category_other": "Other"
   }
 }
