@@ -31,5 +31,5 @@ export interface ProductivityScore {
 /** AIインサイト */
 export interface AIInsight {
   type: string;
-  message: string;
+  params: Record<string, string | number>;
 }

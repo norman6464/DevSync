@@ -894,6 +894,12 @@
     "category_reading": "読書",
     "category_course": "コース",
     "category_meetup": "ミートアップ",
-    "category_other": "その他"
+    "category_other": "その他",
+    "insight_peak_time": "{{day}}曜日の{{hour}}時台が最も学習時間が長いです（合計{{minutes}}分）。この時間帯を集中タイムとして活用しましょう。",
+    "insight_category_focus": "学習時間の{{percentage}}%が「{{category}}」に集中しています。バランスの取れた学習のため、他のカテゴリも試してみましょう。",
+    "insight_weekly_growth_up": "先週と比べて学習時間が{{rate}}%増加しています。この調子で頑張りましょう！",
+    "insight_weekly_growth_down": "先週と比べて学習時間が{{rate}}%減少しています。少しでも学習を続けることが大切です。",
+    "insight_streak_active": "現在{{days}}日連続で学習中です！素晴らしい継続力です。",
+    "insight_streak_record": "過去最長ストリークは{{longest}}日です。現在は{{current}}日目。記録更新を目指しましょう！"
   }
 }

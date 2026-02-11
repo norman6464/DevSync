@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -24,8 +23,8 @@ func (r *LearningAnalyticsRepository) GetHeatmapData(userID uint) ([]model.Heatm
 	var entries []model.HeatmapEntry
 	err := r.db.Raw(`
 		SELECT
-			EXTRACT(DOW FROM created_at) AS day_of_week,
-			EXTRACT(HOUR FROM created_at) AS hour,
+			EXTRACT(DOW FROM created_at)::int AS day_of_week,
+			EXTRACT(HOUR FROM created_at)::int AS hour,
 			COALESCE(SUM(duration), 0) AS total_minutes
 		FROM learning_logs
 		WHERE user_id = ?
@@ -89,29 +88,103 @@ func (r *LearningAnalyticsRepository) GetProductivityStats(userID uint) (*model.
 	startDate := time.Now().AddDate(0, 0, -daysInRange).Format("2006-01-02")
 
 	// ポモドーロセッション数
-	r.db.Raw(`SELECT COUNT(*) FROM learning_logs WHERE user_id = ? AND source = 'pomodoro' AND created_at >= ?`, userID, startDate).Scan(&stats.PomodoroSessions)
+	if err := r.db.Raw(
+		`SELECT COUNT(*) FROM learning_logs WHERE user_id = ? AND source = 'pomodoro' AND created_at >= ?`,
+		userID, startDate,
+	).Scan(&stats.PomodoroSessions).Error; err != nil {
+		return nil, err
+	}
 
 	// 手動記録セッション数
-	r.db.Raw(`SELECT COUNT(*) FROM learning_logs WHERE user_id = ? AND source = 'manual' AND created_at >= ?`, userID, startDate).Scan(&stats.ManualSessions)
+	if err := r.db.Raw(
+		`SELECT COUNT(*) FROM learning_logs WHERE user_id = ? AND source = 'manual' AND created_at >= ?`,
+		userID, startDate,
+	).Scan(&stats.ManualSessions).Error; err != nil {
+		return nil, err
+	}
 
 	// 完了した目標数
-	r.db.Raw(`SELECT COUNT(*) FROM learning_goals WHERE user_id = ? AND status = 'completed'`, userID).Scan(&stats.CompletedGoals)
+	if err := r.db.Raw(
+		`SELECT COUNT(*) FROM learning_goals WHERE user_id = ? AND status = 'completed'`,
+		userID,
+	).Scan(&stats.CompletedGoals).Error; err != nil {
+		return nil, err
+	}
 
 	// 全目標数
-	r.db.Raw(`SELECT COUNT(*) FROM learning_goals WHERE user_id = ?`, userID).Scan(&stats.TotalGoals)
+	if err := r.db.Raw(
+		`SELECT COUNT(*) FROM learning_goals WHERE user_id = ?`,
+		userID,
+	).Scan(&stats.TotalGoals).Error; err != nil {
+		return nil, err
+	}
 
 	// 学習記録がある日数（過去12週）
-	r.db.Raw(fmt.Sprintf(`SELECT COUNT(DISTINCT DATE(created_at)) FROM learning_logs WHERE user_id = ? AND created_at >= '%s'`, startDate), userID).Scan(&stats.TotalLogDays)
+	if err := r.db.Raw(
+		`SELECT COUNT(DISTINCT DATE(created_at)) FROM learning_logs WHERE user_id = ? AND created_at >= ?`,
+		userID, startDate,
+	).Scan(&stats.TotalLogDays).Error; err != nil {
+		return nil, err
+	}
 
-	// ストリーク情報（learning_logsリポジトリと同じロジック）
-	r.db.Raw(`
-		SELECT COALESCE(current_streak, 0), COALESCE(longest_streak, 0)
-		FROM (
-			SELECT
-				(SELECT COUNT(DISTINCT DATE(created_at)) FROM learning_logs WHERE user_id = ?) as current_streak,
-				(SELECT COUNT(DISTINCT DATE(created_at)) FROM learning_logs WHERE user_id = ?) as longest_streak
-		) sub
-	`, userID, userID).Row().Scan(&stats.CurrentStreak, &stats.LongestStreak)
+	// ストリーク情報：学習記録日を取得して連続日数を算出
+	type logDate struct {
+		LogDate time.Time
+	}
+	var logDates []logDate
+	if err := r.db.Raw(`
+		SELECT DISTINCT DATE(created_at) AS log_date
+		FROM learning_logs
+		WHERE user_id = ?
+		ORDER BY log_date DESC
+	`, userID).Scan(&logDates).Error; err != nil {
+		return nil, err
+	}
+
+	if len(logDates) > 0 {
+		normalize := func(t time.Time) time.Time {
+			return t.Truncate(24 * time.Hour)
+		}
+
+		today := normalize(time.Now())
+		first := normalize(logDates[0].LogDate)
+
+		// current streak: 今日から遡って連続している日数
+		if first.Equal(today) || first.Equal(today.AddDate(0, 0, -1)) {
+			stats.CurrentStreak = 1
+			prev := first
+			for i := 1; i < len(logDates); i++ {
+				curr := normalize(logDates[i].LogDate)
+				if int(prev.Sub(curr).Hours()/24) == 1 {
+					stats.CurrentStreak++
+					prev = curr
+				} else {
+					break
+				}
+			}
+		}
+
+		// longest streak: 全期間での最大連続日数
+		longestStreak := 1
+		streakLen := 1
+		prev := normalize(logDates[0].LogDate)
+		for i := 1; i < len(logDates); i++ {
+			curr := normalize(logDates[i].LogDate)
+			if int(prev.Sub(curr).Hours()/24) == 1 {
+				streakLen++
+			} else {
+				if streakLen > longestStreak {
+					longestStreak = streakLen
+				}
+				streakLen = 1
+			}
+			prev = curr
+		}
+		if streakLen > longestStreak {
+			longestStreak = streakLen
+		}
+		stats.LongestStreak = longestStreak
+	}
 
 	return stats, nil
 }

@@ -894,6 +894,12 @@
     "category_reading": "독서",
     "category_course": "코스",
     "category_meetup": "밋업",
-    "category_other": "기타"
+    "category_other": "기타",
+    "insight_peak_time": "{{day}} {{hour}}시가 가장 학습 시간이 긴 시간대입니다(총 {{minutes}}분). 이 시간대를 집중 학습에 활용하세요.",
+    "insight_category_focus": "학습 시간의 {{percentage}}%가 \"{{category}}\"에 집중되어 있습니다. 균형 잡힌 학습을 위해 다른 카테고리도 시도해 보세요.",
+    "insight_weekly_growth_up": "지난주 대비 학습 시간이 {{rate}}% 증가했습니다. 이대로 계속 파이팅!",
+    "insight_weekly_growth_down": "지난주 대비 학습 시간이 {{rate}}% 감소했습니다. 조금이라도 학습을 이어가는 것이 중요합니다.",
+    "insight_streak_active": "현재 {{days}}일 연속 학습 중입니다! 훌륭한 지속력입니다.",
+    "insight_streak_record": "최장 연속 기록은 {{longest}}일입니다. 현재 {{current}}일째. 기록 갱신을 목표로 하세요!"
   }
 }

@@ -894,6 +894,12 @@
     "category_reading": "Lesen",
     "category_course": "Kurs",
     "category_meetup": "Treffen",
-    "category_other": "Sonstiges"
+    "category_other": "Sonstiges",
+    "insight_peak_time": "Ihre beste Lernzeit ist {{day}} um {{hour}} Uhr ({{minutes}} Min. gesamt). Nutzen Sie diese Zeit für konzentriertes Lernen.",
+    "insight_category_focus": "{{percentage}}% Ihrer Lernzeit konzentriert sich auf \u201e{{category}}\u201c. Probieren Sie andere Kategorien für ausgewogenes Lernen.",
+    "insight_weekly_growth_up": "Ihre Lernzeit ist im Vergleich zur Vorwoche um {{rate}}% gestiegen. Weiter so!",
+    "insight_weekly_growth_down": "Ihre Lernzeit ist im Vergleich zur Vorwoche um {{rate}}% gesunken. Jede Minute des Lernens zählt.",
+    "insight_streak_active": "Sie lernen seit {{days}} Tagen in Folge! Tolle Beständigkeit.",
+    "insight_streak_record": "Ihr längster Streak war {{longest}} Tage. Aktuell bei {{current}} Tagen. Versuchen Sie, Ihren Rekord zu brechen!"
   }
 }

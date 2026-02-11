@@ -894,6 +894,12 @@
     "category_reading": "Lecture",
     "category_course": "Cours",
     "category_meetup": "Rencontre",
-    "category_other": "Autre"
+    "category_other": "Autre",
+    "insight_peak_time": "Votre meilleur moment d'étude est le {{day}} à {{hour}}h ({{minutes}} min au total). Profitez de ce créneau pour un apprentissage concentré.",
+    "insight_category_focus": "{{percentage}}% de votre temps d'étude est concentré sur « {{category}} ». Essayez d'autres catégories pour un apprentissage équilibré.",
+    "insight_weekly_growth_up": "Votre temps d'étude a augmenté de {{rate}}% par rapport à la semaine dernière. Continuez comme ça !",
+    "insight_weekly_growth_down": "Votre temps d'étude a diminué de {{rate}}% par rapport à la semaine dernière. Chaque minute d'apprentissage compte.",
+    "insight_streak_active": "Vous étudiez depuis {{days}} jours consécutifs ! Belle constance.",
+    "insight_streak_record": "Votre plus longue série était de {{longest}} jours. Actuellement à {{current}} jours. Essayez de battre votre record !"
   }
 }

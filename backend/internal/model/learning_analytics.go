@@ -44,7 +44,8 @@ type ProductivityScore struct {
 }
 
 // AIInsight はAIが生成した学習インサイトを表す。
+// フロントエンド側でi18nキー analytics.insight_{Type} を使ってメッセージを生成する。
 type AIInsight struct {
-	Type    string `json:"type"`    // インサイトの種類（peak_time, category_focus, streak_trend, productivity_tip）
-	Message string `json:"message"` // インサイトのメッセージ
+	Type   string                 `json:"type"`   // インサイトの種類（peak_time, category_focus, weekly_growth_up, weekly_growth_down, streak_active, streak_record）
+	Params map[string]interface{} `json:"params"` // i18n補間用パラメータ
 }

@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -142,9 +141,6 @@ func (s *LearningAnalyticsService) GetInsights(userID uint) ([]model.AIInsight, 
 	return insights, nil
 }
 
-// dayName は曜日番号を日本語名に変換する。
-var dayName = []string{"日", "月", "火", "水", "木", "金", "土"}
-
 // analyzePeakTime はヒートマップから最も学習時間が長い曜日×時間帯を特定する。
 func analyzePeakTime(heatmap []model.HeatmapEntry) *model.AIInsight {
 	if len(heatmap) == 0 {
@@ -163,8 +159,12 @@ func analyzePeakTime(heatmap []model.HeatmapEntry) *model.AIInsight {
 	}
 
 	return &model.AIInsight{
-		Type:    "peak_time",
-		Message: fmt.Sprintf("%s曜日の%d時台が最も学習時間が長いです（合計%d分）。この時間帯を集中タイムとして活用しましょう。", dayName[maxEntry.DayOfWeek], maxEntry.Hour, maxEntry.TotalMinutes),
+		Type: "peak_time",
+		Params: map[string]interface{}{
+			"day_of_week": maxEntry.DayOfWeek,
+			"hour":        maxEntry.Hour,
+			"minutes":     maxEntry.TotalMinutes,
+		},
 	}
 }
 
@@ -187,11 +187,14 @@ func analyzeCategoryFocus(categories []model.CategoryBreakdown) *model.AIInsight
 		return nil
 	}
 
-	percentage := float64(topCategory.TotalMinutes) / float64(totalMinutes) * 100
+	percentage := math.Round(float64(topCategory.TotalMinutes) / float64(totalMinutes) * 100)
 	if percentage >= 70 {
 		return &model.AIInsight{
-			Type:    "category_focus",
-			Message: fmt.Sprintf("学習時間の%.0f%%が「%s」に集中しています。バランスの取れた学習のため、他のカテゴリも試してみましょう。", percentage, topCategory.Category),
+			Type: "category_focus",
+			Params: map[string]interface{}{
+				"percentage": percentage,
+				"category":   topCategory.Category,
+			},
 		}
 	}
 
@@ -212,17 +215,21 @@ func analyzeWeeklyGrowth(trends []model.WeeklyTrend) *model.AIInsight {
 		return nil
 	}
 
-	growthRate := float64(current.TotalMinutes-prev.TotalMinutes) / float64(prev.TotalMinutes) * 100
+	growthRate := math.Round(float64(current.TotalMinutes-prev.TotalMinutes) / float64(prev.TotalMinutes) * 100)
 
 	if growthRate > 0 {
 		return &model.AIInsight{
-			Type:    "weekly_growth",
-			Message: fmt.Sprintf("先週と比べて学習時間が%.0f%%増加しています。この調子で頑張りましょう！", growthRate),
+			Type: "weekly_growth_up",
+			Params: map[string]interface{}{
+				"rate": growthRate,
+			},
 		}
 	} else if growthRate < -20 {
 		return &model.AIInsight{
-			Type:    "weekly_growth",
-			Message: fmt.Sprintf("先週と比べて学習時間が%.0f%%減少しています。少しでも学習を続けることが大切です。", math.Abs(growthRate)),
+			Type: "weekly_growth_down",
+			Params: map[string]interface{}{
+				"rate": math.Abs(growthRate),
+			},
 		}
 	}
 
@@ -233,15 +240,20 @@ func analyzeWeeklyGrowth(trends []model.WeeklyTrend) *model.AIInsight {
 func analyzeStreak(stats *model.ProductivityStats) *model.AIInsight {
 	if stats.CurrentStreak >= 7 {
 		return &model.AIInsight{
-			Type:    "streak_trend",
-			Message: fmt.Sprintf("現在%d日連続で学習中です！素晴らしい継続力です。", stats.CurrentStreak),
+			Type: "streak_active",
+			Params: map[string]interface{}{
+				"days": stats.CurrentStreak,
+			},
 		}
 	}
 
 	if stats.LongestStreak > 0 && stats.CurrentStreak < stats.LongestStreak {
 		return &model.AIInsight{
-			Type:    "streak_trend",
-			Message: fmt.Sprintf("過去最長ストリークは%d日です。現在は%d日目。記録更新を目指しましょう！", stats.LongestStreak, stats.CurrentStreak),
+			Type: "streak_record",
+			Params: map[string]interface{}{
+				"longest": stats.LongestStreak,
+				"current": stats.CurrentStreak,
+			},
 		}
 	}
 

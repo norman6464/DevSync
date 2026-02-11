@@ -894,6 +894,12 @@
     "category_reading": "Reading",
     "category_course": "Course",
     "category_meetup": "Meetup",
-    "category_other": "Other"
+    "category_other": "Other",
+    "insight_peak_time": "Your peak study time is {{day}} at {{hour}}:00 ({{minutes}} min total). Use this time for focused learning.",
+    "insight_category_focus": "{{percentage}}% of your study time is focused on \"{{category}}\". Try other categories for balanced learning.",
+    "insight_weekly_growth_up": "Your study time increased by {{rate}}% compared to last week. Keep it up!",
+    "insight_weekly_growth_down": "Your study time decreased by {{rate}}% compared to last week. Every bit of learning counts.",
+    "insight_streak_active": "You've been studying for {{days}} days in a row! Amazing consistency.",
+    "insight_streak_record": "Your longest streak was {{longest}} days. Currently at {{current}} days. Aim to break your record!"
   }
 }

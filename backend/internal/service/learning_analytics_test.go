@@ -357,14 +357,14 @@ func TestGetInsights_StreakTrend(t *testing.T) {
 	insights, err := svc.GetInsights(1)
 	assert.NoError(t, err)
 
-	// streak_trendインサイトが含まれることを検証
-	hasStreakTrend := false
+	// streak_activeインサイトが含まれることを検証
+	hasStreakActive := false
 	for _, ins := range insights {
-		if ins.Type == "streak_trend" {
-			hasStreakTrend = true
+		if ins.Type == "streak_active" {
+			hasStreakActive = true
 		}
 	}
-	assert.True(t, hasStreakTrend)
+	assert.True(t, hasStreakActive)
 	repo.AssertExpectations(t)
 }
 
@@ -390,13 +390,13 @@ func TestGetInsights_WeeklyGrowth(t *testing.T) {
 	insights, err := svc.GetInsights(1)
 	assert.NoError(t, err)
 
-	hasWeeklyGrowth := false
+	hasWeeklyGrowthUp := false
 	for _, ins := range insights {
-		if ins.Type == "weekly_growth" {
-			hasWeeklyGrowth = true
+		if ins.Type == "weekly_growth_up" {
+			hasWeeklyGrowthUp = true
 		}
 	}
-	assert.True(t, hasWeeklyGrowth)
+	assert.True(t, hasWeeklyGrowthUp)
 	repo.AssertExpectations(t)
 }
 

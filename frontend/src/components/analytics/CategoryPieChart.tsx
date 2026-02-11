@@ -58,13 +58,13 @@ export default function CategoryPieChart({ data, loading }: Props) {
             )}
           </div>
 
-          {/* 横バー */}
+          {/* 横バー（total_minutesベースで幅を計算し、丸め誤差を防止） */}
           <div className="h-3 flex rounded-full overflow-hidden mb-4">
             {data.map((cat) => (
               <div
                 key={cat.category}
                 className={`${CATEGORY_COLORS[cat.category] || 'bg-gray-600'} transition-all`}
-                style={{ width: `${cat.percentage}%` }}
+                style={{ width: totalMinutes > 0 ? `${(cat.total_minutes / totalMinutes) * 100}%` : '0%' }}
               />
             ))}
           </div>
