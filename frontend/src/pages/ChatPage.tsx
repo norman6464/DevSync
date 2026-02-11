@@ -1,15 +1,7 @@
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { MessageSquare, Users, Plus, Settings, Send } from 'lucide-react';
-import { useAuthStore } from '../store/authStore';
-import { useChatStore } from '../store/chatStore';
-import { getConversations, getMessages, sendMessage as sendMessageApi } from '../api/messages';
-import { getFollowing } from '../api/users';
-import { getChatRooms, getChatRoomMessages, sendGroupMessage } from '../api/chatRooms';
-import type { Conversation, Message } from '../types/message';
-import type { User } from '../types/user';
-import type { ChatRoom } from '../types/chat';
+import { useChat } from '../hooks/useChat';
+import type { Message } from '../types/message';
 import Avatar from '../components/common/Avatar';
 import CreateRoomModal from '../components/chat/CreateRoomModal';
 import RoomSettingsModal from '../components/chat/RoomSettingsModal';
@@ -17,126 +9,7 @@ import { format } from 'date-fns';
 
 export default function ChatPage() {
   const { t } = useTranslation();
-  const { userId } = useParams<{ userId: string }>();
-  const currentUser = useAuthStore((s) => s.user);
-  const {
-    socket, connect, activeMessages, setActiveMessages,
-    activeTab, setActiveTab,
-    chatRooms, setChatRooms,
-    activeRoomId, setActiveRoomId,
-    groupMessages, setGroupMessages, addGroupMessage,
-  } = useChatStore();
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [followingUsers, setFollowingUsers] = useState<User[]>([]);
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(
-    userId ? parseInt(userId) : null
-  );
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [newMessage, setNewMessage] = useState('');
-  const [showCreateRoom, setShowCreateRoom] = useState(false);
-  const [showRoomSettings, setShowRoomSettings] = useState(false);
-
-  useEffect(() => {
-    if (!socket) {
-      connect();
-    }
-  }, [socket, connect]);
-
-  useEffect(() => {
-    // Load conversations
-    getConversations()
-      .then(({ data }) => setConversations(data || []))
-      .catch(() => {});
-
-    // Load following users
-    if (currentUser) {
-      getFollowing(currentUser.id)
-        .then(({ data }) => setFollowingUsers(data || []))
-        .catch(() => {});
-    }
-
-    // Load chat rooms
-    loadChatRooms();
-  }, [currentUser]);
-
-  const loadChatRooms = () => {
-    getChatRooms()
-      .then(({ data }) => setChatRooms(data || []))
-      .catch(() => {});
-  };
-
-  useEffect(() => {
-    if (selectedUserId) {
-      getMessages(selectedUserId)
-        .then(({ data }) => setActiveMessages(data || []))
-        .catch(() => setActiveMessages([]));
-
-      const convUser = conversations.find((c) => c.user.id === selectedUserId)?.user;
-      const followUser = followingUsers.find((u) => u.id === selectedUserId);
-      setSelectedUser(convUser || followUser || null);
-    }
-  }, [selectedUserId, setActiveMessages, conversations, followingUsers]);
-
-  useEffect(() => {
-    if (activeRoomId) {
-      getChatRoomMessages(activeRoomId)
-        .then(({ data }) => setGroupMessages(data || []))
-        .catch(() => setGroupMessages([]));
-    }
-  }, [activeRoomId, setGroupMessages]);
-
-  const followingWithoutConversation = followingUsers.filter(
-    (user) => !conversations.some((conv) => conv.user.id === user.id)
-  );
-
-  const selectedRoom = chatRooms.find((r) => r.id === activeRoomId);
-
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMessage.trim()) return;
-
-    if (activeTab === 'group' && activeRoomId) {
-      try {
-        const { data } = await sendGroupMessage(activeRoomId, newMessage);
-        addGroupMessage(data);
-        if (socket && socket.readyState === WebSocket.OPEN) {
-          socket.send(JSON.stringify({
-            type: 'group_message',
-            room_id: activeRoomId,
-            content: newMessage,
-          }));
-        }
-        setNewMessage('');
-      } catch {
-        // handle error
-      }
-    } else if (selectedUserId) {
-      try {
-        const { data } = await sendMessageApi(selectedUserId, newMessage);
-        setActiveMessages([...activeMessages, data]);
-        if (socket && socket.readyState === WebSocket.OPEN) {
-          socket.send(JSON.stringify({
-            type: 'message',
-            receiver_id: selectedUserId,
-            content: newMessage,
-          }));
-        }
-        setNewMessage('');
-      } catch {
-        // handle error
-      }
-    }
-  };
-
-  const handleSelectRoom = (room: ChatRoom) => {
-    setActiveRoomId(room.id);
-    setSelectedUserId(null);
-  };
-
-  const handleSelectUser = (id: number) => {
-    setSelectedUserId(id);
-    setActiveRoomId(null);
-  };
+  const c = useChat();
 
   return (
     <div className="flex h-[calc(100vh-7rem)] bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
@@ -145,9 +18,9 @@ export default function ChatPage() {
         {/* Tab Switcher */}
         <div className="flex border-b border-gray-800">
           <button
-            onClick={() => setActiveTab('dm')}
+            onClick={() => c.setActiveTab('dm')}
             className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'dm'
+              c.activeTab === 'dm'
                 ? 'text-white border-b-2 border-blue-500'
                 : 'text-gray-400 hover:text-white'
             }`}
@@ -156,9 +29,9 @@ export default function ChatPage() {
             {t('chat.dmTab')}
           </button>
           <button
-            onClick={() => setActiveTab('group')}
+            onClick={() => c.setActiveTab('group')}
             className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'group'
+              c.activeTab === 'group'
                 ? 'text-white border-b-2 border-blue-500'
                 : 'text-gray-400 hover:text-white'
             }`}
@@ -169,20 +42,19 @@ export default function ChatPage() {
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {activeTab === 'dm' ? (
+          {c.activeTab === 'dm' ? (
             <>
-              {/* Existing Conversations */}
-              {conversations.length > 0 && (
+              {c.conversations.length > 0 && (
                 <div>
                   <div className="px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">
                     {t('chat.recentChats')}
                   </div>
-                  {conversations.map((conv) => (
+                  {c.conversations.map((conv) => (
                     <button
                       key={conv.user.id}
-                      onClick={() => handleSelectUser(conv.user.id)}
+                      onClick={() => c.handleSelectUser(conv.user.id)}
                       className={`w-full flex items-center gap-3 px-5 py-3 transition-colors text-left border-l-2 ${
-                        selectedUserId === conv.user.id && activeTab === 'dm'
+                        c.selectedUserId === conv.user.id && c.activeTab === 'dm'
                           ? 'bg-gray-800/70 border-l-blue-500'
                           : 'border-l-transparent hover:bg-gray-800/40'
                       }`}
@@ -204,18 +76,17 @@ export default function ChatPage() {
                 </div>
               )}
 
-              {/* Following Users without Conversation */}
-              {followingWithoutConversation.length > 0 && (
+              {c.followingWithoutConversation.length > 0 && (
                 <div>
                   <div className="px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border-t border-gray-800 mt-2 pt-3">
                     {t('chat.following')}
                   </div>
-                  {followingWithoutConversation.map((user) => (
+                  {c.followingWithoutConversation.map((user) => (
                     <button
                       key={user.id}
-                      onClick={() => handleSelectUser(user.id)}
+                      onClick={() => c.handleSelectUser(user.id)}
                       className={`w-full flex items-center gap-3 px-5 py-3 transition-colors text-left border-l-2 ${
-                        selectedUserId === user.id && activeTab === 'dm'
+                        c.selectedUserId === user.id && c.activeTab === 'dm'
                           ? 'bg-gray-800/70 border-l-green-500'
                           : 'border-l-transparent hover:bg-gray-800/40'
                       }`}
@@ -230,7 +101,7 @@ export default function ChatPage() {
                 </div>
               )}
 
-              {conversations.length === 0 && followingWithoutConversation.length === 0 && (
+              {c.conversations.length === 0 && c.followingWithoutConversation.length === 0 && (
                 <div className="p-6 text-center text-gray-500 text-sm">
                   {t('chat.noConversations')}
                 </div>
@@ -238,10 +109,9 @@ export default function ChatPage() {
             </>
           ) : (
             <>
-              {/* Create Group Button */}
               <div className="p-3">
                 <button
-                  onClick={() => setShowCreateRoom(true)}
+                  onClick={() => c.setShowCreateRoom(true)}
                   className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition-colors"
                 >
                   <Plus className="w-4 h-4" />
@@ -249,14 +119,13 @@ export default function ChatPage() {
                 </button>
               </div>
 
-              {/* Group List */}
-              {chatRooms.length > 0 ? (
-                chatRooms.map((room) => (
+              {c.chatRooms.length > 0 ? (
+                c.chatRooms.map((room) => (
                   <button
                     key={room.id}
-                    onClick={() => handleSelectRoom(room)}
+                    onClick={() => c.handleSelectRoom(room.id)}
                     className={`w-full flex items-center gap-3 px-5 py-3 transition-colors text-left border-l-2 ${
-                      activeRoomId === room.id
+                      c.activeRoomId === room.id
                         ? 'bg-gray-800/70 border-l-blue-500'
                         : 'border-l-transparent hover:bg-gray-800/40'
                     }`}
@@ -284,33 +153,31 @@ export default function ChatPage() {
 
       {/* Chat Area */}
       <div className="flex-1 flex flex-col">
-        {activeTab === 'group' && activeRoomId && selectedRoom ? (
+        {c.activeTab === 'group' && c.activeRoomId && c.selectedRoom ? (
           <>
-            {/* Group Chat Header */}
             <div className="px-6 py-3 border-b border-gray-800 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
                   <Users className="w-4 h-4 text-gray-300" />
                 </div>
                 <div>
-                  <div className="font-medium text-sm">{selectedRoom.name}</div>
-                  {selectedRoom.description && (
-                    <div className="text-xs text-gray-500">{selectedRoom.description}</div>
+                  <div className="font-medium text-sm">{c.selectedRoom.name}</div>
+                  {c.selectedRoom.description && (
+                    <div className="text-xs text-gray-500">{c.selectedRoom.description}</div>
                   )}
                 </div>
               </div>
               <button
-                onClick={() => setShowRoomSettings(true)}
+                onClick={() => c.setShowRoomSettings(true)}
                 className="p-2 text-gray-400 hover:text-white transition-colors rounded-md"
               >
                 <Settings className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Group Messages */}
             <div className="flex-1 overflow-y-auto p-6 space-y-3">
-              {groupMessages.map((msg) => {
-                const isOwn = msg.sender_id === currentUser?.id;
+              {c.groupMessages.map((msg) => {
+                const isOwn = msg.sender_id === c.currentUser?.id;
                 return (
                   <div
                     key={msg.id}
@@ -352,18 +219,17 @@ export default function ChatPage() {
               })}
             </div>
 
-            {/* Group Input */}
-            <form onSubmit={handleSend} className="p-4 border-t border-gray-800 flex gap-3">
+            <form onSubmit={c.handleSend} className="p-4 border-t border-gray-800 flex gap-3">
               <input
                 type="text"
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
+                value={c.newMessage}
+                onChange={(e) => c.setNewMessage(e.target.value)}
                 placeholder={t('chat.groupMessagePlaceholder')}
                 className="flex-1 px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
               />
               <button
                 type="submit"
-                disabled={!newMessage.trim()}
+                disabled={!c.newMessage.trim()}
                 className="px-5 py-2.5 bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:hover:bg-gray-700 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-2"
               >
                 <Send className="w-4 h-4" />
@@ -371,28 +237,26 @@ export default function ChatPage() {
               </button>
             </form>
           </>
-        ) : selectedUserId ? (
+        ) : c.selectedUserId ? (
           <>
-            {/* DM Chat Header */}
             <div className="px-6 py-3 border-b border-gray-800 flex items-center gap-3">
-              {selectedUser && (
+              {c.selectedUser && (
                 <>
                   <Avatar
-                    name={selectedUser.name}
-                    avatarUrl={selectedUser.avatar_url}
+                    name={c.selectedUser.name}
+                    avatarUrl={c.selectedUser.avatar_url}
                     size="sm"
                   />
                   <div>
-                    <div className="font-medium text-sm">{selectedUser.name}</div>
+                    <div className="font-medium text-sm">{c.selectedUser.name}</div>
                   </div>
                 </>
               )}
             </div>
 
-            {/* DM Messages */}
             <div className="flex-1 overflow-y-auto p-6 space-y-3">
-              {activeMessages.map((msg: Message) => {
-                const isOwn = msg.sender_id === currentUser?.id;
+              {c.activeMessages.map((msg: Message) => {
+                const isOwn = msg.sender_id === c.currentUser?.id;
                 return (
                   <div
                     key={msg.id}
@@ -422,18 +286,17 @@ export default function ChatPage() {
               })}
             </div>
 
-            {/* DM Input */}
-            <form onSubmit={handleSend} className="p-4 border-t border-gray-800 flex gap-3">
+            <form onSubmit={c.handleSend} className="p-4 border-t border-gray-800 flex gap-3">
               <input
                 type="text"
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
+                value={c.newMessage}
+                onChange={(e) => c.setNewMessage(e.target.value)}
                 placeholder={t('chat.typeMessage')}
                 className="flex-1 px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
               />
               <button
                 type="submit"
-                disabled={!newMessage.trim()}
+                disabled={!c.newMessage.trim()}
                 className="px-5 py-2.5 bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:hover:bg-gray-700 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-2"
               >
                 <Send className="w-4 h-4" />
@@ -450,34 +313,34 @@ export default function ChatPage() {
       </div>
 
       {/* Modals */}
-      {showCreateRoom && (
+      {c.showCreateRoom && (
         <CreateRoomModal
-          followingUsers={followingUsers}
-          onClose={() => setShowCreateRoom(false)}
+          followingUsers={c.followingUsers}
+          onClose={() => c.setShowCreateRoom(false)}
           onCreated={(room) => {
-            setChatRooms([room, ...chatRooms]);
-            setActiveRoomId(room.id);
-            setShowCreateRoom(false);
+            c.setChatRooms([room, ...c.chatRooms]);
+            c.setActiveRoomId(room.id);
+            c.setShowCreateRoom(false);
           }}
         />
       )}
 
-      {showRoomSettings && selectedRoom && (
+      {c.showRoomSettings && c.selectedRoom && (
         <RoomSettingsModal
-          room={selectedRoom}
-          currentUserId={currentUser?.id || 0}
-          followingUsers={followingUsers}
-          onClose={() => setShowRoomSettings(false)}
-          onUpdated={loadChatRooms}
+          room={c.selectedRoom}
+          currentUserId={c.currentUser?.id || 0}
+          followingUsers={c.followingUsers}
+          onClose={() => c.setShowRoomSettings(false)}
+          onUpdated={c.loadChatRooms}
           onDeleted={() => {
-            setActiveRoomId(null);
-            setShowRoomSettings(false);
-            loadChatRooms();
+            c.setActiveRoomId(null);
+            c.setShowRoomSettings(false);
+            c.loadChatRooms();
           }}
           onLeft={() => {
-            setActiveRoomId(null);
-            setShowRoomSettings(false);
-            loadChatRooms();
+            c.setActiveRoomId(null);
+            c.setShowRoomSettings(false);
+            c.loadChatRooms();
           }}
         />
       )}
