@@ -281,6 +281,14 @@ type AIAdviceRepositoryInterface interface {
 	DeleteByUserID(userID uint) error
 }
 
+// RecommendationRepositoryInterface はレコメンド機能のデータ操作の契約を定義する。
+// スキルマッチングによるユーザー推薦とトレンドコンテンツ取得を提供する。
+type RecommendationRepositoryInterface interface {
+	GetRecommendedUsers(userID uint, skills []string, limit int) ([]model.RecommendedUser, error)
+	GetTrendingPosts(limit int, days int) ([]model.Post, error)
+	GetTrendingResources(limit int, days int) ([]model.LearningResource, error)
+}
+
 // LevelRepositoryInterface はレベルシステムのデータ操作の契約を定義する。
 // 複数テーブルからXP計算に必要な統計を集計する。
 type LevelRepositoryInterface interface {
