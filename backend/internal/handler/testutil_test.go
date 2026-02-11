@@ -393,6 +393,22 @@ func (m *MockGroupMessageRepository) GetMemberUserIDs(roomID uint) []uint {
 	return args.Get(0).([]uint)
 }
 
+// MockRecommendationRepository は RecommendationRepositoryInterface のモック実装。
+type MockRecommendationRepository struct{ mock.Mock }
+
+func (m *MockRecommendationRepository) GetRecommendedUsers(userID uint, skills []string, limit int) ([]model.RecommendedUser, error) {
+	args := m.Called(userID, skills, limit)
+	return args.Get(0).([]model.RecommendedUser), args.Error(1)
+}
+func (m *MockRecommendationRepository) GetTrendingPosts(limit int, days int) ([]model.Post, error) {
+	args := m.Called(limit, days)
+	return args.Get(0).([]model.Post), args.Error(1)
+}
+func (m *MockRecommendationRepository) GetTrendingResources(limit int, days int) ([]model.LearningResource, error) {
+	args := m.Called(limit, days)
+	return args.Get(0).([]model.LearningResource), args.Error(1)
+}
+
 // ---------- リポジトリインターフェース適合チェック ----------
 // import cycle を避けるため repository パッケージは使わないが、
 // コンパイル時にインターフェース適合を検証したい場合は repository パッケージを
@@ -447,6 +463,15 @@ func setupChatRoomHandler() (*ChatRoomHandler, *MockChatRoomRepository, *MockGro
 	svc := service.NewChatRoomService(roomRepo, msgRepo, hub)
 	h := NewChatRoomHandler(svc)
 	return h, roomRepo, msgRepo
+}
+
+// setupRecommendationHandler はRecommendationHandlerテスト用のセットアップを行う。
+func setupRecommendationHandler() (*RecommendationHandler, *MockRecommendationRepository, *MockUserRepository) {
+	recRepo := new(MockRecommendationRepository)
+	userRepo := new(MockUserRepository)
+	svc := service.NewRecommendationService(recRepo, userRepo)
+	h := NewRecommendationHandler(svc)
+	return h, recRepo, userRepo
 }
 
 // doRequest はHTTPリクエストを実行してレスポンスを返す。
