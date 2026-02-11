@@ -11,11 +11,11 @@ import (
 // XP計算、レベル計算、レベルアップ通知を担当する。
 type LevelService struct {
 	repo                repository.LevelRepositoryInterface
-	notificationService *NotificationService
+	notificationService NotificationServiceInterface
 }
 
 // NewLevelService は新しいLevelServiceインスタンスを生成する。
-func NewLevelService(repo repository.LevelRepositoryInterface, ns *NotificationService) *LevelService {
+func NewLevelService(repo repository.LevelRepositoryInterface, ns NotificationServiceInterface) *LevelService {
 	return &LevelService{repo: repo, notificationService: ns}
 }
 

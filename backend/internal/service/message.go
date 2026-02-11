@@ -9,11 +9,11 @@ import (
 // メッセージ送信時に受信者への通知も自動作成する。
 type MessageService struct {
 	repo                repository.MessageRepositoryInterface
-	notificationService *NotificationService
+	notificationService NotificationServiceInterface
 }
 
 // NewMessageService は新しいMessageServiceインスタンスを生成する。
-func NewMessageService(repo repository.MessageRepositoryInterface, notificationService *NotificationService) *MessageService {
+func NewMessageService(repo repository.MessageRepositoryInterface, notificationService NotificationServiceInterface) *MessageService {
 	return &MessageService{repo: repo, notificationService: notificationService}
 }
 
