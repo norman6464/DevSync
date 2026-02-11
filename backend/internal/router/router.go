@@ -80,6 +80,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerLearningRoutes(protected, c)
 		registerCommunityRoutes(protected, c)
 		registerAnalyticsRoutes(protected, c)
+		registerRecommendationRoutes(protected, c)
 	}
 
 	return r
@@ -383,5 +384,14 @@ func registerAnalyticsRoutes(g *gin.RouterGroup, c *di.Container) {
 		advice.GET("/conversations", c.AIAdviceHandler.GetConversations)
 		advice.GET("/conversations/:id", c.AIAdviceHandler.GetConversation)
 		advice.DELETE("/conversations/:id", c.AIAdviceHandler.DeleteConversation)
+	}
+}
+
+func registerRecommendationRoutes(g *gin.RouterGroup, c *di.Container) {
+	recommendations := g.Group("/recommendations")
+	{
+		recommendations.GET("/users", c.RecommendationHandler.GetRecommendedUsers)
+		recommendations.GET("/posts", c.RecommendationHandler.GetTrendingPosts)
+		recommendations.GET("/resources", c.RecommendationHandler.GetTrendingResources)
 	}
 }
