@@ -39,6 +39,7 @@
     "roadmaps": "Hojas de Ruta de Aprendizaje",
     "advice": "Asesor IA",
     "analytics": "Análisis",
+    "studyCircles": "Círculos de Estudio",
     "more": "Más"
   },
   "auth": {
@@ -912,5 +913,81 @@
     "noTrending": "No hay contenido en tendencia",
     "viewAll": "Ver todo",
     "follow": "Seguir"
+  },
+  "studyCircle": {
+    "title": "Círculos de Estudio",
+    "myCircles": "Mis Círculos",
+    "create": "Crear Círculo",
+    "name": "Nombre del Círculo",
+    "topic": "Tema de Estudio",
+    "description": "Descripción",
+    "maxMembers": "Máx. Miembros",
+    "status": "Estado",
+    "active": "Activo",
+    "completed": "Completado",
+    "archived": "Archivado",
+    "members": "Miembros",
+    "memberCount": "{{count}} miembros",
+    "addMember": "Añadir Miembro",
+    "removeMember": "Eliminar Miembro",
+    "leave": "Salir",
+    "owner": "Propietario",
+    "created": "Círculo creado",
+    "updated": "Círculo actualizado",
+    "deleted": "Círculo eliminado",
+    "confirmDelete": "¿Eliminar este círculo?",
+    "memberAdded": "Miembro añadido",
+    "memberRemoved": "Miembro eliminado",
+    "noCircles": "No te has unido a ningún círculo",
+    "tabs": {
+      "roadmap": "Hoja de Ruta",
+      "checkin": "Check-in",
+      "ranking": "Clasificación",
+      "settings": "Configuración"
+    },
+    "steps": {
+      "title": "Pasos",
+      "add": "Añadir Paso",
+      "edit": "Editar Paso",
+      "delete": "Eliminar Paso",
+      "confirmDelete": "¿Eliminar este paso?",
+      "stepCreated": "Paso añadido",
+      "stepDeleted": "Paso eliminado",
+      "resourceUrl": "URL del Recurso",
+      "noSteps": "Aún no hay pasos"
+    },
+    "progress": {
+      "title": "Progreso",
+      "completed": "Completado",
+      "notCompleted": "No completado",
+      "memberProgress": "Progreso de Miembros"
+    },
+    "checkin": {
+      "title": "Check-in Diario",
+      "placeholder": "¿Qué hiciste hoy...",
+      "submit": "Check-in",
+      "checkedIn": "¡Check-in completado!",
+      "alreadyCheckedIn": "Ya hiciste check-in hoy",
+      "noCheckins": "Aún no hay check-ins",
+      "history": "Historial de Check-ins"
+    },
+    "streak": {
+      "title": "Ranking de Rachas",
+      "currentStreak": "Racha Actual",
+      "totalCheckins": "Total de Check-ins",
+      "days": "{{count}} días",
+      "noStreaks": "Aún no hay datos"
+    },
+    "stepCreated": "Paso añadido",
+    "stepDeleted": "Paso eliminado",
+    "confirmDeleteStep": "¿Eliminar este paso?",
+    "checkedIn": "¡Check-in completado!",
+    "alreadyCheckedIn": "Ya hiciste check-in hoy",
+    "widget": {
+      "title": "Círculos de Estudio",
+      "noCircles": "Únete a un círculo para aprender juntos",
+      "todayCheckin": "Check-in de Hoy",
+      "viewAll": "Ver Todo"
+    }
   }
 }

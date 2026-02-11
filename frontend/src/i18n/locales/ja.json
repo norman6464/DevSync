@@ -39,6 +39,7 @@
     "roadmaps": "ロードマップ",
     "advice": "AIアドバイザー",
     "analytics": "学習分析",
+    "studyCircles": "スタディサークル",
     "more": "その他"
   },
   "auth": {
@@ -912,5 +913,81 @@
     "noTrending": "トレンドコンテンツがありません",
     "viewAll": "すべて見る",
     "follow": "フォロー"
+  },
+  "studyCircle": {
+    "title": "スタディサークル",
+    "myCircles": "参加中のサークル",
+    "create": "サークルを作成",
+    "name": "サークル名",
+    "topic": "学習テーマ",
+    "description": "説明",
+    "maxMembers": "最大メンバー数",
+    "status": "ステータス",
+    "active": "アクティブ",
+    "completed": "完了",
+    "archived": "アーカイブ",
+    "members": "メンバー",
+    "memberCount": "{{count}}人のメンバー",
+    "addMember": "メンバーを追加",
+    "removeMember": "メンバーを除外",
+    "leave": "退出",
+    "owner": "オーナー",
+    "created": "サークルを作成しました",
+    "updated": "サークルを更新しました",
+    "deleted": "サークルを削除しました",
+    "confirmDelete": "このサークルを削除しますか？",
+    "memberAdded": "メンバーを追加しました",
+    "memberRemoved": "メンバーを除外しました",
+    "noCircles": "参加中のサークルはありません",
+    "tabs": {
+      "roadmap": "ロードマップ",
+      "checkin": "チェックイン",
+      "ranking": "ランキング",
+      "settings": "設定"
+    },
+    "steps": {
+      "title": "ステップ",
+      "add": "ステップを追加",
+      "edit": "ステップを編集",
+      "delete": "ステップを削除",
+      "confirmDelete": "このステップを削除しますか？",
+      "stepCreated": "ステップを追加しました",
+      "stepDeleted": "ステップを削除しました",
+      "resourceUrl": "参考URL",
+      "noSteps": "ステップがまだありません"
+    },
+    "progress": {
+      "title": "進捗",
+      "completed": "完了",
+      "notCompleted": "未完了",
+      "memberProgress": "メンバー別進捗"
+    },
+    "checkin": {
+      "title": "日次チェックイン",
+      "placeholder": "今日やったことを一言で...",
+      "submit": "チェックイン",
+      "checkedIn": "チェックインしました！",
+      "alreadyCheckedIn": "今日はすでにチェックイン済みです",
+      "noCheckins": "チェックインがまだありません",
+      "history": "チェックイン履歴"
+    },
+    "streak": {
+      "title": "ストリークランキング",
+      "currentStreak": "連続日数",
+      "totalCheckins": "累計チェックイン",
+      "days": "{{count}}日",
+      "noStreaks": "データがまだありません"
+    },
+    "stepCreated": "ステップを追加しました",
+    "stepDeleted": "ステップを削除しました",
+    "confirmDeleteStep": "このステップを削除しますか？",
+    "checkedIn": "チェックインしました！",
+    "alreadyCheckedIn": "今日はすでにチェックイン済みです",
+    "widget": {
+      "title": "スタディサークル",
+      "noCircles": "サークルに参加して学習を始めましょう",
+      "todayCheckin": "今日のチェックイン",
+      "viewAll": "すべて見る"
+    }
   }
 }

@@ -39,6 +39,7 @@
     "roadmaps": "Lern-Roadmaps",
     "advice": "KI-Berater",
     "analytics": "Analytik",
+    "studyCircles": "Lernkreise",
     "more": "Mehr"
   },
   "auth": {
@@ -912,5 +913,81 @@
     "noTrending": "Keine Trendinhalte verfügbar",
     "viewAll": "Alle anzeigen",
     "follow": "Folgen"
+  },
+  "studyCircle": {
+    "title": "Lernkreise",
+    "myCircles": "Meine Kreise",
+    "create": "Kreis erstellen",
+    "name": "Kreisname",
+    "topic": "Lernthema",
+    "description": "Beschreibung",
+    "maxMembers": "Max. Mitglieder",
+    "status": "Status",
+    "active": "Aktiv",
+    "completed": "Abgeschlossen",
+    "archived": "Archiviert",
+    "members": "Mitglieder",
+    "memberCount": "{{count}} Mitglieder",
+    "addMember": "Mitglied hinzufügen",
+    "removeMember": "Mitglied entfernen",
+    "leave": "Verlassen",
+    "owner": "Besitzer",
+    "created": "Kreis erstellt",
+    "updated": "Kreis aktualisiert",
+    "deleted": "Kreis gelöscht",
+    "confirmDelete": "Diesen Kreis löschen?",
+    "memberAdded": "Mitglied hinzugefügt",
+    "memberRemoved": "Mitglied entfernt",
+    "noCircles": "Noch keine Kreise beigetreten",
+    "tabs": {
+      "roadmap": "Roadmap",
+      "checkin": "Check-in",
+      "ranking": "Rangliste",
+      "settings": "Einstellungen"
+    },
+    "steps": {
+      "title": "Schritte",
+      "add": "Schritt hinzufügen",
+      "edit": "Schritt bearbeiten",
+      "delete": "Schritt löschen",
+      "confirmDelete": "Diesen Schritt löschen?",
+      "stepCreated": "Schritt hinzugefügt",
+      "stepDeleted": "Schritt gelöscht",
+      "resourceUrl": "Ressourcen-URL",
+      "noSteps": "Noch keine Schritte"
+    },
+    "progress": {
+      "title": "Fortschritt",
+      "completed": "Abgeschlossen",
+      "notCompleted": "Nicht abgeschlossen",
+      "memberProgress": "Mitgliederfortschritt"
+    },
+    "checkin": {
+      "title": "Täglicher Check-in",
+      "placeholder": "Was hast du heute gemacht...",
+      "submit": "Einchecken",
+      "checkedIn": "Eingecheckt!",
+      "alreadyCheckedIn": "Heute bereits eingecheckt",
+      "noCheckins": "Noch keine Check-ins",
+      "history": "Check-in-Verlauf"
+    },
+    "streak": {
+      "title": "Streak-Rangliste",
+      "currentStreak": "Aktuelle Serie",
+      "totalCheckins": "Gesamt-Check-ins",
+      "days": "{{count}} Tage",
+      "noStreaks": "Noch keine Daten"
+    },
+    "stepCreated": "Schritt hinzugefügt",
+    "stepDeleted": "Schritt gelöscht",
+    "confirmDeleteStep": "Diesen Schritt löschen?",
+    "checkedIn": "Eingecheckt!",
+    "alreadyCheckedIn": "Heute bereits eingecheckt",
+    "widget": {
+      "title": "Lernkreise",
+      "noCircles": "Tritt einem Kreis bei und lerne gemeinsam",
+      "todayCheckin": "Heutiger Check-in",
+      "viewAll": "Alle anzeigen"
+    }
   }
 }

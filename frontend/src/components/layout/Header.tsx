@@ -13,6 +13,7 @@ import {
   Settings,
   Lightbulb,
   LineChart,
+  Users,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import Avatar from '../common/Avatar';
@@ -39,6 +40,7 @@ const moreItems = [
   { path: '/projects', key: 'nav.projects', icon: FolderKanban },
   { path: '/resources', key: 'nav.resources', icon: Library },
   { path: '/book-reviews', key: 'nav.bookReviews', icon: BookOpen },
+  { path: '/study-circles', key: 'nav.studyCircles', icon: Users },
   { path: '/advice', key: 'nav.advice', icon: Lightbulb },
   { path: '/settings', key: 'nav.settings', icon: Settings },
 ] as const;

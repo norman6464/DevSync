@@ -39,6 +39,7 @@
     "roadmaps": "學習路線圖",
     "advice": "AI顧問",
     "analytics": "學習分析",
+    "studyCircles": "學習圈",
     "more": "更多"
   },
   "auth": {
@@ -912,5 +913,81 @@
     "noTrending": "暫無熱門內容",
     "viewAll": "查看全部",
     "follow": "追蹤"
+  },
+  "studyCircle": {
+    "title": "學習圈",
+    "myCircles": "我的學習圈",
+    "create": "建立學習圈",
+    "name": "學習圈名稱",
+    "topic": "學習主題",
+    "description": "描述",
+    "maxMembers": "最大成員數",
+    "status": "狀態",
+    "active": "活躍",
+    "completed": "已完成",
+    "archived": "已歸檔",
+    "members": "成員",
+    "memberCount": "{{count}}名成員",
+    "addMember": "新增成員",
+    "removeMember": "移除成員",
+    "leave": "退出",
+    "owner": "擁有者",
+    "created": "學習圈已建立",
+    "updated": "學習圈已更新",
+    "deleted": "學習圈已刪除",
+    "confirmDelete": "確定要刪除這個學習圈嗎？",
+    "memberAdded": "成員已新增",
+    "memberRemoved": "成員已移除",
+    "noCircles": "尚無加入的學習圈",
+    "tabs": {
+      "roadmap": "路線圖",
+      "checkin": "簽到",
+      "ranking": "排名",
+      "settings": "設定"
+    },
+    "steps": {
+      "title": "步驟",
+      "add": "新增步驟",
+      "edit": "編輯步驟",
+      "delete": "刪除步驟",
+      "confirmDelete": "確定要刪除這個步驟嗎？",
+      "stepCreated": "步驟已新增",
+      "stepDeleted": "步驟已刪除",
+      "resourceUrl": "參考連結",
+      "noSteps": "尚無步驟"
+    },
+    "progress": {
+      "title": "進度",
+      "completed": "已完成",
+      "notCompleted": "未完成",
+      "memberProgress": "成員進度"
+    },
+    "checkin": {
+      "title": "每日簽到",
+      "placeholder": "今天做了什麼...",
+      "submit": "簽到",
+      "checkedIn": "簽到成功！",
+      "alreadyCheckedIn": "今天已經簽到過了",
+      "noCheckins": "尚無簽到紀錄",
+      "history": "簽到歷史"
+    },
+    "streak": {
+      "title": "連續簽到排名",
+      "currentStreak": "連續天數",
+      "totalCheckins": "總簽到次數",
+      "days": "{{count}}天",
+      "noStreaks": "尚無資料"
+    },
+    "stepCreated": "步驟已新增",
+    "stepDeleted": "步驟已刪除",
+    "confirmDeleteStep": "確定要刪除這個步驟嗎？",
+    "checkedIn": "簽到成功！",
+    "alreadyCheckedIn": "今天已經簽到過了",
+    "widget": {
+      "title": "學習圈",
+      "noCircles": "加入學習圈一起學習吧",
+      "todayCheckin": "今日簽到",
+      "viewAll": "查看全部"
+    }
   }
 }
