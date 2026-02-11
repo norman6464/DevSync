@@ -1,9 +1,7 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/service"
@@ -35,19 +33,11 @@ func (h *QiitaHandler) Connect(c *gin.Context) {
 
 	count, err := h.service.Connect(userID, req.Username)
 	if err != nil {
-		if errors.Is(err, service.ErrBadRequest) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid Qiita username"})
-			return
-		}
-		if errors.Is(err, service.ErrNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to connect Qiita"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	respondOK(c, gin.H{
 		"message":        "Qiita connected successfully",
 		"articles_count": count,
 	})
@@ -58,15 +48,11 @@ func (h *QiitaHandler) Disconnect(c *gin.Context) {
 	userID := c.GetUint("userID")
 
 	if err := h.service.Disconnect(userID); err != nil {
-		if errors.Is(err, service.ErrNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to disconnect Qiita"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Qiita disconnected successfully"})
+	respondOK(c, gin.H{"message": "Qiita disconnected successfully"})
 }
 
 // Sync は現在のユーザーのQiita記事を再同期する。
@@ -75,19 +61,11 @@ func (h *QiitaHandler) Sync(c *gin.Context) {
 
 	count, err := h.service.Sync(userID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
-			return
-		}
-		if errors.Is(err, service.ErrBadRequest) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Qiita not connected"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to sync Qiita articles"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	respondOK(c, gin.H{
 		"message":        "Qiita synced successfully",
 		"articles_count": count,
 	})
@@ -95,34 +73,32 @@ func (h *QiitaHandler) Sync(c *gin.Context) {
 
 // GetArticles は指定ユーザーの全Qiita記事を返す。
 func (h *QiitaHandler) GetArticles(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	articles, err := h.service.GetArticles(uint(userID))
+	articles, err := h.service.GetArticles(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get articles"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, articles)
+	respondOK(c, articles)
 }
 
 // GetStats は指定ユーザーのQiita統計情報を返す。
 func (h *QiitaHandler) GetStats(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	stats, err := h.service.GetStats(uint(userID))
+	stats, err := h.service.GetStats(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get stats"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, stats)
+	respondOK(c, stats)
 }

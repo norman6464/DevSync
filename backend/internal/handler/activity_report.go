@@ -1,9 +1,6 @@
 package handler
 
 import (
-	"net/http"
-	"strconv"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
@@ -22,38 +19,34 @@ func NewActivityReportHandler(s *service.ActivityReportService) *ActivityReportH
 
 // GetWeeklyReport は指定ユーザーの週次アクティビティレポートを返す。
 func (h *ActivityReportHandler) GetWeeklyReport(c *gin.Context) {
-	userIDParam := c.Param("userId")
-	userID, err := strconv.ParseUint(userIDParam, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	report, err := h.service.GetWeeklyReport(uint(userID))
+	report, err := h.service.GetWeeklyReport(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate report"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, report)
+	respondOK(c, report)
 }
 
 // GetMonthlyReport は指定ユーザーの月次アクティビティレポートを返す。
 func (h *ActivityReportHandler) GetMonthlyReport(c *gin.Context) {
-	userIDParam := c.Param("userId")
-	userID, err := strconv.ParseUint(userIDParam, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	report, err := h.service.GetMonthlyReport(uint(userID))
+	report, err := h.service.GetMonthlyReport(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate report"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, report)
+	respondOK(c, report)
 }
 
 // GetMyWeeklyReport は現在のユーザーの週次レポートを返す。
@@ -62,11 +55,11 @@ func (h *ActivityReportHandler) GetMyWeeklyReport(c *gin.Context) {
 
 	report, err := h.service.GetWeeklyReport(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate report"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, report)
+	respondOK(c, report)
 }
 
 // GetMyMonthlyReport は現在のユーザーの月次レポートを返す。
@@ -75,11 +68,11 @@ func (h *ActivityReportHandler) GetMyMonthlyReport(c *gin.Context) {
 
 	report, err := h.service.GetMonthlyReport(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate report"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, report)
+	respondOK(c, report)
 }
 
 // GetComparison は現在の期間と前期間のアクティビティ比較を返す。
@@ -94,9 +87,9 @@ func (h *ActivityReportHandler) GetComparison(c *gin.Context) {
 
 	comparison, err := h.service.GetComparison(userID, period)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate comparison"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, comparison)
+	respondOK(c, comparison)
 }

@@ -1,9 +1,7 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/service"
@@ -36,7 +34,7 @@ func (h *GitHubHandler) Connect(c *gin.Context) {
 		return
 	}
 	url := h.githubService.GetOAuthURL(state)
-	c.JSON(http.StatusOK, gin.H{"url": url})
+	respondOK(c, gin.H{"url": url})
 }
 
 // Callback はGitHub OAuthコールバックを処理してアカウントを連携する。
@@ -56,63 +54,56 @@ func (h *GitHubHandler) Callback(c *gin.Context) {
 	}
 
 	if err := h.githubService.ConnectGitHub(userID, code, state); err != nil {
-		if errors.Is(err, service.ErrNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to connect github"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "github connected"})
+	respondOK(c, gin.H{"message": "github connected"})
 }
 
 // GetContributions は指定ユーザーのGitHubコントリビューション情報を取得する。
 func (h *GitHubHandler) GetContributions(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("userId"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	contributions, err := h.githubService.GetContributions(uint(userID))
+	contributions, err := h.githubService.GetContributions(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, contributions)
+	respondOK(c, contributions)
 }
 
 // GetLanguages は指定ユーザーのGitHubリポジトリの使用言語統計を取得する。
 func (h *GitHubHandler) GetLanguages(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("userId"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	stats, err := h.githubService.GetLanguages(uint(userID))
+	stats, err := h.githubService.GetLanguages(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, stats)
+	respondOK(c, stats)
 }
 
 // GetRepos は指定ユーザーのGitHubリポジトリ一覧を取得する。
 func (h *GitHubHandler) GetRepos(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("userId"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	repos, err := h.githubService.GetRepos(uint(userID))
+	repos, err := h.githubService.GetRepos(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, repos)
+	respondOK(c, repos)
 }
 
 // Sync は現在のユーザーのGitHubデータを手動で同期する。
@@ -120,15 +111,11 @@ func (h *GitHubHandler) Sync(c *gin.Context) {
 	userID := c.GetUint("userID")
 
 	if err := h.githubService.SyncUserData(userID); err != nil {
-		if errors.Is(err, service.ErrNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "sync complete"})
+	respondOK(c, gin.H{"message": "sync complete"})
 }
 
 // Disconnect は現在のユーザーのGitHub連携を解除する。
@@ -136,13 +123,9 @@ func (h *GitHubHandler) Disconnect(c *gin.Context) {
 	userID := c.GetUint("userID")
 
 	if err := h.githubService.DisconnectGitHub(userID); err != nil {
-		if errors.Is(err, service.ErrNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "github disconnected"})
+	respondOK(c, gin.H{"message": "github disconnected"})
 }

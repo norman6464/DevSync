@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"errors"
-	"net/http"
 	"strconv"
 	"time"
 
@@ -61,9 +59,8 @@ type UpdateProjectRequest struct {
 func (h *ProjectHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	var req CreateProjectRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	req := bindJSON[CreateProjectRequest](c)
+	if req == nil {
 		return
 	}
 
@@ -94,76 +91,71 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 	}
 
 	if err := h.service.Create(project); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create project"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, project)
+	respondCreated(c, project)
 }
 
 // GetByID は指定IDのプロジェクトを取得する。
 func (h *ProjectHandler) GetByID(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	project, err := h.service.GetByID(uint(id))
+	project, err := h.service.GetByID(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Project not found"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, project)
+	respondOK(c, project)
 }
 
 // GetByUserID は指定ユーザーのプロジェクト一覧を取得する。
 func (h *ProjectHandler) GetByUserID(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	projects, err := h.service.GetByUserID(uint(userID))
+	projects, err := h.service.GetByUserID(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch projects"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, projects)
+	respondOK(c, projects)
 }
 
 // GetFeatured は指定ユーザーの注目プロジェクト一覧を取得する。
 func (h *ProjectHandler) GetFeatured(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	projects, err := h.service.GetFeaturedByUserID(uint(userID))
+	projects, err := h.service.GetFeaturedByUserID(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch featured projects"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, projects)
+	respondOK(c, projects)
 }
 
 // Update は指定IDのプロジェクトを更新する。
 func (h *ProjectHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	var req UpdateProjectRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	req := bindJSON[UpdateProjectRequest](c)
+	if req == nil {
 		return
 	}
 
@@ -205,47 +197,38 @@ func (h *ProjectHandler) Update(c *gin.Context) {
 		}
 	}
 
-	project, err := h.service.Update(uint(id), userID, updates)
+	project, err := h.service.Update(id, userID, updates)
 	if err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to update this project"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "Project not found"})
+		respondError(c, err)
 		return
 	}
 
 	// featuredはboolポインタのため別途処理する
 	if req.Featured != nil {
-		project, err = h.service.UpdateFeatured(uint(id), userID, *req.Featured)
+		project, err = h.service.UpdateFeatured(id, userID, *req.Featured)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update project"})
+			respondError(c, err)
 			return
 		}
 	}
 
-	c.JSON(http.StatusOK, project)
+	respondOK(c, project)
 }
 
 // Delete は指定IDのプロジェクトを削除する。
 func (h *ProjectHandler) Delete(c *gin.Context) {
 	userID := c.GetUint("userID")
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	if err := h.service.Delete(uint(id), userID); err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to delete this project"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "Project not found"})
+	if err := h.service.Delete(id, userID); err != nil {
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Project deleted successfully"})
+	respondDeleted(c)
 }
 
 // GetAll はプロジェクトの一覧をページネーション付きで取得する。
@@ -259,11 +242,11 @@ func (h *ProjectHandler) GetAll(c *gin.Context) {
 
 	projects, total, err := h.service.GetAll(limit, offset)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch projects"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	respondOK(c, gin.H{
 		"projects": projects,
 		"total":    total,
 		"limit":    limit,

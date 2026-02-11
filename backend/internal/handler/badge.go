@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/service"
@@ -21,19 +20,18 @@ func NewBadgeHandler(s *service.BadgeService) *BadgeHandler {
 
 // GetUserBadges は指定ユーザーの全バッジを獲得状況付きで返す。
 func (h *BadgeHandler) GetUserBadges(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("userId"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	badges, err := h.service.GetUserBadges(uint(userID))
+	badges, err := h.service.GetUserBadges(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"badges": badges})
+	respondOK(c, gin.H{"badges": badges})
 }
 
 // NotifyBadgeEarned は新しく獲得したバッジの通知を作成する。
@@ -49,9 +47,9 @@ func (h *BadgeHandler) NotifyBadgeEarned(c *gin.Context) {
 	}
 
 	if err := h.service.NotifyBadgeEarned(userID, req.BadgeID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "badge notification created"})
+	respondOK(c, gin.H{"message": "badge notification created"})
 }

@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -43,11 +42,11 @@ func (h *ChatRoomHandler) Create(c *gin.Context) {
 
 	created, err := h.service.Create(room, input.MemberIDs)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, created)
+	respondCreated(c, created)
 }
 
 // GetMyRooms は現在のユーザーが参加しているチャットルーム一覧を取得する。
@@ -55,39 +54,33 @@ func (h *ChatRoomHandler) GetMyRooms(c *gin.Context) {
 	userID := c.GetUint("userID")
 	rooms, err := h.service.GetByUserID(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, rooms)
+	respondOK(c, rooms)
 }
 
 // GetByID は指定IDのチャットルーム詳細を取得する。
 func (h *ChatRoomHandler) GetByID(c *gin.Context) {
 	userID := c.GetUint("userID")
-	roomID, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid room id"})
+	roomID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	room, err := h.service.GetByID(uint(roomID), userID)
+	room, err := h.service.GetByID(roomID, userID)
 	if err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "not a member"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, room)
+	respondOK(c, room)
 }
 
 // Update は指定IDのチャットルーム情報を更新する。
 func (h *ChatRoomHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
-	roomID, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid room id"})
+	roomID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
@@ -100,65 +93,50 @@ func (h *ChatRoomHandler) Update(c *gin.Context) {
 		return
 	}
 
-	room, err := h.service.Update(uint(roomID), userID, input.Name, input.Description)
+	room, err := h.service.Update(roomID, userID, input.Name, input.Description)
 	if err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "only owner can update"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, room)
+	respondOK(c, room)
 }
 
 // Delete は指定IDのチャットルームを削除する。
 func (h *ChatRoomHandler) Delete(c *gin.Context) {
 	userID := c.GetUint("userID")
-	roomID, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid room id"})
+	roomID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	if err := h.service.Delete(uint(roomID), userID); err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "only owner can delete"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
+	if err := h.service.Delete(roomID, userID); err != nil {
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "room deleted"})
+	respondDeleted(c)
 }
 
 // GetMembers は指定チャットルームのメンバー一覧を取得する。
 func (h *ChatRoomHandler) GetMembers(c *gin.Context) {
 	userID := c.GetUint("userID")
-	roomID, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid room id"})
+	roomID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	members, err := h.service.GetMembers(uint(roomID), userID)
+	members, err := h.service.GetMembers(roomID, userID)
 	if err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "not a member"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, members)
+	respondOK(c, members)
 }
 
 // AddMember はチャットルームに新しいメンバーを追加する。
 func (h *ChatRoomHandler) AddMember(c *gin.Context) {
 	userID := c.GetUint("userID")
-	roomID, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid room id"})
+	roomID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
@@ -170,72 +148,56 @@ func (h *ChatRoomHandler) AddMember(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.AddMember(uint(roomID), userID, input.UserID); err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "not a member"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := h.service.AddMember(roomID, userID, input.UserID); err != nil {
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "member added"})
+	respondOK(c, gin.H{"message": "member added"})
 }
 
 // RemoveMember はチャットルームからメンバーを削除する。
 func (h *ChatRoomHandler) RemoveMember(c *gin.Context) {
 	userID := c.GetUint("userID")
-	roomID, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid room id"})
+	roomID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
-	targetID, err := strconv.ParseUint(c.Param("userId"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+	targetID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	if err := h.service.RemoveMember(uint(roomID), userID, uint(targetID)); err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "only owner can remove members"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
+	if err := h.service.RemoveMember(roomID, userID, targetID); err != nil {
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "member removed"})
+	respondOK(c, gin.H{"message": "member removed"})
 }
 
 // GetMessages は指定チャットルームのメッセージ一覧をページネーション付きで取得する。
 func (h *ChatRoomHandler) GetMessages(c *gin.Context) {
 	userID := c.GetUint("userID")
-	roomID, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid room id"})
+	roomID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "50"))
 
-	messages, err := h.service.GetMessages(uint(roomID), userID, page, limit)
+	messages, err := h.service.GetMessages(roomID, userID, page, limit)
 	if err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "not a member"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, messages)
+	respondOK(c, messages)
 }
 
 // SendMessage は指定チャットルームにメッセージを送信する。
 func (h *ChatRoomHandler) SendMessage(c *gin.Context) {
 	userID := c.GetUint("userID")
-	roomID, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid room id"})
+	roomID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
@@ -247,15 +209,11 @@ func (h *ChatRoomHandler) SendMessage(c *gin.Context) {
 		return
 	}
 
-	msg, err := h.service.SendMessage(uint(roomID), userID, input.Content)
+	msg, err := h.service.SendMessage(roomID, userID, input.Content)
 	if err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "not a member"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, msg)
+	respondCreated(c, msg)
 }

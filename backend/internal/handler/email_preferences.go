@@ -24,11 +24,11 @@ func (h *EmailPreferencesHandler) GetPreferences(c *gin.Context) {
 
 	user, err := h.userService.GetByID(userID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	respondOK(c, gin.H{
 		"email_weekly_report": user.EmailWeeklyReport,
 		"email_language":      user.EmailLanguage,
 	})
@@ -50,7 +50,7 @@ func (h *EmailPreferencesHandler) UpdatePreferences(c *gin.Context) {
 
 	user, err := h.userService.GetByID(userID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		respondError(c, err)
 		return
 	}
 
@@ -71,11 +71,11 @@ func (h *EmailPreferencesHandler) UpdatePreferences(c *gin.Context) {
 	}
 
 	if err := h.userService.Update(user); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update preferences"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	respondOK(c, gin.H{
 		"email_weekly_report": user.EmailWeeklyReport,
 		"email_language":      user.EmailLanguage,
 	})

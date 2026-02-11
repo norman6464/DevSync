@@ -1,9 +1,7 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -48,7 +46,7 @@ func (h *PostHandler) Create(c *gin.Context) {
 	}
 	created, err := h.service.Create(post)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
 
@@ -73,36 +71,31 @@ func (h *PostHandler) Create(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusCreated, created)
+	respondCreated(c, created)
 }
 
 // GetAll は投稿一覧をページネーション付きで返す。
 func (h *PostHandler) GetAll(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
-	if page < 1 {
-		page = 1
-	}
+	page, limit := parsePagination(c)
 
 	posts, err := h.service.GetAll(page, limit)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, posts)
+	respondOK(c, posts)
 }
 
 // GetByID は指定IDの投稿を返す。いいね済みフラグも付与する。
 func (h *PostHandler) GetByID(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	post, err := h.service.GetByID(uint(id))
+	post, err := h.service.GetByID(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
+		respondError(c, err)
 		return
 	}
 
@@ -111,7 +104,7 @@ func (h *PostHandler) GetByID(c *gin.Context) {
 		model.Post
 		Liked bool `json:"liked"`
 	}
-	c.JSON(http.StatusOK, postWithLiked{
+	respondOK(c, postWithLiked{
 		Post:  *post,
 		Liked: h.service.HasLiked(userID, post.ID),
 	})
@@ -119,9 +112,8 @@ func (h *PostHandler) GetByID(c *gin.Context) {
 
 // Update は投稿を更新する。所有者のみ更新可能。
 func (h *PostHandler) Update(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 	userID := c.GetUint("userID")
@@ -135,123 +127,105 @@ func (h *PostHandler) Update(c *gin.Context) {
 		return
 	}
 
-	post, err := h.service.Update(uint(id), userID, input.Title, input.Content)
+	post, err := h.service.Update(id, userID, input.Title, input.Content)
 	if err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "not your post"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, post)
+	respondOK(c, post)
 }
 
 // Delete は投稿を削除する。所有者のみ削除可能。
 func (h *PostHandler) Delete(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.service.Delete(uint(id), userID); err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "not your post"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
+	if err := h.service.Delete(id, userID); err != nil {
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
+	respondDeleted(c)
 }
 
 // Timeline はフォロー中ユーザーの投稿タイムラインを返す。
 func (h *PostHandler) Timeline(c *gin.Context) {
 	userID := c.GetUint("userID")
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
-	if page < 1 {
-		page = 1
-	}
+	page, limit := parsePagination(c)
 
 	posts, err := h.service.Timeline(userID, page, limit)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, posts)
+	respondOK(c, posts)
 }
 
 // GetUserPosts は指定ユーザーの投稿一覧を返す。
 func (h *PostHandler) GetUserPosts(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
-	posts, err := h.service.GetByUserID(uint(id))
+	posts, err := h.service.GetByUserID(id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, posts)
+	respondOK(c, posts)
 }
 
 // Like は投稿にいいねする。
 func (h *PostHandler) Like(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.service.Like(userID, uint(id)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := h.service.Like(userID, id); err != nil {
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "liked"})
+	respondOK(c, gin.H{"message": "liked"})
 }
 
 // Unlike は投稿のいいねを取り消す。
 func (h *PostHandler) Unlike(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.service.Unlike(userID, uint(id)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := h.service.Unlike(userID, id); err != nil {
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "unliked"})
+	respondOK(c, gin.H{"message": "unliked"})
 }
 
 // GetComments は投稿のコメント一覧を返す。
 func (h *PostHandler) GetComments(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	comments, err := h.service.GetComments(uint(id))
+	comments, err := h.service.GetComments(id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, comments)
+	respondOK(c, comments)
 }
 
 // CreateComment は投稿にコメントを作成する。
 func (h *PostHandler) CreateComment(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 	userID := c.GetUint("userID")
@@ -264,26 +238,25 @@ func (h *PostHandler) CreateComment(c *gin.Context) {
 		return
 	}
 
-	comment := &model.Comment{UserID: userID, PostID: uint(id), Content: input.Content}
+	comment := &model.Comment{UserID: userID, PostID: id, Content: input.Content}
 	if err := h.service.CreateComment(comment); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusCreated, comment)
+	respondCreated(c, comment)
 }
 
 // DeleteComment はコメントを削除する。所有者のみ削除可能。
 func (h *PostHandler) DeleteComment(c *gin.Context) {
-	commentID, err := strconv.ParseUint(c.Param("commentId"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid comment id"})
+	commentID, ok := parseID(c, "commentId")
+	if !ok {
 		return
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.service.DeleteComment(uint(commentID), userID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := h.service.DeleteComment(commentID, userID); err != nil {
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
+	respondDeleted(c)
 }

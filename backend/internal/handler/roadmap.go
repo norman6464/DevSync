@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -53,11 +52,11 @@ func (h *RoadmapHandler) Create(c *gin.Context) {
 	}
 
 	if err := h.service.Create(roadmap); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create roadmap"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, roadmap)
+	respondCreated(c, roadmap)
 }
 
 // GetMyRoadmaps は現在のユーザーのロードマップ一覧を取得する。
@@ -66,11 +65,11 @@ func (h *RoadmapHandler) GetMyRoadmaps(c *gin.Context) {
 
 	roadmaps, err := h.service.GetByUserID(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get roadmaps"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, roadmaps)
+	respondOK(c, roadmaps)
 }
 
 // GetPublicRoadmaps は公開ロードマップの一覧をページネーション付きで取得する。
@@ -80,11 +79,11 @@ func (h *RoadmapHandler) GetPublicRoadmaps(c *gin.Context) {
 
 	roadmaps, total, err := h.service.GetPublicRoadmaps(limit, offset)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get roadmaps"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	respondOK(c, gin.H{
 		"roadmaps": roadmaps,
 		"total":    total,
 	})
@@ -92,33 +91,27 @@ func (h *RoadmapHandler) GetPublicRoadmaps(c *gin.Context) {
 
 // GetByID は指定IDのロードマップをステップ付きで取得する。
 func (h *RoadmapHandler) GetByID(c *gin.Context) {
-	roadmapID, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid roadmap ID"})
+	roadmapID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
 	userID := c.GetUint("userID")
 
-	roadmap, err := h.service.GetByID(uint(roadmapID), userID)
+	roadmap, err := h.service.GetByID(roadmapID, userID)
 	if err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "roadmap not found"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, roadmap)
+	respondOK(c, roadmap)
 }
 
 // Update は指定IDのロードマップを更新する。
 func (h *RoadmapHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
-	roadmapID, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid roadmap ID"})
+	roadmapID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
@@ -149,101 +142,82 @@ func (h *RoadmapHandler) Update(c *gin.Context) {
 		updates.Status = model.RoadmapStatus(*req.Status)
 	}
 
-	roadmap, err := h.service.Update(uint(roadmapID), userID, updates)
+	roadmap, err := h.service.Update(roadmapID, userID, updates)
 	if err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "roadmap not found"})
+		respondError(c, err)
 		return
 	}
 
 	// IsPublicが指定されている場合は別途処理する
 	if req.IsPublic != nil {
-		roadmap, err = h.service.UpdateVisibility(uint(roadmapID), userID, *req.IsPublic)
+		roadmap, err = h.service.UpdateVisibility(roadmapID, userID, *req.IsPublic)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update roadmap"})
+			respondError(c, err)
 			return
 		}
 	}
 
-	c.JSON(http.StatusOK, roadmap)
+	respondOK(c, roadmap)
 }
 
 // Delete は指定IDのロードマップを削除する。
 func (h *RoadmapHandler) Delete(c *gin.Context) {
 	userID := c.GetUint("userID")
-	roadmapID, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid roadmap ID"})
+	roadmapID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	if err := h.service.Delete(uint(roadmapID), userID); err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "roadmap not found"})
+	if err := h.service.Delete(roadmapID, userID); err != nil {
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "roadmap deleted"})
+	respondDeleted(c)
 }
 
 // CopyRoadmap は公開ロードマップをテンプレートとしてコピーする。
 func (h *RoadmapHandler) CopyRoadmap(c *gin.Context) {
 	userID := c.GetUint("userID")
-	roadmapID, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid roadmap ID"})
+	roadmapID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	copied, err := h.service.CopyRoadmap(uint(roadmapID), userID)
+	copied, err := h.service.CopyRoadmap(roadmapID, userID)
 	if err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "roadmap not found"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, copied)
+	respondCreated(c, copied)
 }
 
 // GetTemplates はテンプレートロードマップの一覧を取得する。
 func (h *RoadmapHandler) GetTemplates(c *gin.Context) {
 	templates, err := h.service.GetTemplates()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get templates"})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, templates)
+	respondOK(c, templates)
 }
 
 // CreateFromTemplate はテンプレートからユーザー用ロードマップを作成する。
 func (h *RoadmapHandler) CreateFromTemplate(c *gin.Context) {
 	userID := c.GetUint("userID")
-	templateID, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid template ID"})
+	templateID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	roadmap, err := h.service.CreateFromTemplate(uint(templateID), userID)
+	roadmap, err := h.service.CreateFromTemplate(templateID, userID)
 	if err != nil {
-		if errors.Is(err, service.ErrBadRequest) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "not a template"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "template not found"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, roadmap)
+	respondCreated(c, roadmap)
 }
 
 // === ロードマップステップエンドポイント ===
@@ -251,9 +225,8 @@ func (h *RoadmapHandler) CreateFromTemplate(c *gin.Context) {
 // CreateStep はロードマップに新しいステップを作成する。
 func (h *RoadmapHandler) CreateStep(c *gin.Context) {
 	userID := c.GetUint("userID")
-	roadmapID, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid roadmap ID"})
+	roadmapID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
@@ -278,29 +251,23 @@ func (h *RoadmapHandler) CreateStep(c *gin.Context) {
 		step.OrderIndex = *req.OrderIndex
 	}
 
-	if err := h.service.CreateStep(uint(roadmapID), userID, step); err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create step"})
+	if err := h.service.CreateStep(roadmapID, userID, step); err != nil {
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, step)
+	respondCreated(c, step)
 }
 
 // UpdateStep はロードマップのステップを更新する。
 func (h *RoadmapHandler) UpdateStep(c *gin.Context) {
 	userID := c.GetUint("userID")
-	roadmapID, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid roadmap ID"})
+	roadmapID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
-	stepID, err := strconv.ParseUint(c.Param("stepId"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid step ID"})
+	stepID, ok := parseID(c, "stepId")
+	if !ok {
 		return
 	}
 
@@ -318,22 +285,14 @@ func (h *RoadmapHandler) UpdateStep(c *gin.Context) {
 
 	// 完了ステータスの変更を別途処理する
 	if req.IsCompleted != nil {
-		step, err := h.service.UpdateStepCompletion(uint(roadmapID), uint(stepID), userID, *req.IsCompleted)
+		step, err := h.service.UpdateStepCompletion(roadmapID, stepID, userID, *req.IsCompleted)
 		if err != nil {
-			if errors.Is(err, service.ErrForbidden) {
-				c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
-				return
-			}
-			if errors.Is(err, service.ErrBadRequest) {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "step does not belong to roadmap"})
-				return
-			}
-			c.JSON(http.StatusNotFound, gin.H{"error": "step not found"})
+			respondError(c, err)
 			return
 		}
 		// 完了ステータスのみの更新の場合は早期リターンする
 		if req.Title == nil && req.Description == nil && req.ResourceURL == nil {
-			c.JSON(http.StatusOK, step)
+			respondOK(c, step)
 			return
 		}
 	}
@@ -349,59 +308,40 @@ func (h *RoadmapHandler) UpdateStep(c *gin.Context) {
 		updates.ResourceURL = *req.ResourceURL
 	}
 
-	step, err := h.service.UpdateStep(uint(roadmapID), uint(stepID), userID, updates)
+	step, err := h.service.UpdateStep(roadmapID, stepID, userID, updates)
 	if err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
-			return
-		}
-		if errors.Is(err, service.ErrBadRequest) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "step does not belong to roadmap"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "step not found"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, step)
+	respondOK(c, step)
 }
 
 // DeleteStep はロードマップのステップを削除する。
 func (h *RoadmapHandler) DeleteStep(c *gin.Context) {
 	userID := c.GetUint("userID")
-	roadmapID, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid roadmap ID"})
+	roadmapID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
-	stepID, err := strconv.ParseUint(c.Param("stepId"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid step ID"})
-		return
-	}
-
-	if err := h.service.DeleteStep(uint(roadmapID), uint(stepID), userID); err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
-			return
-		}
-		if errors.Is(err, service.ErrBadRequest) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "step does not belong to roadmap"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "step not found"})
+	stepID, ok := parseID(c, "stepId")
+	if !ok {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "step deleted"})
+	if err := h.service.DeleteStep(roadmapID, stepID, userID); err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondDeleted(c)
 }
 
 // ReorderSteps はロードマップ内のステップの並び順を変更する。
 func (h *RoadmapHandler) ReorderSteps(c *gin.Context) {
 	userID := c.GetUint("userID")
-	roadmapID, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid roadmap ID"})
+	roadmapID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
@@ -414,14 +354,10 @@ func (h *RoadmapHandler) ReorderSteps(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.ReorderSteps(uint(roadmapID), userID, req.Orders); err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to reorder steps"})
+	if err := h.service.ReorderSteps(roadmapID, userID, req.Orders); err != nil {
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "steps reordered"})
+	respondOK(c, gin.H{"message": "steps reordered"})
 }

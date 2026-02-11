@@ -1,9 +1,7 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -53,23 +51,18 @@ func (h *LearningLogHandler) Create(c *gin.Context) {
 	}
 
 	if err := h.service.Create(log); err != nil {
-		if errors.Is(err, service.ErrBadRequest) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request parameters"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create log"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, log)
+	respondCreated(c, log)
 }
 
 // Update は指定された学習ログを更新する。
 func (h *LearningLogHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
-	logID, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid log ID"})
+	logID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
@@ -99,13 +92,9 @@ func (h *LearningLogHandler) Update(c *gin.Context) {
 		updates.Duration = *req.Duration
 	}
 
-	log, err := h.service.Update(uint(logID), userID, updates)
+	log, err := h.service.Update(logID, userID, updates)
 	if err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "log not found"})
+		respondError(c, err)
 		return
 	}
 
@@ -115,18 +104,13 @@ func (h *LearningLogHandler) Update(c *gin.Context) {
 // Delete は指定された学習ログを削除する。
 func (h *LearningLogHandler) Delete(c *gin.Context) {
 	userID := c.GetUint("userID")
-	logID, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid log ID"})
+	logID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	if err := h.service.Delete(uint(logID), userID); err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "log not found"})
+	if err := h.service.Delete(logID, userID); err != nil {
+		respondError(c, err)
 		return
 	}
 
@@ -135,15 +119,14 @@ func (h *LearningLogHandler) Delete(c *gin.Context) {
 
 // GetByID は指定されたIDの学習ログを取得する。
 func (h *LearningLogHandler) GetByID(c *gin.Context) {
-	logID, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid log ID"})
+	logID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	log, err := h.service.GetByID(uint(logID))
+	log, err := h.service.GetByID(logID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "log not found"})
+		respondError(c, err)
 		return
 	}
 
@@ -156,23 +139,21 @@ func (h *LearningLogHandler) GetMyLogs(c *gin.Context) {
 
 	logs, err := h.service.GetByUserID(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get logs"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, logs)
+	respondOK(c, logs)
 }
 
 // GetByUserID は指定されたユーザーの学習ログ一覧を取得する。
 func (h *LearningLogHandler) GetByUserID(c *gin.Context) {
-	userIDParam := c.Param("userId")
-	userID, err := strconv.ParseUint(userIDParam, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	logs, err := h.service.GetByUserID(uint(userID))
+	logs, err := h.service.GetByUserID(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get logs"})
 		return
@@ -183,14 +164,12 @@ func (h *LearningLogHandler) GetByUserID(c *gin.Context) {
 
 // GetStreakInfo は指定されたユーザーのストリーク情報を取得する。
 func (h *LearningLogHandler) GetStreakInfo(c *gin.Context) {
-	userIDParam := c.Param("userId")
-	userID, err := strconv.ParseUint(userIDParam, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	info, err := h.service.GetStreakInfo(uint(userID))
+	info, err := h.service.GetStreakInfo(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get streak info"})
 		return
@@ -201,14 +180,12 @@ func (h *LearningLogHandler) GetStreakInfo(c *gin.Context) {
 
 // GetCalendarData はカレンダー表示用の日別学習ログ件数を取得する。
 func (h *LearningLogHandler) GetCalendarData(c *gin.Context) {
-	userIDParam := c.Param("userId")
-	userID, err := strconv.ParseUint(userIDParam, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	entries, err := h.service.GetCalendarData(uint(userID))
+	entries, err := h.service.GetCalendarData(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get calendar data"})
 		return

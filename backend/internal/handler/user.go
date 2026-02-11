@@ -1,9 +1,7 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/service"
@@ -25,44 +23,42 @@ func (h *UserHandler) GetAll(c *gin.Context) {
 	q := c.Query("q")
 	users, err := h.service.GetAll(q)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, users)
+	respondOK(c, users)
 }
 
 // GetByID は指定IDのユーザー情報を返す。
 func (h *UserHandler) GetByID(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	user, err := h.service.GetByID(uint(id))
+	user, err := h.service.GetByID(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
 	}
-	c.JSON(http.StatusOK, user)
+	respondOK(c, user)
 }
 
 // Update はユーザープロフィールを更新する。
 // 本人のみ更新可能（userIDとパスパラメータのIDが一致する必要がある）。
 func (h *UserHandler) Update(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
 	userID := c.GetUint("userID")
-	if userID != uint(id) {
+	if userID != id {
 		c.JSON(http.StatusForbidden, gin.H{"error": "cannot update other user's profile"})
 		return
 	}
 
-	existing, err := h.service.GetByID(uint(id))
+	existing, err := h.service.GetByID(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
@@ -105,12 +101,8 @@ func (h *UserHandler) Update(c *gin.Context) {
 	}
 
 	if err := h.service.Update(existing); err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, existing)
+	respondOK(c, existing)
 }

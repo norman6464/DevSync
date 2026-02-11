@@ -1,9 +1,6 @@
 package handler
 
 import (
-	"net/http"
-	"strconv"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/service"
 )
@@ -25,43 +22,41 @@ func (h *LevelHandler) GetMyLevelInfo(c *gin.Context) {
 
 	info, err := h.service.GetLevelInfo(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, info)
+	respondOK(c, info)
 }
 
 // GetLevelInfo は指定ユーザーのレベル情報を返す。
 func (h *LevelHandler) GetLevelInfo(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("userId"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	info, err := h.service.GetLevelInfo(uint(userID))
+	info, err := h.service.GetLevelInfo(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, info)
+	respondOK(c, info)
 }
 
 // GetXPBreakdown は指定ユーザーのXP内訳を返す。
 func (h *LevelHandler) GetXPBreakdown(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("userId"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	breakdown, err := h.service.GetXPBreakdown(uint(userID))
+	breakdown, err := h.service.GetXPBreakdown(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, breakdown)
+	respondOK(c, breakdown)
 }

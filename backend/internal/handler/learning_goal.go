@@ -1,9 +1,7 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -61,19 +59,18 @@ func (h *LearningGoalHandler) Create(c *gin.Context) {
 	}
 
 	if err := h.service.Create(goal); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create goal"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, goal)
+	respondCreated(c, goal)
 }
 
 // Update は指定された学習目標を更新する。
 func (h *LearningGoalHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
-	goalID, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid goal ID"})
+	goalID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
@@ -118,49 +115,39 @@ func (h *LearningGoalHandler) Update(c *gin.Context) {
 		updates.Status = model.GoalStatus(*req.Status)
 	}
 
-	goal, err := h.service.Update(uint(goalID), userID, updates)
+	goal, err := h.service.Update(goalID, userID, updates)
 	if err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "goal not found"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, goal)
+	respondOK(c, goal)
 }
 
 // Delete は指定された学習目標を削除する。
 func (h *LearningGoalHandler) Delete(c *gin.Context) {
 	userID := c.GetUint("userID")
-	goalID, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid goal ID"})
+	goalID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	if err := h.service.Delete(uint(goalID), userID); err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "not authorized"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "goal not found"})
+	if err := h.service.Delete(goalID, userID); err != nil {
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "goal deleted"})
+	respondDeleted(c)
 }
 
 // GetByID は指定されたIDの学習目標を取得する。
 func (h *LearningGoalHandler) GetByID(c *gin.Context) {
-	goalID, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid goal ID"})
+	goalID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	goal, err := h.service.GetByID(uint(goalID))
+	goal, err := h.service.GetByID(goalID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "goal not found"})
 		return
@@ -171,14 +158,12 @@ func (h *LearningGoalHandler) GetByID(c *gin.Context) {
 
 // GetByUserID は指定されたユーザーの学習目標一覧を取得する。
 func (h *LearningGoalHandler) GetByUserID(c *gin.Context) {
-	userIDParam := c.Param("userId")
-	userID, err := strconv.ParseUint(userIDParam, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	goals, err := h.service.GetByUserID(uint(userID))
+	goals, err := h.service.GetByUserID(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get goals"})
 		return
@@ -202,14 +187,12 @@ func (h *LearningGoalHandler) GetMyGoals(c *gin.Context) {
 
 // GetStats は指定されたユーザーの学習目標統計情報を取得する。
 func (h *LearningGoalHandler) GetStats(c *gin.Context) {
-	userIDParam := c.Param("userId")
-	userID, err := strconv.ParseUint(userIDParam, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	stats, err := h.service.GetStats(uint(userID))
+	stats, err := h.service.GetStats(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get stats"})
 		return

@@ -1,9 +1,7 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -22,9 +20,8 @@ func NewCodeSnippetHandler(s *service.CodeSnippetService) *CodeSnippetHandler {
 
 // Create は投稿にコードスニペットを追加する。
 func (h *CodeSnippetHandler) Create(c *gin.Context) {
-	postID, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid post id"})
+	postID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 	userID := c.GetUint("userID")
@@ -40,7 +37,7 @@ func (h *CodeSnippetHandler) Create(c *gin.Context) {
 	}
 
 	snippet := &model.CodeSnippet{
-		PostID:   uint(postID),
+		PostID:   postID,
 		UserID:   userID,
 		Language: input.Language,
 		FileName: input.FileName,
@@ -48,49 +45,46 @@ func (h *CodeSnippetHandler) Create(c *gin.Context) {
 	}
 	created, err := h.service.Create(snippet)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusCreated, created)
+	respondCreated(c, created)
 }
 
 // GetByPostID は投稿に紐づくスニペット一覧を返す。
 func (h *CodeSnippetHandler) GetByPostID(c *gin.Context) {
-	postID, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid post id"})
+	postID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	snippets, err := h.service.GetByPostID(uint(postID))
+	snippets, err := h.service.GetByPostID(postID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, snippets)
+	respondOK(c, snippets)
 }
 
 // GetByID は指定IDのスニペットを返す。
 func (h *CodeSnippetHandler) GetByID(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	snippets, err := h.service.GetByPostID(uint(id))
+	snippets, err := h.service.GetByPostID(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "snippet not found"})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, snippets)
+	respondOK(c, snippets)
 }
 
 // Update はスニペットを更新する。所有者のみ更新可能。
 func (h *CodeSnippetHandler) Update(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 	userID := c.GetUint("userID")
@@ -105,59 +99,48 @@ func (h *CodeSnippetHandler) Update(c *gin.Context) {
 		return
 	}
 
-	snippet, err := h.service.Update(uint(id), userID, input.Language, input.FileName, input.Code)
+	snippet, err := h.service.Update(id, userID, input.Language, input.FileName, input.Code)
 	if err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "not your snippet"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "snippet not found"})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, snippet)
+	respondOK(c, snippet)
 }
 
 // Delete はスニペットを削除する。所有者のみ削除可能。
 func (h *CodeSnippetHandler) Delete(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.service.Delete(uint(id), userID); err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "not your snippet"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "snippet not found"})
+	if err := h.service.Delete(id, userID); err != nil {
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
+	respondDeleted(c)
 }
 
 // GetComments はスニペットのインラインコメント一覧を返す。
 func (h *CodeSnippetHandler) GetComments(c *gin.Context) {
-	snippetID, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid snippet id"})
+	snippetID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	comments, err := h.service.GetComments(uint(snippetID))
+	comments, err := h.service.GetComments(snippetID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, comments)
+	respondOK(c, comments)
 }
 
 // CreateComment はスニペットにインラインコメントを作成する。
 func (h *CodeSnippetHandler) CreateComment(c *gin.Context) {
-	snippetID, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid snippet id"})
+	snippetID, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 	userID := c.GetUint("userID")
@@ -172,30 +155,29 @@ func (h *CodeSnippetHandler) CreateComment(c *gin.Context) {
 	}
 
 	comment := &model.SnippetComment{
-		SnippetID:  uint(snippetID),
+		SnippetID:  snippetID,
 		UserID:     userID,
 		LineNumber: input.LineNumber,
 		Content:    input.Content,
 	}
 	if err := h.service.CreateComment(comment); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusCreated, comment)
+	respondCreated(c, comment)
 }
 
 // DeleteComment はインラインコメントを削除する。所有者のみ削除可能。
 func (h *CodeSnippetHandler) DeleteComment(c *gin.Context) {
-	commentID, err := strconv.ParseUint(c.Param("commentId"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid comment id"})
+	commentID, ok := parseID(c, "commentId")
+	if !ok {
 		return
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.service.DeleteComment(uint(commentID), userID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := h.service.DeleteComment(commentID, userID); err != nil {
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
+	respondDeleted(c)
 }

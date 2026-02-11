@@ -11,6 +11,7 @@ var (
 	ErrNotFound   = errors.New("not found")   // リソースが見つからない（404）
 	ErrForbidden  = errors.New("forbidden")   // アクセス権限がない（403）
 	ErrBadRequest = errors.New("bad request") // リクエストが不正（400）
+	ErrUnauthorized      = errors.New("unauthorized")        // 認証が必要（401）
 	ErrConflict          = errors.New("conflict")            // リソースの競合（409）
 	ErrRateLimitExceeded = errors.New("rate limit exceeded") // レート制限超過（429）
 	ErrLLMNotConfigured  = errors.New("LLM not configured") // LLM未設定（503）

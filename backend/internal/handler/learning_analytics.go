@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -21,60 +20,56 @@ func NewLearningAnalyticsHandler(s *service.LearningAnalyticsService) *LearningA
 
 // GetHeatmap は指定ユーザーの学習時間ヒートマップを返す。
 func (h *LearningAnalyticsHandler) GetHeatmap(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("userId"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	data, err := h.service.GetHeatmap(uint(userID))
+	data, err := h.service.GetHeatmap(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, data)
+	respondOK(c, data)
 }
 
 // GetCategoryBreakdown は指定ユーザーのカテゴリ別学習時間を返す。
 func (h *LearningAnalyticsHandler) GetCategoryBreakdown(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("userId"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	data, err := h.service.GetCategoryBreakdown(uint(userID))
+	data, err := h.service.GetCategoryBreakdown(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, data)
+	respondOK(c, data)
 }
 
 // GetProductivityScore は指定ユーザーの生産性スコアを返す。
 func (h *LearningAnalyticsHandler) GetProductivityScore(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("userId"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	score, err := h.service.GetProductivityScore(uint(userID))
+	score, err := h.service.GetProductivityScore(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, score)
+	respondOK(c, score)
 }
 
 // GetWeeklyTrends は指定ユーザーの週間学習トレンドを返す。
 func (h *LearningAnalyticsHandler) GetWeeklyTrends(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("userId"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
@@ -85,13 +80,13 @@ func (h *LearningAnalyticsHandler) GetWeeklyTrends(c *gin.Context) {
 		}
 	}
 
-	data, err := h.service.GetWeeklyTrends(uint(userID), weeks)
+	data, err := h.service.GetWeeklyTrends(userID, weeks)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, data)
+	respondOK(c, data)
 }
 
 // GetInsights は認証済みユーザーのAIインサイトを返す。
@@ -100,9 +95,9 @@ func (h *LearningAnalyticsHandler) GetInsights(c *gin.Context) {
 
 	insights, err := h.service.GetInsights(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, insights)
+	respondOK(c, insights)
 }

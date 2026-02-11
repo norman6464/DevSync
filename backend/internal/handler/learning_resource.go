@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -49,9 +48,8 @@ type UpdateResourceRequest struct {
 func (h *LearningResourceHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	var req CreateResourceRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	req := bindJSON[CreateResourceRequest](c)
+	if req == nil {
 		return
 	}
 
@@ -83,27 +81,22 @@ func (h *LearningResourceHandler) Create(c *gin.Context) {
 
 // GetByID は指定されたIDの学習リソースを取得する。
 func (h *LearningResourceHandler) GetByID(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid resource ID"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
 	userID := c.GetUint("userID")
 
-	resource, err := h.service.GetByID(uint(id), userID)
+	resource, err := h.service.GetByID(id, userID)
 	if err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to view this resource"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "Resource not found"})
+		respondError(c, err)
 		return
 	}
 
 	// 現在のユーザーがいいね・保存済みかを確認
-	hasLiked, _ := h.service.HasLiked(userID, uint(id))
-	hasSaved, _ := h.service.HasSaved(userID, uint(id))
+	hasLiked, _ := h.service.HasLiked(userID, id)
+	hasSaved, _ := h.service.HasSaved(userID, id)
 
 	c.JSON(http.StatusOK, gin.H{
 		"resource":  resource,
@@ -114,15 +107,14 @@ func (h *LearningResourceHandler) GetByID(c *gin.Context) {
 
 // GetByUserID は指定されたユーザーの学習リソース一覧を取得する。
 func (h *LearningResourceHandler) GetByUserID(c *gin.Context) {
-	targetUserID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+	targetUserID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
 	currentUserID := c.GetUint("userID")
 
-	resources, err := h.service.GetByUserID(uint(targetUserID), currentUserID)
+	resources, err := h.service.GetByUserID(targetUserID, currentUserID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch resources"})
 		return
@@ -183,15 +175,13 @@ func (h *LearningResourceHandler) Search(c *gin.Context) {
 // Update は指定された学習リソースを更新する。
 func (h *LearningResourceHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid resource ID"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	var req UpdateResourceRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	req := bindJSON[UpdateResourceRequest](c)
+	if req == nil {
 		return
 	}
 
@@ -218,19 +208,15 @@ func (h *LearningResourceHandler) Update(c *gin.Context) {
 		updates.ImageURL = req.ImageURL
 	}
 
-	resource, err := h.service.Update(uint(id), userID, updates)
+	resource, err := h.service.Update(id, userID, updates)
 	if err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to update this resource"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "Resource not found"})
+		respondError(c, err)
 		return
 	}
 
 	// 公開設定が指定されている場合は別途更新
 	if req.IsPublic != nil {
-		resource, err = h.service.UpdateVisibility(uint(id), userID, *req.IsPublic)
+		resource, err = h.service.UpdateVisibility(id, userID, *req.IsPublic)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update resource"})
 			return
@@ -243,18 +229,13 @@ func (h *LearningResourceHandler) Update(c *gin.Context) {
 // Delete は指定された学習リソースを削除する。
 func (h *LearningResourceHandler) Delete(c *gin.Context) {
 	userID := c.GetUint("userID")
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid resource ID"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	if err := h.service.Delete(uint(id), userID); err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to delete this resource"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "Resource not found"})
+	if err := h.service.Delete(id, userID); err != nil {
+		respondError(c, err)
 		return
 	}
 
@@ -264,13 +245,12 @@ func (h *LearningResourceHandler) Delete(c *gin.Context) {
 // Like は学習リソースにいいねする。
 func (h *LearningResourceHandler) Like(c *gin.Context) {
 	userID := c.GetUint("userID")
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid resource ID"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	if err := h.service.Like(userID, uint(id)); err != nil {
+	if err := h.service.Like(userID, id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to like resource"})
 		return
 	}
@@ -281,13 +261,12 @@ func (h *LearningResourceHandler) Like(c *gin.Context) {
 // Unlike は学習リソースのいいねを取り消す。
 func (h *LearningResourceHandler) Unlike(c *gin.Context) {
 	userID := c.GetUint("userID")
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid resource ID"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	if err := h.service.Unlike(userID, uint(id)); err != nil {
+	if err := h.service.Unlike(userID, id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unlike resource"})
 		return
 	}
@@ -298,13 +277,12 @@ func (h *LearningResourceHandler) Unlike(c *gin.Context) {
 // SaveResource は学習リソースを保存する。
 func (h *LearningResourceHandler) SaveResource(c *gin.Context) {
 	userID := c.GetUint("userID")
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid resource ID"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	if err := h.service.Save(userID, uint(id)); err != nil {
+	if err := h.service.Save(userID, id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save resource"})
 		return
 	}
@@ -315,13 +293,12 @@ func (h *LearningResourceHandler) SaveResource(c *gin.Context) {
 // UnsaveResource は学習リソースの保存を取り消す。
 func (h *LearningResourceHandler) UnsaveResource(c *gin.Context) {
 	userID := c.GetUint("userID")
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid resource ID"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	if err := h.service.Unsave(userID, uint(id)); err != nil {
+	if err := h.service.Unsave(userID, id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unsave resource"})
 		return
 	}
