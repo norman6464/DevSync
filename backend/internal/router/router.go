@@ -95,6 +95,8 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	badgeService := service.NewBadgeService(db, notificationService)
 	levelRepo := repository.NewLevelRepository(db)
 	levelService := service.NewLevelService(levelRepo, notificationService)
+	analyticsRepo := repository.NewLearningAnalyticsRepository(db)
+	analyticsService := service.NewLearningAnalyticsService(analyticsRepo)
 
 	// AIアドバイスサービス（LLMクライアントはAPIキー設定時のみ初期化）
 	var llmClient service.LLMClientInterface
@@ -157,6 +159,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	aiAdviceHandler := handler.NewAIAdviceHandler(aiAdviceService)
 	emailPreferencesHandler := handler.NewEmailPreferencesHandler(userService)
 	levelHandler := handler.NewLevelHandler(levelService)
+	analyticsHandler := handler.NewLearningAnalyticsHandler(analyticsService)
 
 	// HubのGetRoomMembersコールバックを設定
 	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs
@@ -469,6 +472,16 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		// メール配信設定
 		protected.GET("/email-preferences", emailPreferencesHandler.GetPreferences)
 		protected.PUT("/email-preferences", emailPreferencesHandler.UpdatePreferences)
+
+		// 学習分析
+		analytics := protected.Group("/analytics")
+		{
+			analytics.GET("/heatmap/:userId", analyticsHandler.GetHeatmap)
+			analytics.GET("/categories/:userId", analyticsHandler.GetCategoryBreakdown)
+			analytics.GET("/productivity/:userId", analyticsHandler.GetProductivityScore)
+			analytics.GET("/trends/:userId", analyticsHandler.GetWeeklyTrends)
+			analytics.GET("/insights", analyticsHandler.GetInsights)
+		}
 
 		// AIアドバイス
 		advice := protected.Group("/advice")
