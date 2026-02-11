@@ -38,6 +38,7 @@
     "qa": "Q&A",
     "roadmaps": "学习路线图",
     "advice": "AI顾问",
+    "analytics": "学习分析",
     "more": "更多"
   },
   "auth": {
@@ -867,5 +868,38 @@
     "xpUnit": "XP",
     "noActivity": "暂无活动",
     "rankingByLevel": "按等级"
+  },
+  "analytics": {
+    "pageTitle": "学习分析仪表盘",
+    "pageDescription": "可视化您的学习模式和进度",
+    "heatmapTitle": "学习活动",
+    "categoryTitle": "分类细分",
+    "productivityTitle": "生产力评分",
+    "trendTitle": "每周趋势",
+    "insightsTitle": "AI洞察",
+    "overallScore": "综合评分",
+    "pomodoroRate": "番茄钟完成率",
+    "goalRate": "目标达成率",
+    "streakConsistency": "连续一致性",
+    "noData": "暂无数据。开始记录学习日志以查看分析！",
+    "noInsights": "收集足够数据后将显示AI洞察",
+    "dayLabels": ["日", "一", "二", "三", "四", "五", "六"],
+    "hours": "小时",
+    "min": "分钟",
+    "minutes": "分钟",
+    "logs": "条",
+    "less": "少",
+    "more": "多",
+    "category_coding": "编程",
+    "category_reading": "阅读",
+    "category_course": "课程",
+    "category_meetup": "聚会",
+    "category_other": "其他",
+    "insight_peak_time": "您在{{day}} {{hour}}点学习时间最长（共{{minutes}}分钟）。利用这个时间段进行专注学习吧。",
+    "insight_category_focus": "学习时间的{{percentage}}%集中在「{{category}}」。尝试其他类别以获得均衡学习。",
+    "insight_weekly_growth_up": "与上周相比，学习时间增加了{{rate}}%。继续保持！",
+    "insight_weekly_growth_down": "与上周相比，学习时间减少了{{rate}}%。坚持每天学习很重要。",
+    "insight_streak_active": "已连续学习{{days}}天！出色的坚持力。",
+    "insight_streak_record": "最长连续记录为{{longest}}天。当前为{{current}}天。挑战新记录吧！"
   }
 }

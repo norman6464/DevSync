@@ -38,6 +38,7 @@
     "qa": "Q&A",
     "roadmaps": "Lern-Roadmaps",
     "advice": "KI-Berater",
+    "analytics": "Analytik",
     "more": "Mehr"
   },
   "auth": {
@@ -867,5 +868,38 @@
     "xpUnit": "XP",
     "noActivity": "Noch keine Aktivität",
     "rankingByLevel": "Nach Stufe"
+  },
+  "analytics": {
+    "pageTitle": "Lernanalyse-Dashboard",
+    "pageDescription": "Visualisieren Sie Ihre Lernmuster und Fortschritte",
+    "heatmapTitle": "Lernaktivität",
+    "categoryTitle": "Kategorieaufschlüsselung",
+    "productivityTitle": "Produktivitätsbewertung",
+    "trendTitle": "Wöchentliche Trends",
+    "insightsTitle": "KI-Einblicke",
+    "overallScore": "Gesamtbewertung",
+    "pomodoroRate": "Pomodoro-Abschluss",
+    "goalRate": "Zielerreichung",
+    "streakConsistency": "Serie-Konsistenz",
+    "noData": "Noch keine Daten. Beginnen Sie mit der Protokollierung Ihres Lernens, um Analysen zu sehen!",
+    "noInsights": "KI-Einblicke erscheinen, sobald genügend Daten gesammelt wurden",
+    "dayLabels": ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+    "hours": "Stunden",
+    "min": "Min",
+    "minutes": "Minuten",
+    "logs": "Einträge",
+    "less": "Weniger",
+    "more": "Mehr",
+    "category_coding": "Programmierung",
+    "category_reading": "Lesen",
+    "category_course": "Kurs",
+    "category_meetup": "Treffen",
+    "category_other": "Sonstiges",
+    "insight_peak_time": "Ihre beste Lernzeit ist {{day}} um {{hour}} Uhr ({{minutes}} Min. gesamt). Nutzen Sie diese Zeit für konzentriertes Lernen.",
+    "insight_category_focus": "{{percentage}}% Ihrer Lernzeit konzentriert sich auf \u201e{{category}}\u201c. Probieren Sie andere Kategorien für ausgewogenes Lernen.",
+    "insight_weekly_growth_up": "Ihre Lernzeit ist im Vergleich zur Vorwoche um {{rate}}% gestiegen. Weiter so!",
+    "insight_weekly_growth_down": "Ihre Lernzeit ist im Vergleich zur Vorwoche um {{rate}}% gesunken. Jede Minute des Lernens zählt.",
+    "insight_streak_active": "Sie lernen seit {{days}} Tagen in Folge! Tolle Beständigkeit.",
+    "insight_streak_record": "Ihr längster Streak war {{longest}} Tage. Aktuell bei {{current}} Tagen. Versuchen Sie, Ihren Rekord zu brechen!"
   }
 }

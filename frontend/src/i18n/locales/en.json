@@ -38,6 +38,7 @@
     "qa": "Q&A",
     "roadmaps": "Learning Roadmaps",
     "advice": "AI Advisor",
+    "analytics": "Analytics",
     "more": "More"
   },
   "auth": {
@@ -867,5 +868,38 @@
     "xpUnit": "XP",
     "noActivity": "No activity yet",
     "rankingByLevel": "By Level"
+  },
+  "analytics": {
+    "pageTitle": "Learning Analytics",
+    "pageDescription": "Visualize your learning patterns and progress",
+    "heatmapTitle": "Learning Activity",
+    "categoryTitle": "Category Breakdown",
+    "productivityTitle": "Productivity Score",
+    "trendTitle": "Weekly Trends",
+    "insightsTitle": "AI Insights",
+    "overallScore": "Overall Score",
+    "pomodoroRate": "Pomodoro Completion",
+    "goalRate": "Goal Achievement",
+    "streakConsistency": "Streak Consistency",
+    "noData": "No data yet. Start logging your learning to see analytics!",
+    "noInsights": "AI insights will appear once enough data is collected",
+    "dayLabels": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    "hours": "hours",
+    "min": "min",
+    "minutes": "minutes",
+    "logs": "logs",
+    "less": "Less",
+    "more": "More",
+    "category_coding": "Coding",
+    "category_reading": "Reading",
+    "category_course": "Course",
+    "category_meetup": "Meetup",
+    "category_other": "Other",
+    "insight_peak_time": "Your peak study time is {{day}} at {{hour}}:00 ({{minutes}} min total). Use this time for focused learning.",
+    "insight_category_focus": "{{percentage}}% of your study time is focused on \"{{category}}\". Try other categories for balanced learning.",
+    "insight_weekly_growth_up": "Your study time increased by {{rate}}% compared to last week. Keep it up!",
+    "insight_weekly_growth_down": "Your study time decreased by {{rate}}% compared to last week. Every bit of learning counts.",
+    "insight_streak_active": "You've been studying for {{days}} days in a row! Amazing consistency.",
+    "insight_streak_record": "Your longest streak was {{longest}} days. Currently at {{current}} days. Aim to break your record!"
   }
 }

@@ -38,6 +38,7 @@
     "qa": "Q&A",
     "roadmaps": "Roteiros de Aprendizado",
     "advice": "Consultor IA",
+    "analytics": "Análise",
     "more": "Mais"
   },
   "auth": {
@@ -867,5 +868,38 @@
     "xpUnit": "XP",
     "noActivity": "Nenhuma atividade ainda",
     "rankingByLevel": "Por Nível"
+  },
+  "analytics": {
+    "pageTitle": "Painel de Análise de Aprendizado",
+    "pageDescription": "Visualize seus padrões de aprendizado e progresso",
+    "heatmapTitle": "Atividade de Aprendizado",
+    "categoryTitle": "Divisão por Categoria",
+    "productivityTitle": "Pontuação de Produtividade",
+    "trendTitle": "Tendências Semanais",
+    "insightsTitle": "Insights de IA",
+    "overallScore": "Pontuação Geral",
+    "pomodoroRate": "Conclusão de Pomodoro",
+    "goalRate": "Alcance de Metas",
+    "streakConsistency": "Consistência de Sequência",
+    "noData": "Sem dados ainda. Comece a registrar seu aprendizado para ver análises!",
+    "noInsights": "Insights de IA aparecerão quando dados suficientes forem coletados",
+    "dayLabels": ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
+    "hours": "horas",
+    "min": "min",
+    "minutes": "minutos",
+    "logs": "registros",
+    "less": "Menos",
+    "more": "Mais",
+    "category_coding": "Programação",
+    "category_reading": "Leitura",
+    "category_course": "Curso",
+    "category_meetup": "Encontro",
+    "category_other": "Outro",
+    "insight_peak_time": "Seu melhor horário de estudo é {{day}} às {{hour}}h ({{minutes}} min no total). Aproveite esse horário para aprendizado focado.",
+    "insight_category_focus": "{{percentage}}% do seu tempo de estudo está concentrado em \"{{category}}\". Experimente outras categorias para um aprendizado equilibrado.",
+    "insight_weekly_growth_up": "Seu tempo de estudo aumentou {{rate}}% em comparação com a semana passada. Continue assim!",
+    "insight_weekly_growth_down": "Seu tempo de estudo diminuiu {{rate}}% em comparação com a semana passada. Cada minuto de aprendizado conta.",
+    "insight_streak_active": "Você está estudando há {{days}} dias consecutivos! Consistência incrível.",
+    "insight_streak_record": "Sua maior sequência foi de {{longest}} dias. Atualmente em {{current}} dias. Tente bater seu recorde!"
   }
 }

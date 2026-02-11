@@ -21,3 +21,4 @@ export { useSnippetComments } from './useSnippetComments';
 export { useAdvice, useAIChat, useConversations } from './useAdvice';
 export { usePomodoroTimer } from './usePomodoroTimer';
 export { useMyLevel, useLevel, useLevelBreakdown } from './useLevel';
+export { useHeatmap, useCategoryBreakdown, useProductivityScore, useWeeklyTrends, useInsights } from './useAnalytics';

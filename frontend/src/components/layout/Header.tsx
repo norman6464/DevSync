@@ -12,6 +12,7 @@ import {
   Library,
   Settings,
   Lightbulb,
+  LineChart,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import Avatar from '../common/Avatar';
@@ -32,6 +33,7 @@ const navItems = [
 const moreItems = [
   { path: '/goals', key: 'nav.goals', icon: Target },
   { path: '/learning-logs', key: 'nav.learningLogs', icon: BookMarked },
+  { path: '/analytics', key: 'nav.analytics', icon: LineChart },
   { path: '/reports', key: 'nav.reports', icon: BarChart3 },
   { path: '/roadmaps', key: 'nav.roadmaps', icon: Map },
   { path: '/projects', key: 'nav.projects', icon: FolderKanban },

@@ -287,6 +287,15 @@ type LevelRepositoryInterface interface {
 	GetXPStats(userID uint) (*model.XPStats, error)
 }
 
+// LearningAnalyticsRepositoryInterface は学習分析データ操作の契約を定義する。
+// 学習ログから集計したヒートマップ・カテゴリ別・週間トレンド・生産性統計を提供する。
+type LearningAnalyticsRepositoryInterface interface {
+	GetHeatmapData(userID uint) ([]model.HeatmapEntry, error)
+	GetCategoryBreakdown(userID uint) ([]model.CategoryBreakdown, error)
+	GetWeeklyTrends(userID uint, weeks int) ([]model.WeeklyTrend, error)
+	GetProductivityStats(userID uint) (*model.ProductivityStats, error)
+}
+
 // AIConversationRepositoryInterface はAI会話セッションデータ操作の契約を定義する。
 // LLMとの会話管理とレート制限用のメッセージカウントを含む。
 type AIConversationRepositoryInterface interface {

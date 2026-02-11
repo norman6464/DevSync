@@ -29,6 +29,7 @@ import RoadmapDetailPage from './pages/RoadmapDetailPage';
 import NotificationsPage from './pages/NotificationsPage';
 import LearningLogsPage from './pages/LearningLogsPage';
 import AdvicePage from './pages/AdvicePage';
+import AnalyticsPage from './pages/AnalyticsPage';
 import OnboardingPage from './pages/OnboardingPage';
 import { ToastProvider } from './contexts/ToastContext';
 
@@ -84,6 +85,7 @@ export default function App() {
           <Route path="/roadmaps" element={<RoadmapsPage />} />
           <Route path="/roadmaps/:id" element={<RoadmapDetailPage />} />
           <Route path="/advice" element={<AdvicePage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
         </Route>
       </Route>
     </Routes>
