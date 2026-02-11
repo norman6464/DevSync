@@ -9,11 +9,11 @@ import (
 // 投稿のCRUD操作に加え、フォロワーへの通知連携を行う。
 type PostService struct {
 	repo                repository.PostRepositoryInterface
-	notificationService *NotificationService
+	notificationService NotificationServiceInterface
 }
 
 // NewPostService は新しいPostServiceインスタンスを生成する。
-func NewPostService(repo repository.PostRepositoryInterface, notificationService *NotificationService) *PostService {
+func NewPostService(repo repository.PostRepositoryInterface, notificationService NotificationServiceInterface) *PostService {
 	return &PostService{repo: repo, notificationService: notificationService}
 }
 
