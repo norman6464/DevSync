@@ -47,6 +47,7 @@ type Container struct {
 	LevelHandler             *handler.LevelHandler
 	LearningAnalyticsHandler *handler.LearningAnalyticsHandler
 	RecommendationHandler    *handler.RecommendationHandler
+	StudyCircleHandler       *handler.StudyCircleHandler
 
 	// ミドルウェア・コールバック用
 	AuthService      *service.AuthService
@@ -88,6 +89,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	analyticsRepo := repository.NewLearningAnalyticsRepository(db)
 	badgeRepo := repository.NewBadgeRepository(db)
 	recommendationRepo := repository.NewRecommendationRepository(db)
+	studyCircleRepo := repository.NewStudyCircleRepository(db)
 
 	c.GroupMessageRepo = groupMessageRepo
 
@@ -122,6 +124,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	levelService := service.NewLevelService(levelRepo, notificationService)
 	analyticsService := service.NewLearningAnalyticsService(analyticsRepo)
 	recommendationService := service.NewRecommendationService(recommendationRepo, userRepo)
+	studyCircleService := service.NewStudyCircleService(studyCircleRepo)
 
 	// テンプレートロードマップの初期登録
 	go seedTemplateRoadmaps(db, roadmapService)
@@ -190,6 +193,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	c.LevelHandler = handler.NewLevelHandler(levelService)
 	c.LearningAnalyticsHandler = handler.NewLearningAnalyticsHandler(analyticsService)
 	c.RecommendationHandler = handler.NewRecommendationHandler(recommendationService)
+	c.StudyCircleHandler = handler.NewStudyCircleHandler(studyCircleService)
 
 	// HubのGetRoomMembersコールバックを設定
 	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs

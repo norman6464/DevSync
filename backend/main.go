@@ -62,6 +62,11 @@ func main() {
 		&model.AIAdvice{},
 		&model.AIConversation{},
 		&model.AIMessage{},
+		&model.StudyCircle{},
+		&model.StudyCircleMember{},
+		&model.StudyCircleStep{},
+		&model.StudyCircleMemberProgress{},
+		&model.StudyCircleCheckin{},
 	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}

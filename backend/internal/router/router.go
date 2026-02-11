@@ -81,6 +81,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerCommunityRoutes(protected, c)
 		registerAnalyticsRoutes(protected, c)
 		registerRecommendationRoutes(protected, c)
+		registerStudyCircleRoutes(protected, c)
 	}
 
 	return r
@@ -384,6 +385,29 @@ func registerAnalyticsRoutes(g *gin.RouterGroup, c *di.Container) {
 		advice.GET("/conversations", c.AIAdviceHandler.GetConversations)
 		advice.GET("/conversations/:id", c.AIAdviceHandler.GetConversation)
 		advice.DELETE("/conversations/:id", c.AIAdviceHandler.DeleteConversation)
+	}
+}
+
+func registerStudyCircleRoutes(g *gin.RouterGroup, c *di.Container) {
+	circles := g.Group("/study-circles")
+	{
+		circles.POST("", c.StudyCircleHandler.Create)
+		circles.GET("", c.StudyCircleHandler.GetMyCircles)
+		circles.GET("/:id", c.StudyCircleHandler.GetByID)
+		circles.PUT("/:id", c.StudyCircleHandler.Update)
+		circles.DELETE("/:id", c.StudyCircleHandler.Delete)
+		circles.GET("/:id/members", c.StudyCircleHandler.GetMembers)
+		circles.POST("/:id/members", c.StudyCircleHandler.AddMember)
+		circles.DELETE("/:id/members/:userId", c.StudyCircleHandler.RemoveMember)
+		circles.POST("/:id/steps", c.StudyCircleHandler.CreateStep)
+		circles.PUT("/:id/steps/:stepId", c.StudyCircleHandler.UpdateStep)
+		circles.DELETE("/:id/steps/:stepId", c.StudyCircleHandler.DeleteStep)
+		circles.PUT("/:id/steps/reorder", c.StudyCircleHandler.ReorderSteps)
+		circles.PUT("/:id/steps/:stepId/progress", c.StudyCircleHandler.UpdateProgress)
+		circles.GET("/:id/progress", c.StudyCircleHandler.GetProgress)
+		circles.POST("/:id/checkins", c.StudyCircleHandler.CreateCheckin)
+		circles.GET("/:id/checkins", c.StudyCircleHandler.GetCheckins)
+		circles.GET("/:id/streak-ranking", c.StudyCircleHandler.GetStreakRanking)
 	}
 }
 
