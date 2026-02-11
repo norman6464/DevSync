@@ -39,6 +39,7 @@
     "roadmaps": "Learning Roadmaps",
     "advice": "AI Advisor",
     "analytics": "Analytics",
+    "studyCircles": "Study Circles",
     "more": "More"
   },
   "auth": {
@@ -912,5 +913,81 @@
     "noTrending": "No trending content available",
     "viewAll": "View All",
     "follow": "Follow"
+  },
+  "studyCircle": {
+    "title": "Study Circles",
+    "myCircles": "My Circles",
+    "create": "Create Circle",
+    "name": "Circle Name",
+    "topic": "Learning Topic",
+    "description": "Description",
+    "maxMembers": "Max Members",
+    "status": "Status",
+    "active": "Active",
+    "completed": "Completed",
+    "archived": "Archived",
+    "members": "Members",
+    "memberCount": "{{count}} members",
+    "addMember": "Add Member",
+    "removeMember": "Remove Member",
+    "leave": "Leave",
+    "owner": "Owner",
+    "created": "Circle created",
+    "updated": "Circle updated",
+    "deleted": "Circle deleted",
+    "confirmDelete": "Delete this circle?",
+    "memberAdded": "Member added",
+    "memberRemoved": "Member removed",
+    "noCircles": "No circles joined yet",
+    "tabs": {
+      "roadmap": "Roadmap",
+      "checkin": "Check-in",
+      "ranking": "Ranking",
+      "settings": "Settings"
+    },
+    "steps": {
+      "title": "Steps",
+      "add": "Add Step",
+      "edit": "Edit Step",
+      "delete": "Delete Step",
+      "confirmDelete": "Delete this step?",
+      "stepCreated": "Step added",
+      "stepDeleted": "Step deleted",
+      "resourceUrl": "Resource URL",
+      "noSteps": "No steps yet"
+    },
+    "progress": {
+      "title": "Progress",
+      "completed": "Completed",
+      "notCompleted": "Not completed",
+      "memberProgress": "Member Progress"
+    },
+    "checkin": {
+      "title": "Daily Check-in",
+      "placeholder": "What did you do today...",
+      "submit": "Check-in",
+      "checkedIn": "Checked in!",
+      "alreadyCheckedIn": "Already checked in today",
+      "noCheckins": "No check-ins yet",
+      "history": "Check-in History"
+    },
+    "streak": {
+      "title": "Streak Ranking",
+      "currentStreak": "Current Streak",
+      "totalCheckins": "Total Check-ins",
+      "days": "{{count}} days",
+      "noStreaks": "No data yet"
+    },
+    "stepCreated": "Step added",
+    "stepDeleted": "Step deleted",
+    "confirmDeleteStep": "Delete this step?",
+    "checkedIn": "Checked in!",
+    "alreadyCheckedIn": "Already checked in today",
+    "widget": {
+      "title": "Study Circles",
+      "noCircles": "Join a circle to start learning together",
+      "todayCheckin": "Today's Check-in",
+      "viewAll": "View All"
+    }
   }
 }

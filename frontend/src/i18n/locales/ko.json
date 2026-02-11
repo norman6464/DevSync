@@ -39,6 +39,7 @@
     "roadmaps": "학습 로드맵",
     "advice": "AI 어드바이저",
     "analytics": "학습 분석",
+    "studyCircles": "스터디 서클",
     "more": "더보기"
   },
   "auth": {
@@ -912,5 +913,81 @@
     "noTrending": "트렌드 콘텐츠가 없습니다",
     "viewAll": "전체 보기",
     "follow": "팔로우"
+  },
+  "studyCircle": {
+    "title": "스터디 서클",
+    "myCircles": "참여 중인 서클",
+    "create": "서클 만들기",
+    "name": "서클 이름",
+    "topic": "학습 주제",
+    "description": "설명",
+    "maxMembers": "최대 인원",
+    "status": "상태",
+    "active": "활성",
+    "completed": "완료",
+    "archived": "보관",
+    "members": "멤버",
+    "memberCount": "{{count}}명의 멤버",
+    "addMember": "멤버 추가",
+    "removeMember": "멤버 제외",
+    "leave": "탈퇴",
+    "owner": "소유자",
+    "created": "서클을 만들었습니다",
+    "updated": "서클을 수정했습니다",
+    "deleted": "서클을 삭제했습니다",
+    "confirmDelete": "이 서클을 삭제하시겠습니까?",
+    "memberAdded": "멤버를 추가했습니다",
+    "memberRemoved": "멤버를 제외했습니다",
+    "noCircles": "참여 중인 서클이 없습니다",
+    "tabs": {
+      "roadmap": "로드맵",
+      "checkin": "체크인",
+      "ranking": "랭킹",
+      "settings": "설정"
+    },
+    "steps": {
+      "title": "단계",
+      "add": "단계 추가",
+      "edit": "단계 수정",
+      "delete": "단계 삭제",
+      "confirmDelete": "이 단계를 삭제하시겠습니까?",
+      "stepCreated": "단계를 추가했습니다",
+      "stepDeleted": "단계를 삭제했습니다",
+      "resourceUrl": "참고 URL",
+      "noSteps": "아직 단계가 없습니다"
+    },
+    "progress": {
+      "title": "진행 상황",
+      "completed": "완료",
+      "notCompleted": "미완료",
+      "memberProgress": "멤버별 진행 상황"
+    },
+    "checkin": {
+      "title": "일일 체크인",
+      "placeholder": "오늘 한 일을 한 줄로...",
+      "submit": "체크인",
+      "checkedIn": "체크인 완료!",
+      "alreadyCheckedIn": "오늘은 이미 체크인했습니다",
+      "noCheckins": "아직 체크인이 없습니다",
+      "history": "체크인 기록"
+    },
+    "streak": {
+      "title": "스트릭 랭킹",
+      "currentStreak": "연속 일수",
+      "totalCheckins": "총 체크인",
+      "days": "{{count}}일",
+      "noStreaks": "아직 데이터가 없습니다"
+    },
+    "stepCreated": "단계를 추가했습니다",
+    "stepDeleted": "단계를 삭제했습니다",
+    "confirmDeleteStep": "이 단계를 삭제하시겠습니까?",
+    "checkedIn": "체크인 완료!",
+    "alreadyCheckedIn": "오늘은 이미 체크인했습니다",
+    "widget": {
+      "title": "스터디 서클",
+      "noCircles": "서클에 참여하여 함께 학습하세요",
+      "todayCheckin": "오늘의 체크인",
+      "viewAll": "모두 보기"
+    }
   }
 }

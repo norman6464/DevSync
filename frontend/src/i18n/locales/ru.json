@@ -39,6 +39,7 @@
     "roadmaps": "Дорожные карты",
     "advice": "ИИ-советник",
     "analytics": "Аналитика",
+    "studyCircles": "Учебные Кружки",
     "more": "Ещё"
   },
   "auth": {
@@ -912,5 +913,81 @@
     "noTrending": "Нет трендового контента",
     "viewAll": "Смотреть все",
     "follow": "Подписаться"
+  },
+  "studyCircle": {
+    "title": "Учебные Кружки",
+    "myCircles": "Мои Кружки",
+    "create": "Создать Кружок",
+    "name": "Название Кружка",
+    "topic": "Тема Обучения",
+    "description": "Описание",
+    "maxMembers": "Макс. Участников",
+    "status": "Статус",
+    "active": "Активный",
+    "completed": "Завершённый",
+    "archived": "В архиве",
+    "members": "Участники",
+    "memberCount": "{{count}} участников",
+    "addMember": "Добавить Участника",
+    "removeMember": "Удалить Участника",
+    "leave": "Выйти",
+    "owner": "Владелец",
+    "created": "Кружок создан",
+    "updated": "Кружок обновлён",
+    "deleted": "Кружок удалён",
+    "confirmDelete": "Удалить этот кружок?",
+    "memberAdded": "Участник добавлен",
+    "memberRemoved": "Участник удалён",
+    "noCircles": "Вы ещё не состоите ни в одном кружке",
+    "tabs": {
+      "roadmap": "Дорожная Карта",
+      "checkin": "Отметка",
+      "ranking": "Рейтинг",
+      "settings": "Настройки"
+    },
+    "steps": {
+      "title": "Шаги",
+      "add": "Добавить Шаг",
+      "edit": "Редактировать Шаг",
+      "delete": "Удалить Шаг",
+      "confirmDelete": "Удалить этот шаг?",
+      "stepCreated": "Шаг добавлен",
+      "stepDeleted": "Шаг удалён",
+      "resourceUrl": "URL Ресурса",
+      "noSteps": "Пока нет шагов"
+    },
+    "progress": {
+      "title": "Прогресс",
+      "completed": "Завершено",
+      "notCompleted": "Не завершено",
+      "memberProgress": "Прогресс Участников"
+    },
+    "checkin": {
+      "title": "Ежедневная Отметка",
+      "placeholder": "Что вы сделали сегодня...",
+      "submit": "Отметиться",
+      "checkedIn": "Отметка сделана!",
+      "alreadyCheckedIn": "Вы уже отметились сегодня",
+      "noCheckins": "Пока нет отметок",
+      "history": "История Отметок"
+    },
+    "streak": {
+      "title": "Рейтинг Серий",
+      "currentStreak": "Текущая Серия",
+      "totalCheckins": "Всего Отметок",
+      "days": "{{count}} дней",
+      "noStreaks": "Пока нет данных"
+    },
+    "stepCreated": "Шаг добавлен",
+    "stepDeleted": "Шаг удалён",
+    "confirmDeleteStep": "Удалить этот шаг?",
+    "checkedIn": "Отметка сделана!",
+    "alreadyCheckedIn": "Вы уже отметились сегодня",
+    "widget": {
+      "title": "Учебные Кружки",
+      "noCircles": "Присоединяйтесь к кружку для совместного обучения",
+      "todayCheckin": "Сегодняшняя Отметка",
+      "viewAll": "Показать Все"
+    }
   }
 }
