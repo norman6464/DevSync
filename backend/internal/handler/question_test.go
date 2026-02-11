@@ -1,0 +1,266 @@
+package handler
+
+import (
+	"net/http"
+	"testing"
+
+	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+)
+
+// ---------- Create ----------
+
+func TestQuestionCreate_Success(t *testing.T) {
+	h, repo := setupQuestionHandler()
+	r := newRouter(1)
+	r.POST("/questions", h.Create)
+
+	repo.On("Create", mock.AnythingOfType("*model.Question")).Return(nil)
+
+	w := doRequest(r, http.MethodPost, "/questions", map[string]string{
+		"title": "How to use Go?", "body": "I want to learn Go.",
+	})
+	assertStatus(t, w, http.StatusCreated)
+}
+
+func TestQuestionCreate_ValidationError(t *testing.T) {
+	h, _ := setupQuestionHandler()
+	r := newRouter(1)
+	r.POST("/questions", h.Create)
+
+	// title と body は required
+	w := doRequest(r, http.MethodPost, "/questions", map[string]string{
+		"title": "No body",
+	})
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestQuestionCreate_InvalidJSON(t *testing.T) {
+	h, _ := setupQuestionHandler()
+	r := newRouter(1)
+	r.POST("/questions", h.Create)
+
+	w := doRequestRaw(r, http.MethodPost, "/questions", "not json")
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// ---------- GetAll ----------
+
+func TestQuestionGetAll_Success(t *testing.T) {
+	h, repo := setupQuestionHandler()
+	r := newRouter(1)
+	r.GET("/questions", h.GetAll)
+
+	repo.On("FindAll", 20, 0, "", "newest").Return([]model.Question{
+		{Title: "Q1"}, {Title: "Q2"},
+	}, int64(2), nil)
+
+	w := doRequest(r, http.MethodGet, "/questions", nil)
+	assertStatus(t, w, http.StatusOK)
+
+	body := parseJSON(t, w)
+	questions := body["questions"].([]interface{})
+	assert.Len(t, questions, 2)
+	assert.Equal(t, float64(2), body["total"])
+}
+
+func TestQuestionGetAll_WithFilters(t *testing.T) {
+	h, repo := setupQuestionHandler()
+	r := newRouter(1)
+	r.GET("/questions", h.GetAll)
+
+	repo.On("FindAll", 10, 5, "go", "popular").Return([]model.Question{}, int64(0), nil)
+
+	w := doRequest(r, http.MethodGet, "/questions?limit=10&offset=5&tag=go&sort=popular", nil)
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestQuestionGetAll_LimitCap(t *testing.T) {
+	h, repo := setupQuestionHandler()
+	r := newRouter(1)
+	r.GET("/questions", h.GetAll)
+
+	// limit=200 は 100 に制限される
+	repo.On("FindAll", 100, 0, "", "newest").Return([]model.Question{}, int64(0), nil)
+
+	w := doRequest(r, http.MethodGet, "/questions?limit=200", nil)
+	assertStatus(t, w, http.StatusOK)
+}
+
+// ---------- Search ----------
+
+func TestQuestionSearch_Success(t *testing.T) {
+	h, repo := setupQuestionHandler()
+	r := newRouter(1)
+	r.GET("/questions/search", h.Search)
+
+	repo.On("Search", "golang", 20, 0).Return([]model.Question{
+		{Title: "Go Question"},
+	}, int64(1), nil)
+
+	w := doRequest(r, http.MethodGet, "/questions/search?q=golang", nil)
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestQuestionSearch_EmptyQuery(t *testing.T) {
+	h, _ := setupQuestionHandler()
+	r := newRouter(1)
+	r.GET("/questions/search", h.Search)
+
+	w := doRequest(r, http.MethodGet, "/questions/search", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// ---------- GetByID ----------
+
+func TestQuestionGetByID_Success(t *testing.T) {
+	h, repo := setupQuestionHandler()
+	r := newRouter(1)
+	r.GET("/questions/:id", h.GetByID)
+
+	repo.On("FindByID", uint(5)).Return(&model.Question{Title: "Q"}, nil)
+	repo.On("GetUserVote", uint(1), uint(5)).Return(1, nil)
+
+	w := doRequest(r, http.MethodGet, "/questions/5", nil)
+	assertStatus(t, w, http.StatusOK)
+
+	body := parseJSON(t, w)
+	assert.Equal(t, float64(1), body["user_vote"])
+}
+
+func TestQuestionGetByID_NotFound(t *testing.T) {
+	h, repo := setupQuestionHandler()
+	r := newRouter(1)
+	r.GET("/questions/:id", h.GetByID)
+
+	repo.On("FindByID", uint(999)).Return(nil, service.ErrNotFound)
+
+	w := doRequest(r, http.MethodGet, "/questions/999", nil)
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+func TestQuestionGetByID_InvalidID(t *testing.T) {
+	h, _ := setupQuestionHandler()
+	r := newRouter(1)
+	r.GET("/questions/:id", h.GetByID)
+
+	w := doRequest(r, http.MethodGet, "/questions/abc", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// ---------- Update ----------
+
+func TestQuestionUpdate_Success(t *testing.T) {
+	h, repo := setupQuestionHandler()
+	r := newRouter(1)
+	r.PUT("/questions/:id", h.Update)
+
+	q := &model.Question{Title: "Old", Body: "Old Body"}
+	q.ID = 5
+	q.UserID = 1
+	repo.On("FindByID", uint(5)).Return(q, nil)
+	repo.On("Update", mock.AnythingOfType("*model.Question")).Return(nil)
+
+	w := doRequest(r, http.MethodPut, "/questions/5", map[string]string{
+		"title": "Updated",
+	})
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestQuestionUpdate_Forbidden(t *testing.T) {
+	h, repo := setupQuestionHandler()
+	r := newRouter(1)
+	r.PUT("/questions/:id", h.Update)
+
+	q := &model.Question{Title: "Other"}
+	q.ID = 5
+	q.UserID = 999
+	repo.On("FindByID", uint(5)).Return(q, nil)
+
+	w := doRequest(r, http.MethodPut, "/questions/5", map[string]string{
+		"title": "Hacked",
+	})
+	assertStatus(t, w, http.StatusForbidden)
+}
+
+func TestQuestionUpdate_NotFound(t *testing.T) {
+	h, repo := setupQuestionHandler()
+	r := newRouter(1)
+	r.PUT("/questions/:id", h.Update)
+
+	repo.On("FindByID", uint(5)).Return(nil, service.ErrNotFound)
+
+	w := doRequest(r, http.MethodPut, "/questions/5", map[string]string{"title": "X"})
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+// ---------- Delete ----------
+
+func TestQuestionDelete_Success(t *testing.T) {
+	h, repo := setupQuestionHandler()
+	r := newRouter(1)
+	r.DELETE("/questions/:id", h.Delete)
+
+	q := &model.Question{}
+	q.ID = 5
+	q.UserID = 1
+	repo.On("FindByID", uint(5)).Return(q, nil)
+	repo.On("Delete", uint(5)).Return(nil)
+
+	w := doRequest(r, http.MethodDelete, "/questions/5", nil)
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestQuestionDelete_Forbidden(t *testing.T) {
+	h, repo := setupQuestionHandler()
+	r := newRouter(1)
+	r.DELETE("/questions/:id", h.Delete)
+
+	q := &model.Question{}
+	q.ID = 5
+	q.UserID = 999
+	repo.On("FindByID", uint(5)).Return(q, nil)
+
+	w := doRequest(r, http.MethodDelete, "/questions/5", nil)
+	assertStatus(t, w, http.StatusForbidden)
+}
+
+// ---------- Vote / RemoveVote ----------
+
+func TestQuestionVote_Success(t *testing.T) {
+	h, repo := setupQuestionHandler()
+	r := newRouter(1)
+	r.POST("/questions/:id/vote", h.Vote)
+
+	repo.On("Vote", uint(1), uint(5), 1).Return(nil)
+
+	w := doRequest(r, http.MethodPost, "/questions/5/vote", map[string]int{
+		"value": 1,
+	})
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestQuestionVote_InvalidValue(t *testing.T) {
+	h, _ := setupQuestionHandler()
+	r := newRouter(1)
+	r.POST("/questions/:id/vote", h.Vote)
+
+	// value は 1 or -1 のみ
+	w := doRequest(r, http.MethodPost, "/questions/5/vote", map[string]int{
+		"value": 5,
+	})
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestQuestionRemoveVote_Success(t *testing.T) {
+	h, repo := setupQuestionHandler()
+	r := newRouter(1)
+	r.DELETE("/questions/:id/vote", h.RemoveVote)
+
+	repo.On("RemoveVote", uint(1), uint(5)).Return(nil)
+
+	w := doRequest(r, http.MethodDelete, "/questions/5/vote", nil)
+	assertStatus(t, w, http.StatusOK)
+}
