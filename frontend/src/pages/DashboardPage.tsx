@@ -17,6 +17,7 @@ import DailyChallengeWidget from '../components/dashboard/DailyChallengeWidget';
 import AIAdviceWidget from '../components/dashboard/AIAdviceWidget';
 import RecommendedUsersWidget from '../components/dashboard/RecommendedUsersWidget';
 import TrendingWidget from '../components/dashboard/TrendingWidget';
+import StudyCircleWidget from '../components/dashboard/StudyCircleWidget';
 
 export default function DashboardPage() {
   const { t } = useTranslation();
@@ -187,6 +188,9 @@ export default function DashboardPage() {
 
         {/* AI Advice Widget */}
         <AIAdviceWidget />
+
+        {/* Study Circle Widget */}
+        <StudyCircleWidget />
 
         {/* Trending Widget */}
         <TrendingWidget />
