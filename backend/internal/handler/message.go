@@ -25,38 +25,36 @@ func (h *MessageHandler) GetConversations(c *gin.Context) {
 	userID := c.GetUint("userID")
 	conversations, err := h.service.GetConversations(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, conversations)
+	respondOK(c, conversations)
 }
 
 // GetMessages は指定ユーザーとの会話メッセージをページネーション付きで返す。
 func (h *MessageHandler) GetMessages(c *gin.Context) {
 	userID := c.GetUint("userID")
-	otherID, err := strconv.ParseUint(c.Param("userId"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+	otherID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "50"))
 
-	messages, err := h.service.GetConversation(userID, uint(otherID), page, limit)
+	messages, err := h.service.GetConversation(userID, otherID, page, limit)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, messages)
+	respondOK(c, messages)
 }
 
 // SendMessage は指定ユーザーにDMを送信する。
 func (h *MessageHandler) SendMessage(c *gin.Context) {
 	userID := c.GetUint("userID")
-	receiverID, err := strconv.ParseUint(c.Param("userId"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+	receiverID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
@@ -70,13 +68,13 @@ func (h *MessageHandler) SendMessage(c *gin.Context) {
 
 	msg := &model.Message{
 		SenderID:   userID,
-		ReceiverID: uint(receiverID),
+		ReceiverID: receiverID,
 		Content:    input.Content,
 	}
 	if err := h.service.SendMessage(msg); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, msg)
+	respondCreated(c, msg)
 }

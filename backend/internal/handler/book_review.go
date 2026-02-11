@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"errors"
-	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -45,9 +43,8 @@ type UpdateBookReviewRequest struct {
 func (h *BookReviewHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	var req CreateBookReviewRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	req := bindJSON[CreateBookReviewRequest](c)
+	if req == nil {
 		return
 	}
 
@@ -62,45 +59,43 @@ func (h *BookReviewHandler) Create(c *gin.Context) {
 	}
 
 	if err := h.service.Create(review); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create book review"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, review)
+	respondCreated(c, review)
 }
 
 // GetByID は指定IDの書籍レビューを取得する。
 func (h *BookReviewHandler) GetByID(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid review ID"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	review, err := h.service.GetByID(uint(id))
+	review, err := h.service.GetByID(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Review not found"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, review)
+	respondOK(c, review)
 }
 
 // GetByUserID は指定ユーザーの書籍レビュー一覧を取得する。
 func (h *BookReviewHandler) GetByUserID(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	reviews, err := h.service.GetByUserID(uint(userID))
+	reviews, err := h.service.GetByUserID(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch reviews"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, reviews)
+	respondOK(c, reviews)
 }
 
 // GetAll は書籍レビューの一覧をページネーション付きで取得する。
@@ -114,11 +109,11 @@ func (h *BookReviewHandler) GetAll(c *gin.Context) {
 
 	reviews, total, err := h.service.GetAll(limit, offset)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch reviews"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	respondOK(c, gin.H{
 		"reviews": reviews,
 		"total":   total,
 		"limit":   limit,
@@ -129,15 +124,13 @@ func (h *BookReviewHandler) GetAll(c *gin.Context) {
 // Update は指定IDの書籍レビューを更新する。
 func (h *BookReviewHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid review ID"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	var req UpdateBookReviewRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	req := bindJSON[UpdateBookReviewRequest](c)
+	if req == nil {
 		return
 	}
 
@@ -161,36 +154,27 @@ func (h *BookReviewHandler) Update(c *gin.Context) {
 		updates.ImageURL = req.ImageURL
 	}
 
-	review, err := h.service.Update(uint(id), userID, updates)
+	review, err := h.service.Update(id, userID, updates)
 	if err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to update this review"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "Review not found"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, review)
+	respondOK(c, review)
 }
 
 // Delete は指定IDの書籍レビューを削除する。
 func (h *BookReviewHandler) Delete(c *gin.Context) {
 	userID := c.GetUint("userID")
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid review ID"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	if err := h.service.Delete(uint(id), userID); err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to delete this review"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "Review not found"})
+	if err := h.service.Delete(id, userID); err != nil {
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Review deleted successfully"})
+	respondDeleted(c)
 }

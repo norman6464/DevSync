@@ -1,9 +1,7 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/service"
@@ -35,19 +33,11 @@ func (h *ZennHandler) Connect(c *gin.Context) {
 
 	count, err := h.service.Connect(userID, req.Username)
 	if err != nil {
-		if errors.Is(err, service.ErrBadRequest) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid Zenn username"})
-			return
-		}
-		if errors.Is(err, service.ErrNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to connect Zenn"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	respondOK(c, gin.H{
 		"message":        "Zenn connected successfully",
 		"articles_count": count,
 	})
@@ -58,15 +48,11 @@ func (h *ZennHandler) Disconnect(c *gin.Context) {
 	userID := c.GetUint("userID")
 
 	if err := h.service.Disconnect(userID); err != nil {
-		if errors.Is(err, service.ErrNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to disconnect Zenn"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Zenn disconnected successfully"})
+	respondOK(c, gin.H{"message": "Zenn disconnected successfully"})
 }
 
 // Sync は現在のユーザーのZenn記事を再同期する。
@@ -75,19 +61,11 @@ func (h *ZennHandler) Sync(c *gin.Context) {
 
 	count, err := h.service.Sync(userID)
 	if err != nil {
-		if errors.Is(err, service.ErrNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
-			return
-		}
-		if errors.Is(err, service.ErrBadRequest) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Zenn not connected"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to sync Zenn articles"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	respondOK(c, gin.H{
 		"message":        "Zenn synced successfully",
 		"articles_count": count,
 	})
@@ -95,34 +73,32 @@ func (h *ZennHandler) Sync(c *gin.Context) {
 
 // GetArticles は指定ユーザーの全Zenn記事を返す。
 func (h *ZennHandler) GetArticles(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	articles, err := h.service.GetArticles(uint(userID))
+	articles, err := h.service.GetArticles(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get articles"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, articles)
+	respondOK(c, articles)
 }
 
 // GetStats は指定ユーザーのZenn統計情報を返す。
 func (h *ZennHandler) GetStats(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	stats, err := h.service.GetStats(uint(userID))
+	stats, err := h.service.GetStats(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get stats"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, stats)
+	respondOK(c, stats)
 }

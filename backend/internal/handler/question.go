@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -44,9 +43,8 @@ type VoteRequest struct {
 func (h *QuestionHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	var req CreateQuestionRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	req := bindJSON[CreateQuestionRequest](c)
+	if req == nil {
 		return
 	}
 
@@ -58,11 +56,11 @@ func (h *QuestionHandler) Create(c *gin.Context) {
 	}
 
 	if err := h.service.Create(question); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create question"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, question)
+	respondCreated(c, question)
 }
 
 // GetAll は質問一覧をページネーション・タグ・ソート付きで取得する。
@@ -78,11 +76,11 @@ func (h *QuestionHandler) GetAll(c *gin.Context) {
 
 	questions, total, err := h.service.GetAll(limit, offset, tag, sort)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch questions"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	respondOK(c, gin.H{
 		"questions": questions,
 		"total":     total,
 		"limit":     limit,
@@ -107,11 +105,11 @@ func (h *QuestionHandler) Search(c *gin.Context) {
 
 	questions, total, err := h.service.Search(q, limit, offset)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to search questions"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	respondOK(c, gin.H{
 		"questions": questions,
 		"total":     total,
 		"limit":     limit,
@@ -122,21 +120,20 @@ func (h *QuestionHandler) Search(c *gin.Context) {
 // GetByID は指定されたIDの質問を取得する。
 func (h *QuestionHandler) GetByID(c *gin.Context) {
 	userID := c.GetUint("userID")
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid question ID"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	question, err := h.service.GetByID(uint(id))
+	question, err := h.service.GetByID(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Question not found"})
+		respondError(c, err)
 		return
 	}
 
-	userVote, _ := h.service.GetUserVote(userID, uint(id))
+	userVote, _ := h.service.GetUserVote(userID, id)
 
-	c.JSON(http.StatusOK, gin.H{
+	respondOK(c, gin.H{
 		"question":  question,
 		"user_vote": userVote,
 	})
@@ -144,106 +141,91 @@ func (h *QuestionHandler) GetByID(c *gin.Context) {
 
 // GetByUserID は指定されたユーザーの質問一覧を取得する。
 func (h *QuestionHandler) GetByUserID(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+	userID, ok := parseID(c, "userId")
+	if !ok {
 		return
 	}
 
-	questions, err := h.service.GetByUserID(uint(userID))
+	questions, err := h.service.GetByUserID(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch questions"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, questions)
+	respondOK(c, questions)
 }
 
 // Update は指定された質問を更新する。
 func (h *QuestionHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	req := bindJSON[UpdateQuestionRequest](c)
+	if req == nil {
+		return
+	}
+
+	question, err := h.service.Update(id, userID, req.Title, req.Body, req.Tags)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid question ID"})
+		respondError(c, err)
 		return
 	}
 
-	var req UpdateQuestionRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	question, err := h.service.Update(uint(id), userID, req.Title, req.Body, req.Tags)
-	if err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to update this question"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "Question not found"})
-		return
-	}
-
-	c.JSON(http.StatusOK, question)
+	respondOK(c, question)
 }
 
 // Delete は指定された質問を削除する。
 func (h *QuestionHandler) Delete(c *gin.Context) {
 	userID := c.GetUint("userID")
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid question ID"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	if err := h.service.Delete(uint(id), userID); err != nil {
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized to delete this question"})
-			return
-		}
-		c.JSON(http.StatusNotFound, gin.H{"error": "Question not found"})
+	if err := h.service.Delete(id, userID); err != nil {
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Question deleted successfully"})
+	respondDeleted(c)
 }
 
 // Vote は質問に投票する。
 func (h *QuestionHandler) Vote(c *gin.Context) {
 	userID := c.GetUint("userID")
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid question ID"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	var req VoteRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	req := bindJSON[VoteRequest](c)
+	if req == nil {
 		return
 	}
 
-	if err := h.service.Vote(userID, uint(id), req.Value); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to vote"})
+	if err := h.service.Vote(userID, id, req.Value); err != nil {
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Voted successfully"})
+	respondOK(c, gin.H{"message": "Voted successfully"})
 }
 
 // RemoveVote は質問への投票を取り消す。
 func (h *QuestionHandler) RemoveVote(c *gin.Context) {
 	userID := c.GetUint("userID")
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid question ID"})
+	id, ok := parseID(c, "id")
+	if !ok {
 		return
 	}
 
-	if err := h.service.RemoveVote(userID, uint(id)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to remove vote"})
+	if err := h.service.RemoveVote(userID, id); err != nil {
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Vote removed successfully"})
+	respondOK(c, gin.H{"message": "Vote removed successfully"})
 }
