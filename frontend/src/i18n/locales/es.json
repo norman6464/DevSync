@@ -901,5 +901,16 @@
     "insight_weekly_growth_down": "Tu tiempo de estudio disminuyó un {{rate}}% en comparación con la semana pasada. Cada minuto de aprendizaje cuenta.",
     "insight_streak_active": "¡Llevas {{days}} días consecutivos estudiando! Increíble constancia.",
     "insight_streak_record": "Tu racha más larga fue de {{longest}} días. Actualmente llevas {{current}} días. ¡Intenta superar tu récord!"
+  },
+  "recommendations": {
+    "recommendedUsers": "Usuarios recomendados",
+    "trending": "Tendencias",
+    "trendingPosts": "Publicaciones en tendencia",
+    "trendingResources": "Recursos en tendencia",
+    "commonSkills": "Habilidades en común",
+    "noRecommendations": "No se encontraron usuarios recomendados",
+    "noTrending": "No hay contenido en tendencia",
+    "viewAll": "Ver todo",
+    "follow": "Seguir"
   }
 }

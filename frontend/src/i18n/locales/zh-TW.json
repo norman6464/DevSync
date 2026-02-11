@@ -901,5 +901,16 @@
     "insight_weekly_growth_down": "與上週相比，學習時間減少了{{rate}}%。堅持每天學習很重要。",
     "insight_streak_active": "已連續學習{{days}}天！出色的堅持力。",
     "insight_streak_record": "最長連續記錄為{{longest}}天。當前為{{current}}天。挑戰新記錄吧！"
+  },
+  "recommendations": {
+    "recommendedUsers": "推薦用戶",
+    "trending": "熱門",
+    "trendingPosts": "熱門貼文",
+    "trendingResources": "熱門資源",
+    "commonSkills": "共同技能",
+    "noRecommendations": "未找到推薦用戶",
+    "noTrending": "暫無熱門內容",
+    "viewAll": "查看全部",
+    "follow": "追蹤"
   }
 }

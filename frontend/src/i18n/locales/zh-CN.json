@@ -901,5 +901,16 @@
     "insight_weekly_growth_down": "与上周相比，学习时间减少了{{rate}}%。坚持每天学习很重要。",
     "insight_streak_active": "已连续学习{{days}}天！出色的坚持力。",
     "insight_streak_record": "最长连续记录为{{longest}}天。当前为{{current}}天。挑战新记录吧！"
+  },
+  "recommendations": {
+    "recommendedUsers": "推荐用户",
+    "trending": "热门",
+    "trendingPosts": "热门帖子",
+    "trendingResources": "热门资源",
+    "commonSkills": "共同技能",
+    "noRecommendations": "未找到推荐用户",
+    "noTrending": "暂无热门内容",
+    "viewAll": "查看全部",
+    "follow": "关注"
   }
 }

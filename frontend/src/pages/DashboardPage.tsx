@@ -15,6 +15,8 @@ import LevelWidget from '../components/dashboard/LevelWidget';
 import StreakWidget from '../components/dashboard/StreakWidget';
 import DailyChallengeWidget from '../components/dashboard/DailyChallengeWidget';
 import AIAdviceWidget from '../components/dashboard/AIAdviceWidget';
+import RecommendedUsersWidget from '../components/dashboard/RecommendedUsersWidget';
+import TrendingWidget from '../components/dashboard/TrendingWidget';
 
 export default function DashboardPage() {
   const { t } = useTranslation();
@@ -174,6 +176,9 @@ export default function DashboardPage() {
         {/* Level Widget */}
         <LevelWidget />
 
+        {/* Recommended Users Widget */}
+        <RecommendedUsersWidget />
+
         {/* Streak Widget */}
         <StreakWidget />
 
@@ -182,6 +187,9 @@ export default function DashboardPage() {
 
         {/* AI Advice Widget */}
         <AIAdviceWidget />
+
+        {/* Trending Widget */}
+        <TrendingWidget />
 
         {/* Goals Progress Widget */}
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">

@@ -46,6 +46,7 @@ type Container struct {
 	EmailPreferencesHandler  *handler.EmailPreferencesHandler
 	LevelHandler             *handler.LevelHandler
 	LearningAnalyticsHandler *handler.LearningAnalyticsHandler
+	RecommendationHandler    *handler.RecommendationHandler
 
 	// ミドルウェア・コールバック用
 	AuthService      *service.AuthService
@@ -86,6 +87,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	levelRepo := repository.NewLevelRepository(db)
 	analyticsRepo := repository.NewLearningAnalyticsRepository(db)
 	badgeRepo := repository.NewBadgeRepository(db)
+	recommendationRepo := repository.NewRecommendationRepository(db)
 
 	c.GroupMessageRepo = groupMessageRepo
 
@@ -119,6 +121,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	badgeService := service.NewBadgeService(badgeRepo, notificationService)
 	levelService := service.NewLevelService(levelRepo, notificationService)
 	analyticsService := service.NewLearningAnalyticsService(analyticsRepo)
+	recommendationService := service.NewRecommendationService(recommendationRepo, userRepo)
 
 	// テンプレートロードマップの初期登録
 	go seedTemplateRoadmaps(db, roadmapService)
@@ -186,6 +189,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	c.EmailPreferencesHandler = handler.NewEmailPreferencesHandler(userService)
 	c.LevelHandler = handler.NewLevelHandler(levelService)
 	c.LearningAnalyticsHandler = handler.NewLearningAnalyticsHandler(analyticsService)
+	c.RecommendationHandler = handler.NewRecommendationHandler(recommendationService)
 
 	// HubのGetRoomMembersコールバックを設定
 	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs

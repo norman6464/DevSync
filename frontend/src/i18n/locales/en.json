@@ -901,5 +901,16 @@
     "insight_weekly_growth_down": "Your study time decreased by {{rate}}% compared to last week. Every bit of learning counts.",
     "insight_streak_active": "You've been studying for {{days}} days in a row! Amazing consistency.",
     "insight_streak_record": "Your longest streak was {{longest}} days. Currently at {{current}} days. Aim to break your record!"
+  },
+  "recommendations": {
+    "recommendedUsers": "Recommended Users",
+    "trending": "Trending",
+    "trendingPosts": "Trending Posts",
+    "trendingResources": "Trending Resources",
+    "commonSkills": "Common Skills",
+    "noRecommendations": "No recommended users found",
+    "noTrending": "No trending content available",
+    "viewAll": "View All",
+    "follow": "Follow"
   }
 }

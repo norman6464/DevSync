@@ -901,5 +901,16 @@
     "insight_weekly_growth_down": "지난주 대비 학습 시간이 {{rate}}% 감소했습니다. 조금이라도 학습을 이어가는 것이 중요합니다.",
     "insight_streak_active": "현재 {{days}}일 연속 학습 중입니다! 훌륭한 지속력입니다.",
     "insight_streak_record": "최장 연속 기록은 {{longest}}일입니다. 현재 {{current}}일째. 기록 갱신을 목표로 하세요!"
+  },
+  "recommendations": {
+    "recommendedUsers": "추천 사용자",
+    "trending": "트렌드",
+    "trendingPosts": "인기 게시물",
+    "trendingResources": "인기 리소스",
+    "commonSkills": "공통 스킬",
+    "noRecommendations": "추천 사용자를 찾을 수 없습니다",
+    "noTrending": "트렌드 콘텐츠가 없습니다",
+    "viewAll": "전체 보기",
+    "follow": "팔로우"
   }
 }

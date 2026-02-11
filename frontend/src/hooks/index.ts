@@ -24,3 +24,4 @@ export { useMyLevel, useLevel, useLevelBreakdown } from './useLevel';
 export { useHeatmap, useCategoryBreakdown, useProductivityScore, useWeeklyTrends, useInsights } from './useAnalytics';
 export { useSettings } from './useSettings';
 export { useChat } from './useChat';
+export { useRecommendedUsers, useTrendingPosts, useTrendingResources } from './useRecommendations';
