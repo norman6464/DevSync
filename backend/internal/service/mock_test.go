@@ -1147,7 +1147,39 @@ func (m *MockLevelRepository) GetXPStats(userID uint) (*model.XPStats, error) {
 	return args.Get(0).(*model.XPStats), args.Error(1)
 }
 
+// ============================================================
+// MockLearningAnalyticsRepository は repository.LearningAnalyticsRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockLearningAnalyticsRepository struct {
+	mock.Mock
+}
+
+func (m *MockLearningAnalyticsRepository) GetHeatmapData(userID uint) ([]model.HeatmapEntry, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.HeatmapEntry), args.Error(1)
+}
+
+func (m *MockLearningAnalyticsRepository) GetCategoryBreakdown(userID uint) ([]model.CategoryBreakdown, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.CategoryBreakdown), args.Error(1)
+}
+
+func (m *MockLearningAnalyticsRepository) GetWeeklyTrends(userID uint, weeks int) ([]model.WeeklyTrend, error) {
+	args := m.Called(userID, weeks)
+	return args.Get(0).([]model.WeeklyTrend), args.Error(1)
+}
+
+func (m *MockLearningAnalyticsRepository) GetProductivityStats(userID uint) (*model.ProductivityStats, error) {
+	args := m.Called(userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.ProductivityStats), args.Error(1)
+}
+
 // インターフェース適合チェック
 var _ EmailSenderInterface = (*MockEmailSender)(nil)
 var _ repository.ActivityReportRepositoryInterface = (*MockActivityReportRepository)(nil)
 var _ repository.LevelRepositoryInterface = (*MockLevelRepository)(nil)
+var _ repository.LearningAnalyticsRepositoryInterface = (*MockLearningAnalyticsRepository)(nil)
