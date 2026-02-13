@@ -76,7 +76,7 @@ export function useChat() {
   }, [activeRoomId, setGroupMessages]);
 
   const followingWithoutConversation = followingUsers.filter(
-    (user) => !conversations.some((conv) => conv.user.id === user.id)
+    (user) => !conversations.some((conv) => conv.user && conv.user.id === user.id)
   );
 
   const selectedRoom = chatRooms.find((r) => r.id === activeRoomId);
