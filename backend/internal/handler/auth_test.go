@@ -215,9 +215,10 @@ func TestRegister_SetsCookie(t *testing.T) {
 	mockUserRepo.On("Create", mock.AnythingOfType("*model.User")).Return(nil)
 
 	body, _ := json.Marshal(map[string]string{
-		"name":     "New User",
-		"email":    "new@example.com",
-		"password": "password123",
+		"name":             "New User",
+		"email":            "new@example.com",
+		"password":         "password123",
+		"confirm_password": "password123",
 	})
 	req := httptest.NewRequest("POST", "/api/v1/auth/register", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")

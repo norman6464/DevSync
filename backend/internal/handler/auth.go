@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
@@ -43,49 +43,60 @@ func clearAuthCookie(c *gin.Context) {
 
 // Register はユーザー新規登録を処理する。
 func (h *AuthHandler) Register(c *gin.Context) {
-	var input service.RegisterInput
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	req := bindJSON[dto.RegisterRequest](c)
+	if req == nil {
 		return
+	}
+
+	// DTOをservice層の入力に変換
+	input := service.RegisterInput{
+		Name:     req.Name,
+		Email:    req.Email,
+		Password: req.Password,
 	}
 
 	resp, err := h.authService.Register(input)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
 
 	setAuthCookie(c, resp.Token)
-	c.JSON(http.StatusCreated, gin.H{"user": resp.User})
+	respondCreated(c, gin.H{"user": resp.User})
 }
 
 // Login はメール・パスワードによるログインを処理する。
 func (h *AuthHandler) Login(c *gin.Context) {
-	var input service.LoginInput
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	req := bindJSON[dto.LoginRequest](c)
+	if req == nil {
 		return
+	}
+
+	// DTOをservice層の入力に変換
+	input := service.LoginInput{
+		Email:    req.Email,
+		Password: req.Password,
 	}
 
 	resp, err := h.authService.Login(input)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
 
 	setAuthCookie(c, resp.Token)
-	c.JSON(http.StatusOK, gin.H{"user": resp.User})
+	respondOK(c, gin.H{"user": resp.User})
 }
 
 // GitHubLogin はGitHub OAuthログインのURLを生成して返す。
 func (h *AuthHandler) GitHubLogin(c *gin.Context) {
 	state, err := h.authService.GenerateLoginState()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate state"})
+		respondError(c, err)
 		return
 	}
 	url := h.githubService.GetLoginOAuthURL(state)
-	c.JSON(http.StatusOK, gin.H{"url": url})
+	respondOK(c, dto.URLResponse{URL: url})
 }
 
 // GitHubLoginCallback はGitHub OAuthコールバックを処理する。
@@ -96,30 +107,30 @@ func (h *AuthHandler) GitHubLoginCallback(c *gin.Context) {
 	state := c.Query("state")
 
 	if code == "" || state == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "missing code or state"})
+		respondError(c, service.ErrBadRequest)
 		return
 	}
 
 	if err := h.authService.ValidateLoginState(state); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid state"})
+		respondError(c, err)
 		return
 	}
 
 	accessToken, err := h.githubService.ExchangeCode(code)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to exchange code"})
+		respondError(c, err)
 		return
 	}
 
 	ghUser, err := h.githubService.GetGitHubUser(accessToken)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get github user"})
+		respondError(c, err)
 		return
 	}
 
 	resp, err := h.authService.GitHubLogin(ghUser, accessToken)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
 
@@ -127,7 +138,7 @@ func (h *AuthHandler) GitHubLoginCallback(c *gin.Context) {
 	go h.githubService.SyncUserData(resp.User.ID)
 
 	setAuthCookie(c, resp.Token)
-	c.JSON(http.StatusOK, gin.H{"user": resp.User})
+	respondOK(c, gin.H{"user": resp.User})
 }
 
 // Me は認証済みユーザーの情報を返す。
@@ -135,27 +146,24 @@ func (h *AuthHandler) Me(c *gin.Context) {
 	userID := c.GetUint("userID")
 	user, err := h.authService.GetMe(userID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	respondOK(c, user)
 }
 
 // RequestPasswordReset はパスワードリセットトークンを生成する。
 // 本番環境ではメール送信を行うべきだが、デモ用にトークンを直接返す。
 func (h *AuthHandler) RequestPasswordReset(c *gin.Context) {
-	var input struct {
-		Email string `json:"email" binding:"required,email"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	req := bindJSON[dto.PasswordResetRequest](c)
+	if req == nil {
 		return
 	}
 
-	token, err := h.authService.RequestPasswordReset(input.Email)
+	token, err := h.authService.RequestPasswordReset(req.Email)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate token"})
+		respondError(c, err)
 		return
 	}
 
@@ -163,36 +171,28 @@ func (h *AuthHandler) RequestPasswordReset(c *gin.Context) {
 	// 本番ではここでメール送信を行う
 	// token変数はメール送信時に使用する（レスポンスには含めない）
 	_ = token
-	c.JSON(http.StatusOK, gin.H{"message": "If the email exists, a reset link has been sent"})
+	respondOK(c, dto.MessageResponse{Message: "If the email exists, a reset link has been sent"})
 }
 
 // ResetPassword はトークンを使ってパスワードをリセットする。
 func (h *AuthHandler) ResetPassword(c *gin.Context) {
-	var input struct {
-		Token       string `json:"token" binding:"required"`
-		NewPassword string `json:"new_password" binding:"required,min=6"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	req := bindJSON[dto.ResetPasswordRequest](c)
+	if req == nil {
 		return
 	}
 
-	if err := h.authService.ResetPassword(input.Token, input.NewPassword); err != nil {
-		if errors.Is(err, service.ErrBadRequest) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid or expired token"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to reset password"})
+	if err := h.authService.ResetPassword(req.Token, req.NewPassword); err != nil {
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Password has been reset successfully"})
+	respondOK(c, dto.MessageResponse{Message: "Password has been reset successfully"})
 }
 
 // Logout はユーザーのログアウトを処理し、認証Cookieをクリアする。
 func (h *AuthHandler) Logout(c *gin.Context) {
 	clearAuthCookie(c)
-	c.JSON(http.StatusOK, gin.H{"message": "logged out successfully"})
+	respondOK(c, dto.MessageResponse{Message: "logged out successfully"})
 }
 
 // DeleteAccount はユーザーアカウントを完全に削除する。
@@ -200,30 +200,15 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 func (h *AuthHandler) DeleteAccount(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	var input struct {
-		Password string `json:"password"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	req := bindJSON[dto.DeleteAccountRequest](c)
+	if req == nil {
 		return
 	}
 
-	if err := h.authService.DeleteAccount(userID, input.Password); err != nil {
-		if errors.Is(err, service.ErrNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
-			return
-		}
-		if errors.Is(err, service.ErrBadRequest) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "password required"})
-			return
-		}
-		if errors.Is(err, service.ErrForbidden) {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "incorrect password"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete account"})
+	if err := h.authService.DeleteAccount(userID, req.Password); err != nil {
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Account deleted successfully"})
+	respondOK(c, dto.MessageResponse{Message: "Account deleted successfully"})
 }
