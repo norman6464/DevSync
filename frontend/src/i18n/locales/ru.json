@@ -377,6 +377,7 @@
     "filterMessage": "Сообщения",
     "filterAnswer": "Ответы Q&A",
     "filterBadge": "Значок",
+    "showUnreadOnly": "Показать только непрочитанные",
     "deleteNotification": "Удалить уведомление",
     "deleted": "Уведомление удалено",
     "levelUp": "Вы достигли уровня {{level}}!",

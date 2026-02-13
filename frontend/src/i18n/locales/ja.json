@@ -366,6 +366,7 @@
     "filterMessage": "メッセージ",
     "filterAnswer": "Q&A回答",
     "filterBadge": "バッジ",
+    "showUnreadOnly": "未読のみ表示",
     "deleteNotification": "通知を削除",
     "deleted": "通知を削除しました",
     "levelUp": "レベル {{level}} に到達しました！",

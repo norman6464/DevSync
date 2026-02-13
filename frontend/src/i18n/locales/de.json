@@ -377,6 +377,7 @@
     "filterMessage": "Nachrichten",
     "filterAnswer": "Q&A-Antworten",
     "filterBadge": "Abzeichen",
+    "showUnreadOnly": "Nur ungelesene anzeigen",
     "deleteNotification": "Benachrichtigung löschen",
     "deleted": "Benachrichtigung gelöscht",
     "levelUp": "Sie haben Stufe {{level}} erreicht!",

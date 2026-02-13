@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Bell, CheckCheck, Trash2 } from 'lucide-react';
+import { Bell, CheckCheck, Trash2, Filter } from 'lucide-react';
 import { useNotifications } from '../hooks';
 import type { Notification, NotificationType } from '../types/notification';
 import Avatar from '../components/common/Avatar';
@@ -52,12 +53,18 @@ function formatTime(dateString: string, t: (key: string, opts?: Record<string, u
 
 export default function NotificationsPage() {
   const { t } = useTranslation();
+  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   const {
     notifications, unreadCount, total, loading,
     page, setPage, limit,
     filterType, setFilterType,
     markAsRead, markAllAsRead, deleteNotification,
   } = useNotifications();
+
+  // Filter notifications by read status
+  const filteredNotifications = showUnreadOnly
+    ? notifications.filter((n) => !n.read)
+    : notifications;
 
   const getNotificationMessage = (notification: Notification) => {
     switch (notification.type) {
@@ -101,20 +108,35 @@ export default function NotificationsPage() {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex flex-wrap gap-2 mb-6">
-        {FILTER_TYPES.map(({ key, labelKey }) => (
-          <button
-            key={key}
-            onClick={() => setFilterType(key)}
-            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-              filterType === key
-                ? 'bg-gray-700 text-white'
-                : 'bg-gray-800 text-gray-400 hover:text-white'
-            }`}
-          >
-            {t(labelKey)}
-          </button>
-        ))}
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex flex-wrap gap-2">
+          {FILTER_TYPES.map(({ key, labelKey }) => (
+            <button
+              key={key}
+              onClick={() => setFilterType(key)}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                filterType === key
+                  ? 'bg-gray-700 text-white'
+                  : 'bg-gray-800 text-gray-400 hover:text-white'
+              }`}
+            >
+              {t(labelKey)}
+            </button>
+          ))}
+        </div>
+
+        {/* Unread Only Toggle */}
+        <button
+          onClick={() => setShowUnreadOnly(!showUnreadOnly)}
+          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors self-start ${
+            showUnreadOnly
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-800 text-gray-400 hover:text-white'
+          }`}
+        >
+          <Filter className="w-4 h-4" />
+          {t('notifications.showUnreadOnly')}
+        </button>
       </div>
 
       {/* Content */}
@@ -122,7 +144,7 @@ export default function NotificationsPage() {
         <div className="flex justify-center items-center min-h-[400px]">
           <LoadingSpinner />
         </div>
-      ) : notifications.length === 0 ? (
+      ) : filteredNotifications.length === 0 ? (
         <div className="text-center py-12">
           <div className="w-16 h-16 mx-auto mb-4 bg-gray-800 rounded-full flex items-center justify-center">
             <Bell className="w-8 h-8 text-gray-500" />
@@ -132,7 +154,7 @@ export default function NotificationsPage() {
       ) : (
         <>
           <div className="space-y-2">
-            {notifications.map((notification) => (
+            {filteredNotifications.map((notification) => (
               <div
                 key={notification.id}
                 className={`flex items-start gap-3 p-4 rounded-lg border transition-colors ${
