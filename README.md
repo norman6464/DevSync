@@ -292,7 +292,11 @@ cp frontend/.env.example frontend/.env
 #### 3. Docker Composeで起動
 
 ```bash
-docker-compose up -d
+# 初回起動 or コードを変更した場合は --build フラグを追加
+docker compose up -d --build
+
+# 2回目以降（コード変更がない場合）
+docker compose up -d
 ```
 
 #### 4. マイグレーション実行
@@ -307,6 +311,29 @@ make migrate-up
 - API: http://localhost:8080
 - Mailhog: http://localhost:8025（開発用メールUI）
 - Grafana: http://localhost:3000
+
+### トラブルシューティング
+
+#### フロントエンドがブラウザで表示されない場合
+
+1. **ブラウザのキャッシュをクリア**
+   - Chrome/Edge: Ctrl+Shift+Delete / Cmd+Shift+Delete
+   - ハードリロード: Ctrl+Shift+R / Cmd+Shift+R
+
+2. **Dockerコンテナを再起動**
+   ```bash
+   docker compose down
+   docker compose up -d --build
+   ```
+
+3. **フロントエンドのログを確認**
+   ```bash
+   docker compose logs frontend --tail=50
+   ```
+
+4. **Viteサーバーが正常に起動しているか確認**
+   - ログに `VITE v7.x.x  ready in XXX ms` と表示されていること
+   - `Network: http://172.x.x.x:5173/` のようなネットワークアドレスが表示されていること
 
 ### Kubernetesへのデプロイ
 
