@@ -19,7 +19,8 @@
     "and": "と",
     "add": "追加",
     "menu": "メニュー",
-    "scrollToTop": "ページ上部に戻る"
+    "scrollToTop": "ページ上部に戻る",
+    "dismiss": "閉じる"
   },
   "nav": {
     "dashboard": "ダッシュボード",
@@ -132,7 +133,12 @@
     "confirmPublish": "この下書きを公開しますか？",
     "confirmDelete": "この投稿を削除しますか？",
     "deleted": "削除しました",
-    "deleteFailed": "削除に失敗しました"
+    "deleteFailed": "削除に失敗しました",
+    "saving": "保存中...",
+    "savedJustNow": "たった今保存されました",
+    "savedMinutesAgo": "{{minutes}}分前に保存",
+    "restorePrompt": "保存された下書きがあります。復元しますか？",
+    "restore": "復元する"
   },
   "profile": {
     "followers": "フォロワー",
