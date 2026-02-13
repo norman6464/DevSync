@@ -680,6 +680,14 @@ API仕様はOpenAPI (Swagger)で管理しています。
 - [x] usePostSearch / useCircleSearch フック
 - [x] 全10言語のi18n対応
 
+### Phase 6.3（投稿の下書き・公開機能）✅
+- [x] Postモデルに`is_draft`フィールドを追加
+- [x] 下書き専用APIエンドポイント（`GET /api/v1/posts/drafts`, `PUT /api/v1/posts/:id/publish`）
+- [x] 下書き作成時は通知をスキップ、公開時にフォロワーへ通知
+- [x] 下書き一覧ページ（DraftsPage）の実装
+- [x] PostFormに「下書き保存」ボタンを追加
+- [x] 全10言語のi18n対応（下書き関連キー）
+
 ### Phase 4（将来）📋
 - [ ] モバイルアプリ
 - [ ] チーム機能
