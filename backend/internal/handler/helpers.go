@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
@@ -50,7 +51,15 @@ func bindJSON[T any](c *gin.Context) *T {
 }
 
 // respondError はサービス層のエラーを適切なHTTPステータスコードに変換してレスポンスを返す。
+// DomainError を優先し、従来の service.ErrXXX も引き続きサポートする。
 func respondError(c *gin.Context, err error) {
+	// DomainError の場合
+	if domainErr := domain.GetDomainError(err); domainErr != nil {
+		c.JSON(domainErr.HTTPStatus(), gin.H{"error": domainErr.Message, "code": domainErr.Code})
+		return
+	}
+
+	// 従来の service.ErrXXX との互換性を保つ
 	switch {
 	case errors.Is(err, service.ErrNotFound):
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
