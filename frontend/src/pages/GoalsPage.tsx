@@ -4,6 +4,7 @@ import { Monitor, Rocket, Target, FolderOpen, FileText, type LucideIcon } from '
 import { type GoalCategory, type GoalStatus, type LearningGoal } from '../api/goals';
 import { useGoals } from '../hooks';
 import { PageLoader } from '../components/common';
+import EmptyState from '../components/common/EmptyState';
 
 const CATEGORIES: { value: GoalCategory; label: string; icon: string; Icon: LucideIcon }[] = [
   { value: 'language', label: 'goals.categoryLanguage', icon: '💻', Icon: Monitor },
@@ -212,14 +213,13 @@ export default function GoalsPage() {
 
       {/* Goals List */}
       {goals.length === 0 ? (
-        <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center">
-          <p className="text-gray-400 text-sm mb-4">{t('goals.noGoals')}</p>
-          <button
-            onClick={() => setShowForm(true)}
-            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium text-sm transition-colors"
-          >
-            {t('goals.createFirst')}
-          </button>
+        <div className="bg-gray-900 border border-gray-800 rounded-md">
+          <EmptyState
+            icon={Target}
+            message={t('goals.noGoals')}
+            actionLabel={t('goals.createFirst')}
+            onAction={() => setShowForm(true)}
+          />
         </div>
       ) : (
         <div className="space-y-4">

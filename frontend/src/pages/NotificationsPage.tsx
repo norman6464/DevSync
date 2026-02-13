@@ -6,6 +6,7 @@ import { useNotifications } from '../hooks';
 import type { Notification, NotificationType } from '../types/notification';
 import Avatar from '../components/common/Avatar';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import EmptyState from '../components/common/EmptyState';
 
 const FILTER_TYPES: { key: NotificationType | ''; labelKey: string }[] = [
   { key: '', labelKey: 'notifications.filterAll' },
@@ -145,12 +146,10 @@ export default function NotificationsPage() {
           <LoadingSpinner />
         </div>
       ) : filteredNotifications.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gray-800 rounded-full flex items-center justify-center">
-            <Bell className="w-8 h-8 text-gray-500" />
-          </div>
-          <p className="text-gray-400">{t('notifications.empty')}</p>
-        </div>
+        <EmptyState
+          icon={Bell}
+          message={t('notifications.empty')}
+        />
       ) : (
         <>
           <div className="space-y-2">
