@@ -3,12 +3,14 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/service"
 	"github.com/stretchr/testify/assert"
 )
@@ -236,6 +238,75 @@ func TestRespondError_WrappedError(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusNotFound, w.Code)
+}
+
+func TestRespondError_DomainError(t *testing.T) {
+	tests := []struct {
+		name     string
+		err      *domain.DomainError
+		wantCode int
+		wantErrCode domain.ErrorCode
+	}{
+		{"NotFound", domain.ErrNotFound, http.StatusNotFound, domain.ErrCodeNotFound},
+		{"Forbidden", domain.ErrForbidden, http.StatusForbidden, domain.ErrCodeForbidden},
+		{"BadRequest", domain.ErrBadRequest, http.StatusBadRequest, domain.ErrCodeBadRequest},
+		{"Unauthorized", domain.ErrUnauthorized, http.StatusUnauthorized, domain.ErrCodeUnauthorized},
+		{"Conflict", domain.ErrConflict, http.StatusConflict, domain.ErrCodeConflict},
+		{"RateLimitExceeded", domain.ErrRateLimitExceeded, http.StatusTooManyRequests, domain.ErrCodeRateLimitExceeded},
+		{"ServiceUnavailable", domain.ErrServiceUnavailable, http.StatusServiceUnavailable, domain.ErrCodeServiceUnavailable},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+			r.GET("/test", func(c *gin.Context) {
+				respondError(c, tt.err)
+			})
+			req := httptest.NewRequest("GET", "/test", nil)
+			r.ServeHTTP(w, req)
+
+			assert.Equal(t, tt.wantCode, w.Code)
+			var resp map[string]interface{}
+			json.Unmarshal(w.Body.Bytes(), &resp)
+			assert.Contains(t, resp, "error")
+			assert.Contains(t, resp, "code")
+			assert.Equal(t, string(tt.wantErrCode), resp["code"])
+		})
+	}
+}
+
+func TestRespondError_CustomDomainError(t *testing.T) {
+	customErr := domain.NewError(domain.ErrCodeValidation, "カスタムバリデーションエラー", errors.New("field is invalid"))
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.GET("/test", func(c *gin.Context) {
+		respondError(c, customErr)
+	})
+	req := httptest.NewRequest("GET", "/test", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	var resp map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.Equal(t, "カスタムバリデーションエラー", resp["error"])
+	assert.Equal(t, string(domain.ErrCodeValidation), resp["code"])
+}
+
+func TestRespondError_NonDomainError(t *testing.T) {
+	stdErr := errors.New("標準エラー")
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.GET("/test", func(c *gin.Context) {
+		respondError(c, stdErr)
+	})
+	req := httptest.NewRequest("GET", "/test", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	var resp map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.Contains(t, resp, "error")
 }
 
 // --- respondOK / respondCreated / respondDeleted ---

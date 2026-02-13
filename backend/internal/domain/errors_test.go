@@ -48,6 +48,9 @@ func TestDomainError_HTTPStatus(t *testing.T) {
 		{"Bad Request", ErrCodeBadRequest, http.StatusBadRequest},
 		{"Database", ErrCodeDatabase, http.StatusInternalServerError},
 		{"Internal", ErrCodeInternal, http.StatusInternalServerError},
+		{"Rate Limit Exceeded", ErrCodeRateLimitExceeded, http.StatusTooManyRequests},
+		{"Service Unavailable", ErrCodeServiceUnavailable, http.StatusServiceUnavailable},
+		{"Unknown Code", ErrorCode("UNKNOWN"), http.StatusInternalServerError},
 	}
 
 	for _, tt := range tests {
@@ -130,12 +133,19 @@ func TestPredefinedErrors(t *testing.T) {
 		{"NotFound", ErrNotFound, ErrCodeNotFound, http.StatusNotFound},
 		{"BadRequest", ErrBadRequest, ErrCodeBadRequest, http.StatusBadRequest},
 		{"Internal", ErrInternal, ErrCodeInternal, http.StatusInternalServerError},
+		{"AlreadyExists", ErrAlreadyExists, ErrCodeAlreadyExists, http.StatusConflict},
+		{"Conflict", ErrConflict, ErrCodeConflict, http.StatusConflict},
+		{"Validation", ErrValidation, ErrCodeValidation, http.StatusBadRequest},
+		{"Database", ErrDatabase, ErrCodeDatabase, http.StatusInternalServerError},
+		{"RateLimitExceeded", ErrRateLimitExceeded, ErrCodeRateLimitExceeded, http.StatusTooManyRequests},
+		{"ServiceUnavailable", ErrServiceUnavailable, ErrCodeServiceUnavailable, http.StatusServiceUnavailable},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t, tt.code, tt.err.Code)
 			assert.Equal(t, tt.httpCode, tt.err.HTTPStatus())
+			assert.NotEmpty(t, tt.err.Message, "エラーメッセージが空であってはならない")
 		})
 	}
 }
