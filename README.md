@@ -688,6 +688,14 @@ API仕様はOpenAPI (Swagger)で管理しています。
 - [x] PostFormに「下書き保存」ボタンを追加
 - [x] 全10言語のi18n対応（下書き関連キー）
 
+### Phase 7.1（エラーハンドリングの統一）✅
+- [x] DomainError型の導入（Code, Message, Err）
+- [x] ErrorCode定数の定義（UNAUTHORIZED, FORBIDDEN, NOT_FOUND など）
+- [x] HTTPStatus()メソッドで自動マッピング
+- [x] 事前定義エラー（ErrUnauthorized, ErrForbidden など）
+- [x] respondError関数のDomainError対応
+- [x] 包括的なテストスイート（全てパス）
+
 ### Phase 4（将来）📋
 - [ ] モバイルアプリ
 - [ ] チーム機能
