@@ -377,6 +377,7 @@
     "filterMessage": "消息",
     "filterAnswer": "Q&A回答",
     "filterBadge": "徽章",
+    "showUnreadOnly": "仅显示未读",
     "deleteNotification": "删除通知",
     "deleted": "通知已删除",
     "levelUp": "已达到等级 {{level}}！",

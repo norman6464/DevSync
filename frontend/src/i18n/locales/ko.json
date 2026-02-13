@@ -377,6 +377,7 @@
     "filterMessage": "메시지",
     "filterAnswer": "Q&A 답변",
     "filterBadge": "배지",
+    "showUnreadOnly": "읽지 않은 항목만 표시",
     "deleteNotification": "알림 삭제",
     "deleted": "알림이 삭제되었습니다",
     "levelUp": "레벨 {{level}}에 도달했습니다!",

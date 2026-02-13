@@ -377,6 +377,7 @@
     "filterMessage": "Messages",
     "filterAnswer": "Réponses Q&R",
     "filterBadge": "Badge",
+    "showUnreadOnly": "Afficher uniquement non lus",
     "deleteNotification": "Supprimer la notification",
     "deleted": "Notification supprimée",
     "levelUp": "Vous avez atteint le Niveau {{level}} !",
