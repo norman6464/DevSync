@@ -507,6 +507,7 @@
     "durationPlaceholder": "分钟",
     "calendar": "日历",
     "list": "列表",
+    "filterAll": "全部",
     "noLogs": "还没有日志",
     "noLogsOnDate": "这一天没有日志",
     "created": "日志已创建",

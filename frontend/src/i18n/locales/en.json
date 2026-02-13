@@ -507,6 +507,7 @@
     "durationPlaceholder": "minutes",
     "calendar": "Calendar",
     "list": "List",
+    "filterAll": "All",
     "noLogs": "No logs yet",
     "noLogsOnDate": "No logs on this date",
     "created": "Log created",

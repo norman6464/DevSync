@@ -507,6 +507,7 @@
     "durationPlaceholder": "minutos",
     "calendar": "Calendario",
     "list": "Lista",
+    "filterAll": "Todos",
     "noLogs": "Aún no hay registros",
     "noLogsOnDate": "No hay registros en esta fecha",
     "created": "Registro creado",

@@ -507,6 +507,7 @@
     "durationPlaceholder": "минуты",
     "calendar": "Календарь",
     "list": "Список",
+    "filterAll": "Все",
     "noLogs": "Записей пока нет",
     "noLogsOnDate": "Нет записей за эту дату",
     "created": "Запись создана",

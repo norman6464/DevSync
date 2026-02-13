@@ -28,6 +28,7 @@ export default function LearningLogsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingLog, setEditingLog] = useState<LearningLog | null>(null);
   const [filterDate, setFilterDate] = useState<string | null>(null);
+  const [filterCategory, setFilterCategory] = useState<'all' | LogCategory>('all');
 
   // Form state
   const [title, setTitle] = useState('');
@@ -97,9 +98,17 @@ export default function LearningLogsPage() {
     }
   };
 
-  const filteredLogs = filterDate
-    ? logs.filter((l) => l.created_at.split('T')[0] === filterDate)
-    : logs;
+  const filteredLogs = logs.filter((log) => {
+    // 日付フィルター
+    if (filterDate && log.created_at.split('T')[0] !== filterDate) {
+      return false;
+    }
+    // カテゴリーフィルター
+    if (filterCategory !== 'all' && log.category !== filterCategory) {
+      return false;
+    }
+    return true;
+  });
 
   if (loading) return <div className="py-12"><LoadingSpinner /></div>;
 
@@ -153,6 +162,37 @@ export default function LearningLogsPage() {
             </button>
           </div>
         )}
+      </div>
+
+      {/* Category Filter */}
+      <div className="flex flex-col gap-2">
+        <span className="text-sm text-gray-400">{t('learningLogs.category')}</span>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setFilterCategory('all')}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              filterCategory === 'all'
+                ? 'bg-purple-500/20 text-purple-400'
+                : 'bg-gray-800/50 text-gray-400 hover:text-white'
+            }`}
+          >
+            {t('learningLogs.filterAll')}
+          </button>
+          {CATEGORIES.map(({ value, label, Icon }) => (
+            <button
+              key={value}
+              onClick={() => setFilterCategory(value)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                filterCategory === value
+                  ? 'bg-purple-500/20 text-purple-400'
+                  : 'bg-gray-800/50 text-gray-400 hover:text-white'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {t(label)}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Calendar View */}

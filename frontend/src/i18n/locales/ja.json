@@ -486,6 +486,7 @@
     "durationPlaceholder": "分",
     "calendar": "カレンダー",
     "list": "リスト",
+    "filterAll": "全て表示",
     "noLogs": "まだログがありません",
     "noLogsOnDate": "この日のログはありません",
     "created": "ログを作成しました",
