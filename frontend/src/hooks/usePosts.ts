@@ -18,9 +18,10 @@ export function usePosts() {
     title: string,
     content: string,
     imageUrls?: string,
-    codeSnippets?: { language: string; file_name?: string; code: string }[]
+    codeSnippets?: { language: string; file_name?: string; code: string }[],
+    isDraft?: boolean
   ) => {
-    await createPost({ title, content, image_urls: imageUrls, code_snippets: codeSnippets });
+    await createPost({ title, content, image_urls: imageUrls, code_snippets: codeSnippets, is_draft: isDraft });
     refetch();
   }, [refetch]);
 

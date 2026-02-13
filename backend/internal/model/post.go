@@ -10,6 +10,7 @@ type Post struct {
 	Title        string    `json:"title" gorm:"not null"`
 	Content      string    `json:"content" gorm:"type:text;not null"`
 	ImageURLs    string    `json:"image_urls" gorm:"type:text"` // カンマ区切りの画像URL
+	IsDraft      bool      `json:"is_draft" gorm:"default:false;index"` // 下書きフラグ
 	LikeCount    int       `json:"like_count" gorm:"default:0"`
 	CommentCount int            `json:"comment_count" gorm:"default:0"`
 	CodeSnippets []CodeSnippet  `json:"code_snippets,omitempty" gorm:"foreignKey:PostID"`

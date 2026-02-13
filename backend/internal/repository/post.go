@@ -27,28 +27,32 @@ func (r *PostRepository) FindByID(id uint) (*model.Post, error) {
 	return &post, err
 }
 
-// FindAll はページネーション付きで全投稿を取得する（新しい順）。
+// FindAll はページネーション付きで全投稿を取得する（新しい順）。下書きは除外。
 func (r *PostRepository) FindAll(page, limit int) ([]model.Post, error) {
 	var posts []model.Post
 	offset := (page - 1) * limit
-	err := r.db.Preload("User").Preload("CodeSnippets").Order("created_at DESC").Offset(offset).Limit(limit).Find(&posts).Error
+	err := r.db.Preload("User").Preload("CodeSnippets").
+		Where("is_draft = ?", false).
+		Order("created_at DESC").Offset(offset).Limit(limit).Find(&posts).Error
 	return posts, err
 }
 
-// FindByUserID は指定ユーザーの全投稿を取得する（新しい順）。
+// FindByUserID は指定ユーザーの全投稿を取得する（新しい順）。下書きは除外。
 func (r *PostRepository) FindByUserID(userID uint) ([]model.Post, error) {
 	var posts []model.Post
-	err := r.db.Preload("User").Preload("CodeSnippets").Where("user_id = ?", userID).Order("created_at DESC").Find(&posts).Error
+	err := r.db.Preload("User").Preload("CodeSnippets").
+		Where("user_id = ? AND is_draft = ?", userID, false).
+		Order("created_at DESC").Find(&posts).Error
 	return posts, err
 }
 
-// Timeline はフォロー中ユーザーと自分の投稿をタイムライン形式で取得する。
+// Timeline はフォロー中ユーザーと自分の投稿をタイムライン形式で取得する。下書きは除外。
 // サブクエリでフォロー中のユーザーIDを取得し、自分のIDと合わせてフィルタする。
 func (r *PostRepository) Timeline(userID uint, page, limit int) ([]model.Post, error) {
 	var posts []model.Post
 	offset := (page - 1) * limit
 	err := r.db.Preload("User").Preload("CodeSnippets").
-		Where("user_id IN (SELECT followee_id FROM follows WHERE follower_id = ?) OR user_id = ?", userID, userID).
+		Where("(user_id IN (SELECT followee_id FROM follows WHERE follower_id = ?) OR user_id = ?) AND is_draft = ?", userID, userID, false).
 		Order("created_at DESC").
 		Offset(offset).Limit(limit).
 		Find(&posts).Error
@@ -120,14 +124,14 @@ func (r *PostRepository) DeleteComment(id, userID uint) error {
 	return r.db.Delete(&comment).Error
 }
 
-// Search はキーワードで投稿を検索する（タイトルまたは本文に部分一致）。
+// Search はキーワードで投稿を検索する（タイトルまたは本文に部分一致）。下書きは除外。
 func (r *PostRepository) Search(query string, limit, offset int) (interface{}, int64, error) {
 	var posts []model.Post
 	var total int64
 
 	searchPattern := "%" + query + "%"
 	db := r.db.Preload("User").Preload("CodeSnippets").
-		Where("title LIKE ? OR content LIKE ?", searchPattern, searchPattern).
+		Where("(title LIKE ? OR content LIKE ?) AND is_draft = ?", searchPattern, searchPattern, false).
 		Order("created_at DESC")
 
 	if err := db.Count(&total).Error; err != nil {
@@ -136,4 +140,13 @@ func (r *PostRepository) Search(query string, limit, offset int) (interface{}, i
 
 	err := db.Offset(offset).Limit(limit).Find(&posts).Error
 	return posts, total, err
+}
+
+// FindDraftsByUserID は指定ユーザーの下書き一覧を取得する（新しい順）。
+func (r *PostRepository) FindDraftsByUserID(userID uint) ([]model.Post, error) {
+	var posts []model.Post
+	err := r.db.Preload("User").Preload("CodeSnippets").
+		Where("user_id = ? AND is_draft = ?", userID, true).
+		Order("updated_at DESC").Find(&posts).Error
+	return posts, err
 }

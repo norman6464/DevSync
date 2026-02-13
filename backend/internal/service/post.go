@@ -17,14 +17,16 @@ func NewPostService(repo repository.PostRepositoryInterface, notificationService
 	return &PostService{repo: repo, notificationService: notificationService}
 }
 
-// Create は新しい投稿を作成し、フォロワーに非同期で通知する。
+// Create は新しい投稿を作成し、下書きでない場合はフォロワーに非同期で通知する。
 func (s *PostService) Create(post *model.Post) (*model.Post, error) {
 	if err := s.repo.Create(post); err != nil {
 		return nil, err
 	}
 
-	// フォロワーへ非同期で通知
-	go s.notificationService.NotifyFollowers(post.UserID, post.ID, model.NotificationTypePost)
+	// 下書きでない場合のみフォロワーへ非同期で通知
+	if !post.IsDraft {
+		go s.notificationService.NotifyFollowers(post.UserID, post.ID, model.NotificationTypePost)
+	}
 
 	// アソシエーション付きで再取得
 	created, err := s.repo.FindByID(post.ID)
@@ -47,6 +49,11 @@ func (s *PostService) GetAll(page, limit int) ([]model.Post, error) {
 // GetByUserID は指定ユーザーの全投稿を取得する。
 func (s *PostService) GetByUserID(userID uint) ([]model.Post, error) {
 	return s.repo.FindByUserID(userID)
+}
+
+// GetDrafts は指定ユーザーの下書き投稿を取得する。
+func (s *PostService) GetDrafts(userID uint) ([]model.Post, error) {
+	return s.repo.FindDraftsByUserID(userID)
 }
 
 // Timeline は指定ユーザーのタイムライン（フォロー中ユーザーの投稿）を取得する。
@@ -117,4 +124,28 @@ func (s *PostService) GetComments(postID uint) ([]model.Comment, error) {
 // DeleteComment はコメントを削除する。
 func (s *PostService) DeleteComment(id, userID uint) error {
 	return s.repo.DeleteComment(id, userID)
+}
+
+// Publish は下書き投稿を公開し、フォロワーに通知する。
+func (s *PostService) Publish(id, userID uint) (*model.Post, error) {
+	post, err := s.repo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+	if post.UserID != userID {
+		return nil, ErrForbidden
+	}
+	if !post.IsDraft {
+		return nil, ErrBadRequest
+	}
+
+	post.IsDraft = false
+	if err := s.repo.Update(post); err != nil {
+		return nil, err
+	}
+
+	// 公開時にフォロワーへ非同期で通知
+	go s.notificationService.NotifyFollowers(post.UserID, post.ID, model.NotificationTypePost)
+
+	return post, nil
 }

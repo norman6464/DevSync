@@ -10,7 +10,8 @@ interface PostFormProps {
     title: string,
     content: string,
     imageUrls?: string,
-    codeSnippets?: { language: string; file_name?: string; code: string }[]
+    codeSnippets?: { language: string; file_name?: string; code: string }[],
+    isDraft?: boolean
   ) => Promise<void>;
 }
 
@@ -37,7 +38,7 @@ export default function PostForm({ onSubmit }: PostFormProps) {
     setSnippets(snippets.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, isDraft = false) => {
     e.preventDefault();
     if (!title.trim() || !content.trim()) return;
     setLoading(true);
@@ -50,15 +51,15 @@ export default function PostForm({ onSubmit }: PostFormProps) {
           file_name: s.file_name || undefined,
           code: s.code,
         }));
-      await onSubmit(title, content, imageUrlsJson, validSnippets.length > 0 ? validSnippets : undefined);
+      await onSubmit(title, content, imageUrlsJson, validSnippets.length > 0 ? validSnippets : undefined, isDraft);
       setTitle('');
       setContent('');
       setImageUrls([]);
       setSnippets([]);
       setExpanded(false);
-      toast.success(t('post.postCreated'));
+      toast.success(isDraft ? t('post.draftSaved') : t('post.postCreated'));
     } catch {
-      toast.error(t('post.postFailed'));
+      toast.error(isDraft ? t('post.draftFailed') : t('post.postFailed'));
     } finally {
       setLoading(false);
     }
@@ -128,6 +129,14 @@ export default function PostForm({ onSubmit }: PostFormProps) {
                 className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors rounded-lg"
               >
                 {t('common.cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={(e) => handleSubmit(e, true)}
+                disabled={loading || !title.trim() || !content.trim()}
+                className="px-4 py-2 text-sm text-gray-400 hover:text-white disabled:opacity-40 transition-colors rounded-lg border border-gray-700 hover:border-gray-600"
+              >
+                {t('post.saveDraft')}
               </button>
               <button
                 type="submit"

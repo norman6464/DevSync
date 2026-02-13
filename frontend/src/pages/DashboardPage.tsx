@@ -47,9 +47,10 @@ export default function DashboardPage() {
     title: string,
     content: string,
     imageUrls?: string,
-    codeSnippets?: { language: string; file_name?: string; code: string }[]
+    codeSnippets?: { language: string; file_name?: string; code: string }[],
+    isDraft?: boolean
   ) => {
-    await createPost(title, content, imageUrls, codeSnippets);
+    await createPost(title, content, imageUrls, codeSnippets, isDraft);
   };
 
   const getNotificationText = (notification: { type: string; actor: { name: string } }) => {

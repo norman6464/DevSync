@@ -17,6 +17,7 @@ export const createPost = (data: {
   title: string;
   content: string;
   image_urls?: string;
+  is_draft?: boolean;
   code_snippets?: { language: string; file_name?: string; code: string }[];
 }) => client.post<Post>('/posts', data);
 
@@ -61,3 +62,9 @@ export const deleteComment = (id: number) =>
 
 export const searchPosts = (query: string, limit = 20, offset = 0) =>
   client.get<Post[]>('/search/posts', { params: { q: query, limit, offset } });
+
+export const getDrafts = () =>
+  client.get<Post[]>('/posts/drafts');
+
+export const publishPost = (id: number) =>
+  client.put<Post>(`/posts/${id}/publish`);

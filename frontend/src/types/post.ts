@@ -7,6 +7,7 @@ export interface Post {
   title: string;
   content: string;
   image_urls: string;
+  is_draft: boolean;
   like_count: number;
   comment_count: number;
   code_snippets?: CodeSnippet[];
