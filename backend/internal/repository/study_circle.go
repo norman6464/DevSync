@@ -267,3 +267,21 @@ func calculateCheckinStreak(dates []string) int {
 
 	return streak
 }
+
+// Search はキーワードでスタディサークルを検索する（名前、トピック、説明に部分一致）。
+func (r *StudyCircleRepository) Search(query string, limit, offset int) (interface{}, int64, error) {
+	var circles []model.StudyCircle
+	var total int64
+
+	searchPattern := "%" + query + "%"
+	db := r.db.Preload("Owner").Preload("Members").Preload("Members.User").
+		Where("name LIKE ? OR topic LIKE ? OR description LIKE ?", searchPattern, searchPattern, searchPattern).
+		Order("created_at DESC")
+
+	if err := db.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	err := db.Offset(offset).Limit(limit).Find(&circles).Error
+	return circles, total, err
+}

@@ -228,6 +228,19 @@
     "viewProfile": "查看资料",
     "startChat": "开始聊天"
   },
+  "search": {
+    "title": "搜索",
+    "description": "搜索用户、帖子和学习圈",
+    "placeholder": "输入关键词...",
+    "emptyInitial": "请输入搜索关键词",
+    "noResults": "未找到结果",
+    "tabs": {
+      "users": "用户",
+      "posts": "帖子",
+      "circles": "圈子"
+    },
+    "viewProfile": "查看资料"
+  },
   "chat": {
     "title": "消息",
     "timeline": "时间线",

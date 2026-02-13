@@ -228,6 +228,19 @@
     "viewProfile": "Ver perfil",
     "startChat": "Chat"
   },
+  "search": {
+    "title": "Búsqueda",
+    "description": "Busca usuarios, publicaciones y círculos de estudio",
+    "placeholder": "Ingresa palabras clave...",
+    "emptyInitial": "Ingresa palabras clave de búsqueda",
+    "noResults": "No se encontraron resultados",
+    "tabs": {
+      "users": "Usuarios",
+      "posts": "Publicaciones",
+      "circles": "Círculos"
+    },
+    "viewProfile": "Ver perfil"
+  },
   "chat": {
     "title": "Mensajes",
     "timeline": "Línea de tiempo",

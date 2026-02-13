@@ -228,6 +228,19 @@
     "viewProfile": "查看資料",
     "startChat": "開始聊天"
   },
+  "search": {
+    "title": "搜尋",
+    "description": "搜尋使用者、貼文和學習圈",
+    "placeholder": "輸入關鍵詞...",
+    "emptyInitial": "請輸入搜尋關鍵詞",
+    "noResults": "未找到結果",
+    "tabs": {
+      "users": "使用者",
+      "posts": "貼文",
+      "circles": "圈子"
+    },
+    "viewProfile": "查看資料"
+  },
   "chat": {
     "title": "訊息",
     "timeline": "時間線",

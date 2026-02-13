@@ -82,6 +82,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerAnalyticsRoutes(protected, c)
 		registerRecommendationRoutes(protected, c)
 		registerStudyCircleRoutes(protected, c)
+		registerSearchRoutes(protected, c)
 	}
 
 	return r
@@ -417,5 +418,13 @@ func registerRecommendationRoutes(g *gin.RouterGroup, c *di.Container) {
 		recommendations.GET("/users", c.RecommendationHandler.GetRecommendedUsers)
 		recommendations.GET("/posts", c.RecommendationHandler.GetTrendingPosts)
 		recommendations.GET("/resources", c.RecommendationHandler.GetTrendingResources)
+	}
+}
+
+func registerSearchRoutes(g *gin.RouterGroup, c *di.Container) {
+	search := g.Group("/search")
+	{
+		search.GET("/posts", c.SearchHandler.SearchPosts)
+		search.GET("/circles", c.SearchHandler.SearchCircles)
 	}
 }

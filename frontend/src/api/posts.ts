@@ -58,3 +58,6 @@ export const createComment = (postId: number, content: string) =>
 
 export const deleteComment = (id: number) =>
   client.delete(`/comments/${id}`);
+
+export const searchPosts = (query: string, limit = 20, offset = 0) =>
+  client.get<Post[]>('/search/posts', { params: { q: query, limit, offset } });
