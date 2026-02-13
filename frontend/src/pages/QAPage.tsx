@@ -5,7 +5,7 @@ import type { Question } from '../types/qa';
 import { useQuestions } from '../hooks';
 import QuestionCard from '../components/qa/QuestionCard';
 import QuestionForm from '../components/qa/QuestionForm';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { QuestionCardSkeleton } from '../components/common/Skeleton';
 
 export default function QAPage() {
   const { t } = useTranslation();
@@ -105,8 +105,10 @@ export default function QAPage() {
 
       {/* Content */}
       {loading ? (
-        <div className="flex justify-center items-center min-h-[400px]">
-          <LoadingSpinner />
+        <div className="space-y-4">
+          <QuestionCardSkeleton />
+          <QuestionCardSkeleton />
+          <QuestionCardSkeleton />
         </div>
       ) : questions.length === 0 ? (
         <div className="text-center py-12">
