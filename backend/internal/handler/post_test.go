@@ -160,6 +160,26 @@ func TestPostUpdate_NotFound(t *testing.T) {
 	assertStatus(t, w, http.StatusNotFound)
 }
 
+func TestPostUpdate_WithImageUrls(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.PUT("/posts/:id", h.Update)
+
+	post := &model.Post{Title: "Old", Content: "Old", ImageURLs: ""}
+	post.ID = 10
+	post.UserID = 1
+	postRepo.On("FindByID", uint(10)).Return(post, nil)
+	postRepo.On("Update", mock.AnythingOfType("*model.Post")).Return(nil)
+
+	imageUrls := `["https://example.com/image1.jpg"]`
+	w := doRequest(r, http.MethodPut, "/posts/10", map[string]interface{}{
+		"title":      "Updated",
+		"content":    "Updated content",
+		"image_urls": imageUrls,
+	})
+	assertStatus(t, w, http.StatusOK)
+}
+
 // ---------- Delete ----------
 
 func TestPostDelete_Success(t *testing.T) {

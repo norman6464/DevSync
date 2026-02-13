@@ -62,7 +62,7 @@ func (s *PostService) Timeline(userID uint, page, limit int) ([]model.Post, erro
 }
 
 // Update は所有権を検証した後、投稿を更新する。
-func (s *PostService) Update(id, userID uint, title, content string) (*model.Post, error) {
+func (s *PostService) Update(id, userID uint, title, content, imageUrls string) (*model.Post, error) {
 	post, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err
@@ -76,6 +76,9 @@ func (s *PostService) Update(id, userID uint, title, content string) (*model.Pos
 	}
 	if content != "" {
 		post.Content = content
+	}
+	if imageUrls != "" {
+		post.ImageURLs = imageUrls
 	}
 
 	if err := s.repo.Update(post); err != nil {
