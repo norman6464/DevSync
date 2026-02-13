@@ -672,6 +672,14 @@ API仕様はOpenAPI (Swagger)で管理しています。
 - [x] 一貫性のあるスペーシング（space-y-6）
 - [x] 全10言語のi18n対応
 
+### Phase 6.1（統合検索機能）✅
+- [x] タブ切り替えUI（ユーザー/投稿/スタディサークル）
+- [x] 検索APIエンドポイント（`/api/v1/search/posts`, `/api/v1/search/circles`）
+- [x] リポジトリ層の部分一致検索（タイトル・本文・名前・トピック・説明）
+- [x] SearchBar / SearchTabs コンポーネント
+- [x] usePostSearch / useCircleSearch フック
+- [x] 全10言語のi18n対応
+
 ### Phase 4（将来）📋
 - [ ] モバイルアプリ
 - [ ] チーム機能
