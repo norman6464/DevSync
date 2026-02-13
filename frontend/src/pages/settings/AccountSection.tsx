@@ -26,7 +26,7 @@ export default function AccountSection(props: Props) {
   return (
     <>
       {/* Email Notifications */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+      <div className="bg-gray-900 border border-gray-800 rounded-md overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-800">
           <h2 className="text-base font-semibold">{t('settings.emailNotifications')}</h2>
         </div>
@@ -90,7 +90,7 @@ export default function AccountSection(props: Props) {
       </div>
 
       {/* Danger Zone */}
-      <div className="bg-gray-900 border border-red-500/30 rounded-xl overflow-hidden">
+      <div className="bg-gray-900 border border-red-500/30 rounded-md overflow-hidden">
         <div className="px-6 py-4 border-b border-red-500/30 bg-red-500/5">
           <h2 className="text-base font-semibold text-red-400">{t('accountManagement.dangerZone')}</h2>
         </div>
@@ -110,7 +110,7 @@ export default function AccountSection(props: Props) {
       {/* Delete Confirmation Modal */}
       {props.showDeleteModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
-          <div className="bg-gray-900 border border-gray-700 rounded-xl max-w-md w-full p-6">
+          <div className="bg-gray-900 border border-gray-700 rounded-md max-w-md w-full p-6">
             <h3 className="text-lg font-semibold text-white mb-2">
               {t('accountManagement.confirmDelete')}
             </h3>

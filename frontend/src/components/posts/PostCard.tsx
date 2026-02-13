@@ -50,7 +50,7 @@ export default function PostCard({ post, onUpdate }: PostCardProps) {
   }
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-gray-700 transition-colors">
+    <div className="bg-gray-900 border border-gray-800 rounded-md p-5 hover:border-gray-700 transition-colors">
       <div className="flex items-center gap-3 mb-3">
         <Link to={`/profile/${post.user_id}`}>
           <Avatar name={post.user?.name || 'U'} avatarUrl={post.user?.avatar_url} size="sm" />

@@ -60,11 +60,11 @@ export default function FollowListPage() {
       {loading ? (
         <div className="py-12"><LoadingSpinner /></div>
       ) : users.length === 0 ? (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-12 text-center text-gray-500 text-sm">
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center text-gray-500 text-sm">
           {tab === 'followers' ? 'No followers yet' : 'Not following anyone yet'}
         </div>
       ) : (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden divide-y divide-gray-800/50">
+        <div className="bg-gray-900 border border-gray-800 rounded-md overflow-hidden divide-y divide-gray-800/50">
           {users.map((user) => (
             <div key={user.id} className="flex items-center gap-4 px-5 py-4 hover:bg-gray-800/40 transition-colors">
               <Link to={`/profile/${user.id}`} className="flex-shrink-0">

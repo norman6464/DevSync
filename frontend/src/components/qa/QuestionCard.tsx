@@ -18,7 +18,7 @@ export default function QuestionCard({ question, isOwner = false, onEdit, onDele
   })() : [];
 
   return (
-    <div className="bg-gray-800 rounded-xl p-5 border border-gray-700 hover:border-gray-600 transition-colors">
+    <div className="bg-gray-800 rounded-md p-5 border border-gray-700 hover:border-gray-600 transition-colors">
       <div className="flex gap-4">
         {/* Vote & Answer counts */}
         <div className="flex flex-col items-center gap-2 text-center min-w-[60px]">

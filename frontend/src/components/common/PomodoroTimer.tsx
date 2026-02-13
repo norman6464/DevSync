@@ -14,23 +14,13 @@ const CATEGORIES: { value: LogCategory; labelKey: string }[] = [
   { value: 'other', labelKey: 'learningLogs.categoryOther' },
 ];
 
-/** フェーズに応じた色 */
+/** Business UI: Unified colors */
 function getPhaseColor(phase: PomodoroPhase): string {
-  switch (phase) {
-    case 'focus': return 'text-red-400';
-    case 'shortBreak': return 'text-green-400';
-    case 'longBreak': return 'text-blue-400';
-    default: return 'text-gray-400';
-  }
+  return phase === 'idle' ? 'text-gray-400' : 'text-blue-600';
 }
 
 function getPhaseRingColor(phase: PomodoroPhase): string {
-  switch (phase) {
-    case 'focus': return 'stroke-red-400';
-    case 'shortBreak': return 'stroke-green-400';
-    case 'longBreak': return 'stroke-blue-400';
-    default: return 'stroke-gray-600';
-  }
+  return phase === 'idle' ? 'stroke-gray-600' : 'stroke-blue-600';
 }
 
 /** mm:ss フォーマット */
@@ -95,9 +85,9 @@ export default function PomodoroTimer() {
     return (
       <button
         onClick={() => setExpanded(true)}
-        className={`fixed bottom-20 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full shadow-lg border transition-all duration-200 hover:scale-105 ${
+        className={`fixed bottom-20 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full shadow-sm border transition-colors ${
           isRunning
-            ? 'bg-gray-800/95 border-red-500/50 animate-pulse'
+            ? 'bg-gray-800/95 border-blue-600/50 animate-pulse'
             : 'bg-gray-800/90 border-gray-700 hover:border-gray-600'
         }`}
       >
@@ -111,7 +101,7 @@ export default function PomodoroTimer() {
   }
 
   return (
-    <div className="fixed bottom-20 right-6 z-50 w-72 bg-gray-800/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700 overflow-hidden">
+    <div className="fixed bottom-20 right-6 z-50 w-72 bg-gray-800/95 backdrop-blur-sm rounded-md shadow-sm border border-gray-700 overflow-hidden">
       {/* ヘッダー */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700/50">
         <div className="flex items-center gap-2">

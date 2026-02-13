@@ -17,7 +17,7 @@ export default function StreakDisplay({ streakInfo }: StreakDisplayProps) {
   if (total_days === 0) return null;
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+    <div className="bg-gray-900 border border-gray-800 rounded-md p-6">
       <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide flex items-center gap-2 mb-4">
         <Flame className="w-5 h-5 text-orange-400" />
         {t('streak.title')}

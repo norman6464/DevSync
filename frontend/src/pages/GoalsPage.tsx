@@ -111,19 +111,19 @@ export default function GoalsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
           <p className="text-2xl font-bold">{goals.length}</p>
           <p className="text-sm text-gray-400">{t('goals.totalGoals')}</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
           <p className="text-2xl font-bold text-blue-400">{activeGoals.length}</p>
           <p className="text-sm text-gray-400">{t('goals.activeGoals')}</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
           <p className="text-2xl font-bold text-green-400">{completedGoals.length}</p>
           <p className="text-sm text-gray-400">{t('goals.completedGoals')}</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
           <p className="text-2xl font-bold text-yellow-400">{pausedGoals.length}</p>
           <p className="text-sm text-gray-400">{t('goals.pausedGoals')}</p>
         </div>
@@ -132,7 +132,7 @@ export default function GoalsPage() {
       {/* Create/Edit Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
-          <div className="bg-gray-900 border border-gray-700 rounded-xl max-w-md w-full p-6">
+          <div className="bg-gray-900 border border-gray-700 rounded-md max-w-md w-full p-6">
             <h3 className="text-lg font-semibold mb-4">
               {editingGoal ? t('goals.editGoal') : t('goals.addGoal')}
             </h3>
@@ -212,7 +212,7 @@ export default function GoalsPage() {
 
       {/* Goals List */}
       {goals.length === 0 ? (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-12 text-center">
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center">
           <p className="text-gray-400 text-sm mb-4">{t('goals.noGoals')}</p>
           <button
             onClick={() => setShowForm(true)}
@@ -322,7 +322,7 @@ function GoalCard({
   const CategoryIcon = categoryInfo.Icon;
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+    <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3 min-w-0 flex-1">
           <CategoryIcon className="w-6 h-6 text-purple-400 flex-shrink-0 mt-0.5" />

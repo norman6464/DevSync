@@ -14,7 +14,7 @@ export default function AIAdviceWidget() {
 
   if (loading) {
     return (
-      <div className="bg-gray-800/50 rounded-xl border border-gray-700 p-4">
+      <div className="bg-gray-800/50 rounded-md border border-gray-700 p-4">
         <div className="animate-pulse space-y-3">
           <div className="h-4 bg-gray-700 rounded w-1/2" />
           <div className="h-3 bg-gray-700 rounded w-full" />
@@ -25,7 +25,7 @@ export default function AIAdviceWidget() {
   }
 
   return (
-    <div className="bg-gray-800/50 rounded-xl border border-gray-700 p-4">
+    <div className="bg-gray-800/50 rounded-md border border-gray-700 p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Lightbulb size={18} className="text-yellow-400" />

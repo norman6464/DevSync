@@ -140,29 +140,30 @@ body {
 }
 
 /* ============================================
-   Light mode overrides - Accent text colors
+   Light mode overrides - Accent text colors (Business)
    ============================================ */
 .light .text-blue-300 { color: #2563eb; }
-.light .text-blue-400 { color: #3b82f6; }
+.light .text-blue-400 { color: #2563eb; }
 .light .text-blue-500 { color: #2563eb; }
 .light .text-green-300 { color: #16a34a; }
-.light .text-green-400 { color: #22c55e; }
+.light .text-green-400 { color: #16a34a; }
 .light .text-green-500 { color: #16a34a; }
 .light .text-red-300 { color: #dc2626; }
-.light .text-red-400 { color: #f87171; }
-.light .text-red-500 { color: #ef4444; }
-.light .text-yellow-300 { color: #ca8a04; }
-.light .text-yellow-400 { color: #facc15; }
-.light .text-orange-400 { color: #fb923c; }
-.light .text-purple-300 { color: #7c3aed; }
-.light .text-purple-400 { color: #a855f7; }
-.light .text-pink-400 { color: #f472b6; }
-.light .text-amber-400 { color: #f59e0b; }
-.light .text-cyan-400 { color: #06b6d4; }
-.light .text-indigo-400 { color: #6366f1; }
-.light .text-rose-400 { color: #fb7185; }
-.light .text-teal-400 { color: #14b8a6; }
-.light .text-violet-400 { color: #8b5cf6; }
+.light .text-red-400 { color: #dc2626; }
+.light .text-red-500 { color: #dc2626; }
+/* Business UI: Reduce vibrant colors */
+.light .text-yellow-300 { color: #6b7280; }
+.light .text-yellow-400 { color: #6b7280; }
+.light .text-orange-400 { color: #6b7280; }
+.light .text-purple-300 { color: #6b7280; }
+.light .text-purple-400 { color: #6b7280; }
+.light .text-pink-400 { color: #6b7280; }
+.light .text-amber-400 { color: #6b7280; }
+.light .text-cyan-400 { color: #2563eb; }
+.light .text-indigo-400 { color: #2563eb; }
+.light .text-rose-400 { color: #6b7280; }
+.light .text-teal-400 { color: #16a34a; }
+.light .text-violet-400 { color: #6b7280; }
 
 /* ============================================
    Light mode overrides - Badge/tag backgrounds
@@ -293,4 +294,40 @@ body {
 }
 .animate-slide-in-right {
   animation: slide-in-right 0.3s ease-out;
+}
+
+/* ============================================
+   Business UI - Dark mode accent colors
+   ============================================ */
+/* Reduce vibrant colors to gray/blue in dark mode */
+.dark .text-yellow-400,
+.dark .text-yellow-500 {
+  color: #9ca3af;
+}
+
+.dark .text-orange-400,
+.dark .text-orange-500 {
+  color: #9ca3af;
+}
+
+.dark .text-purple-300,
+.dark .text-purple-400,
+.dark .text-purple-500 {
+  color: #9ca3af;
+}
+
+.dark .text-pink-400,
+.dark .text-rose-400,
+.dark .text-violet-400,
+.dark .text-amber-400 {
+  color: #9ca3af;
+}
+
+.dark .text-cyan-400,
+.dark .text-indigo-400 {
+  color: #60a5fa;
+}
+
+.dark .text-teal-400 {
+  color: #34d399;
 }

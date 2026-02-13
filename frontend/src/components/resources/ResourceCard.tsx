@@ -82,7 +82,7 @@ export default function ResourceCard({
   };
 
   return (
-    <div className="bg-gray-800 rounded-xl overflow-hidden border border-gray-700 hover:border-gray-600 transition-colors">
+    <div className="bg-gray-800 rounded-md overflow-hidden border border-gray-700 hover:border-gray-600 transition-colors">
       <div className="p-4">
         {/* Header */}
         <div className="flex items-start justify-between gap-2">

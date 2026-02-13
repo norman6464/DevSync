@@ -14,7 +14,7 @@ export default function DailyChallengeWidget() {
   };
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+    <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
       <h3 className="flex items-center gap-2 text-sm font-medium text-white mb-3">
         <Sparkles className="w-4 h-4 text-yellow-400" />
         {t('dailyChallenge.title')}

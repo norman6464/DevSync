@@ -12,7 +12,7 @@ export default function ChatPage() {
   const c = useChat();
 
   return (
-    <div className="flex h-[calc(100vh-7rem)] bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+    <div className="flex h-[calc(100vh-7rem)] bg-gray-900 border border-gray-800 rounded-md overflow-hidden">
       {/* Sidebar */}
       <div className="w-80 border-r border-gray-800 flex flex-col">
         {/* Tab Switcher */}
@@ -200,7 +200,7 @@ export default function ChatPage() {
                         <p className="text-xs text-gray-400 mb-1">{msg.sender?.name}</p>
                       )}
                       <div
-                        className={`px-4 py-2.5 rounded-2xl ${
+                        className={`px-4 py-2.5 rounded-md ${
                           isOwn
                             ? 'chat-bubble-own rounded-br-md'
                             : 'chat-bubble-other rounded-bl-md'
@@ -268,7 +268,7 @@ export default function ChatPage() {
                       </span>
                     )}
                     <div
-                      className={`max-w-sm px-4 py-2.5 rounded-2xl ${
+                      className={`max-w-sm px-4 py-2.5 rounded-md ${
                         isOwn
                           ? 'chat-bubble-own rounded-br-md'
                           : 'chat-bubble-other rounded-bl-md'

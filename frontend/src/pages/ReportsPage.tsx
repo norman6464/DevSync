@@ -105,21 +105,21 @@ export default function ReportsPage() {
       {/* Activity Overview */}
       {report && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
             <div className="flex items-center gap-2 mb-2">
               <MessageCircle className="w-5 h-5 text-gray-400" />
               <span className="text-sm text-gray-400">{t('reports.comments')}</span>
             </div>
             <p className="text-2xl font-bold">{report.comments_created}</p>
           </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
             <div className="flex items-center gap-2 mb-2">
               <Heart className="w-5 h-5 text-gray-400" />
               <span className="text-sm text-gray-400">{t('reports.likesReceived')}</span>
             </div>
             <p className="text-2xl font-bold">{report.likes_received}</p>
           </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
             <div className="flex items-center gap-2 mb-2">
               <MessageCircle className="w-5 h-5 text-gray-400" />
               <span className="text-sm text-gray-400">{t('reports.messages')}</span>
@@ -131,7 +131,7 @@ export default function ReportsPage() {
 
       {/* Trend Indicator */}
       {comparison && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-6">
           <h2 className="text-lg font-semibold mb-4">{t('reports.trend')}</h2>
           <div className="flex items-center gap-4">
             <div
@@ -155,7 +155,7 @@ export default function ReportsPage() {
 
       {/* Daily Activity Chart */}
       {report && report.daily_contributions && report.daily_contributions.length > 0 && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-6">
           <h2 className="text-lg font-semibold mb-4">{t('reports.dailyActivity')}</h2>
           <div className="flex items-end gap-1 h-40">
             {report.daily_contributions.map((day, index) => {
@@ -190,7 +190,7 @@ export default function ReportsPage() {
 
       {/* Top Languages */}
       {report && report.top_languages && report.top_languages.length > 0 && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-6">
           <h2 className="text-lg font-semibold mb-4">{t('reports.topLanguages')}</h2>
           <div className="space-y-3">
             {report.top_languages.map((lang, index) => {
@@ -219,7 +219,7 @@ export default function ReportsPage() {
 
       {/* Goals Progress */}
       {report && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-6">
           <h2 className="text-lg font-semibold mb-4">{t('reports.goalsProgress')}</h2>
           <div className="flex items-center gap-4">
             <div className="relative w-24 h-24">
@@ -283,7 +283,7 @@ function StatCard({ label, value, diff, icon: Icon }: StatCardProps) {
   };
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+    <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
       <div className="flex items-center gap-2 mb-2">
         <Icon className="w-5 h-5 text-gray-400" />
         <span className="text-sm text-gray-400">{label}</span>

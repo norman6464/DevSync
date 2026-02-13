@@ -12,7 +12,7 @@ export default function LevelWidget() {
 
   if (loading) {
     return (
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+      <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
         <div className="h-5 bg-gray-800 rounded animate-pulse w-1/2 mb-3" />
         <div className="h-12 bg-gray-800 rounded animate-pulse mb-3" />
         <div className="h-3 bg-gray-800 rounded animate-pulse" />
@@ -28,9 +28,9 @@ export default function LevelWidget() {
   const xpToNext = nextLevelXP - totalXP;
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+    <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
       <h3 className="flex items-center gap-2 text-sm font-medium text-white mb-3">
-        <Star className="w-4 h-4 text-yellow-400" />
+        <Star className="w-4 h-4 text-gray-400" />
         {t('level.title')}
       </h3>
 
@@ -38,7 +38,7 @@ export default function LevelWidget() {
       <div className="text-center py-2 mb-3">
         <div className="flex items-center justify-center gap-2">
           <span className="text-sm text-gray-400">{t('level.level')}</span>
-          <span className="text-4xl font-bold text-yellow-400">{level}</span>
+          <span className="text-4xl font-bold text-white">{level}</span>
         </div>
         <p className="text-xs text-gray-400 mt-1">
           {t('level.xpProgress', { current: totalXP.toLocaleString(), next: nextLevelXP.toLocaleString() })}
@@ -49,7 +49,7 @@ export default function LevelWidget() {
       <div className="mb-2">
         <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full transition-all"
+            className="h-full bg-blue-600 rounded-full transition-all"
             style={{ width: `${Math.min(progressPercent, 100)}%` }}
           />
         </div>

@@ -11,29 +11,29 @@ interface BadgeDisplayProps {
   badges: BadgeResult[];
 }
 
-/** Badge ID → icon, color, bgColor mapping (UI responsibility) */
+/** Badge ID → icon mapping (Business UI: simplified colors) */
 const badgeMeta: Record<string, { icon: LucideIcon; color: string; bgColor: string }> = {
-  'first-commit':    { icon: Sprout,     color: 'text-green-400',  bgColor: 'bg-green-500/10 border-green-500/30' },
-  'contributor':     { icon: Monitor,    color: 'text-blue-400',   bgColor: 'bg-blue-500/10 border-blue-500/30' },
-  'code-warrior':    { icon: Swords,     color: 'text-purple-400', bgColor: 'bg-purple-500/10 border-purple-500/30' },
-  'commit-master':   { icon: Crown,      color: 'text-yellow-400', bgColor: 'bg-yellow-500/10 border-yellow-500/30' },
-  'legend':          { icon: Trophy,     color: 'text-orange-400', bgColor: 'bg-orange-500/10 border-orange-500/30' },
-  'week-streak':     { icon: Flame,      color: 'text-orange-400', bgColor: 'bg-orange-500/10 border-orange-500/30' },
-  'month-streak':    { icon: Zap,        color: 'text-yellow-400', bgColor: 'bg-yellow-500/10 border-yellow-500/30' },
-  'first-post':      { icon: PenLine,    color: 'text-cyan-400',   bgColor: 'bg-cyan-500/10 border-cyan-500/30' },
-  'blogger':         { icon: FileText,   color: 'text-indigo-400', bgColor: 'bg-indigo-500/10 border-indigo-500/30' },
-  'liked':           { icon: Heart,      color: 'text-pink-400',   bgColor: 'bg-pink-500/10 border-pink-500/30' },
-  'popular':         { icon: Star,       color: 'text-rose-400',   bgColor: 'bg-rose-500/10 border-rose-500/30' },
-  'friendly':        { icon: Handshake,  color: 'text-teal-400',   bgColor: 'bg-teal-500/10 border-teal-500/30' },
-  'influencer':      { icon: Megaphone,  color: 'text-violet-400', bgColor: 'bg-violet-500/10 border-violet-500/30' },
-  'star':            { icon: StarIcon,   color: 'text-amber-400',  bgColor: 'bg-amber-500/10 border-amber-500/30' },
-  'qa-first-answer': { icon: MessageCircleQuestion, color: 'text-blue-400', bgColor: 'bg-blue-500/10 border-blue-500/30' },
-  'qa-helper':       { icon: HelpCircle, color: 'text-cyan-400',   bgColor: 'bg-cyan-500/10 border-cyan-500/30' },
-  'goal-achiever':   { icon: Award,      color: 'text-green-400',  bgColor: 'bg-green-500/10 border-green-500/30' },
-  'goal-master':     { icon: GraduationCap, color: 'text-purple-400', bgColor: 'bg-purple-500/10 border-purple-500/30' },
+  'first-commit':    { icon: Sprout,     color: 'text-green-500',  bgColor: 'bg-gray-800 border-gray-700' },
+  'contributor':     { icon: Monitor,    color: 'text-blue-600',   bgColor: 'bg-gray-800 border-gray-700' },
+  'code-warrior':    { icon: Swords,     color: 'text-gray-400',   bgColor: 'bg-gray-800 border-gray-700' },
+  'commit-master':   { icon: Crown,      color: 'text-gray-400',   bgColor: 'bg-gray-800 border-gray-700' },
+  'legend':          { icon: Trophy,     color: 'text-gray-400',   bgColor: 'bg-gray-800 border-gray-700' },
+  'week-streak':     { icon: Flame,      color: 'text-gray-400',   bgColor: 'bg-gray-800 border-gray-700' },
+  'month-streak':    { icon: Zap,        color: 'text-gray-400',   bgColor: 'bg-gray-800 border-gray-700' },
+  'first-post':      { icon: PenLine,    color: 'text-blue-600',   bgColor: 'bg-gray-800 border-gray-700' },
+  'blogger':         { icon: FileText,   color: 'text-blue-600',   bgColor: 'bg-gray-800 border-gray-700' },
+  'liked':           { icon: Heart,      color: 'text-gray-400',   bgColor: 'bg-gray-800 border-gray-700' },
+  'popular':         { icon: Star,       color: 'text-gray-400',   bgColor: 'bg-gray-800 border-gray-700' },
+  'friendly':        { icon: Handshake,  color: 'text-green-500',  bgColor: 'bg-gray-800 border-gray-700' },
+  'influencer':      { icon: Megaphone,  color: 'text-gray-400',   bgColor: 'bg-gray-800 border-gray-700' },
+  'star':            { icon: StarIcon,   color: 'text-gray-400',   bgColor: 'bg-gray-800 border-gray-700' },
+  'qa-first-answer': { icon: MessageCircleQuestion, color: 'text-blue-600', bgColor: 'bg-gray-800 border-gray-700' },
+  'qa-helper':       { icon: HelpCircle, color: 'text-blue-600',   bgColor: 'bg-gray-800 border-gray-700' },
+  'goal-achiever':   { icon: Award,      color: 'text-green-500',  bgColor: 'bg-gray-800 border-gray-700' },
+  'goal-master':     { icon: GraduationCap, color: 'text-gray-400', bgColor: 'bg-gray-800 border-gray-700' },
 };
 
-const fallbackMeta = { icon: Medal, color: 'text-gray-400', bgColor: 'bg-gray-500/10 border-gray-500/30' };
+const fallbackMeta = { icon: Medal, color: 'text-gray-400', bgColor: 'bg-gray-800 border-gray-700' };
 
 export default function BadgeDisplay({ badges }: BadgeDisplayProps) {
   const { t } = useTranslation();
@@ -42,11 +42,11 @@ export default function BadgeDisplay({ badges }: BadgeDisplayProps) {
   const lockedBadges = badges.filter((b) => !b.earned);
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+    <div className="bg-gray-900 border border-gray-800 rounded-md overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <svg
-            className="w-4 h-4 text-yellow-400"
+            className="w-4 h-4 text-gray-400"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
@@ -77,13 +77,13 @@ export default function BadgeDisplay({ badges }: BadgeDisplayProps) {
                 return (
                   <div
                     key={badge.id}
-                    className={`group relative px-3 py-2 rounded-lg border ${meta.bgColor} cursor-pointer transition-all hover:scale-105`}
+                    className={`group relative px-3 py-2 rounded-md border ${meta.bgColor} cursor-pointer transition-colors hover:border-gray-600`}
                   >
                     <div className="flex items-center gap-2">
                       <Icon className={`w-5 h-5 ${meta.color}`} />
                       <span className={`text-sm font-medium ${meta.color}`}>{t(badge.name)}</span>
                     </div>
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 rounded-lg text-xs text-center opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-10 shadow-lg">
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 rounded-lg text-xs text-center opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-10 shadow-sm">
                       <div className="font-medium text-white">{t(badge.name)}</div>
                       <div className="text-gray-400">{t(badge.description)}</div>
                       <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800" />
@@ -112,7 +112,7 @@ export default function BadgeDisplay({ badges }: BadgeDisplayProps) {
                       <Icon className="w-5 h-5 text-gray-500" />
                       <span className="text-sm font-medium text-gray-500">{t(badge.name)}</span>
                     </div>
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 rounded-lg text-xs text-center opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-10 shadow-lg">
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 rounded-lg text-xs text-center opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-10 shadow-sm">
                       <div className="font-medium text-white">{t(badge.name)}</div>
                       <div className="text-gray-400">{t(badge.description)}</div>
                       <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800" />

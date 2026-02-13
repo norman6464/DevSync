@@ -39,7 +39,7 @@ export default function AnswerCard({
   };
 
   return (
-    <div className={`bg-gray-800 rounded-xl p-5 border transition-colors ${
+    <div className={`bg-gray-800 rounded-md p-5 border transition-colors ${
       answer.is_best ? 'border-green-600/50 bg-green-900/10' : 'border-gray-700'
     }`}>
       {answer.is_best && (

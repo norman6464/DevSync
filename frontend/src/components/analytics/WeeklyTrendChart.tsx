@@ -11,7 +11,7 @@ export default function WeeklyTrendChart({ data, loading }: Props) {
 
   if (loading) {
     return (
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+      <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
         <div className="h-5 bg-gray-800 rounded animate-pulse w-1/3 mb-4" />
         <div className="h-40 bg-gray-800 rounded animate-pulse" />
       </div>
@@ -20,7 +20,7 @@ export default function WeeklyTrendChart({ data, loading }: Props) {
 
   if (data.length === 0) {
     return (
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+      <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
         <h3 className="text-sm font-medium text-white mb-4">{t('analytics.trendTitle')}</h3>
         <p className="text-xs text-gray-500 text-center py-6">{t('analytics.noData')}</p>
       </div>
@@ -38,7 +38,7 @@ export default function WeeklyTrendChart({ data, loading }: Props) {
   }
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+    <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-medium text-white">{t('analytics.trendTitle')}</h3>
         {growthRate !== null && (

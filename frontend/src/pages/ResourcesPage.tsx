@@ -125,7 +125,7 @@ export default function ResourcesPage() {
       {/* Form Modal */}
       {(showForm || editingResource) && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-gray-800 rounded-md p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-semibold text-white mb-4">
               {editingResource ? t('resources.editResource') : t('resources.newResource')}
             </h2>

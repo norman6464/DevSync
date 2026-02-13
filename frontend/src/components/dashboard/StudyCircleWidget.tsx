@@ -9,7 +9,7 @@ export default function StudyCircleWidget() {
   const { circles, loading } = useStudyCircles();
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+    <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
       <div className="flex items-center justify-between mb-3">
         <h3 className="flex items-center gap-2 text-sm font-medium text-white">
           <Users className="w-4 h-4 text-purple-400" />

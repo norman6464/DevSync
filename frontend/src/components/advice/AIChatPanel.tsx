@@ -38,7 +38,7 @@ export default function AIChatPanel({
   };
 
   return (
-    <div className="bg-gray-800/50 rounded-xl border border-gray-700 flex flex-col h-[600px]">
+    <div className="bg-gray-800/50 rounded-md border border-gray-700 flex flex-col h-[600px]">
       {/* ヘッダー */}
       <div className="flex items-center justify-between p-4 border-b border-gray-700">
         <div className="flex items-center gap-2">

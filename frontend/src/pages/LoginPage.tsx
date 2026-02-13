@@ -50,7 +50,7 @@ export default function LoginPage() {
         </div>
 
         {/* Card */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-4">
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-6 space-y-4">
           <button
             onClick={handleGitHubLogin}
             disabled={loading}
@@ -110,7 +110,7 @@ export default function LoginPage() {
         </div>
 
         {/* Bottom link */}
-        <div className="mt-4 bg-gray-900 border border-gray-800 rounded-xl p-4 text-center text-sm text-gray-400">
+        <div className="mt-4 bg-gray-900 border border-gray-800 rounded-md p-4 text-center text-sm text-gray-400">
           {t('auth.noAccount')}{' '}
           <Link to="/register" className="text-blue-400 hover:text-blue-300 font-medium">
             {t('auth.register')}

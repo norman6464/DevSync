@@ -65,7 +65,7 @@ export default function PostForm({ onSubmit }: PostFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+    <form onSubmit={handleSubmit} className="bg-gray-900 border border-gray-800 rounded-md p-4">
       <input
         type="text"
         value={title}

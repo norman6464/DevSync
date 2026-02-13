@@ -16,7 +16,7 @@ export default function ProfileSection({ name, setName, bio, setBio, avatarUrl, 
   const { t } = useTranslation();
 
   return (
-    <form onSubmit={onSubmit} className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+    <form onSubmit={onSubmit} className="bg-gray-900 border border-gray-800 rounded-md overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-800">
         <h2 className="text-base font-semibold">{t('settings.profile')}</h2>
       </div>

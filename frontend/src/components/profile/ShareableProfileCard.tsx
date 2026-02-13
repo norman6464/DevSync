@@ -38,7 +38,7 @@ const ShareableProfileCard = forwardRef<HTMLDivElement, ShareableProfileCardProp
     return (
       <div
         ref={ref}
-        className="w-[600px] h-[315px] bg-gradient-to-br from-gray-900 via-gray-800 to-purple-900 p-6 rounded-xl relative overflow-hidden"
+        className="w-[600px] h-[315px] bg-gradient-to-br from-gray-900 via-gray-800 to-purple-900 p-6 rounded-md relative overflow-hidden"
         style={{ fontFamily: 'system-ui, sans-serif' }}
       >
         {/* Background decoration */}
