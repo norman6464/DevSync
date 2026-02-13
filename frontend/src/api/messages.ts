@@ -2,7 +2,7 @@ import client from './client';
 import type { Message, Conversation } from '../types/message';
 
 export const getConversations = () =>
-  client.get<Conversation[]>('/messages/conversations');
+  client.get<Conversation[]>('/messages');
 
 export const getMessages = (userId: number, page = 1, limit = 50) =>
   client.get<Message[]>(`/messages/${userId}`, { params: { page, limit } });

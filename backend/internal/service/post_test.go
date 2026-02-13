@@ -60,7 +60,7 @@ func TestPostUpdate_Success(t *testing.T) {
 	postRepo.On("FindByID", uint(1)).Return(existing, nil)
 	postRepo.On("Update", existing).Return(nil)
 
-	result, err := svc.Update(1, 1, "New Title", "New Content")
+	result, err := svc.Update(1, 1, "New Title", "New Content", "")
 	assert.NoError(t, err)
 	assert.Equal(t, "New Title", result.Title)
 	assert.Equal(t, "New Content", result.Content)
@@ -75,7 +75,7 @@ func TestPostUpdate_Forbidden(t *testing.T) {
 
 	postRepo.On("FindByID", uint(1)).Return(existing, nil)
 
-	result, err := svc.Update(1, 999, "New Title", "")
+	result, err := svc.Update(1, 999, "New Title", "", "")
 	assert.ErrorIs(t, err, ErrForbidden)
 	assert.Nil(t, result)
 	postRepo.AssertExpectations(t)
@@ -91,7 +91,7 @@ func TestPostUpdate_PartialUpdate(t *testing.T) {
 	postRepo.On("Update", existing).Return(nil)
 
 	// タイトルのみ更新（contentは空文字）
-	result, err := svc.Update(1, 1, "New Title", "")
+	result, err := svc.Update(1, 1, "New Title", "", "")
 	assert.NoError(t, err)
 	assert.Equal(t, "New Title", result.Title)
 	assert.Equal(t, "Old Content", result.Content) // 変更されない

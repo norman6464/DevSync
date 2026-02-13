@@ -162,7 +162,7 @@ export default function ReportsPage() {
               const height = (day.contributions / maxContribution) * 100;
               return (
                 <div
-                  key={index}
+                  key={day.date}
                   className="flex-1 flex flex-col items-center gap-1 group"
                 >
                   <div className="relative w-full">
@@ -197,7 +197,7 @@ export default function ReportsPage() {
               const maxBytes = report.top_languages[0].bytes;
               const width = (lang.bytes / maxBytes) * 100;
               return (
-                <div key={index}>
+                <div key={lang.language}>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="font-medium">{lang.language}</span>
                     <span className="text-gray-400">

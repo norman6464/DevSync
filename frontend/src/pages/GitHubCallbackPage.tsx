@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { gitHubCallback } from '../api/github';
 import { useAuthStore } from '../store/authStore';
@@ -22,8 +22,13 @@ export default function GitHubCallbackPage() {
   const handleGitHubCallback = useAuthStore((s) => s.handleGitHubCallback);
   const [error, setError] = useState('');
   const [mode, setMode] = useState<'connect' | 'login' | ''>('');
+  const hasProcessed = useRef(false);
 
   useEffect(() => {
+    // 二重実行を防ぐ
+    if (hasProcessed.current) return;
+    hasProcessed.current = true;
+
     const code = searchParams.get('code');
     const state = searchParams.get('state');
 
