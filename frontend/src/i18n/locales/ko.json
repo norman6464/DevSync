@@ -508,6 +508,7 @@
     "durationPlaceholder": "분",
     "calendar": "캘린더",
     "list": "목록",
+    "filterAll": "전체",
     "noLogs": "아직 로그가 없습니다",
     "noLogsOnDate": "이 날의 로그가 없습니다",
     "created": "로그가 생성되었습니다",
