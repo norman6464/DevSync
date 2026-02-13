@@ -25,8 +25,10 @@ const (
 	ErrCodeBadRequest ErrorCode = "BAD_REQUEST"
 
 	// System errors
-	ErrCodeInternal ErrorCode = "INTERNAL_ERROR"
-	ErrCodeDatabase ErrorCode = "DATABASE_ERROR"
+	ErrCodeInternal          ErrorCode = "INTERNAL_ERROR"
+	ErrCodeDatabase          ErrorCode = "DATABASE_ERROR"
+	ErrCodeRateLimitExceeded ErrorCode = "RATE_LIMIT_EXCEEDED"
+	ErrCodeServiceUnavailable ErrorCode = "SERVICE_UNAVAILABLE"
 )
 
 // DomainError represents a domain-level error with additional context.
@@ -62,6 +64,10 @@ func (e *DomainError) HTTPStatus() int {
 		return http.StatusConflict
 	case ErrCodeValidation, ErrCodeBadRequest:
 		return http.StatusBadRequest
+	case ErrCodeRateLimitExceeded:
+		return http.StatusTooManyRequests
+	case ErrCodeServiceUnavailable:
+		return http.StatusServiceUnavailable
 	case ErrCodeDatabase, ErrCodeInternal:
 		return http.StatusInternalServerError
 	default:
@@ -80,11 +86,17 @@ func NewError(code ErrorCode, message string, err error) *DomainError {
 
 // Predefined domain errors
 var (
-	ErrUnauthorized = NewError(ErrCodeUnauthorized, "認証が必要です", nil)
-	ErrForbidden    = NewError(ErrCodeForbidden, "この操作を実行する権限がありません", nil)
-	ErrNotFound     = NewError(ErrCodeNotFound, "リソースが見つかりません", nil)
-	ErrBadRequest   = NewError(ErrCodeBadRequest, "不正なリクエストです", nil)
-	ErrInternal     = NewError(ErrCodeInternal, "内部エラーが発生しました", nil)
+	ErrUnauthorized       = NewError(ErrCodeUnauthorized, "認証が必要です", nil)
+	ErrForbidden          = NewError(ErrCodeForbidden, "この操作を実行する権限がありません", nil)
+	ErrNotFound           = NewError(ErrCodeNotFound, "リソースが見つかりません", nil)
+	ErrBadRequest         = NewError(ErrCodeBadRequest, "不正なリクエストです", nil)
+	ErrInternal           = NewError(ErrCodeInternal, "内部エラーが発生しました", nil)
+	ErrAlreadyExists      = NewError(ErrCodeAlreadyExists, "リソースが既に存在します", nil)
+	ErrConflict           = NewError(ErrCodeConflict, "競合が発生しました", nil)
+	ErrValidation         = NewError(ErrCodeValidation, "バリデーションエラー", nil)
+	ErrDatabase           = NewError(ErrCodeDatabase, "データベースエラーが発生しました", nil)
+	ErrRateLimitExceeded  = NewError(ErrCodeRateLimitExceeded, "レート制限を超過しました", nil)
+	ErrServiceUnavailable = NewError(ErrCodeServiceUnavailable, "サービスが利用できません", nil)
 )
 
 // IsDomainError checks if an error is a DomainError.

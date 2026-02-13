@@ -3,16 +3,16 @@
 // 権限チェック・ビジネスルール・通知連携などのロジックを実装する。
 package service
 
-import "errors"
+import "github.com/norman6464/devsync/backend/internal/domain"
 
 // サービス層の共通エラー定義。
-// ハンドラー層でこれらのエラーを判定し、適切なHTTPステータスコードに変換する。
+// domain.DomainErrorを使用して統一的なエラーハンドリングを実現する。
 var (
-	ErrNotFound   = errors.New("not found")   // リソースが見つからない（404）
-	ErrForbidden  = errors.New("forbidden")   // アクセス権限がない（403）
-	ErrBadRequest = errors.New("bad request") // リクエストが不正（400）
-	ErrUnauthorized      = errors.New("unauthorized")        // 認証が必要（401）
-	ErrConflict          = errors.New("conflict")            // リソースの競合（409）
-	ErrRateLimitExceeded = errors.New("rate limit exceeded") // レート制限超過（429）
-	ErrLLMNotConfigured  = errors.New("LLM not configured") // LLM未設定（503）
+	ErrNotFound          = domain.ErrNotFound          // リソースが見つからない（404）
+	ErrForbidden         = domain.ErrForbidden         // アクセス権限がない（403）
+	ErrBadRequest        = domain.ErrBadRequest        // リクエストが不正（400）
+	ErrUnauthorized      = domain.ErrUnauthorized      // 認証が必要（401）
+	ErrConflict          = domain.ErrConflict          // リソースの競合（409）
+	ErrRateLimitExceeded = domain.ErrRateLimitExceeded // レート制限超過（429）
+	ErrLLMNotConfigured  = domain.ErrServiceUnavailable // LLM未設定（503）
 )
