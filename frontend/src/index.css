@@ -331,3 +331,121 @@ body {
 .dark .text-teal-400 {
   color: #34d399;
 }
+
+/* ============================================
+   Improved Layout & Visibility
+   ============================================ */
+
+/* Section headings - more prominent */
+.section-heading {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #374151;
+}
+
+.light .section-heading {
+  color: #111827;
+  border-bottom-color: #e5e7eb;
+}
+
+/* Card with better borders */
+.card-enhanced {
+  background-color: #111827;
+  border: 2px solid #1f2937;
+  border-radius: 0.375rem;
+  padding: 1rem;
+  transition: border-color 0.2s;
+}
+
+.card-enhanced:hover {
+  border-color: #374151;
+}
+
+.light .card-enhanced {
+  background-color: #ffffff;
+  border-color: #e5e7eb;
+}
+
+.light .card-enhanced:hover {
+  border-color: #d1d5db;
+}
+
+/* Interactive elements - clearer affordance */
+.btn-primary {
+  background-color: #2563eb;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8;
+}
+
+.btn-primary:focus {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+.btn-secondary {
+  background-color: #374151;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background-color: #4b5563;
+}
+
+.btn-secondary:focus {
+  outline: 2px solid #9ca3af;
+  outline-offset: 2px;
+}
+
+.light .btn-secondary {
+  background-color: #e5e7eb;
+  color: #111827;
+}
+
+.light .btn-secondary:hover {
+  background-color: #d1d5db;
+}
+
+/* Better focus states for all interactive elements */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+.light button:focus-visible,
+.light a:focus-visible,
+.light input:focus-visible,
+.light textarea:focus-visible,
+.light select:focus-visible {
+  outline-color: #2563eb;
+}
+
+/* Spacing utilities for consistent layout */
+.section-spacing {
+  margin-bottom: 1.5rem;
+}
+
+.widget-spacing {
+  margin-bottom: 1rem;
+}

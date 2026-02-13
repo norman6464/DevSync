@@ -662,6 +662,16 @@ API仕様はOpenAPI (Swagger)で管理しています。
 - [x] 主要コンポーネント更新（LevelWidget、BadgeDisplay、StreakWidget、PomodoroTimer）
 - [x] 59ファイル、139箇所の一括スタイル変更
 
+### Phase 5.5（レイアウトと視認性の改善）✅
+- [x] グローバルスタイルで視認性向上のユーティリティ追加
+- [x] セクション見出しの強調（section-heading クラス）
+- [x] カード境界の明確化（card-enhanced クラス）
+- [x] ボタンスタイルの統一（btn-primary, btn-secondary）
+- [x] フォーカス状態の改善（全インタラクティブ要素）
+- [x] ダッシュボードのレイアウト改善（セクションごとにグループ化）
+- [x] 一貫性のあるスペーシング（space-y-6）
+- [x] 全10言語のi18n対応
+
 ### Phase 4（将来）📋
 - [ ] モバイルアプリ
 - [ ] チーム機能

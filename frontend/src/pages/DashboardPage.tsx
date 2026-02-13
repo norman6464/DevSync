@@ -70,11 +70,13 @@ export default function DashboardPage() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
       {/* Main Feed */}
-      <div className="lg:col-span-3 space-y-4">
+      <div className="lg:col-span-3 space-y-6">
         <PostForm onSubmit={handleCreatePost} />
 
-        {/* Tabs */}
-        <div className="flex items-center border-b border-gray-800">
+        <div>
+          <h2 className="section-heading">{t('dashboard.timeline')}</h2>
+          {/* Tabs */}
+          <div className="flex items-center border-b-2 border-gray-800">
           <button
             onClick={() => setTab('timeline')}
             className={`px-4 py-2.5 text-sm font-medium transition-colors relative ${
@@ -128,18 +130,21 @@ export default function DashboardPage() {
             )}
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {posts.map((post) => (
               <PostCard key={post.id} post={post} onUpdate={refetch} />
             ))}
           </div>
         )}
+        </div>
       </div>
 
       {/* Sidebar */}
-      <div className="space-y-4">
-        {/* User Profile Card */}
-        {user && (
+      <div className="space-y-6">
+        {/* User Profile Section */}
+        <div>
+          <h2 className="section-heading">{t('dashboard.profile')}</h2>
+          {user && (
           <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
             <div className="flex items-center gap-3 mb-3">
               <Avatar name={user.name} avatarUrl={user.avatar_url} size="md" />
@@ -173,27 +178,35 @@ export default function DashboardPage() {
             )}
           </div>
         )}
+        </div>
 
-        {/* Level Widget */}
-        <LevelWidget />
+        {/* Progress Section */}
+        <div>
+          <h2 className="section-heading">{t('dashboard.progress')}</h2>
+          <div className="space-y-4">
+            <LevelWidget />
+            <StreakWidget />
+          </div>
+        </div>
 
-        {/* Recommended Users Widget */}
-        <RecommendedUsersWidget />
+        {/* Activities Section */}
+        <div>
+          <h2 className="section-heading">{t('dashboard.activities')}</h2>
+          <div className="space-y-4">
+            <DailyChallengeWidget />
+            <StudyCircleWidget />
+          </div>
+        </div>
 
-        {/* Streak Widget */}
-        <StreakWidget />
-
-        {/* Daily Challenge Widget */}
-        <DailyChallengeWidget />
-
-        {/* AI Advice Widget */}
-        <AIAdviceWidget />
-
-        {/* Study Circle Widget */}
-        <StudyCircleWidget />
-
-        {/* Trending Widget */}
-        <TrendingWidget />
+        {/* Recommendations Section */}
+        <div>
+          <h2 className="section-heading">{t('dashboard.recommendations')}</h2>
+          <div className="space-y-4">
+            <RecommendedUsersWidget />
+            <TrendingWidget />
+            <AIAdviceWidget />
+          </div>
+        </div>
 
         {/* Goals Progress Widget */}
         <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
