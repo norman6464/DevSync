@@ -36,15 +36,15 @@ export function useChat() {
   }, [socket, connect]);
 
   useEffect(() => {
+    if (!currentUser) return;
+
     getConversations()
       .then(({ data }) => setConversations(data || []))
       .catch(() => {});
 
-    if (currentUser) {
-      getFollowing(currentUser.id)
-        .then(({ data }) => setFollowingUsers(data || []))
-        .catch(() => {});
-    }
+    getFollowing(currentUser.id)
+      .then(({ data }) => setFollowingUsers(data || []))
+      .catch(() => {});
 
     loadChatRooms();
   }, [currentUser]);

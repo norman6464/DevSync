@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { useToastStore, Toast as ToastType } from '../../store/toastStore';
+import { useToastStore } from '../../store/toastStore';
+import type { Toast as ToastType } from '../../store/toastStore';
 import { useTranslation } from 'react-i18next';
 
 const ICONS = {
