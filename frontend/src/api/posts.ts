@@ -39,7 +39,7 @@ export const uploadImages = async (files: File[]): Promise<{ urls: string[] }> =
   return response.data;
 };
 
-export const updatePost = (id: number, data: { title: string; content: string }) =>
+export const updatePost = (id: number, data: { title: string; content: string; image_urls?: string }) =>
   client.put<Post>(`/posts/${id}`, data);
 
 export const deletePost = (id: number) =>

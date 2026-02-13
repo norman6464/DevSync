@@ -121,15 +121,16 @@ func (h *PostHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
 
 	var input struct {
-		Title   string `json:"title"`
-		Content string `json:"content"`
+		Title     string `json:"title"`
+		Content   string `json:"content"`
+		ImageURLs string `json:"image_urls"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	post, err := h.service.Update(id, userID, input.Title, input.Content)
+	post, err := h.service.Update(id, userID, input.Title, input.Content, input.ImageURLs)
 	if err != nil {
 		respondError(c, err)
 		return
