@@ -7,7 +7,7 @@ import { getUserBadges } from '../api/badges';
 import { useAsyncData } from '../hooks/useAsyncData';
 import type { BadgeResult } from '../types/badge';
 import PostCard from '../components/posts/PostCard';
-import PostForm from '../components/posts/PostForm';
+import QuickPostForm from '../components/posts/QuickPostForm';
 import { PostCardSkeleton } from '../components/common/Skeleton';
 import Avatar from '../components/common/Avatar';
 import { formatDistanceToNow } from '../utils/timeFormat';
@@ -72,7 +72,10 @@ export default function DashboardPage() {
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
       {/* Main Feed */}
       <div className="lg:col-span-3 space-y-6">
-        <PostForm onSubmit={handleCreatePost} />
+        <QuickPostForm onSubmit={async (title, content, isDraft) => {
+          await createPost(title, content, undefined, undefined, isDraft);
+          await refetch();
+        }} />
 
         <div>
           <h2 className="section-heading">{t('dashboard.timeline')}</h2>
