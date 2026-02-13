@@ -1,13 +1,11 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/service"
 )
 
 // parseID はURLパラメータからuint型のIDを取得する。
@@ -51,7 +49,7 @@ func bindJSON[T any](c *gin.Context) *T {
 }
 
 // respondError はサービス層のエラーを適切なHTTPステータスコードに変換してレスポンスを返す。
-// DomainError を優先し、従来の service.ErrXXX も引き続きサポートする。
+// DomainError を使用して統一的なエラーハンドリングを実現する。
 func respondError(c *gin.Context, err error) {
 	// DomainError の場合
 	if domainErr := domain.GetDomainError(err); domainErr != nil {
@@ -59,25 +57,8 @@ func respondError(c *gin.Context, err error) {
 		return
 	}
 
-	// 従来の service.ErrXXX との互換性を保つ
-	switch {
-	case errors.Is(err, service.ErrNotFound):
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-	case errors.Is(err, service.ErrForbidden):
-		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
-	case errors.Is(err, service.ErrBadRequest):
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	case errors.Is(err, service.ErrUnauthorized):
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-	case errors.Is(err, service.ErrConflict):
-		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
-	case errors.Is(err, service.ErrRateLimitExceeded):
-		c.JSON(http.StatusTooManyRequests, gin.H{"error": err.Error()})
-	case errors.Is(err, service.ErrLLMNotConfigured):
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": err.Error()})
-	default:
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
+	// DomainError でない場合は内部エラーとして扱う
+	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 }
 
 // respondOK は200 OKでデータを返す。
