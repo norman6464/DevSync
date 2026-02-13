@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 	"golang.org/x/crypto/bcrypt"
@@ -51,9 +52,20 @@ type AuthResponse struct {
 // Register は新規ユーザーを登録し、JWTトークンを発行する。
 // メールアドレスの重複チェックとパスワードのbcryptハッシュ化を行う。
 func (s *AuthService) Register(input RegisterInput) (*AuthResponse, error) {
+	// バリデーション
+	if err := domain.ValidateEmail(input.Email); err != nil {
+		return nil, err
+	}
+	if err := domain.ValidatePassword(input.Password); err != nil {
+		return nil, err
+	}
+	if err := domain.ValidateUsername(input.Name); err != nil {
+		return nil, err
+	}
+
 	existing, _ := s.userRepo.FindByEmail(input.Email)
 	if existing != nil {
-		return nil, errors.New("email already registered")
+		return nil, domain.NewError(domain.ErrCodeAlreadyExists, "このメールアドレスは既に登録されています", nil)
 	}
 
 	hashed, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
@@ -81,13 +93,18 @@ func (s *AuthService) Register(input RegisterInput) (*AuthResponse, error) {
 
 // Login はメールアドレスとパスワードで認証し、JWTトークンを発行する。
 func (s *AuthService) Login(input LoginInput) (*AuthResponse, error) {
+	// バリデーション
+	if err := domain.ValidateEmail(input.Email); err != nil {
+		return nil, err
+	}
+
 	user, err := s.userRepo.FindByEmail(input.Email)
 	if err != nil {
-		return nil, errors.New("invalid email or password")
+		return nil, domain.ErrUnauthorized
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password)); err != nil {
-		return nil, errors.New("invalid email or password")
+		return nil, domain.ErrUnauthorized
 	}
 
 	token, err := s.generateToken(user.ID)
