@@ -5,7 +5,7 @@ import { usePostDetail } from '../hooks';
 import PostCard from '../components/posts/PostCard';
 import CodeSnippetViewer from '../components/posts/CodeSnippetViewer';
 import Avatar from '../components/common/Avatar';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { PageLoader } from '../components/common';
 import { format } from 'date-fns';
 
 export default function PostDetailPage() {
@@ -21,7 +21,7 @@ export default function PostDetailPage() {
     if (success) setNewComment('');
   };
 
-  if (loading) return <div className="py-12"><LoadingSpinner /></div>;
+  if (loading) return <PageLoader />;
   if (!post) return <div className="text-center text-gray-400 py-12">Post not found</div>;
 
   return (
