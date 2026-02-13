@@ -35,6 +35,7 @@ import StudyCircleDetailPage from './pages/StudyCircleDetailPage';
 import DraftsPage from './pages/DraftsPage';
 import OnboardingPage from './pages/OnboardingPage';
 import { ToastProvider } from './contexts/ToastContext';
+import ToastContainer from './components/common/Toast';
 
 export default function App() {
   const { loadUser } = useAuthStore();
@@ -57,6 +58,7 @@ export default function App() {
 
   return (
     <ToastProvider>
+    <ToastContainer />
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
