@@ -133,9 +133,26 @@ func setupLoginTest() (*gin.Engine, *MockUserRepository) {
 	authHandler := NewAuthHandler(authService, nil)
 
 	r := gin.New()
+	// 認証不要なルート
 	r.POST("/api/v1/auth/login", authHandler.Login)
 	r.POST("/api/v1/auth/register", authHandler.Register)
-	r.POST("/api/v1/auth/logout", authHandler.Logout)
+	r.POST("/api/v1/auth/password-reset", authHandler.RequestPasswordReset)
+	r.POST("/api/v1/auth/password-reset/confirm", authHandler.ResetPassword)
+
+	// 認証が必要なルート（テスト用に簡易的なミドルウェアを追加）
+	authorized := r.Group("/api/v1/auth")
+	authorized.Use(func(c *gin.Context) {
+		// テスト用の簡易認証ミドルウェア（userIDをcontextから取得または設定）
+		if userID, exists := c.Get("userID"); !exists {
+			c.Set("userID", uint(1)) // デフォルトでuserID=1を設定
+		} else {
+			c.Set("userID", userID)
+		}
+		c.Next()
+	})
+	authorized.GET("/me", authHandler.Me)
+	authorized.POST("/logout", authHandler.Logout)
+	authorized.DELETE("/account", authHandler.DeleteAccount)
 
 	return r, mockUserRepo
 }
@@ -281,4 +298,166 @@ func TestLogout_ReturnsOK(t *testing.T) {
 	var resp map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &resp)
 	assert.Contains(t, resp, "message")
+}
+
+// TestMe_Success は正常なユーザー情報取得をテストする。
+func TestMe_Success(t *testing.T) {
+	r, mockUserRepo := setupLoginTest()
+
+	mockUser := &model.User{
+		Name:  "Test User",
+		Email: "test@example.com",
+	}
+	mockUser.ID = 1
+
+	mockUserRepo.On("FindByID", uint(1)).Return(mockUser, nil)
+
+	req := httptest.NewRequest("GET", "/api/v1/auth/me", nil)
+	w := httptest.NewRecorder()
+
+	// userIDをcontextにセット（middlewareの代わり）
+	ctx := gin.CreateTestContextOnly(w, r)
+	ctx.Set("userID", uint(1))
+	ctx.Request = req
+
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+// TestMe_UserNotFound はユーザーが見つからない場合をテストする。
+func TestMe_UserNotFound(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockUserRepo := new(MockUserRepository)
+	mockPwResetRepo := new(MockPasswordResetRepository)
+	authService := service.NewAuthService(mockUserRepo, mockPwResetRepo, testJWTSecret)
+	authHandler := NewAuthHandler(authService, nil)
+
+	mockUserRepo.On("FindByID", uint(999)).Return(nil, service.ErrNotFound)
+
+	// 独自のルーター（ミドルウェアなし）を作成
+	r := gin.New()
+	r.GET("/api/v1/auth/me", func(c *gin.Context) {
+		c.Set("userID", uint(999))
+		authHandler.Me(c)
+	})
+
+	req := httptest.NewRequest("GET", "/api/v1/auth/me", nil)
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
+}
+
+// TestDeleteAccount_Success は正常なアカウント削除をテストする。
+func TestDeleteAccount_Success(t *testing.T) {
+	r, mockUserRepo := setupLoginTest()
+
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
+	mockUser := &model.User{
+		Name:     "Test User",
+		Email:    "test@example.com",
+		Password: string(hashedPassword),
+	}
+	mockUser.ID = 1
+
+	mockUserRepo.On("FindByID", uint(1)).Return(mockUser, nil)
+	mockUserRepo.On("DeleteWithRelatedData", uint(1)).Return(nil)
+
+	body, _ := json.Marshal(map[string]string{
+		"password": "password123",
+	})
+	req := httptest.NewRequest("DELETE", "/api/v1/auth/account", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.Contains(t, resp, "message")
+}
+
+// TestDeleteAccount_WrongPassword はパスワード不一致をテストする。
+func TestDeleteAccount_WrongPassword(t *testing.T) {
+	r, mockUserRepo := setupLoginTest()
+
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
+	mockUser := &model.User{
+		Name:     "Test User",
+		Email:    "test@example.com",
+		Password: string(hashedPassword),
+	}
+	mockUser.ID = 1
+
+	mockUserRepo.On("FindByID", uint(1)).Return(mockUser, nil)
+
+	body, _ := json.Marshal(map[string]string{
+		"password": "wrongpassword",
+	})
+	req := httptest.NewRequest("DELETE", "/api/v1/auth/account", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+
+	// パスワード不一致の場合、service層でErrForbiddenが返されるが、respondErrorで401に変換される
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+}
+
+// TestRequestPasswordReset_Success は正常なパスワードリセット要求をテストする。
+func TestRequestPasswordReset_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockUserRepo := new(MockUserRepository)
+	mockPwResetRepo := new(MockPasswordResetRepository)
+	authService := service.NewAuthService(mockUserRepo, mockPwResetRepo, testJWTSecret)
+	authHandler := NewAuthHandler(authService, nil)
+
+	mockUser := &model.User{
+		Name:  "Test User",
+		Email: "test@example.com",
+	}
+	mockUser.ID = 1
+
+	mockUserRepo.On("FindByEmail", "test@example.com").Return(mockUser, nil)
+	mockPwResetRepo.On("InvalidateUserTokens", uint(1)).Return(nil)
+	mockPwResetRepo.On("Create", mock.AnythingOfType("*model.PasswordResetToken")).Return(nil)
+
+	// 独自のルーターを作成
+	r := gin.New()
+	r.POST("/api/v1/auth/password-reset", authHandler.RequestPasswordReset)
+
+	body, _ := json.Marshal(map[string]string{
+		"email": "test@example.com",
+	})
+	req := httptest.NewRequest("POST", "/api/v1/auth/password-reset", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.Contains(t, resp, "message")
+}
+
+// TestResetPassword_ValidationError はバリデーションエラーをテストする。
+func TestResetPassword_ValidationError(t *testing.T) {
+	r, _ := setupLoginTest()
+
+	// new_passwordが短すぎる（min=6）
+	body, _ := json.Marshal(map[string]string{
+		"token":        "valid-token",
+		"new_password": "short",
+	})
+	req := httptest.NewRequest("POST", "/api/v1/auth/password-reset/confirm", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
