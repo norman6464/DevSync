@@ -652,6 +652,16 @@ API仕様はOpenAPI (Swagger)で管理しています。
 - [x] TDDで実装（4テストスイート追加）
 - [x] 全10言語のi18n対応
 
+### Phase 5.4（UIのビジネス向けリデザイン）✅
+- [x] ゲーミフィケーション要素の削減（派手な色・グラデーション・過剰なアニメーション削除）
+- [x] Teams/Notion風のシンプルなデザインシステム導入
+- [x] カラーパレット統一（グレー基調、アクセントは blue-600/green-500 のみ）
+- [x] rounded-xl/2xl → rounded-md（控えめな丸み）
+- [x] shadow-lg/xl/2xl → shadow-sm（控えめな影）
+- [x] hover:scale-105 削除、transition-colors のみ
+- [x] 主要コンポーネント更新（LevelWidget、BadgeDisplay、StreakWidget、PomodoroTimer）
+- [x] 59ファイル、139箇所の一括スタイル変更
+
 ### Phase 4（将来）📋
 - [ ] モバイルアプリ
 - [ ] チーム機能
