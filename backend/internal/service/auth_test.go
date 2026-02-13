@@ -32,7 +32,7 @@ func TestRegister_Success(t *testing.T) {
 	userRepo.On("Create", mock.AnythingOfType("*model.User")).Return(nil)
 
 	resp, err := svc.Register(RegisterInput{
-		Name:     "Test User",
+		Name:     "testuser",
 		Email:    "test@example.com",
 		Password: "password123",
 	})
@@ -40,7 +40,7 @@ func TestRegister_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
 	assert.NotEmpty(t, resp.Token)
-	assert.Equal(t, "Test User", resp.User.Name)
+	assert.Equal(t, "testuser", resp.User.Name)
 	assert.Equal(t, "test@example.com", resp.User.Email)
 	userRepo.AssertExpectations(t)
 }
@@ -52,14 +52,14 @@ func TestRegister_DuplicateEmail(t *testing.T) {
 	userRepo.On("FindByEmail", "test@example.com").Return(existingUser, nil)
 
 	resp, err := svc.Register(RegisterInput{
-		Name:     "Test User",
+		Name:     "testuser",
 		Email:    "test@example.com",
 		Password: "password123",
 	})
 
 	assert.Error(t, err)
 	assert.Nil(t, resp)
-	assert.Equal(t, "email already registered", err.Error())
+	assert.Contains(t, err.Error(), "このメールアドレスは既に登録されています")
 	userRepo.AssertExpectations(t)
 }
 
@@ -71,7 +71,7 @@ func TestLogin_Success(t *testing.T) {
 	svc, userRepo, _ := newTestAuthService()
 
 	hashed, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
-	user := &model.User{Name: "Test User", Email: "test@example.com", Password: string(hashed)}
+	user := &model.User{Name: "testuser", Email: "test@example.com", Password: string(hashed)}
 	user.ID = 1
 
 	userRepo.On("FindByEmail", "test@example.com").Return(user, nil)
@@ -84,7 +84,7 @@ func TestLogin_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
 	assert.NotEmpty(t, resp.Token)
-	assert.Equal(t, "Test User", resp.User.Name)
+	assert.Equal(t, "testuser", resp.User.Name)
 	userRepo.AssertExpectations(t)
 }
 
@@ -100,7 +100,7 @@ func TestLogin_EmailNotFound(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Nil(t, resp)
-	assert.Equal(t, "invalid email or password", err.Error())
+	assert.Contains(t, err.Error(), "認証")
 	userRepo.AssertExpectations(t)
 }
 
@@ -108,7 +108,7 @@ func TestLogin_WrongPassword(t *testing.T) {
 	svc, userRepo, _ := newTestAuthService()
 
 	hashed, _ := bcrypt.GenerateFromPassword([]byte("correctpassword"), bcrypt.DefaultCost)
-	user := &model.User{Name: "Test User", Email: "test@example.com", Password: string(hashed)}
+	user := &model.User{Name: "testuser", Email: "test@example.com", Password: string(hashed)}
 	user.ID = 1
 
 	userRepo.On("FindByEmail", "test@example.com").Return(user, nil)
@@ -120,7 +120,7 @@ func TestLogin_WrongPassword(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Nil(t, resp)
-	assert.Equal(t, "invalid email or password", err.Error())
+	assert.Contains(t, err.Error(), "認証")
 	userRepo.AssertExpectations(t)
 }
 
@@ -190,7 +190,7 @@ func TestDeleteAccount_GitHubOnlyUser(t *testing.T) {
 	svc, userRepo, _ := newTestAuthService()
 
 	// GitHubのみユーザーはパスワードが空
-	user := &model.User{Name: "GH User", Email: "gh@github.local", Password: ""}
+	user := &model.User{Name: "ghuser", Email: "gh@github.local", Password: ""}
 	user.ID = 1
 
 	userRepo.On("FindByID", uint(1)).Return(user, nil)
@@ -232,14 +232,14 @@ func TestDeleteAccount_PasswordRequired(t *testing.T) {
 func TestGetMe_Success(t *testing.T) {
 	svc, userRepo, _ := newTestAuthService()
 
-	user := &model.User{Name: "Test User"}
+	user := &model.User{Name: "testuser"}
 	user.ID = 1
 
 	userRepo.On("FindByID", uint(1)).Return(user, nil)
 
 	result, err := svc.GetMe(1)
 	assert.NoError(t, err)
-	assert.Equal(t, "Test User", result.Name)
+	assert.Equal(t, "testuser", result.Name)
 	userRepo.AssertExpectations(t)
 }
 
@@ -335,7 +335,7 @@ func TestResetPassword_ExpiredToken(t *testing.T) {
 func TestGitHubLogin_ExistingGitHubUser(t *testing.T) {
 	svc, userRepo, _ := newTestAuthService()
 
-	user := &model.User{Name: "GH User", GitHubUsername: "ghuser"}
+	user := &model.User{Name: "ghuser", GitHubUsername: "ghuser"}
 	user.ID = 1
 
 	userRepo.On("FindByGitHubID", int64(12345)).Return(user, nil)
@@ -345,7 +345,7 @@ func TestGitHubLogin_ExistingGitHubUser(t *testing.T) {
 		ID:        12345,
 		Login:     "ghuser",
 		Email:     "gh@example.com",
-		Name:      "GH User",
+		Name:      "ghuser",
 		AvatarURL: "https://example.com/avatar.png",
 	}
 
@@ -362,7 +362,7 @@ func TestGitHubLogin_LinkByEmail(t *testing.T) {
 	// GitHub IDが見つからない
 	userRepo.On("FindByGitHubID", int64(12345)).Return(nil, errors.New("not found"))
 	// しかしメールが一致
-	user := &model.User{Name: "Existing User", Email: "existing@example.com"}
+	user := &model.User{Name: "existinguser", Email: "existing@example.com"}
 	user.ID = 2
 	userRepo.On("FindByEmail", "existing@example.com").Return(user, nil)
 	userRepo.On("Update", mock.AnythingOfType("*model.User")).Return(nil)
@@ -371,7 +371,7 @@ func TestGitHubLogin_LinkByEmail(t *testing.T) {
 		ID:    12345,
 		Login: "ghuser",
 		Email: "existing@example.com",
-		Name:  "GH User",
+		Name:  "ghuser",
 	}
 
 	resp, err := svc.GitHubLogin(ghUser, "access-token")
@@ -393,7 +393,7 @@ func TestGitHubLogin_CreateNewUser(t *testing.T) {
 		ID:    12345,
 		Login: "newghuser",
 		Email: "new@example.com",
-		Name:  "New GH User",
+		Name:  "New ghuser",
 	}
 
 	resp, err := svc.GitHubLogin(ghUser, "access-token")
