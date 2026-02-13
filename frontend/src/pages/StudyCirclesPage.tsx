@@ -42,7 +42,7 @@ export default function StudyCirclesPage() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-gray-900 border border-gray-800 rounded-xl p-5 animate-pulse">
+            <div key={i} className="bg-gray-900 border border-gray-800 rounded-md p-5 animate-pulse">
               <div className="h-5 bg-gray-800 rounded w-1/2 mb-3" />
               <div className="h-4 bg-gray-800 rounded w-3/4 mb-2" />
               <div className="h-3 bg-gray-800 rounded w-1/3" />
@@ -50,7 +50,7 @@ export default function StudyCirclesPage() {
           ))}
         </div>
       ) : circles.length === 0 ? (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-12 text-center">
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center">
           <Users className="w-16 h-16 mx-auto mb-4 text-gray-700" />
           <p className="text-gray-400 mb-4">{t('studyCircle.noCircles')}</p>
           <button
@@ -67,7 +67,7 @@ export default function StudyCirclesPage() {
             <Link
               key={circle.id}
               to={`/study-circles/${circle.id}`}
-              className="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-gray-700 transition-colors group"
+              className="bg-gray-900 border border-gray-800 rounded-md p-5 hover:border-gray-700 transition-colors group"
             >
               <div className="flex items-start justify-between mb-2">
                 <h3 className="text-sm font-semibold text-white group-hover:text-purple-400 transition-colors truncate">
@@ -120,7 +120,7 @@ export default function StudyCirclesPage() {
       {/* Create Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-md">
+          <div className="bg-gray-900 border border-gray-800 rounded-md p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-white">{t('studyCircle.create')}</h2>
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-white">

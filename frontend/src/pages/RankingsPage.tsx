@@ -98,7 +98,7 @@ export default function RankingsPage() {
 
       {/* Language Filter */}
       {tab === 'languages' && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
           <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">
             {t('rankings.selectLanguage')}
           </h3>
@@ -109,7 +109,7 @@ export default function RankingsPage() {
                 onClick={() => setLanguage(lang)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
                   language === lang
-                    ? 'bg-purple-600 text-white border-purple-500 shadow-lg shadow-purple-500/20'
+                    ? 'bg-purple-600 text-white border-purple-500 shadow-sm shadow-purple-500/20'
                     : 'bg-gray-800 text-gray-400 border-gray-700 hover:text-white hover:border-gray-500 hover:bg-gray-700'
                 }`}
               >
@@ -124,11 +124,11 @@ export default function RankingsPage() {
       {loading ? (
         <PageLoader />
       ) : rankings.length === 0 ? (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-12 text-center text-gray-400 text-sm">
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center text-gray-400 text-sm">
           {t('rankings.noData')}
         </div>
       ) : (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+        <div className="bg-gray-900 border border-gray-800 rounded-md overflow-hidden">
           <div className="px-6 py-3 border-b border-gray-800 grid grid-cols-[3rem_1fr_auto] gap-4 text-xs font-medium text-gray-500 uppercase tracking-wider">
             <span className="text-center">{t('rankings.rank')}</span>
             <span>{t('rankings.developer')}</span>

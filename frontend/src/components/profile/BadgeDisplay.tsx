@@ -83,7 +83,7 @@ export default function BadgeDisplay({ badges }: BadgeDisplayProps) {
                       <Icon className={`w-5 h-5 ${meta.color}`} />
                       <span className={`text-sm font-medium ${meta.color}`}>{t(badge.name)}</span>
                     </div>
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 rounded-lg text-xs text-center opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-10 shadow-lg">
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 rounded-lg text-xs text-center opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-10 shadow-sm">
                       <div className="font-medium text-white">{t(badge.name)}</div>
                       <div className="text-gray-400">{t(badge.description)}</div>
                       <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800" />
@@ -112,7 +112,7 @@ export default function BadgeDisplay({ badges }: BadgeDisplayProps) {
                       <Icon className="w-5 h-5 text-gray-500" />
                       <span className="text-sm font-medium text-gray-500">{t(badge.name)}</span>
                     </div>
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 rounded-lg text-xs text-center opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-10 shadow-lg">
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 rounded-lg text-xs text-center opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-10 shadow-sm">
                       <div className="font-medium text-white">{t(badge.name)}</div>
                       <div className="text-gray-400">{t(badge.description)}</div>
                       <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800" />

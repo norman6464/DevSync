@@ -155,7 +155,7 @@ export default function Header() {
           </button>
 
           {moreOpen && (
-            <div className="absolute top-full right-0 mt-1 w-48 bg-gray-900 border border-gray-700 rounded-lg shadow-xl py-1 z-50">
+            <div className="absolute top-full right-0 mt-1 w-48 bg-gray-900 border border-gray-700 rounded-lg shadow-sm py-1 z-50">
               {moreItems.map(({ path, key, icon: Icon }) => (
                 <Link
                   key={path}

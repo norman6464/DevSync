@@ -157,7 +157,7 @@ export default function LearningLogsPage() {
 
       {/* Calendar View */}
       {view === 'calendar' && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-6">
           <LogCalendar entries={calendarData} onDateClick={handleDateClick} />
         </div>
       )}
@@ -165,7 +165,7 @@ export default function LearningLogsPage() {
       {/* Create/Edit Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
-          <div className="bg-gray-900 border border-gray-700 rounded-xl max-w-md w-full p-6">
+          <div className="bg-gray-900 border border-gray-700 rounded-md max-w-md w-full p-6">
             <h3 className="text-lg font-semibold mb-4">
               {editingLog ? t('learningLogs.editLog') : t('learningLogs.addLog')}
             </h3>
@@ -252,7 +252,7 @@ export default function LearningLogsPage() {
       {view === 'list' && (
         <>
           {filteredLogs.length === 0 ? (
-            <div className="bg-gray-900 border border-gray-800 rounded-xl p-12 text-center">
+            <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center">
               <p className="text-gray-400 text-sm mb-4">
                 {filterDate ? t('learningLogs.noLogsOnDate') : t('learningLogs.noLogs')}
               </p>
@@ -271,7 +271,7 @@ export default function LearningLogsPage() {
                 const catInfo = getCategoryInfo(log.category);
                 const CatIcon = catInfo.Icon;
                 return (
-                  <div key={log.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+                  <div key={log.id} className="bg-gray-900 border border-gray-800 rounded-md p-4">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-3 min-w-0 flex-1">
                         <CatIcon className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />

@@ -26,7 +26,7 @@ export default function RecommendedUsersWidget() {
 
   if (loading) {
     return (
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+      <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
         <div className="h-5 bg-gray-800 rounded animate-pulse w-1/2 mb-3" />
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
@@ -46,7 +46,7 @@ export default function RecommendedUsersWidget() {
   if (!users || users.length === 0) return null;
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+    <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
       <div className="flex items-center justify-between mb-3">
         <h3 className="flex items-center gap-2 text-sm font-medium text-white">
           <Users className="w-4 h-4 text-purple-400" />

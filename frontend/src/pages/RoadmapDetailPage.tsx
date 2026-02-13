@@ -135,7 +135,7 @@ export default function RoadmapDetailPage() {
       </div>
 
       {/* Progress */}
-      <div className="bg-gray-800 border border-gray-700 rounded-xl p-4 mb-6">
+      <div className="bg-gray-800 border border-gray-700 rounded-md p-4 mb-6">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm text-gray-400">{t('roadmaps.progress')}</span>
           <span className="text-sm font-medium text-white">
@@ -154,7 +154,7 @@ export default function RoadmapDetailPage() {
       {/* Step Form Modal */}
       {showStepForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md">
+          <div className="bg-gray-800 rounded-md p-6 w-full max-w-md">
             <h2 className="text-xl font-semibold text-white mb-4">
               {editingStep ? t('roadmaps.editStep') : t('roadmaps.addStep')}
             </h2>
@@ -234,7 +234,7 @@ export default function RoadmapDetailPage() {
           {roadmap.steps?.map((step, index) => (
             <div
               key={step.id}
-              className={`bg-gray-800 border rounded-xl p-4 transition-colors ${
+              className={`bg-gray-800 border rounded-md p-4 transition-colors ${
                 step.is_completed ? 'border-green-500/30' : 'border-gray-700'
               }`}
             >

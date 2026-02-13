@@ -213,7 +213,7 @@ export default function OnboardingPage() {
         </div>
 
         {/* Step Content */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+        <div className="bg-gray-900 border border-gray-800 rounded-md overflow-hidden">
           {/* Step 1: Profile */}
           {step === 1 && (
             <div>

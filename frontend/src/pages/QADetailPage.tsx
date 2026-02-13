@@ -63,7 +63,7 @@ export default function QADetailPage() {
       </Link>
 
       {/* Question */}
-      <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+      <div className="bg-gray-800 rounded-md p-6 border border-gray-700">
         <div className="flex gap-4">
           {/* Vote buttons */}
           <div className="flex flex-col items-center gap-1">
@@ -148,7 +148,7 @@ export default function QADetailPage() {
         <div className="space-y-4">
           {answers.map(answer => (
             editingAnswer?.id === answer.id ? (
-              <div key={answer.id} className="bg-gray-800 rounded-xl p-5 border border-gray-700">
+              <div key={answer.id} className="bg-gray-800 rounded-md p-5 border border-gray-700">
                 <AnswerForm
                   initialBody={answer.body}
                   onSubmit={async (body) => {

@@ -27,7 +27,7 @@ export default function CategoryPieChart({ data, loading }: Props) {
 
   if (loading) {
     return (
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+      <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
         <div className="h-5 bg-gray-800 rounded animate-pulse w-1/3 mb-4" />
         <div className="h-32 bg-gray-800 rounded animate-pulse" />
       </div>
@@ -39,7 +39,7 @@ export default function CategoryPieChart({ data, loading }: Props) {
   const remainMinutes = totalMinutes % 60;
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+    <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
       <h3 className="text-sm font-medium text-white mb-4">{t('analytics.categoryTitle')}</h3>
 
       {data.length === 0 ? (

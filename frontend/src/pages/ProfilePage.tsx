@@ -37,7 +37,7 @@ export default function ProfilePage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Profile Header */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+      <div className="bg-gray-900 border border-gray-800 rounded-md p-6">
         <div className="flex items-start gap-5">
           <Avatar name={user.name} avatarUrl={user.avatar_url} size="lg" />
           <div className="flex-1 min-w-0">
@@ -110,7 +110,7 @@ export default function ProfilePage() {
 
       {/* Skills */}
       {(user.skills_languages || user.skills_frameworks) && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-4">
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-6 space-y-4">
           {user.skills_languages && (
             <div>
               <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2"><Sparkles className="w-4 h-4 text-yellow-400" /> {t('profile.languages')}</h3>
@@ -128,7 +128,7 @@ export default function ProfilePage() {
 
       {/* AtCoder Rating & paiza Rank */}
       {(atcoderRating || user.paiza_rank) && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-6">
           <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2">
             <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M18.75 4.236c.982.143 1.954.317 2.916.52A6.003 6.003 0 0 1 16.27 9.728M18.75 4.236V4.5c0 2.108-.966 3.99-2.48 5.228m0 0a6.023 6.023 0 0 1-2.52.587 6.023 6.023 0 0 1-2.52-.587" /></svg>
             {t('profile.competitiveProgramming')}
@@ -168,12 +168,12 @@ export default function ProfilePage() {
       {/* GitHub Data */}
       {user.github_connected && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+          <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-md overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-800"><h2 className="text-sm font-semibold">{t('profile.contributions')}</h2></div>
             <div className="p-6"><ContributionCalendar contributions={contributions} /></div>
           </div>
           {languages.length > 0 && (
-            <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+            <div className="bg-gray-900 border border-gray-800 rounded-md overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-800"><h2 className="text-sm font-semibold">{t('profile.languages')}</h2></div>
               <div className="p-6"><LanguageChart languages={languages} /></div>
             </div>
@@ -201,7 +201,7 @@ export default function ProfilePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {repos.slice(0, 6).map((repo) => (
-              <a key={repo.id} href={`https://github.com/${repo.full_name}`} target="_blank" rel="noopener noreferrer" className="bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-gray-600 transition-colors group">
+              <a key={repo.id} href={`https://github.com/${repo.full_name}`} target="_blank" rel="noopener noreferrer" className="bg-gray-900 border border-gray-800 rounded-md p-4 hover:border-gray-600 transition-colors group">
                 <div className="flex items-start gap-2">
                   <svg className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" /></svg>
                   <div className="min-w-0 flex-1">
@@ -233,7 +233,7 @@ export default function ProfilePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {zennArticles.slice(0, 6).map((article) => (
-              <a key={article.id} href={`https://zenn.dev/${user.zenn_username}/articles/${article.slug}`} target="_blank" rel="noopener noreferrer" className="bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-gray-600 transition-colors group">
+              <a key={article.id} href={`https://zenn.dev/${user.zenn_username}/articles/${article.slug}`} target="_blank" rel="noopener noreferrer" className="bg-gray-900 border border-gray-800 rounded-md p-4 hover:border-gray-600 transition-colors group">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">{article.emoji || '📝'}</span>
                   <div className="min-w-0 flex-1">
@@ -264,7 +264,7 @@ export default function ProfilePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {qiitaArticles.slice(0, 6).map((article) => (
-              <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-gray-600 transition-colors group">
+              <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="bg-gray-900 border border-gray-800 rounded-md p-4 hover:border-gray-600 transition-colors group">
                 <div className="flex items-start gap-3">
                   <FileText className="w-6 h-6 text-green-400 flex-shrink-0" />
                   <div className="min-w-0 flex-1">
@@ -301,7 +301,7 @@ export default function ProfilePage() {
               const statusColors: Record<string, string> = { active: 'text-green-400 bg-green-400/10', completed: 'text-blue-400 bg-blue-400/10', paused: 'text-yellow-400 bg-yellow-400/10' };
               const CategoryIcon = categoryIcons[goal.category] || FileText;
               return (
-                <div key={goal.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+                <div key={goal.id} className="bg-gray-900 border border-gray-800 rounded-md p-4">
                   <div className="flex items-start gap-3">
                     <CategoryIcon className="w-6 h-6 text-purple-400 flex-shrink-0 mt-0.5" />
                     <div className="min-w-0 flex-1">
@@ -327,7 +327,7 @@ export default function ProfilePage() {
       <div>
         <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-3">{t('profile.posts')}</h2>
         {posts.length === 0 ? (
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-12 text-center text-gray-400 text-sm">{t('profile.noPosts')}</div>
+          <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center text-gray-400 text-sm">{t('profile.noPosts')}</div>
         ) : (
           <div className="space-y-3">{posts.map((post) => <PostCard key={post.id} post={post} />)}</div>
         )}

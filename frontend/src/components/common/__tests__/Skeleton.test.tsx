@@ -21,7 +21,7 @@ describe('PostCardSkeleton', () => {
     const { container } = render(<PostCardSkeleton />);
     const card = container.querySelector('.bg-gray-900');
     expect(card).toBeInTheDocument();
-    expect(card).toHaveClass('border', 'border-gray-800', 'rounded-xl', 'p-5');
+    expect(card).toHaveClass('border', 'border-gray-800', 'rounded-md', 'p-5');
   });
 
   it('複数のスケルトン要素が含まれる', () => {
@@ -36,7 +36,7 @@ describe('UserCardSkeleton', () => {
     const { container } = render(<UserCardSkeleton />);
     const card = container.querySelector('.bg-gray-900');
     expect(card).toBeInTheDocument();
-    expect(card).toHaveClass('border', 'border-gray-800', 'rounded-xl', 'p-4');
+    expect(card).toHaveClass('border', 'border-gray-800', 'rounded-md', 'p-4');
   });
 
   it('複数のスケルトン要素が含まれる', () => {

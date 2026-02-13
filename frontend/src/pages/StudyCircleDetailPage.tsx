@@ -81,7 +81,7 @@ export default function StudyCircleDetailPage() {
     return (
       <div className="space-y-4">
         <div className="h-8 bg-gray-800 rounded w-1/3 animate-pulse" />
-        <div className="h-40 bg-gray-900 border border-gray-800 rounded-xl animate-pulse" />
+        <div className="h-40 bg-gray-900 border border-gray-800 rounded-md animate-pulse" />
       </div>
     );
   }
@@ -139,7 +139,7 @@ export default function StudyCircleDetailPage() {
         <div className="space-y-3">
           {/* Steps */}
           {circle.steps?.length === 0 && !showStepForm ? (
-            <div className="bg-gray-900 border border-gray-800 rounded-xl p-8 text-center">
+            <div className="bg-gray-900 border border-gray-800 rounded-md p-8 text-center">
               <p className="text-sm text-gray-500 mb-3">{t('studyCircle.steps.noSteps')}</p>
               {isOwner && (
                 <button
@@ -161,7 +161,7 @@ export default function StudyCircleDetailPage() {
                 return (
                   <div
                     key={step.id}
-                    className={`bg-gray-900 border rounded-xl p-4 transition-colors ${
+                    className={`bg-gray-900 border rounded-md p-4 transition-colors ${
                       isCompleted ? 'border-green-500/30' : 'border-gray-800'
                     }`}
                   >
@@ -231,7 +231,7 @@ export default function StudyCircleDetailPage() {
               {isOwner && !showStepForm && (
                 <button
                   onClick={() => setShowStepForm(true)}
-                  className="w-full flex items-center justify-center gap-1 py-2 text-xs text-gray-500 hover:text-purple-400 border border-dashed border-gray-800 hover:border-purple-500/50 rounded-xl transition-colors"
+                  className="w-full flex items-center justify-center gap-1 py-2 text-xs text-gray-500 hover:text-purple-400 border border-dashed border-gray-800 hover:border-purple-500/50 rounded-md transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   {t('studyCircle.steps.add')}
@@ -242,7 +242,7 @@ export default function StudyCircleDetailPage() {
 
           {/* Step Form */}
           {showStepForm && (
-            <div className="bg-gray-900 border border-purple-500/30 rounded-xl p-4 space-y-3">
+            <div className="bg-gray-900 border border-purple-500/30 rounded-md p-4 space-y-3">
               <input
                 type="text"
                 value={stepForm.title}
@@ -286,7 +286,7 @@ export default function StudyCircleDetailPage() {
       {tab === 'checkin' && (
         <div className="space-y-4">
           {/* Checkin Form */}
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
             <h3 className="text-sm font-medium text-white mb-2">{t('studyCircle.checkin.title')}</h3>
             <div className="flex gap-2">
               <input
@@ -308,7 +308,7 @@ export default function StudyCircleDetailPage() {
           </div>
 
           {/* Checkin History */}
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
             <h3 className="text-sm font-medium text-white mb-3">{t('studyCircle.checkin.history')}</h3>
             {checkins.length === 0 ? (
               <p className="text-xs text-gray-500 text-center py-4">{t('studyCircle.checkin.noCheckins')}</p>
@@ -333,7 +333,7 @@ export default function StudyCircleDetailPage() {
       )}
 
       {tab === 'ranking' && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
           <h3 className="text-sm font-medium text-white mb-3">{t('studyCircle.streak.title')}</h3>
           {streaks.length === 0 ? (
             <p className="text-xs text-gray-500 text-center py-4">{t('studyCircle.streak.noStreaks')}</p>
@@ -370,7 +370,7 @@ export default function StudyCircleDetailPage() {
       {tab === 'settings' && isOwner && (
         <div className="space-y-4">
           {/* Members Management */}
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-medium text-white">{t('studyCircle.members')}</h3>
               <button
@@ -437,7 +437,7 @@ export default function StudyCircleDetailPage() {
           </div>
 
           {/* Danger Zone */}
-          <div className="bg-gray-900 border border-red-500/20 rounded-xl p-4">
+          <div className="bg-gray-900 border border-red-500/20 rounded-md p-4">
             <h3 className="text-sm font-medium text-red-400 mb-3">{t('common.delete')}</h3>
             <button
               onClick={async () => {

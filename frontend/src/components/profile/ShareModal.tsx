@@ -107,7 +107,7 @@ export default function ShareModal({
       />
 
       {/* Modal */}
-      <div className="relative bg-gray-900 border border-gray-800 rounded-xl shadow-2xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-gray-900 border border-gray-800 rounded-md shadow-sm max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-800">
           <h2 className="text-lg font-semibold">{t('sharing.title')}</h2>
@@ -152,7 +152,7 @@ export default function ShareModal({
             <button
               onClick={handleDownload}
               disabled={generating}
-              className="flex flex-col items-center gap-2 p-4 bg-gray-800 hover:bg-gray-700 rounded-xl transition-colors disabled:opacity-50"
+              className="flex flex-col items-center gap-2 p-4 bg-gray-800 hover:bg-gray-700 rounded-md transition-colors disabled:opacity-50"
             >
               <div className="w-10 h-10 flex items-center justify-center bg-green-500/20 text-green-400 rounded-full">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -167,7 +167,7 @@ export default function ShareModal({
             {/* Copy Link */}
             <button
               onClick={handleCopyLink}
-              className="flex flex-col items-center gap-2 p-4 bg-gray-800 hover:bg-gray-700 rounded-xl transition-colors"
+              className="flex flex-col items-center gap-2 p-4 bg-gray-800 hover:bg-gray-700 rounded-md transition-colors"
             >
               <div className="w-10 h-10 flex items-center justify-center bg-blue-500/20 text-blue-400 rounded-full">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -180,7 +180,7 @@ export default function ShareModal({
             {/* Twitter */}
             <button
               onClick={handleShareTwitter}
-              className="flex flex-col items-center gap-2 p-4 bg-gray-800 hover:bg-gray-700 rounded-xl transition-colors"
+              className="flex flex-col items-center gap-2 p-4 bg-gray-800 hover:bg-gray-700 rounded-md transition-colors"
             >
               <div className="w-10 h-10 flex items-center justify-center bg-sky-500/20 text-sky-400 rounded-full">
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -193,7 +193,7 @@ export default function ShareModal({
             {/* LinkedIn */}
             <button
               onClick={handleShareLinkedIn}
-              className="flex flex-col items-center gap-2 p-4 bg-gray-800 hover:bg-gray-700 rounded-xl transition-colors"
+              className="flex flex-col items-center gap-2 p-4 bg-gray-800 hover:bg-gray-700 rounded-md transition-colors"
             >
               <div className="w-10 h-10 flex items-center justify-center bg-blue-600/20 text-blue-500 rounded-full">
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

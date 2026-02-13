@@ -107,15 +107,15 @@ export default function RoadmapsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+        <div className="bg-gray-800 rounded-md p-4 border border-gray-700">
           <p className="text-2xl font-bold text-white">{roadmaps.length}</p>
           <p className="text-sm text-gray-400">{t('roadmaps.totalRoadmaps')}</p>
         </div>
-        <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+        <div className="bg-gray-800 rounded-md p-4 border border-gray-700">
           <p className="text-2xl font-bold text-blue-400">{activeRoadmaps.length}</p>
           <p className="text-sm text-gray-400">{t('roadmaps.activeRoadmaps')}</p>
         </div>
-        <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+        <div className="bg-gray-800 rounded-md p-4 border border-gray-700">
           <p className="text-2xl font-bold text-green-400">{completedRoadmaps.length}</p>
           <p className="text-sm text-gray-400">{t('roadmaps.completedRoadmaps')}</p>
         </div>
@@ -126,7 +126,7 @@ export default function RoadmapsPage() {
         <div className="mb-6">
           <button
             onClick={() => setShowTemplates(!showTemplates)}
-            className="w-full flex items-center justify-between p-4 bg-gray-800 border border-gray-700 rounded-xl hover:border-gray-600 transition-colors"
+            className="w-full flex items-center justify-between p-4 bg-gray-800 border border-gray-700 rounded-md hover:border-gray-600 transition-colors"
           >
             <div className="flex items-center gap-3">
               <BookOpen className="w-5 h-5 text-purple-400" />
@@ -157,7 +157,7 @@ export default function RoadmapsPage() {
                 return (
                   <div
                     key={template.id}
-                    className="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden"
+                    className="bg-gray-800 border border-gray-700 rounded-md overflow-hidden"
                   >
                     <div className="p-4">
                       <div className="flex items-start justify-between gap-4">
@@ -236,7 +236,7 @@ export default function RoadmapsPage() {
       {/* Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md">
+          <div className="bg-gray-800 rounded-md p-6 w-full max-w-md">
             <h2 className="text-xl font-semibold text-white mb-4">
               {editingRoadmap ? t('roadmaps.editRoadmap') : t('roadmaps.addRoadmap')}
             </h2>
@@ -388,7 +388,7 @@ function RoadmapCard({
   return (
     <div
       onClick={onView}
-      className="bg-gray-800 border border-gray-700 rounded-xl p-4 hover:border-gray-600 transition-colors cursor-pointer"
+      className="bg-gray-800 border border-gray-700 rounded-md p-4 hover:border-gray-600 transition-colors cursor-pointer"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3 min-w-0 flex-1">

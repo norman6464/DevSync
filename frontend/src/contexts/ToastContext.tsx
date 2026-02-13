@@ -43,7 +43,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           {toasts.map((toast) => (
             <div
               key={toast.id}
-              className="pointer-events-auto animate-slide-in-right flex items-center gap-3 px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg shadow-xl max-w-sm"
+              className="pointer-events-auto animate-slide-in-right flex items-center gap-3 px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg shadow-sm max-w-sm"
             >
               {toast.icon && <span className="text-xl shrink-0">{toast.icon}</span>}
               <p className={`text-sm font-medium ${toast.color || 'text-white'}`}>

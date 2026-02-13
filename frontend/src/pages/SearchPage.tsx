@@ -51,7 +51,7 @@ export default function SearchPage() {
           <UserCardSkeleton />
         </div>
       ) : searched && filteredUsers.length === 0 ? (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-12 text-center">
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center">
           <svg className="w-16 h-16 mx-auto mb-4 text-gray-700" fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
           </svg>
@@ -71,7 +71,7 @@ export default function SearchPage() {
 
 function UserCard({ user, currentUserId, t }: { user: User; currentUserId?: number; t: (key: string) => string }) {
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-gray-700 transition-colors">
+    <div className="bg-gray-900 border border-gray-800 rounded-md p-5 hover:border-gray-700 transition-colors">
       <div className="flex items-start gap-4">
         <Link to={`/profile/${user.id}`}>
           <Avatar name={user.name} avatarUrl={user.avatar_url} />
