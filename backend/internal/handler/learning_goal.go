@@ -20,19 +20,20 @@ func NewLearningGoalHandler(s *service.LearningGoalService) *LearningGoalHandler
 	return &LearningGoalHandler{service: s}
 }
 
+// CreateGoalInput は学習目標作成のリクエストボディ。
+type CreateGoalInput struct {
+	Title       string `json:"title" binding:"required"`
+	Description string `json:"description"`
+	Category    string `json:"category"`
+	TargetDate  string `json:"target_date"`
+}
+
 // Create は新しい学習目標を作成する。
 func (h *LearningGoalHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	var req struct {
-		Title       string `json:"title" binding:"required"`
-		Description string `json:"description"`
-		Category    string `json:"category"`
-		TargetDate  string `json:"target_date"`
-	}
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "title is required"})
+	req := bindJSON[CreateGoalInput](c)
+	if req == nil {
 		return
 	}
 
@@ -66,6 +67,16 @@ func (h *LearningGoalHandler) Create(c *gin.Context) {
 	respondCreated(c, goal)
 }
 
+// UpdateGoalInput は学習目標更新のリクエストボディ。
+type UpdateGoalInput struct {
+	Title       *string `json:"title"`
+	Description *string `json:"description"`
+	Category    *string `json:"category"`
+	TargetDate  *string `json:"target_date"`
+	Progress    *int    `json:"progress"`
+	Status      *string `json:"status"`
+}
+
 // Update は指定された学習目標を更新する。
 func (h *LearningGoalHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -74,17 +85,8 @@ func (h *LearningGoalHandler) Update(c *gin.Context) {
 		return
 	}
 
-	var req struct {
-		Title       *string `json:"title"`
-		Description *string `json:"description"`
-		Category    *string `json:"category"`
-		TargetDate  *string `json:"target_date"`
-		Progress    *int    `json:"progress"`
-		Status      *string `json:"status"`
-	}
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+	req := bindJSON[UpdateGoalInput](c)
+	if req == nil {
 		return
 	}
 

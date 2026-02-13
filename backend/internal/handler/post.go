@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
@@ -20,22 +18,24 @@ func NewPostHandler(s *service.PostService, snippetService *service.CodeSnippetS
 	return &PostHandler{service: s, snippetService: snippetService}
 }
 
+// CreatePostInput は投稿作成のリクエストボディ。
+type CreatePostInput struct {
+	Title     string `json:"title" binding:"required"`
+	Content   string `json:"content" binding:"required"`
+	ImageURLs string `json:"image_urls"`
+	IsDraft   bool   `json:"is_draft"`
+	CodeSnippets []struct {
+		Language string `json:"language"`
+		FileName string `json:"file_name"`
+		Code     string `json:"code"`
+	} `json:"code_snippets"`
+}
+
 // Create は新しい投稿を作成する。
 func (h *PostHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
-	var input struct {
-		Title     string `json:"title" binding:"required"`
-		Content   string `json:"content" binding:"required"`
-		ImageURLs string `json:"image_urls"`
-		IsDraft   bool   `json:"is_draft"`
-		CodeSnippets []struct {
-			Language string `json:"language"`
-			FileName string `json:"file_name"`
-			Code     string `json:"code"`
-		} `json:"code_snippets"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	input := bindJSON[CreatePostInput](c)
+	if input == nil {
 		return
 	}
 
@@ -112,6 +112,13 @@ func (h *PostHandler) GetByID(c *gin.Context) {
 	})
 }
 
+// UpdatePostInput は投稿更新のリクエストボディ。
+type UpdatePostInput struct {
+	Title     string `json:"title"`
+	Content   string `json:"content"`
+	ImageURLs string `json:"image_urls"`
+}
+
 // Update は投稿を更新する。所有者のみ更新可能。
 func (h *PostHandler) Update(c *gin.Context) {
 	id, ok := parseID(c, "id")
@@ -120,13 +127,8 @@ func (h *PostHandler) Update(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	var input struct {
-		Title     string `json:"title"`
-		Content   string `json:"content"`
-		ImageURLs string `json:"image_urls"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	input := bindJSON[UpdatePostInput](c)
+	if input == nil {
 		return
 	}
 
@@ -225,6 +227,11 @@ func (h *PostHandler) GetComments(c *gin.Context) {
 	respondOK(c, comments)
 }
 
+// CreateCommentInput はコメント作成のリクエストボディ。
+type CreateCommentInput struct {
+	Content string `json:"content" binding:"required"`
+}
+
 // CreateComment は投稿にコメントを作成する。
 func (h *PostHandler) CreateComment(c *gin.Context) {
 	id, ok := parseID(c, "id")
@@ -233,11 +240,8 @@ func (h *PostHandler) CreateComment(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	var input struct {
-		Content string `json:"content" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	input := bindJSON[CreateCommentInput](c)
+	if input == nil {
 		return
 	}
 
