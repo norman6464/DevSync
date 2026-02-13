@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useRankings } from '../hooks';
 import Avatar from '../components/common/Avatar';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { PageLoader } from '../components/common';
 
 export default function RankingsPage() {
   const { t } = useTranslation();
@@ -122,7 +122,7 @@ export default function RankingsPage() {
 
       {/* Rankings Table */}
       {loading ? (
-        <div className="py-12"><LoadingSpinner /></div>
+        <PageLoader />
       ) : rankings.length === 0 ? (
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-12 text-center text-gray-400 text-sm">
           {t('rankings.noData')}

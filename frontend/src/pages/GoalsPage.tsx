@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Monitor, Rocket, Target, FolderOpen, FileText, type LucideIcon } from 'lucide-react';
 import { type GoalCategory, type GoalStatus, type LearningGoal } from '../api/goals';
 import { useGoals } from '../hooks';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { PageLoader } from '../components/common';
 
 const CATEGORIES: { value: GoalCategory; label: string; icon: string; Icon: LucideIcon }[] = [
   { value: 'language', label: 'goals.categoryLanguage', icon: '💻', Icon: Monitor },
@@ -93,7 +93,7 @@ export default function GoalsPage() {
     }
   };
 
-  if (loading) return <div className="py-12"><LoadingSpinner /></div>;
+  if (loading) return <PageLoader />;
 
   const inputClass = "w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow";
 

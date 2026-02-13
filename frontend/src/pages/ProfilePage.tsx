@@ -5,7 +5,7 @@ import { Sparkles, Rocket, FileText, Monitor, Target, FolderOpen } from 'lucide-
 import { useAuthStore } from '../store/authStore';
 import { useProfile } from '../hooks';
 import Avatar from '../components/common/Avatar';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { PageLoader } from '../components/common';
 import FollowButton from '../components/profile/FollowButton';
 import ContributionCalendar from '../components/profile/ContributionCalendar';
 import LanguageChart from '../components/profile/LanguageChart';
@@ -29,7 +29,7 @@ export default function ProfilePage() {
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [portfolioModalOpen, setPortfolioModalOpen] = useState(false);
 
-  if (loading) return <div className="py-12"><LoadingSpinner /></div>;
+  if (loading) return <PageLoader />;
   if (!user) return <div className="text-center text-gray-400 py-12">{t('errors.notFound')}</div>;
 
   const isOwnProfile = currentUser?.id === user.id;
