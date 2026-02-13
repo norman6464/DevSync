@@ -5,7 +5,7 @@ import type { LearningResource, ResourceCategory, ResourceDifficulty } from '../
 import { useResources } from '../hooks';
 import ResourceCard from '../components/resources/ResourceCard';
 import ResourceForm from '../components/resources/ResourceForm';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { ResourceCardSkeleton } from '../components/common/Skeleton';
 
 const categories: (ResourceCategory | '')[] = ['', 'book', 'video', 'article', 'course', 'tutorial', 'podcast', 'tool', 'other'];
 const difficulties: (ResourceDifficulty | '')[] = ['', 'beginner', 'intermediate', 'advanced'];
@@ -152,8 +152,10 @@ export default function ResourcesPage() {
 
       {/* Content */}
       {loading ? (
-        <div className="flex justify-center items-center min-h-[400px]">
-          <LoadingSpinner />
+        <div className="space-y-4">
+          <ResourceCardSkeleton />
+          <ResourceCardSkeleton />
+          <ResourceCardSkeleton />
         </div>
       ) : resources.length === 0 ? (
         <div className="text-center py-12">
