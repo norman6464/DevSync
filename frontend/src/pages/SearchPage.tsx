@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import SearchBar from '../components/search/SearchBar';
 import SearchTabs, { SearchTab } from '../components/search/SearchTabs';
-import { useUserSearch, usePostSearch, useCircleSearch } from '../hooks';
+import { useUserSearch, usePostSearch, useCircleSearch, useDebounce } from '../hooks';
 import { useAuthStore } from '../store/authStore';
 import Avatar from '../components/common/Avatar';
 import FollowButton from '../components/profile/FollowButton';
@@ -18,15 +18,15 @@ export default function NewSearchPage() {
   const [activeTab, setActiveTab] = useState<SearchTab>('users');
   const [globalQuery, setGlobalQuery] = useState('');
 
+  // デバウンス処理（300ms）
+  const debouncedQuery = useDebounce(globalQuery, 300);
+
   const userSearch = useUserSearch();
   const postSearch = usePostSearch();
   const circleSearch = useCircleSearch();
 
   const handleGlobalQueryChange = (value: string) => {
     setGlobalQuery(value);
-    userSearch.setQuery(value);
-    postSearch.setQuery(value);
-    circleSearch.setQuery(value);
   };
 
   const handleGlobalSearch = () => {
@@ -34,6 +34,16 @@ export default function NewSearchPage() {
     postSearch.handleSearch();
     circleSearch.handleSearch();
   };
+
+  // デバウンスされたクエリで自動検索
+  useEffect(() => {
+    if (debouncedQuery) {
+      userSearch.setQuery(debouncedQuery);
+      postSearch.setQuery(debouncedQuery);
+      circleSearch.setQuery(debouncedQuery);
+      handleGlobalSearch();
+    }
+  }, [debouncedQuery]);
 
   const counts = {
     users: userSearch.filteredUsers?.length || 0,

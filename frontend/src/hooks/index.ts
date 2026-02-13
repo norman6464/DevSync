@@ -29,3 +29,4 @@ export { useChat } from './useChat';
 export { useRecommendedUsers, useTrendingPosts, useTrendingResources } from './useRecommendations';
 export { useStudyCircles, useStudyCircleDetail, useStudyCircleActivity } from './useStudyCircles';
 export { useToast } from './useToast';
+export { useDebounce } from './useDebounce';
