@@ -34,6 +34,7 @@ import StudyCirclesPage from './pages/StudyCirclesPage';
 import StudyCircleDetailPage from './pages/StudyCircleDetailPage';
 import DraftsPage from './pages/DraftsPage';
 import OnboardingPage from './pages/OnboardingPage';
+import NotFoundPage from './pages/NotFoundPage';
 import { ToastProvider } from './contexts/ToastContext';
 import ToastContainer from './components/common/Toast';
 
@@ -96,6 +97,7 @@ export default function App() {
           <Route path="/study-circles/:id" element={<StudyCircleDetailPage />} />
         </Route>
       </Route>
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
     </ToastProvider>
   );
