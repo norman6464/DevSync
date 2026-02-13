@@ -49,7 +49,7 @@ export default function ChatPage() {
                   <div className="px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">
                     {t('chat.recentChats')}
                   </div>
-                  {c.conversations.map((conv) => (
+                  {c.conversations.filter((conv) => conv.user).map((conv) => (
                     <button
                       key={conv.user.id}
                       onClick={() => c.handleSelectUser(conv.user.id)}
