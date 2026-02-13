@@ -118,7 +118,21 @@
     "lineCommentPlaceholder": "この行へのコメント...",
     "snippetComments": "{{count}}件のコメント",
     "codeSnippets": "コードスニペット",
-    "moreSnippets": "件のスニペット"
+    "moreSnippets": "件のスニペット",
+    "saveDraft": "下書き保存",
+    "draftSaved": "下書きを保存しました",
+    "draftFailed": "下書きの保存に失敗しました",
+    "drafts": "下書き",
+    "draft": "下書き",
+    "noDrafts": "下書きはありません",
+    "lastEdited": "最終編集",
+    "publish": "公開",
+    "published": "公開しました",
+    "publishFailed": "公開に失敗しました",
+    "confirmPublish": "この下書きを公開しますか？",
+    "confirmDelete": "この投稿を削除しますか？",
+    "deleted": "削除しました",
+    "deleteFailed": "削除に失敗しました"
   },
   "profile": {
     "followers": "フォロワー",

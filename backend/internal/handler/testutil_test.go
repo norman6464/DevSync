@@ -108,6 +108,10 @@ func (m *MockPostRepository) Search(query string, limit, offset int) (interface{
 	args := m.Called(query, limit, offset)
 	return args.Get(0), args.Get(1).(int64), args.Error(2)
 }
+func (m *MockPostRepository) FindDraftsByUserID(userID uint) ([]model.Post, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.Post), args.Error(1)
+}
 
 // MockNotificationRepository は NotificationRepositoryInterface のモック実装。
 type MockNotificationRepository struct{ mock.Mock }

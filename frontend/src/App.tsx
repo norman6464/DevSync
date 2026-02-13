@@ -32,6 +32,7 @@ import AdvicePage from './pages/AdvicePage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import StudyCirclesPage from './pages/StudyCirclesPage';
 import StudyCircleDetailPage from './pages/StudyCircleDetailPage';
+import DraftsPage from './pages/DraftsPage';
 import OnboardingPage from './pages/OnboardingPage';
 import { ToastProvider } from './contexts/ToastContext';
 
@@ -76,6 +77,7 @@ export default function App() {
           <Route path="/chat/:userId" element={<ChatPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/posts/:id" element={<PostDetailPage />} />
+          <Route path="/drafts" element={<DraftsPage />} />
           <Route path="/goals" element={<GoalsPage />} />
           <Route path="/learning-logs" element={<LearningLogsPage />} />
           <Route path="/reports" element={<ReportsPage />} />

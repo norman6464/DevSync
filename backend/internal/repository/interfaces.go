@@ -25,6 +25,7 @@ type PostRepositoryInterface interface {
 	FindByID(id uint) (*model.Post, error)
 	FindAll(page, limit int) ([]model.Post, error)
 	FindByUserID(userID uint) ([]model.Post, error)
+	FindDraftsByUserID(userID uint) ([]model.Post, error)
 	Timeline(userID uint, page, limit int) ([]model.Post, error)
 	Update(post *model.Post) error
 	Delete(id uint) error

@@ -278,3 +278,86 @@ func TestPostDeleteComment_Success(t *testing.T) {
 	w := doRequest(r, http.MethodDelete, "/posts/5/comments/3", nil)
 	assertStatus(t, w, http.StatusOK)
 }
+
+// ---------- Draft ----------
+
+func TestPostCreate_Draft_Success(t *testing.T) {
+	h, postRepo, notifRepo, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts", h.Create)
+
+	postRepo.On("Create", mock.AnythingOfType("*model.Post")).Return(nil)
+	// 下書きの場合、通知は送られない（GetFollowerIDsは呼ばれない）
+	postRepo.On("FindByID", mock.AnythingOfType("uint")).Return(&model.Post{
+		Title: "Draft Post", Content: "Draft content", IsDraft: true,
+	}, nil)
+
+	w := doRequest(r, http.MethodPost, "/posts", map[string]interface{}{
+		"title": "Draft Post", "content": "Draft content", "is_draft": true,
+	})
+
+	assertStatus(t, w, http.StatusCreated)
+	notifRepo.AssertNotCalled(t, "GetFollowerIDs")
+}
+
+func TestPostGetDrafts_Success(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.GET("/posts/drafts", h.GetDrafts)
+
+	postRepo.On("FindDraftsByUserID", uint(1)).Return([]model.Post{
+		{Title: "Draft 1", IsDraft: true},
+		{Title: "Draft 2", IsDraft: true},
+	}, nil)
+
+	w := doRequest(r, http.MethodGet, "/posts/drafts", nil)
+	assertStatus(t, w, http.StatusOK)
+
+	var drafts []map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &drafts)
+	assert.Len(t, drafts, 2)
+}
+
+func TestPostPublish_Success(t *testing.T) {
+	h, postRepo, notifRepo, _ := setupPostHandler()
+	r := newRouter(1)
+	r.PUT("/posts/:id/publish", h.Publish)
+
+	postRepo.On("FindByID", uint(5)).Return(&model.Post{
+		ID: 5, UserID: 1, Title: "Draft", IsDraft: true,
+	}, nil)
+	postRepo.On("Update", mock.AnythingOfType("*model.Post")).Return(nil)
+	notifRepo.On("GetFollowerIDs", uint(1)).Return([]uint{2, 3}, nil)
+	notifRepo.On("CreateBatch", mock.AnythingOfType("[]*model.Notification")).Return(nil)
+
+	w := doRequest(r, http.MethodPut, "/posts/5/publish", nil)
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestPostPublish_Forbidden(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1) // userID=1
+	r.PUT("/posts/:id/publish", h.Publish)
+
+	// 別のユーザーの下書き
+	postRepo.On("FindByID", uint(5)).Return(&model.Post{
+		ID: 5, UserID: 999, Title: "Draft", IsDraft: true,
+	}, nil)
+
+	w := doRequest(r, http.MethodPut, "/posts/5/publish", nil)
+	assertStatus(t, w, http.StatusForbidden)
+}
+
+func TestPostPublish_NotDraft(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.PUT("/posts/:id/publish", h.Publish)
+
+	// すでに公開済み
+	postRepo.On("FindByID", uint(5)).Return(&model.Post{
+		ID: 5, UserID: 1, Title: "Published", IsDraft: false,
+	}, nil)
+
+	w := doRequest(r, http.MethodPut, "/posts/5/publish", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}

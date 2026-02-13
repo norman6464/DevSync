@@ -27,6 +27,7 @@ func (h *PostHandler) Create(c *gin.Context) {
 		Title     string `json:"title" binding:"required"`
 		Content   string `json:"content" binding:"required"`
 		ImageURLs string `json:"image_urls"`
+		IsDraft   bool   `json:"is_draft"`
 		CodeSnippets []struct {
 			Language string `json:"language"`
 			FileName string `json:"file_name"`
@@ -43,6 +44,7 @@ func (h *PostHandler) Create(c *gin.Context) {
 		Title:     input.Title,
 		Content:   input.Content,
 		ImageURLs: input.ImageURLs,
+		IsDraft:   input.IsDraft,
 	}
 	created, err := h.service.Create(post)
 	if err != nil {
@@ -259,4 +261,32 @@ func (h *PostHandler) DeleteComment(c *gin.Context) {
 		return
 	}
 	respondDeleted(c)
+}
+
+// GetDrafts は現在のユーザーの下書き投稿一覧を返す。
+func (h *PostHandler) GetDrafts(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	drafts, err := h.service.GetDrafts(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, drafts)
+}
+
+// Publish は下書き投稿を公開する。所有者のみ公開可能。
+func (h *PostHandler) Publish(c *gin.Context) {
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+	userID := c.GetUint("userID")
+
+	post, err := h.service.Publish(id, userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, post)
 }
