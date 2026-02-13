@@ -104,6 +104,10 @@ func (m *MockPostRepository) GetComments(postID uint) ([]model.Comment, error) {
 func (m *MockPostRepository) DeleteComment(id, userID uint) error {
 	return m.Called(id, userID).Error(0)
 }
+func (m *MockPostRepository) Search(query string, limit, offset int) (interface{}, int64, error) {
+	args := m.Called(query, limit, offset)
+	return args.Get(0), args.Get(1).(int64), args.Error(2)
+}
 
 // MockNotificationRepository は NotificationRepositoryInterface のモック実装。
 type MockNotificationRepository struct{ mock.Mock }
@@ -590,6 +594,10 @@ func (m *MockStudyCircleRepository) HasCheckedInToday(circleID, userID uint) (bo
 func (m *MockStudyCircleRepository) GetStreakRanking(circleID uint) ([]model.CircleMemberStreak, error) {
 	args := m.Called(circleID)
 	return args.Get(0).([]model.CircleMemberStreak), args.Error(1)
+}
+func (m *MockStudyCircleRepository) Search(query string, limit, offset int) (interface{}, int64, error) {
+	args := m.Called(query, limit, offset)
+	return args.Get(0), args.Get(1).(int64), args.Error(2)
 }
 
 // setupStudyCircleHandler はStudyCircleHandlerテスト用のセットアップを行う。

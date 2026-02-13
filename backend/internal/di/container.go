@@ -48,6 +48,7 @@ type Container struct {
 	LearningAnalyticsHandler *handler.LearningAnalyticsHandler
 	RecommendationHandler    *handler.RecommendationHandler
 	StudyCircleHandler       *handler.StudyCircleHandler
+	SearchHandler            *handler.SearchHandler
 
 	// ミドルウェア・コールバック用
 	AuthService      *service.AuthService
@@ -194,6 +195,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	c.LearningAnalyticsHandler = handler.NewLearningAnalyticsHandler(analyticsService)
 	c.RecommendationHandler = handler.NewRecommendationHandler(recommendationService)
 	c.StudyCircleHandler = handler.NewStudyCircleHandler(studyCircleService)
+	c.SearchHandler = handler.NewSearchHandler(postRepo, studyCircleRepo)
 
 	// HubのGetRoomMembersコールバックを設定
 	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs

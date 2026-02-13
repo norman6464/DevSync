@@ -228,6 +228,19 @@
     "viewProfile": "Profil",
     "startChat": "Chat"
   },
+  "search": {
+    "title": "Suchen",
+    "description": "Suchen Sie nach Benutzern, Beiträgen und Lernkreisen",
+    "placeholder": "Suchbegriffe eingeben...",
+    "emptyInitial": "Geben Sie Suchbegriffe ein",
+    "noResults": "Keine Ergebnisse gefunden",
+    "tabs": {
+      "users": "Benutzer",
+      "posts": "Beiträge",
+      "circles": "Lernkreise"
+    },
+    "viewProfile": "Profil anzeigen"
+  },
   "chat": {
     "title": "Nachrichten",
     "timeline": "Zeitleiste",

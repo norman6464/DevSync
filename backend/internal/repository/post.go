@@ -119,3 +119,21 @@ func (r *PostRepository) DeleteComment(id, userID uint) error {
 	r.db.Model(&model.Post{}).Where("id = ?", comment.PostID).UpdateColumn("comment_count", gorm.Expr("GREATEST(comment_count - 1, 0)"))
 	return r.db.Delete(&comment).Error
 }
+
+// Search はキーワードで投稿を検索する（タイトルまたは本文に部分一致）。
+func (r *PostRepository) Search(query string, limit, offset int) (interface{}, int64, error) {
+	var posts []model.Post
+	var total int64
+
+	searchPattern := "%" + query + "%"
+	db := r.db.Preload("User").Preload("CodeSnippets").
+		Where("title LIKE ? OR content LIKE ?", searchPattern, searchPattern).
+		Order("created_at DESC")
+
+	if err := db.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	err := db.Offset(offset).Limit(limit).Find(&posts).Error
+	return posts, total, err
+}

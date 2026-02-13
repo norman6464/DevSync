@@ -68,3 +68,7 @@ export const getCheckins = (circleId: number) =>
 // ストリークランキング
 export const getStreakRanking = (circleId: number) =>
   client.get<CircleMemberStreak[]>(`/study-circles/${circleId}/streak-ranking`);
+
+// 検索
+export const searchCircles = (query: string, limit = 20, offset = 0) =>
+  client.get<StudyCircle[]>('/search/circles', { params: { q: query, limit, offset } });

@@ -218,6 +218,19 @@
     "viewProfile": "プロフィール",
     "startChat": "チャット"
   },
+  "search": {
+    "title": "検索",
+    "description": "ユーザー、投稿、スタディサークルを検索",
+    "placeholder": "キーワードを入力...",
+    "emptyInitial": "検索キーワードを入力してください",
+    "noResults": "結果が見つかりませんでした",
+    "tabs": {
+      "users": "ユーザー",
+      "posts": "投稿",
+      "circles": "サークル"
+    },
+    "viewProfile": "プロフィール"
+  },
   "chat": {
     "title": "メッセージ",
     "recentChats": "最近のチャット",
