@@ -58,6 +58,11 @@
   },
   "dashboard": {
     "title": "ダッシュボード",
+    "timeline": "タイムライン",
+    "profile": "プロフィール",
+    "progress": "進捗",
+    "activities": "アクティビティ",
+    "recommendations": "おすすめ",
     "following": "フォロー中",
     "allPosts": "すべての投稿",
     "noPostsFollowing": "フォロー中のユーザーの投稿はまだありません。",
