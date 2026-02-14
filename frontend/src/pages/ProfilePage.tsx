@@ -329,7 +329,13 @@ export default function ProfilePage() {
         {posts.length === 0 ? (
           <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center text-gray-400 text-sm">{t('profile.noPosts')}</div>
         ) : (
-          <div className="space-y-3">{posts.map((post) => <PostCard key={post.id} post={post} />)}</div>
+          <div className="space-y-3">{posts.map((post) => (
+            <PostCard
+              key={post.id}
+              post={post}
+              isOwner={currentUser?.id === post.user_id}
+            />
+          ))}</div>
         )}
       </div>
 

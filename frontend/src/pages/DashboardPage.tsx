@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Target, Bell, TrendingUp, CheckCircle2, Clock, ChevronRight } from 'lucide-react';
@@ -6,7 +7,9 @@ import { usePosts, useDashboard, useBadgeNotifier } from '../hooks';
 import { getUserBadges } from '../api/badges';
 import { useAsyncData } from '../hooks/useAsyncData';
 import type { BadgeResult } from '../types/badge';
+import type { Post } from '../types/post';
 import PostCard from '../components/posts/PostCard';
+import PostForm from '../components/posts/PostForm';
 import QuickPostForm from '../components/posts/QuickPostForm';
 import { PostCardSkeleton } from '../components/common/Skeleton';
 import Avatar from '../components/common/Avatar';
@@ -22,7 +25,8 @@ import StudyCircleWidget from '../components/dashboard/StudyCircleWidget';
 export default function DashboardPage() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
-  const { posts, loading, tab, setTab, createPost, refetch } = usePosts();
+  const { posts, loading, tab, setTab, createPost, updatePost, deletePost, refetch } = usePosts();
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
   const {
     activeGoals,
     completedGoals,
@@ -136,11 +140,35 @@ export default function DashboardPage() {
         ) : (
           <div className="space-y-4">
             {posts.map((post) => (
-              <PostCard key={post.id} post={post} onUpdate={refetch} />
+              <PostCard
+                key={post.id}
+                post={post}
+                isOwner={user?.id === post.user_id}
+                onEdit={() => setEditingPost(post)}
+                onDelete={() => deletePost(post)}
+                onUpdate={refetch}
+              />
             ))}
           </div>
         )}
         </div>
+
+        {/* Edit Modal */}
+        {editingPost && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 rounded-md p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <h2 className="text-xl font-semibold text-white mb-4">投稿を編集</h2>
+              <PostForm
+                post={editingPost}
+                onSubmit={async (title, content, imageUrls) => {
+                  const result = await updatePost(editingPost.id, title, content, imageUrls);
+                  if (result) setEditingPost(null);
+                }}
+                onCancel={() => setEditingPost(null)}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Sidebar */}

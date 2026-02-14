@@ -6,6 +6,7 @@ import MarkdownEditor from './MarkdownEditor';
 import CodeSnippetInput, { type SnippetInputData } from './CodeSnippetInput';
 
 interface PostFormProps {
+  post?: { id: number; title: string; content: string; image_urls?: string };
   onSubmit: (
     title: string,
     content: string,
@@ -13,16 +14,20 @@ interface PostFormProps {
     codeSnippets?: { language: string; file_name?: string; code: string }[],
     isDraft?: boolean
   ) => Promise<void>;
+  onCancel?: () => void;
+  loading?: boolean;
 }
 
-export default function PostForm({ onSubmit }: PostFormProps) {
+export default function PostForm({ post, onSubmit, onCancel, loading: externalLoading }: PostFormProps) {
   const { t } = useTranslation();
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [title, setTitle] = useState(post?.title || '');
+  const [content, setContent] = useState(post?.content || '');
+  const [imageUrls, setImageUrls] = useState<string[]>(
+    post?.image_urls ? JSON.parse(post.image_urls) : []
+  );
   const [snippets, setSnippets] = useState<SnippetInputData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(!!post);
 
   const addSnippet = () => {
     setSnippets([...snippets, { language: '', file_name: '', code: '' }]);
@@ -52,14 +57,16 @@ export default function PostForm({ onSubmit }: PostFormProps) {
           code: s.code,
         }));
       await onSubmit(title, content, imageUrlsJson, validSnippets.length > 0 ? validSnippets : undefined, isDraft);
-      setTitle('');
-      setContent('');
-      setImageUrls([]);
-      setSnippets([]);
-      setExpanded(false);
-      toast.success(isDraft ? t('post.draftSaved') : t('post.postCreated'));
+      if (!post) {
+        setTitle('');
+        setContent('');
+        setImageUrls([]);
+        setSnippets([]);
+        setExpanded(false);
+      }
+      toast.success(post ? '投稿を更新しました' : (isDraft ? '下書きを保存しました' : '投稿を作成しました'));
     } catch {
-      toast.error(isDraft ? t('post.draftFailed') : t('post.postFailed'));
+      toast.error(post ? '投稿の更新に失敗しました' : (isDraft ? '下書きの保存に失敗しました' : '投稿の作成に失敗しました'));
     } finally {
       setLoading(false);
     }
@@ -120,30 +127,36 @@ export default function PostForm({ onSubmit }: PostFormProps) {
               <button
                 type="button"
                 onClick={() => {
-                  setExpanded(false);
-                  setTitle('');
-                  setContent('');
-                  setImageUrls([]);
-                  setSnippets([]);
+                  if (onCancel) {
+                    onCancel();
+                  } else {
+                    setExpanded(false);
+                    setTitle('');
+                    setContent('');
+                    setImageUrls([]);
+                    setSnippets([]);
+                  }
                 }}
                 className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors rounded-lg"
               >
-                {t('common.cancel')}
+                キャンセル
               </button>
-              <button
-                type="button"
-                onClick={(e) => handleSubmit(e, true)}
-                disabled={loading || !title.trim() || !content.trim()}
-                className="px-4 py-2 text-sm text-gray-400 hover:text-white disabled:opacity-40 transition-colors rounded-lg border border-gray-700 hover:border-gray-600"
-              >
-                {t('post.saveDraft')}
-              </button>
+              {!post && (
+                <button
+                  type="button"
+                  onClick={(e) => handleSubmit(e, true)}
+                  disabled={(externalLoading || loading) || !title.trim() || !content.trim()}
+                  className="px-4 py-2 text-sm text-gray-400 hover:text-white disabled:opacity-40 transition-colors rounded-lg border border-gray-700 hover:border-gray-600"
+                >
+                  下書き保存
+                </button>
+              )}
               <button
                 type="submit"
-                disabled={loading || !title.trim() || !content.trim()}
+                disabled={(externalLoading || loading) || !title.trim() || !content.trim()}
                 className="px-5 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:hover:bg-gray-700 text-white rounded-lg font-medium text-sm transition-colors"
               >
-                {loading ? t('post.posting') : t('post.post')}
+                {(externalLoading || loading) ? (post ? '更新中...' : '投稿中...') : (post ? '更新' : '投稿')}
               </button>
             </div>
           </div>
