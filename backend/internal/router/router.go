@@ -280,6 +280,19 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 		learningLogs.DELETE("/:id", c.LearningLogHandler.Delete)
 	}
 
+	// 学習ノート
+	notes := g.Group("/notes")
+	{
+		notes.POST("", c.NoteHandler.Create)
+		notes.GET("", c.NoteHandler.GetByUserID)
+		notes.GET("/search", c.NoteHandler.Search)
+		notes.GET("/folder/:folderId", c.NoteHandler.GetByFolderID)
+		notes.GET("/:id", c.NoteHandler.GetByID)
+		notes.PUT("/:id", c.NoteHandler.Update)
+		notes.DELETE("/:id", c.NoteHandler.Delete)
+		notes.PUT("/:id/favorite", c.NoteHandler.ToggleFavorite)
+	}
+
 	// メール配信設定
 	g.GET("/email-preferences", c.EmailPreferencesHandler.GetPreferences)
 	g.PUT("/email-preferences", c.EmailPreferencesHandler.UpdatePreferences)
