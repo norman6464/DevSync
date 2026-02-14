@@ -53,12 +53,14 @@ func bindJSON[T any](c *gin.Context) *T {
 func respondError(c *gin.Context, err error) {
 	// DomainError の場合
 	if domainErr := domain.GetDomainError(err); domainErr != nil {
-		c.JSON(domainErr.HTTPStatus(), gin.H{"error": domainErr.Message, "code": domainErr.Code})
+		response := domain.NewErrorResponse(domainErr.Message, string(domainErr.Code), nil)
+		c.JSON(domainErr.HTTPStatus(), response)
 		return
 	}
 
 	// DomainError でない場合は内部エラーとして扱う
-	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	response := domain.NewErrorResponse(err.Error(), "", nil)
+	c.JSON(http.StatusInternalServerError, response)
 }
 
 // respondOK は200 OKでデータを返す。
@@ -73,5 +75,12 @@ func respondCreated(c *gin.Context, data interface{}) {
 
 // respondDeleted は200 OKで削除メッセージを返す。
 func respondDeleted(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
+	response := domain.NewMessageResponse("deleted")
+	c.JSON(http.StatusOK, response)
+}
+
+// respondPaginated はページネーション付きレスポンスを返す。
+func respondPaginated(c *gin.Context, data interface{}, total int64, page, limit int) {
+	response := domain.NewPaginatedResponse(data, total, page, limit)
+	c.JSON(http.StatusOK, response)
 }
