@@ -57,6 +57,24 @@ func (m *MockNoteRepository) ToggleFavorite(id uint) error {
 	return m.Called(id).Error(0)
 }
 
+func (m *MockNoteRepository) Archive(id uint) error {
+	return m.Called(id).Error(0)
+}
+
+func (m *MockNoteRepository) Unarchive(id uint) error {
+	return m.Called(id).Error(0)
+}
+
+func (m *MockNoteRepository) FindArchived(userID uint, page, limit int) ([]model.Note, error) {
+	args := m.Called(userID, page, limit)
+	return args.Get(0).([]model.Note), args.Error(1)
+}
+
+func (m *MockNoteRepository) CountArchivedByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 // newTestNoteService はテスト用のNoteServiceを生成する。
 func newTestNoteService() (*NoteService, *MockNoteRepository) {
 	repo := new(MockNoteRepository)

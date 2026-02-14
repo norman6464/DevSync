@@ -287,11 +287,14 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 		notes.POST("", c.NoteHandler.Create)
 		notes.GET("", c.NoteHandler.GetByUserID)
 		notes.GET("/search", c.NoteHandler.Search)
+		notes.GET("/archived", c.NoteHandler.GetArchived)
 		notes.GET("/folder/:folderId", c.NoteHandler.GetByFolderID)
 		notes.GET("/:id", c.NoteHandler.GetByID)
 		notes.PUT("/:id", c.NoteHandler.Update)
 		notes.DELETE("/:id", c.NoteHandler.Delete)
 		notes.PUT("/:id/favorite", c.NoteHandler.ToggleFavorite)
+		notes.PUT("/:id/archive", c.NoteHandler.Archive)
+		notes.PUT("/:id/unarchive", c.NoteHandler.Unarchive)
 	}
 
 	// ノートフォルダ

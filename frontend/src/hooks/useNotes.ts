@@ -7,6 +7,9 @@ import {
   updateNote,
   deleteNote,
   toggleFavorite,
+  archiveNote,
+  unarchiveNote,
+  getArchivedNotes,
   searchNotes,
   type Note,
   type CreateNoteRequest,
@@ -94,6 +97,30 @@ export function useNotes(page = 1, limit = 20) {
     }
   }, [t, setNotes]);
 
+  const handleArchive = useCallback(async (id: number) => {
+    try {
+      await archiveNote(id);
+      setNotes(prev => prev.filter(n => n.id !== id));
+      toast.success(t('notes.archived', { defaultValue: 'ノートをアーカイブしました' }));
+      return true;
+    } catch {
+      toast.error(t('errors.somethingWrong'));
+      return false;
+    }
+  }, [t, setNotes]);
+
+  const handleUnarchive = useCallback(async (id: number) => {
+    try {
+      await unarchiveNote(id);
+      setNotes(prev => prev.filter(n => n.id !== id));
+      toast.success(t('notes.unarchived', { defaultValue: 'ノートのアーカイブを解除しました' }));
+      return true;
+    } catch {
+      toast.error(t('errors.somethingWrong'));
+      return false;
+    }
+  }, [t, setNotes]);
+
   const favoriteNotes = currentNotes.filter(n => n.is_favorite);
 
   return {
@@ -108,6 +135,8 @@ export function useNotes(page = 1, limit = 20) {
     updateNote: handleUpdate,
     deleteNote: handleDelete,
     toggleFavorite: handleToggleFavorite,
+    archiveNote: handleArchive,
+    unarchiveNote: handleUnarchive,
     refetch,
   };
 }
@@ -130,5 +159,63 @@ export function useNoteSearch(query: string, page = 1, limit = 20) {
     page: searchResults.page,
     limit: searchResults.limit,
     loading,
+  };
+}
+
+export function useArchivedNotes(page = 1, limit = 20) {
+  const { t } = useTranslation();
+
+  const { data: archivedData, loading, refetch } = useAsyncData(
+    async () => {
+      const { data } = await getArchivedNotes(page, limit);
+      return data || { data: [], total: 0, page: 1, limit: 20 };
+    },
+    { initialData: { data: [], total: 0, page: 1, limit: 20 }, deps: [page, limit] }
+  );
+
+  const [localNotes, setLocalNotes] = useState<Note[] | null>(null);
+  const currentNotes = localNotes ?? archivedData.data;
+
+  const setNotes = useCallback((updater: Note[] | ((prev: Note[]) => Note[])) => {
+    setLocalNotes(prev => {
+      const current = prev ?? archivedData.data;
+      return typeof updater === 'function' ? updater(current) : updater;
+    });
+  }, [archivedData.data]);
+
+  const handleUnarchive = useCallback(async (id: number) => {
+    try {
+      await unarchiveNote(id);
+      setNotes(prev => prev.filter(n => n.id !== id));
+      toast.success(t('notes.unarchived', { defaultValue: 'ノートのアーカイブを解除しました' }));
+      return true;
+    } catch {
+      toast.error(t('errors.somethingWrong'));
+      return false;
+    }
+  }, [t, setNotes]);
+
+  const handleDelete = useCallback(async (id: number) => {
+    if (!confirm(t('notes.confirmDelete', { defaultValue: 'このノートを完全に削除しますか？' }))) return false;
+    try {
+      await deleteNote(id);
+      setNotes(prev => prev.filter(n => n.id !== id));
+      toast.success(t('notes.deleted', { defaultValue: 'ノートを削除しました' }));
+      return true;
+    } catch {
+      toast.error(t('errors.somethingWrong'));
+      return false;
+    }
+  }, [t, setNotes]);
+
+  return {
+    notes: currentNotes,
+    total: archivedData.total,
+    page: archivedData.page,
+    limit: archivedData.limit,
+    loading,
+    unarchiveNote: handleUnarchive,
+    deleteNote: handleDelete,
+    refetch,
   };
 }

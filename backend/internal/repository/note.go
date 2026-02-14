@@ -28,11 +28,12 @@ func (r *NoteRepository) FindByID(id uint) (*model.Note, error) {
 }
 
 // FindByUserID は指定ユーザーのノート一覧をページネーション付きで取得する（新しい順）。
+// アーカイブ済みノートは除外される。
 func (r *NoteRepository) FindByUserID(userID uint, page, limit int) ([]model.Note, error) {
 	var notes []model.Note
 	offset := (page - 1) * limit
 	err := r.db.Preload("Folder").
-		Where("user_id = ?", userID).
+		Where("user_id = ? AND is_archived = ?", userID, false).
 		Order("updated_at DESC").
 		Offset(offset).Limit(limit).
 		Find(&notes).Error
@@ -59,13 +60,14 @@ func (r *NoteRepository) Delete(id uint) error {
 }
 
 // Search はキーワードでノートを検索する（タイトルまたは本文に部分一致）。
+// アーカイブ済みノートは除外される。
 func (r *NoteRepository) Search(userID uint, query string, limit, offset int) ([]model.Note, int64, error) {
 	var notes []model.Note
 	var total int64
 
 	searchPattern := "%" + query + "%"
 	db := r.db.Model(&model.Note{}).Preload("Folder").
-		Where("user_id = ? AND (title LIKE ? OR content LIKE ?)", userID, searchPattern, searchPattern).
+		Where("user_id = ? AND is_archived = ? AND (title LIKE ? OR content LIKE ?)", userID, false, searchPattern, searchPattern).
 		Order("updated_at DESC")
 
 	if err := db.Count(&total).Error; err != nil {
@@ -76,10 +78,10 @@ func (r *NoteRepository) Search(userID uint, query string, limit, offset int) ([
 	return notes, total, err
 }
 
-// CountByUserID は指定ユーザーのノート総数を取得する。
+// CountByUserID は指定ユーザーのノート総数を取得する（アーカイブ済みを除く）。
 func (r *NoteRepository) CountByUserID(userID uint) (int64, error) {
 	var count int64
-	err := r.db.Model(&model.Note{}).Where("user_id = ?", userID).Count(&count).Error
+	err := r.db.Model(&model.Note{}).Where("user_id = ? AND is_archived = ?", userID, false).Count(&count).Error
 	return count, err
 }
 
@@ -87,4 +89,35 @@ func (r *NoteRepository) CountByUserID(userID uint) (int64, error) {
 func (r *NoteRepository) ToggleFavorite(id uint) error {
 	return r.db.Model(&model.Note{}).Where("id = ?", id).
 		Update("is_favorite", gorm.Expr("NOT is_favorite")).Error
+}
+
+// Archive は指定IDのノートをアーカイブする。
+func (r *NoteRepository) Archive(id uint) error {
+	return r.db.Model(&model.Note{}).Where("id = ?", id).
+		Update("is_archived", true).Error
+}
+
+// Unarchive は指定IDのノートのアーカイブを解除する。
+func (r *NoteRepository) Unarchive(id uint) error {
+	return r.db.Model(&model.Note{}).Where("id = ?", id).
+		Update("is_archived", false).Error
+}
+
+// FindArchived は指定ユーザーのアーカイブ済みノート一覧をページネーション付きで取得する。
+func (r *NoteRepository) FindArchived(userID uint, page, limit int) ([]model.Note, error) {
+	var notes []model.Note
+	offset := (page - 1) * limit
+	err := r.db.Preload("Folder").
+		Where("user_id = ? AND is_archived = ?", userID, true).
+		Order("updated_at DESC").
+		Offset(offset).Limit(limit).
+		Find(&notes).Error
+	return notes, err
+}
+
+// CountArchivedByUserID は指定ユーザーのアーカイブ済みノート総数を取得する。
+func (r *NoteRepository) CountArchivedByUserID(userID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.Note{}).Where("user_id = ? AND is_archived = ?", userID, true).Count(&count).Error
+	return count, err
 }
