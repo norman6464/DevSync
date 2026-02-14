@@ -22,6 +22,7 @@ func parseID(c *gin.Context, param string) (uint, bool) {
 
 // parsePagination はクエリパラメータからpage/limitを取得する。
 // デフォルト: page=1, limit=20。limitの上限は100。
+// domain.ValidatePaginationを使用してlimitの上限を正規化する。
 func parsePagination(c *gin.Context) (page, limit int) {
 	page, _ = strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ = strconv.Atoi(c.DefaultQuery("limit", "20"))
@@ -31,9 +32,11 @@ func parsePagination(c *gin.Context) (page, limit int) {
 	if limit < 1 {
 		limit = 20
 	}
-	if limit > 100 {
-		limit = 100
-	}
+
+	// domain.ValidatePaginationでlimitの上限（100）を正規化（エラーは無視）
+	offset := (page - 1) * limit
+	limit, _, _ = domain.ValidatePagination(limit, offset)
+
 	return page, limit
 }
 
