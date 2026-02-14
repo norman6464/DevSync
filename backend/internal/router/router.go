@@ -92,6 +92,7 @@ func registerUserRoutes(g *gin.RouterGroup, c *di.Container) {
 	users := g.Group("/users")
 	{
 		users.GET("", c.UserHandler.GetAll)
+		users.GET("/by-username/:username", c.UserHandler.GetByUsername) // ユーザー名でユーザー取得（IDとの競合回避）
 		users.GET("/:id", c.UserHandler.GetByID)
 		users.PUT("/:id", c.UserHandler.Update)
 		users.GET("/:id/followers", c.FollowHandler.GetFollowers)

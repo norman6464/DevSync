@@ -8,6 +8,7 @@ import "time"
 // 認証情報、プロフィール、外部サービス連携、スキル情報を保持する。
 type User struct {
 	ID                  uint      `json:"id" gorm:"primaryKey"`
+	Username            string    `json:"username" gorm:"uniqueIndex;not null"`      // 一意のユーザー名（プロフィールURL用）
 	Name                string    `json:"name" gorm:"not null"`
 	Email               string    `json:"email" gorm:"uniqueIndex;not null"`
 	Password            string    `json:"-"`                                         // json:"-" でAPIレスポンスから除外

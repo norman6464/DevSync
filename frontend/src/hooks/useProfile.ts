@@ -1,4 +1,4 @@
-import { getUser, getFollowers, getFollowing } from '../api/users';
+import { getUser, getUserByUsername, getFollowers, getFollowing } from '../api/users';
 import { getUserPosts } from '../api/posts';
 import { getContributions, getLanguages, getRepos } from '../api/github';
 import { getZennArticles, getZennStats, type ZennArticle, type ZennStats } from '../api/zenn';
@@ -33,28 +33,36 @@ interface ProfileData {
   streakInfo: StreakInfo | null;
 }
 
-export function useProfile(id: string | undefined) {
-  const userId = id ? parseInt(id) : 0;
+export function useProfile(usernameOrId: string | undefined) {
+  // usernameOrIdが数値の場合はID、そうでない場合はusername
+  const isId = usernameOrId && /^\d+$/.test(usernameOrId);
+  const userId = isId ? parseInt(usernameOrId) : 0;
+  const username = !isId ? usernameOrId : '';
 
   const { data, loading, refetch } = useAsyncData(
     async (): Promise<ProfileData> => {
-      const [userRes, postsRes, followersRes, followingRes] = await Promise.all([
-        getUser(userId),
-        getUserPosts(userId),
-        getFollowers(userId),
-        getFollowing(userId),
-      ]);
+      // usernameまたはIDでユーザーを取得
+      const userRes = username
+        ? await getUserByUsername(username)
+        : await getUser(userId);
 
       const userData = userRes.data;
+      const actualUserId = userData.id;
+
+      const [postsRes, followersRes, followingRes] = await Promise.all([
+        getUserPosts(actualUserId),
+        getFollowers(actualUserId),
+        getFollowing(actualUserId),
+      ]);
       let contributions: GitHubContribution[] = [];
       let languages: GitHubLanguageStat[] = [];
       let repos: GitHubRepository[] = [];
 
       if (userData.github_connected) {
         const [contribRes, langRes, reposRes] = await Promise.all([
-          getContributions(userId),
-          getLanguages(userId),
-          getRepos(userId),
+          getContributions(actualUserId),
+          getLanguages(actualUserId),
+          getRepos(actualUserId),
         ]);
         contributions = contribRes.data || [];
         languages = langRes.data || [];
@@ -65,8 +73,8 @@ export function useProfile(id: string | undefined) {
       let zennStats: ZennStats | null = null;
       if (userData.zenn_username) {
         const [articlesRes, statsRes] = await Promise.all([
-          getZennArticles(userId),
-          getZennStats(userId),
+          getZennArticles(actualUserId),
+          getZennStats(actualUserId),
         ]);
         zennArticles = articlesRes.data || [];
         zennStats = statsRes.data;
@@ -76,8 +84,8 @@ export function useProfile(id: string | undefined) {
       let qiitaStats: QiitaStats | null = null;
       if (userData.qiita_username) {
         const [articlesRes, statsRes] = await Promise.all([
-          getQiitaArticles(userId),
-          getQiitaStats(userId),
+          getQiitaArticles(actualUserId),
+          getQiitaStats(actualUserId),
         ]);
         qiitaArticles = articlesRes.data || [];
         qiitaStats = statsRes.data;
@@ -94,10 +102,10 @@ export function useProfile(id: string | undefined) {
       }
 
       const [goalsRes, goalStatsRes, badgesRes, streakRes] = await Promise.all([
-        getUserGoals(userId),
-        getGoalStats(userId),
-        getUserBadges(userId),
-        getStreakInfo(userId),
+        getUserGoals(actualUserId),
+        getGoalStats(actualUserId),
+        getUserBadges(actualUserId),
+        getStreakInfo(actualUserId),
       ]);
 
       return {
@@ -119,7 +127,7 @@ export function useProfile(id: string | undefined) {
         streakInfo: streakRes.data || null,
       };
     },
-    { deps: [userId], enabled: !!userId }
+    { deps: [usernameOrId], enabled: !!usernameOrId }
   );
 
   return {

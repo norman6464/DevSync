@@ -42,6 +42,16 @@ func (r *UserRepository) FindByEmail(email string) (*model.User, error) {
 	return &user, nil
 }
 
+// FindByUsername は指定ユーザー名のユーザーを取得する。
+func (r *UserRepository) FindByUsername(username string) (*model.User, error) {
+	var user model.User
+	result := r.db.Where("username = ?", username).First(&user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &user, nil
+}
+
 // Search は名前またはメールアドレスでユーザーを検索する（最大50件）。
 func (r *UserRepository) Search(query string) ([]model.User, error) {
 	var users []model.User

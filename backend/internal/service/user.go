@@ -28,6 +28,11 @@ func (s *UserService) GetByID(id uint) (*model.User, error) {
 	return s.repo.FindByID(id)
 }
 
+// GetByUsername は指定ユーザー名のユーザーを取得する。
+func (s *UserService) GetByUsername(username string) (*model.User, error) {
+	return s.repo.FindByUsername(username)
+}
+
 // FindByID は指定IDのユーザーを取得する（リポジトリ互換エイリアス）。
 func (s *UserService) FindByID(id uint) (*model.User, error) {
 	return s.repo.FindByID(id)
