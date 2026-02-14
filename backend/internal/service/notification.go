@@ -1,6 +1,8 @@
 package service
 
 import (
+	"encoding/json"
+
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
@@ -9,11 +11,17 @@ import (
 // 個別通知の作成・既読管理に加え、フォロワーへの一括通知を担当する。
 type NotificationService struct {
 	repo repository.NotificationRepositoryInterface
+	hub  *Hub // WebSocketハブ（オプショナル）
 }
 
 // NewNotificationService は新しいNotificationServiceインスタンスを生成する。
 func NewNotificationService(repo repository.NotificationRepositoryInterface) *NotificationService {
-	return &NotificationService{repo: repo}
+	return &NotificationService{repo: repo, hub: nil}
+}
+
+// NewNotificationServiceWithHub はWebSocket配信機能付きのNotificationServiceを生成する。
+func NewNotificationServiceWithHub(repo repository.NotificationRepositoryInterface, hub *Hub) *NotificationService {
+	return &NotificationService{repo: repo, hub: hub}
 }
 
 // GetByUserID は指定ユーザーの通知をページネーション付きで取得する。
@@ -47,7 +55,7 @@ func (s *NotificationService) Delete(id, userID uint) error {
 	return s.repo.Delete(id, userID)
 }
 
-// NotifyFollowers は指定ユーザーの全フォロワーに通知を一括作成する。
+// NotifyFollowers は指定ユーザーの全フォロワーに通知を一括作成し、WebSocket経由で配信する。
 // 投稿作成時などに非同期で呼び出される。
 func (s *NotificationService) NotifyFollowers(actorID uint, postID uint, notificationType model.NotificationType) {
 	followerIDs, err := s.repo.GetFollowerIDs(actorID)
@@ -63,15 +71,47 @@ func (s *NotificationService) NotifyFollowers(actorID uint, postID uint, notific
 			PostID:  &postID,
 		})
 	}
-	s.repo.CreateBatch(notifications)
+	// DB保存とWebSocket配信を実行
+	s.CreateBatch(notifications)
 }
 
-// CreateNotification は単一の通知を作成する。
+// CreateNotification は単一の通知を作成し、WebSocket経由でリアルタイム配信する。
 func (s *NotificationService) CreateNotification(notification *model.Notification) error {
-	return s.repo.Create(notification)
+	if err := s.repo.Create(notification); err != nil {
+		return err
+	}
+	// WebSocket経由でリアルタイム配信（hubがnilでなければ）
+	s.broadcastNotification(notification)
+	return nil
 }
 
-// CreateBatch は複数の通知を一括作成する。
+// CreateBatch は複数の通知を一括作成し、WebSocket経由でリアルタイム配信する。
 func (s *NotificationService) CreateBatch(notifications []*model.Notification) error {
-	return s.repo.CreateBatch(notifications)
+	if err := s.repo.CreateBatch(notifications); err != nil {
+		return err
+	}
+	// WebSocket経由でリアルタイム配信
+	for _, notification := range notifications {
+		s.broadcastNotification(notification)
+	}
+	return nil
+}
+
+// broadcastNotification は通知をWebSocket経由でユーザーに配信する。
+// hubがnilの場合は何もしない（テスト環境との互換性のため）。
+func (s *NotificationService) broadcastNotification(notification *model.Notification) {
+	if s.hub == nil {
+		return
+	}
+	// 通知をJSON形式でシリアライズしてWebSocket経由で送信
+	message := WSMessage{
+		Type:     "notification",
+		SenderID: notification.ActorID,
+		Content:  string(notification.Type),
+	}
+	data, err := json.Marshal(message)
+	if err != nil {
+		return
+	}
+	s.hub.SendToUser(notification.UserID, data)
 }
