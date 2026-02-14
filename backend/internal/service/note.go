@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
@@ -92,4 +93,43 @@ func (s *NoteService) GetArchived(userID uint, page, limit int) ([]model.Note, e
 // CountArchivedByUserID は指定ユーザーのアーカイブ済みノート総数を取得する。
 func (s *NoteService) CountArchivedByUserID(userID uint) (int64, error) {
 	return s.repo.CountArchivedByUserID(userID)
+}
+
+// Duplicate は既存のノートを複製する。
+// タイトルに「(コピー)」を付与し、アーカイブ・お気に入り状態はリセットされる。
+func (s *NoteService) Duplicate(id uint, userID uint) (*model.Note, error) {
+	// 元ノートを取得
+	original, err := s.repo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	// 所有者チェック
+	if original.UserID != userID {
+		return nil, domain.NewError(domain.ErrCodeForbidden, "この操作を行う権限がありません", nil)
+	}
+
+	// 複製ノートを作成
+	duplicate := &model.Note{
+		UserID:     userID,
+		Title:      original.Title + " (コピー)",
+		Content:    original.Content,
+		Tags:       original.Tags,
+		FolderID:   original.FolderID,
+		IsFavorite: false,
+		IsArchived: false,
+	}
+
+	// バリデーション
+	v := validator.NewNoteValidator()
+	if err := v.ValidateCreateNote(duplicate.Title, duplicate.Content, duplicate.Tags); err != nil {
+		return nil, err
+	}
+
+	// 保存
+	if err := s.repo.Create(duplicate); err != nil {
+		return nil, err
+	}
+
+	return duplicate, nil
 }

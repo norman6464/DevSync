@@ -23,6 +23,7 @@ type NoteServiceInterface interface {
 	Unarchive(id uint) error
 	GetArchived(userID uint, page, limit int) ([]model.Note, error)
 	CountArchivedByUserID(userID uint) (int64, error)
+	Duplicate(id uint, userID uint) (*model.Note, error)
 }
 
 // NoteHandler は学習ノート関連のHTTPハンドラ。
@@ -274,4 +275,21 @@ func (h *NoteHandler) GetArchived(c *gin.Context) {
 	}
 
 	respondPaginated(c, notes, total, page, limit)
+}
+
+// Duplicate は既存のノートを複製する。
+func (h *NoteHandler) Duplicate(c *gin.Context) {
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+	userID := c.GetUint("userID")
+
+	duplicate, err := h.service.Duplicate(id, userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondCreated(c, duplicate)
 }

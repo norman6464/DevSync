@@ -295,6 +295,7 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 		notes.PUT("/:id/favorite", c.NoteHandler.ToggleFavorite)
 		notes.PUT("/:id/archive", c.NoteHandler.Archive)
 		notes.PUT("/:id/unarchive", c.NoteHandler.Unarchive)
+		notes.POST("/:id/duplicate", c.NoteHandler.Duplicate)
 	}
 
 	// ノートフォルダ

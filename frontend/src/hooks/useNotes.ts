@@ -11,6 +11,7 @@ import {
   unarchiveNote,
   getArchivedNotes,
   searchNotes,
+  duplicateNote,
   type Note,
   type CreateNoteRequest,
   type UpdateNoteRequest,
@@ -121,6 +122,18 @@ export function useNotes(page = 1, limit = 20) {
     }
   }, [t, setNotes]);
 
+  const handleDuplicate = useCallback(async (id: number) => {
+    try {
+      const { data: duplicate } = await duplicateNote(id);
+      setNotes(prev => [duplicate, ...prev]);
+      toast.success(t('notes.duplicated', { defaultValue: 'ノートを複製しました' }));
+      return duplicate;
+    } catch {
+      toast.error(t('errors.somethingWrong'));
+      return null;
+    }
+  }, [t, setNotes]);
+
   const favoriteNotes = currentNotes.filter(n => n.is_favorite);
 
   return {
@@ -137,6 +150,7 @@ export function useNotes(page = 1, limit = 20) {
     toggleFavorite: handleToggleFavorite,
     archiveNote: handleArchive,
     unarchiveNote: handleUnarchive,
+    duplicateNote: handleDuplicate,
     refetch,
   };
 }
