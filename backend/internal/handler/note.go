@@ -19,6 +19,10 @@ type NoteServiceInterface interface {
 	Search(userID uint, query string, page, limit int) ([]model.Note, int64, error)
 	CountByUserID(userID uint) (int64, error)
 	ToggleFavorite(id uint) error
+	Archive(id uint) error
+	Unarchive(id uint) error
+	GetArchived(userID uint, page, limit int) ([]model.Note, error)
+	CountArchivedByUserID(userID uint) (int64, error)
 }
 
 // NoteHandler は学習ノート関連のHTTPハンドラ。
@@ -220,4 +224,54 @@ func (h *NoteHandler) ToggleFavorite(c *gin.Context) {
 	}
 
 	respondOK(c, gin.H{"message": "お気に入り状態を更新しました"})
+}
+
+// Archive はノートをアーカイブする。
+func (h *NoteHandler) Archive(c *gin.Context) {
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	if err := h.service.Archive(id); err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, gin.H{"message": "ノートをアーカイブしました"})
+}
+
+// Unarchive はノートのアーカイブを解除する。
+func (h *NoteHandler) Unarchive(c *gin.Context) {
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	if err := h.service.Unarchive(id); err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, gin.H{"message": "ノートのアーカイブを解除しました"})
+}
+
+// GetArchived は現在のユーザーのアーカイブ済みノート一覧をページネーション付きで取得する。
+func (h *NoteHandler) GetArchived(c *gin.Context) {
+	userID := c.GetUint("userID")
+	page, limit := parsePagination(c)
+
+	notes, err := h.service.GetArchived(userID, page, limit)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	total, err := h.service.CountArchivedByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondPaginated(c, notes, total, page, limit)
 }

@@ -15,6 +15,7 @@ type Note struct {
 	Content    string     `gorm:"type:text" json:"content"` // マークダウン形式
 	Tags       string     `gorm:"type:text" json:"tags"`    // カンマ区切りのタグ
 	IsFavorite bool       `gorm:"default:false" json:"is_favorite"`
+	IsArchived bool       `gorm:"default:false" json:"is_archived"`
 
 	CreatedAt  time.Time  `json:"created_at"`
 	UpdatedAt  time.Time  `json:"updated_at"`

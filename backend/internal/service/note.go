@@ -73,3 +73,23 @@ func (s *NoteService) CountByUserID(userID uint) (int64, error) {
 func (s *NoteService) ToggleFavorite(id uint) error {
 	return s.repo.ToggleFavorite(id)
 }
+
+// Archive はノートをアーカイブする。
+func (s *NoteService) Archive(id uint) error {
+	return s.repo.Archive(id)
+}
+
+// Unarchive はノートのアーカイブを解除する。
+func (s *NoteService) Unarchive(id uint) error {
+	return s.repo.Unarchive(id)
+}
+
+// GetArchived は指定ユーザーのアーカイブ済みノート一覧を取得する。
+func (s *NoteService) GetArchived(userID uint, page, limit int) ([]model.Note, error) {
+	return s.repo.FindArchived(userID, page, limit)
+}
+
+// CountArchivedByUserID は指定ユーザーのアーカイブ済みノート総数を取得する。
+func (s *NoteService) CountArchivedByUserID(userID uint) (int64, error) {
+	return s.repo.CountArchivedByUserID(userID)
+}
