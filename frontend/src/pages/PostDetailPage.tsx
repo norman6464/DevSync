@@ -1,18 +1,25 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { usePostDetail } from '../hooks';
+import { deletePost } from '../api/posts';
+import { useAuthStore } from '../store/authStore';
 import PostCard from '../components/posts/PostCard';
+import PostForm from '../components/posts/PostForm';
 import CodeSnippetViewer from '../components/posts/CodeSnippetViewer';
 import Avatar from '../components/common/Avatar';
 import { PageLoader } from '../components/common';
 import { format } from 'date-fns';
+import toast from 'react-hot-toast';
 
 export default function PostDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
-  const { post, comments, loading, submitting, submitComment, refetch } = usePostDetail(id);
+  const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
+  const { post, comments, loading, submitting, submitComment, refetch, updatePost } = usePostDetail(id);
   const [newComment, setNewComment] = useState('');
+  const [editingPost, setEditingPost] = useState(false);
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,12 +28,30 @@ export default function PostDetailPage() {
     if (success) setNewComment('');
   };
 
+  const handleDeletePost = async () => {
+    if (!post || !confirm(`「${post.title}」を削除してもよろしいですか？`)) return;
+
+    try {
+      await deletePost(post.id);
+      toast.success('投稿を削除しました');
+      navigate('/');
+    } catch {
+      toast.error('投稿の削除に失敗しました');
+    }
+  };
+
   if (loading) return <PageLoader />;
   if (!post) return <div className="text-center text-gray-400 py-12">Post not found</div>;
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <PostCard post={post} onUpdate={refetch} />
+      <PostCard
+        post={post}
+        isOwner={user?.id === post.user_id}
+        onEdit={() => setEditingPost(true)}
+        onDelete={handleDeletePost}
+        onUpdate={refetch}
+      />
 
       {/* Code Snippets Section */}
       {post.code_snippets && post.code_snippets.length > 0 && (
@@ -103,6 +128,23 @@ export default function PostDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Edit Modal */}
+      {editingPost && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-md p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-semibold text-white mb-4">投稿を編集</h2>
+            <PostForm
+              post={post}
+              onSubmit={async (title, content, imageUrls) => {
+                const result = await updatePost(title, content, imageUrls);
+                if (result) setEditingPost(false);
+              }}
+              onCancel={() => setEditingPost(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

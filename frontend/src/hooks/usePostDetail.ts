@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react';
-import { getPost, getComments, createComment } from '../api/posts';
+import { getPost, getComments, createComment, updatePost as apiUpdatePost } from '../api/posts';
 import type { Post, Comment } from '../types/post';
 import { useAsyncData } from './useAsyncData';
+import toast from 'react-hot-toast';
 
 export function usePostDetail(id: string | undefined) {
   const postId = id ? parseInt(id) : 0;
@@ -35,12 +36,33 @@ export function usePostDetail(id: string | undefined) {
     }
   }, [postId, refetch]);
 
+  const handleUpdatePost = useCallback(async (
+    title: string,
+    content: string,
+    imageUrls?: string
+  ) => {
+    if (!postId) return false;
+    setSubmitting(true);
+    try {
+      await apiUpdatePost(postId, { title, content, image_urls: imageUrls });
+      await refetch();
+      toast.success('投稿を更新しました');
+      return true;
+    } catch {
+      toast.error('投稿の更新に失敗しました');
+      return false;
+    } finally {
+      setSubmitting(false);
+    }
+  }, [postId, refetch]);
+
   return {
     post: data?.post ?? null,
     comments: data?.comments ?? [],
     loading,
     submitting,
     submitComment: handleSubmitComment,
+    updatePost: handleUpdatePost,
     refetch,
   };
 }
