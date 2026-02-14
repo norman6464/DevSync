@@ -310,6 +310,18 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 		noteFolders.DELETE("/:id", c.NoteFolderHandler.Delete)
 	}
 
+	// ノートテンプレート
+	noteTemplates := g.Group("/note-templates")
+	{
+		noteTemplates.POST("", c.NoteTemplateHandler.Create)
+		noteTemplates.GET("", c.NoteTemplateHandler.GetByUserID)
+		noteTemplates.GET("/default", c.NoteTemplateHandler.GetDefault)
+		noteTemplates.GET("/:id", c.NoteTemplateHandler.GetByID)
+		noteTemplates.PUT("/:id", c.NoteTemplateHandler.Update)
+		noteTemplates.DELETE("/:id", c.NoteTemplateHandler.Delete)
+		noteTemplates.POST("/:id/use", c.NoteTemplateHandler.UseTemplate)
+	}
+
 	// メール配信設定
 	g.GET("/email-preferences", c.EmailPreferencesHandler.GetPreferences)
 	g.PUT("/email-preferences", c.EmailPreferencesHandler.UpdatePreferences)

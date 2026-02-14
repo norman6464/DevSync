@@ -1,0 +1,108 @@
+package service
+
+import (
+	"github.com/norman6464/devsync/backend/internal/domain/validator"
+	"github.com/norman6464/devsync/backend/internal/model"
+)
+
+// NoteTemplateRepositoryInterface はNoteTemplateRepositoryのインターフェース。
+type NoteTemplateRepositoryInterface interface {
+	Create(template *model.NoteTemplate) error
+	FindByID(id uint) (*model.NoteTemplate, error)
+	FindByUserID(userID uint) ([]model.NoteTemplate, error)
+	FindDefaultByUserID(userID uint) (*model.NoteTemplate, error)
+	Update(template *model.NoteTemplate) error
+	Delete(id uint) error
+	ClearDefaultFlag(userID uint) error
+}
+
+// NoteTemplateService はノートテンプレートのビジネスロジック。
+type NoteTemplateService struct {
+	repo NoteTemplateRepositoryInterface
+}
+
+// NewNoteTemplateService は新しいNoteTemplateServiceインスタンスを生成する。
+func NewNoteTemplateService(repo NoteTemplateRepositoryInterface) *NoteTemplateService {
+	return &NoteTemplateService{repo: repo}
+}
+
+// Create は新しいテンプレートを作成する。
+func (s *NoteTemplateService) Create(template *model.NoteTemplate) error {
+	v := validator.NewNoteTemplateValidator()
+	if err := v.ValidateCreateTemplate(template.Name, template.ContentTemplate); err != nil {
+		return err
+	}
+	if template.Description != "" {
+		if err := v.ValidateDescription(template.Description); err != nil {
+			return err
+		}
+	}
+	if template.DefaultTitle != "" {
+		if err := v.ValidateDefaultTitle(template.DefaultTitle); err != nil {
+			return err
+		}
+	}
+
+	// is_default=trueの場合、既存のデフォルトフラグをクリア
+	if template.IsDefault {
+		if err := s.repo.ClearDefaultFlag(template.UserID); err != nil {
+			return err
+		}
+	}
+
+	return s.repo.Create(template)
+}
+
+// GetByID は指定IDのテンプレートを取得する。
+func (s *NoteTemplateService) GetByID(id uint) (*model.NoteTemplate, error) {
+	return s.repo.FindByID(id)
+}
+
+// GetByUserID は指定ユーザーの全テンプレートを取得する。
+func (s *NoteTemplateService) GetByUserID(userID uint) ([]model.NoteTemplate, error) {
+	return s.repo.FindByUserID(userID)
+}
+
+// GetDefaultByUserID は指定ユーザーのデフォルトテンプレートを取得する。
+func (s *NoteTemplateService) GetDefaultByUserID(userID uint) (*model.NoteTemplate, error) {
+	return s.repo.FindDefaultByUserID(userID)
+}
+
+// Update はテンプレートを更新する。
+func (s *NoteTemplateService) Update(template *model.NoteTemplate) error {
+	v := validator.NewNoteTemplateValidator()
+	if template.Name != "" {
+		if err := v.ValidateName(template.Name); err != nil {
+			return err
+		}
+	}
+	if template.ContentTemplate != "" {
+		if err := v.ValidateContentTemplate(template.ContentTemplate); err != nil {
+			return err
+		}
+	}
+	if template.Description != "" {
+		if err := v.ValidateDescription(template.Description); err != nil {
+			return err
+		}
+	}
+	if template.DefaultTitle != "" {
+		if err := v.ValidateDefaultTitle(template.DefaultTitle); err != nil {
+			return err
+		}
+	}
+
+	// is_default=trueの場合、既存のデフォルトフラグをクリア
+	if template.IsDefault {
+		if err := s.repo.ClearDefaultFlag(template.UserID); err != nil {
+			return err
+		}
+	}
+
+	return s.repo.Update(template)
+}
+
+// Delete はテンプレートを削除する。
+func (s *NoteTemplateService) Delete(id uint) error {
+	return s.repo.Delete(id)
+}
