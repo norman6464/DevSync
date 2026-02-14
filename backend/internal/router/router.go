@@ -296,6 +296,10 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 		notes.PUT("/:id/archive", c.NoteHandler.Archive)
 		notes.PUT("/:id/unarchive", c.NoteHandler.Unarchive)
 		notes.POST("/:id/duplicate", c.NoteHandler.Duplicate)
+		notes.POST("/:id/links", c.NoteLinkHandler.CreateLink)
+		notes.GET("/:id/links", c.NoteLinkHandler.GetLinks)
+		notes.GET("/:id/backlinks", c.NoteLinkHandler.GetBacklinks)
+		notes.DELETE("/:id/links/:targetId", c.NoteLinkHandler.DeleteLink)
 	}
 
 	// ノートフォルダ

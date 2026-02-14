@@ -31,6 +31,7 @@ export { useStudyCircles, useStudyCircleDetail, useStudyCircleActivity } from '.
 export { useNotes, useNoteSearch, useArchivedNotes } from './useNotes';
 export { useNoteFolders, useRootFolders, useFolderChildren } from './useNoteFolders';
 export { useNoteTemplates, useDefaultNoteTemplate } from './useNoteTemplates';
+export { useNoteLinks, useNoteBacklinks } from './useNoteLinks';
 export { useToast } from './useToast';
 export { useDebounce } from './useDebounce';
 export { useAutoSave } from './useAutoSave';
