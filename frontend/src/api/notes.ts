@@ -74,3 +74,6 @@ export const unarchiveNote = (id: number) =>
 
 export const getArchivedNotes = (page = 1, limit = 20) =>
   client.get<NotePaginatedResponse>(`/notes/archived?page=${page}&limit=${limit}`);
+
+export const duplicateNote = (id: number) =>
+  client.post<Note>(`/notes/${id}/duplicate`);

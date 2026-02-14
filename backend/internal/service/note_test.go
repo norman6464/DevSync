@@ -199,3 +199,39 @@ func TestNoteService_Search(t *testing.T) {
 	assert.Equal(t, 1, len(result))
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// Duplicate テスト
+// ============================================================
+
+func TestNoteService_Duplicate(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	original := &model.Note{
+		ID:       1,
+		UserID:   1,
+		Title:    "元ノート",
+		Content:  "元の内容",
+		Tags:     "Go,TDD",
+		FolderID: nil,
+	}
+
+	repo.On("FindByID", uint(1)).Return(original, nil)
+	repo.On("Create", mock.MatchedBy(func(n *model.Note) bool {
+		return n.Title == "元ノート (コピー)" &&
+			n.Content == "元の内容" &&
+			n.Tags == "Go,TDD" &&
+			n.UserID == 1 &&
+			!n.IsFavorite &&
+			!n.IsArchived
+	})).Return(nil)
+
+	result, err := svc.Duplicate(1, 1)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, "元ノート (コピー)", result.Title)
+	assert.Equal(t, "元の内容", result.Content)
+	assert.False(t, result.IsFavorite)
+	assert.False(t, result.IsArchived)
+	repo.AssertExpectations(t)
+}
