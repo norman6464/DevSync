@@ -1130,4 +1130,28 @@
       "viewAll": "Alle anzeigen"
     }
   }
+  },
+  "notes": {
+    "title": "Lernnotizen",
+    "myNotes": "Meine Notizen",
+    "createNote": "Neue Notiz",
+    "editNote": "Notiz bearbeiten",
+    "noteTitle": "Titel",
+    "noteContent": "Inhalt (Markdown unterstützt)",
+    "tags": "Tags (durch Kommas getrennt)",
+    "folder": "Ordner",
+    "noFolder": "Kein Ordner",
+    "favorites": "Favoriten",
+    "searchNotes": "Notizen durchsuchen",
+    "searchPlaceholder": "Nach Titel oder Inhalt suchen...",
+    "noNotes": "Keine Notizen",
+    "noSearchResults": "Keine Suchergebnisse gefunden",
+    "created": "Notiz erfolgreich erstellt",
+    "updated": "Notiz erfolgreich aktualisiert",
+    "deleted": "Notiz erfolgreich gelöscht",
+    "confirmDelete": "Möchten Sie diese Notiz wirklich löschen?",
+    "favoriteToggled": "Favoritenstatus aktualisiert",
+    "lastUpdated": "Zuletzt aktualisiert",
+    "createdAt": "Erstellt am"
+  }
 }

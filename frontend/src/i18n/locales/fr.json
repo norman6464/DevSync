@@ -1130,4 +1130,28 @@
       "viewAll": "Tout Voir"
     }
   }
+  },
+  "notes": {
+    "title": "Notes d'Apprentissage",
+    "myNotes": "Mes Notes",
+    "createNote": "Nouvelle Note",
+    "editNote": "Modifier la Note",
+    "noteTitle": "Titre",
+    "noteContent": "Contenu (Markdown pris en charge)",
+    "tags": "Étiquettes (séparées par des virgules)",
+    "folder": "Dossier",
+    "noFolder": "Aucun dossier",
+    "favorites": "Favoris",
+    "searchNotes": "Rechercher des Notes",
+    "searchPlaceholder": "Rechercher par titre ou contenu...",
+    "noNotes": "Aucune note",
+    "noSearchResults": "Aucun résultat trouvé",
+    "created": "Note créée avec succès",
+    "updated": "Note mise à jour avec succès",
+    "deleted": "Note supprimée avec succès",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette note ?",
+    "favoriteToggled": "Statut favori mis à jour",
+    "lastUpdated": "Dernière mise à jour",
+    "createdAt": "Créé le"
+  }
 }

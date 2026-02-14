@@ -1130,4 +1130,28 @@
       "viewAll": "모두 보기"
     }
   }
+  },
+  "notes": {
+    "title": "학습 노트",
+    "myNotes": "내 노트",
+    "createNote": "새 노트",
+    "editNote": "노트 편집",
+    "noteTitle": "제목",
+    "noteContent": "내용 (마크다운 지원)",
+    "tags": "태그 (쉼표로 구분)",
+    "folder": "폴더",
+    "noFolder": "폴더 없음",
+    "favorites": "즐겨찾기",
+    "searchNotes": "노트 검색",
+    "searchPlaceholder": "제목 또는 내용으로 검색...",
+    "noNotes": "노트가 없습니다",
+    "noSearchResults": "검색 결과가 없습니다",
+    "created": "노트가 생성되었습니다",
+    "updated": "노트가 업데이트되었습니다",
+    "deleted": "노트가 삭제되었습니다",
+    "confirmDelete": "이 노트를 삭제하시겠습니까?",
+    "favoriteToggled": "즐겨찾기 상태가 업데이트되었습니다",
+    "lastUpdated": "마지막 업데이트",
+    "createdAt": "생성일"
+  }
 }
