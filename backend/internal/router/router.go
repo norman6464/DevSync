@@ -294,6 +294,18 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 		notes.PUT("/:id/favorite", c.NoteHandler.ToggleFavorite)
 	}
 
+	// ノートフォルダ
+	noteFolders := g.Group("/note-folders")
+	{
+		noteFolders.POST("", c.NoteFolderHandler.Create)
+		noteFolders.GET("", c.NoteFolderHandler.GetByUserID)
+		noteFolders.GET("/root", c.NoteFolderHandler.GetRootFolders)
+		noteFolders.GET("/:id", c.NoteFolderHandler.GetByID)
+		noteFolders.GET("/:id/children", c.NoteFolderHandler.GetChildren)
+		noteFolders.PUT("/:id", c.NoteFolderHandler.Update)
+		noteFolders.DELETE("/:id", c.NoteFolderHandler.Delete)
+	}
+
 	// メール配信設定
 	g.GET("/email-preferences", c.EmailPreferencesHandler.GetPreferences)
 	g.PUT("/email-preferences", c.EmailPreferencesHandler.UpdatePreferences)
