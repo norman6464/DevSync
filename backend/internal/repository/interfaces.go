@@ -375,3 +375,16 @@ type ReminderSettingsRepositoryInterface interface {
 	GetEnabledSettings() ([]model.ReminderSettings, error)
 	UpdateLastRemindedAt(userID uint) error
 }
+
+// NoteRepositoryInterface は学習ノートデータ操作の契約を定義する。
+type NoteRepositoryInterface interface {
+	Create(note *model.Note) error
+	FindByID(id uint) (*model.Note, error)
+	FindByUserID(userID uint, page, limit int) ([]model.Note, error)
+	FindByFolderID(folderID uint) ([]model.Note, error)
+	Update(note *model.Note) error
+	Delete(id uint) error
+	Search(userID uint, query string, limit, offset int) ([]model.Note, int64, error)
+	CountByUserID(userID uint) (int64, error)
+	ToggleFavorite(id uint) error
+}
