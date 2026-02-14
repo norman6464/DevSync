@@ -30,6 +30,7 @@ export { useRecommendedUsers, useTrendingPosts, useTrendingResources } from './u
 export { useStudyCircles, useStudyCircleDetail, useStudyCircleActivity } from './useStudyCircles';
 export { useNotes, useNoteSearch, useArchivedNotes } from './useNotes';
 export { useNoteFolders, useRootFolders, useFolderChildren } from './useNoteFolders';
+export { useNoteTemplates, useDefaultNoteTemplate } from './useNoteTemplates';
 export { useToast } from './useToast';
 export { useDebounce } from './useDebounce';
 export { useAutoSave } from './useAutoSave';

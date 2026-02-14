@@ -51,6 +51,7 @@ type Container struct {
 	SearchHandler            *handler.SearchHandler
 	NoteHandler              *handler.NoteHandler
 	NoteFolderHandler        *handler.NoteFolderHandler
+	NoteTemplateHandler      *handler.NoteTemplateHandler
 
 	// ミドルウェア・コールバック用
 	AuthService      *service.AuthService
@@ -95,6 +96,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	studyCircleRepo := repository.NewStudyCircleRepository(db)
 	noteRepo := repository.NewNoteRepository(db)
 	noteFolderRepo := repository.NewNoteFolderRepository(db)
+	noteTemplateRepo := repository.NewNoteTemplateRepository(db)
 
 	c.GroupMessageRepo = groupMessageRepo
 
@@ -132,6 +134,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	studyCircleService := service.NewStudyCircleService(studyCircleRepo)
 	noteService := service.NewNoteService(noteRepo)
 	noteFolderService := service.NewNoteFolderService(noteFolderRepo)
+	noteTemplateService := service.NewNoteTemplateService(noteTemplateRepo)
 
 	// テンプレートロードマップの初期登録
 	go seedTemplateRoadmaps(db, roadmapService)
@@ -204,6 +207,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	c.SearchHandler = handler.NewSearchHandler(postRepo, studyCircleRepo)
 	c.NoteHandler = handler.NewNoteHandler(noteService)
 	c.NoteFolderHandler = handler.NewNoteFolderHandler(noteFolderService)
+	c.NoteTemplateHandler = handler.NewNoteTemplateHandler(noteTemplateService, noteService)
 
 	// HubのGetRoomMembersコールバックを設定
 	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs
