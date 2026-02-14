@@ -1029,5 +1029,28 @@
       "todayCheckin": "今日のチェックイン",
       "viewAll": "すべて見る"
     }
+  },
+  "notes": {
+    "title": "学習ノート",
+    "myNotes": "マイノート",
+    "createNote": "新規ノート",
+    "editNote": "ノート編集",
+    "noteTitle": "タイトル",
+    "noteContent": "内容（マークダウン対応）",
+    "tags": "タグ（カンマ区切り）",
+    "folder": "フォルダ",
+    "noFolder": "フォルダなし",
+    "favorites": "お気に入り",
+    "searchNotes": "ノートを検索",
+    "searchPlaceholder": "タイトルまたは本文で検索...",
+    "noNotes": "ノートがありません",
+    "noSearchResults": "検索結果が見つかりませんでした",
+    "created": "ノートを作成しました",
+    "updated": "ノートを更新しました",
+    "deleted": "ノートを削除しました",
+    "confirmDelete": "このノートを削除しますか？",
+    "favoriteToggled": "お気に入りを更新しました",
+    "lastUpdated": "最終更新",
+    "createdAt": "作成日時"
   }
 }

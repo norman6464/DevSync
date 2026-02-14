@@ -1129,5 +1129,28 @@
       "todayCheckin": "Today's Check-in",
       "viewAll": "View All"
     }
+  },
+  "notes": {
+    "title": "Learning Notes",
+    "myNotes": "My Notes",
+    "createNote": "New Note",
+    "editNote": "Edit Note",
+    "noteTitle": "Title",
+    "noteContent": "Content (Markdown supported)",
+    "tags": "Tags (comma separated)",
+    "folder": "Folder",
+    "noFolder": "No folder",
+    "favorites": "Favorites",
+    "searchNotes": "Search Notes",
+    "searchPlaceholder": "Search by title or content...",
+    "noNotes": "No notes yet",
+    "noSearchResults": "No search results found",
+    "created": "Note created successfully",
+    "updated": "Note updated successfully",
+    "deleted": "Note deleted successfully",
+    "confirmDelete": "Are you sure you want to delete this note?",
+    "favoriteToggled": "Favorite status updated",
+    "lastUpdated": "Last updated",
+    "createdAt": "Created at"
   }
 }
