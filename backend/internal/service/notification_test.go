@@ -84,3 +84,50 @@ func TestCreateNotification_Success(t *testing.T) {
 	assert.NoError(t, err)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// WebSocket配信テスト
+// ============================================================
+
+func TestCreateNotificationWithWebSocket_Success(t *testing.T) {
+	repo := new(MockNotificationRepository)
+	hub := NewHub()
+	svc := NewNotificationServiceWithHub(repo, hub)
+
+	// テスト用のクライアントを作成（実際のWebSocket接続なしでSendチャネルのみ）
+	client := &Client{
+		Hub:    hub,
+		UserID: 1,
+		Send:   make(chan []byte, 256),
+	}
+	hub.clients[1] = client
+
+	notification := &model.Notification{UserID: 1, Type: model.NotificationTypePost, ActorID: 2}
+	repo.On("Create", notification).Return(nil)
+
+	err := svc.CreateNotification(notification)
+	assert.NoError(t, err)
+
+	// WebSocket経由でメッセージが送信されたことを確認
+	select {
+	case msg := <-client.Send:
+		assert.NotNil(t, msg)
+		assert.Contains(t, string(msg), "notification")
+	default:
+		t.Fatal("WebSocket経由でメッセージが送信されませんでした")
+	}
+
+	repo.AssertExpectations(t)
+}
+
+func TestCreateNotificationWithoutHub_Success(t *testing.T) {
+	svc, repo := newTestNotificationService() // hubなし
+
+	notification := &model.Notification{UserID: 1, Type: model.NotificationTypePost, ActorID: 2}
+	repo.On("Create", notification).Return(nil)
+
+	// hubがnilでもエラーにならないことを確認
+	err := svc.CreateNotification(notification)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
