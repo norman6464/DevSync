@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
@@ -18,6 +19,10 @@ func NewQuestionService(repo repository.QuestionRepositoryInterface) *QuestionSe
 
 // Create は新しい質問を作成する。
 func (s *QuestionService) Create(question *model.Question) error {
+	v := validator.NewQuestionValidator()
+	if err := v.ValidateCreateQuestion(question.Title, question.Body, question.Tags); err != nil {
+		return err
+	}
 	return s.repo.Create(question)
 }
 
@@ -56,6 +61,11 @@ func (s *QuestionService) Update(id, userID uint, title, body, tags string) (*mo
 		return nil, ErrForbidden
 	}
 
+	v := validator.NewQuestionValidator()
+	if err := v.ValidateUpdateQuestion(title, body, tags); err != nil {
+		return nil, err
+	}
+
 	if title != "" {
 		question.Title = title
 	}
@@ -86,6 +96,10 @@ func (s *QuestionService) Delete(id, userID uint) error {
 
 // Vote は質問に投票する。
 func (s *QuestionService) Vote(userID, questionID uint, value int) error {
+	v := validator.NewQuestionValidator()
+	if err := v.ValidateVote(value); err != nil {
+		return err
+	}
 	return s.repo.Vote(userID, questionID, value)
 }
 

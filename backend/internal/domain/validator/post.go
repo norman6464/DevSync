@@ -67,13 +67,23 @@ func (v *PostValidator) ValidateCreatePost(title, content string, imageURLs stri
 }
 
 // ValidateUpdatePost validates inputs for updating an existing post.
+// 更新では部分更新をサポートするため、各フィールドが空でない場合のみバリデーション
 func (v *PostValidator) ValidateUpdatePost(title, content string, imageURLs string) error {
-	// タイトルと本文のバリデーション
-	if err := v.ValidatePost(title, content); err != nil {
-		return err
+	// タイトルのバリデーション（空でない場合のみ）
+	if title != "" {
+		if err := v.ValidateTitle(title); err != nil {
+			return err
+		}
 	}
 
-	// 画像URLのバリデーション（オプショナル）
+	// 本文のバリデーション（空でない場合のみ）
+	if content != "" {
+		if err := v.ValidateContent(content); err != nil {
+			return err
+		}
+	}
+
+	// 画像URLのバリデーション（空でない場合のみ）
 	if imageURLs != "" {
 		var urls []string
 		if err := json.Unmarshal([]byte(imageURLs), &urls); err != nil {

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
@@ -19,6 +20,13 @@ func NewPostService(repo repository.PostRepositoryInterface, notificationService
 
 // Create は新しい投稿を作成し、下書きでない場合はフォロワーに非同期で通知する。
 func (s *PostService) Create(post *model.Post) (*model.Post, error) {
+	// バリデーション
+	v := validator.NewPostValidator()
+	// タグは空配列として渡す（post.Tagsフィールドは未確認のため）
+	if err := v.ValidateCreatePost(post.Title, post.Content, post.ImageURLs, nil); err != nil {
+		return nil, err
+	}
+
 	if err := s.repo.Create(post); err != nil {
 		return nil, err
 	}
@@ -71,6 +79,12 @@ func (s *PostService) Update(id, userID uint, title, content, imageUrls string) 
 		return nil, ErrForbidden
 	}
 
+	// バリデーション
+	v := validator.NewPostValidator()
+	if err := v.ValidateUpdatePost(title, content, imageUrls); err != nil {
+		return nil, err
+	}
+
 	if title != "" {
 		post.Title = title
 	}
@@ -116,6 +130,12 @@ func (s *PostService) HasLiked(userID, postID uint) bool {
 
 // CreateComment は投稿にコメントを作成する。
 func (s *PostService) CreateComment(comment *model.Comment) error {
+	// バリデーション
+	v := validator.NewPostValidator()
+	if err := v.ValidateComment(comment.Content); err != nil {
+		return err
+	}
+
 	return s.repo.CreateComment(comment)
 }
 

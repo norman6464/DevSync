@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
@@ -18,6 +19,10 @@ func NewLearningResourceService(repo repository.LearningResourceRepositoryInterf
 
 // Create は新しい学習リソースを作成する。
 func (s *LearningResourceService) Create(resource *model.LearningResource) error {
+	v := validator.NewResourceValidator()
+	if err := v.ValidateCreateResource(resource.Title, resource.Description, resource.URL, string(resource.Category), string(resource.Difficulty)); err != nil {
+		return err
+	}
 	return s.repo.Create(resource)
 }
 
@@ -72,6 +77,11 @@ func (s *LearningResourceService) Update(id, userID uint, updates *model.Learnin
 	}
 	if resource.UserID != userID {
 		return nil, ErrForbidden
+	}
+
+	v := validator.NewResourceValidator()
+	if err := v.ValidateUpdateResource(updates.Title, updates.Description, updates.URL, string(updates.Category), string(updates.Difficulty)); err != nil {
+		return nil, err
 	}
 
 	if updates.Title != "" {

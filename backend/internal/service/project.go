@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
@@ -18,6 +19,10 @@ func NewProjectService(repo repository.ProjectRepositoryInterface) *ProjectServi
 
 // Create は新しいプロジェクトを作成する。
 func (s *ProjectService) Create(project *model.Project) error {
+	v := validator.NewProjectValidator()
+	if err := v.ValidateCreateProject(project.Title, project.Description, project.DemoURL, project.GithubURL); err != nil {
+		return err
+	}
 	return s.repo.Create(project)
 }
 
@@ -49,6 +54,11 @@ func (s *ProjectService) Update(id, userID uint, updates *model.Project) (*model
 	}
 	if project.UserID != userID {
 		return nil, ErrForbidden
+	}
+
+	v := validator.NewProjectValidator()
+	if err := v.ValidateUpdateProject(updates.Title, updates.Description, updates.DemoURL, updates.GithubURL); err != nil {
+		return nil, err
 	}
 
 	if updates.Title != "" {
