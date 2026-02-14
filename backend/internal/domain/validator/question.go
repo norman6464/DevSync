@@ -37,9 +37,30 @@ func (v *QuestionValidator) ValidateCreateQuestion(title, body, tags string) err
 }
 
 // ValidateUpdateQuestion validates inputs for updating an existing question.
+// 更新では部分更新をサポートするため、各フィールドが空でない場合のみバリデーション
 func (v *QuestionValidator) ValidateUpdateQuestion(title, body, tags string) error {
-	// 作成時と同じバリデーション
-	return v.ValidateCreateQuestion(title, body, tags)
+	// タイトルのバリデーション（空でない場合のみ）
+	if title != "" {
+		if err := domain.ValidateStringLength(title, 1, 500, "タイトル"); err != nil {
+			return err
+		}
+	}
+
+	// 本文のバリデーション（空でない場合のみ）
+	if body != "" {
+		if err := domain.ValidateContent(body); err != nil {
+			return err
+		}
+	}
+
+	// タグのバリデーション（空でない場合のみ）
+	if tags != "" {
+		if err := domain.ValidateStringLength(tags, 1, 300, "タグ"); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // ValidateVote validates vote value (should be 1 or -1).
