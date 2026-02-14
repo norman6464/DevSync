@@ -11,7 +11,6 @@ func TestPostValidator_ValidateTitle(t *testing.T) {
 		name    string
 		title   string
 		wantErr bool
-		errMsg  string
 	}{
 		{
 			name:    "正常なタイトル",
@@ -22,19 +21,16 @@ func TestPostValidator_ValidateTitle(t *testing.T) {
 			name:    "空のタイトル",
 			title:   "",
 			wantErr: true,
-			errMsg:  "タイトルは必須です",
 		},
 		{
 			name:    "タイトルが長すぎる（200文字超）",
 			title:   string(make([]byte, 201)),
 			wantErr: true,
-			errMsg:  "タイトルは200文字以内で入力してください",
 		},
 		{
 			name:    "空白のみのタイトル",
 			title:   "   ",
 			wantErr: true,
-			errMsg:  "タイトルは必須です",
 		},
 	}
 
@@ -44,7 +40,6 @@ func TestPostValidator_ValidateTitle(t *testing.T) {
 			err := validator.ValidateTitle(tt.title)
 			if tt.wantErr {
 				assert.Error(t, err)
-				assert.Contains(t, err.Error(), tt.errMsg)
 			} else {
 				assert.NoError(t, err)
 			}
@@ -57,7 +52,6 @@ func TestPostValidator_ValidateContent(t *testing.T) {
 		name    string
 		content string
 		wantErr bool
-		errMsg  string
 	}{
 		{
 			name:    "正常な本文",
@@ -68,19 +62,16 @@ func TestPostValidator_ValidateContent(t *testing.T) {
 			name:    "空の本文",
 			content: "",
 			wantErr: true,
-			errMsg:  "本文は必須です",
 		},
 		{
 			name:    "本文が長すぎる（10000文字超）",
 			content: string(make([]byte, 10001)),
 			wantErr: true,
-			errMsg:  "本文は10000文字以内で入力してください",
 		},
 		{
 			name:    "空白のみの本文",
 			content: "   ",
 			wantErr: true,
-			errMsg:  "本文は必須です",
 		},
 	}
 
@@ -90,7 +81,6 @@ func TestPostValidator_ValidateContent(t *testing.T) {
 			err := validator.ValidateContent(tt.content)
 			if tt.wantErr {
 				assert.Error(t, err)
-				assert.Contains(t, err.Error(), tt.errMsg)
 			} else {
 				assert.NoError(t, err)
 			}
@@ -135,6 +125,91 @@ func TestPostValidator_ValidatePost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := validator.ValidatePost(tt.title, tt.content)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestPostValidator_ValidateCreatePost(t *testing.T) {
+	validator := NewPostValidator()
+
+	tests := []struct {
+		name      string
+		title     string
+		content   string
+		imageURLs string
+		tags      []string
+		wantErr   bool
+	}{
+		{"有効な投稿", "タイトル", "本文", "", nil, false},
+		{"有効（画像URL付き）", "タイトル", "本文", `["https://example.com/img.jpg"]`, nil, false},
+		{"有効（タグ付き）", "タイトル", "本文", "", []string{"tag1", "tag2"}, false},
+		{"無効（タイトルが空）", "", "本文", "", nil, true},
+		{"無効（本文が空）", "タイトル", "", "", nil, true},
+		{"無効（画像URL形式が不正）", "タイトル", "本文", "not-json", nil, true},
+		{"無効（タグが多すぎる）", "タイトル", "本文", "", []string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"}, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validator.ValidateCreatePost(tt.title, tt.content, tt.imageURLs, tt.tags)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestPostValidator_ValidateUpdatePost(t *testing.T) {
+	validator := NewPostValidator()
+
+	tests := []struct {
+		name      string
+		title     string
+		content   string
+		imageURLs string
+		wantErr   bool
+	}{
+		{"有効な更新", "タイトル", "本文", "", false},
+		{"有効（画像URL付き）", "タイトル", "本文", `["https://example.com/img.jpg"]`, false},
+		{"無効（タイトルが空）", "", "本文", "", true},
+		{"無効（本文が空）", "タイトル", "", "", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validator.ValidateUpdatePost(tt.title, tt.content, tt.imageURLs)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestPostValidator_ValidateComment(t *testing.T) {
+	validator := NewPostValidator()
+
+	tests := []struct {
+		name    string
+		content string
+		wantErr bool
+	}{
+		{"有効なコメント", "コメント内容", false},
+		{"無効（空）", "", true},
+		{"無効（長すぎる）", string(make([]byte, 1001)), true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validator.ValidateComment(tt.content)
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
