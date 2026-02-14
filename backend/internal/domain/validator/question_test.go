@@ -43,12 +43,12 @@ func TestQuestionValidator_ValidateCreateQuestion(t *testing.T) {
 func TestQuestionValidator_ValidateUpdateQuestion(t *testing.T) {
 	v := NewQuestionValidator()
 
-	// ValidateUpdateQuestionはValidateCreateQuestionと同じロジック
+	// 部分更新では空値OK
 	err := v.ValidateUpdateQuestion("タイトル", "本文", "")
 	assert.NoError(t, err)
 
 	err = v.ValidateUpdateQuestion("", "本文", "")
-	assert.Error(t, err)
+	assert.NoError(t, err) // 部分更新では空値OK
 }
 
 func TestQuestionValidator_ValidateVote(t *testing.T) {

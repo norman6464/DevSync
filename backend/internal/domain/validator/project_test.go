@@ -47,10 +47,10 @@ func TestProjectValidator_ValidateCreateProject(t *testing.T) {
 func TestProjectValidator_ValidateUpdateProject(t *testing.T) {
 	v := NewProjectValidator()
 
-	// ValidateUpdateProjectはValidateCreateProjectと同じロジック
+	// 部分更新では空値OK
 	err := v.ValidateUpdateProject("タイトル", "説明", "", "")
 	assert.NoError(t, err)
 
 	err = v.ValidateUpdateProject("", "説明", "", "")
-	assert.Error(t, err)
+	assert.NoError(t, err) // 部分更新では空値OK
 }

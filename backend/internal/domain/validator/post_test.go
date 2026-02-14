@@ -178,8 +178,9 @@ func TestPostValidator_ValidateUpdatePost(t *testing.T) {
 	}{
 		{"有効な更新", "タイトル", "本文", "", false},
 		{"有効（画像URL付き）", "タイトル", "本文", `["https://example.com/img.jpg"]`, false},
-		{"無効（タイトルが空）", "", "本文", "", true},
-		{"無効（本文が空）", "タイトル", "", "", true},
+		{"有効（タイトルが空）", "", "本文", "", false},          // 部分更新では空値OK
+		{"有効（本文が空）", "タイトル", "", "", false},          // 部分更新では空値OK
+		{"無効（不正な画像URL）", "タイトル", "本文", `["invalid"]`, true},
 	}
 
 	for _, tt := range tests {
