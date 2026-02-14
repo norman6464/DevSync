@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
@@ -17,6 +18,12 @@ func NewNoteService(repo repository.NoteRepositoryInterface) *NoteService {
 
 // Create は新しいノートを作成する。
 func (s *NoteService) Create(note *model.Note) error {
+	// バリデーション
+	v := validator.NewNoteValidator()
+	if err := v.ValidateCreateNote(note.Title, note.Content, note.Tags); err != nil {
+		return err
+	}
+
 	return s.repo.Create(note)
 }
 
@@ -37,6 +44,12 @@ func (s *NoteService) GetByFolderID(folderID uint) ([]model.Note, error) {
 
 // Update はノートを更新する。
 func (s *NoteService) Update(note *model.Note) error {
+	// バリデーション（部分更新対応）
+	v := validator.NewNoteValidator()
+	if err := v.ValidateUpdateNote(note.Title, note.Content, note.Tags); err != nil {
+		return err
+	}
+
 	return s.repo.Update(note)
 }
 
