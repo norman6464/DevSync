@@ -28,6 +28,7 @@ export { useSettings } from './useSettings';
 export { useChat } from './useChat';
 export { useRecommendedUsers, useTrendingPosts, useTrendingResources } from './useRecommendations';
 export { useStudyCircles, useStudyCircleDetail, useStudyCircleActivity } from './useStudyCircles';
+export { useNotes, useNoteSearch } from './useNotes';
 export { useToast } from './useToast';
 export { useDebounce } from './useDebounce';
 export { useAutoSave } from './useAutoSave';
