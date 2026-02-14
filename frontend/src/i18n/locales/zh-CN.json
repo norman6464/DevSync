@@ -1130,4 +1130,28 @@
       "viewAll": "查看全部"
     }
   }
+  },
+  "notes": {
+    "title": "学习笔记",
+    "myNotes": "我的笔记",
+    "createNote": "新建笔记",
+    "editNote": "编辑笔记",
+    "noteTitle": "标题",
+    "noteContent": "内容（支持Markdown）",
+    "tags": "标签（逗号分隔）",
+    "folder": "文件夹",
+    "noFolder": "无文件夹",
+    "favorites": "收藏",
+    "searchNotes": "搜索笔记",
+    "searchPlaceholder": "按标题或内容搜索...",
+    "noNotes": "暂无笔记",
+    "noSearchResults": "未找到搜索结果",
+    "created": "笔记创建成功",
+    "updated": "笔记更新成功",
+    "deleted": "笔记删除成功",
+    "confirmDelete": "确定要删除这条笔记吗？",
+    "favoriteToggled": "收藏状态已更新",
+    "lastUpdated": "最后更新",
+    "createdAt": "创建时间"
+  }
 }

@@ -1130,4 +1130,28 @@
       "viewAll": "查看全部"
     }
   }
+  },
+  "notes": {
+    "title": "學習筆記",
+    "myNotes": "我的筆記",
+    "createNote": "新建筆記",
+    "editNote": "編輯筆記",
+    "noteTitle": "標題",
+    "noteContent": "內容（支援Markdown）",
+    "tags": "標籤（逗號分隔）",
+    "folder": "資料夾",
+    "noFolder": "無資料夾",
+    "favorites": "收藏",
+    "searchNotes": "搜尋筆記",
+    "searchPlaceholder": "按標題或內容搜尋...",
+    "noNotes": "暫無筆記",
+    "noSearchResults": "未找到搜尋結果",
+    "created": "筆記創建成功",
+    "updated": "筆記更新成功",
+    "deleted": "筆記刪除成功",
+    "confirmDelete": "確定要刪除這條筆記嗎？",
+    "favoriteToggled": "收藏狀態已更新",
+    "lastUpdated": "最後更新",
+    "createdAt": "創建時間"
+  }
 }

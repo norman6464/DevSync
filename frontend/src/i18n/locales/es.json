@@ -1130,4 +1130,28 @@
       "viewAll": "Ver Todo"
     }
   }
+  },
+  "notes": {
+    "title": "Notas de Aprendizaje",
+    "myNotes": "Mis Notas",
+    "createNote": "Nueva Nota",
+    "editNote": "Editar Nota",
+    "noteTitle": "Título",
+    "noteContent": "Contenido (compatible con Markdown)",
+    "tags": "Etiquetas (separadas por comas)",
+    "folder": "Carpeta",
+    "noFolder": "Sin carpeta",
+    "favorites": "Favoritos",
+    "searchNotes": "Buscar Notas",
+    "searchPlaceholder": "Buscar por título o contenido...",
+    "noNotes": "No hay notas",
+    "noSearchResults": "No se encontraron resultados",
+    "created": "Nota creada con éxito",
+    "updated": "Nota actualizada con éxito",
+    "deleted": "Nota eliminada con éxito",
+    "confirmDelete": "¿Está seguro de que desea eliminar esta nota?",
+    "favoriteToggled": "Estado de favorito actualizado",
+    "lastUpdated": "Última actualización",
+    "createdAt": "Creado el"
+  }
 }
