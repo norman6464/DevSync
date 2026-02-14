@@ -196,3 +196,93 @@ func TestValidateTags(t *testing.T) {
 		})
 	}
 }
+
+func TestValidatePagination(t *testing.T) {
+	tests := []struct {
+		name         string
+		limit        int
+		offset       int
+		wantLimit    int
+		wantOffset   int
+		wantErr      bool
+	}{
+		{"有効なページネーション", 10, 0, 10, 0, false},
+		{"limit最大値", 100, 0, 100, 0, false},
+		{"limit超過（正規化）", 200, 0, 100, 0, false},
+		{"limit未指定（デフォルト）", 0, 0, 10, 0, false},
+		{"offset有効", 10, 20, 10, 20, false},
+		{"offset負数", 10, -1, 0, 0, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			limit, offset, err := ValidatePagination(tt.limit, tt.offset)
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.True(t, IsDomainError(err))
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.wantLimit, limit)
+				assert.Equal(t, tt.wantOffset, offset)
+			}
+		})
+	}
+}
+
+func TestValidateStringLength(t *testing.T) {
+	tests := []struct {
+		name      string
+		s         string
+		min       int
+		max       int
+		fieldName string
+		wantErr   bool
+	}{
+		{"有効な文字列", "test", 1, 10, "テスト", false},
+		{"最小長ちょうど", "a", 1, 10, "テスト", false},
+		{"最大長ちょうど", strings.Repeat("a", 10), 1, 10, "テスト", false},
+		{"無効（短すぎる）", "", 1, 10, "テスト", true},
+		{"無効（長すぎる）", strings.Repeat("a", 11), 1, 10, "テスト", true},
+		{"最大長制限なし", strings.Repeat("a", 1000), 1, 0, "テスト", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateStringLength(tt.s, tt.min, tt.max, tt.fieldName)
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.True(t, IsDomainError(err))
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestValidateEnum(t *testing.T) {
+	allowedValues := []string{"option1", "option2", "option3"}
+
+	tests := []struct {
+		name      string
+		value     string
+		fieldName string
+		wantErr   bool
+	}{
+		{"有効な値", "option1", "オプション", false},
+		{"有効な値2", "option3", "オプション", false},
+		{"空文字（オプショナル）", "", "オプション", false},
+		{"無効な値", "invalid", "オプション", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateEnum(tt.value, allowedValues, tt.fieldName)
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.True(t, IsDomainError(err))
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}

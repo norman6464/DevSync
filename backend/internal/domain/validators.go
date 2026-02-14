@@ -173,3 +173,58 @@ func ValidateTags(tags []string) error {
 
 	return nil
 }
+
+// ValidatePagination はページネーションパラメータのバリデーションを行い、
+// 正規化された値を返す。limitは最大100に制限される。
+func ValidatePagination(limit, offset int) (int, int, error) {
+	// offsetは0以上
+	if offset < 0 {
+		return 0, 0, NewError(ErrCodeValidation, "オフセットは0以上である必要があります", nil)
+	}
+
+	// limitが指定されていない場合はデフォルト値（10）を使用
+	if limit <= 0 {
+		limit = 10
+	}
+
+	// limitは最大100
+	if limit > 100 {
+		limit = 100
+	}
+
+	return limit, offset, nil
+}
+
+// ValidateStringLength は文字列の長さをバリデーションする汎用関数
+func ValidateStringLength(s string, min, max int, fieldName string) error {
+	s = strings.TrimSpace(s)
+	length := len(s)
+
+	if length < min {
+		if min == 1 {
+			return NewError(ErrCodeValidation, fmt.Sprintf("%sを入力してください", fieldName), nil)
+		}
+		return NewError(ErrCodeValidation, fmt.Sprintf("%sは%d文字以上である必要があります", fieldName, min), nil)
+	}
+
+	if max > 0 && length > max {
+		return NewError(ErrCodeValidation, fmt.Sprintf("%sは%d文字以下である必要があります", fieldName, max), nil)
+	}
+
+	return nil
+}
+
+// ValidateEnum は値が許可されたリストに含まれるかチェックする
+func ValidateEnum(value string, allowedValues []string, fieldName string) error {
+	if value == "" {
+		return nil // 空の場合は許可（オプショナル）
+	}
+
+	for _, allowed := range allowedValues {
+		if value == allowed {
+			return nil
+		}
+	}
+
+	return NewError(ErrCodeValidation, fmt.Sprintf("%sの値が不正です", fieldName), nil)
+}
