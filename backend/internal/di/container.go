@@ -50,6 +50,7 @@ type Container struct {
 	StudyCircleHandler       *handler.StudyCircleHandler
 	SearchHandler            *handler.SearchHandler
 	NoteHandler              *handler.NoteHandler
+	NoteFolderHandler        *handler.NoteFolderHandler
 
 	// ミドルウェア・コールバック用
 	AuthService      *service.AuthService
@@ -93,6 +94,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	recommendationRepo := repository.NewRecommendationRepository(db)
 	studyCircleRepo := repository.NewStudyCircleRepository(db)
 	noteRepo := repository.NewNoteRepository(db)
+	noteFolderRepo := repository.NewNoteFolderRepository(db)
 
 	c.GroupMessageRepo = groupMessageRepo
 
@@ -129,6 +131,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	recommendationService := service.NewRecommendationService(recommendationRepo, userRepo)
 	studyCircleService := service.NewStudyCircleService(studyCircleRepo)
 	noteService := service.NewNoteService(noteRepo)
+	noteFolderService := service.NewNoteFolderService(noteFolderRepo)
 
 	// テンプレートロードマップの初期登録
 	go seedTemplateRoadmaps(db, roadmapService)
@@ -200,6 +203,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	c.StudyCircleHandler = handler.NewStudyCircleHandler(studyCircleService)
 	c.SearchHandler = handler.NewSearchHandler(postRepo, studyCircleRepo)
 	c.NoteHandler = handler.NewNoteHandler(noteService)
+	c.NoteFolderHandler = handler.NewNoteFolderHandler(noteFolderService)
 
 	// HubのGetRoomMembersコールバックを設定
 	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs
