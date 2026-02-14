@@ -48,10 +48,10 @@ func TestResourceValidator_ValidateCreateResource(t *testing.T) {
 func TestResourceValidator_ValidateUpdateResource(t *testing.T) {
 	v := NewResourceValidator()
 
-	// ValidateUpdateResourceはValidateCreateResourceと同じロジック
+	// 部分更新では空値OK
 	err := v.ValidateUpdateResource("タイトル", "説明", "https://example.com", "book", "beginner")
 	assert.NoError(t, err)
 
 	err = v.ValidateUpdateResource("", "説明", "https://example.com", "book", "beginner")
-	assert.Error(t, err)
+	assert.NoError(t, err) // 部分更新では空値OK
 }
