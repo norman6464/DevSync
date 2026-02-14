@@ -7,6 +7,9 @@ export const getUsers = (q?: string) =>
 export const getUser = (id: number) =>
   client.get<User>(`/users/${id}`);
 
+export const getUserByUsername = (username: string) =>
+  client.get<User>(`/users/by-username/${username}`);
+
 export const updateUser = (id: number, data: {
   name?: string;
   bio?: string;

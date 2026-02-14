@@ -6,9 +6,9 @@ import FollowButton from '../components/profile/FollowButton';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
 export default function FollowListPage() {
-  const { id } = useParams<{ id: string }>();
+  const { username } = useParams<{ username: string }>();
   const currentUser = useAuthStore((s) => s.user);
-  const { profileUser, users, tab, loading, profileLoading } = useFollowList(id);
+  const { profileUser, users, tab, loading, profileLoading } = useFollowList(username);
 
   if (!profileUser && profileLoading) return <div className="py-12"><LoadingSpinner /></div>;
 
@@ -17,7 +17,7 @@ export default function FollowListPage() {
       {/* Header with back link */}
       <div className="flex items-center gap-3">
         <Link
-          to={`/profile/${id}`}
+          to={`/profile/${username}`}
           className="p-1.5 rounded-lg hover:bg-gray-800 transition-colors text-gray-400 hover:text-white"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -33,7 +33,7 @@ export default function FollowListPage() {
       {/* Tabs */}
       <div className="flex border-b border-gray-800">
         <Link
-          to={`/profile/${id}/followers`}
+          to={`/profile/${username}/followers`}
           className={`flex-1 text-center py-3 text-sm font-medium transition-colors relative ${
             tab === 'followers' ? 'text-white' : 'text-gray-500 hover:text-gray-300'
           }`}
@@ -44,7 +44,7 @@ export default function FollowListPage() {
           )}
         </Link>
         <Link
-          to={`/profile/${id}/following`}
+          to={`/profile/${username}/following`}
           className={`flex-1 text-center py-3 text-sm font-medium transition-colors relative ${
             tab === 'following' ? 'text-white' : 'text-gray-500 hover:text-gray-300'
           }`}
@@ -67,13 +67,13 @@ export default function FollowListPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-md overflow-hidden divide-y divide-gray-800/50">
           {users.map((user) => (
             <div key={user.id} className="flex items-center gap-4 px-5 py-4 hover:bg-gray-800/40 transition-colors">
-              <Link to={`/profile/${user.id}`} className="flex-shrink-0">
+              <Link to={`/profile/${user.username}`} className="flex-shrink-0">
                 <Avatar name={user.name} avatarUrl={user.avatar_url} size="sm" />
               </Link>
 
               <div className="flex-1 min-w-0">
                 <Link
-                  to={`/profile/${user.id}`}
+                  to={`/profile/${user.username}`}
                   className="font-medium text-sm hover:text-blue-400 transition-colors"
                 >
                   {user.name}

@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { getUser, getFollowers, getFollowing } from '../api/users';
+import { getUser, getUserByUsername, getFollowers, getFollowing } from '../api/users';
 import type { User } from '../types/user';
 import { useAsyncData } from './useAsyncData';
 
 type Tab = 'followers' | 'following';
 
-export function useFollowList(id: string | undefined) {
+export function useFollowList(usernameOrId: string | undefined) {
   const location = useLocation();
-  const userId = id ? parseInt(id) : 0;
+  // usernameOrIdが数値の場合はID、そうでない場合はusername
+  const isId = usernameOrId && /^\d+$/.test(usernameOrId);
+  const userId = isId ? parseInt(usernameOrId) : 0;
+  const username = !isId ? usernameOrId : '';
 
   const initialTab: Tab = location.pathname.endsWith('/following') ? 'following' : 'followers';
   const [tab, setTab] = useState<Tab>(initialTab);
@@ -20,19 +23,23 @@ export function useFollowList(id: string | undefined) {
 
   const { data: profileUser, loading: profileLoading } = useAsyncData(
     async () => {
-      const { data } = await getUser(userId);
-      return data as User;
+      const userRes = username
+        ? await getUserByUsername(username)
+        : await getUser(userId);
+      return userRes.data as User;
     },
-    { deps: [userId], enabled: !!userId }
+    { deps: [usernameOrId], enabled: !!usernameOrId }
   );
 
   const { data: users, loading: usersLoading } = useAsyncData(
     async () => {
+      const actualUserId = profileUser?.id || userId;
+      if (!actualUserId) return [];
       const fetcher = tab === 'followers' ? getFollowers : getFollowing;
-      const { data } = await fetcher(userId);
+      const { data } = await fetcher(actualUserId);
       return (data || []) as User[];
     },
-    { initialData: [] as User[], deps: [userId, tab], enabled: !!userId }
+    { initialData: [] as User[], deps: [profileUser?.id, tab], enabled: !!profileUser }
   );
 
   return {

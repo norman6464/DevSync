@@ -18,13 +18,13 @@ import PortfolioModal from '../components/profile/PortfolioModal';
 
 export default function ProfilePage() {
   const { t } = useTranslation();
-  const { id } = useParams<{ id: string }>();
+  const { username } = useParams<{ username: string }>();
   const currentUser = useAuthStore((s) => s.user);
   const {
     user, posts, contributions, languages, repos,
     zennArticles, zennStats, qiitaArticles, qiitaStats, atcoderRating,
     goals, goalStats, followerCount, followingCount, badges, streakInfo, loading,
-  } = useProfile(id);
+  } = useProfile(username);
 
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [portfolioModalOpen, setPortfolioModalOpen] = useState(false);
@@ -97,10 +97,10 @@ export default function ProfilePage() {
               )}
             </div>
             <div className="flex gap-4 mt-3 text-sm">
-              <Link to={`/profile/${user.id}/followers`} className="text-gray-400 hover:text-blue-400 transition-colors">
+              <Link to={`/profile/${user.username}/followers`} className="text-gray-400 hover:text-blue-400 transition-colors">
                 <strong className="text-white">{followerCount}</strong> {t('profile.followers')}
               </Link>
-              <Link to={`/profile/${user.id}/following`} className="text-gray-400 hover:text-blue-400 transition-colors">
+              <Link to={`/profile/${user.username}/following`} className="text-gray-400 hover:text-blue-400 transition-colors">
                 <strong className="text-white">{followingCount}</strong> {t('profile.following')}
               </Link>
             </div>

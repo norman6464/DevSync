@@ -9,6 +9,7 @@ type UserRepositoryInterface interface {
 	FindAll() ([]model.User, error)
 	FindByID(id uint) (*model.User, error)
 	FindByEmail(email string) (*model.User, error)
+	FindByUsername(username string) (*model.User, error)
 	Search(query string) ([]model.User, error)
 	FindByGitHubID(githubID int64) (*model.User, error)
 	Create(user *model.User) error

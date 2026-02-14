@@ -44,6 +44,22 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 	respondOK(c, user)
 }
 
+// GetByUsername は指定ユーザー名のユーザー情報を返す。
+func (h *UserHandler) GetByUsername(c *gin.Context) {
+	username := c.Param("username")
+	if username == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "username required"})
+		return
+	}
+
+	user, err := h.service.GetByUsername(username)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
+	respondOK(c, user)
+}
+
 // Update はユーザープロフィールを更新する。
 // 本人のみ更新可能（userIDとパスパラメータのIDが一致する必要がある）。
 func (h *UserHandler) Update(c *gin.Context) {

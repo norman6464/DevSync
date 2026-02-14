@@ -71,9 +71,9 @@ export default function App() {
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route element={<Layout />}>
           <Route path="/" element={<DashboardPage />} />
-          <Route path="/profile/:id" element={<ProfilePage />} />
-          <Route path="/profile/:id/followers" element={<FollowListPage />} />
-          <Route path="/profile/:id/following" element={<FollowListPage />} />
+          <Route path="/profile/:username" element={<ProfilePage />} />
+          <Route path="/profile/:username/followers" element={<FollowListPage />} />
+          <Route path="/profile/:username/following" element={<FollowListPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/rankings" element={<RankingsPage />} />
