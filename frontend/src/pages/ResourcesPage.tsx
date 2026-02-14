@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BookOpen } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import type { LearningResource, ResourceCategory, ResourceDifficulty } from '../types/resource';
-import { useResources } from '../hooks';
+import { useResources, useDebounce } from '../hooks';
 import ResourceCard from '../components/resources/ResourceCard';
 import ResourceForm from '../components/resources/ResourceForm';
 import { ResourceCardSkeleton } from '../components/common/Skeleton';
@@ -29,6 +29,16 @@ export default function ResourcesPage() {
 
   const [showForm, setShowForm] = useState(false);
   const [editingResource, setEditingResource] = useState<LearningResource | null>(null);
+
+  // デバウンス処理（300ms）
+  const debouncedQuery = useDebounce(searchQuery, 300);
+
+  // デバウンスされたクエリで自動検索
+  useEffect(() => {
+    if (debouncedQuery !== undefined) {
+      handleSearch();
+    }
+  }, [debouncedQuery, handleSearch]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">

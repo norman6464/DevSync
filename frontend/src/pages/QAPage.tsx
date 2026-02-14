@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
 import type { Question } from '../types/qa';
-import { useQuestions } from '../hooks';
+import { useQuestions, useDebounce } from '../hooks';
 import QuestionCard from '../components/qa/QuestionCard';
 import QuestionForm from '../components/qa/QuestionForm';
 import { QuestionCardSkeleton } from '../components/common/Skeleton';
@@ -21,6 +21,16 @@ export default function QAPage() {
 
   const [showForm, setShowForm] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+
+  // デバウンス処理（300ms）
+  const debouncedQuery = useDebounce(searchQuery, 300);
+
+  // デバウンスされたクエリで自動検索
+  useEffect(() => {
+    if (debouncedQuery !== undefined) {
+      handleSearch();
+    }
+  }, [debouncedQuery, handleSearch]);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
