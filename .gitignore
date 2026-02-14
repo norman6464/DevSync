@@ -21,5 +21,6 @@ frontend/dist/
 
 # Docker
 postgres_data/
-.claude/
+
+# Claude Code
 .claude/
