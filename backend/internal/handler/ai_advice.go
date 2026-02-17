@@ -6,16 +6,28 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/model"
 )
+
+// AIAdviceServiceInterface はAIAdviceHandlerが依存するサービスのインターフェース。
+type AIAdviceServiceInterface interface {
+	GenerateAdvice(userID uint) []model.AIAdvice
+	IsLLMAvailable() bool
+	GetDailyChatRemaining(userID uint) (int, error)
+	MarkAsRead(id, userID uint) error
+	Chat(userID uint, message string, conversationID uint) (*model.AIConversation, error)
+	DeleteConversation(id, userID uint) error
+	GetConversations(userID uint, limit, offset int) ([]model.AIConversation, error)
+	GetConversation(id, userID uint) (*model.AIConversation, error)
+}
 
 // AIAdviceHandler はAIアドバイス関連のHTTPハンドラ。
 type AIAdviceHandler struct {
-	service *service.AIAdviceService
+	service AIAdviceServiceInterface
 }
 
 // NewAIAdviceHandler は新しいAIAdviceHandlerインスタンスを生成する。
-func NewAIAdviceHandler(s *service.AIAdviceService) *AIAdviceHandler {
+func NewAIAdviceHandler(s AIAdviceServiceInterface) *AIAdviceHandler {
 	return &AIAdviceHandler{service: s}
 }
 
