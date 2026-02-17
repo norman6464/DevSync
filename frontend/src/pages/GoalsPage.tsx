@@ -6,6 +6,7 @@ import { useGoals, useConfirm } from '../hooks';
 import { Modal, PageLoader } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
 import ConfirmDialog from '../components/common/ConfirmDialog';
+import { inputClass } from '../constants/styles';
 
 const CATEGORIES: { value: GoalCategory; label: string; icon: string; Icon: LucideIcon }[] = [
   { value: 'language', label: 'goals.categoryLanguage', icon: '💻', Icon: Monitor },
@@ -104,7 +105,6 @@ export default function GoalsPage() {
 
   if (loading) return <PageLoader />;
 
-  const inputClass = "w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow";
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">

@@ -10,6 +10,7 @@ import { connectQiita } from '../api/qiita';
 import { connectAtCoder } from '../api/atcoder';
 import toast from 'react-hot-toast';
 import { LANGUAGES, FRAMEWORKS } from '../constants/skills';
+import { inputClass } from '../constants/styles';
 
 const STEPS = [
   { id: 1, icon: User },
@@ -169,7 +170,6 @@ export default function OnboardingPage() {
     }
   };
 
-  const inputClass = "w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow";
 
   return (
     <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center px-4 py-12">

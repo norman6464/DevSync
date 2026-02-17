@@ -6,6 +6,7 @@ import { type RoadmapCategory, type Roadmap } from '../api/roadmaps';
 import { useRoadmaps, useRoadmapTemplates } from '../hooks';
 import EmptyState from '../components/common/EmptyState';
 import { Modal, PageHeader, PageLoader } from '../components/common';
+import { inputClass } from '../constants/styles';
 
 const CATEGORIES: { value: RoadmapCategory; label: string; icon: string; Icon: LucideIcon }[] = [
   { value: 'language', label: 'roadmaps.categoryLanguage', icon: '💻', Icon: Monitor },
@@ -82,7 +83,6 @@ export default function RoadmapsPage() {
     return <PageLoader />;
   }
 
-  const inputClass = 'w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent';
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">

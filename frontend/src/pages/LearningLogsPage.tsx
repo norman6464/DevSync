@@ -7,6 +7,7 @@ import type { LearningLog, LogCategory } from '../types/learningLog';
 import LogCalendar from '../components/learning-logs/LogCalendar';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { Modal } from '../components/common';
+import { inputClass } from '../constants/styles';
 
 const CATEGORIES: { value: LogCategory; label: string; Icon: LucideIcon }[] = [
   { value: 'coding', label: 'learningLogs.categoryCoding', Icon: Code },
@@ -113,7 +114,6 @@ export default function LearningLogsPage() {
 
   if (loading) return <div className="py-12"><LoadingSpinner /></div>;
 
-  const inputClass = "w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-shadow";
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
