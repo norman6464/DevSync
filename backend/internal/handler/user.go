@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
@@ -46,7 +44,7 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 
 	user, err := h.service.GetByID(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		respondNotFound(c, "user not found")
 		return
 	}
 	respondOK(c, user)
@@ -56,13 +54,13 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 func (h *UserHandler) GetByUsername(c *gin.Context) {
 	username := c.Param("username")
 	if username == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "username required"})
+		respondBadRequest(c, "username required")
 		return
 	}
 
 	user, err := h.service.GetByUsername(username)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		respondNotFound(c, "user not found")
 		return
 	}
 	respondOK(c, user)
@@ -78,13 +76,13 @@ func (h *UserHandler) Update(c *gin.Context) {
 
 	userID := c.GetUint("userID")
 	if userID != id {
-		c.JSON(http.StatusForbidden, gin.H{"error": "cannot update other user's profile"})
+		respondForbidden(c, "cannot update other user's profile")
 		return
 	}
 
 	existing, err := h.service.GetByID(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		respondNotFound(c, "user not found")
 		return
 	}
 
@@ -99,7 +97,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 		OnboardingCompleted *bool   `json:"onboarding_completed"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondBadRequest(c, err.Error())
 		return
 	}
 
