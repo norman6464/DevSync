@@ -19,7 +19,8 @@
     "and": "and",
     "add": "Add",
     "menu": "Menu",
-    "scrollToTop": "Back to top"
+    "scrollToTop": "Back to top",
+    "selectLanguage": "Select language"
   },
   "nav": {
     "dashboard": "Dashboard",

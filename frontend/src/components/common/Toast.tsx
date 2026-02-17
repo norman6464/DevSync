@@ -54,6 +54,7 @@ interface ToastItemProps {
 }
 
 function ToastItem({ toast }: ToastItemProps) {
+  const { t } = useTranslation();
   const removeToast = useToastStore((state) => state.removeToast);
 
   useEffect(() => {
@@ -77,7 +78,7 @@ function ToastItem({ toast }: ToastItemProps) {
       <button
         onClick={() => removeToast(toast.id)}
         className="flex-shrink-0 ml-2 opacity-70 hover:opacity-100 transition-opacity"
-        aria-label="Close"
+        aria-label={t('common.close')}
       >
         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
           <path

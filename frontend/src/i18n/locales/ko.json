@@ -19,7 +19,8 @@
     "or": "또는",
     "and": "그리고",
     "menu": "메뉴",
-    "scrollToTop": "맨 위로"
+    "scrollToTop": "맨 위로",
+    "selectLanguage": "언어 선택"
   },
   "nav": {
     "dashboard": "대시보드",

@@ -19,7 +19,8 @@
     "or": "или",
     "and": "и",
     "menu": "Меню",
-    "scrollToTop": "Наверх"
+    "scrollToTop": "Наверх",
+    "selectLanguage": "Выбрать язык"
   },
   "nav": {
     "dashboard": "Панель",
