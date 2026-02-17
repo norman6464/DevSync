@@ -1,6 +1,9 @@
 package dto
 
-import "github.com/norman6464/devsync/backend/internal/service"
+import (
+	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/service"
+)
 
 // CreateRoadmapRequest はロードマップ作成リクエストのDTO。
 type CreateRoadmapRequest struct {
@@ -38,4 +41,10 @@ type UpdateRoadmapStepRequest struct {
 // ReorderRoadmapStepsRequest はロードマップステップ並べ替えリクエストのDTO。
 type ReorderRoadmapStepsRequest struct {
 	Orders []service.StepOrder `json:"orders" binding:"required"`
+}
+
+// RoadmapListResponse はロードマップ一覧レスポンス。
+type RoadmapListResponse struct {
+	Roadmaps []model.Roadmap `json:"roadmaps"`
+	Total    int64           `json:"total"`
 }

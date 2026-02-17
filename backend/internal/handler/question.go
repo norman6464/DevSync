@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -93,11 +94,11 @@ func (h *QuestionHandler) GetAll(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{
-		"questions": questions,
-		"total":     total,
-		"limit":     limit,
-		"offset":    offset,
+	respondOK(c, dto.QuestionListResponse{
+		Questions: questions,
+		Total:     total,
+		Limit:     limit,
+		Offset:    offset,
 	})
 }
 
@@ -122,11 +123,11 @@ func (h *QuestionHandler) Search(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{
-		"questions": questions,
-		"total":     total,
-		"limit":     limit,
-		"offset":    offset,
+	respondOK(c, dto.QuestionListResponse{
+		Questions: questions,
+		Total:     total,
+		Limit:     limit,
+		Offset:    offset,
 	})
 }
 
@@ -146,9 +147,9 @@ func (h *QuestionHandler) GetByID(c *gin.Context) {
 
 	userVote, _ := h.service.GetUserVote(userID, id)
 
-	respondOK(c, gin.H{
-		"question":  question,
-		"user_vote": userVote,
+	respondOK(c, dto.QuestionDetailResponse{
+		Question: *question,
+		UserVote: userVote,
 	})
 }
 

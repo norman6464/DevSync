@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -257,10 +258,10 @@ func (h *ProjectHandler) GetAll(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{
-		"projects": projects,
-		"total":    total,
-		"limit":    limit,
-		"offset":   offset,
+	respondOK(c, dto.ProjectListResponse{
+		Projects: projects,
+		Total:    total,
+		Limit:    limit,
+		Offset:   offset,
 	})
 }

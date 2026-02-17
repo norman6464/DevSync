@@ -5,3 +5,9 @@ type UpdateEmailPreferencesRequest struct {
 	EmailWeeklyReport *bool   `json:"email_weekly_report"`
 	EmailLanguage     *string `json:"email_language"`
 }
+
+// EmailPreferencesResponse はメール配信設定レスポンス。
+type EmailPreferencesResponse struct {
+	EmailWeeklyReport bool   `json:"email_weekly_report"`
+	EmailLanguage     string `json:"email_language"`
+}

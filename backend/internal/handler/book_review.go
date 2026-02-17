@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -122,11 +123,11 @@ func (h *BookReviewHandler) GetAll(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{
-		"reviews": reviews,
-		"total":   total,
-		"limit":   limit,
-		"offset":  offset,
+	respondOK(c, dto.BookReviewListResponse{
+		Reviews: reviews,
+		Total:   total,
+		Limit:   limit,
+		Offset:  offset,
 	})
 }
 
