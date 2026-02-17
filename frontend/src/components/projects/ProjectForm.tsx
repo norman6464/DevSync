@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Project, CreateProjectRequest } from '../../types/project';
 import type { GitHubRepository } from '../../types/github';
-import { buttonSecondaryClass } from '../../constants/styles';
+import { buttonSecondaryClass, inputClass } from '../../constants/styles';
 
 interface ProjectFormProps {
   project?: Project;
@@ -88,7 +88,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
           <select
             value={githubRepoId || ''}
             onChange={(e) => e.target.value && handleRepoSelect(parseInt(e.target.value))}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+            className={inputClass}
           >
             <option value="">{t('projects.selectRepo')}</option>
             {repos.map(repo => (
@@ -242,7 +242,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+            className={inputClass}
           />
         </div>
         <div>
@@ -253,7 +253,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+            className={inputClass}
           />
         </div>
       </div>

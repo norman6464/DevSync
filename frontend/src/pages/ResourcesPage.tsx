@@ -8,6 +8,7 @@ import ResourceCard from '../components/resources/ResourceCard';
 import ResourceForm from '../components/resources/ResourceForm';
 import { ResourceCardSkeleton } from '../components/common/Skeleton';
 import EmptyState from '../components/common/EmptyState';
+import { selectClass } from '../constants/styles';
 import { Pagination, SearchInput, PageHeader, Modal } from '../components/common';
 
 const categories: (ResourceCategory | '')[] = ['', 'book', 'video', 'article', 'course', 'tutorial', 'podcast', 'tool', 'other'];
@@ -93,7 +94,7 @@ export default function ResourcesPage() {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value as ResourceCategory | '')}
-            className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+            className={selectClass}
           >
             <option value="">{t('resources.allCategories')}</option>
             {categories.slice(1).map(cat => (
@@ -105,7 +106,7 @@ export default function ResourcesPage() {
           <select
             value={difficultyFilter}
             onChange={(e) => setDifficultyFilter(e.target.value as ResourceDifficulty | '')}
-            className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+            className={selectClass}
           >
             <option value="">{t('resources.allDifficulties')}</option>
             {difficulties.slice(1).map(diff => (
