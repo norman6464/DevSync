@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Project, CreateProjectRequest } from '../../types/project';
 import type { GitHubRepository } from '../../types/github';
-import { buttonSecondaryClass, inputClass } from '../../constants/styles';
+import { buttonSecondaryClass, inputClass, textareaClass } from '../../constants/styles';
 
 interface ProjectFormProps {
   project?: Project;
@@ -125,7 +125,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent resize-none"
+          className={textareaClass}
           placeholder={t('projects.descriptionPlaceholder')}
         />
       </div>

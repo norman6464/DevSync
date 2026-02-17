@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Question, CreateQuestionRequest } from '../../types/qa';
-import { buttonSecondaryClass } from '../../constants/styles';
+import { buttonSecondaryClass, textareaClass } from '../../constants/styles';
 
 interface QuestionFormProps {
   question?: Question;
@@ -62,7 +62,7 @@ export default function QuestionForm({ question, onSubmit, onCancel, loading }: 
           onChange={(e) => setBody(e.target.value)}
           required
           rows={8}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent resize-none"
+          className={textareaClass}
           placeholder={t('qa.questionBodyPlaceholder')}
         />
       </div>

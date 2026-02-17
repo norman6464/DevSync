@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { BookReview, CreateBookReviewRequest } from '../../types/bookReview';
-import { buttonSecondaryClass } from '../../constants/styles';
+import { buttonSecondaryClass, textareaClass } from '../../constants/styles';
 
 interface BookReviewFormProps {
   review?: BookReview;
@@ -121,7 +121,7 @@ export default function BookReviewForm({ review, onSubmit, onCancel, loading }: 
           value={reviewText}
           onChange={(e) => setReviewText(e.target.value)}
           rows={4}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent resize-none"
+          className={textareaClass}
           placeholder={t('bookReviews.reviewPlaceholder')}
         />
       </div>
