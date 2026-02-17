@@ -3,17 +3,23 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
 )
+
+// ActivityReportServiceInterface はActivityReportHandlerが依存するサービスのインターフェース。
+type ActivityReportServiceInterface interface {
+	GetWeeklyReport(userID uint) (*model.ActivityReport, error)
+	GetMonthlyReport(userID uint) (*model.ActivityReport, error)
+	GetComparison(userID uint, period model.ReportPeriod) (*model.ReportComparison, error)
+}
 
 // ActivityReportHandler はアクティビティレポート関連のHTTPハンドラ。
 // 週次・月次レポートの取得および期間比較を処理する。
 type ActivityReportHandler struct {
-	service *service.ActivityReportService
+	service ActivityReportServiceInterface
 }
 
 // NewActivityReportHandler は新しいActivityReportHandlerインスタンスを生成する。
-func NewActivityReportHandler(s *service.ActivityReportService) *ActivityReportHandler {
+func NewActivityReportHandler(s ActivityReportServiceInterface) *ActivityReportHandler {
 	return &ActivityReportHandler{service: s}
 }
 

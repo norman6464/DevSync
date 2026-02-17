@@ -4,17 +4,26 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/model"
 )
+
+// LearningAnalyticsServiceInterface はLearningAnalyticsHandlerが依存するサービスのインターフェース。
+type LearningAnalyticsServiceInterface interface {
+	GetHeatmap(userID uint) ([]model.HeatmapEntry, error)
+	GetCategoryBreakdown(userID uint) ([]model.CategoryBreakdown, error)
+	GetWeeklyTrends(userID uint, weeks int) ([]model.WeeklyTrend, error)
+	GetProductivityScore(userID uint) (*model.ProductivityScore, error)
+	GetInsights(userID uint) ([]model.AIInsight, error)
+}
 
 // LearningAnalyticsHandler は学習分析関連のHTTPハンドラ。
 // ヒートマップ、カテゴリ別、トレンド、生産性スコア、AIインサイトの取得を処理する。
 type LearningAnalyticsHandler struct {
-	service *service.LearningAnalyticsService
+	service LearningAnalyticsServiceInterface
 }
 
 // NewLearningAnalyticsHandler は新しいLearningAnalyticsHandlerインスタンスを生成する。
-func NewLearningAnalyticsHandler(s *service.LearningAnalyticsService) *LearningAnalyticsHandler {
+func NewLearningAnalyticsHandler(s LearningAnalyticsServiceInterface) *LearningAnalyticsHandler {
 	return &LearningAnalyticsHandler{service: s}
 }
 
