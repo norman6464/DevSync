@@ -4,6 +4,7 @@ import { BookOpen, Star, Plus, Edit, Trash2 } from 'lucide-react';
 import { useNotes } from '../hooks';
 import { PageLoader, SearchInput } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
+import { buttonPrimaryClass } from '../constants/styles';
 import type { Note } from '../api/notes';
 
 export default function NotesPage() {
@@ -74,7 +75,7 @@ export default function NotesPage() {
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          className={`${buttonPrimaryClass} flex items-center gap-2`}
         >
           <Plus className="w-5 h-5" />
           {t('notes.createNote')}

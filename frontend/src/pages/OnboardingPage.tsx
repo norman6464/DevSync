@@ -8,7 +8,7 @@ import { getGitHubConnectURL } from '../api/github';
 import { connectZenn } from '../api/zenn';
 import { connectQiita } from '../api/qiita';
 import { connectAtCoder } from '../api/atcoder';
-import { sectionContainerClass, inputClass, labelClass } from '../constants/styles';
+import { sectionContainerClass, inputClass, labelClass, buttonPrimaryClass } from '../constants/styles';
 import toast from 'react-hot-toast';
 import { LANGUAGES, FRAMEWORKS } from '../constants/skills';
 
@@ -423,7 +423,7 @@ export default function OnboardingPage() {
                       <button
                         onClick={handleConnectZenn}
                         disabled={connectingZenn || !zennUsername.trim()}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors whitespace-nowrap"
+                        className={`${buttonPrimaryClass} text-sm disabled:opacity-50 whitespace-nowrap`}
                       >
                         {connectingZenn ? t('common.loading') : t('settings.connect')}
                       </button>
