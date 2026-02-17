@@ -3,11 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { HelpCircle } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import type { Question } from '../types/qa';
-import { useQuestions, useDebounce } from '../hooks';
+import { useQuestions, useDebounce, useConfirm } from '../hooks';
 import QuestionCard from '../components/qa/QuestionCard';
 import QuestionForm from '../components/qa/QuestionForm';
 import { QuestionCardSkeleton } from '../components/common/Skeleton';
 import { EmptyState, Modal, Pagination } from '../components/common';
+import ConfirmDialog from '../components/common/ConfirmDialog';
 
 export default function QAPage() {
   const { t } = useTranslation();
@@ -21,8 +22,15 @@ export default function QAPage() {
     createQuestion, updateQuestion, deleteQuestion,
   } = useQuestions();
 
+  const { confirm, dialogProps } = useConfirm();
+
   const [showForm, setShowForm] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+
+  const handleDeleteQuestion = async (question: Question) => {
+    const ok = await confirm({ title: t('common.confirm'), message: t('qa.confirmDelete'), variant: 'danger' });
+    if (ok) deleteQuestion(question);
+  };
 
   // デバウンス処理（300ms）
   const debouncedQuery = useDebounce(searchQuery, 300);
@@ -135,7 +143,7 @@ export default function QAPage() {
                 question={question}
                 isOwner={user?.id === question.user_id}
                 onEdit={() => setEditingQuestion(question)}
-                onDelete={() => deleteQuestion(question)}
+                onDelete={() => handleDeleteQuestion(question)}
               />
             ))}
           </div>
@@ -148,6 +156,7 @@ export default function QAPage() {
           />
         </>
       )}
+      <ConfirmDialog {...dialogProps} />
     </div>
   );
 }

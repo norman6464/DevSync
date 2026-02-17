@@ -44,8 +44,6 @@ export function usePosts() {
   }, [refetch]);
 
   const handleDeletePost = useCallback(async (post: Post) => {
-    if (!confirm(`「${post.title}」を削除してもよろしいですか？`)) return false;
-
     try {
       await apiDeletePost(post.id);
       await refetch();

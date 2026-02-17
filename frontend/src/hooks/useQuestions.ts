@@ -74,7 +74,6 @@ export function useQuestions() {
   }, [t, questions]);
 
   const handleDelete = useCallback(async (question: Question) => {
-    if (!confirm(t('qa.confirmDelete'))) return false;
     try {
       await deleteQuestion(question.id);
       setLocalQuestions(prev => (prev ?? questions).filter(q => q.id !== question.id));
