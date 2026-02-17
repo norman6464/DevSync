@@ -7,6 +7,7 @@ import { useRoadmapDetail } from '../hooks';
 import { type RoadmapStep } from '../api/roadmaps';
 import { PageLoader, Modal } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
+import { inputClass } from '../constants/styles';
 
 export default function RoadmapDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -81,7 +82,6 @@ export default function RoadmapDetailPage() {
     );
   }
 
-  const inputClass = 'w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent';
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
