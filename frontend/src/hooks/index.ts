@@ -35,3 +35,4 @@ export { useNoteLinks, useNoteBacklinks } from './useNoteLinks';
 export { useToast } from './useToast';
 export { useDebounce } from './useDebounce';
 export { useAutoSave } from './useAutoSave';
+export { useConfirm } from './useConfirm';

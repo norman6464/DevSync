@@ -5,9 +5,11 @@ import {
   getChatRoomMembers, updateChatRoom, deleteChatRoom,
   addChatRoomMember, removeChatRoomMember,
 } from '../../api/chatRooms';
+import { useConfirm } from '../../hooks';
 import type { User } from '../../types/user';
 import type { ChatRoom, ChatRoomMember } from '../../types/chat';
 import Avatar from '../common/Avatar';
+import ConfirmDialog from '../common/ConfirmDialog';
 
 interface Props {
   room: ChatRoom;
@@ -29,6 +31,7 @@ export default function RoomSettingsModal({
   const [description, setDescription] = useState(room.description);
   const [showAddMember, setShowAddMember] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { confirm, dialogProps } = useConfirm();
 
   const isOwner = room.owner_id === currentUserId;
 
@@ -74,7 +77,13 @@ export default function RoomSettingsModal({
   };
 
   const handleLeave = async () => {
-    if (!confirm(t('chat.confirmLeave'))) return;
+    const confirmed = await confirm({
+      title: t('chat.leaveGroup'),
+      message: t('chat.confirmLeave'),
+      variant: 'warning',
+      confirmText: t('chat.leaveGroup'),
+    });
+    if (!confirmed) return;
     try {
       await removeChatRoomMember(room.id, currentUserId);
       onLeft();
@@ -84,7 +93,13 @@ export default function RoomSettingsModal({
   };
 
   const handleDelete = async () => {
-    if (!confirm(t('chat.confirmDelete'))) return;
+    const confirmed = await confirm({
+      title: t('common.delete'),
+      message: t('chat.confirmDelete'),
+      variant: 'danger',
+      confirmText: t('common.delete'),
+    });
+    if (!confirmed) return;
     try {
       await deleteChatRoom(room.id);
       onDeleted();
@@ -223,6 +238,7 @@ export default function RoomSettingsModal({
             </button>
           )}
         </div>
+        <ConfirmDialog {...dialogProps} />
       </div>
     </div>
   );

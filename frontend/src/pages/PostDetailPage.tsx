@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { usePostDetail } from '../hooks';
+import { usePostDetail, useConfirm } from '../hooks';
 import { deletePost } from '../api/posts';
 import { useAuthStore } from '../store/authStore';
 import PostCard from '../components/posts/PostCard';
@@ -9,6 +9,7 @@ import PostForm from '../components/posts/PostForm';
 import CodeSnippetViewer from '../components/posts/CodeSnippetViewer';
 import Avatar from '../components/common/Avatar';
 import { PageLoader } from '../components/common';
+import ConfirmDialog from '../components/common/ConfirmDialog';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 
@@ -20,6 +21,7 @@ export default function PostDetailPage() {
   const { post, comments, loading, submitting, submitComment, refetch, updatePost } = usePostDetail(id);
   const [newComment, setNewComment] = useState('');
   const [editingPost, setEditingPost] = useState(false);
+  const { confirm, dialogProps } = useConfirm();
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +31,14 @@ export default function PostDetailPage() {
   };
 
   const handleDeletePost = async () => {
-    if (!post || !confirm(`「${post.title}」を削除してもよろしいですか？`)) return;
+    if (!post) return;
+    const confirmed = await confirm({
+      title: t('common.delete'),
+      message: `「${post.title}」${t('post.confirmDelete')}`,
+      variant: 'danger',
+      confirmText: t('common.delete'),
+    });
+    if (!confirmed) return;
 
     try {
       await deletePost(post.id);
@@ -128,6 +137,8 @@ export default function PostDetailPage() {
           </div>
         )}
       </div>
+
+      <ConfirmDialog {...dialogProps} />
 
       {/* Edit Modal */}
       {editingPost && (

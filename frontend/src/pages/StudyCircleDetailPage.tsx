@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Map, MessageSquare, Trophy, Settings, Plus, X, Trash2, Check, ExternalLink, Crown, UserMinus, ArrowLeft } from 'lucide-react';
-import { useStudyCircleDetail, useStudyCircleActivity } from '../hooks';
+import { useStudyCircleDetail, useStudyCircleActivity, useConfirm } from '../hooks';
 import { useAuthStore } from '../store/authStore';
 import { useUserSearch } from '../hooks';
 import Avatar from '../components/common/Avatar';
+import ConfirmDialog from '../components/common/ConfirmDialog';
 
 type Tab = 'roadmap' | 'checkin' | 'ranking' | 'settings';
 
@@ -36,6 +37,7 @@ export default function StudyCircleDetailPage() {
   const [memberSearch, setMemberSearch] = useState('');
   const { users: searchUsers } = useUserSearch(memberSearch);
 
+  const { confirm, dialogProps } = useConfirm();
   const isOwner = circle?.owner_id === user?.id;
 
   const handleCreateStep = async () => {
@@ -441,7 +443,13 @@ export default function StudyCircleDetailPage() {
             <h3 className="text-sm font-medium text-red-400 mb-3">{t('common.delete')}</h3>
             <button
               onClick={async () => {
-                if (confirm(t('studyCircle.confirmDelete'))) {
+                const confirmed = await confirm({
+                  title: t('common.delete'),
+                  message: t('studyCircle.confirmDelete'),
+                  variant: 'danger',
+                  confirmText: t('common.delete'),
+                });
+                if (confirmed) {
                   const { deleteCircle } = await import('../api/studyCircles');
                   await deleteCircle(circle.id);
                   navigate('/study-circles');
@@ -454,6 +462,7 @@ export default function StudyCircleDetailPage() {
           </div>
         </div>
       )}
+      <ConfirmDialog {...dialogProps} />
     </div>
   );
 }

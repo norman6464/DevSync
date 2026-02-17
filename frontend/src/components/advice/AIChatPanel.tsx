@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Send, Loader2, Plus, MessageSquare, Trash2 } from 'lucide-react';
+import { useConfirm } from '../../hooks';
+import ConfirmDialog from '../common/ConfirmDialog';
 import type { AIMessage } from '../../api/advice';
 
 interface AIChatPanelProps {
@@ -25,6 +27,7 @@ export default function AIChatPanel({
   const { t } = useTranslation();
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { confirm, dialogProps } = useConfirm();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -51,10 +54,14 @@ export default function AIChatPanel({
           </span>
           {conversationId && onDelete && (
             <button
-              onClick={() => {
-                if (window.confirm(t('advice.deleteConfirm'))) {
-                  onDelete();
-                }
+              onClick={async () => {
+                const confirmed = await confirm({
+                  title: t('common.delete'),
+                  message: t('advice.deleteConfirm'),
+                  variant: 'danger',
+                  confirmText: t('common.delete'),
+                });
+                if (confirmed) onDelete();
               }}
               className="text-xs text-gray-400 hover:text-red-400 flex items-center gap-1 transition-colors"
               title={t('advice.deleteConversation')}
@@ -136,6 +143,7 @@ export default function AIChatPanel({
           </div>
         )}
       </form>
+      <ConfirmDialog {...dialogProps} />
     </div>
   );
 }

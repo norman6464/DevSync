@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { MessageSquare, Clock, Trash2 } from 'lucide-react';
+import { useConfirm } from '../../hooks';
+import ConfirmDialog from '../common/ConfirmDialog';
 import type { AIConversation } from '../../api/advice';
 
 interface ConversationListProps {
@@ -18,6 +20,7 @@ export default function ConversationList({
   activeId,
 }: ConversationListProps) {
   const { t } = useTranslation();
+  const { confirm, dialogProps } = useConfirm();
 
   if (loading) {
     return (
@@ -38,6 +41,7 @@ export default function ConversationList({
 
   return (
     <div className="space-y-2">
+      <ConfirmDialog {...dialogProps} />
       <h4 className="text-gray-400 text-xs font-medium uppercase tracking-wider mb-3">
         {t('advice.conversations')}
       </h4>
@@ -68,11 +72,15 @@ export default function ConversationList({
             </div>
           </button>
           <button
-            onClick={(e) => {
+            onClick={async (e) => {
               e.stopPropagation();
-              if (window.confirm(t('advice.deleteConfirm'))) {
-                onDelete(conv.id);
-              }
+              const confirmed = await confirm({
+                title: t('common.delete'),
+                message: t('advice.deleteConfirm'),
+                variant: 'danger',
+                confirmText: t('common.delete'),
+              });
+              if (confirmed) onDelete(conv.id);
             }}
             className="opacity-0 group-hover:opacity-100 p-2 mr-1 text-gray-500 hover:text-red-400 transition-all"
             title={t('advice.deleteConversation')}

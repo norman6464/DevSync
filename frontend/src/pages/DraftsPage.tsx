@@ -4,14 +4,18 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { FileEdit, Eye, Trash2, Send } from 'lucide-react';
 import { useAsyncData } from '../hooks/useAsyncData';
+import { useConfirm } from '../hooks';
 import { getDrafts, publishPost, deletePost } from '../api/posts';
 import { PostCardSkeleton } from '../components/common/Skeleton';
+import ConfirmDialog from '../components/common/ConfirmDialog';
 import { formatDistanceToNow } from '../utils/timeFormat';
 
 export default function DraftsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const { confirm, dialogProps } = useConfirm();
 
   const { data: drafts, loading } = useAsyncData(
     async () => {
@@ -22,7 +26,13 @@ export default function DraftsPage() {
   );
 
   const handlePublish = async (id: number) => {
-    if (!confirm(t('post.confirmPublish'))) return;
+    const confirmed = await confirm({
+      title: t('post.publish'),
+      message: t('post.confirmPublish'),
+      variant: 'info',
+      confirmText: t('post.publish'),
+    });
+    if (!confirmed) return;
     try {
       await publishPost(id);
       toast.success(t('post.published'));
@@ -33,7 +43,13 @@ export default function DraftsPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm(t('post.confirmDelete'))) return;
+    const confirmed = await confirm({
+      title: t('common.delete'),
+      message: t('post.confirmDelete'),
+      variant: 'danger',
+      confirmText: t('common.delete'),
+    });
+    if (!confirmed) return;
     try {
       await deletePost(id);
       toast.success(t('post.deleted'));
@@ -113,6 +129,7 @@ export default function DraftsPage() {
           ))}
         </div>
       )}
+      <ConfirmDialog {...dialogProps} />
     </div>
   );
 }
