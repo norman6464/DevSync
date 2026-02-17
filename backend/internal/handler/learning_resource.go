@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -90,11 +89,11 @@ func (h *LearningResourceHandler) Create(c *gin.Context) {
 	}
 
 	if err := h.service.Create(resource); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create resource"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, resource)
+	respondCreated(c, resource)
 }
 
 // GetByID は指定されたIDの学習リソースを取得する。
@@ -116,7 +115,7 @@ func (h *LearningResourceHandler) GetByID(c *gin.Context) {
 	hasLiked, _ := h.service.HasLiked(userID, id)
 	hasSaved, _ := h.service.HasSaved(userID, id)
 
-	c.JSON(http.StatusOK, gin.H{
+	respondOK(c, gin.H{
 		"resource":  resource,
 		"has_liked": hasLiked,
 		"has_saved": hasSaved,
@@ -134,11 +133,11 @@ func (h *LearningResourceHandler) GetByUserID(c *gin.Context) {
 
 	resources, err := h.service.GetByUserID(targetUserID, currentUserID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch resources"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, resources)
+	respondOK(c, resources)
 }
 
 // GetPublic は公開学習リソース一覧をページネーション・フィルター付きで取得する。
@@ -154,11 +153,11 @@ func (h *LearningResourceHandler) GetPublic(c *gin.Context) {
 
 	resources, total, err := h.service.GetPublic(limit, offset, category, difficulty)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch resources"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	respondOK(c, gin.H{
 		"resources": resources,
 		"total":     total,
 		"limit":     limit,
@@ -178,11 +177,11 @@ func (h *LearningResourceHandler) Search(c *gin.Context) {
 
 	resources, total, err := h.service.Search(query, limit, offset)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to search resources"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	respondOK(c, gin.H{
 		"resources": resources,
 		"total":     total,
 		"limit":     limit,
@@ -236,12 +235,12 @@ func (h *LearningResourceHandler) Update(c *gin.Context) {
 	if req.IsPublic != nil {
 		resource, err = h.service.UpdateVisibility(id, userID, *req.IsPublic)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update resource"})
+			respondError(c, err)
 			return
 		}
 	}
 
-	c.JSON(http.StatusOK, resource)
+	respondOK(c, resource)
 }
 
 // Delete は指定された学習リソースを削除する。
@@ -257,7 +256,7 @@ func (h *LearningResourceHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Resource deleted successfully"})
+	respondDeleted(c)
 }
 
 // Like は学習リソースにいいねする。
@@ -269,11 +268,11 @@ func (h *LearningResourceHandler) Like(c *gin.Context) {
 	}
 
 	if err := h.service.Like(userID, id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to like resource"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Resource liked"})
+	respondOK(c, gin.H{"message": "Resource liked"})
 }
 
 // Unlike は学習リソースのいいねを取り消す。
@@ -285,11 +284,11 @@ func (h *LearningResourceHandler) Unlike(c *gin.Context) {
 	}
 
 	if err := h.service.Unlike(userID, id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unlike resource"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Resource unliked"})
+	respondOK(c, gin.H{"message": "Resource unliked"})
 }
 
 // SaveResource は学習リソースを保存する。
@@ -301,11 +300,11 @@ func (h *LearningResourceHandler) SaveResource(c *gin.Context) {
 	}
 
 	if err := h.service.Save(userID, id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save resource"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Resource saved"})
+	respondOK(c, gin.H{"message": "Resource saved"})
 }
 
 // UnsaveResource は学習リソースの保存を取り消す。
@@ -317,11 +316,11 @@ func (h *LearningResourceHandler) UnsaveResource(c *gin.Context) {
 	}
 
 	if err := h.service.Unsave(userID, id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unsave resource"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Resource unsaved"})
+	respondOK(c, gin.H{"message": "Resource unsaved"})
 }
 
 // GetSaved は認証ユーザーの保存済み学習リソース一覧を取得する。
@@ -336,11 +335,11 @@ func (h *LearningResourceHandler) GetSaved(c *gin.Context) {
 
 	resources, total, err := h.service.GetSavedByUserID(userID, limit, offset)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch saved resources"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	respondOK(c, gin.H{
 		"resources": resources,
 		"total":     total,
 		"limit":     limit,
