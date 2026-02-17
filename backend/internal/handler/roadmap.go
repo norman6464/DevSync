@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
 )
@@ -45,12 +46,7 @@ func NewRoadmapHandler(s RoadmapServiceInterface) *RoadmapHandler {
 func (h *RoadmapHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	var req struct {
-		Title       string `json:"title" binding:"required"`
-		Description string `json:"description"`
-		Category    string `json:"category"`
-		IsPublic    bool   `json:"is_public"`
-	}
+	var req dto.CreateRoadmapRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		respondBadRequest(c, "title is required")
@@ -134,13 +130,7 @@ func (h *RoadmapHandler) Update(c *gin.Context) {
 		return
 	}
 
-	var req struct {
-		Title       *string `json:"title"`
-		Description *string `json:"description"`
-		Category    *string `json:"category"`
-		IsPublic    *bool   `json:"is_public"`
-		Status      *string `json:"status"`
-	}
+	var req dto.UpdateRoadmapRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		respondBadRequest(c, "invalid request")
@@ -249,12 +239,7 @@ func (h *RoadmapHandler) CreateStep(c *gin.Context) {
 		return
 	}
 
-	var req struct {
-		Title       string `json:"title" binding:"required"`
-		Description string `json:"description"`
-		ResourceURL string `json:"resource_url"`
-		OrderIndex  *int   `json:"order_index"`
-	}
+	var req dto.CreateRoadmapStepRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		respondBadRequest(c, "title is required")
@@ -290,12 +275,7 @@ func (h *RoadmapHandler) UpdateStep(c *gin.Context) {
 		return
 	}
 
-	var req struct {
-		Title       *string `json:"title"`
-		Description *string `json:"description"`
-		ResourceURL *string `json:"resource_url"`
-		IsCompleted *bool   `json:"is_completed"`
-	}
+	var req dto.UpdateRoadmapStepRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		respondBadRequest(c, "invalid request")
@@ -364,9 +344,7 @@ func (h *RoadmapHandler) ReorderSteps(c *gin.Context) {
 		return
 	}
 
-	var req struct {
-		Orders []service.StepOrder `json:"orders" binding:"required"`
-	}
+	var req dto.ReorderRoadmapStepsRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		respondBadRequest(c, "invalid request")
