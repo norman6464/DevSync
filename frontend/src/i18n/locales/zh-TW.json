@@ -153,7 +153,9 @@
     "qiitaArticles": "Qiita文章",
     "viewAllOnQiita": "在Qiita上查看全部",
     "competitiveProgramming": "競技程式設計",
-    "paizaRankLabel": "paiza 等級 {{rank}}"
+    "paizaRankLabel": "paiza 等級 {{rank}}",
+    "followFailed": "追蹤失敗",
+    "unfollowFailed": "取消追蹤失敗"
   },
   "settings": {
     "title": "設定",
