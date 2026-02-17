@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
@@ -47,7 +45,7 @@ func (h *GitHubHandler) Connect(c *gin.Context) {
 	userID := c.GetUint("userID")
 	state, err := h.authService.GenerateOAuthState(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate state"})
+		respondError(c, err)
 		return
 	}
 	url := h.githubService.GetOAuthURL(state)

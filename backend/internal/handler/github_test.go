@@ -35,7 +35,7 @@ func TestGitHubConnect_StateError(t *testing.T) {
 	r.GET("/github/connect", h.Connect)
 	w := doRequest(r, "GET", "/github/connect", nil)
 
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusBadRequest)
 	authSvc.AssertExpectations(t)
 }
 
