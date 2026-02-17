@@ -2,16 +2,23 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/model"
 )
+
+// RecommendationServiceInterface はRecommendationHandlerが依存するサービスのインターフェース。
+type RecommendationServiceInterface interface {
+	GetRecommendedUsers(userID uint) ([]model.RecommendedUser, error)
+	GetTrendingPosts() ([]model.Post, error)
+	GetTrendingResources() ([]model.LearningResource, error)
+}
 
 // RecommendationHandler はレコメンド関連のHTTPリクエストを処理する。
 type RecommendationHandler struct {
-	service *service.RecommendationService
+	service RecommendationServiceInterface
 }
 
 // NewRecommendationHandler は新しいRecommendationHandlerインスタンスを生成する。
-func NewRecommendationHandler(service *service.RecommendationService) *RecommendationHandler {
+func NewRecommendationHandler(service RecommendationServiceInterface) *RecommendationHandler {
 	return &RecommendationHandler{service: service}
 }
 
