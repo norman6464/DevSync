@@ -6,17 +6,35 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
 )
+
+// LearningResourceServiceInterface は学習リソースサービスの抽象インターフェース。
+type LearningResourceServiceInterface interface {
+	Create(resource *model.LearningResource) error
+	GetByID(id, userID uint) (*model.LearningResource, error)
+	HasLiked(userID, resourceID uint) (bool, error)
+	HasSaved(userID, resourceID uint) (bool, error)
+	GetByUserID(targetUserID, currentUserID uint) ([]model.LearningResource, error)
+	GetPublic(limit, offset int, category, difficulty string) ([]model.LearningResource, int64, error)
+	Search(query string, limit, offset int) ([]model.LearningResource, int64, error)
+	Update(id, userID uint, updates *model.LearningResource) (*model.LearningResource, error)
+	UpdateVisibility(id, userID uint, isPublic bool) (*model.LearningResource, error)
+	Delete(id, userID uint) error
+	Like(userID, resourceID uint) error
+	Unlike(userID, resourceID uint) error
+	Save(userID, resourceID uint) error
+	Unsave(userID, resourceID uint) error
+	GetSavedByUserID(userID uint, limit, offset int) ([]model.LearningResource, int64, error)
+}
 
 // LearningResourceHandler は学習リソース関連のHTTPハンドラ。
 // 学習リソースのCRUD・検索・いいね・保存を処理する。
 type LearningResourceHandler struct {
-	service *service.LearningResourceService
+	service LearningResourceServiceInterface
 }
 
 // NewLearningResourceHandler は新しいLearningResourceHandlerインスタンスを生成する。
-func NewLearningResourceHandler(s *service.LearningResourceService) *LearningResourceHandler {
+func NewLearningResourceHandler(s LearningResourceServiceInterface) *LearningResourceHandler {
 	return &LearningResourceHandler{service: s}
 }
 
