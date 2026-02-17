@@ -475,3 +475,251 @@ func TestDeleteConversation_Forbidden(t *testing.T) {
 	err := svc.DeleteConversation(1, 1)
 	assert.ErrorIs(t, err, ErrForbidden)
 }
+
+// ============================================================
+// GetAdvice テスト
+// ============================================================
+
+func TestGetAdvice_Success(t *testing.T) {
+	svc, deps := newTestAIAdviceService(false)
+
+	deps.adviceRepo.On("FindByUserID", uint(1), 10).Return([]model.AIAdvice{
+		{UserID: 1, TitleKey: "advice.test"},
+	}, nil)
+
+	advices, err := svc.GetAdvice(1, 10)
+	assert.NoError(t, err)
+	assert.Len(t, advices, 1)
+}
+
+func TestGetAdvice_Error(t *testing.T) {
+	svc, deps := newTestAIAdviceService(false)
+
+	deps.adviceRepo.On("FindByUserID", uint(1), 10).Return([]model.AIAdvice{}, ErrNotFound)
+
+	_, err := svc.GetAdvice(1, 10)
+	assert.Error(t, err)
+}
+
+// ============================================================
+// MarkAsRead テスト
+// ============================================================
+
+func TestMarkAsRead_Success(t *testing.T) {
+	svc, deps := newTestAIAdviceService(false)
+
+	deps.adviceRepo.On("MarkAsRead", uint(5), uint(1)).Return(nil)
+
+	err := svc.MarkAsRead(5, 1)
+	assert.NoError(t, err)
+}
+
+func TestMarkAsRead_Error(t *testing.T) {
+	svc, deps := newTestAIAdviceService(false)
+
+	deps.adviceRepo.On("MarkAsRead", uint(999), uint(1)).Return(ErrNotFound)
+
+	err := svc.MarkAsRead(999, 1)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+// ============================================================
+// GetDailyChatRemaining テスト
+// ============================================================
+
+func TestGetDailyChatRemaining_HasRemaining(t *testing.T) {
+	svc, deps := newTestAIAdviceService(true)
+
+	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(2), nil)
+
+	remaining, err := svc.GetDailyChatRemaining(1)
+	assert.NoError(t, err)
+	assert.Equal(t, 3, remaining) // DailyChatLimit(5) - 2 = 3
+}
+
+func TestGetDailyChatRemaining_AtLimit(t *testing.T) {
+	svc, deps := newTestAIAdviceService(true)
+
+	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(5), nil)
+
+	remaining, err := svc.GetDailyChatRemaining(1)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, remaining)
+}
+
+func TestGetDailyChatRemaining_OverLimit(t *testing.T) {
+	svc, deps := newTestAIAdviceService(true)
+
+	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(10), nil)
+
+	remaining, err := svc.GetDailyChatRemaining(1)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, remaining) // 負にならない
+}
+
+func TestGetDailyChatRemaining_Error(t *testing.T) {
+	svc, deps := newTestAIAdviceService(true)
+
+	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(0), ErrNotFound)
+
+	_, err := svc.GetDailyChatRemaining(1)
+	assert.Error(t, err)
+}
+
+// ============================================================
+// GetConversations テスト
+// ============================================================
+
+func TestGetConversations_Success(t *testing.T) {
+	svc, deps := newTestAIAdviceService(false)
+
+	deps.convRepo.On("FindConversationsByUserID", uint(1), 20, 0).Return([]model.AIConversation{
+		{UserID: 1, Title: "会話1"},
+		{UserID: 1, Title: "会話2"},
+	}, nil)
+
+	convs, err := svc.GetConversations(1, 20, 0)
+	assert.NoError(t, err)
+	assert.Len(t, convs, 2)
+}
+
+func TestGetConversations_Error(t *testing.T) {
+	svc, deps := newTestAIAdviceService(false)
+
+	deps.convRepo.On("FindConversationsByUserID", uint(1), 20, 0).Return([]model.AIConversation{}, ErrNotFound)
+
+	_, err := svc.GetConversations(1, 20, 0)
+	assert.Error(t, err)
+}
+
+// ============================================================
+// GetConversation テスト
+// ============================================================
+
+func TestGetConversation_Success(t *testing.T) {
+	svc, deps := newTestAIAdviceService(false)
+
+	deps.convRepo.On("FindConversationByID", uint(1)).Return(&model.AIConversation{
+		UserID: 1,
+		Title:  "テスト会話",
+	}, nil)
+
+	conv, err := svc.GetConversation(1, 1)
+	assert.NoError(t, err)
+	assert.Equal(t, "テスト会話", conv.Title)
+}
+
+func TestGetConversation_NotFound(t *testing.T) {
+	svc, deps := newTestAIAdviceService(false)
+
+	deps.convRepo.On("FindConversationByID", uint(999)).Return(nil, ErrNotFound)
+
+	conv, err := svc.GetConversation(999, 1)
+	assert.ErrorIs(t, err, ErrNotFound)
+	assert.Nil(t, conv)
+}
+
+func TestGetConversation_Forbidden(t *testing.T) {
+	svc, deps := newTestAIAdviceService(false)
+
+	deps.convRepo.On("FindConversationByID", uint(1)).Return(&model.AIConversation{
+		UserID: 2, // 別ユーザー
+		Title:  "他人の会話",
+	}, nil)
+
+	conv, err := svc.GetConversation(1, 1)
+	assert.ErrorIs(t, err, ErrForbidden)
+	assert.Nil(t, conv)
+}
+
+// ============================================================
+// Chat 追加テスト（既存会話・Forbidden）
+// ============================================================
+
+func TestChat_ExistingConversation(t *testing.T) {
+	svc, deps := newTestAIAdviceService(true)
+
+	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(1), nil)
+	deps.goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
+
+	// 既存会話を返す（所有者一致）
+	deps.convRepo.On("FindConversationByID", uint(10)).Return(&model.AIConversation{
+		UserID:   1,
+		Title:    "既存会話",
+		Messages: []model.AIMessage{},
+	}, nil)
+	deps.convRepo.On("AddMessage", mock.AnythingOfType("*model.AIMessage")).Return(nil)
+	deps.llmClient.On("Complete", mock.Anything).Return(&ChatResponse{
+		Content:    "回答です",
+		TokensUsed: 100,
+	}, nil)
+	// 会話再取得
+	deps.convRepo.On("FindConversationByID", mock.AnythingOfType("uint")).Return(&model.AIConversation{
+		UserID: 1,
+		Title:  "既存会話",
+	}, nil)
+
+	conv, err := svc.Chat(1, "追加の質問", 10)
+	assert.NoError(t, err)
+	assert.NotNil(t, conv)
+}
+
+func TestChat_ForbiddenConversation(t *testing.T) {
+	svc, deps := newTestAIAdviceService(true)
+
+	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(1), nil)
+	deps.goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
+
+	// 他人の会話
+	deps.convRepo.On("FindConversationByID", uint(10)).Return(&model.AIConversation{
+		UserID: 2,
+		Title:  "他人の会話",
+	}, nil)
+
+	conv, err := svc.Chat(1, "不正アクセス", 10)
+	assert.ErrorIs(t, err, ErrForbidden)
+	assert.Nil(t, conv)
+}
+
+// ============================================================
+// buildSystemPrompt テスト
+// ============================================================
+
+func TestBuildSystemPrompt(t *testing.T) {
+	t.Run("全データありの場合プロンプトにコンテキストが含まれる", func(t *testing.T) {
+		goals := []model.LearningGoal{
+			{Title: "Go学習", Status: model.GoalStatusActive, Progress: 50},
+			{Title: "React学習", Status: model.GoalStatusCompleted, Progress: 100},
+		}
+		streak := &model.StreakInfo{CurrentStreak: 5, LongestStreak: 10, TotalDays: 30}
+		roadmaps := []model.Roadmap{
+			{Title: "Goロードマップ", Progress: 60, CompletedStepCount: 3, StepCount: 5},
+		}
+		langStats := []model.GitHubLanguageStat{
+			{Language: "Go", RepoCount: 5},
+			{Language: "TypeScript", RepoCount: 3},
+		}
+
+		prompt := buildSystemPrompt(goals, streak, roadmaps, langStats)
+
+		assert.Contains(t, prompt, "5日連続")
+		assert.Contains(t, prompt, "Go学習")
+		assert.Contains(t, prompt, "完了")
+		assert.Contains(t, prompt, "Goロードマップ")
+		assert.Contains(t, prompt, "Go (5リポジトリ)")
+	})
+
+	t.Run("データなしの場合基本プロンプトのみ", func(t *testing.T) {
+		prompt := buildSystemPrompt(nil, nil, nil, nil)
+
+		assert.Contains(t, prompt, "学習アドバイザー")
+		assert.NotContains(t, prompt, "【学習ストリーク】")
+		assert.NotContains(t, prompt, "【学習目標】")
+	})
+}
