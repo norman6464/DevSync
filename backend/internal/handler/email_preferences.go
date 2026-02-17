@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
@@ -50,7 +48,7 @@ func (h *EmailPreferencesHandler) UpdatePreferences(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		respondBadRequest(c, "invalid request")
 		return
 	}
 
@@ -70,7 +68,7 @@ func (h *EmailPreferencesHandler) UpdatePreferences(c *gin.Context) {
 			"es": true, "fr": true, "de": true, "pt": true, "ru": true,
 		}
 		if !validLangs[*req.EmailLanguage] {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid email language"})
+			respondBadRequest(c, "invalid email language")
 			return
 		}
 		user.EmailLanguage = *req.EmailLanguage
