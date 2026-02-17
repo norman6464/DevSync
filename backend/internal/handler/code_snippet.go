@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -34,13 +35,8 @@ func (h *CodeSnippetHandler) Create(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	var input struct {
-		Language string `json:"language" binding:"required"`
-		FileName string `json:"file_name"`
-		Code     string `json:"code" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		respondBadRequest(c, err.Error())
+	input := bindJSON[dto.CreateCodeSnippetRequest](c)
+	if input == nil {
 		return
 	}
 
@@ -97,13 +93,8 @@ func (h *CodeSnippetHandler) Update(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	var input struct {
-		Language string `json:"language"`
-		FileName string `json:"file_name"`
-		Code     string `json:"code"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		respondBadRequest(c, err.Error())
+	input := bindJSON[dto.UpdateCodeSnippetRequest](c)
+	if input == nil {
 		return
 	}
 
@@ -153,12 +144,8 @@ func (h *CodeSnippetHandler) CreateComment(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	var input struct {
-		LineNumber int    `json:"line_number" binding:"required"`
-		Content    string `json:"content" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		respondBadRequest(c, err.Error())
+	input := bindJSON[dto.CreateSnippetCommentRequest](c)
+	if input == nil {
 		return
 	}
 
