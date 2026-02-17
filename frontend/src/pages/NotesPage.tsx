@@ -4,7 +4,7 @@ import { BookOpen, Star, Plus, Edit, Trash2 } from 'lucide-react';
 import { useNotes } from '../hooks';
 import { PageLoader, SearchInput } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
-import { buttonPrimaryClass } from '../constants/styles';
+import { buttonPrimaryClass, buttonSecondaryClass } from '../constants/styles';
 import type { Note } from '../api/notes';
 
 export default function NotesPage() {
@@ -132,14 +132,14 @@ export default function NotesPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+                className={`${buttonPrimaryClass} disabled:opacity-50`}
               >
                 {saving ? t('common.saving') : t('common.save')}
               </button>
               <button
                 type="button"
                 onClick={resetForm}
-                className="px-6 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-600 transition-colors"
+                className={buttonSecondaryClass}
               >
                 {t('common.cancel')}
               </button>
