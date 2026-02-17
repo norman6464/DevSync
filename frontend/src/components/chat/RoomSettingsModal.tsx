@@ -5,7 +5,7 @@ import {
   getChatRoomMembers, updateChatRoom, deleteChatRoom,
   addChatRoomMember, removeChatRoomMember,
 } from '../../api/chatRooms';
-import { labelClass, textareaClass } from '../../constants/styles';
+import { labelClass, textareaClass, buttonPrimaryClass } from '../../constants/styles';
 import { useConfirm } from '../../hooks';
 import type { User } from '../../types/user';
 import type { ChatRoom, ChatRoomMember } from '../../types/chat';
@@ -147,7 +147,7 @@ export default function RoomSettingsModal({
             <button
               onClick={handleUpdate}
               disabled={!name.trim() || loading}
-              className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
+              className={`${buttonPrimaryClass} w-full text-sm disabled:opacity-50`}
             >
               {t('chat.editRoom')}
             </button>
