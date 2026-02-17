@@ -7,6 +7,8 @@ import (
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/norman6464/devsync/backend/internal/domain"
 )
 
 // LLMClientInterface はLLM APIクライアントの契約を定義する。
@@ -82,12 +84,12 @@ func (c *OpenAIClient) Complete(messages []ChatMessage) (*ChatResponse, error) {
 
 	jsonData, err := json.Marshal(reqBody)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request: %w", err)
+		return nil, domain.NewError(domain.ErrCodeInternal, "リクエストのシリアライズに失敗", err)
 	}
 
 	req, err := http.NewRequest("POST", c.baseURL, bytes.NewReader(jsonData))
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return nil, domain.NewError(domain.ErrCodeInternal, "HTTPリクエストの作成に失敗", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -95,30 +97,30 @@ func (c *OpenAIClient) Complete(messages []ChatMessage) (*ChatResponse, error) {
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to call OpenAI API: %w", err)
+		return nil, domain.NewError(domain.ErrCodeServiceUnavailable, "OpenAI APIの呼び出しに失敗", err)
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read response: %w", err)
+		return nil, domain.NewError(domain.ErrCodeServiceUnavailable, "レスポンスの読み取りに失敗", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("OpenAI API error (status %d): %s", resp.StatusCode, string(body))
+		return nil, domain.NewError(domain.ErrCodeServiceUnavailable, fmt.Sprintf("OpenAI APIエラー (ステータス %d): %s", resp.StatusCode, string(body)), nil)
 	}
 
 	var apiResp openAIResponse
 	if err := json.Unmarshal(body, &apiResp); err != nil {
-		return nil, fmt.Errorf("failed to parse response: %w", err)
+		return nil, domain.NewError(domain.ErrCodeServiceUnavailable, "レスポンスのパースに失敗", err)
 	}
 
 	if apiResp.Error != nil {
-		return nil, fmt.Errorf("OpenAI API error: %s", apiResp.Error.Message)
+		return nil, domain.NewError(domain.ErrCodeServiceUnavailable, fmt.Sprintf("OpenAI APIエラー: %s", apiResp.Error.Message), nil)
 	}
 
 	if len(apiResp.Choices) == 0 {
-		return nil, fmt.Errorf("no response from OpenAI API")
+		return nil, domain.NewError(domain.ErrCodeServiceUnavailable, "OpenAI APIからの応答がありません", nil)
 	}
 
 	return &ChatResponse{

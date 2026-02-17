@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/norman6464/devsync/backend/internal/config"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
@@ -68,7 +69,7 @@ func (s *GitHubService) ExchangeCode(code string) (string, error) {
 		return "", err
 	}
 	if result.Error != "" {
-		return "", fmt.Errorf("github oauth error: %s", result.Error)
+		return "", domain.NewError(domain.ErrCodeServiceUnavailable, fmt.Sprintf("GitHub OAuthエラー: %s", result.Error), nil)
 	}
 	return result.AccessToken, nil
 }
@@ -139,17 +140,17 @@ func (s *GitHubService) fetchPrimaryEmail(token string) string {
 // SyncData はGitHubのコントリビューション、リポジトリ、言語統計を同期する。
 func (s *GitHubService) SyncData(user *model.User) error {
 	if user.GitHubToken == "" {
-		return fmt.Errorf("github not connected")
+		return domain.NewError(domain.ErrCodeBadRequest, "GitHubが連携されていません", nil)
 	}
 
 	// コントリビューションを同期
 	if err := s.syncContributions(user); err != nil {
-		return fmt.Errorf("sync contributions: %w", err)
+		return domain.NewError(domain.ErrCodeServiceUnavailable, "GitHubコントリビューションの同期に失敗", err)
 	}
 
 	// リポジトリと言語統計を同期
 	if err := s.syncReposAndLanguages(user); err != nil {
-		return fmt.Errorf("sync repos: %w", err)
+		return domain.NewError(domain.ErrCodeServiceUnavailable, "GitHubリポジトリの同期に失敗", err)
 	}
 
 	return nil
