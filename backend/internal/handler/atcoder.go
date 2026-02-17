@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
 )
@@ -53,11 +54,8 @@ func (h *AtCoderHandler) GetRating(c *gin.Context) {
 func (h *AtCoderHandler) Connect(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	var input struct {
-		Username string `json:"username" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		respondBadRequest(c, "username is required")
+	input := bindJSON[dto.ConnectUsernameRequest](c)
+	if input == nil {
 		return
 	}
 

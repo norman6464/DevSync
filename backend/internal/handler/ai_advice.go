@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -78,12 +79,8 @@ func (h *AIAdviceHandler) MarkAsRead(c *gin.Context) {
 func (h *AIAdviceHandler) Chat(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	var input struct {
-		Message        string `json:"message" binding:"required"`
-		ConversationID uint   `json:"conversation_id"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		respondBadRequest(c, err.Error())
+	input := bindJSON[dto.AIChatRequest](c)
+	if input == nil {
 		return
 	}
 

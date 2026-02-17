@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -86,18 +87,8 @@ func (h *UserHandler) Update(c *gin.Context) {
 		return
 	}
 
-	var input struct {
-		Name                string  `json:"name"`
-		Bio                 string  `json:"bio"`
-		AvatarURL           string  `json:"avatar_url"`
-		SkillsLanguages     *string `json:"skills_languages"`
-		SkillsFrameworks    *string `json:"skills_frameworks"`
-		AtCoderUsername     *string `json:"atcoder_username"`
-		PaizaRank           *string `json:"paiza_rank"`
-		OnboardingCompleted *bool   `json:"onboarding_completed"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		respondBadRequest(c, err.Error())
+	input := bindJSON[dto.UpdateUserRequest](c)
+	if input == nil {
 		return
 	}
 

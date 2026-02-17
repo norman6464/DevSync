@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
@@ -64,11 +65,8 @@ func (h *MessageHandler) SendMessage(c *gin.Context) {
 		return
 	}
 
-	var input struct {
-		Content string `json:"content" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		respondBadRequest(c, err.Error())
+	input := bindJSON[dto.SendMessageRequest](c)
+	if input == nil {
 		return
 	}
 
