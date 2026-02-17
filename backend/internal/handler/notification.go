@@ -2,17 +2,27 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/model"
 )
+
+// NotificationServiceInterface はNotificationServiceが実装すべきインターフェース。
+type NotificationServiceInterface interface {
+	GetByUserID(userID uint, page, limit int, notificationType string) ([]model.Notification, error)
+	CountByUserID(userID uint, notificationType string) (int64, error)
+	CountUnread(userID uint) (int64, error)
+	MarkAsRead(id, userID uint) error
+	MarkAllAsRead(userID uint) error
+	Delete(id, userID uint) error
+}
 
 // NotificationHandler は通知関連のHTTPハンドラ。
 // 通知の取得・既読処理・削除を処理する。
 type NotificationHandler struct {
-	service *service.NotificationService
+	service NotificationServiceInterface
 }
 
 // NewNotificationHandler は新しいNotificationHandlerインスタンスを生成する。
-func NewNotificationHandler(s *service.NotificationService) *NotificationHandler {
+func NewNotificationHandler(s NotificationServiceInterface) *NotificationHandler {
 	return &NotificationHandler{service: s}
 }
 
