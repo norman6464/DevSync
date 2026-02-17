@@ -127,7 +127,8 @@
     "updateFailed": "Failed to update post",
     "saveDraft": "Save draft",
     "draftSaved": "Draft saved",
-    "draftFailed": "Failed to save draft"
+    "draftFailed": "Failed to save draft",
+    "writeComment": "Write a comment..."
   },
   "profile": {
     "followers": "followers",
@@ -1150,7 +1151,8 @@
       "noCircles": "Join a circle to start learning together",
       "todayCheckin": "Today's Check-in",
       "viewAll": "View All"
-    }
+    },
+    "searchUsers": "Search users..."
   },
   "notes": {
     "title": "Learning Notes",

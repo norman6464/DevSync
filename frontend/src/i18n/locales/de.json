@@ -127,7 +127,8 @@
     "updateFailed": "Aktualisierung fehlgeschlagen",
     "saveDraft": "Entwurf speichern",
     "draftSaved": "Entwurf gespeichert",
-    "draftFailed": "Entwurf konnte nicht gespeichert werden"
+    "draftFailed": "Entwurf konnte nicht gespeichert werden",
+    "writeComment": "Kommentar schreiben..."
   },
   "profile": {
     "followers": "Follower",
@@ -1150,7 +1151,8 @@
       "noCircles": "Tritt einem Kreis bei und lerne gemeinsam",
       "todayCheckin": "Heutiger Check-in",
       "viewAll": "Alle anzeigen"
-    }
+    },
+    "searchUsers": "Benutzer suchen..."
   },
   "notes": {
     "title": "Lernnotizen",

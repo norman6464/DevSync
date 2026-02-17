@@ -127,7 +127,8 @@
     "updateFailed": "수정에 실패했습니다",
     "saveDraft": "임시 저장",
     "draftSaved": "임시 저장되었습니다",
-    "draftFailed": "임시 저장에 실패했습니다"
+    "draftFailed": "임시 저장에 실패했습니다",
+    "writeComment": "댓글 작성..."
   },
   "profile": {
     "followers": "팔로워",
@@ -1150,7 +1151,8 @@
       "noCircles": "서클에 참여하여 함께 학습하세요",
       "todayCheckin": "오늘의 체크인",
       "viewAll": "모두 보기"
-    }
+    },
+    "searchUsers": "사용자 검색..."
   },
   "notes": {
     "title": "학습 노트",

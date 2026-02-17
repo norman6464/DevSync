@@ -127,7 +127,8 @@
     "updateFailed": "更新失败",
     "saveDraft": "保存草稿",
     "draftSaved": "草稿已保存",
-    "draftFailed": "草稿保存失败"
+    "draftFailed": "草稿保存失败",
+    "writeComment": "写评论..."
   },
   "profile": {
     "followers": "粉丝",
@@ -1150,7 +1151,8 @@
       "noCircles": "加入学习圈一起学习吧",
       "todayCheckin": "今日签到",
       "viewAll": "查看全部"
-    }
+    },
+    "searchUsers": "搜索用户..."
   },
   "notes": {
     "title": "学习笔记",

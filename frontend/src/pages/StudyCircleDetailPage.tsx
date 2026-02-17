@@ -390,7 +390,7 @@ export default function StudyCircleDetailPage() {
                   type="text"
                   value={memberSearch}
                   onChange={(e) => setMemberSearch(e.target.value)}
-                  placeholder="Search users..."
+                  placeholder={t('studyCircle.searchUsers')}
                   className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500 mb-2"
                 />
                 {searchUsers.length > 0 && (

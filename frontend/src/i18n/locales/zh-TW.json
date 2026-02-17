@@ -127,7 +127,8 @@
     "updateFailed": "更新失敗",
     "saveDraft": "儲存草稿",
     "draftSaved": "草稿已儲存",
-    "draftFailed": "草稿儲存失敗"
+    "draftFailed": "草稿儲存失敗",
+    "writeComment": "寫評論..."
   },
   "profile": {
     "followers": "追蹤者",
@@ -1150,7 +1151,8 @@
       "noCircles": "加入學習圈一起學習吧",
       "todayCheckin": "今日簽到",
       "viewAll": "查看全部"
-    }
+    },
+    "searchUsers": "搜尋使用者..."
   },
   "notes": {
     "title": "學習筆記",
