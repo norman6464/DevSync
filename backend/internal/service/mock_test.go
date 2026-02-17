@@ -1191,8 +1191,128 @@ func (m *MockLearningAnalyticsRepository) GetProductivityStats(userID uint) (*mo
 	return args.Get(0).(*model.ProductivityStats), args.Error(1)
 }
 
+// ============================================================
+// MockStudyCircleRepository は repository.StudyCircleRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockStudyCircleRepository struct {
+	mock.Mock
+}
+
+func (m *MockStudyCircleRepository) Create(circle *model.StudyCircle) error {
+	args := m.Called(circle)
+	return args.Error(0)
+}
+
+func (m *MockStudyCircleRepository) FindByID(id uint) (*model.StudyCircle, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.StudyCircle), args.Error(1)
+}
+
+func (m *MockStudyCircleRepository) FindByUserID(userID uint) ([]model.StudyCircle, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.StudyCircle), args.Error(1)
+}
+
+func (m *MockStudyCircleRepository) Update(circle *model.StudyCircle) error {
+	args := m.Called(circle)
+	return args.Error(0)
+}
+
+func (m *MockStudyCircleRepository) Delete(id uint) error {
+	args := m.Called(id)
+	return args.Error(0)
+}
+
+func (m *MockStudyCircleRepository) AddMember(circleID, userID uint, role model.StudyCircleMemberRole) error {
+	args := m.Called(circleID, userID, role)
+	return args.Error(0)
+}
+
+func (m *MockStudyCircleRepository) RemoveMember(circleID, userID uint) error {
+	args := m.Called(circleID, userID)
+	return args.Error(0)
+}
+
+func (m *MockStudyCircleRepository) GetMembers(circleID uint) ([]model.StudyCircleMember, error) {
+	args := m.Called(circleID)
+	return args.Get(0).([]model.StudyCircleMember), args.Error(1)
+}
+
+func (m *MockStudyCircleRepository) IsMember(circleID, userID uint) (bool, error) {
+	args := m.Called(circleID, userID)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockStudyCircleRepository) GetMemberCount(circleID uint) (int, error) {
+	args := m.Called(circleID)
+	return args.Int(0), args.Error(1)
+}
+
+func (m *MockStudyCircleRepository) CreateStep(step *model.StudyCircleStep) error {
+	args := m.Called(step)
+	return args.Error(0)
+}
+
+func (m *MockStudyCircleRepository) UpdateStep(step *model.StudyCircleStep) error {
+	args := m.Called(step)
+	return args.Error(0)
+}
+
+func (m *MockStudyCircleRepository) DeleteStep(stepID uint) error {
+	args := m.Called(stepID)
+	return args.Error(0)
+}
+
+func (m *MockStudyCircleRepository) FindStepByID(stepID uint) (*model.StudyCircleStep, error) {
+	args := m.Called(stepID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.StudyCircleStep), args.Error(1)
+}
+
+func (m *MockStudyCircleRepository) ReorderSteps(circleID uint, stepOrders []repository.StepOrder) error {
+	args := m.Called(circleID, stepOrders)
+	return args.Error(0)
+}
+
+func (m *MockStudyCircleRepository) UpsertProgress(progress *model.StudyCircleMemberProgress) error {
+	args := m.Called(progress)
+	return args.Error(0)
+}
+
+func (m *MockStudyCircleRepository) GetProgress(circleID uint) ([]model.StudyCircleMemberProgress, error) {
+	args := m.Called(circleID)
+	return args.Get(0).([]model.StudyCircleMemberProgress), args.Error(1)
+}
+
+func (m *MockStudyCircleRepository) CreateCheckin(checkin *model.StudyCircleCheckin) error {
+	args := m.Called(checkin)
+	return args.Error(0)
+}
+
+func (m *MockStudyCircleRepository) GetCheckins(circleID uint) ([]model.StudyCircleCheckin, error) {
+	args := m.Called(circleID)
+	return args.Get(0).([]model.StudyCircleCheckin), args.Error(1)
+}
+
+func (m *MockStudyCircleRepository) HasCheckedInToday(circleID, userID uint) (bool, error) {
+	args := m.Called(circleID, userID)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockStudyCircleRepository) GetStreakRanking(circleID uint) ([]model.CircleMemberStreak, error) {
+	args := m.Called(circleID)
+	return args.Get(0).([]model.CircleMemberStreak), args.Error(1)
+}
+
 // インターフェース適合チェック
 var _ EmailSenderInterface = (*MockEmailSender)(nil)
 var _ repository.ActivityReportRepositoryInterface = (*MockActivityReportRepository)(nil)
 var _ repository.LevelRepositoryInterface = (*MockLevelRepository)(nil)
 var _ repository.LearningAnalyticsRepositoryInterface = (*MockLearningAnalyticsRepository)(nil)
+var _ repository.StudyCircleRepositoryInterface = (*MockStudyCircleRepository)(nil)
