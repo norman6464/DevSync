@@ -6,7 +6,7 @@ import { type RoadmapCategory, type Roadmap } from '../api/roadmaps';
 import { useRoadmaps, useRoadmapTemplates } from '../hooks';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import EmptyState from '../components/common/EmptyState';
-import { Modal } from '../components/common';
+import { Modal, PageHeader } from '../components/common';
 
 const CATEGORIES: { value: RoadmapCategory; label: string; icon: string; Icon: LucideIcon }[] = [
   { value: 'language', label: 'roadmaps.categoryLanguage', icon: '💻', Icon: Monitor },
@@ -91,21 +91,12 @@ export default function RoadmapsPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white">{t('roadmaps.title')}</h1>
-          <p className="text-gray-400 text-sm mt-1">{t('roadmaps.description')}</p>
-        </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-          {t('roadmaps.addRoadmap')}
-        </button>
-      </div>
+      <PageHeader
+        title={t('roadmaps.title')}
+        subtitle={t('roadmaps.description')}
+        actionLabel={t('roadmaps.addRoadmap')}
+        onAction={() => setShowForm(true)}
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-6">

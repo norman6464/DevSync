@@ -7,7 +7,7 @@ import { useBookReviews, useConfirm } from '../hooks';
 import BookReviewCard from '../components/bookReviews/BookReviewCard';
 import BookReviewForm from '../components/bookReviews/BookReviewForm';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import { EmptyState, Modal, Pagination } from '../components/common';
+import { EmptyState, Modal, Pagination, PageHeader } from '../components/common';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 
 export default function BookReviewsPage() {
@@ -30,21 +30,12 @@ export default function BookReviewsPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white">{t('bookReviews.title')}</h1>
-          <p className="text-gray-400 text-sm mt-1">{t('bookReviews.subtitle')}</p>
-        </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-          {t('bookReviews.addReview')}
-        </button>
-      </div>
+      <PageHeader
+        title={t('bookReviews.title')}
+        subtitle={t('bookReviews.subtitle')}
+        actionLabel={t('bookReviews.addReview')}
+        onAction={() => setShowForm(true)}
+      />
 
       {/* Form Modal */}
       <Modal
