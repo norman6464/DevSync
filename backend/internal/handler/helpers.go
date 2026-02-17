@@ -82,6 +82,12 @@ func respondDeleted(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+// respondBadRequest は400 Bad Requestでエラーメッセージを返す。
+func respondBadRequest(c *gin.Context, message string) {
+	response := domain.NewErrorResponse(message, string(domain.ErrCodeValidation), nil)
+	c.JSON(http.StatusBadRequest, response)
+}
+
 // respondPaginated はページネーション付きレスポンスを返す。
 func respondPaginated(c *gin.Context, data interface{}, total int64, page, limit int) {
 	response := domain.NewPaginatedResponse(data, total, page, limit)
