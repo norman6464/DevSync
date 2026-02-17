@@ -6,17 +6,30 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
 )
+
+// ChatRoomServiceInterface はChatRoomHandlerが依存するサービスのインターフェース。
+type ChatRoomServiceInterface interface {
+	Create(room *model.ChatRoom, memberIDs []uint) (*model.ChatRoom, error)
+	GetByUserID(userID uint) ([]model.ChatRoom, error)
+	GetByID(roomID, userID uint) (*model.ChatRoom, error)
+	Update(roomID, userID uint, name, description string) (*model.ChatRoom, error)
+	Delete(roomID, userID uint) error
+	GetMembers(roomID, userID uint) ([]model.ChatRoomMember, error)
+	AddMember(roomID, userID, targetUserID uint) error
+	RemoveMember(roomID, userID, targetUserID uint) error
+	GetMessages(roomID, userID uint, page, limit int) ([]model.GroupMessage, error)
+	SendMessage(roomID, userID uint, content string) (*model.GroupMessage, error)
+}
 
 // ChatRoomHandler はチャットルーム関連のHTTPハンドラ。
 // チャットルームのCRUD・メンバー管理・メッセージ送受信を処理する。
 type ChatRoomHandler struct {
-	service *service.ChatRoomService
+	service ChatRoomServiceInterface
 }
 
 // NewChatRoomHandler は新しいChatRoomHandlerインスタンスを生成する。
-func NewChatRoomHandler(s *service.ChatRoomService) *ChatRoomHandler {
+func NewChatRoomHandler(s ChatRoomServiceInterface) *ChatRoomHandler {
 	return &ChatRoomHandler{service: s}
 }
 
