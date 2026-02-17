@@ -794,3 +794,160 @@ func setupProjectHandler() (*ProjectHandler, *MockProjectService) {
 	h := NewProjectHandler(svc)
 	return h, svc
 }
+
+// MockRoadmapService は RoadmapServiceInterface のモック実装。
+type MockRoadmapService struct{ mock.Mock }
+
+func (m *MockRoadmapService) Create(roadmap *model.Roadmap) error {
+	return m.Called(roadmap).Error(0)
+}
+func (m *MockRoadmapService) GetByID(id, userID uint) (*model.Roadmap, error) {
+	args := m.Called(id, userID)
+	if r := args.Get(0); r != nil {
+		return r.(*model.Roadmap), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockRoadmapService) GetByUserID(userID uint) ([]model.Roadmap, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.Roadmap), args.Error(1)
+}
+func (m *MockRoadmapService) GetPublicRoadmaps(limit, offset int) ([]model.Roadmap, int64, error) {
+	args := m.Called(limit, offset)
+	return args.Get(0).([]model.Roadmap), args.Get(1).(int64), args.Error(2)
+}
+func (m *MockRoadmapService) Update(id, userID uint, updates *model.Roadmap) (*model.Roadmap, error) {
+	args := m.Called(id, userID, updates)
+	if r := args.Get(0); r != nil {
+		return r.(*model.Roadmap), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockRoadmapService) UpdateVisibility(id, userID uint, isPublic bool) (*model.Roadmap, error) {
+	args := m.Called(id, userID, isPublic)
+	if r := args.Get(0); r != nil {
+		return r.(*model.Roadmap), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockRoadmapService) Delete(id, userID uint) error {
+	return m.Called(id, userID).Error(0)
+}
+func (m *MockRoadmapService) CopyRoadmap(roadmapID, userID uint) (*model.Roadmap, error) {
+	args := m.Called(roadmapID, userID)
+	if r := args.Get(0); r != nil {
+		return r.(*model.Roadmap), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockRoadmapService) GetTemplates() ([]model.Roadmap, error) {
+	args := m.Called()
+	return args.Get(0).([]model.Roadmap), args.Error(1)
+}
+func (m *MockRoadmapService) CreateFromTemplate(templateID, userID uint) (*model.Roadmap, error) {
+	args := m.Called(templateID, userID)
+	if r := args.Get(0); r != nil {
+		return r.(*model.Roadmap), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockRoadmapService) CreateStep(roadmapID, userID uint, step *model.RoadmapStep) error {
+	return m.Called(roadmapID, userID, step).Error(0)
+}
+func (m *MockRoadmapService) UpdateStep(roadmapID, stepID, userID uint, updates *model.RoadmapStep) (*model.RoadmapStep, error) {
+	args := m.Called(roadmapID, stepID, userID, updates)
+	if s := args.Get(0); s != nil {
+		return s.(*model.RoadmapStep), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockRoadmapService) UpdateStepCompletion(roadmapID, stepID, userID uint, isCompleted bool) (*model.RoadmapStep, error) {
+	args := m.Called(roadmapID, stepID, userID, isCompleted)
+	if s := args.Get(0); s != nil {
+		return s.(*model.RoadmapStep), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockRoadmapService) DeleteStep(roadmapID, stepID, userID uint) error {
+	return m.Called(roadmapID, stepID, userID).Error(0)
+}
+func (m *MockRoadmapService) ReorderSteps(roadmapID, userID uint, orders []service.StepOrder) error {
+	return m.Called(roadmapID, userID, orders).Error(0)
+}
+
+// setupRoadmapHandlerMock はRoadmapHandlerテスト用のモックセットアップを行う。
+func setupRoadmapHandlerMock() (*RoadmapHandler, *MockRoadmapService) {
+	svc := new(MockRoadmapService)
+	h := NewRoadmapHandler(svc)
+	return h, svc
+}
+
+// MockBadgeService は BadgeServiceInterface のモック実装。
+type MockBadgeService struct{ mock.Mock }
+
+func (m *MockBadgeService) GetUserBadges(userID uint) ([]service.BadgeResult, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]service.BadgeResult), args.Error(1)
+}
+func (m *MockBadgeService) NotifyBadgeEarned(userID uint, badgeID string) error {
+	return m.Called(userID, badgeID).Error(0)
+}
+
+// setupBadgeHandler はBadgeHandlerテスト用のセットアップを行う。
+func setupBadgeHandler() (*BadgeHandler, *MockBadgeService) {
+	svc := new(MockBadgeService)
+	h := NewBadgeHandler(svc)
+	return h, svc
+}
+
+// MockRankingService は RankingServiceInterface のモック実装。
+type MockRankingService struct{ mock.Mock }
+
+func (m *MockRankingService) ContributionRanking(period string) ([]repository.RankingEntry, error) {
+	args := m.Called(period)
+	return args.Get(0).([]repository.RankingEntry), args.Error(1)
+}
+func (m *MockRankingService) LanguageRanking(language, period string) ([]repository.RankingEntry, error) {
+	args := m.Called(language, period)
+	return args.Get(0).([]repository.RankingEntry), args.Error(1)
+}
+func (m *MockRankingService) LevelRanking() ([]repository.RankingEntry, error) {
+	args := m.Called()
+	return args.Get(0).([]repository.RankingEntry), args.Error(1)
+}
+func (m *MockRankingService) AvailableLanguages() ([]string, error) {
+	args := m.Called()
+	return args.Get(0).([]string), args.Error(1)
+}
+
+// setupRankingHandler はRankingHandlerテスト用のセットアップを行う。
+func setupRankingHandler() (*RankingHandler, *MockRankingService) {
+	svc := new(MockRankingService)
+	h := NewRankingHandler(svc)
+	return h, svc
+}
+
+// MockLevelService は LevelServiceInterface のモック実装。
+type MockLevelService struct{ mock.Mock }
+
+func (m *MockLevelService) GetLevelInfo(userID uint) (*model.LevelInfo, error) {
+	args := m.Called(userID)
+	if l := args.Get(0); l != nil {
+		return l.(*model.LevelInfo), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockLevelService) GetXPBreakdown(userID uint) (*model.XPBreakdown, error) {
+	args := m.Called(userID)
+	if x := args.Get(0); x != nil {
+		return x.(*model.XPBreakdown), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+// setupLevelHandler はLevelHandlerテスト用のセットアップを行う。
+func setupLevelHandler() (*LevelHandler, *MockLevelService) {
+	svc := new(MockLevelService)
+	h := NewLevelHandler(svc)
+	return h, svc
+}
