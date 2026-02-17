@@ -7,7 +7,7 @@ import type { LearningLog, LogCategory } from '../types/learningLog';
 import LogCalendar from '../components/learning-logs/LogCalendar';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { Modal } from '../components/common';
-import { inputClass } from '../constants/styles';
+import { inputClass, buttonSecondaryClass } from '../constants/styles';
 
 const CATEGORIES: { value: LogCategory; label: string; Icon: LucideIcon }[] = [
   { value: 'coding', label: 'learningLogs.categoryCoding', Icon: Code },
@@ -124,7 +124,7 @@ export default function LearningLogsPage() {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium text-sm transition-colors"
+          className={`${buttonSecondaryClass} font-medium text-sm`}
         >
           {t('learningLogs.addLog')}
         </button>
@@ -272,7 +272,7 @@ export default function LearningLogsPage() {
             <button
               type="button"
               onClick={resetForm}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors"
+              className={`${buttonSecondaryClass} text-sm font-medium`}
             >
               {t('common.cancel')}
             </button>
@@ -298,7 +298,7 @@ export default function LearningLogsPage() {
               {!filterDate && (
                 <button
                   onClick={() => setShowForm(true)}
-                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium text-sm transition-colors"
+                  className={`${buttonSecondaryClass} font-medium text-sm`}
                 >
                   {t('learningLogs.addLog')}
                 </button>

@@ -6,7 +6,7 @@ import { useGoals, useConfirm } from '../hooks';
 import { Modal, PageLoader } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
 import ConfirmDialog from '../components/common/ConfirmDialog';
-import { inputClass } from '../constants/styles';
+import { inputClass, buttonSecondaryClass } from '../constants/styles';
 
 const CATEGORIES: { value: GoalCategory; label: string; icon: string; Icon: LucideIcon }[] = [
   { value: 'language', label: 'goals.categoryLanguage', icon: '💻', Icon: Monitor },
@@ -112,7 +112,7 @@ export default function GoalsPage() {
         <h1 className="text-2xl font-bold">{t('goals.title')}</h1>
         <button
           onClick={() => setShowForm(true)}
-          className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium text-sm transition-colors"
+          className={`${buttonSecondaryClass} font-medium text-sm`}
         >
           {t('goals.addGoal')}
         </button>
@@ -202,14 +202,14 @@ export default function GoalsPage() {
             <button
               type="button"
               onClick={resetForm}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors"
+              className={`${buttonSecondaryClass} text-sm font-medium`}
             >
               {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={saving || !title.trim()}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
+              className={`${buttonSecondaryClass} disabled:opacity-50 text-sm font-medium`}
             >
               {saving ? t('common.loading') : editingGoal ? t('common.save') : t('goals.create')}
             </button>
