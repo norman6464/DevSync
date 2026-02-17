@@ -6,8 +6,7 @@ import type { BookReview } from '../types/bookReview';
 import { useBookReviews, useConfirm } from '../hooks';
 import BookReviewCard from '../components/bookReviews/BookReviewCard';
 import BookReviewForm from '../components/bookReviews/BookReviewForm';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import { EmptyState, Modal, Pagination, PageHeader } from '../components/common';
+import { EmptyState, Modal, Pagination, PageHeader, PageLoader } from '../components/common';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 
 export default function BookReviewsPage() {
@@ -65,9 +64,7 @@ export default function BookReviewsPage() {
 
       {/* Content */}
       {loading ? (
-        <div className="flex justify-center items-center min-h-[400px]">
-          <LoadingSpinner />
-        </div>
+        <PageLoader />
       ) : reviews.length === 0 ? (
         <EmptyState
           icon={BookOpen}

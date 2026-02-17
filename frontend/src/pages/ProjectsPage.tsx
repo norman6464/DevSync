@@ -5,10 +5,9 @@ import type { Project } from '../types/project';
 import { useProjects, useConfirm } from '../hooks';
 import ProjectCard from '../components/projects/ProjectCard';
 import ProjectForm from '../components/projects/ProjectForm';
-import LoadingSpinner from '../components/common/LoadingSpinner';
 import EmptyState from '../components/common/EmptyState';
 import ConfirmDialog from '../components/common/ConfirmDialog';
-import { Modal, PageHeader } from '../components/common';
+import { Modal, PageHeader, PageLoader } from '../components/common';
 
 export default function ProjectsPage() {
   const { t } = useTranslation();
@@ -28,11 +27,7 @@ export default function ProjectsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <LoadingSpinner />
-      </div>
-    );
+    return <PageLoader />;
   }
 
   return (
