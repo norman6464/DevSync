@@ -100,6 +100,18 @@ func respondNotFound(c *gin.Context, message string) {
 	c.JSON(http.StatusNotFound, response)
 }
 
+// respondUnauthorized は401 Unauthorizedでエラーメッセージを返す。
+func respondUnauthorized(c *gin.Context, message string) {
+	response := domain.NewErrorResponse(message, string(domain.ErrCodeUnauthorized), nil)
+	c.JSON(http.StatusUnauthorized, response)
+}
+
+// respondInternalError は500 Internal Server Errorでエラーメッセージを返す。
+func respondInternalError(c *gin.Context, message string) {
+	response := domain.NewErrorResponse(message, string(domain.ErrCodeInternal), nil)
+	c.JSON(http.StatusInternalServerError, response)
+}
+
 // respondPaginated はページネーション付きレスポンスを返す。
 func respondPaginated(c *gin.Context, data interface{}, total int64, page, limit int) {
 	response := domain.NewPaginatedResponse(data, total, page, limit)

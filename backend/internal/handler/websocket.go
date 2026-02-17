@@ -63,14 +63,14 @@ func (h *WebSocketHandler) HandleWebSocket(c *gin.Context) {
 	// httpOnly Cookieからトークンを取得（URLクエリパラメータには含めない）
 	token, err := c.Cookie("token")
 	if err != nil || token == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
+		respondUnauthorized(c, "authentication required")
 		return
 	}
 
 	// トークンを検証してユーザーIDを取得
 	userID, err := h.authService.ValidateToken(token)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+		respondUnauthorized(c, "invalid token")
 		return
 	}
 
