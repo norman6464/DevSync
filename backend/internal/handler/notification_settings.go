@@ -3,16 +3,21 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
 )
+
+// NotificationSettingsServiceInterface は通知設定サービスの抽象インターフェース。
+type NotificationSettingsServiceInterface interface {
+	GetSettings(userID uint) (*model.NotificationSettings, error)
+	UpdateSettings(userID uint, updates *model.NotificationSettings) (*model.NotificationSettings, error)
+}
 
 // NotificationSettingsHandler は通知設定関連のHTTPハンドラ。
 type NotificationSettingsHandler struct {
-	service *service.NotificationSettingsService
+	service NotificationSettingsServiceInterface
 }
 
 // NewNotificationSettingsHandler は新しいNotificationSettingsHandlerインスタンスを生成する。
-func NewNotificationSettingsHandler(s *service.NotificationSettingsService) *NotificationSettingsHandler {
+func NewNotificationSettingsHandler(s NotificationSettingsServiceInterface) *NotificationSettingsHandler {
 	return &NotificationSettingsHandler{service: s}
 }
 

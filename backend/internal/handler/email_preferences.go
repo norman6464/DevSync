@@ -4,17 +4,23 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/model"
 )
+
+// EmailPreferencesServiceInterface はメール配信設定に必要なサービスの抽象インターフェース。
+type EmailPreferencesServiceInterface interface {
+	GetByID(id uint) (*model.User, error)
+	Update(user *model.User) error
+}
 
 // EmailPreferencesHandler はメール配信設定関連のHTTPハンドラ。
 // ユーザーのメール配信設定の取得・更新を処理する。
 type EmailPreferencesHandler struct {
-	userService *service.UserService
+	userService EmailPreferencesServiceInterface
 }
 
 // NewEmailPreferencesHandler は新しいEmailPreferencesHandlerインスタンスを生成する。
-func NewEmailPreferencesHandler(userService *service.UserService) *EmailPreferencesHandler {
+func NewEmailPreferencesHandler(userService EmailPreferencesServiceInterface) *EmailPreferencesHandler {
 	return &EmailPreferencesHandler{userService: userService}
 }
 
