@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -36,13 +37,8 @@ func NewChatRoomHandler(s ChatRoomServiceInterface) *ChatRoomHandler {
 func (h *ChatRoomHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	var input struct {
-		Name        string `json:"name" binding:"required"`
-		Description string `json:"description"`
-		MemberIDs   []uint `json:"member_ids"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		respondBadRequest(c, err.Error())
+	input := bindJSON[dto.CreateChatRoomRequest](c)
+	if input == nil {
 		return
 	}
 
@@ -96,12 +92,8 @@ func (h *ChatRoomHandler) Update(c *gin.Context) {
 		return
 	}
 
-	var input struct {
-		Name        string `json:"name"`
-		Description string `json:"description"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		respondBadRequest(c, err.Error())
+	input := bindJSON[dto.UpdateChatRoomRequest](c)
+	if input == nil {
 		return
 	}
 
@@ -152,11 +144,8 @@ func (h *ChatRoomHandler) AddMember(c *gin.Context) {
 		return
 	}
 
-	var input struct {
-		UserID uint `json:"user_id" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		respondBadRequest(c, err.Error())
+	input := bindJSON[dto.AddChatRoomMemberRequest](c)
+	if input == nil {
 		return
 	}
 
@@ -213,11 +202,8 @@ func (h *ChatRoomHandler) SendMessage(c *gin.Context) {
 		return
 	}
 
-	var input struct {
-		Content string `json:"content" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		respondBadRequest(c, err.Error())
+	input := bindJSON[dto.SendChatRoomMessageRequest](c)
+	if input == nil {
 		return
 	}
 
