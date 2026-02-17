@@ -60,13 +60,13 @@ func (h *GitHubHandler) Callback(c *gin.Context) {
 	state := c.Query("state")
 
 	if code == "" || state == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "missing code or state"})
+		respondBadRequest(c, "missing code or state")
 		return
 	}
 
 	userID, err := h.authService.ValidateOAuthState(state)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid state"})
+		respondBadRequest(c, "invalid state")
 		return
 	}
 

@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
@@ -151,7 +149,7 @@ func (h *NoteHandler) Update(c *gin.Context) {
 
 	// 所有者チェック
 	if note.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "この操作を行う権限がありません"})
+		respondForbidden(c, "この操作を行う権限がありません")
 		return
 	}
 
@@ -197,7 +195,7 @@ func (h *NoteHandler) Search(c *gin.Context) {
 	userID := c.GetUint("userID")
 	query := c.Query("q")
 	if query == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "検索キーワードが必要です"})
+		respondBadRequest(c, "検索キーワードが必要です")
 		return
 	}
 

@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
@@ -144,7 +142,7 @@ func (h *NoteFolderHandler) Update(c *gin.Context) {
 
 	// 所有者チェック
 	if folder.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "この操作を行う権限がありません"})
+		respondForbidden(c, "この操作を行う権限がありません")
 		return
 	}
 

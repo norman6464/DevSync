@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
@@ -141,7 +139,7 @@ func (h *NoteTemplateHandler) Update(c *gin.Context) {
 
 	// 所有者チェック
 	if template.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "この操作を行う権限がありません"})
+		respondForbidden(c, "この操作を行う権限がありません")
 		return
 	}
 
@@ -189,7 +187,7 @@ func (h *NoteTemplateHandler) Delete(c *gin.Context) {
 	}
 
 	if template.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "この操作を行う権限がありません"})
+		respondForbidden(c, "この操作を行う権限がありません")
 		return
 	}
 
@@ -220,7 +218,7 @@ func (h *NoteTemplateHandler) UseTemplate(c *gin.Context) {
 
 	// 所有者チェック
 	if template.UserID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "この操作を行う権限がありません"})
+		respondForbidden(c, "この操作を行う権限がありません")
 		return
 	}
 

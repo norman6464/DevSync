@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -35,7 +34,7 @@ func NewSearchHandler(postRepo PostSearchRepository, circleRepo StudyCircleSearc
 func (h *SearchHandler) SearchPosts(c *gin.Context) {
 	query := c.Query("q")
 	if query == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "query parameter 'q' is required"})
+		respondBadRequest(c, "query parameter 'q' is required")
 		return
 	}
 
@@ -55,7 +54,7 @@ func (h *SearchHandler) SearchPosts(c *gin.Context) {
 func (h *SearchHandler) SearchCircles(c *gin.Context) {
 	query := c.Query("q")
 	if query == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "query parameter 'q' is required"})
+		respondBadRequest(c, "query parameter 'q' is required")
 		return
 	}
 
