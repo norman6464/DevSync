@@ -153,7 +153,9 @@
     "qiitaArticles": "Artículos de Qiita",
     "viewAllOnQiita": "Ver todo en Qiita",
     "competitiveProgramming": "Programación Competitiva",
-    "paizaRankLabel": "paiza Rango {{rank}}"
+    "paizaRankLabel": "paiza Rango {{rank}}",
+    "followFailed": "Error al seguir al usuario",
+    "unfollowFailed": "Error al dejar de seguir"
   },
   "settings": {
     "title": "Configuración",
