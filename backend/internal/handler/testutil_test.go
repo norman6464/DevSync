@@ -1387,3 +1387,129 @@ func setupAtCoderHandler() (*AtCoderHandler, *MockAtCoderService, *MockAtCoderUs
 	h := NewAtCoderHandler(atcoderSvc, userSvc)
 	return h, atcoderSvc, userSvc
 }
+
+// MockAuthService は AuthServiceInterface のモック実装。
+type MockAuthService struct{ mock.Mock }
+
+func (m *MockAuthService) Register(input service.RegisterInput) (*service.AuthResponse, error) {
+	args := m.Called(input)
+	if r := args.Get(0); r != nil {
+		return r.(*service.AuthResponse), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockAuthService) Login(input service.LoginInput) (*service.AuthResponse, error) {
+	args := m.Called(input)
+	if r := args.Get(0); r != nil {
+		return r.(*service.AuthResponse), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockAuthService) GenerateLoginState() (string, error) {
+	args := m.Called()
+	return args.String(0), args.Error(1)
+}
+func (m *MockAuthService) ValidateLoginState(state string) error {
+	return m.Called(state).Error(0)
+}
+func (m *MockAuthService) GitHubLogin(ghUser *service.GitHubUserInfo, accessToken string) (*service.AuthResponse, error) {
+	args := m.Called(ghUser, accessToken)
+	if r := args.Get(0); r != nil {
+		return r.(*service.AuthResponse), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockAuthService) GetMe(userID uint) (*model.User, error) {
+	args := m.Called(userID)
+	if u := args.Get(0); u != nil {
+		return u.(*model.User), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockAuthService) RequestPasswordReset(email string) (string, error) {
+	args := m.Called(email)
+	return args.String(0), args.Error(1)
+}
+func (m *MockAuthService) ResetPassword(token string, newPassword string) error {
+	return m.Called(token, newPassword).Error(0)
+}
+func (m *MockAuthService) DeleteAccount(userID uint, password string) error {
+	return m.Called(userID, password).Error(0)
+}
+
+// MockAuthGitHubService は AuthGitHubServiceInterface のモック実装。
+type MockAuthGitHubService struct{ mock.Mock }
+
+func (m *MockAuthGitHubService) GetLoginOAuthURL(state string) string {
+	return m.Called(state).String(0)
+}
+func (m *MockAuthGitHubService) ExchangeCode(code string) (string, error) {
+	args := m.Called(code)
+	return args.String(0), args.Error(1)
+}
+func (m *MockAuthGitHubService) GetGitHubUser(token string) (*service.GitHubUserInfo, error) {
+	args := m.Called(token)
+	if u := args.Get(0); u != nil {
+		return u.(*service.GitHubUserInfo), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockAuthGitHubService) SyncUserData(userID uint) error {
+	return m.Called(userID).Error(0)
+}
+
+// setupAuthHandler はAuthHandlerテスト用のセットアップを行う。
+func setupAuthHandlerMock() (*AuthHandler, *MockAuthService, *MockAuthGitHubService) {
+	authSvc := new(MockAuthService)
+	ghSvc := new(MockAuthGitHubService)
+	h := NewAuthHandler(authSvc, ghSvc)
+	return h, authSvc, ghSvc
+}
+
+// MockGHService は GitHubServiceInterface のモック実装。
+type MockGHService struct{ mock.Mock }
+
+func (m *MockGHService) GetOAuthURL(state string) string {
+	return m.Called(state).String(0)
+}
+func (m *MockGHService) ConnectGitHub(userID uint, code, state string) error {
+	return m.Called(userID, code, state).Error(0)
+}
+func (m *MockGHService) GetContributions(userID uint) ([]model.GitHubContribution, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.GitHubContribution), args.Error(1)
+}
+func (m *MockGHService) GetLanguages(userID uint) ([]model.GitHubLanguageStat, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.GitHubLanguageStat), args.Error(1)
+}
+func (m *MockGHService) GetRepos(userID uint) ([]model.GitHubRepository, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.GitHubRepository), args.Error(1)
+}
+func (m *MockGHService) SyncUserData(userID uint) error {
+	return m.Called(userID).Error(0)
+}
+func (m *MockGHService) DisconnectGitHub(userID uint) error {
+	return m.Called(userID).Error(0)
+}
+
+// MockGHAuthService は GitHubAuthServiceInterface のモック実装。
+type MockGHAuthService struct{ mock.Mock }
+
+func (m *MockGHAuthService) GenerateOAuthState(userID uint) (string, error) {
+	args := m.Called(userID)
+	return args.String(0), args.Error(1)
+}
+func (m *MockGHAuthService) ValidateOAuthState(state string) (uint, error) {
+	args := m.Called(state)
+	return uint(args.Int(0)), args.Error(1)
+}
+
+// setupGitHubHandlerMock はGitHubHandlerテスト用のセットアップを行う。
+func setupGitHubHandlerMock() (*GitHubHandler, *MockGHService, *MockGHAuthService) {
+	ghSvc := new(MockGHService)
+	authSvc := new(MockGHAuthService)
+	h := NewGitHubHandler(ghSvc, authSvc)
+	return h, ghSvc, authSvc
+}

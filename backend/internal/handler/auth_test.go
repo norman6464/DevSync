@@ -469,3 +469,113 @@ func TestResetPassword_ValidationError(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
+
+// ---------- モックベースのAuth Handlerテスト ----------
+
+// TestAuthGitHubLogin_ReturnsURL はGitHub OAuthログインURLの生成をテストする。
+func TestAuthGitHubLogin_ReturnsURL(t *testing.T) {
+	h, authSvc, ghSvc := setupAuthHandlerMock()
+	authSvc.On("GenerateLoginState").Return("test-state", nil)
+	ghSvc.On("GetLoginOAuthURL", "test-state").Return("https://github.com/login/oauth/authorize?state=test-state")
+
+	r := gin.New()
+	r.GET("/auth/github", h.GitHubLogin)
+	w := doRequest(r, "GET", "/auth/github", nil)
+
+	assertStatus(t, w, http.StatusOK)
+	body := parseJSON(t, w)
+	assert.NotEmpty(t, body["url"])
+	authSvc.AssertExpectations(t)
+	ghSvc.AssertExpectations(t)
+}
+
+// TestAuthGitHubLogin_StateError はstate生成エラーをテストする。
+func TestAuthGitHubLogin_StateError(t *testing.T) {
+	h, authSvc, _ := setupAuthHandlerMock()
+	authSvc.On("GenerateLoginState").Return("", service.ErrBadRequest)
+
+	r := gin.New()
+	r.GET("/auth/github", h.GitHubLogin)
+	w := doRequest(r, "GET", "/auth/github", nil)
+
+	assertStatus(t, w, http.StatusBadRequest)
+	authSvc.AssertExpectations(t)
+}
+
+// TestAuthMeMock_Success はモック版のMe成功テスト。
+func TestAuthMeMock_Success(t *testing.T) {
+	h, authSvc, _ := setupAuthHandlerMock()
+	user := &model.User{Name: "Test User", Email: "test@example.com"}
+	authSvc.On("GetMe", uint(1)).Return(user, nil)
+
+	r := newRouter(1)
+	r.GET("/me", h.Me)
+	w := doRequest(r, "GET", "/me", nil)
+
+	assertStatus(t, w, http.StatusOK)
+	authSvc.AssertExpectations(t)
+}
+
+// TestAuthMeMock_NotFound はモック版のMeユーザー未発見テスト。
+func TestAuthMeMock_NotFound(t *testing.T) {
+	h, authSvc, _ := setupAuthHandlerMock()
+	authSvc.On("GetMe", uint(1)).Return(nil, service.ErrNotFound)
+
+	r := newRouter(1)
+	r.GET("/me", h.Me)
+	w := doRequest(r, "GET", "/me", nil)
+
+	assertStatus(t, w, http.StatusNotFound)
+	authSvc.AssertExpectations(t)
+}
+
+// TestAuthLoginMock_Success はモック版のLogin成功テスト。
+func TestAuthLoginMock_Success(t *testing.T) {
+	h, authSvc, _ := setupAuthHandlerMock()
+	resp := &service.AuthResponse{
+		Token: "test-token",
+		User:  model.User{Name: "Test User", Email: "test@example.com"},
+	}
+	authSvc.On("Login", mock.Anything).Return(resp, nil)
+
+	r := gin.New()
+	r.POST("/login", h.Login)
+	w := doRequest(r, "POST", "/login", map[string]string{
+		"email":    "test@example.com",
+		"password": "password123",
+	})
+
+	assertStatus(t, w, http.StatusOK)
+	authSvc.AssertExpectations(t)
+}
+
+// TestAuthLoginMock_Unauthorized はモック版のログイン失敗テスト。
+func TestAuthLoginMock_Unauthorized(t *testing.T) {
+	h, authSvc, _ := setupAuthHandlerMock()
+	authSvc.On("Login", mock.Anything).Return(nil, service.ErrUnauthorized)
+
+	r := gin.New()
+	r.POST("/login", h.Login)
+	w := doRequest(r, "POST", "/login", map[string]string{
+		"email":    "test@example.com",
+		"password": "wrong",
+	})
+
+	assertStatus(t, w, http.StatusUnauthorized)
+	authSvc.AssertExpectations(t)
+}
+
+// TestAuthDeleteAccountMock_Success はモック版のアカウント削除成功テスト。
+func TestAuthDeleteAccountMock_Success(t *testing.T) {
+	h, authSvc, _ := setupAuthHandlerMock()
+	authSvc.On("DeleteAccount", uint(1), "password123").Return(nil)
+
+	r := newRouter(1)
+	r.DELETE("/account", h.DeleteAccount)
+	w := doRequest(r, "DELETE", "/account", map[string]string{
+		"password": "password123",
+	})
+
+	assertStatus(t, w, http.StatusOK)
+	authSvc.AssertExpectations(t)
+}
