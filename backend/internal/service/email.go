@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/norman6464/devsync/backend/internal/config"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
@@ -91,10 +92,10 @@ func (s *WeeklyReportEmailService) SetAppURL(url string) {
 // SendWeeklyReport は指定ユーザーにウィークリーレポートメールを送信する。
 func (s *WeeklyReportEmailService) SendWeeklyReport(user *model.User, report *model.ActivityReport) error {
 	if user.Email == "" {
-		return fmt.Errorf("%w: email is empty", ErrBadRequest)
+		return domain.NewError(domain.ErrCodeBadRequest, "メールアドレスが空です", nil)
 	}
 	if report == nil {
-		return fmt.Errorf("%w: report is nil", ErrBadRequest)
+		return domain.NewError(domain.ErrCodeBadRequest, "レポートがありません", nil)
 	}
 
 	lang := user.EmailLanguage
@@ -104,7 +105,7 @@ func (s *WeeklyReportEmailService) SendWeeklyReport(user *model.User, report *mo
 
 	html, err := s.RenderHTML(user, report, lang)
 	if err != nil {
-		return fmt.Errorf("failed to render email template: %w", err)
+		return domain.NewError(domain.ErrCodeInternal, "メールテンプレートのレンダリングに失敗", err)
 	}
 
 	texts := getEmailTexts(lang)
@@ -118,7 +119,7 @@ func (s *WeeklyReportEmailService) SendWeeklyReport(user *model.User, report *mo
 func (s *WeeklyReportEmailService) SendAllWeeklyReports() error {
 	users, err := s.userRepo.FindAll()
 	if err != nil {
-		return fmt.Errorf("failed to fetch users: %w", err)
+		return domain.NewError(domain.ErrCodeDatabase, "ユーザー一覧の取得に失敗", err)
 	}
 
 	for _, user := range users {

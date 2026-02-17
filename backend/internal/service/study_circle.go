@@ -1,9 +1,9 @@
 package service
 
 import (
-	"fmt"
 	"time"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
@@ -135,7 +135,7 @@ func (s *StudyCircleService) AddMember(circleID, userID, targetUserID uint) erro
 		return err
 	}
 	if count >= circle.MaxMembers {
-		return fmt.Errorf("%w: member limit reached", ErrBadRequest)
+		return domain.NewError(domain.ErrCodeBadRequest, "メンバー上限に達しました", nil)
 	}
 
 	return s.repo.AddMember(circleID, targetUserID, model.StudyCircleRoleMember)
@@ -288,7 +288,7 @@ func (s *StudyCircleService) CreateCheckin(circleID, userID uint, content string
 		return nil, err
 	}
 	if done {
-		return nil, fmt.Errorf("%w: already checked in today", ErrConflict)
+		return nil, domain.NewError(domain.ErrCodeConflict, "本日は既にチェックイン済みです", nil)
 	}
 
 	checkin := &model.StudyCircleCheckin{
