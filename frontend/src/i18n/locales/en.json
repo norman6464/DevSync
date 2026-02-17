@@ -223,7 +223,8 @@
     "emailLanguageDesc": "Select the language for email delivery",
     "emailEnabled": "Enabled",
     "emailDisabled": "Disabled",
-    "emailPreferencesSaved": "Email preferences saved"
+    "emailPreferencesSaved": "Email preferences saved",
+    "setTheme": "Set {{theme}} theme"
   },
   "explore": {
     "title": "Discover Developers",

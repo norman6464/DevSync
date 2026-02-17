@@ -223,7 +223,8 @@
     "emailLanguageDesc": "이메일 전송 언어 선택",
     "emailEnabled": "활성화",
     "emailDisabled": "비활성화",
-    "emailPreferencesSaved": "이메일 설정이 저장되었습니다"
+    "emailPreferencesSaved": "이메일 설정이 저장되었습니다",
+    "setTheme": "{{theme}} 테마로 설정"
   },
   "explore": {
     "title": "개발자 찾기",

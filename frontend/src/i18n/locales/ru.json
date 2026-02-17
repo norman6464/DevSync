@@ -223,7 +223,8 @@
     "emailLanguageDesc": "Выбрать язык доставки",
     "emailEnabled": "Включено",
     "emailDisabled": "Отключено",
-    "emailPreferencesSaved": "Настройки email сохранены"
+    "emailPreferencesSaved": "Настройки email сохранены",
+    "setTheme": "Установить тему {{theme}}"
   },
   "explore": {
     "title": "Найти разработчиков",

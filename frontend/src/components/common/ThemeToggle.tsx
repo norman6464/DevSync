@@ -1,6 +1,8 @@
+import { useTranslation } from 'react-i18next';
 import { useThemeStore } from '../../store/themeStore';
 
 export default function ThemeToggle() {
+  const { t } = useTranslation();
   const { theme, setTheme } = useThemeStore();
 
   const themes = [
@@ -15,7 +17,7 @@ export default function ThemeToggle() {
           />
         </svg>
       ),
-      label: 'Light',
+      label: t('settings.light'),
     },
     {
       value: 'dark' as const,
@@ -28,7 +30,7 @@ export default function ThemeToggle() {
           />
         </svg>
       ),
-      label: 'Dark',
+      label: t('settings.dark'),
     },
     {
       value: 'system' as const,
@@ -41,7 +43,7 @@ export default function ThemeToggle() {
           />
         </svg>
       ),
-      label: 'System',
+      label: t('settings.system'),
     },
   ];
 
@@ -57,7 +59,7 @@ export default function ThemeToggle() {
               : 'text-gray-400 hover:text-white'
           }`}
           title={t.label}
-          aria-label={`Set ${t.label} theme`}
+          aria-label={t('settings.setTheme', { theme: t.label })}
         >
           {t.icon}
         </button>

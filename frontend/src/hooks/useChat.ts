@@ -40,11 +40,11 @@ export function useChat() {
 
     getConversations()
       .then(({ data }) => setConversations(data || []))
-      .catch(() => {});
+      .catch((e) => console.warn('Failed to load conversations:', e));
 
     getFollowing(currentUser.id)
       .then(({ data }) => setFollowingUsers(data || []))
-      .catch(() => {});
+      .catch((e) => console.warn('Failed to load following users:', e));
 
     loadChatRooms();
   }, [currentUser]);
@@ -52,7 +52,7 @@ export function useChat() {
   const loadChatRooms = () => {
     getChatRooms()
       .then(({ data }) => setChatRooms(data || []))
-      .catch(() => {});
+      .catch((e) => console.warn('Failed to load chat rooms:', e));
   };
 
   useEffect(() => {
