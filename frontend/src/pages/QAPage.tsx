@@ -6,6 +6,7 @@ import { useQuestions, useDebounce } from '../hooks';
 import QuestionCard from '../components/qa/QuestionCard';
 import QuestionForm from '../components/qa/QuestionForm';
 import { QuestionCardSkeleton } from '../components/common/Skeleton';
+import { Pagination } from '../components/common';
 
 export default function QAPage() {
   const { t } = useTranslation();
@@ -149,28 +150,12 @@ export default function QAPage() {
             ))}
           </div>
 
-          {/* Pagination */}
-          {total > limit && (
-            <div className="flex justify-center gap-2 mt-8">
-              <button
-                onClick={() => setPage(p => Math.max(0, p - 1))}
-                disabled={page === 0}
-                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
-              >
-                {t('common.previous')}
-              </button>
-              <span className="px-4 py-2 text-gray-400">
-                {page + 1} / {Math.ceil(total / limit)}
-              </span>
-              <button
-                onClick={() => setPage(p => p + 1)}
-                disabled={(page + 1) * limit >= total}
-                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
-              >
-                {t('common.next')}
-              </button>
-            </div>
-          )}
+          <Pagination
+            currentPage={page}
+            totalItems={total}
+            itemsPerPage={limit}
+            onPageChange={setPage}
+          />
         </>
       )}
     </div>
