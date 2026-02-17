@@ -5,7 +5,7 @@ import { createChatRoom } from '../../api/chatRooms';
 import type { User } from '../../types/user';
 import type { ChatRoom } from '../../types/chat';
 import Avatar from '../common/Avatar';
-import { inputClass, labelClass, textareaClass, buttonSecondaryClass } from '../../constants/styles';
+import { inputClass, labelClass, textareaClass, buttonSecondaryClass, buttonPrimaryClass } from '../../constants/styles';
 
 interface Props {
   followingUsers: User[];
@@ -122,7 +122,7 @@ export default function CreateRoomModal({ followingUsers, onClose, onCreated }: 
             <button
               type="submit"
               disabled={!name.trim() || loading}
-              className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
+              className={`${buttonPrimaryClass} flex-1 text-sm disabled:opacity-50`}
             >
               {loading ? '...' : t('chat.createButton')}
             </button>
