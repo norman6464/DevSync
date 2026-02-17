@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { inputClass, buttonSecondaryClass, sectionContainerClass, labelClass } from '../../constants/styles';
+import { inputClass, buttonSecondaryClass, sectionContainerClass, labelClass, selectClass } from '../../constants/styles';
 import { Modal } from '../../components/common';
 import type { User } from '../../types/user';
 
@@ -63,7 +63,7 @@ export default function AccountSection(props: Props) {
             <select
               value={props.emailLanguage}
               onChange={(e) => props.setEmailLanguage(e.target.value)}
-              className={inputClass}
+              className={`${selectClass} w-full`}
             >
               <option value="ja">日本語</option>
               <option value="en">English</option>
