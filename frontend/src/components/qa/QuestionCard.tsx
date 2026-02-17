@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import type { Question } from '../../types/qa';
 import Avatar from '../common/Avatar';
+import { cardPaddedClass } from '../../constants/styles';
 
 interface QuestionCardProps {
   question: Question;
@@ -18,7 +19,7 @@ export default function QuestionCard({ question, isOwner = false, onEdit, onDele
   })() : [];
 
   return (
-    <div className="bg-gray-800 rounded-md p-5 border border-gray-700 hover:border-gray-600 transition-colors">
+    <div className={cardPaddedClass}>
       <div className="flex gap-4">
         {/* Vote & Answer counts */}
         <div className="flex flex-col items-center gap-2 text-center min-w-[60px]">

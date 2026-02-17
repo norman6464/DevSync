@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import type { BookReview } from '../../types/bookReview';
 import Avatar from '../common/Avatar';
+import { cardClass } from '../../constants/styles';
 
 interface BookReviewCardProps {
   review: BookReview;
@@ -38,7 +39,7 @@ export default function BookReviewCard({
   };
 
   return (
-    <div className="bg-gray-800 rounded-md overflow-hidden border border-gray-700 hover:border-gray-600 transition-colors">
+    <div className={cardClass}>
       <div className="flex">
         {/* Book Cover */}
         {review.image_url && (

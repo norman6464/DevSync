@@ -11,6 +11,7 @@ import Avatar from '../common/Avatar';
 import { format } from 'date-fns';
 import { useState } from 'react';
 import { Code2 } from 'lucide-react';
+import { cardDarkClass } from '../../constants/styles';
 
 interface PostCardProps {
   post: Post;
@@ -53,7 +54,7 @@ export default function PostCard({ post, isOwner = false, onEdit, onDelete, onUp
   }
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-md p-5 hover:border-gray-700 transition-colors">
+    <div className={cardDarkClass}>
       <div className="flex items-center gap-3 mb-3">
         <Link to={`/profile/${post.user_id}`}>
           <Avatar name={post.user?.name || 'U'} avatarUrl={post.user?.avatar_url} size="sm" />

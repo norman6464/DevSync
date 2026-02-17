@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { Project } from '../../types/project';
+import { cardClass } from '../../constants/styles';
 
 interface ProjectCardProps {
   project: Project;
@@ -19,7 +20,7 @@ export default function ProjectCard({ project, onEdit, onDelete, isOwner }: Proj
   };
 
   return (
-    <div className="bg-gray-800 rounded-md overflow-hidden border border-gray-700 hover:border-gray-600 transition-colors">
+    <div className={cardClass}>
       {project.image_url && (
         <div className="aspect-video bg-gray-700 overflow-hidden">
           <img
