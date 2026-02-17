@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -69,7 +68,7 @@ func (h *MessageHandler) SendMessage(c *gin.Context) {
 		Content string `json:"content" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondBadRequest(c, err.Error())
 		return
 	}
 

@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
@@ -36,7 +34,7 @@ func (h *ZennHandler) Connect(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "username is required"})
+		respondBadRequest(c, "username is required")
 		return
 	}
 

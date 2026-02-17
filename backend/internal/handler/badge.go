@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/service"
 )
@@ -48,7 +46,7 @@ func (h *BadgeHandler) NotifyBadgeEarned(c *gin.Context) {
 		BadgeID string `json:"badge_id" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "badge_id is required"})
+		respondBadRequest(c, "badge_id is required")
 		return
 	}
 

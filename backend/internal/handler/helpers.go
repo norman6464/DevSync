@@ -94,6 +94,12 @@ func respondForbidden(c *gin.Context, message string) {
 	c.JSON(http.StatusForbidden, response)
 }
 
+// respondNotFound は404 Not Foundでエラーメッセージを返す。
+func respondNotFound(c *gin.Context, message string) {
+	response := domain.NewErrorResponse(message, string(domain.ErrCodeNotFound), nil)
+	c.JSON(http.StatusNotFound, response)
+}
+
 // respondPaginated はページネーション付きレスポンスを返す。
 func respondPaginated(c *gin.Context, data interface{}, total int64, page, limit int) {
 	response := domain.NewPaginatedResponse(data, total, page, limit)

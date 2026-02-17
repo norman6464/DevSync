@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
@@ -38,17 +36,17 @@ func NewAtCoderHandler(atcoderService AtCoderServiceInterface, userService AtCod
 func (h *AtCoderHandler) GetRating(c *gin.Context) {
 	username := c.Param("username")
 	if username == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "username is required"})
+		respondBadRequest(c, "username is required")
 		return
 	}
 
 	info, err := h.atcoderService.GetRating(username)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondBadRequest(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, info)
+	respondOK(c, info)
 }
 
 // Connect はAtCoderユーザー名を検証し、ユーザープロフィールに保存する。
@@ -59,28 +57,28 @@ func (h *AtCoderHandler) Connect(c *gin.Context) {
 		Username string `json:"username" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "username is required"})
+		respondBadRequest(c, "username is required")
 		return
 	}
 
 	if !h.atcoderService.ValidateUsername(input.Username) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid AtCoder username"})
+		respondBadRequest(c, "invalid AtCoder username")
 		return
 	}
 
 	user, err := h.userService.GetByID(userID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		respondNotFound(c, "user not found")
 		return
 	}
 
 	user.AtCoderUsername = input.Username
 	if err := h.userService.Update(user); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	respondOK(c, user)
 }
 
 // Disconnect はAtCoderユーザー名をクリアする。
@@ -89,15 +87,15 @@ func (h *AtCoderHandler) Disconnect(c *gin.Context) {
 
 	user, err := h.userService.GetByID(userID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		respondNotFound(c, "user not found")
 		return
 	}
 
 	user.AtCoderUsername = ""
 	if err := h.userService.Update(user); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	respondOK(c, user)
 }
