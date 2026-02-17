@@ -7,7 +7,7 @@ import { useQuestions, useDebounce } from '../hooks';
 import QuestionCard from '../components/qa/QuestionCard';
 import QuestionForm from '../components/qa/QuestionForm';
 import { QuestionCardSkeleton } from '../components/common/Skeleton';
-import { EmptyState, Pagination } from '../components/common';
+import { EmptyState, Modal, Pagination } from '../components/common';
 
 export default function QAPage() {
   const { t } = useTranslation();
@@ -88,32 +88,29 @@ export default function QAPage() {
       </div>
 
       {/* Form Modal */}
-      {(showForm || editingQuestion) && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-md p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-semibold text-white mb-4">
-              {editingQuestion ? t('qa.editQuestion') : t('qa.newQuestion')}
-            </h2>
-            <QuestionForm
-              question={editingQuestion || undefined}
-              onSubmit={async (data) => {
-                if (editingQuestion) {
-                  const result = await updateQuestion(editingQuestion.id, data);
-                  if (result) setEditingQuestion(null);
-                } else {
-                  const result = await createQuestion(data);
-                  if (result) setShowForm(false);
-                }
-              }}
-              onCancel={() => {
-                setShowForm(false);
-                setEditingQuestion(null);
-              }}
-              loading={saving}
-            />
-          </div>
-        </div>
-      )}
+      <Modal
+        isOpen={showForm || !!editingQuestion}
+        onClose={() => { setShowForm(false); setEditingQuestion(null); }}
+        title={editingQuestion ? t('qa.editQuestion') : t('qa.newQuestion')}
+      >
+        <QuestionForm
+          question={editingQuestion || undefined}
+          onSubmit={async (data) => {
+            if (editingQuestion) {
+              const result = await updateQuestion(editingQuestion.id, data);
+              if (result) setEditingQuestion(null);
+            } else {
+              const result = await createQuestion(data);
+              if (result) setShowForm(false);
+            }
+          }}
+          onCancel={() => {
+            setShowForm(false);
+            setEditingQuestion(null);
+          }}
+          loading={saving}
+        />
+      </Modal>
 
       {/* Content */}
       {loading ? (

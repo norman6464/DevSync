@@ -7,6 +7,7 @@ import ProjectCard from '../components/projects/ProjectCard';
 import ProjectForm from '../components/projects/ProjectForm';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import EmptyState from '../components/common/EmptyState';
+import { Modal } from '../components/common';
 
 export default function ProjectsPage() {
   const { t } = useTranslation();
@@ -45,33 +46,30 @@ export default function ProjectsPage() {
       </div>
 
       {/* Form Modal */}
-      {(showForm || editingProject) && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-md p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-semibold text-white mb-4">
-              {editingProject ? t('projects.editProject') : t('projects.newProject')}
-            </h2>
-            <ProjectForm
-              project={editingProject || undefined}
-              repos={repos}
-              onSubmit={async (data) => {
-                if (editingProject) {
-                  const result = await updateProject(editingProject.id, data);
-                  if (result) setEditingProject(null);
-                } else {
-                  const result = await createProject(data);
-                  if (result) setShowForm(false);
-                }
-              }}
-              onCancel={() => {
-                setShowForm(false);
-                setEditingProject(null);
-              }}
-              loading={saving}
-            />
-          </div>
-        </div>
-      )}
+      <Modal
+        isOpen={showForm || !!editingProject}
+        onClose={() => { setShowForm(false); setEditingProject(null); }}
+        title={editingProject ? t('projects.editProject') : t('projects.newProject')}
+      >
+        <ProjectForm
+          project={editingProject || undefined}
+          repos={repos}
+          onSubmit={async (data) => {
+            if (editingProject) {
+              const result = await updateProject(editingProject.id, data);
+              if (result) setEditingProject(null);
+            } else {
+              const result = await createProject(data);
+              if (result) setShowForm(false);
+            }
+          }}
+          onCancel={() => {
+            setShowForm(false);
+            setEditingProject(null);
+          }}
+          loading={saving}
+        />
+      </Modal>
 
       {/* Projects Grid */}
       {projects.length === 0 ? (

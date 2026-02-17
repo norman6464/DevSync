@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Monitor, Rocket, Target, FolderOpen, FileText, type LucideIcon } from 'lucide-react';
 import { type GoalCategory, type GoalStatus, type LearningGoal } from '../api/goals';
 import { useGoals } from '../hooks';
-import { PageLoader } from '../components/common';
+import { Modal, PageLoader } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
 
 const CATEGORIES: { value: GoalCategory; label: string; icon: string; Icon: LucideIcon }[] = [
@@ -131,85 +131,83 @@ export default function GoalsPage() {
       </div>
 
       {/* Create/Edit Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
-          <div className="bg-gray-900 border border-gray-700 rounded-md max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold mb-4">
-              {editingGoal ? t('goals.editGoal') : t('goals.addGoal')}
-            </h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                  {t('goals.goalTitle')}
-                </label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder={t('goals.titlePlaceholder')}
-                  className={inputClass}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                  {t('goals.description')}
-                </label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder={t('goals.descriptionPlaceholder')}
-                  rows={3}
-                  className={`${inputClass} resize-none`}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                  {t('goals.category')}
-                </label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value as GoalCategory)}
-                  className={inputClass}
-                >
-                  {CATEGORIES.map((cat) => (
-                    <option key={cat.value} value={cat.value}>
-                      {cat.icon} {t(cat.label)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                  {t('goals.targetDate')}
-                </label>
-                <input
-                  type="date"
-                  value={targetDate}
-                  onChange={(e) => setTargetDate(e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-              <div className="flex gap-3 justify-end pt-2">
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors"
-                >
-                  {t('common.cancel')}
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving || !title.trim()}
-                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
-                >
-                  {saving ? t('common.loading') : editingGoal ? t('common.save') : t('goals.create')}
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showForm}
+        onClose={resetForm}
+        title={editingGoal ? t('goals.editGoal') : t('goals.addGoal')}
+        maxWidth="max-w-md"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              {t('goals.goalTitle')}
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={t('goals.titlePlaceholder')}
+              className={inputClass}
+              required
+            />
           </div>
-        </div>
-      )}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              {t('goals.description')}
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={t('goals.descriptionPlaceholder')}
+              rows={3}
+              className={`${inputClass} resize-none`}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              {t('goals.category')}
+            </label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value as GoalCategory)}
+              className={inputClass}
+            >
+              {CATEGORIES.map((cat) => (
+                <option key={cat.value} value={cat.value}>
+                  {cat.icon} {t(cat.label)}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              {t('goals.targetDate')}
+            </label>
+            <input
+              type="date"
+              value={targetDate}
+              onChange={(e) => setTargetDate(e.target.value)}
+              className={inputClass}
+            />
+          </div>
+          <div className="flex gap-3 justify-end pt-2">
+            <button
+              type="button"
+              onClick={resetForm}
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              {t('common.cancel')}
+            </button>
+            <button
+              type="submit"
+              disabled={saving || !title.trim()}
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              {saving ? t('common.loading') : editingGoal ? t('common.save') : t('goals.create')}
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Goals List */}
       {goals.length === 0 ? (

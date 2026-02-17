@@ -6,6 +6,7 @@ import { type RoadmapCategory, type Roadmap } from '../api/roadmaps';
 import { useRoadmaps, useRoadmapTemplates } from '../hooks';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import EmptyState from '../components/common/EmptyState';
+import { Modal } from '../components/common';
 
 const CATEGORIES: { value: RoadmapCategory; label: string; icon: string; Icon: LucideIcon }[] = [
   { value: 'language', label: 'roadmaps.categoryLanguage', icon: '💻', Icon: Monitor },
@@ -235,78 +236,76 @@ export default function RoadmapsPage() {
       )}
 
       {/* Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-md p-6 w-full max-w-md">
-            <h2 className="text-xl font-semibold text-white mb-4">
-              {editingRoadmap ? t('roadmaps.editRoadmap') : t('roadmaps.addRoadmap')}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">{t('roadmaps.roadmapTitle')}</label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={e => setTitle(e.target.value)}
-                  placeholder={t('roadmaps.titlePlaceholder')}
-                  className={inputClass}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">{t('roadmaps.descriptionLabel')}</label>
-                <textarea
-                  value={description}
-                  onChange={e => setDescription(e.target.value)}
-                  placeholder={t('roadmaps.descriptionPlaceholder')}
-                  rows={3}
-                  className={`${inputClass} resize-none`}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">{t('roadmaps.category')}</label>
-                <select
-                  value={category}
-                  onChange={e => setCategory(e.target.value as RoadmapCategory)}
-                  className={inputClass}
-                >
-                  {CATEGORIES.map(cat => (
-                    <option key={cat.value} value={cat.value}>
-                      {cat.icon} {t(cat.label)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="is_public"
-                  checked={isPublic}
-                  onChange={e => setIsPublic(e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-600 bg-gray-700"
-                />
-                <label htmlFor="is_public" className="text-sm text-gray-300">{t('roadmaps.makePublic')}</label>
-              </div>
-              <div className="flex gap-3 justify-end pt-2">
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-                >
-                  {t('common.cancel')}
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving || !title.trim()}
-                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
-                >
-                  {saving ? t('common.saving') : editingRoadmap ? t('common.save') : t('roadmaps.create')}
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showForm}
+        onClose={resetForm}
+        title={editingRoadmap ? t('roadmaps.editRoadmap') : t('roadmaps.addRoadmap')}
+        maxWidth="max-w-md"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">{t('roadmaps.roadmapTitle')}</label>
+            <input
+              type="text"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              placeholder={t('roadmaps.titlePlaceholder')}
+              className={inputClass}
+              required
+            />
           </div>
-        </div>
-      )}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">{t('roadmaps.descriptionLabel')}</label>
+            <textarea
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              placeholder={t('roadmaps.descriptionPlaceholder')}
+              rows={3}
+              className={`${inputClass} resize-none`}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">{t('roadmaps.category')}</label>
+            <select
+              value={category}
+              onChange={e => setCategory(e.target.value as RoadmapCategory)}
+              className={inputClass}
+            >
+              {CATEGORIES.map(cat => (
+                <option key={cat.value} value={cat.value}>
+                  {cat.icon} {t(cat.label)}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="is_public"
+              checked={isPublic}
+              onChange={e => setIsPublic(e.target.checked)}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700"
+            />
+            <label htmlFor="is_public" className="text-sm text-gray-300">{t('roadmaps.makePublic')}</label>
+          </div>
+          <div className="flex gap-3 justify-end pt-2">
+            <button
+              type="button"
+              onClick={resetForm}
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+            >
+              {t('common.cancel')}
+            </button>
+            <button
+              type="submit"
+              disabled={saving || !title.trim()}
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+            >
+              {saving ? t('common.saving') : editingRoadmap ? t('common.save') : t('roadmaps.create')}
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Content */}
       {roadmaps.length === 0 ? (
