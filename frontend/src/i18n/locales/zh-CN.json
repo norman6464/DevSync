@@ -1187,5 +1187,28 @@
     "backToSettings": "返回设置",
     "loggingIn": "正在通过GitHub登录...",
     "connecting": "正在连接GitHub..."
+  },
+  "editor": {
+    "write": "编辑",
+    "preview": "预览",
+    "placeholder": "在此输入内容...（支持Markdown）",
+    "heading": "标题",
+    "bold": "粗体",
+    "italic": "斜体",
+    "strikethrough": "删除线",
+    "link": "链接",
+    "image": "图片",
+    "inlineCode": "行内代码",
+    "codeBlock": "代码块",
+    "quote": "引用",
+    "bulletList": "无序列表",
+    "numberedList": "有序列表",
+    "taskList": "任务列表",
+    "uploading": "上传中...",
+    "nothingToPreview": "没有可预览的内容",
+    "attachedImages": "附加图片：",
+    "uploadedImage": "已上传图片 {{number}}",
+    "markdownSupported": "支持Markdown",
+    "pasteOrDragImages": "粘贴或拖拽图片上传"
   }
 }

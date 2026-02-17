@@ -1187,5 +1187,28 @@
     "backToSettings": "설정으로 돌아가기",
     "loggingIn": "GitHub으로 로그인 중...",
     "connecting": "GitHub 연결 중..."
+  },
+  "editor": {
+    "write": "작성",
+    "preview": "미리보기",
+    "placeholder": "여기에 내용을 입력하세요... (마크다운 지원)",
+    "heading": "제목",
+    "bold": "굵게",
+    "italic": "기울임",
+    "strikethrough": "취소선",
+    "link": "링크",
+    "image": "이미지",
+    "inlineCode": "인라인 코드",
+    "codeBlock": "코드 블록",
+    "quote": "인용",
+    "bulletList": "글머리 기호 목록",
+    "numberedList": "번호 매기기 목록",
+    "taskList": "작업 목록",
+    "uploading": "업로드 중...",
+    "nothingToPreview": "미리볼 내용이 없습니다",
+    "attachedImages": "첨부 이미지:",
+    "uploadedImage": "업로드된 이미지 {{number}}",
+    "markdownSupported": "마크다운 지원",
+    "pasteOrDragImages": "이미지를 붙여넣거나 드래그하여 업로드"
   }
 }

@@ -1187,5 +1187,28 @@
     "backToSettings": "Retour aux paramètres",
     "loggingIn": "Connexion avec GitHub...",
     "connecting": "Connexion de GitHub..."
+  },
+  "editor": {
+    "write": "Écrire",
+    "preview": "Aperçu",
+    "placeholder": "Écrivez votre contenu ici... (Markdown pris en charge)",
+    "heading": "Titre",
+    "bold": "Gras",
+    "italic": "Italique",
+    "strikethrough": "Barré",
+    "link": "Lien",
+    "image": "Image",
+    "inlineCode": "Code en ligne",
+    "codeBlock": "Bloc de code",
+    "quote": "Citation",
+    "bulletList": "Liste à puces",
+    "numberedList": "Liste numérotée",
+    "taskList": "Liste de tâches",
+    "uploading": "Téléchargement...",
+    "nothingToPreview": "Rien à prévisualiser",
+    "attachedImages": "Images jointes :",
+    "uploadedImage": "Image téléchargée {{number}}",
+    "markdownSupported": "Markdown pris en charge",
+    "pasteOrDragImages": "Collez ou glissez des images pour télécharger"
   }
 }

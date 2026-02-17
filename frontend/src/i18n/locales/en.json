@@ -1187,5 +1187,28 @@
     "backToSettings": "Back to Settings",
     "loggingIn": "Logging in with GitHub...",
     "connecting": "Connecting GitHub..."
+  },
+  "editor": {
+    "write": "Write",
+    "preview": "Preview",
+    "placeholder": "Write your content here... (Markdown supported)",
+    "heading": "Heading",
+    "bold": "Bold",
+    "italic": "Italic",
+    "strikethrough": "Strikethrough",
+    "link": "Link",
+    "image": "Image",
+    "inlineCode": "Inline Code",
+    "codeBlock": "Code Block",
+    "quote": "Quote",
+    "bulletList": "Bullet List",
+    "numberedList": "Numbered List",
+    "taskList": "Task List",
+    "uploading": "Uploading...",
+    "nothingToPreview": "Nothing to preview",
+    "attachedImages": "Attached images:",
+    "uploadedImage": "Uploaded {{number}}",
+    "markdownSupported": "Markdown supported",
+    "pasteOrDragImages": "Paste or drag images to upload"
   }
 }
