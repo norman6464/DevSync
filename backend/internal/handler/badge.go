@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
@@ -43,9 +44,7 @@ func (h *BadgeHandler) GetUserBadges(c *gin.Context) {
 func (h *BadgeHandler) NotifyBadgeEarned(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	var req struct {
-		BadgeID string `json:"badge_id" binding:"required"`
-	}
+	var req dto.NotifyBadgeEarnedRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		respondBadRequest(c, "badge_id is required")
 		return

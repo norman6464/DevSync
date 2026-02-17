@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -31,14 +32,7 @@ func NewLearningLogHandler(s LearningLogServiceInterface) *LearningLogHandler {
 func (h *LearningLogHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	var req struct {
-		Title    string `json:"title" binding:"required"`
-		Content  string `json:"content" binding:"required"`
-		Category string `json:"category"`
-		Duration int    `json:"duration"`
-		Source   string `json:"source"`
-	}
-
+	var req dto.CreateLearningLogRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		respondBadRequest(c, "title and content are required")
 		return
@@ -74,13 +68,7 @@ func (h *LearningLogHandler) Update(c *gin.Context) {
 		return
 	}
 
-	var req struct {
-		Title    *string `json:"title"`
-		Content  *string `json:"content"`
-		Category *string `json:"category"`
-		Duration *int    `json:"duration"`
-	}
-
+	var req dto.UpdateLearningLogRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		respondBadRequest(c, "invalid request")
 		return
