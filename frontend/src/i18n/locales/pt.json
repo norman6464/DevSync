@@ -127,7 +127,8 @@
     "updateFailed": "Falha ao atualizar",
     "saveDraft": "Salvar rascunho",
     "draftSaved": "Rascunho salvo",
-    "draftFailed": "Falha ao salvar rascunho"
+    "draftFailed": "Falha ao salvar rascunho",
+    "writeComment": "Escrever um comentário..."
   },
   "profile": {
     "followers": "seguidores",
@@ -1150,7 +1151,8 @@
       "noCircles": "Entre em um círculo para aprender juntos",
       "todayCheckin": "Check-in de Hoje",
       "viewAll": "Ver Tudo"
-    }
+    },
+    "searchUsers": "Pesquisar usuários..."
   },
   "notes": {
     "title": "Notas de Aprendizado",

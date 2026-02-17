@@ -27,7 +27,7 @@ export default function ProfileSection({ name, setName, bio, setBio, avatarUrl, 
         </div>
         <div>
           <label className={labelClass}>{t('settings.bio')}</label>
-          <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder="Tell us about yourself" className={textareaClass} />
+          <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder={t('settings.bioPlaceholder')} className={textareaClass} />
         </div>
         <div>
           <label className={labelClass}>{t('settings.avatar')}</label>

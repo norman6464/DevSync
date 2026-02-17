@@ -144,7 +144,8 @@
     "update": "更新",
     "updating": "更新中...",
     "postUpdated": "投稿を更新しました",
-    "updateFailed": "投稿の更新に失敗しました"
+    "updateFailed": "投稿の更新に失敗しました",
+    "writeComment": "コメントを書く..."
   },
   "profile": {
     "followers": "フォロワー",
@@ -1051,7 +1052,8 @@
       "noCircles": "サークルに参加して学習を始めましょう",
       "todayCheckin": "今日のチェックイン",
       "viewAll": "すべて見る"
-    }
+    },
+    "searchUsers": "ユーザーを検索..."
   },
   "notes": {
     "title": "学習ノート",

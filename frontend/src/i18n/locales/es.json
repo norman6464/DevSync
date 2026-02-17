@@ -127,7 +127,8 @@
     "updateFailed": "Error al actualizar",
     "saveDraft": "Guardar borrador",
     "draftSaved": "Borrador guardado",
-    "draftFailed": "Error al guardar borrador"
+    "draftFailed": "Error al guardar borrador",
+    "writeComment": "Escribe un comentario..."
   },
   "profile": {
     "followers": "seguidores",
@@ -1150,7 +1151,8 @@
       "noCircles": "Únete a un círculo para aprender juntos",
       "todayCheckin": "Check-in de Hoy",
       "viewAll": "Ver Todo"
-    }
+    },
+    "searchUsers": "Buscar usuarios..."
   },
   "notes": {
     "title": "Notas de Aprendizaje",
