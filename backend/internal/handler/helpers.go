@@ -14,7 +14,7 @@ func parseID(c *gin.Context, param string) (uint, bool) {
 	raw := c.Param(param)
 	id, err := strconv.ParseUint(raw, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid " + param})
+		respondBadRequest(c, "invalid "+param)
 		return 0, false
 	}
 	return uint(id), true
@@ -45,7 +45,7 @@ func parsePagination(c *gin.Context) (page, limit int) {
 func bindJSON[T any](c *gin.Context) *T {
 	var req T
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondBadRequest(c, err.Error())
 		return nil
 	}
 	return &req
