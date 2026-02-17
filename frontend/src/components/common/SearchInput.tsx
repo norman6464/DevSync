@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react';
+import { buttonSecondaryClass } from '../../constants/styles';
 
 interface SearchInputProps {
   value: string;
@@ -35,7 +36,7 @@ export default function SearchInput({ value, onChange, onSearch, placeholder, sh
         <button
           type="button"
           onClick={onSearch}
-          className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+          className={buttonSecondaryClass}
         >
           {t('common.search')}
         </button>
