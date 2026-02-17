@@ -84,7 +84,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	}
 
 	setAuthCookie(c, resp.Token)
-	respondCreated(c, gin.H{"user": resp.User})
+	respondCreated(c, dto.UserResponse{User: resp.User})
 }
 
 // Login はメール・パスワードによるログインを処理する。
@@ -107,7 +107,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	setAuthCookie(c, resp.Token)
-	respondOK(c, gin.H{"user": resp.User})
+	respondOK(c, dto.UserResponse{User: resp.User})
 }
 
 // GitHubLogin はGitHub OAuthログインのURLを生成して返す。
@@ -160,7 +160,7 @@ func (h *AuthHandler) GitHubLoginCallback(c *gin.Context) {
 	go h.githubService.SyncUserData(resp.User.ID)
 
 	setAuthCookie(c, resp.Token)
-	respondOK(c, gin.H{"user": resp.User})
+	respondOK(c, dto.UserResponse{User: resp.User})
 }
 
 // Me は認証済みユーザーの情報を返す。

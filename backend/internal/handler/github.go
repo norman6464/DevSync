@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -50,7 +51,7 @@ func (h *GitHubHandler) Connect(c *gin.Context) {
 		return
 	}
 	url := h.githubService.GetOAuthURL(state)
-	respondOK(c, gin.H{"url": url})
+	respondOK(c, dto.URLResponse{URL: url})
 }
 
 // Callback はGitHub OAuthコールバックを処理してアカウントを連携する。

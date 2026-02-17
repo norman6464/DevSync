@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -45,9 +46,9 @@ func (h *NotificationHandler) GetAll(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{
-		"notifications": notifications,
-		"total":         total,
+	respondOK(c, dto.NotificationListResponse{
+		Notifications: notifications,
+		Total:         total,
 	})
 }
 
@@ -60,7 +61,7 @@ func (h *NotificationHandler) GetUnreadCount(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, gin.H{"count": count})
+	respondOK(c, dto.CountResponse{Count: count})
 }
 
 // MarkAsRead は指定された通知を既読にする。

@@ -37,7 +37,7 @@ func (h *BadgeHandler) GetUserBadges(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"badges": badges})
+	respondOK(c, dto.BadgesResponse{Badges: badges})
 }
 
 // NotifyBadgeEarned は新しく獲得したバッジの通知を作成する。
