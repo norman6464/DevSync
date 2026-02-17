@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -62,7 +63,10 @@ func TestSendWeeklyReport_EmptyEmail(t *testing.T) {
 	report := testReport()
 
 	err := svc.SendWeeklyReport(user, report)
-	assert.ErrorIs(t, err, ErrBadRequest)
+	assert.Error(t, err)
+	var domainErr *domain.DomainError
+	assert.ErrorAs(t, err, &domainErr)
+	assert.Equal(t, domain.ErrCodeBadRequest, domainErr.Code)
 }
 
 func TestSendWeeklyReport_NilReport(t *testing.T) {
@@ -71,7 +75,10 @@ func TestSendWeeklyReport_NilReport(t *testing.T) {
 	user := &model.User{Name: "テストユーザー", Email: "test@example.com"}
 
 	err := svc.SendWeeklyReport(user, nil)
-	assert.ErrorIs(t, err, ErrBadRequest)
+	assert.Error(t, err)
+	var domainErr *domain.DomainError
+	assert.ErrorAs(t, err, &domainErr)
+	assert.Equal(t, domain.ErrCodeBadRequest, domainErr.Code)
 }
 
 // ============================================================
