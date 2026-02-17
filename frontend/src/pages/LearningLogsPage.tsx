@@ -7,7 +7,7 @@ import type { LearningLog, LogCategory } from '../types/learningLog';
 import LogCalendar from '../components/learning-logs/LogCalendar';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { Modal } from '../components/common';
-import { inputClass, buttonSecondaryClass } from '../constants/styles';
+import { inputClass, buttonSecondaryClass, labelClass } from '../constants/styles';
 
 const CATEGORIES: { value: LogCategory; label: string; Icon: LucideIcon }[] = [
   { value: 'coding', label: 'learningLogs.categoryCoding', Icon: Code },
@@ -212,7 +212,7 @@ export default function LearningLogsPage() {
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+            <label className={labelClass}>
               {t('learningLogs.logTitle')}
             </label>
             <input
@@ -225,7 +225,7 @@ export default function LearningLogsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+            <label className={labelClass}>
               {t('learningLogs.content')}
             </label>
             <textarea
@@ -239,7 +239,7 @@ export default function LearningLogsPage() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              <label className={labelClass}>
                 {t('learningLogs.category')}
               </label>
               <select
@@ -255,7 +255,7 @@ export default function LearningLogsPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              <label className={labelClass}>
                 {t('learningLogs.duration')}
               </label>
               <input

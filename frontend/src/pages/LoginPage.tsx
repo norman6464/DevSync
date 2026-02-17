@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
 import { useToast } from '../hooks';
+import { labelClass } from '../constants/styles';
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -71,7 +72,7 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              <label className={labelClass}>
                 {t('auth.email')}
               </label>
               <input
@@ -83,7 +84,7 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              <label className={labelClass}>
                 {t('auth.password')}
               </label>
               <input

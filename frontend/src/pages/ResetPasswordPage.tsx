@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { resetPassword } from '../api/auth';
+import { labelClass } from '../constants/styles';
 
 export default function ResetPasswordPage() {
   const { t } = useTranslation();
@@ -100,7 +101,7 @@ export default function ResetPasswordPage() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                <label className={labelClass}>
                   {t('accountManagement.newPassword')}
                 </label>
                 <input
@@ -115,7 +116,7 @@ export default function ResetPasswordPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                <label className={labelClass}>
                   {t('auth.confirmPassword')}
                 </label>
                 <input

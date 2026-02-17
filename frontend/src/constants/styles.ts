@@ -23,4 +23,4 @@ export const textareaClass =
   'w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow resize-none';
 
 export const labelClass =
-  'block text-sm font-medium text-gray-300 mb-1';
+  'block text-sm font-medium text-gray-300 mb-1.5';

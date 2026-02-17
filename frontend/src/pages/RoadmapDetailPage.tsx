@@ -7,7 +7,7 @@ import { useRoadmapDetail } from '../hooks';
 import { type RoadmapStep } from '../api/roadmaps';
 import { PageLoader, Modal } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
-import { inputClass, buttonSecondaryClass } from '../constants/styles';
+import { inputClass, buttonSecondaryClass, labelClass } from '../constants/styles';
 
 export default function RoadmapDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -158,7 +158,7 @@ export default function RoadmapDetailPage() {
       >
         <form onSubmit={handleStepSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">{t('roadmaps.stepTitle')}</label>
+            <label className={labelClass}>{t('roadmaps.stepTitle')}</label>
             <input
               type="text"
               value={stepTitle}
@@ -169,7 +169,7 @@ export default function RoadmapDetailPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">{t('roadmaps.stepDescription')}</label>
+            <label className={labelClass}>{t('roadmaps.stepDescription')}</label>
             <textarea
               value={stepDescription}
               onChange={e => setStepDescription(e.target.value)}
@@ -179,7 +179,7 @@ export default function RoadmapDetailPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">{t('roadmaps.resourceURL')}</label>
+            <label className={labelClass}>{t('roadmaps.resourceURL')}</label>
             <input
               type="url"
               value={stepResourceURL}

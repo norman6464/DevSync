@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { inputClass, buttonSecondaryClass, sectionContainerClass } from '../../constants/styles';
+import { inputClass, buttonSecondaryClass, sectionContainerClass, labelClass } from '../../constants/styles';
 import { Modal } from '../../components/common';
 import type { User } from '../../types/user';
 
@@ -58,7 +58,7 @@ export default function AccountSection(props: Props) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">{t('settings.emailLanguage')}</label>
+            <label className={labelClass}>{t('settings.emailLanguage')}</label>
             <p className="text-xs text-gray-500 mb-2">{t('settings.emailLanguageDesc')}</p>
             <select
               value={props.emailLanguage}
@@ -121,7 +121,7 @@ export default function AccountSection(props: Props) {
 
         {!props.user.github_connected && (
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+            <label className={labelClass}>
               {t('auth.password')}
             </label>
             <input

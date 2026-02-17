@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { requestPasswordReset } from '../api/auth';
+import { labelClass } from '../constants/styles';
 
 export default function ForgotPasswordPage() {
   const { t } = useTranslation();
@@ -69,7 +70,7 @@ export default function ForgotPasswordPage() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                <label className={labelClass}>
                   {t('auth.email')}
                 </label>
                 <input

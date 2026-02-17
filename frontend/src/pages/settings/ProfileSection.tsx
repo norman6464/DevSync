@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { inputClass, buttonSecondaryClass, sectionContainerClass } from '../../constants/styles';
+import { inputClass, buttonSecondaryClass, sectionContainerClass, labelClass } from '../../constants/styles';
 
 interface Props {
   name: string;
@@ -22,15 +22,15 @@ export default function ProfileSection({ name, setName, bio, setBio, avatarUrl, 
       </div>
       <div className="p-6 space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1.5">{t('settings.name')}</label>
+          <label className={labelClass}>{t('settings.name')}</label>
           <input type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputClass} />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1.5">{t('settings.bio')}</label>
+          <label className={labelClass}>{t('settings.bio')}</label>
           <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder="Tell us about yourself" className={`${inputClass} resize-none`} />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1.5">{t('settings.avatar')}</label>
+          <label className={labelClass}>{t('settings.avatar')}</label>
           <input type="text" value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} placeholder="https://..." className={inputClass} />
         </div>
       </div>

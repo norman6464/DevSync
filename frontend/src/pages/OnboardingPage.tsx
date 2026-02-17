@@ -8,10 +8,9 @@ import { getGitHubConnectURL } from '../api/github';
 import { connectZenn } from '../api/zenn';
 import { connectQiita } from '../api/qiita';
 import { connectAtCoder } from '../api/atcoder';
-import { sectionContainerClass } from '../constants/styles';
+import { sectionContainerClass, inputClass, labelClass } from '../constants/styles';
 import toast from 'react-hot-toast';
 import { LANGUAGES, FRAMEWORKS } from '../constants/skills';
-import { inputClass } from '../constants/styles';
 
 const STEPS = [
   { id: 1, icon: User },
@@ -224,7 +223,7 @@ export default function OnboardingPage() {
               </div>
               <div className="p-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                  <label className={labelClass}>
                     {t('settings.name')}
                   </label>
                   <input
@@ -236,7 +235,7 @@ export default function OnboardingPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                  <label className={labelClass}>
                     {t('settings.bio')}
                   </label>
                   <textarea
