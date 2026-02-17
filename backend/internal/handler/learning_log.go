@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
@@ -42,7 +40,7 @@ func (h *LearningLogHandler) Create(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "title and content are required"})
+		respondBadRequest(c, "title and content are required")
 		return
 	}
 
@@ -84,7 +82,7 @@ func (h *LearningLogHandler) Update(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		respondBadRequest(c, "invalid request")
 		return
 	}
 
@@ -108,7 +106,7 @@ func (h *LearningLogHandler) Update(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, log)
+	respondOK(c, log)
 }
 
 // Delete は指定された学習ログを削除する。
@@ -124,7 +122,7 @@ func (h *LearningLogHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "log deleted"})
+	respondDeleted(c)
 }
 
 // GetByID は指定されたIDの学習ログを取得する。
@@ -140,7 +138,7 @@ func (h *LearningLogHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, log)
+	respondOK(c, log)
 }
 
 // GetMyLogs は認証ユーザー自身の学習ログ一覧を取得する。
@@ -165,11 +163,11 @@ func (h *LearningLogHandler) GetByUserID(c *gin.Context) {
 
 	logs, err := h.service.GetByUserID(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get logs"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, logs)
+	respondOK(c, logs)
 }
 
 // GetStreakInfo は指定されたユーザーのストリーク情報を取得する。
@@ -181,11 +179,11 @@ func (h *LearningLogHandler) GetStreakInfo(c *gin.Context) {
 
 	info, err := h.service.GetStreakInfo(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get streak info"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, info)
+	respondOK(c, info)
 }
 
 // GetCalendarData はカレンダー表示用の日別学習ログ件数を取得する。
@@ -197,9 +195,9 @@ func (h *LearningLogHandler) GetCalendarData(c *gin.Context) {
 
 	entries, err := h.service.GetCalendarData(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get calendar data"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, entries)
+	respondOK(c, entries)
 }
