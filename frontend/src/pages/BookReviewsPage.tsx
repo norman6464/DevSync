@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { BookOpen } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import type { BookReview } from '../types/bookReview';
 import { useBookReviews } from '../hooks';
 import BookReviewCard from '../components/bookReviews/BookReviewCard';
 import BookReviewForm from '../components/bookReviews/BookReviewForm';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import { Pagination } from '../components/common';
+import { EmptyState, Pagination } from '../components/common';
 
 export default function BookReviewsPage() {
   const { t } = useTranslation();
@@ -71,20 +72,12 @@ export default function BookReviewsPage() {
           <LoadingSpinner />
         </div>
       ) : reviews.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gray-800 rounded-full flex items-center justify-center">
-            <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
-            </svg>
-          </div>
-          <p className="text-gray-400">{t('bookReviews.noReviews')}</p>
-          <button
-            onClick={() => setShowForm(true)}
-            className="mt-4 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-          >
-            {t('bookReviews.addFirstReview')}
-          </button>
-        </div>
+        <EmptyState
+          icon={BookOpen}
+          message={t('bookReviews.noReviews')}
+          actionLabel={t('bookReviews.addFirstReview')}
+          onAction={() => setShowForm(true)}
+        />
       ) : (
         <>
           <div className="space-y-4">

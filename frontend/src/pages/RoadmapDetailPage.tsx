@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { List } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useRoadmapDetail } from '../hooks';
 import { type RoadmapStep } from '../api/roadmaps';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import EmptyState from '../components/common/EmptyState';
 
 export default function RoadmapDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -213,22 +215,12 @@ export default function RoadmapDetailPage() {
 
       {/* Steps List */}
       {roadmap.steps && roadmap.steps.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gray-800 rounded-full flex items-center justify-center">
-            <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-            </svg>
-          </div>
-          <p className="text-gray-400">{t('roadmaps.noSteps')}</p>
-          {isOwner && (
-            <button
-              onClick={() => setShowStepForm(true)}
-              className="mt-4 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-            >
-              {t('roadmaps.addFirstStep')}
-            </button>
-          )}
-        </div>
+        <EmptyState
+          icon={List}
+          message={t('roadmaps.noSteps')}
+          actionLabel={isOwner ? t('roadmaps.addFirstStep') : undefined}
+          onAction={isOwner ? () => setShowStepForm(true) : undefined}
+        />
       ) : (
         <div className="space-y-3">
           {roadmap.steps?.map((step, index) => (
