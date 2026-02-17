@@ -4,17 +4,26 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/model"
 )
+
+// ZennServiceInterface はZennサービスの抽象インターフェース。
+type ZennServiceInterface interface {
+	Connect(userID uint, username string) (int, error)
+	Disconnect(userID uint) error
+	Sync(userID uint) (int, error)
+	GetArticles(userID uint) ([]model.ZennArticle, error)
+	GetStats(userID uint) (*model.ZennStats, error)
+}
 
 // ZennHandler はZenn連携関連のHTTPハンドラ。
 // Zennアカウントの接続・切断・記事同期・統計情報の取得を処理する。
 type ZennHandler struct {
-	service *service.ZennService
+	service ZennServiceInterface
 }
 
 // NewZennHandler は新しいZennHandlerインスタンスを生成する。
-func NewZennHandler(s *service.ZennService) *ZennHandler {
+func NewZennHandler(s ZennServiceInterface) *ZennHandler {
 	return &ZennHandler{service: s}
 }
 
