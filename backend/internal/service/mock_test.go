@@ -1375,3 +1375,33 @@ func (m *MockNotificationService) CreateNotification(notification *model.Notific
 func (m *MockNotificationService) NotifyFollowers(actorID uint, postID uint, notificationType model.NotificationType) {
 	m.Called(actorID, postID, notificationType)
 }
+
+// ============================================================
+// MockRankingRepository は repository.RankingRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockRankingRepository struct {
+	mock.Mock
+}
+
+var _ repository.RankingRepositoryInterface = (*MockRankingRepository)(nil)
+
+func (m *MockRankingRepository) ContributionRanking(period string) ([]repository.RankingEntry, error) {
+	args := m.Called(period)
+	return args.Get(0).([]repository.RankingEntry), args.Error(1)
+}
+
+func (m *MockRankingRepository) LanguageRanking(language, period string) ([]repository.RankingEntry, error) {
+	args := m.Called(language, period)
+	return args.Get(0).([]repository.RankingEntry), args.Error(1)
+}
+
+func (m *MockRankingRepository) LevelRanking() ([]repository.RankingEntry, error) {
+	args := m.Called()
+	return args.Get(0).([]repository.RankingEntry), args.Error(1)
+}
+
+func (m *MockRankingRepository) AvailableLanguages() ([]string, error) {
+	args := m.Called()
+	return args.Get(0).([]string), args.Error(1)
+}
