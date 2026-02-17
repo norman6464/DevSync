@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { inputClass, buttonSecondaryClass, sectionContainerClass, labelClass } from '../../constants/styles';
+import { inputClass, buttonSecondaryClass, sectionContainerClass, labelClass, textareaClass } from '../../constants/styles';
 
 interface Props {
   name: string;
@@ -27,7 +27,7 @@ export default function ProfileSection({ name, setName, bio, setBio, avatarUrl, 
         </div>
         <div>
           <label className={labelClass}>{t('settings.bio')}</label>
-          <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder="Tell us about yourself" className={`${inputClass} resize-none`} />
+          <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder="Tell us about yourself" className={textareaClass} />
         </div>
         <div>
           <label className={labelClass}>{t('settings.avatar')}</label>
