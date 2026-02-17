@@ -14,6 +14,34 @@ import (
 	"gorm.io/gorm"
 )
 
+// preMigrateUsername はAutoMigrate前にusernameカラムを安全に追加する。
+// 既存行にNULL値があるとNOT NULL制約の追加が失敗するため、
+// 先にカラムを作成しEmailから一意のユーザー名を生成して埋める。
+func preMigrateUsername(db *gorm.DB) {
+	var exists bool
+	db.Raw(`SELECT EXISTS (
+		SELECT 1 FROM information_schema.columns
+		WHERE table_name = 'users' AND column_name = 'username'
+	)`).Scan(&exists)
+	if exists {
+		return
+	}
+
+	// NULLを許容してカラムを追加
+	db.Exec(`ALTER TABLE users ADD COLUMN username text`)
+
+	// 既存ユーザーにEmailのローカルパート（@より前）をユーザー名として設定
+	db.Exec(`UPDATE users SET username = split_part(email, '@', 1) WHERE username IS NULL`)
+
+	// 重複がある場合はIDを末尾に付与して一意にする
+	db.Exec(`UPDATE users SET username = username || id::text
+		WHERE id IN (
+			SELECT u.id FROM users u
+			JOIN (SELECT username, MIN(id) AS min_id FROM users GROUP BY username HAVING COUNT(*) > 1) dup
+			ON u.username = dup.username AND u.id != dup.min_id
+		)`)
+}
+
 func main() {
 	// .envファイルから環境変数を読み込み（存在しなくてもエラーにしない）
 	_ = godotenv.Load()
@@ -25,6 +53,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
+
+	// usernameカラムのプレマイグレーション: NOT NULL制約を追加する前に既存行にデフォルト値を設定
+	preMigrateUsername(db)
 
 	// 全モデルのAutoMigrationを実行
 	if err := db.AutoMigrate(
