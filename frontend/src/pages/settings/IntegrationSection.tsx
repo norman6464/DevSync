@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { inputClass, sectionContainerClass, labelClass } from '../../constants/styles';
+import { inputClass, sectionContainerClass, labelClass, selectClass } from '../../constants/styles';
 import type { User } from '../../types/user';
 
 interface Props {
@@ -280,7 +280,7 @@ export default function IntegrationSection(props: Props) {
             <select
               value={props.paizaRank}
               onChange={(e) => props.setPaizaRank(e.target.value)}
-              className={inputClass}
+              className={`${selectClass} w-full`}
             >
               <option value="">{t('settings.paizaSelectRank')}</option>
               <option value="S">S {t('settings.paizaRankS')}</option>

@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Timer, Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, ChevronDown, ChevronUp } from 'lucide-react';
+import { selectClass } from '../../constants/styles';
 import { usePomodoroTimer } from '../../hooks/usePomodoroTimer';
 import type { PomodoroPhase } from '../../hooks/usePomodoroTimer';
 import { createLog } from '../../api/learningLogs';
@@ -227,7 +228,7 @@ export default function PomodoroTimer() {
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value as LogCategory)}
-                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className={`${selectClass} w-full`}
               >
                 {CATEGORIES.map((cat) => (
                   <option key={cat.value} value={cat.value}>
