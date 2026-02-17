@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
@@ -57,21 +58,21 @@ func (s *QiitaService) FetchArticles(username string) ([]model.QiitaArticle, err
 
 		resp, err := s.httpClient.Get(url)
 		if err != nil {
-			return nil, fmt.Errorf("failed to fetch Qiita articles: %w", err)
+			return nil, domain.NewError(domain.ErrCodeServiceUnavailable, "Qiita記事の取得に失敗", err)
 		}
 		defer resp.Body.Close()
 
 		if resp.StatusCode == http.StatusNotFound {
-			return nil, fmt.Errorf("Qiita user not found")
+			return nil, domain.NewError(domain.ErrCodeNotFound, "Qiitaユーザーが見つかりません", nil)
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("Qiita API returned status %d", resp.StatusCode)
+			return nil, domain.NewError(domain.ErrCodeServiceUnavailable, fmt.Sprintf("Qiita APIエラー: ステータスコード %d", resp.StatusCode), nil)
 		}
 
 		var apiArticles []QiitaAPIArticle
 		if err := json.NewDecoder(resp.Body).Decode(&apiArticles); err != nil {
-			return nil, fmt.Errorf("failed to decode Qiita response: %w", err)
+			return nil, domain.NewError(domain.ErrCodeServiceUnavailable, "Qiitaレスポンスのデコードに失敗", err)
 		}
 
 		for _, article := range apiArticles {

@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/norman6464/devsync/backend/internal/domain"
 )
 
 // AtCoderRatingEntry はAtCoderのレーティング履歴エントリを表す。
@@ -44,20 +46,20 @@ func (s *AtCoderService) GetRating(username string) (*AtCoderRatingInfo, error) 
 	url := fmt.Sprintf("https://atcoder.jp/users/%s/history/json", username)
 	resp, err := s.client.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("AtCoder APIリクエストに失敗: %w", err)
+		return nil, domain.NewError(domain.ErrCodeServiceUnavailable, "AtCoder APIリクエストに失敗", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusNotFound {
-		return nil, fmt.Errorf("AtCoderユーザーが見つかりません: %s", username)
+		return nil, domain.NewError(domain.ErrCodeNotFound, fmt.Sprintf("AtCoderユーザーが見つかりません: %s", username), nil)
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("AtCoder APIエラー: ステータスコード %d", resp.StatusCode)
+		return nil, domain.NewError(domain.ErrCodeServiceUnavailable, fmt.Sprintf("AtCoder APIエラー: ステータスコード %d", resp.StatusCode), nil)
 	}
 
 	var history []AtCoderRatingEntry
 	if err := json.NewDecoder(resp.Body).Decode(&history); err != nil {
-		return nil, fmt.Errorf("AtCoder APIレスポンスのパースに失敗: %w", err)
+		return nil, domain.NewError(domain.ErrCodeServiceUnavailable, "AtCoder APIレスポンスのパースに失敗", err)
 	}
 
 	info := &AtCoderRatingInfo{
