@@ -294,7 +294,8 @@
     "addMemberFailed": "Failed to add member",
     "removeMemberFailed": "Failed to remove member",
     "leaveFailed": "Failed to leave group",
-    "chatDeleteFailed": "Failed to delete group"
+    "chatDeleteFailed": "Failed to delete group",
+    "loadMembersFailed": "Failed to load members"
   },
   "rankings": {
     "title": "Rankings",

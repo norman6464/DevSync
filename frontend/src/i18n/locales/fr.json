@@ -294,7 +294,8 @@
     "addMemberFailed": "Échec de l'ajout du membre",
     "removeMemberFailed": "Échec de la suppression du membre",
     "leaveFailed": "Échec de la sortie du groupe",
-    "chatDeleteFailed": "Échec de la suppression du groupe"
+    "chatDeleteFailed": "Échec de la suppression du groupe",
+    "loadMembersFailed": "Échec du chargement des membres"
   },
   "rankings": {
     "title": "Classements",

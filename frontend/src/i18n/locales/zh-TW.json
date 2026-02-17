@@ -294,7 +294,8 @@
     "addMemberFailed": "新增成員失敗",
     "removeMemberFailed": "移除成員失敗",
     "leaveFailed": "退出群組失敗",
-    "chatDeleteFailed": "刪除群組失敗"
+    "chatDeleteFailed": "刪除群組失敗",
+    "loadMembersFailed": "載入成員失敗"
   },
   "rankings": {
     "title": "排行榜",

@@ -6,7 +6,7 @@ import {
   getChatRoomMembers, updateChatRoom, deleteChatRoom,
   addChatRoomMember, removeChatRoomMember,
 } from '../../api/chatRooms';
-import { labelClass, textareaClass, buttonPrimaryClass } from '../../constants/styles';
+import { inputClass, labelClass, textareaClass, buttonPrimaryClass } from '../../constants/styles';
 import { useConfirm } from '../../hooks';
 import type { User } from '../../types/user';
 import type { ChatRoom, ChatRoomMember } from '../../types/chat';
@@ -40,7 +40,7 @@ export default function RoomSettingsModal({
   useEffect(() => {
     getChatRoomMembers(room.id)
       .then(({ data }) => setMembers(data || []))
-      .catch(() => {});
+      .catch(() => { toast.error(t('chat.loadMembersFailed')); });
   }, [room.id]);
 
   const memberUserIds = members.map((m) => m.user_id);
@@ -115,7 +115,7 @@ export default function RoomSettingsModal({
       <div className="bg-gray-800 rounded-md p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-white">{t('chat.roomSettings')}</h2>
-          <button onClick={onClose} className="p-1 text-gray-400 hover:text-white transition-colors">
+          <button onClick={onClose} className="p-1 text-gray-400 hover:text-white transition-colors" aria-label={t('common.close')}>
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -131,7 +131,7 @@ export default function RoomSettingsModal({
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={inputClass}
               />
             </div>
             <div>
