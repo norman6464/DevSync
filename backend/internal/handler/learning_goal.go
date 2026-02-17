@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -160,11 +159,11 @@ func (h *LearningGoalHandler) GetByID(c *gin.Context) {
 
 	goal, err := h.service.GetByID(goalID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "goal not found"})
+		respondNotFound(c, "goal not found")
 		return
 	}
 
-	c.JSON(http.StatusOK, goal)
+	respondOK(c, goal)
 }
 
 // GetByUserID は指定されたユーザーの学習目標一覧を取得する。
@@ -176,11 +175,11 @@ func (h *LearningGoalHandler) GetByUserID(c *gin.Context) {
 
 	goals, err := h.service.GetByUserID(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get goals"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, goals)
+	respondOK(c, goals)
 }
 
 // GetMyGoals は認証ユーザー自身の学習目標一覧を取得する。
@@ -189,11 +188,11 @@ func (h *LearningGoalHandler) GetMyGoals(c *gin.Context) {
 
 	goals, err := h.service.GetByUserID(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get goals"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, goals)
+	respondOK(c, goals)
 }
 
 // GetStats は指定されたユーザーの学習目標統計情報を取得する。
@@ -205,9 +204,9 @@ func (h *LearningGoalHandler) GetStats(c *gin.Context) {
 
 	stats, err := h.service.GetStats(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get stats"})
+		respondError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, stats)
+	respondOK(c, stats)
 }
