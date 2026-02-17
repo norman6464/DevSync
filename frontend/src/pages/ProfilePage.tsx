@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Sparkles, Rocket, FileText, Monitor, Target, FolderOpen } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useProfile } from '../hooks';
+import { sectionContainerClass } from '../constants/styles';
 import Avatar from '../components/common/Avatar';
 import { PageLoader } from '../components/common';
 import FollowButton from '../components/profile/FollowButton';
@@ -168,12 +169,12 @@ export default function ProfilePage() {
       {/* GitHub Data */}
       {user.github_connected && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-md overflow-hidden">
+          <div className={`lg:col-span-2 ${sectionContainerClass}`}>
             <div className="px-6 py-4 border-b border-gray-800"><h2 className="text-sm font-semibold">{t('profile.contributions')}</h2></div>
             <div className="p-6"><ContributionCalendar contributions={contributions} /></div>
           </div>
           {languages.length > 0 && (
-            <div className="bg-gray-900 border border-gray-800 rounded-md overflow-hidden">
+            <div className={sectionContainerClass}>
               <div className="px-6 py-4 border-b border-gray-800"><h2 className="text-sm font-semibold">{t('profile.languages')}</h2></div>
               <div className="p-6"><LanguageChart languages={languages} /></div>
             </div>

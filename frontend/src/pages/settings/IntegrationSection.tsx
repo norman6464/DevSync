@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { inputClass } from '../../constants/styles';
+import { inputClass, sectionContainerClass } from '../../constants/styles';
 import type { User } from '../../types/user';
 
 interface Props {
@@ -49,7 +49,7 @@ export default function IntegrationSection(props: Props) {
   return (
     <>
       {/* GitHub Integration */}
-      <div className="bg-gray-900 border border-gray-800 rounded-md overflow-hidden">
+      <div className={sectionContainerClass}>
         <div className="px-6 py-4 border-b border-gray-800">
           <h2 className="text-base font-semibold">{t('settings.github')}</h2>
         </div>
@@ -96,7 +96,7 @@ export default function IntegrationSection(props: Props) {
       </div>
 
       {/* Zenn Integration */}
-      <div className="bg-gray-900 border border-gray-800 rounded-md overflow-hidden">
+      <div className={sectionContainerClass}>
         <div className="px-6 py-4 border-b border-gray-800">
           <h2 className="text-base font-semibold">{t('settings.zenn')}</h2>
         </div>
@@ -155,7 +155,7 @@ export default function IntegrationSection(props: Props) {
       </div>
 
       {/* Qiita Integration */}
-      <div className="bg-gray-900 border border-gray-800 rounded-md overflow-hidden">
+      <div className={sectionContainerClass}>
         <div className="px-6 py-4 border-b border-gray-800">
           <h2 className="text-base font-semibold">{t('settings.qiita')}</h2>
         </div>
@@ -214,7 +214,7 @@ export default function IntegrationSection(props: Props) {
       </div>
 
       {/* AtCoder Integration */}
-      <div className="bg-gray-900 border border-gray-800 rounded-md overflow-hidden">
+      <div className={sectionContainerClass}>
         <div className="px-6 py-4 border-b border-gray-800">
           <h2 className="text-base font-semibold">{t('settings.atcoder')}</h2>
         </div>
@@ -266,7 +266,7 @@ export default function IntegrationSection(props: Props) {
       </div>
 
       {/* paiza Rank */}
-      <div className="bg-gray-900 border border-gray-800 rounded-md overflow-hidden">
+      <div className={sectionContainerClass}>
         <div className="px-6 py-4 border-b border-gray-800">
           <h2 className="text-base font-semibold">{t('settings.paiza')}</h2>
         </div>

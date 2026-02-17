@@ -1,3 +1,5 @@
+import { sectionContainerClass } from '../../constants/styles';
+
 interface SkeletonProps {
   className?: string;
 }
@@ -117,7 +119,7 @@ export function ListSkeleton({ count = 3 }: { count?: number }) {
 
 export function TableSkeleton({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) {
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-md overflow-hidden">
+    <div className={sectionContainerClass}>
       <div className="bg-gray-800 p-4 flex gap-4">
         {Array.from({ length: cols }).map((_, i) => (
           <Skeleton key={i} className="h-4 flex-1" />
