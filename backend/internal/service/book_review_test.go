@@ -16,6 +16,102 @@ func newTestBookReviewService() (*BookReviewService, *MockBookReviewRepository) 
 }
 
 // ============================================================
+// 書籍レビュー作成テスト
+// ============================================================
+
+func TestBookReviewCreate_Success(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	review := &model.BookReview{
+		UserID: 1,
+		Title:  "Go言語による並行処理",
+		Author: "Katherine Cox-Buday",
+		Rating: 5,
+		Review: "並行処理の基礎から応用まで丁寧に解説",
+	}
+
+	repo.On("Create", review).Return(nil)
+
+	err := svc.Create(review)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestBookReviewCreate_RepoError(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	review := &model.BookReview{UserID: 1, Title: "テスト本"}
+
+	repo.On("Create", review).Return(errors.New("db error"))
+
+	err := svc.Create(review)
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// 書籍レビュー取得テスト
+// ============================================================
+
+func TestBookReviewGetByID_Success(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	expected := &model.BookReview{Title: "Go入門", Author: "著者A", Rating: 4, UserID: 1}
+	expected.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(expected, nil)
+
+	result, err := svc.GetByID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, result)
+	repo.AssertExpectations(t)
+}
+
+func TestBookReviewGetByID_NotFound(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	repo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	result, err := svc.GetByID(999)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestBookReviewGetByUserID_Success(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	reviews := []model.BookReview{
+		{Title: "本A", UserID: 1, Rating: 3},
+		{Title: "本B", UserID: 1, Rating: 5},
+	}
+
+	repo.On("FindByUserID", uint(1)).Return(reviews, nil)
+
+	result, err := svc.GetByUserID(1)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	repo.AssertExpectations(t)
+}
+
+func TestBookReviewGetAll_Success(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	reviews := []model.BookReview{
+		{Title: "本A", Rating: 4},
+		{Title: "本B", Rating: 3},
+	}
+
+	repo.On("FindAll", 10, 0).Return(reviews, int64(2), nil)
+
+	result, total, err := svc.GetAll(10, 0)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, int64(2), total)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
 // 書籍レビュー更新テスト
 // ============================================================
 
