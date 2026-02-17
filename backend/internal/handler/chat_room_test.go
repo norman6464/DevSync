@@ -14,7 +14,7 @@ import (
 // ---------- Create ----------
 
 func TestChatRoomCreate_Success(t *testing.T) {
-	h, roomRepo, _ := setupChatRoomHandler()
+	h, roomRepo, _ := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.POST("/rooms", h.Create)
 
@@ -31,7 +31,7 @@ func TestChatRoomCreate_Success(t *testing.T) {
 }
 
 func TestChatRoomCreate_ValidationError(t *testing.T) {
-	h, _, _ := setupChatRoomHandler()
+	h, _, _ := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.POST("/rooms", h.Create)
 
@@ -41,7 +41,7 @@ func TestChatRoomCreate_ValidationError(t *testing.T) {
 }
 
 func TestChatRoomCreate_InvalidJSON(t *testing.T) {
-	h, _, _ := setupChatRoomHandler()
+	h, _, _ := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.POST("/rooms", h.Create)
 
@@ -52,7 +52,7 @@ func TestChatRoomCreate_InvalidJSON(t *testing.T) {
 // ---------- GetMyRooms ----------
 
 func TestChatRoomGetMyRooms_Success(t *testing.T) {
-	h, roomRepo, _ := setupChatRoomHandler()
+	h, roomRepo, _ := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.GET("/rooms", h.GetMyRooms)
 
@@ -71,7 +71,7 @@ func TestChatRoomGetMyRooms_Success(t *testing.T) {
 // ---------- GetByID ----------
 
 func TestChatRoomGetByID_Success(t *testing.T) {
-	h, roomRepo, _ := setupChatRoomHandler()
+	h, roomRepo, _ := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.GET("/rooms/:id", h.GetByID)
 
@@ -85,7 +85,7 @@ func TestChatRoomGetByID_Success(t *testing.T) {
 }
 
 func TestChatRoomGetByID_NotMember(t *testing.T) {
-	h, roomRepo, _ := setupChatRoomHandler()
+	h, roomRepo, _ := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.GET("/rooms/:id", h.GetByID)
 
@@ -96,7 +96,7 @@ func TestChatRoomGetByID_NotMember(t *testing.T) {
 }
 
 func TestChatRoomGetByID_InvalidID(t *testing.T) {
-	h, _, _ := setupChatRoomHandler()
+	h, _, _ := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.GET("/rooms/:id", h.GetByID)
 
@@ -107,7 +107,7 @@ func TestChatRoomGetByID_InvalidID(t *testing.T) {
 // ---------- Update ----------
 
 func TestChatRoomUpdate_Success(t *testing.T) {
-	h, roomRepo, _ := setupChatRoomHandler()
+	h, roomRepo, _ := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.PUT("/rooms/:id", h.Update)
 
@@ -123,7 +123,7 @@ func TestChatRoomUpdate_Success(t *testing.T) {
 }
 
 func TestChatRoomUpdate_Forbidden(t *testing.T) {
-	h, roomRepo, _ := setupChatRoomHandler()
+	h, roomRepo, _ := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.PUT("/rooms/:id", h.Update)
 
@@ -138,7 +138,7 @@ func TestChatRoomUpdate_Forbidden(t *testing.T) {
 }
 
 func TestChatRoomUpdate_NotFound(t *testing.T) {
-	h, roomRepo, _ := setupChatRoomHandler()
+	h, roomRepo, _ := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.PUT("/rooms/:id", h.Update)
 
@@ -151,7 +151,7 @@ func TestChatRoomUpdate_NotFound(t *testing.T) {
 // ---------- Delete ----------
 
 func TestChatRoomDelete_Success(t *testing.T) {
-	h, roomRepo, _ := setupChatRoomHandler()
+	h, roomRepo, _ := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.DELETE("/rooms/:id", h.Delete)
 
@@ -165,7 +165,7 @@ func TestChatRoomDelete_Success(t *testing.T) {
 }
 
 func TestChatRoomDelete_Forbidden(t *testing.T) {
-	h, roomRepo, _ := setupChatRoomHandler()
+	h, roomRepo, _ := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.DELETE("/rooms/:id", h.Delete)
 
@@ -180,7 +180,7 @@ func TestChatRoomDelete_Forbidden(t *testing.T) {
 // ---------- GetMembers ----------
 
 func TestChatRoomGetMembers_Success(t *testing.T) {
-	h, roomRepo, _ := setupChatRoomHandler()
+	h, roomRepo, _ := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.GET("/rooms/:id/members", h.GetMembers)
 
@@ -194,7 +194,7 @@ func TestChatRoomGetMembers_Success(t *testing.T) {
 }
 
 func TestChatRoomGetMembers_NotMember(t *testing.T) {
-	h, roomRepo, _ := setupChatRoomHandler()
+	h, roomRepo, _ := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.GET("/rooms/:id/members", h.GetMembers)
 
@@ -207,7 +207,7 @@ func TestChatRoomGetMembers_NotMember(t *testing.T) {
 // ---------- AddMember ----------
 
 func TestChatRoomAddMember_Success(t *testing.T) {
-	h, roomRepo, _ := setupChatRoomHandler()
+	h, roomRepo, _ := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.POST("/rooms/:id/members", h.AddMember)
 
@@ -221,7 +221,7 @@ func TestChatRoomAddMember_Success(t *testing.T) {
 }
 
 func TestChatRoomAddMember_NotMember(t *testing.T) {
-	h, roomRepo, _ := setupChatRoomHandler()
+	h, roomRepo, _ := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.POST("/rooms/:id/members", h.AddMember)
 
@@ -234,7 +234,7 @@ func TestChatRoomAddMember_NotMember(t *testing.T) {
 }
 
 func TestChatRoomAddMember_ValidationError(t *testing.T) {
-	h, _, _ := setupChatRoomHandler()
+	h, _, _ := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.POST("/rooms/:id/members", h.AddMember)
 
@@ -246,7 +246,7 @@ func TestChatRoomAddMember_ValidationError(t *testing.T) {
 // ---------- RemoveMember ----------
 
 func TestChatRoomRemoveMember_OwnerRemoves(t *testing.T) {
-	h, roomRepo, _ := setupChatRoomHandler()
+	h, roomRepo, _ := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.DELETE("/rooms/:id/members/:userId", h.RemoveMember)
 
@@ -260,7 +260,7 @@ func TestChatRoomRemoveMember_OwnerRemoves(t *testing.T) {
 }
 
 func TestChatRoomRemoveMember_SelfLeave(t *testing.T) {
-	h, roomRepo, _ := setupChatRoomHandler()
+	h, roomRepo, _ := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.DELETE("/rooms/:id/members/:userId", h.RemoveMember)
 
@@ -275,7 +275,7 @@ func TestChatRoomRemoveMember_SelfLeave(t *testing.T) {
 }
 
 func TestChatRoomRemoveMember_Forbidden(t *testing.T) {
-	h, roomRepo, _ := setupChatRoomHandler()
+	h, roomRepo, _ := setupChatRoomHandlerRepo()
 	r := newRouter(1) // userID=1
 	r.DELETE("/rooms/:id/members/:userId", h.RemoveMember)
 
@@ -291,7 +291,7 @@ func TestChatRoomRemoveMember_Forbidden(t *testing.T) {
 // ---------- GetMessages ----------
 
 func TestChatRoomGetMessages_Success(t *testing.T) {
-	h, roomRepo, msgRepo := setupChatRoomHandler()
+	h, roomRepo, msgRepo := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.GET("/rooms/:id/messages", h.GetMessages)
 
@@ -305,7 +305,7 @@ func TestChatRoomGetMessages_Success(t *testing.T) {
 }
 
 func TestChatRoomGetMessages_NotMember(t *testing.T) {
-	h, roomRepo, _ := setupChatRoomHandler()
+	h, roomRepo, _ := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.GET("/rooms/:id/messages", h.GetMessages)
 
@@ -316,7 +316,7 @@ func TestChatRoomGetMessages_NotMember(t *testing.T) {
 }
 
 func TestChatRoomGetMessages_WithPagination(t *testing.T) {
-	h, roomRepo, msgRepo := setupChatRoomHandler()
+	h, roomRepo, msgRepo := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.GET("/rooms/:id/messages", h.GetMessages)
 
@@ -330,7 +330,7 @@ func TestChatRoomGetMessages_WithPagination(t *testing.T) {
 // ---------- SendMessage ----------
 
 func TestChatRoomSendMessage_Success(t *testing.T) {
-	h, roomRepo, msgRepo := setupChatRoomHandler()
+	h, roomRepo, msgRepo := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.POST("/rooms/:id/messages", h.SendMessage)
 
@@ -346,7 +346,7 @@ func TestChatRoomSendMessage_Success(t *testing.T) {
 }
 
 func TestChatRoomSendMessage_NotMember(t *testing.T) {
-	h, roomRepo, _ := setupChatRoomHandler()
+	h, roomRepo, _ := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.POST("/rooms/:id/messages", h.SendMessage)
 
@@ -359,7 +359,7 @@ func TestChatRoomSendMessage_NotMember(t *testing.T) {
 }
 
 func TestChatRoomSendMessage_ValidationError(t *testing.T) {
-	h, _, _ := setupChatRoomHandler()
+	h, _, _ := setupChatRoomHandlerRepo()
 	r := newRouter(1)
 	r.POST("/rooms/:id/messages", h.SendMessage)
 

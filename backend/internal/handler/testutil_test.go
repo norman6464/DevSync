@@ -463,8 +463,8 @@ func setupRoadmapHandler() (*RoadmapHandler, *MockRoadmapRepository) {
 	return h, repo
 }
 
-// setupChatRoomHandler はChatRoomHandlerテスト用のセットアップを行う。
-func setupChatRoomHandler() (*ChatRoomHandler, *MockChatRoomRepository, *MockGroupMessageRepository) {
+// setupChatRoomHandlerRepo はChatRoomHandlerテスト用のリポジトリレベルセットアップを行う。
+func setupChatRoomHandlerRepo() (*ChatRoomHandler, *MockChatRoomRepository, *MockGroupMessageRepository) {
 	roomRepo := new(MockChatRoomRepository)
 	msgRepo := new(MockGroupMessageRepository)
 	hub := service.NewHub()
@@ -1061,5 +1061,111 @@ func (m *MockLearningAnalyticsService) GetInsights(userID uint) ([]model.AIInsig
 func setupLearningAnalyticsHandler() (*LearningAnalyticsHandler, *MockLearningAnalyticsService) {
 	svc := new(MockLearningAnalyticsService)
 	h := NewLearningAnalyticsHandler(svc)
+	return h, svc
+}
+
+// MockChatRoomService は ChatRoomServiceInterface のモック実装。
+type MockChatRoomService struct{ mock.Mock }
+
+func (m *MockChatRoomService) Create(room *model.ChatRoom, memberIDs []uint) (*model.ChatRoom, error) {
+	args := m.Called(room, memberIDs)
+	if r := args.Get(0); r != nil {
+		return r.(*model.ChatRoom), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockChatRoomService) GetByUserID(userID uint) ([]model.ChatRoom, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.ChatRoom), args.Error(1)
+}
+func (m *MockChatRoomService) GetByID(roomID, userID uint) (*model.ChatRoom, error) {
+	args := m.Called(roomID, userID)
+	if r := args.Get(0); r != nil {
+		return r.(*model.ChatRoom), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockChatRoomService) Update(roomID, userID uint, name, description string) (*model.ChatRoom, error) {
+	args := m.Called(roomID, userID, name, description)
+	if r := args.Get(0); r != nil {
+		return r.(*model.ChatRoom), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockChatRoomService) Delete(roomID, userID uint) error {
+	return m.Called(roomID, userID).Error(0)
+}
+func (m *MockChatRoomService) GetMembers(roomID, userID uint) ([]model.ChatRoomMember, error) {
+	args := m.Called(roomID, userID)
+	return args.Get(0).([]model.ChatRoomMember), args.Error(1)
+}
+func (m *MockChatRoomService) AddMember(roomID, userID, targetUserID uint) error {
+	return m.Called(roomID, userID, targetUserID).Error(0)
+}
+func (m *MockChatRoomService) RemoveMember(roomID, userID, targetUserID uint) error {
+	return m.Called(roomID, userID, targetUserID).Error(0)
+}
+func (m *MockChatRoomService) GetMessages(roomID, userID uint, page, limit int) ([]model.GroupMessage, error) {
+	args := m.Called(roomID, userID, page, limit)
+	return args.Get(0).([]model.GroupMessage), args.Error(1)
+}
+func (m *MockChatRoomService) SendMessage(roomID, userID uint, content string) (*model.GroupMessage, error) {
+	args := m.Called(roomID, userID, content)
+	if r := args.Get(0); r != nil {
+		return r.(*model.GroupMessage), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+// setupChatRoomHandler はChatRoomHandlerテスト用のセットアップを行う。
+func setupChatRoomHandler() (*ChatRoomHandler, *MockChatRoomService) {
+	svc := new(MockChatRoomService)
+	h := NewChatRoomHandler(svc)
+	return h, svc
+}
+
+// MockLearningLogService は LearningLogServiceInterface のモック実装。
+type MockLearningLogService struct{ mock.Mock }
+
+func (m *MockLearningLogService) Create(log *model.LearningLog) error {
+	return m.Called(log).Error(0)
+}
+func (m *MockLearningLogService) GetByID(id uint) (*model.LearningLog, error) {
+	args := m.Called(id)
+	if l := args.Get(0); l != nil {
+		return l.(*model.LearningLog), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockLearningLogService) GetByUserID(userID uint) ([]model.LearningLog, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.LearningLog), args.Error(1)
+}
+func (m *MockLearningLogService) Update(id, userID uint, updates *model.LearningLog) (*model.LearningLog, error) {
+	args := m.Called(id, userID, updates)
+	if l := args.Get(0); l != nil {
+		return l.(*model.LearningLog), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockLearningLogService) Delete(id, userID uint) error {
+	return m.Called(id, userID).Error(0)
+}
+func (m *MockLearningLogService) GetStreakInfo(userID uint) (*model.StreakInfo, error) {
+	args := m.Called(userID)
+	if s := args.Get(0); s != nil {
+		return s.(*model.StreakInfo), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockLearningLogService) GetCalendarData(userID uint) ([]model.CalendarEntry, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.CalendarEntry), args.Error(1)
+}
+
+// setupLearningLogHandler はLearningLogHandlerテスト用のセットアップを行う。
+func setupLearningLogHandler() (*LearningLogHandler, *MockLearningLogService) {
+	svc := new(MockLearningLogService)
+	h := NewLearningLogHandler(svc)
 	return h, svc
 }
