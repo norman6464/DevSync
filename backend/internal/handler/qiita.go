@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -59,7 +60,7 @@ func (h *QiitaHandler) Disconnect(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "Qiita disconnected successfully"})
+	respondOK(c, domain.NewMessageResponse("Qiita disconnected successfully"))
 }
 
 // Sync は現在のユーザーのQiita記事を再同期する。

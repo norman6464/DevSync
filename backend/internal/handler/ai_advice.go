@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
@@ -72,7 +73,7 @@ func (h *AIAdviceHandler) MarkAsRead(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "marked as read"})
+	respondOK(c, domain.NewMessageResponse("marked as read"))
 }
 
 // Chat はLLMとのチャットメッセージを送信する。
@@ -107,7 +108,7 @@ func (h *AIAdviceHandler) DeleteConversation(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "conversation deleted"})
+	respondOK(c, domain.NewMessageResponse("conversation deleted"))
 }
 
 // GetConversations は会話履歴一覧を取得する。

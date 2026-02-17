@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -74,7 +75,7 @@ func (h *NotificationHandler) MarkAsRead(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, gin.H{"message": "marked as read"})
+	respondOK(c, domain.NewMessageResponse("marked as read"))
 }
 
 // MarkAllAsRead は認証ユーザーの全通知を既読にする。
@@ -85,7 +86,7 @@ func (h *NotificationHandler) MarkAllAsRead(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, gin.H{"message": "all marked as read"})
+	respondOK(c, domain.NewMessageResponse("all marked as read"))
 }
 
 // Delete は指定された通知を削除する。
@@ -100,5 +101,5 @@ func (h *NotificationHandler) Delete(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, gin.H{"message": "deleted"})
+	respondOK(c, domain.NewMessageResponse("deleted"))
 }

@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -272,7 +273,7 @@ func (h *LearningResourceHandler) Like(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "Resource liked"})
+	respondOK(c, domain.NewMessageResponse("Resource liked"))
 }
 
 // Unlike は学習リソースのいいねを取り消す。
@@ -288,7 +289,7 @@ func (h *LearningResourceHandler) Unlike(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "Resource unliked"})
+	respondOK(c, domain.NewMessageResponse("Resource unliked"))
 }
 
 // SaveResource は学習リソースを保存する。
@@ -304,7 +305,7 @@ func (h *LearningResourceHandler) SaveResource(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "Resource saved"})
+	respondOK(c, domain.NewMessageResponse("Resource saved"))
 }
 
 // UnsaveResource は学習リソースの保存を取り消す。
@@ -320,7 +321,7 @@ func (h *LearningResourceHandler) UnsaveResource(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "Resource unsaved"})
+	respondOK(c, domain.NewMessageResponse("Resource unsaved"))
 }
 
 // GetSaved は認証ユーザーの保存済み学習リソース一覧を取得する。

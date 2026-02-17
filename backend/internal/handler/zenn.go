@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -59,7 +60,7 @@ func (h *ZennHandler) Disconnect(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "Zenn disconnected successfully"})
+	respondOK(c, domain.NewMessageResponse("Zenn disconnected successfully"))
 }
 
 // Sync は現在のユーザーのZenn記事を再同期する。

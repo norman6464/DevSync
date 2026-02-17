@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -223,7 +224,7 @@ func (h *QuestionHandler) Vote(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "Voted successfully"})
+	respondOK(c, domain.NewMessageResponse("Voted successfully"))
 }
 
 // RemoveVote は質問への投票を取り消す。
@@ -239,5 +240,5 @@ func (h *QuestionHandler) RemoveVote(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "Vote removed successfully"})
+	respondOK(c, domain.NewMessageResponse("Vote removed successfully"))
 }

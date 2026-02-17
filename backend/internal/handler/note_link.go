@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -45,7 +46,7 @@ func (h *NoteLinkHandler) CreateLink(c *gin.Context) {
 		return
 	}
 
-	respondCreated(c, gin.H{"message": "リンクを作成しました"})
+	respondCreated(c, domain.NewMessageResponse("リンクを作成しました"))
 }
 
 // GetLinks は指定ノートからのリンク一覧を取得する。

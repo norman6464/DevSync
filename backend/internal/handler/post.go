@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -217,7 +218,7 @@ func (h *PostHandler) Like(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, gin.H{"message": "liked"})
+	respondOK(c, domain.NewMessageResponse("liked"))
 }
 
 // Unlike は投稿のいいねを取り消す。
@@ -232,7 +233,7 @@ func (h *PostHandler) Unlike(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, gin.H{"message": "unliked"})
+	respondOK(c, domain.NewMessageResponse("unliked"))
 }
 
 // GetComments は投稿のコメント一覧を返す。

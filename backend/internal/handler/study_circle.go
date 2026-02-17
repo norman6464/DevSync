@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
@@ -164,7 +165,7 @@ func (h *StudyCircleHandler) AddMember(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, gin.H{"message": "member added"})
+	respondOK(c, domain.NewMessageResponse("member added"))
 }
 
 // RemoveMember はメンバーを除外/退出する。
@@ -182,7 +183,7 @@ func (h *StudyCircleHandler) RemoveMember(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, gin.H{"message": "member removed"})
+	respondOK(c, domain.NewMessageResponse("member removed"))
 }
 
 // CreateStep はステップを追加する。
@@ -279,7 +280,7 @@ func (h *StudyCircleHandler) ReorderSteps(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, gin.H{"message": "reordered"})
+	respondOK(c, domain.NewMessageResponse("reordered"))
 }
 
 // UpdateProgress は自分のステップ進捗を更新する。
@@ -304,7 +305,7 @@ func (h *StudyCircleHandler) UpdateProgress(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, gin.H{"message": "progress updated"})
+	respondOK(c, domain.NewMessageResponse("progress updated"))
 }
 
 // GetProgress は全メンバーの進捗を返す。

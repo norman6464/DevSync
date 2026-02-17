@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
@@ -153,7 +154,7 @@ func (h *ChatRoomHandler) AddMember(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, gin.H{"message": "member added"})
+	respondOK(c, domain.NewMessageResponse("member added"))
 }
 
 // RemoveMember はチャットルームからメンバーを削除する。
@@ -172,7 +173,7 @@ func (h *ChatRoomHandler) RemoveMember(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, gin.H{"message": "member removed"})
+	respondOK(c, domain.NewMessageResponse("member removed"))
 }
 
 // GetMessages は指定チャットルームのメッセージ一覧をページネーション付きで取得する。
