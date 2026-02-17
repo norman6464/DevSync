@@ -3,7 +3,6 @@ package service
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -119,7 +118,7 @@ func (s *AuthService) Login(input LoginInput) (*AuthResponse, error) {
 func (s *AuthService) ValidateToken(tokenString string) (uint, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("unexpected signing method")
+			return nil, domain.NewError(domain.ErrCodeUnauthorized, "unexpected signing method", nil)
 		}
 		return s.jwtSecret, nil
 	})
@@ -129,12 +128,12 @@ func (s *AuthService) ValidateToken(tokenString string) (uint, error) {
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
-		return 0, errors.New("invalid token")
+		return 0, domain.ErrUnauthorized
 	}
 
 	userID, ok := claims["user_id"].(float64)
 	if !ok {
-		return 0, errors.New("invalid token claims")
+		return 0, domain.ErrUnauthorized
 	}
 
 	return uint(userID), nil
@@ -160,11 +159,11 @@ func (s *AuthService) ValidateLoginState(state string) error {
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
-		return errors.New("invalid state")
+		return domain.ErrUnauthorized
 	}
 	purpose, _ := claims["purpose"].(string)
 	if purpose != "github_login" {
-		return errors.New("invalid state purpose")
+		return domain.ErrUnauthorized
 	}
 	return nil
 }
@@ -265,17 +264,17 @@ func (s *AuthService) ValidateOAuthState(state string) (uint, error) {
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
-		return 0, errors.New("invalid state")
+		return 0, domain.ErrUnauthorized
 	}
 
 	purpose, _ := claims["purpose"].(string)
 	if purpose != "oauth_state" {
-		return 0, errors.New("invalid state purpose")
+		return 0, domain.ErrUnauthorized
 	}
 
 	userID, ok := claims["user_id"].(float64)
 	if !ok {
-		return 0, errors.New("invalid state claims")
+		return 0, domain.ErrUnauthorized
 	}
 
 	return uint(userID), nil
