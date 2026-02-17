@@ -4,17 +4,25 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/model"
 )
+
+// UserServiceInterface はUserServiceが実装すべきインターフェース。
+type UserServiceInterface interface {
+	GetAll(query string) ([]model.User, error)
+	GetByID(id uint) (*model.User, error)
+	GetByUsername(username string) (*model.User, error)
+	Update(user *model.User) error
+}
 
 // UserHandler はユーザー関連のHTTPハンドラ。
 // ユーザー検索・詳細取得・プロフィール更新を処理する。
 type UserHandler struct {
-	service *service.UserService
+	service UserServiceInterface
 }
 
 // NewUserHandler は新しいUserHandlerインスタンスを生成する。
-func NewUserHandler(s *service.UserService) *UserHandler {
+func NewUserHandler(s UserServiceInterface) *UserHandler {
 	return &UserHandler{service: s}
 }
 
