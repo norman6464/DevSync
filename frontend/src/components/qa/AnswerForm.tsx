@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { textareaClass } from '../../constants/styles';
 
 interface AnswerFormProps {
   initialBody?: string;
@@ -28,7 +29,7 @@ export default function AnswerForm({ initialBody = '', onSubmit, onCancel, loadi
         onChange={(e) => setBody(e.target.value)}
         required
         rows={isEdit ? 4 : 6}
-        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent resize-none"
+        className={textareaClass}
         placeholder={t('qa.answerPlaceholder')}
       />
       <div className="flex gap-3 justify-end">

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LearningResource, CreateResourceRequest, ResourceCategory, ResourceDifficulty } from '../../types/resource';
-import { buttonSecondaryClass, inputClass } from '../../constants/styles';
+import { buttonSecondaryClass, inputClass, textareaClass } from '../../constants/styles';
 
 interface ResourceFormProps {
   resource?: LearningResource;
@@ -137,7 +137,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent resize-none"
+          className={textareaClass}
           placeholder={t('resources.descriptionPlaceholder')}
         />
       </div>

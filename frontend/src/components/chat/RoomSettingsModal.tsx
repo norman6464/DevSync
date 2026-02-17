@@ -5,6 +5,7 @@ import {
   getChatRoomMembers, updateChatRoom, deleteChatRoom,
   addChatRoomMember, removeChatRoomMember,
 } from '../../api/chatRooms';
+import { textareaClass } from '../../constants/styles';
 import { useConfirm } from '../../hooks';
 import type { User } from '../../types/user';
 import type { ChatRoom, ChatRoomMember } from '../../types/chat';
@@ -140,7 +141,7 @@ export default function RoomSettingsModal({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={2}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className={textareaClass}
               />
             </div>
             <button
