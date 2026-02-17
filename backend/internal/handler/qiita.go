@@ -44,9 +44,9 @@ func (h *QiitaHandler) Connect(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{
-		"message":        "Qiita connected successfully",
-		"articles_count": count,
+	respondOK(c, dto.ConnectSyncResponse{
+		Message:       "Qiita connected successfully",
+		ArticlesCount: count,
 	})
 }
 
@@ -72,9 +72,9 @@ func (h *QiitaHandler) Sync(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{
-		"message":        "Qiita synced successfully",
-		"articles_count": count,
+	respondOK(c, dto.ConnectSyncResponse{
+		Message:       "Qiita synced successfully",
+		ArticlesCount: count,
 	})
 }
 

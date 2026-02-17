@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/norman6464/devsync/backend/internal/dto"
 )
 
 // allowedMIMETypes はアップロードを許可するMIMEタイプの一覧。
@@ -125,9 +126,9 @@ func (h *UploadHandler) UploadImage(c *gin.Context) {
 
 	// URLパスを返す
 	urlPath := fmt.Sprintf("/uploads/%s/%s", dateDir, filename)
-	respondOK(c, gin.H{
-		"url":      urlPath,
-		"filename": filename,
+	respondOK(c, dto.UploadResponse{
+		URL:      urlPath,
+		Filename: filename,
 	})
 }
 
@@ -210,5 +211,5 @@ func (h *UploadHandler) UploadMultipleImages(c *gin.Context) {
 		urls = append(urls, fmt.Sprintf("/uploads/%s/%s", dateDir, filename))
 	}
 
-	respondOK(c, gin.H{"urls": urls})
+	respondOK(c, dto.UploadMultipleResponse{URLs: urls})
 }
