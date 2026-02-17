@@ -9,14 +9,33 @@ import (
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
+// RoadmapServiceInterface はRoadmapHandlerが依存するサービスメソッドを定義する。
+type RoadmapServiceInterface interface {
+	Create(roadmap *model.Roadmap) error
+	GetByID(id, userID uint) (*model.Roadmap, error)
+	GetByUserID(userID uint) ([]model.Roadmap, error)
+	GetPublicRoadmaps(limit, offset int) ([]model.Roadmap, int64, error)
+	Update(id, userID uint, updates *model.Roadmap) (*model.Roadmap, error)
+	UpdateVisibility(id, userID uint, isPublic bool) (*model.Roadmap, error)
+	Delete(id, userID uint) error
+	CopyRoadmap(roadmapID, userID uint) (*model.Roadmap, error)
+	GetTemplates() ([]model.Roadmap, error)
+	CreateFromTemplate(templateID, userID uint) (*model.Roadmap, error)
+	CreateStep(roadmapID, userID uint, step *model.RoadmapStep) error
+	UpdateStep(roadmapID, stepID, userID uint, updates *model.RoadmapStep) (*model.RoadmapStep, error)
+	UpdateStepCompletion(roadmapID, stepID, userID uint, isCompleted bool) (*model.RoadmapStep, error)
+	DeleteStep(roadmapID, stepID, userID uint) error
+	ReorderSteps(roadmapID, userID uint, orders []service.StepOrder) error
+}
+
 // RoadmapHandler はロードマップ関連のHTTPハンドラ。
 // ロードマップとステップのCRUD・公開一覧・コピー・並べ替えを処理する。
 type RoadmapHandler struct {
-	service *service.RoadmapService
+	service RoadmapServiceInterface
 }
 
 // NewRoadmapHandler は新しいRoadmapHandlerインスタンスを生成する。
-func NewRoadmapHandler(s *service.RoadmapService) *RoadmapHandler {
+func NewRoadmapHandler(s RoadmapServiceInterface) *RoadmapHandler {
 	return &RoadmapHandler{service: s}
 }
 

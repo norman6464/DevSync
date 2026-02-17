@@ -6,16 +6,36 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
-	"github.com/norman6464/devsync/backend/internal/service"
 )
+
+// StudyCircleServiceInterface はStudyCircleHandlerが依存するサービスメソッドを定義する。
+type StudyCircleServiceInterface interface {
+	Create(circle *model.StudyCircle, memberIDs []uint) error
+	GetMyCircles(userID uint) ([]model.StudyCircle, error)
+	GetByID(id, userID uint) (*model.StudyCircle, error)
+	Update(id, userID uint, name, topic, description *string) (*model.StudyCircle, error)
+	Delete(id, userID uint) error
+	GetMembers(circleID, userID uint) ([]model.StudyCircleMember, error)
+	AddMember(circleID, userID, targetUserID uint) error
+	RemoveMember(circleID, userID, targetUserID uint) error
+	CreateStep(circleID, userID uint, step *model.StudyCircleStep) error
+	UpdateStep(circleID, userID, stepID uint, title, description *string) (*model.StudyCircleStep, error)
+	DeleteStep(circleID, userID, stepID uint) error
+	ReorderSteps(circleID, userID uint, orders []repository.StepOrder) error
+	UpdateProgress(circleID, userID, stepID uint, isCompleted bool) error
+	GetProgress(circleID, userID uint) ([]model.StudyCircleMemberProgress, error)
+	CreateCheckin(circleID, userID uint, content string) (*model.StudyCircleCheckin, error)
+	GetCheckins(circleID, userID uint) ([]model.StudyCircleCheckin, error)
+	GetStreakRanking(circleID, userID uint) ([]model.CircleMemberStreak, error)
+}
 
 // StudyCircleHandler はスタディサークル関連のHTTPリクエストを処理する。
 type StudyCircleHandler struct {
-	service *service.StudyCircleService
+	service StudyCircleServiceInterface
 }
 
 // NewStudyCircleHandler は新しいStudyCircleHandlerインスタンスを生成する。
-func NewStudyCircleHandler(svc *service.StudyCircleService) *StudyCircleHandler {
+func NewStudyCircleHandler(svc StudyCircleServiceInterface) *StudyCircleHandler {
 	return &StudyCircleHandler{service: svc}
 }
 
