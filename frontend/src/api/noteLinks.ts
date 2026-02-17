@@ -1,5 +1,5 @@
 import client from './client';
-import { Note } from './notes';
+import type { Note } from './notes';
 
 export interface NoteLink {
   id: number;
