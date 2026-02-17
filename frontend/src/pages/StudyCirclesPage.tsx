@@ -178,7 +178,7 @@ export default function StudyCirclesPage() {
             disabled={saving || !form.name || !form.topic}
             className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
           >
-            {saving ? '...' : t('studyCircle.create')}
+            {saving ? t('common.saving') : t('studyCircle.create')}
           </button>
         </div>
       </Modal>

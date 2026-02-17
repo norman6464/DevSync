@@ -297,7 +297,8 @@
     "addMemberFailed": "メンバー追加に失敗しました",
     "removeMemberFailed": "メンバー削除に失敗しました",
     "leaveFailed": "グループ退出に失敗しました",
-    "chatDeleteFailed": "グループ削除に失敗しました"
+    "chatDeleteFailed": "グループ削除に失敗しました",
+    "loadMembersFailed": "メンバーの読み込みに失敗しました"
   },
   "rankings": {
     "title": "ランキング",

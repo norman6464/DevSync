@@ -294,7 +294,8 @@
     "addMemberFailed": "Mitglied konnte nicht hinzugefügt werden",
     "removeMemberFailed": "Mitglied konnte nicht entfernt werden",
     "leaveFailed": "Gruppe konnte nicht verlassen werden",
-    "chatDeleteFailed": "Gruppe konnte nicht gelöscht werden"
+    "chatDeleteFailed": "Gruppe konnte nicht gelöscht werden",
+    "loadMembersFailed": "Mitglieder konnten nicht geladen werden"
   },
   "rankings": {
     "title": "Ranglisten",

@@ -294,7 +294,8 @@
     "addMemberFailed": "멤버 추가에 실패했습니다",
     "removeMemberFailed": "멤버 삭제에 실패했습니다",
     "leaveFailed": "그룹 탈퇴에 실패했습니다",
-    "chatDeleteFailed": "그룹 삭제에 실패했습니다"
+    "chatDeleteFailed": "그룹 삭제에 실패했습니다",
+    "loadMembersFailed": "멤버를 불러오지 못했습니다"
   },
   "rankings": {
     "title": "랭킹",

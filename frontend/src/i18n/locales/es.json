@@ -294,7 +294,8 @@
     "addMemberFailed": "Error al añadir miembro",
     "removeMemberFailed": "Error al eliminar miembro",
     "leaveFailed": "Error al salir del grupo",
-    "chatDeleteFailed": "Error al eliminar grupo"
+    "chatDeleteFailed": "Error al eliminar grupo",
+    "loadMembersFailed": "Error al cargar los miembros"
   },
   "rankings": {
     "title": "Rankings",

@@ -51,7 +51,7 @@ export default function CreateRoomModal({ followingUsers, onClose, onCreated }: 
       <div className="bg-gray-800 rounded-md p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-white">{t('chat.createGroup')}</h2>
-          <button onClick={onClose} className="p-1 text-gray-400 hover:text-white transition-colors">
+          <button onClick={onClose} className="p-1 text-gray-400 hover:text-white transition-colors" aria-label={t('common.close')}>
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -125,7 +125,7 @@ export default function CreateRoomModal({ followingUsers, onClose, onCreated }: 
               disabled={!name.trim() || loading}
               className={`${buttonPrimaryClass} flex-1 text-sm disabled:opacity-50`}
             >
-              {loading ? '...' : t('chat.createButton')}
+              {loading ? t('common.saving') : t('chat.createButton')}
             </button>
           </div>
         </form>

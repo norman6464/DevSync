@@ -294,7 +294,8 @@
     "addMemberFailed": "Не удалось добавить участника",
     "removeMemberFailed": "Не удалось удалить участника",
     "leaveFailed": "Не удалось покинуть группу",
-    "chatDeleteFailed": "Не удалось удалить группу"
+    "chatDeleteFailed": "Не удалось удалить группу",
+    "loadMembersFailed": "Не удалось загрузить участников"
   },
   "rankings": {
     "title": "Рейтинги",
