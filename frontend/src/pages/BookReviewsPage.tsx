@@ -7,7 +7,7 @@ import { useBookReviews } from '../hooks';
 import BookReviewCard from '../components/bookReviews/BookReviewCard';
 import BookReviewForm from '../components/bookReviews/BookReviewForm';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import { EmptyState, Pagination } from '../components/common';
+import { EmptyState, Modal, Pagination } from '../components/common';
 
 export default function BookReviewsPage() {
   const { t } = useTranslation();
@@ -39,32 +39,30 @@ export default function BookReviewsPage() {
       </div>
 
       {/* Form Modal */}
-      {(showForm || editingReview) && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-md p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-semibold text-white mb-4">
-              {editingReview ? t('bookReviews.editReview') : t('bookReviews.newReview')}
-            </h2>
-            <BookReviewForm
-              review={editingReview || undefined}
-              onSubmit={async (data) => {
-                if (editingReview) {
-                  const result = await updateReview(editingReview.id, data);
-                  if (result) setEditingReview(null);
-                } else {
-                  const result = await createReview(data);
-                  if (result) setShowForm(false);
-                }
-              }}
-              onCancel={() => {
-                setShowForm(false);
-                setEditingReview(null);
-              }}
-              loading={saving}
-            />
-          </div>
-        </div>
-      )}
+      <Modal
+        isOpen={showForm || !!editingReview}
+        onClose={() => { setShowForm(false); setEditingReview(null); }}
+        title={editingReview ? t('bookReviews.editReview') : t('bookReviews.newReview')}
+        maxWidth="max-w-lg"
+      >
+        <BookReviewForm
+          review={editingReview || undefined}
+          onSubmit={async (data) => {
+            if (editingReview) {
+              const result = await updateReview(editingReview.id, data);
+              if (result) setEditingReview(null);
+            } else {
+              const result = await createReview(data);
+              if (result) setShowForm(false);
+            }
+          }}
+          onCancel={() => {
+            setShowForm(false);
+            setEditingReview(null);
+          }}
+          loading={saving}
+        />
+      </Modal>
 
       {/* Content */}
       {loading ? (

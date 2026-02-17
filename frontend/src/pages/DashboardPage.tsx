@@ -10,6 +10,7 @@ import type { BadgeResult } from '../types/badge';
 import type { Post } from '../types/post';
 import PostCard from '../components/posts/PostCard';
 import PostForm from '../components/posts/PostForm';
+import { Modal } from '../components/common';
 import QuickPostForm from '../components/posts/QuickPostForm';
 import { PostCardSkeleton } from '../components/common/Skeleton';
 import Avatar from '../components/common/Avatar';
@@ -154,21 +155,22 @@ export default function DashboardPage() {
         </div>
 
         {/* Edit Modal */}
-        {editingPost && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-gray-800 rounded-md p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-              <h2 className="text-xl font-semibold text-white mb-4">投稿を編集</h2>
-              <PostForm
-                post={editingPost}
-                onSubmit={async (title, content, imageUrls) => {
-                  const result = await updatePost(editingPost.id, title, content, imageUrls);
-                  if (result) setEditingPost(null);
-                }}
-                onCancel={() => setEditingPost(null)}
-              />
-            </div>
-          </div>
-        )}
+        <Modal
+          isOpen={!!editingPost}
+          onClose={() => setEditingPost(null)}
+          title="投稿を編集"
+        >
+          {editingPost && (
+            <PostForm
+              post={editingPost}
+              onSubmit={async (title, content, imageUrls) => {
+                const result = await updatePost(editingPost.id, title, content, imageUrls);
+                if (result) setEditingPost(null);
+              }}
+              onCancel={() => setEditingPost(null)}
+            />
+          )}
+        </Modal>
       </div>
 
       {/* Sidebar */}
