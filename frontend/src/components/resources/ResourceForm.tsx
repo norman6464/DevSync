@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LearningResource, CreateResourceRequest, ResourceCategory, ResourceDifficulty } from '../../types/resource';
-import { buttonSecondaryClass } from '../../constants/styles';
+import { buttonSecondaryClass, inputClass } from '../../constants/styles';
 
 interface ResourceFormProps {
   resource?: LearningResource;
@@ -100,7 +100,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as ResourceCategory)}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+            className={inputClass}
           >
             {categories.map(cat => (
               <option key={cat} value={cat}>
@@ -116,7 +116,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
           <select
             value={difficulty}
             onChange={(e) => setDifficulty(e.target.value as ResourceDifficulty | '')}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+            className={inputClass}
           >
             <option value="">{t('resources.selectDifficulty')}</option>
             {difficulties.map(diff => (

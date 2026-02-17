@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { selectClass } from '../../constants/styles';
 
 const LANGUAGES = [
   'go', 'typescript', 'javascript', 'python', 'java', 'rust', 'ruby', 'php',
@@ -19,7 +20,7 @@ export default function LanguageSelector({ value, onChange }: LanguageSelectorPr
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+      className={selectClass}
     >
       <option value="">{t('post.selectLanguage')}</option>
       {LANGUAGES.map((lang) => (
