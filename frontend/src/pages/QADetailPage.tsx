@@ -7,7 +7,7 @@ import type { Answer } from '../types/qa';
 import AnswerCard from '../components/qa/AnswerCard';
 import AnswerForm from '../components/qa/AnswerForm';
 import Avatar from '../components/common/Avatar';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { PageLoader } from '../components/common';
 
 export default function QADetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -31,11 +31,7 @@ export default function QADetailPage() {
   const isQuestionOwner = user?.id === question?.user_id;
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <LoadingSpinner />
-      </div>
-    );
+    return <PageLoader />;
   }
 
   if (!question) {

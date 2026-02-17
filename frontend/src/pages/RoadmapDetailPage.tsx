@@ -5,7 +5,7 @@ import { List } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useRoadmapDetail } from '../hooks';
 import { type RoadmapStep } from '../api/roadmaps';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { PageLoader } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
 
 export default function RoadmapDetailPage() {
@@ -70,11 +70,7 @@ export default function RoadmapDetailPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <LoadingSpinner />
-      </div>
-    );
+    return <PageLoader />;
   }
 
   if (!roadmap) {

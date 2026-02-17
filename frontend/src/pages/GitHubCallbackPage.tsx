@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { gitHubCallback } from '../api/github';
 import { useAuthStore } from '../store/authStore';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { PageLoader } from '../components/common';
 import toast from 'react-hot-toast';
 
 function parseStatePurpose(state: string): string {
@@ -88,13 +88,9 @@ export default function GitHubCallbackPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-      <div className="text-center">
-        <LoadingSpinner />
-        <p className="text-gray-400 mt-4">
-          {mode === 'login' ? 'Logging in with GitHub...' : 'Connecting GitHub...'}
-        </p>
-      </div>
-    </div>
+    <PageLoader
+      fullHeight
+      message={mode === 'login' ? 'Logging in with GitHub...' : 'Connecting GitHub...'}
+    />
   );
 }
