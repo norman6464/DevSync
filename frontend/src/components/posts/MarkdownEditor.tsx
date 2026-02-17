@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
@@ -18,10 +19,11 @@ interface MarkdownEditorProps {
 export default function MarkdownEditor({
   value,
   onChange,
-  placeholder = 'Write your content here... (Markdown supported)',
+  placeholder,
   minHeight = '200px',
   onImagesChange,
 }: MarkdownEditorProps) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'write' | 'preview'>('write');
   const [uploading, setUploading] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
@@ -151,21 +153,21 @@ export default function MarkdownEditor({
   };
 
   const toolbarButtons = [
-    { action: 'heading', icon: 'H', title: 'Heading' },
-    { action: 'bold', icon: 'B', title: 'Bold', className: 'font-bold' },
-    { action: 'italic', icon: 'I', title: 'Italic', className: 'italic' },
-    { action: 'strikethrough', icon: 'S', title: 'Strikethrough', className: 'line-through' },
+    { action: 'heading', icon: 'H', title: t('editor.heading') },
+    { action: 'bold', icon: 'B', title: t('editor.bold'), className: 'font-bold' },
+    { action: 'italic', icon: 'I', title: t('editor.italic'), className: 'italic' },
+    { action: 'strikethrough', icon: 'S', title: t('editor.strikethrough'), className: 'line-through' },
     { action: 'divider' },
-    { action: 'link', icon: <Link2 className="w-3.5 h-3.5" />, title: 'Link' },
-    { action: 'image', icon: <Image className="w-3.5 h-3.5" />, title: 'Image' },
+    { action: 'link', icon: <Link2 className="w-3.5 h-3.5" />, title: t('editor.link') },
+    { action: 'image', icon: <Image className="w-3.5 h-3.5" />, title: t('editor.image') },
     { action: 'divider' },
-    { action: 'code', icon: '<>', title: 'Inline Code' },
-    { action: 'codeblock', icon: '{}', title: 'Code Block' },
+    { action: 'code', icon: '<>', title: t('editor.inlineCode') },
+    { action: 'codeblock', icon: '{}', title: t('editor.codeBlock') },
     { action: 'divider' },
-    { action: 'quote', icon: '"', title: 'Quote' },
-    { action: 'list', icon: '•', title: 'Bullet List' },
-    { action: 'orderedlist', icon: '1.', title: 'Numbered List' },
-    { action: 'task', icon: '☐', title: 'Task List' },
+    { action: 'quote', icon: '"', title: t('editor.quote') },
+    { action: 'list', icon: '•', title: t('editor.bulletList') },
+    { action: 'orderedlist', icon: '1.', title: t('editor.numberedList') },
+    { action: 'task', icon: '☐', title: t('editor.taskList') },
   ];
 
   return (
@@ -181,7 +183,7 @@ export default function MarkdownEditor({
               : 'text-gray-400 hover:text-white hover:bg-gray-750'
           }`}
         >
-          Write
+          {t('editor.write')}
         </button>
         <button
           type="button"
@@ -192,7 +194,7 @@ export default function MarkdownEditor({
               : 'text-gray-400 hover:text-white hover:bg-gray-750'
           }`}
         >
-          Preview
+          {t('editor.preview')}
         </button>
 
         {/* Toolbar */}
@@ -228,7 +230,7 @@ export default function MarkdownEditor({
               onPaste={handlePaste}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
-              placeholder={placeholder}
+              placeholder={placeholder || t('editor.placeholder')}
               className="w-full p-4 bg-transparent text-white resize-none focus:outline-none font-mono text-sm"
               style={{ minHeight }}
             />
@@ -243,7 +245,7 @@ export default function MarkdownEditor({
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                   </svg>
-                  <span className="text-sm">Uploading...</span>
+                  <span className="text-sm">{t('editor.uploading')}</span>
                 </div>
               </div>
             )}
@@ -279,7 +281,7 @@ export default function MarkdownEditor({
                 }}
               >{value}</ReactMarkdown>
             ) : (
-              <p className="text-gray-500 italic">Nothing to preview</p>
+              <p className="text-gray-500 italic">{t('editor.nothingToPreview')}</p>
             )}
           </div>
         )}
@@ -298,13 +300,13 @@ export default function MarkdownEditor({
       {/* Uploaded images preview */}
       {uploadedImages.length > 0 && (
         <div className="border-t border-gray-700 p-3">
-          <div className="text-xs text-gray-500 mb-2">Attached images:</div>
+          <div className="text-xs text-gray-500 mb-2">{t('editor.attachedImages')}</div>
           <div className="flex flex-wrap gap-2">
             {uploadedImages.map((url, i) => (
               <div key={i} className="relative group">
                 <img
                   src={url}
-                  alt={`Uploaded ${i + 1}`}
+                  alt={t('editor.uploadedImage', { number: i + 1 })}
                   className="w-16 h-16 object-cover rounded border border-gray-600"
                 />
                 <button
@@ -326,8 +328,8 @@ export default function MarkdownEditor({
 
       {/* Hint */}
       <div className="border-t border-gray-700 px-4 py-2 text-xs text-gray-500 flex items-center gap-4">
-        <span>Markdown supported</span>
-        <span>Paste or drag images to upload</span>
+        <span>{t('editor.markdownSupported')}</span>
+        <span>{t('editor.pasteOrDragImages')}</span>
       </div>
     </div>
   );

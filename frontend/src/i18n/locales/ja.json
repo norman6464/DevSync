@@ -1088,5 +1088,28 @@
     "backToSettings": "設定に戻る",
     "loggingIn": "GitHubでログイン中...",
     "connecting": "GitHub連携中..."
+  },
+  "editor": {
+    "write": "書く",
+    "preview": "プレビュー",
+    "placeholder": "ここに内容を入力... (Markdown対応)",
+    "heading": "見出し",
+    "bold": "太字",
+    "italic": "斜体",
+    "strikethrough": "取り消し線",
+    "link": "リンク",
+    "image": "画像",
+    "inlineCode": "インラインコード",
+    "codeBlock": "コードブロック",
+    "quote": "引用",
+    "bulletList": "箇条書き",
+    "numberedList": "番号付きリスト",
+    "taskList": "タスクリスト",
+    "uploading": "アップロード中...",
+    "nothingToPreview": "プレビューする内容がありません",
+    "attachedImages": "添付画像:",
+    "uploadedImage": "アップロード画像 {{number}}",
+    "markdownSupported": "Markdown対応",
+    "pasteOrDragImages": "画像を貼り付けまたはドラッグしてアップロード"
   }
 }

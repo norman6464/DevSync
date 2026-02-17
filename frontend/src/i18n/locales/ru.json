@@ -1187,5 +1187,28 @@
     "backToSettings": "Вернуться к настройкам",
     "loggingIn": "Вход через GitHub...",
     "connecting": "Подключение GitHub..."
+  },
+  "editor": {
+    "write": "Написать",
+    "preview": "Предпросмотр",
+    "placeholder": "Напишите содержание здесь... (поддерживается Markdown)",
+    "heading": "Заголовок",
+    "bold": "Жирный",
+    "italic": "Курсив",
+    "strikethrough": "Зачёркнутый",
+    "link": "Ссылка",
+    "image": "Изображение",
+    "inlineCode": "Встроенный код",
+    "codeBlock": "Блок кода",
+    "quote": "Цитата",
+    "bulletList": "Маркированный список",
+    "numberedList": "Нумерованный список",
+    "taskList": "Список задач",
+    "uploading": "Загрузка...",
+    "nothingToPreview": "Нет содержимого для предпросмотра",
+    "attachedImages": "Прикреплённые изображения:",
+    "uploadedImage": "Загруженное изображение {{number}}",
+    "markdownSupported": "Поддерживается Markdown",
+    "pasteOrDragImages": "Вставьте или перетащите изображения для загрузки"
   }
 }
