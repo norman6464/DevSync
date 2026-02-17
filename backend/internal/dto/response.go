@@ -16,6 +16,16 @@ type URLResponse struct {
 	URL string `json:"url"`
 }
 
+// StatusResponse はステータスレスポンス
+type StatusResponse struct {
+	Status string `json:"status"`
+}
+
+// CountResponse はカウントレスポンス
+type CountResponse struct {
+	Count int64 `json:"count"`
+}
+
 // DataResponse は汎用データレスポンス
 type DataResponse[T any] struct {
 	Data T `json:"data"`

@@ -2,10 +2,13 @@
 // Ginフレームワークを使用し、リクエストの受付・バリデーション・レスポンス返却を担当する。
 package handler
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/dto"
+)
 
 // HealthCheck はヘルスチェックエンドポイントのハンドラ。
 // サーバーの稼働状態を確認するために使用する。
 func HealthCheck(c *gin.Context) {
-	respondOK(c, gin.H{"status": "ok"})
+	respondOK(c, dto.StatusResponse{Status: "ok"})
 }
