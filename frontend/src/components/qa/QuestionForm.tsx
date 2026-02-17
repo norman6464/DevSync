@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Question, CreateQuestionRequest } from '../../types/qa';
-import { buttonSecondaryClass, textareaClass } from '../../constants/styles';
+import { buttonSecondaryClass, labelClass, textareaClass } from '../../constants/styles';
 
 interface QuestionFormProps {
   question?: Question;
@@ -38,7 +38,7 @@ export default function QuestionForm({ question, onSubmit, onCancel, loading }: 
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Title */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
+        <label className={labelClass}>
           {t('qa.questionTitle')} *
         </label>
         <input
@@ -54,7 +54,7 @@ export default function QuestionForm({ question, onSubmit, onCancel, loading }: 
 
       {/* Body */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
+        <label className={labelClass}>
           {t('qa.questionBody')} *
         </label>
         <textarea
@@ -69,7 +69,7 @@ export default function QuestionForm({ question, onSubmit, onCancel, loading }: 
 
       {/* Tags */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
+        <label className={labelClass}>
           {t('qa.tags')}
         </label>
         <input

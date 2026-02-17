@@ -5,7 +5,7 @@ import { createChatRoom } from '../../api/chatRooms';
 import type { User } from '../../types/user';
 import type { ChatRoom } from '../../types/chat';
 import Avatar from '../common/Avatar';
-import { textareaClass } from '../../constants/styles';
+import { labelClass, textareaClass } from '../../constants/styles';
 
 interface Props {
   followingUsers: User[];
@@ -57,7 +57,7 @@ export default function CreateRoomModal({ followingUsers, onClose, onCreated }: 
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className={labelClass}>
               {t('chat.groupName')}
             </label>
             <input
@@ -71,7 +71,7 @@ export default function CreateRoomModal({ followingUsers, onClose, onCreated }: 
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className={labelClass}>
               {t('chat.groupDescription')}
             </label>
             <textarea
