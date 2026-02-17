@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
@@ -32,7 +33,7 @@ func AuthRequired(authService *service.AuthService) gin.HandlerFunc {
 				if len(parts) == 2 && parts[0] == "Bearer" {
 					tokenString = parts[1]
 				} else {
-					c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid authorization header format"})
+					c.JSON(http.StatusUnauthorized, domain.NewErrorResponse("invalid authorization header format", string(domain.ErrCodeUnauthorized), nil))
 					c.Abort()
 					return
 				}
@@ -41,14 +42,14 @@ func AuthRequired(authService *service.AuthService) gin.HandlerFunc {
 
 		// CookieもAuthorizationヘッダーもない場合
 		if tokenString == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
+			c.JSON(http.StatusUnauthorized, domain.NewErrorResponse("authentication required", string(domain.ErrCodeUnauthorized), nil))
 			c.Abort()
 			return
 		}
 
 		userID, err := authService.ValidateToken(tokenString)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid or expired token"})
+			c.JSON(http.StatusUnauthorized, domain.NewErrorResponse("invalid or expired token", string(domain.ErrCodeUnauthorized), nil))
 			c.Abort()
 			return
 		}
