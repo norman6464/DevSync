@@ -9,18 +9,23 @@ import (
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
+// WebSocketAuthServiceInterface はWebSocketHandler用の認証サービスの抽象インターフェース。
+type WebSocketAuthServiceInterface interface {
+	ValidateToken(tokenString string) (uint, error)
+}
+
 // WebSocketHandler はWebSocket関連のHTTPハンドラ。
 // リアルタイム通信のためのWebSocket接続確立を処理する。
 type WebSocketHandler struct {
 	hub            *service.Hub
-	authService    *service.AuthService
+	authService    WebSocketAuthServiceInterface
 	allowedOrigins map[string]bool // CORS設定と連動した許可オリジン
 	upgrader       websocket.Upgrader
 }
 
 // NewWebSocketHandler は新しいWebSocketHandlerインスタンスを生成する。
 // allowedOriginsにはCORS設定のオリジン一覧を渡す。
-func NewWebSocketHandler(hub *service.Hub, authService *service.AuthService, allowedOrigins []string) *WebSocketHandler {
+func NewWebSocketHandler(hub *service.Hub, authService WebSocketAuthServiceInterface, allowedOrigins []string) *WebSocketHandler {
 	originsMap := make(map[string]bool, len(allowedOrigins))
 	for _, o := range allowedOrigins {
 		originsMap[o] = true
