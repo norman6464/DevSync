@@ -5,16 +5,26 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
 )
+
+// CodeSnippetHandlerServiceInterface はCodeSnippetHandlerが依存するサービスのインターフェース。
+type CodeSnippetHandlerServiceInterface interface {
+	Create(snippet *model.CodeSnippet) (*model.CodeSnippet, error)
+	GetByPostID(postID uint) ([]model.CodeSnippet, error)
+	Update(id, userID uint, language, fileName, code string) (*model.CodeSnippet, error)
+	Delete(id, userID uint) error
+	GetComments(snippetID uint) ([]model.SnippetComment, error)
+	CreateComment(comment *model.SnippetComment) error
+	DeleteComment(id, userID uint) error
+}
 
 // CodeSnippetHandler はコードスニペット関連のHTTPハンドラ。
 type CodeSnippetHandler struct {
-	service *service.CodeSnippetService
+	service CodeSnippetHandlerServiceInterface
 }
 
 // NewCodeSnippetHandler は新しいCodeSnippetHandlerインスタンスを生成する。
-func NewCodeSnippetHandler(s *service.CodeSnippetService) *CodeSnippetHandler {
+func NewCodeSnippetHandler(s CodeSnippetHandlerServiceInterface) *CodeSnippetHandler {
 	return &CodeSnippetHandler{service: s}
 }
 

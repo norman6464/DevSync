@@ -5,17 +5,27 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
 )
+
+// LearningLogServiceInterface はLearningLogHandlerが依存するサービスのインターフェース。
+type LearningLogServiceInterface interface {
+	Create(log *model.LearningLog) error
+	GetByID(id uint) (*model.LearningLog, error)
+	GetByUserID(userID uint) ([]model.LearningLog, error)
+	Update(id, userID uint, updates *model.LearningLog) (*model.LearningLog, error)
+	Delete(id, userID uint) error
+	GetStreakInfo(userID uint) (*model.StreakInfo, error)
+	GetCalendarData(userID uint) ([]model.CalendarEntry, error)
+}
 
 // LearningLogHandler は学習ログ関連のHTTPハンドラ。
 // 学習ログのCRUD・ストリーク・カレンダーデータの取得を処理する。
 type LearningLogHandler struct {
-	service *service.LearningLogService
+	service LearningLogServiceInterface
 }
 
 // NewLearningLogHandler は新しいLearningLogHandlerインスタンスを生成する。
-func NewLearningLogHandler(s *service.LearningLogService) *LearningLogHandler {
+func NewLearningLogHandler(s LearningLogServiceInterface) *LearningLogHandler {
 	return &LearningLogHandler{service: s}
 }
 
