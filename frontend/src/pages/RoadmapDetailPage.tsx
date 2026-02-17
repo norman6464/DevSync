@@ -5,7 +5,7 @@ import { List } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useRoadmapDetail } from '../hooks';
 import { type RoadmapStep } from '../api/roadmaps';
-import { PageLoader } from '../components/common';
+import { PageLoader, Modal } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
 
 export default function RoadmapDetailPage() {
@@ -150,64 +150,62 @@ export default function RoadmapDetailPage() {
       </div>
 
       {/* Step Form Modal */}
-      {showStepForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-md p-6 w-full max-w-md">
-            <h2 className="text-xl font-semibold text-white mb-4">
-              {editingStep ? t('roadmaps.editStep') : t('roadmaps.addStep')}
-            </h2>
-            <form onSubmit={handleStepSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">{t('roadmaps.stepTitle')}</label>
-                <input
-                  type="text"
-                  value={stepTitle}
-                  onChange={e => setStepTitle(e.target.value)}
-                  placeholder={t('roadmaps.stepTitlePlaceholder')}
-                  className={inputClass}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">{t('roadmaps.stepDescription')}</label>
-                <textarea
-                  value={stepDescription}
-                  onChange={e => setStepDescription(e.target.value)}
-                  placeholder={t('roadmaps.stepDescriptionPlaceholder')}
-                  rows={3}
-                  className={`${inputClass} resize-none`}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">{t('roadmaps.resourceURL')}</label>
-                <input
-                  type="url"
-                  value={stepResourceURL}
-                  onChange={e => setStepResourceURL(e.target.value)}
-                  placeholder="https://..."
-                  className={inputClass}
-                />
-              </div>
-              <div className="flex gap-3 justify-end pt-2">
-                <button
-                  type="button"
-                  onClick={resetStepForm}
-                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-                >
-                  {t('common.cancel')}
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving || !stepTitle.trim()}
-                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
-                >
-                  {saving ? t('common.saving') : editingStep ? t('common.save') : t('roadmaps.create')}
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showStepForm}
+        onClose={resetStepForm}
+        title={editingStep ? t('roadmaps.editStep') : t('roadmaps.addStep')}
+        maxWidth="max-w-md"
+      >
+        <form onSubmit={handleStepSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">{t('roadmaps.stepTitle')}</label>
+            <input
+              type="text"
+              value={stepTitle}
+              onChange={e => setStepTitle(e.target.value)}
+              placeholder={t('roadmaps.stepTitlePlaceholder')}
+              className={inputClass}
+              required
+            />
           </div>
-        </div>
-      )}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">{t('roadmaps.stepDescription')}</label>
+            <textarea
+              value={stepDescription}
+              onChange={e => setStepDescription(e.target.value)}
+              placeholder={t('roadmaps.stepDescriptionPlaceholder')}
+              rows={3}
+              className={`${inputClass} resize-none`}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">{t('roadmaps.resourceURL')}</label>
+            <input
+              type="url"
+              value={stepResourceURL}
+              onChange={e => setStepResourceURL(e.target.value)}
+              placeholder="https://..."
+              className={inputClass}
+            />
+          </div>
+          <div className="flex gap-3 justify-end pt-2">
+            <button
+              type="button"
+              onClick={resetStepForm}
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+            >
+              {t('common.cancel')}
+            </button>
+            <button
+              type="submit"
+              disabled={saving || !stepTitle.trim()}
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+            >
+              {saving ? t('common.saving') : editingStep ? t('common.save') : t('roadmaps.create')}
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Steps List */}
       {roadmap.steps && roadmap.steps.length === 0 ? (

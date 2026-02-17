@@ -8,7 +8,7 @@ import PostCard from '../components/posts/PostCard';
 import PostForm from '../components/posts/PostForm';
 import CodeSnippetViewer from '../components/posts/CodeSnippetViewer';
 import Avatar from '../components/common/Avatar';
-import { PageLoader } from '../components/common';
+import { PageLoader, Modal } from '../components/common';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -141,21 +141,16 @@ export default function PostDetailPage() {
       <ConfirmDialog {...dialogProps} />
 
       {/* Edit Modal */}
-      {editingPost && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-md p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-semibold text-white mb-4">投稿を編集</h2>
-            <PostForm
-              post={post}
-              onSubmit={async (title, content, imageUrls) => {
-                const result = await updatePost(title, content, imageUrls);
-                if (result) setEditingPost(false);
-              }}
-              onCancel={() => setEditingPost(false)}
-            />
-          </div>
-        </div>
-      )}
+      <Modal isOpen={editingPost} onClose={() => setEditingPost(false)} title="投稿を編集">
+        <PostForm
+          post={post}
+          onSubmit={async (title, content, imageUrls) => {
+            const result = await updatePost(title, content, imageUrls);
+            if (result) setEditingPost(false);
+          }}
+          onCancel={() => setEditingPost(false)}
+        />
+      </Modal>
     </div>
   );
 }

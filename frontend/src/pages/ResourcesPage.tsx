@@ -8,7 +8,7 @@ import ResourceCard from '../components/resources/ResourceCard';
 import ResourceForm from '../components/resources/ResourceForm';
 import { ResourceCardSkeleton } from '../components/common/Skeleton';
 import EmptyState from '../components/common/EmptyState';
-import { Pagination, SearchInput, PageHeader } from '../components/common';
+import { Pagination, SearchInput, PageHeader, Modal } from '../components/common';
 
 const categories: (ResourceCategory | '')[] = ['', 'book', 'video', 'article', 'course', 'tutorial', 'podcast', 'tool', 'other'];
 const difficulties: (ResourceDifficulty | '')[] = ['', 'beginner', 'intermediate', 'advanced'];
@@ -118,32 +118,29 @@ export default function ResourcesPage() {
       )}
 
       {/* Form Modal */}
-      {(showForm || editingResource) && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-md p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-semibold text-white mb-4">
-              {editingResource ? t('resources.editResource') : t('resources.newResource')}
-            </h2>
-            <ResourceForm
-              resource={editingResource || undefined}
-              onSubmit={async (data) => {
-                if (editingResource) {
-                  const result = await updateResource(editingResource.id, data);
-                  if (result) setEditingResource(null);
-                } else {
-                  const result = await createResource(data);
-                  if (result) setShowForm(false);
-                }
-              }}
-              onCancel={() => {
-                setShowForm(false);
-                setEditingResource(null);
-              }}
-              loading={saving}
-            />
-          </div>
-        </div>
-      )}
+      <Modal
+        isOpen={showForm || !!editingResource}
+        onClose={() => { setShowForm(false); setEditingResource(null); }}
+        title={editingResource ? t('resources.editResource') : t('resources.newResource')}
+      >
+        <ResourceForm
+          resource={editingResource || undefined}
+          onSubmit={async (data) => {
+            if (editingResource) {
+              const result = await updateResource(editingResource.id, data);
+              if (result) setEditingResource(null);
+            } else {
+              const result = await createResource(data);
+              if (result) setShowForm(false);
+            }
+          }}
+          onCancel={() => {
+            setShowForm(false);
+            setEditingResource(null);
+          }}
+          loading={saving}
+        />
+      </Modal>
 
       {/* Content */}
       {loading ? (
