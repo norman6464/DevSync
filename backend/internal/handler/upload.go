@@ -63,13 +63,13 @@ func NewUploadHandler() *UploadHandler {
 func (h *UploadHandler) UploadImage(c *gin.Context) {
 	file, err := c.FormFile("image")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No image file provided"})
+		respondBadRequest(c, "No image file provided")
 		return
 	}
 
 	// ファイルサイズのバリデーション（最大5MB）
 	if file.Size > 5*1024*1024 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "File size exceeds 5MB limit"})
+		respondBadRequest(c, "File size exceeds 5MB limit")
 		return
 	}
 
@@ -83,25 +83,25 @@ func (h *UploadHandler) UploadImage(c *gin.Context) {
 		".webp": true,
 	}
 	if !allowedExts[ext] {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid file type. Allowed: jpg, jpeg, png, gif, webp"})
+		respondBadRequest(c, "Invalid file type. Allowed: jpg, jpeg, png, gif, webp")
 		return
 	}
 
 	// マジックバイトによるMIMEタイプ検証（拡張子偽装防止）
 	src, err := file.Open()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read file"})
+		respondInternalError(c, "Failed to read file")
 		return
 	}
 	defer src.Close()
 
 	mimeType, err := detectMIMEType(src)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to detect file type"})
+		respondInternalError(c, "Failed to detect file type")
 		return
 	}
 	if !allowedMIMETypes[mimeType] {
-		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid file content type: %s. Only image files are allowed", mimeType)})
+		respondBadRequest(c, fmt.Sprintf("Invalid file content type: %s. Only image files are allowed", mimeType))
 		return
 	}
 
@@ -112,20 +112,20 @@ func (h *UploadHandler) UploadImage(c *gin.Context) {
 	dateDir := time.Now().Format("2006/01")
 	fullDir := filepath.Join(h.uploadDir, dateDir)
 	if err := os.MkdirAll(fullDir, 0755); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create directory"})
+		respondInternalError(c, "Failed to create directory")
 		return
 	}
 
 	// ファイルを保存する
 	filePath := filepath.Join(fullDir, filename)
 	if err := c.SaveUploadedFile(file, filePath); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
+		respondInternalError(c, "Failed to save file")
 		return
 	}
 
 	// URLパスを返す
 	urlPath := fmt.Sprintf("/uploads/%s/%s", dateDir, filename)
-	c.JSON(http.StatusOK, gin.H{
+	respondOK(c, gin.H{
 		"url":      urlPath,
 		"filename": filename,
 	})
@@ -136,18 +136,18 @@ func (h *UploadHandler) UploadImage(c *gin.Context) {
 func (h *UploadHandler) UploadMultipleImages(c *gin.Context) {
 	form, err := c.MultipartForm()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to parse form"})
+		respondBadRequest(c, "Failed to parse form")
 		return
 	}
 
 	files := form.File["images"]
 	if len(files) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No image files provided"})
+		respondBadRequest(c, "No image files provided")
 		return
 	}
 
 	if len(files) > 10 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Maximum 10 images allowed"})
+		respondBadRequest(c, "Maximum 10 images allowed")
 		return
 	}
 
@@ -163,38 +163,38 @@ func (h *UploadHandler) UploadMultipleImages(c *gin.Context) {
 	dateDir := time.Now().Format("2006/01")
 	fullDir := filepath.Join(h.uploadDir, dateDir)
 	if err := os.MkdirAll(fullDir, 0755); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create directory"})
+		respondInternalError(c, "Failed to create directory")
 		return
 	}
 
 	for _, file := range files {
 		// ファイルサイズのバリデーション
 		if file.Size > 5*1024*1024 {
-			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("File %s exceeds 5MB limit", file.Filename)})
+			respondBadRequest(c, fmt.Sprintf("File %s exceeds 5MB limit", file.Filename))
 			return
 		}
 
 		// ファイル拡張子のバリデーション
 		ext := strings.ToLower(filepath.Ext(file.Filename))
 		if !allowedExts[ext] {
-			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid file type for %s", file.Filename)})
+			respondBadRequest(c, fmt.Sprintf("Invalid file type for %s", file.Filename))
 			return
 		}
 
 		// マジックバイトによるMIMEタイプ検証（拡張子偽装防止）
 		src, err := file.Open()
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read file"})
+			respondInternalError(c, "Failed to read file")
 			return
 		}
 		mimeType, err := detectMIMEType(src)
 		src.Close()
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to detect file type"})
+			respondInternalError(c, "Failed to detect file type")
 			return
 		}
 		if !allowedMIMETypes[mimeType] {
-			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid content type for %s: %s", file.Filename, mimeType)})
+			respondBadRequest(c, fmt.Sprintf("Invalid content type for %s: %s", file.Filename, mimeType))
 			return
 		}
 
@@ -203,12 +203,12 @@ func (h *UploadHandler) UploadMultipleImages(c *gin.Context) {
 		filePath := filepath.Join(fullDir, filename)
 
 		if err := c.SaveUploadedFile(file, filePath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
+			respondInternalError(c, "Failed to save file")
 			return
 		}
 
 		urls = append(urls, fmt.Sprintf("/uploads/%s/%s", dateDir, filename))
 	}
 
-	c.JSON(http.StatusOK, gin.H{"urls": urls})
+	respondOK(c, gin.H{"urls": urls})
 }
