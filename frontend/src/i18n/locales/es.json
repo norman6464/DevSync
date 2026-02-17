@@ -223,7 +223,8 @@
     "emailLanguageDesc": "Seleccionar el idioma de entrega del correo",
     "emailEnabled": "Habilitado",
     "emailDisabled": "Deshabilitado",
-    "emailPreferencesSaved": "Preferencias de correo guardadas"
+    "emailPreferencesSaved": "Preferencias de correo guardadas",
+    "setTheme": "Establecer tema {{theme}}"
   },
   "explore": {
     "title": "Descubrir Desarrolladores",

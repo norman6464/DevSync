@@ -223,7 +223,8 @@
     "emailLanguageDesc": "Selecionar o idioma de entrega do e-mail",
     "emailEnabled": "Ativado",
     "emailDisabled": "Desativado",
-    "emailPreferencesSaved": "Preferências de e-mail salvas"
+    "emailPreferencesSaved": "Preferências de e-mail salvas",
+    "setTheme": "Definir tema {{theme}}"
   },
   "explore": {
     "title": "Descobrir Desenvolvedores",

@@ -223,7 +223,8 @@
     "emailLanguageDesc": "選擇郵件投遞語言",
     "emailEnabled": "已啟用",
     "emailDisabled": "已停用",
-    "emailPreferencesSaved": "郵件設定已儲存"
+    "emailPreferencesSaved": "郵件設定已儲存",
+    "setTheme": "設置{{theme}}主題"
   },
   "explore": {
     "title": "探索開發者",
