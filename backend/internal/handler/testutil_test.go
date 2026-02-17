@@ -650,3 +650,40 @@ func setupBookReviewHandler() (*BookReviewHandler, *MockBookReviewService) {
 	h := NewBookReviewHandler(mockService)
 	return h, mockService
 }
+
+// MockAnswerService は AnswerServiceInterface のモック実装。
+type MockAnswerService struct{ mock.Mock }
+
+func (m *MockAnswerService) GetByQuestionID(questionID uint) ([]model.Answer, error) {
+	args := m.Called(questionID)
+	return args.Get(0).([]model.Answer), args.Error(1)
+}
+func (m *MockAnswerService) Create(answer *model.Answer) error {
+	return m.Called(answer).Error(0)
+}
+func (m *MockAnswerService) Update(answerID, userID uint, body string) (*model.Answer, error) {
+	args := m.Called(answerID, userID, body)
+	if a := args.Get(0); a != nil {
+		return a.(*model.Answer), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockAnswerService) Delete(answerID, userID uint) error {
+	return m.Called(answerID, userID).Error(0)
+}
+func (m *MockAnswerService) SetBestAnswer(questionID, answerID, userID uint) error {
+	return m.Called(questionID, answerID, userID).Error(0)
+}
+func (m *MockAnswerService) Vote(userID, answerID uint, value int) error {
+	return m.Called(userID, answerID, value).Error(0)
+}
+func (m *MockAnswerService) RemoveVote(userID, answerID uint) error {
+	return m.Called(userID, answerID).Error(0)
+}
+
+// setupAnswerHandler はAnswerHandlerテスト用のセットアップを行う。
+func setupAnswerHandler() (*AnswerHandler, *MockAnswerService) {
+	svc := new(MockAnswerService)
+	h := NewAnswerHandler(svc)
+	return h, svc
+}
