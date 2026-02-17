@@ -1172,5 +1172,16 @@
     "favoriteToggled": "Статус избранного обновлен",
     "lastUpdated": "Последнее обновление",
     "createdAt": "Создано"
+  },
+  "githubCallback": {
+    "missingOAuthParams": "Отсутствуют параметры OAuth",
+    "loginSuccess": "Вход через GitHub выполнен!",
+    "loginFailed": "Не удалось войти через GitHub",
+    "connectSuccess": "GitHub успешно подключён!",
+    "connectFailed": "Не удалось подключить GitHub",
+    "backToLogin": "Вернуться к входу",
+    "backToSettings": "Вернуться к настройкам",
+    "loggingIn": "Вход через GitHub...",
+    "connecting": "Подключение GitHub..."
   }
 }

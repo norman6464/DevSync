@@ -1073,5 +1073,16 @@
     "favoriteToggled": "お気に入りを更新しました",
     "lastUpdated": "最終更新",
     "createdAt": "作成日時"
+  },
+  "githubCallback": {
+    "missingOAuthParams": "OAuthパラメータが不足しています",
+    "loginSuccess": "GitHubでログインしました",
+    "loginFailed": "GitHubログインに失敗しました",
+    "connectSuccess": "GitHubの連携に成功しました",
+    "connectFailed": "GitHubの連携に失敗しました",
+    "backToLogin": "ログインに戻る",
+    "backToSettings": "設定に戻る",
+    "loggingIn": "GitHubでログイン中...",
+    "connecting": "GitHub連携中..."
   }
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { gitHubCallback } from '../api/github';
 import { useAuthStore } from '../store/authStore';
@@ -16,6 +17,7 @@ function parseStatePurpose(state: string): string {
 }
 
 export default function GitHubCallbackPage() {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const loadUser = useAuthStore((s) => s.loadUser);
@@ -33,7 +35,7 @@ export default function GitHubCallbackPage() {
     const state = searchParams.get('state');
 
     if (!code || !state) {
-      setError('Missing OAuth parameters');
+      setError(t('githubCallback.missingOAuthParams'));
       return;
     }
 
@@ -43,18 +45,18 @@ export default function GitHubCallbackPage() {
       setMode('login');
       handleGitHubCallback(code, state)
         .then(() => {
-          toast.success('Logged in with GitHub!');
+          toast.success(t('githubCallback.loginSuccess'));
           navigate('/');
         })
         .catch(() => {
-          setError('GitHub login failed');
+          setError(t('githubCallback.loginFailed'));
         });
     } else {
       setMode('connect');
       gitHubCallback(code, state)
         .then(async () => {
           await loadUser();
-          toast.success('GitHub connected successfully!');
+          toast.success(t('githubCallback.connectSuccess'));
           const onboardingRedirect = localStorage.getItem('onboarding_redirect');
           if (onboardingRedirect) {
             localStorage.removeItem('onboarding_redirect');
@@ -64,18 +66,18 @@ export default function GitHubCallbackPage() {
           }
         })
         .catch(() => {
-          setError('Failed to connect GitHub');
+          setError(t('githubCallback.connectFailed'));
         });
     }
-  }, [searchParams, navigate, loadUser, handleGitHubCallback]);
+  }, [searchParams, navigate, loadUser, handleGitHubCallback, t]);
 
   if (error) {
     const backPath = mode === 'login' ? '/login' : '/settings';
-    const backLabel = mode === 'login' ? 'Back to Login' : 'Back to Settings';
+    const backLabel = mode === 'login' ? t('githubCallback.backToLogin') : t('githubCallback.backToSettings');
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-400 mb-4">{error}</p>
+          <p className="text-red-400 mb-4" role="alert">{error}</p>
           <button
             onClick={() => navigate(backPath)}
             className="px-4 py-2 bg-blue-600 text-white rounded-md"
@@ -90,7 +92,7 @@ export default function GitHubCallbackPage() {
   return (
     <PageLoader
       fullHeight
-      message={mode === 'login' ? 'Logging in with GitHub...' : 'Connecting GitHub...'}
+      message={mode === 'login' ? t('githubCallback.loggingIn') : t('githubCallback.connecting')}
     />
   );
 }

@@ -1172,5 +1172,16 @@
     "favoriteToggled": "즐겨찾기 상태가 업데이트되었습니다",
     "lastUpdated": "마지막 업데이트",
     "createdAt": "생성일"
+  },
+  "githubCallback": {
+    "missingOAuthParams": "OAuth 매개변수가 없습니다",
+    "loginSuccess": "GitHub으로 로그인했습니다!",
+    "loginFailed": "GitHub 로그인에 실패했습니다",
+    "connectSuccess": "GitHub 연결에 성공했습니다!",
+    "connectFailed": "GitHub 연결에 실패했습니다",
+    "backToLogin": "로그인으로 돌아가기",
+    "backToSettings": "설정으로 돌아가기",
+    "loggingIn": "GitHub으로 로그인 중...",
+    "connecting": "GitHub 연결 중..."
   }
 }
