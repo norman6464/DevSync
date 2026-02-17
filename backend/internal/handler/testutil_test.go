@@ -1514,6 +1514,50 @@ func setupGitHubHandlerMock() (*GitHubHandler, *MockGHService, *MockGHAuthServic
 	return h, ghSvc, authSvc
 }
 
+// ---------- CodeSnippetHandler モック ----------
+
+// MockCodeSnippetHandlerService は CodeSnippetHandlerServiceInterface のモック実装。
+type MockCodeSnippetHandlerService struct{ mock.Mock }
+
+func (m *MockCodeSnippetHandlerService) Create(snippet *model.CodeSnippet) (*model.CodeSnippet, error) {
+	args := m.Called(snippet)
+	if s := args.Get(0); s != nil {
+		return s.(*model.CodeSnippet), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockCodeSnippetHandlerService) GetByPostID(postID uint) ([]model.CodeSnippet, error) {
+	args := m.Called(postID)
+	return args.Get(0).([]model.CodeSnippet), args.Error(1)
+}
+func (m *MockCodeSnippetHandlerService) Update(id, userID uint, language, fileName, code string) (*model.CodeSnippet, error) {
+	args := m.Called(id, userID, language, fileName, code)
+	if s := args.Get(0); s != nil {
+		return s.(*model.CodeSnippet), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockCodeSnippetHandlerService) Delete(id, userID uint) error {
+	return m.Called(id, userID).Error(0)
+}
+func (m *MockCodeSnippetHandlerService) GetComments(snippetID uint) ([]model.SnippetComment, error) {
+	args := m.Called(snippetID)
+	return args.Get(0).([]model.SnippetComment), args.Error(1)
+}
+func (m *MockCodeSnippetHandlerService) CreateComment(comment *model.SnippetComment) error {
+	return m.Called(comment).Error(0)
+}
+func (m *MockCodeSnippetHandlerService) DeleteComment(id, userID uint) error {
+	return m.Called(id, userID).Error(0)
+}
+
+// setupCodeSnippetHandler はCodeSnippetHandlerテスト用のセットアップを行う。
+func setupCodeSnippetHandler() (*CodeSnippetHandler, *MockCodeSnippetHandlerService) {
+	svc := new(MockCodeSnippetHandlerService)
+	h := NewCodeSnippetHandler(svc)
+	return h, svc
+}
+
 // ---------- NoteLinkHandler モック ----------
 
 // MockNoteLinkService は NoteLinkServiceInterface のモック実装。
