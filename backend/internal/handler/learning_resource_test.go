@@ -20,7 +20,7 @@ func TestResourceCreate_Success(t *testing.T) {
 	repo.On("Create", mock.AnythingOfType("*model.LearningResource")).Return(nil)
 
 	w := doRequest(r, http.MethodPost, "/resources", map[string]string{
-		"title": "Go Tutorial", "category": "programming",
+		"title": "Go Tutorial", "category": "article", "url": "https://example.com/go-tutorial",
 	})
 	assertStatus(t, w, http.StatusCreated)
 }

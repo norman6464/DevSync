@@ -240,7 +240,7 @@ func TestRegister_SetsCookie(t *testing.T) {
 	mockUserRepo.On("Create", mock.AnythingOfType("*model.User")).Return(nil)
 
 	body, _ := json.Marshal(map[string]string{
-		"name":             "New User",
+		"name":             "NewUser",
 		"email":            "new@example.com",
 		"password":         "password123",
 		"confirm_password": "password123",
@@ -411,8 +411,8 @@ func TestDeleteAccount_WrongPassword(t *testing.T) {
 
 	r.ServeHTTP(w, req)
 
-	// パスワード不一致の場合、service層でErrForbiddenが返されるが、respondErrorで401に変換される
-	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	// パスワード不一致の場合、service層でErrForbiddenが返され、respondErrorで403に変換される
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 // TestRequestPasswordReset_Success は正常なパスワードリセット要求をテストする。
