@@ -84,7 +84,8 @@
     "noNotifications": "Sem notificações",
     "quickStats": "Estatísticas rápidas",
     "goalsCompleted": "Metas concluídas",
-    "goalsInProgress": "Metas em andamento"
+    "goalsInProgress": "Metas em andamento",
+    "editPost": "Editar publicação"
   },
   "post": {
     "createTitle": "O que você aprendeu hoje?",
@@ -251,7 +252,9 @@
       "posts": "Postagens",
       "circles": "Círculos"
     },
-    "viewProfile": "Ver perfil"
+    "viewProfile": "Ver perfil",
+    "likesCount": "{{count}} curtidas",
+    "commentsCount": "{{count}} comentários"
   },
   "chat": {
     "title": "Mensagens",

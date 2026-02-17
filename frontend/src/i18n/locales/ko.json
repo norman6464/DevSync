@@ -84,7 +84,8 @@
     "noNotifications": "알림이 없습니다",
     "quickStats": "빠른 통계",
     "goalsCompleted": "완료한 목표",
-    "goalsInProgress": "진행 중인 목표"
+    "goalsInProgress": "진행 중인 목표",
+    "editPost": "게시물 수정"
   },
   "post": {
     "createTitle": "오늘 무엇을 배웠나요?",
@@ -251,7 +252,9 @@
       "posts": "게시물",
       "circles": "서클"
     },
-    "viewProfile": "프로필 보기"
+    "viewProfile": "프로필 보기",
+    "likesCount": "좋아요 {{count}}개",
+    "commentsCount": "댓글 {{count}}개"
   },
   "chat": {
     "title": "메시지",
