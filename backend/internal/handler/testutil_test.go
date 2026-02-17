@@ -447,12 +447,58 @@ func setupQuestionHandler() (*QuestionHandler, *MockQuestionRepository) {
 	return h, repo
 }
 
-// setupLearningResourceHandler はLearningResourceHandlerテスト用のセットアップを行う。
+// setupLearningResourceHandler はLearningResourceHandlerテスト用のセットアップを行う（リポジトリレベル）。
 func setupLearningResourceHandler() (*LearningResourceHandler, *MockLearningResourceRepository) {
 	repo := new(MockLearningResourceRepository)
 	svc := service.NewLearningResourceService(repo)
 	h := NewLearningResourceHandler(svc)
 	return h, repo
+}
+
+// MockNotificationSettingsService は NotificationSettingsServiceInterface のモック実装。
+type MockNotificationSettingsServiceMock struct{ mock.Mock }
+
+func (m *MockNotificationSettingsServiceMock) GetSettings(userID uint) (*model.NotificationSettings, error) {
+	args := m.Called(userID)
+	if s := args.Get(0); s != nil {
+		return s.(*model.NotificationSettings), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockNotificationSettingsServiceMock) UpdateSettings(userID uint, updates *model.NotificationSettings) (*model.NotificationSettings, error) {
+	args := m.Called(userID, updates)
+	if s := args.Get(0); s != nil {
+		return s.(*model.NotificationSettings), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+// setupNotificationSettingsHandler はNotificationSettingsHandlerテスト用のセットアップを行う。
+func setupNotificationSettingsHandler() (*NotificationSettingsHandler, *MockNotificationSettingsServiceMock) {
+	svc := new(MockNotificationSettingsServiceMock)
+	h := NewNotificationSettingsHandler(svc)
+	return h, svc
+}
+
+// MockEmailPreferencesService は EmailPreferencesServiceInterface のモック実装。
+type MockEmailPreferencesService struct{ mock.Mock }
+
+func (m *MockEmailPreferencesService) GetByID(id uint) (*model.User, error) {
+	args := m.Called(id)
+	if u := args.Get(0); u != nil {
+		return u.(*model.User), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockEmailPreferencesService) Update(user *model.User) error {
+	return m.Called(user).Error(0)
+}
+
+// setupEmailPreferencesHandler はEmailPreferencesHandlerテスト用のセットアップを行う。
+func setupEmailPreferencesHandler() (*EmailPreferencesHandler, *MockEmailPreferencesService) {
+	svc := new(MockEmailPreferencesService)
+	h := NewEmailPreferencesHandler(svc)
+	return h, svc
 }
 
 // setupRoadmapHandler はRoadmapHandlerテスト用のセットアップを行う。
