@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { createChatRoom } from '../../api/chatRooms';
 import type { User } from '../../types/user';
 import type { ChatRoom } from '../../types/chat';
@@ -39,7 +40,7 @@ export default function CreateRoomModal({ followingUsers, onClose, onCreated }: 
       });
       onCreated(data);
     } catch {
-      // handle error
+      toast.error(t('chat.createFailed'));
     } finally {
       setLoading(false);
     }

@@ -64,9 +64,9 @@ export default function PostForm({ post, onSubmit, onCancel, loading: externalLo
         setSnippets([]);
         setExpanded(false);
       }
-      toast.success(post ? '投稿を更新しました' : (isDraft ? '下書きを保存しました' : '投稿を作成しました'));
+      toast.success(post ? t('post.postUpdated') : (isDraft ? t('post.draftSaved') : t('post.postCreated')));
     } catch {
-      toast.error(post ? '投稿の更新に失敗しました' : (isDraft ? '下書きの保存に失敗しました' : '投稿の作成に失敗しました'));
+      toast.error(post ? t('post.updateFailed') : (isDraft ? t('post.draftFailed') : t('post.postFailed')));
     } finally {
       setLoading(false);
     }
@@ -139,7 +139,7 @@ export default function PostForm({ post, onSubmit, onCancel, loading: externalLo
                 }}
                 className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors rounded-lg"
               >
-                キャンセル
+                {t('common.cancel')}
               </button>
               {!post && (
                 <button
@@ -148,7 +148,7 @@ export default function PostForm({ post, onSubmit, onCancel, loading: externalLo
                   disabled={(externalLoading || loading) || !title.trim() || !content.trim()}
                   className="px-4 py-2 text-sm text-gray-400 hover:text-white disabled:opacity-40 transition-colors rounded-lg border border-gray-700 hover:border-gray-600"
                 >
-                  下書き保存
+                  {t('post.saveDraft')}
                 </button>
               )}
               <button
@@ -156,7 +156,7 @@ export default function PostForm({ post, onSubmit, onCancel, loading: externalLo
                 disabled={(externalLoading || loading) || !title.trim() || !content.trim()}
                 className="px-5 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:hover:bg-gray-700 text-white rounded-lg font-medium text-sm transition-colors"
               >
-                {(externalLoading || loading) ? (post ? '更新中...' : '投稿中...') : (post ? '更新' : '投稿')}
+                {(externalLoading || loading) ? (post ? t('post.updating') : t('post.posting')) : (post ? t('post.update') : t('post.post'))}
               </button>
             </div>
           </div>
