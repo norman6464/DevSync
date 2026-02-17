@@ -4,17 +4,26 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/model"
 )
+
+// QiitaServiceInterface はQiitaサービスの抽象インターフェース。
+type QiitaServiceInterface interface {
+	Connect(userID uint, username string) (int, error)
+	Disconnect(userID uint) error
+	Sync(userID uint) (int, error)
+	GetArticles(userID uint) ([]model.QiitaArticle, error)
+	GetStats(userID uint) (*model.QiitaStats, error)
+}
 
 // QiitaHandler はQiita連携関連のHTTPハンドラ。
 // Qiitaアカウントの接続・切断・記事同期・統計情報の取得を処理する。
 type QiitaHandler struct {
-	service *service.QiitaService
+	service QiitaServiceInterface
 }
 
 // NewQiitaHandler は新しいQiitaHandlerインスタンスを生成する。
-func NewQiitaHandler(s *service.QiitaService) *QiitaHandler {
+func NewQiitaHandler(s QiitaServiceInterface) *QiitaHandler {
 	return &QiitaHandler{service: s}
 }
 

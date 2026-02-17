@@ -4,17 +4,30 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
+// AtCoderServiceInterface はAtCoderサービスの抽象インターフェース。
+type AtCoderServiceInterface interface {
+	GetRating(username string) (*service.AtCoderRatingInfo, error)
+	ValidateUsername(username string) bool
+}
+
+// AtCoderUserServiceInterface はAtCoderハンドラーが必要とするユーザーサービスの抽象インターフェース。
+type AtCoderUserServiceInterface interface {
+	GetByID(id uint) (*model.User, error)
+	Update(user *model.User) error
+}
+
 // AtCoderHandler はAtCoder関連のHTTPハンドラ。
 type AtCoderHandler struct {
-	atcoderService *service.AtCoderService
-	userService    *service.UserService
+	atcoderService AtCoderServiceInterface
+	userService    AtCoderUserServiceInterface
 }
 
 // NewAtCoderHandler は新しいAtCoderHandlerインスタンスを生成する。
-func NewAtCoderHandler(atcoderService *service.AtCoderService, userService *service.UserService) *AtCoderHandler {
+func NewAtCoderHandler(atcoderService AtCoderServiceInterface, userService AtCoderUserServiceInterface) *AtCoderHandler {
 	return &AtCoderHandler{
 		atcoderService: atcoderService,
 		userService:    userService,
