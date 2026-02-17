@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
 import toast from 'react-hot-toast';
+import { labelClass } from '../constants/styles';
 
 export default function RegisterPage() {
   const { t } = useTranslation();
@@ -75,7 +76,7 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              <label className={labelClass}>
                 {t('auth.name')}
               </label>
               <input
@@ -87,7 +88,7 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              <label className={labelClass}>
                 {t('auth.email')}
               </label>
               <input
@@ -99,7 +100,7 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              <label className={labelClass}>
                 {t('auth.password')}
               </label>
               <input

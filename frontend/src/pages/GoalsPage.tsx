@@ -6,7 +6,7 @@ import { useGoals, useConfirm } from '../hooks';
 import { Modal, PageLoader } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
 import ConfirmDialog from '../components/common/ConfirmDialog';
-import { inputClass, buttonSecondaryClass } from '../constants/styles';
+import { inputClass, buttonSecondaryClass, labelClass } from '../constants/styles';
 
 const CATEGORIES: { value: GoalCategory; label: string; icon: string; Icon: LucideIcon }[] = [
   { value: 'language', label: 'goals.categoryLanguage', icon: '💻', Icon: Monitor },
@@ -147,7 +147,7 @@ export default function GoalsPage() {
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+            <label className={labelClass}>
               {t('goals.goalTitle')}
             </label>
             <input
@@ -160,7 +160,7 @@ export default function GoalsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+            <label className={labelClass}>
               {t('goals.description')}
             </label>
             <textarea
@@ -172,7 +172,7 @@ export default function GoalsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+            <label className={labelClass}>
               {t('goals.category')}
             </label>
             <select
@@ -188,7 +188,7 @@ export default function GoalsPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+            <label className={labelClass}>
               {t('goals.targetDate')}
             </label>
             <input

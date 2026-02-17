@@ -6,7 +6,7 @@ import { type RoadmapCategory, type Roadmap } from '../api/roadmaps';
 import { useRoadmaps, useRoadmapTemplates } from '../hooks';
 import EmptyState from '../components/common/EmptyState';
 import { Modal, PageHeader, PageLoader } from '../components/common';
-import { inputClass, buttonSecondaryClass } from '../constants/styles';
+import { inputClass, buttonSecondaryClass, labelClass } from '../constants/styles';
 
 const CATEGORIES: { value: RoadmapCategory; label: string; icon: string; Icon: LucideIcon }[] = [
   { value: 'language', label: 'roadmaps.categoryLanguage', icon: '💻', Icon: Monitor },
@@ -230,7 +230,7 @@ export default function RoadmapsPage() {
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">{t('roadmaps.roadmapTitle')}</label>
+            <label className={labelClass}>{t('roadmaps.roadmapTitle')}</label>
             <input
               type="text"
               value={title}
@@ -241,7 +241,7 @@ export default function RoadmapsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">{t('roadmaps.descriptionLabel')}</label>
+            <label className={labelClass}>{t('roadmaps.descriptionLabel')}</label>
             <textarea
               value={description}
               onChange={e => setDescription(e.target.value)}
@@ -251,7 +251,7 @@ export default function RoadmapsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">{t('roadmaps.category')}</label>
+            <label className={labelClass}>{t('roadmaps.category')}</label>
             <select
               value={category}
               onChange={e => setCategory(e.target.value as RoadmapCategory)}

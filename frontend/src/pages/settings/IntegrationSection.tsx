@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { inputClass, sectionContainerClass } from '../../constants/styles';
+import { inputClass, sectionContainerClass, labelClass } from '../../constants/styles';
 import type { User } from '../../types/user';
 
 interface Props {
@@ -133,7 +133,7 @@ export default function IntegrationSection(props: Props) {
                 <p className="text-gray-400 text-sm mb-4">{t('settings.zennDescription')}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">{t('settings.zennUsername')}</label>
+                <label className={labelClass}>{t('settings.zennUsername')}</label>
                 <input
                   type="text"
                   value={props.zennUsername}
@@ -192,7 +192,7 @@ export default function IntegrationSection(props: Props) {
                 <p className="text-gray-400 text-sm mb-4">{t('settings.qiitaDescription')}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">{t('settings.qiitaUsername')}</label>
+                <label className={labelClass}>{t('settings.qiitaUsername')}</label>
                 <input
                   type="text"
                   value={props.qiitaUsername}
@@ -244,7 +244,7 @@ export default function IntegrationSection(props: Props) {
                 <p className="text-gray-400 text-sm mb-4">{t('settings.atcoderDescription')}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">{t('settings.atcoderUsername')}</label>
+                <label className={labelClass}>{t('settings.atcoderUsername')}</label>
                 <input
                   type="text"
                   value={props.atcoderUsername}
@@ -276,7 +276,7 @@ export default function IntegrationSection(props: Props) {
             <p className="text-gray-400 text-sm mb-4">{t('settings.paizaDescription')}</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">{t('settings.paizaRankLabel')}</label>
+            <label className={labelClass}>{t('settings.paizaRankLabel')}</label>
             <select
               value={props.paizaRank}
               onChange={(e) => props.setPaizaRank(e.target.value)}
