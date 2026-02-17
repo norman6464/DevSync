@@ -6,6 +6,7 @@ import { useAuthStore } from '../store/authStore';
 import type { LearningLog, LogCategory } from '../types/learningLog';
 import LogCalendar from '../components/learning-logs/LogCalendar';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { Modal } from '../components/common';
 
 const CATEGORIES: { value: LogCategory; label: string; Icon: LucideIcon }[] = [
   { value: 'coding', label: 'learningLogs.categoryCoding', Icon: Code },
@@ -203,90 +204,88 @@ export default function LearningLogsPage() {
       )}
 
       {/* Create/Edit Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
-          <div className="bg-gray-900 border border-gray-700 rounded-md max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold mb-4">
-              {editingLog ? t('learningLogs.editLog') : t('learningLogs.addLog')}
-            </h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                  {t('learningLogs.logTitle')}
-                </label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder={t('learningLogs.titlePlaceholder')}
-                  className={inputClass}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                  {t('learningLogs.content')}
-                </label>
-                <textarea
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder={t('learningLogs.contentPlaceholder')}
-                  rows={4}
-                  className={`${inputClass} resize-none`}
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                    {t('learningLogs.category')}
-                  </label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value as LogCategory)}
-                    className={inputClass}
-                  >
-                    {CATEGORIES.map((cat) => (
-                      <option key={cat.value} value={cat.value}>
-                        {t(cat.label)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                    {t('learningLogs.duration')}
-                  </label>
-                  <input
-                    type="number"
-                    value={duration}
-                    onChange={(e) => setDuration(e.target.value)}
-                    placeholder={t('learningLogs.durationPlaceholder')}
-                    min="0"
-                    className={inputClass}
-                  />
-                </div>
-              </div>
-              <div className="flex gap-3 justify-end pt-2">
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors"
-                >
-                  {t('common.cancel')}
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving || !title.trim() || !content.trim()}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
-                >
-                  {saving ? t('common.loading') : editingLog ? t('common.save') : t('learningLogs.addLog')}
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showForm}
+        onClose={resetForm}
+        title={editingLog ? t('learningLogs.editLog') : t('learningLogs.addLog')}
+        maxWidth="max-w-md"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              {t('learningLogs.logTitle')}
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={t('learningLogs.titlePlaceholder')}
+              className={inputClass}
+              required
+            />
           </div>
-        </div>
-      )}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              {t('learningLogs.content')}
+            </label>
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder={t('learningLogs.contentPlaceholder')}
+              rows={4}
+              className={`${inputClass} resize-none`}
+              required
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                {t('learningLogs.category')}
+              </label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value as LogCategory)}
+                className={inputClass}
+              >
+                {CATEGORIES.map((cat) => (
+                  <option key={cat.value} value={cat.value}>
+                    {t(cat.label)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                {t('learningLogs.duration')}
+              </label>
+              <input
+                type="number"
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+                placeholder={t('learningLogs.durationPlaceholder')}
+                min="0"
+                className={inputClass}
+              />
+            </div>
+          </div>
+          <div className="flex gap-3 justify-end pt-2">
+            <button
+              type="button"
+              onClick={resetForm}
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              {t('common.cancel')}
+            </button>
+            <button
+              type="submit"
+              disabled={saving || !title.trim() || !content.trim()}
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              {saving ? t('common.loading') : editingLog ? t('common.save') : t('learningLogs.addLog')}
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Logs List */}
       {view === 'list' && (
