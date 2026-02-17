@@ -5,7 +5,7 @@ import { createChatRoom } from '../../api/chatRooms';
 import type { User } from '../../types/user';
 import type { ChatRoom } from '../../types/chat';
 import Avatar from '../common/Avatar';
-import { inputClass, labelClass, textareaClass } from '../../constants/styles';
+import { inputClass, labelClass, textareaClass, buttonSecondaryClass } from '../../constants/styles';
 
 interface Props {
   followingUsers: User[];
@@ -115,7 +115,7 @@ export default function CreateRoomModal({ followingUsers, onClose, onCreated }: 
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm transition-colors"
+              className={`${buttonSecondaryClass} flex-1 text-sm`}
             >
               {t('common.cancel')}
             </button>

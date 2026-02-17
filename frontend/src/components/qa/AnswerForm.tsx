@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { textareaClass } from '../../constants/styles';
+import { textareaClass, buttonSecondaryClass } from '../../constants/styles';
 
 interface AnswerFormProps {
   initialBody?: string;
@@ -37,7 +37,7 @@ export default function AnswerForm({ initialBody = '', onSubmit, onCancel, loadi
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+            className={buttonSecondaryClass}
           >
             {t('common.cancel')}
           </button>
