@@ -6,7 +6,7 @@ import { type RoadmapCategory, type Roadmap } from '../api/roadmaps';
 import { useRoadmaps, useRoadmapTemplates } from '../hooks';
 import EmptyState from '../components/common/EmptyState';
 import { Modal, PageHeader, PageLoader } from '../components/common';
-import { inputClass } from '../constants/styles';
+import { inputClass, buttonSecondaryClass } from '../constants/styles';
 
 const CATEGORIES: { value: RoadmapCategory; label: string; icon: string; Icon: LucideIcon }[] = [
   { value: 'language', label: 'roadmaps.categoryLanguage', icon: '💻', Icon: Monitor },
@@ -278,14 +278,14 @@ export default function RoadmapsPage() {
             <button
               type="button"
               onClick={resetForm}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+              className={buttonSecondaryClass}
             >
               {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={saving || !title.trim()}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+              className={`${buttonSecondaryClass} disabled:bg-gray-600 disabled:cursor-not-allowed`}
             >
               {saving ? t('common.saving') : editingRoadmap ? t('common.save') : t('roadmaps.create')}
             </button>

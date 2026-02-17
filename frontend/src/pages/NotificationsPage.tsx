@@ -7,6 +7,7 @@ import type { Notification, NotificationType } from '../types/notification';
 import Avatar from '../components/common/Avatar';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import EmptyState from '../components/common/EmptyState';
+import { buttonSecondaryClass } from '../constants/styles';
 
 const FILTER_TYPES: { key: NotificationType | ''; labelKey: string }[] = [
   { key: '', labelKey: 'notifications.filterAll' },
@@ -100,7 +101,7 @@ export default function NotificationsPage() {
         {unreadCount > 0 && (
           <button
             onClick={markAllAsRead}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+            className={`flex items-center gap-2 ${buttonSecondaryClass}`}
           >
             <CheckCheck className="w-5 h-5" />
             {t('notifications.markAllRead')}
