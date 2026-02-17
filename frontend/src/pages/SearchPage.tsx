@@ -206,6 +206,7 @@ function PostResults({ posts, query }: { posts: Post[]; query: string }) {
 }
 
 function PostCard({ post }: { post: Post }) {
+  const { t } = useTranslation();
   return (
     <Link
       to={`/posts/${post.id}`}
@@ -222,8 +223,8 @@ function PostCard({ post }: { post: Post }) {
           <h3 className="font-semibold text-white mb-1">{post.title}</h3>
           <p className="text-sm text-gray-400 line-clamp-2">{post.content}</p>
           <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
-            <span>{post.like_count || 0} likes</span>
-            <span>{post.comment_count || 0} comments</span>
+            <span>{t('search.likesCount', { count: post.like_count || 0 })}</span>
+            <span>{t('search.commentsCount', { count: post.comment_count || 0 })}</span>
           </div>
         </div>
       </div>

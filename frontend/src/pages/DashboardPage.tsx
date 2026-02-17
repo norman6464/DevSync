@@ -166,7 +166,7 @@ export default function DashboardPage() {
         <Modal
           isOpen={!!editingPost}
           onClose={() => setEditingPost(null)}
-          title="投稿を編集"
+          title={t('dashboard.editPost')}
         >
           {editingPost && (
             <PostForm

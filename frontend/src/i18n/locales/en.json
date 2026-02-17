@@ -84,7 +84,8 @@
     "noNotifications": "No notifications",
     "quickStats": "Quick Stats",
     "goalsCompleted": "Goals Completed",
-    "goalsInProgress": "Goals In Progress"
+    "goalsInProgress": "Goals In Progress",
+    "editPost": "Edit Post"
   },
   "post": {
     "createTitle": "What did you learn today?",
@@ -251,7 +252,9 @@
       "posts": "Posts",
       "circles": "Circles"
     },
-    "viewProfile": "View Profile"
+    "viewProfile": "View Profile",
+    "likesCount": "{{count}} likes",
+    "commentsCount": "{{count}} comments"
   },
   "chat": {
     "title": "Messages",

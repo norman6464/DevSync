@@ -38,8 +38,8 @@ export default function PostCard({ post, isOwner = false, onEdit, onDelete, onUp
         setLikeCount((c) => c + 1);
       }
       onUpdate?.();
-    } catch {
-      // handle error
+    } catch (e) {
+      console.warn('Failed to toggle like:', e);
     }
   };
 

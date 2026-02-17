@@ -85,7 +85,8 @@
     "noNotifications": "通知はありません",
     "quickStats": "クイック統計",
     "goalsCompleted": "達成した目標",
-    "goalsInProgress": "進行中の目標"
+    "goalsInProgress": "進行中の目標",
+    "editPost": "投稿を編集"
   },
   "post": {
     "createTitle": "今日学んだことは？",
@@ -259,7 +260,9 @@
       "posts": "投稿",
       "circles": "サークル"
     },
-    "viewProfile": "プロフィール"
+    "viewProfile": "プロフィール",
+    "likesCount": "{{count}}件のいいね",
+    "commentsCount": "{{count}}件のコメント"
   },
   "chat": {
     "title": "メッセージ",

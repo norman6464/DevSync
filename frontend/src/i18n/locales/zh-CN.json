@@ -84,7 +84,8 @@
     "noNotifications": "没有通知",
     "quickStats": "快速统计",
     "goalsCompleted": "已完成目标",
-    "goalsInProgress": "进行中目标"
+    "goalsInProgress": "进行中目标",
+    "editPost": "编辑帖子"
   },
   "post": {
     "createTitle": "今天你学到了什么？",
@@ -251,7 +252,9 @@
       "posts": "帖子",
       "circles": "圈子"
     },
-    "viewProfile": "查看资料"
+    "viewProfile": "查看资料",
+    "likesCount": "{{count}} 个赞",
+    "commentsCount": "{{count}} 条评论"
   },
   "chat": {
     "title": "消息",

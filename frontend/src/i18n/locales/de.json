@@ -84,7 +84,8 @@
     "noNotifications": "Keine Benachrichtigungen",
     "quickStats": "Schnellstatistik",
     "goalsCompleted": "Abgeschlossene Ziele",
-    "goalsInProgress": "Ziele in Bearbeitung"
+    "goalsInProgress": "Ziele in Bearbeitung",
+    "editPost": "Beitrag bearbeiten"
   },
   "post": {
     "createTitle": "Was hast du heute gelernt?",
@@ -251,7 +252,9 @@
       "posts": "Beiträge",
       "circles": "Lernkreise"
     },
-    "viewProfile": "Profil anzeigen"
+    "viewProfile": "Profil anzeigen",
+    "likesCount": "{{count}} Likes",
+    "commentsCount": "{{count}} Kommentare"
   },
   "chat": {
     "title": "Nachrichten",

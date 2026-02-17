@@ -84,7 +84,8 @@
     "noNotifications": "沒有通知",
     "quickStats": "快速統計",
     "goalsCompleted": "已完成目標",
-    "goalsInProgress": "進行中目標"
+    "goalsInProgress": "進行中目標",
+    "editPost": "編輯貼文"
   },
   "post": {
     "createTitle": "今天你學到了什麼？",
@@ -251,7 +252,9 @@
       "posts": "貼文",
       "circles": "圈子"
     },
-    "viewProfile": "查看資料"
+    "viewProfile": "查看資料",
+    "likesCount": "{{count}} 個讚",
+    "commentsCount": "{{count}} 則留言"
   },
   "chat": {
     "title": "訊息",

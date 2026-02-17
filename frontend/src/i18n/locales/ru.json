@@ -84,7 +84,8 @@
     "noNotifications": "Нет уведомлений",
     "quickStats": "Быстрая статистика",
     "goalsCompleted": "Достигнутые цели",
-    "goalsInProgress": "Цели в процессе"
+    "goalsInProgress": "Цели в процессе",
+    "editPost": "Редактировать пост"
   },
   "post": {
     "createTitle": "Что вы узнали сегодня?",
@@ -251,7 +252,9 @@
       "posts": "Посты",
       "circles": "Группы"
     },
-    "viewProfile": "Посмотреть профиль"
+    "viewProfile": "Посмотреть профиль",
+    "likesCount": "{{count}} лайков",
+    "commentsCount": "{{count}} комментариев"
   },
   "chat": {
     "title": "Сообщения",
