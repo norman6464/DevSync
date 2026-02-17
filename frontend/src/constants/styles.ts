@@ -7,6 +7,9 @@ export const buttonPrimaryClass =
 export const buttonDangerClass =
   'px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors';
 
+export const buttonDangerOutlineClass =
+  'px-4 py-2 text-red-400 hover:text-red-300 border border-red-400/30 hover:border-red-400/50 rounded-lg text-sm font-medium transition-colors';
+
 export const buttonSecondaryClass =
   'px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors';
 
