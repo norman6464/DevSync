@@ -2,17 +2,23 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/model"
 )
+
+// LevelServiceInterface はLevelHandlerが依存するサービスメソッドを定義する。
+type LevelServiceInterface interface {
+	GetLevelInfo(userID uint) (*model.LevelInfo, error)
+	GetXPBreakdown(userID uint) (*model.XPBreakdown, error)
+}
 
 // LevelHandler はレベルシステム関連のHTTPハンドラ。
 // ユーザーのレベル情報とXP内訳の取得を処理する。
 type LevelHandler struct {
-	service *service.LevelService
+	service LevelServiceInterface
 }
 
 // NewLevelHandler は新しいLevelHandlerインスタンスを生成する。
-func NewLevelHandler(s *service.LevelService) *LevelHandler {
+func NewLevelHandler(s LevelServiceInterface) *LevelHandler {
 	return &LevelHandler{service: s}
 }
 

@@ -7,14 +7,20 @@ import (
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
+// BadgeServiceInterface はBadgeHandlerが依存するサービスメソッドを定義する。
+type BadgeServiceInterface interface {
+	GetUserBadges(userID uint) ([]service.BadgeResult, error)
+	NotifyBadgeEarned(userID uint, badgeID string) error
+}
+
 // BadgeHandler はバッジ関連のHTTPハンドラ。
 // ユーザーバッジの取得・バッジ獲得通知の作成を処理する。
 type BadgeHandler struct {
-	service *service.BadgeService
+	service BadgeServiceInterface
 }
 
 // NewBadgeHandler は新しいBadgeHandlerインスタンスを生成する。
-func NewBadgeHandler(s *service.BadgeService) *BadgeHandler {
+func NewBadgeHandler(s BadgeServiceInterface) *BadgeHandler {
 	return &BadgeHandler{service: s}
 }
 
