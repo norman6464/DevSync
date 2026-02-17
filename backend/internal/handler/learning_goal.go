@@ -6,17 +6,26 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
 )
+
+// LearningGoalServiceInterface はLearningGoalServiceが実装すべきインターフェース。
+type LearningGoalServiceInterface interface {
+	Create(goal *model.LearningGoal) error
+	GetByID(id uint) (*model.LearningGoal, error)
+	GetByUserID(userID uint) ([]model.LearningGoal, error)
+	GetStats(userID uint) (*model.LearningGoalStats, error)
+	Update(id, userID uint, updates *model.LearningGoal) (*model.LearningGoal, error)
+	Delete(id, userID uint) error
+}
 
 // LearningGoalHandler は学習目標関連のHTTPハンドラ。
 // 学習目標のCRUD・統計情報の取得を処理する。
 type LearningGoalHandler struct {
-	service *service.LearningGoalService
+	service LearningGoalServiceInterface
 }
 
 // NewLearningGoalHandler は新しいLearningGoalHandlerインスタンスを生成する。
-func NewLearningGoalHandler(s *service.LearningGoalService) *LearningGoalHandler {
+func NewLearningGoalHandler(s LearningGoalServiceInterface) *LearningGoalHandler {
 	return &LearningGoalHandler{service: s}
 }
 

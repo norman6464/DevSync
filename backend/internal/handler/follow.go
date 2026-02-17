@@ -3,17 +3,24 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
 )
+
+// FollowServiceInterface はFollowServiceが実装すべきインターフェース。
+type FollowServiceInterface interface {
+	Follow(followerID, followeeID uint) error
+	Unfollow(followerID, followeeID uint) error
+	GetFollowers(userID uint) ([]model.User, error)
+	GetFollowing(userID uint) ([]model.User, error)
+}
 
 // FollowHandler はフォロー関連のHTTPハンドラ。
 // フォロー・アンフォロー・フォロワー/フォロー中一覧の取得を処理する。
 type FollowHandler struct {
-	service *service.FollowService
+	service FollowServiceInterface
 }
 
 // NewFollowHandler は新しいFollowHandlerインスタンスを生成する。
-func NewFollowHandler(s *service.FollowService) *FollowHandler {
+func NewFollowHandler(s FollowServiceInterface) *FollowHandler {
 	return &FollowHandler{service: s}
 }
 
