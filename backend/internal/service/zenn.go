@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
@@ -55,17 +56,17 @@ func (s *ZennService) FetchArticles(username string) ([]model.ZennArticle, error
 
 		resp, err := s.httpClient.Get(url)
 		if err != nil {
-			return nil, fmt.Errorf("failed to fetch Zenn articles: %w", err)
+			return nil, domain.NewError(domain.ErrCodeServiceUnavailable, "Zenn記事の取得に失敗", err)
 		}
 		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("Zenn API returned status %d", resp.StatusCode)
+			return nil, domain.NewError(domain.ErrCodeServiceUnavailable, fmt.Sprintf("Zenn APIエラー: ステータスコード %d", resp.StatusCode), nil)
 		}
 
 		var apiResp ZennAPIResponse
 		if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
-			return nil, fmt.Errorf("failed to decode Zenn response: %w", err)
+			return nil, domain.NewError(domain.ErrCodeServiceUnavailable, "Zennレスポンスのデコードに失敗", err)
 		}
 
 		for _, article := range apiResp.Articles {
