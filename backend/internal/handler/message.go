@@ -6,17 +6,24 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/repository"
 )
+
+// MessageServiceInterface はMessageHandlerが依存するサービスのインターフェース。
+type MessageServiceInterface interface {
+	GetConversations(userID uint) ([]repository.ConversationSummary, error)
+	GetConversation(userID, otherUserID uint, page, limit int) ([]model.Message, error)
+	SendMessage(msg *model.Message) error
+}
 
 // MessageHandler はDM（ダイレクトメッセージ）関連のHTTPハンドラ。
 // 会話一覧・メッセージ取得・メッセージ送信を処理する。
 type MessageHandler struct {
-	service *service.MessageService
+	service MessageServiceInterface
 }
 
 // NewMessageHandler は新しいMessageHandlerインスタンスを生成する。
-func NewMessageHandler(s *service.MessageService) *MessageHandler {
+func NewMessageHandler(s MessageServiceInterface) *MessageHandler {
 	return &MessageHandler{service: s}
 }
 

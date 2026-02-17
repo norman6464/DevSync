@@ -5,16 +5,21 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
 )
+
+// ReminderSettingsServiceInterface はReminderSettingsHandlerが依存するサービスのインターフェース。
+type ReminderSettingsServiceInterface interface {
+	GetSettings(userID uint) (*model.ReminderSettings, error)
+	UpdateSettings(userID uint, updates *model.ReminderSettings) (*model.ReminderSettings, error)
+}
 
 // ReminderSettingsHandler は学習リマインダー設定関連のHTTPハンドラ。
 type ReminderSettingsHandler struct {
-	service *service.ReminderSettingsService
+	service ReminderSettingsServiceInterface
 }
 
 // NewReminderSettingsHandler は新しいReminderSettingsHandlerインスタンスを生成する。
-func NewReminderSettingsHandler(s *service.ReminderSettingsService) *ReminderSettingsHandler {
+func NewReminderSettingsHandler(s ReminderSettingsServiceInterface) *ReminderSettingsHandler {
 	return &ReminderSettingsHandler{service: s}
 }
 
