@@ -3,17 +3,27 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
 )
+
+// AnswerServiceInterface はAnswerServiceが実装すべきインターフェース。
+type AnswerServiceInterface interface {
+	GetByQuestionID(questionID uint) ([]model.Answer, error)
+	Create(answer *model.Answer) error
+	Update(answerID, userID uint, body string) (*model.Answer, error)
+	Delete(answerID, userID uint) error
+	SetBestAnswer(questionID, answerID, userID uint) error
+	Vote(userID, answerID uint, value int) error
+	RemoveVote(userID, answerID uint) error
+}
 
 // AnswerHandler は回答関連のHTTPハンドラ。
 // 回答のCRUD・ベストアンサー選定・投票を処理する。
 type AnswerHandler struct {
-	service *service.AnswerService
+	service AnswerServiceInterface
 }
 
 // NewAnswerHandler は新しいAnswerHandlerインスタンスを生成する。
-func NewAnswerHandler(s *service.AnswerService) *AnswerHandler {
+func NewAnswerHandler(s AnswerServiceInterface) *AnswerHandler {
 	return &AnswerHandler{service: s}
 }
 
