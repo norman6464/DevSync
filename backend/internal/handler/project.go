@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
 )
 
 // parseDate は日付文字列を "2006-01-02" 形式でパースする。
@@ -14,14 +13,26 @@ func parseDate(dateStr string) (time.Time, error) {
 	return time.Parse("2006-01-02", dateStr)
 }
 
+// ProjectServiceInterface はProjectHandlerが依存するサービスメソッドを定義する。
+type ProjectServiceInterface interface {
+	Create(project *model.Project) error
+	GetByID(id uint) (*model.Project, error)
+	GetByUserID(userID uint) ([]model.Project, error)
+	GetFeaturedByUserID(userID uint) ([]model.Project, error)
+	GetAll(limit, offset int) ([]model.Project, int64, error)
+	Update(id, userID uint, updates *model.Project) (*model.Project, error)
+	UpdateFeatured(id, userID uint, featured bool) (*model.Project, error)
+	Delete(id, userID uint) error
+}
+
 // ProjectHandler はプロジェクト関連のHTTPハンドラ。
 // プロジェクトのCRUD・注目プロジェクト取得・一覧取得を処理する。
 type ProjectHandler struct {
-	service *service.ProjectService
+	service ProjectServiceInterface
 }
 
 // NewProjectHandler は新しいProjectHandlerインスタンスを生成する。
-func NewProjectHandler(s *service.ProjectService) *ProjectHandler {
+func NewProjectHandler(s ProjectServiceInterface) *ProjectHandler {
 	return &ProjectHandler{service: s}
 }
 
