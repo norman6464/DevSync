@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Sparkles } from 'lucide-react';
+import { buttonSecondaryClass } from '../../constants/styles';
 import { LANGUAGES, FRAMEWORKS } from '../../constants/skills';
 
 interface Props {
@@ -103,7 +104,7 @@ export default function SkillsSection({
           type="button"
           onClick={onSave}
           disabled={savingSkills}
-          className="px-5 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors"
+          className={`${buttonSecondaryClass} px-5 font-medium text-sm disabled:opacity-50`}
         >
           {savingSkills ? t('common.loading') : t('common.save')}
         </button>

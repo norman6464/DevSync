@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LearningResource, CreateResourceRequest, ResourceCategory, ResourceDifficulty } from '../../types/resource';
+import { buttonSecondaryClass } from '../../constants/styles';
 
 interface ResourceFormProps {
   resource?: LearningResource;
@@ -219,14 +220,14 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+          className={`flex-1 ${buttonSecondaryClass}`}
         >
           {t('common.cancel')}
         </button>
         <button
           type="submit"
           disabled={loading || !title.trim()}
-          className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+          className={`flex-1 ${buttonSecondaryClass} disabled:bg-gray-600 disabled:cursor-not-allowed`}
         >
           {loading ? t('common.saving') : t('common.save')}
         </button>
