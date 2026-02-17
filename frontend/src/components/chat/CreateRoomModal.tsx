@@ -5,7 +5,7 @@ import { createChatRoom } from '../../api/chatRooms';
 import type { User } from '../../types/user';
 import type { ChatRoom } from '../../types/chat';
 import Avatar from '../common/Avatar';
-import { labelClass, textareaClass } from '../../constants/styles';
+import { inputClass, labelClass, textareaClass } from '../../constants/styles';
 
 interface Props {
   followingUsers: User[];
@@ -65,7 +65,7 @@ export default function CreateRoomModal({ followingUsers, onClose, onCreated }: 
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={t('chat.groupNamePlaceholder')}
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={inputClass}
               required
             />
           </div>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Question, CreateQuestionRequest } from '../../types/qa';
-import { buttonSecondaryClass, labelClass, textareaClass } from '../../constants/styles';
+import { buttonSecondaryClass, inputClass, labelClass, textareaClass } from '../../constants/styles';
 
 interface QuestionFormProps {
   question?: Question;
@@ -47,7 +47,7 @@ export default function QuestionForm({ question, onSubmit, onCancel, loading }: 
           onChange={(e) => setTitle(e.target.value)}
           required
           maxLength={500}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+          className={inputClass}
           placeholder={t('qa.questionTitlePlaceholder')}
         />
       </div>
@@ -76,7 +76,7 @@ export default function QuestionForm({ question, onSubmit, onCancel, loading }: 
           type="text"
           value={tagsInput}
           onChange={(e) => setTagsInput(e.target.value)}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+          className={inputClass}
           placeholder={t('qa.tagsPlaceholder')}
         />
         <p className="text-xs text-gray-500 mt-1">{t('qa.tagsHint')}</p>

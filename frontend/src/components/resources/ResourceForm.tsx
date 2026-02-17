@@ -72,7 +72,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
           onChange={(e) => setTitle(e.target.value)}
           required
           maxLength={300}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+          className={inputClass}
           placeholder={t('resources.titlePlaceholder')}
         />
       </div>
@@ -86,7 +86,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
           type="url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+          className={inputClass}
           placeholder="https://..."
         />
       </div>
@@ -153,7 +153,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-            className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+            className={`${inputClass} flex-1`}
             placeholder={t('resources.tagsPlaceholder')}
           />
           <button
@@ -196,7 +196,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
           type="url"
           value={imageUrl}
           onChange={(e) => setImageUrl(e.target.value)}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+          className={inputClass}
           placeholder="https://..."
         />
       </div>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { BookReview, CreateBookReviewRequest } from '../../types/bookReview';
-import { buttonSecondaryClass, labelClass, textareaClass } from '../../constants/styles';
+import { buttonSecondaryClass, inputClass, labelClass, textareaClass } from '../../constants/styles';
 
 interface BookReviewFormProps {
   review?: BookReview;
@@ -69,7 +69,7 @@ export default function BookReviewForm({ review, onSubmit, onCancel, loading }: 
           onChange={(e) => setTitle(e.target.value)}
           required
           maxLength={300}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+          className={inputClass}
           placeholder={t('bookReviews.bookTitlePlaceholder')}
         />
       </div>
@@ -84,7 +84,7 @@ export default function BookReviewForm({ review, onSubmit, onCancel, loading }: 
           value={author}
           onChange={(e) => setAuthor(e.target.value)}
           maxLength={200}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+          className={inputClass}
           placeholder={t('bookReviews.authorPlaceholder')}
         />
       </div>
@@ -99,7 +99,7 @@ export default function BookReviewForm({ review, onSubmit, onCancel, loading }: 
           value={isbn}
           onChange={(e) => setIsbn(e.target.value)}
           maxLength={20}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+          className={inputClass}
           placeholder="978-4-..."
         />
       </div>
@@ -135,7 +135,7 @@ export default function BookReviewForm({ review, onSubmit, onCancel, loading }: 
           type="url"
           value={imageUrl}
           onChange={(e) => setImageUrl(e.target.value)}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+          className={inputClass}
           placeholder="https://..."
         />
       </div>
