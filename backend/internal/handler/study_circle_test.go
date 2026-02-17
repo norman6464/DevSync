@@ -411,6 +411,119 @@ func TestStudyCircleGetStreakRanking_Success(t *testing.T) {
 
 // ---------- ReorderSteps ----------
 
+// ---------- UpdateStep ----------
+
+func TestStudyCircleUpdateStep_Success(t *testing.T) {
+	h, repo := setupStudyCircleHandler()
+	r := newRouter(1)
+	r.PUT("/study-circles/:id/steps/:stepId", h.UpdateStep)
+
+	circle := &model.StudyCircle{OwnerID: 1}
+	circle.ID = 10
+	repo.On("FindByID", uint(10)).Return(circle, nil)
+	step := &model.StudyCircleStep{Title: "Old Title", CircleID: 10}
+	step.ID = 5
+	repo.On("FindStepByID", uint(5)).Return(step, nil)
+	repo.On("UpdateStep", mock.AnythingOfType("*model.StudyCircleStep")).Return(nil)
+
+	w := doRequest(r, http.MethodPut, "/study-circles/10/steps/5", map[string]interface{}{
+		"title": "New Title",
+	})
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestStudyCircleUpdateStep_NotOwner(t *testing.T) {
+	h, repo := setupStudyCircleHandler()
+	r := newRouter(1)
+	r.PUT("/study-circles/:id/steps/:stepId", h.UpdateStep)
+
+	circle := &model.StudyCircle{OwnerID: 999}
+	circle.ID = 10
+	repo.On("FindByID", uint(10)).Return(circle, nil)
+
+	w := doRequest(r, http.MethodPut, "/study-circles/10/steps/5", map[string]interface{}{
+		"title": "New Title",
+	})
+	assertStatus(t, w, http.StatusForbidden)
+}
+
+func TestStudyCircleUpdateStep_StepNotFound(t *testing.T) {
+	h, repo := setupStudyCircleHandler()
+	r := newRouter(1)
+	r.PUT("/study-circles/:id/steps/:stepId", h.UpdateStep)
+
+	circle := &model.StudyCircle{OwnerID: 1}
+	circle.ID = 10
+	repo.On("FindByID", uint(10)).Return(circle, nil)
+	repo.On("FindStepByID", uint(5)).Return(nil, service.ErrNotFound)
+
+	w := doRequest(r, http.MethodPut, "/study-circles/10/steps/5", map[string]interface{}{
+		"title": "New Title",
+	})
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+// ---------- DeleteStep ----------
+
+func TestStudyCircleDeleteStep_Success(t *testing.T) {
+	h, repo := setupStudyCircleHandler()
+	r := newRouter(1)
+	r.DELETE("/study-circles/:id/steps/:stepId", h.DeleteStep)
+
+	circle := &model.StudyCircle{OwnerID: 1}
+	circle.ID = 10
+	repo.On("FindByID", uint(10)).Return(circle, nil)
+	step := &model.StudyCircleStep{CircleID: 10}
+	step.ID = 5
+	repo.On("FindStepByID", uint(5)).Return(step, nil)
+	repo.On("DeleteStep", uint(5)).Return(nil)
+
+	w := doRequest(r, http.MethodDelete, "/study-circles/10/steps/5", nil)
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestStudyCircleDeleteStep_NotOwner(t *testing.T) {
+	h, repo := setupStudyCircleHandler()
+	r := newRouter(1)
+	r.DELETE("/study-circles/:id/steps/:stepId", h.DeleteStep)
+
+	circle := &model.StudyCircle{OwnerID: 999}
+	circle.ID = 10
+	repo.On("FindByID", uint(10)).Return(circle, nil)
+
+	w := doRequest(r, http.MethodDelete, "/study-circles/10/steps/5", nil)
+	assertStatus(t, w, http.StatusForbidden)
+}
+
+// ---------- GetProgress ----------
+
+func TestStudyCircleGetProgress_Success(t *testing.T) {
+	h, repo := setupStudyCircleHandler()
+	r := newRouter(1)
+	r.GET("/study-circles/:id/progress", h.GetProgress)
+
+	repo.On("IsMember", uint(10), uint(1)).Return(true, nil)
+	repo.On("GetProgress", uint(10)).Return([]model.StudyCircleMemberProgress{
+		{CircleID: 10, UserID: 1, StepID: 1, IsCompleted: true},
+	}, nil)
+
+	w := doRequest(r, http.MethodGet, "/study-circles/10/progress", nil)
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestStudyCircleGetProgress_NotMember(t *testing.T) {
+	h, repo := setupStudyCircleHandler()
+	r := newRouter(1)
+	r.GET("/study-circles/:id/progress", h.GetProgress)
+
+	repo.On("IsMember", uint(10), uint(1)).Return(false, nil)
+
+	w := doRequest(r, http.MethodGet, "/study-circles/10/progress", nil)
+	assertStatus(t, w, http.StatusForbidden)
+}
+
+// ---------- ReorderSteps ----------
+
 func TestStudyCircleReorderSteps_Success(t *testing.T) {
 	h, repo := setupStudyCircleHandler()
 	r := newRouter(1)
