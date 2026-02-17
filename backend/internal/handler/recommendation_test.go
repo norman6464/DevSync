@@ -12,7 +12,7 @@ import (
 // ---------- GetRecommendedUsers ----------
 
 func TestRecommendationGetUsers_Success(t *testing.T) {
-	h, recRepo, userRepo := setupRecommendationHandler()
+	h, recRepo, userRepo := setupRecommendationHandlerRepo()
 	r := newRouter(1)
 	r.GET("/recommendations/users", h.GetRecommendedUsers)
 
@@ -43,7 +43,7 @@ func TestRecommendationGetUsers_Success(t *testing.T) {
 }
 
 func TestRecommendationGetUsers_EmptySkills(t *testing.T) {
-	h, _, userRepo := setupRecommendationHandler()
+	h, _, userRepo := setupRecommendationHandlerRepo()
 	r := newRouter(1)
 	r.GET("/recommendations/users", h.GetRecommendedUsers)
 
@@ -62,7 +62,7 @@ func TestRecommendationGetUsers_EmptySkills(t *testing.T) {
 }
 
 func TestRecommendationGetUsers_UserNotFound(t *testing.T) {
-	h, _, userRepo := setupRecommendationHandler()
+	h, _, userRepo := setupRecommendationHandlerRepo()
 	r := newRouter(1)
 	r.GET("/recommendations/users", h.GetRecommendedUsers)
 
@@ -75,7 +75,7 @@ func TestRecommendationGetUsers_UserNotFound(t *testing.T) {
 // ---------- GetTrendingPosts ----------
 
 func TestRecommendationGetTrendingPosts_Success(t *testing.T) {
-	h, recRepo, _ := setupRecommendationHandler()
+	h, recRepo, _ := setupRecommendationHandlerRepo()
 	r := newRouter(1)
 	r.GET("/recommendations/posts", h.GetTrendingPosts)
 
@@ -93,7 +93,7 @@ func TestRecommendationGetTrendingPosts_Success(t *testing.T) {
 }
 
 func TestRecommendationGetTrendingPosts_Empty(t *testing.T) {
-	h, recRepo, _ := setupRecommendationHandler()
+	h, recRepo, _ := setupRecommendationHandlerRepo()
 	r := newRouter(1)
 	r.GET("/recommendations/posts", h.GetTrendingPosts)
 
@@ -110,7 +110,7 @@ func TestRecommendationGetTrendingPosts_Empty(t *testing.T) {
 // ---------- GetTrendingResources ----------
 
 func TestRecommendationGetTrendingResources_Success(t *testing.T) {
-	h, recRepo, _ := setupRecommendationHandler()
+	h, recRepo, _ := setupRecommendationHandlerRepo()
 	r := newRouter(1)
 	r.GET("/recommendations/resources", h.GetTrendingResources)
 
@@ -129,7 +129,7 @@ func TestRecommendationGetTrendingResources_Success(t *testing.T) {
 }
 
 func TestRecommendationGetTrendingResources_Empty(t *testing.T) {
-	h, recRepo, _ := setupRecommendationHandler()
+	h, recRepo, _ := setupRecommendationHandlerRepo()
 	r := newRouter(1)
 	r.GET("/recommendations/resources", h.GetTrendingResources)
 

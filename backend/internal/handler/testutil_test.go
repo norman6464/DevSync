@@ -473,8 +473,8 @@ func setupChatRoomHandlerRepo() (*ChatRoomHandler, *MockChatRoomRepository, *Moc
 	return h, roomRepo, msgRepo
 }
 
-// setupRecommendationHandler はRecommendationHandlerテスト用のセットアップを行う。
-func setupRecommendationHandler() (*RecommendationHandler, *MockRecommendationRepository, *MockUserRepository) {
+// setupRecommendationHandlerRepo はRecommendationHandlerテスト用のセットアップを行う（リポジトリモック版）。
+func setupRecommendationHandlerRepo() (*RecommendationHandler, *MockRecommendationRepository, *MockUserRepository) {
 	recRepo := new(MockRecommendationRepository)
 	userRepo := new(MockUserRepository)
 	svc := service.NewRecommendationService(recRepo, userRepo)
@@ -1167,5 +1167,75 @@ func (m *MockLearningLogService) GetCalendarData(userID uint) ([]model.CalendarE
 func setupLearningLogHandler() (*LearningLogHandler, *MockLearningLogService) {
 	svc := new(MockLearningLogService)
 	h := NewLearningLogHandler(svc)
+	return h, svc
+}
+
+// MockMessageService は MessageServiceInterface のモック実装。
+type MockMessageService struct{ mock.Mock }
+
+func (m *MockMessageService) GetConversations(userID uint) ([]repository.ConversationSummary, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]repository.ConversationSummary), args.Error(1)
+}
+func (m *MockMessageService) GetConversation(userID, otherUserID uint, page, limit int) ([]model.Message, error) {
+	args := m.Called(userID, otherUserID, page, limit)
+	return args.Get(0).([]model.Message), args.Error(1)
+}
+func (m *MockMessageService) SendMessage(msg *model.Message) error {
+	return m.Called(msg).Error(0)
+}
+
+// setupMessageHandler はMessageHandlerテスト用のセットアップを行う。
+func setupMessageHandler() (*MessageHandler, *MockMessageService) {
+	svc := new(MockMessageService)
+	h := NewMessageHandler(svc)
+	return h, svc
+}
+
+// MockReminderSettingsService は ReminderSettingsServiceInterface のモック実装。
+type MockReminderSettingsService struct{ mock.Mock }
+
+func (m *MockReminderSettingsService) GetSettings(userID uint) (*model.ReminderSettings, error) {
+	args := m.Called(userID)
+	if s := args.Get(0); s != nil {
+		return s.(*model.ReminderSettings), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockReminderSettingsService) UpdateSettings(userID uint, updates *model.ReminderSettings) (*model.ReminderSettings, error) {
+	args := m.Called(userID, updates)
+	if s := args.Get(0); s != nil {
+		return s.(*model.ReminderSettings), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+// setupReminderSettingsHandler はReminderSettingsHandlerテスト用のセットアップを行う。
+func setupReminderSettingsHandler() (*ReminderSettingsHandler, *MockReminderSettingsService) {
+	svc := new(MockReminderSettingsService)
+	h := NewReminderSettingsHandler(svc)
+	return h, svc
+}
+
+// MockRecommendationService は RecommendationServiceInterface のモック実装。
+type MockRecommendationService struct{ mock.Mock }
+
+func (m *MockRecommendationService) GetRecommendedUsers(userID uint) ([]model.RecommendedUser, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.RecommendedUser), args.Error(1)
+}
+func (m *MockRecommendationService) GetTrendingPosts() ([]model.Post, error) {
+	args := m.Called()
+	return args.Get(0).([]model.Post), args.Error(1)
+}
+func (m *MockRecommendationService) GetTrendingResources() ([]model.LearningResource, error) {
+	args := m.Called()
+	return args.Get(0).([]model.LearningResource), args.Error(1)
+}
+
+// setupRecommendationHandler はRecommendationHandlerテスト用のセットアップを行う。
+func setupRecommendationHandler() (*RecommendationHandler, *MockRecommendationService) {
+	svc := new(MockRecommendationService)
+	h := NewRecommendationHandler(svc)
 	return h, svc
 }
