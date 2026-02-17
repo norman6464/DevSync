@@ -7,7 +7,7 @@ import { useQuestions, useDebounce, useConfirm } from '../hooks';
 import QuestionCard from '../components/qa/QuestionCard';
 import QuestionForm from '../components/qa/QuestionForm';
 import { QuestionCardSkeleton } from '../components/common/Skeleton';
-import { EmptyState, Modal, Pagination } from '../components/common';
+import { EmptyState, Modal, Pagination, SearchInput } from '../components/common';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 
 export default function QAPage() {
@@ -63,22 +63,13 @@ export default function QAPage() {
       {/* Search & Sort */}
       <div className="flex flex-wrap gap-4 mb-6">
         <div className="flex-1 min-w-[200px]">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-              placeholder={t('qa.searchPlaceholder')}
-              className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
-            />
-            <button
-              onClick={handleSearch}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-            >
-              {t('common.search')}
-            </button>
-          </div>
+          <SearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onSearch={handleSearch}
+            placeholder={t('qa.searchPlaceholder')}
+            showButton
+          />
         </div>
         <div className="flex gap-2">
           {(['newest', 'votes', 'unanswered'] as const).map(s => (
