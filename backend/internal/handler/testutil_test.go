@@ -611,3 +611,42 @@ func setupStudyCircleHandler() (*StudyCircleHandler, *MockStudyCircleRepository)
 	h := NewStudyCircleHandler(svc)
 	return h, repo
 }
+
+// MockBookReviewService は BookReviewServiceInterface のモック実装。
+type MockBookReviewService struct{ mock.Mock }
+
+func (m *MockBookReviewService) Create(review *model.BookReview) error {
+	return m.Called(review).Error(0)
+}
+func (m *MockBookReviewService) GetByID(id uint) (*model.BookReview, error) {
+	args := m.Called(id)
+	if r := args.Get(0); r != nil {
+		return r.(*model.BookReview), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockBookReviewService) GetByUserID(userID uint) ([]model.BookReview, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.BookReview), args.Error(1)
+}
+func (m *MockBookReviewService) GetAll(limit, offset int) ([]model.BookReview, int64, error) {
+	args := m.Called(limit, offset)
+	return args.Get(0).([]model.BookReview), args.Get(1).(int64), args.Error(2)
+}
+func (m *MockBookReviewService) Update(id, userID uint, updates *model.BookReview) (*model.BookReview, error) {
+	args := m.Called(id, userID, updates)
+	if r := args.Get(0); r != nil {
+		return r.(*model.BookReview), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockBookReviewService) Delete(id, userID uint) error {
+	return m.Called(id, userID).Error(0)
+}
+
+// setupBookReviewHandler はBookReviewHandlerテスト用のセットアップを行う。
+func setupBookReviewHandler() (*BookReviewHandler, *MockBookReviewService) {
+	mockService := new(MockBookReviewService)
+	h := NewBookReviewHandler(mockService)
+	return h, mockService
+}
