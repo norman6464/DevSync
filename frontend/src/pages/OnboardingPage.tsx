@@ -8,6 +8,7 @@ import { getGitHubConnectURL } from '../api/github';
 import { connectZenn } from '../api/zenn';
 import { connectQiita } from '../api/qiita';
 import { connectAtCoder } from '../api/atcoder';
+import { sectionContainerClass } from '../constants/styles';
 import toast from 'react-hot-toast';
 import { LANGUAGES, FRAMEWORKS } from '../constants/skills';
 import { inputClass } from '../constants/styles';
@@ -213,7 +214,7 @@ export default function OnboardingPage() {
         </div>
 
         {/* Step Content */}
-        <div className="bg-gray-900 border border-gray-800 rounded-md overflow-hidden">
+        <div className={sectionContainerClass}>
           {/* Step 1: Profile */}
           {step === 1 && (
             <div>

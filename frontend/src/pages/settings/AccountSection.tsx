@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { inputClass, buttonSecondaryClass } from '../../constants/styles';
+import { inputClass, buttonSecondaryClass, sectionContainerClass } from '../../constants/styles';
 import { Modal } from '../../components/common';
 import type { User } from '../../types/user';
 
@@ -27,7 +27,7 @@ export default function AccountSection(props: Props) {
   return (
     <>
       {/* Email Notifications */}
-      <div className="bg-gray-900 border border-gray-800 rounded-md overflow-hidden">
+      <div className={sectionContainerClass}>
         <div className="px-6 py-4 border-b border-gray-800">
           <h2 className="text-base font-semibold">{t('settings.emailNotifications')}</h2>
         </div>

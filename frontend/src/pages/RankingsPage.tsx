@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useRankings } from '../hooks';
+import { sectionContainerClass } from '../constants/styles';
 import Avatar from '../components/common/Avatar';
 import { PageLoader } from '../components/common';
 
@@ -128,7 +129,7 @@ export default function RankingsPage() {
           {t('rankings.noData')}
         </div>
       ) : (
-        <div className="bg-gray-900 border border-gray-800 rounded-md overflow-hidden">
+        <div className={sectionContainerClass}>
           <div className="px-6 py-3 border-b border-gray-800 grid grid-cols-[3rem_1fr_auto] gap-4 text-xs font-medium text-gray-500 uppercase tracking-wider">
             <span className="text-center">{t('rankings.rank')}</span>
             <span>{t('rankings.developer')}</span>

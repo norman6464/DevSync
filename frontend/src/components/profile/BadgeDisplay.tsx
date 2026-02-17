@@ -6,6 +6,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import type { BadgeResult } from '../../types/badge';
+import { sectionContainerClass } from '../../constants/styles';
 
 interface BadgeDisplayProps {
   badges: BadgeResult[];
@@ -42,7 +43,7 @@ export default function BadgeDisplay({ badges }: BadgeDisplayProps) {
   const lockedBadges = badges.filter((b) => !b.earned);
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-md overflow-hidden">
+    <div className={sectionContainerClass}>
       <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <svg
