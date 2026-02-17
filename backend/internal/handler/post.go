@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -42,23 +43,10 @@ func NewPostHandler(s PostServiceInterface, snippetService CodeSnippetServiceInt
 	return &PostHandler{service: s, snippetService: snippetService}
 }
 
-// CreatePostInput は投稿作成のリクエストボディ。
-type CreatePostInput struct {
-	Title     string `json:"title" binding:"required"`
-	Content   string `json:"content" binding:"required"`
-	ImageURLs string `json:"image_urls"`
-	IsDraft   bool   `json:"is_draft"`
-	CodeSnippets []struct {
-		Language string `json:"language"`
-		FileName string `json:"file_name"`
-		Code     string `json:"code"`
-	} `json:"code_snippets"`
-}
-
 // Create は新しい投稿を作成する。
 func (h *PostHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
-	input := bindJSON[CreatePostInput](c)
+	input := bindJSON[dto.CreatePostRequest](c)
 	if input == nil {
 		return
 	}
@@ -126,21 +114,10 @@ func (h *PostHandler) GetByID(c *gin.Context) {
 	}
 
 	userID := c.GetUint("userID")
-	type postWithLiked struct {
-		model.Post
-		Liked bool `json:"liked"`
-	}
-	respondOK(c, postWithLiked{
+	respondOK(c, dto.PostDetailResponse{
 		Post:  *post,
 		Liked: h.service.HasLiked(userID, post.ID),
 	})
-}
-
-// UpdatePostInput は投稿更新のリクエストボディ。
-type UpdatePostInput struct {
-	Title     string `json:"title"`
-	Content   string `json:"content"`
-	ImageURLs string `json:"image_urls"`
 }
 
 // Update は投稿を更新する。所有者のみ更新可能。
@@ -151,7 +128,7 @@ func (h *PostHandler) Update(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	input := bindJSON[UpdatePostInput](c)
+	input := bindJSON[dto.UpdatePostRequest](c)
 	if input == nil {
 		return
 	}
@@ -251,11 +228,6 @@ func (h *PostHandler) GetComments(c *gin.Context) {
 	respondOK(c, comments)
 }
 
-// CreateCommentInput はコメント作成のリクエストボディ。
-type CreateCommentInput struct {
-	Content string `json:"content" binding:"required"`
-}
-
 // CreateComment は投稿にコメントを作成する。
 func (h *PostHandler) CreateComment(c *gin.Context) {
 	id, ok := parseID(c, "id")
@@ -264,7 +236,7 @@ func (h *PostHandler) CreateComment(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	input := bindJSON[CreateCommentInput](c)
+	input := bindJSON[dto.CreateCommentRequest](c)
 	if input == nil {
 		return
 	}
