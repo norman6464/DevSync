@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { inputClass, sectionContainerClass, labelClass, selectClass } from '../../constants/styles';
+import { inputClass, sectionContainerClass, labelClass, selectClass, buttonDangerOutlineClass } from '../../constants/styles';
 import type { User } from '../../types/user';
 
 interface Props {
@@ -73,7 +73,7 @@ export default function IntegrationSection(props: Props) {
                 </button>
                 <button
                   onClick={props.onDisconnectGitHub}
-                  className="px-4 py-2 text-red-400 hover:text-red-300 border border-red-400/30 hover:border-red-400/50 rounded-lg text-sm font-medium transition-colors"
+                  className={buttonDangerOutlineClass}
                 >
                   {t('settings.disconnect')}
                 </button>
@@ -120,7 +120,7 @@ export default function IntegrationSection(props: Props) {
                 </button>
                 <button
                   onClick={props.onDisconnectZenn}
-                  className="px-4 py-2 text-red-400 hover:text-red-300 border border-red-400/30 hover:border-red-400/50 rounded-lg text-sm font-medium transition-colors"
+                  className={buttonDangerOutlineClass}
                 >
                   {t('settings.disconnect')}
                 </button>
@@ -179,7 +179,7 @@ export default function IntegrationSection(props: Props) {
                 </button>
                 <button
                   onClick={props.onDisconnectQiita}
-                  className="px-4 py-2 text-red-400 hover:text-red-300 border border-red-400/30 hover:border-red-400/50 rounded-lg text-sm font-medium transition-colors"
+                  className={buttonDangerOutlineClass}
                 >
                   {t('settings.disconnect')}
                 </button>
@@ -231,7 +231,7 @@ export default function IntegrationSection(props: Props) {
               <div className="flex gap-2">
                 <button
                   onClick={props.onDisconnectAtCoder}
-                  className="px-4 py-2 text-red-400 hover:text-red-300 border border-red-400/30 hover:border-red-400/50 rounded-lg text-sm font-medium transition-colors"
+                  className={buttonDangerOutlineClass}
                 >
                   {t('settings.disconnect')}
                 </button>
