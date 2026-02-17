@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -73,7 +74,7 @@ func (h *GitHubHandler) Callback(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "github connected"})
+	respondOK(c, domain.NewMessageResponse("github connected"))
 }
 
 // GetContributions は指定ユーザーのGitHubコントリビューション情報を取得する。
@@ -130,7 +131,7 @@ func (h *GitHubHandler) Sync(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "sync complete"})
+	respondOK(c, domain.NewMessageResponse("sync complete"))
 }
 
 // Disconnect は現在のユーザーのGitHub連携を解除する。
@@ -142,5 +143,5 @@ func (h *GitHubHandler) Disconnect(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "github disconnected"})
+	respondOK(c, domain.NewMessageResponse("github disconnected"))
 }

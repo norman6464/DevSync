@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -35,7 +36,7 @@ func (h *FollowHandler) Follow(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, gin.H{"message": "followed"})
+	respondOK(c, domain.NewMessageResponse("followed"))
 }
 
 // Unfollow は指定ユーザーのフォローを解除する。
@@ -49,7 +50,7 @@ func (h *FollowHandler) Unfollow(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, gin.H{"message": "unfollowed"})
+	respondOK(c, domain.NewMessageResponse("unfollowed"))
 }
 
 // GetFollowers は指定ユーザーのフォロワー一覧を返す。

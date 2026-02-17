@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
 )
@@ -377,5 +378,5 @@ func (h *RoadmapHandler) ReorderSteps(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "steps reordered"})
+	respondOK(c, domain.NewMessageResponse("steps reordered"))
 }

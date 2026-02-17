@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/service"
 )
 
@@ -55,5 +56,5 @@ func (h *BadgeHandler) NotifyBadgeEarned(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "badge notification created"})
+	respondOK(c, domain.NewMessageResponse("badge notification created"))
 }

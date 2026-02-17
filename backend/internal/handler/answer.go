@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -137,7 +138,7 @@ func (h *AnswerHandler) SetBestAnswer(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "Best answer set successfully"})
+	respondOK(c, domain.NewMessageResponse("Best answer set successfully"))
 }
 
 // Vote は回答に投票する。
@@ -158,7 +159,7 @@ func (h *AnswerHandler) Vote(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "Voted successfully"})
+	respondOK(c, domain.NewMessageResponse("Voted successfully"))
 }
 
 // RemoveVote は回答への投票を取り消す。
@@ -174,5 +175,5 @@ func (h *AnswerHandler) RemoveVote(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "Vote removed successfully"})
+	respondOK(c, domain.NewMessageResponse("Vote removed successfully"))
 }

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -222,7 +223,7 @@ func (h *NoteHandler) ToggleFavorite(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "お気に入り状態を更新しました"})
+	respondOK(c, domain.NewMessageResponse("お気に入り状態を更新しました"))
 }
 
 // Archive はノートをアーカイブする。
@@ -237,7 +238,7 @@ func (h *NoteHandler) Archive(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "ノートをアーカイブしました"})
+	respondOK(c, domain.NewMessageResponse("ノートをアーカイブしました"))
 }
 
 // Unarchive はノートのアーカイブを解除する。
@@ -252,7 +253,7 @@ func (h *NoteHandler) Unarchive(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "ノートのアーカイブを解除しました"})
+	respondOK(c, domain.NewMessageResponse("ノートのアーカイブを解除しました"))
 }
 
 // GetArchived は現在のユーザーのアーカイブ済みノート一覧をページネーション付きで取得する。
