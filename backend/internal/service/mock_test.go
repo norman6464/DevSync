@@ -1316,3 +1316,38 @@ var _ repository.ActivityReportRepositoryInterface = (*MockActivityReportReposit
 var _ repository.LevelRepositoryInterface = (*MockLevelRepository)(nil)
 var _ repository.LearningAnalyticsRepositoryInterface = (*MockLearningAnalyticsRepository)(nil)
 var _ repository.StudyCircleRepositoryInterface = (*MockStudyCircleRepository)(nil)
+var _ repository.BadgeRepositoryInterface = (*MockBadgeRepository)(nil)
+var _ NotificationServiceInterface = (*MockNotificationService)(nil)
+
+// ============================================================
+// MockBadgeRepository は repository.BadgeRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockBadgeRepository struct {
+	mock.Mock
+}
+
+func (m *MockBadgeRepository) GetBadgeStats(userID uint) (*model.BadgeStats, error) {
+	args := m.Called(userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.BadgeStats), args.Error(1)
+}
+
+// ============================================================
+// MockNotificationService は NotificationServiceInterface のテスト用モック実装。
+// ============================================================
+
+type MockNotificationService struct {
+	mock.Mock
+}
+
+func (m *MockNotificationService) CreateNotification(notification *model.Notification) error {
+	args := m.Called(notification)
+	return args.Error(0)
+}
+
+func (m *MockNotificationService) NotifyFollowers(actorID uint, postID uint, notificationType model.NotificationType) {
+	m.Called(actorID, postID, notificationType)
+}
