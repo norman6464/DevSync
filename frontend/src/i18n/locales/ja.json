@@ -20,7 +20,8 @@
     "add": "追加",
     "menu": "メニュー",
     "scrollToTop": "ページ上部に戻る",
-    "dismiss": "閉じる"
+    "dismiss": "閉じる",
+    "selectLanguage": "言語を選択"
   },
   "nav": {
     "dashboard": "ダッシュボード",

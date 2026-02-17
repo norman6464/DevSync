@@ -121,7 +121,7 @@ export default function PortfolioModal({
               <iframe
                 srcDoc={html}
                 className="w-full h-96 border-0"
-                title="Portfolio Preview"
+                title={t('portfolio.preview')}
               />
             </div>
           )}

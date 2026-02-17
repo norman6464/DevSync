@@ -19,7 +19,8 @@
     "or": "或",
     "and": "和",
     "menu": "選單",
-    "scrollToTop": "返回頂部"
+    "scrollToTop": "返回頂部",
+    "selectLanguage": "選擇語言"
   },
   "nav": {
     "dashboard": "儀表板",

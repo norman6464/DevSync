@@ -19,7 +19,8 @@
     "or": "ou",
     "and": "et",
     "menu": "Menu",
-    "scrollToTop": "Retour en haut"
+    "scrollToTop": "Retour en haut",
+    "selectLanguage": "Choisir la langue"
   },
   "nav": {
     "dashboard": "Tableau de bord",
