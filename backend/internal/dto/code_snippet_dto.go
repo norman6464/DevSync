@@ -2,9 +2,9 @@ package dto
 
 // CreateCodeSnippetRequest はコードスニペット作成リクエスト。
 type CreateCodeSnippetRequest struct {
-	Language string `json:"language" binding:"required"`
+	Language string `json:"language" binding:"required" validate:"required"`
 	FileName string `json:"file_name"`
-	Code     string `json:"code" binding:"required"`
+	Code     string `json:"code" binding:"required" validate:"required"`
 }
 
 // UpdateCodeSnippetRequest はコードスニペット更新リクエスト。
@@ -16,6 +16,6 @@ type UpdateCodeSnippetRequest struct {
 
 // CreateSnippetCommentRequest はスニペットコメント作成リクエスト。
 type CreateSnippetCommentRequest struct {
-	LineNumber int    `json:"line_number" binding:"required"`
-	Content    string `json:"content" binding:"required"`
+	LineNumber int    `json:"line_number" binding:"required" validate:"required"`
+	Content    string `json:"content" binding:"required" validate:"required"`
 }
