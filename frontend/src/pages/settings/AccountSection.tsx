@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { inputClass } from '../../constants/styles';
+import { inputClass, buttonSecondaryClass } from '../../constants/styles';
 import { Modal } from '../../components/common';
 import type { User } from '../../types/user';
 
@@ -83,7 +83,7 @@ export default function AccountSection(props: Props) {
             type="button"
             onClick={props.onSaveEmailPreferences}
             disabled={props.savingEmail}
-            className="px-5 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors"
+            className={`${buttonSecondaryClass} px-5 font-medium text-sm disabled:opacity-50`}
           >
             {props.savingEmail ? t('common.loading') : t('common.save')}
           </button>
@@ -140,7 +140,7 @@ export default function AccountSection(props: Props) {
               props.setShowDeleteModal(false);
               props.setDeletePassword('');
             }}
-            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors"
+            className={`${buttonSecondaryClass} text-sm font-medium`}
           >
             {t('common.cancel')}
           </button>
