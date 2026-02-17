@@ -13,6 +13,7 @@ import PostForm from '../components/posts/PostForm';
 import { Modal } from '../components/common';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import QuickPostForm from '../components/posts/QuickPostForm';
+import { buttonPrimaryClass } from '../constants/styles';
 import { PostCardSkeleton } from '../components/common/Skeleton';
 import Avatar from '../components/common/Avatar';
 import { formatDistanceToNow } from '../utils/timeFormat';
@@ -136,7 +137,7 @@ export default function DashboardPage() {
             {tab === 'timeline' && (
               <Link
                 to="/search"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors"
+                className={`${buttonPrimaryClass} inline-flex items-center gap-2 text-sm`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
