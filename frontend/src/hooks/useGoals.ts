@@ -79,7 +79,6 @@ export function useGoals() {
   }, [t, setGoals]);
 
   const handleDelete = useCallback(async (id: number) => {
-    if (!confirm(t('goals.confirmDelete'))) return false;
     try {
       await deleteGoal(id);
       setGoals(prev => prev.filter(g => g.id !== id));

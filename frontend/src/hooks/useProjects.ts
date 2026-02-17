@@ -65,7 +65,6 @@ export function useProjects() {
   }, [t, projects]);
 
   const handleDelete = useCallback(async (project: Project) => {
-    if (!confirm(t('projects.confirmDelete'))) return false;
     try {
       await deleteProject(project.id);
       setLocalProjects(prev => (prev ?? projects).filter(p => p.id !== project.id));

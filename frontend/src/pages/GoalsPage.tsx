@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Monitor, Rocket, Target, FolderOpen, FileText, type LucideIcon } from 'lucide-react';
 import { type GoalCategory, type GoalStatus, type LearningGoal } from '../api/goals';
-import { useGoals } from '../hooks';
+import { useGoals, useConfirm } from '../hooks';
 import { Modal, PageLoader } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
+import ConfirmDialog from '../components/common/ConfirmDialog';
 
 const CATEGORIES: { value: GoalCategory; label: string; icon: string; Icon: LucideIcon }[] = [
   { value: 'language', label: 'goals.categoryLanguage', icon: '💻', Icon: Monitor },
@@ -21,8 +22,15 @@ export default function GoalsPage() {
     createGoal, updateGoal, deleteGoal,
   } = useGoals();
 
+  const { confirm, dialogProps } = useConfirm();
+
   const [showForm, setShowForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState<LearningGoal | null>(null);
+
+  const handleDeleteGoal = async (id: number) => {
+    const ok = await confirm({ title: t('common.confirm'), message: t('goals.confirmDelete'), variant: 'danger' });
+    if (ok) deleteGoal(id);
+  };
 
   // Form state
   const [title, setTitle] = useState('');
@@ -232,7 +240,7 @@ export default function GoalsPage() {
                     key={goal.id}
                     goal={goal}
                     onEdit={handleEdit}
-                    onDelete={deleteGoal}
+                    onDelete={handleDeleteGoal}
                     onProgressChange={handleProgressChange}
                     onStatusChange={handleStatusChange}
                     getCategoryInfo={getCategoryInfo}
@@ -255,7 +263,7 @@ export default function GoalsPage() {
                     key={goal.id}
                     goal={goal}
                     onEdit={handleEdit}
-                    onDelete={deleteGoal}
+                    onDelete={handleDeleteGoal}
                     onProgressChange={handleProgressChange}
                     onStatusChange={handleStatusChange}
                     getCategoryInfo={getCategoryInfo}
@@ -278,7 +286,7 @@ export default function GoalsPage() {
                     key={goal.id}
                     goal={goal}
                     onEdit={handleEdit}
-                    onDelete={deleteGoal}
+                    onDelete={handleDeleteGoal}
                     onProgressChange={handleProgressChange}
                     onStatusChange={handleStatusChange}
                     getCategoryInfo={getCategoryInfo}
@@ -291,6 +299,8 @@ export default function GoalsPage() {
           )}
         </div>
       )}
+
+      <ConfirmDialog {...dialogProps} />
     </div>
   );
 }

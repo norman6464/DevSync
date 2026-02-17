@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FolderOpen } from 'lucide-react';
 import type { Project } from '../types/project';
-import { useProjects } from '../hooks';
+import { useProjects, useConfirm } from '../hooks';
 import ProjectCard from '../components/projects/ProjectCard';
 import ProjectForm from '../components/projects/ProjectForm';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import EmptyState from '../components/common/EmptyState';
+import ConfirmDialog from '../components/common/ConfirmDialog';
 import { Modal } from '../components/common';
 
 export default function ProjectsPage() {
@@ -16,8 +17,15 @@ export default function ProjectsPage() {
     createProject, updateProject, deleteProject,
   } = useProjects();
 
+  const { confirm, dialogProps } = useConfirm();
+
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+
+  const handleDeleteProject = async (project: Project) => {
+    const ok = await confirm({ title: t('common.confirm'), message: t('projects.confirmDelete'), variant: 'danger' });
+    if (ok) deleteProject(project);
+  };
 
   if (loading) {
     return (
@@ -87,11 +95,13 @@ export default function ProjectsPage() {
               project={project}
               isOwner
               onEdit={() => setEditingProject(project)}
-              onDelete={() => deleteProject(project)}
+              onDelete={() => handleDeleteProject(project)}
             />
           ))}
         </div>
       )}
+
+      <ConfirmDialog {...dialogProps} />
     </div>
   );
 }

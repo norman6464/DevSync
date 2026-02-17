@@ -3,11 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { BookOpen } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import type { BookReview } from '../types/bookReview';
-import { useBookReviews } from '../hooks';
+import { useBookReviews, useConfirm } from '../hooks';
 import BookReviewCard from '../components/bookReviews/BookReviewCard';
 import BookReviewForm from '../components/bookReviews/BookReviewForm';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { EmptyState, Modal, Pagination } from '../components/common';
+import ConfirmDialog from '../components/common/ConfirmDialog';
 
 export default function BookReviewsPage() {
   const { t } = useTranslation();
@@ -17,8 +18,15 @@ export default function BookReviewsPage() {
     createReview, updateReview, deleteReview,
   } = useBookReviews();
 
+  const { confirm, dialogProps } = useConfirm();
+
   const [showForm, setShowForm] = useState(false);
   const [editingReview, setEditingReview] = useState<BookReview | null>(null);
+
+  const handleDeleteReview = async (review: BookReview) => {
+    const ok = await confirm({ title: t('common.confirm'), message: t('bookReviews.confirmDelete'), variant: 'danger' });
+    if (ok) deleteReview(review);
+  };
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -86,7 +94,7 @@ export default function BookReviewsPage() {
                 isOwner={user?.id === review.user_id}
                 showUser={true}
                 onEdit={() => setEditingReview(review)}
-                onDelete={() => deleteReview(review)}
+                onDelete={() => handleDeleteReview(review)}
               />
             ))}
           </div>
@@ -99,6 +107,7 @@ export default function BookReviewsPage() {
           />
         </>
       )}
+      <ConfirmDialog {...dialogProps} />
     </div>
   );
 }

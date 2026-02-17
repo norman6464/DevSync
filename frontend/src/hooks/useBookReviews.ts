@@ -55,7 +55,6 @@ export function useBookReviews() {
   }, [t, reviews]);
 
   const handleDelete = useCallback(async (review: BookReview) => {
-    if (!confirm(t('bookReviews.confirmDelete'))) return false;
     try {
       await deleteBookReview(review.id);
       setLocalReviews(prev => (prev ?? reviews).filter(r => r.id !== review.id));

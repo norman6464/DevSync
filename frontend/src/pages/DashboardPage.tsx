@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Target, Bell, TrendingUp, CheckCircle2, Clock, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import { usePosts, useDashboard, useBadgeNotifier } from '../hooks';
+import { usePosts, useDashboard, useBadgeNotifier, useConfirm } from '../hooks';
 import { getUserBadges } from '../api/badges';
 import { useAsyncData } from '../hooks/useAsyncData';
 import type { BadgeResult } from '../types/badge';
@@ -11,6 +11,7 @@ import type { Post } from '../types/post';
 import PostCard from '../components/posts/PostCard';
 import PostForm from '../components/posts/PostForm';
 import { Modal } from '../components/common';
+import ConfirmDialog from '../components/common/ConfirmDialog';
 import QuickPostForm from '../components/posts/QuickPostForm';
 import { PostCardSkeleton } from '../components/common/Skeleton';
 import Avatar from '../components/common/Avatar';
@@ -27,7 +28,13 @@ export default function DashboardPage() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const { posts, loading, tab, setTab, createPost, updatePost, deletePost, refetch } = usePosts();
+  const { confirm, dialogProps } = useConfirm();
   const [editingPost, setEditingPost] = useState<Post | null>(null);
+
+  const handleDeletePost = async (post: Post) => {
+    const ok = await confirm({ title: t('common.confirm'), message: t('dashboard.confirmDeletePost'), variant: 'danger' });
+    if (ok) deletePost(post);
+  };
   const {
     activeGoals,
     completedGoals,
@@ -146,7 +153,7 @@ export default function DashboardPage() {
                 post={post}
                 isOwner={user?.id === post.user_id}
                 onEdit={() => setEditingPost(post)}
-                onDelete={() => deletePost(post)}
+                onDelete={() => handleDeletePost(post)}
                 onUpdate={refetch}
               />
             ))}
@@ -396,6 +403,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      <ConfirmDialog {...dialogProps} />
     </div>
   );
 }
