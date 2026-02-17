@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -30,9 +31,7 @@ func NewZennHandler(s ZennServiceInterface) *ZennHandler {
 func (h *ZennHandler) Connect(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	var req struct {
-		Username string `json:"username" binding:"required"`
-	}
+	var req dto.ConnectUsernameRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		respondBadRequest(c, "username is required")
