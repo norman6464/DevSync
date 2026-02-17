@@ -11,8 +11,8 @@ type NoteTemplateServiceInterface interface {
 	GetByID(id uint) (*model.NoteTemplate, error)
 	GetByUserID(userID uint) ([]model.NoteTemplate, error)
 	GetDefaultByUserID(userID uint) (*model.NoteTemplate, error)
-	Update(template *model.NoteTemplate) error
-	Delete(id uint) error
+	Update(id, userID uint, name, description, defaultTitle, contentTemplate, defaultTags string, isDefault *bool) (*model.NoteTemplate, error)
+	Delete(id, userID uint) error
 }
 
 // NoteTemplateHandler はノートテンプレート関連のHTTPハンドラ。
@@ -130,40 +130,8 @@ func (h *NoteTemplateHandler) Update(c *gin.Context) {
 		return
 	}
 
-	// 既存のテンプレートを取得して所有者確認
-	template, err := h.service.GetByID(id)
+	template, err := h.service.Update(id, userID, input.Name, input.Description, input.DefaultTitle, input.ContentTemplate, input.DefaultTags, input.IsDefault)
 	if err != nil {
-		respondError(c, err)
-		return
-	}
-
-	// 所有者チェック
-	if template.UserID != userID {
-		respondForbidden(c, "この操作を行う権限がありません")
-		return
-	}
-
-	// 更新フィールドを適用
-	if input.Name != "" {
-		template.Name = input.Name
-	}
-	if input.Description != "" {
-		template.Description = input.Description
-	}
-	if input.DefaultTitle != "" {
-		template.DefaultTitle = input.DefaultTitle
-	}
-	if input.ContentTemplate != "" {
-		template.ContentTemplate = input.ContentTemplate
-	}
-	if input.DefaultTags != "" {
-		template.DefaultTags = input.DefaultTags
-	}
-	if input.IsDefault != nil {
-		template.IsDefault = *input.IsDefault
-	}
-
-	if err := h.service.Update(template); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -179,19 +147,7 @@ func (h *NoteTemplateHandler) Delete(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	// 所有者確認
-	template, err := h.service.GetByID(id)
-	if err != nil {
-		respondError(c, err)
-		return
-	}
-
-	if template.UserID != userID {
-		respondForbidden(c, "この操作を行う権限がありません")
-		return
-	}
-
-	if err := h.service.Delete(id); err != nil {
+	if err := h.service.Delete(id, userID); err != nil {
 		respondError(c, err)
 		return
 	}

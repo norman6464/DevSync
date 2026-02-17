@@ -45,12 +45,16 @@ func (m *MockNoteFolderService) GetRootFolders(userID uint) ([]model.NoteFolder,
 	return args.Get(0).([]model.NoteFolder), args.Error(1)
 }
 
-func (m *MockNoteFolderService) Update(folder *model.NoteFolder) error {
-	return m.Called(folder).Error(0)
+func (m *MockNoteFolderService) Update(id, userID uint, name string, parentID *uint) (*model.NoteFolder, error) {
+	args := m.Called(id, userID, name, parentID)
+	if f := args.Get(0); f != nil {
+		return f.(*model.NoteFolder), args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
-func (m *MockNoteFolderService) Delete(id uint) error {
-	return m.Called(id).Error(0)
+func (m *MockNoteFolderService) Delete(id, userID uint) error {
+	return m.Called(id, userID).Error(0)
 }
 
 // newTestNoteFolderHandler はテスト用のNoteFolderHandlerを生成する。
@@ -222,8 +226,7 @@ func TestNoteFolderHandler_Update(t *testing.T) {
 		Name:   "更新後フォルダ名",
 	}
 
-	mockService.On("GetByID", uint(1)).Return(updatedFolder, nil)
-	mockService.On("Update", mock.AnythingOfType("*model.NoteFolder")).Return(nil)
+	mockService.On("Update", uint(1), uint(1), "更新後フォルダ名", (*uint)(nil)).Return(updatedFolder, nil)
 
 	req, _ := http.NewRequest("PUT", "/folders/1", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
@@ -242,9 +245,12 @@ func TestNoteFolderHandler_Delete(t *testing.T) {
 	handler, mockService := newTestNoteFolderHandler()
 	router := setupRouter()
 
-	router.DELETE("/folders/:id", handler.Delete)
+	router.DELETE("/folders/:id", func(c *gin.Context) {
+		c.Set("userID", uint(1))
+		handler.Delete(c)
+	})
 
-	mockService.On("Delete", uint(1)).Return(nil)
+	mockService.On("Delete", uint(1), uint(1)).Return(nil)
 
 	req, _ := http.NewRequest("DELETE", "/folders/1", nil)
 	w := httptest.NewRecorder()

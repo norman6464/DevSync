@@ -1610,11 +1610,15 @@ func (m *MockNoteTemplateService) GetDefaultByUserID(userID uint) (*model.NoteTe
 	}
 	return nil, args.Error(1)
 }
-func (m *MockNoteTemplateService) Update(template *model.NoteTemplate) error {
-	return m.Called(template).Error(0)
+func (m *MockNoteTemplateService) Update(id, userID uint, name, description, defaultTitle, contentTemplate, defaultTags string, isDefault *bool) (*model.NoteTemplate, error) {
+	args := m.Called(id, userID, name, description, defaultTitle, contentTemplate, defaultTags, isDefault)
+	if t := args.Get(0); t != nil {
+		return t.(*model.NoteTemplate), args.Error(1)
+	}
+	return nil, args.Error(1)
 }
-func (m *MockNoteTemplateService) Delete(id uint) error {
-	return m.Called(id).Error(0)
+func (m *MockNoteTemplateService) Delete(id, userID uint) error {
+	return m.Called(id, userID).Error(0)
 }
 
 // MockNoteServiceForTemplate は NoteTemplateHandler 用のノートサービスモック。

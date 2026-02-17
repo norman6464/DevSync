@@ -148,18 +148,36 @@ func TestNoteTemplateService_GetByUserID(t *testing.T) {
 func TestNoteTemplateService_Update(t *testing.T) {
 	svc, repo := newTestNoteTemplateService()
 
-	template := &model.NoteTemplate{
+	existing := &model.NoteTemplate{
 		ID:              1,
 		UserID:          1,
-		Name:            "更新後テンプレート",
-		ContentTemplate: "更新後本文",
+		Name:            "元テンプレート",
+		ContentTemplate: "元本文",
 		IsDefault:       false,
 	}
 
-	repo.On("Update", template).Return(nil)
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", mock.AnythingOfType("*model.NoteTemplate")).Return(nil)
 
-	err := svc.Update(template)
+	result, err := svc.Update(1, 1, "更新後テンプレート", "", "", "更新後本文", "", nil)
 	assert.NoError(t, err)
+	assert.Equal(t, "更新後テンプレート", result.Name)
+	assert.Equal(t, "更新後本文", result.ContentTemplate)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteTemplateService_Update_Forbidden(t *testing.T) {
+	svc, repo := newTestNoteTemplateService()
+
+	existing := &model.NoteTemplate{
+		ID:     1,
+		UserID: 1,
+	}
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	_, err := svc.Update(1, 999, "", "", "", "", "", nil)
+	assert.ErrorIs(t, err, ErrForbidden)
 	repo.AssertExpectations(t)
 }
 
@@ -170,9 +188,22 @@ func TestNoteTemplateService_Update(t *testing.T) {
 func TestNoteTemplateService_Delete(t *testing.T) {
 	svc, repo := newTestNoteTemplateService()
 
+	existing := &model.NoteTemplate{ID: 1, UserID: 1}
+	repo.On("FindByID", uint(1)).Return(existing, nil)
 	repo.On("Delete", uint(1)).Return(nil)
 
-	err := svc.Delete(1)
+	err := svc.Delete(1, 1)
 	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteTemplateService_Delete_Forbidden(t *testing.T) {
+	svc, repo := newTestNoteTemplateService()
+
+	existing := &model.NoteTemplate{ID: 1, UserID: 1}
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	err := svc.Delete(1, 999)
+	assert.ErrorIs(t, err, ErrForbidden)
 	repo.AssertExpectations(t)
 }
