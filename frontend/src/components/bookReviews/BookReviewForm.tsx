@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { BookReview, CreateBookReviewRequest } from '../../types/bookReview';
-import { buttonSecondaryClass, textareaClass } from '../../constants/styles';
+import { buttonSecondaryClass, labelClass, textareaClass } from '../../constants/styles';
 
 interface BookReviewFormProps {
   review?: BookReview;
@@ -60,7 +60,7 @@ export default function BookReviewForm({ review, onSubmit, onCancel, loading }: 
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Title */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
+        <label className={labelClass}>
           {t('bookReviews.bookTitle')} *
         </label>
         <input
@@ -76,7 +76,7 @@ export default function BookReviewForm({ review, onSubmit, onCancel, loading }: 
 
       {/* Author */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
+        <label className={labelClass}>
           {t('bookReviews.author')}
         </label>
         <input
@@ -91,7 +91,7 @@ export default function BookReviewForm({ review, onSubmit, onCancel, loading }: 
 
       {/* ISBN */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
+        <label className={labelClass}>
           ISBN
         </label>
         <input
@@ -114,7 +114,7 @@ export default function BookReviewForm({ review, onSubmit, onCancel, loading }: 
 
       {/* Review */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
+        <label className={labelClass}>
           {t('bookReviews.review')}
         </label>
         <textarea
@@ -128,7 +128,7 @@ export default function BookReviewForm({ review, onSubmit, onCancel, loading }: 
 
       {/* Image URL */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
+        <label className={labelClass}>
           {t('bookReviews.coverImage')}
         </label>
         <input

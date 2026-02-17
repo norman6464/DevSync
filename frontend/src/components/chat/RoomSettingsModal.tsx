@@ -5,7 +5,7 @@ import {
   getChatRoomMembers, updateChatRoom, deleteChatRoom,
   addChatRoomMember, removeChatRoomMember,
 } from '../../api/chatRooms';
-import { textareaClass } from '../../constants/styles';
+import { labelClass, textareaClass } from '../../constants/styles';
 import { useConfirm } from '../../hooks';
 import type { User } from '../../types/user';
 import type { ChatRoom, ChatRoomMember } from '../../types/chat';
@@ -123,7 +123,7 @@ export default function RoomSettingsModal({
         {isOwner && (
           <div className="space-y-3 mb-6">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label className={labelClass}>
                 {t('chat.groupName')}
               </label>
               <input
@@ -134,7 +134,7 @@ export default function RoomSettingsModal({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label className={labelClass}>
                 {t('chat.groupDescription')}
               </label>
               <textarea

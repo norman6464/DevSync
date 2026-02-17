@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LearningResource, CreateResourceRequest, ResourceCategory, ResourceDifficulty } from '../../types/resource';
-import { buttonSecondaryClass, inputClass, textareaClass } from '../../constants/styles';
+import { buttonSecondaryClass, inputClass, labelClass, textareaClass } from '../../constants/styles';
 
 interface ResourceFormProps {
   resource?: LearningResource;
@@ -63,7 +63,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Title */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
+        <label className={labelClass}>
           {t('resources.title')} *
         </label>
         <input
@@ -79,7 +79,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
 
       {/* URL */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
+        <label className={labelClass}>
           {t('resources.url')}
         </label>
         <input
@@ -94,7 +94,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
       {/* Category & Difficulty */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">
+          <label className={labelClass}>
             {t('resources.category')} *
           </label>
           <select
@@ -110,7 +110,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">
+          <label className={labelClass}>
             {t('resources.difficultyLabel')}
           </label>
           <select
@@ -130,7 +130,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
 
       {/* Description */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
+        <label className={labelClass}>
           {t('resources.description')}
         </label>
         <textarea
@@ -144,7 +144,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
 
       {/* Tags */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
+        <label className={labelClass}>
           {t('resources.tags')}
         </label>
         <div className="flex gap-2">
@@ -189,7 +189,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
 
       {/* Image URL */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
+        <label className={labelClass}>
           {t('resources.imageUrl')}
         </label>
         <input

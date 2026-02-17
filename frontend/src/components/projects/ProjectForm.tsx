@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Project, CreateProjectRequest } from '../../types/project';
 import type { GitHubRepository } from '../../types/github';
-import { buttonSecondaryClass, inputClass, textareaClass } from '../../constants/styles';
+import { buttonSecondaryClass, inputClass, labelClass, textareaClass } from '../../constants/styles';
 
 interface ProjectFormProps {
   project?: Project;
@@ -82,7 +82,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
       {/* Link to GitHub Repo */}
       {repos.length > 0 && (
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">
+          <label className={labelClass}>
             {t('projects.linkGitHubRepo')}
           </label>
           <select
@@ -102,7 +102,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
 
       {/* Title */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
+        <label className={labelClass}>
           {t('projects.title')} *
         </label>
         <input
@@ -118,7 +118,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
 
       {/* Description */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
+        <label className={labelClass}>
           {t('projects.description')}
         </label>
         <textarea
@@ -132,7 +132,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
 
       {/* Tech Stack */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
+        <label className={labelClass}>
           {t('projects.techStack')}
         </label>
         <div className="flex gap-2">
@@ -178,7 +178,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
       {/* URLs */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">
+          <label className={labelClass}>
             {t('projects.demoUrl')}
           </label>
           <input
@@ -190,7 +190,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">
+          <label className={labelClass}>
             {t('projects.githubUrl')}
           </label>
           <input
@@ -205,7 +205,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
 
       {/* Image URL */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
+        <label className={labelClass}>
           {t('projects.imageUrl')}
         </label>
         <input
@@ -219,7 +219,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
 
       {/* Role */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
+        <label className={labelClass}>
           {t('projects.role')}
         </label>
         <input
@@ -235,7 +235,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
       {/* Dates */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">
+          <label className={labelClass}>
             {t('projects.startDate')}
           </label>
           <input
@@ -246,7 +246,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">
+          <label className={labelClass}>
             {t('projects.endDate')}
           </label>
           <input
