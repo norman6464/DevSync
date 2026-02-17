@@ -2,7 +2,6 @@ package handler
 
 import (
 	"log"
-	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -68,7 +67,7 @@ func (h *AIAdviceHandler) MarkAsRead(c *gin.Context) {
 	userID := c.GetUint("userID")
 
 	if err := h.service.MarkAsRead(id, userID); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "advice not found"})
+		respondNotFound(c, "advice not found")
 		return
 	}
 
@@ -84,7 +83,7 @@ func (h *AIAdviceHandler) Chat(c *gin.Context) {
 		ConversationID uint   `json:"conversation_id"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondBadRequest(c, err.Error())
 		return
 	}
 

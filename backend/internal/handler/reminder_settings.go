@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
@@ -43,7 +41,7 @@ func (h *ReminderSettingsHandler) GetSettings(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, settings)
+	respondOK(c, settings)
 }
 
 // UpdateSettings は認証ユーザーのリマインダー設定を更新する。
@@ -52,7 +50,7 @@ func (h *ReminderSettingsHandler) UpdateSettings(c *gin.Context) {
 
 	var req UpdateReminderSettingsInput
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondBadRequest(c, err.Error())
 		return
 	}
 
@@ -71,5 +69,5 @@ func (h *ReminderSettingsHandler) UpdateSettings(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, settings)
+	respondOK(c, settings)
 }

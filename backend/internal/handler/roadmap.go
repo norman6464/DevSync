@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -53,7 +52,7 @@ func (h *RoadmapHandler) Create(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "title is required"})
+		respondBadRequest(c, "title is required")
 		return
 	}
 
@@ -143,7 +142,7 @@ func (h *RoadmapHandler) Update(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		respondBadRequest(c, "invalid request")
 		return
 	}
 
@@ -257,7 +256,7 @@ func (h *RoadmapHandler) CreateStep(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "title is required"})
+		respondBadRequest(c, "title is required")
 		return
 	}
 
@@ -298,7 +297,7 @@ func (h *RoadmapHandler) UpdateStep(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		respondBadRequest(c, "invalid request")
 		return
 	}
 
@@ -369,7 +368,7 @@ func (h *RoadmapHandler) ReorderSteps(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		respondBadRequest(c, "invalid request")
 		return
 	}
 
