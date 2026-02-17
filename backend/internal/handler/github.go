@@ -4,20 +4,37 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/model"
 )
+
+// GitHubServiceInterface はGitHubサービスの抽象インターフェース。
+type GitHubServiceInterface interface {
+	GetOAuthURL(state string) string
+	ConnectGitHub(userID uint, code, state string) error
+	GetContributions(userID uint) ([]model.GitHubContribution, error)
+	GetLanguages(userID uint) ([]model.GitHubLanguageStat, error)
+	GetRepos(userID uint) ([]model.GitHubRepository, error)
+	SyncUserData(userID uint) error
+	DisconnectGitHub(userID uint) error
+}
+
+// GitHubAuthServiceInterface はGitHubHandler用の認証サービスの抽象インターフェース。
+type GitHubAuthServiceInterface interface {
+	GenerateOAuthState(userID uint) (string, error)
+	ValidateOAuthState(state string) (uint, error)
+}
 
 // GitHubHandler はGitHub連携関連のHTTPハンドラ。
 // GitHub OAuth認証・データ同期・コントリビューション取得を処理する。
 type GitHubHandler struct {
-	githubService *service.GitHubService
-	authService   *service.AuthService
+	githubService GitHubServiceInterface
+	authService   GitHubAuthServiceInterface
 }
 
 // NewGitHubHandler は新しいGitHubHandlerインスタンスを生成する。
 func NewGitHubHandler(
-	githubService *service.GitHubService,
-	authService *service.AuthService,
+	githubService GitHubServiceInterface,
+	authService GitHubAuthServiceInterface,
 ) *GitHubHandler {
 	return &GitHubHandler{
 		githubService: githubService,

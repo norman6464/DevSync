@@ -6,18 +6,40 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
+	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
 )
+
+// AuthServiceInterface は認証サービスの抽象インターフェース。
+type AuthServiceInterface interface {
+	Register(input service.RegisterInput) (*service.AuthResponse, error)
+	Login(input service.LoginInput) (*service.AuthResponse, error)
+	GenerateLoginState() (string, error)
+	ValidateLoginState(state string) error
+	GitHubLogin(ghUser *service.GitHubUserInfo, accessToken string) (*service.AuthResponse, error)
+	GetMe(userID uint) (*model.User, error)
+	RequestPasswordReset(email string) (string, error)
+	ResetPassword(token string, newPassword string) error
+	DeleteAccount(userID uint, password string) error
+}
+
+// AuthGitHubServiceInterface はAuthHandler用のGitHubサービスの抽象インターフェース。
+type AuthGitHubServiceInterface interface {
+	GetLoginOAuthURL(state string) string
+	ExchangeCode(code string) (string, error)
+	GetGitHubUser(token string) (*service.GitHubUserInfo, error)
+	SyncUserData(userID uint) error
+}
 
 // AuthHandler は認証関連のHTTPハンドラ。
 // ユーザー登録・ログイン・GitHub OAuth・パスワードリセット・アカウント削除を処理する。
 type AuthHandler struct {
-	authService   *service.AuthService   // 認証ビジネスロジック
-	githubService *service.GitHubService // GitHub OAuth連携
+	authService   AuthServiceInterface       // 認証ビジネスロジック
+	githubService AuthGitHubServiceInterface // GitHub OAuth連携
 }
 
 // NewAuthHandler は新しいAuthHandlerインスタンスを生成する。
-func NewAuthHandler(authService *service.AuthService, githubService *service.GitHubService) *AuthHandler {
+func NewAuthHandler(authService AuthServiceInterface, githubService AuthGitHubServiceInterface) *AuthHandler {
 	return &AuthHandler{
 		authService:   authService,
 		githubService: githubService,
