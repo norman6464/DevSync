@@ -44,9 +44,9 @@ func (h *ZennHandler) Connect(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{
-		"message":        "Zenn connected successfully",
-		"articles_count": count,
+	respondOK(c, dto.ConnectSyncResponse{
+		Message:       "Zenn connected successfully",
+		ArticlesCount: count,
 	})
 }
 
@@ -72,9 +72,9 @@ func (h *ZennHandler) Sync(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{
-		"message":        "Zenn synced successfully",
-		"articles_count": count,
+	respondOK(c, dto.ConnectSyncResponse{
+		Message:       "Zenn synced successfully",
+		ArticlesCount: count,
 	})
 }
 

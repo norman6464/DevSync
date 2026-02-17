@@ -53,10 +53,10 @@ func (h *AIAdviceHandler) GetAdvice(c *gin.Context) {
 		}
 	}
 
-	respondOK(c, gin.H{
-		"advices":              advices,
-		"llm_available":        llmAvailable,
-		"daily_chat_remaining": remaining,
+	respondOK(c, dto.AIAdviceResponse{
+		Advices:            advices,
+		LLMAvailable:       llmAvailable,
+		DailyChatRemaining: remaining,
 	})
 }
 

@@ -5,3 +5,10 @@ package dto
 type ConnectUsernameRequest struct {
 	Username string `json:"username" binding:"required" validate:"required"`
 }
+
+// ConnectSyncResponse は外部サービス接続・同期のレスポンス。
+// Qiita・Zennで共通使用する。
+type ConnectSyncResponse struct {
+	Message       string `json:"message"`
+	ArticlesCount int    `json:"articles_count"`
+}
