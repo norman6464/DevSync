@@ -1172,5 +1172,16 @@
     "favoriteToggled": "Status de favorito atualizado",
     "lastUpdated": "Última atualização",
     "createdAt": "Criado em"
+  },
+  "githubCallback": {
+    "missingOAuthParams": "Parâmetros OAuth ausentes",
+    "loginSuccess": "Conectado com GitHub!",
+    "loginFailed": "Falha ao entrar com GitHub",
+    "connectSuccess": "GitHub conectado com sucesso!",
+    "connectFailed": "Falha ao conectar GitHub",
+    "backToLogin": "Voltar ao login",
+    "backToSettings": "Voltar às configurações",
+    "loggingIn": "Entrando com GitHub...",
+    "connecting": "Conectando GitHub..."
   }
 }

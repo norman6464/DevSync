@@ -1172,5 +1172,16 @@
     "favoriteToggled": "收藏状态已更新",
     "lastUpdated": "最后更新",
     "createdAt": "创建时间"
+  },
+  "githubCallback": {
+    "missingOAuthParams": "缺少OAuth参数",
+    "loginSuccess": "已通过GitHub登录！",
+    "loginFailed": "GitHub登录失败",
+    "connectSuccess": "GitHub连接成功！",
+    "connectFailed": "GitHub连接失败",
+    "backToLogin": "返回登录",
+    "backToSettings": "返回设置",
+    "loggingIn": "正在通过GitHub登录...",
+    "connecting": "正在连接GitHub..."
   }
 }
