@@ -68,41 +68,77 @@ func (s *NoteTemplateService) GetDefaultByUserID(userID uint) (*model.NoteTempla
 	return s.repo.FindDefaultByUserID(userID)
 }
 
-// Update はテンプレートを更新する。
-func (s *NoteTemplateService) Update(template *model.NoteTemplate) error {
+// Update は所有権を検証した後、テンプレートを更新する。
+func (s *NoteTemplateService) Update(id, userID uint, name, description, defaultTitle, contentTemplate, defaultTags string, isDefault *bool) (*model.NoteTemplate, error) {
+	template, err := s.repo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+	if template.UserID != userID {
+		return nil, ErrForbidden
+	}
+
+	if name != "" {
+		template.Name = name
+	}
+	if description != "" {
+		template.Description = description
+	}
+	if defaultTitle != "" {
+		template.DefaultTitle = defaultTitle
+	}
+	if contentTemplate != "" {
+		template.ContentTemplate = contentTemplate
+	}
+	if defaultTags != "" {
+		template.DefaultTags = defaultTags
+	}
+	if isDefault != nil {
+		template.IsDefault = *isDefault
+	}
+
 	v := validator.NewNoteTemplateValidator()
 	if template.Name != "" {
 		if err := v.ValidateName(template.Name); err != nil {
-			return err
+			return nil, err
 		}
 	}
 	if template.ContentTemplate != "" {
 		if err := v.ValidateContentTemplate(template.ContentTemplate); err != nil {
-			return err
+			return nil, err
 		}
 	}
 	if template.Description != "" {
 		if err := v.ValidateDescription(template.Description); err != nil {
-			return err
+			return nil, err
 		}
 	}
 	if template.DefaultTitle != "" {
 		if err := v.ValidateDefaultTitle(template.DefaultTitle); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	// is_default=trueの場合、既存のデフォルトフラグをクリア
 	if template.IsDefault {
 		if err := s.repo.ClearDefaultFlag(template.UserID); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	return s.repo.Update(template)
+	if err := s.repo.Update(template); err != nil {
+		return nil, err
+	}
+	return template, nil
 }
 
-// Delete はテンプレートを削除する。
-func (s *NoteTemplateService) Delete(id uint) error {
+// Delete は所有権を検証した後、テンプレートを削除する。
+func (s *NoteTemplateService) Delete(id, userID uint) error {
+	template, err := s.repo.FindByID(id)
+	if err != nil {
+		return err
+	}
+	if template.UserID != userID {
+		return ErrForbidden
+	}
 	return s.repo.Delete(id)
 }

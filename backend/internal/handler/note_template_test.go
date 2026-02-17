@@ -92,9 +92,8 @@ func TestNoteTemplateGetDefault_Success(t *testing.T) {
 
 func TestNoteTemplateUpdate_Success(t *testing.T) {
 	h, svc, _ := setupNoteTemplateHandler()
-	tmpl := &model.NoteTemplate{ID: 1, UserID: 1, Name: "旧名"}
-	svc.On("GetByID", uint(1)).Return(tmpl, nil)
-	svc.On("Update", mock.AnythingOfType("*model.NoteTemplate")).Return(nil)
+	updated := &model.NoteTemplate{ID: 1, UserID: 1, Name: "新名"}
+	svc.On("Update", uint(1), uint(1), "新名", "", "", "", "", (*bool)(nil)).Return(updated, nil)
 
 	r := newRouter(1)
 	r.PUT("/note-templates/:id", h.Update)
@@ -108,8 +107,7 @@ func TestNoteTemplateUpdate_Success(t *testing.T) {
 
 func TestNoteTemplateUpdate_Forbidden(t *testing.T) {
 	h, svc, _ := setupNoteTemplateHandler()
-	tmpl := &model.NoteTemplate{ID: 1, UserID: 99, Name: "他人の"}
-	svc.On("GetByID", uint(1)).Return(tmpl, nil)
+	svc.On("Update", uint(1), uint(1), "変更", "", "", "", "", (*bool)(nil)).Return(nil, service.ErrForbidden)
 
 	r := newRouter(1)
 	r.PUT("/note-templates/:id", h.Update)
@@ -123,9 +121,7 @@ func TestNoteTemplateUpdate_Forbidden(t *testing.T) {
 
 func TestNoteTemplateDelete_Success(t *testing.T) {
 	h, svc, _ := setupNoteTemplateHandler()
-	tmpl := &model.NoteTemplate{ID: 1, UserID: 1}
-	svc.On("GetByID", uint(1)).Return(tmpl, nil)
-	svc.On("Delete", uint(1)).Return(nil)
+	svc.On("Delete", uint(1), uint(1)).Return(nil)
 
 	r := newRouter(1)
 	r.DELETE("/note-templates/:id", h.Delete)
@@ -137,8 +133,7 @@ func TestNoteTemplateDelete_Success(t *testing.T) {
 
 func TestNoteTemplateDelete_Forbidden(t *testing.T) {
 	h, svc, _ := setupNoteTemplateHandler()
-	tmpl := &model.NoteTemplate{ID: 1, UserID: 99}
-	svc.On("GetByID", uint(1)).Return(tmpl, nil)
+	svc.On("Delete", uint(1), uint(1)).Return(service.ErrForbidden)
 
 	r := newRouter(1)
 	r.DELETE("/note-templates/:id", h.Delete)

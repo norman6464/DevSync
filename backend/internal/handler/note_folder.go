@@ -13,8 +13,8 @@ type NoteFolderServiceInterface interface {
 	GetByUserID(userID uint) ([]model.NoteFolder, error)
 	GetChildren(parentID uint) ([]model.NoteFolder, error)
 	GetRootFolders(userID uint) ([]model.NoteFolder, error)
-	Update(folder *model.NoteFolder) error
-	Delete(id uint) error
+	Update(id, userID uint, name string, parentID *uint) (*model.NoteFolder, error)
+	Delete(id, userID uint) error
 }
 
 // NoteFolderHandler はノートフォルダ関連のHTTPハンドラ。
@@ -133,28 +133,8 @@ func (h *NoteFolderHandler) Update(c *gin.Context) {
 		return
 	}
 
-	// 既存のフォルダを取得して所有者確認
-	folder, err := h.service.GetByID(id)
+	folder, err := h.service.Update(id, userID, input.Name, input.ParentID)
 	if err != nil {
-		respondError(c, err)
-		return
-	}
-
-	// 所有者チェック
-	if folder.UserID != userID {
-		respondForbidden(c, "この操作を行う権限がありません")
-		return
-	}
-
-	// 更新フィールドを適用（空でない場合のみ）
-	if input.Name != "" {
-		folder.Name = input.Name
-	}
-	if input.ParentID != nil {
-		folder.ParentID = input.ParentID
-	}
-
-	if err := h.service.Update(folder); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -168,8 +148,9 @@ func (h *NoteFolderHandler) Delete(c *gin.Context) {
 	if !ok {
 		return
 	}
+	userID := c.GetUint("userID")
 
-	if err := h.service.Delete(id); err != nil {
+	if err := h.service.Delete(id, userID); err != nil {
 		respondError(c, err)
 		return
 	}

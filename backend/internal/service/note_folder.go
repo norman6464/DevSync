@@ -47,18 +47,42 @@ func (s *NoteFolderService) GetRootFolders(userID uint) ([]model.NoteFolder, err
 	return s.repo.GetRootFolders(userID)
 }
 
-// Update はフォルダを更新する。
-func (s *NoteFolderService) Update(folder *model.NoteFolder) error {
-	// バリデーション
-	v := validator.NewNoteFolderValidator()
-	if err := v.ValidateUpdate(folder.Name); err != nil {
-		return err
+// Update は所有権を検証した後、フォルダを更新する。
+func (s *NoteFolderService) Update(id, userID uint, name string, parentID *uint) (*model.NoteFolder, error) {
+	folder, err := s.repo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+	if folder.UserID != userID {
+		return nil, ErrForbidden
 	}
 
-	return s.repo.Update(folder)
+	if name != "" {
+		folder.Name = name
+	}
+	if parentID != nil {
+		folder.ParentID = parentID
+	}
+
+	v := validator.NewNoteFolderValidator()
+	if err := v.ValidateUpdate(folder.Name); err != nil {
+		return nil, err
+	}
+
+	if err := s.repo.Update(folder); err != nil {
+		return nil, err
+	}
+	return folder, nil
 }
 
-// Delete はフォルダを削除する。
-func (s *NoteFolderService) Delete(id uint) error {
+// Delete は所有権を検証した後、フォルダを削除する。
+func (s *NoteFolderService) Delete(id, userID uint) error {
+	folder, err := s.repo.FindByID(id)
+	if err != nil {
+		return err
+	}
+	if folder.UserID != userID {
+		return ErrForbidden
+	}
 	return s.repo.Delete(id)
 }

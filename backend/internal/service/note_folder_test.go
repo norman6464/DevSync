@@ -140,16 +140,30 @@ func TestNoteFolderService_Update(t *testing.T) {
 	mockRepo := new(MockNoteFolderRepository)
 	service := NewNoteFolderService(mockRepo)
 
-	folder := &model.NoteFolder{
+	existing := &model.NoteFolder{
 		ID:     1,
 		UserID: 1,
-		Name:   "更新後の名前",
+		Name:   "元の名前",
 	}
 
-	mockRepo.On("Update", folder).Return(nil)
+	mockRepo.On("FindByID", uint(1)).Return(existing, nil)
+	mockRepo.On("Update", mock.AnythingOfType("*model.NoteFolder")).Return(nil)
 
-	err := service.Update(folder)
+	result, err := service.Update(1, 1, "更新後の名前", nil)
 	assert.NoError(t, err)
+	assert.Equal(t, "更新後の名前", result.Name)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestNoteFolderService_Update_Forbidden(t *testing.T) {
+	mockRepo := new(MockNoteFolderRepository)
+	service := NewNoteFolderService(mockRepo)
+
+	existing := &model.NoteFolder{ID: 1, UserID: 1}
+	mockRepo.On("FindByID", uint(1)).Return(existing, nil)
+
+	_, err := service.Update(1, 999, "名前", nil)
+	assert.ErrorIs(t, err, ErrForbidden)
 	mockRepo.AssertExpectations(t)
 }
 
@@ -157,9 +171,23 @@ func TestNoteFolderService_Delete(t *testing.T) {
 	mockRepo := new(MockNoteFolderRepository)
 	service := NewNoteFolderService(mockRepo)
 
+	existing := &model.NoteFolder{ID: 1, UserID: 1}
+	mockRepo.On("FindByID", uint(1)).Return(existing, nil)
 	mockRepo.On("Delete", uint(1)).Return(nil)
 
-	err := service.Delete(1)
+	err := service.Delete(1, 1)
 	assert.NoError(t, err)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestNoteFolderService_Delete_Forbidden(t *testing.T) {
+	mockRepo := new(MockNoteFolderRepository)
+	service := NewNoteFolderService(mockRepo)
+
+	existing := &model.NoteFolder{ID: 1, UserID: 1}
+	mockRepo.On("FindByID", uint(1)).Return(existing, nil)
+
+	err := service.Delete(1, 999)
+	assert.ErrorIs(t, err, ErrForbidden)
 	mockRepo.AssertExpectations(t)
 }
