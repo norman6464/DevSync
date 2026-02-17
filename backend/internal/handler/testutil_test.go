@@ -1285,3 +1285,105 @@ func setupRecommendationHandler() (*RecommendationHandler, *MockRecommendationSe
 	h := NewRecommendationHandler(svc)
 	return h, svc
 }
+
+// MockQiitaService は QiitaServiceInterface のモック実装。
+type MockQiitaService struct{ mock.Mock }
+
+func (m *MockQiitaService) Connect(userID uint, username string) (int, error) {
+	args := m.Called(userID, username)
+	return args.Int(0), args.Error(1)
+}
+func (m *MockQiitaService) Disconnect(userID uint) error {
+	return m.Called(userID).Error(0)
+}
+func (m *MockQiitaService) Sync(userID uint) (int, error) {
+	args := m.Called(userID)
+	return args.Int(0), args.Error(1)
+}
+func (m *MockQiitaService) GetArticles(userID uint) ([]model.QiitaArticle, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.QiitaArticle), args.Error(1)
+}
+func (m *MockQiitaService) GetStats(userID uint) (*model.QiitaStats, error) {
+	args := m.Called(userID)
+	if s := args.Get(0); s != nil {
+		return s.(*model.QiitaStats), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+// setupQiitaHandler はQiitaHandlerテスト用のセットアップを行う。
+func setupQiitaHandler() (*QiitaHandler, *MockQiitaService) {
+	svc := new(MockQiitaService)
+	h := NewQiitaHandler(svc)
+	return h, svc
+}
+
+// MockZennService は ZennServiceInterface のモック実装。
+type MockZennService struct{ mock.Mock }
+
+func (m *MockZennService) Connect(userID uint, username string) (int, error) {
+	args := m.Called(userID, username)
+	return args.Int(0), args.Error(1)
+}
+func (m *MockZennService) Disconnect(userID uint) error {
+	return m.Called(userID).Error(0)
+}
+func (m *MockZennService) Sync(userID uint) (int, error) {
+	args := m.Called(userID)
+	return args.Int(0), args.Error(1)
+}
+func (m *MockZennService) GetArticles(userID uint) ([]model.ZennArticle, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.ZennArticle), args.Error(1)
+}
+func (m *MockZennService) GetStats(userID uint) (*model.ZennStats, error) {
+	args := m.Called(userID)
+	if s := args.Get(0); s != nil {
+		return s.(*model.ZennStats), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+// setupZennHandler はZennHandlerテスト用のセットアップを行う。
+func setupZennHandler() (*ZennHandler, *MockZennService) {
+	svc := new(MockZennService)
+	h := NewZennHandler(svc)
+	return h, svc
+}
+
+// MockAtCoderService は AtCoderServiceInterface のモック実装。
+type MockAtCoderService struct{ mock.Mock }
+
+func (m *MockAtCoderService) GetRating(username string) (*service.AtCoderRatingInfo, error) {
+	args := m.Called(username)
+	if r := args.Get(0); r != nil {
+		return r.(*service.AtCoderRatingInfo), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockAtCoderService) ValidateUsername(username string) bool {
+	return m.Called(username).Bool(0)
+}
+
+// MockAtCoderUserService は AtCoderUserServiceInterface のモック実装。
+type MockAtCoderUserService struct{ mock.Mock }
+
+func (m *MockAtCoderUserService) GetByID(id uint) (*model.User, error) {
+	args := m.Called(id)
+	if u := args.Get(0); u != nil {
+		return u.(*model.User), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockAtCoderUserService) Update(user *model.User) error {
+	return m.Called(user).Error(0)
+}
+
+// setupAtCoderHandler はAtCoderHandlerテスト用のセットアップを行う。
+func setupAtCoderHandler() (*AtCoderHandler, *MockAtCoderService, *MockAtCoderUserService) {
+	atcoderSvc := new(MockAtCoderService)
+	userSvc := new(MockAtCoderUserService)
+	h := NewAtCoderHandler(atcoderSvc, userSvc)
+	return h, atcoderSvc, userSvc
+}
