@@ -951,3 +951,115 @@ func setupLevelHandler() (*LevelHandler, *MockLevelService) {
 	h := NewLevelHandler(svc)
 	return h, svc
 }
+
+// MockActivityReportService は ActivityReportServiceInterface のモック実装。
+type MockActivityReportService struct{ mock.Mock }
+
+func (m *MockActivityReportService) GetWeeklyReport(userID uint) (*model.ActivityReport, error) {
+	args := m.Called(userID)
+	if r := args.Get(0); r != nil {
+		return r.(*model.ActivityReport), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockActivityReportService) GetMonthlyReport(userID uint) (*model.ActivityReport, error) {
+	args := m.Called(userID)
+	if r := args.Get(0); r != nil {
+		return r.(*model.ActivityReport), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockActivityReportService) GetComparison(userID uint, period model.ReportPeriod) (*model.ReportComparison, error) {
+	args := m.Called(userID, period)
+	if r := args.Get(0); r != nil {
+		return r.(*model.ReportComparison), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+// setupActivityReportHandler はActivityReportHandlerテスト用のセットアップを行う。
+func setupActivityReportHandler() (*ActivityReportHandler, *MockActivityReportService) {
+	svc := new(MockActivityReportService)
+	h := NewActivityReportHandler(svc)
+	return h, svc
+}
+
+// MockAIAdviceService は AIAdviceServiceInterface のモック実装。
+type MockAIAdviceService struct{ mock.Mock }
+
+func (m *MockAIAdviceService) GenerateAdvice(userID uint) []model.AIAdvice {
+	args := m.Called(userID)
+	return args.Get(0).([]model.AIAdvice)
+}
+func (m *MockAIAdviceService) IsLLMAvailable() bool {
+	return m.Called().Bool(0)
+}
+func (m *MockAIAdviceService) GetDailyChatRemaining(userID uint) (int, error) {
+	args := m.Called(userID)
+	return args.Int(0), args.Error(1)
+}
+func (m *MockAIAdviceService) MarkAsRead(id, userID uint) error {
+	return m.Called(id, userID).Error(0)
+}
+func (m *MockAIAdviceService) Chat(userID uint, message string, conversationID uint) (*model.AIConversation, error) {
+	args := m.Called(userID, message, conversationID)
+	if c := args.Get(0); c != nil {
+		return c.(*model.AIConversation), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockAIAdviceService) DeleteConversation(id, userID uint) error {
+	return m.Called(id, userID).Error(0)
+}
+func (m *MockAIAdviceService) GetConversations(userID uint, limit, offset int) ([]model.AIConversation, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.AIConversation), args.Error(1)
+}
+func (m *MockAIAdviceService) GetConversation(id, userID uint) (*model.AIConversation, error) {
+	args := m.Called(id, userID)
+	if c := args.Get(0); c != nil {
+		return c.(*model.AIConversation), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+// setupAIAdviceHandler はAIAdviceHandlerテスト用のセットアップを行う。
+func setupAIAdviceHandler() (*AIAdviceHandler, *MockAIAdviceService) {
+	svc := new(MockAIAdviceService)
+	h := NewAIAdviceHandler(svc)
+	return h, svc
+}
+
+// MockLearningAnalyticsService は LearningAnalyticsServiceInterface のモック実装。
+type MockLearningAnalyticsService struct{ mock.Mock }
+
+func (m *MockLearningAnalyticsService) GetHeatmap(userID uint) ([]model.HeatmapEntry, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.HeatmapEntry), args.Error(1)
+}
+func (m *MockLearningAnalyticsService) GetCategoryBreakdown(userID uint) ([]model.CategoryBreakdown, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.CategoryBreakdown), args.Error(1)
+}
+func (m *MockLearningAnalyticsService) GetWeeklyTrends(userID uint, weeks int) ([]model.WeeklyTrend, error) {
+	args := m.Called(userID, weeks)
+	return args.Get(0).([]model.WeeklyTrend), args.Error(1)
+}
+func (m *MockLearningAnalyticsService) GetProductivityScore(userID uint) (*model.ProductivityScore, error) {
+	args := m.Called(userID)
+	if s := args.Get(0); s != nil {
+		return s.(*model.ProductivityScore), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockLearningAnalyticsService) GetInsights(userID uint) ([]model.AIInsight, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.AIInsight), args.Error(1)
+}
+
+// setupLearningAnalyticsHandler はLearningAnalyticsHandlerテスト用のセットアップを行う。
+func setupLearningAnalyticsHandler() (*LearningAnalyticsHandler, *MockLearningAnalyticsService) {
+	svc := new(MockLearningAnalyticsService)
+	h := NewLearningAnalyticsHandler(svc)
+	return h, svc
+}
