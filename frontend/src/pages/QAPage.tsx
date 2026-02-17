@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { HelpCircle } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import type { Question } from '../types/qa';
 import { useQuestions, useDebounce } from '../hooks';
 import QuestionCard from '../components/qa/QuestionCard';
 import QuestionForm from '../components/qa/QuestionForm';
 import { QuestionCardSkeleton } from '../components/common/Skeleton';
-import { Pagination } from '../components/common';
+import { EmptyState, Pagination } from '../components/common';
 
 export default function QAPage() {
   const { t } = useTranslation();
@@ -122,20 +123,12 @@ export default function QAPage() {
           <QuestionCardSkeleton />
         </div>
       ) : questions.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gray-800 rounded-full flex items-center justify-center">
-            <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
-            </svg>
-          </div>
-          <p className="text-gray-400">{t('qa.noQuestions')}</p>
-          <button
-            onClick={() => setShowForm(true)}
-            className="mt-4 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-          >
-            {t('qa.askFirstQuestion')}
-          </button>
-        </div>
+        <EmptyState
+          icon={HelpCircle}
+          message={t('qa.noQuestions')}
+          actionLabel={t('qa.askFirstQuestion')}
+          onAction={() => setShowForm(true)}
+        />
       ) : (
         <>
           <div className="space-y-4">

@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Monitor, Rocket, Target, FolderOpen, FileText, BookOpen, ChevronDown, ChevronUp, type LucideIcon } from 'lucide-react';
+import { Monitor, Rocket, Target, FolderOpen, FileText, BookOpen, ChevronDown, ChevronUp, MapPin, type LucideIcon } from 'lucide-react';
 import { type RoadmapCategory, type Roadmap } from '../api/roadmaps';
 import { useRoadmaps, useRoadmapTemplates } from '../hooks';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import EmptyState from '../components/common/EmptyState';
 
 const CATEGORIES: { value: RoadmapCategory; label: string; icon: string; Icon: LucideIcon }[] = [
   { value: 'language', label: 'roadmaps.categoryLanguage', icon: '💻', Icon: Monitor },
@@ -309,20 +310,12 @@ export default function RoadmapsPage() {
 
       {/* Content */}
       {roadmaps.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gray-800 rounded-full flex items-center justify-center">
-            <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
-            </svg>
-          </div>
-          <p className="text-gray-400">{t('roadmaps.noRoadmaps')}</p>
-          <button
-            onClick={() => setShowForm(true)}
-            className="mt-4 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-          >
-            {t('roadmaps.createFirst')}
-          </button>
-        </div>
+        <EmptyState
+          icon={MapPin}
+          message={t('roadmaps.noRoadmaps')}
+          actionLabel={t('roadmaps.createFirst')}
+          onAction={() => setShowForm(true)}
+        />
       ) : (
         <div className="space-y-6">
           {activeRoadmaps.length > 0 && (
