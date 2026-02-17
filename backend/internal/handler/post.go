@@ -3,18 +3,41 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
 )
+
+// PostServiceInterface はPostServiceが実装すべきインターフェース。
+type PostServiceInterface interface {
+	Create(post *model.Post) (*model.Post, error)
+	GetByID(id uint) (*model.Post, error)
+	GetAll(page, limit int) ([]model.Post, error)
+	GetByUserID(userID uint) ([]model.Post, error)
+	GetDrafts(userID uint) ([]model.Post, error)
+	Timeline(userID uint, page, limit int) ([]model.Post, error)
+	Update(id, userID uint, title, content, imageUrls string) (*model.Post, error)
+	Delete(id, userID uint) error
+	Like(userID, postID uint) error
+	Unlike(userID, postID uint) error
+	HasLiked(userID, postID uint) bool
+	CreateComment(comment *model.Comment) error
+	GetComments(postID uint) ([]model.Comment, error)
+	DeleteComment(id, userID uint) error
+	Publish(id, userID uint) (*model.Post, error)
+}
+
+// CodeSnippetServiceInterface はCodeSnippetServiceが実装すべきインターフェース。
+type CodeSnippetServiceInterface interface {
+	Create(snippet *model.CodeSnippet) (*model.CodeSnippet, error)
+}
 
 // PostHandler は投稿関連のHTTPハンドラ。
 // 投稿のCRUD・いいね・コメント・タイムラインを処理する。
 type PostHandler struct {
-	service        *service.PostService
-	snippetService *service.CodeSnippetService
+	service        PostServiceInterface
+	snippetService CodeSnippetServiceInterface
 }
 
 // NewPostHandler は新しいPostHandlerインスタンスを生成する。
-func NewPostHandler(s *service.PostService, snippetService *service.CodeSnippetService) *PostHandler {
+func NewPostHandler(s PostServiceInterface, snippetService CodeSnippetServiceInterface) *PostHandler {
 	return &PostHandler{service: s, snippetService: snippetService}
 }
 
