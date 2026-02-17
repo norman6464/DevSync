@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, UserPlus, UserMinus, LogOut, Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import {
   getChatRoomMembers, updateChatRoom, deleteChatRoom,
   addChatRoomMember, removeChatRoomMember,
@@ -52,7 +53,7 @@ export default function RoomSettingsModal({
       await updateChatRoom(room.id, { name: name.trim(), description: description.trim() });
       onUpdated();
     } catch {
-      // handle error
+      toast.error(t('chat.updateRoomFailed'));
     } finally {
       setLoading(false);
     }
@@ -64,7 +65,7 @@ export default function RoomSettingsModal({
       const { data } = await getChatRoomMembers(room.id);
       setMembers(data || []);
     } catch {
-      // handle error
+      toast.error(t('chat.addMemberFailed'));
     }
   };
 
@@ -73,7 +74,7 @@ export default function RoomSettingsModal({
       await removeChatRoomMember(room.id, userId);
       setMembers((prev) => prev.filter((m) => m.user_id !== userId));
     } catch {
-      // handle error
+      toast.error(t('chat.removeMemberFailed'));
     }
   };
 
@@ -89,7 +90,7 @@ export default function RoomSettingsModal({
       await removeChatRoomMember(room.id, currentUserId);
       onLeft();
     } catch {
-      // handle error
+      toast.error(t('chat.leaveFailed'));
     }
   };
 
@@ -105,7 +106,7 @@ export default function RoomSettingsModal({
       await deleteChatRoom(room.id);
       onDeleted();
     } catch {
-      // handle error
+      toast.error(t('chat.chatDeleteFailed'));
     }
   };
 
