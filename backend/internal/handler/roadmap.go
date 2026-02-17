@@ -98,9 +98,9 @@ func (h *RoadmapHandler) GetPublicRoadmaps(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{
-		"roadmaps": roadmaps,
-		"total":    total,
+	respondOK(c, dto.RoadmapListResponse{
+		Roadmaps: roadmaps,
+		Total:    total,
 	})
 }
 

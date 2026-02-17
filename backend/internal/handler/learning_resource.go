@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -116,10 +117,10 @@ func (h *LearningResourceHandler) GetByID(c *gin.Context) {
 	hasLiked, _ := h.service.HasLiked(userID, id)
 	hasSaved, _ := h.service.HasSaved(userID, id)
 
-	respondOK(c, gin.H{
-		"resource":  resource,
-		"has_liked": hasLiked,
-		"has_saved": hasSaved,
+	respondOK(c, dto.ResourceDetailResponse{
+		Resource: *resource,
+		HasLiked: hasLiked,
+		HasSaved: hasSaved,
 	})
 }
 
@@ -158,11 +159,11 @@ func (h *LearningResourceHandler) GetPublic(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{
-		"resources": resources,
-		"total":     total,
-		"limit":     limit,
-		"offset":    offset,
+	respondOK(c, dto.ResourceListResponse{
+		Resources: resources,
+		Total:     total,
+		Limit:     limit,
+		Offset:    offset,
 	})
 }
 
@@ -182,11 +183,11 @@ func (h *LearningResourceHandler) Search(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{
-		"resources": resources,
-		"total":     total,
-		"limit":     limit,
-		"offset":    offset,
+	respondOK(c, dto.ResourceListResponse{
+		Resources: resources,
+		Total:     total,
+		Limit:     limit,
+		Offset:    offset,
 	})
 }
 
@@ -340,10 +341,10 @@ func (h *LearningResourceHandler) GetSaved(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{
-		"resources": resources,
-		"total":     total,
-		"limit":     limit,
-		"offset":    offset,
+	respondOK(c, dto.ResourceListResponse{
+		Resources: resources,
+		Total:     total,
+		Limit:     limit,
+		Offset:    offset,
 	})
 }

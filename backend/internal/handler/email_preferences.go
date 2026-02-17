@@ -33,9 +33,9 @@ func (h *EmailPreferencesHandler) GetPreferences(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{
-		"email_weekly_report": user.EmailWeeklyReport,
-		"email_language":      user.EmailLanguage,
+	respondOK(c, dto.EmailPreferencesResponse{
+		EmailWeeklyReport: user.EmailWeeklyReport,
+		EmailLanguage:     user.EmailLanguage,
 	})
 }
 
@@ -76,8 +76,8 @@ func (h *EmailPreferencesHandler) UpdatePreferences(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{
-		"email_weekly_report": user.EmailWeeklyReport,
-		"email_language":      user.EmailLanguage,
+	respondOK(c, dto.EmailPreferencesResponse{
+		EmailWeeklyReport: user.EmailWeeklyReport,
+		EmailLanguage:     user.EmailLanguage,
 	})
 }
