@@ -1,4 +1,5 @@
 import { Plus } from 'lucide-react';
+import { buttonSecondaryClass } from '../../constants/styles';
 
 interface PageHeaderProps {
   title: string;
@@ -17,7 +18,7 @@ export default function PageHeader({ title, subtitle, actionLabel, onAction }: P
       {actionLabel && onAction && (
         <button
           onClick={onAction}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+          className={`${buttonSecondaryClass} flex items-center gap-2`}
         >
           <Plus className="w-5 h-5" />
           {actionLabel}
