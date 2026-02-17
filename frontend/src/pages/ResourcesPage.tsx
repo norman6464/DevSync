@@ -8,7 +8,7 @@ import ResourceCard from '../components/resources/ResourceCard';
 import ResourceForm from '../components/resources/ResourceForm';
 import { ResourceCardSkeleton } from '../components/common/Skeleton';
 import EmptyState from '../components/common/EmptyState';
-import { Pagination } from '../components/common';
+import { Pagination, SearchInput } from '../components/common';
 
 const categories: (ResourceCategory | '')[] = ['', 'book', 'video', 'article', 'course', 'tutorial', 'podcast', 'tool', 'other'];
 const difficulties: (ResourceDifficulty | '')[] = ['', 'beginner', 'intermediate', 'advanced'];
@@ -91,22 +91,13 @@ export default function ResourcesPage() {
       {tab === 'explore' && (
         <div className="flex flex-wrap gap-4 mb-6">
           <div className="flex-1 min-w-[200px]">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder={t('resources.searchPlaceholder')}
-                className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
-              />
-              <button
-                onClick={handleSearch}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-              >
-                {t('common.search')}
-              </button>
-            </div>
+            <SearchInput
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onSearch={handleSearch}
+              placeholder={t('resources.searchPlaceholder')}
+              showButton
+            />
           </div>
           <select
             value={categoryFilter}
