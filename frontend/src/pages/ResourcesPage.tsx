@@ -8,7 +8,7 @@ import ResourceCard from '../components/resources/ResourceCard';
 import ResourceForm from '../components/resources/ResourceForm';
 import { ResourceCardSkeleton } from '../components/common/Skeleton';
 import EmptyState from '../components/common/EmptyState';
-import { Pagination, SearchInput } from '../components/common';
+import { Pagination, SearchInput, PageHeader } from '../components/common';
 
 const categories: (ResourceCategory | '')[] = ['', 'book', 'video', 'article', 'course', 'tutorial', 'podcast', 'tool', 'other'];
 const difficulties: (ResourceDifficulty | '')[] = ['', 'beginner', 'intermediate', 'advanced'];
@@ -43,21 +43,12 @@ export default function ResourcesPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white">{t('resources.pageTitle')}</h1>
-          <p className="text-gray-400 text-sm mt-1">{t('resources.pageSubtitle')}</p>
-        </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-          {t('resources.addResource')}
-        </button>
-      </div>
+      <PageHeader
+        title={t('resources.pageTitle')}
+        subtitle={t('resources.pageSubtitle')}
+        actionLabel={t('resources.addResource')}
+        onAction={() => setShowForm(true)}
+      />
 
       {/* Tabs */}
       <div className="flex gap-2 mb-6">
