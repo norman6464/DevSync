@@ -88,6 +88,12 @@ func respondBadRequest(c *gin.Context, message string) {
 	c.JSON(http.StatusBadRequest, response)
 }
 
+// respondForbidden は403 Forbiddenでエラーメッセージを返す。
+func respondForbidden(c *gin.Context, message string) {
+	response := domain.NewErrorResponse(message, string(domain.ErrCodeForbidden), nil)
+	c.JSON(http.StatusForbidden, response)
+}
+
 // respondPaginated はページネーション付きレスポンスを返す。
 func respondPaginated(c *gin.Context, data interface{}, total int64, page, limit int) {
 	response := domain.NewPaginatedResponse(data, total, page, limit)
