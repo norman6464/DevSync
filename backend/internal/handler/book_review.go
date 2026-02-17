@@ -5,17 +5,26 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
 )
+
+// BookReviewServiceInterface はBookReviewServiceが実装すべきインターフェース。
+type BookReviewServiceInterface interface {
+	Create(review *model.BookReview) error
+	GetByID(id uint) (*model.BookReview, error)
+	GetByUserID(userID uint) ([]model.BookReview, error)
+	GetAll(limit, offset int) ([]model.BookReview, int64, error)
+	Update(id, userID uint, updates *model.BookReview) (*model.BookReview, error)
+	Delete(id, userID uint) error
+}
 
 // BookReviewHandler は書籍レビュー関連のHTTPハンドラ。
 // 書籍レビューのCRUD・一覧取得を処理する。
 type BookReviewHandler struct {
-	service *service.BookReviewService
+	service BookReviewServiceInterface
 }
 
 // NewBookReviewHandler は新しいBookReviewHandlerインスタンスを生成する。
-func NewBookReviewHandler(s *service.BookReviewService) *BookReviewHandler {
+func NewBookReviewHandler(s BookReviewServiceInterface) *BookReviewHandler {
 	return &BookReviewHandler{service: s}
 }
 

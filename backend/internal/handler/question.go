@@ -1,22 +1,34 @@
 package handler
 
 import (
-	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
 )
+
+// QuestionServiceInterface はQuestionServiceが実装すべきインターフェース。
+type QuestionServiceInterface interface {
+	Create(question *model.Question) error
+	GetAll(limit, offset int, tag, sort string) ([]model.Question, int64, error)
+	Search(q string, limit, offset int) ([]model.Question, int64, error)
+	GetByID(id uint) (*model.Question, error)
+	GetByUserID(userID uint) ([]model.Question, error)
+	GetUserVote(userID, questionID uint) (int, error)
+	Update(id, userID uint, title, body, tags string) (*model.Question, error)
+	Delete(id, userID uint) error
+	Vote(userID, questionID uint, value int) error
+	RemoveVote(userID, questionID uint) error
+}
 
 // QuestionHandler は質問関連のHTTPハンドラ。
 // 質問のCRUD・検索・投票を処理する。
 type QuestionHandler struct {
-	service *service.QuestionService
+	service QuestionServiceInterface
 }
 
 // NewQuestionHandler は新しいQuestionHandlerインスタンスを生成する。
-func NewQuestionHandler(s *service.QuestionService) *QuestionHandler {
+func NewQuestionHandler(s QuestionServiceInterface) *QuestionHandler {
 	return &QuestionHandler{service: s}
 }
 
@@ -92,7 +104,7 @@ func (h *QuestionHandler) GetAll(c *gin.Context) {
 func (h *QuestionHandler) Search(c *gin.Context) {
 	q := c.Query("q")
 	if q == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Search query is required"})
+		respondBadRequest(c, "search query is required")
 		return
 	}
 
