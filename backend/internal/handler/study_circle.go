@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
@@ -49,7 +47,7 @@ func (h *StudyCircleHandler) Create(c *gin.Context) {
 		MemberIDs   []uint `json:"member_ids"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondBadRequest(c, err.Error())
 		return
 	}
 
@@ -107,7 +105,7 @@ func (h *StudyCircleHandler) Update(c *gin.Context) {
 		Description *string `json:"description"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondBadRequest(c, err.Error())
 		return
 	}
 	userID := c.GetUint("userID")
@@ -158,7 +156,7 @@ func (h *StudyCircleHandler) AddMember(c *gin.Context) {
 		UserID uint `json:"user_id" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondBadRequest(c, err.Error())
 		return
 	}
 	userID := c.GetUint("userID")
@@ -200,7 +198,7 @@ func (h *StudyCircleHandler) CreateStep(c *gin.Context) {
 		OrderIndex  int    `json:"order_index"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondBadRequest(c, err.Error())
 		return
 	}
 	userID := c.GetUint("userID")
@@ -233,7 +231,7 @@ func (h *StudyCircleHandler) UpdateStep(c *gin.Context) {
 		Description *string `json:"description"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondBadRequest(c, err.Error())
 		return
 	}
 	userID := c.GetUint("userID")
@@ -273,7 +271,7 @@ func (h *StudyCircleHandler) ReorderSteps(c *gin.Context) {
 		Orders []repository.StepOrder `json:"orders" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondBadRequest(c, err.Error())
 		return
 	}
 	userID := c.GetUint("userID")
@@ -298,7 +296,7 @@ func (h *StudyCircleHandler) UpdateProgress(c *gin.Context) {
 		IsCompleted bool `json:"is_completed"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondBadRequest(c, err.Error())
 		return
 	}
 	userID := c.GetUint("userID")
@@ -334,7 +332,7 @@ func (h *StudyCircleHandler) CreateCheckin(c *gin.Context) {
 		Content string `json:"content" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondBadRequest(c, err.Error())
 		return
 	}
 	userID := c.GetUint("userID")
