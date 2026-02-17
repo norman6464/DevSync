@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -42,11 +43,7 @@ func (h *EmailPreferencesHandler) GetPreferences(c *gin.Context) {
 func (h *EmailPreferencesHandler) UpdatePreferences(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	var req struct {
-		EmailWeeklyReport *bool   `json:"email_weekly_report"`
-		EmailLanguage     *string `json:"email_language"`
-	}
-
+	var req dto.UpdateEmailPreferencesRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		respondBadRequest(c, "invalid request")
 		return
