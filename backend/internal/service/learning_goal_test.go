@@ -16,6 +16,146 @@ func newTestLearningGoalService() (*LearningGoalService, *MockLearningGoalReposi
 }
 
 // ============================================================
+// 学習目標作成テスト
+// ============================================================
+
+func TestLearningGoalCreate_Success(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	goal := &model.LearningGoal{
+		UserID:   1,
+		Title:    "Goを学ぶ",
+		Category: model.GoalCategoryOther,
+	}
+
+	repo.On("Create", goal).Return(nil)
+
+	err := svc.Create(goal)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningGoalCreate_Error(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	goal := &model.LearningGoal{UserID: 1, Title: "Test"}
+	repo.On("Create", goal).Return(errors.New("db error"))
+
+	err := svc.Create(goal)
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// 学習目標取得テスト
+// ============================================================
+
+func TestLearningGoalGetByID_Success(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	expected := &model.LearningGoal{Title: "Go学習", UserID: 1}
+	expected.ID = 1
+	repo.On("FindByID", uint(1)).Return(expected, nil)
+
+	result, err := svc.GetByID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, "Go学習", result.Title)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningGoalGetByID_NotFound(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	repo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	result, err := svc.GetByID(999)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningGoalGetByUserID_Success(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	goals := []model.LearningGoal{
+		{Title: "Goal 1", UserID: 1},
+		{Title: "Goal 2", UserID: 1},
+	}
+	repo.On("GetByUserID", uint(1)).Return(goals, nil)
+
+	result, err := svc.GetByUserID(1)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningGoalGetByUserID_Error(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	repo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, errors.New("db error"))
+
+	result, err := svc.GetByUserID(1)
+	assert.Error(t, err)
+	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningGoalGetActiveByUserID_Success(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	goals := []model.LearningGoal{
+		{Title: "Active Goal", UserID: 1, Status: model.GoalStatusActive},
+	}
+	repo.On("GetActiveByUserID", uint(1)).Return(goals, nil)
+
+	result, err := svc.GetActiveByUserID(1)
+	assert.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, model.GoalStatusActive, result[0].Status)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningGoalGetActiveByUserID_Error(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	repo.On("GetActiveByUserID", uint(1)).Return([]model.LearningGoal{}, errors.New("db error"))
+
+	result, err := svc.GetActiveByUserID(1)
+	assert.Error(t, err)
+	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningGoalGetStats_Success(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	stats := &model.LearningGoalStats{
+		TotalGoals:     5,
+		ActiveGoals:    3,
+		CompletedGoals: 2,
+	}
+	repo.On("GetStats", uint(1)).Return(stats, nil)
+
+	result, err := svc.GetStats(1)
+	assert.NoError(t, err)
+	assert.Equal(t, 5, result.TotalGoals)
+	assert.Equal(t, 3, result.ActiveGoals)
+	assert.Equal(t, 2, result.CompletedGoals)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningGoalGetStats_Error(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	repo.On("GetStats", uint(1)).Return(nil, errors.New("db error"))
+
+	result, err := svc.GetStats(1)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
 // 学習目標更新テスト
 // ============================================================
 
