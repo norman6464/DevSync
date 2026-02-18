@@ -1270,7 +1270,9 @@
     "attachedImages": "Angehängte Bilder:",
     "uploadedImage": "Hochgeladenes Bild {{number}}",
     "markdownSupported": "Markdown unterstützt",
-    "pasteOrDragImages": "Bilder einfügen oder ziehen zum Hochladen"
+    "pasteOrDragImages": "Bilder einfügen oder ziehen zum Hochladen",
+    "toolbar": "Formatierungswerkzeugleiste",
+    "removeImage": "Bild {{number}} entfernen"
   },
   "tags": {
     "title": "Tags",

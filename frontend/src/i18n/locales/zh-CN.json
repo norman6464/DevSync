@@ -1270,7 +1270,9 @@
     "attachedImages": "附加图片：",
     "uploadedImage": "已上传图片 {{number}}",
     "markdownSupported": "支持Markdown",
-    "pasteOrDragImages": "粘贴或拖拽图片上传"
+    "pasteOrDragImages": "粘贴或拖拽图片上传",
+    "toolbar": "格式工具栏",
+    "removeImage": "删除图片{{number}}"
   },
   "tags": {
     "title": "标签",

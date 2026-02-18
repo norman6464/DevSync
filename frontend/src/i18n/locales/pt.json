@@ -1270,7 +1270,9 @@
     "attachedImages": "Imagens anexadas:",
     "uploadedImage": "Imagem enviada {{number}}",
     "markdownSupported": "Markdown suportado",
-    "pasteOrDragImages": "Cole ou arraste imagens para enviar"
+    "pasteOrDragImages": "Cole ou arraste imagens para enviar",
+    "toolbar": "Barra de ferramentas de formatação",
+    "removeImage": "Remover imagem {{number}}"
   },
   "tags": {
     "title": "Tags",

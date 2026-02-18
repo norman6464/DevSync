@@ -1270,7 +1270,9 @@
     "attachedImages": "첨부 이미지:",
     "uploadedImage": "업로드된 이미지 {{number}}",
     "markdownSupported": "마크다운 지원",
-    "pasteOrDragImages": "이미지를 붙여넣거나 드래그하여 업로드"
+    "pasteOrDragImages": "이미지를 붙여넣거나 드래그하여 업로드",
+    "toolbar": "서식 도구 모음",
+    "removeImage": "이미지 {{number}} 삭제"
   },
   "tags": {
     "title": "태그",

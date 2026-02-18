@@ -1270,7 +1270,9 @@
     "attachedImages": "Attached images:",
     "uploadedImage": "Uploaded {{number}}",
     "markdownSupported": "Markdown supported",
-    "pasteOrDragImages": "Paste or drag images to upload"
+    "pasteOrDragImages": "Paste or drag images to upload",
+    "toolbar": "Formatting toolbar",
+    "removeImage": "Remove image {{number}}"
   },
   "tags": {
     "title": "Tags",
