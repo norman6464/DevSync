@@ -366,6 +366,194 @@ func TestGenerateAdvice_ExploreResources(t *testing.T) {
 	})
 }
 
+func TestGenerateAdvice_LowStudyTime(t *testing.T) {
+	t.Run("週平均15分未満の学習で学習時間増加アドバイスを返す", func(t *testing.T) {
+		svc, logRepo, goalRepo, roadmapRepo, githubRepo, resourceRepo, userRepo := setupRuleEngineService()
+		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+		goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
+		// 過去7日に合計50分の学習（平均7分/日 → 15分未満）
+		now := time.Now()
+		logs := []model.LearningLog{
+			{Duration: 25},
+			{Duration: 25},
+		}
+		logs[0].CreatedAt = now.Add(-1 * 24 * time.Hour)
+		logs[1].CreatedAt = now.Add(-3 * 24 * time.Hour)
+		logRepo.On("GetByUserID", uint(1)).Return(logs, nil)
+		resourceRepo.On("FindByUserID", uint(1), true).Return([]model.LearningResource{{}, {}, {}}, nil)
+		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
+
+		advices := svc.GenerateAdvice(1)
+
+		found := false
+		for _, a := range advices {
+			if a.TitleKey == "advice.suggestMoreTime" {
+				found = true
+				assert.Equal(t, model.AdvicePriorityLow, a.Priority)
+				assert.Equal(t, "/learning-logs", a.ActionURL)
+				break
+			}
+		}
+		assert.True(t, found, "学習時間増加アドバイスが返されるべき")
+	})
+
+	t.Run("週平均15分以上60分未満の場合は学習時間アドバイスなし", func(t *testing.T) {
+		svc, logRepo, goalRepo, roadmapRepo, githubRepo, resourceRepo, userRepo := setupRuleEngineService()
+		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+		goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
+		// 過去7日に合計210分（平均30分/日 → 15〜60の間）
+		now := time.Now()
+		logs := []model.LearningLog{
+			{Duration: 70},
+			{Duration: 70},
+			{Duration: 70},
+		}
+		logs[0].CreatedAt = now.Add(-1 * 24 * time.Hour)
+		logs[1].CreatedAt = now.Add(-3 * 24 * time.Hour)
+		logs[2].CreatedAt = now.Add(-5 * 24 * time.Hour)
+		logRepo.On("GetByUserID", uint(1)).Return(logs, nil)
+		resourceRepo.On("FindByUserID", uint(1), true).Return([]model.LearningResource{{}, {}, {}}, nil)
+		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
+
+		advices := svc.GenerateAdvice(1)
+
+		for _, a := range advices {
+			assert.NotEqual(t, "advice.suggestMoreTime", a.TitleKey,
+				"週平均15〜60分の場合は学習時間増加アドバイスを返さない")
+			assert.NotEqual(t, model.AdviceTypePraise, a.Type,
+				"週平均60分未満の場合は称賛アドバイスを返さない")
+		}
+	})
+}
+
+func TestGenerateAdvice_TechSuggestionFromTopLanguage(t *testing.T) {
+	t.Run("TypeScript以外のトップ言語で目標なしの場合技術提案を返す", func(t *testing.T) {
+		svc, logRepo, goalRepo, roadmapRepo, githubRepo, resourceRepo, userRepo := setupRuleEngineService()
+		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+		goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{
+			{Title: "Docker学習", Status: model.GoalStatusActive},
+		}, nil)
+		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{TotalGoals: 1}, nil)
+		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{
+			{Language: "Go", Bytes: 80000, RepoCount: 5},
+			{Language: "Python", Bytes: 30000, RepoCount: 2},
+		}, nil)
+		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		resourceRepo.On("FindByUserID", uint(1), true).Return([]model.LearningResource{{}, {}, {}}, nil)
+		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
+
+		advices := svc.GenerateAdvice(1)
+
+		found := false
+		for _, a := range advices {
+			if a.TitleKey == "advice.suggestFromGithub" {
+				found = true
+				assert.Equal(t, model.AdvicePriorityMedium, a.Priority)
+				assert.Contains(t, a.Params, "Go")
+				break
+			}
+		}
+		assert.True(t, found, "GitHub言語ベースの技術提案が返されるべき")
+	})
+
+	t.Run("トップ言語に対応する目標がある場合は提案なし", func(t *testing.T) {
+		svc, logRepo, goalRepo, roadmapRepo, githubRepo, resourceRepo, userRepo := setupRuleEngineService()
+		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+		goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{
+			{Title: "Go言語マスター", Status: model.GoalStatusActive},
+		}, nil)
+		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{TotalGoals: 1}, nil)
+		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{
+			{Language: "Go", Bytes: 80000, RepoCount: 5},
+		}, nil)
+		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		resourceRepo.On("FindByUserID", uint(1), true).Return([]model.LearningResource{{}, {}, {}}, nil)
+		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
+
+		advices := svc.GenerateAdvice(1)
+
+		for _, a := range advices {
+			assert.NotEqual(t, "advice.suggestFromGithub", a.TitleKey,
+				"既にトップ言語の目標がある場合は提案しない")
+		}
+	})
+
+	t.Run("トップ言語のバイト数が10000以下の場合は提案なし", func(t *testing.T) {
+		svc, logRepo, goalRepo, roadmapRepo, githubRepo, resourceRepo, userRepo := setupRuleEngineService()
+		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+		goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{
+			{Language: "Go", Bytes: 5000, RepoCount: 1},
+		}, nil)
+		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		resourceRepo.On("FindByUserID", uint(1), true).Return([]model.LearningResource{{}, {}, {}}, nil)
+		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
+
+		advices := svc.GenerateAdvice(1)
+
+		for _, a := range advices {
+			assert.NotEqual(t, "advice.suggestFromGithub", a.TitleKey,
+				"バイト数が少ない場合は技術提案しない")
+		}
+	})
+}
+
+func TestGenerateAdvice_StalledRoadmapEdgeCases(t *testing.T) {
+	t.Run("完了済みロードマップは停滞アドバイスを返さない", func(t *testing.T) {
+		svc, logRepo, goalRepo, roadmapRepo, githubRepo, resourceRepo, userRepo := setupRuleEngineService()
+		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+		goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
+		staleTime := time.Now().Add(-10 * 24 * time.Hour)
+		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{
+			{Status: model.RoadmapStatusCompleted, StepCount: 5, CompletedStepCount: 5, UpdatedAt: staleTime},
+		}, nil)
+		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
+		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		resourceRepo.On("FindByUserID", uint(1), true).Return([]model.LearningResource{{}, {}, {}}, nil)
+		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
+
+		advices := svc.GenerateAdvice(1)
+
+		for _, a := range advices {
+			assert.NotEqual(t, model.AdviceTypeStalledRoadmap, a.Type,
+				"完了済みロードマップには停滞アドバイスを返さない")
+		}
+	})
+
+	t.Run("全ステップ完了のアクティブロードマップは停滞アドバイスを返さない", func(t *testing.T) {
+		svc, logRepo, goalRepo, roadmapRepo, githubRepo, resourceRepo, userRepo := setupRuleEngineService()
+		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+		goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
+		staleTime := time.Now().Add(-10 * 24 * time.Hour)
+		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{
+			{Status: model.RoadmapStatusActive, StepCount: 5, CompletedStepCount: 5, UpdatedAt: staleTime},
+		}, nil)
+		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
+		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		resourceRepo.On("FindByUserID", uint(1), true).Return([]model.LearningResource{{}, {}, {}}, nil)
+		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
+
+		advices := svc.GenerateAdvice(1)
+
+		for _, a := range advices {
+			assert.NotEqual(t, model.AdviceTypeStalledRoadmap, a.Type,
+				"全ステップ完了のロードマップには停滞アドバイスを返さない")
+		}
+	})
+}
+
 func TestGenerateAdvice_PrioritySorting(t *testing.T) {
 	t.Run("アドバイスは優先度順にソートされる", func(t *testing.T) {
 		svc, logRepo, goalRepo, roadmapRepo, githubRepo, resourceRepo, userRepo := setupRuleEngineService()
