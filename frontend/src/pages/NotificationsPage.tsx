@@ -103,7 +103,7 @@ export default function NotificationsPage() {
             onClick={markAllAsRead}
             className={`flex items-center gap-2 ${buttonSecondaryClass}`}
           >
-            <CheckCheck className="w-5 h-5" />
+            <CheckCheck className="w-5 h-5" aria-hidden="true" />
             {t('notifications.markAllRead')}
           </button>
         )}
@@ -111,11 +111,12 @@ export default function NotificationsPage() {
 
       {/* Filter Tabs */}
       <div className="flex flex-col gap-4 mb-6">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2" role="group" aria-label={t('notifications.filterGroup')}>
           {FILTER_TYPES.map(({ key, labelKey }) => (
             <button
               key={key}
               onClick={() => setFilterType(key)}
+              aria-pressed={filterType === key}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 filterType === key
                   ? 'bg-gray-700 text-white'
@@ -130,13 +131,14 @@ export default function NotificationsPage() {
         {/* Unread Only Toggle */}
         <button
           onClick={() => setShowUnreadOnly(!showUnreadOnly)}
+          aria-pressed={showUnreadOnly}
           className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors self-start ${
             showUnreadOnly
               ? 'bg-blue-600 text-white'
               : 'bg-gray-800 text-gray-400 hover:text-white'
           }`}
         >
-          <Filter className="w-4 h-4" />
+          <Filter className="w-4 h-4" aria-hidden="true" />
           {t('notifications.showUnreadOnly')}
         </button>
       </div>
@@ -153,9 +155,9 @@ export default function NotificationsPage() {
         />
       ) : (
         <>
-          <div className="space-y-2">
+          <ul className="space-y-2" role="list" aria-label={t('notifications.listLabel')}>
             {filteredNotifications.map((notification) => (
-              <div
+              <li
                 key={notification.id}
                 className={`flex items-start gap-3 p-4 rounded-lg border transition-colors ${
                   !notification.read
@@ -194,19 +196,19 @@ export default function NotificationsPage() {
                     </p>
                   </div>
                   {!notification.read && (
-                    <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 shrink-0" />
+                    <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 shrink-0" aria-hidden="true" />
                   )}
                 </Link>
                 <button
                   onClick={() => deleteNotification(notification.id)}
                   className="p-1.5 text-gray-500 hover:text-red-400 transition-colors rounded-md shrink-0"
-                  title={t('notifications.deleteNotification')}
+                  aria-label={t('notifications.deleteNotification')}
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-4 h-4" aria-hidden="true" />
                 </button>
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
 
           {/* Pagination */}
           {total > limit && (

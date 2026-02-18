@@ -462,6 +462,8 @@
     "filterBadge": "Значок",
     "showUnreadOnly": "Показать только непрочитанные",
     "deleteNotification": "Удалить уведомление",
+    "filterGroup": "Фильтры уведомлений",
+    "listLabel": "Список уведомлений",
     "deleted": "Уведомление удалено",
     "levelUp": "Вы достигли уровня {{level}}!",
     "filterLevel": "Повышение уровня"
