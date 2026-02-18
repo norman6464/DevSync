@@ -131,3 +131,79 @@ func TestCreateNotificationWithoutHub_Success(t *testing.T) {
 	assert.NoError(t, err)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// GetByUserID テスト
+// ============================================================
+
+func TestNotificationGetByUserID_Success(t *testing.T) {
+	svc, repo := newTestNotificationService()
+
+	notifications := []model.Notification{
+		{ID: 1, UserID: 1, Type: model.NotificationTypePost, ActorID: 2},
+		{ID: 2, UserID: 1, Type: model.NotificationTypeFollow, ActorID: 3},
+	}
+	repo.On("FindByUserID", uint(1), 1, 20, "").Return(notifications, nil)
+
+	result, err := svc.GetByUserID(1, 1, 20, "")
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	repo.AssertExpectations(t)
+}
+
+func TestNotificationGetByUserID_WithFilter(t *testing.T) {
+	svc, repo := newTestNotificationService()
+
+	notifications := []model.Notification{
+		{ID: 1, UserID: 1, Type: model.NotificationTypePost, ActorID: 2},
+	}
+	repo.On("FindByUserID", uint(1), 1, 20, "post").Return(notifications, nil)
+
+	result, err := svc.GetByUserID(1, 1, 20, "post")
+	assert.NoError(t, err)
+	assert.Len(t, result, 1)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// CountByUserID テスト
+// ============================================================
+
+func TestNotificationCountByUserID_Success(t *testing.T) {
+	svc, repo := newTestNotificationService()
+
+	repo.On("CountByUserID", uint(1), "").Return(int64(15), nil)
+
+	count, err := svc.CountByUserID(1, "")
+	assert.NoError(t, err)
+	assert.Equal(t, int64(15), count)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// MarkAsRead テスト
+// ============================================================
+
+func TestNotificationMarkAsRead_Success(t *testing.T) {
+	svc, repo := newTestNotificationService()
+
+	repo.On("MarkAsRead", uint(5), uint(1)).Return(nil)
+
+	err := svc.MarkAsRead(5, 1)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// Delete テスト
+// ============================================================
+
+func TestNotificationDelete_Success(t *testing.T) {
+	svc, repo := newTestNotificationService()
+
+	repo.On("Delete", uint(5), uint(1)).Return(nil)
+
+	err := svc.Delete(5, 1)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
