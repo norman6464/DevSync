@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BookOpen } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
@@ -22,10 +22,25 @@ export default function BookReviewsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingReview, setEditingReview] = useState<BookReview | null>(null);
 
-  const handleDeleteReview = async (review: BookReview) => {
+  const handleDeleteReview = useCallback(async (review: BookReview) => {
     const ok = await confirm({ title: t('common.confirm'), message: t('bookReviews.confirmDelete'), variant: 'danger' });
     if (ok) deleteReview(review);
-  };
+  }, [confirm, t, deleteReview]);
+
+  const handleFormClose = useCallback(() => {
+    setShowForm(false);
+    setEditingReview(null);
+  }, []);
+
+  const handleFormSubmit = useCallback(async (data: Parameters<typeof createReview>[0]) => {
+    if (editingReview) {
+      const result = await updateReview(editingReview.id, data);
+      if (result) setEditingReview(null);
+    } else {
+      const result = await createReview(data);
+      if (result) setShowForm(false);
+    }
+  }, [editingReview, updateReview, createReview]);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -39,25 +54,14 @@ export default function BookReviewsPage() {
       {/* Form Modal */}
       <Modal
         isOpen={showForm || !!editingReview}
-        onClose={() => { setShowForm(false); setEditingReview(null); }}
+        onClose={handleFormClose}
         title={editingReview ? t('bookReviews.editReview') : t('bookReviews.newReview')}
         maxWidth="max-w-lg"
       >
         <BookReviewForm
           review={editingReview || undefined}
-          onSubmit={async (data) => {
-            if (editingReview) {
-              const result = await updateReview(editingReview.id, data);
-              if (result) setEditingReview(null);
-            } else {
-              const result = await createReview(data);
-              if (result) setShowForm(false);
-            }
-          }}
-          onCancel={() => {
-            setShowForm(false);
-            setEditingReview(null);
-          }}
+          onSubmit={handleFormSubmit}
+          onCancel={handleFormClose}
           loading={saving}
         />
       </Modal>
