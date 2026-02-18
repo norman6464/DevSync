@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/stretchr/testify/assert"
@@ -304,5 +305,151 @@ func TestLearningGoalDelete_Forbidden(t *testing.T) {
 
 	err := svc.Delete(1, 999)
 	assert.ErrorIs(t, err, ErrForbidden)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// デッドラインステータス判定テスト（純粋関数）
+// ============================================================
+
+func TestDeadlineStatus_NoTargetDate(t *testing.T) {
+	now := time.Now()
+	goal := model.LearningGoal{Status: model.GoalStatusActive}
+	assert.Equal(t, "", DeadlineStatus(&goal, now))
+}
+
+func TestDeadlineStatus_CompletedGoal(t *testing.T) {
+	now := time.Now()
+	yesterday := now.AddDate(0, 0, -1)
+	goal := model.LearningGoal{
+		Status:     model.GoalStatusCompleted,
+		TargetDate: &yesterday,
+	}
+	assert.Equal(t, "", DeadlineStatus(&goal, now))
+}
+
+func TestDeadlineStatus_PausedGoal(t *testing.T) {
+	now := time.Now()
+	yesterday := now.AddDate(0, 0, -1)
+	goal := model.LearningGoal{
+		Status:     model.GoalStatusPaused,
+		TargetDate: &yesterday,
+	}
+	assert.Equal(t, "", DeadlineStatus(&goal, now))
+}
+
+func TestDeadlineStatus_Overdue(t *testing.T) {
+	now := time.Now()
+	pastDate := now.AddDate(0, 0, -2)
+	goal := model.LearningGoal{
+		Status:     model.GoalStatusActive,
+		TargetDate: &pastDate,
+	}
+	assert.Equal(t, "overdue", DeadlineStatus(&goal, now))
+}
+
+func TestDeadlineStatus_Approaching_Today(t *testing.T) {
+	now := time.Now()
+	today := now
+	goal := model.LearningGoal{
+		Status:     model.GoalStatusActive,
+		TargetDate: &today,
+	}
+	assert.Equal(t, "approaching", DeadlineStatus(&goal, now))
+}
+
+func TestDeadlineStatus_Approaching_3Days(t *testing.T) {
+	now := time.Now()
+	threeDays := now.AddDate(0, 0, 3)
+	goal := model.LearningGoal{
+		Status:     model.GoalStatusActive,
+		TargetDate: &threeDays,
+	}
+	assert.Equal(t, "approaching", DeadlineStatus(&goal, now))
+}
+
+func TestDeadlineStatus_Safe_4Days(t *testing.T) {
+	now := time.Now()
+	fourDays := now.AddDate(0, 0, 4)
+	goal := model.LearningGoal{
+		Status:     model.GoalStatusActive,
+		TargetDate: &fourDays,
+	}
+	assert.Equal(t, "", DeadlineStatus(&goal, now))
+}
+
+// ============================================================
+// DaysUntilDeadline テスト
+// ============================================================
+
+func TestDaysUntilDeadline_NoTargetDate(t *testing.T) {
+	now := time.Now()
+	goal := model.LearningGoal{}
+	assert.Equal(t, -1, DaysUntilDeadline(&goal, now))
+}
+
+func TestDaysUntilDeadline_Tomorrow(t *testing.T) {
+	now := time.Now()
+	tomorrow := now.AddDate(0, 0, 1)
+	goal := model.LearningGoal{TargetDate: &tomorrow}
+	assert.Equal(t, 1, DaysUntilDeadline(&goal, now))
+}
+
+func TestDaysUntilDeadline_Yesterday(t *testing.T) {
+	now := time.Now()
+	yesterday := now.AddDate(0, 0, -1)
+	goal := model.LearningGoal{TargetDate: &yesterday}
+	assert.Equal(t, -1, DaysUntilDeadline(&goal, now))
+}
+
+// ============================================================
+// GetDeadlineAlerts サービステスト
+// ============================================================
+
+func TestGetDeadlineAlerts_Success(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	now := time.Now()
+	overdue := now.AddDate(0, 0, -2)
+	approaching := now.AddDate(0, 0, 2)
+	safe := now.AddDate(0, 0, 10)
+
+	goals := []model.LearningGoal{
+		{Title: "Overdue Goal", Status: model.GoalStatusActive, TargetDate: &overdue},
+		{Title: "Approaching Goal", Status: model.GoalStatusActive, TargetDate: &approaching},
+		{Title: "Safe Goal", Status: model.GoalStatusActive, TargetDate: &safe},
+		{Title: "No Deadline", Status: model.GoalStatusActive},
+	}
+	repo.On("GetActiveByUserID", uint(1)).Return(goals, nil)
+
+	alerts, err := svc.GetDeadlineAlerts(1)
+	assert.NoError(t, err)
+	assert.Len(t, alerts, 2)
+	assert.Equal(t, "overdue", alerts[0].Status)
+	assert.Equal(t, "Overdue Goal", alerts[0].Goal.Title)
+	assert.Equal(t, "approaching", alerts[1].Status)
+	assert.Equal(t, "Approaching Goal", alerts[1].Goal.Title)
+	repo.AssertExpectations(t)
+}
+
+func TestGetDeadlineAlerts_Empty(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	repo.On("GetActiveByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+
+	alerts, err := svc.GetDeadlineAlerts(1)
+	assert.NoError(t, err)
+	assert.Empty(t, alerts)
+	repo.AssertExpectations(t)
+}
+
+func TestGetDeadlineAlerts_RepoError(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	repo.On("GetActiveByUserID", uint(1)).Return([]model.LearningGoal{}, assert.AnError)
+
+	alerts, err := svc.GetDeadlineAlerts(1)
+	assert.Error(t, err)
+	assert.Nil(t, alerts)
 	repo.AssertExpectations(t)
 }

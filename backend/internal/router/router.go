@@ -298,6 +298,7 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 		goals.DELETE("/:id", c.LearningGoalHandler.Delete)
 		goals.GET("/user/:userId", c.LearningGoalHandler.GetByUserID)
 		goals.GET("/stats/:userId", c.LearningGoalHandler.GetStats)
+		goals.GET("/deadline-alerts", c.LearningGoalHandler.GetDeadlineAlerts)
 	}
 
 	// アクティビティレポート

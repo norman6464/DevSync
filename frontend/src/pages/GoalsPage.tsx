@@ -30,6 +30,17 @@ const getStatusColor = (status: GoalStatus) => {
   }
 };
 
+const getDeadlineInfo = (goal: LearningGoal): { status: 'overdue' | 'approaching' | ''; daysLeft: number } => {
+  if (!goal.target_date || goal.status !== 'active') return { status: '', daysLeft: -1 };
+  const now = new Date();
+  const target = new Date(goal.target_date);
+  const diffMs = target.getTime() - now.getTime();
+  const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  if (days < 0) return { status: 'overdue', daysLeft: days };
+  if (days <= 3) return { status: 'approaching', daysLeft: days };
+  return { status: '', daysLeft: days };
+};
+
 export default function GoalsPage() {
   const { t } = useTranslation();
   const {
@@ -289,6 +300,24 @@ function GoalCard({
                   {t('goals.targetDateLabel')}: {new Date(goal.target_date).toLocaleDateString()}
                 </span>
               )}
+              {(() => {
+                const deadline = getDeadlineInfo(goal);
+                if (deadline.status === 'overdue') {
+                  return (
+                    <span className="px-2 py-0.5 rounded-full text-red-400 bg-red-400/10 font-medium">
+                      {t('goals.deadlineOverdue')}
+                    </span>
+                  );
+                }
+                if (deadline.status === 'approaching') {
+                  return (
+                    <span className="px-2 py-0.5 rounded-full text-orange-400 bg-orange-400/10 font-medium">
+                      {t('goals.deadlineApproaching', { days: deadline.daysLeft })}
+                    </span>
+                  );
+                }
+                return null;
+              })()}
             </div>
 
             {/* Progress Bar */}

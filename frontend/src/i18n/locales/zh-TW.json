@@ -508,6 +508,8 @@
     "goalDescriptionPlaceholder": "描述你的目標...",
     "category": "類別",
     "targetDate": "目標日期",
+    "deadlineOverdue": "已逾期",
+    "deadlineApproaching": "還剩{{days}}天",
     "status": "狀態",
     "active": "進行中",
     "completed": "已完成",

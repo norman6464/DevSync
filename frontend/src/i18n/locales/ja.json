@@ -497,6 +497,8 @@
     "category": "カテゴリ",
     "targetDate": "目標日",
     "targetDateLabel": "目標日",
+    "deadlineOverdue": "期限超過",
+    "deadlineApproaching": "あと{{days}}日",
     "progress": "進捗",
     "status": "ステータス",
     "active": "進行中",

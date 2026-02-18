@@ -16,6 +16,7 @@ type LearningGoalServiceInterface interface {
 	GetStats(userID uint) (*model.LearningGoalStats, error)
 	Update(id, userID uint, updates *model.LearningGoal) (*model.LearningGoal, error)
 	Delete(id, userID uint) error
+	GetDeadlineAlerts(userID uint) ([]model.GoalDeadlineAlert, error)
 }
 
 // LearningGoalHandler は学習目標関連のHTTPハンドラ。
@@ -176,6 +177,22 @@ func (h *LearningGoalHandler) GetMyGoals(c *gin.Context) {
 	}
 
 	respondOK(c, goals)
+}
+
+// GetDeadlineAlerts は認証ユーザーのデッドラインアラートを取得する。
+func (h *LearningGoalHandler) GetDeadlineAlerts(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	alerts, err := h.service.GetDeadlineAlerts(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	if alerts == nil {
+		alerts = []model.GoalDeadlineAlert{}
+	}
+
+	respondOK(c, alerts)
 }
 
 // GetStats は指定されたユーザーの学習目標統計情報を取得する。

@@ -508,6 +508,8 @@
     "goalDescriptionPlaceholder": "Опишите свою цель...",
     "category": "Категория",
     "targetDate": "Целевая дата",
+    "deadlineOverdue": "Просрочено",
+    "deadlineApproaching": "Осталось {{days}} дн.",
     "status": "Статус",
     "active": "Активная",
     "completed": "Завершена",
