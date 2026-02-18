@@ -1,16 +1,29 @@
 package service
 
 import (
+	"context"
 	"log"
 
 	"github.com/robfig/cron/v3"
 )
 
+// CronScheduler はcronスケジューラの抽象インターフェース。
+type CronScheduler interface {
+	AddFunc(spec string, cmd func()) (cron.EntryID, error)
+	Start()
+	Stop() context.Context
+}
+
+// WeeklyReportSender はウィークリーレポート送信の抽象インターフェース。
+type WeeklyReportSender interface {
+	SendAllWeeklyReports() error
+}
+
 // Scheduler はcronベースの定期実行サービス。
 // ウィークリーレポートメールなどの定期タスクをスケジュール実行する。
 type Scheduler struct {
-	cron     *cron.Cron
-	emailSvc *WeeklyReportEmailService
+	cron     CronScheduler
+	emailSvc WeeklyReportSender
 }
 
 // NewScheduler は新しいSchedulerインスタンスを生成する。
