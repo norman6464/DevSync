@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Monitor, Rocket, Target, FolderOpen, FileText, type LucideIcon } from 'lucide-react';
 import { type GoalCategory, type GoalStatus, type LearningGoal } from '../api/goals';
@@ -265,7 +266,7 @@ interface GoalCardProps {
   t: (key: string) => string;
 }
 
-function GoalCard({
+const GoalCard = memo(function GoalCard({
   goal,
   onEdit,
   onDelete,
@@ -394,4 +395,4 @@ function GoalCard({
       </div>
     </div>
   );
-}
+});
