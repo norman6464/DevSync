@@ -58,6 +58,8 @@
     "password": "パスワード",
     "name": "名前",
     "confirmPassword": "パスワード確認",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "••••••••",
     "forgotPassword": "パスワードを忘れた方",
     "noAccount": "アカウントをお持ちでない方",
     "hasAccount": "すでにアカウントをお持ちの方",

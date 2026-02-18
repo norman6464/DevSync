@@ -57,6 +57,8 @@
     "password": "密码",
     "name": "姓名",
     "confirmPassword": "确认密码",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "••••••••",
     "forgotPassword": "忘记密码？",
     "noAccount": "没有账号？",
     "hasAccount": "已有账号？",
