@@ -21,6 +21,7 @@ export { useDashboard } from './useDashboard';
 export { useBadgeNotifier } from './useBadgeNotifier';
 export { useLearningLogs, useLearningLogCalendar, useStreak } from './useLearningLogs';
 export { useLearningLogForm } from './useLearningLogForm';
+export { useGoalForm } from './useGoalForm';
 export { useSnippetComments } from './useSnippetComments';
 export { useAdvice, useAIChat, useConversations } from './useAdvice';
 export { usePomodoroTimer } from './usePomodoroTimer';
