@@ -27,7 +27,7 @@ type CreateRoadmapStepRequest struct {
 	Title       string `json:"title" binding:"required,max=200"`
 	Description string `json:"description" binding:"omitempty,max=2000"`
 	ResourceURL string `json:"resource_url" binding:"omitempty,max=2000"`
-	OrderIndex  *int   `json:"order_index"`
+	OrderIndex  *int   `json:"order_index" binding:"omitempty,min=0"`
 }
 
 // UpdateRoadmapStepRequest はロードマップステップ更新リクエストのDTO。

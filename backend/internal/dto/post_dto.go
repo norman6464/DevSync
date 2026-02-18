@@ -4,25 +4,25 @@ import "github.com/norman6464/devsync/backend/internal/model"
 
 // CodeSnippetInput はコードスニペットの入力データ。
 type CodeSnippetInput struct {
-	Language string `json:"language"`
-	FileName string `json:"file_name"`
-	Code     string `json:"code"`
+	Language string `json:"language" binding:"omitempty,max=100"`
+	FileName string `json:"file_name" binding:"omitempty,max=255"`
+	Code     string `json:"code" binding:"omitempty,max=50000"`
 }
 
 // CreatePostRequest は投稿作成リクエスト。
 type CreatePostRequest struct {
 	Title        string             `json:"title" binding:"required,max=200"`
 	Content      string             `json:"content" binding:"required,max=50000"`
-	ImageURLs    string             `json:"image_urls"`
+	ImageURLs    string             `json:"image_urls" binding:"omitempty,max=2000"`
 	IsDraft      bool               `json:"is_draft"`
-	CodeSnippets []CodeSnippetInput `json:"code_snippets"`
+	CodeSnippets []CodeSnippetInput `json:"code_snippets" binding:"omitempty,max=20"`
 }
 
 // UpdatePostRequest は投稿更新リクエスト。
 type UpdatePostRequest struct {
-	Title     string `json:"title"`
-	Content   string `json:"content"`
-	ImageURLs string `json:"image_urls"`
+	Title     string `json:"title" binding:"omitempty,max=200"`
+	Content   string `json:"content" binding:"omitempty,max=50000"`
+	ImageURLs string `json:"image_urls" binding:"omitempty,max=2000"`
 }
 
 // CreateCommentRequest はコメント作成リクエスト。
