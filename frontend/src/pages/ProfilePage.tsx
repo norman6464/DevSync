@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Sparkles, Rocket, FileText, Monitor, Target, FolderOpen, Pin } from 'lucide-react';
@@ -18,6 +18,9 @@ import PostSeriesCard from '../components/series/PostSeriesCard';
 import ShareModal from '../components/profile/ShareModal';
 import PortfolioModal from '../components/profile/PortfolioModal';
 
+const categoryIcons: Record<string, typeof Monitor> = { language: Monitor, framework: Rocket, skill: Target, project: FolderOpen, other: FileText };
+const statusColors: Record<string, string> = { active: 'text-green-400 bg-green-400/10', completed: 'text-blue-400 bg-blue-400/10', paused: 'text-yellow-400 bg-yellow-400/10' };
+
 export default function ProfilePage() {
   const { t } = useTranslation();
   const { username } = useParams<{ username: string }>();
@@ -34,6 +37,7 @@ export default function ProfilePage() {
   const { collections } = usePostCollections(user?.id);
   const { pins } = usePinnedPosts(user?.id);
   const { percentage, missingFields } = useProfileCompleteness();
+  const totalContributions = useMemo(() => contributions.reduce((sum, c) => sum + c.count, 0), [contributions]);
 
   if (loading) return <PageLoader />;
   if (!user) return <div className="text-center text-gray-400 py-12">{t('errors.notFound')}</div>;
@@ -336,8 +340,6 @@ export default function ProfilePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {goals.slice(0, 4).map((goal) => {
-              const categoryIcons: Record<string, typeof Monitor> = { language: Monitor, framework: Rocket, skill: Target, project: FolderOpen, other: FileText };
-              const statusColors: Record<string, string> = { active: 'text-green-400 bg-green-400/10', completed: 'text-blue-400 bg-blue-400/10', paused: 'text-yellow-400 bg-yellow-400/10' };
               const CategoryIcon = categoryIcons[goal.category] || FileText;
               return (
                 <div key={goal.id} className="bg-gray-900 border border-gray-800 rounded-md p-4">
@@ -433,8 +435,8 @@ export default function ProfilePage() {
         )}
       </div>
 
-      <ShareModal isOpen={shareModalOpen} onClose={() => setShareModalOpen(false)} user={user} followerCount={followerCount} followingCount={followingCount} totalContributions={contributions.reduce((sum, c) => sum + c.count, 0)} languages={languages} postCount={posts.length} />
-      <PortfolioModal isOpen={portfolioModalOpen} onClose={() => setPortfolioModalOpen(false)} user={user} languages={languages} repos={repos} goals={goals} totalContributions={contributions.reduce((sum, c) => sum + c.count, 0)} followerCount={followerCount} followingCount={followingCount} />
+      <ShareModal isOpen={shareModalOpen} onClose={() => setShareModalOpen(false)} user={user} followerCount={followerCount} followingCount={followingCount} totalContributions={totalContributions} languages={languages} postCount={posts.length} />
+      <PortfolioModal isOpen={portfolioModalOpen} onClose={() => setPortfolioModalOpen(false)} user={user} languages={languages} repos={repos} goals={goals} totalContributions={totalContributions} followerCount={followerCount} followingCount={followingCount} />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Target, Bell, TrendingUp, CheckCircle2, Clock, ChevronRight } from 'lucide-react';
@@ -32,10 +32,10 @@ export default function DashboardPage() {
   const { confirm, dialogProps } = useConfirm();
   const [editingPost, setEditingPost] = useState<Post | null>(null);
 
-  const handleDeletePost = async (post: Post) => {
+  const handleDeletePost = useCallback(async (post: Post) => {
     const ok = await confirm({ title: t('common.confirm'), message: t('dashboard.confirmDeletePost'), variant: 'danger' });
     if (ok) deletePost(post);
-  };
+  }, [confirm, deletePost, t]);
   const {
     activeGoals,
     completedGoals,
@@ -56,7 +56,12 @@ export default function DashboardPage() {
   );
   useBadgeNotifier(badges);
 
-  const handleCreatePost = async (
+  const handleQuickPost = useCallback(async (title: string, content: string, isDraft?: boolean) => {
+    await createPost(title, content, undefined, undefined, isDraft);
+    await refetch();
+  }, [createPost, refetch]);
+
+  const handleCreatePost = useCallback(async (
     title: string,
     content: string,
     imageUrls?: string,
@@ -64,31 +69,29 @@ export default function DashboardPage() {
     isDraft?: boolean
   ) => {
     await createPost(title, content, imageUrls, codeSnippets, isDraft);
-  };
+  }, [createPost]);
 
-  const getNotificationText = (notification: { type: string; actor: { name: string } }) => {
-    const nameMap: Record<string, string> = {
-      post: 'notifications.newPost',
-      message: 'notifications.newMessage',
-      like: 'notifications.newLike',
-      comment: 'notifications.newComment',
-      follow: 'notifications.newFollow',
-      answer: 'notifications.newAnswer',
-      badge: 'notifications.newBadge',
-    };
-    return t(nameMap[notification.type] || 'notifications.newPost', {
+  const notificationNameMap = useMemo<Record<string, string>>(() => ({
+    post: 'notifications.newPost',
+    message: 'notifications.newMessage',
+    like: 'notifications.newLike',
+    comment: 'notifications.newComment',
+    follow: 'notifications.newFollow',
+    answer: 'notifications.newAnswer',
+    badge: 'notifications.newBadge',
+  }), []);
+
+  const getNotificationText = useCallback((notification: { type: string; actor: { name: string } }) => {
+    return t(notificationNameMap[notification.type] || 'notifications.newPost', {
       name: notification.actor?.name || '',
     });
-  };
+  }, [t, notificationNameMap]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
       {/* Main Feed */}
       <div className="lg:col-span-3 space-y-6">
-        <QuickPostForm onSubmit={async (title, content, isDraft) => {
-          await createPost(title, content, undefined, undefined, isDraft);
-          await refetch();
-        }} />
+        <QuickPostForm onSubmit={handleQuickPost} />
 
         <div>
           <h2 className="section-heading">{t('dashboard.timeline')}</h2>
