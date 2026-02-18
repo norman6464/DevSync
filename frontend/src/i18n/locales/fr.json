@@ -1260,5 +1260,17 @@
     "uploadedImage": "Image téléchargée {{number}}",
     "markdownSupported": "Markdown pris en charge",
     "pasteOrDragImages": "Collez ou glissez des images pour télécharger"
+  },
+  "tags": {
+    "title": "Tags",
+    "popularTags": "Tags Populaires",
+    "searchByTag": "Rechercher par Tag",
+    "addTags": "Ajouter des Tags",
+    "editTags": "Modifier les Tags",
+    "noTags": "Aucun tag",
+    "updateSuccess": "Tags mis à jour",
+    "updateFailed": "Échec de la mise à jour des tags",
+    "maxTags": "Maximum 10 tags",
+    "tagPlaceholder": "Saisissez un tag et appuyez sur Entrée"
   }
 }

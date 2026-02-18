@@ -1260,5 +1260,17 @@
     "uploadedImage": "Imagen subida {{number}}",
     "markdownSupported": "Markdown compatible",
     "pasteOrDragImages": "Pega o arrastra imágenes para subir"
+  },
+  "tags": {
+    "title": "Etiquetas",
+    "popularTags": "Etiquetas Populares",
+    "searchByTag": "Buscar por Etiqueta",
+    "addTags": "Agregar Etiquetas",
+    "editTags": "Editar Etiquetas",
+    "noTags": "Sin etiquetas",
+    "updateSuccess": "Etiquetas actualizadas",
+    "updateFailed": "Error al actualizar etiquetas",
+    "maxTags": "Máximo 10 etiquetas",
+    "tagPlaceholder": "Escribe una etiqueta y presiona Enter"
   }
 }

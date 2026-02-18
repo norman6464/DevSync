@@ -1260,5 +1260,17 @@
     "uploadedImage": "Загруженное изображение {{number}}",
     "markdownSupported": "Поддерживается Markdown",
     "pasteOrDragImages": "Вставьте или перетащите изображения для загрузки"
+  },
+  "tags": {
+    "title": "Теги",
+    "popularTags": "Популярные теги",
+    "searchByTag": "Поиск по тегу",
+    "addTags": "Добавить теги",
+    "editTags": "Редактировать теги",
+    "noTags": "Нет тегов",
+    "updateSuccess": "Теги обновлены",
+    "updateFailed": "Не удалось обновить теги",
+    "maxTags": "Максимум 10 тегов",
+    "tagPlaceholder": "Введите тег и нажмите Enter"
   }
 }

@@ -1260,5 +1260,17 @@
     "uploadedImage": "Hochgeladenes Bild {{number}}",
     "markdownSupported": "Markdown unterstützt",
     "pasteOrDragImages": "Bilder einfügen oder ziehen zum Hochladen"
+  },
+  "tags": {
+    "title": "Tags",
+    "popularTags": "Beliebte Tags",
+    "searchByTag": "Nach Tag suchen",
+    "addTags": "Tags hinzufügen",
+    "editTags": "Tags bearbeiten",
+    "noTags": "Keine Tags",
+    "updateSuccess": "Tags aktualisiert",
+    "updateFailed": "Tags konnten nicht aktualisiert werden",
+    "maxTags": "Maximal 10 Tags",
+    "tagPlaceholder": "Tag eingeben und Enter drücken"
   }
 }
