@@ -646,7 +646,9 @@
     "linkCopied": "Link copied to clipboard!",
     "downloaded": "Image downloaded!",
     "downloadFailed": "Failed to download image",
-    "twitterText": "Check out {{name}}'s developer profile on DevSync!"
+    "twitterText": "Check out {{name}}'s developer profile on DevSync!",
+    "shareOnTwitter": "Share on Twitter",
+    "shareOnLinkedIn": "Share on LinkedIn"
   },
   "projects": {
     "title": "Project Showcase",

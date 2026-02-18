@@ -646,7 +646,9 @@
     "linkCopied": "Ссылка скопирована!",
     "downloaded": "Изображение скачано!",
     "downloadFailed": "Не удалось скачать изображение",
-    "twitterText": "Посмотрите профиль разработчика {{name}} на DevSync!"
+    "twitterText": "Посмотрите профиль разработчика {{name}} на DevSync!",
+    "shareOnTwitter": "Поделиться в Twitter",
+    "shareOnLinkedIn": "Поделиться в LinkedIn"
   },
   "projects": {
     "title": "Витрина Проектов",

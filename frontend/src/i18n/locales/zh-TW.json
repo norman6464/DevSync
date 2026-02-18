@@ -646,7 +646,9 @@
     "linkCopied": "連結已複製！",
     "downloaded": "圖片已下載！",
     "downloadFailed": "下載圖片失敗",
-    "twitterText": "在DevSync上查看{{name}}的開發者資料！"
+    "twitterText": "在DevSync上查看{{name}}的開發者資料！",
+    "shareOnTwitter": "在Twitter上分享",
+    "shareOnLinkedIn": "在LinkedIn上分享"
   },
   "projects": {
     "title": "專案展示",

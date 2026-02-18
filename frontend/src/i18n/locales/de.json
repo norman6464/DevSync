@@ -646,7 +646,9 @@
     "linkCopied": "Link kopiert!",
     "downloaded": "Bild heruntergeladen!",
     "downloadFailed": "Bild konnte nicht heruntergeladen werden",
-    "twitterText": "Schau dir das Entwicklerprofil von {{name}} auf DevSync an!"
+    "twitterText": "Schau dir das Entwicklerprofil von {{name}} auf DevSync an!",
+    "shareOnTwitter": "Auf Twitter teilen",
+    "shareOnLinkedIn": "Auf LinkedIn teilen"
   },
   "projects": {
     "title": "Projekt-Showcase",

@@ -646,7 +646,9 @@
     "linkCopied": "Lien copié !",
     "downloaded": "Image téléchargée !",
     "downloadFailed": "Échec du téléchargement de l'image",
-    "twitterText": "Découvrez le profil développeur de {{name}} sur DevSync !"
+    "twitterText": "Découvrez le profil développeur de {{name}} sur DevSync !",
+    "shareOnTwitter": "Partager sur Twitter",
+    "shareOnLinkedIn": "Partager sur LinkedIn"
   },
   "projects": {
     "title": "Vitrine de Projets",
