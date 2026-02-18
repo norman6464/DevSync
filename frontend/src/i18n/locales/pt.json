@@ -55,7 +55,8 @@
     "hasAccount": "Já tem conta?",
     "signInWith": "Entrar com {{provider}}",
     "signUpWith": "Registrar com {{provider}}",
-    "orContinueWith": "Ou continue com"
+    "orContinueWith": "Ou continue com",
+    "passwordPlaceholder": "6+ caracteres"
   },
   "dashboard": {
     "title": "Painel",
@@ -681,7 +682,11 @@
     "createFailed": "Falha ao criar recurso",
     "updateFailed": "Falha ao atualizar recurso",
     "deleteFailed": "Falha ao excluir recurso",
-    "confirmDelete": "Tem certeza de que deseja excluir este recurso?"
+    "confirmDelete": "Tem certeza de que deseja excluir este recurso?",
+    "likeFailed": "Falha ao curtir",
+    "unlikeFailed": "Falha ao descurtir",
+    "saveFailed": "Falha ao salvar",
+    "unsaveFailed": "Falha ao remover dos salvos"
   },
   "portfolio": {
     "generate": "Portfólio",

@@ -55,7 +55,8 @@
     "hasAccount": "이미 계정이 있으신가요?",
     "signInWith": "{{provider}}로 로그인",
     "signUpWith": "{{provider}}로 가입",
-    "orContinueWith": "또는"
+    "orContinueWith": "또는",
+    "passwordPlaceholder": "6자 이상"
   },
   "dashboard": {
     "title": "대시보드",
@@ -681,7 +682,11 @@
     "createFailed": "리소스 생성에 실패했습니다",
     "updateFailed": "리소스 업데이트에 실패했습니다",
     "deleteFailed": "리소스 삭제에 실패했습니다",
-    "confirmDelete": "이 리소스를 삭제하시겠습니까?"
+    "confirmDelete": "이 리소스를 삭제하시겠습니까?",
+    "likeFailed": "좋아요에 실패했습니다",
+    "unlikeFailed": "좋아요 취소에 실패했습니다",
+    "saveFailed": "저장에 실패했습니다",
+    "unsaveFailed": "저장 취소에 실패했습니다"
   },
   "portfolio": {
     "generate": "포트폴리오",

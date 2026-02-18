@@ -107,20 +107,20 @@ export function useResources() {
   }, [t, resources]);
 
   const handleLike = useCallback(async (id: number) => {
-    try { await likeResource(id); } catch { /* noop */ }
-  }, []);
+    try { await likeResource(id); } catch { toast.error(t('resource.likeFailed')); }
+  }, [t]);
 
   const handleUnlike = useCallback(async (id: number) => {
-    try { await unlikeResource(id); } catch { /* noop */ }
-  }, []);
+    try { await unlikeResource(id); } catch { toast.error(t('resource.unlikeFailed')); }
+  }, [t]);
 
   const handleSave = useCallback(async (id: number) => {
-    try { await saveResource(id); } catch { /* noop */ }
-  }, []);
+    try { await saveResource(id); } catch { toast.error(t('resource.saveFailed')); }
+  }, [t]);
 
   const handleUnsave = useCallback(async (id: number) => {
-    try { await unsaveResource(id); } catch { /* noop */ }
-  }, []);
+    try { await unsaveResource(id); } catch { toast.error(t('resource.unsaveFailed')); }
+  }, [t]);
 
   const changeTab = useCallback((newTab: TabType) => {
     setTab(newTab);

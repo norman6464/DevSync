@@ -55,7 +55,8 @@
     "hasAccount": "Déjà un compte ?",
     "signInWith": "Se connecter avec {{provider}}",
     "signUpWith": "S'inscrire avec {{provider}}",
-    "orContinueWith": "Ou continuer avec"
+    "orContinueWith": "Ou continuer avec",
+    "passwordPlaceholder": "6 caractères minimum"
   },
   "dashboard": {
     "title": "Tableau de bord",
@@ -681,7 +682,11 @@
     "createFailed": "Échec de la création de la ressource",
     "updateFailed": "Échec de la mise à jour de la ressource",
     "deleteFailed": "Échec de la suppression de la ressource",
-    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette ressource ?"
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette ressource ?",
+    "likeFailed": "Échec de l'ajout du j'aime",
+    "unlikeFailed": "Échec du retrait du j'aime",
+    "saveFailed": "Échec de la sauvegarde",
+    "unsaveFailed": "Échec du retrait de la sauvegarde"
   },
   "portfolio": {
     "generate": "Portfolio",
