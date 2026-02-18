@@ -620,7 +620,9 @@
     "linkCopied": "リンクをコピーしました！",
     "downloaded": "画像をダウンロードしました！",
     "downloadFailed": "画像のダウンロードに失敗しました",
-    "twitterText": "{{name}}さんの開発者プロフィールをDevSyncでチェック！"
+    "twitterText": "{{name}}さんの開発者プロフィールをDevSyncでチェック！",
+    "shareOnTwitter": "Twitterで共有",
+    "shareOnLinkedIn": "LinkedInで共有"
   },
   "projects": {
     "title": "プロジェクトショーケース",

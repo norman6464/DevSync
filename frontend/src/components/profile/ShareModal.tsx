@@ -189,7 +189,7 @@ export default function ShareModal({
             {/* Twitter */}
             <button
               onClick={handleShareTwitter}
-              aria-label="Twitter"
+              aria-label={t('sharing.shareOnTwitter')}
               className="flex flex-col items-center gap-2 p-4 bg-gray-800 hover:bg-gray-700 rounded-md transition-colors"
             >
               <div className="w-10 h-10 flex items-center justify-center bg-sky-500/20 text-sky-400 rounded-full">
@@ -203,7 +203,7 @@ export default function ShareModal({
             {/* LinkedIn */}
             <button
               onClick={handleShareLinkedIn}
-              aria-label="LinkedIn"
+              aria-label={t('sharing.shareOnLinkedIn')}
               className="flex flex-col items-center gap-2 p-4 bg-gray-800 hover:bg-gray-700 rounded-md transition-colors"
             >
               <div className="w-10 h-10 flex items-center justify-center bg-blue-600/20 text-blue-500 rounded-full">

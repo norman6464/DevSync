@@ -646,7 +646,9 @@
     "linkCopied": "¡Enlace copiado!",
     "downloaded": "¡Imagen descargada!",
     "downloadFailed": "Error al descargar la imagen",
-    "twitterText": "¡Mira el perfil de desarrollador de {{name}} en DevSync!"
+    "twitterText": "¡Mira el perfil de desarrollador de {{name}} en DevSync!",
+    "shareOnTwitter": "Compartir en Twitter",
+    "shareOnLinkedIn": "Compartir en LinkedIn"
   },
   "projects": {
     "title": "Portafolio de Proyectos",
