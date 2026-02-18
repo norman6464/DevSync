@@ -17,8 +17,8 @@ export default function RecommendedUsersWidget() {
     try {
       await followUser(userId);
       setFollowedIds((prev) => new Set(prev).add(userId));
-    } catch {
-      // エラー時は何もしない
+    } catch (e) {
+      console.warn('Failed to follow user:', e);
     } finally {
       setFollowingId(null);
     }
