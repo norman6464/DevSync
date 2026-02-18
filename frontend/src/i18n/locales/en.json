@@ -129,7 +129,13 @@
     "saveDraft": "Save draft",
     "draftSaved": "Draft saved",
     "draftFailed": "Failed to save draft",
-    "writeComment": "Write a comment..."
+    "writeComment": "Write a comment...",
+    "notFound": "Post not found"
+  },
+  "follow": {
+    "noFollowers": "No followers yet",
+    "noFollowing": "Not following anyone yet",
+    "chatWith": "Chat with {{name}}"
   },
   "profile": {
     "followers": "followers",

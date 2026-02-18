@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
 import { useFollowList } from '../hooks';
 import Avatar from '../components/common/Avatar';
@@ -8,6 +9,7 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 export default function FollowListPage() {
   const { username } = useParams<{ username: string }>();
   const currentUser = useAuthStore((s) => s.user);
+  const { t } = useTranslation();
   const { profileUser, users, tab, loading, profileLoading } = useFollowList(username);
 
   if (!profileUser && profileLoading) return <div className="py-12"><LoadingSpinner /></div>;
@@ -19,6 +21,7 @@ export default function FollowListPage() {
         <Link
           to={`/profile/${username}`}
           className="p-1.5 rounded-lg hover:bg-gray-800 transition-colors text-gray-400 hover:text-white"
+          aria-label={t('common.back')}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
@@ -38,7 +41,7 @@ export default function FollowListPage() {
             tab === 'followers' ? 'text-white' : 'text-gray-500 hover:text-gray-300'
           }`}
         >
-          Followers
+          {t('profile.followers')}
           {tab === 'followers' && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500 rounded-full" />
           )}
@@ -49,7 +52,7 @@ export default function FollowListPage() {
             tab === 'following' ? 'text-white' : 'text-gray-500 hover:text-gray-300'
           }`}
         >
-          Following
+          {t('profile.following')}
           {tab === 'following' && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500 rounded-full" />
           )}
@@ -61,7 +64,7 @@ export default function FollowListPage() {
         <div className="py-12"><LoadingSpinner /></div>
       ) : users.length === 0 ? (
         <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center text-gray-500 text-sm">
-          {tab === 'followers' ? 'No followers yet' : 'Not following anyone yet'}
+          {tab === 'followers' ? t('follow.noFollowers') : t('follow.noFollowing')}
         </div>
       ) : (
         <div className="bg-gray-900 border border-gray-800 rounded-md overflow-hidden divide-y divide-gray-800/50">
@@ -97,7 +100,8 @@ export default function FollowListPage() {
                   <Link
                     to={`/chat/${user.id}`}
                     className="p-2 rounded-lg border border-gray-700 text-gray-400 hover:text-white hover:border-gray-500 hover:bg-gray-800 transition-colors"
-                    title={`Chat with ${user.name}`}
+                    title={t('follow.chatWith', { name: user.name })}
+                    aria-label={t('follow.chatWith', { name: user.name })}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" />

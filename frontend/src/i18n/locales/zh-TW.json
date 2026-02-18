@@ -129,7 +129,13 @@
     "saveDraft": "儲存草稿",
     "draftSaved": "草稿已儲存",
     "draftFailed": "草稿儲存失敗",
-    "writeComment": "寫評論..."
+    "writeComment": "寫評論...",
+    "notFound": "找不到貼文"
+  },
+  "follow": {
+    "noFollowers": "尚無追蹤者",
+    "noFollowing": "尚未追蹤任何人",
+    "chatWith": "與{{name}}聊天"
   },
   "profile": {
     "followers": "追蹤者",

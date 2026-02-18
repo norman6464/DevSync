@@ -129,7 +129,13 @@
     "saveDraft": "Salvar rascunho",
     "draftSaved": "Rascunho salvo",
     "draftFailed": "Falha ao salvar rascunho",
-    "writeComment": "Escrever um comentário..."
+    "writeComment": "Escrever um comentário...",
+    "notFound": "Publicação não encontrada"
+  },
+  "follow": {
+    "noFollowers": "Ainda sem seguidores",
+    "noFollowing": "Ainda não segue ninguém",
+    "chatWith": "Conversar com {{name}}"
   },
   "profile": {
     "followers": "seguidores",

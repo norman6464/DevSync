@@ -129,7 +129,13 @@
     "saveDraft": "保存草稿",
     "draftSaved": "草稿已保存",
     "draftFailed": "草稿保存失败",
-    "writeComment": "写评论..."
+    "writeComment": "写评论...",
+    "notFound": "未找到帖子"
+  },
+  "follow": {
+    "noFollowers": "暂无粉丝",
+    "noFollowing": "暂未关注任何人",
+    "chatWith": "与{{name}}聊天"
   },
   "profile": {
     "followers": "粉丝",

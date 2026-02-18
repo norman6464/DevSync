@@ -129,7 +129,13 @@
     "saveDraft": "Enregistrer le brouillon",
     "draftSaved": "Brouillon enregistré",
     "draftFailed": "Échec de l'enregistrement du brouillon",
-    "writeComment": "Écrire un commentaire..."
+    "writeComment": "Écrire un commentaire...",
+    "notFound": "Publication introuvable"
+  },
+  "follow": {
+    "noFollowers": "Pas encore d'abonnés",
+    "noFollowing": "Ne suit encore personne",
+    "chatWith": "Discuter avec {{name}}"
   },
   "profile": {
     "followers": "abonnés",

@@ -146,7 +146,13 @@
     "updating": "更新中...",
     "postUpdated": "投稿を更新しました",
     "updateFailed": "投稿の更新に失敗しました",
-    "writeComment": "コメントを書く..."
+    "writeComment": "コメントを書く...",
+    "notFound": "投稿が見つかりません"
+  },
+  "follow": {
+    "noFollowers": "まだフォロワーはいません",
+    "noFollowing": "まだ誰もフォローしていません",
+    "chatWith": "{{name}}とチャット"
   },
   "profile": {
     "followers": "フォロワー",
