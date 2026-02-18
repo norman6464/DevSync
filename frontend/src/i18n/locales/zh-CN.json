@@ -1260,5 +1260,17 @@
     "uploadedImage": "已上传图片 {{number}}",
     "markdownSupported": "支持Markdown",
     "pasteOrDragImages": "粘贴或拖拽图片上传"
+  },
+  "tags": {
+    "title": "标签",
+    "popularTags": "热门标签",
+    "searchByTag": "按标签搜索",
+    "addTags": "添加标签",
+    "editTags": "编辑标签",
+    "noTags": "暂无标签",
+    "updateSuccess": "标签已更新",
+    "updateFailed": "标签更新失败",
+    "maxTags": "最多10个标签",
+    "tagPlaceholder": "输入标签后按回车"
   }
 }

@@ -1260,5 +1260,17 @@
     "uploadedImage": "Imagem enviada {{number}}",
     "markdownSupported": "Markdown suportado",
     "pasteOrDragImages": "Cole ou arraste imagens para enviar"
+  },
+  "tags": {
+    "title": "Tags",
+    "popularTags": "Tags Populares",
+    "searchByTag": "Pesquisar por Tag",
+    "addTags": "Adicionar Tags",
+    "editTags": "Editar Tags",
+    "noTags": "Sem tags",
+    "updateSuccess": "Tags atualizadas",
+    "updateFailed": "Falha ao atualizar tags",
+    "maxTags": "Máximo de 10 tags",
+    "tagPlaceholder": "Digite uma tag e pressione Enter"
   }
 }

@@ -1161,5 +1161,17 @@
     "uploadedImage": "アップロード画像 {{number}}",
     "markdownSupported": "Markdown対応",
     "pasteOrDragImages": "画像を貼り付けまたはドラッグしてアップロード"
+  },
+  "tags": {
+    "title": "タグ",
+    "popularTags": "人気タグ",
+    "searchByTag": "タグで検索",
+    "addTags": "タグを追加",
+    "editTags": "タグを編集",
+    "noTags": "タグなし",
+    "updateSuccess": "タグを更新しました",
+    "updateFailed": "タグの更新に失敗しました",
+    "maxTags": "タグは最大10個まで",
+    "tagPlaceholder": "タグを入力してEnter"
   }
 }

@@ -1260,5 +1260,17 @@
     "uploadedImage": "업로드된 이미지 {{number}}",
     "markdownSupported": "마크다운 지원",
     "pasteOrDragImages": "이미지를 붙여넣거나 드래그하여 업로드"
+  },
+  "tags": {
+    "title": "태그",
+    "popularTags": "인기 태그",
+    "searchByTag": "태그로 검색",
+    "addTags": "태그 추가",
+    "editTags": "태그 편집",
+    "noTags": "태그 없음",
+    "updateSuccess": "태그가 업데이트되었습니다",
+    "updateFailed": "태그 업데이트에 실패했습니다",
+    "maxTags": "태그는 최대 10개",
+    "tagPlaceholder": "태그를 입력하고 Enter"
   }
 }

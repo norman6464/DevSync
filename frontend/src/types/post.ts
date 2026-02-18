@@ -13,8 +13,14 @@ export interface Post {
   code_snippets?: CodeSnippet[];
   liked?: boolean;
   bookmarked?: boolean;
+  tags?: string[];
   created_at: string;
   updated_at: string;
+}
+
+export interface TagCount {
+  tag: string;
+  count: number;
 }
 
 export interface Comment {

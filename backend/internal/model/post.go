@@ -99,6 +99,20 @@ type PostCollectionItem struct {
 	CreatedAt    time.Time `json:"created_at"`
 }
 
+// PostTag は投稿に付与されたタグを表す。
+// uniqueIndex制約で同一投稿に同じタグが重複しないことを保証する。
+type PostTag struct {
+	ID     uint   `json:"id" gorm:"primaryKey"`
+	PostID uint   `json:"post_id" gorm:"not null;uniqueIndex:idx_post_tag;index"`
+	Tag    string `json:"tag" gorm:"not null;uniqueIndex:idx_post_tag;index;size:50"`
+}
+
+// TagCount はタグとその使用回数を表す集計結果。
+type TagCount struct {
+	Tag   string `json:"tag"`
+	Count int    `json:"count"`
+}
+
 // Comment は投稿へのコメントを表す。
 type Comment struct {
 	ID        uint      `json:"id" gorm:"primaryKey"`

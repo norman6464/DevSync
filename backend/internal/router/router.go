@@ -73,6 +73,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerPostRoutes(protected, c)
 		registerPostSeriesRoutes(protected, c)
 		registerPostCollectionRoutes(protected, c)
+		registerPostTagRoutes(protected, c)
 		registerSnippetRoutes(protected, c)
 		registerRankingRoutes(protected, c)
 		registerMessageRoutes(protected, c)
@@ -169,6 +170,16 @@ func registerPostCollectionRoutes(g *gin.RouterGroup, c *di.Container) {
 		collections.POST("/:id/posts", c.PostCollectionHandler.AddPost)
 		collections.DELETE("/:id/posts/:postId", c.PostCollectionHandler.RemovePost)
 		collections.GET("/user/:userId", c.PostCollectionHandler.GetByUserID)
+	}
+}
+
+func registerPostTagRoutes(g *gin.RouterGroup, c *di.Container) {
+	tags := g.Group("/post-tags")
+	{
+		tags.PUT("/posts/:postId", c.PostTagHandler.SetTags)
+		tags.GET("/posts/:postId", c.PostTagHandler.GetByPostID)
+		tags.GET("/search", c.PostTagHandler.FindPostsByTag)
+		tags.GET("/popular", c.PostTagHandler.GetPopularTags)
 	}
 }
 

@@ -1551,3 +1551,33 @@ func (m *MockPostCollectionRepository) GetPostsByCollectionID(collectionID uint)
 	args := m.Called(collectionID)
 	return args.Get(0).([]model.PostCollectionItem), args.Error(1)
 }
+
+// ============================================================
+// MockPostTagRepository は repository.PostTagRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockPostTagRepository struct {
+	mock.Mock
+}
+
+var _ repository.PostTagRepositoryInterface = (*MockPostTagRepository)(nil)
+
+func (m *MockPostTagRepository) SetTags(postID uint, tags []string) error {
+	args := m.Called(postID, tags)
+	return args.Error(0)
+}
+
+func (m *MockPostTagRepository) GetByPostID(postID uint) ([]string, error) {
+	args := m.Called(postID)
+	return args.Get(0).([]string), args.Error(1)
+}
+
+func (m *MockPostTagRepository) FindPostsByTag(tag string, limit, offset int) ([]model.Post, int64, error) {
+	args := m.Called(tag, limit, offset)
+	return args.Get(0).([]model.Post), args.Get(1).(int64), args.Error(2)
+}
+
+func (m *MockPostTagRepository) GetPopularTags(limit int) ([]model.TagCount, error) {
+	args := m.Called(limit)
+	return args.Get(0).([]model.TagCount), args.Error(1)
+}
