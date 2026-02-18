@@ -158,3 +158,88 @@ func TestPostViewGetMostViewed_RepoError(t *testing.T) {
 	assert.Nil(t, result)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// バリデーションテスト
+// ============================================================
+
+func TestPostViewRecordView_InvalidUserID(t *testing.T) {
+	svc, repo := newTestPostViewService()
+
+	err := svc.RecordView(0, 10)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	repo.AssertNotCalled(t, "HasViewed")
+}
+
+func TestPostViewRecordView_InvalidPostID(t *testing.T) {
+	svc, repo := newTestPostViewService()
+
+	err := svc.RecordView(1, 0)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	repo.AssertNotCalled(t, "HasViewed")
+}
+
+func TestPostViewGetViewCount_InvalidPostID(t *testing.T) {
+	svc, repo := newTestPostViewService()
+
+	count, err := svc.GetViewCount(0)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	assert.Equal(t, int64(0), count)
+	repo.AssertNotCalled(t, "GetViewCount")
+}
+
+func TestPostViewHasViewed_InvalidUserID(t *testing.T) {
+	svc, repo := newTestPostViewService()
+
+	viewed, err := svc.HasViewed(0, 10)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	assert.False(t, viewed)
+	repo.AssertNotCalled(t, "HasViewed")
+}
+
+func TestPostViewHasViewed_InvalidPostID(t *testing.T) {
+	svc, repo := newTestPostViewService()
+
+	viewed, err := svc.HasViewed(1, 0)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	assert.False(t, viewed)
+	repo.AssertNotCalled(t, "HasViewed")
+}
+
+func TestPostViewGetMostViewed_InvalidLimit_Zero(t *testing.T) {
+	svc, repo := newTestPostViewService()
+
+	result, err := svc.GetMostViewed(0)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	assert.Nil(t, result)
+	repo.AssertNotCalled(t, "GetMostViewed")
+}
+
+func TestPostViewGetMostViewed_InvalidLimit_Negative(t *testing.T) {
+	svc, repo := newTestPostViewService()
+
+	result, err := svc.GetMostViewed(-5)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	assert.Nil(t, result)
+	repo.AssertNotCalled(t, "GetMostViewed")
+}
+
+func TestPostViewGetMostViewed_InvalidLimit_TooLarge(t *testing.T) {
+	svc, repo := newTestPostViewService()
+
+	result, err := svc.GetMostViewed(200)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	assert.Nil(t, result)
+	repo.AssertNotCalled(t, "GetMostViewed")
+}
+
+func TestPostViewHasViewed_RepoError(t *testing.T) {
+	svc, repo := newTestPostViewService()
+
+	repo.On("HasViewed", uint(1), uint(10)).Return(false, errors.New("db error"))
+
+	viewed, err := svc.HasViewed(1, 10)
+	assert.Error(t, err)
+	assert.False(t, viewed)
+	repo.AssertExpectations(t)
+}
