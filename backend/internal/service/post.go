@@ -1,10 +1,21 @@
 package service
 
 import (
+	"fmt"
+
 	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
+
+// allowedEmojis はリアクションに使用可能な絵文字一覧。
+var allowedEmojis = map[string]bool{
+	"👍": true,
+	"🎉": true,
+	"❤️": true,
+	"🔥": true,
+	"👀": true,
+}
 
 // PostService は投稿に関するビジネスロジックを提供する。
 // 投稿のCRUD操作に加え、フォロワーへの通知連携を行う。
@@ -167,6 +178,30 @@ func (s *PostService) HasBookmarked(userID, postID uint) bool {
 // GetBookmarks は指定ユーザーのブックマーク済み投稿一覧を取得する。
 func (s *PostService) GetBookmarks(userID uint, page, limit int) ([]model.Post, int64, error) {
 	return s.repo.FindBookmarkedByUserID(userID, page, limit)
+}
+
+// AddReaction は投稿にリアクション（絵文字）を追加する。
+// 許可された絵文字のみ使用可能。
+func (s *PostService) AddReaction(userID, postID uint, emoji string) error {
+	if !allowedEmojis[emoji] {
+		return fmt.Errorf("許可されていない絵文字です: %s", emoji)
+	}
+	return s.repo.AddReaction(userID, postID, emoji)
+}
+
+// RemoveReaction は投稿のリアクションを削除する。
+func (s *PostService) RemoveReaction(userID, postID uint, emoji string) error {
+	return s.repo.RemoveReaction(userID, postID, emoji)
+}
+
+// GetReactionsByPostID は指定投稿のリアクション集計を取得する。
+func (s *PostService) GetReactionsByPostID(postID uint) ([]model.ReactionCount, error) {
+	return s.repo.GetReactionsByPostID(postID)
+}
+
+// GetUserReactions は指定ユーザーが投稿に付けたリアクション絵文字一覧を取得する。
+func (s *PostService) GetUserReactions(userID, postID uint) ([]string, error) {
+	return s.repo.GetUserReactions(userID, postID)
 }
 
 // Publish は下書き投稿を公開し、フォロワーに通知する。

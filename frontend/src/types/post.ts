@@ -39,6 +39,16 @@ export interface CodeSnippet {
   updated_at: string;
 }
 
+export interface ReactionCount {
+  emoji: string;
+  count: number;
+}
+
+export interface ReactionResponse {
+  reactions: ReactionCount[];
+  user_reactions: string[];
+}
+
 export interface SnippetComment {
   id: number;
   snippet_id: number;

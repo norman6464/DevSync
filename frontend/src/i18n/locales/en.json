@@ -135,7 +135,8 @@
     "bookmark": "Bookmark",
     "unbookmark": "Remove Bookmark",
     "bookmarks": "Bookmarks",
-    "noBookmarks": "No bookmarked posts"
+    "noBookmarks": "No bookmarked posts",
+    "addReaction": "React"
   },
   "follow": {
     "noFollowers": "No followers yet",

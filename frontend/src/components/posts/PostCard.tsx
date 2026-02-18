@@ -5,11 +5,11 @@ import rehypeSanitize from 'rehype-sanitize';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTranslation } from 'react-i18next';
-import { likePost, unlikePost, bookmarkPost, unbookmarkPost } from '../../api/posts';
-import type { Post } from '../../types/post';
+import { likePost, unlikePost, bookmarkPost, unbookmarkPost, getReactions, addReaction, removeReaction } from '../../api/posts';
+import type { Post, ReactionCount } from '../../types/post';
 import Avatar from '../common/Avatar';
 import { format } from 'date-fns';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Code2 } from 'lucide-react';
 import { cardDarkClass } from '../../constants/styles';
 
@@ -26,6 +26,43 @@ export default function PostCard({ post, isOwner = false, onEdit, onDelete, onUp
   const [liked, setLiked] = useState(post.liked || false);
   const [likeCount, setLikeCount] = useState(post.like_count);
   const [bookmarked, setBookmarked] = useState(post.bookmarked || false);
+  const [reactions, setReactions] = useState<ReactionCount[]>([]);
+  const [userReactions, setUserReactions] = useState<string[]>([]);
+  const [showReactionPicker, setShowReactionPicker] = useState(false);
+
+  const availableEmojis = ['👍', '🎉', '❤️', '🔥', '👀'];
+
+  useEffect(() => {
+    getReactions(post.id).then((res) => {
+      setReactions(res.data.reactions || []);
+      setUserReactions(res.data.user_reactions || []);
+    }).catch(() => {});
+  }, [post.id]);
+
+  const handleReaction = async (emoji: string) => {
+    try {
+      if (userReactions.includes(emoji)) {
+        await removeReaction(post.id, emoji);
+        setUserReactions((prev) => prev.filter((e) => e !== emoji));
+        setReactions((prev) =>
+          prev.map((r) => r.emoji === emoji ? { ...r, count: r.count - 1 } : r).filter((r) => r.count > 0)
+        );
+      } else {
+        await addReaction(post.id, emoji);
+        setUserReactions((prev) => [...prev, emoji]);
+        setReactions((prev) => {
+          const existing = prev.find((r) => r.emoji === emoji);
+          if (existing) {
+            return prev.map((r) => r.emoji === emoji ? { ...r, count: r.count + 1 } : r);
+          }
+          return [...prev, { emoji, count: 1 }];
+        });
+      }
+      setShowReactionPicker(false);
+    } catch (e) {
+      console.warn('Failed to toggle reaction:', e);
+    }
+  };
 
   const handleLike = async () => {
     try {
@@ -213,6 +250,26 @@ export default function PostCard({ post, isOwner = false, onEdit, onDelete, onUp
         </Link>
       )}
 
+      {/* Reactions display */}
+      {reactions.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-3">
+          {reactions.map((r) => (
+            <button
+              key={r.emoji}
+              onClick={() => handleReaction(r.emoji)}
+              className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border transition-colors ${
+                userReactions.includes(r.emoji)
+                  ? 'border-blue-500/50 bg-blue-500/10 text-blue-400'
+                  : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
+              }`}
+            >
+              <span>{r.emoji}</span>
+              <span>{r.count}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="flex items-center gap-4 mt-4 pt-3 border-t border-gray-800">
         <button
           onClick={handleLike}
@@ -234,6 +291,32 @@ export default function PostCard({ post, isOwner = false, onEdit, onDelete, onUp
           </svg>
           {post.comment_count}
         </Link>
+        <div className="relative">
+          <button
+            onClick={() => setShowReactionPicker(!showReactionPicker)}
+            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-300 transition-colors"
+            title={t('post.addReaction')}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.182 15.182a4.5 4.5 0 0 1-6.364 0M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Z" />
+            </svg>
+          </button>
+          {showReactionPicker && (
+            <div className="absolute bottom-8 left-0 z-10 flex gap-1 p-1.5 bg-gray-800 border border-gray-700 rounded-lg shadow-lg">
+              {availableEmojis.map((emoji) => (
+                <button
+                  key={emoji}
+                  onClick={() => handleReaction(emoji)}
+                  className={`text-lg p-1 rounded hover:bg-gray-700 transition-colors ${
+                    userReactions.includes(emoji) ? 'bg-blue-500/20' : ''
+                  }`}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <button
           onClick={handleBookmark}
           className={`flex items-center gap-1.5 text-sm transition-colors ml-auto ${

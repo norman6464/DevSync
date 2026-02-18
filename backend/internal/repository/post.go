@@ -179,6 +179,38 @@ func (r *PostRepository) FindBookmarkedByUserID(userID uint, page, limit int) ([
 	return posts, total, err
 }
 
+// AddReaction は投稿にリアクション（絵文字）を追加する。
+func (r *PostRepository) AddReaction(userID, postID uint, emoji string) error {
+	return r.db.Create(&model.Reaction{UserID: userID, PostID: postID, Emoji: emoji}).Error
+}
+
+// RemoveReaction は投稿のリアクションを削除する。
+func (r *PostRepository) RemoveReaction(userID, postID uint, emoji string) error {
+	return r.db.Where("user_id = ? AND post_id = ? AND emoji = ?", userID, postID, emoji).Delete(&model.Reaction{}).Error
+}
+
+// GetReactionsByPostID は指定投稿のリアクション集計を絵文字ごとに返す。
+func (r *PostRepository) GetReactionsByPostID(postID uint) ([]model.ReactionCount, error) {
+	var counts []model.ReactionCount
+	err := r.db.Model(&model.Reaction{}).
+		Select("emoji, COUNT(*) as count").
+		Where("post_id = ?", postID).
+		Group("emoji").
+		Order("count DESC").
+		Find(&counts).Error
+	return counts, err
+}
+
+// GetUserReactions は指定ユーザーが投稿に付けたリアクション絵文字一覧を返す。
+func (r *PostRepository) GetUserReactions(userID, postID uint) ([]string, error) {
+	var emojis []string
+	err := r.db.Model(&model.Reaction{}).
+		Select("emoji").
+		Where("user_id = ? AND post_id = ?", userID, postID).
+		Pluck("emoji", &emojis).Error
+	return emojis, err
+}
+
 // FindDraftsByUserID は指定ユーザーの下書き一覧を取得する（新しい順）。
 func (r *PostRepository) FindDraftsByUserID(userID uint) ([]model.Post, error) {
 	var posts []model.Post

@@ -135,7 +135,8 @@
     "bookmark": "Signet",
     "unbookmark": "Retirer le signet",
     "bookmarks": "Signets",
-    "noBookmarks": "Aucune publication enregistrée"
+    "noBookmarks": "Aucune publication enregistrée",
+    "addReaction": "Réagir"
   },
   "follow": {
     "noFollowers": "Pas encore d'abonnés",

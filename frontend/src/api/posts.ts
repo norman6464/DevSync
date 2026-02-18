@@ -1,5 +1,5 @@
 import client from './client';
-import type { Post, Comment } from '../types/post';
+import type { Post, Comment, ReactionResponse } from '../types/post';
 
 export const getPosts = (page = 1, limit = 20) =>
   client.get<Post[]>('/posts', { params: { page, limit } });
@@ -77,3 +77,12 @@ export const getDrafts = () =>
 
 export const publishPost = (id: number) =>
   client.put<Post>(`/posts/${id}/publish`);
+
+export const getReactions = (postId: number) =>
+  client.get<ReactionResponse>(`/posts/${postId}/reactions`);
+
+export const addReaction = (postId: number, emoji: string) =>
+  client.post(`/posts/${postId}/reactions`, { emoji });
+
+export const removeReaction = (postId: number, emoji: string) =>
+  client.delete(`/posts/${postId}/reactions`, { data: { emoji } });

@@ -135,7 +135,8 @@
     "bookmark": "Marcador",
     "unbookmark": "Quitar marcador",
     "bookmarks": "Marcadores",
-    "noBookmarks": "No hay publicaciones marcadas"
+    "noBookmarks": "No hay publicaciones marcadas",
+    "addReaction": "Reaccionar"
   },
   "follow": {
     "noFollowers": "Aún no hay seguidores",

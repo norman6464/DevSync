@@ -152,7 +152,8 @@
     "bookmark": "ブックマーク",
     "unbookmark": "ブックマーク解除",
     "bookmarks": "ブックマーク一覧",
-    "noBookmarks": "ブックマークした投稿はありません"
+    "noBookmarks": "ブックマークした投稿はありません",
+    "addReaction": "リアクション"
   },
   "follow": {
     "noFollowers": "まだフォロワーはいません",
