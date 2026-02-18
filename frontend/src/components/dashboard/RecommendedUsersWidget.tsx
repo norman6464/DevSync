@@ -49,7 +49,7 @@ export default function RecommendedUsersWidget() {
     <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
       <div className="flex items-center justify-between mb-3">
         <h3 className="flex items-center gap-2 text-sm font-medium text-white">
-          <Users className="w-4 h-4 text-purple-400" />
+          <Users aria-hidden="true" className="w-4 h-4 text-purple-400" />
           {t('recommendations.recommendedUsers')}
         </h3>
         <Link to="/search" className="text-xs text-gray-400 hover:text-blue-400 transition-colors">
@@ -93,6 +93,7 @@ export default function RecommendedUsersWidget() {
               <button
                 onClick={() => !isFollowed && !isFollowing && handleFollow(rec.user.id)}
                 disabled={isFollowed || isFollowing}
+                aria-label={isFollowed ? t('recommendations.following') : t('recommendations.follow')}
                 className={`shrink-0 flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-colors ${
                   isFollowed
                     ? 'bg-gray-800 text-gray-500 cursor-default'
@@ -101,11 +102,11 @@ export default function RecommendedUsersWidget() {
               >
                 {isFollowed ? (
                   <>
-                    <Check className="w-3 h-3" />
+                    <Check aria-hidden="true" className="w-3 h-3" />
                   </>
                 ) : (
                   <>
-                    <UserPlus className="w-3 h-3" />
+                    <UserPlus aria-hidden="true" className="w-3 h-3" />
                     {t('recommendations.follow')}
                   </>
                 )}

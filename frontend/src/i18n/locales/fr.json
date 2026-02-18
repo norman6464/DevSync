@@ -1130,7 +1130,8 @@
     "noRecommendations": "Aucun utilisateur recommandé trouvé",
     "noTrending": "Aucun contenu tendance disponible",
     "viewAll": "Voir tout",
-    "follow": "Suivre"
+    "follow": "Suivre",
+    "following": "Abonné"
   },
   "studyCircle": {
     "title": "Cercles d'Étude",

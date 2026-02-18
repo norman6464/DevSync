@@ -1130,7 +1130,8 @@
     "noRecommendations": "未找到推荐用户",
     "noTrending": "暂无热门内容",
     "viewAll": "查看全部",
-    "follow": "关注"
+    "follow": "关注",
+    "following": "已关注"
   },
   "studyCircle": {
     "title": "学习圈",
