@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Code, BookOpen, GraduationCap, Users, FileText, Calendar, List, type LucideIcon } from 'lucide-react';
 import { useLearningLogForm } from '../hooks/useLearningLogForm';
@@ -44,6 +45,15 @@ export default function LearningLogsPage() {
     resetForm, handleSubmit, handleEdit, handleDelete, handleDateClick,
   } = useLearningLogForm();
 
+  const handleShowForm = useCallback(() => setShowForm(true), [setShowForm]);
+  const handleViewList = useCallback(() => { setView('list'); clearFilterDate(); }, [setView, clearFilterDate]);
+  const handleViewCalendar = useCallback(() => { setView('calendar'); clearFilterDate(); }, [setView, clearFilterDate]);
+  const handleFilterAll = useCallback(() => setFilterCategory('all'), [setFilterCategory]);
+  const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value), [setTitle]);
+  const handleContentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => setContent(e.target.value), [setContent]);
+  const handleCategoryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => setCategory(e.target.value as LogCategory), [setCategory]);
+  const handleDurationChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setDuration(e.target.value), [setDuration]);
+
   if (loading) return <div className="py-12"><LoadingSpinner /></div>;
 
   return (
@@ -54,7 +64,7 @@ export default function LearningLogsPage() {
           <p className="text-sm text-gray-400 mt-1">{t('learningLogs.subtitle')}</p>
         </div>
         <button
-          onClick={() => setShowForm(true)}
+          onClick={handleShowForm}
           className={`${buttonSecondaryClass} font-medium text-sm`}
         >
           {t('learningLogs.addLog')}
@@ -64,7 +74,7 @@ export default function LearningLogsPage() {
       {/* View Toggle */}
       <div className="flex items-center gap-2">
         <button
-          onClick={() => { setView('list'); clearFilterDate(); }}
+          onClick={handleViewList}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
             view === 'list' ? 'bg-purple-500/20 text-purple-400' : 'text-gray-400 hover:text-white'
           }`}
@@ -73,7 +83,7 @@ export default function LearningLogsPage() {
           {t('learningLogs.list')}
         </button>
         <button
-          onClick={() => { setView('calendar'); clearFilterDate(); }}
+          onClick={handleViewCalendar}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
             view === 'calendar' ? 'bg-purple-500/20 text-purple-400' : 'text-gray-400 hover:text-white'
           }`}
@@ -101,7 +111,7 @@ export default function LearningLogsPage() {
         <span className="text-sm text-gray-400">{t('learningLogs.category')}</span>
         <div className="flex flex-wrap gap-2">
           <button
-            onClick={() => setFilterCategory('all')}
+            onClick={handleFilterAll}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               filterCategory === 'all'
                 ? 'bg-purple-500/20 text-purple-400'
@@ -150,7 +160,7 @@ export default function LearningLogsPage() {
               id="log-title"
               type="text"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={handleTitleChange}
               placeholder={t('learningLogs.titlePlaceholder')}
               className={inputClass}
               required
@@ -163,7 +173,7 @@ export default function LearningLogsPage() {
             <textarea
               id="log-content"
               value={content}
-              onChange={(e) => setContent(e.target.value)}
+              onChange={handleContentChange}
               placeholder={t('learningLogs.contentPlaceholder')}
               rows={4}
               className={`${inputClass} resize-none`}
@@ -178,7 +188,7 @@ export default function LearningLogsPage() {
               <select
                 id="log-category"
                 value={category}
-                onChange={(e) => setCategory(e.target.value as LogCategory)}
+                onChange={handleCategoryChange}
                 className={inputClass}
               >
                 {CATEGORIES.map((cat) => (
@@ -196,7 +206,7 @@ export default function LearningLogsPage() {
                 id="log-duration"
                 type="number"
                 value={duration}
-                onChange={(e) => setDuration(e.target.value)}
+                onChange={handleDurationChange}
                 placeholder={t('learningLogs.durationPlaceholder')}
                 min="0"
                 className={inputClass}
@@ -232,7 +242,7 @@ export default function LearningLogsPage() {
               </p>
               {!filterDate && (
                 <button
-                  onClick={() => setShowForm(true)}
+                  onClick={handleShowForm}
                   className={`${buttonSecondaryClass} font-medium text-sm`}
                 >
                   {t('learningLogs.addLog')}
