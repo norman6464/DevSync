@@ -1,7 +1,9 @@
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MessageSquare, Users, Plus, Settings, Send } from 'lucide-react';
 import { useChat } from '../hooks/useChat';
 import type { Message } from '../types/message';
+import type { ChatRoom } from '../types/chat';
 import Avatar from '../components/common/Avatar';
 import CreateRoomModal from '../components/chat/CreateRoomModal';
 import RoomSettingsModal from '../components/chat/RoomSettingsModal';
@@ -10,6 +12,24 @@ import { format } from 'date-fns';
 export default function ChatPage() {
   const { t } = useTranslation();
   const c = useChat();
+
+  const handleRoomCreated = useCallback((room: ChatRoom) => {
+    c.setChatRooms([room, ...c.chatRooms]);
+    c.setActiveRoomId(room.id);
+    c.setShowCreateRoom(false);
+  }, [c]);
+
+  const handleRoomDeleted = useCallback(() => {
+    c.setActiveRoomId(null);
+    c.setShowRoomSettings(false);
+    c.loadChatRooms();
+  }, [c]);
+
+  const handleRoomLeft = useCallback(() => {
+    c.setActiveRoomId(null);
+    c.setShowRoomSettings(false);
+    c.loadChatRooms();
+  }, [c]);
 
   return (
     <div className="flex h-[calc(100vh-7rem)] bg-gray-900 border border-gray-800 rounded-md overflow-hidden">
@@ -317,11 +337,7 @@ export default function ChatPage() {
         <CreateRoomModal
           followingUsers={c.followingUsers}
           onClose={() => c.setShowCreateRoom(false)}
-          onCreated={(room) => {
-            c.setChatRooms([room, ...c.chatRooms]);
-            c.setActiveRoomId(room.id);
-            c.setShowCreateRoom(false);
-          }}
+          onCreated={handleRoomCreated}
         />
       )}
 
@@ -332,16 +348,8 @@ export default function ChatPage() {
           followingUsers={c.followingUsers}
           onClose={() => c.setShowRoomSettings(false)}
           onUpdated={c.loadChatRooms}
-          onDeleted={() => {
-            c.setActiveRoomId(null);
-            c.setShowRoomSettings(false);
-            c.loadChatRooms();
-          }}
-          onLeft={() => {
-            c.setActiveRoomId(null);
-            c.setShowRoomSettings(false);
-            c.loadChatRooms();
-          }}
+          onDeleted={handleRoomDeleted}
+          onLeft={handleRoomLeft}
         />
       )}
     </div>

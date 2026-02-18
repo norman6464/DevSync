@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Lightbulb, MessageSquare } from 'lucide-react';
 import { useAdvice, useAIChat, useConversations } from '../hooks/useAdvice';
@@ -13,29 +13,29 @@ export default function AdvicePage() {
   const { conversations, loading: convsLoading, refetch: refetchConvs, removeConversation } = useConversations();
   const [activeTab, setActiveTab] = useState<'advice' | 'chat'>('advice');
 
-  const handleSend = async (message: string) => {
+  const handleSend = useCallback(async (message: string) => {
     await sendMessage(message);
     refetchConvs();
-  };
+  }, [sendMessage, refetchConvs]);
 
-  const handleSelectConversation = (id: number) => {
+  const handleSelectConversation = useCallback((id: number) => {
     loadConversation(id);
     setActiveTab('chat');
-  };
+  }, [loadConversation]);
 
-  const handleDeleteConversation = async (id: number) => {
+  const handleDeleteConversation = useCallback(async (id: number) => {
     const success = await removeConversation(id);
     if (success && conversationId === id) {
       startNewChat();
     }
-  };
+  }, [removeConversation, conversationId, startNewChat]);
 
-  const handleDeleteCurrentConversation = async () => {
+  const handleDeleteCurrentConversation = useCallback(async () => {
     const success = await deleteCurrentConversation();
     if (success) {
       refetchConvs();
     }
-  };
+  }, [deleteCurrentConversation, refetchConvs]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
