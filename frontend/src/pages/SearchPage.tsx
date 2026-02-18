@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import SearchBar from '../components/search/SearchBar';
@@ -26,15 +26,15 @@ export default function NewSearchPage() {
   const postSearch = usePostSearch();
   const circleSearch = useCircleSearch();
 
-  const handleGlobalQueryChange = (value: string) => {
+  const handleGlobalQueryChange = useCallback((value: string) => {
     setGlobalQuery(value);
-  };
+  }, []);
 
-  const handleGlobalSearch = () => {
+  const handleGlobalSearch = useCallback(() => {
     userSearch.handleSearch(globalQuery);
     postSearch.handleSearch(globalQuery);
     circleSearch.handleSearch(globalQuery);
-  };
+  }, [globalQuery, userSearch, postSearch, circleSearch]);
 
   // デバウンスされたクエリで自動検索
   useEffect(() => {
@@ -48,11 +48,11 @@ export default function NewSearchPage() {
     }
   }, [debouncedQuery]);
 
-  const counts = {
+  const counts = useMemo(() => ({
     users: userSearch.filteredUsers?.length || 0,
     posts: postSearch.results.length,
     circles: circleSearch.results.length,
-  };
+  }), [userSearch.filteredUsers, postSearch.results, circleSearch.results]);
 
   const isLoading = userSearch.loading || postSearch.loading || circleSearch.loading;
   const hasSearched = userSearch.searched || postSearch.searched || circleSearch.searched;
