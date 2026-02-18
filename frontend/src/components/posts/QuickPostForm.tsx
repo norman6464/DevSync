@@ -78,9 +78,9 @@ export default function QuickPostForm({ onSubmit }: QuickPostFormProps) {
     <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-xl p-4 transition-all">
       {/* 復元プロンプト */}
       {showRestorePrompt && (
-        <div className="mb-3 p-3 bg-blue-900/20 border border-blue-800/30 rounded-lg flex items-center justify-between">
+        <div role="alert" className="mb-3 p-3 bg-blue-900/20 border border-blue-800/30 rounded-lg flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-blue-400" />
+            <Clock className="w-4 h-4 text-blue-400" aria-hidden="true" />
             <p className="text-sm text-blue-300">{t('post.restorePrompt')}</p>
           </div>
           <div className="flex gap-2">
@@ -125,12 +125,12 @@ export default function QuickPostForm({ onSubmit }: QuickPostFormProps) {
                   <div className="flex items-center gap-1 text-xs text-gray-400">
                     {saveStatus === 'saving' ? (
                       <>
-                        <Clock className="w-3 h-3 animate-pulse" />
+                        <Clock className="w-3 h-3 animate-pulse" aria-hidden="true" />
                         <span>{getSaveStatusText()}</span>
                       </>
                     ) : (
                       <>
-                        <Check className="w-3 h-3 text-green-500" />
+                        <Check className="w-3 h-3 text-green-500" aria-hidden="true" />
                         <span>{getSaveStatusText()}</span>
                       </>
                     )}
