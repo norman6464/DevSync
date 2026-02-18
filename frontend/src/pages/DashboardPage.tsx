@@ -93,8 +93,10 @@ export default function DashboardPage() {
         <div>
           <h2 className="section-heading">{t('dashboard.timeline')}</h2>
           {/* Tabs */}
-          <div className="flex items-center border-b-2 border-gray-800">
+          <div className="flex items-center border-b-2 border-gray-800" role="tablist" aria-label={t('dashboard.timeline')}>
           <button
+            role="tab"
+            aria-selected={tab === 'timeline'}
             onClick={() => setTab('timeline')}
             className={`px-4 py-2.5 text-sm font-medium transition-colors relative ${
               tab === 'timeline' ? 'text-white' : 'text-gray-400 hover:text-white'
@@ -106,6 +108,8 @@ export default function DashboardPage() {
             )}
           </button>
           <button
+            role="tab"
+            aria-selected={tab === 'all'}
             onClick={() => setTab('all')}
             className={`px-4 py-2.5 text-sm font-medium transition-colors relative ${
               tab === 'all' ? 'text-white' : 'text-gray-400 hover:text-white'
@@ -126,7 +130,7 @@ export default function DashboardPage() {
           </div>
         ) : posts.length === 0 ? (
           <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center">
-            <svg className="w-16 h-16 mx-auto mb-4 text-gray-700" fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24">
+            <svg className="w-16 h-16 mx-auto mb-4 text-gray-700" fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
             </svg>
             <p className="text-gray-400 mb-4">
@@ -139,7 +143,7 @@ export default function DashboardPage() {
                 to="/search"
                 className={`${buttonPrimaryClass} inline-flex items-center gap-2 text-sm`}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                 </svg>
                 {t('dashboard.findPeople')}
@@ -201,11 +205,11 @@ export default function DashboardPage() {
             </div>
             <div className="space-y-0.5">
               <Link to={`/profile/${user.id}`} className="flex items-center gap-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800 py-1.5 px-2 rounded-md transition-colors">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.9 17.9 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.9 17.9 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
                 {t('dashboard.yourProfile')}
               </Link>
               <Link to="/settings" className="flex items-center gap-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800 py-1.5 px-2 rounded-md transition-colors">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93l.164.076c.374.174.798.203 1.167.067l.838-.34a1.114 1.114 0 0 1 1.365.486l.547.948c.271.47.163 1.07-.258 1.414l-.69.577a1.18 1.18 0 0 0-.378 1.001c.006.1.006.2 0 .3a1.18 1.18 0 0 0 .378 1.001l.69.577c.421.345.529.944.258 1.414l-.547.948a1.114 1.114 0 0 1-1.365.486l-.838-.34a1.18 1.18 0 0 0-1.167.067l-.164.076c-.396.166-.71.506-.78.93l-.149.894c-.09.542-.56.94-1.11.94h-1.093c-.55 0-1.02-.398-1.11-.94l-.149-.894a1.18 1.18 0 0 0-.78-.93l-.164-.076a1.18 1.18 0 0 0-1.167-.067l-.838.34a1.114 1.114 0 0 1-1.365-.486l-.547-.948a1.114 1.114 0 0 1 .258-1.414l.69-.577a1.18 1.18 0 0 0 .378-1.001 2 2 0 0 1 0-.3 1.18 1.18 0 0 0-.378-1.001l-.69-.577a1.114 1.114 0 0 1-.258-1.414l.547-.948a1.114 1.114 0 0 1 1.365-.486l.838.34c.369.136.793.107 1.167-.067l.164-.076c.396-.166.71-.506.78-.93l.149-.894Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93l.164.076c.374.174.798.203 1.167.067l.838-.34a1.114 1.114 0 0 1 1.365.486l.547.948c.271.47.163 1.07-.258 1.414l-.69.577a1.18 1.18 0 0 0-.378 1.001c.006.1.006.2 0 .3a1.18 1.18 0 0 0 .378 1.001l.69.577c.421.345.529.944.258 1.414l-.547.948a1.114 1.114 0 0 1-1.365.486l-.838-.34a1.18 1.18 0 0 0-1.167.067l-.164.076c-.396.166-.71.506-.78.93l-.149.894c-.09.542-.56.94-1.11.94h-1.093c-.55 0-1.02-.398-1.11-.94l-.149-.894a1.18 1.18 0 0 0-.78-.93l-.164-.076a1.18 1.18 0 0 0-1.167-.067l-.838.34a1.114 1.114 0 0 1-1.365-.486l-.547-.948a1.114 1.114 0 0 1 .258-1.414l.69-.577a1.18 1.18 0 0 0 .378-1.001 2 2 0 0 1 0-.3 1.18 1.18 0 0 0-.378-1.001l-.69-.577a1.114 1.114 0 0 1-.258-1.414l.547-.948a1.114 1.114 0 0 1 1.365-.486l.838.34c.369.136.793.107 1.167-.067l.164-.076c.396-.166.71-.506.78-.93l.149-.894Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
                 {t('nav.settings')}
               </Link>
             </div>
@@ -214,7 +218,7 @@ export default function DashboardPage() {
                 to="/settings"
                 className="mt-3 flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 py-2 px-3 bg-amber-400/10 border border-amber-400/20 rounded-lg transition-colors"
               >
-                <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
                 {t('dashboard.connectGitHub')}
               </Link>
             )}
@@ -254,7 +258,7 @@ export default function DashboardPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="flex items-center gap-2 text-sm font-medium text-white">
-              <Target className="w-4 h-4 text-blue-400" />
+              <Target className="w-4 h-4 text-blue-400" aria-hidden="true" />
               {t('dashboard.goalsProgress')}
             </h3>
             <Link to="/goals" className="text-xs text-gray-400 hover:text-blue-400 transition-colors">
@@ -303,7 +307,7 @@ export default function DashboardPage() {
                       <span className="text-xs text-gray-300 truncate flex-1 mr-2">{goal.title}</span>
                       <span className="text-xs text-gray-500 shrink-0">{goal.progress}%</span>
                     </div>
-                    <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden" role="progressbar" aria-valuenow={goal.progress} aria-valuemin={0} aria-valuemax={100} aria-label={`${goal.title}: ${goal.progress}%`}>
                       <div
                         className={`h-full rounded-full transition-all ${
                           goal.progress >= 80 ? 'bg-green-500' : goal.progress >= 50 ? 'bg-blue-500' : 'bg-orange-500'
@@ -319,7 +323,7 @@ export default function DashboardPage() {
                     className="flex items-center justify-center gap-1 text-xs text-gray-400 hover:text-blue-400 pt-1 transition-colors"
                   >
                     {t('dashboard.moreGoals', { count: activeGoals.length - 3 })}
-                    <ChevronRight className="w-3 h-3" />
+                    <ChevronRight className="w-3 h-3" aria-hidden="true" />
                   </Link>
                 )}
               </div>
@@ -331,7 +335,7 @@ export default function DashboardPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="flex items-center gap-2 text-sm font-medium text-white">
-              <Bell className="w-4 h-4 text-yellow-400" />
+              <Bell className="w-4 h-4 text-yellow-400" aria-hidden="true" />
               {t('dashboard.recentNotifications')}
             </h3>
             <Link to="/notifications" className="text-xs text-gray-400 hover:text-blue-400 transition-colors">
@@ -381,7 +385,7 @@ export default function DashboardPage() {
         {/* Quick Stats */}
         <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
           <h3 className="flex items-center gap-2 text-sm font-medium text-white mb-3">
-            <TrendingUp className="w-4 h-4 text-green-400" />
+            <TrendingUp className="w-4 h-4 text-green-400" aria-hidden="true" />
             {t('dashboard.quickStats')}
           </h3>
           <div className="space-y-2">
@@ -389,7 +393,7 @@ export default function DashboardPage() {
               to="/goals"
               className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-800/50 transition-colors"
             >
-              <CheckCircle2 className="w-4 h-4 text-green-400" />
+              <CheckCircle2 className="w-4 h-4 text-green-400" aria-hidden="true" />
               <span className="text-xs text-gray-300 flex-1">{t('dashboard.goalsCompleted')}</span>
               <span className="text-xs font-medium text-white">{completedGoals.length}</span>
             </Link>
@@ -397,7 +401,7 @@ export default function DashboardPage() {
               to="/goals"
               className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-800/50 transition-colors"
             >
-              <Clock className="w-4 h-4 text-blue-400" />
+              <Clock className="w-4 h-4 text-blue-400" aria-hidden="true" />
               <span className="text-xs text-gray-300 flex-1">{t('dashboard.goalsInProgress')}</span>
               <span className="text-xs font-medium text-white">{activeGoals.length}</span>
             </Link>
