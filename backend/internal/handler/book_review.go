@@ -29,31 +29,11 @@ func NewBookReviewHandler(s BookReviewServiceInterface) *BookReviewHandler {
 	return &BookReviewHandler{service: s}
 }
 
-// CreateBookReviewRequest は書籍レビュー作成のリクエストボディ。
-type CreateBookReviewRequest struct {
-	Title    string `json:"title" binding:"required,max=300"`
-	Author   string `json:"author" binding:"max=200"`
-	ISBN     string `json:"isbn" binding:"max=20"`
-	Rating   int    `json:"rating" binding:"required,min=1,max=5"`
-	Review   string `json:"review"`
-	ImageURL string `json:"image_url"`
-}
-
-// UpdateBookReviewRequest は書籍レビュー更新のリクエストボディ。
-type UpdateBookReviewRequest struct {
-	Title    string `json:"title" binding:"max=300"`
-	Author   string `json:"author" binding:"max=200"`
-	ISBN     string `json:"isbn" binding:"max=20"`
-	Rating   *int   `json:"rating" binding:"omitempty,min=1,max=5"`
-	Review   string `json:"review"`
-	ImageURL string `json:"image_url"`
-}
-
 // Create は新しい書籍レビューを作成する。
 func (h *BookReviewHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	req := bindJSON[CreateBookReviewRequest](c)
+	req := bindJSON[dto.CreateBookReviewRequest](c)
 	if req == nil {
 		return
 	}
@@ -139,7 +119,7 @@ func (h *BookReviewHandler) Update(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[UpdateBookReviewRequest](c)
+	req := bindJSON[dto.UpdateBookReviewRequest](c)
 	if req == nil {
 		return
 	}

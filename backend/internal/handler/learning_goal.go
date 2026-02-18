@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -28,19 +29,11 @@ func NewLearningGoalHandler(s LearningGoalServiceInterface) *LearningGoalHandler
 	return &LearningGoalHandler{service: s}
 }
 
-// CreateGoalInput は学習目標作成のリクエストボディ。
-type CreateGoalInput struct {
-	Title       string `json:"title" binding:"required"`
-	Description string `json:"description"`
-	Category    string `json:"category"`
-	TargetDate  string `json:"target_date"`
-}
-
 // Create は新しい学習目標を作成する。
 func (h *LearningGoalHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	req := bindJSON[CreateGoalInput](c)
+	req := bindJSON[dto.CreateGoalRequest](c)
 	if req == nil {
 		return
 	}
@@ -75,16 +68,6 @@ func (h *LearningGoalHandler) Create(c *gin.Context) {
 	respondCreated(c, goal)
 }
 
-// UpdateGoalInput は学習目標更新のリクエストボディ。
-type UpdateGoalInput struct {
-	Title       *string `json:"title"`
-	Description *string `json:"description"`
-	Category    *string `json:"category"`
-	TargetDate  *string `json:"target_date"`
-	Progress    *int    `json:"progress"`
-	Status      *string `json:"status"`
-}
-
 // Update は指定された学習目標を更新する。
 func (h *LearningGoalHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -93,7 +76,7 @@ func (h *LearningGoalHandler) Update(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[UpdateGoalInput](c)
+	req := bindJSON[dto.UpdateGoalRequest](c)
 	if req == nil {
 		return
 	}

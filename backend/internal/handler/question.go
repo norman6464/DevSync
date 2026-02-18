@@ -34,30 +34,11 @@ func NewQuestionHandler(s QuestionServiceInterface) *QuestionHandler {
 	return &QuestionHandler{service: s}
 }
 
-// CreateQuestionRequest は質問作成のリクエストボディ。
-type CreateQuestionRequest struct {
-	Title string `json:"title" binding:"required,max=500"`
-	Body  string `json:"body" binding:"required"`
-	Tags  string `json:"tags"`
-}
-
-// UpdateQuestionRequest は質問更新のリクエストボディ。
-type UpdateQuestionRequest struct {
-	Title string `json:"title" binding:"max=500"`
-	Body  string `json:"body"`
-	Tags  string `json:"tags"`
-}
-
-// VoteRequest は投票のリクエストボディ。
-type VoteRequest struct {
-	Value int `json:"value" binding:"required,oneof=1 -1"`
-}
-
 // Create は新しい質問を作成する。
 func (h *QuestionHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	req := bindJSON[CreateQuestionRequest](c)
+	req := bindJSON[dto.CreateQuestionRequest](c)
 	if req == nil {
 		return
 	}
@@ -177,7 +158,7 @@ func (h *QuestionHandler) Update(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[UpdateQuestionRequest](c)
+	req := bindJSON[dto.UpdateQuestionRequest](c)
 	if req == nil {
 		return
 	}
@@ -215,7 +196,7 @@ func (h *QuestionHandler) Vote(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[VoteRequest](c)
+	req := bindJSON[dto.VoteRequest](c)
 	if req == nil {
 		return
 	}

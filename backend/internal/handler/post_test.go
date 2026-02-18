@@ -89,6 +89,7 @@ func TestPostGetByID_Success(t *testing.T) {
 
 	postRepo.On("FindByID", uint(10)).Return(&model.Post{Title: "Found"}, nil)
 	postRepo.On("HasLiked", uint(1), uint(0)).Return(false)
+	postRepo.On("HasBookmarked", uint(1), uint(0)).Return(false)
 
 	w := doRequest(r, http.MethodGet, "/posts/10", nil)
 	assertStatus(t, w, http.StatusOK)
