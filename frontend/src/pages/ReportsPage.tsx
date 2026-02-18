@@ -1,32 +1,46 @@
+import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BarChart3, FileText, Users, Target, MessageCircle, Heart, type LucideIcon } from 'lucide-react';
 import { useReport } from '../hooks';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
+function formatDate(dateStr: string) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function getTrendColor(diff: number) {
+  if (diff > 0) return 'text-green-400';
+  if (diff < 0) return 'text-red-400';
+  return 'text-gray-400';
+}
+
+function getTrendIcon(d: number) {
+  if (d > 0) return '↑';
+  if (d < 0) return '↓';
+  return '—';
+}
+
 export default function ReportsPage() {
   const { t } = useTranslation();
   const { report, comparison, loading, period, setPeriod } = useReport();
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-  };
+  const handleSetWeekly = useCallback(() => setPeriod('weekly'), [setPeriod]);
+  const handleSetMonthly = useCallback(() => setPeriod('monthly'), [setPeriod]);
 
-  const formatBytes = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
-
-  const getTrendColor = (diff: number) => {
-    if (diff > 0) return 'text-green-400';
-    if (diff < 0) return 'text-red-400';
-    return 'text-gray-400';
-  };
-
-  const maxContribution = report?.daily_contributions
-    ? Math.max(...report.daily_contributions.map((d) => d.contributions), 1)
-    : 1;
+  const maxContribution = useMemo(
+    () =>
+      report?.daily_contributions
+        ? Math.max(...report.daily_contributions.map((d) => d.contributions), 1)
+        : 1,
+    [report?.daily_contributions]
+  );
 
   if (loading) {
     return (
@@ -43,7 +57,7 @@ export default function ReportsPage() {
         <h1 className="text-2xl font-bold">{t('reports.title')}</h1>
         <div className="flex bg-gray-800 rounded-lg p-1">
           <button
-            onClick={() => setPeriod('weekly')}
+            onClick={handleSetWeekly}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
               period === 'weekly'
                 ? 'bg-gray-700 text-white'
@@ -53,7 +67,7 @@ export default function ReportsPage() {
             {t('reports.weekly')}
           </button>
           <button
-            onClick={() => setPeriod('monthly')}
+            onClick={handleSetMonthly}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
               period === 'monthly'
                 ? 'bg-gray-700 text-white'
@@ -270,18 +284,6 @@ interface StatCardProps {
 }
 
 function StatCard({ label, value, diff, icon: Icon }: StatCardProps) {
-  const getTrendIcon = (d: number) => {
-    if (d > 0) return '↑';
-    if (d < 0) return '↓';
-    return '—';
-  };
-
-  const getTrendColor = (d: number) => {
-    if (d > 0) return 'text-green-400';
-    if (d < 0) return 'text-red-400';
-    return 'text-gray-400';
-  };
-
   return (
     <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
       <div className="flex items-center gap-2 mb-2">
