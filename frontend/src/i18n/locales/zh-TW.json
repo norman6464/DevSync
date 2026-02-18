@@ -1290,5 +1290,12 @@
     "views": "{{count}}次瀏覽",
     "mostViewed": "熱門貼文",
     "recordFailed": "記錄瀏覽失敗"
+  },
+  "mention": {
+    "suggestions": "使用者建議",
+    "noMentions": "沒有提及",
+    "mentionedYou": "提到了你",
+    "inPost": "在貼文中",
+    "inComment": "在留言中"
   }
 }
