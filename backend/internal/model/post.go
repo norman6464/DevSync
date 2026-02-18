@@ -14,6 +14,7 @@ type Post struct {
 	LikeCount         int            `json:"like_count" gorm:"default:0"`
 	CommentCount      int            `json:"comment_count" gorm:"default:0"`
 	BookmarkCount     int            `json:"bookmark_count" gorm:"default:0"`
+	ViewCount         int            `json:"view_count" gorm:"default:0"`
 	EstimatedReadTime int            `json:"estimated_read_time" gorm:"default:0"`
 	CodeSnippets      []CodeSnippet  `json:"code_snippets,omitempty" gorm:"foreignKey:PostID"`
 	CreatedAt    time.Time      `json:"created_at"`

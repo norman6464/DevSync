@@ -16,7 +16,12 @@ func NewPostViewRepository(db *gorm.DB) *PostViewRepository {
 }
 
 func (r *PostViewRepository) RecordView(view *model.PostView) error {
-	return r.db.Create(view).Error
+	err := r.db.Create(view).Error
+	if err != nil {
+		return err
+	}
+	return r.db.Model(&model.Post{}).Where("id = ?", view.PostID).
+		UpdateColumn("view_count", gorm.Expr("view_count + 1")).Error
 }
 
 func (r *PostViewRepository) GetViewCount(postID uint) (int64, error) {

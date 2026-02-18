@@ -11,6 +11,7 @@ export interface Post {
   like_count: number;
   comment_count: number;
   bookmark_count: number;
+  view_count: number;
   estimated_read_time: number;
   code_snippets?: CodeSnippet[];
   liked?: boolean;
