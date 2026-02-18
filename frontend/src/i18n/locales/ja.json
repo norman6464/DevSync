@@ -291,6 +291,9 @@
     "emailEnabled": "有効",
     "emailDisabled": "無効",
     "emailPreferencesSaved": "メール設定を保存しました",
+    "zennUsernamePlaceholder": "Zennのユーザー名を入力",
+    "qiitaUsernamePlaceholder": "Qiitaのユーザー名を入力",
+    "atcoderUsernamePlaceholder": "AtCoderのユーザー名を入力",
     "setTheme": "{{theme}}テーマに設定"
   },
   "explore": {
@@ -1139,7 +1142,8 @@
     "confirmDelete": "このノートを削除しますか？",
     "favoriteToggled": "お気に入りを更新しました",
     "lastUpdated": "最終更新",
-    "createdAt": "作成日時"
+    "createdAt": "作成日時",
+    "tagsPlaceholder": "例: React, TypeScript, Go"
   },
   "githubCallback": {
     "missingOAuthParams": "OAuthパラメータが不足しています",

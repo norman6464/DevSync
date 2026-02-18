@@ -139,7 +139,7 @@ export default function IntegrationSection(props: Props) {
                   type="text"
                   value={props.zennUsername}
                   onChange={(e) => props.setZennUsername(e.target.value)}
-                  placeholder="your-zenn-username"
+                  placeholder={t('settings.zennUsernamePlaceholder')}
                   className={inputClass}
                 />
               </div>
@@ -199,7 +199,7 @@ export default function IntegrationSection(props: Props) {
                   type="text"
                   value={props.qiitaUsername}
                   onChange={(e) => props.setQiitaUsername(e.target.value)}
-                  placeholder="your-qiita-username"
+                  placeholder={t('settings.qiitaUsernamePlaceholder')}
                   className={inputClass}
                 />
               </div>
@@ -252,7 +252,7 @@ export default function IntegrationSection(props: Props) {
                   type="text"
                   value={props.atcoderUsername}
                   onChange={(e) => props.setAtcoderUsername(e.target.value)}
-                  placeholder="your-atcoder-username"
+                  placeholder={t('settings.atcoderUsernamePlaceholder')}
                   className={inputClass}
                 />
               </div>

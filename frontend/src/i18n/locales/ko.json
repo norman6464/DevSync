@@ -278,6 +278,9 @@
     "emailEnabled": "활성화",
     "emailDisabled": "비활성화",
     "emailPreferencesSaved": "이메일 설정이 저장되었습니다",
+    "zennUsernamePlaceholder": "Zenn 사용자명 입력",
+    "qiitaUsernamePlaceholder": "Qiita 사용자명 입력",
+    "atcoderUsernamePlaceholder": "AtCoder 사용자명 입력",
     "setTheme": "{{theme}} 테마로 설정"
   },
   "explore": {
@@ -1238,7 +1241,8 @@
     "confirmDelete": "이 노트를 삭제하시겠습니까?",
     "favoriteToggled": "즐겨찾기 상태가 업데이트되었습니다",
     "lastUpdated": "마지막 업데이트",
-    "createdAt": "생성일"
+    "createdAt": "생성일",
+    "tagsPlaceholder": "예: React, TypeScript, Go"
   },
   "githubCallback": {
     "missingOAuthParams": "OAuth 매개변수가 없습니다",

@@ -278,6 +278,9 @@
     "emailEnabled": "已啟用",
     "emailDisabled": "已停用",
     "emailPreferencesSaved": "郵件設定已儲存",
+    "zennUsernamePlaceholder": "輸入Zenn使用者名稱",
+    "qiitaUsernamePlaceholder": "輸入Qiita使用者名稱",
+    "atcoderUsernamePlaceholder": "輸入AtCoder使用者名稱",
     "setTheme": "設置{{theme}}主題"
   },
   "explore": {
@@ -1238,7 +1241,8 @@
     "confirmDelete": "確定要刪除這條筆記嗎？",
     "favoriteToggled": "收藏狀態已更新",
     "lastUpdated": "最後更新",
-    "createdAt": "創建時間"
+    "createdAt": "創建時間",
+    "tagsPlaceholder": "例如：React, TypeScript, Go"
   },
   "githubCallback": {
     "missingOAuthParams": "缺少OAuth參數",

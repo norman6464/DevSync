@@ -278,6 +278,9 @@
     "emailEnabled": "已启用",
     "emailDisabled": "已禁用",
     "emailPreferencesSaved": "邮件设置已保存",
+    "zennUsernamePlaceholder": "输入Zenn用户名",
+    "qiitaUsernamePlaceholder": "输入Qiita用户名",
+    "atcoderUsernamePlaceholder": "输入AtCoder用户名",
     "setTheme": "设置{{theme}}主题"
   },
   "explore": {
@@ -1238,7 +1241,8 @@
     "confirmDelete": "确定要删除这条笔记吗？",
     "favoriteToggled": "收藏状态已更新",
     "lastUpdated": "最后更新",
-    "createdAt": "创建时间"
+    "createdAt": "创建时间",
+    "tagsPlaceholder": "例如：React, TypeScript, Go"
   },
   "githubCallback": {
     "missingOAuthParams": "缺少OAuth参数",
