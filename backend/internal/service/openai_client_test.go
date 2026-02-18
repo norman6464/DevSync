@@ -160,3 +160,125 @@ func TestNewOpenAIClient(t *testing.T) {
 	assert.Equal(t, "https://api.openai.com/v1/chat/completions", client.baseURL)
 	assert.NotNil(t, client.httpClient)
 }
+
+// ============================================================
+// エッジケーステスト
+// ============================================================
+
+// errorReader はio.ReadAllを失敗させるためのモック。
+type errorReader struct{}
+
+func (e errorReader) Read([]byte) (int, error) { return 0, errors.New("read error") }
+func (e errorReader) Close() error             { return nil }
+
+func TestComplete_MultipleMessages(t *testing.T) {
+	client := newTestOpenAIClient(func(req *http.Request) (*http.Response, error) {
+		reqBody, _ := io.ReadAll(req.Body)
+		assert.Contains(t, string(reqBody), `"role":"system"`)
+		assert.Contains(t, string(reqBody), `"role":"user"`)
+
+		body := `{"choices":[{"message":{"content":"はい、お手伝いします"}}],"usage":{"total_tokens":40}}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       io.NopCloser(strings.NewReader(body)),
+		}, nil
+	})
+
+	messages := []ChatMessage{
+		{Role: "system", Content: "あなたはアシスタントです"},
+		{Role: "user", Content: "手伝って"},
+	}
+	resp, err := client.Complete(messages)
+	assert.NoError(t, err)
+	assert.Equal(t, "はい、お手伝いします", resp.Content)
+	assert.Equal(t, 40, resp.TokensUsed)
+}
+
+func TestComplete_UnauthorizedError(t *testing.T) {
+	client := newTestOpenAIClient(func(req *http.Request) (*http.Response, error) {
+		return &http.Response{
+			StatusCode: http.StatusUnauthorized,
+			Body:       io.NopCloser(strings.NewReader(`{"error":{"message":"invalid api key"}}`)),
+		}, nil
+	})
+
+	messages := []ChatMessage{{Role: "user", Content: "test"}}
+	resp, err := client.Complete(messages)
+	assert.Nil(t, resp)
+	assert.Error(t, err)
+
+	var domainErr *domain.DomainError
+	assert.True(t, errors.As(err, &domainErr))
+	assert.Equal(t, domain.ErrCodeServiceUnavailable, domainErr.Code)
+	assert.Contains(t, domainErr.Message, "401")
+}
+
+func TestComplete_ReadBodyError(t *testing.T) {
+	client := newTestOpenAIClient(func(req *http.Request) (*http.Response, error) {
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       io.NopCloser(errorReader{}),
+		}, nil
+	})
+
+	messages := []ChatMessage{{Role: "user", Content: "test"}}
+	resp, err := client.Complete(messages)
+	assert.Nil(t, resp)
+	assert.Error(t, err)
+
+	var domainErr *domain.DomainError
+	assert.True(t, errors.As(err, &domainErr))
+	assert.Equal(t, domain.ErrCodeServiceUnavailable, domainErr.Code)
+	assert.Contains(t, domainErr.Message, "読み取り")
+}
+
+func TestComplete_InvalidBaseURL(t *testing.T) {
+	client := &OpenAIClient{
+		apiKey:     "test-key",
+		httpClient: &http.Client{},
+		model:      "gpt-4o-mini",
+		baseURL:    "://invalid-url",
+	}
+
+	messages := []ChatMessage{{Role: "user", Content: "test"}}
+	resp, err := client.Complete(messages)
+	assert.Nil(t, resp)
+	assert.Error(t, err)
+
+	var domainErr *domain.DomainError
+	assert.True(t, errors.As(err, &domainErr))
+	assert.Equal(t, domain.ErrCodeInternal, domainErr.Code)
+}
+
+func TestComplete_EmptyContentSuccess(t *testing.T) {
+	client := newTestOpenAIClient(func(req *http.Request) (*http.Response, error) {
+		body := `{"choices":[{"message":{"content":""}}],"usage":{"total_tokens":5}}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       io.NopCloser(strings.NewReader(body)),
+		}, nil
+	})
+
+	messages := []ChatMessage{{Role: "user", Content: "test"}}
+	resp, err := client.Complete(messages)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.Equal(t, "", resp.Content)
+	assert.Equal(t, 5, resp.TokensUsed)
+}
+
+func TestComplete_LargeTokenCount(t *testing.T) {
+	client := newTestOpenAIClient(func(req *http.Request) (*http.Response, error) {
+		body := `{"choices":[{"message":{"content":"長い回答"}}],"usage":{"total_tokens":999999}}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       io.NopCloser(strings.NewReader(body)),
+		}, nil
+	})
+
+	messages := []ChatMessage{{Role: "user", Content: "test"}}
+	resp, err := client.Complete(messages)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.Equal(t, 999999, resp.TokensUsed)
+}
