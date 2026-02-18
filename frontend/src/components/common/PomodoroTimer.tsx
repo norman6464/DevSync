@@ -48,8 +48,8 @@ export default function PomodoroTimer() {
         duration: 25,
         source: 'pomodoro',
       });
-    } catch {
-      // エラーは無視
+    } catch (e) {
+      console.warn('Failed to create pomodoro learning log:', e);
     }
   }, [autoLog, category, t]);
 

@@ -30,8 +30,8 @@ export function useAdvice() {
       try {
         await markAdviceRead(id);
         await refetch();
-      } catch {
-        // エラーは無視
+      } catch (e) {
+        console.warn('Failed to mark advice as read:', e);
       }
     },
     [refetch]
@@ -76,8 +76,8 @@ export function useAIChat() {
           setMessages(conv.messages.filter((m) => m.role !== 'system'));
         }
         return conv;
-      } catch {
-        // エラー時はユーザーメッセージを残す
+      } catch (e) {
+        console.warn('Failed to send AI message:', e);
         return null;
       } finally {
         setSending(false);
