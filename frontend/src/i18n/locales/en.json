@@ -1232,6 +1232,8 @@
       "todayCheckin": "Today's Check-in",
       "viewAll": "View All"
     },
+    "namePlaceholder": "React Study Group",
+    "topicPlaceholder": "Learn React basics in 1 month",
     "searchUsers": "Search users..."
   },
   "notes": {

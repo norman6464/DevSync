@@ -1232,6 +1232,8 @@
       "todayCheckin": "오늘의 체크인",
       "viewAll": "모두 보기"
     },
+    "namePlaceholder": "React 스터디",
+    "topicPlaceholder": "1개월 만에 React 입문",
     "searchUsers": "사용자 검색..."
   },
   "notes": {

@@ -1232,6 +1232,8 @@
       "todayCheckin": "Check-in du Jour",
       "viewAll": "Tout Voir"
     },
+    "namePlaceholder": "Groupe d'étude React",
+    "topicPlaceholder": "Apprendre React en 1 mois",
     "searchUsers": "Rechercher des utilisateurs..."
   },
   "notes": {

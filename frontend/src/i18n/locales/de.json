@@ -1232,6 +1232,8 @@
       "todayCheckin": "Heutiger Check-in",
       "viewAll": "Alle anzeigen"
     },
+    "namePlaceholder": "React-Lerngruppe",
+    "topicPlaceholder": "React-Grundlagen in 1 Monat lernen",
     "searchUsers": "Benutzer suchen..."
   },
   "notes": {
