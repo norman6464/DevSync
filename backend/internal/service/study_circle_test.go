@@ -6,6 +6,7 @@ import (
 
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -308,6 +309,246 @@ func TestStudyCircleGetStreakRanking_Forbidden(t *testing.T) {
 	repo.On("IsMember", uint(1), uint(99)).Return(false, nil)
 
 	result, err := svc.GetStreakRanking(1, 99)
+	assert.Nil(t, result)
+	assert.ErrorIs(t, err, ErrForbidden)
+}
+
+// --- GetMyCircles ---
+
+func TestStudyCircleGetMyCircles_Success(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	circles := []model.StudyCircle{
+		{ID: 1, Name: "Go勉強会"},
+		{ID: 2, Name: "React勉強会"},
+	}
+	repo.On("FindByUserID", uint(1)).Return(circles, nil)
+
+	result, err := svc.GetMyCircles(1)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	repo.AssertExpectations(t)
+}
+
+func TestStudyCircleGetMyCircles_Empty(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	repo.On("FindByUserID", uint(99)).Return([]model.StudyCircle{}, nil)
+
+	result, err := svc.GetMyCircles(99)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}
+
+// --- GetMembers ---
+
+func TestStudyCircleGetMembers_Success(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	members := []model.StudyCircleMember{
+		{CircleID: 1, UserID: 1, Role: model.StudyCircleRoleOwner},
+		{CircleID: 1, UserID: 2, Role: model.StudyCircleRoleMember},
+	}
+	repo.On("IsMember", uint(1), uint(1)).Return(true, nil)
+	repo.On("GetMembers", uint(1)).Return(members, nil)
+
+	result, err := svc.GetMembers(1, 1)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	repo.AssertExpectations(t)
+}
+
+func TestStudyCircleGetMembers_Forbidden(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	repo.On("IsMember", uint(1), uint(99)).Return(false, nil)
+
+	result, err := svc.GetMembers(1, 99)
+	assert.Nil(t, result)
+	assert.ErrorIs(t, err, ErrForbidden)
+}
+
+// --- UpdateStep ---
+
+func TestStudyCircleUpdateStep_Success(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	circle := &model.StudyCircle{ID: 1, OwnerID: 1}
+	step := &model.StudyCircleStep{CircleID: 1, Title: "旧タイトル"}
+	step.ID = 5
+
+	repo.On("FindByID", uint(1)).Return(circle, nil)
+	repo.On("FindStepByID", uint(5)).Return(step, nil)
+	repo.On("UpdateStep", step).Return(nil)
+
+	newTitle := "新タイトル"
+	result, err := svc.UpdateStep(1, 1, 5, &newTitle, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, "新タイトル", result.Title)
+	repo.AssertExpectations(t)
+}
+
+func TestStudyCircleUpdateStep_Forbidden(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	circle := &model.StudyCircle{ID: 1, OwnerID: 1}
+	repo.On("FindByID", uint(1)).Return(circle, nil)
+
+	newTitle := "変更"
+	result, err := svc.UpdateStep(1, 99, 5, &newTitle, nil)
+	assert.Nil(t, result)
+	assert.ErrorIs(t, err, ErrForbidden)
+}
+
+func TestStudyCircleUpdateStep_StepBelongsToDifferentCircle(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	circle := &model.StudyCircle{ID: 1, OwnerID: 1}
+	step := &model.StudyCircleStep{CircleID: 2, Title: "別サークル"}
+	step.ID = 5
+
+	repo.On("FindByID", uint(1)).Return(circle, nil)
+	repo.On("FindStepByID", uint(5)).Return(step, nil)
+
+	newTitle := "変更"
+	result, err := svc.UpdateStep(1, 1, 5, &newTitle, nil)
+	assert.Nil(t, result)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+// --- DeleteStep ---
+
+func TestStudyCircleDeleteStep_Success(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	circle := &model.StudyCircle{ID: 1, OwnerID: 1}
+	step := &model.StudyCircleStep{CircleID: 1}
+	step.ID = 5
+
+	repo.On("FindByID", uint(1)).Return(circle, nil)
+	repo.On("FindStepByID", uint(5)).Return(step, nil)
+	repo.On("DeleteStep", uint(5)).Return(nil)
+
+	err := svc.DeleteStep(1, 1, 5)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestStudyCircleDeleteStep_Forbidden(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	circle := &model.StudyCircle{ID: 1, OwnerID: 1}
+	repo.On("FindByID", uint(1)).Return(circle, nil)
+
+	err := svc.DeleteStep(1, 99, 5)
+	assert.ErrorIs(t, err, ErrForbidden)
+}
+
+// --- ReorderSteps ---
+
+func TestStudyCircleReorderSteps_Success(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	circle := &model.StudyCircle{ID: 1, OwnerID: 1}
+	orders := []repository.StepOrder{
+		{StepID: 1, OrderIndex: 0},
+		{StepID: 2, OrderIndex: 1},
+	}
+
+	repo.On("FindByID", uint(1)).Return(circle, nil)
+	repo.On("ReorderSteps", uint(1), orders).Return(nil)
+
+	err := svc.ReorderSteps(1, 1, orders)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestStudyCircleReorderSteps_Forbidden(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	circle := &model.StudyCircle{ID: 1, OwnerID: 1}
+	repo.On("FindByID", uint(1)).Return(circle, nil)
+
+	orders := []repository.StepOrder{{StepID: 1, OrderIndex: 0}}
+	err := svc.ReorderSteps(1, 99, orders)
+	assert.ErrorIs(t, err, ErrForbidden)
+}
+
+// --- UpdateProgress ---
+
+func TestStudyCircleUpdateProgress_Success(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	repo.On("IsMember", uint(1), uint(2)).Return(true, nil)
+	repo.On("UpsertProgress", mock.AnythingOfType("*model.StudyCircleMemberProgress")).Return(nil)
+
+	err := svc.UpdateProgress(1, 2, 5, true)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestStudyCircleUpdateProgress_Forbidden(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	repo.On("IsMember", uint(1), uint(99)).Return(false, nil)
+
+	err := svc.UpdateProgress(1, 99, 5, true)
+	assert.ErrorIs(t, err, ErrForbidden)
+}
+
+// --- GetProgress ---
+
+func TestStudyCircleGetProgress_Success(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	progress := []model.StudyCircleMemberProgress{
+		{CircleID: 1, UserID: 1, StepID: 1, IsCompleted: true},
+		{CircleID: 1, UserID: 2, StepID: 1, IsCompleted: false},
+	}
+	repo.On("IsMember", uint(1), uint(1)).Return(true, nil)
+	repo.On("GetProgress", uint(1)).Return(progress, nil)
+
+	result, err := svc.GetProgress(1, 1)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	repo.AssertExpectations(t)
+}
+
+func TestStudyCircleGetProgress_Forbidden(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	repo.On("IsMember", uint(1), uint(99)).Return(false, nil)
+
+	result, err := svc.GetProgress(1, 99)
+	assert.Nil(t, result)
+	assert.ErrorIs(t, err, ErrForbidden)
+}
+
+// --- GetCheckins ---
+
+func TestStudyCircleGetCheckins_Success(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	checkins := []model.StudyCircleCheckin{
+		{CircleID: 1, UserID: 1, Content: "Go学習"},
+		{CircleID: 1, UserID: 2, Content: "React学習"},
+	}
+	repo.On("IsMember", uint(1), uint(1)).Return(true, nil)
+	repo.On("GetCheckins", uint(1)).Return(checkins, nil)
+
+	result, err := svc.GetCheckins(1, 1)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	repo.AssertExpectations(t)
+}
+
+func TestStudyCircleGetCheckins_Forbidden(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	repo.On("IsMember", uint(1), uint(99)).Return(false, nil)
+
+	result, err := svc.GetCheckins(1, 99)
 	assert.Nil(t, result)
 	assert.ErrorIs(t, err, ErrForbidden)
 }

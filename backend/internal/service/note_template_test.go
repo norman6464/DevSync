@@ -306,3 +306,37 @@ func TestNoteTemplateService_UseTemplate_CreateError(t *testing.T) {
 	repo.AssertExpectations(t)
 	noteCreator.AssertExpectations(t)
 }
+
+// ============================================================
+// GetDefaultByUserID テスト
+// ============================================================
+
+func TestNoteTemplateService_GetDefaultByUserID_Success(t *testing.T) {
+	svc, repo, _ := newTestNoteTemplateService()
+
+	template := &model.NoteTemplate{
+		ID:              1,
+		UserID:          1,
+		Name:            "デフォルトテンプレート",
+		ContentTemplate: "本文",
+		IsDefault:       true,
+	}
+	repo.On("FindDefaultByUserID", uint(1)).Return(template, nil)
+
+	result, err := svc.GetDefaultByUserID(1)
+	assert.NoError(t, err)
+	assert.True(t, result.IsDefault)
+	assert.Equal(t, "デフォルトテンプレート", result.Name)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteTemplateService_GetDefaultByUserID_NotFound(t *testing.T) {
+	svc, repo, _ := newTestNoteTemplateService()
+
+	repo.On("FindDefaultByUserID", uint(99)).Return(nil, errors.New("not found"))
+
+	result, err := svc.GetDefaultByUserID(99)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}

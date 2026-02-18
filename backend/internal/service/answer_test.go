@@ -197,3 +197,62 @@ func TestAnswerRemoveVote_Success(t *testing.T) {
 	assert.NoError(t, err)
 	answerRepo.AssertExpectations(t)
 }
+
+// ============================================================
+// 質問IDによる回答取得テスト
+// ============================================================
+
+func TestAnswerGetByQuestionID_Success(t *testing.T) {
+	svc, answerRepo, _ := newTestAnswerService()
+
+	answers := []model.Answer{
+		{Body: "Answer 1", QuestionID: 10, UserID: 1},
+		{Body: "Answer 2", QuestionID: 10, UserID: 2},
+	}
+	answerRepo.On("FindByQuestionID", uint(10)).Return(answers, nil)
+
+	result, err := svc.GetByQuestionID(10)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	answerRepo.AssertExpectations(t)
+}
+
+func TestAnswerGetByQuestionID_Empty(t *testing.T) {
+	svc, answerRepo, _ := newTestAnswerService()
+
+	answerRepo.On("FindByQuestionID", uint(99)).Return([]model.Answer{}, nil)
+
+	result, err := svc.GetByQuestionID(99)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	answerRepo.AssertExpectations(t)
+}
+
+// ============================================================
+// ユーザー投票取得テスト
+// ============================================================
+
+func TestAnswerGetUserVotes_Success(t *testing.T) {
+	svc, answerRepo, _ := newTestAnswerService()
+
+	votes := map[uint]int{1: 1, 2: -1, 3: 1}
+	answerRepo.On("GetUserVotes", uint(1), []uint{1, 2, 3}).Return(votes, nil)
+
+	result, err := svc.GetUserVotes(1, []uint{1, 2, 3})
+	assert.NoError(t, err)
+	assert.Len(t, result, 3)
+	assert.Equal(t, 1, result[1])
+	assert.Equal(t, -1, result[2])
+	answerRepo.AssertExpectations(t)
+}
+
+func TestAnswerGetUserVotes_Empty(t *testing.T) {
+	svc, answerRepo, _ := newTestAnswerService()
+
+	answerRepo.On("GetUserVotes", uint(1), []uint{}).Return(map[uint]int{}, nil)
+
+	result, err := svc.GetUserVotes(1, []uint{})
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	answerRepo.AssertExpectations(t)
+}

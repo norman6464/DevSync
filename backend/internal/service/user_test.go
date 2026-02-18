@@ -175,3 +175,45 @@ func TestGetProfileCompleteness_WithSkillsFrameworks(t *testing.T) {
 	assert.Equal(t, 100, result.Percentage)
 	assert.Empty(t, result.MissingFields)
 }
+
+// ============================================================
+// GetByUsername テスト
+// ============================================================
+
+func TestUserGetByUsername_Success(t *testing.T) {
+	svc, repo := newTestUserService()
+
+	user := &model.User{Name: "Alice", Username: "alice"}
+	repo.On("FindByUsername", "alice").Return(user, nil)
+
+	result, err := svc.GetByUsername("alice")
+	assert.NoError(t, err)
+	assert.Equal(t, "Alice", result.Name)
+	repo.AssertExpectations(t)
+}
+
+func TestUserGetByUsername_NotFound(t *testing.T) {
+	svc, repo := newTestUserService()
+
+	repo.On("FindByUsername", "unknown").Return((*model.User)(nil), errors.New("not found"))
+
+	_, err := svc.GetByUsername("unknown")
+	assert.Error(t, err)
+}
+
+// ============================================================
+// FindByID テスト
+// ============================================================
+
+func TestUserFindByID_Success(t *testing.T) {
+	svc, repo := newTestUserService()
+
+	user := &model.User{Name: "Alice"}
+	user.ID = 1
+	repo.On("FindByID", uint(1)).Return(user, nil)
+
+	result, err := svc.FindByID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, "Alice", result.Name)
+	repo.AssertExpectations(t)
+}

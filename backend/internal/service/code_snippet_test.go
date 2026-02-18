@@ -177,3 +177,61 @@ func TestSnippetCommentDelete_Forbidden(t *testing.T) {
 	err := svc.DeleteComment(5, 999)
 	assert.Error(t, err)
 }
+
+// ---------- 投稿IDによるスニペット取得 ----------
+
+func TestSnippetGetByPostID_Success(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+
+	snippets := []model.CodeSnippet{
+		{PostID: 5, UserID: 1, Language: "go", Code: "package main"},
+		{PostID: 5, UserID: 1, Language: "typescript", Code: "console.log()"},
+	}
+	snippetRepo.On("FindByPostID", uint(5)).Return(snippets, nil)
+
+	result, err := svc.GetByPostID(5)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, "go", result[0].Language)
+	snippetRepo.AssertExpectations(t)
+}
+
+func TestSnippetGetByPostID_Empty(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+
+	snippetRepo.On("FindByPostID", uint(99)).Return([]model.CodeSnippet{}, nil)
+
+	result, err := svc.GetByPostID(99)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	snippetRepo.AssertExpectations(t)
+}
+
+// ---------- スニペットコメント取得 ----------
+
+func TestSnippetGetComments_Success(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+
+	comments := []model.SnippetComment{
+		{SnippetID: 10, UserID: 1, LineNumber: 1, Content: "コメント1"},
+		{SnippetID: 10, UserID: 2, LineNumber: 5, Content: "コメント2"},
+	}
+	snippetRepo.On("GetComments", uint(10)).Return(comments, nil)
+
+	result, err := svc.GetComments(10)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, "コメント1", result[0].Content)
+	snippetRepo.AssertExpectations(t)
+}
+
+func TestSnippetGetComments_Empty(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+
+	snippetRepo.On("GetComments", uint(99)).Return([]model.SnippetComment{}, nil)
+
+	result, err := svc.GetComments(99)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	snippetRepo.AssertExpectations(t)
+}

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -496,4 +497,194 @@ func TestSeedTemplates_SkipsIfAlreadyExist(t *testing.T) {
 
 	// Createは呼ばれない
 	repo.AssertNotCalled(t, "Create", mock.Anything)
+}
+
+// ============================================================
+// Create テスト
+// ============================================================
+
+func TestRoadmapCreate_Success(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	roadmap := &model.Roadmap{Title: "New Roadmap", UserID: 1}
+	repo.On("Create", roadmap).Return(nil)
+
+	err := svc.Create(roadmap)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// GetByUserID テスト
+// ============================================================
+
+func TestRoadmapGetByUserID_Success(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	roadmaps := []model.Roadmap{
+		{Title: "Roadmap 1", UserID: 1},
+		{Title: "Roadmap 2", UserID: 1},
+	}
+	repo.On("GetByUserID", uint(1)).Return(roadmaps, nil)
+
+	result, err := svc.GetByUserID(1)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	repo.AssertExpectations(t)
+}
+
+func TestRoadmapGetByUserID_Empty(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	repo.On("GetByUserID", uint(99)).Return([]model.Roadmap{}, nil)
+
+	result, err := svc.GetByUserID(99)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// GetPublicRoadmaps テスト
+// ============================================================
+
+func TestRoadmapGetPublicRoadmaps_Success(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	roadmaps := []model.Roadmap{
+		{Title: "Public 1", IsPublic: true},
+		{Title: "Public 2", IsPublic: true},
+	}
+	repo.On("GetPublicRoadmaps", 10, 0).Return(roadmaps, int64(2), nil)
+
+	result, total, err := svc.GetPublicRoadmaps(10, 0)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, int64(2), total)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// GetStats テスト
+// ============================================================
+
+func TestRoadmapGetStats_Success(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	stats := &model.RoadmapStats{
+		TotalRoadmaps:     3,
+		CompletedRoadmaps: 1,
+	}
+	repo.On("GetStats", uint(1)).Return(stats, nil)
+
+	result, err := svc.GetStats(1)
+	assert.NoError(t, err)
+	assert.Equal(t, 3, result.TotalRoadmaps)
+	assert.Equal(t, 1, result.CompletedRoadmaps)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// UpdateVisibility テスト
+// ============================================================
+
+func TestRoadmapUpdateVisibility_Success(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	existing := &model.Roadmap{UserID: 1, IsPublic: false}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.UpdateVisibility(1, 1, true)
+	assert.NoError(t, err)
+	assert.True(t, result.IsPublic)
+	repo.AssertExpectations(t)
+}
+
+func TestRoadmapUpdateVisibility_Forbidden(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	existing := &model.Roadmap{UserID: 1}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	result, err := svc.UpdateVisibility(1, 999, true)
+	assert.ErrorIs(t, err, ErrForbidden)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// CreateStep テスト
+// ============================================================
+
+func TestRoadmapCreateStep_Success(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 10
+
+	step := &model.RoadmapStep{Title: "New Step"}
+
+	repo.On("FindByID", uint(10)).Return(roadmap, nil)
+	repo.On("CreateStep", step).Return(nil)
+
+	err := svc.CreateStep(10, 1, step)
+	assert.NoError(t, err)
+	assert.Equal(t, uint(10), step.RoadmapID)
+	repo.AssertExpectations(t)
+}
+
+func TestRoadmapCreateStep_Forbidden(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 10
+
+	repo.On("FindByID", uint(10)).Return(roadmap, nil)
+
+	step := &model.RoadmapStep{Title: "New Step"}
+	err := svc.CreateStep(10, 999, step)
+	assert.ErrorIs(t, err, ErrForbidden)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// ReorderSteps テスト
+// ============================================================
+
+func TestRoadmapReorderSteps_Success(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 10
+
+	orders := []repository.StepOrder{
+		{StepID: 1, OrderIndex: 0},
+		{StepID: 2, OrderIndex: 1},
+	}
+
+	repo.On("FindByID", uint(10)).Return(roadmap, nil)
+	repo.On("ReorderSteps", uint(10), orders).Return(nil)
+
+	err := svc.ReorderSteps(10, 1, orders)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestRoadmapReorderSteps_Forbidden(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 10
+
+	repo.On("FindByID", uint(10)).Return(roadmap, nil)
+
+	orders := []repository.StepOrder{{StepID: 1, OrderIndex: 0}}
+	err := svc.ReorderSteps(10, 999, orders)
+	assert.ErrorIs(t, err, ErrForbidden)
+	repo.AssertExpectations(t)
 }
