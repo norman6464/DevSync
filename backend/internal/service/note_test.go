@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -125,6 +126,17 @@ func TestNoteService_GetByID(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestNoteService_GetByID_NotFound(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	repo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	result, err := svc.GetByID(999)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
 // ============================================================
 // GetByUserID テスト
 // ============================================================
@@ -201,6 +213,113 @@ func TestNoteService_Search(t *testing.T) {
 }
 
 // ============================================================
+// GetByFolderID テスト
+// ============================================================
+
+func TestNoteService_GetByFolderID(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	notes := []model.Note{
+		{ID: 1, UserID: 1, Title: "フォルダ内ノート1"},
+		{ID: 2, UserID: 1, Title: "フォルダ内ノート2"},
+	}
+
+	repo.On("FindByFolderID", uint(5)).Return(notes, nil)
+
+	result, err := svc.GetByFolderID(5)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// CountByUserID テスト
+// ============================================================
+
+func TestNoteService_CountByUserID(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	repo.On("CountByUserID", uint(1)).Return(int64(10), nil)
+
+	count, err := svc.CountByUserID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(10), count)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// ToggleFavorite テスト
+// ============================================================
+
+func TestNoteService_ToggleFavorite(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	repo.On("ToggleFavorite", uint(1)).Return(nil)
+
+	err := svc.ToggleFavorite(1)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// Archive / Unarchive テスト
+// ============================================================
+
+func TestNoteService_Archive(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	repo.On("Archive", uint(1)).Return(nil)
+
+	err := svc.Archive(1)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteService_Unarchive(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	repo.On("Unarchive", uint(1)).Return(nil)
+
+	err := svc.Unarchive(1)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// GetArchived テスト
+// ============================================================
+
+func TestNoteService_GetArchived(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	notes := []model.Note{
+		{ID: 3, UserID: 1, Title: "アーカイブノート", IsArchived: true},
+	}
+
+	repo.On("FindArchived", uint(1), 1, 20).Return(notes, nil)
+
+	result, err := svc.GetArchived(1, 1, 20)
+	assert.NoError(t, err)
+	assert.Len(t, result, 1)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// CountArchivedByUserID テスト
+// ============================================================
+
+func TestNoteService_CountArchivedByUserID(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	repo.On("CountArchivedByUserID", uint(1)).Return(int64(3), nil)
+
+	count, err := svc.CountArchivedByUserID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(3), count)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
 // Duplicate テスト
 // ============================================================
 
@@ -233,5 +352,28 @@ func TestNoteService_Duplicate(t *testing.T) {
 	assert.Equal(t, "元の内容", result.Content)
 	assert.False(t, result.IsFavorite)
 	assert.False(t, result.IsArchived)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteService_Duplicate_Forbidden(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	original := &model.Note{ID: 1, UserID: 1, Title: "元ノート"}
+	repo.On("FindByID", uint(1)).Return(original, nil)
+
+	result, err := svc.Duplicate(1, 999)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteService_Duplicate_NotFound(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	result, err := svc.Duplicate(99, 1)
+	assert.Error(t, err)
+	assert.Nil(t, result)
 	repo.AssertExpectations(t)
 }
