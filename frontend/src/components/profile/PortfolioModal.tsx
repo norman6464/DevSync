@@ -20,10 +20,10 @@ interface PortfolioModalProps {
   followingCount: number;
 }
 
-const themes: { id: PortfolioTheme; label: string; color: string }[] = [
-  { id: 'minimal', label: 'Minimal', color: 'bg-white border-2 border-gray-300' },
-  { id: 'modern', label: 'Modern', color: 'bg-slate-900' },
-  { id: 'gradient', label: 'Gradient', color: 'bg-gradient-to-br from-indigo-500 to-purple-600' },
+const themes: { id: PortfolioTheme; labelKey: string; color: string }[] = [
+  { id: 'minimal', labelKey: 'portfolio.minimal', color: 'bg-white border-2 border-gray-300' },
+  { id: 'modern', labelKey: 'portfolio.modern', color: 'bg-slate-900' },
+  { id: 'gradient', labelKey: 'portfolio.gradient', color: 'bg-gradient-to-br from-indigo-500 to-purple-600' },
 ];
 
 export default function PortfolioModal({
@@ -91,16 +91,16 @@ export default function PortfolioModal({
             {t('portfolio.theme')}
           </label>
           <div className="flex gap-3">
-            {themes.map((t) => (
+            {themes.map((th) => (
               <button
-                key={t.id}
-                onClick={() => setTheme(t.id)}
+                key={th.id}
+                onClick={() => setTheme(th.id)}
                 className={`flex flex-col items-center gap-2 p-3 rounded-lg transition-all ${
-                  theme === t.id ? 'ring-2 ring-green-500' : 'hover:bg-gray-700'
+                  theme === th.id ? 'ring-2 ring-green-500' : 'hover:bg-gray-700'
                 }`}
               >
-                <div className={`w-16 h-12 rounded-md ${t.color}`} />
-                <span className="text-sm text-gray-300">{t.label}</span>
+                <div className={`w-16 h-12 rounded-md ${th.color}`} />
+                <span className="text-sm text-gray-300">{t(th.labelKey)}</span>
               </button>
             ))}
           </div>
