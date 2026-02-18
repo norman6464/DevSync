@@ -36,6 +36,10 @@ type PostRepositoryInterface interface {
 	CreateComment(comment *model.Comment) error
 	GetComments(postID uint) ([]model.Comment, error)
 	DeleteComment(id, userID uint) error
+	Bookmark(userID, postID uint) error
+	Unbookmark(userID, postID uint) error
+	HasBookmarked(userID, postID uint) bool
+	FindBookmarkedByUserID(userID uint, page, limit int) ([]model.Post, int64, error)
 }
 
 // FollowRepositoryInterface はフォロー関係データ操作の契約を定義する。

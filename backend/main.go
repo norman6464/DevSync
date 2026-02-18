@@ -66,6 +66,7 @@ func main() {
 		&model.GitHubRepository{},
 		&model.Post{},
 		&model.Like{},
+		&model.Bookmark{},
 		&model.Comment{},
 		&model.Message{},
 		&model.Notification{},

@@ -369,3 +369,88 @@ func TestPostCreate_ValidationError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, result)
 }
+
+// ============================================================
+// ブックマークテスト
+// ============================================================
+
+func TestPostBookmark_Success(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("Bookmark", uint(1), uint(10)).Return(nil)
+
+	err := svc.Bookmark(1, 10)
+	assert.NoError(t, err)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostBookmark_Error(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("Bookmark", uint(1), uint(10)).Return(errors.New("already bookmarked"))
+
+	err := svc.Bookmark(1, 10)
+	assert.Error(t, err)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostUnbookmark_Success(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("Unbookmark", uint(1), uint(10)).Return(nil)
+
+	err := svc.Unbookmark(1, 10)
+	assert.NoError(t, err)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostUnbookmark_Error(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("Unbookmark", uint(1), uint(10)).Return(errors.New("not bookmarked"))
+
+	err := svc.Unbookmark(1, 10)
+	assert.Error(t, err)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostHasBookmarked_True(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("HasBookmarked", uint(1), uint(10)).Return(true)
+
+	result := svc.HasBookmarked(1, 10)
+	assert.True(t, result)
+}
+
+func TestPostHasBookmarked_False(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("HasBookmarked", uint(1), uint(10)).Return(false)
+
+	result := svc.HasBookmarked(1, 10)
+	assert.False(t, result)
+}
+
+func TestPostGetBookmarks_Success(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	posts := []model.Post{{Title: "Bookmarked Post 1"}, {Title: "Bookmarked Post 2"}}
+	postRepo.On("FindBookmarkedByUserID", uint(1), 1, 20).Return(posts, int64(2), nil)
+
+	result, total, err := svc.GetBookmarks(1, 1, 20)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, int64(2), total)
+}
+
+func TestPostGetBookmarks_Empty(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindBookmarkedByUserID", uint(1), 1, 20).Return([]model.Post{}, int64(0), nil)
+
+	result, total, err := svc.GetBookmarks(1, 1, 20)
+	assert.NoError(t, err)
+	assert.Len(t, result, 0)
+	assert.Equal(t, int64(0), total)
+}
