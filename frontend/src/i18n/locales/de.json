@@ -1130,7 +1130,8 @@
     "noRecommendations": "Keine empfohlenen Benutzer gefunden",
     "noTrending": "Keine Trendinhalte verfügbar",
     "viewAll": "Alle anzeigen",
-    "follow": "Folgen"
+    "follow": "Folgen",
+    "following": "Gefolgt"
   },
   "studyCircle": {
     "title": "Lernkreise",
