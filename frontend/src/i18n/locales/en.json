@@ -103,6 +103,21 @@
     "postRemoved": "Post removed from series",
     "postRemoveFailed": "Failed to remove post"
   },
+  "collections": {
+    "title": "Collections",
+    "posts": "Collection Posts",
+    "noPosts": "No posts in this collection yet",
+    "createSuccess": "Collection created",
+    "createFailed": "Failed to create collection",
+    "updateSuccess": "Collection updated",
+    "updateFailed": "Failed to update collection",
+    "deleteSuccess": "Collection deleted",
+    "deleteFailed": "Failed to delete collection",
+    "postAdded": "Post added to collection",
+    "postAddFailed": "Failed to add post",
+    "postRemoved": "Post removed from collection",
+    "postRemoveFailed": "Failed to remove post"
+  },
   "post": {
     "createTitle": "What did you learn today?",
     "createContent": "Share your thoughts... (Markdown supported)",

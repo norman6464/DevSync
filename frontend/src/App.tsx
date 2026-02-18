@@ -36,6 +36,7 @@ import DraftsPage from './pages/DraftsPage';
 import NotesPage from './pages/NotesPage';
 import OnboardingPage from './pages/OnboardingPage';
 import PostSeriesDetailPage from './pages/PostSeriesDetailPage';
+import PostCollectionDetailPage from './pages/PostCollectionDetailPage';
 import NotFoundPage from './pages/NotFoundPage';
 import { ToastProvider } from './contexts/ToastContext';
 import ToastContainer from './components/common/Toast';
@@ -83,6 +84,7 @@ export default function App() {
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/posts/:id" element={<PostDetailPage />} />
           <Route path="/series/:id" element={<PostSeriesDetailPage />} />
+          <Route path="/collections/:id" element={<PostCollectionDetailPage />} />
           <Route path="/drafts" element={<DraftsPage />} />
           <Route path="/goals" element={<GoalsPage />} />
           <Route path="/learning-logs" element={<LearningLogsPage />} />

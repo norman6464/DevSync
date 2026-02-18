@@ -103,6 +103,21 @@
     "postRemoved": "Publicação removida da série",
     "postRemoveFailed": "Falha ao remover publicação"
   },
+  "collections": {
+    "title": "Coleções",
+    "posts": "Publicações da coleção",
+    "noPosts": "Nenhuma publicação nesta coleção ainda",
+    "createSuccess": "Coleção criada",
+    "createFailed": "Falha ao criar coleção",
+    "updateSuccess": "Coleção atualizada",
+    "updateFailed": "Falha ao atualizar coleção",
+    "deleteSuccess": "Coleção excluída",
+    "deleteFailed": "Falha ao excluir coleção",
+    "postAdded": "Publicação adicionada à coleção",
+    "postAddFailed": "Falha ao adicionar publicação",
+    "postRemoved": "Publicação removida da coleção",
+    "postRemoveFailed": "Falha ao remover publicação"
+  },
   "post": {
     "createTitle": "O que você aprendeu hoje?",
     "createContent": "Compartilhe seus pensamentos... (Markdown suportado)",

@@ -103,6 +103,21 @@
     "postRemoved": "Beitrag aus der Serie entfernt",
     "postRemoveFailed": "Beitrag konnte nicht entfernt werden"
   },
+  "collections": {
+    "title": "Sammlungen",
+    "posts": "Beiträge der Sammlung",
+    "noPosts": "Noch keine Beiträge in dieser Sammlung",
+    "createSuccess": "Sammlung erstellt",
+    "createFailed": "Sammlung konnte nicht erstellt werden",
+    "updateSuccess": "Sammlung aktualisiert",
+    "updateFailed": "Sammlung konnte nicht aktualisiert werden",
+    "deleteSuccess": "Sammlung gelöscht",
+    "deleteFailed": "Sammlung konnte nicht gelöscht werden",
+    "postAdded": "Beitrag zur Sammlung hinzugefügt",
+    "postAddFailed": "Beitrag konnte nicht hinzugefügt werden",
+    "postRemoved": "Beitrag aus der Sammlung entfernt",
+    "postRemoveFailed": "Beitrag konnte nicht entfernt werden"
+  },
   "post": {
     "createTitle": "Was hast du heute gelernt?",
     "createContent": "Teile deine Gedanken... (Markdown unterstützt)",

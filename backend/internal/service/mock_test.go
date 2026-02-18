@@ -1496,3 +1496,58 @@ func (m *MockPostSeriesRepository) GetPostsBySeriesID(seriesID uint) ([]model.Po
 	args := m.Called(seriesID)
 	return args.Get(0).([]model.PostSeriesItem), args.Error(1)
 }
+
+// MockPostCollectionRepository は repository.PostCollectionRepositoryInterface のテスト用モック実装。
+type MockPostCollectionRepository struct {
+	mock.Mock
+}
+
+var _ repository.PostCollectionRepositoryInterface = (*MockPostCollectionRepository)(nil)
+
+func (m *MockPostCollectionRepository) Create(collection *model.PostCollection) error {
+	args := m.Called(collection)
+	return args.Error(0)
+}
+
+func (m *MockPostCollectionRepository) FindByID(id uint) (*model.PostCollection, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.PostCollection), args.Error(1)
+}
+
+func (m *MockPostCollectionRepository) FindByUserID(userID uint) ([]model.PostCollection, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.PostCollection), args.Error(1)
+}
+
+func (m *MockPostCollectionRepository) FindPublicByUserID(userID uint) ([]model.PostCollection, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.PostCollection), args.Error(1)
+}
+
+func (m *MockPostCollectionRepository) Update(collection *model.PostCollection) error {
+	args := m.Called(collection)
+	return args.Error(0)
+}
+
+func (m *MockPostCollectionRepository) Delete(id uint) error {
+	args := m.Called(id)
+	return args.Error(0)
+}
+
+func (m *MockPostCollectionRepository) AddPost(item *model.PostCollectionItem) error {
+	args := m.Called(item)
+	return args.Error(0)
+}
+
+func (m *MockPostCollectionRepository) RemovePost(collectionID, postID uint) error {
+	args := m.Called(collectionID, postID)
+	return args.Error(0)
+}
+
+func (m *MockPostCollectionRepository) GetPostsByCollectionID(collectionID uint) ([]model.PostCollectionItem, error) {
+	args := m.Called(collectionID)
+	return args.Get(0).([]model.PostCollectionItem), args.Error(1)
+}

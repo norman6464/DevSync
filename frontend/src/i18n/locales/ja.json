@@ -104,6 +104,21 @@
     "postRemoved": "投稿をシリーズから削除しました",
     "postRemoveFailed": "投稿の削除に失敗しました"
   },
+  "collections": {
+    "title": "コレクション",
+    "posts": "コレクションの投稿",
+    "noPosts": "このコレクションにはまだ投稿がありません",
+    "createSuccess": "コレクションを作成しました",
+    "createFailed": "コレクションの作成に失敗しました",
+    "updateSuccess": "コレクションを更新しました",
+    "updateFailed": "コレクションの更新に失敗しました",
+    "deleteSuccess": "コレクションを削除しました",
+    "deleteFailed": "コレクションの削除に失敗しました",
+    "postAdded": "投稿をコレクションに追加しました",
+    "postAddFailed": "投稿の追加に失敗しました",
+    "postRemoved": "投稿をコレクションから削除しました",
+    "postRemoveFailed": "投稿の削除に失敗しました"
+  },
   "post": {
     "createTitle": "今日学んだことは？",
     "createContent": "あなたの考えを共有... (Markdown対応)",

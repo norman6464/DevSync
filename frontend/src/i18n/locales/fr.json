@@ -103,6 +103,21 @@
     "postRemoved": "Publication retirée de la série",
     "postRemoveFailed": "Échec du retrait de la publication"
   },
+  "collections": {
+    "title": "Collections",
+    "posts": "Publications de la collection",
+    "noPosts": "Aucune publication dans cette collection",
+    "createSuccess": "Collection créée",
+    "createFailed": "Échec de la création de la collection",
+    "updateSuccess": "Collection mise à jour",
+    "updateFailed": "Échec de la mise à jour de la collection",
+    "deleteSuccess": "Collection supprimée",
+    "deleteFailed": "Échec de la suppression de la collection",
+    "postAdded": "Publication ajoutée à la collection",
+    "postAddFailed": "Échec de l'ajout de la publication",
+    "postRemoved": "Publication retirée de la collection",
+    "postRemoveFailed": "Échec du retrait de la publication"
+  },
   "post": {
     "createTitle": "Qu'avez-vous appris aujourd'hui ?",
     "createContent": "Partagez vos pensées... (Markdown supporté)",
