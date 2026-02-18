@@ -722,4 +722,191 @@ func TestBuildSystemPrompt(t *testing.T) {
 		assert.NotContains(t, prompt, "【学習ストリーク】")
 		assert.NotContains(t, prompt, "【学習目標】")
 	})
+
+	t.Run("GitHub言語統計が5件超の場合上位5件のみ表示", func(t *testing.T) {
+		langStats := []model.GitHubLanguageStat{
+			{Language: "Go", RepoCount: 10},
+			{Language: "TypeScript", RepoCount: 8},
+			{Language: "Python", RepoCount: 6},
+			{Language: "Rust", RepoCount: 4},
+			{Language: "Java", RepoCount: 3},
+			{Language: "C++", RepoCount: 2},
+			{Language: "Ruby", RepoCount: 1},
+		}
+
+		prompt := buildSystemPrompt(nil, nil, nil, langStats)
+
+		assert.Contains(t, prompt, "Go (10リポジトリ)")
+		assert.Contains(t, prompt, "Java (3リポジトリ)")
+		assert.NotContains(t, prompt, "C++")
+		assert.NotContains(t, prompt, "Ruby")
+	})
+}
+
+// ============================================================
+// Chat エラーパス テスト
+// ============================================================
+
+func TestChat_CountTodayMessagesError(t *testing.T) {
+	svc, deps := newTestAIAdviceService(true)
+
+	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(0), ErrNotFound)
+
+	conv, err := svc.Chat(1, "質問", 0)
+	assert.Error(t, err)
+	assert.Nil(t, conv)
+}
+
+func TestChat_CreateConversationError(t *testing.T) {
+	svc, deps := newTestAIAdviceService(true)
+
+	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(0), nil)
+	deps.goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
+	deps.convRepo.On("CreateConversation", mock.AnythingOfType("*model.AIConversation")).Return(ErrNotFound)
+
+	conv, err := svc.Chat(1, "質問", 0)
+	assert.Error(t, err)
+	assert.Nil(t, conv)
+}
+
+func TestChat_AddUserMessageError(t *testing.T) {
+	svc, deps := newTestAIAdviceService(true)
+
+	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(0), nil)
+	deps.goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
+	deps.convRepo.On("CreateConversation", mock.AnythingOfType("*model.AIConversation")).Return(nil)
+	deps.convRepo.On("AddMessage", mock.AnythingOfType("*model.AIMessage")).Return(ErrNotFound).Once()
+
+	conv, err := svc.Chat(1, "質問", 0)
+	assert.Error(t, err)
+	assert.Nil(t, conv)
+}
+
+func TestChat_LLMCompleteError(t *testing.T) {
+	svc, deps := newTestAIAdviceService(true)
+
+	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(0), nil)
+	deps.goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
+	deps.convRepo.On("CreateConversation", mock.AnythingOfType("*model.AIConversation")).Return(nil)
+	deps.convRepo.On("AddMessage", mock.AnythingOfType("*model.AIMessage")).Return(nil)
+	deps.llmClient.On("Complete", mock.Anything).Return((*ChatResponse)(nil), ErrNotFound)
+
+	conv, err := svc.Chat(1, "質問", 0)
+	assert.Error(t, err)
+	assert.Nil(t, conv)
+}
+
+func TestChat_AddAssistantMessageError(t *testing.T) {
+	svc, deps := newTestAIAdviceService(true)
+
+	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(0), nil)
+	deps.goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
+	deps.convRepo.On("CreateConversation", mock.AnythingOfType("*model.AIConversation")).Return(nil)
+	// ユーザーメッセージ成功、アシスタントメッセージ失敗
+	deps.convRepo.On("AddMessage", mock.MatchedBy(func(m *model.AIMessage) bool {
+		return m.Role == model.AIMessageRoleUser
+	})).Return(nil)
+	deps.convRepo.On("AddMessage", mock.MatchedBy(func(m *model.AIMessage) bool {
+		return m.Role == model.AIMessageRoleAssistant
+	})).Return(ErrNotFound)
+	deps.llmClient.On("Complete", mock.Anything).Return(&ChatResponse{
+		Content:    "回答",
+		TokensUsed: 50,
+	}, nil)
+
+	conv, err := svc.Chat(1, "質問", 0)
+	assert.Error(t, err)
+	assert.Nil(t, conv)
+}
+
+func TestChat_ExistingConversationWithMessages(t *testing.T) {
+	svc, deps := newTestAIAdviceService(true)
+
+	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(0), nil)
+	deps.goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
+	// 既存会話にメッセージ履歴あり（systemメッセージはスキップされること）
+	deps.convRepo.On("FindConversationByID", uint(10)).Return(&model.AIConversation{
+		UserID: 1,
+		Title:  "既存会話",
+		Messages: []model.AIMessage{
+			{Role: model.AIMessageRoleSystem, Content: "system prompt"},
+			{Role: model.AIMessageRoleUser, Content: "前の質問"},
+			{Role: model.AIMessageRoleAssistant, Content: "前の回答"},
+		},
+	}, nil)
+	deps.convRepo.On("AddMessage", mock.AnythingOfType("*model.AIMessage")).Return(nil)
+	deps.llmClient.On("Complete", mock.MatchedBy(func(msgs []ChatMessage) bool {
+		// systemメッセージが先頭、過去のuserとassistantが含まれ、systemはスキップ
+		return len(msgs) >= 4 && msgs[0].Role == "system"
+	})).Return(&ChatResponse{
+		Content:    "回答",
+		TokensUsed: 50,
+	}, nil)
+	deps.convRepo.On("FindConversationByID", mock.AnythingOfType("uint")).Return(&model.AIConversation{
+		UserID: 1,
+		Title:  "既存会話",
+	}, nil)
+
+	conv, err := svc.Chat(1, "追加の質問", 10)
+	assert.NoError(t, err)
+	assert.NotNil(t, conv)
+}
+
+func TestChat_LongTitleTruncation(t *testing.T) {
+	svc, deps := newTestAIAdviceService(true)
+
+	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(0), nil)
+	deps.goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
+	// 会話作成時にタイトルが50文字+...に切り詰められることを検証
+	deps.convRepo.On("CreateConversation", mock.MatchedBy(func(c *model.AIConversation) bool {
+		return len(c.Title) == 53 && c.Title[50:] == "..."
+	})).Return(nil)
+	deps.convRepo.On("AddMessage", mock.AnythingOfType("*model.AIMessage")).Return(nil)
+	deps.llmClient.On("Complete", mock.Anything).Return(&ChatResponse{
+		Content:    "回答",
+		TokensUsed: 50,
+	}, nil)
+	deps.convRepo.On("FindConversationByID", mock.AnythingOfType("uint")).Return(&model.AIConversation{
+		UserID: 1,
+	}, nil)
+
+	longMessage := "これは50文字を超える非常に長いメッセージです。テストのために長い文章を書いています。さらに追加のテキスト。"
+	conv, err := svc.Chat(1, longMessage, 0)
+	assert.NoError(t, err)
+	assert.NotNil(t, conv)
+	deps.convRepo.AssertExpectations(t)
+}
+
+func TestChat_ExistingConversationNotFound(t *testing.T) {
+	svc, deps := newTestAIAdviceService(true)
+
+	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(0), nil)
+	deps.goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
+	// 既存会話が見つからない
+	deps.convRepo.On("FindConversationByID", uint(999)).Return((*model.AIConversation)(nil), ErrNotFound)
+
+	conv, err := svc.Chat(1, "質問", 999)
+	assert.ErrorIs(t, err, ErrNotFound)
+	assert.Nil(t, conv)
 }
