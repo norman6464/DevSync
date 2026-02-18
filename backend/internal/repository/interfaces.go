@@ -456,6 +456,17 @@ type PostTagRepositoryInterface interface {
 	GetPopularTags(limit int) ([]model.TagCount, error)
 }
 
+// MentionRepositoryInterface はメンションデータ操作の契約を定義する。
+type MentionRepositoryInterface interface {
+	Create(mention *model.Mention) error
+	FindByUserID(userID uint, page, limit int) ([]model.Mention, error)
+	FindByPostID(postID uint) ([]model.Mention, error)
+	FindByCommentID(commentID uint) ([]model.Mention, error)
+	Delete(id uint) error
+	DeleteByPostID(postID uint) error
+	DeleteByCommentID(commentID uint) error
+}
+
 // PostViewRepositoryInterface は投稿閲覧数データ操作の契約を定義する。
 type PostViewRepositoryInterface interface {
 	RecordView(view *model.PostView) error

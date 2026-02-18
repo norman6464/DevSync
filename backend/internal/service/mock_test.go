@@ -1651,3 +1651,48 @@ func (m *MockPostViewRepository) GetMostViewed(limit int) ([]model.ViewCount, er
 	args := m.Called(limit)
 	return args.Get(0).([]model.ViewCount), args.Error(1)
 }
+
+// ============================================================
+// MockMentionRepository は repository.MentionRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockMentionRepository struct {
+	mock.Mock
+}
+
+var _ repository.MentionRepositoryInterface = (*MockMentionRepository)(nil)
+
+func (m *MockMentionRepository) Create(mention *model.Mention) error {
+	args := m.Called(mention)
+	return args.Error(0)
+}
+
+func (m *MockMentionRepository) FindByUserID(userID uint, page, limit int) ([]model.Mention, error) {
+	args := m.Called(userID, page, limit)
+	return args.Get(0).([]model.Mention), args.Error(1)
+}
+
+func (m *MockMentionRepository) FindByPostID(postID uint) ([]model.Mention, error) {
+	args := m.Called(postID)
+	return args.Get(0).([]model.Mention), args.Error(1)
+}
+
+func (m *MockMentionRepository) FindByCommentID(commentID uint) ([]model.Mention, error) {
+	args := m.Called(commentID)
+	return args.Get(0).([]model.Mention), args.Error(1)
+}
+
+func (m *MockMentionRepository) Delete(id uint) error {
+	args := m.Called(id)
+	return args.Error(0)
+}
+
+func (m *MockMentionRepository) DeleteByPostID(postID uint) error {
+	args := m.Called(postID)
+	return args.Error(0)
+}
+
+func (m *MockMentionRepository) DeleteByCommentID(commentID uint) error {
+	args := m.Called(commentID)
+	return args.Error(0)
+}
