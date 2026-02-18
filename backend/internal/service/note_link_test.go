@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -139,5 +140,79 @@ func TestNoteLinkService_DeleteLink(t *testing.T) {
 
 	err := svc.DeleteLink(1, 2)
 	assert.NoError(t, err)
+	linkRepo.AssertExpectations(t)
+}
+
+// ============================================================
+// エラーケーステスト
+// ============================================================
+
+func TestNoteLinkService_CreateLink_TargetNotFound(t *testing.T) {
+	svc, _, noteRepo := newTestNoteLinkService()
+
+	noteRepo.On("FindByID", uint(2)).Return((*model.Note)(nil), errors.New("not found"))
+
+	err := svc.CreateLink(1, 2)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "リンク先のノートが見つかりません")
+	noteRepo.AssertExpectations(t)
+}
+
+func TestNoteLinkService_CreateLink_ExistsError(t *testing.T) {
+	svc, linkRepo, noteRepo := newTestNoteLinkService()
+
+	targetNote := &model.Note{ID: 2, UserID: 1, Title: "ノート"}
+	noteRepo.On("FindByID", uint(2)).Return(targetNote, nil)
+	linkRepo.On("Exists", uint(1), uint(2)).Return(false, errors.New("db error"))
+
+	err := svc.CreateLink(1, 2)
+	assert.Error(t, err)
+	linkRepo.AssertExpectations(t)
+	noteRepo.AssertExpectations(t)
+}
+
+func TestNoteLinkService_CreateLink_CreateError(t *testing.T) {
+	svc, linkRepo, noteRepo := newTestNoteLinkService()
+
+	targetNote := &model.Note{ID: 2, UserID: 1, Title: "ノート"}
+	noteRepo.On("FindByID", uint(2)).Return(targetNote, nil)
+	linkRepo.On("Exists", uint(1), uint(2)).Return(false, nil)
+	linkRepo.On("Create", mock.AnythingOfType("*model.NoteLink")).Return(errors.New("db error"))
+
+	err := svc.CreateLink(1, 2)
+	assert.Error(t, err)
+	linkRepo.AssertExpectations(t)
+	noteRepo.AssertExpectations(t)
+}
+
+func TestNoteLinkService_GetLinks_Error(t *testing.T) {
+	svc, linkRepo, _ := newTestNoteLinkService()
+
+	linkRepo.On("FindBySourceNoteID", uint(1)).Return([]model.NoteLink(nil), errors.New("db error"))
+
+	result, err := svc.GetLinks(1)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	linkRepo.AssertExpectations(t)
+}
+
+func TestNoteLinkService_GetBacklinks_Error(t *testing.T) {
+	svc, linkRepo, _ := newTestNoteLinkService()
+
+	linkRepo.On("FindByTargetNoteID", uint(1)).Return([]model.NoteLink(nil), errors.New("db error"))
+
+	result, err := svc.GetBacklinks(1)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	linkRepo.AssertExpectations(t)
+}
+
+func TestNoteLinkService_DeleteLink_Error(t *testing.T) {
+	svc, linkRepo, _ := newTestNoteLinkService()
+
+	linkRepo.On("Delete", uint(1), uint(2)).Return(errors.New("db error"))
+
+	err := svc.DeleteLink(1, 2)
+	assert.Error(t, err)
 	linkRepo.AssertExpectations(t)
 }
