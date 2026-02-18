@@ -910,3 +910,32 @@ func TestChat_ExistingConversationNotFound(t *testing.T) {
 	assert.ErrorIs(t, err, ErrNotFound)
 	assert.Nil(t, conv)
 }
+
+func TestChat_RefetchFallback(t *testing.T) {
+	svc, deps := newTestAIAdviceService(true)
+
+	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(0), nil)
+	deps.goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
+	deps.convRepo.On("CreateConversation", mock.AnythingOfType("*model.AIConversation")).Return(nil)
+	deps.convRepo.On("AddMessage", mock.AnythingOfType("*model.AIMessage")).Return(nil)
+	deps.llmClient.On("Complete", mock.Anything).Return(&ChatResponse{
+		Content:    "回答です",
+		TokensUsed: 100,
+	}, nil)
+	// 再取得が失敗 → フォールバックでメッセージを手動追加
+	deps.convRepo.On("FindConversationByID", mock.AnythingOfType("uint")).Return(&model.AIConversation{
+		UserID: 1,
+	}, ErrNotFound)
+
+	conv, err := svc.Chat(1, "質問", 0)
+	assert.NoError(t, err)
+	assert.NotNil(t, conv)
+	// フォールバックでユーザーメッセージとアシスタントメッセージが手動追加される
+	assert.Len(t, conv.Messages, 2)
+	assert.Equal(t, model.AIMessageRoleUser, conv.Messages[0].Role)
+	assert.Equal(t, model.AIMessageRoleAssistant, conv.Messages[1].Role)
+	assert.Equal(t, "回答です", conv.Messages[1].Content)
+}
