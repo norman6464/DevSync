@@ -96,7 +96,7 @@ export default function PostForm({ post, onSubmit, onCancel, loading: externalLo
 
           {/* Code Snippets Section */}
           {snippets.length > 0 && (
-            <div className="mt-3 space-y-3">
+            <div className="mt-3 space-y-3" role="group" aria-label={t('post.addSnippet')}>
               {snippets.map((snippet, i) => (
                 <CodeSnippetInput
                   key={i}
@@ -119,7 +119,7 @@ export default function PostForm({ post, onSubmit, onCancel, loading: externalLo
                 onClick={addSnippet}
                 className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded-lg transition-colors"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-3.5 h-3.5" aria-hidden="true" />
                 {t('post.addSnippet')}
               </button>
             </div>
