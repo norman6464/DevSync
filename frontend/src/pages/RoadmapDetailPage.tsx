@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { List } from 'lucide-react';
@@ -28,6 +28,12 @@ export default function RoadmapDetailPage() {
   const [stepResourceURL, setStepResourceURL] = useState('');
 
   const isOwner = user?.id === roadmap?.user_id;
+
+  const handleNavigateBack = useCallback(() => navigate('/roadmaps'), [navigate]);
+  const handleShowStepForm = useCallback(() => setShowStepForm(true), []);
+  const handleStepTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setStepTitle(e.target.value), []);
+  const handleStepDescriptionChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => setStepDescription(e.target.value), []);
+  const handleStepResourceURLChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setStepResourceURL(e.target.value), []);
 
   const resetStepForm = () => {
     setStepTitle('');
@@ -87,7 +93,7 @@ export default function RoadmapDetailPage() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Back button */}
       <button
-        onClick={() => navigate('/roadmaps')}
+        onClick={handleNavigateBack}
         className="text-sm text-gray-400 hover:text-white transition-colors mb-4 flex items-center gap-1"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -121,7 +127,7 @@ export default function RoadmapDetailPage() {
         </div>
         {isOwner && (
           <button
-            onClick={() => setShowStepForm(true)}
+            onClick={handleShowStepForm}
             className={`flex items-center gap-2 ${buttonSecondaryClass}`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -163,7 +169,7 @@ export default function RoadmapDetailPage() {
               id="roadmap-step-title"
               type="text"
               value={stepTitle}
-              onChange={e => setStepTitle(e.target.value)}
+              onChange={handleStepTitleChange}
               placeholder={t('roadmaps.stepTitlePlaceholder')}
               className={inputClass}
               required
@@ -174,7 +180,7 @@ export default function RoadmapDetailPage() {
             <textarea
               id="roadmap-step-description"
               value={stepDescription}
-              onChange={e => setStepDescription(e.target.value)}
+              onChange={handleStepDescriptionChange}
               placeholder={t('roadmaps.stepDescriptionPlaceholder')}
               rows={3}
               className={`${inputClass} resize-none`}
@@ -186,7 +192,7 @@ export default function RoadmapDetailPage() {
               id="roadmap-step-resource-url"
               type="url"
               value={stepResourceURL}
-              onChange={e => setStepResourceURL(e.target.value)}
+              onChange={handleStepResourceURLChange}
               placeholder="https://..."
               className={inputClass}
             />
@@ -216,7 +222,7 @@ export default function RoadmapDetailPage() {
           icon={List}
           message={t('roadmaps.noSteps')}
           actionLabel={isOwner ? t('roadmaps.addFirstStep') : undefined}
-          onAction={isOwner ? () => setShowStepForm(true) : undefined}
+          onAction={isOwner ? handleShowStepForm : undefined}
         />
       ) : (
         <div className="space-y-3">
