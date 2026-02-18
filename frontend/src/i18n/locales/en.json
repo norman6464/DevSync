@@ -131,7 +131,11 @@
     "draftSaved": "Draft saved",
     "draftFailed": "Failed to save draft",
     "writeComment": "Write a comment...",
-    "notFound": "Post not found"
+    "notFound": "Post not found",
+    "bookmark": "Bookmark",
+    "unbookmark": "Remove Bookmark",
+    "bookmarks": "Bookmarks",
+    "noBookmarks": "No bookmarked posts"
   },
   "follow": {
     "noFollowers": "No followers yet",

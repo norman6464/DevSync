@@ -131,7 +131,11 @@
     "draftSaved": "Borrador guardado",
     "draftFailed": "Error al guardar borrador",
     "writeComment": "Escribe un comentario...",
-    "notFound": "Publicación no encontrada"
+    "notFound": "Publicación no encontrada",
+    "bookmark": "Marcador",
+    "unbookmark": "Quitar marcador",
+    "bookmarks": "Marcadores",
+    "noBookmarks": "No hay publicaciones marcadas"
   },
   "follow": {
     "noFollowers": "Aún no hay seguidores",

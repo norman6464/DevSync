@@ -51,6 +51,15 @@ export const likePost = (id: number) =>
 export const unlikePost = (id: number) =>
   client.delete(`/posts/${id}/likes`);
 
+export const bookmarkPost = (id: number) =>
+  client.post(`/posts/${id}/bookmark`);
+
+export const unbookmarkPost = (id: number) =>
+  client.delete(`/posts/${id}/bookmark`);
+
+export const getBookmarkedPosts = (page = 1, limit = 20) =>
+  client.get<{ posts: Post[]; total: number }>('/posts/bookmarks', { params: { page, limit } });
+
 export const getComments = (postId: number) =>
   client.get<Comment[]>(`/posts/${postId}/comments`);
 

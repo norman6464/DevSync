@@ -5,7 +5,7 @@ import rehypeSanitize from 'rehype-sanitize';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTranslation } from 'react-i18next';
-import { likePost, unlikePost } from '../../api/posts';
+import { likePost, unlikePost, bookmarkPost, unbookmarkPost } from '../../api/posts';
 import type { Post } from '../../types/post';
 import Avatar from '../common/Avatar';
 import { format } from 'date-fns';
@@ -25,6 +25,7 @@ export default function PostCard({ post, isOwner = false, onEdit, onDelete, onUp
   const { t } = useTranslation();
   const [liked, setLiked] = useState(post.liked || false);
   const [likeCount, setLikeCount] = useState(post.like_count);
+  const [bookmarked, setBookmarked] = useState(post.bookmarked || false);
 
   const handleLike = async () => {
     try {
@@ -40,6 +41,21 @@ export default function PostCard({ post, isOwner = false, onEdit, onDelete, onUp
       onUpdate?.();
     } catch (e) {
       console.warn('Failed to toggle like:', e);
+    }
+  };
+
+  const handleBookmark = async () => {
+    try {
+      if (bookmarked) {
+        await unbookmarkPost(post.id);
+        setBookmarked(false);
+      } else {
+        await bookmarkPost(post.id);
+        setBookmarked(true);
+      }
+      onUpdate?.();
+    } catch (e) {
+      console.warn('Failed to toggle bookmark:', e);
     }
   };
 
@@ -218,6 +234,17 @@ export default function PostCard({ post, isOwner = false, onEdit, onDelete, onUp
           </svg>
           {post.comment_count}
         </Link>
+        <button
+          onClick={handleBookmark}
+          className={`flex items-center gap-1.5 text-sm transition-colors ml-auto ${
+            bookmarked ? 'text-yellow-400' : 'text-gray-500 hover:text-yellow-400'
+          }`}
+          title={bookmarked ? t('post.unbookmark') : t('post.bookmark')}
+        >
+          <svg className="w-4 h-4" fill={bookmarked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+          </svg>
+        </button>
       </div>
     </div>
   );

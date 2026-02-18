@@ -148,7 +148,11 @@
     "postUpdated": "投稿を更新しました",
     "updateFailed": "投稿の更新に失敗しました",
     "writeComment": "コメントを書く...",
-    "notFound": "投稿が見つかりません"
+    "notFound": "投稿が見つかりません",
+    "bookmark": "ブックマーク",
+    "unbookmark": "ブックマーク解除",
+    "bookmarks": "ブックマーク一覧",
+    "noBookmarks": "ブックマークした投稿はありません"
   },
   "follow": {
     "noFollowers": "まだフォロワーはいません",

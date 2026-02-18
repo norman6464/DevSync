@@ -131,7 +131,11 @@
     "draftSaved": "草稿已保存",
     "draftFailed": "草稿保存失败",
     "writeComment": "写评论...",
-    "notFound": "未找到帖子"
+    "notFound": "未找到帖子",
+    "bookmark": "书签",
+    "unbookmark": "取消书签",
+    "bookmarks": "书签列表",
+    "noBookmarks": "没有收藏的帖子"
   },
   "follow": {
     "noFollowers": "暂无粉丝",

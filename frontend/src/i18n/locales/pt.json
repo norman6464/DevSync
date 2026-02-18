@@ -131,7 +131,11 @@
     "draftSaved": "Rascunho salvo",
     "draftFailed": "Falha ao salvar rascunho",
     "writeComment": "Escrever um comentário...",
-    "notFound": "Publicação não encontrada"
+    "notFound": "Publicação não encontrada",
+    "bookmark": "Favorito",
+    "unbookmark": "Remover favorito",
+    "bookmarks": "Favoritos",
+    "noBookmarks": "Nenhuma publicação favoritada"
   },
   "follow": {
     "noFollowers": "Ainda sem seguidores",
