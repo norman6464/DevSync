@@ -152,12 +152,20 @@ func (r *PostRepository) Search(query string, limit, offset int) (interface{}, i
 
 // Bookmark は投稿をブックマークする。
 func (r *PostRepository) Bookmark(userID, postID uint) error {
-	return r.db.Create(&model.Bookmark{UserID: userID, PostID: postID}).Error
+	err := r.db.Create(&model.Bookmark{UserID: userID, PostID: postID}).Error
+	if err != nil {
+		return err
+	}
+	return r.db.Model(&model.Post{}).Where("id = ?", postID).UpdateColumn("bookmark_count", gorm.Expr("bookmark_count + 1")).Error
 }
 
-// Unbookmark は投稿のブックマークを解除する。
+// Unbookmark は投稿のブックマークを解除し、bookmark_countをデクリメントする。
 func (r *PostRepository) Unbookmark(userID, postID uint) error {
-	return r.db.Where("user_id = ? AND post_id = ?", userID, postID).Delete(&model.Bookmark{}).Error
+	result := r.db.Where("user_id = ? AND post_id = ?", userID, postID).Delete(&model.Bookmark{})
+	if result.RowsAffected > 0 {
+		r.db.Model(&model.Post{}).Where("id = ?", postID).UpdateColumn("bookmark_count", gorm.Expr("GREATEST(bookmark_count - 1, 0)"))
+	}
+	return result.Error
 }
 
 // HasBookmarked は指定ユーザーが投稿をブックマーク済みかどうかを判定する。
