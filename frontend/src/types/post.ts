@@ -103,6 +103,11 @@ export interface PostPin {
   created_at: string;
 }
 
+export interface ViewCount {
+  post_id: number;
+  count: number;
+}
+
 export interface SnippetComment {
   id: number;
   snippet_id: number;

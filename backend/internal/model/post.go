@@ -124,6 +124,21 @@ type PostPin struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+// PostView は投稿の閲覧記録を表す。
+// uniqueIndex制約でユーザーごとに1投稿1閲覧レコードを保証する。
+type PostView struct {
+	ID        uint      `json:"id" gorm:"primaryKey"`
+	UserID    uint      `json:"user_id" gorm:"not null;uniqueIndex:idx_user_post_view;index"`
+	PostID    uint      `json:"post_id" gorm:"not null;uniqueIndex:idx_user_post_view;index"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// ViewCount は投稿の閲覧数集計結果を表す。
+type ViewCount struct {
+	PostID uint `json:"post_id"`
+	Count  int  `json:"count"`
+}
+
 // Comment は投稿へのコメントを表す。
 type Comment struct {
 	ID        uint      `json:"id" gorm:"primaryKey"`

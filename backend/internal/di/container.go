@@ -57,6 +57,7 @@ type Container struct {
 	PostCollectionHandler    *handler.PostCollectionHandler
 	PostTagHandler           *handler.PostTagHandler
 	PostPinHandler           *handler.PostPinHandler
+	PostViewHandler          *handler.PostViewHandler
 
 	// ミドルウェア・コールバック用
 	AuthService      *service.AuthService
@@ -231,6 +232,10 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	postPinRepo := repository.NewPostPinRepository(db)
 	postPinService := service.NewPostPinService(postPinRepo, postRepo)
 	c.PostPinHandler = handler.NewPostPinHandler(postPinService)
+
+	postViewRepo := repository.NewPostViewRepository(db)
+	postViewService := service.NewPostViewService(postViewRepo)
+	c.PostViewHandler = handler.NewPostViewHandler(postViewService)
 
 	// HubのGetRoomMembersコールバックを設定
 	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs

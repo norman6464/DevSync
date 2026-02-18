@@ -1284,5 +1284,11 @@
     "reorderFailed": "Error al reordenar",
     "maxPins": "Puedes fijar hasta 3 publicaciones",
     "noPins": "No hay publicaciones fijadas"
+  },
+  "postViews": {
+    "viewCount": "Vistas",
+    "views": "{{count}} vistas",
+    "mostViewed": "Más vistos",
+    "recordFailed": "Error al registrar la vista"
   }
 }

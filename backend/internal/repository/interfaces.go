@@ -455,3 +455,11 @@ type PostTagRepositoryInterface interface {
 	FindPostsByTag(tag string, limit, offset int) ([]model.Post, int64, error)
 	GetPopularTags(limit int) ([]model.TagCount, error)
 }
+
+// PostViewRepositoryInterface は投稿閲覧数データ操作の契約を定義する。
+type PostViewRepositoryInterface interface {
+	RecordView(view *model.PostView) error
+	GetViewCount(postID uint) (int64, error)
+	HasViewed(userID, postID uint) (bool, error)
+	GetMostViewed(limit int) ([]model.ViewCount, error)
+}
