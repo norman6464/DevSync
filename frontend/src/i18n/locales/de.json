@@ -278,6 +278,9 @@
     "emailEnabled": "Aktiviert",
     "emailDisabled": "Deaktiviert",
     "emailPreferencesSaved": "E-Mail-Einstellungen gespeichert",
+    "zennUsernamePlaceholder": "Zenn-Benutzername eingeben",
+    "qiitaUsernamePlaceholder": "Qiita-Benutzername eingeben",
+    "atcoderUsernamePlaceholder": "AtCoder-Benutzername eingeben",
     "setTheme": "{{theme}}-Design einstellen"
   },
   "explore": {
@@ -1238,7 +1241,8 @@
     "confirmDelete": "Möchten Sie diese Notiz wirklich löschen?",
     "favoriteToggled": "Favoritenstatus aktualisiert",
     "lastUpdated": "Zuletzt aktualisiert",
-    "createdAt": "Erstellt am"
+    "createdAt": "Erstellt am",
+    "tagsPlaceholder": "z.B. React, TypeScript, Go"
   },
   "githubCallback": {
     "missingOAuthParams": "Fehlende OAuth-Parameter",

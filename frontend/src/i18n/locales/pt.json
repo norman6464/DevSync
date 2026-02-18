@@ -278,6 +278,9 @@
     "emailEnabled": "Ativado",
     "emailDisabled": "Desativado",
     "emailPreferencesSaved": "Preferências de e-mail salvas",
+    "zennUsernamePlaceholder": "Digite seu nome de usuário Zenn",
+    "qiitaUsernamePlaceholder": "Digite seu nome de usuário Qiita",
+    "atcoderUsernamePlaceholder": "Digite seu nome de usuário AtCoder",
     "setTheme": "Definir tema {{theme}}"
   },
   "explore": {
@@ -1238,7 +1241,8 @@
     "confirmDelete": "Tem certeza de que deseja excluir esta nota?",
     "favoriteToggled": "Status de favorito atualizado",
     "lastUpdated": "Última atualização",
-    "createdAt": "Criado em"
+    "createdAt": "Criado em",
+    "tagsPlaceholder": "Ex: React, TypeScript, Go"
   },
   "githubCallback": {
     "missingOAuthParams": "Parâmetros OAuth ausentes",

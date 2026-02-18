@@ -278,6 +278,9 @@
     "emailEnabled": "Включено",
     "emailDisabled": "Отключено",
     "emailPreferencesSaved": "Настройки email сохранены",
+    "zennUsernamePlaceholder": "Введите имя пользователя Zenn",
+    "qiitaUsernamePlaceholder": "Введите имя пользователя Qiita",
+    "atcoderUsernamePlaceholder": "Введите имя пользователя AtCoder",
     "setTheme": "Установить тему {{theme}}"
   },
   "explore": {
@@ -1238,7 +1241,8 @@
     "confirmDelete": "Вы уверены, что хотите удалить эту заметку?",
     "favoriteToggled": "Статус избранного обновлен",
     "lastUpdated": "Последнее обновление",
-    "createdAt": "Создано"
+    "createdAt": "Создано",
+    "tagsPlaceholder": "Напр.: React, TypeScript, Go"
   },
   "githubCallback": {
     "missingOAuthParams": "Отсутствуют параметры OAuth",

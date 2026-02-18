@@ -278,6 +278,9 @@
     "emailEnabled": "Enabled",
     "emailDisabled": "Disabled",
     "emailPreferencesSaved": "Email preferences saved",
+    "zennUsernamePlaceholder": "Enter your Zenn username",
+    "qiitaUsernamePlaceholder": "Enter your Qiita username",
+    "atcoderUsernamePlaceholder": "Enter your AtCoder username",
     "setTheme": "Set {{theme}} theme"
   },
   "explore": {
@@ -1238,7 +1241,8 @@
     "confirmDelete": "Are you sure you want to delete this note?",
     "favoriteToggled": "Favorite status updated",
     "lastUpdated": "Last updated",
-    "createdAt": "Created at"
+    "createdAt": "Created at",
+    "tagsPlaceholder": "e.g., React, TypeScript, Go"
   },
   "githubCallback": {
     "missingOAuthParams": "Missing OAuth parameters",
