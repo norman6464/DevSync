@@ -89,6 +89,41 @@ func TestFollowService_IsFollowing(t *testing.T) {
 	})
 }
 
+func TestFollowService_Unfollow_SelfUnfollow(t *testing.T) {
+	repo := new(MockFollowRepository)
+	svc := NewFollowService(repo)
+
+	repo.On("Unfollow", uint(1), uint(1)).Return(nil)
+
+	err := svc.Unfollow(1, 1)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestFollowService_GetFollowers_EmptyList(t *testing.T) {
+	repo := new(MockFollowRepository)
+	svc := NewFollowService(repo)
+
+	repo.On("GetFollowers", uint(1)).Return([]model.User{}, nil)
+
+	result, err := svc.GetFollowers(1)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestFollowService_GetFollowing_EmptyList(t *testing.T) {
+	repo := new(MockFollowRepository)
+	svc := NewFollowService(repo)
+
+	repo.On("GetFollowing", uint(1)).Return([]model.User{}, nil)
+
+	result, err := svc.GetFollowing(1)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}
+
 func TestFollowService_GetFollowers(t *testing.T) {
 	t.Run("正常にフォロワー一覧を取得", func(t *testing.T) {
 		repo := new(MockFollowRepository)
