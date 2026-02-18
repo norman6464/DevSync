@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useRankings } from '../hooks';
@@ -12,12 +13,12 @@ export default function RankingsPage() {
     tab, setTab, period, setPeriod, language, setLanguage,
   } = useRankings();
 
-  const medalColor = (index: number) => {
+  const medalColor = useCallback((index: number) => {
     if (index === 0) return 'text-yellow-400';
     if (index === 1) return 'text-gray-300';
     if (index === 2) return 'text-amber-600';
     return 'text-gray-600';
-  };
+  }, []);
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
