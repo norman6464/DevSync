@@ -136,7 +136,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	studyCircleService := service.NewStudyCircleService(studyCircleRepo)
 	noteService := service.NewNoteService(noteRepo)
 	noteFolderService := service.NewNoteFolderService(noteFolderRepo)
-	noteTemplateService := service.NewNoteTemplateService(noteTemplateRepo)
+	noteTemplateService := service.NewNoteTemplateService(noteTemplateRepo, noteService)
 	noteLinkService := service.NewNoteLinkService(noteLinkRepo, noteRepo)
 
 	// テンプレートロードマップの初期登録
@@ -210,7 +210,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	c.SearchHandler = handler.NewSearchHandler(postRepo, studyCircleRepo)
 	c.NoteHandler = handler.NewNoteHandler(noteService)
 	c.NoteFolderHandler = handler.NewNoteFolderHandler(noteFolderService)
-	c.NoteTemplateHandler = handler.NewNoteTemplateHandler(noteTemplateService, noteService)
+	c.NoteTemplateHandler = handler.NewNoteTemplateHandler(noteTemplateService)
 	c.NoteLinkHandler = handler.NewNoteLinkHandler(noteLinkService)
 
 	// HubのGetRoomMembersコールバックを設定

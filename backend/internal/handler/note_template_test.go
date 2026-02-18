@@ -10,7 +10,7 @@ import (
 )
 
 func TestNoteTemplateCreate_Success(t *testing.T) {
-	h, svc, _ := setupNoteTemplateHandler()
+	h, svc := setupNoteTemplateHandler()
 	svc.On("Create", mock.AnythingOfType("*model.NoteTemplate")).Return(nil)
 
 	r := newRouter(1)
@@ -25,7 +25,7 @@ func TestNoteTemplateCreate_Success(t *testing.T) {
 }
 
 func TestNoteTemplateCreate_ServiceError(t *testing.T) {
-	h, svc, _ := setupNoteTemplateHandler()
+	h, svc := setupNoteTemplateHandler()
 	svc.On("Create", mock.AnythingOfType("*model.NoteTemplate")).Return(service.ErrBadRequest)
 
 	r := newRouter(1)
@@ -40,7 +40,7 @@ func TestNoteTemplateCreate_ServiceError(t *testing.T) {
 }
 
 func TestNoteTemplateGetByID_Success(t *testing.T) {
-	h, svc, _ := setupNoteTemplateHandler()
+	h, svc := setupNoteTemplateHandler()
 	tmpl := &model.NoteTemplate{ID: 1, UserID: 1, Name: "テスト"}
 	svc.On("GetByID", uint(1)).Return(tmpl, nil)
 
@@ -53,7 +53,7 @@ func TestNoteTemplateGetByID_Success(t *testing.T) {
 }
 
 func TestNoteTemplateGetByID_NotFound(t *testing.T) {
-	h, svc, _ := setupNoteTemplateHandler()
+	h, svc := setupNoteTemplateHandler()
 	svc.On("GetByID", uint(99)).Return(nil, service.ErrNotFound)
 
 	r := newRouter(1)
@@ -65,7 +65,7 @@ func TestNoteTemplateGetByID_NotFound(t *testing.T) {
 }
 
 func TestNoteTemplateGetByUserID_Success(t *testing.T) {
-	h, svc, _ := setupNoteTemplateHandler()
+	h, svc := setupNoteTemplateHandler()
 	templates := []model.NoteTemplate{{ID: 1, UserID: 1, Name: "テスト"}}
 	svc.On("GetByUserID", uint(1)).Return(templates, nil)
 
@@ -78,7 +78,7 @@ func TestNoteTemplateGetByUserID_Success(t *testing.T) {
 }
 
 func TestNoteTemplateGetDefault_Success(t *testing.T) {
-	h, svc, _ := setupNoteTemplateHandler()
+	h, svc := setupNoteTemplateHandler()
 	tmpl := &model.NoteTemplate{ID: 1, UserID: 1, Name: "デフォルト", IsDefault: true}
 	svc.On("GetDefaultByUserID", uint(1)).Return(tmpl, nil)
 
@@ -91,7 +91,7 @@ func TestNoteTemplateGetDefault_Success(t *testing.T) {
 }
 
 func TestNoteTemplateUpdate_Success(t *testing.T) {
-	h, svc, _ := setupNoteTemplateHandler()
+	h, svc := setupNoteTemplateHandler()
 	updated := &model.NoteTemplate{ID: 1, UserID: 1, Name: "新名"}
 	svc.On("Update", uint(1), uint(1), "新名", "", "", "", "", (*bool)(nil)).Return(updated, nil)
 
@@ -106,7 +106,7 @@ func TestNoteTemplateUpdate_Success(t *testing.T) {
 }
 
 func TestNoteTemplateUpdate_Forbidden(t *testing.T) {
-	h, svc, _ := setupNoteTemplateHandler()
+	h, svc := setupNoteTemplateHandler()
 	svc.On("Update", uint(1), uint(1), "変更", "", "", "", "", (*bool)(nil)).Return(nil, service.ErrForbidden)
 
 	r := newRouter(1)
@@ -120,7 +120,7 @@ func TestNoteTemplateUpdate_Forbidden(t *testing.T) {
 }
 
 func TestNoteTemplateDelete_Success(t *testing.T) {
-	h, svc, _ := setupNoteTemplateHandler()
+	h, svc := setupNoteTemplateHandler()
 	svc.On("Delete", uint(1), uint(1)).Return(nil)
 
 	r := newRouter(1)
@@ -132,7 +132,7 @@ func TestNoteTemplateDelete_Success(t *testing.T) {
 }
 
 func TestNoteTemplateDelete_Forbidden(t *testing.T) {
-	h, svc, _ := setupNoteTemplateHandler()
+	h, svc := setupNoteTemplateHandler()
 	svc.On("Delete", uint(1), uint(1)).Return(service.ErrForbidden)
 
 	r := newRouter(1)
@@ -144,16 +144,9 @@ func TestNoteTemplateDelete_Forbidden(t *testing.T) {
 }
 
 func TestNoteTemplateUseTemplate_Success(t *testing.T) {
-	h, svc, noteSvc := setupNoteTemplateHandler()
-	tmpl := &model.NoteTemplate{
-		ID:              1,
-		UserID:          1,
-		DefaultTitle:    "テンプレタイトル",
-		ContentTemplate: "テンプレ内容",
-		DefaultTags:     "tag1",
-	}
-	svc.On("GetByID", uint(1)).Return(tmpl, nil)
-	noteSvc.On("Create", mock.AnythingOfType("*model.Note")).Return(nil)
+	h, svc := setupNoteTemplateHandler()
+	note := &model.Note{UserID: 1, Title: "テンプレタイトル", Content: "テンプレ内容", Tags: "tag1"}
+	svc.On("UseTemplate", uint(1), uint(1)).Return(note, nil)
 
 	r := newRouter(1)
 	r.POST("/note-templates/:id/use", h.UseTemplate)
@@ -161,13 +154,11 @@ func TestNoteTemplateUseTemplate_Success(t *testing.T) {
 
 	assertStatus(t, w, http.StatusCreated)
 	svc.AssertExpectations(t)
-	noteSvc.AssertExpectations(t)
 }
 
 func TestNoteTemplateUseTemplate_Forbidden(t *testing.T) {
-	h, svc, _ := setupNoteTemplateHandler()
-	tmpl := &model.NoteTemplate{ID: 1, UserID: 99}
-	svc.On("GetByID", uint(1)).Return(tmpl, nil)
+	h, svc := setupNoteTemplateHandler()
+	svc.On("UseTemplate", uint(1), uint(1)).Return(nil, service.ErrForbidden)
 
 	r := newRouter(1)
 	r.POST("/note-templates/:id/use", h.UseTemplate)
@@ -178,8 +169,8 @@ func TestNoteTemplateUseTemplate_Forbidden(t *testing.T) {
 }
 
 func TestNoteTemplateUseTemplate_NotFound(t *testing.T) {
-	h, svc, _ := setupNoteTemplateHandler()
-	svc.On("GetByID", uint(99)).Return(nil, service.ErrNotFound)
+	h, svc := setupNoteTemplateHandler()
+	svc.On("UseTemplate", uint(99), uint(1)).Return(nil, service.ErrNotFound)
 
 	r := newRouter(1)
 	r.POST("/note-templates/:id/use", h.UseTemplate)

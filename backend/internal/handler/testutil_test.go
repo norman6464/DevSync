@@ -1620,60 +1620,7 @@ func (m *MockNoteTemplateService) Update(id, userID uint, name, description, def
 func (m *MockNoteTemplateService) Delete(id, userID uint) error {
 	return m.Called(id, userID).Error(0)
 }
-
-// MockNoteServiceForTemplate は NoteTemplateHandler 用のノートサービスモック。
-type MockNoteServiceForTemplate struct{ mock.Mock }
-
-func (m *MockNoteServiceForTemplate) Create(note *model.Note) error {
-	return m.Called(note).Error(0)
-}
-func (m *MockNoteServiceForTemplate) GetByID(id uint) (*model.Note, error) {
-	args := m.Called(id)
-	if n := args.Get(0); n != nil {
-		return n.(*model.Note), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockNoteServiceForTemplate) GetByUserID(userID uint, page, limit int) ([]model.Note, error) {
-	args := m.Called(userID, page, limit)
-	return args.Get(0).([]model.Note), args.Error(1)
-}
-func (m *MockNoteServiceForTemplate) GetByFolderID(folderID uint) ([]model.Note, error) {
-	args := m.Called(folderID)
-	return args.Get(0).([]model.Note), args.Error(1)
-}
-func (m *MockNoteServiceForTemplate) Update(note *model.Note) error {
-	return m.Called(note).Error(0)
-}
-func (m *MockNoteServiceForTemplate) Delete(id uint) error {
-	return m.Called(id).Error(0)
-}
-func (m *MockNoteServiceForTemplate) Search(userID uint, query string, page, limit int) ([]model.Note, int64, error) {
-	args := m.Called(userID, query, page, limit)
-	return args.Get(0).([]model.Note), args.Get(1).(int64), args.Error(2)
-}
-func (m *MockNoteServiceForTemplate) CountByUserID(userID uint) (int64, error) {
-	args := m.Called(userID)
-	return args.Get(0).(int64), args.Error(1)
-}
-func (m *MockNoteServiceForTemplate) ToggleFavorite(id uint) error {
-	return m.Called(id).Error(0)
-}
-func (m *MockNoteServiceForTemplate) Archive(id uint) error {
-	return m.Called(id).Error(0)
-}
-func (m *MockNoteServiceForTemplate) Unarchive(id uint) error {
-	return m.Called(id).Error(0)
-}
-func (m *MockNoteServiceForTemplate) GetArchived(userID uint, page, limit int) ([]model.Note, error) {
-	args := m.Called(userID, page, limit)
-	return args.Get(0).([]model.Note), args.Error(1)
-}
-func (m *MockNoteServiceForTemplate) CountArchivedByUserID(userID uint) (int64, error) {
-	args := m.Called(userID)
-	return args.Get(0).(int64), args.Error(1)
-}
-func (m *MockNoteServiceForTemplate) Duplicate(id uint, userID uint) (*model.Note, error) {
+func (m *MockNoteTemplateService) UseTemplate(id, userID uint) (*model.Note, error) {
 	args := m.Called(id, userID)
 	if n := args.Get(0); n != nil {
 		return n.(*model.Note), args.Error(1)
@@ -1681,9 +1628,8 @@ func (m *MockNoteServiceForTemplate) Duplicate(id uint, userID uint) (*model.Not
 	return nil, args.Error(1)
 }
 
-func setupNoteTemplateHandler() (*NoteTemplateHandler, *MockNoteTemplateService, *MockNoteServiceForTemplate) {
+func setupNoteTemplateHandler() (*NoteTemplateHandler, *MockNoteTemplateService) {
 	svc := new(MockNoteTemplateService)
-	noteSvc := new(MockNoteServiceForTemplate)
-	h := NewNoteTemplateHandler(svc, noteSvc)
-	return h, svc, noteSvc
+	h := NewNoteTemplateHandler(svc)
+	return h, svc
 }

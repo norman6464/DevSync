@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -50,11 +51,21 @@ func (m *MockNoteTemplateRepository) ClearDefaultFlag(userID uint) error {
 	return m.Called(userID).Error(0)
 }
 
+// MockNoteCreator はNoteCreatorInterfaceのモック実装。
+type MockNoteCreator struct {
+	mock.Mock
+}
+
+func (m *MockNoteCreator) Create(note *model.Note) error {
+	return m.Called(note).Error(0)
+}
+
 // newTestNoteTemplateService はテスト用のNoteTemplateServiceを生成する。
-func newTestNoteTemplateService() (*NoteTemplateService, *MockNoteTemplateRepository) {
+func newTestNoteTemplateService() (*NoteTemplateService, *MockNoteTemplateRepository, *MockNoteCreator) {
 	repo := new(MockNoteTemplateRepository)
-	svc := NewNoteTemplateService(repo)
-	return svc, repo
+	noteCreator := new(MockNoteCreator)
+	svc := NewNoteTemplateService(repo, noteCreator)
+	return svc, repo, noteCreator
 }
 
 // ============================================================
@@ -62,7 +73,7 @@ func newTestNoteTemplateService() (*NoteTemplateService, *MockNoteTemplateReposi
 // ============================================================
 
 func TestNoteTemplateService_Create(t *testing.T) {
-	svc, repo := newTestNoteTemplateService()
+	svc, repo, _ := newTestNoteTemplateService()
 
 	template := &model.NoteTemplate{
 		UserID:          1,
@@ -82,7 +93,7 @@ func TestNoteTemplateService_Create(t *testing.T) {
 }
 
 func TestNoteTemplateService_Create_WithDefaultFlag(t *testing.T) {
-	svc, repo := newTestNoteTemplateService()
+	svc, repo, _ := newTestNoteTemplateService()
 
 	template := &model.NoteTemplate{
 		UserID:          1,
@@ -104,7 +115,7 @@ func TestNoteTemplateService_Create_WithDefaultFlag(t *testing.T) {
 // ============================================================
 
 func TestNoteTemplateService_GetByID(t *testing.T) {
-	svc, repo := newTestNoteTemplateService()
+	svc, repo, _ := newTestNoteTemplateService()
 
 	template := &model.NoteTemplate{
 		ID:              1,
@@ -126,7 +137,7 @@ func TestNoteTemplateService_GetByID(t *testing.T) {
 // ============================================================
 
 func TestNoteTemplateService_GetByUserID(t *testing.T) {
-	svc, repo := newTestNoteTemplateService()
+	svc, repo, _ := newTestNoteTemplateService()
 
 	templates := []model.NoteTemplate{
 		{ID: 1, UserID: 1, Name: "テンプレート1", ContentTemplate: "本文1"},
@@ -146,7 +157,7 @@ func TestNoteTemplateService_GetByUserID(t *testing.T) {
 // ============================================================
 
 func TestNoteTemplateService_Update(t *testing.T) {
-	svc, repo := newTestNoteTemplateService()
+	svc, repo, _ := newTestNoteTemplateService()
 
 	existing := &model.NoteTemplate{
 		ID:              1,
@@ -167,7 +178,7 @@ func TestNoteTemplateService_Update(t *testing.T) {
 }
 
 func TestNoteTemplateService_Update_Forbidden(t *testing.T) {
-	svc, repo := newTestNoteTemplateService()
+	svc, repo, _ := newTestNoteTemplateService()
 
 	existing := &model.NoteTemplate{
 		ID:     1,
@@ -186,7 +197,7 @@ func TestNoteTemplateService_Update_Forbidden(t *testing.T) {
 // ============================================================
 
 func TestNoteTemplateService_Delete(t *testing.T) {
-	svc, repo := newTestNoteTemplateService()
+	svc, repo, _ := newTestNoteTemplateService()
 
 	existing := &model.NoteTemplate{ID: 1, UserID: 1}
 	repo.On("FindByID", uint(1)).Return(existing, nil)
@@ -198,7 +209,7 @@ func TestNoteTemplateService_Delete(t *testing.T) {
 }
 
 func TestNoteTemplateService_Delete_Forbidden(t *testing.T) {
-	svc, repo := newTestNoteTemplateService()
+	svc, repo, _ := newTestNoteTemplateService()
 
 	existing := &model.NoteTemplate{ID: 1, UserID: 1}
 	repo.On("FindByID", uint(1)).Return(existing, nil)
@@ -206,4 +217,92 @@ func TestNoteTemplateService_Delete_Forbidden(t *testing.T) {
 	err := svc.Delete(1, 999)
 	assert.ErrorIs(t, err, ErrForbidden)
 	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// UseTemplate テスト
+// ============================================================
+
+func TestNoteTemplateService_UseTemplate_Success(t *testing.T) {
+	svc, repo, noteCreator := newTestNoteTemplateService()
+
+	template := &model.NoteTemplate{
+		ID:              1,
+		UserID:          1,
+		DefaultTitle:    "テンプレタイトル",
+		ContentTemplate: "テンプレ内容",
+		DefaultTags:     "tag1",
+	}
+
+	repo.On("FindByID", uint(1)).Return(template, nil)
+	noteCreator.On("Create", mock.AnythingOfType("*model.Note")).Return(nil)
+
+	note, err := svc.UseTemplate(1, 1)
+	assert.NoError(t, err)
+	assert.Equal(t, "テンプレタイトル", note.Title)
+	assert.Equal(t, "テンプレ内容", note.Content)
+	assert.Equal(t, "tag1", note.Tags)
+	assert.Equal(t, uint(1), note.UserID)
+	repo.AssertExpectations(t)
+	noteCreator.AssertExpectations(t)
+}
+
+func TestNoteTemplateService_UseTemplate_DefaultTitle(t *testing.T) {
+	svc, repo, noteCreator := newTestNoteTemplateService()
+
+	template := &model.NoteTemplate{
+		ID:              1,
+		UserID:          1,
+		DefaultTitle:    "",
+		ContentTemplate: "内容",
+	}
+
+	repo.On("FindByID", uint(1)).Return(template, nil)
+	noteCreator.On("Create", mock.AnythingOfType("*model.Note")).Return(nil)
+
+	note, err := svc.UseTemplate(1, 1)
+	assert.NoError(t, err)
+	assert.Equal(t, "新しいノート", note.Title)
+	repo.AssertExpectations(t)
+	noteCreator.AssertExpectations(t)
+}
+
+func TestNoteTemplateService_UseTemplate_Forbidden(t *testing.T) {
+	svc, repo, _ := newTestNoteTemplateService()
+
+	template := &model.NoteTemplate{ID: 1, UserID: 1}
+	repo.On("FindByID", uint(1)).Return(template, nil)
+
+	_, err := svc.UseTemplate(1, 999)
+	assert.ErrorIs(t, err, ErrForbidden)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteTemplateService_UseTemplate_NotFound(t *testing.T) {
+	svc, repo, _ := newTestNoteTemplateService()
+
+	repo.On("FindByID", uint(99)).Return(nil, ErrNotFound)
+
+	_, err := svc.UseTemplate(99, 1)
+	assert.ErrorIs(t, err, ErrNotFound)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteTemplateService_UseTemplate_CreateError(t *testing.T) {
+	svc, repo, noteCreator := newTestNoteTemplateService()
+
+	template := &model.NoteTemplate{
+		ID:              1,
+		UserID:          1,
+		DefaultTitle:    "タイトル",
+		ContentTemplate: "内容",
+	}
+
+	repo.On("FindByID", uint(1)).Return(template, nil)
+	noteCreator.On("Create", mock.AnythingOfType("*model.Note")).Return(errors.New("db error"))
+
+	_, err := svc.UseTemplate(1, 1)
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+	noteCreator.AssertExpectations(t)
 }

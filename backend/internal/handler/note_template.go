@@ -13,20 +13,17 @@ type NoteTemplateServiceInterface interface {
 	GetDefaultByUserID(userID uint) (*model.NoteTemplate, error)
 	Update(id, userID uint, name, description, defaultTitle, contentTemplate, defaultTags string, isDefault *bool) (*model.NoteTemplate, error)
 	Delete(id, userID uint) error
+	UseTemplate(id, userID uint) (*model.Note, error)
 }
 
 // NoteTemplateHandler はノートテンプレート関連のHTTPハンドラ。
 type NoteTemplateHandler struct {
-	service     NoteTemplateServiceInterface
-	noteService NoteServiceInterface
+	service NoteTemplateServiceInterface
 }
 
 // NewNoteTemplateHandler は新しいNoteTemplateHandlerインスタンスを生成する。
-func NewNoteTemplateHandler(s NoteTemplateServiceInterface, noteService NoteServiceInterface) *NoteTemplateHandler {
-	return &NoteTemplateHandler{
-		service:     s,
-		noteService: noteService,
-	}
+func NewNoteTemplateHandler(s NoteTemplateServiceInterface) *NoteTemplateHandler {
+	return &NoteTemplateHandler{service: s}
 }
 
 // CreateTemplateInput はテンプレート作成のリクエストボディ。
@@ -163,36 +160,8 @@ func (h *NoteTemplateHandler) UseTemplate(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	// NoteServiceからNoteRepositoryを取得する必要があるが、
-	// 簡便化のため、NoteServiceのインターフェースを使用する想定
-	// 実装上は、noteServiceを経由してノートを作成する
-	template, err := h.service.GetByID(id)
+	note, err := h.service.UseTemplate(id, userID)
 	if err != nil {
-		respondError(c, err)
-		return
-	}
-
-	// 所有者チェック
-	if template.UserID != userID {
-		respondForbidden(c, "この操作を行う権限がありません")
-		return
-	}
-
-	// テンプレートからノートを作成
-	note := &model.Note{
-		UserID:  userID,
-		Title:   template.DefaultTitle,
-		Content: template.ContentTemplate,
-		Tags:    template.DefaultTags,
-	}
-
-	// タイトルが空の場合、デフォルト値を設定
-	if note.Title == "" {
-		note.Title = "新しいノート"
-	}
-
-	// NoteServiceを使ってノートを作成（バリデーション含む）
-	if err := h.noteService.Create(note); err != nil {
 		respondError(c, err)
 		return
 	}
