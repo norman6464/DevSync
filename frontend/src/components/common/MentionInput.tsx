@@ -135,10 +135,17 @@ export default function MentionInput({
         placeholder={placeholder}
         disabled={disabled}
         className={className}
+        aria-autocomplete="list"
+        aria-expanded={showSuggestions}
+        aria-controls={showSuggestions ? 'mention-suggestions' : undefined}
+        aria-activedescendant={showSuggestions && suggestions[selectedIndex] ? `mention-option-${suggestions[selectedIndex].id}` : undefined}
       />
       {showSuggestions && (
         <div
           ref={suggestionsRef}
+          id="mention-suggestions"
+          role="listbox"
+          aria-label={t('mention.suggestions')}
           className="absolute bottom-full left-0 mb-1 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden"
         >
           <div className="px-3 py-1.5 text-xs text-gray-500 border-b border-gray-700">
@@ -147,7 +154,11 @@ export default function MentionInput({
           {suggestions.map((user, index) => (
             <button
               key={user.id}
+              id={`mention-option-${user.id}`}
               type="button"
+              role="option"
+              aria-selected={index === selectedIndex}
+              aria-label={`${user.name} (@${user.username})`}
               className={`w-full flex items-center gap-2 px-3 py-2 text-left text-sm transition-colors ${
                 index === selectedIndex ? 'bg-blue-600/20 text-white' : 'text-gray-300 hover:bg-gray-700'
               }`}
