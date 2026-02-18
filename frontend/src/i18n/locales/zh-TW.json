@@ -55,7 +55,8 @@
     "hasAccount": "已有帳號？",
     "signInWith": "使用 {{provider}} 登入",
     "signUpWith": "使用 {{provider}} 註冊",
-    "orContinueWith": "或者"
+    "orContinueWith": "或者",
+    "passwordPlaceholder": "6個字元以上"
   },
   "dashboard": {
     "title": "儀表板",
@@ -681,7 +682,11 @@
     "createFailed": "建立資源失敗",
     "updateFailed": "更新資源失敗",
     "deleteFailed": "刪除資源失敗",
-    "confirmDelete": "確定要刪除這個資源嗎？"
+    "confirmDelete": "確定要刪除這個資源嗎？",
+    "likeFailed": "按讚失敗",
+    "unlikeFailed": "取消按讚失敗",
+    "saveFailed": "收藏失敗",
+    "unsaveFailed": "取消收藏失敗"
   },
   "portfolio": {
     "generate": "作品集",

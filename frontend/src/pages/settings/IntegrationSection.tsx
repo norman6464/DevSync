@@ -82,7 +82,7 @@ export default function IntegrationSection(props: Props) {
           ) : (
             <div className="text-center py-4">
               <GitHubIcon className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-              <p className="text-gray-400 text-sm mb-4">Connect your GitHub account to sync contributions, repos, and languages.</p>
+              <p className="text-gray-400 text-sm mb-4">{t('settings.githubDescription')}</p>
               <button
                 onClick={props.onConnectGitHub}
                 className="px-5 py-2.5 bg-white hover:bg-gray-100 text-gray-900 rounded-lg font-semibold text-sm transition-colors inline-flex items-center gap-2"

@@ -55,7 +55,8 @@
     "hasAccount": "Уже есть аккаунт?",
     "signInWith": "Войти через {{provider}}",
     "signUpWith": "Регистрация через {{provider}}",
-    "orContinueWith": "Или продолжить с"
+    "orContinueWith": "Или продолжить с",
+    "passwordPlaceholder": "Минимум 6 символов"
   },
   "dashboard": {
     "title": "Панель",
@@ -681,7 +682,11 @@
     "createFailed": "Не удалось создать ресурс",
     "updateFailed": "Не удалось обновить ресурс",
     "deleteFailed": "Не удалось удалить ресурс",
-    "confirmDelete": "Вы уверены, что хотите удалить этот ресурс?"
+    "confirmDelete": "Вы уверены, что хотите удалить этот ресурс?",
+    "likeFailed": "Не удалось поставить лайк",
+    "unlikeFailed": "Не удалось убрать лайк",
+    "saveFailed": "Не удалось сохранить",
+    "unsaveFailed": "Не удалось убрать из сохранённых"
   },
   "portfolio": {
     "generate": "Портфолио",

@@ -56,7 +56,8 @@
     "hasAccount": "すでにアカウントをお持ちの方",
     "signInWith": "{{provider}}でログイン",
     "signUpWith": "{{provider}}で登録",
-    "orContinueWith": "または"
+    "orContinueWith": "または",
+    "passwordPlaceholder": "6文字以上"
   },
   "dashboard": {
     "title": "ダッシュボード",
@@ -645,7 +646,11 @@
     "createFailed": "教材の追加に失敗しました",
     "updateFailed": "教材の更新に失敗しました",
     "deleteFailed": "教材の削除に失敗しました",
-    "confirmDelete": "この教材を削除してもよろしいですか？"
+    "confirmDelete": "この教材を削除してもよろしいですか？",
+    "likeFailed": "いいねに失敗しました",
+    "unlikeFailed": "いいね解除に失敗しました",
+    "saveFailed": "保存に失敗しました",
+    "unsaveFailed": "保存解除に失敗しました"
   },
   "portfolio": {
     "generate": "ポートフォリオ",

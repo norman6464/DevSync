@@ -55,7 +55,8 @@
     "hasAccount": "¿Ya tienes cuenta?",
     "signInWith": "Iniciar sesión con {{provider}}",
     "signUpWith": "Registrarse con {{provider}}",
-    "orContinueWith": "O continuar con"
+    "orContinueWith": "O continuar con",
+    "passwordPlaceholder": "6+ caracteres"
   },
   "dashboard": {
     "title": "Panel",
@@ -681,7 +682,11 @@
     "createFailed": "Error al crear recurso",
     "updateFailed": "Error al actualizar recurso",
     "deleteFailed": "Error al eliminar recurso",
-    "confirmDelete": "¿Estás seguro de que deseas eliminar este recurso?"
+    "confirmDelete": "¿Estás seguro de que deseas eliminar este recurso?",
+    "likeFailed": "Error al dar me gusta",
+    "unlikeFailed": "Error al quitar me gusta",
+    "saveFailed": "Error al guardar",
+    "unsaveFailed": "Error al quitar guardado"
   },
   "portfolio": {
     "generate": "Portafolio",

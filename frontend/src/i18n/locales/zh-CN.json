@@ -55,7 +55,8 @@
     "hasAccount": "已有账号？",
     "signInWith": "使用 {{provider}} 登录",
     "signUpWith": "使用 {{provider}} 注册",
-    "orContinueWith": "或者"
+    "orContinueWith": "或者",
+    "passwordPlaceholder": "6个字符以上"
   },
   "dashboard": {
     "title": "仪表板",
@@ -681,7 +682,11 @@
     "createFailed": "创建资源失败",
     "updateFailed": "更新资源失败",
     "deleteFailed": "删除资源失败",
-    "confirmDelete": "确定要删除这个资源吗？"
+    "confirmDelete": "确定要删除这个资源吗？",
+    "likeFailed": "点赞失败",
+    "unlikeFailed": "取消点赞失败",
+    "saveFailed": "收藏失败",
+    "unsaveFailed": "取消收藏失败"
   },
   "portfolio": {
     "generate": "作品集",
