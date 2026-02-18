@@ -1,68 +1,18 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BookOpen, Star, Plus, Edit, Trash2 } from 'lucide-react';
-import { useNotes } from '../hooks';
+import { useNoteForm } from '../hooks';
 import { PageLoader, SearchInput } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
 import { buttonPrimaryClass, buttonSecondaryClass } from '../constants/styles';
-import type { Note } from '../api/notes';
 
 export default function NotesPage() {
   const { t } = useTranslation();
-  const { notes, loading, saving, favoriteNotes, createNote, updateNote, deleteNote, toggleFavorite } = useNotes();
-
-  const [showForm, setShowForm] = useState(false);
-  const [editingNote, setEditingNote] = useState<Note | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-
-  // Form state
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [tags, setTags] = useState('');
-
-  const resetForm = () => {
-    setTitle('');
-    setContent('');
-    setTags('');
-    setEditingNote(null);
-    setShowForm(false);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim() || !content.trim()) return;
-
-    if (editingNote) {
-      const result = await updateNote(editingNote.id, { title, content, tags });
-      if (result) resetForm();
-    } else {
-      const result = await createNote({ title, content, tags });
-      if (result) resetForm();
-    }
-  };
-
-  const handleEdit = (note: Note) => {
-    setEditingNote(note);
-    setTitle(note.title);
-    setContent(note.content);
-    setTags(note.tags);
-    setShowForm(true);
-  };
-
-  const handleDelete = async (id: number) => {
-    await deleteNote(id);
-  };
-
-  const handleToggleFavorite = async (id: number) => {
-    await toggleFavorite(id);
-  };
-
-  const filteredNotes = searchQuery
-    ? notes.filter(note =>
-        note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        note.content.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : notes;
+  const {
+    filteredNotes, loading, saving,
+    showForm, setShowForm, editingNote, searchQuery, setSearchQuery,
+    title, setTitle, content, setContent, tags, setTags,
+    resetForm, handleSubmit, handleEdit, deleteNote, toggleFavorite,
+  } = useNoteForm();
 
   if (loading) return <PageLoader />;
 
@@ -189,7 +139,7 @@ export default function NotesPage() {
                 </div>
                 <div className="flex gap-2 ml-4">
                   <button
-                    onClick={() => handleToggleFavorite(note.id)}
+                    onClick={() => toggleFavorite(note.id)}
                     className="p-2 text-gray-400 hover:text-yellow-500 transition-colors"
                     title={t('notes.favorites')}
                   >
@@ -203,7 +153,7 @@ export default function NotesPage() {
                     <Edit className="w-5 h-5" />
                   </button>
                   <button
-                    onClick={() => handleDelete(note.id)}
+                    onClick={() => deleteNote(note.id)}
                     className="p-2 text-gray-400 hover:text-red-500 transition-colors"
                     title={t('common.delete')}
                   >

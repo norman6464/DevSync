@@ -32,6 +32,7 @@ export { useChat } from './useChat';
 export { useRecommendedUsers, useTrendingPosts, useTrendingResources } from './useRecommendations';
 export { useStudyCircles, useStudyCircleDetail, useStudyCircleActivity } from './useStudyCircles';
 export { useNotes, useNoteSearch, useArchivedNotes } from './useNotes';
+export { useNoteForm } from './useNoteForm';
 export { useNoteFolders, useRootFolders, useFolderChildren } from './useNoteFolders';
 export { useNoteTemplates, useDefaultNoteTemplate } from './useNoteTemplates';
 export { useNoteLinks, useNoteBacklinks } from './useNoteLinks';
