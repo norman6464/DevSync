@@ -100,7 +100,7 @@ export default function PomodoroTimer() {
             : 'bg-gray-800/90 border-gray-700 hover:border-gray-600'
         }`}
       >
-        <Timer size={18} className={getPhaseColor(phase)} />
+        <Timer size={18} className={getPhaseColor(phase)} aria-hidden="true" />
         <span className="text-sm font-mono" style={{ color: '#ffffff' }}>{formatTime(timeLeft)}</span>
         {completedCycles > 0 && (
           <span className="text-xs text-gray-400">x{completedCycles}</span>
@@ -114,22 +114,23 @@ export default function PomodoroTimer() {
       {/* ヘッダー */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700/50">
         <div className="flex items-center gap-2">
-          <Timer size={16} className={getPhaseColor(phase)} />
+          <Timer size={16} className={getPhaseColor(phase)} aria-hidden="true" />
           <span className={`text-sm font-medium ${getPhaseColor(phase)}`}>{phaseLabel}</span>
         </div>
         <div className="flex items-center gap-1">
           <button
             onClick={handleToggleSound}
             className="p-1.5 text-gray-400 hover:text-white rounded transition-colors"
-            title={soundEnabled ? t('pomodoro.soundOn') : t('pomodoro.soundOff')}
+            aria-label={soundEnabled ? t('pomodoro.soundOn') : t('pomodoro.soundOff')}
           >
-            {soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
+            {soundEnabled ? <Volume2 size={14} aria-hidden="true" /> : <VolumeX size={14} aria-hidden="true" />}
           </button>
           <button
             onClick={handleCollapse}
             className="p-1.5 text-gray-400 hover:text-white rounded transition-colors"
+            aria-label={t('common.close')}
           >
-            <ChevronDown size={14} />
+            <ChevronDown size={14} aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -176,9 +177,9 @@ export default function PomodoroTimer() {
         <button
           onClick={reset}
           className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-700/50 transition-colors"
-          title={t('pomodoro.reset')}
+          aria-label={t('pomodoro.reset')}
         >
-          <RotateCcw size={18} />
+          <RotateCcw size={18} aria-hidden="true" />
         </button>
 
         <button
@@ -189,25 +190,25 @@ export default function PomodoroTimer() {
               : 'bg-red-600 hover:bg-red-700'
           }`}
           style={{ color: '#ffffff' }}
-          title={isRunning ? t('pomodoro.pause') : t('pomodoro.start')}
+          aria-label={isRunning ? t('pomodoro.pause') : t('pomodoro.start')}
         >
-          {isRunning ? <Pause size={20} /> : <Play size={20} />}
+          {isRunning ? <Pause size={20} aria-hidden="true" /> : <Play size={20} aria-hidden="true" />}
         </button>
 
         <button
           onClick={skip}
           disabled={phase === 'idle'}
           className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-700/50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          title={t('pomodoro.skip')}
+          aria-label={t('pomodoro.skip')}
         >
-          <SkipForward size={18} />
+          <SkipForward size={18} aria-hidden="true" />
         </button>
       </div>
 
       {/* 設定パネル */}
       <details className="border-t border-gray-700/50">
         <summary className="flex items-center justify-center gap-1 py-2 cursor-pointer text-xs text-gray-500 hover:text-gray-400 select-none">
-          <ChevronUp size={12} className="details-open:rotate-180 transition-transform" />
+          <ChevronUp size={12} className="details-open:rotate-180 transition-transform" aria-hidden="true" />
           {t('settings.title')}
         </summary>
         <div className="px-4 pb-4 space-y-3">
