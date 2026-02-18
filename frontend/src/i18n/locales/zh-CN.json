@@ -88,6 +88,21 @@
     "goalsInProgress": "进行中目标",
     "editPost": "编辑帖子"
   },
+  "series": {
+    "title": "帖子系列",
+    "posts": "系列帖子",
+    "noPosts": "该系列暂无帖子",
+    "createSuccess": "系列创建成功",
+    "createFailed": "系列创建失败",
+    "updateSuccess": "系列更新成功",
+    "updateFailed": "系列更新失败",
+    "deleteSuccess": "系列删除成功",
+    "deleteFailed": "系列删除失败",
+    "postAdded": "帖子已添加到系列",
+    "postAddFailed": "添加帖子失败",
+    "postRemoved": "帖子已从系列中移除",
+    "postRemoveFailed": "移除帖子失败"
+  },
   "post": {
     "createTitle": "今天你学到了什么？",
     "createContent": "分享你的想法...（支持 Markdown）",

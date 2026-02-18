@@ -88,6 +88,21 @@
     "goalsInProgress": "Ziele in Bearbeitung",
     "editPost": "Beitrag bearbeiten"
   },
+  "series": {
+    "title": "Beitragsserien",
+    "posts": "Beiträge der Serie",
+    "noPosts": "Noch keine Beiträge in dieser Serie",
+    "createSuccess": "Serie erstellt",
+    "createFailed": "Serie konnte nicht erstellt werden",
+    "updateSuccess": "Serie aktualisiert",
+    "updateFailed": "Serie konnte nicht aktualisiert werden",
+    "deleteSuccess": "Serie gelöscht",
+    "deleteFailed": "Serie konnte nicht gelöscht werden",
+    "postAdded": "Beitrag zur Serie hinzugefügt",
+    "postAddFailed": "Beitrag konnte nicht hinzugefügt werden",
+    "postRemoved": "Beitrag aus der Serie entfernt",
+    "postRemoveFailed": "Beitrag konnte nicht entfernt werden"
+  },
   "post": {
     "createTitle": "Was hast du heute gelernt?",
     "createContent": "Teile deine Gedanken... (Markdown unterstützt)",

@@ -88,6 +88,21 @@
     "goalsInProgress": "진행 중인 목표",
     "editPost": "게시물 수정"
   },
+  "series": {
+    "title": "게시물 시리즈",
+    "posts": "시리즈 게시물",
+    "noPosts": "이 시리즈에는 아직 게시물이 없습니다",
+    "createSuccess": "시리즈를 생성했습니다",
+    "createFailed": "시리즈 생성에 실패했습니다",
+    "updateSuccess": "시리즈를 업데이트했습니다",
+    "updateFailed": "시리즈 업데이트에 실패했습니다",
+    "deleteSuccess": "시리즈를 삭제했습니다",
+    "deleteFailed": "시리즈 삭제에 실패했습니다",
+    "postAdded": "게시물을 시리즈에 추가했습니다",
+    "postAddFailed": "게시물 추가에 실패했습니다",
+    "postRemoved": "게시물을 시리즈에서 삭제했습니다",
+    "postRemoveFailed": "게시물 삭제에 실패했습니다"
+  },
   "post": {
     "createTitle": "오늘 무엇을 배웠나요?",
     "createContent": "생각을 공유하세요... (마크다운 지원)",

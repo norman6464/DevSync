@@ -412,3 +412,15 @@ type NoteFolderRepositoryInterface interface {
 	Update(folder *model.NoteFolder) error
 	Delete(id uint) error
 }
+
+// PostSeriesRepositoryInterface は投稿シリーズデータ操作の契約を定義する。
+type PostSeriesRepositoryInterface interface {
+	Create(series *model.PostSeries) error
+	FindByID(id uint) (*model.PostSeries, error)
+	FindByUserID(userID uint) ([]model.PostSeries, error)
+	Update(series *model.PostSeries) error
+	Delete(id uint) error
+	AddPost(item *model.PostSeriesItem) error
+	RemovePost(seriesID, postID uint) error
+	GetPostsBySeriesID(seriesID uint) ([]model.PostSeriesItem, error)
+}

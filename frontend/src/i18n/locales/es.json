@@ -88,6 +88,21 @@
     "goalsInProgress": "Objetivos en progreso",
     "editPost": "Editar publicación"
   },
+  "series": {
+    "title": "Series de publicaciones",
+    "posts": "Publicaciones de la serie",
+    "noPosts": "No hay publicaciones en esta serie aún",
+    "createSuccess": "Serie creada",
+    "createFailed": "Error al crear la serie",
+    "updateSuccess": "Serie actualizada",
+    "updateFailed": "Error al actualizar la serie",
+    "deleteSuccess": "Serie eliminada",
+    "deleteFailed": "Error al eliminar la serie",
+    "postAdded": "Publicación añadida a la serie",
+    "postAddFailed": "Error al añadir la publicación",
+    "postRemoved": "Publicación eliminada de la serie",
+    "postRemoveFailed": "Error al eliminar la publicación"
+  },
   "post": {
     "createTitle": "¿Qué aprendiste hoy?",
     "createContent": "Comparte tus pensamientos... (Markdown compatible)",

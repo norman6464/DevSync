@@ -71,6 +71,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerUserRoutes(protected, c)
 		registerGitHubRoutes(protected, c)
 		registerPostRoutes(protected, c)
+		registerPostSeriesRoutes(protected, c)
 		registerSnippetRoutes(protected, c)
 		registerRankingRoutes(protected, c)
 		registerMessageRoutes(protected, c)
@@ -139,6 +140,20 @@ func registerPostRoutes(g *gin.RouterGroup, c *di.Container) {
 		posts.DELETE("/:id/reactions", c.PostHandler.RemoveReaction)
 		posts.POST("/:id/snippets", c.CodeSnippetHandler.Create)
 		posts.GET("/:id/snippets", c.CodeSnippetHandler.GetByPostID)
+	}
+}
+
+func registerPostSeriesRoutes(g *gin.RouterGroup, c *di.Container) {
+	series := g.Group("/post-series")
+	{
+		series.POST("", c.PostSeriesHandler.Create)
+		series.GET("/:id", c.PostSeriesHandler.GetByID)
+		series.PUT("/:id", c.PostSeriesHandler.Update)
+		series.DELETE("/:id", c.PostSeriesHandler.Delete)
+		series.GET("/:id/posts", c.PostSeriesHandler.GetPosts)
+		series.POST("/:id/posts", c.PostSeriesHandler.AddPost)
+		series.DELETE("/:id/posts/:postId", c.PostSeriesHandler.RemovePost)
+		series.GET("/user/:userId", c.PostSeriesHandler.GetByUserID)
 	}
 }
 

@@ -88,6 +88,21 @@
     "goalsInProgress": "Goals In Progress",
     "editPost": "Edit Post"
   },
+  "series": {
+    "title": "Post Series",
+    "posts": "Series Posts",
+    "noPosts": "No posts in this series yet",
+    "createSuccess": "Series created",
+    "createFailed": "Failed to create series",
+    "updateSuccess": "Series updated",
+    "updateFailed": "Failed to update series",
+    "deleteSuccess": "Series deleted",
+    "deleteFailed": "Failed to delete series",
+    "postAdded": "Post added to series",
+    "postAddFailed": "Failed to add post",
+    "postRemoved": "Post removed from series",
+    "postRemoveFailed": "Failed to remove post"
+  },
   "post": {
     "createTitle": "What did you learn today?",
     "createContent": "Share your thoughts... (Markdown supported)",

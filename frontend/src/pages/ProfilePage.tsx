@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Sparkles, Rocket, FileText, Monitor, Target, FolderOpen } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import { useProfile } from '../hooks';
+import { useProfile, usePostSeries } from '../hooks';
 import { sectionContainerClass } from '../constants/styles';
 import Avatar from '../components/common/Avatar';
 import { PageLoader } from '../components/common';
@@ -14,6 +14,7 @@ import BadgeDisplay from '../components/profile/BadgeDisplay';
 import StreakDisplay from '../components/profile/StreakDisplay';
 import LevelDisplay from '../components/profile/LevelDisplay';
 import PostCard from '../components/posts/PostCard';
+import PostSeriesCard from '../components/series/PostSeriesCard';
 import ShareModal from '../components/profile/ShareModal';
 import PortfolioModal from '../components/profile/PortfolioModal';
 
@@ -29,6 +30,7 @@ export default function ProfilePage() {
 
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [portfolioModalOpen, setPortfolioModalOpen] = useState(false);
+  const { series } = usePostSeries(user?.id);
 
   if (loading) return <PageLoader />;
   if (!user) return <div className="text-center text-gray-400 py-12">{t('errors.notFound')}</div>;
@@ -320,6 +322,18 @@ export default function ProfilePage() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Post Series */}
+      {series.length > 0 && (
+        <div>
+          <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-3">{t('series.title')}</h2>
+          <div className="space-y-3">
+            {series.map((s) => (
+              <PostSeriesCard key={s.id} series={s} isOwner={isOwnProfile} />
+            ))}
           </div>
         </div>
       )}
