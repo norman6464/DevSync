@@ -80,6 +80,32 @@ func TestAnswerUpdate_Forbidden(t *testing.T) {
 	answerRepo.AssertExpectations(t)
 }
 
+func TestAnswerUpdate_NotFound(t *testing.T) {
+	svc, answerRepo, _ := newTestAnswerService()
+
+	answerRepo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	result, err := svc.Update(999, 1, "New Body")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	answerRepo.AssertExpectations(t)
+}
+
+func TestAnswerUpdate_RepoError(t *testing.T) {
+	svc, answerRepo, _ := newTestAnswerService()
+
+	existing := &model.Answer{Body: "Old Body", UserID: 1}
+	existing.ID = 1
+
+	answerRepo.On("FindByID", uint(1)).Return(existing, nil)
+	answerRepo.On("Update", existing).Return(errors.New("db error"))
+
+	result, err := svc.Update(1, 1, "New Body")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	answerRepo.AssertExpectations(t)
+}
+
 // ============================================================
 // 回答削除テスト
 // ============================================================
@@ -108,6 +134,30 @@ func TestAnswerDelete_Forbidden(t *testing.T) {
 
 	err := svc.Delete(1, 999)
 	assert.ErrorIs(t, err, ErrForbidden)
+	answerRepo.AssertExpectations(t)
+}
+
+func TestAnswerDelete_NotFound(t *testing.T) {
+	svc, answerRepo, _ := newTestAnswerService()
+
+	answerRepo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	err := svc.Delete(999, 1)
+	assert.Error(t, err)
+	answerRepo.AssertExpectations(t)
+}
+
+func TestAnswerDelete_RepoError(t *testing.T) {
+	svc, answerRepo, _ := newTestAnswerService()
+
+	existing := &model.Answer{UserID: 1}
+	existing.ID = 1
+
+	answerRepo.On("FindByID", uint(1)).Return(existing, nil)
+	answerRepo.On("Delete", existing).Return(errors.New("db error"))
+
+	err := svc.Delete(1, 1)
+	assert.Error(t, err)
 	answerRepo.AssertExpectations(t)
 }
 
@@ -171,6 +221,39 @@ func TestSetBestAnswer_QuestionNotFound(t *testing.T) {
 
 	err := svc.SetBestAnswer(999, 5, 1)
 	assert.ErrorIs(t, err, ErrNotFound)
+	questionRepo.AssertExpectations(t)
+}
+
+func TestSetBestAnswer_AnswerNotFound(t *testing.T) {
+	svc, answerRepo, questionRepo := newTestAnswerService()
+
+	question := &model.Question{UserID: 1}
+	question.ID = 10
+	questionRepo.On("FindByID", uint(10)).Return(question, nil)
+
+	answerRepo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	err := svc.SetBestAnswer(10, 999, 1)
+	assert.ErrorIs(t, err, ErrNotFound)
+	answerRepo.AssertExpectations(t)
+	questionRepo.AssertExpectations(t)
+}
+
+func TestSetBestAnswer_RepoError(t *testing.T) {
+	svc, answerRepo, questionRepo := newTestAnswerService()
+
+	question := &model.Question{UserID: 1}
+	question.ID = 10
+	questionRepo.On("FindByID", uint(10)).Return(question, nil)
+
+	answer := &model.Answer{QuestionID: 10}
+	answer.ID = 5
+	answerRepo.On("FindByID", uint(5)).Return(answer, nil)
+	answerRepo.On("SetBestAnswer", uint(10), uint(5)).Return(errors.New("db error"))
+
+	err := svc.SetBestAnswer(10, 5, 1)
+	assert.Error(t, err)
+	answerRepo.AssertExpectations(t)
 	questionRepo.AssertExpectations(t)
 }
 

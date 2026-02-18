@@ -160,6 +160,21 @@ func TestBookReviewUpdate_NotFound(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestBookReviewUpdate_RepoError(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	existing := &model.BookReview{UserID: 1, Title: "Old", Rating: 4}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(errors.New("db error"))
+
+	updates := &model.BookReview{Title: "New"}
+	result, err := svc.Update(1, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
 // ============================================================
 // 書籍レビュー削除テスト
 // ============================================================
@@ -189,4 +204,11 @@ func TestBookReviewDelete_Forbidden(t *testing.T) {
 	err := svc.Delete(1, 999)
 	assert.ErrorIs(t, err, ErrForbidden)
 	repo.AssertExpectations(t)
+}
+
+func TestBookReviewDelete_NotFound(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+	err := svc.Delete(99, 1)
+	assert.Error(t, err)
 }

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -65,6 +66,52 @@ func TestChatRoomCreate_SkipDuplicateOwner(t *testing.T) {
 	assert.NotNil(t, result)
 	// AddMember は ownerID=1 の1回のみ呼ばれる
 	roomRepo.AssertNumberOfCalls(t, "AddMember", 1)
+}
+
+func TestChatRoomCreate_RepoError(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	room := &model.ChatRoom{Name: "Test Room", OwnerID: 1}
+	roomRepo.On("Create", room).Return(errors.New("db error"))
+
+	result, err := svc.Create(room, []uint{2})
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	roomRepo.AssertExpectations(t)
+}
+
+func TestChatRoomCreate_AddMemberError(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	room := &model.ChatRoom{Name: "Test Room", OwnerID: 1}
+	roomRepo.On("Create", room).Run(func(args mock.Arguments) {
+		r := args.Get(0).(*model.ChatRoom)
+		r.ID = 10
+	}).Return(nil)
+	roomRepo.On("AddMember", uint(10), uint(1)).Return(errors.New("add member error"))
+
+	result, err := svc.Create(room, []uint{2})
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	roomRepo.AssertExpectations(t)
+}
+
+func TestChatRoomCreate_FindByIDError(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	room := &model.ChatRoom{Name: "Test Room", OwnerID: 1}
+	roomRepo.On("Create", room).Run(func(args mock.Arguments) {
+		r := args.Get(0).(*model.ChatRoom)
+		r.ID = 10
+	}).Return(nil)
+	roomRepo.On("AddMember", uint(10), uint(1)).Return(nil)
+	roomRepo.On("FindByID", uint(10)).Return(nil, errors.New("not found"))
+
+	// FindByID失敗時はフォールバックでroomを返す
+	result, err := svc.Create(room, nil)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	roomRepo.AssertExpectations(t)
 }
 
 // ============================================================
@@ -437,4 +484,37 @@ func TestChatRoomIsMember_RepoError(t *testing.T) {
 	assert.Error(t, err)
 	assert.False(t, result)
 	roomRepo.AssertExpectations(t)
+}
+
+func TestChatRoomUpdate_NotFound(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+	roomRepo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+	result, err := svc.Update(99, 1, "Name", "Desc")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestChatRoomUpdate_RepoError(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+	room := &model.ChatRoom{Name: "Room", OwnerID: 1}
+	room.ID = 10
+	roomRepo.On("FindByID", uint(10)).Return(room, nil)
+	roomRepo.On("Update", room).Return(errors.New("db error"))
+	result, err := svc.Update(10, 1, "New", "Desc")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestChatRoomDelete_NotFound(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+	roomRepo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+	err := svc.Delete(99, 1)
+	assert.Error(t, err)
+}
+
+func TestChatRoomRemoveMember_NotFound(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+	roomRepo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+	err := svc.RemoveMember(99, 1, 2)
+	assert.Error(t, err)
 }

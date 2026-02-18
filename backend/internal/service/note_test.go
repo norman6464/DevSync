@@ -104,6 +104,35 @@ func TestNoteService_Create(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestNoteService_Create_ValidationError(t *testing.T) {
+	svc, _ := newTestNoteService()
+
+	note := &model.Note{
+		UserID:  1,
+		Title:   "",
+		Content: "内容",
+	}
+
+	err := svc.Create(note)
+	assert.Error(t, err)
+}
+
+func TestNoteService_Create_RepoError(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	note := &model.Note{
+		UserID:  1,
+		Title:   "テストノート",
+		Content: "内容",
+	}
+
+	repo.On("Create", note).Return(errors.New("db error"))
+
+	err := svc.Create(note)
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
 // ============================================================
 // GetByID テスト
 // ============================================================
@@ -404,4 +433,38 @@ func TestNoteService_Duplicate_NotFound(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	repo.AssertExpectations(t)
+}
+
+func TestNoteService_Update_RepoError(t *testing.T) {
+	svc, repo := newTestNoteService()
+	existing := &model.Note{ID: 1, UserID: 1, Title: "元タイトル", Content: "内容"}
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", mock.Anything).Return(errors.New("db error"))
+	result, err := svc.Update(1, 1, "新タイトル", "", "", nil)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestNoteService_Duplicate_RepoError(t *testing.T) {
+	svc, repo := newTestNoteService()
+	original := &model.Note{ID: 1, UserID: 1, Title: "元ノート", Content: "内容", Tags: "Go"}
+	repo.On("FindByID", uint(1)).Return(original, nil)
+	repo.On("Create", mock.Anything).Return(errors.New("db error"))
+	result, err := svc.Duplicate(1, 1)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestNoteService_Update_WithAllFields(t *testing.T) {
+	svc, repo := newTestNoteService()
+	folderID := uint(5)
+	existing := &model.Note{ID: 1, UserID: 1, Title: "元", Content: "元内容", Tags: "Go"}
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", mock.Anything).Return(nil)
+	result, err := svc.Update(1, 1, "新タイトル", "新内容", "React,Go", &folderID)
+	assert.NoError(t, err)
+	assert.Equal(t, "新タイトル", result.Title)
+	assert.Equal(t, "新内容", result.Content)
+	assert.Equal(t, "React,Go", result.Tags)
+	assert.Equal(t, &folderID, result.FolderID)
 }

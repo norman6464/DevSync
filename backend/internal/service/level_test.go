@@ -273,6 +273,16 @@ func TestGetXPBreakdown_EmptyStats(t *testing.T) {
 	levelRepo.AssertExpectations(t)
 }
 
+func TestGetXPBreakdown_RepoError(t *testing.T) {
+	svc, levelRepo, _ := newTestLevelService()
+	levelRepo.On("GetXPStats", uint(1)).Return((*model.XPStats)(nil), assert.AnError)
+
+	breakdown, err := svc.GetXPBreakdown(1)
+	assert.Error(t, err)
+	assert.Nil(t, breakdown)
+	levelRepo.AssertExpectations(t)
+}
+
 func TestCheckAndNotifyLevelUp_LevelUp(t *testing.T) {
 	svc, levelRepo, notifRepo := newTestLevelService()
 	// previousXP = 90 (Lv0), 現在のXP = 160 (Lv1) → レベルアップ

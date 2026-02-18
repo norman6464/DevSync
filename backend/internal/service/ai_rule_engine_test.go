@@ -408,3 +408,119 @@ func TestGenerateAdvice_EmptyContext(t *testing.T) {
 		assert.Equal(t, "advice.exploreResources", advices[0].TitleKey)
 	})
 }
+
+func TestGenerateAdvice_ContextCollectionError_StreakInfo(t *testing.T) {
+	t.Run("StreakInfo取得エラー時は空スライスを返す", func(t *testing.T) {
+		svc, logRepo, _, _, _, _, _ := setupRuleEngineService()
+
+		logRepo.On("GetStreakInfo", uint(1)).Return(nil, assert.AnError)
+
+		advices := svc.GenerateAdvice(1)
+		assert.Empty(t, advices)
+	})
+}
+
+func TestGenerateAdvice_ContextCollectionError_Goals(t *testing.T) {
+	t.Run("Goals取得エラー時は空スライスを返す", func(t *testing.T) {
+		svc, logRepo, goalRepo, _, _, _, _ := setupRuleEngineService()
+
+		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+		goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, assert.AnError)
+
+		advices := svc.GenerateAdvice(1)
+		assert.Empty(t, advices)
+	})
+}
+
+func TestGenerateAdvice_ContextCollectionError_GoalStats(t *testing.T) {
+	t.Run("GoalStats取得エラー時は空スライスを返す", func(t *testing.T) {
+		svc, logRepo, goalRepo, _, _, _, _ := setupRuleEngineService()
+
+		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+		goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+		goalRepo.On("GetStats", uint(1)).Return(nil, assert.AnError)
+
+		advices := svc.GenerateAdvice(1)
+		assert.Empty(t, advices)
+	})
+}
+
+func TestGenerateAdvice_ContextCollectionError_Roadmaps(t *testing.T) {
+	t.Run("Roadmap取得エラー時は空スライスを返す", func(t *testing.T) {
+		svc, logRepo, goalRepo, roadmapRepo, _, _, _ := setupRuleEngineService()
+
+		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+		goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, assert.AnError)
+
+		advices := svc.GenerateAdvice(1)
+		assert.Empty(t, advices)
+	})
+}
+
+func TestGenerateAdvice_ContextCollectionError_LanguageStats(t *testing.T) {
+	t.Run("LanguageStats取得エラー時は空スライスを返す", func(t *testing.T) {
+		svc, logRepo, goalRepo, roadmapRepo, githubRepo, _, _ := setupRuleEngineService()
+
+		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+		goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, assert.AnError)
+
+		advices := svc.GenerateAdvice(1)
+		assert.Empty(t, advices)
+	})
+}
+
+func TestGenerateAdvice_ContextCollectionError_Logs(t *testing.T) {
+	t.Run("Logs取得エラー時は空スライスを返す", func(t *testing.T) {
+		svc, logRepo, goalRepo, roadmapRepo, githubRepo, _, _ := setupRuleEngineService()
+
+		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+		goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
+		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, assert.AnError)
+
+		advices := svc.GenerateAdvice(1)
+		assert.Empty(t, advices)
+	})
+}
+
+func TestGenerateAdvice_ContextCollectionError_Resources(t *testing.T) {
+	t.Run("Resources取得エラー時は空スライスを返す", func(t *testing.T) {
+		svc, logRepo, goalRepo, roadmapRepo, githubRepo, resourceRepo, _ := setupRuleEngineService()
+
+		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+		goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
+		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		resourceRepo.On("FindByUserID", uint(1), true).Return([]model.LearningResource{}, assert.AnError)
+
+		advices := svc.GenerateAdvice(1)
+		assert.Empty(t, advices)
+	})
+}
+
+func TestGenerateAdvice_ContextCollectionError_User(t *testing.T) {
+	t.Run("User取得エラー時は空スライスを返す", func(t *testing.T) {
+		svc, logRepo, goalRepo, roadmapRepo, githubRepo, resourceRepo, userRepo := setupRuleEngineService()
+
+		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+		goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
+		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		resourceRepo.On("FindByUserID", uint(1), true).Return([]model.LearningResource{}, nil)
+		userRepo.On("FindByID", uint(1)).Return(nil, assert.AnError)
+
+		advices := svc.GenerateAdvice(1)
+		assert.Empty(t, advices)
+	})
+}

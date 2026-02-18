@@ -268,3 +268,22 @@ func TestLearningLogGetByUserID_Empty(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Empty(t, result)
 }
+
+func TestLearningLogUpdate_RepoError(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+	existing := &model.LearningLog{Title: "Old", UserID: 1, Duration: 30}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(errors.New("db error"))
+	updates := &model.LearningLog{Title: "New"}
+	result, err := svc.Update(1, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestLearningLogDelete_NotFound(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+	err := svc.Delete(99, 1)
+	assert.Error(t, err)
+}

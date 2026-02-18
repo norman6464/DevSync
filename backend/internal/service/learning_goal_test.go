@@ -453,3 +453,42 @@ func TestGetDeadlineAlerts_RepoError(t *testing.T) {
 	assert.Nil(t, alerts)
 	repo.AssertExpectations(t)
 }
+
+func TestLearningGoalUpdate_RepoError(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+	existing := &model.LearningGoal{Title: "Goal", UserID: 1, Status: model.GoalStatusActive}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(errors.New("db error"))
+	updates := &model.LearningGoal{Title: "New Title"}
+	result, err := svc.Update(1, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestLearningGoalDelete_NotFound(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+	err := svc.Delete(99, 1)
+	assert.Error(t, err)
+}
+
+func TestLearningGoalUpdate_WithTargetDate(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+	existing := &model.LearningGoal{Title: "Goal", UserID: 1, Status: model.GoalStatusActive}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+	targetDate := time.Now().AddDate(0, 1, 0)
+	updates := &model.LearningGoal{
+		Title:       "Updated",
+		Description: "Desc",
+		Category:    model.GoalCategoryOther,
+		TargetDate:  &targetDate,
+	}
+	result, err := svc.Update(1, 1, updates)
+	assert.NoError(t, err)
+	assert.Equal(t, "Updated", result.Title)
+	assert.Equal(t, "Desc", result.Description)
+	assert.NotNil(t, result.TargetDate)
+}

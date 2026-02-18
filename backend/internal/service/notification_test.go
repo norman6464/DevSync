@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -129,6 +130,21 @@ func TestCreateNotificationWithoutHub_Success(t *testing.T) {
 	// hubがnilでもエラーにならないことを確認
 	err := svc.CreateNotification(notification)
 	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestCreateNotification_RepoError(t *testing.T) {
+	svc, repo := newTestNotificationService()
+
+	notification := &model.Notification{
+		UserID:  1,
+		Type:    model.NotificationTypePost,
+		ActorID: 2,
+	}
+	repo.On("Create", notification).Return(errors.New("db error"))
+
+	err := svc.CreateNotification(notification)
+	assert.Error(t, err)
 	repo.AssertExpectations(t)
 }
 
