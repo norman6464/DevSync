@@ -76,10 +76,11 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
-              <label className={labelClass}>
+              <label htmlFor="register-name" className={labelClass}>
                 {t('auth.name')}
               </label>
               <input
+                id="register-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -88,10 +89,11 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label className={labelClass}>
+              <label htmlFor="register-email" className={labelClass}>
                 {t('auth.email')}
               </label>
               <input
+                id="register-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -100,10 +102,11 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label className={labelClass}>
+              <label htmlFor="register-password" className={labelClass}>
                 {t('auth.password')}
               </label>
               <input
+                id="register-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
