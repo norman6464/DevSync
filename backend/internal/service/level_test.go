@@ -303,3 +303,39 @@ func TestCheckAndNotifyLevelUp_NoLevelUp(t *testing.T) {
 	assert.NoError(t, err)
 	notifRepo.AssertNotCalled(t, "Create", mock.Anything)
 }
+
+// === GetLevelTitle テスト ===
+
+func TestGetLevelTitle_Newcomer(t *testing.T) {
+	assert.Equal(t, "Newcomer", GetLevelTitle(0))
+}
+
+func TestGetLevelTitle_Beginner(t *testing.T) {
+	assert.Equal(t, "Beginner", GetLevelTitle(1))
+	assert.Equal(t, "Beginner", GetLevelTitle(5))
+}
+
+func TestGetLevelTitle_Intermediate(t *testing.T) {
+	assert.Equal(t, "Intermediate", GetLevelTitle(6))
+	assert.Equal(t, "Intermediate", GetLevelTitle(10))
+}
+
+func TestGetLevelTitle_Advanced(t *testing.T) {
+	assert.Equal(t, "Advanced", GetLevelTitle(11))
+	assert.Equal(t, "Advanced", GetLevelTitle(20))
+}
+
+func TestGetLevelTitle_Expert(t *testing.T) {
+	assert.Equal(t, "Expert", GetLevelTitle(21))
+	assert.Equal(t, "Expert", GetLevelTitle(30))
+}
+
+func TestGetLevelTitle_Master(t *testing.T) {
+	assert.Equal(t, "Master", GetLevelTitle(31))
+	assert.Equal(t, "Master", GetLevelTitle(40))
+}
+
+func TestGetLevelTitle_Legend(t *testing.T) {
+	assert.Equal(t, "Legend Lv.41", GetLevelTitle(41))
+	assert.Equal(t, "Legend Lv.100", GetLevelTitle(100))
+}

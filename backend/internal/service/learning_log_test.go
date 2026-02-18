@@ -216,3 +216,55 @@ func TestLearningLogGetCalendarData_Success(t *testing.T) {
 	assert.Equal(t, 3, result[0].Count)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// GetByID テスト
+// ============================================================
+
+func TestLearningLogGetByID_Success(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	log := &model.LearningLog{Title: "Go Study", UserID: 1}
+	log.ID = 1
+	repo.On("FindByID", uint(1)).Return(log, nil)
+
+	result, err := svc.GetByID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, "Go Study", result.Title)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogGetByID_NotFound(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	repo.On("FindByID", uint(999)).Return((*model.LearningLog)(nil), errors.New("not found"))
+
+	_, err := svc.GetByID(999)
+	assert.Error(t, err)
+}
+
+// ============================================================
+// GetByUserID テスト
+// ============================================================
+
+func TestLearningLogGetByUserID_Success(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	logs := []model.LearningLog{{Title: "Go Study"}, {Title: "React Study"}}
+	repo.On("GetByUserID", uint(1)).Return(logs, nil)
+
+	result, err := svc.GetByUserID(1)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogGetByUserID_Empty(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	repo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+
+	result, err := svc.GetByUserID(1)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+}
