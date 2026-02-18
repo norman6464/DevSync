@@ -23,7 +23,12 @@
     "menu": "メニュー",
     "scrollToTop": "ページ上部に戻る",
     "dismiss": "閉じる",
-    "selectLanguage": "言語を選択"
+    "selectLanguage": "言語を選択",
+    "monthsShort": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
+    "dayLabelsShort": ["", "月", "", "水", "", "金", ""],
+    "contributionsInLastYear": "過去1年間に{{count}}コントリビューション",
+    "dateContributions": "{{date}}: {{count}}コントリビューション",
+    "dateLogs": "{{date}}: {{count}}件のログ"
   },
   "nav": {
     "dashboard": "ダッシュボード",

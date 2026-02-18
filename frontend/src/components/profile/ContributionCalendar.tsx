@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { GitHubContribution } from '../../types/github';
 import { useThemeStore } from '../../store/themeStore';
 
@@ -14,6 +15,7 @@ function getColor(count: number, resolvedTheme: 'dark' | 'light'): string {
 }
 
 export default function ContributionCalendar({ contributions }: ContributionCalendarProps) {
+  const { t } = useTranslation();
   const resolvedTheme = useThemeStore((state) => state.resolvedTheme);
   const contributionMap = new Map(
     contributions.map((c) => [c.date.split('T')[0], c.count])
@@ -51,7 +53,7 @@ export default function ContributionCalendar({ contributions }: ContributionCale
 
   // Calculate month labels for header
   const monthLabels: { label: string; weekIndex: number }[] = [];
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months = t('common.monthsShort', { returnObjects: true }) as string[];
   let lastMonth = -1;
 
   weeks.forEach((week, weekIndex) => {
@@ -65,7 +67,7 @@ export default function ContributionCalendar({ contributions }: ContributionCale
     }
   });
 
-  const dayLabels = ['', 'Mon', '', 'Wed', '', 'Fri', ''];
+  const dayLabels = t('common.dayLabelsShort', { returnObjects: true }) as string[];
 
   return (
     <div>
@@ -102,7 +104,7 @@ export default function ContributionCalendar({ contributions }: ContributionCale
                   {week.map((day, di) => (
                     <div
                       key={di}
-                      title={`${day.date}: ${day.count} contributions`}
+                      title={t('common.dateContributions', { date: day.date, count: day.count })}
                       className="w-3 h-3 rounded-sm"
                       style={{ backgroundColor: getColor(day.count, resolvedTheme) }}
                     />
@@ -114,7 +116,7 @@ export default function ContributionCalendar({ contributions }: ContributionCale
         </div>
       </div>
       <p className="text-sm text-gray-500 mt-3">
-        {totalContributions.toLocaleString()} contributions in the last year
+        {t('common.contributionsInLastYear', { count: totalContributions })}
       </p>
     </div>
   );

@@ -50,7 +50,7 @@ export default function LogCalendar({ entries, onDateClick }: LogCalendarProps) 
   const totalLogs = entries.reduce((sum, e) => sum + e.count, 0);
 
   const monthLabels: { label: string; weekIndex: number }[] = [];
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months = t('common.monthsShort', { returnObjects: true }) as string[];
   let lastMonth = -1;
 
   weeks.forEach((week, weekIndex) => {
@@ -64,7 +64,7 @@ export default function LogCalendar({ entries, onDateClick }: LogCalendarProps) 
     }
   });
 
-  const dayLabels = ['', 'Mon', '', 'Wed', '', 'Fri', ''];
+  const dayLabels = t('common.dayLabelsShort', { returnObjects: true }) as string[];
 
   return (
     <div>
@@ -97,7 +97,7 @@ export default function LogCalendar({ entries, onDateClick }: LogCalendarProps) 
                   {week.map((day, di) => (
                     <div
                       key={di}
-                      title={`${day.date}: ${day.count} logs`}
+                      title={t('common.dateLogs', { date: day.date, count: day.count })}
                       className={`w-3 h-3 rounded-sm ${onDateClick && day.count > 0 ? 'cursor-pointer hover:ring-1 hover:ring-purple-400' : ''}`}
                       style={{ backgroundColor: getColor(day.count, resolvedTheme) }}
                       onClick={() => onDateClick && day.count > 0 && onDateClick(day.date)}

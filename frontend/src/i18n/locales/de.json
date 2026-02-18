@@ -22,7 +22,12 @@
     "and": "und",
     "menu": "Menü",
     "scrollToTop": "Nach oben",
-    "selectLanguage": "Sprache auswählen"
+    "selectLanguage": "Sprache auswählen",
+    "monthsShort": ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"],
+    "dayLabelsShort": ["", "Mo", "", "Mi", "", "Fr", ""],
+    "contributionsInLastYear": "{{count}} Beiträge im letzten Jahr",
+    "dateContributions": "{{date}}: {{count}} Beiträge",
+    "dateLogs": "{{date}}: {{count}} Einträge"
   },
   "nav": {
     "dashboard": "Dashboard",
