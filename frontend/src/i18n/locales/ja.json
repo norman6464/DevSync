@@ -1173,5 +1173,17 @@
     "updateFailed": "タグの更新に失敗しました",
     "maxTags": "タグは最大10個まで",
     "tagPlaceholder": "タグを入力してEnter"
+  },
+  "pinnedPosts": {
+    "title": "ピン留め投稿",
+    "pin": "ピン留め",
+    "unpin": "ピン留め解除",
+    "pinSuccess": "ピン留めしました",
+    "unpinSuccess": "ピン留めを解除しました",
+    "pinFailed": "ピン留めに失敗しました",
+    "unpinFailed": "ピン留め解除に失敗しました",
+    "reorderFailed": "順序の変更に失敗しました",
+    "maxPins": "ピン留めは最大3件まで",
+    "noPins": "ピン留めした投稿はありません"
   }
 }

@@ -1272,5 +1272,17 @@
     "updateFailed": "標籤更新失敗",
     "maxTags": "最多10個標籤",
     "tagPlaceholder": "輸入標籤後按Enter"
+  },
+  "pinnedPosts": {
+    "title": "置頂貼文",
+    "pin": "置頂",
+    "unpin": "取消置頂",
+    "pinSuccess": "已置頂",
+    "unpinSuccess": "已取消置頂",
+    "pinFailed": "置頂失敗",
+    "unpinFailed": "取消置頂失敗",
+    "reorderFailed": "排序失敗",
+    "maxPins": "最多置頂3篇貼文",
+    "noPins": "沒有置頂貼文"
   }
 }

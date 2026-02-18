@@ -1272,5 +1272,17 @@
     "updateFailed": "Échec de la mise à jour des tags",
     "maxTags": "Maximum 10 tags",
     "tagPlaceholder": "Saisissez un tag et appuyez sur Entrée"
+  },
+  "pinnedPosts": {
+    "title": "Publications épinglées",
+    "pin": "Épingler",
+    "unpin": "Désépingler",
+    "pinSuccess": "Publication épinglée",
+    "unpinSuccess": "Publication désépinglée",
+    "pinFailed": "Échec de l'épinglage",
+    "unpinFailed": "Échec du désépinglage",
+    "reorderFailed": "Échec du réordonnancement",
+    "maxPins": "Vous pouvez épingler jusqu'à 3 publications",
+    "noPins": "Aucune publication épinglée"
   }
 }

@@ -39,6 +39,7 @@ export { usePostSeries, useSeriesPosts } from './usePostSeries';
 export { usePostCollections, useCollectionPosts } from './usePostCollections';
 export { usePostTags, useTagSearch, usePopularTags } from './usePostTags';
 export { useBookmarks } from './useBookmarks';
+export { usePinnedPosts } from './usePinnedPosts';
 export { useToast } from './useToast';
 export { useDebounce } from './useDebounce';
 export { useAutoSave } from './useAutoSave';

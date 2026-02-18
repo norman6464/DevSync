@@ -113,6 +113,17 @@ type TagCount struct {
 	Count int    `json:"count"`
 }
 
+// PostPin はプロフィールにピン留めされた投稿を表す。
+// uniqueIndex制約でユーザーごとに同じ投稿が重複してピン留めされないことを保証する。
+type PostPin struct {
+	ID        uint      `json:"id" gorm:"primaryKey"`
+	UserID    uint      `json:"user_id" gorm:"not null;uniqueIndex:idx_user_post_pin;index"`
+	PostID    uint      `json:"post_id" gorm:"not null;uniqueIndex:idx_user_post_pin;index"`
+	Post      Post      `json:"post,omitempty" gorm:"foreignKey:PostID"`
+	PinOrder  int       `json:"pin_order" gorm:"not null;default:0"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 // Comment は投稿へのコメントを表す。
 type Comment struct {
 	ID        uint      `json:"id" gorm:"primaryKey"`

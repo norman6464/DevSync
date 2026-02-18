@@ -1553,6 +1553,46 @@ func (m *MockPostCollectionRepository) GetPostsByCollectionID(collectionID uint)
 }
 
 // ============================================================
+// MockPostPinRepository は repository.PostPinRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockPostPinRepository struct {
+	mock.Mock
+}
+
+var _ repository.PostPinRepositoryInterface = (*MockPostPinRepository)(nil)
+
+func (m *MockPostPinRepository) Pin(pin *model.PostPin) error {
+	args := m.Called(pin)
+	return args.Error(0)
+}
+
+func (m *MockPostPinRepository) Unpin(userID, postID uint) error {
+	args := m.Called(userID, postID)
+	return args.Error(0)
+}
+
+func (m *MockPostPinRepository) GetByUserID(userID uint) ([]model.PostPin, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.PostPin), args.Error(1)
+}
+
+func (m *MockPostPinRepository) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockPostPinRepository) IsPinned(userID, postID uint) (bool, error) {
+	args := m.Called(userID, postID)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockPostPinRepository) UpdateOrder(userID uint, postIDs []uint) error {
+	args := m.Called(userID, postIDs)
+	return args.Error(0)
+}
+
+// ============================================================
 // MockPostTagRepository は repository.PostTagRepositoryInterface のテスト用モック実装。
 // ============================================================
 

@@ -1272,5 +1272,17 @@
     "updateFailed": "Falha ao atualizar tags",
     "maxTags": "Máximo de 10 tags",
     "tagPlaceholder": "Digite uma tag e pressione Enter"
+  },
+  "pinnedPosts": {
+    "title": "Publicações fixadas",
+    "pin": "Fixar",
+    "unpin": "Desfixar",
+    "pinSuccess": "Publicação fixada",
+    "unpinSuccess": "Publicação desfixada",
+    "pinFailed": "Falha ao fixar",
+    "unpinFailed": "Falha ao desfixar",
+    "reorderFailed": "Falha ao reordenar",
+    "maxPins": "Você pode fixar até 3 publicações",
+    "noPins": "Nenhuma publicação fixada"
   }
 }

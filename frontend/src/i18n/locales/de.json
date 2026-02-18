@@ -1272,5 +1272,17 @@
     "updateFailed": "Tags konnten nicht aktualisiert werden",
     "maxTags": "Maximal 10 Tags",
     "tagPlaceholder": "Tag eingeben und Enter drücken"
+  },
+  "pinnedPosts": {
+    "title": "Angeheftete Beiträge",
+    "pin": "Anheften",
+    "unpin": "Loslösen",
+    "pinSuccess": "Beitrag angeheftet",
+    "unpinSuccess": "Beitrag losgelöst",
+    "pinFailed": "Anheften fehlgeschlagen",
+    "unpinFailed": "Loslösen fehlgeschlagen",
+    "reorderFailed": "Neuordnung fehlgeschlagen",
+    "maxPins": "Maximal 3 Beiträge können angeheftet werden",
+    "noPins": "Keine angehefteten Beiträge"
   }
 }
