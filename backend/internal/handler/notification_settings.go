@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -21,18 +22,6 @@ func NewNotificationSettingsHandler(s NotificationSettingsServiceInterface) *Not
 	return &NotificationSettingsHandler{service: s}
 }
 
-// UpdateNotificationSettingsInput は通知設定更新のリクエストボディ。
-type UpdateNotificationSettingsInput struct {
-	EnableLikes    bool `json:"enable_likes"`
-	EnableComments bool `json:"enable_comments"`
-	EnableFollows  bool `json:"enable_follows"`
-	EnableMessages bool `json:"enable_messages"`
-	EnableMentions bool `json:"enable_mentions"`
-	EnableWebPush  bool `json:"enable_web_push"`
-	EnableEmail    bool `json:"enable_email"`
-	EnableSound    bool `json:"enable_sound"`
-}
-
 // GetSettings は認証ユーザーの通知設定を取得する。
 func (h *NotificationSettingsHandler) GetSettings(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -50,7 +39,7 @@ func (h *NotificationSettingsHandler) GetSettings(c *gin.Context) {
 func (h *NotificationSettingsHandler) UpdateSettings(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	req := bindJSON[UpdateNotificationSettingsInput](c)
+	req := bindJSON[dto.UpdateNotificationSettingsRequest](c)
 	if req == nil {
 		return
 	}

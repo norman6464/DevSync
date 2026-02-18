@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -21,16 +22,6 @@ func NewReminderSettingsHandler(s ReminderSettingsServiceInterface) *ReminderSet
 	return &ReminderSettingsHandler{service: s}
 }
 
-// UpdateReminderSettingsInput はリマインダー設定更新リクエストの入力構造体。
-type UpdateReminderSettingsInput struct {
-	Enabled          bool                      `json:"enabled"`
-	Frequency        model.ReminderFrequency   `json:"frequency"`
-	NotificationTime string                    `json:"notification_time"`
-	InactiveDays     int                       `json:"inactive_days"`
-	EnableWeb        bool                      `json:"enable_web"`
-	EnableEmail      bool                      `json:"enable_email"`
-}
-
 // GetSettings は認証ユーザーのリマインダー設定を取得する。
 func (h *ReminderSettingsHandler) GetSettings(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -48,9 +39,8 @@ func (h *ReminderSettingsHandler) GetSettings(c *gin.Context) {
 func (h *ReminderSettingsHandler) UpdateSettings(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	var req UpdateReminderSettingsInput
-	if err := c.ShouldBindJSON(&req); err != nil {
-		respondBadRequest(c, err.Error())
+	req := bindJSON[dto.UpdateReminderSettingsRequest](c)
+	if req == nil {
 		return
 	}
 

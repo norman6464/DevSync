@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -149,7 +150,7 @@ func (h *AnswerHandler) Vote(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[VoteRequest](c)
+	req := bindJSON[dto.VoteRequest](c)
 	if req == nil {
 		return
 	}
