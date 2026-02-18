@@ -290,6 +290,58 @@ func TestPostDeleteComment_Success(t *testing.T) {
 }
 
 // ============================================================
+// スレッドコメント（返信）テスト
+// ============================================================
+
+func TestPostCreateReply_Success(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	parentID := uint(5)
+	reply := &model.Comment{Content: "Great reply!", UserID: 2, PostID: 10, ParentID: &parentID}
+	postRepo.On("CreateComment", reply).Return(nil)
+
+	err := svc.CreateComment(reply)
+	assert.NoError(t, err)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostGetReplies_Success(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	parentID := uint(5)
+	replies := []model.Comment{
+		{ID: 10, Content: "Reply 1", ParentID: &parentID},
+		{ID: 11, Content: "Reply 2", ParentID: &parentID},
+	}
+	postRepo.On("GetReplies", uint(5)).Return(replies, nil)
+
+	result, err := svc.GetReplies(5)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostGetReplies_Empty(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("GetReplies", uint(5)).Return([]model.Comment{}, nil)
+
+	result, err := svc.GetReplies(5)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+}
+
+func TestPostGetReplies_RepoError(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("GetReplies", uint(5)).Return([]model.Comment(nil), errors.New("db error"))
+
+	result, err := svc.GetReplies(5)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+// ============================================================
 // 投稿公開テスト
 // ============================================================
 

@@ -155,6 +155,11 @@ func (s *PostService) GetComments(postID uint) ([]model.Comment, error) {
 	return s.repo.GetComments(postID)
 }
 
+// GetReplies は指定コメントへの返信一覧を取得する。
+func (s *PostService) GetReplies(parentID uint) ([]model.Comment, error) {
+	return s.repo.GetReplies(parentID)
+}
+
 // DeleteComment はコメントを削除する。
 func (s *PostService) DeleteComment(id, userID uint) error {
 	return s.repo.DeleteComment(id, userID)

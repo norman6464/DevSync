@@ -106,8 +106,16 @@ func (r *PostRepository) CreateComment(comment *model.Comment) error {
 // GetComments は指定投稿の全コメントをユーザー情報付きで取得する（古い順）。
 func (r *PostRepository) GetComments(postID uint) ([]model.Comment, error) {
 	var comments []model.Comment
-	err := r.db.Preload("User").Where("post_id = ?", postID).Order("created_at ASC").Find(&comments).Error
+	err := r.db.Preload("User").Preload("Replies").Preload("Replies.User").
+		Where("post_id = ? AND parent_id IS NULL", postID).
+		Order("created_at ASC").Find(&comments).Error
 	return comments, err
+}
+
+func (r *PostRepository) GetReplies(parentID uint) ([]model.Comment, error) {
+	var replies []model.Comment
+	err := r.db.Preload("User").Where("parent_id = ?", parentID).Order("created_at ASC").Find(&replies).Error
+	return replies, err
 }
 
 // DeleteComment はコメントを削除し、投稿のcomment_countをデクリメントする。

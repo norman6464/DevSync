@@ -22,11 +22,11 @@ export function usePostDetail(id: string | undefined) {
     { deps: [postId], enabled: !!postId }
   );
 
-  const handleSubmitComment = useCallback(async (content: string) => {
+  const handleSubmitComment = useCallback(async (content: string, parentId?: number) => {
     if (!content.trim() || !postId) return false;
     setSubmitting(true);
     try {
-      await createComment(postId, content);
+      await createComment(postId, content, parentId);
       await refetch();
       return true;
     } catch {

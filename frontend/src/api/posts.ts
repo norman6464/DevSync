@@ -63,8 +63,11 @@ export const getBookmarkedPosts = (page = 1, limit = 20) =>
 export const getComments = (postId: number) =>
   client.get<Comment[]>(`/posts/${postId}/comments`);
 
-export const createComment = (postId: number, content: string) =>
-  client.post<Comment>(`/posts/${postId}/comments`, { content });
+export const createComment = (postId: number, content: string, parentId?: number) =>
+  client.post<Comment>(`/posts/${postId}/comments`, { content, parent_id: parentId || undefined });
+
+export const getReplies = (postId: number, commentId: number) =>
+  client.get<Comment[]>(`/posts/${postId}/comments/${commentId}/replies`);
 
 export const deleteComment = (id: number) =>
   client.delete(`/comments/${id}`);
