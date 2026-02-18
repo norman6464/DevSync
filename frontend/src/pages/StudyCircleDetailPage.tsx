@@ -100,8 +100,8 @@ export default function StudyCircleDetailPage() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-start gap-3">
-        <button onClick={() => navigate('/study-circles')} className="mt-1 text-gray-400 hover:text-white">
-          <ArrowLeft className="w-5 h-5" />
+        <button onClick={() => navigate('/study-circles')} className="mt-1 text-gray-400 hover:text-white" aria-label={t('common.back')}>
+          <ArrowLeft className="w-5 h-5" aria-hidden="true" />
         </button>
         <div className="flex-1 min-w-0">
           <h1 className="text-xl font-bold text-white truncate">{circle.name}</h1>
@@ -118,16 +118,18 @@ export default function StudyCircleDetailPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center border-b border-gray-800 gap-1">
+      <div className="flex items-center border-b border-gray-800 gap-1" role="tablist">
         {tabs.map(({ key, icon: Icon, label }) => (
           <button
             key={key}
+            role="tab"
+            aria-selected={tab === key}
             onClick={() => setTab(key)}
             className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors relative ${
               tab === key ? 'text-white' : 'text-gray-400 hover:text-white'
             }`}
           >
-            <Icon className="w-3.5 h-3.5" />
+            <Icon className="w-3.5 h-3.5" aria-hidden="true" />
             {label}
             {tab === key && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500 rounded-t" />
@@ -170,13 +172,15 @@ export default function StudyCircleDetailPage() {
                     <div className="flex items-start gap-3">
                       <button
                         onClick={() => handleToggleProgress(step.id, isCompleted)}
+                        aria-pressed={isCompleted}
+                        aria-label={`${step.title} - ${isCompleted ? t('studyCircle.progress.completed') : t('studyCircle.progress.notCompleted')}`}
                         className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
                           isCompleted
                             ? 'bg-green-500 border-green-500 text-white'
                             : 'border-gray-600 hover:border-purple-500'
                         }`}
                       >
-                        {isCompleted && <Check className="w-3 h-3" />}
+                        {isCompleted && <Check className="w-3 h-3" aria-hidden="true" />}
                       </button>
                       <div className="flex-1 min-w-0">
                         <h4 className={`text-sm font-medium ${isCompleted ? 'text-green-400 line-through' : 'text-white'}`}>
@@ -221,9 +225,10 @@ export default function StudyCircleDetailPage() {
                       {isOwner && (
                         <button
                           onClick={() => deleteStep(step.id)}
+                          aria-label={t('common.delete')}
                           className="text-gray-600 hover:text-red-400 transition-colors"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                         </button>
                       )}
                     </div>
@@ -377,9 +382,10 @@ export default function StudyCircleDetailPage() {
               <h3 className="text-sm font-medium text-white">{t('studyCircle.members')}</h3>
               <button
                 onClick={() => setShowAddMember(!showAddMember)}
+                aria-expanded={showAddMember}
                 className="flex items-center gap-1 px-2 py-1 text-xs text-purple-400 hover:text-purple-300 border border-purple-500/30 rounded-lg transition-colors"
               >
-                <Plus className="w-3 h-3" />
+                <Plus className="w-3 h-3" aria-hidden="true" />
                 {t('studyCircle.addMember')}
               </button>
             </div>
@@ -425,13 +431,13 @@ export default function StudyCircleDetailPage() {
                     <button
                       onClick={() => removeMember(m.user_id)}
                       className="text-gray-600 hover:text-red-400 transition-colors"
-                      title={t('studyCircle.removeMember')}
+                      aria-label={t('studyCircle.removeMember')}
                     >
-                      <UserMinus className="w-3.5 h-3.5" />
+                      <UserMinus className="w-3.5 h-3.5" aria-hidden="true" />
                     </button>
                   )}
                   {m.role === 'owner' && (
-                    <Crown className="w-3.5 h-3.5 text-amber-400" />
+                    <Crown className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
                   )}
                 </div>
               ))}
