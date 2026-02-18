@@ -158,6 +158,7 @@
     "codeCopied": "Скопировано!",
     "lineComment": "Комментарий к строке",
     "addLineComment": "Добавить комментарий",
+    "deleteComment": "Удалить комментарий",
     "lineCommentPlaceholder": "Комментарий к этой строке...",
     "snippetComments": "{{count}} комментариев",
     "codeSnippets": "Фрагменты Кода",

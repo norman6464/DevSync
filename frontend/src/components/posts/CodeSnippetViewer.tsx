@@ -68,12 +68,12 @@ export default function CodeSnippetViewer({ snippet, showComments = true }: Code
         >
           {copied ? (
             <>
-              <Check className="w-3.5 h-3.5 text-green-400" />
+              <Check className="w-3.5 h-3.5 text-green-400" aria-hidden="true" />
               <span className="text-green-400">{t('post.codeCopied')}</span>
             </>
           ) : (
             <>
-              <Copy className="w-3.5 h-3.5" />
+              <Copy className="w-3.5 h-3.5" aria-hidden="true" />
               {t('post.copyCode')}
             </>
           )}
@@ -96,9 +96,9 @@ export default function CodeSnippetViewer({ snippet, showComments = true }: Code
                         <button
                           onClick={() => setCommentLine(commentLine === lineNum ? null : lineNum)}
                           className="w-5 h-full flex items-center justify-center text-transparent group-hover:text-blue-400 hover:bg-gray-800 transition-colors"
-                          title={t('post.addLineComment')}
+                          aria-label={t('post.addLineComment')}
                         >
-                          <MessageSquarePlus className="w-3 h-3" />
+                          <MessageSquarePlus className="w-3 h-3" aria-hidden="true" />
                         </button>
                         {/* Line number */}
                         <span className="px-2 text-xs text-gray-600 select-none font-mono text-right min-w-[2.5rem] inline-block">
@@ -182,6 +182,7 @@ export default function CodeSnippetViewer({ snippet, showComments = true }: Code
                               <button
                                 onClick={() => removeComment(comment.id)}
                                 className="text-xs text-gray-600 hover:text-red-400 transition-colors"
+                                aria-label={t('post.deleteComment')}
                               >
                                 ×
                               </button>

@@ -159,6 +159,7 @@
     "codeCopied": "コピーしました",
     "lineComment": "行コメント",
     "addLineComment": "コメントを追加",
+    "deleteComment": "コメントを削除",
     "lineCommentPlaceholder": "この行へのコメント...",
     "snippetComments": "{{count}}件のコメント",
     "codeSnippets": "コードスニペット",
