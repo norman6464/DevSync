@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { User, Code, Link, CheckCircle, ChevronRight, ChevronLeft } from 'lucide-react';
@@ -47,6 +48,17 @@ export default function OnboardingPage() {
     handleSavePaizaRank,
     handleComplete,
   } = useOnboarding();
+
+  const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value), [setName]);
+  const handleBioChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => setBio(e.target.value), [setBio]);
+  const handleZennUsernameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setZennUsername(e.target.value), [setZennUsername]);
+  const handleQiitaUsernameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setQiitaUsername(e.target.value), [setQiitaUsername]);
+  const handleAtcoderUsernameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setAtcoderUsername(e.target.value), [setAtcoderUsername]);
+  const handlePaizaRankChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => setPaizaRank(e.target.value), [setPaizaRank]);
+  const handleGoToStep1 = useCallback(() => setStep(1), [setStep]);
+  const handleGoToStep2 = useCallback(() => setStep(2), [setStep]);
+  const handleGoToStep3 = useCallback(() => setStep(3), [setStep]);
+  const handleGoToStep4 = useCallback(() => setStep(4), [setStep]);
 
   if (!user) return null;
   if (user.onboarding_completed) return <Navigate to="/" replace />;
@@ -109,7 +121,7 @@ export default function OnboardingPage() {
                   <input
                     type="text"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={handleNameChange}
                     placeholder={t('onboarding.namePlaceholder')}
                     className={inputClass}
                   />
@@ -120,7 +132,7 @@ export default function OnboardingPage() {
                   </label>
                   <textarea
                     value={bio}
-                    onChange={(e) => setBio(e.target.value)}
+                    onChange={handleBioChange}
                     rows={3}
                     placeholder={t('onboarding.bioPlaceholder')}
                     className={`${inputClass} resize-none`}
@@ -129,7 +141,7 @@ export default function OnboardingPage() {
               </div>
               <div className="px-6 py-4 border-t border-gray-800 flex justify-end gap-3">
                 <button
-                  onClick={() => setStep(2)}
+                  onClick={handleGoToStep2}
                   className="px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors"
                 >
                   {t('onboarding.skip')}
@@ -218,7 +230,7 @@ export default function OnboardingPage() {
               </div>
               <div className="px-6 py-4 border-t border-gray-800 flex justify-between">
                 <button
-                  onClick={() => setStep(1)}
+                  onClick={handleGoToStep1}
                   className="px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors inline-flex items-center gap-1"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -226,7 +238,7 @@ export default function OnboardingPage() {
                 </button>
                 <div className="flex gap-3">
                   <button
-                    onClick={() => setStep(3)}
+                    onClick={handleGoToStep3}
                     className="px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors"
                   >
                     {t('onboarding.skip')}
@@ -296,7 +308,7 @@ export default function OnboardingPage() {
                       <input
                         type="text"
                         value={zennUsername}
-                        onChange={(e) => setZennUsername(e.target.value)}
+                        onChange={handleZennUsernameChange}
                         placeholder={t('settings.zennUsername')}
                         className={`${inputClass} flex-1`}
                       />
@@ -330,7 +342,7 @@ export default function OnboardingPage() {
                       <input
                         type="text"
                         value={qiitaUsername}
-                        onChange={(e) => setQiitaUsername(e.target.value)}
+                        onChange={handleQiitaUsernameChange}
                         placeholder={t('settings.qiitaUsername')}
                         className={`${inputClass} flex-1`}
                       />
@@ -364,7 +376,7 @@ export default function OnboardingPage() {
                       <input
                         type="text"
                         value={atcoderUsername}
-                        onChange={(e) => setAtcoderUsername(e.target.value)}
+                        onChange={handleAtcoderUsernameChange}
                         placeholder={t('settings.atcoderUsername')}
                         className={`${inputClass} flex-1`}
                       />
@@ -397,7 +409,7 @@ export default function OnboardingPage() {
                     <div className="flex gap-2">
                       <select
                         value={paizaRank}
-                        onChange={(e) => setPaizaRank(e.target.value)}
+                        onChange={handlePaizaRankChange}
                         className={`${inputClass} flex-1`}
                       >
                         <option value="">{t('settings.paizaSelectRank')}</option>
@@ -421,14 +433,14 @@ export default function OnboardingPage() {
               </div>
               <div className="px-6 py-4 border-t border-gray-800 flex justify-between">
                 <button
-                  onClick={() => setStep(2)}
+                  onClick={handleGoToStep2}
                   className="px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors inline-flex items-center gap-1"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   {t('onboarding.back')}
                 </button>
                 <button
-                  onClick={() => setStep(4)}
+                  onClick={handleGoToStep4}
                   className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium text-sm transition-colors inline-flex items-center gap-1"
                 >
                   {t('onboarding.next')}
