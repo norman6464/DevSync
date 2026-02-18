@@ -15,5 +15,5 @@ type UpdatePostSeriesRequest struct {
 // AddPostToSeriesRequest はシリーズへの投稿追加リクエスト。
 type AddPostToSeriesRequest struct {
 	PostID     uint `json:"post_id" binding:"required"`
-	OrderIndex int  `json:"order_index"`
+	OrderIndex int  `json:"order_index" binding:"omitempty,min=0"`
 }
