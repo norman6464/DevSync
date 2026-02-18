@@ -2,15 +2,15 @@ package dto
 
 // CreateChatRoomRequest はチャットルーム作成リクエスト。
 type CreateChatRoomRequest struct {
-	Name        string `json:"name" binding:"required" validate:"required"`
-	Description string `json:"description"`
-	MemberIDs   []uint `json:"member_ids"`
+	Name        string `json:"name" binding:"required,max=200" validate:"required,max=200"`
+	Description string `json:"description" binding:"omitempty,max=2000"`
+	MemberIDs   []uint `json:"member_ids" binding:"omitempty,max=100"`
 }
 
 // UpdateChatRoomRequest はチャットルーム更新リクエスト。
 type UpdateChatRoomRequest struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	Name        string `json:"name" binding:"omitempty,max=200"`
+	Description string `json:"description" binding:"omitempty,max=2000"`
 }
 
 // AddChatRoomMemberRequest はメンバー追加リクエスト。
@@ -20,5 +20,5 @@ type AddChatRoomMemberRequest struct {
 
 // SendChatRoomMessageRequest はチャットルームメッセージ送信リクエスト。
 type SendChatRoomMessageRequest struct {
-	Content string `json:"content" binding:"required" validate:"required"`
+	Content string `json:"content" binding:"required,max=5000" validate:"required,max=5000"`
 }
