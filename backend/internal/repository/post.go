@@ -142,6 +142,43 @@ func (r *PostRepository) Search(query string, limit, offset int) (interface{}, i
 	return posts, total, err
 }
 
+// Bookmark は投稿をブックマークする。
+func (r *PostRepository) Bookmark(userID, postID uint) error {
+	return r.db.Create(&model.Bookmark{UserID: userID, PostID: postID}).Error
+}
+
+// Unbookmark は投稿のブックマークを解除する。
+func (r *PostRepository) Unbookmark(userID, postID uint) error {
+	return r.db.Where("user_id = ? AND post_id = ?", userID, postID).Delete(&model.Bookmark{}).Error
+}
+
+// HasBookmarked は指定ユーザーが投稿をブックマーク済みかどうかを判定する。
+func (r *PostRepository) HasBookmarked(userID, postID uint) bool {
+	var count int64
+	r.db.Model(&model.Bookmark{}).Where("user_id = ? AND post_id = ?", userID, postID).Count(&count)
+	return count > 0
+}
+
+// FindBookmarkedByUserID は指定ユーザーのブックマーク済み投稿をページネーション付きで取得する。
+func (r *PostRepository) FindBookmarkedByUserID(userID uint, page, limit int) ([]model.Post, int64, error) {
+	var posts []model.Post
+	var total int64
+	offset := (page - 1) * limit
+
+	subQuery := r.db.Model(&model.Bookmark{}).Select("post_id").Where("user_id = ?", userID)
+
+	if err := r.db.Model(&model.Post{}).Where("id IN (?)", subQuery).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	err := r.db.Preload("User").Preload("CodeSnippets").
+		Where("id IN (?)", subQuery).
+		Order("created_at DESC").
+		Offset(offset).Limit(limit).
+		Find(&posts).Error
+	return posts, total, err
+}
+
 // FindDraftsByUserID は指定ユーザーの下書き一覧を取得する（新しい順）。
 func (r *PostRepository) FindDraftsByUserID(userID uint) ([]model.Post, error) {
 	var posts []model.Post

@@ -12,6 +12,7 @@ export interface Post {
   comment_count: number;
   code_snippets?: CodeSnippet[];
   liked?: boolean;
+  bookmarked?: boolean;
   created_at: string;
   updated_at: string;
 }

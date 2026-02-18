@@ -131,7 +131,11 @@
     "draftSaved": "Entwurf gespeichert",
     "draftFailed": "Entwurf konnte nicht gespeichert werden",
     "writeComment": "Kommentar schreiben...",
-    "notFound": "Beitrag nicht gefunden"
+    "notFound": "Beitrag nicht gefunden",
+    "bookmark": "Lesezeichen",
+    "unbookmark": "Lesezeichen entfernen",
+    "bookmarks": "Lesezeichen",
+    "noBookmarks": "Keine markierten Beiträge"
   },
   "follow": {
     "noFollowers": "Noch keine Follower",

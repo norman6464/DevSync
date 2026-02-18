@@ -30,8 +30,15 @@ type CreateCommentRequest struct {
 	Content string `json:"content" binding:"required"`
 }
 
-// PostDetailResponse は投稿詳細レスポンス（いいね済みフラグ付き）。
+// PostDetailResponse は投稿詳細レスポンス（いいね済み・ブックマーク済みフラグ付き）。
 type PostDetailResponse struct {
 	model.Post
-	Liked bool `json:"liked"`
+	Liked      bool `json:"liked"`
+	Bookmarked bool `json:"bookmarked"`
+}
+
+// BookmarkedPostsResponse はブックマーク済み投稿一覧レスポンス。
+type BookmarkedPostsResponse struct {
+	Posts []model.Post `json:"posts"`
+	Total int64        `json:"total"`
 }

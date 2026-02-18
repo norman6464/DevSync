@@ -131,7 +131,11 @@
     "draftSaved": "Brouillon enregistré",
     "draftFailed": "Échec de l'enregistrement du brouillon",
     "writeComment": "Écrire un commentaire...",
-    "notFound": "Publication introuvable"
+    "notFound": "Publication introuvable",
+    "bookmark": "Signet",
+    "unbookmark": "Retirer le signet",
+    "bookmarks": "Signets",
+    "noBookmarks": "Aucune publication enregistrée"
   },
   "follow": {
     "noFollowers": "Pas encore d'abonnés",

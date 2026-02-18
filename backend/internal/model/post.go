@@ -27,6 +27,16 @@ type Like struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+// Bookmark は投稿のブックマーク（保存）を記録する。
+// uniqueIndex制約でユーザーごとに1投稿1ブックマークを保証する。
+type Bookmark struct {
+	ID        uint      `json:"id" gorm:"primaryKey"`
+	UserID    uint      `json:"user_id" gorm:"not null;uniqueIndex:idx_user_post_bookmark"`
+	PostID    uint      `json:"post_id" gorm:"not null;uniqueIndex:idx_user_post_bookmark;index"`
+	Post      Post      `json:"post,omitempty" gorm:"foreignKey:PostID"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 // Comment は投稿へのコメントを表す。
 type Comment struct {
 	ID        uint      `json:"id" gorm:"primaryKey"`

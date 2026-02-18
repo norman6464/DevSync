@@ -24,6 +24,10 @@ type PostServiceInterface interface {
 	GetComments(postID uint) ([]model.Comment, error)
 	DeleteComment(id, userID uint) error
 	Publish(id, userID uint) (*model.Post, error)
+	Bookmark(userID, postID uint) error
+	Unbookmark(userID, postID uint) error
+	HasBookmarked(userID, postID uint) bool
+	GetBookmarks(userID uint, page, limit int) ([]model.Post, int64, error)
 }
 
 // CodeSnippetServiceInterface はCodeSnippetServiceが実装すべきインターフェース。
@@ -115,8 +119,9 @@ func (h *PostHandler) GetByID(c *gin.Context) {
 
 	userID := c.GetUint("userID")
 	respondOK(c, dto.PostDetailResponse{
-		Post:  *post,
-		Liked: h.service.HasLiked(userID, post.ID),
+		Post:       *post,
+		Liked:      h.service.HasLiked(userID, post.ID),
+		Bookmarked: h.service.HasBookmarked(userID, post.ID),
 	})
 }
 
@@ -290,4 +295,47 @@ func (h *PostHandler) Publish(c *gin.Context) {
 		return
 	}
 	respondOK(c, post)
+}
+
+// Bookmark は投稿をブックマークする。
+func (h *PostHandler) Bookmark(c *gin.Context) {
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+	userID := c.GetUint("userID")
+
+	if err := h.service.Bookmark(userID, id); err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, domain.NewMessageResponse("bookmarked"))
+}
+
+// Unbookmark は投稿のブックマークを解除する。
+func (h *PostHandler) Unbookmark(c *gin.Context) {
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+	userID := c.GetUint("userID")
+
+	if err := h.service.Unbookmark(userID, id); err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, domain.NewMessageResponse("unbookmarked"))
+}
+
+// GetBookmarks は現在のユーザーのブックマーク済み投稿一覧を返す。
+func (h *PostHandler) GetBookmarks(c *gin.Context) {
+	userID := c.GetUint("userID")
+	page, limit := parsePagination(c)
+
+	posts, total, err := h.service.GetBookmarks(userID, page, limit)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, dto.BookmarkedPostsResponse{Posts: posts, Total: total})
 }

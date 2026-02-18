@@ -131,7 +131,11 @@
     "draftSaved": "草稿已儲存",
     "draftFailed": "草稿儲存失敗",
     "writeComment": "寫評論...",
-    "notFound": "找不到貼文"
+    "notFound": "找不到貼文",
+    "bookmark": "書籤",
+    "unbookmark": "取消書籤",
+    "bookmarks": "書籤列表",
+    "noBookmarks": "沒有收藏的貼文"
   },
   "follow": {
     "noFollowers": "尚無追蹤者",

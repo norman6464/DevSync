@@ -149,6 +149,26 @@ func (s *PostService) DeleteComment(id, userID uint) error {
 	return s.repo.DeleteComment(id, userID)
 }
 
+// Bookmark は投稿をブックマークする。
+func (s *PostService) Bookmark(userID, postID uint) error {
+	return s.repo.Bookmark(userID, postID)
+}
+
+// Unbookmark は投稿のブックマークを解除する。
+func (s *PostService) Unbookmark(userID, postID uint) error {
+	return s.repo.Unbookmark(userID, postID)
+}
+
+// HasBookmarked は指定ユーザーが投稿をブックマーク済みかを判定する。
+func (s *PostService) HasBookmarked(userID, postID uint) bool {
+	return s.repo.HasBookmarked(userID, postID)
+}
+
+// GetBookmarks は指定ユーザーのブックマーク済み投稿一覧を取得する。
+func (s *PostService) GetBookmarks(userID uint, page, limit int) ([]model.Post, int64, error) {
+	return s.repo.FindBookmarkedByUserID(userID, page, limit)
+}
+
 // Publish は下書き投稿を公開し、フォロワーに通知する。
 func (s *PostService) Publish(id, userID uint) (*model.Post, error) {
 	post, err := s.repo.FindByID(id)

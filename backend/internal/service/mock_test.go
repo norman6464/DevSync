@@ -163,6 +163,26 @@ func (m *MockPostRepository) DeleteComment(id, userID uint) error {
 	return args.Error(0)
 }
 
+func (m *MockPostRepository) Bookmark(userID, postID uint) error {
+	args := m.Called(userID, postID)
+	return args.Error(0)
+}
+
+func (m *MockPostRepository) Unbookmark(userID, postID uint) error {
+	args := m.Called(userID, postID)
+	return args.Error(0)
+}
+
+func (m *MockPostRepository) HasBookmarked(userID, postID uint) bool {
+	args := m.Called(userID, postID)
+	return args.Bool(0)
+}
+
+func (m *MockPostRepository) FindBookmarkedByUserID(userID uint, page, limit int) ([]model.Post, int64, error) {
+	args := m.Called(userID, page, limit)
+	return args.Get(0).([]model.Post), args.Get(1).(int64), args.Error(2)
+}
+
 // ============================================================
 // MockFollowRepository は repository.FollowRepositoryInterface のテスト用モック実装。
 // ============================================================
