@@ -158,6 +158,7 @@
     "codeCopied": "已复制",
     "lineComment": "行注释",
     "addLineComment": "添加评论",
+    "deleteComment": "删除评论",
     "lineCommentPlaceholder": "对这行进行评论...",
     "snippetComments": "{{count}}条评论",
     "codeSnippets": "代码片段",

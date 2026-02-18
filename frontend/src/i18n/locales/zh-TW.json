@@ -158,6 +158,7 @@
     "codeCopied": "已複製",
     "lineComment": "行註解",
     "addLineComment": "新增留言",
+    "deleteComment": "刪除留言",
     "lineCommentPlaceholder": "對這行進行留言...",
     "snippetComments": "{{count}}則留言",
     "codeSnippets": "程式碼片段",

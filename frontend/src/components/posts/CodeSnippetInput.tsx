@@ -38,9 +38,9 @@ export default function CodeSnippetInput({ value, onChange, onRemove, index }: C
           type="button"
           onClick={onRemove}
           className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-gray-700 rounded transition-colors"
-          title={t('post.removeSnippet')}
+          aria-label={t('post.removeSnippet')}
         >
-          <X className="w-4 h-4" />
+          <X className="w-4 h-4" aria-hidden="true" />
         </button>
       </div>
 

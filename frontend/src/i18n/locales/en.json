@@ -158,6 +158,7 @@
     "codeCopied": "Copied!",
     "lineComment": "Line comment",
     "addLineComment": "Add comment",
+    "deleteComment": "Delete comment",
     "lineCommentPlaceholder": "Comment on this line...",
     "snippetComments": "{{count}} comments",
     "codeSnippets": "Code Snippets",

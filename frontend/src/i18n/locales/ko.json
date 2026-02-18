@@ -158,6 +158,7 @@
     "codeCopied": "복사되었습니다",
     "lineComment": "라인 코멘트",
     "addLineComment": "코멘트 추가",
+    "deleteComment": "코멘트 삭제",
     "lineCommentPlaceholder": "이 줄에 코멘트...",
     "snippetComments": "{{count}}개의 코멘트",
     "codeSnippets": "코드 스니펫",
