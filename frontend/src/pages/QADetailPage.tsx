@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
@@ -29,6 +29,17 @@ export default function QADetailPage() {
   })() : [];
 
   const isQuestionOwner = user?.id === question?.user_id;
+
+  const handleUpvote = useCallback(() => {
+    userVote === 1 ? removeQuestionVote() : voteQuestion(1);
+  }, [userVote, removeQuestionVote, voteQuestion]);
+  const handleDownvote = useCallback(() => {
+    userVote === -1 ? removeQuestionVote() : voteQuestion(-1);
+  }, [userVote, removeQuestionVote, voteQuestion]);
+  const handleCancelEdit = useCallback(() => setEditingAnswer(null), []);
+  const handleCreateAnswer = useCallback(async (body: string) => {
+    return await createAnswer({ body });
+  }, [createAnswer]);
 
   if (loading) {
     return <PageLoader />;
@@ -64,7 +75,7 @@ export default function QADetailPage() {
           {/* Vote buttons */}
           <div className="flex flex-col items-center gap-1">
             <button
-              onClick={() => userVote === 1 ? removeQuestionVote() : voteQuestion(1)}
+              onClick={handleUpvote}
               className={`p-1 transition-colors ${userVote === 1 ? 'text-green-400' : 'text-gray-400 hover:text-green-400'}`}
               title={t('qa.upvote')}
             >
@@ -78,7 +89,7 @@ export default function QADetailPage() {
               {question.vote_count}
             </span>
             <button
-              onClick={() => userVote === -1 ? removeQuestionVote() : voteQuestion(-1)}
+              onClick={handleDownvote}
               className={`p-1 transition-colors ${userVote === -1 ? 'text-red-400' : 'text-gray-400 hover:text-red-400'}`}
               title={t('qa.downvote')}
             >
@@ -152,7 +163,7 @@ export default function QADetailPage() {
                     if (success) setEditingAnswer(null);
                     return success;
                   }}
-                  onCancel={() => setEditingAnswer(null)}
+                  onCancel={handleCancelEdit}
                   loading={submitting}
                   isEdit
                 />
@@ -177,9 +188,7 @@ export default function QADetailPage() {
         <div className="mt-8">
           <h3 className="text-md font-semibold text-white mb-3">{t('qa.yourAnswer')}</h3>
           <AnswerForm
-            onSubmit={async (body) => {
-              return await createAnswer({ body });
-            }}
+            onSubmit={handleCreateAnswer}
             loading={submitting}
           />
         </div>
