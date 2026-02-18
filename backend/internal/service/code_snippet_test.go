@@ -159,6 +159,23 @@ func TestSnippetCommentCreate_Success(t *testing.T) {
 	snippetRepo.AssertCalled(t, "CreateComment", comment)
 }
 
+func TestSnippetCommentCreate_SnippetNotFound(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+
+	snippetRepo.On("FindByID", uint(999)).Return(nil, gorm.ErrRecordNotFound)
+
+	comment := &model.SnippetComment{
+		SnippetID:  999,
+		UserID:     2,
+		LineNumber: 1,
+		Content:    "コメント",
+	}
+
+	err := svc.CreateComment(comment)
+	assert.Error(t, err)
+	snippetRepo.AssertExpectations(t)
+}
+
 func TestSnippetCommentDelete_Success(t *testing.T) {
 	svc, snippetRepo, _ := newTestCodeSnippetService()
 
@@ -234,4 +251,58 @@ func TestSnippetGetComments_Empty(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Empty(t, result)
 	snippetRepo.AssertExpectations(t)
+}
+
+func TestSnippetCreate_RepoError(t *testing.T) {
+	svc, snippetRepo, postRepo := newTestCodeSnippetService()
+	post := &model.Post{Title: "Test", Content: "Content", UserID: 1}
+	post.ID = 5
+	postRepo.On("FindByID", uint(5)).Return(post, nil)
+	snippet := &model.CodeSnippet{PostID: 5, UserID: 1, Language: "go", Code: "package main"}
+	snippetRepo.On("Create", snippet).Return(gorm.ErrInvalidDB)
+	result, err := svc.Create(snippet)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestSnippetCreate_FindByIDAfterCreateFails(t *testing.T) {
+	svc, snippetRepo, postRepo := newTestCodeSnippetService()
+	post := &model.Post{Title: "Test", Content: "Content", UserID: 1}
+	post.ID = 5
+	postRepo.On("FindByID", uint(5)).Return(post, nil)
+	snippet := &model.CodeSnippet{PostID: 5, UserID: 1, Language: "go", Code: "package main"}
+	snippetRepo.On("Create", snippet).Run(func(args mock.Arguments) {
+		s := args.Get(0).(*model.CodeSnippet)
+		s.ID = 10
+	}).Return(nil)
+	snippetRepo.On("FindByID", uint(10)).Return(nil, gorm.ErrRecordNotFound)
+	result, err := svc.Create(snippet)
+	assert.NoError(t, err)
+	assert.NotNil(t, result) // フォールバックでsnippetを返す
+}
+
+func TestSnippetDelete_NotFound(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+	snippetRepo.On("FindByID", uint(99)).Return(nil, gorm.ErrRecordNotFound)
+	err := svc.Delete(99, 1)
+	assert.Error(t, err)
+}
+
+func TestSnippetUpdate_NotFound(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+	snippetRepo.On("FindByID", uint(99)).Return(nil, gorm.ErrRecordNotFound)
+	result, err := svc.Update(99, 1, "go", "", "")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestSnippetUpdate_RepoError(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+	existing := &model.CodeSnippet{PostID: 5, UserID: 1, Language: "go", Code: "package main"}
+	existing.ID = 10
+	snippetRepo.On("FindByID", uint(10)).Return(existing, nil)
+	snippetRepo.On("Update", existing).Return(gorm.ErrInvalidDB)
+	result, err := svc.Update(10, 1, "python", "", "")
+	assert.Error(t, err)
+	assert.Nil(t, result)
 }

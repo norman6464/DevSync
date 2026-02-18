@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -152,6 +153,49 @@ func TestNoteFolderService_Update(t *testing.T) {
 	result, err := service.Update(1, 1, "更新後の名前", nil)
 	assert.NoError(t, err)
 	assert.Equal(t, "更新後の名前", result.Name)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestNoteFolderService_Create_ValidationError(t *testing.T) {
+	mockRepo := new(MockNoteFolderRepository)
+	service := NewNoteFolderService(mockRepo)
+
+	folder := &model.NoteFolder{
+		UserID: 1,
+		Name:   "", // 空名前 → バリデーションエラー
+	}
+
+	err := service.Create(folder)
+	assert.Error(t, err)
+}
+
+func TestNoteFolderService_Create_RepoError(t *testing.T) {
+	mockRepo := new(MockNoteFolderRepository)
+	service := NewNoteFolderService(mockRepo)
+
+	folder := &model.NoteFolder{
+		UserID: 1,
+		Name:   "テストフォルダ",
+	}
+
+	mockRepo.On("Create", folder).Return(errors.New("db error"))
+
+	err := service.Create(folder)
+	assert.Error(t, err)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestNoteFolderService_Update_RepoError(t *testing.T) {
+	mockRepo := new(MockNoteFolderRepository)
+	service := NewNoteFolderService(mockRepo)
+
+	existing := &model.NoteFolder{ID: 1, UserID: 1, Name: "元の名前"}
+	mockRepo.On("FindByID", uint(1)).Return(existing, nil)
+	mockRepo.On("Update", mock.AnythingOfType("*model.NoteFolder")).Return(errors.New("db error"))
+
+	result, err := service.Update(1, 1, "更新後", nil)
+	assert.Error(t, err)
+	assert.Nil(t, result)
 	mockRepo.AssertExpectations(t)
 }
 

@@ -121,6 +121,20 @@ func TestStudyCircleUpdate_Forbidden(t *testing.T) {
 	assert.ErrorIs(t, err, ErrForbidden)
 }
 
+func TestStudyCircleUpdate_RepoError(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	circle := &model.StudyCircle{ID: 1, Name: "旧名", OwnerID: 1}
+	repo.On("FindByID", uint(1)).Return(circle, nil)
+	repo.On("Update", circle).Return(errors.New("db error"))
+
+	newName := "新名"
+	result, err := svc.Update(1, 1, &newName, nil, nil)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
 // --- Delete ---
 
 func TestStudyCircleDelete_Success(t *testing.T) {
@@ -551,4 +565,184 @@ func TestStudyCircleGetCheckins_Forbidden(t *testing.T) {
 	result, err := svc.GetCheckins(1, 99)
 	assert.Nil(t, result)
 	assert.ErrorIs(t, err, ErrForbidden)
+}
+
+// --- エラーパステスト ---
+
+func TestStudyCircleCreate_AddMemberOwnerError(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	circle := &model.StudyCircle{Name: "Test", Topic: "Go", OwnerID: 1, MaxMembers: 5}
+	repo.On("Create", circle).Return(nil)
+	repo.On("AddMember", uint(0), uint(1), model.StudyCircleRoleOwner).Return(errors.New("db error"))
+	err := svc.Create(circle, nil)
+	assert.Error(t, err)
+}
+
+func TestStudyCircleGetByID_IsMemberError(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	circle := &model.StudyCircle{ID: 1, OwnerID: 1}
+	repo.On("FindByID", uint(1)).Return(circle, nil)
+	repo.On("IsMember", uint(1), uint(2)).Return(false, errors.New("db error"))
+	result, err := svc.GetByID(1, 2)
+	assert.Nil(t, result)
+	assert.Error(t, err)
+}
+
+func TestStudyCircleUpdate_NotFound(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+	name := "新名"
+	result, err := svc.Update(99, 1, &name, nil, nil)
+	assert.Nil(t, result)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestStudyCircleDelete_NotFound(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+	err := svc.Delete(99, 1)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestStudyCircleDeleteStep_StepNotFound(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	circle := &model.StudyCircle{ID: 1, OwnerID: 1}
+	repo.On("FindByID", uint(1)).Return(circle, nil)
+	repo.On("FindStepByID", uint(99)).Return(nil, errors.New("not found"))
+	err := svc.DeleteStep(1, 1, 99)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestStudyCircleDeleteStep_StepBelongsToDifferentCircle(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	circle := &model.StudyCircle{ID: 1, OwnerID: 1}
+	step := &model.StudyCircleStep{CircleID: 2}
+	step.ID = 5
+	repo.On("FindByID", uint(1)).Return(circle, nil)
+	repo.On("FindStepByID", uint(5)).Return(step, nil)
+	err := svc.DeleteStep(1, 1, 5)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestStudyCircleUpdateStep_StepNotFound(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	circle := &model.StudyCircle{ID: 1, OwnerID: 1}
+	repo.On("FindByID", uint(1)).Return(circle, nil)
+	repo.On("FindStepByID", uint(99)).Return(nil, errors.New("not found"))
+	title := "新タイトル"
+	result, err := svc.UpdateStep(1, 1, 99, &title, nil)
+	assert.Nil(t, result)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestStudyCircleUpdateStep_RepoError(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	circle := &model.StudyCircle{ID: 1, OwnerID: 1}
+	step := &model.StudyCircleStep{CircleID: 1, Title: "旧"}
+	step.ID = 5
+	repo.On("FindByID", uint(1)).Return(circle, nil)
+	repo.On("FindStepByID", uint(5)).Return(step, nil)
+	repo.On("UpdateStep", step).Return(errors.New("db error"))
+	title := "新"
+	result, err := svc.UpdateStep(1, 1, 5, &title, nil)
+	assert.Nil(t, result)
+	assert.Error(t, err)
+}
+
+func TestStudyCircleAddMember_IsMemberError(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	repo.On("IsMember", uint(1), uint(1)).Return(false, errors.New("db error"))
+	err := svc.AddMember(1, 1, 5)
+	assert.Error(t, err)
+}
+
+func TestStudyCircleAddMember_FindByIDError(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	repo.On("IsMember", uint(1), uint(1)).Return(true, nil)
+	repo.On("FindByID", uint(1)).Return(nil, errors.New("not found"))
+	err := svc.AddMember(1, 1, 5)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestStudyCircleAddMember_GetMemberCountError(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	circle := &model.StudyCircle{ID: 1, MaxMembers: 5}
+	repo.On("IsMember", uint(1), uint(1)).Return(true, nil)
+	repo.On("FindByID", uint(1)).Return(circle, nil)
+	repo.On("GetMemberCount", uint(1)).Return(0, errors.New("db error"))
+	err := svc.AddMember(1, 1, 5)
+	assert.Error(t, err)
+}
+
+func TestStudyCircleRemoveMember_NotFound(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+	err := svc.RemoveMember(99, 1, 2)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestStudyCircleGetMembers_IsMemberError(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	repo.On("IsMember", uint(1), uint(1)).Return(false, errors.New("db error"))
+	result, err := svc.GetMembers(1, 1)
+	assert.Nil(t, result)
+	assert.Error(t, err)
+}
+
+func TestStudyCircleGetProgress_IsMemberError(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	repo.On("IsMember", uint(1), uint(1)).Return(false, errors.New("db error"))
+	result, err := svc.GetProgress(1, 1)
+	assert.Nil(t, result)
+	assert.Error(t, err)
+}
+
+func TestStudyCircleGetCheckins_IsMemberError(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	repo.On("IsMember", uint(1), uint(1)).Return(false, errors.New("db error"))
+	result, err := svc.GetCheckins(1, 1)
+	assert.Nil(t, result)
+	assert.Error(t, err)
+}
+
+func TestStudyCircleGetStreakRanking_IsMemberError(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	repo.On("IsMember", uint(1), uint(1)).Return(false, errors.New("db error"))
+	result, err := svc.GetStreakRanking(1, 1)
+	assert.Nil(t, result)
+	assert.Error(t, err)
+}
+
+func TestStudyCircleCreateCheckin_HasCheckedInTodayError(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	repo.On("IsMember", uint(1), uint(2)).Return(true, nil)
+	repo.On("HasCheckedInToday", uint(1), uint(2)).Return(false, errors.New("db error"))
+	result, err := svc.CreateCheckin(1, 2, "test")
+	assert.Nil(t, result)
+	assert.Error(t, err)
+}
+
+func TestStudyCircleCreateCheckin_RepoError(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	repo.On("IsMember", uint(1), uint(2)).Return(true, nil)
+	repo.On("HasCheckedInToday", uint(1), uint(2)).Return(false, nil)
+	repo.On("CreateCheckin", mock.AnythingOfType("*model.StudyCircleCheckin")).Return(errors.New("db error"))
+	result, err := svc.CreateCheckin(1, 2, "test")
+	assert.Nil(t, result)
+	assert.Error(t, err)
+}
+
+func TestStudyCircleCreateStep_NotFound(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+	step := &model.StudyCircleStep{Title: "ステップ1"}
+	err := svc.CreateStep(99, 1, step)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestStudyCircleUpdateProgress_IsMemberError(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	repo.On("IsMember", uint(1), uint(1)).Return(false, errors.New("db error"))
+	err := svc.UpdateProgress(1, 1, 5, true)
+	assert.Error(t, err)
 }

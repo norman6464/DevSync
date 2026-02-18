@@ -147,6 +147,64 @@ func TestLearningResourceUpdate_Forbidden(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestLearningResourceUpdate_AllFields(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+
+	existing := &model.LearningResource{Title: "Old", Description: "Old Desc", URL: "https://old.com", UserID: 1, Category: "article", Difficulty: "beginner"}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	updates := &model.LearningResource{
+		Title:       "New Title",
+		Description: "New Desc",
+		URL:         "https://new.com",
+		Category:    "video",
+		Difficulty:  "intermediate",
+		Tags:        "go,web",
+		ImageURL:    "https://img.com/pic.png",
+	}
+	result, err := svc.Update(1, 1, updates)
+	assert.NoError(t, err)
+	assert.Equal(t, "New Title", result.Title)
+	assert.Equal(t, "New Desc", result.Description)
+	assert.Equal(t, "https://new.com", result.URL)
+	assert.Equal(t, model.ResourceCategory("video"), result.Category)
+	assert.Equal(t, model.ResourceDifficulty("intermediate"), result.Difficulty)
+	assert.Equal(t, "go,web", result.Tags)
+	assert.Equal(t, "https://img.com/pic.png", result.ImageURL)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningResourceUpdate_RepoError(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+
+	existing := &model.LearningResource{Title: "Old", UserID: 1}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(errors.New("db error"))
+
+	updates := &model.LearningResource{Title: "New"}
+	result, err := svc.Update(1, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningResourceUpdate_NotFound(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+
+	repo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	updates := &model.LearningResource{Title: "New"}
+	result, err := svc.Update(999, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
 // ============================================================
 // 公開設定変更テスト
 // ============================================================

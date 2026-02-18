@@ -110,6 +110,57 @@ func TestNoteTemplateService_Create_WithDefaultFlag(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestNoteTemplateService_Create_ValidationError(t *testing.T) {
+	svc, _, _ := newTestNoteTemplateService()
+
+	// Name空 → バリデーションエラー
+	template := &model.NoteTemplate{
+		UserID:          1,
+		Name:            "",
+		ContentTemplate: "本文",
+	}
+
+	err := svc.Create(template)
+	assert.Error(t, err)
+}
+
+func TestNoteTemplateService_Create_DescriptionValidationError(t *testing.T) {
+	svc, _, _ := newTestNoteTemplateService()
+
+	// 超長い説明文 → バリデーションエラー
+	longDesc := ""
+	for i := 0; i < 600; i++ {
+		longDesc += "あ"
+	}
+
+	template := &model.NoteTemplate{
+		UserID:          1,
+		Name:            "テンプレート",
+		ContentTemplate: "本文",
+		Description:     longDesc,
+	}
+
+	err := svc.Create(template)
+	assert.Error(t, err)
+}
+
+func TestNoteTemplateService_Create_ClearDefaultFlagError(t *testing.T) {
+	svc, repo, _ := newTestNoteTemplateService()
+
+	template := &model.NoteTemplate{
+		UserID:          1,
+		Name:            "テンプレート",
+		ContentTemplate: "本文",
+		IsDefault:       true,
+	}
+
+	repo.On("ClearDefaultFlag", uint(1)).Return(errors.New("db error"))
+
+	err := svc.Create(template)
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
 // ============================================================
 // GetByID テスト
 // ============================================================
@@ -189,6 +240,72 @@ func TestNoteTemplateService_Update_Forbidden(t *testing.T) {
 
 	_, err := svc.Update(1, 999, "", "", "", "", "", nil)
 	assert.ErrorIs(t, err, ErrForbidden)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteTemplateService_Update_WithAllFields(t *testing.T) {
+	svc, repo, _ := newTestNoteTemplateService()
+
+	existing := &model.NoteTemplate{
+		ID:              1,
+		UserID:          1,
+		Name:            "元テンプレート",
+		ContentTemplate: "元本文",
+		IsDefault:       false,
+	}
+
+	isDefault := true
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("ClearDefaultFlag", uint(1)).Return(nil)
+	repo.On("Update", mock.AnythingOfType("*model.NoteTemplate")).Return(nil)
+
+	result, err := svc.Update(1, 1, "新名前", "新説明", "新タイトル", "新本文", "tag1,tag2", &isDefault)
+	assert.NoError(t, err)
+	assert.Equal(t, "新名前", result.Name)
+	assert.Equal(t, "新説明", result.Description)
+	assert.Equal(t, "新タイトル", result.DefaultTitle)
+	assert.Equal(t, "新本文", result.ContentTemplate)
+	assert.Equal(t, "tag1,tag2", result.DefaultTags)
+	assert.True(t, result.IsDefault)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteTemplateService_Update_RepoError(t *testing.T) {
+	svc, repo, _ := newTestNoteTemplateService()
+
+	existing := &model.NoteTemplate{
+		ID:              1,
+		UserID:          1,
+		Name:            "テンプレ",
+		ContentTemplate: "本文",
+	}
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", mock.AnythingOfType("*model.NoteTemplate")).Return(errors.New("db error"))
+
+	result, err := svc.Update(1, 1, "新名前", "", "", "", "", nil)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteTemplateService_Update_ClearDefaultFlagError(t *testing.T) {
+	svc, repo, _ := newTestNoteTemplateService()
+
+	existing := &model.NoteTemplate{
+		ID:              1,
+		UserID:          1,
+		Name:            "テンプレ",
+		ContentTemplate: "本文",
+	}
+
+	isDefault := true
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("ClearDefaultFlag", uint(1)).Return(errors.New("db error"))
+
+	result, err := svc.Update(1, 1, "", "", "", "", "", &isDefault)
+	assert.Error(t, err)
+	assert.Nil(t, result)
 	repo.AssertExpectations(t)
 }
 

@@ -229,6 +229,24 @@ func TestRoadmapUpdateStep_NotOwner(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestRoadmapUpdateStep_RepoError(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 10
+
+	step := &model.RoadmapStep{RoadmapID: 10, Title: "Old"}
+	step.ID = 5
+
+	repo.On("FindByID", uint(10)).Return(roadmap, nil)
+	repo.On("FindStepByID", uint(5)).Return(step, nil)
+	repo.On("UpdateStep", step).Return(errors.New("db error"))
+
+	_, err := svc.UpdateStep(10, 5, 1, &model.RoadmapStep{Title: "New"})
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
 // ============================================================
 // ステップ削除テスト
 // ============================================================
@@ -265,6 +283,24 @@ func TestRoadmapDeleteStep_StepBelongsToDifferentRoadmap(t *testing.T) {
 
 	err := svc.DeleteStep(10, 5, 1)
 	assert.ErrorIs(t, err, ErrBadRequest)
+	repo.AssertExpectations(t)
+}
+
+func TestRoadmapDeleteStep_RepoError(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 10
+
+	step := &model.RoadmapStep{RoadmapID: 10}
+	step.ID = 5
+
+	repo.On("FindByID", uint(10)).Return(roadmap, nil)
+	repo.On("FindStepByID", uint(5)).Return(step, nil)
+	repo.On("DeleteStep", uint(5)).Return(errors.New("db error"))
+
+	err := svc.DeleteStep(10, 5, 1)
+	assert.Error(t, err)
 	repo.AssertExpectations(t)
 }
 
@@ -687,4 +723,140 @@ func TestRoadmapReorderSteps_Forbidden(t *testing.T) {
 	err := svc.ReorderSteps(10, 999, orders)
 	assert.ErrorIs(t, err, ErrForbidden)
 	repo.AssertExpectations(t)
+}
+
+func TestRoadmapUpdate_NotFound(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+	updates := &model.Roadmap{Title: "New"}
+	result, err := svc.Update(99, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestRoadmapUpdate_RepoError(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+	existing := &model.Roadmap{Title: "Old", UserID: 1, Status: model.RoadmapStatusActive}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(errors.New("db error"))
+	updates := &model.Roadmap{Title: "New"}
+	result, err := svc.Update(1, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestRoadmapUpdateVisibility_NotFound(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+	result, err := svc.UpdateVisibility(99, 1, true)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestRoadmapUpdateVisibility_RepoError(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+	existing := &model.Roadmap{UserID: 1, IsPublic: false}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(errors.New("db error"))
+	result, err := svc.UpdateVisibility(1, 1, true)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestRoadmapUpdateStepCompletion_Forbidden(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 10
+	repo.On("FindByID", uint(10)).Return(roadmap, nil)
+	result, err := svc.UpdateStepCompletion(10, 5, 999, true)
+	assert.ErrorIs(t, err, ErrForbidden)
+	assert.Nil(t, result)
+}
+
+func TestRoadmapUpdateStepCompletion_StepNotFound(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 10
+	repo.On("FindByID", uint(10)).Return(roadmap, nil)
+	repo.On("FindStepByID", uint(99)).Return(nil, errors.New("not found"))
+	result, err := svc.UpdateStepCompletion(10, 99, 1, true)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestRoadmapUpdateStepCompletion_WrongRoadmap(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 10
+	step := &model.RoadmapStep{RoadmapID: 20}
+	step.ID = 5
+	repo.On("FindByID", uint(10)).Return(roadmap, nil)
+	repo.On("FindStepByID", uint(5)).Return(step, nil)
+	result, err := svc.UpdateStepCompletion(10, 5, 1, true)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	assert.Nil(t, result)
+}
+
+func TestRoadmapUpdateStepCompletion_RepoError(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 10
+	step := &model.RoadmapStep{RoadmapID: 10, IsCompleted: false}
+	step.ID = 5
+	repo.On("FindByID", uint(10)).Return(roadmap, nil)
+	repo.On("FindStepByID", uint(5)).Return(step, nil)
+	repo.On("UpdateStep", step).Return(errors.New("db error"))
+	result, err := svc.UpdateStepCompletion(10, 5, 1, true)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestRoadmapDeleteStep_NotOwner(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 10
+	repo.On("FindByID", uint(10)).Return(roadmap, nil)
+	err := svc.DeleteStep(10, 5, 999)
+	assert.ErrorIs(t, err, ErrForbidden)
+}
+
+func TestRoadmapDeleteStep_StepNotFound(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 10
+	repo.On("FindByID", uint(10)).Return(roadmap, nil)
+	repo.On("FindStepByID", uint(99)).Return(nil, errors.New("not found"))
+	err := svc.DeleteStep(10, 99, 1)
+	assert.Error(t, err)
+}
+
+func TestRoadmapDelete_NotFound(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+	err := svc.Delete(99, 1)
+	assert.Error(t, err)
+}
+
+func TestRoadmapCreateStep_NotFound(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+	step := &model.RoadmapStep{Title: "New Step"}
+	err := svc.CreateStep(99, 1, step)
+	assert.Error(t, err)
+}
+
+func TestRoadmapUpdate_WithAllFields(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+	existing := &model.Roadmap{Title: "Old", UserID: 1, Status: model.RoadmapStatusActive}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+	updates := &model.Roadmap{Title: "New", Description: "Desc", Category: model.RoadmapCategorySkill}
+	result, err := svc.Update(1, 1, updates)
+	assert.NoError(t, err)
+	assert.Equal(t, "New", result.Title)
+	assert.Equal(t, "Desc", result.Description)
+	assert.Equal(t, model.RoadmapCategorySkill, result.Category)
 }
