@@ -22,7 +22,12 @@
     "and": "и",
     "menu": "Меню",
     "scrollToTop": "Наверх",
-    "selectLanguage": "Выбрать язык"
+    "selectLanguage": "Выбрать язык",
+    "monthsShort": ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"],
+    "dayLabelsShort": ["", "Пн", "", "Ср", "", "Пт", ""],
+    "contributionsInLastYear": "{{count}} вкладов за последний год",
+    "dateContributions": "{{date}}: {{count}} вкладов",
+    "dateLogs": "{{date}}: {{count}} записей"
   },
   "nav": {
     "dashboard": "Панель",

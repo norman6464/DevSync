@@ -22,7 +22,12 @@
     "and": "和",
     "menu": "菜单",
     "scrollToTop": "返回顶部",
-    "selectLanguage": "选择语言"
+    "selectLanguage": "选择语言",
+    "monthsShort": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
+    "dayLabelsShort": ["", "一", "", "三", "", "五", ""],
+    "contributionsInLastYear": "过去一年 {{count}} 次贡献",
+    "dateContributions": "{{date}}: {{count}} 次贡献",
+    "dateLogs": "{{date}}: {{count}} 条日志"
   },
   "nav": {
     "dashboard": "仪表板",
