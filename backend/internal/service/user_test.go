@@ -217,3 +217,73 @@ func TestUserFindByID_Success(t *testing.T) {
 	assert.Equal(t, "Alice", result.Name)
 	repo.AssertExpectations(t)
 }
+
+func TestUserGetAll_SearchError(t *testing.T) {
+	svc, repo := newTestUserService()
+
+	repo.On("Search", "fail").Return([]model.User(nil), errors.New("db error"))
+
+	result, err := svc.GetAll("fail")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestUserGetAll_FindAllError(t *testing.T) {
+	svc, repo := newTestUserService()
+
+	repo.On("FindAll").Return([]model.User(nil), errors.New("db error"))
+
+	result, err := svc.GetAll("")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestUserGetByID_NotFound(t *testing.T) {
+	svc, repo := newTestUserService()
+
+	repo.On("FindByID", uint(999)).Return((*model.User)(nil), errors.New("not found"))
+
+	result, err := svc.GetByID(999)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestUserUpdate_Error(t *testing.T) {
+	svc, repo := newTestUserService()
+
+	user := &model.User{Name: "Alice"}
+	repo.On("Update", user).Return(errors.New("db error"))
+
+	err := svc.Update(user)
+	assert.Error(t, err)
+}
+
+func TestUserFindByID_NotFound(t *testing.T) {
+	svc, repo := newTestUserService()
+
+	repo.On("FindByID", uint(999)).Return((*model.User)(nil), errors.New("not found"))
+
+	result, err := svc.FindByID(999)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestGetProfileCompleteness_OnlyFrameworks(t *testing.T) {
+	svc, repo := newTestUserService()
+
+	user := &model.User{
+		ID:               1,
+		Name:             "Alice",
+		Username:         "alice",
+		Email:            "alice@example.com",
+		SkillsFrameworks: "React,Next.js",
+	}
+	repo.On("FindByID", uint(1)).Return(user, nil)
+
+	result, err := svc.GetProfileCompleteness(1)
+	assert.NoError(t, err)
+	assert.NotContains(t, result.MissingFields, "skills")
+	assert.Contains(t, result.MissingFields, "avatar")
+	assert.Contains(t, result.MissingFields, "bio")
+	assert.Contains(t, result.MissingFields, "github")
+}
