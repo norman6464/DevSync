@@ -1272,5 +1272,17 @@
     "updateFailed": "Error al actualizar etiquetas",
     "maxTags": "Máximo 10 etiquetas",
     "tagPlaceholder": "Escribe una etiqueta y presiona Enter"
+  },
+  "pinnedPosts": {
+    "title": "Publicaciones fijadas",
+    "pin": "Fijar",
+    "unpin": "Desfijar",
+    "pinSuccess": "Publicación fijada",
+    "unpinSuccess": "Publicación desfijada",
+    "pinFailed": "Error al fijar",
+    "unpinFailed": "Error al desfijar",
+    "reorderFailed": "Error al reordenar",
+    "maxPins": "Puedes fijar hasta 3 publicaciones",
+    "noPins": "No hay publicaciones fijadas"
   }
 }

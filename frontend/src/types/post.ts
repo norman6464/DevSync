@@ -94,6 +94,15 @@ export interface PostCollectionItem {
   created_at: string;
 }
 
+export interface PostPin {
+  id: number;
+  user_id: number;
+  post_id: number;
+  post?: Post;
+  pin_order: number;
+  created_at: string;
+}
+
 export interface SnippetComment {
   id: number;
   snippet_id: number;

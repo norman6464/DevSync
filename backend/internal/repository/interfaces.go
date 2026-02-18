@@ -438,6 +438,16 @@ type PostSeriesRepositoryInterface interface {
 	GetPostsBySeriesID(seriesID uint) ([]model.PostSeriesItem, error)
 }
 
+// PostPinRepositoryInterface は投稿ピン留めデータ操作の契約を定義する。
+type PostPinRepositoryInterface interface {
+	Pin(pin *model.PostPin) error
+	Unpin(userID, postID uint) error
+	GetByUserID(userID uint) ([]model.PostPin, error)
+	CountByUserID(userID uint) (int64, error)
+	IsPinned(userID, postID uint) (bool, error)
+	UpdateOrder(userID uint, postIDs []uint) error
+}
+
 // PostTagRepositoryInterface は投稿タグデータ操作の契約を定義する。
 type PostTagRepositoryInterface interface {
 	SetTags(postID uint, tags []string) error

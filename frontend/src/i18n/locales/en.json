@@ -1272,5 +1272,17 @@
     "updateFailed": "Failed to update tags",
     "maxTags": "Maximum 10 tags",
     "tagPlaceholder": "Type a tag and press Enter"
+  },
+  "pinnedPosts": {
+    "title": "Pinned Posts",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "pinSuccess": "Post pinned",
+    "unpinSuccess": "Post unpinned",
+    "pinFailed": "Failed to pin post",
+    "unpinFailed": "Failed to unpin post",
+    "reorderFailed": "Failed to reorder pins",
+    "maxPins": "You can pin up to 3 posts",
+    "noPins": "No pinned posts"
   }
 }

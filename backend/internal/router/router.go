@@ -74,6 +74,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerPostSeriesRoutes(protected, c)
 		registerPostCollectionRoutes(protected, c)
 		registerPostTagRoutes(protected, c)
+		registerPostPinRoutes(protected, c)
 		registerSnippetRoutes(protected, c)
 		registerRankingRoutes(protected, c)
 		registerMessageRoutes(protected, c)
@@ -180,6 +181,16 @@ func registerPostTagRoutes(g *gin.RouterGroup, c *di.Container) {
 		tags.GET("/posts/:postId", c.PostTagHandler.GetByPostID)
 		tags.GET("/search", c.PostTagHandler.FindPostsByTag)
 		tags.GET("/popular", c.PostTagHandler.GetPopularTags)
+	}
+}
+
+func registerPostPinRoutes(g *gin.RouterGroup, c *di.Container) {
+	pins := g.Group("/post-pins")
+	{
+		pins.POST("/posts/:postId", c.PostPinHandler.Pin)
+		pins.DELETE("/posts/:postId", c.PostPinHandler.Unpin)
+		pins.GET("/users/:userId", c.PostPinHandler.GetByUserID)
+		pins.PUT("/reorder", c.PostPinHandler.Reorder)
 	}
 }
 

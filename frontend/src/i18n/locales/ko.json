@@ -1272,5 +1272,17 @@
     "updateFailed": "태그 업데이트에 실패했습니다",
     "maxTags": "태그는 최대 10개",
     "tagPlaceholder": "태그를 입력하고 Enter"
+  },
+  "pinnedPosts": {
+    "title": "고정 게시물",
+    "pin": "고정",
+    "unpin": "고정 해제",
+    "pinSuccess": "게시물을 고정했습니다",
+    "unpinSuccess": "고정을 해제했습니다",
+    "pinFailed": "고정에 실패했습니다",
+    "unpinFailed": "고정 해제에 실패했습니다",
+    "reorderFailed": "순서 변경에 실패했습니다",
+    "maxPins": "최대 3개까지 고정할 수 있습니다",
+    "noPins": "고정된 게시물이 없습니다"
   }
 }

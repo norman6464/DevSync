@@ -1272,5 +1272,17 @@
     "updateFailed": "标签更新失败",
     "maxTags": "最多10个标签",
     "tagPlaceholder": "输入标签后按回车"
+  },
+  "pinnedPosts": {
+    "title": "置顶帖子",
+    "pin": "置顶",
+    "unpin": "取消置顶",
+    "pinSuccess": "已置顶",
+    "unpinSuccess": "已取消置顶",
+    "pinFailed": "置顶失败",
+    "unpinFailed": "取消置顶失败",
+    "reorderFailed": "排序失败",
+    "maxPins": "最多置顶3篇帖子",
+    "noPins": "没有置顶帖子"
   }
 }
