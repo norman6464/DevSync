@@ -264,3 +264,177 @@ func TestChatRoomGetMessages_NotMember(t *testing.T) {
 	assert.Nil(t, result)
 	roomRepo.AssertExpectations(t)
 }
+
+// ============================================================
+// GetByUserID
+// ============================================================
+
+func TestChatRoomGetByUserID_Success(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	rooms := []model.ChatRoom{
+		{Name: "Room A", OwnerID: 1},
+		{Name: "Room B", OwnerID: 2},
+	}
+	roomRepo.On("FindByUserID", uint(1)).Return(rooms, nil)
+
+	result, err := svc.GetByUserID(1)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, "Room A", result[0].Name)
+	roomRepo.AssertExpectations(t)
+}
+
+func TestChatRoomGetByUserID_Empty(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	roomRepo.On("FindByUserID", uint(999)).Return([]model.ChatRoom{}, nil)
+
+	result, err := svc.GetByUserID(999)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	roomRepo.AssertExpectations(t)
+}
+
+func TestChatRoomGetByUserID_RepoError(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	roomRepo.On("FindByUserID", uint(1)).Return([]model.ChatRoom{}, assert.AnError)
+
+	result, err := svc.GetByUserID(1)
+	assert.Error(t, err)
+	assert.Empty(t, result)
+	roomRepo.AssertExpectations(t)
+}
+
+// ============================================================
+// GetMembers（メンバーシップチェック）
+// ============================================================
+
+func TestChatRoomGetMembers_Success(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	roomRepo.On("IsMember", uint(10), uint(1)).Return(true, nil)
+
+	members := []model.ChatRoomMember{
+		{ChatRoomID: 10, UserID: 1},
+		{ChatRoomID: 10, UserID: 2},
+	}
+	roomRepo.On("GetMembers", uint(10)).Return(members, nil)
+
+	result, err := svc.GetMembers(10, 1)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	roomRepo.AssertExpectations(t)
+}
+
+func TestChatRoomGetMembers_NotMember(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	roomRepo.On("IsMember", uint(10), uint(999)).Return(false, nil)
+
+	result, err := svc.GetMembers(10, 999)
+	assert.ErrorIs(t, err, ErrForbidden)
+	assert.Nil(t, result)
+	roomRepo.AssertExpectations(t)
+}
+
+func TestChatRoomGetMembers_IsMemberError(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	roomRepo.On("IsMember", uint(10), uint(1)).Return(false, assert.AnError)
+
+	result, err := svc.GetMembers(10, 1)
+	assert.ErrorIs(t, err, ErrForbidden)
+	assert.Nil(t, result)
+	roomRepo.AssertExpectations(t)
+}
+
+// ============================================================
+// SendMessage（メンバーシップチェック + メッセージ作成 + WebSocket配信）
+// ============================================================
+
+func TestChatRoomSendMessage_Success(t *testing.T) {
+	svc, roomRepo, msgRepo := newTestChatRoomService()
+
+	roomRepo.On("IsMember", uint(10), uint(1)).Return(true, nil)
+
+	msgRepo.On("Create", mock.MatchedBy(func(msg *model.GroupMessage) bool {
+		return msg.ChatRoomID == 10 && msg.SenderID == 1 && msg.Content == "Hello!"
+	})).Return(nil)
+
+	msgRepo.On("FindSenderByID", mock.AnythingOfType("*model.GroupMessage")).Return()
+
+	result, err := svc.SendMessage(10, 1, "Hello!")
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, uint(10), result.ChatRoomID)
+	assert.Equal(t, uint(1), result.SenderID)
+	assert.Equal(t, "Hello!", result.Content)
+	roomRepo.AssertExpectations(t)
+	msgRepo.AssertExpectations(t)
+}
+
+func TestChatRoomSendMessage_NotMember(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	roomRepo.On("IsMember", uint(10), uint(999)).Return(false, nil)
+
+	result, err := svc.SendMessage(10, 999, "Hello!")
+	assert.ErrorIs(t, err, ErrForbidden)
+	assert.Nil(t, result)
+	roomRepo.AssertExpectations(t)
+}
+
+func TestChatRoomSendMessage_CreateError(t *testing.T) {
+	svc, roomRepo, msgRepo := newTestChatRoomService()
+
+	roomRepo.On("IsMember", uint(10), uint(1)).Return(true, nil)
+
+	msgRepo.On("Create", mock.MatchedBy(func(msg *model.GroupMessage) bool {
+		return msg.ChatRoomID == 10 && msg.SenderID == 1
+	})).Return(assert.AnError)
+
+	result, err := svc.SendMessage(10, 1, "Hello!")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	roomRepo.AssertExpectations(t)
+	msgRepo.AssertExpectations(t)
+}
+
+// ============================================================
+// IsMember
+// ============================================================
+
+func TestChatRoomIsMember_True(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	roomRepo.On("IsMember", uint(10), uint(1)).Return(true, nil)
+
+	result, err := svc.IsMember(10, 1)
+	assert.NoError(t, err)
+	assert.True(t, result)
+	roomRepo.AssertExpectations(t)
+}
+
+func TestChatRoomIsMember_False(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	roomRepo.On("IsMember", uint(10), uint(999)).Return(false, nil)
+
+	result, err := svc.IsMember(10, 999)
+	assert.NoError(t, err)
+	assert.False(t, result)
+	roomRepo.AssertExpectations(t)
+}
+
+func TestChatRoomIsMember_RepoError(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	roomRepo.On("IsMember", uint(10), uint(1)).Return(false, assert.AnError)
+
+	result, err := svc.IsMember(10, 1)
+	assert.Error(t, err)
+	assert.False(t, result)
+	roomRepo.AssertExpectations(t)
+}
