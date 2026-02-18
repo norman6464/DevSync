@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BookOpen } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
@@ -31,6 +31,21 @@ export default function ResourcesPage() {
 
   const [showForm, setShowForm] = useState(false);
   const [editingResource, setEditingResource] = useState<LearningResource | null>(null);
+
+  const handleFormClose = useCallback(() => {
+    setShowForm(false);
+    setEditingResource(null);
+  }, []);
+
+  const handleFormSubmit = useCallback(async (data: Parameters<typeof createResource>[0]) => {
+    if (editingResource) {
+      const result = await updateResource(editingResource.id, data);
+      if (result) setEditingResource(null);
+    } else {
+      const result = await createResource(data);
+      if (result) setShowForm(false);
+    }
+  }, [editingResource, updateResource, createResource]);
 
   // デバウンス処理（300ms）
   const debouncedQuery = useDebounce(searchQuery, 300);
@@ -121,24 +136,13 @@ export default function ResourcesPage() {
       {/* Form Modal */}
       <Modal
         isOpen={showForm || !!editingResource}
-        onClose={() => { setShowForm(false); setEditingResource(null); }}
+        onClose={handleFormClose}
         title={editingResource ? t('resources.editResource') : t('resources.newResource')}
       >
         <ResourceForm
           resource={editingResource || undefined}
-          onSubmit={async (data) => {
-            if (editingResource) {
-              const result = await updateResource(editingResource.id, data);
-              if (result) setEditingResource(null);
-            } else {
-              const result = await createResource(data);
-              if (result) setShowForm(false);
-            }
-          }}
-          onCancel={() => {
-            setShowForm(false);
-            setEditingResource(null);
-          }}
+          onSubmit={handleFormSubmit}
+          onCancel={handleFormClose}
           loading={saving}
         />
       </Modal>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FolderOpen } from 'lucide-react';
 import type { Project } from '../types/project';
@@ -21,10 +21,25 @@ export default function ProjectsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
 
-  const handleDeleteProject = async (project: Project) => {
+  const handleDeleteProject = useCallback(async (project: Project) => {
     const ok = await confirm({ title: t('common.confirm'), message: t('projects.confirmDelete'), variant: 'danger' });
     if (ok) deleteProject(project);
-  };
+  }, [confirm, t, deleteProject]);
+
+  const handleFormClose = useCallback(() => {
+    setShowForm(false);
+    setEditingProject(null);
+  }, []);
+
+  const handleFormSubmit = useCallback(async (data: Parameters<typeof createProject>[0]) => {
+    if (editingProject) {
+      const result = await updateProject(editingProject.id, data);
+      if (result) setEditingProject(null);
+    } else {
+      const result = await createProject(data);
+      if (result) setShowForm(false);
+    }
+  }, [editingProject, updateProject, createProject]);
 
   if (loading) {
     return <PageLoader />;
@@ -42,25 +57,14 @@ export default function ProjectsPage() {
       {/* Form Modal */}
       <Modal
         isOpen={showForm || !!editingProject}
-        onClose={() => { setShowForm(false); setEditingProject(null); }}
+        onClose={handleFormClose}
         title={editingProject ? t('projects.editProject') : t('projects.newProject')}
       >
         <ProjectForm
           project={editingProject || undefined}
           repos={repos}
-          onSubmit={async (data) => {
-            if (editingProject) {
-              const result = await updateProject(editingProject.id, data);
-              if (result) setEditingProject(null);
-            } else {
-              const result = await createProject(data);
-              if (result) setShowForm(false);
-            }
-          }}
-          onCancel={() => {
-            setShowForm(false);
-            setEditingProject(null);
-          }}
+          onSubmit={handleFormSubmit}
+          onCancel={handleFormClose}
           loading={saving}
         />
       </Modal>
