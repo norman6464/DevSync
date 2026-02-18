@@ -19,16 +19,16 @@ export function useUserSearch() {
     { initialData: [] as User[] }
   );
 
-  const handleSearch = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) {
+  const handleSearch = useCallback(async (searchQuery?: string) => {
+    const q = (searchQuery ?? query).trim();
+    if (!q) {
       setResults([]);
       setSearched(false);
       return;
     }
     setSearchLoading(true);
     try {
-      const { data } = await getUsers(query);
+      const { data } = await getUsers(q);
       setResults(data || []);
       setSearched(true);
     } catch {

@@ -93,7 +93,7 @@ export default function PomodoroTimer() {
         }`}
       >
         <Timer size={18} className={getPhaseColor(phase)} />
-        <span className="text-white text-sm font-mono">{formatTime(timeLeft)}</span>
+        <span className="text-sm font-mono" style={{ color: '#ffffff' }}>{formatTime(timeLeft)}</span>
         {completedCycles > 0 && (
           <span className="text-xs text-gray-400">x{completedCycles}</span>
         )}
@@ -151,7 +151,7 @@ export default function PomodoroTimer() {
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-3xl font-mono font-bold text-white">
+            <span className="text-3xl font-mono font-bold" style={{ color: '#ffffff' }}>
               {formatTime(timeLeft)}
             </span>
             {completedCycles > 0 && (
@@ -175,11 +175,12 @@ export default function PomodoroTimer() {
 
         <button
           onClick={isRunning ? pause : start}
-          className={`p-3 rounded-full text-white transition-colors ${
+          className={`p-3 rounded-full transition-colors ${
             isRunning
               ? 'bg-yellow-600 hover:bg-yellow-700'
               : 'bg-red-600 hover:bg-red-700'
           }`}
+          style={{ color: '#ffffff' }}
           title={isRunning ? t('pomodoro.pause') : t('pomodoro.start')}
         >
           {isRunning ? <Pause size={20} /> : <Play size={20} />}

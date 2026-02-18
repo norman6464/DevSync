@@ -8,15 +8,16 @@ export function useCircleSearch() {
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSearch = useCallback(async () => {
-    if (!query.trim()) {
+  const handleSearch = useCallback(async (searchQuery?: string) => {
+    const q = (searchQuery ?? query).trim();
+    if (!q) {
       setResults([]);
       setSearched(false);
       return;
     }
     setLoading(true);
     try {
-      const { data } = await searchCircles(query);
+      const { data } = await searchCircles(q);
       setResults(data || []);
       setSearched(true);
     } catch {
