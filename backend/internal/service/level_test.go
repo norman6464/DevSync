@@ -314,6 +314,71 @@ func TestCheckAndNotifyLevelUp_NoLevelUp(t *testing.T) {
 	notifRepo.AssertNotCalled(t, "Create", mock.Anything)
 }
 
+func TestCheckAndNotifyLevelUp_MultipleLevels(t *testing.T) {
+	svc, levelRepo, notifRepo := newTestLevelService()
+	// previousXP = 50 (Lv0), 現在のXP = 600+ (Lv3) → 複数レベルアップ
+	stats := &model.XPStats{
+		LearningLogCount:         10,
+		LearningLogTotalDuration: 300,
+		PostCount:                10,
+		CompletedGoals:           2,
+	}
+	levelRepo.On("GetXPStats", uint(1)).Return(stats, nil)
+	notifRepo.On("Create", mock.AnythingOfType("*model.Notification")).Return(nil)
+
+	err := svc.CheckAndNotifyLevelUp(1, 50)
+	assert.NoError(t, err)
+	// Lv0→Lv3以上なので通知が発火する
+	notifRepo.AssertCalled(t, "Create", mock.AnythingOfType("*model.Notification"))
+}
+
+func TestCheckAndNotifyLevelUp_HighLevel(t *testing.T) {
+	svc, levelRepo, notifRepo := newTestLevelService()
+	// 高レベル帯: previousXP = 5499 (Lv9), 現在のXP = 5500+ (Lv10)
+	stats := &model.XPStats{
+		LearningLogCount:         100,
+		LearningLogTotalDuration: 5000,
+		PostCount:                50,
+		GitHubContributionDays:   100,
+		CompletedGoals:           10,
+		CommentCount:             50,
+		LikesReceived:            100,
+		CurrentStreak:            28,
+	}
+	levelRepo.On("GetXPStats", uint(1)).Return(stats, nil)
+	notifRepo.On("Create", mock.AnythingOfType("*model.Notification")).Return(nil)
+
+	err := svc.CheckAndNotifyLevelUp(1, 5499)
+	assert.NoError(t, err)
+	notifRepo.AssertCalled(t, "Create", mock.AnythingOfType("*model.Notification"))
+}
+
+func TestCheckAndNotifyLevelUp_GetXPStatsError(t *testing.T) {
+	svc, levelRepo, notifRepo := newTestLevelService()
+	levelRepo.On("GetXPStats", uint(1)).Return((*model.XPStats)(nil), assert.AnError)
+
+	err := svc.CheckAndNotifyLevelUp(1, 50)
+	assert.Error(t, err)
+	// エラー時は通知が作成されない
+	notifRepo.AssertNotCalled(t, "Create", mock.Anything)
+}
+
+func TestCheckAndNotifyLevelUp_NotificationError(t *testing.T) {
+	svc, levelRepo, notifRepo := newTestLevelService()
+	// レベルアップするが通知作成がエラーになるケース
+	stats := &model.XPStats{
+		LearningLogCount:         5,
+		LearningLogTotalDuration: 100,
+		PostCount:                2,
+	}
+	levelRepo.On("GetXPStats", uint(1)).Return(stats, nil)
+	notifRepo.On("Create", mock.AnythingOfType("*model.Notification")).Return(assert.AnError)
+
+	err := svc.CheckAndNotifyLevelUp(1, 90)
+	assert.Error(t, err)
+	levelRepo.AssertExpectations(t)
+}
+
 // === GetLevelTitle テスト ===
 
 func TestGetLevelTitle_Newcomer(t *testing.T) {
