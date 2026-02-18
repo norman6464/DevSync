@@ -129,7 +129,13 @@
     "saveDraft": "Guardar borrador",
     "draftSaved": "Borrador guardado",
     "draftFailed": "Error al guardar borrador",
-    "writeComment": "Escribe un comentario..."
+    "writeComment": "Escribe un comentario...",
+    "notFound": "Publicación no encontrada"
+  },
+  "follow": {
+    "noFollowers": "Aún no hay seguidores",
+    "noFollowing": "Aún no sigues a nadie",
+    "chatWith": "Chatear con {{name}}"
   },
   "profile": {
     "followers": "seguidores",

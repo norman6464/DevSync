@@ -129,7 +129,13 @@
     "saveDraft": "Entwurf speichern",
     "draftSaved": "Entwurf gespeichert",
     "draftFailed": "Entwurf konnte nicht gespeichert werden",
-    "writeComment": "Kommentar schreiben..."
+    "writeComment": "Kommentar schreiben...",
+    "notFound": "Beitrag nicht gefunden"
+  },
+  "follow": {
+    "noFollowers": "Noch keine Follower",
+    "noFollowing": "Folgt noch niemandem",
+    "chatWith": "Mit {{name}} chatten"
   },
   "profile": {
     "followers": "Follower",
