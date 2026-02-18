@@ -9,7 +9,7 @@ type VoteRequest struct {
 // ConnectUsernameRequest は外部サービスのユーザー名接続リクエスト。
 // AtCoder・Zenn・Qiitaなど共通で使用する。
 type ConnectUsernameRequest struct {
-	Username string `json:"username" binding:"required" validate:"required"`
+	Username string `json:"username" binding:"required,max=100" validate:"required,max=100"`
 }
 
 // ConnectSyncResponse は外部サービス接続・同期のレスポンス。
