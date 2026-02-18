@@ -16,14 +16,20 @@ type NoteTemplateRepositoryInterface interface {
 	ClearDefaultFlag(userID uint) error
 }
 
+// NoteCreatorInterface はノート作成機能のインターフェース。
+type NoteCreatorInterface interface {
+	Create(note *model.Note) error
+}
+
 // NoteTemplateService はノートテンプレートのビジネスロジック。
 type NoteTemplateService struct {
-	repo NoteTemplateRepositoryInterface
+	repo        NoteTemplateRepositoryInterface
+	noteCreator NoteCreatorInterface
 }
 
 // NewNoteTemplateService は新しいNoteTemplateServiceインスタンスを生成する。
-func NewNoteTemplateService(repo NoteTemplateRepositoryInterface) *NoteTemplateService {
-	return &NoteTemplateService{repo: repo}
+func NewNoteTemplateService(repo NoteTemplateRepositoryInterface, noteCreator NoteCreatorInterface) *NoteTemplateService {
+	return &NoteTemplateService{repo: repo, noteCreator: noteCreator}
 }
 
 // Create は新しいテンプレートを作成する。
@@ -141,4 +147,30 @@ func (s *NoteTemplateService) Delete(id, userID uint) error {
 		return ErrForbidden
 	}
 	return s.repo.Delete(id)
+}
+
+// UseTemplate は所有権を検証した後、テンプレートからノートを作成する。
+func (s *NoteTemplateService) UseTemplate(id, userID uint) (*model.Note, error) {
+	template, err := s.repo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+	if template.UserID != userID {
+		return nil, ErrForbidden
+	}
+
+	note := &model.Note{
+		UserID:  userID,
+		Title:   template.DefaultTitle,
+		Content: template.ContentTemplate,
+		Tags:    template.DefaultTags,
+	}
+	if note.Title == "" {
+		note.Title = "新しいノート"
+	}
+
+	if err := s.noteCreator.Create(note); err != nil {
+		return nil, err
+	}
+	return note, nil
 }
