@@ -97,10 +97,11 @@ export default function GoalsPage() {
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className={labelClass}>
+            <label htmlFor="goal-title" className={labelClass}>
               {t('goals.goalTitle')}
             </label>
             <input
+              id="goal-title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -110,10 +111,11 @@ export default function GoalsPage() {
             />
           </div>
           <div>
-            <label className={labelClass}>
+            <label htmlFor="goal-description" className={labelClass}>
               {t('goals.description')}
             </label>
             <textarea
+              id="goal-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder={t('goals.descriptionPlaceholder')}
@@ -122,10 +124,11 @@ export default function GoalsPage() {
             />
           </div>
           <div>
-            <label className={labelClass}>
+            <label htmlFor="goal-category" className={labelClass}>
               {t('goals.category')}
             </label>
             <select
+              id="goal-category"
               value={category}
               onChange={(e) => setCategory(e.target.value as GoalCategory)}
               className={inputClass}
@@ -138,10 +141,11 @@ export default function GoalsPage() {
             </select>
           </div>
           <div>
-            <label className={labelClass}>
+            <label htmlFor="goal-target-date" className={labelClass}>
               {t('goals.targetDate')}
             </label>
             <input
+              id="goal-target-date"
               type="date"
               value={targetDate}
               onChange={(e) => setTargetDate(e.target.value)}
