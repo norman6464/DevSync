@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BookOpen, Star, Plus, Edit, Trash2 } from 'lucide-react';
 import { useNoteForm } from '../hooks';
@@ -14,6 +15,11 @@ export default function NotesPage() {
     resetForm, handleSubmit, handleEdit, deleteNote, toggleFavorite,
   } = useNoteForm();
 
+  const handleToggleForm = useCallback(() => setShowForm((prev) => !prev), [setShowForm]);
+  const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value), [setTitle]);
+  const handleContentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => setContent(e.target.value), [setContent]);
+  const handleTagsChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setTags(e.target.value), [setTags]);
+
   if (loading) return <PageLoader />;
 
   return (
@@ -24,7 +30,7 @@ export default function NotesPage() {
           <h1 className="text-3xl font-bold">{t('notes.title')}</h1>
         </div>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={handleToggleForm}
           className={`${buttonPrimaryClass} flex items-center gap-2`}
         >
           <Plus className="w-5 h-5" />
@@ -54,7 +60,7 @@ export default function NotesPage() {
                 id="note-title"
                 type="text"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={handleTitleChange}
                 className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
@@ -64,7 +70,7 @@ export default function NotesPage() {
               <textarea
                 id="note-content"
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={handleContentChange}
                 rows={8}
                 className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
@@ -76,7 +82,7 @@ export default function NotesPage() {
                 id="note-tags"
                 type="text"
                 value={tags}
-                onChange={(e) => setTags(e.target.value)}
+                onChange={handleTagsChange}
                 placeholder={t('notes.tagsPlaceholder')}
                 className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
@@ -144,23 +150,23 @@ export default function NotesPage() {
                   <button
                     onClick={() => toggleFavorite(note.id)}
                     className="p-2 text-gray-400 hover:text-yellow-500 transition-colors"
-                    title={t('notes.favorites')}
+                    aria-label={t('notes.favorites')}
                   >
-                    <Star className={`w-5 h-5 ${note.is_favorite ? 'fill-yellow-500 text-yellow-500' : ''}`} />
+                    <Star aria-hidden="true" className={`w-5 h-5 ${note.is_favorite ? 'fill-yellow-500 text-yellow-500' : ''}`} />
                   </button>
                   <button
                     onClick={() => handleEdit(note)}
                     className="p-2 text-gray-400 hover:text-blue-500 transition-colors"
-                    title={t('common.edit')}
+                    aria-label={t('common.edit')}
                   >
-                    <Edit className="w-5 h-5" />
+                    <Edit aria-hidden="true" className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => deleteNote(note.id)}
                     className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                    title={t('common.delete')}
+                    aria-label={t('common.delete')}
                   >
-                    <Trash2 className="w-5 h-5" />
+                    <Trash2 aria-hidden="true" className="w-5 h-5" />
                   </button>
                 </div>
               </div>
