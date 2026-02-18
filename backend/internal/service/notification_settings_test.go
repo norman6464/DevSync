@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -132,5 +133,70 @@ func TestNotificationSettingsService_ShouldNotify(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, should)
 
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// エラーケーステスト
+// ============================================================
+
+func TestNotificationSettingsService_GetSettings_Error(t *testing.T) {
+	svc, repo := setupNotificationSettingsService()
+
+	repo.On("GetOrCreateDefault", uint(1)).Return(nil, errors.New("db error"))
+
+	result, err := svc.GetSettings(1)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestNotificationSettingsService_UpdateSettings_GetError(t *testing.T) {
+	svc, repo := setupNotificationSettingsService()
+
+	repo.On("GetOrCreateDefault", uint(1)).Return(nil, errors.New("db error"))
+
+	updates := &model.NotificationSettings{EnableLikes: true}
+	result, err := svc.UpdateSettings(1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestNotificationSettingsService_UpdateSettings_SaveError(t *testing.T) {
+	svc, repo := setupNotificationSettingsService()
+
+	existing := &model.NotificationSettings{ID: 1, UserID: 1, EnableLikes: true}
+	repo.On("GetOrCreateDefault", uint(1)).Return(existing, nil)
+	repo.On("CreateOrUpdate", mock.AnythingOfType("*model.NotificationSettings")).Return(errors.New("save error"))
+
+	updates := &model.NotificationSettings{EnableLikes: false}
+	result, err := svc.UpdateSettings(1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestNotificationSettingsService_ShouldNotify_Error(t *testing.T) {
+	svc, repo := setupNotificationSettingsService()
+
+	repo.On("GetOrCreateDefault", uint(1)).Return(nil, errors.New("db error"))
+
+	should, err := svc.ShouldNotify(1, model.NotificationTypeLike)
+	assert.Error(t, err)
+	assert.False(t, should)
+	repo.AssertExpectations(t)
+}
+
+func TestNotificationSettingsService_ShouldNotify_DefaultType(t *testing.T) {
+	svc, repo := setupNotificationSettingsService()
+
+	settings := &model.NotificationSettings{UserID: 1}
+	repo.On("GetOrCreateDefault", uint(1)).Return(settings, nil)
+
+	// 未定義の通知タイプはデフォルトでtrue
+	should, err := svc.ShouldNotify(1, model.NotificationType("unknown"))
+	assert.NoError(t, err)
+	assert.True(t, should)
 	repo.AssertExpectations(t)
 }
