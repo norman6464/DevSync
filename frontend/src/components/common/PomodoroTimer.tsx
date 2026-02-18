@@ -38,6 +38,14 @@ export default function PomodoroTimer() {
   const [autoLog, setAutoLog] = useState(true);
   const [category, setCategory] = useState<LogCategory>('coding');
 
+  const handleExpand = useCallback(() => setExpanded(true), []);
+  const handleCollapse = useCallback(() => setExpanded(false), []);
+  const handleToggleSound = useCallback(() => setSoundEnabled(prev => !prev), []);
+  const handleToggleAutoLog = useCallback(() => setAutoLog(prev => !prev), []);
+  const handleCategoryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setCategory(e.target.value as LogCategory);
+  }, []);
+
   const handleFocusComplete = useCallback(async () => {
     if (!autoLog) return;
     try {
@@ -85,7 +93,7 @@ export default function PomodoroTimer() {
   if (!expanded) {
     return (
       <button
-        onClick={() => setExpanded(true)}
+        onClick={handleExpand}
         className={`fixed bottom-20 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full shadow-sm border transition-colors ${
           isRunning
             ? 'bg-gray-800/95 border-blue-600/50 animate-pulse'
@@ -111,14 +119,14 @@ export default function PomodoroTimer() {
         </div>
         <div className="flex items-center gap-1">
           <button
-            onClick={() => setSoundEnabled(!soundEnabled)}
+            onClick={handleToggleSound}
             className="p-1.5 text-gray-400 hover:text-white rounded transition-colors"
             title={soundEnabled ? t('pomodoro.soundOn') : t('pomodoro.soundOff')}
           >
             {soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
           </button>
           <button
-            onClick={() => setExpanded(false)}
+            onClick={handleCollapse}
             className="p-1.5 text-gray-400 hover:text-white rounded transition-colors"
           >
             <ChevronDown size={14} />
@@ -207,7 +215,7 @@ export default function PomodoroTimer() {
           <label className="flex items-center justify-between cursor-pointer">
             <span className="text-xs text-gray-400">{t('pomodoro.autoLog')}</span>
             <button
-              onClick={() => setAutoLog(!autoLog)}
+              onClick={handleToggleAutoLog}
               className={`relative w-9 h-5 rounded-full transition-colors ${
                 autoLog ? 'bg-blue-600' : 'bg-gray-600'
               }`}
@@ -228,7 +236,7 @@ export default function PomodoroTimer() {
               </label>
               <select
                 value={category}
-                onChange={(e) => setCategory(e.target.value as LogCategory)}
+                onChange={handleCategoryChange}
                 className={`${selectClass} w-full`}
               >
                 {CATEGORIES.map((cat) => (
