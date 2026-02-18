@@ -1,8 +1,7 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Monitor, Rocket, Target, FolderOpen, FileText, type LucideIcon } from 'lucide-react';
 import { type GoalCategory, type GoalStatus, type LearningGoal } from '../api/goals';
-import { useGoals, useConfirm } from '../hooks';
+import { useGoalForm } from '../hooks';
 import { Modal, PageLoader } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
 import ConfirmDialog from '../components/common/ConfirmDialog';
@@ -16,95 +15,34 @@ const CATEGORIES: { value: GoalCategory; label: string; icon: string; Icon: Luci
   { value: 'other', label: 'goals.categoryOther', icon: '📝', Icon: FileText },
 ];
 
+const getCategoryInfo = (cat: GoalCategory) => {
+  return CATEGORIES.find((c) => c.value === cat) || CATEGORIES[4];
+};
+
+const getStatusColor = (status: GoalStatus) => {
+  switch (status) {
+    case 'active':
+      return 'text-blue-400 bg-blue-400/10';
+    case 'completed':
+      return 'text-green-400 bg-green-400/10';
+    case 'paused':
+      return 'text-yellow-400 bg-yellow-400/10';
+  }
+};
+
 export default function GoalsPage() {
   const { t } = useTranslation();
   const {
     goals, loading, saving, activeGoals, completedGoals, pausedGoals,
-    createGoal, updateGoal, deleteGoal,
-  } = useGoals();
-
-  const { confirm, dialogProps } = useConfirm();
-
-  const [showForm, setShowForm] = useState(false);
-  const [editingGoal, setEditingGoal] = useState<LearningGoal | null>(null);
-
-  const handleDeleteGoal = async (id: number) => {
-    const ok = await confirm({ title: t('common.confirm'), message: t('goals.confirmDelete'), variant: 'danger' });
-    if (ok) deleteGoal(id);
-  };
-
-  // Form state
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<GoalCategory>('other');
-  const [targetDate, setTargetDate] = useState('');
-
-  const resetForm = () => {
-    setTitle('');
-    setDescription('');
-    setCategory('other');
-    setTargetDate('');
-    setEditingGoal(null);
-    setShowForm(false);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim()) return;
-
-    if (editingGoal) {
-      const result = await updateGoal(editingGoal.id, {
-        title,
-        description,
-        category,
-        target_date: targetDate || undefined,
-      });
-      if (result) resetForm();
-    } else {
-      const result = await createGoal({
-        title,
-        description,
-        category,
-        target_date: targetDate || undefined,
-      });
-      if (result) resetForm();
-    }
-  };
-
-  const handleEdit = (goal: LearningGoal) => {
-    setEditingGoal(goal);
-    setTitle(goal.title);
-    setDescription(goal.description);
-    setCategory(goal.category);
-    setTargetDate(goal.target_date ? goal.target_date.split('T')[0] : '');
-    setShowForm(true);
-  };
-
-  const handleProgressChange = async (goal: LearningGoal, newProgress: number) => {
-    await updateGoal(goal.id, { progress: newProgress });
-  };
-
-  const handleStatusChange = async (goal: LearningGoal, newStatus: GoalStatus) => {
-    await updateGoal(goal.id, { status: newStatus });
-  };
-
-  const getCategoryInfo = (cat: GoalCategory) => {
-    return CATEGORIES.find((c) => c.value === cat) || CATEGORIES[4];
-  };
-
-  const getStatusColor = (status: GoalStatus) => {
-    switch (status) {
-      case 'active':
-        return 'text-blue-400 bg-blue-400/10';
-      case 'completed':
-        return 'text-green-400 bg-green-400/10';
-      case 'paused':
-        return 'text-yellow-400 bg-yellow-400/10';
-    }
-  };
+    showForm, setShowForm, editingGoal,
+    title, setTitle, description, setDescription,
+    category, setCategory, targetDate, setTargetDate,
+    resetForm, handleSubmit, handleEdit,
+    handleProgressChange, handleStatusChange, handleDeleteGoal,
+    dialogProps,
+  } = useGoalForm();
 
   if (loading) return <PageLoader />;
-
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
