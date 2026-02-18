@@ -198,6 +198,13 @@
     "unfollow": "フォロー解除",
     "editProfile": "プロフィール編集",
     "posts": "投稿",
+    "completeness": "プロフィール完成度",
+    "missing": {
+      "avatar": "アバター画像を設定",
+      "bio": "自己紹介を追加",
+      "github": "GitHubを連携",
+      "skills": "スキルを追加"
+    },
     "noPosts": "まだ投稿がありません",
     "contributions": "コントリビューション",
     "languages": "言語",

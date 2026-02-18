@@ -42,3 +42,51 @@ func (s *UserService) FindByID(id uint) (*model.User, error) {
 func (s *UserService) Update(user *model.User) error {
 	return s.repo.Update(user)
 }
+
+// ProfileCompleteness はプロフィール完成度の計算結果を表す。
+type ProfileCompleteness struct {
+	Percentage    int      `json:"percentage"`
+	MissingFields []string `json:"missing_fields"`
+}
+
+// GetProfileCompleteness は指定ユーザーのプロフィール完成度を計算する。
+func (s *UserService) GetProfileCompleteness(userID uint) (*ProfileCompleteness, error) {
+	user, err := s.repo.FindByID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	totalFields := 4
+	completed := 0
+	var missing []string
+
+	if user.AvatarURL != "" {
+		completed++
+	} else {
+		missing = append(missing, "avatar")
+	}
+
+	if user.Bio != "" {
+		completed++
+	} else {
+		missing = append(missing, "bio")
+	}
+
+	if user.GitHubConnected {
+		completed++
+	} else {
+		missing = append(missing, "github")
+	}
+
+	if user.SkillsLanguages != "" || user.SkillsFrameworks != "" {
+		completed++
+	} else {
+		missing = append(missing, "skills")
+	}
+
+	percentage := (completed * 100) / totalFields
+	return &ProfileCompleteness{
+		Percentage:    percentage,
+		MissingFields: missing,
+	}, nil
+}

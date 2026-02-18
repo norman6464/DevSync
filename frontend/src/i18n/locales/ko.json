@@ -181,6 +181,13 @@
     "unfollow": "언팔로우",
     "editProfile": "프로필 편집",
     "posts": "게시물",
+    "completeness": "프로필 완성도",
+    "missing": {
+      "avatar": "아바타 설정",
+      "bio": "자기소개 추가",
+      "github": "GitHub 연동",
+      "skills": "스킬 추가"
+    },
     "noPosts": "게시물이 없습니다",
     "contributions": "기여 활동",
     "languages": "언어",

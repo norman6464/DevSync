@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -75,4 +76,102 @@ func TestUserUpdate_Success(t *testing.T) {
 	err := svc.Update(user)
 	assert.NoError(t, err)
 	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// GetProfileCompleteness テスト
+// ============================================================
+
+func TestGetProfileCompleteness_FullProfile(t *testing.T) {
+	svc, repo := newTestUserService()
+
+	user := &model.User{
+		ID:              1,
+		Name:            "Alice",
+		Username:        "alice",
+		Email:           "alice@example.com",
+		AvatarURL:       "https://example.com/avatar.png",
+		Bio:             "I love coding",
+		GitHubConnected: true,
+		SkillsLanguages: "Go,TypeScript",
+	}
+	repo.On("FindByID", uint(1)).Return(user, nil)
+
+	result, err := svc.GetProfileCompleteness(1)
+	assert.NoError(t, err)
+	assert.Equal(t, 100, result.Percentage)
+	assert.Empty(t, result.MissingFields)
+}
+
+func TestGetProfileCompleteness_EmptyProfile(t *testing.T) {
+	svc, repo := newTestUserService()
+
+	user := &model.User{
+		ID:       1,
+		Name:     "Alice",
+		Username: "alice",
+		Email:    "alice@example.com",
+	}
+	repo.On("FindByID", uint(1)).Return(user, nil)
+
+	result, err := svc.GetProfileCompleteness(1)
+	assert.NoError(t, err)
+	assert.Less(t, result.Percentage, 100)
+	assert.Contains(t, result.MissingFields, "avatar")
+	assert.Contains(t, result.MissingFields, "bio")
+	assert.Contains(t, result.MissingFields, "github")
+	assert.Contains(t, result.MissingFields, "skills")
+}
+
+func TestGetProfileCompleteness_PartialProfile(t *testing.T) {
+	svc, repo := newTestUserService()
+
+	user := &model.User{
+		ID:        1,
+		Name:      "Alice",
+		Username:  "alice",
+		Email:     "alice@example.com",
+		AvatarURL: "https://example.com/avatar.png",
+		Bio:       "Hello",
+	}
+	repo.On("FindByID", uint(1)).Return(user, nil)
+
+	result, err := svc.GetProfileCompleteness(1)
+	assert.NoError(t, err)
+	assert.Greater(t, result.Percentage, 0)
+	assert.Less(t, result.Percentage, 100)
+	assert.NotContains(t, result.MissingFields, "avatar")
+	assert.NotContains(t, result.MissingFields, "bio")
+	assert.Contains(t, result.MissingFields, "github")
+	assert.Contains(t, result.MissingFields, "skills")
+}
+
+func TestGetProfileCompleteness_UserNotFound(t *testing.T) {
+	svc, repo := newTestUserService()
+
+	repo.On("FindByID", uint(999)).Return((*model.User)(nil), errors.New("not found"))
+
+	_, err := svc.GetProfileCompleteness(999)
+	assert.Error(t, err)
+}
+
+func TestGetProfileCompleteness_WithSkillsFrameworks(t *testing.T) {
+	svc, repo := newTestUserService()
+
+	user := &model.User{
+		ID:               1,
+		Name:             "Alice",
+		Username:         "alice",
+		Email:            "alice@example.com",
+		AvatarURL:        "https://example.com/avatar.png",
+		Bio:              "Developer",
+		GitHubConnected:  true,
+		SkillsFrameworks: "React,Gin",
+	}
+	repo.On("FindByID", uint(1)).Return(user, nil)
+
+	result, err := svc.GetProfileCompleteness(1)
+	assert.NoError(t, err)
+	assert.Equal(t, 100, result.Percentage)
+	assert.Empty(t, result.MissingFields)
 }
