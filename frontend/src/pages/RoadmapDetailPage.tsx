@@ -158,8 +158,9 @@ export default function RoadmapDetailPage() {
       >
         <form onSubmit={handleStepSubmit} className="space-y-4">
           <div>
-            <label className={labelClass}>{t('roadmaps.stepTitle')}</label>
+            <label htmlFor="roadmap-step-title" className={labelClass}>{t('roadmaps.stepTitle')}</label>
             <input
+              id="roadmap-step-title"
               type="text"
               value={stepTitle}
               onChange={e => setStepTitle(e.target.value)}
@@ -169,8 +170,9 @@ export default function RoadmapDetailPage() {
             />
           </div>
           <div>
-            <label className={labelClass}>{t('roadmaps.stepDescription')}</label>
+            <label htmlFor="roadmap-step-description" className={labelClass}>{t('roadmaps.stepDescription')}</label>
             <textarea
+              id="roadmap-step-description"
               value={stepDescription}
               onChange={e => setStepDescription(e.target.value)}
               placeholder={t('roadmaps.stepDescriptionPlaceholder')}
@@ -179,8 +181,9 @@ export default function RoadmapDetailPage() {
             />
           </div>
           <div>
-            <label className={labelClass}>{t('roadmaps.resourceURL')}</label>
+            <label htmlFor="roadmap-step-resource-url" className={labelClass}>{t('roadmaps.resourceURL')}</label>
             <input
+              id="roadmap-step-resource-url"
               type="url"
               value={stepResourceURL}
               onChange={e => setStepResourceURL(e.target.value)}

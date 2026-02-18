@@ -133,8 +133,9 @@ export default function IntegrationSection(props: Props) {
                 <p className="text-gray-400 text-sm mb-4">{t('settings.zennDescription')}</p>
               </div>
               <div>
-                <label className={labelClass}>{t('settings.zennUsername')}</label>
+                <label htmlFor="integration-zenn-username" className={labelClass}>{t('settings.zennUsername')}</label>
                 <input
+                  id="integration-zenn-username"
                   type="text"
                   value={props.zennUsername}
                   onChange={(e) => props.setZennUsername(e.target.value)}
@@ -192,8 +193,9 @@ export default function IntegrationSection(props: Props) {
                 <p className="text-gray-400 text-sm mb-4">{t('settings.qiitaDescription')}</p>
               </div>
               <div>
-                <label className={labelClass}>{t('settings.qiitaUsername')}</label>
+                <label htmlFor="integration-qiita-username" className={labelClass}>{t('settings.qiitaUsername')}</label>
                 <input
+                  id="integration-qiita-username"
                   type="text"
                   value={props.qiitaUsername}
                   onChange={(e) => props.setQiitaUsername(e.target.value)}
@@ -244,8 +246,9 @@ export default function IntegrationSection(props: Props) {
                 <p className="text-gray-400 text-sm mb-4">{t('settings.atcoderDescription')}</p>
               </div>
               <div>
-                <label className={labelClass}>{t('settings.atcoderUsername')}</label>
+                <label htmlFor="integration-atcoder-username" className={labelClass}>{t('settings.atcoderUsername')}</label>
                 <input
+                  id="integration-atcoder-username"
                   type="text"
                   value={props.atcoderUsername}
                   onChange={(e) => props.setAtcoderUsername(e.target.value)}
@@ -276,8 +279,9 @@ export default function IntegrationSection(props: Props) {
             <p className="text-gray-400 text-sm mb-4">{t('settings.paizaDescription')}</p>
           </div>
           <div>
-            <label className={labelClass}>{t('settings.paizaRankLabel')}</label>
+            <label htmlFor="integration-paiza-rank" className={labelClass}>{t('settings.paizaRankLabel')}</label>
             <select
+              id="integration-paiza-rank"
               value={props.paizaRank}
               onChange={(e) => props.setPaizaRank(e.target.value)}
               className={`${selectClass} w-full`}

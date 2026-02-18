@@ -143,10 +143,11 @@ export default function LearningLogsPage() {
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className={labelClass}>
+            <label htmlFor="log-title" className={labelClass}>
               {t('learningLogs.logTitle')}
             </label>
             <input
+              id="log-title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -156,10 +157,11 @@ export default function LearningLogsPage() {
             />
           </div>
           <div>
-            <label className={labelClass}>
+            <label htmlFor="log-content" className={labelClass}>
               {t('learningLogs.content')}
             </label>
             <textarea
+              id="log-content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder={t('learningLogs.contentPlaceholder')}
@@ -170,10 +172,11 @@ export default function LearningLogsPage() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>
+              <label htmlFor="log-category" className={labelClass}>
                 {t('learningLogs.category')}
               </label>
               <select
+                id="log-category"
                 value={category}
                 onChange={(e) => setCategory(e.target.value as LogCategory)}
                 className={inputClass}
@@ -186,10 +189,11 @@ export default function LearningLogsPage() {
               </select>
             </div>
             <div>
-              <label className={labelClass}>
+              <label htmlFor="log-duration" className={labelClass}>
                 {t('learningLogs.duration')}
               </label>
               <input
+                id="log-duration"
                 type="number"
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}

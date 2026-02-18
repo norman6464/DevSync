@@ -58,9 +58,10 @@ export default function AccountSection(props: Props) {
           </div>
 
           <div>
-            <label className={labelClass}>{t('settings.emailLanguage')}</label>
+            <label htmlFor="account-email-language" className={labelClass}>{t('settings.emailLanguage')}</label>
             <p className="text-xs text-gray-500 mb-2">{t('settings.emailLanguageDesc')}</p>
             <select
+              id="account-email-language"
               value={props.emailLanguage}
               onChange={(e) => props.setEmailLanguage(e.target.value)}
               className={`${selectClass} w-full`}
@@ -121,10 +122,11 @@ export default function AccountSection(props: Props) {
 
         {!props.user.github_connected && (
           <div className="mb-4">
-            <label className={labelClass}>
+            <label htmlFor="account-delete-password" className={labelClass}>
               {t('auth.password')}
             </label>
             <input
+              id="account-delete-password"
               type="password"
               value={props.deletePassword}
               onChange={(e) => props.setDeletePassword(e.target.value)}

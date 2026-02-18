@@ -49,8 +49,9 @@ export default function NotesPage() {
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2">{t('notes.noteTitle')}</label>
+              <label htmlFor="note-title" className="block text-sm font-medium mb-2">{t('notes.noteTitle')}</label>
               <input
+                id="note-title"
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -59,8 +60,9 @@ export default function NotesPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">{t('notes.noteContent')}</label>
+              <label htmlFor="note-content" className="block text-sm font-medium mb-2">{t('notes.noteContent')}</label>
               <textarea
+                id="note-content"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 rows={8}
@@ -69,8 +71,9 @@ export default function NotesPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">{t('notes.tags')}</label>
+              <label htmlFor="note-tags" className="block text-sm font-medium mb-2">{t('notes.tags')}</label>
               <input
+                id="note-tags"
                 type="text"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
