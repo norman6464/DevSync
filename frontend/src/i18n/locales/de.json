@@ -162,6 +162,7 @@
     "draftFailed": "Entwurf konnte nicht gespeichert werden",
     "writeComment": "Kommentar schreiben...",
     "writeReply": "Antwort schreiben...",
+    "readTime": "{{minutes}} Min. Lesezeit",
     "notFound": "Beitrag nicht gefunden",
     "bookmark": "Lesezeichen",
     "unbookmark": "Lesezeichen entfernen",

@@ -162,6 +162,7 @@
     "draftFailed": "Error al guardar borrador",
     "writeComment": "Escribe un comentario...",
     "writeReply": "Escribe una respuesta...",
+    "readTime": "{{minutes}} min de lectura",
     "notFound": "Publicación no encontrada",
     "bookmark": "Marcador",
     "unbookmark": "Quitar marcador",

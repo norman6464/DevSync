@@ -162,6 +162,7 @@
     "draftFailed": "草稿儲存失敗",
     "writeComment": "寫評論...",
     "writeReply": "寫回覆...",
+    "readTime": "{{minutes}}分鐘閱讀",
     "notFound": "找不到貼文",
     "bookmark": "書籤",
     "unbookmark": "取消書籤",

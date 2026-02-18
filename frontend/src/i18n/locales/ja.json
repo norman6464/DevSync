@@ -179,6 +179,7 @@
     "updateFailed": "投稿の更新に失敗しました",
     "writeComment": "コメントを書く...",
     "writeReply": "返信を書く...",
+    "readTime": "{{minutes}}分で読める",
     "notFound": "投稿が見つかりません",
     "bookmark": "ブックマーク",
     "unbookmark": "ブックマーク解除",

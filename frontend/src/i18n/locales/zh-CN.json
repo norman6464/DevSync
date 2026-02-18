@@ -162,6 +162,7 @@
     "draftFailed": "草稿保存失败",
     "writeComment": "写评论...",
     "writeReply": "写回复...",
+    "readTime": "{{minutes}}分钟阅读",
     "notFound": "未找到帖子",
     "bookmark": "书签",
     "unbookmark": "取消书签",
