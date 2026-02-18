@@ -72,6 +72,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerGitHubRoutes(protected, c)
 		registerPostRoutes(protected, c)
 		registerPostSeriesRoutes(protected, c)
+		registerPostCollectionRoutes(protected, c)
 		registerSnippetRoutes(protected, c)
 		registerRankingRoutes(protected, c)
 		registerMessageRoutes(protected, c)
@@ -154,6 +155,20 @@ func registerPostSeriesRoutes(g *gin.RouterGroup, c *di.Container) {
 		series.POST("/:id/posts", c.PostSeriesHandler.AddPost)
 		series.DELETE("/:id/posts/:postId", c.PostSeriesHandler.RemovePost)
 		series.GET("/user/:userId", c.PostSeriesHandler.GetByUserID)
+	}
+}
+
+func registerPostCollectionRoutes(g *gin.RouterGroup, c *di.Container) {
+	collections := g.Group("/post-collections")
+	{
+		collections.POST("", c.PostCollectionHandler.Create)
+		collections.GET("/:id", c.PostCollectionHandler.GetByID)
+		collections.PUT("/:id", c.PostCollectionHandler.Update)
+		collections.DELETE("/:id", c.PostCollectionHandler.Delete)
+		collections.GET("/:id/posts", c.PostCollectionHandler.GetPosts)
+		collections.POST("/:id/posts", c.PostCollectionHandler.AddPost)
+		collections.DELETE("/:id/posts/:postId", c.PostCollectionHandler.RemovePost)
+		collections.GET("/user/:userId", c.PostCollectionHandler.GetByUserID)
 	}
 }
 

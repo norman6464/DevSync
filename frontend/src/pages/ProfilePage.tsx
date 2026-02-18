@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Sparkles, Rocket, FileText, Monitor, Target, FolderOpen } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import { useProfile, usePostSeries } from '../hooks';
+import { useProfile, usePostSeries, usePostCollections } from '../hooks';
 import { sectionContainerClass } from '../constants/styles';
 import Avatar from '../components/common/Avatar';
 import { PageLoader } from '../components/common';
@@ -31,6 +31,7 @@ export default function ProfilePage() {
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [portfolioModalOpen, setPortfolioModalOpen] = useState(false);
   const { series } = usePostSeries(user?.id);
+  const { collections } = usePostCollections(user?.id);
 
   if (loading) return <PageLoader />;
   if (!user) return <div className="text-center text-gray-400 py-12">{t('errors.notFound')}</div>;
@@ -333,6 +334,30 @@ export default function ProfilePage() {
           <div className="space-y-3">
             {series.map((s) => (
               <PostSeriesCard key={s.id} series={s} isOwner={isOwnProfile} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Post Collections */}
+      {collections.length > 0 && (
+        <div>
+          <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-3">{t('collections.title')}</h2>
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+            {collections.map((c) => (
+              <Link
+                key={c.id}
+                to={`/collections/${c.id}`}
+                className="bg-gray-900 border border-gray-800 rounded-md p-4 hover:border-gray-700 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <FolderOpen className="w-4 h-4 text-purple-400" />
+                  <h3 className="text-white font-medium truncate">{c.title}</h3>
+                </div>
+                {c.description && (
+                  <p className="text-gray-400 text-sm mt-1 line-clamp-2">{c.description}</p>
+                )}
+              </Link>
             ))}
           </div>
         </div>

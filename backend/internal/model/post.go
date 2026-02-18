@@ -74,6 +74,31 @@ type PostSeriesItem struct {
 	OrderIndex int  `json:"order_index" gorm:"not null;default:0"`
 }
 
+// PostCollection はテーマ別の投稿コレクションを表す。
+// ユーザーが自他の投稿をテーマ別にまとめて管理・公開できる。
+type PostCollection struct {
+	ID          uint      `json:"id" gorm:"primaryKey"`
+	UserID      uint      `json:"user_id" gorm:"not null;index"`
+	User        User      `json:"user" gorm:"foreignKey:UserID"`
+	Title       string    `json:"title" gorm:"not null"`
+	Description string    `json:"description" gorm:"type:text"`
+	IsPublic    bool      `json:"is_public" gorm:"default:false"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+// PostCollectionItem はコレクション内の投稿を表す。
+// uniqueIndex制約でコレクション内に同じ投稿が重複しないことを保証する。
+type PostCollectionItem struct {
+	ID           uint      `json:"id" gorm:"primaryKey"`
+	CollectionID uint      `json:"collection_id" gorm:"not null;uniqueIndex:idx_collection_post;index"`
+	PostID       uint      `json:"post_id" gorm:"not null;uniqueIndex:idx_collection_post;index"`
+	Post         Post      `json:"post,omitempty" gorm:"foreignKey:PostID"`
+	Note         string    `json:"note" gorm:"type:text"`
+	OrderIndex   int       `json:"order_index" gorm:"not null;default:0"`
+	CreatedAt    time.Time `json:"created_at"`
+}
+
 // Comment は投稿へのコメントを表す。
 type Comment struct {
 	ID        uint      `json:"id" gorm:"primaryKey"`

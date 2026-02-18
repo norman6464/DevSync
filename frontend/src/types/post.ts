@@ -67,6 +67,27 @@ export interface PostSeriesItem {
   order_index: number;
 }
 
+export interface PostCollection {
+  id: number;
+  user_id: number;
+  user?: User;
+  title: string;
+  description: string;
+  is_public: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PostCollectionItem {
+  id: number;
+  collection_id: number;
+  post_id: number;
+  post?: Post;
+  note: string;
+  order_index: number;
+  created_at: string;
+}
+
 export interface SnippetComment {
   id: number;
   snippet_id: number;

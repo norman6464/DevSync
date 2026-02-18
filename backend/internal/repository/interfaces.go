@@ -413,6 +413,19 @@ type NoteFolderRepositoryInterface interface {
 	Delete(id uint) error
 }
 
+// PostCollectionRepositoryInterface は投稿コレクションデータ操作の契約を定義する。
+type PostCollectionRepositoryInterface interface {
+	Create(collection *model.PostCollection) error
+	FindByID(id uint) (*model.PostCollection, error)
+	FindByUserID(userID uint) ([]model.PostCollection, error)
+	FindPublicByUserID(userID uint) ([]model.PostCollection, error)
+	Update(collection *model.PostCollection) error
+	Delete(id uint) error
+	AddPost(item *model.PostCollectionItem) error
+	RemovePost(collectionID, postID uint) error
+	GetPostsByCollectionID(collectionID uint) ([]model.PostCollectionItem, error)
+}
+
 // PostSeriesRepositoryInterface は投稿シリーズデータ操作の契約を定義する。
 type PostSeriesRepositoryInterface interface {
 	Create(series *model.PostSeries) error

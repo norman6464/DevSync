@@ -34,6 +34,7 @@ export { useNoteFolders, useRootFolders, useFolderChildren } from './useNoteFold
 export { useNoteTemplates, useDefaultNoteTemplate } from './useNoteTemplates';
 export { useNoteLinks, useNoteBacklinks } from './useNoteLinks';
 export { usePostSeries, useSeriesPosts } from './usePostSeries';
+export { usePostCollections, useCollectionPosts } from './usePostCollections';
 export { useBookmarks } from './useBookmarks';
 export { useToast } from './useToast';
 export { useDebounce } from './useDebounce';

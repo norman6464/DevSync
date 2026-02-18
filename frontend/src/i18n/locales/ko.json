@@ -103,6 +103,21 @@
     "postRemoved": "게시물을 시리즈에서 삭제했습니다",
     "postRemoveFailed": "게시물 삭제에 실패했습니다"
   },
+  "collections": {
+    "title": "컬렉션",
+    "posts": "컬렉션 게시물",
+    "noPosts": "이 컬렉션에는 아직 게시물이 없습니다",
+    "createSuccess": "컬렉션을 생성했습니다",
+    "createFailed": "컬렉션 생성에 실패했습니다",
+    "updateSuccess": "컬렉션을 업데이트했습니다",
+    "updateFailed": "컬렉션 업데이트에 실패했습니다",
+    "deleteSuccess": "컬렉션을 삭제했습니다",
+    "deleteFailed": "컬렉션 삭제에 실패했습니다",
+    "postAdded": "게시물을 컬렉션에 추가했습니다",
+    "postAddFailed": "게시물 추가에 실패했습니다",
+    "postRemoved": "게시물을 컬렉션에서 삭제했습니다",
+    "postRemoveFailed": "게시물 삭제에 실패했습니다"
+  },
   "post": {
     "createTitle": "오늘 무엇을 배웠나요?",
     "createContent": "생각을 공유하세요... (마크다운 지원)",

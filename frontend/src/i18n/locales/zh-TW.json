@@ -103,6 +103,21 @@
     "postRemoved": "貼文已從系列移除",
     "postRemoveFailed": "移除貼文失敗"
   },
+  "collections": {
+    "title": "收藏集",
+    "posts": "收藏集貼文",
+    "noPosts": "此收藏集尚無貼文",
+    "createSuccess": "收藏集建立成功",
+    "createFailed": "收藏集建立失敗",
+    "updateSuccess": "收藏集更新成功",
+    "updateFailed": "收藏集更新失敗",
+    "deleteSuccess": "收藏集刪除成功",
+    "deleteFailed": "收藏集刪除失敗",
+    "postAdded": "貼文已加入收藏集",
+    "postAddFailed": "加入貼文失敗",
+    "postRemoved": "貼文已從收藏集移除",
+    "postRemoveFailed": "移除貼文失敗"
+  },
   "post": {
     "createTitle": "今天你學到了什麼？",
     "createContent": "分享你的想法...（支援 Markdown）",
