@@ -508,6 +508,8 @@
     "goalDescriptionPlaceholder": "목표를 설명하세요...",
     "category": "카테고리",
     "targetDate": "목표 날짜",
+    "deadlineOverdue": "기한 초과",
+    "deadlineApproaching": "{{days}}일 남음",
     "status": "상태",
     "active": "진행 중",
     "completed": "완료",

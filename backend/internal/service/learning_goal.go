@@ -94,6 +94,57 @@ func (s *LearningGoalService) Update(id, userID uint, updates *model.LearningGoa
 	return goal, nil
 }
 
+// DeadlineStatus はアクティブな目標のデッドライン状態を判定する純粋関数。
+// "overdue"（期限超過）、"approaching"（3日以内）、""（安全/対象外）を返す。
+func DeadlineStatus(goal *model.LearningGoal, now time.Time) string {
+	if goal.TargetDate == nil || goal.Status != model.GoalStatusActive {
+		return ""
+	}
+	days := int(goal.TargetDate.Sub(now).Hours() / 24)
+	if goal.TargetDate.Before(now) && days < 0 {
+		return "overdue"
+	}
+	if days <= 3 {
+		return "approaching"
+	}
+	return ""
+}
+
+// DaysUntilDeadline は目標の期限までの残り日数を返す。
+// TargetDateがnilまたは期限超過の場合は-1を返す。
+func DaysUntilDeadline(goal *model.LearningGoal, now time.Time) int {
+	if goal.TargetDate == nil {
+		return -1
+	}
+	days := int(goal.TargetDate.Sub(now).Hours() / 24)
+	if days < 0 {
+		return -1
+	}
+	return days
+}
+
+// GetDeadlineAlerts はユーザーのアクティブ目標からデッドラインアラートを取得する。
+func (s *LearningGoalService) GetDeadlineAlerts(userID uint) ([]model.GoalDeadlineAlert, error) {
+	goals, err := s.repo.GetActiveByUserID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now()
+	var alerts []model.GoalDeadlineAlert
+	for _, g := range goals {
+		status := DeadlineStatus(&g, now)
+		if status != "" {
+			alerts = append(alerts, model.GoalDeadlineAlert{
+				Goal:     g,
+				Status:   status,
+				DaysLeft: DaysUntilDeadline(&g, now),
+			})
+		}
+	}
+	return alerts, nil
+}
+
 // Delete は所有権を検証した後、学習目標を削除する。
 func (s *LearningGoalService) Delete(id, userID uint) error {
 	goal, err := s.repo.FindByID(id)

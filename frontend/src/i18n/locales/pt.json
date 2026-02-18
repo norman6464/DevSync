@@ -508,6 +508,8 @@
     "goalDescriptionPlaceholder": "Descreva sua meta...",
     "category": "Categoria",
     "targetDate": "Data Alvo",
+    "deadlineOverdue": "Atrasado",
+    "deadlineApproaching": "{{days}} dias restantes",
     "status": "Status",
     "active": "Ativo",
     "completed": "Concluído",

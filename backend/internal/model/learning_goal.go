@@ -40,6 +40,13 @@ type LearningGoal struct {
 	CompletedAt *time.Time   `json:"completed_at"`                      // 完了日時（完了時に自動設定）
 }
 
+// GoalDeadlineAlert はデッドラインが近い・超過した目標のアラート情報を表す。
+type GoalDeadlineAlert struct {
+	Goal     LearningGoal `json:"goal"`
+	Status   string       `json:"status"`    // "overdue" or "approaching"
+	DaysLeft int          `json:"days_left"` // 残り日数（超過時は負数）
+}
+
 // LearningGoalStats はユーザーの学習目標統計情報を表す。
 type LearningGoalStats struct {
 	TotalGoals      int `json:"total_goals"`

@@ -24,6 +24,12 @@ export interface LearningGoalStats {
   average_progress: number;
 }
 
+export interface GoalDeadlineAlert {
+  goal: LearningGoal;
+  status: 'overdue' | 'approaching';
+  days_left: number;
+}
+
 export interface CreateGoalRequest {
   title: string;
   description?: string;
@@ -60,3 +66,6 @@ export const getUserGoals = (userId: number) =>
 
 export const getGoalStats = (userId: number) =>
   client.get<LearningGoalStats>(`/goals/stats/${userId}`);
+
+export const getDeadlineAlerts = () =>
+  client.get<GoalDeadlineAlert[]>('/goals/deadline-alerts');

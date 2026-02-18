@@ -508,6 +508,8 @@
     "goalDescriptionPlaceholder": "Describe tu objetivo...",
     "category": "Categoría",
     "targetDate": "Fecha Objetivo",
+    "deadlineOverdue": "Vencido",
+    "deadlineApproaching": "{{days}} días restantes",
     "status": "Estado",
     "active": "Activo",
     "completed": "Completado",
