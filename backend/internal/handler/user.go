@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/service"
 )
 
 // UserServiceInterface はUserServiceが実装すべきインターフェース。
@@ -12,6 +13,7 @@ type UserServiceInterface interface {
 	GetByID(id uint) (*model.User, error)
 	GetByUsername(username string) (*model.User, error)
 	Update(user *model.User) error
+	GetProfileCompleteness(userID uint) (*service.ProfileCompleteness, error)
 }
 
 // UserHandler はユーザー関連のHTTPハンドラ。
@@ -118,4 +120,15 @@ func (h *UserHandler) Update(c *gin.Context) {
 		return
 	}
 	respondOK(c, existing)
+}
+
+// GetProfileCompleteness は認証ユーザーのプロフィール完成度を返す。
+func (h *UserHandler) GetProfileCompleteness(c *gin.Context) {
+	userID := c.GetUint("userID")
+	result, err := h.service.GetProfileCompleteness(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, result)
 }
