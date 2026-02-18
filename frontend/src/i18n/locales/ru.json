@@ -1232,6 +1232,8 @@
       "todayCheckin": "Сегодняшняя Отметка",
       "viewAll": "Показать Все"
     },
+    "namePlaceholder": "Группа изучения React",
+    "topicPlaceholder": "Изучить основы React за 1 месяц",
     "searchUsers": "Поиск пользователей..."
   },
   "notes": {

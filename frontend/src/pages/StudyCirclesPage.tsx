@@ -149,7 +149,7 @@ export default function StudyCirclesPage() {
               value={form.name}
               onChange={handleNameChange}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
-              placeholder="React学習会"
+              placeholder={t('studyCircle.namePlaceholder')}
             />
           </div>
           <div>
@@ -159,7 +159,7 @@ export default function StudyCirclesPage() {
               value={form.topic}
               onChange={handleTopicChange}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
-              placeholder="React入門を1ヶ月で"
+              placeholder={t('studyCircle.topicPlaceholder')}
             />
           </div>
           <div>

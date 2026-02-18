@@ -1232,6 +1232,8 @@
       "todayCheckin": "今日簽到",
       "viewAll": "查看全部"
     },
+    "namePlaceholder": "React學習會",
+    "topicPlaceholder": "一個月學會React入門",
     "searchUsers": "搜尋使用者..."
   },
   "notes": {

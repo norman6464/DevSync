@@ -1232,6 +1232,8 @@
       "todayCheckin": "今日签到",
       "viewAll": "查看全部"
     },
+    "namePlaceholder": "React学习会",
+    "topicPlaceholder": "一个月掌握React入门",
     "searchUsers": "搜索用户..."
   },
   "notes": {

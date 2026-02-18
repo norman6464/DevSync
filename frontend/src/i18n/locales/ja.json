@@ -1133,6 +1133,8 @@
       "todayCheckin": "今日のチェックイン",
       "viewAll": "すべて見る"
     },
+    "namePlaceholder": "React学習会",
+    "topicPlaceholder": "React入門を1ヶ月で",
     "searchUsers": "ユーザーを検索..."
   },
   "notes": {
