@@ -1290,5 +1290,12 @@
     "views": "{{count}} vues",
     "mostViewed": "Les plus vus",
     "recordFailed": "Échec de l'enregistrement de la vue"
+  },
+  "mention": {
+    "suggestions": "Suggestions d'utilisateurs",
+    "noMentions": "Aucune mention",
+    "mentionedYou": "vous a mentionné",
+    "inPost": "dans la publication",
+    "inComment": "dans le commentaire"
   }
 }

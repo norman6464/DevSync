@@ -9,6 +9,8 @@ import PostCard from '../components/posts/PostCard';
 import PostForm from '../components/posts/PostForm';
 import CodeSnippetViewer from '../components/posts/CodeSnippetViewer';
 import Avatar from '../components/common/Avatar';
+import MentionInput from '../components/common/MentionInput';
+import MentionText from '../components/common/MentionText';
 import { PageLoader, Modal } from '../components/common';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import { format } from 'date-fns';
@@ -90,12 +92,12 @@ export default function PostDetailPage() {
         {/* Comment Form */}
         <div className="px-6 py-4 border-b border-gray-800">
           <form onSubmit={handleSubmitComment} className="flex gap-3">
-            <input
-              type="text"
+            <MentionInput
               value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
+              onChange={setNewComment}
               placeholder={t('post.writeComment')}
               className="flex-1 px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+              disabled={submitting}
             />
             <button
               type="submit"
@@ -131,7 +133,9 @@ export default function PostDetailPage() {
                       {format(new Date(comment.created_at), 'MMM d, yyyy · HH:mm')}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-300 mt-1 leading-relaxed">{comment.content}</p>
+                  <p className="text-sm text-gray-300 mt-1 leading-relaxed">
+                    <MentionText text={comment.content} />
+                  </p>
                 </div>
               </div>
             ))}

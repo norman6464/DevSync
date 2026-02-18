@@ -1191,5 +1191,12 @@
     "views": "{{count}}回閲覧",
     "mostViewed": "人気の投稿",
     "recordFailed": "閲覧の記録に失敗しました"
+  },
+  "mention": {
+    "suggestions": "ユーザー候補",
+    "noMentions": "メンションはありません",
+    "mentionedYou": "あなたをメンションしました",
+    "inPost": "投稿内",
+    "inComment": "コメント内"
   }
 }

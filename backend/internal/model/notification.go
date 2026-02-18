@@ -15,6 +15,7 @@ const (
 	NotificationTypeAnswer  NotificationType = "answer"  // Q&A回答
 	NotificationTypeBadge   NotificationType = "badge"    // バッジ獲得
 	NotificationTypeLevelUp NotificationType = "level_up" // レベルアップ
+	NotificationTypeMention NotificationType = "mention"  // メンション
 )
 
 // Notification はユーザーへの通知を表す。

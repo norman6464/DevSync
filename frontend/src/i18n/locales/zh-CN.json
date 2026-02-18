@@ -1290,5 +1290,12 @@
     "views": "{{count}}次浏览",
     "mostViewed": "热门帖子",
     "recordFailed": "记录浏览失败"
+  },
+  "mention": {
+    "suggestions": "用户建议",
+    "noMentions": "没有提及",
+    "mentionedYou": "提到了你",
+    "inPost": "在帖子中",
+    "inComment": "在评论中"
   }
 }

@@ -1290,5 +1290,12 @@
     "views": "{{count}} vistas",
     "mostViewed": "Más vistos",
     "recordFailed": "Error al registrar la vista"
+  },
+  "mention": {
+    "suggestions": "Sugerencias de usuarios",
+    "noMentions": "Sin menciones",
+    "mentionedYou": "te mencionó",
+    "inPost": "en publicación",
+    "inComment": "en comentario"
   }
 }

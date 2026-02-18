@@ -1290,5 +1290,12 @@
     "views": "{{count}} просмотров",
     "mostViewed": "Популярные",
     "recordFailed": "Не удалось записать просмотр"
+  },
+  "mention": {
+    "suggestions": "Предложения пользователей",
+    "noMentions": "Нет упоминаний",
+    "mentionedYou": "упомянул вас",
+    "inPost": "в публикации",
+    "inComment": "в комментарии"
   }
 }

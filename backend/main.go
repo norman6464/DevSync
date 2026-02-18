@@ -100,6 +100,7 @@ func main() {
 		&model.StudyCircleStep{},
 		&model.StudyCircleMemberProgress{},
 		&model.StudyCircleCheckin{},
+		&model.Mention{},
 	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}

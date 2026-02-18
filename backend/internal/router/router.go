@@ -76,6 +76,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerPostTagRoutes(protected, c)
 		registerPostPinRoutes(protected, c)
 		registerPostViewRoutes(protected, c)
+		registerMentionRoutes(protected, c)
 		registerSnippetRoutes(protected, c)
 		registerRankingRoutes(protected, c)
 		registerMessageRoutes(protected, c)
@@ -534,6 +535,14 @@ func registerRecommendationRoutes(g *gin.RouterGroup, c *di.Container) {
 		recommendations.GET("/users", c.RecommendationHandler.GetRecommendedUsers)
 		recommendations.GET("/posts", c.RecommendationHandler.GetTrendingPosts)
 		recommendations.GET("/resources", c.RecommendationHandler.GetTrendingResources)
+	}
+}
+
+func registerMentionRoutes(g *gin.RouterGroup, c *di.Container) {
+	mentions := g.Group("/mentions")
+	{
+		mentions.GET("", c.MentionHandler.GetMyMentions)
+		mentions.GET("/posts/:postId", c.MentionHandler.GetPostMentions)
 	}
 }
 

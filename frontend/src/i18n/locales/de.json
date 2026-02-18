@@ -1290,5 +1290,12 @@
     "views": "{{count}} Aufrufe",
     "mostViewed": "Meistgesehen",
     "recordFailed": "Aufzeichnung der Ansicht fehlgeschlagen"
+  },
+  "mention": {
+    "suggestions": "Benutzervorschläge",
+    "noMentions": "Keine Erwähnungen",
+    "mentionedYou": "hat dich erwähnt",
+    "inPost": "im Beitrag",
+    "inComment": "im Kommentar"
   }
 }

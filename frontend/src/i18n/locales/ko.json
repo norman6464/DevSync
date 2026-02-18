@@ -1290,5 +1290,12 @@
     "views": "{{count}}회 조회",
     "mostViewed": "인기 게시물",
     "recordFailed": "조회 기록에 실패했습니다"
+  },
+  "mention": {
+    "suggestions": "사용자 후보",
+    "noMentions": "멘션이 없습니다",
+    "mentionedYou": "당신을 멘션했습니다",
+    "inPost": "게시물에서",
+    "inComment": "댓글에서"
   }
 }

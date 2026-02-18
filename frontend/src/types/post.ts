@@ -108,6 +108,18 @@ export interface ViewCount {
   count: number;
 }
 
+export interface Mention {
+  id: number;
+  user_id: number;
+  user: User;
+  actor_id: number;
+  actor: User;
+  post_id?: number;
+  post?: Post;
+  comment_id?: number;
+  created_at: string;
+}
+
 export interface SnippetComment {
   id: number;
   snippet_id: number;

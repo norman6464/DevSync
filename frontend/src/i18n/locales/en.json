@@ -1290,5 +1290,12 @@
     "views": "{{count}} views",
     "mostViewed": "Most Viewed",
     "recordFailed": "Failed to record view"
+  },
+  "mention": {
+    "suggestions": "User suggestions",
+    "noMentions": "No mentions",
+    "mentionedYou": "mentioned you",
+    "inPost": "in post",
+    "inComment": "in comment"
   }
 }
