@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -42,6 +43,14 @@ func (m *MockUserService) GetByUsername(username string) (*model.User, error) {
 
 func (m *MockUserService) Update(user *model.User) error {
 	return m.Called(user).Error(0)
+}
+
+func (m *MockUserService) GetProfileCompleteness(userID uint) (*service.ProfileCompleteness, error) {
+	args := m.Called(userID)
+	if p := args.Get(0); p != nil {
+		return p.(*service.ProfileCompleteness), args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func newTestUserHandler() (*UserHandler, *MockUserService) {
