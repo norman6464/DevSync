@@ -1270,7 +1270,9 @@
     "attachedImages": "Images jointes :",
     "uploadedImage": "Image téléchargée {{number}}",
     "markdownSupported": "Markdown pris en charge",
-    "pasteOrDragImages": "Collez ou glissez des images pour télécharger"
+    "pasteOrDragImages": "Collez ou glissez des images pour télécharger",
+    "toolbar": "Barre d'outils de mise en forme",
+    "removeImage": "Supprimer l'image {{number}}"
   },
   "tags": {
     "title": "Tags",

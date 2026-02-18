@@ -1270,7 +1270,9 @@
     "attachedImages": "Прикреплённые изображения:",
     "uploadedImage": "Загруженное изображение {{number}}",
     "markdownSupported": "Поддерживается Markdown",
-    "pasteOrDragImages": "Вставьте или перетащите изображения для загрузки"
+    "pasteOrDragImages": "Вставьте или перетащите изображения для загрузки",
+    "toolbar": "Панель форматирования",
+    "removeImage": "Удалить изображение {{number}}"
   },
   "tags": {
     "title": "Теги",

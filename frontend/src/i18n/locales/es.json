@@ -1270,7 +1270,9 @@
     "attachedImages": "Imágenes adjuntas:",
     "uploadedImage": "Imagen subida {{number}}",
     "markdownSupported": "Markdown compatible",
-    "pasteOrDragImages": "Pega o arrastra imágenes para subir"
+    "pasteOrDragImages": "Pega o arrastra imágenes para subir",
+    "toolbar": "Barra de herramientas de formato",
+    "removeImage": "Eliminar imagen {{number}}"
   },
   "tags": {
     "title": "Etiquetas",
