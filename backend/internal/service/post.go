@@ -1,9 +1,9 @@
 package service
 
 import (
-	"fmt"
 	"unicode/utf8"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
@@ -205,7 +205,7 @@ func (s *PostService) GetBookmarks(userID uint, page, limit int) ([]model.Post, 
 // 許可された絵文字のみ使用可能。
 func (s *PostService) AddReaction(userID, postID uint, emoji string) error {
 	if !allowedEmojis[emoji] {
-		return fmt.Errorf("許可されていない絵文字です: %s", emoji)
+		return domain.NewError(domain.ErrCodeBadRequest, "許可されていない絵文字です: "+emoji, nil)
 	}
 	return s.repo.AddReaction(userID, postID, emoji)
 }
