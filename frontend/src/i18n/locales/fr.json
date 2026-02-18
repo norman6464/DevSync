@@ -1067,7 +1067,14 @@
     "breakdownStreakBonus": "Bonus de Série",
     "xpUnit": "XP",
     "noActivity": "Aucune activité",
-    "rankingByLevel": "Par Niveau"
+    "rankingByLevel": "Par Niveau",
+    "titleNewcomer": "Nouveau",
+    "titleBeginner": "Débutant",
+    "titleIntermediate": "Intermédiaire",
+    "titleAdvanced": "Avancé",
+    "titleExpert": "Expert",
+    "titleMaster": "Maître",
+    "titleLegend": "Légende Nv.{{level}}"
   },
   "analytics": {
     "pageTitle": "Tableau de Bord Analytique",

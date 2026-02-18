@@ -997,7 +997,14 @@
     "breakdownStreakBonus": "ストリークボーナス",
     "xpUnit": "XP",
     "noActivity": "アクティビティがありません",
-    "rankingByLevel": "レベル別"
+    "rankingByLevel": "レベル別",
+    "titleNewcomer": "ニューカマー",
+    "titleBeginner": "ビギナー",
+    "titleIntermediate": "中級者",
+    "titleAdvanced": "上級者",
+    "titleExpert": "エキスパート",
+    "titleMaster": "マスター",
+    "titleLegend": "レジェンド Lv.{{level}}"
   },
   "analytics": {
     "pageTitle": "学習分析ダッシュボード",

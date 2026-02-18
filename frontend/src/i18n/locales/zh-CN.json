@@ -1067,7 +1067,14 @@
     "breakdownStreakBonus": "连续奖励",
     "xpUnit": "XP",
     "noActivity": "暂无活动",
-    "rankingByLevel": "按等级"
+    "rankingByLevel": "按等级",
+    "titleNewcomer": "新手",
+    "titleBeginner": "初学者",
+    "titleIntermediate": "中级",
+    "titleAdvanced": "高级",
+    "titleExpert": "专家",
+    "titleMaster": "大师",
+    "titleLegend": "传奇 Lv.{{level}}"
   },
   "analytics": {
     "pageTitle": "学习分析仪表盘",

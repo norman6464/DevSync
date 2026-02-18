@@ -1067,7 +1067,14 @@
     "breakdownStreakBonus": "連續獎勵",
     "xpUnit": "XP",
     "noActivity": "尚無活動",
-    "rankingByLevel": "依等級"
+    "rankingByLevel": "依等級",
+    "titleNewcomer": "新手",
+    "titleBeginner": "初學者",
+    "titleIntermediate": "中級",
+    "titleAdvanced": "高級",
+    "titleExpert": "專家",
+    "titleMaster": "大師",
+    "titleLegend": "傳奇 Lv.{{level}}"
   },
   "analytics": {
     "pageTitle": "學習分析儀表板",

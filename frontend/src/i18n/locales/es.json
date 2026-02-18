@@ -1067,7 +1067,14 @@
     "breakdownStreakBonus": "Bonus de Racha",
     "xpUnit": "XP",
     "noActivity": "Sin actividad aún",
-    "rankingByLevel": "Por Nivel"
+    "rankingByLevel": "Por Nivel",
+    "titleNewcomer": "Novato",
+    "titleBeginner": "Principiante",
+    "titleIntermediate": "Intermedio",
+    "titleAdvanced": "Avanzado",
+    "titleExpert": "Experto",
+    "titleMaster": "Maestro",
+    "titleLegend": "Leyenda Nv.{{level}}"
   },
   "analytics": {
     "pageTitle": "Panel de Análisis de Aprendizaje",

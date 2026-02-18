@@ -1067,7 +1067,14 @@
     "breakdownStreakBonus": "Streak Bonus",
     "xpUnit": "XP",
     "noActivity": "No activity yet",
-    "rankingByLevel": "By Level"
+    "rankingByLevel": "By Level",
+    "titleNewcomer": "Newcomer",
+    "titleBeginner": "Beginner",
+    "titleIntermediate": "Intermediate",
+    "titleAdvanced": "Advanced",
+    "titleExpert": "Expert",
+    "titleMaster": "Master",
+    "titleLegend": "Legend Lv.{{level}}"
   },
   "analytics": {
     "pageTitle": "Learning Analytics",

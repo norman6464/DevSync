@@ -1067,7 +1067,14 @@
     "breakdownStreakBonus": "연속 보너스",
     "xpUnit": "XP",
     "noActivity": "아직 활동이 없습니다",
-    "rankingByLevel": "레벨별"
+    "rankingByLevel": "레벨별",
+    "titleNewcomer": "신입",
+    "titleBeginner": "초보자",
+    "titleIntermediate": "중급자",
+    "titleAdvanced": "상급자",
+    "titleExpert": "전문가",
+    "titleMaster": "마스터",
+    "titleLegend": "레전드 Lv.{{level}}"
   },
   "analytics": {
     "pageTitle": "학습 분석 대시보드",
