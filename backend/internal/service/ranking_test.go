@@ -123,3 +123,69 @@ func TestRankingService_AvailableLanguages(t *testing.T) {
 		repo.AssertExpectations(t)
 	})
 }
+
+func TestRankingService_ContributionRanking_EmptyList(t *testing.T) {
+	repo := new(MockRankingRepository)
+	svc := NewRankingService(repo)
+
+	repo.On("ContributionRanking", "weekly").Return([]repository.RankingEntry{}, nil)
+
+	result, err := svc.ContributionRanking("weekly")
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestRankingService_LanguageRanking_EmptyList(t *testing.T) {
+	repo := new(MockRankingRepository)
+	svc := NewRankingService(repo)
+
+	repo.On("LanguageRanking", "Rust", "weekly").Return([]repository.RankingEntry{}, nil)
+
+	result, err := svc.LanguageRanking("Rust", "weekly")
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestRankingService_LevelRanking_EmptyList(t *testing.T) {
+	repo := new(MockRankingRepository)
+	svc := NewRankingService(repo)
+
+	repo.On("LevelRanking").Return([]repository.RankingEntry{}, nil)
+
+	result, err := svc.LevelRanking()
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestRankingService_AvailableLanguages_EmptyList(t *testing.T) {
+	repo := new(MockRankingRepository)
+	svc := NewRankingService(repo)
+
+	repo.On("AvailableLanguages").Return([]string{}, nil)
+
+	result, err := svc.AvailableLanguages()
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestRankingService_ContributionRanking_LargeScores(t *testing.T) {
+	repo := new(MockRankingRepository)
+	svc := NewRankingService(repo)
+
+	expected := []repository.RankingEntry{
+		{UserID: 1, Name: "top-user", Score: 999999},
+		{UserID: 2, Name: "second-user", Score: 0},
+	}
+	repo.On("ContributionRanking", "monthly").Return(expected, nil)
+
+	result, err := svc.ContributionRanking("monthly")
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, int64(999999), result[0].Score)
+	assert.Equal(t, int64(0), result[1].Score)
+	repo.AssertExpectations(t)
+}
