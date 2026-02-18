@@ -1284,5 +1284,11 @@
     "reorderFailed": "순서 변경에 실패했습니다",
     "maxPins": "최대 3개까지 고정할 수 있습니다",
     "noPins": "고정된 게시물이 없습니다"
+  },
+  "postViews": {
+    "viewCount": "조회수",
+    "views": "{{count}}회 조회",
+    "mostViewed": "인기 게시물",
+    "recordFailed": "조회 기록에 실패했습니다"
   }
 }

@@ -1185,5 +1185,11 @@
     "reorderFailed": "順序の変更に失敗しました",
     "maxPins": "ピン留めは最大3件まで",
     "noPins": "ピン留めした投稿はありません"
+  },
+  "postViews": {
+    "viewCount": "閲覧数",
+    "views": "{{count}}回閲覧",
+    "mostViewed": "人気の投稿",
+    "recordFailed": "閲覧の記録に失敗しました"
   }
 }

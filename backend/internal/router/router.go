@@ -75,6 +75,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerPostCollectionRoutes(protected, c)
 		registerPostTagRoutes(protected, c)
 		registerPostPinRoutes(protected, c)
+		registerPostViewRoutes(protected, c)
 		registerSnippetRoutes(protected, c)
 		registerRankingRoutes(protected, c)
 		registerMessageRoutes(protected, c)
@@ -191,6 +192,15 @@ func registerPostPinRoutes(g *gin.RouterGroup, c *di.Container) {
 		pins.DELETE("/posts/:postId", c.PostPinHandler.Unpin)
 		pins.GET("/users/:userId", c.PostPinHandler.GetByUserID)
 		pins.PUT("/reorder", c.PostPinHandler.Reorder)
+	}
+}
+
+func registerPostViewRoutes(g *gin.RouterGroup, c *di.Container) {
+	views := g.Group("/post-views")
+	{
+		views.POST("/posts/:postId", c.PostViewHandler.RecordView)
+		views.GET("/posts/:postId", c.PostViewHandler.GetViewCount)
+		views.GET("/popular", c.PostViewHandler.GetMostViewed)
 	}
 }
 

@@ -1284,5 +1284,11 @@
     "reorderFailed": "Échec du réordonnancement",
     "maxPins": "Vous pouvez épingler jusqu'à 3 publications",
     "noPins": "Aucune publication épinglée"
+  },
+  "postViews": {
+    "viewCount": "Nombre de vues",
+    "views": "{{count}} vues",
+    "mostViewed": "Les plus vus",
+    "recordFailed": "Échec de l'enregistrement de la vue"
   }
 }

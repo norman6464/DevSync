@@ -31,9 +31,9 @@ export default function NewSearchPage() {
   };
 
   const handleGlobalSearch = () => {
-    userSearch.handleSearch();
-    postSearch.handleSearch();
-    circleSearch.handleSearch();
+    userSearch.handleSearch(globalQuery);
+    postSearch.handleSearch(globalQuery);
+    circleSearch.handleSearch(globalQuery);
   };
 
   // デバウンスされたクエリで自動検索
@@ -42,7 +42,9 @@ export default function NewSearchPage() {
       userSearch.setQuery(debouncedQuery);
       postSearch.setQuery(debouncedQuery);
       circleSearch.setQuery(debouncedQuery);
-      handleGlobalSearch();
+      userSearch.handleSearch(debouncedQuery);
+      postSearch.handleSearch(debouncedQuery);
+      circleSearch.handleSearch(debouncedQuery);
     }
   }, [debouncedQuery]);
 

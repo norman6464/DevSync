@@ -1284,5 +1284,11 @@
     "reorderFailed": "Failed to reorder pins",
     "maxPins": "You can pin up to 3 posts",
     "noPins": "No pinned posts"
+  },
+  "postViews": {
+    "viewCount": "View Count",
+    "views": "{{count}} views",
+    "mostViewed": "Most Viewed",
+    "recordFailed": "Failed to record view"
   }
 }

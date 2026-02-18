@@ -1284,5 +1284,11 @@
     "reorderFailed": "排序失敗",
     "maxPins": "最多置頂3篇貼文",
     "noPins": "沒有置頂貼文"
+  },
+  "postViews": {
+    "viewCount": "瀏覽數",
+    "views": "{{count}}次瀏覽",
+    "mostViewed": "熱門貼文",
+    "recordFailed": "記錄瀏覽失敗"
   }
 }

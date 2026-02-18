@@ -1621,3 +1621,33 @@ func (m *MockPostTagRepository) GetPopularTags(limit int) ([]model.TagCount, err
 	args := m.Called(limit)
 	return args.Get(0).([]model.TagCount), args.Error(1)
 }
+
+// ============================================================
+// MockPostViewRepository は repository.PostViewRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockPostViewRepository struct {
+	mock.Mock
+}
+
+var _ repository.PostViewRepositoryInterface = (*MockPostViewRepository)(nil)
+
+func (m *MockPostViewRepository) RecordView(view *model.PostView) error {
+	args := m.Called(view)
+	return args.Error(0)
+}
+
+func (m *MockPostViewRepository) GetViewCount(postID uint) (int64, error) {
+	args := m.Called(postID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockPostViewRepository) HasViewed(userID, postID uint) (bool, error) {
+	args := m.Called(userID, postID)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockPostViewRepository) GetMostViewed(limit int) ([]model.ViewCount, error) {
+	args := m.Called(limit)
+	return args.Get(0).([]model.ViewCount), args.Error(1)
+}

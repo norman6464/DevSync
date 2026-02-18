@@ -1284,5 +1284,11 @@
     "reorderFailed": "排序失败",
     "maxPins": "最多置顶3篇帖子",
     "noPins": "没有置顶帖子"
+  },
+  "postViews": {
+    "viewCount": "浏览量",
+    "views": "{{count}}次浏览",
+    "mostViewed": "热门帖子",
+    "recordFailed": "记录浏览失败"
   }
 }

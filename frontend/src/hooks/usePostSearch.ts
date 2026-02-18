@@ -8,15 +8,16 @@ export function usePostSearch() {
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSearch = useCallback(async () => {
-    if (!query.trim()) {
+  const handleSearch = useCallback(async (searchQuery?: string) => {
+    const q = (searchQuery ?? query).trim();
+    if (!q) {
       setResults([]);
       setSearched(false);
       return;
     }
     setLoading(true);
     try {
-      const { data } = await searchPosts(query);
+      const { data } = await searchPosts(q);
       setResults(data || []);
       setSearched(true);
     } catch {
