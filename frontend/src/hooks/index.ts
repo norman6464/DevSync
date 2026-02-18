@@ -37,3 +37,4 @@ export { useToast } from './useToast';
 export { useDebounce } from './useDebounce';
 export { useAutoSave } from './useAutoSave';
 export { useConfirm } from './useConfirm';
+export { useOnboarding } from './useOnboarding';
