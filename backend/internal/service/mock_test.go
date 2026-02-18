@@ -158,6 +158,11 @@ func (m *MockPostRepository) GetComments(postID uint) ([]model.Comment, error) {
 	return args.Get(0).([]model.Comment), args.Error(1)
 }
 
+func (m *MockPostRepository) GetReplies(parentID uint) ([]model.Comment, error) {
+	args := m.Called(parentID)
+	return args.Get(0).([]model.Comment), args.Error(1)
+}
+
 func (m *MockPostRepository) DeleteComment(id, userID uint) error {
 	args := m.Called(id, userID)
 	return args.Error(0)

@@ -35,6 +35,7 @@ type PostRepositoryInterface interface {
 	HasLiked(userID, postID uint) bool
 	CreateComment(comment *model.Comment) error
 	GetComments(postID uint) ([]model.Comment, error)
+	GetReplies(parentID uint) ([]model.Comment, error)
 	DeleteComment(id, userID uint) error
 	Bookmark(userID, postID uint) error
 	Unbookmark(userID, postID uint) error

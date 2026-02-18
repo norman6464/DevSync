@@ -140,12 +140,15 @@ type ViewCount struct {
 }
 
 // Comment は投稿へのコメントを表す。
+// ParentID が設定されている場合は返信コメント（スレッド）。
 type Comment struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	UserID    uint      `json:"user_id" gorm:"not null;index"`
-	User      User      `json:"user" gorm:"foreignKey:UserID"`
-	PostID    uint      `json:"post_id" gorm:"not null;index"`
-	Content   string    `json:"content" gorm:"type:text;not null"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        uint       `json:"id" gorm:"primaryKey"`
+	UserID    uint       `json:"user_id" gorm:"not null;index"`
+	User      User       `json:"user" gorm:"foreignKey:UserID"`
+	PostID    uint       `json:"post_id" gorm:"not null;index"`
+	ParentID  *uint      `json:"parent_id,omitempty" gorm:"index"`
+	Content   string     `json:"content" gorm:"type:text;not null"`
+	Replies   []Comment  `json:"replies,omitempty" gorm:"foreignKey:ParentID"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
 }

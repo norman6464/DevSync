@@ -22,6 +22,7 @@ type PostServiceInterface interface {
 	HasLiked(userID, postID uint) bool
 	CreateComment(comment *model.Comment) error
 	GetComments(postID uint) ([]model.Comment, error)
+	GetReplies(parentID uint) ([]model.Comment, error)
 	DeleteComment(id, userID uint) error
 	Publish(id, userID uint) (*model.Post, error)
 	Bookmark(userID, postID uint) error
@@ -256,6 +257,21 @@ func (h *PostHandler) CreateComment(c *gin.Context) {
 		return
 	}
 	respondCreated(c, comment)
+}
+
+// GetReplies は指定コメントへの返信一覧を返す。
+func (h *PostHandler) GetReplies(c *gin.Context) {
+	commentID, ok := parseID(c, "commentId")
+	if !ok {
+		return
+	}
+
+	replies, err := h.service.GetReplies(commentID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, replies)
 }
 
 // DeleteComment はコメントを削除する。所有者のみ削除可能。
