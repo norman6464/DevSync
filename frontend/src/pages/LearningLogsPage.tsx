@@ -1,9 +1,7 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Code, BookOpen, GraduationCap, Users, FileText, Calendar, List, type LucideIcon } from 'lucide-react';
-import { useLearningLogs, useLearningLogCalendar } from '../hooks';
-import { useAuthStore } from '../store/authStore';
-import type { LearningLog, LogCategory } from '../types/learningLog';
+import { useLearningLogForm } from '../hooks/useLearningLogForm';
+import type { LogCategory } from '../types/learningLog';
 import LogCalendar from '../components/learning-logs/LogCalendar';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { Modal } from '../components/common';
@@ -17,103 +15,36 @@ const CATEGORIES: { value: LogCategory; label: string; Icon: LucideIcon }[] = [
   { value: 'other', label: 'learningLogs.categoryOther', Icon: FileText },
 ];
 
+const getCategoryInfo = (cat: LogCategory) =>
+  CATEGORIES.find((c) => c.value === cat) || CATEGORIES[4];
+
+const getCategoryColor = (cat: LogCategory) => {
+  switch (cat) {
+    case 'coding': return 'text-blue-400 bg-blue-400/10';
+    case 'reading': return 'text-green-400 bg-green-400/10';
+    case 'course': return 'text-purple-400 bg-purple-400/10';
+    case 'meetup': return 'text-orange-400 bg-orange-400/10';
+    default: return 'text-gray-400 bg-gray-400/10';
+  }
+};
+
 export default function LearningLogsPage() {
   const { t } = useTranslation();
-  const user = useAuthStore((s) => s.user);
   const {
-    logs, loading, saving,
-    createLog, updateLog, deleteLog,
-  } = useLearningLogs();
-  const { calendarData, refetchCalendar } = useLearningLogCalendar(user?.id);
-
-  const [view, setView] = useState<'list' | 'calendar'>('list');
-  const [showForm, setShowForm] = useState(false);
-  const [editingLog, setEditingLog] = useState<LearningLog | null>(null);
-  const [filterDate, setFilterDate] = useState<string | null>(null);
-  const [filterCategory, setFilterCategory] = useState<'all' | LogCategory>('all');
-
-  // Form state
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [category, setCategory] = useState<LogCategory>('coding');
-  const [duration, setDuration] = useState('');
-
-  const resetForm = () => {
-    setTitle('');
-    setContent('');
-    setCategory('coding');
-    setDuration('');
-    setEditingLog(null);
-    setShowForm(false);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim() || !content.trim()) return;
-
-    const data = {
-      title,
-      content,
-      category,
-      duration: duration ? parseInt(duration) : 0,
-    };
-
-    if (editingLog) {
-      const result = await updateLog(editingLog.id, data);
-      if (result) {
-        resetForm();
-        refetchCalendar();
-      }
-    } else {
-      const result = await createLog(data);
-      if (result) {
-        resetForm();
-        refetchCalendar();
-      }
-    }
-  };
-
-  const handleEdit = (log: LearningLog) => {
-    setEditingLog(log);
-    setTitle(log.title);
-    setContent(log.content);
-    setCategory(log.category);
-    setDuration(log.duration ? String(log.duration) : '');
-    setShowForm(true);
-  };
-
-  const handleDateClick = (date: string) => {
-    setFilterDate(date);
-    setView('list');
-  };
-
-  const getCategoryInfo = (cat: LogCategory) =>
-    CATEGORIES.find((c) => c.value === cat) || CATEGORIES[4];
-
-  const getCategoryColor = (cat: LogCategory) => {
-    switch (cat) {
-      case 'coding': return 'text-blue-400 bg-blue-400/10';
-      case 'reading': return 'text-green-400 bg-green-400/10';
-      case 'course': return 'text-purple-400 bg-purple-400/10';
-      case 'meetup': return 'text-orange-400 bg-orange-400/10';
-      default: return 'text-gray-400 bg-gray-400/10';
-    }
-  };
-
-  const filteredLogs = logs.filter((log) => {
-    // 日付フィルター
-    if (filterDate && log.created_at.split('T')[0] !== filterDate) {
-      return false;
-    }
-    // カテゴリーフィルター
-    if (filterCategory !== 'all' && log.category !== filterCategory) {
-      return false;
-    }
-    return true;
-  });
+    filteredLogs, calendarData, loading, saving,
+    view, setView,
+    showForm, setShowForm,
+    editingLog,
+    filterDate, clearFilterDate,
+    filterCategory, setFilterCategory,
+    title, setTitle,
+    content, setContent,
+    category, setCategory,
+    duration, setDuration,
+    resetForm, handleSubmit, handleEdit, handleDelete, handleDateClick,
+  } = useLearningLogForm();
 
   if (loading) return <div className="py-12"><LoadingSpinner /></div>;
-
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -133,7 +64,7 @@ export default function LearningLogsPage() {
       {/* View Toggle */}
       <div className="flex items-center gap-2">
         <button
-          onClick={() => { setView('list'); setFilterDate(null); }}
+          onClick={() => { setView('list'); clearFilterDate(); }}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
             view === 'list' ? 'bg-purple-500/20 text-purple-400' : 'text-gray-400 hover:text-white'
           }`}
@@ -142,7 +73,7 @@ export default function LearningLogsPage() {
           {t('learningLogs.list')}
         </button>
         <button
-          onClick={() => { setView('calendar'); setFilterDate(null); }}
+          onClick={() => { setView('calendar'); clearFilterDate(); }}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
             view === 'calendar' ? 'bg-purple-500/20 text-purple-400' : 'text-gray-400 hover:text-white'
           }`}
@@ -156,7 +87,7 @@ export default function LearningLogsPage() {
               {t('learningLogs.logsOnDate', { date: filterDate })}
             </span>
             <button
-              onClick={() => setFilterDate(null)}
+              onClick={clearFilterDate}
               className="text-xs text-gray-500 hover:text-white"
             >
               &times;
@@ -342,7 +273,7 @@ export default function LearningLogsPage() {
                           </svg>
                         </button>
                         <button
-                          onClick={async () => { const ok = await deleteLog(log.id); if (ok) refetchCalendar(); }}
+                          onClick={() => handleDelete(log.id)}
                           className="p-2 text-gray-400 hover:text-red-400 transition-colors"
                           title={t('common.delete')}
                         >
