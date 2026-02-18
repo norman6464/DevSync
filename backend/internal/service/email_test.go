@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"strings"
 	"testing"
 	"time"
@@ -151,4 +152,85 @@ func TestRenderWeeklyReportHTML_Success(t *testing.T) {
 	// HTML内にレポートデータが含まれることを確認
 	assert.True(t, strings.Contains(html, "42"))  // TotalContributions
 	assert.True(t, strings.Contains(html, "3"))   // PostsCreated
+}
+
+// ============================================================
+// エッジケーステスト
+// ============================================================
+
+func TestSendWeeklyReport_DefaultLanguage(t *testing.T) {
+	svc, sender, _, _ := newTestWeeklyReportEmailService()
+
+	// EmailLanguageが空の場合、デフォルトで"ja"が使われる
+	user := &model.User{Name: "テストユーザー", Email: "test@example.com", EmailLanguage: ""}
+	report := testReport()
+
+	sender.On("Send", "test@example.com", mock.MatchedBy(func(subject string) bool {
+		return strings.Contains(subject, "ウィークリー")
+	}), mock.AnythingOfType("string")).Return(nil)
+
+	err := svc.SendWeeklyReport(user, report)
+	assert.NoError(t, err)
+	sender.AssertExpectations(t)
+}
+
+func TestSendWeeklyReport_SenderError(t *testing.T) {
+	svc, sender, _, _ := newTestWeeklyReportEmailService()
+
+	user := &model.User{Name: "テストユーザー", Email: "test@example.com", EmailLanguage: "ja"}
+	report := testReport()
+
+	sender.On("Send", "test@example.com", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(errors.New("smtp error"))
+
+	err := svc.SendWeeklyReport(user, report)
+	assert.Error(t, err)
+	sender.AssertExpectations(t)
+}
+
+func TestSendAllWeeklyReports_FindAllError(t *testing.T) {
+	svc, _, userRepo, _ := newTestWeeklyReportEmailService()
+
+	userRepo.On("FindAll").Return([]model.User(nil), errors.New("db error"))
+
+	err := svc.SendAllWeeklyReports()
+	assert.Error(t, err)
+	userRepo.AssertExpectations(t)
+}
+
+func TestSendAllWeeklyReports_EmptyUserList(t *testing.T) {
+	svc, _, userRepo, _ := newTestWeeklyReportEmailService()
+
+	userRepo.On("FindAll").Return([]model.User{}, nil)
+
+	err := svc.SendAllWeeklyReports()
+	assert.NoError(t, err)
+	userRepo.AssertExpectations(t)
+}
+
+func TestRenderWeeklyReportHTML_EnglishLanguage(t *testing.T) {
+	svc, _, _, _ := newTestWeeklyReportEmailService()
+
+	user := &model.User{Name: "TestUser", Email: "test@example.com"}
+	report := testReport()
+
+	html, err := svc.RenderHTML(user, report, "en")
+	assert.NoError(t, err)
+	assert.NotEmpty(t, html)
+	assert.True(t, strings.Contains(html, "TestUser"))
+	// 英語テキストが含まれることを確認
+	assert.True(t, strings.Contains(html, "This Week"))
+}
+
+func TestRenderWeeklyReportHTML_UnsupportedLanguageFallback(t *testing.T) {
+	svc, _, _, _ := newTestWeeklyReportEmailService()
+
+	user := &model.User{Name: "テストユーザー", Email: "test@example.com"}
+	report := testReport()
+
+	// 未対応言語は日本語にフォールバック
+	html, err := svc.RenderHTML(user, report, "xx")
+	assert.NoError(t, err)
+	assert.NotEmpty(t, html)
+	// 日本語テキストが含まれることを確認
+	assert.True(t, strings.Contains(html, "コントリビューション"))
 }
