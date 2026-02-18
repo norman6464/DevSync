@@ -462,6 +462,8 @@
     "filterBadge": "Insignia",
     "showUnreadOnly": "Mostrar solo no leídos",
     "deleteNotification": "Eliminar notificación",
+    "filterGroup": "Filtros de notificación",
+    "listLabel": "Lista de notificaciones",
     "deleted": "Notificación eliminada",
     "levelUp": "¡Has alcanzado el Nivel {{level}}!",
     "filterLevel": "Subida de Nivel"

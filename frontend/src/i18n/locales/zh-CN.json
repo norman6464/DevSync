@@ -462,6 +462,8 @@
     "filterBadge": "徽章",
     "showUnreadOnly": "仅显示未读",
     "deleteNotification": "删除通知",
+    "filterGroup": "通知筛选",
+    "listLabel": "通知列表",
     "deleted": "通知已删除",
     "levelUp": "已达到等级 {{level}}！",
     "filterLevel": "升级"

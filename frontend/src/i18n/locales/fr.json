@@ -462,6 +462,8 @@
     "filterBadge": "Badge",
     "showUnreadOnly": "Afficher uniquement non lus",
     "deleteNotification": "Supprimer la notification",
+    "filterGroup": "Filtres de notification",
+    "listLabel": "Liste des notifications",
     "deleted": "Notification supprimée",
     "levelUp": "Vous avez atteint le Niveau {{level}} !",
     "filterLevel": "Niveau Supérieur"

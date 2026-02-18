@@ -462,6 +462,8 @@
     "filterBadge": "Abzeichen",
     "showUnreadOnly": "Nur ungelesene anzeigen",
     "deleteNotification": "Benachrichtigung löschen",
+    "filterGroup": "Benachrichtigungsfilter",
+    "listLabel": "Benachrichtigungsliste",
     "deleted": "Benachrichtigung gelöscht",
     "levelUp": "Sie haben Stufe {{level}} erreicht!",
     "filterLevel": "Aufgestiegen"
