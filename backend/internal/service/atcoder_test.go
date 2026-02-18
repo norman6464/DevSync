@@ -198,3 +198,94 @@ func TestValidateUsername_NetworkError(t *testing.T) {
 
 	assert.False(t, svc.ValidateUsername("testuser"))
 }
+
+func TestGetRating_RequestURL(t *testing.T) {
+	svc := newTestAtCoderService(func(req *http.Request) (*http.Response, error) {
+		assert.Equal(t, "atcoder.jp", req.URL.Host)
+		assert.Equal(t, "/users/myuser/history/json", req.URL.Path)
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       io.NopCloser(strings.NewReader("[]")),
+		}, nil
+	})
+
+	_, err := svc.GetRating("myuser")
+	assert.NoError(t, err)
+}
+
+func TestGetRating_MultipleEntries(t *testing.T) {
+	svc := newTestAtCoderService(func(req *http.Request) (*http.Response, error) {
+		body := `[
+			{"IsRated":true,"NewRating":400,"ContestName":"ABC100"},
+			{"IsRated":true,"NewRating":800,"ContestName":"ABC200"},
+			{"IsRated":true,"NewRating":1200,"ContestName":"ABC300"}
+		]`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       io.NopCloser(strings.NewReader(body)),
+		}, nil
+	})
+
+	info, err := svc.GetRating("testuser")
+	assert.NoError(t, err)
+	assert.Equal(t, 1200, info.Rating)
+	assert.Equal(t, "cyan", info.Color)
+	assert.Equal(t, "水色", info.Rank)
+}
+
+func TestGetRating_HighRating(t *testing.T) {
+	svc := newTestAtCoderService(func(req *http.Request) (*http.Response, error) {
+		body := `[{"IsRated":true,"NewRating":3500,"ContestName":"ABC999"}]`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       io.NopCloser(strings.NewReader(body)),
+		}, nil
+	})
+
+	info, err := svc.GetRating("tourist")
+	assert.NoError(t, err)
+	assert.Equal(t, 3500, info.Rating)
+	assert.Equal(t, "red", info.Color)
+	assert.Equal(t, "赤", info.Rank)
+}
+
+func TestGetRating_RateLimited(t *testing.T) {
+	svc := newTestAtCoderService(func(req *http.Request) (*http.Response, error) {
+		return &http.Response{
+			StatusCode: http.StatusTooManyRequests,
+			Body:       io.NopCloser(strings.NewReader("")),
+		}, nil
+	})
+
+	info, err := svc.GetRating("testuser")
+	assert.Nil(t, info)
+	assert.Error(t, err)
+
+	var domainErr *domain.DomainError
+	assert.True(t, errors.As(err, &domainErr))
+	assert.Equal(t, domain.ErrCodeServiceUnavailable, domainErr.Code)
+}
+
+func TestValidateUsername_ServerError(t *testing.T) {
+	svc := newTestAtCoderService(func(req *http.Request) (*http.Response, error) {
+		return &http.Response{
+			StatusCode: http.StatusInternalServerError,
+			Body:       io.NopCloser(strings.NewReader("")),
+		}, nil
+	})
+
+	assert.False(t, svc.ValidateUsername("testuser"))
+}
+
+func TestValidateUsername_RequestURL(t *testing.T) {
+	svc := newTestAtCoderService(func(req *http.Request) (*http.Response, error) {
+		assert.Equal(t, "atcoder.jp", req.URL.Host)
+		assert.Equal(t, "/users/atcoderuser/history/json", req.URL.Path)
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       io.NopCloser(strings.NewReader("[]")),
+		}, nil
+	})
+
+	assert.True(t, svc.ValidateUsername("atcoderuser"))
+}
