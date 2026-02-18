@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Bell, CheckCheck, Trash2, Filter } from 'lucide-react';
@@ -68,7 +68,7 @@ export default function NotificationsPage() {
     ? notifications.filter((n) => !n.read)
     : notifications;
 
-  const getNotificationMessage = (notification: Notification) => {
+  const getNotificationMessage = useCallback((notification: Notification) => {
     switch (notification.type) {
       case 'post':
         return t('notifications.newPost', { name: notification.actor.name });
@@ -87,7 +87,11 @@ export default function NotificationsPage() {
       default:
         return '';
     }
-  };
+  }, [t]);
+
+  const handleToggleUnreadOnly = useCallback(() => setShowUnreadOnly((prev) => !prev), []);
+  const handlePreviousPage = useCallback(() => setPage(page - 1), [page, setPage]);
+  const handleNextPage = useCallback(() => setPage(page + 1), [page, setPage]);
 
   const totalPages = Math.ceil(total / limit);
 
@@ -130,7 +134,7 @@ export default function NotificationsPage() {
 
         {/* Unread Only Toggle */}
         <button
-          onClick={() => setShowUnreadOnly(!showUnreadOnly)}
+          onClick={handleToggleUnreadOnly}
           aria-pressed={showUnreadOnly}
           className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors self-start ${
             showUnreadOnly
@@ -214,7 +218,7 @@ export default function NotificationsPage() {
           {total > limit && (
             <div className="flex justify-center gap-2 mt-8">
               <button
-                onClick={() => setPage(page - 1)}
+                onClick={handlePreviousPage}
                 disabled={page <= 1}
                 className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
               >
@@ -224,7 +228,7 @@ export default function NotificationsPage() {
                 {page} / {totalPages}
               </span>
               <button
-                onClick={() => setPage(page + 1)}
+                onClick={handleNextPage}
                 disabled={page >= totalPages}
                 className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
               >
