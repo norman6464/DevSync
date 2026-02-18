@@ -1067,7 +1067,14 @@
     "breakdownStreakBonus": "Serie-Bonus",
     "xpUnit": "XP",
     "noActivity": "Noch keine Aktivität",
-    "rankingByLevel": "Nach Stufe"
+    "rankingByLevel": "Nach Stufe",
+    "titleNewcomer": "Neuling",
+    "titleBeginner": "Anfänger",
+    "titleIntermediate": "Fortgeschritten",
+    "titleAdvanced": "Erfahren",
+    "titleExpert": "Experte",
+    "titleMaster": "Meister",
+    "titleLegend": "Legende Lv.{{level}}"
   },
   "analytics": {
     "pageTitle": "Lernanalyse-Dashboard",

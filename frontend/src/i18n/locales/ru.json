@@ -1067,7 +1067,14 @@
     "breakdownStreakBonus": "Бонус за серию",
     "xpUnit": "XP",
     "noActivity": "Пока нет активности",
-    "rankingByLevel": "По уровню"
+    "rankingByLevel": "По уровню",
+    "titleNewcomer": "Новичок",
+    "titleBeginner": "Начинающий",
+    "titleIntermediate": "Средний",
+    "titleAdvanced": "Продвинутый",
+    "titleExpert": "Эксперт",
+    "titleMaster": "Мастер",
+    "titleLegend": "Легенда Ур.{{level}}"
   },
   "analytics": {
     "pageTitle": "Панель Аналитики Обучения",

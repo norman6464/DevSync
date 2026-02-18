@@ -3,6 +3,16 @@ import { Star } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useMyLevel } from '../../hooks';
 
+function getLevelTitleKey(level: number): { key: string; params?: Record<string, unknown> } {
+  if (level === 0) return { key: 'level.titleNewcomer' };
+  if (level <= 5) return { key: 'level.titleBeginner' };
+  if (level <= 10) return { key: 'level.titleIntermediate' };
+  if (level <= 20) return { key: 'level.titleAdvanced' };
+  if (level <= 30) return { key: 'level.titleExpert' };
+  if (level <= 40) return { key: 'level.titleMaster' };
+  return { key: 'level.titleLegend', params: { level } };
+}
+
 export default function LevelWidget() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
@@ -40,6 +50,9 @@ export default function LevelWidget() {
           <span className="text-sm text-gray-400">{t('level.level')}</span>
           <span className="text-4xl font-bold text-white">{level}</span>
         </div>
+        <p className="text-xs text-yellow-400 mt-0.5">
+          {t(getLevelTitleKey(level).key, getLevelTitleKey(level).params)}
+        </p>
         <p className="text-xs text-gray-400 mt-1">
           {t('level.xpProgress', { current: totalXP.toLocaleString(), next: nextLevelXP.toLocaleString() })}
         </p>
