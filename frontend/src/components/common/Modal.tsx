@@ -34,11 +34,13 @@ export default function Modal({
     >
       <div
         role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? 'modal-title' : undefined}
         className={`bg-gray-800 rounded-md p-6 w-full ${maxWidth} max-h-[90vh] overflow-y-auto`}
         onClick={(e) => e.stopPropagation()}
       >
         {title && (
-          <h2 className="text-xl font-semibold text-white mb-4">{title}</h2>
+          <h2 id="modal-title" className="text-xl font-semibold text-white mb-4">{title}</h2>
         )}
         {children}
       </div>
