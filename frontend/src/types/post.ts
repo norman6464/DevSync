@@ -28,7 +28,9 @@ export interface Comment {
   user_id: number;
   user: User;
   post_id: number;
+  parent_id?: number;
   content: string;
+  replies?: Comment[];
   created_at: string;
   updated_at: string;
 }

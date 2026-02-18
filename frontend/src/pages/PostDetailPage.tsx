@@ -24,6 +24,8 @@ export default function PostDetailPage() {
   const { post, comments, loading, submitting, submitComment, refetch, updatePost } = usePostDetail(id);
   const [newComment, setNewComment] = useState('');
   const [editingPost, setEditingPost] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<number | null>(null);
+  const [replyContent, setReplyContent] = useState('');
   const { confirm, dialogProps } = useConfirm();
 
   const handleSubmitComment = async (e: React.FormEvent) => {
@@ -31,6 +33,16 @@ export default function PostDetailPage() {
     if (!newComment.trim()) return;
     const success = await submitComment(newComment);
     if (success) setNewComment('');
+  };
+
+  const handleSubmitReply = async (e: React.FormEvent, parentId: number) => {
+    e.preventDefault();
+    if (!replyContent.trim()) return;
+    const success = await submitComment(replyContent, parentId);
+    if (success) {
+      setReplyContent('');
+      setReplyingTo(null);
+    }
   };
 
   const handleDeletePost = async () => {
@@ -117,26 +129,88 @@ export default function PostDetailPage() {
         ) : (
           <div className="divide-y divide-gray-800/50">
             {comments.map((comment) => (
-              <div key={comment.id} className="px-6 py-4 flex gap-3">
-                <Link to={`/profile/${comment.user_id}`} className="flex-shrink-0">
-                  <Avatar name={comment.user?.name || 'U'} avatarUrl={comment.user?.avatar_url} size="sm" />
-                </Link>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Link
-                      to={`/profile/${comment.user_id}`}
-                      className="font-medium text-sm hover:text-blue-400 transition-colors"
+              <div key={comment.id} className="px-6 py-4">
+                <div className="flex gap-3">
+                  <Link to={`/profile/${comment.user_id}`} className="flex-shrink-0">
+                    <Avatar name={comment.user?.name || 'U'} avatarUrl={comment.user?.avatar_url} size="sm" />
+                  </Link>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Link
+                        to={`/profile/${comment.user_id}`}
+                        className="font-medium text-sm hover:text-blue-400 transition-colors"
+                      >
+                        {comment.user?.name}
+                      </Link>
+                      <span className="text-xs text-gray-600">
+                        {format(new Date(comment.created_at), 'MMM d, yyyy · HH:mm')}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-300 mt-1 leading-relaxed">
+                      <MentionText text={comment.content} />
+                    </p>
+                    <button
+                      onClick={() => {
+                        setReplyingTo(replyingTo === comment.id ? null : comment.id);
+                        setReplyContent('');
+                      }}
+                      className="mt-1.5 text-xs text-gray-500 hover:text-blue-400 transition-colors"
                     >
-                      {comment.user?.name}
-                    </Link>
-                    <span className="text-xs text-gray-600">
-                      {format(new Date(comment.created_at), 'MMM d, yyyy · HH:mm')}
-                    </span>
+                      {t('post.reply')}
+                    </button>
                   </div>
-                  <p className="text-sm text-gray-300 mt-1 leading-relaxed">
-                    <MentionText text={comment.content} />
-                  </p>
                 </div>
+
+                {/* Reply Form */}
+                {replyingTo === comment.id && (
+                  <div className="ml-11 mt-3">
+                    <form onSubmit={(e) => handleSubmitReply(e, comment.id)} className="flex gap-2">
+                      <MentionInput
+                        value={replyContent}
+                        onChange={setReplyContent}
+                        placeholder={t('post.writeReply')}
+                        className="flex-1 px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                        disabled={submitting}
+                      />
+                      <button
+                        type="submit"
+                        disabled={submitting || !replyContent.trim()}
+                        className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:hover:bg-gray-700 text-white rounded-lg font-medium text-xs transition-colors"
+                      >
+                        {t('post.reply')}
+                      </button>
+                    </form>
+                  </div>
+                )}
+
+                {/* Replies */}
+                {comment.replies && comment.replies.length > 0 && (
+                  <div className="ml-11 mt-3 space-y-3 border-l-2 border-gray-800 pl-4">
+                    {comment.replies.map((reply) => (
+                      <div key={reply.id} className="flex gap-2.5">
+                        <Link to={`/profile/${reply.user_id}`} className="flex-shrink-0">
+                          <Avatar name={reply.user?.name || 'U'} avatarUrl={reply.user?.avatar_url} size="xs" />
+                        </Link>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Link
+                              to={`/profile/${reply.user_id}`}
+                              className="font-medium text-xs hover:text-blue-400 transition-colors"
+                            >
+                              {reply.user?.name}
+                            </Link>
+                            <span className="text-xs text-gray-600">
+                              {format(new Date(reply.created_at), 'MMM d, yyyy · HH:mm')}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-300 mt-0.5 leading-relaxed">
+                            <MentionText text={reply.content} />
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
