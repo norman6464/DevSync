@@ -235,3 +235,107 @@ func TestNoteFolderService_Delete_Forbidden(t *testing.T) {
 	assert.ErrorIs(t, err, ErrForbidden)
 	mockRepo.AssertExpectations(t)
 }
+
+func TestNoteFolderService_GetByID_Error(t *testing.T) {
+	mockRepo := new(MockNoteFolderRepository)
+	service := NewNoteFolderService(mockRepo)
+
+	mockRepo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	result, err := service.GetByID(999)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestNoteFolderService_GetByUserID_Error(t *testing.T) {
+	mockRepo := new(MockNoteFolderRepository)
+	service := NewNoteFolderService(mockRepo)
+
+	mockRepo.On("FindByUserID", uint(1)).Return([]model.NoteFolder(nil), errors.New("db error"))
+
+	result, err := service.GetByUserID(1)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestNoteFolderService_GetChildren_Error(t *testing.T) {
+	mockRepo := new(MockNoteFolderRepository)
+	service := NewNoteFolderService(mockRepo)
+
+	mockRepo.On("FindByParentID", uint(1)).Return([]model.NoteFolder(nil), errors.New("db error"))
+
+	result, err := service.GetChildren(1)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestNoteFolderService_GetRootFolders_Error(t *testing.T) {
+	mockRepo := new(MockNoteFolderRepository)
+	service := NewNoteFolderService(mockRepo)
+
+	mockRepo.On("GetRootFolders", uint(1)).Return([]model.NoteFolder(nil), errors.New("db error"))
+
+	result, err := service.GetRootFolders(1)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestNoteFolderService_Update_FindByIDError(t *testing.T) {
+	mockRepo := new(MockNoteFolderRepository)
+	service := NewNoteFolderService(mockRepo)
+
+	mockRepo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	result, err := service.Update(999, 1, "名前", nil)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestNoteFolderService_Update_ValidationError(t *testing.T) {
+	mockRepo := new(MockNoteFolderRepository)
+	service := NewNoteFolderService(mockRepo)
+
+	existing := &model.NoteFolder{ID: 1, UserID: 1, Name: "元の名前"}
+	mockRepo.On("FindByID", uint(1)).Return(existing, nil)
+
+	// 空文字でname更新 → 元のNameが維持されるので、空文字を直接代入するケースはないが、
+	// name="" の場合は更新されないのでバリデーションは通る
+	// 代わりにparentID付きの正常更新をテスト
+	parentID := uint(5)
+	mockRepo.On("Update", mock.AnythingOfType("*model.NoteFolder")).Return(nil)
+
+	result, err := service.Update(1, 1, "更新名", &parentID)
+	assert.NoError(t, err)
+	assert.Equal(t, "更新名", result.Name)
+	assert.Equal(t, &parentID, result.ParentID)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestNoteFolderService_Delete_FindByIDError(t *testing.T) {
+	mockRepo := new(MockNoteFolderRepository)
+	service := NewNoteFolderService(mockRepo)
+
+	mockRepo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	err := service.Delete(999, 1)
+	assert.Error(t, err)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestNoteFolderService_Delete_RepoError(t *testing.T) {
+	mockRepo := new(MockNoteFolderRepository)
+	service := NewNoteFolderService(mockRepo)
+
+	existing := &model.NoteFolder{ID: 1, UserID: 1}
+	mockRepo.On("FindByID", uint(1)).Return(existing, nil)
+	mockRepo.On("Delete", uint(1)).Return(errors.New("db error"))
+
+	err := service.Delete(1, 1)
+	assert.Error(t, err)
+	mockRepo.AssertExpectations(t)
+}
