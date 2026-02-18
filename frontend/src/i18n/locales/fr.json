@@ -181,6 +181,13 @@
     "unfollow": "Ne plus suivre",
     "editProfile": "Modifier le profil",
     "posts": "Publications",
+    "completeness": "Complétude du profil",
+    "missing": {
+      "avatar": "Ajouter un avatar",
+      "bio": "Ajouter une bio",
+      "github": "Connecter GitHub",
+      "skills": "Ajouter des compétences"
+    },
     "noPosts": "Pas encore de publications",
     "contributions": "Activité de contribution",
     "languages": "Langages",

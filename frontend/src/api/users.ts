@@ -33,3 +33,6 @@ export const getFollowers = (id: number) =>
 
 export const getFollowing = (id: number) =>
   client.get<User[]>(`/users/${id}/following`);
+
+export const getProfileCompleteness = () =>
+  client.get<{ percentage: number; missing_fields: string[] }>('/users/me/profile-completeness');

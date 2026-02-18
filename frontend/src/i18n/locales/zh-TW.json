@@ -181,6 +181,13 @@
     "unfollow": "取消追蹤",
     "editProfile": "編輯資料",
     "posts": "貼文",
+    "completeness": "資料完成度",
+    "missing": {
+      "avatar": "設定頭像",
+      "bio": "新增簡介",
+      "github": "連接GitHub",
+      "skills": "新增技能"
+    },
     "noPosts": "暫無貼文",
     "contributions": "貢獻活動",
     "languages": "語言",

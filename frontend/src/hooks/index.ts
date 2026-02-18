@@ -43,6 +43,7 @@ export { useBookmarks } from './useBookmarks';
 export { usePinnedPosts } from './usePinnedPosts';
 export { useViewCount, useMostViewed, useRecordView } from './usePostViews';
 export { useMentions, usePostMentions } from './useMentions';
+export { useProfileCompleteness } from './useProfileCompleteness';
 export { useToast } from './useToast';
 export { useDebounce } from './useDebounce';
 export { useAutoSave } from './useAutoSave';

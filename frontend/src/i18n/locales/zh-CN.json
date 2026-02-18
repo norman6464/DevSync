@@ -181,6 +181,13 @@
     "unfollow": "取消关注",
     "editProfile": "编辑资料",
     "posts": "帖子",
+    "completeness": "资料完成度",
+    "missing": {
+      "avatar": "设置头像",
+      "bio": "添加简介",
+      "github": "连接GitHub",
+      "skills": "添加技能"
+    },
     "noPosts": "暂无帖子",
     "contributions": "贡献活动",
     "languages": "语言",
