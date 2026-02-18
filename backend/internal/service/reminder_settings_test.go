@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -161,5 +162,84 @@ func TestReminderSettingsService_ShouldRemind(t *testing.T) {
 		})
 	}
 
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// エラーケーステスト
+// ============================================================
+
+func TestReminderSettingsService_GetSettings_Error(t *testing.T) {
+	svc, repo := newTestReminderSettingsService()
+
+	repo.On("GetOrCreateDefault", uint(1)).Return(nil, errors.New("db error"))
+
+	result, err := svc.GetSettings(1)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestReminderSettingsService_UpdateSettings_GetError(t *testing.T) {
+	svc, repo := newTestReminderSettingsService()
+
+	repo.On("GetByUserID", uint(1)).Return(nil, errors.New("db error"))
+
+	updates := &model.ReminderSettings{Frequency: model.ReminderFrequencyDaily}
+	result, err := svc.UpdateSettings(1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestReminderSettingsService_UpdateSettings_SaveError(t *testing.T) {
+	svc, repo := newTestReminderSettingsService()
+
+	existing := &model.ReminderSettings{
+		ID:               1,
+		UserID:           1,
+		Enabled:          true,
+		Frequency:        model.ReminderFrequencyDaily,
+		NotificationTime: "09:00",
+		InactiveDays:     3,
+	}
+
+	repo.On("GetByUserID", uint(1)).Return(existing, nil)
+	repo.On("CreateOrUpdate", mock.AnythingOfType("*model.ReminderSettings")).Return(errors.New("save error"))
+
+	updates := &model.ReminderSettings{Frequency: model.ReminderFrequencyWeekly}
+	result, err := svc.UpdateSettings(1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestReminderSettingsService_ShouldRemind_RepoError(t *testing.T) {
+	svc, repo := newTestReminderSettingsService()
+
+	repo.On("GetByUserID", uint(1)).Return(nil, errors.New("db error"))
+
+	result := svc.ShouldRemind(1, time.Now().Add(-5*24*time.Hour))
+	assert.False(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestReminderSettingsService_SendReminder_Success(t *testing.T) {
+	svc, repo := newTestReminderSettingsService()
+
+	repo.On("UpdateLastRemindedAt", uint(1)).Return(nil)
+
+	err := svc.SendReminder(1)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestReminderSettingsService_SendReminder_Error(t *testing.T) {
+	svc, repo := newTestReminderSettingsService()
+
+	repo.On("UpdateLastRemindedAt", uint(1)).Return(errors.New("db error"))
+
+	err := svc.SendReminder(1)
+	assert.Error(t, err)
 	repo.AssertExpectations(t)
 }
