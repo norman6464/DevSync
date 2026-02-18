@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, Rocket, FileText, Monitor, Target, FolderOpen } from 'lucide-react';
+import { Sparkles, Rocket, FileText, Monitor, Target, FolderOpen, Pin } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import { useProfile, usePostSeries, usePostCollections, useProfileCompleteness } from '../hooks';
+import { useProfile, usePostSeries, usePostCollections, useProfileCompleteness, usePinnedPosts } from '../hooks';
 import { sectionContainerClass } from '../constants/styles';
 import Avatar from '../components/common/Avatar';
 import { PageLoader } from '../components/common';
@@ -32,6 +32,7 @@ export default function ProfilePage() {
   const [portfolioModalOpen, setPortfolioModalOpen] = useState(false);
   const { series } = usePostSeries(user?.id);
   const { collections } = usePostCollections(user?.id);
+  const { pins } = usePinnedPosts(user?.id);
   const { percentage, missingFields } = useProfileCompleteness();
 
   if (loading) return <PageLoader />;
@@ -392,6 +393,25 @@ export default function ProfilePage() {
                   <p className="text-gray-400 text-sm mt-1 line-clamp-2">{c.description}</p>
                 )}
               </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Pinned Posts */}
+      {pins.length > 0 && (
+        <div>
+          <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-3 flex items-center gap-2">
+            <Pin className="w-4 h-4 text-yellow-400" />
+            {t('pinnedPosts.title')}
+          </h2>
+          <div className="space-y-3">
+            {pins.map((pin) => pin.post && (
+              <PostCard
+                key={pin.id}
+                post={pin.post}
+                isOwner={currentUser?.id === pin.post.user_id}
+              />
             ))}
           </div>
         </div>
