@@ -58,10 +58,11 @@ export default function CreateRoomModal({ followingUsers, onClose, onCreated }: 
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className={labelClass}>
+            <label htmlFor="room-name" className={labelClass}>
               {t('chat.groupName')}
             </label>
             <input
+              id="room-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -72,10 +73,11 @@ export default function CreateRoomModal({ followingUsers, onClose, onCreated }: 
           </div>
 
           <div>
-            <label className={labelClass}>
+            <label htmlFor="room-description" className={labelClass}>
               {t('chat.groupDescription')}
             </label>
             <textarea
+              id="room-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder={t('chat.groupDescriptionPlaceholder')}

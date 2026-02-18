@@ -63,10 +63,11 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Title */}
       <div>
-        <label className={labelClass}>
+        <label htmlFor="resource-title" className={labelClass}>
           {t('resources.title')} *
         </label>
         <input
+          id="resource-title"
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -79,10 +80,11 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
 
       {/* URL */}
       <div>
-        <label className={labelClass}>
+        <label htmlFor="resource-url" className={labelClass}>
           {t('resources.url')}
         </label>
         <input
+          id="resource-url"
           type="url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
@@ -94,10 +96,11 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
       {/* Category & Difficulty */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className={labelClass}>
+          <label htmlFor="resource-category" className={labelClass}>
             {t('resources.category')} *
           </label>
           <select
+            id="resource-category"
             value={category}
             onChange={(e) => setCategory(e.target.value as ResourceCategory)}
             className={inputClass}
@@ -110,10 +113,11 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
           </select>
         </div>
         <div>
-          <label className={labelClass}>
+          <label htmlFor="resource-difficulty" className={labelClass}>
             {t('resources.difficultyLabel')}
           </label>
           <select
+            id="resource-difficulty"
             value={difficulty}
             onChange={(e) => setDifficulty(e.target.value as ResourceDifficulty | '')}
             className={inputClass}
@@ -130,10 +134,11 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
 
       {/* Description */}
       <div>
-        <label className={labelClass}>
+        <label htmlFor="resource-description" className={labelClass}>
           {t('resources.description')}
         </label>
         <textarea
+          id="resource-description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
@@ -144,11 +149,12 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
 
       {/* Tags */}
       <div>
-        <label className={labelClass}>
+        <label htmlFor="resource-tags" className={labelClass}>
           {t('resources.tags')}
         </label>
         <div className="flex gap-2">
           <input
+            id="resource-tags"
             type="text"
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
@@ -189,10 +195,11 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
 
       {/* Image URL */}
       <div>
-        <label className={labelClass}>
+        <label htmlFor="resource-image-url" className={labelClass}>
           {t('resources.imageUrl')}
         </label>
         <input
+          id="resource-image-url"
           type="url"
           value={imageUrl}
           onChange={(e) => setImageUrl(e.target.value)}

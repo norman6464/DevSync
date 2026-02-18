@@ -38,10 +38,11 @@ export default function QuestionForm({ question, onSubmit, onCancel, loading }: 
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Title */}
       <div>
-        <label className={labelClass}>
+        <label htmlFor="question-title" className={labelClass}>
           {t('qa.questionTitle')} *
         </label>
         <input
+          id="question-title"
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -54,10 +55,11 @@ export default function QuestionForm({ question, onSubmit, onCancel, loading }: 
 
       {/* Body */}
       <div>
-        <label className={labelClass}>
+        <label htmlFor="question-body" className={labelClass}>
           {t('qa.questionBody')} *
         </label>
         <textarea
+          id="question-body"
           value={body}
           onChange={(e) => setBody(e.target.value)}
           required
@@ -69,10 +71,11 @@ export default function QuestionForm({ question, onSubmit, onCancel, loading }: 
 
       {/* Tags */}
       <div>
-        <label className={labelClass}>
+        <label htmlFor="question-tags" className={labelClass}>
           {t('qa.tags')}
         </label>
         <input
+          id="question-tags"
           type="text"
           value={tagsInput}
           onChange={(e) => setTagsInput(e.target.value)}

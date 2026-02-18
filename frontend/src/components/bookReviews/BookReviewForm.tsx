@@ -60,10 +60,11 @@ export default function BookReviewForm({ review, onSubmit, onCancel, loading }: 
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Title */}
       <div>
-        <label className={labelClass}>
+        <label htmlFor="review-title" className={labelClass}>
           {t('bookReviews.bookTitle')} *
         </label>
         <input
+          id="review-title"
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -76,10 +77,11 @@ export default function BookReviewForm({ review, onSubmit, onCancel, loading }: 
 
       {/* Author */}
       <div>
-        <label className={labelClass}>
+        <label htmlFor="review-author" className={labelClass}>
           {t('bookReviews.author')}
         </label>
         <input
+          id="review-author"
           type="text"
           value={author}
           onChange={(e) => setAuthor(e.target.value)}
@@ -91,10 +93,11 @@ export default function BookReviewForm({ review, onSubmit, onCancel, loading }: 
 
       {/* ISBN */}
       <div>
-        <label className={labelClass}>
+        <label htmlFor="review-isbn" className={labelClass}>
           ISBN
         </label>
         <input
+          id="review-isbn"
           type="text"
           value={isbn}
           onChange={(e) => setIsbn(e.target.value)}
@@ -114,10 +117,11 @@ export default function BookReviewForm({ review, onSubmit, onCancel, loading }: 
 
       {/* Review */}
       <div>
-        <label className={labelClass}>
+        <label htmlFor="review-text" className={labelClass}>
           {t('bookReviews.review')}
         </label>
         <textarea
+          id="review-text"
           value={reviewText}
           onChange={(e) => setReviewText(e.target.value)}
           rows={4}
@@ -128,10 +132,11 @@ export default function BookReviewForm({ review, onSubmit, onCancel, loading }: 
 
       {/* Image URL */}
       <div>
-        <label className={labelClass}>
+        <label htmlFor="review-image-url" className={labelClass}>
           {t('bookReviews.coverImage')}
         </label>
         <input
+          id="review-image-url"
           type="url"
           value={imageUrl}
           onChange={(e) => setImageUrl(e.target.value)}
