@@ -40,8 +40,12 @@ func (m *MockNoteService) GetByFolderID(folderID uint) ([]model.Note, error) {
 	return args.Get(0).([]model.Note), args.Error(1)
 }
 
-func (m *MockNoteService) Update(note *model.Note) error {
-	return m.Called(note).Error(0)
+func (m *MockNoteService) Update(id, userID uint, title, content, tags string, folderID *uint) (*model.Note, error) {
+	args := m.Called(id, userID, title, content, tags, folderID)
+	if n := args.Get(0); n != nil {
+		return n.(*model.Note), args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *MockNoteService) Delete(id uint) error {
@@ -215,8 +219,7 @@ func TestNoteHandler_Update(t *testing.T) {
 		Content: "更新後内容",
 	}
 
-	mockService.On("GetByID", uint(1)).Return(updatedNote, nil)
-	mockService.On("Update", mock.AnythingOfType("*model.Note")).Return(nil)
+	mockService.On("Update", uint(1), uint(1), "更新後タイトル", "更新後内容", "", (*uint)(nil)).Return(updatedNote, nil)
 
 	req, _ := http.NewRequest("PUT", "/notes/1", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")

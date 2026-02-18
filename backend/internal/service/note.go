@@ -43,15 +43,39 @@ func (s *NoteService) GetByFolderID(folderID uint) ([]model.Note, error) {
 	return s.repo.FindByFolderID(folderID)
 }
 
-// Update はノートを更新する。
-func (s *NoteService) Update(note *model.Note) error {
-	// バリデーション（部分更新対応）
-	v := validator.NewNoteValidator()
-	if err := v.ValidateUpdateNote(note.Title, note.Content, note.Tags); err != nil {
-		return err
+// Update は所有権を検証した後、ノートを更新する。
+func (s *NoteService) Update(id, userID uint, title, content, tags string, folderID *uint) (*model.Note, error) {
+	note, err := s.repo.FindByID(id)
+	if err != nil {
+		return nil, err
 	}
 
-	return s.repo.Update(note)
+	if note.UserID != userID {
+		return nil, domain.NewError(domain.ErrCodeForbidden, "この操作を行う権限がありません", nil)
+	}
+
+	if title != "" {
+		note.Title = title
+	}
+	if content != "" {
+		note.Content = content
+	}
+	if tags != "" {
+		note.Tags = tags
+	}
+	if folderID != nil {
+		note.FolderID = folderID
+	}
+
+	v := validator.NewNoteValidator()
+	if err := v.ValidateUpdateNote(note.Title, note.Content, note.Tags); err != nil {
+		return nil, err
+	}
+
+	if err := s.repo.Update(note); err != nil {
+		return nil, err
+	}
+	return note, nil
 }
 
 // Delete はノートを削除する。
