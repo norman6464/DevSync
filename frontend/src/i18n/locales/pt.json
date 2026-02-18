@@ -135,7 +135,8 @@
     "bookmark": "Favorito",
     "unbookmark": "Remover favorito",
     "bookmarks": "Favoritos",
-    "noBookmarks": "Nenhuma publicação favoritada"
+    "noBookmarks": "Nenhuma publicação favoritada",
+    "addReaction": "Reagir"
   },
   "follow": {
     "noFollowers": "Ainda sem seguidores",

@@ -183,6 +183,24 @@ func (m *MockPostRepository) FindBookmarkedByUserID(userID uint, page, limit int
 	return args.Get(0).([]model.Post), args.Get(1).(int64), args.Error(2)
 }
 
+func (m *MockPostRepository) AddReaction(userID, postID uint, emoji string) error {
+	return m.Called(userID, postID, emoji).Error(0)
+}
+
+func (m *MockPostRepository) RemoveReaction(userID, postID uint, emoji string) error {
+	return m.Called(userID, postID, emoji).Error(0)
+}
+
+func (m *MockPostRepository) GetReactionsByPostID(postID uint) ([]model.ReactionCount, error) {
+	args := m.Called(postID)
+	return args.Get(0).([]model.ReactionCount), args.Error(1)
+}
+
+func (m *MockPostRepository) GetUserReactions(userID, postID uint) ([]string, error) {
+	args := m.Called(userID, postID)
+	return args.Get(0).([]string), args.Error(1)
+}
+
 // ============================================================
 // MockFollowRepository は repository.FollowRepositoryInterface のテスト用モック実装。
 // ============================================================

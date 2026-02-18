@@ -135,7 +135,8 @@
     "bookmark": "书签",
     "unbookmark": "取消书签",
     "bookmarks": "书签列表",
-    "noBookmarks": "没有收藏的帖子"
+    "noBookmarks": "没有收藏的帖子",
+    "addReaction": "表情回应"
   },
   "follow": {
     "noFollowers": "暂无粉丝",

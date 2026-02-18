@@ -454,3 +454,95 @@ func TestPostGetBookmarks_Empty(t *testing.T) {
 	assert.Len(t, result, 0)
 	assert.Equal(t, int64(0), total)
 }
+
+// ============================================================
+// リアクションテスト
+// ============================================================
+
+func TestPostAddReaction_Success(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("AddReaction", uint(1), uint(10), "👍").Return(nil)
+
+	err := svc.AddReaction(1, 10, "👍")
+	assert.NoError(t, err)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostAddReaction_InvalidEmoji(t *testing.T) {
+	svc, _, _ := newTestPostService()
+
+	err := svc.AddReaction(1, 10, "invalid")
+	assert.Error(t, err)
+}
+
+func TestPostAddReaction_Error(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("AddReaction", uint(1), uint(10), "🎉").Return(errors.New("duplicate"))
+
+	err := svc.AddReaction(1, 10, "🎉")
+	assert.Error(t, err)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostRemoveReaction_Success(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("RemoveReaction", uint(1), uint(10), "👍").Return(nil)
+
+	err := svc.RemoveReaction(1, 10, "👍")
+	assert.NoError(t, err)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostRemoveReaction_Error(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("RemoveReaction", uint(1), uint(10), "👍").Return(errors.New("not found"))
+
+	err := svc.RemoveReaction(1, 10, "👍")
+	assert.Error(t, err)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostGetReactionsByPostID_Success(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	counts := []model.ReactionCount{
+		{Emoji: "👍", Count: 5},
+		{Emoji: "❤️", Count: 3},
+	}
+	postRepo.On("GetReactionsByPostID", uint(10)).Return(counts, nil)
+
+	result, err := svc.GetReactionsByPostID(10)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, "👍", result[0].Emoji)
+	assert.Equal(t, 5, result[0].Count)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostGetReactionsByPostID_Empty(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("GetReactionsByPostID", uint(10)).Return([]model.ReactionCount{}, nil)
+
+	result, err := svc.GetReactionsByPostID(10)
+	assert.NoError(t, err)
+	assert.Len(t, result, 0)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostGetUserReactions_Success(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("GetUserReactions", uint(1), uint(10)).Return([]string{"👍", "🎉"}, nil)
+
+	result, err := svc.GetUserReactions(1, 10)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Contains(t, result, "👍")
+	assert.Contains(t, result, "🎉")
+	postRepo.AssertExpectations(t)
+}

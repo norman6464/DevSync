@@ -67,6 +67,7 @@ func main() {
 		&model.Post{},
 		&model.Like{},
 		&model.Bookmark{},
+		&model.Reaction{},
 		&model.Comment{},
 		&model.Message{},
 		&model.Notification{},

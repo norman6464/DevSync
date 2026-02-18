@@ -135,7 +135,8 @@
     "bookmark": "Lesezeichen",
     "unbookmark": "Lesezeichen entfernen",
     "bookmarks": "Lesezeichen",
-    "noBookmarks": "Keine markierten Beiträge"
+    "noBookmarks": "Keine markierten Beiträge",
+    "addReaction": "Reagieren"
   },
   "follow": {
     "noFollowers": "Noch keine Follower",

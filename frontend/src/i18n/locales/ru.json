@@ -135,7 +135,8 @@
     "bookmark": "Закладка",
     "unbookmark": "Удалить закладку",
     "bookmarks": "Закладки",
-    "noBookmarks": "Нет сохранённых публикаций"
+    "noBookmarks": "Нет сохранённых публикаций",
+    "addReaction": "Реакция"
   },
   "follow": {
     "noFollowers": "Пока нет подписчиков",

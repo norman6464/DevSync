@@ -134,6 +134,9 @@ func registerPostRoutes(g *gin.RouterGroup, c *di.Container) {
 		posts.GET("/:id/comments", c.PostHandler.GetComments)
 		posts.POST("/:id/comments", c.PostHandler.CreateComment)
 		posts.DELETE("/:id/comments/:commentId", c.PostHandler.DeleteComment)
+		posts.GET("/:id/reactions", c.PostHandler.GetReactions)
+		posts.POST("/:id/reactions", c.PostHandler.AddReaction)
+		posts.DELETE("/:id/reactions", c.PostHandler.RemoveReaction)
 		posts.POST("/:id/snippets", c.CodeSnippetHandler.Create)
 		posts.GET("/:id/snippets", c.CodeSnippetHandler.GetByPostID)
 	}

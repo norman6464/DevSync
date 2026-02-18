@@ -28,6 +28,10 @@ type PostServiceInterface interface {
 	Unbookmark(userID, postID uint) error
 	HasBookmarked(userID, postID uint) bool
 	GetBookmarks(userID uint, page, limit int) ([]model.Post, int64, error)
+	AddReaction(userID, postID uint, emoji string) error
+	RemoveReaction(userID, postID uint, emoji string) error
+	GetReactionsByPostID(postID uint) ([]model.ReactionCount, error)
+	GetUserReactions(userID, postID uint) ([]string, error)
 }
 
 // CodeSnippetServiceInterface はCodeSnippetServiceが実装すべきインターフェース。
@@ -338,4 +342,70 @@ func (h *PostHandler) GetBookmarks(c *gin.Context) {
 		return
 	}
 	respondOK(c, dto.BookmarkedPostsResponse{Posts: posts, Total: total})
+}
+
+// AddReaction は投稿にリアクション（絵文字）を追加する。
+func (h *PostHandler) AddReaction(c *gin.Context) {
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+	userID := c.GetUint("userID")
+
+	input := bindJSON[dto.ReactionRequest](c)
+	if input == nil {
+		return
+	}
+
+	if err := h.service.AddReaction(userID, id, input.Emoji); err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, domain.NewMessageResponse("reaction_added"))
+}
+
+// RemoveReaction は投稿のリアクションを削除する。
+func (h *PostHandler) RemoveReaction(c *gin.Context) {
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+	userID := c.GetUint("userID")
+
+	input := bindJSON[dto.ReactionRequest](c)
+	if input == nil {
+		return
+	}
+
+	if err := h.service.RemoveReaction(userID, id, input.Emoji); err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, domain.NewMessageResponse("reaction_removed"))
+}
+
+// GetReactions は投稿のリアクション一覧を返す。
+func (h *PostHandler) GetReactions(c *gin.Context) {
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+	userID := c.GetUint("userID")
+
+	reactions, err := h.service.GetReactionsByPostID(id)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	userReactions, err := h.service.GetUserReactions(userID, id)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, dto.ReactionResponse{
+		Reactions:     reactions,
+		UserReactions: userReactions,
+	})
 }

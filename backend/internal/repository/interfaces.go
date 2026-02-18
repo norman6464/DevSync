@@ -40,6 +40,10 @@ type PostRepositoryInterface interface {
 	Unbookmark(userID, postID uint) error
 	HasBookmarked(userID, postID uint) bool
 	FindBookmarkedByUserID(userID uint, page, limit int) ([]model.Post, int64, error)
+	AddReaction(userID, postID uint, emoji string) error
+	RemoveReaction(userID, postID uint, emoji string) error
+	GetReactionsByPostID(postID uint) ([]model.ReactionCount, error)
+	GetUserReactions(userID, postID uint) ([]string, error)
 }
 
 // FollowRepositoryInterface はフォロー関係データ操作の契約を定義する。
