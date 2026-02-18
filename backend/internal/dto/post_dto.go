@@ -11,8 +11,8 @@ type CodeSnippetInput struct {
 
 // CreatePostRequest は投稿作成リクエスト。
 type CreatePostRequest struct {
-	Title        string             `json:"title" binding:"required"`
-	Content      string             `json:"content" binding:"required"`
+	Title        string             `json:"title" binding:"required,max=200"`
+	Content      string             `json:"content" binding:"required,max=50000"`
 	ImageURLs    string             `json:"image_urls"`
 	IsDraft      bool               `json:"is_draft"`
 	CodeSnippets []CodeSnippetInput `json:"code_snippets"`
@@ -27,7 +27,7 @@ type UpdatePostRequest struct {
 
 // CreateCommentRequest はコメント作成リクエスト。
 type CreateCommentRequest struct {
-	Content string `json:"content" binding:"required"`
+	Content string `json:"content" binding:"required,max=5000"`
 }
 
 // PostDetailResponse は投稿詳細レスポンス（いいね済み・ブックマーク済みフラグ付き）。
