@@ -63,10 +63,11 @@ export default function Pagination({
   };
 
   return (
-    <div className="flex justify-center items-center gap-2 mt-8">
+    <nav className="flex justify-center items-center gap-2 mt-8" aria-label={t('common.pagination')}>
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={isFirstPage}
+        aria-label={t('common.previous')}
         className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
       >
         {t('common.previous')}
@@ -75,13 +76,15 @@ export default function Pagination({
       <div className="flex items-center gap-1">
         {getPageNumbers().map((page, idx) =>
           page === 'ellipsis' ? (
-            <span key={`ellipsis-${idx}`} className="px-2 py-2 text-gray-400">
+            <span key={`ellipsis-${idx}`} className="px-2 py-2 text-gray-400" aria-hidden="true">
               …
             </span>
           ) : (
             <button
               key={page}
               onClick={() => onPageChange(page)}
+              aria-label={`${t('common.page')} ${page + 1}`}
+              aria-current={page === currentPage ? 'page' : undefined}
               className={`min-w-[36px] px-2 py-2 rounded-lg text-sm font-medium transition-colors ${
                 page === currentPage
                   ? 'bg-gray-600 text-white'
@@ -101,10 +104,11 @@ export default function Pagination({
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={isLastPage}
+        aria-label={t('common.next')}
         className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
       >
         {t('common.next')}
       </button>
-    </div>
+    </nav>
   );
 }

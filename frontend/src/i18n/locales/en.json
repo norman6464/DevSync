@@ -11,6 +11,8 @@
     "back": "Back",
     "next": "Next",
     "previous": "Previous",
+    "pagination": "Page navigation",
+    "page": "Page",
     "confirm": "Confirm",
     "close": "Close",
     "yes": "Yes",

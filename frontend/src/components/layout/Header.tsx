@@ -103,7 +103,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center gap-3">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 shrink-0">
-          <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M16 18l2-2-2-2" />
             <path d="M8 6L6 8l2 2" />
             <path d="M14.5 4l-5 16" />
@@ -119,11 +119,11 @@ export default function Header() {
           aria-expanded={mobileOpen}
         >
           {mobileOpen ? (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           ) : (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
             </svg>
           )}
@@ -156,11 +156,15 @@ export default function Header() {
           </button>
 
           {moreOpen && (
-            <div className="absolute top-full right-0 mt-1 w-48 bg-gray-900 border border-gray-700 rounded-lg shadow-sm py-1 z-50">
+            <div
+              className="absolute top-full right-0 mt-1 w-48 bg-gray-900 border border-gray-700 rounded-lg shadow-sm py-1 z-50"
+              role="menu"
+            >
               {moreItems.map(({ path, key, icon: Icon }) => (
                 <Link
                   key={path}
                   to={path}
+                  role="menuitem"
                   className={`flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors ${
                     location.pathname === path
                       ? 'text-white bg-gray-800'
@@ -168,7 +172,7 @@ export default function Header() {
                   }`}
                   onClick={() => setMoreOpen(false)}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-4 h-4" aria-hidden="true" />
                   {t(key)}
                 </Link>
               ))}
@@ -198,7 +202,7 @@ export default function Header() {
             title={t('nav.signOut')}
             aria-label={t('nav.signOut')}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
             </svg>
           </button>

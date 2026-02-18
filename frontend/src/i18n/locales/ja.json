@@ -11,6 +11,8 @@
     "back": "戻る",
     "next": "次へ",
     "previous": "前へ",
+    "pagination": "ページナビゲーション",
+    "page": "ページ",
     "confirm": "確認",
     "close": "閉じる",
     "yes": "はい",
