@@ -57,6 +57,8 @@
     "password": "Mot de passe",
     "name": "Nom",
     "confirmPassword": "Confirmer le mot de passe",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "••••••••",
     "forgotPassword": "Mot de passe oublié ?",
     "noAccount": "Pas de compte ?",
     "hasAccount": "Déjà un compte ?",

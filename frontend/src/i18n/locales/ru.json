@@ -57,6 +57,8 @@
     "password": "Пароль",
     "name": "Имя",
     "confirmPassword": "Подтвердите пароль",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "••••••••",
     "forgotPassword": "Забыли пароль?",
     "noAccount": "Нет аккаунта?",
     "hasAccount": "Уже есть аккаунт?",
