@@ -1,9 +1,7 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Monitor, Rocket, Target, FolderOpen, FileText, BookOpen, ChevronDown, ChevronUp, MapPin, type LucideIcon } from 'lucide-react';
 import { type RoadmapCategory, type Roadmap } from '../api/roadmaps';
-import { useRoadmaps, useRoadmapTemplates } from '../hooks';
+import { useRoadmapForm } from '../hooks';
 import EmptyState from '../components/common/EmptyState';
 import { Modal, PageHeader, PageLoader } from '../components/common';
 import { inputClass, buttonSecondaryClass, labelClass } from '../constants/styles';
@@ -16,73 +14,25 @@ const CATEGORIES: { value: RoadmapCategory; label: string; icon: string; Icon: L
   { value: 'other', label: 'roadmaps.categoryOther', icon: '📝', Icon: FileText },
 ];
 
+const getCategoryInfo = (cat: RoadmapCategory) =>
+  CATEGORIES.find(c => c.value === cat) || CATEGORIES[4];
+
 export default function RoadmapsPage() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const {
-    roadmaps, loading, saving, activeRoadmaps, completedRoadmaps,
-    createRoadmap, updateRoadmap, deleteRoadmap, refetch,
-  } = useRoadmaps();
-  const { templates, loading: templatesLoading, creating, createFromTemplate } = useRoadmapTemplates();
-
-  const [showForm, setShowForm] = useState(false);
-  const [editingRoadmap, setEditingRoadmap] = useState<Roadmap | null>(null);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<RoadmapCategory>('other');
-  const [isPublic, setIsPublic] = useState(false);
-  const [showTemplates, setShowTemplates] = useState(false);
-  const [expandedTemplate, setExpandedTemplate] = useState<number | null>(null);
-
-  const resetForm = () => {
-    setTitle('');
-    setDescription('');
-    setCategory('other');
-    setIsPublic(false);
-    setEditingRoadmap(null);
-    setShowForm(false);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim()) return;
-
-    if (editingRoadmap) {
-      const result = await updateRoadmap(editingRoadmap.id, { title, description, category, is_public: isPublic });
-      if (result) resetForm();
-    } else {
-      const result = await createRoadmap({ title, description, category, is_public: isPublic });
-      if (result) {
-        resetForm();
-        navigate(`/roadmaps/${result.id}`);
-      }
-    }
-  };
-
-  const handleEdit = (roadmap: Roadmap) => {
-    setEditingRoadmap(roadmap);
-    setTitle(roadmap.title);
-    setDescription(roadmap.description);
-    setCategory(roadmap.category);
-    setIsPublic(roadmap.is_public);
-    setShowForm(true);
-  };
-
-  const handleUseTemplate = async (templateId: number) => {
-    const result = await createFromTemplate(templateId);
-    if (result) {
-      await refetch();
-      navigate(`/roadmaps/${result.id}`);
-    }
-  };
-
-  const getCategoryInfo = (cat: RoadmapCategory) =>
-    CATEGORIES.find(c => c.value === cat) || CATEGORIES[4];
+    roadmaps, activeRoadmaps, completedRoadmaps, templates,
+    loading, saving, templatesLoading, creating,
+    showForm, setShowForm, editingRoadmap,
+    title, setTitle, description, setDescription,
+    category, setCategory, isPublic, setIsPublic,
+    showTemplates, expandedTemplate,
+    resetForm, handleSubmit, handleEdit, handleUseTemplate,
+    deleteRoadmap, toggleTemplates, toggleExpandedTemplate, navigate,
+  } = useRoadmapForm();
 
   if (loading) {
     return <PageLoader />;
   }
-
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -113,7 +63,7 @@ export default function RoadmapsPage() {
       {!templatesLoading && templates.length > 0 && (
         <div className="mb-6">
           <button
-            onClick={() => setShowTemplates(!showTemplates)}
+            onClick={toggleTemplates}
             className="w-full flex items-center justify-between p-4 bg-gray-800 border border-gray-700 rounded-md hover:border-gray-600 transition-colors"
           >
             <div className="flex items-center gap-3">
@@ -169,7 +119,7 @@ export default function RoadmapsPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => setExpandedTemplate(isExpanded ? null : template.id)}
+                            onClick={() => toggleExpandedTemplate(template.id)}
                             className="p-2 text-gray-400 hover:text-white transition-colors"
                             title={t('roadmaps.viewSteps')}
                           >
