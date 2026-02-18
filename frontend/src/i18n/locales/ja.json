@@ -89,6 +89,21 @@
     "goalsInProgress": "進行中の目標",
     "editPost": "投稿を編集"
   },
+  "series": {
+    "title": "投稿シリーズ",
+    "posts": "シリーズの投稿",
+    "noPosts": "このシリーズにはまだ投稿がありません",
+    "createSuccess": "シリーズを作成しました",
+    "createFailed": "シリーズの作成に失敗しました",
+    "updateSuccess": "シリーズを更新しました",
+    "updateFailed": "シリーズの更新に失敗しました",
+    "deleteSuccess": "シリーズを削除しました",
+    "deleteFailed": "シリーズの削除に失敗しました",
+    "postAdded": "投稿をシリーズに追加しました",
+    "postAddFailed": "投稿の追加に失敗しました",
+    "postRemoved": "投稿をシリーズから削除しました",
+    "postRemoveFailed": "投稿の削除に失敗しました"
+  },
   "post": {
     "createTitle": "今日学んだことは？",
     "createContent": "あなたの考えを共有... (Markdown対応)",

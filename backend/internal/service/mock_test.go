@@ -1443,3 +1443,56 @@ func (m *MockRankingRepository) AvailableLanguages() ([]string, error) {
 	args := m.Called()
 	return args.Get(0).([]string), args.Error(1)
 }
+
+// ============================================================
+// MockPostSeriesRepository
+// ============================================================
+
+type MockPostSeriesRepository struct {
+	mock.Mock
+}
+
+var _ repository.PostSeriesRepositoryInterface = (*MockPostSeriesRepository)(nil)
+
+func (m *MockPostSeriesRepository) Create(series *model.PostSeries) error {
+	args := m.Called(series)
+	return args.Error(0)
+}
+
+func (m *MockPostSeriesRepository) FindByID(id uint) (*model.PostSeries, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.PostSeries), args.Error(1)
+}
+
+func (m *MockPostSeriesRepository) FindByUserID(userID uint) ([]model.PostSeries, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.PostSeries), args.Error(1)
+}
+
+func (m *MockPostSeriesRepository) Update(series *model.PostSeries) error {
+	args := m.Called(series)
+	return args.Error(0)
+}
+
+func (m *MockPostSeriesRepository) Delete(id uint) error {
+	args := m.Called(id)
+	return args.Error(0)
+}
+
+func (m *MockPostSeriesRepository) AddPost(item *model.PostSeriesItem) error {
+	args := m.Called(item)
+	return args.Error(0)
+}
+
+func (m *MockPostSeriesRepository) RemovePost(seriesID, postID uint) error {
+	args := m.Called(seriesID, postID)
+	return args.Error(0)
+}
+
+func (m *MockPostSeriesRepository) GetPostsBySeriesID(seriesID uint) ([]model.PostSeriesItem, error) {
+	args := m.Called(seriesID)
+	return args.Get(0).([]model.PostSeriesItem), args.Error(1)
+}

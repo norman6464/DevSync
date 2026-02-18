@@ -53,6 +53,27 @@ type ReactionCount struct {
 	Count int    `json:"count"`
 }
 
+// PostSeries は関連する投稿をシリーズとしてグループ化する。
+type PostSeries struct {
+	ID          uint      `json:"id" gorm:"primaryKey"`
+	UserID      uint      `json:"user_id" gorm:"not null;index"`
+	User        User      `json:"user" gorm:"foreignKey:UserID"`
+	Title       string    `json:"title" gorm:"not null"`
+	Description string    `json:"description" gorm:"type:text"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+// PostSeriesItem はシリーズ内の投稿を表す。
+// uniqueIndex制約でシリーズ内に同じ投稿が重複しないことを保証する。
+type PostSeriesItem struct {
+	ID         uint `json:"id" gorm:"primaryKey"`
+	SeriesID   uint `json:"series_id" gorm:"not null;uniqueIndex:idx_series_post;index"`
+	PostID     uint `json:"post_id" gorm:"not null;uniqueIndex:idx_series_post;index"`
+	Post       Post `json:"post,omitempty" gorm:"foreignKey:PostID"`
+	OrderIndex int  `json:"order_index" gorm:"not null;default:0"`
+}
+
 // Comment は投稿へのコメントを表す。
 type Comment struct {
 	ID        uint      `json:"id" gorm:"primaryKey"`

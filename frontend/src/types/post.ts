@@ -49,6 +49,24 @@ export interface ReactionResponse {
   user_reactions: string[];
 }
 
+export interface PostSeries {
+  id: number;
+  user_id: number;
+  user?: User;
+  title: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PostSeriesItem {
+  id: number;
+  series_id: number;
+  post_id: number;
+  post?: Post;
+  order_index: number;
+}
+
 export interface SnippetComment {
   id: number;
   snippet_id: number;
