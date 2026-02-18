@@ -162,6 +162,7 @@
     "draftFailed": "Falha ao salvar rascunho",
     "writeComment": "Escrever um comentário...",
     "writeReply": "Escrever uma resposta...",
+    "readTime": "{{minutes}} min de leitura",
     "notFound": "Publicação não encontrada",
     "bookmark": "Favorito",
     "unbookmark": "Remover favorito",

@@ -2,11 +2,23 @@ package service
 
 import (
 	"fmt"
+	"unicode/utf8"
 
 	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
+
+// EstimateReadTime はコンテンツの文字数から推定読了時間（分）を計算する純粋関数。
+// 日本語基準で約500文字/分として計算し、最低1分を返す。
+func EstimateReadTime(content string) int {
+	charCount := utf8.RuneCountInString(content)
+	minutes := charCount / 500
+	if minutes < 1 {
+		return 1
+	}
+	return minutes
+}
 
 // allowedEmojis はリアクションに使用可能な絵文字一覧。
 var allowedEmojis = map[string]bool{
@@ -37,6 +49,9 @@ func (s *PostService) Create(post *model.Post) (*model.Post, error) {
 	if err := v.ValidateCreatePost(post.Title, post.Content, post.ImageURLs, nil); err != nil {
 		return nil, err
 	}
+
+	// 読了時間を推定
+	post.EstimatedReadTime = EstimateReadTime(post.Content)
 
 	if err := s.repo.Create(post); err != nil {
 		return nil, err
@@ -101,6 +116,7 @@ func (s *PostService) Update(id, userID uint, title, content, imageUrls string) 
 	}
 	if content != "" {
 		post.Content = content
+		post.EstimatedReadTime = EstimateReadTime(content)
 	}
 	if imageUrls != "" {
 		post.ImageURLs = imageUrls

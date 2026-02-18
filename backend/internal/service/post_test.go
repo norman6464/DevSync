@@ -598,3 +598,72 @@ func TestPostGetUserReactions_Success(t *testing.T) {
 	assert.Contains(t, result, "🎉")
 	postRepo.AssertExpectations(t)
 }
+
+// ============================================================
+// 読了時間推定テスト
+// ============================================================
+
+func TestEstimateReadTime_ShortContent(t *testing.T) {
+	// 短いコンテンツ → 最低1分
+	result := EstimateReadTime("Hello World")
+	assert.Equal(t, 1, result)
+}
+
+func TestEstimateReadTime_JapaneseContent(t *testing.T) {
+	// 500文字の日本語 → 1分
+	content := ""
+	for i := 0; i < 500; i++ {
+		content += "あ"
+	}
+	result := EstimateReadTime(content)
+	assert.Equal(t, 1, result)
+}
+
+func TestEstimateReadTime_LongJapaneseContent(t *testing.T) {
+	// 1500文字の日本語 → 3分
+	content := ""
+	for i := 0; i < 1500; i++ {
+		content += "あ"
+	}
+	result := EstimateReadTime(content)
+	assert.Equal(t, 3, result)
+}
+
+func TestEstimateReadTime_EmptyContent(t *testing.T) {
+	result := EstimateReadTime("")
+	assert.Equal(t, 1, result)
+}
+
+func TestEstimateReadTime_MixedContent(t *testing.T) {
+	// 1000文字（混合） → 2分
+	content := ""
+	for i := 0; i < 1000; i++ {
+		content += "a"
+	}
+	result := EstimateReadTime(content)
+	assert.Equal(t, 2, result)
+}
+
+func TestPostCreate_SetsEstimatedReadTime(t *testing.T) {
+	svc, postRepo, notifRepo := newTestPostService()
+
+	post := &model.Post{Title: "Test", Content: "テスト投稿の本文です。", UserID: 1}
+
+	postRepo.On("Create", mock.MatchedBy(func(p *model.Post) bool {
+		return p.EstimatedReadTime >= 1
+	})).Run(func(args mock.Arguments) {
+		p := args.Get(0).(*model.Post)
+		p.ID = 10
+	}).Return(nil)
+
+	createdPost := &model.Post{Title: "Test", Content: "テスト投稿の本文です。", UserID: 1, EstimatedReadTime: 1}
+	createdPost.ID = 10
+	postRepo.On("FindByID", uint(10)).Return(createdPost, nil)
+
+	notifRepo.On("GetFollowerIDs", uint(1)).Return([]uint{}, nil).Maybe()
+	notifRepo.On("CreateBatch", mock.Anything).Return(nil).Maybe()
+
+	result, err := svc.Create(post)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, result.EstimatedReadTime)
+}

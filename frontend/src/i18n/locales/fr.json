@@ -162,6 +162,7 @@
     "draftFailed": "Échec de l'enregistrement du brouillon",
     "writeComment": "Écrire un commentaire...",
     "writeReply": "Écrire une réponse...",
+    "readTime": "{{minutes}} min de lecture",
     "notFound": "Publication introuvable",
     "bookmark": "Signet",
     "unbookmark": "Retirer le signet",

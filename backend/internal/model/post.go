@@ -12,8 +12,9 @@ type Post struct {
 	ImageURLs    string    `json:"image_urls" gorm:"type:text"` // カンマ区切りの画像URL
 	IsDraft      bool      `json:"is_draft" gorm:"default:false;index"` // 下書きフラグ
 	LikeCount    int       `json:"like_count" gorm:"default:0"`
-	CommentCount int            `json:"comment_count" gorm:"default:0"`
-	CodeSnippets []CodeSnippet  `json:"code_snippets,omitempty" gorm:"foreignKey:PostID"`
+	CommentCount      int            `json:"comment_count" gorm:"default:0"`
+	EstimatedReadTime int            `json:"estimated_read_time" gorm:"default:0"`
+	CodeSnippets      []CodeSnippet  `json:"code_snippets,omitempty" gorm:"foreignKey:PostID"`
 	CreatedAt    time.Time      `json:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at"`
 }

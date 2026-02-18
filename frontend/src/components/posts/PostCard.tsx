@@ -125,6 +125,9 @@ export default function PostCard({ post, isOwner = false, onEdit, onDelete, onUp
       <div className="flex items-start justify-between gap-2 mb-2">
         <Link to={`/posts/${post.id}`} className="flex-1 group">
           <h3 className="text-base font-semibold group-hover:text-blue-400 transition-colors">{post.title}</h3>
+          {post.estimated_read_time > 0 && (
+            <p className="text-xs text-gray-500 mt-0.5">{t('post.readTime', { minutes: post.estimated_read_time })}</p>
+          )}
         </Link>
 
         {isOwner && (
