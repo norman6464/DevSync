@@ -13,7 +13,7 @@ type NoteServiceInterface interface {
 	GetByID(id uint) (*model.Note, error)
 	GetByUserID(userID uint, page, limit int) ([]model.Note, error)
 	GetByFolderID(folderID uint) ([]model.Note, error)
-	Update(note *model.Note) error
+	Update(id, userID uint, title, content, tags string, folderID *uint) (*model.Note, error)
 	Delete(id uint) error
 	Search(userID uint, query string, page, limit int) ([]model.Note, int64, error)
 	CountByUserID(userID uint) (int64, error)
@@ -141,34 +141,8 @@ func (h *NoteHandler) Update(c *gin.Context) {
 		return
 	}
 
-	// 既存のノートを取得して所有者確認
-	note, err := h.service.GetByID(id)
+	note, err := h.service.Update(id, userID, input.Title, input.Content, input.Tags, input.FolderID)
 	if err != nil {
-		respondError(c, err)
-		return
-	}
-
-	// 所有者チェック
-	if note.UserID != userID {
-		respondForbidden(c, "この操作を行う権限がありません")
-		return
-	}
-
-	// 更新フィールドを適用（空でない場合のみ）
-	if input.Title != "" {
-		note.Title = input.Title
-	}
-	if input.Content != "" {
-		note.Content = input.Content
-	}
-	if input.Tags != "" {
-		note.Tags = input.Tags
-	}
-	if input.FolderID != nil {
-		note.FolderID = input.FolderID
-	}
-
-	if err := h.service.Update(note); err != nil {
 		respondError(c, err)
 		return
 	}

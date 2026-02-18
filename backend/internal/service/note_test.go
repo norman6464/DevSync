@@ -164,17 +164,45 @@ func TestNoteService_GetByUserID(t *testing.T) {
 func TestNoteService_Update(t *testing.T) {
 	svc, repo := newTestNoteService()
 
-	note := &model.Note{
+	existing := &model.Note{
 		ID:      1,
 		UserID:  1,
-		Title:   "更新後タイトル",
-		Content: "更新後内容",
+		Title:   "元タイトル",
+		Content: "元内容",
 	}
 
-	repo.On("Update", note).Return(nil)
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", mock.MatchedBy(func(n *model.Note) bool {
+		return n.Title == "更新後タイトル" && n.Content == "更新後内容"
+	})).Return(nil)
 
-	err := svc.Update(note)
+	result, err := svc.Update(1, 1, "更新後タイトル", "更新後内容", "", nil)
 	assert.NoError(t, err)
+	assert.Equal(t, "更新後タイトル", result.Title)
+	assert.Equal(t, "更新後内容", result.Content)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteService_Update_Forbidden(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	existing := &model.Note{ID: 1, UserID: 1, Title: "元タイトル"}
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	result, err := svc.Update(1, 999, "更新", "", "", nil)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteService_Update_NotFound(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	result, err := svc.Update(99, 1, "更新", "", "", nil)
+	assert.Error(t, err)
+	assert.Nil(t, result)
 	repo.AssertExpectations(t)
 }
 
