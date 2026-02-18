@@ -70,6 +70,34 @@ func TestLearningAnalytics_GetCategoryBreakdown_Success(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
+func TestLearningAnalytics_GetCategoryBreakdown_InvalidID(t *testing.T) {
+	h, _ := setupLearningAnalyticsHandler()
+
+	r := gin.New()
+	r.GET("/users/:userId/analytics/categories", h.GetCategoryBreakdown)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/users/xyz/analytics/categories", nil)
+	r.ServeHTTP(w, req)
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestLearningAnalytics_GetCategoryBreakdown_ServiceError(t *testing.T) {
+	h, svc := setupLearningAnalyticsHandler()
+	svc.On("GetCategoryBreakdown", uint(1)).Return([]model.CategoryBreakdown(nil), errors.New("db error"))
+
+	r := gin.New()
+	r.GET("/users/:userId/analytics/categories", h.GetCategoryBreakdown)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/users/1/analytics/categories", nil)
+	r.ServeHTTP(w, req)
+
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
 func TestLearningAnalytics_GetProductivityScore_Success(t *testing.T) {
 	h, svc := setupLearningAnalyticsHandler()
 	score := &model.ProductivityScore{OverallScore: 85.5}
@@ -83,6 +111,34 @@ func TestLearningAnalytics_GetProductivityScore_Success(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestLearningAnalytics_GetProductivityScore_InvalidID(t *testing.T) {
+	h, _ := setupLearningAnalyticsHandler()
+
+	r := gin.New()
+	r.GET("/users/:userId/analytics/productivity", h.GetProductivityScore)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/users/!!/analytics/productivity", nil)
+	r.ServeHTTP(w, req)
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestLearningAnalytics_GetProductivityScore_ServiceError(t *testing.T) {
+	h, svc := setupLearningAnalyticsHandler()
+	svc.On("GetProductivityScore", uint(1)).Return((*model.ProductivityScore)(nil), errors.New("db error"))
+
+	r := gin.New()
+	r.GET("/users/:userId/analytics/productivity", h.GetProductivityScore)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/users/1/analytics/productivity", nil)
+	r.ServeHTTP(w, req)
+
+	assertStatus(t, w, http.StatusInternalServerError)
 	svc.AssertExpectations(t)
 }
 
@@ -115,6 +171,79 @@ func TestLearningAnalytics_GetWeeklyTrends_CustomWeeks(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestLearningAnalytics_GetWeeklyTrends_InvalidUserID(t *testing.T) {
+	h, _ := setupLearningAnalyticsHandler()
+
+	r := gin.New()
+	r.GET("/users/:userId/analytics/trends", h.GetWeeklyTrends)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/users/abc/analytics/trends", nil)
+	r.ServeHTTP(w, req)
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestLearningAnalytics_GetWeeklyTrends_InvalidWeeksUsesDefault(t *testing.T) {
+	h, svc := setupLearningAnalyticsHandler()
+	svc.On("GetWeeklyTrends", uint(1), 12).Return([]model.WeeklyTrend(nil), nil)
+
+	r := gin.New()
+	r.GET("/users/:userId/analytics/trends", h.GetWeeklyTrends)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/users/1/analytics/trends?weeks=abc", nil)
+	r.ServeHTTP(w, req)
+
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestLearningAnalytics_GetWeeklyTrends_ZeroWeeksUsesDefault(t *testing.T) {
+	h, svc := setupLearningAnalyticsHandler()
+	svc.On("GetWeeklyTrends", uint(1), 12).Return([]model.WeeklyTrend(nil), nil)
+
+	r := gin.New()
+	r.GET("/users/:userId/analytics/trends", h.GetWeeklyTrends)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/users/1/analytics/trends?weeks=0", nil)
+	r.ServeHTTP(w, req)
+
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestLearningAnalytics_GetWeeklyTrends_NegativeWeeksUsesDefault(t *testing.T) {
+	h, svc := setupLearningAnalyticsHandler()
+	svc.On("GetWeeklyTrends", uint(1), 12).Return([]model.WeeklyTrend(nil), nil)
+
+	r := gin.New()
+	r.GET("/users/:userId/analytics/trends", h.GetWeeklyTrends)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/users/1/analytics/trends?weeks=-5", nil)
+	r.ServeHTTP(w, req)
+
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestLearningAnalytics_GetWeeklyTrends_ServiceError(t *testing.T) {
+	h, svc := setupLearningAnalyticsHandler()
+	svc.On("GetWeeklyTrends", uint(1), 12).Return([]model.WeeklyTrend(nil), errors.New("db error"))
+
+	r := gin.New()
+	r.GET("/users/:userId/analytics/trends", h.GetWeeklyTrends)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/users/1/analytics/trends", nil)
+	r.ServeHTTP(w, req)
+
+	assertStatus(t, w, http.StatusInternalServerError)
 	svc.AssertExpectations(t)
 }
 
