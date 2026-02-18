@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
@@ -25,7 +25,7 @@ export default function DraftsPage() {
     { initialData: [], deps: [refreshKey] }
   );
 
-  const handlePublish = async (id: number) => {
+  const handlePublish = useCallback(async (id: number) => {
     const confirmed = await confirm({
       title: t('post.publish'),
       message: t('post.confirmPublish'),
@@ -40,9 +40,9 @@ export default function DraftsPage() {
     } catch {
       toast.error(t('post.publishFailed'));
     }
-  };
+  }, [confirm, t]);
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = useCallback(async (id: number) => {
     const confirmed = await confirm({
       title: t('common.delete'),
       message: t('post.confirmDelete'),
@@ -57,7 +57,7 @@ export default function DraftsPage() {
     } catch {
       toast.error(t('post.deleteFailed'));
     }
-  };
+  }, [confirm, t]);
 
   return (
     <div className="max-w-4xl mx-auto">
