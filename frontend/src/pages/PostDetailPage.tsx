@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { usePostDetail, useConfirm } from '../hooks';
@@ -28,14 +28,14 @@ export default function PostDetailPage() {
   const [replyContent, setReplyContent] = useState('');
   const { confirm, dialogProps } = useConfirm();
 
-  const handleSubmitComment = async (e: React.FormEvent) => {
+  const handleSubmitComment = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
     const success = await submitComment(newComment);
     if (success) setNewComment('');
-  };
+  }, [newComment, submitComment]);
 
-  const handleSubmitReply = async (e: React.FormEvent, parentId: number) => {
+  const handleSubmitReply = useCallback(async (e: React.FormEvent, parentId: number) => {
     e.preventDefault();
     if (!replyContent.trim()) return;
     const success = await submitComment(replyContent, parentId);
@@ -43,9 +43,9 @@ export default function PostDetailPage() {
       setReplyContent('');
       setReplyingTo(null);
     }
-  };
+  }, [replyContent, submitComment]);
 
-  const handleDeletePost = async () => {
+  const handleDeletePost = useCallback(async () => {
     if (!post) return;
     const confirmed = await confirm({
       title: t('common.delete'),
@@ -62,7 +62,15 @@ export default function PostDetailPage() {
     } catch {
       toast.error(t('post.deleteFailed'));
     }
-  };
+  }, [post, confirm, t, navigate]);
+
+  const handleOpenEdit = useCallback(() => setEditingPost(true), []);
+  const handleCloseEdit = useCallback(() => setEditingPost(false), []);
+
+  const handleEditSubmit = useCallback(async (title: string, content: string, imageUrls: string[]) => {
+    const result = await updatePost(title, content, imageUrls);
+    if (result) setEditingPost(false);
+  }, [updatePost]);
 
   if (loading) return <PageLoader />;
   if (!post) return <div className="text-center text-gray-400 py-12">{t('post.notFound')}</div>;
@@ -72,7 +80,7 @@ export default function PostDetailPage() {
       <PostCard
         post={post}
         isOwner={user?.id === post.user_id}
-        onEdit={() => setEditingPost(true)}
+        onEdit={handleOpenEdit}
         onDelete={handleDeletePost}
         onUpdate={refetch}
       />
@@ -220,14 +228,11 @@ export default function PostDetailPage() {
       <ConfirmDialog {...dialogProps} />
 
       {/* Edit Modal */}
-      <Modal isOpen={editingPost} onClose={() => setEditingPost(false)} title={t('dashboard.editPost')}>
+      <Modal isOpen={editingPost} onClose={handleCloseEdit} title={t('dashboard.editPost')}>
         <PostForm
           post={post}
-          onSubmit={async (title, content, imageUrls) => {
-            const result = await updatePost(title, content, imageUrls);
-            if (result) setEditingPost(false);
-          }}
-          onCancel={() => setEditingPost(false)}
+          onSubmit={handleEditSubmit}
+          onCancel={handleCloseEdit}
         />
       </Modal>
     </div>

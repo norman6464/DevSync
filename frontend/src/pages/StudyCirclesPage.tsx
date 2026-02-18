@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Users, Plus, Crown } from 'lucide-react';
@@ -14,13 +14,29 @@ export default function StudyCirclesPage() {
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ name: '', topic: '', description: '', max_members: 5 });
 
-  const handleCreate = async () => {
+  const handleOpenModal = useCallback(() => setShowModal(true), []);
+  const handleCloseModal = useCallback(() => setShowModal(false), []);
+
+  const handleCreate = useCallback(async () => {
     const result = await createCircle(form);
     if (result) {
       setShowModal(false);
       setForm({ name: '', topic: '', description: '', max_members: 5 });
     }
-  };
+  }, [form, createCircle]);
+
+  const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm((prev) => ({ ...prev, name: e.target.value }));
+  }, []);
+  const handleTopicChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm((prev) => ({ ...prev, topic: e.target.value }));
+  }, []);
+  const handleDescriptionChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setForm((prev) => ({ ...prev, description: e.target.value }));
+  }, []);
+  const handleMaxMembersChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm((prev) => ({ ...prev, max_members: parseInt(e.target.value) || 5 }));
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -31,7 +47,7 @@ export default function StudyCirclesPage() {
           {t('studyCircle.title')}
         </h1>
         <button
-          onClick={() => setShowModal(true)}
+          onClick={handleOpenModal}
           className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-sm font-medium transition-colors"
         >
           <Plus className="w-4 h-4" />
@@ -55,7 +71,7 @@ export default function StudyCirclesPage() {
           <Users className="w-16 h-16 mx-auto mb-4 text-gray-700" />
           <p className="text-gray-400 mb-4">{t('studyCircle.noCircles')}</p>
           <button
-            onClick={() => setShowModal(true)}
+            onClick={handleOpenModal}
             className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-sm font-medium transition-colors"
           >
             <Plus className="w-4 h-4" />
@@ -121,7 +137,7 @@ export default function StudyCirclesPage() {
       {/* Create Modal */}
       <Modal
         isOpen={showModal}
-        onClose={() => setShowModal(false)}
+        onClose={handleCloseModal}
         title={t('studyCircle.create')}
         maxWidth="max-w-md"
       >
@@ -131,7 +147,7 @@ export default function StudyCirclesPage() {
             <input
               type="text"
               value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              onChange={handleNameChange}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
               placeholder="React学習会"
             />
@@ -141,7 +157,7 @@ export default function StudyCirclesPage() {
             <input
               type="text"
               value={form.topic}
-              onChange={(e) => setForm({ ...form, topic: e.target.value })}
+              onChange={handleTopicChange}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
               placeholder="React入門を1ヶ月で"
             />
@@ -150,7 +166,7 @@ export default function StudyCirclesPage() {
             <label className="text-xs text-gray-400 block mb-1">{t('studyCircle.description')}</label>
             <textarea
               value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onChange={handleDescriptionChange}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500 h-20 resize-none"
             />
           </div>
@@ -161,14 +177,14 @@ export default function StudyCirclesPage() {
               min={3}
               max={10}
               value={form.max_members}
-              onChange={(e) => setForm({ ...form, max_members: parseInt(e.target.value) || 5 })}
+              onChange={handleMaxMembersChange}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
             />
           </div>
         </div>
         <div className="flex justify-end gap-2 mt-5">
           <button
-            onClick={() => setShowModal(false)}
+            onClick={handleCloseModal}
             className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
           >
             {t('common.cancel')}
