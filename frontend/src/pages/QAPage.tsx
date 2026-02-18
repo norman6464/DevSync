@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HelpCircle } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
@@ -27,10 +27,25 @@ export default function QAPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
 
-  const handleDeleteQuestion = async (question: Question) => {
+  const handleDeleteQuestion = useCallback(async (question: Question) => {
     const ok = await confirm({ title: t('common.confirm'), message: t('qa.confirmDelete'), variant: 'danger' });
     if (ok) deleteQuestion(question);
-  };
+  }, [confirm, t, deleteQuestion]);
+
+  const handleFormClose = useCallback(() => {
+    setShowForm(false);
+    setEditingQuestion(null);
+  }, []);
+
+  const handleFormSubmit = useCallback(async (data: Parameters<typeof createQuestion>[0]) => {
+    if (editingQuestion) {
+      const result = await updateQuestion(editingQuestion.id, data);
+      if (result) setEditingQuestion(null);
+    } else {
+      const result = await createQuestion(data);
+      if (result) setShowForm(false);
+    }
+  }, [editingQuestion, updateQuestion, createQuestion]);
 
   // デバウンス処理（300ms）
   const debouncedQuery = useDebounce(searchQuery, 300);
@@ -80,24 +95,13 @@ export default function QAPage() {
       {/* Form Modal */}
       <Modal
         isOpen={showForm || !!editingQuestion}
-        onClose={() => { setShowForm(false); setEditingQuestion(null); }}
+        onClose={handleFormClose}
         title={editingQuestion ? t('qa.editQuestion') : t('qa.newQuestion')}
       >
         <QuestionForm
           question={editingQuestion || undefined}
-          onSubmit={async (data) => {
-            if (editingQuestion) {
-              const result = await updateQuestion(editingQuestion.id, data);
-              if (result) setEditingQuestion(null);
-            } else {
-              const result = await createQuestion(data);
-              if (result) setShowForm(false);
-            }
-          }}
-          onCancel={() => {
-            setShowForm(false);
-            setEditingQuestion(null);
-          }}
+          onSubmit={handleFormSubmit}
+          onCancel={handleFormClose}
           loading={saving}
         />
       </Modal>
