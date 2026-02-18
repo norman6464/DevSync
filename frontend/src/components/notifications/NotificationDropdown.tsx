@@ -92,9 +92,11 @@ export default function NotificationDropdown() {
       <button
         onClick={handleOpen}
         className="relative p-2 text-gray-400 hover:text-white transition-colors rounded-md"
-        title={t('notifications.title')}
+        aria-label={t('notifications.title')}
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
       >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
         </svg>
         {unreadCount > 0 && (
@@ -105,7 +107,11 @@ export default function NotificationDropdown() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-gray-800 border border-gray-700 rounded-lg shadow-sm z-50">
+        <div
+          className="absolute right-0 mt-2 w-80 bg-gray-800 border border-gray-700 rounded-lg shadow-sm z-50"
+          role="dialog"
+          aria-label={t('notifications.title')}
+        >
           <div className="flex items-center justify-between p-3 border-b border-gray-700">
             <h3 className="font-semibold text-white">{t('notifications.title')}</h3>
             {unreadCount > 0 && (
