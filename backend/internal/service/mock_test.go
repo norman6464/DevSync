@@ -2085,3 +2085,18 @@ func (m *MockMentionStatsRepository) GetMentionStats(userID uint) (*model.Mentio
 	}
 	return args.Get(0).(*model.MentionStats), args.Error(1)
 }
+
+// MockReactionStatsRepository は repository.ReactionStatsRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockReactionStatsRepository struct {
+	mock.Mock
+}
+
+func (m *MockReactionStatsRepository) GetReactionStats(userID uint) (*model.ReactionStats, error) {
+	args := m.Called(userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.ReactionStats), args.Error(1)
+}

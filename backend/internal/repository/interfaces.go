@@ -591,3 +591,8 @@ type MessageStatsRepositoryInterface interface {
 type MentionStatsRepositoryInterface interface {
 	GetMentionStats(userID uint) (*model.MentionStats, error)
 }
+
+// ReactionStatsRepositoryInterface はユーザーリアクション集計統計データ操作の契約を定義する。
+type ReactionStatsRepositoryInterface interface {
+	GetReactionStats(userID uint) (*model.ReactionStats, error)
+}
