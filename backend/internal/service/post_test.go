@@ -679,6 +679,16 @@ func TestPostUnbookmark_Error(t *testing.T) {
 	postRepo.AssertExpectations(t)
 }
 
+func TestPostUnbookmark_PostNotFound(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindByID", uint(10)).Return(nil, errors.New("not found"))
+
+	err := svc.Unbookmark(1, 10)
+	assert.ErrorIs(t, err, ErrNotFound)
+	postRepo.AssertNotCalled(t, "Unbookmark")
+}
+
 func TestPostUnbookmark_SelfUnbookmark_Forbidden(t *testing.T) {
 	svc, postRepo, _ := newTestPostService()
 
