@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { requestPasswordReset } from '../api/auth';
-import { labelClass } from '../constants/styles';
+import { inputClass, labelClass } from '../constants/styles';
 
 export default function ForgotPasswordPage() {
   const { t } = useTranslation();
@@ -77,7 +77,7 @@ export default function ForgotPasswordPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  className={inputClass}
                   placeholder={t('auth.emailPlaceholder')}
                   required
                 />

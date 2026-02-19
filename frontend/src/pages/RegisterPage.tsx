@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
 import toast from 'react-hot-toast';
-import { labelClass } from '../constants/styles';
+import { inputClass, labelClass } from '../constants/styles';
 
 export default function RegisterPage() {
   const { t } = useTranslation();
@@ -91,7 +91,7 @@ export default function RegisterPage() {
                 value={name}
                 onChange={handleNameChange}
                 required
-                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                className={inputClass}
               />
             </div>
             <div>
@@ -108,7 +108,7 @@ export default function RegisterPage() {
                 maxLength={30}
                 pattern="[a-zA-Z0-9_\-]+"
                 placeholder={t('auth.usernamePlaceholder')}
-                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                className={inputClass}
               />
             </div>
             <div>
@@ -121,7 +121,7 @@ export default function RegisterPage() {
                 value={email}
                 onChange={handleEmailChange}
                 required
-                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                className={inputClass}
               />
             </div>
             <div>
@@ -136,7 +136,7 @@ export default function RegisterPage() {
                 required
                 minLength={6}
                 placeholder={t('auth.passwordPlaceholder')}
-                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                className={inputClass}
               />
             </div>
             <button
