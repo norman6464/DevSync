@@ -46,14 +46,23 @@ func (s *ProjectService) GetAll(limit, offset int) ([]model.Project, int64, erro
 	return s.repo.FindAll(limit, offset)
 }
 
-// Update は所有権を検証した後、プロジェクトを更新する。
-func (s *ProjectService) Update(id, userID uint, updates *model.Project) (*model.Project, error) {
+// findAndCheckOwnership はプロジェクトを取得し、指定ユーザーが所有者かを検証する。
+func (s *ProjectService) findAndCheckOwnership(id, userID uint) (*model.Project, error) {
 	project, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err
 	}
 	if project.UserID != userID {
 		return nil, ErrForbidden
+	}
+	return project, nil
+}
+
+// Update は所有権を検証した後、プロジェクトを更新する。
+func (s *ProjectService) Update(id, userID uint, updates *model.Project) (*model.Project, error) {
+	project, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return nil, err
 	}
 
 	v := validator.NewProjectValidator()
@@ -100,12 +109,9 @@ func (s *ProjectService) Update(id, userID uint, updates *model.Project) (*model
 
 // UpdateFeatured は所有権を検証した後、プロジェクトの注目ステータスを更新する。
 func (s *ProjectService) UpdateFeatured(id, userID uint, featured bool) (*model.Project, error) {
-	project, err := s.repo.FindByID(id)
+	project, err := s.findAndCheckOwnership(id, userID)
 	if err != nil {
 		return nil, err
-	}
-	if project.UserID != userID {
-		return nil, ErrForbidden
 	}
 
 	project.Featured = featured
@@ -118,12 +124,8 @@ func (s *ProjectService) UpdateFeatured(id, userID uint, featured bool) (*model.
 
 // Delete は所有権を検証した後、プロジェクトを削除する。
 func (s *ProjectService) Delete(id, userID uint) error {
-	project, err := s.repo.FindByID(id)
-	if err != nil {
+	if _, err := s.findAndCheckOwnership(id, userID); err != nil {
 		return err
-	}
-	if project.UserID != userID {
-		return ErrForbidden
 	}
 	return s.repo.Delete(id)
 }
