@@ -43,15 +43,24 @@ func (s *NoteService) GetByFolderID(folderID uint) ([]model.Note, error) {
 	return s.repo.FindByFolderID(folderID)
 }
 
-// Update は所有権を検証した後、ノートを更新する。
-func (s *NoteService) Update(id, userID uint, title, content, tags string, folderID *uint) (*model.Note, error) {
+// findAndCheckOwnership は指定IDのノートを取得し、所有権を検証する共通ヘルパー。
+// 取得失敗または所有権不一致の場合はエラーを返す。
+func (s *NoteService) findAndCheckOwnership(id, userID uint) (*model.Note, error) {
 	note, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err
 	}
-
 	if note.UserID != userID {
 		return nil, domain.NewError(domain.ErrCodeForbidden, "この操作を行う権限がありません", nil)
+	}
+	return note, nil
+}
+
+// Update は所有権を検証した後、ノートを更新する。
+func (s *NoteService) Update(id, userID uint, title, content, tags string, folderID *uint) (*model.Note, error) {
+	note, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return nil, err
 	}
 
 	if title != "" {
@@ -80,15 +89,9 @@ func (s *NoteService) Update(id, userID uint, title, content, tags string, folde
 
 // Delete は所有権を検証した後、ノートを削除する。
 func (s *NoteService) Delete(id, userID uint) error {
-	note, err := s.repo.FindByID(id)
-	if err != nil {
+	if _, err := s.findAndCheckOwnership(id, userID); err != nil {
 		return err
 	}
-
-	if note.UserID != userID {
-		return domain.NewError(domain.ErrCodeForbidden, "この操作を行う権限がありません", nil)
-	}
-
 	return s.repo.Delete(id)
 }
 
@@ -105,43 +108,25 @@ func (s *NoteService) CountByUserID(userID uint) (int64, error) {
 
 // ToggleFavorite は所有権を検証した後、ノートのお気に入り状態を切り替える。
 func (s *NoteService) ToggleFavorite(id, userID uint) error {
-	note, err := s.repo.FindByID(id)
-	if err != nil {
+	if _, err := s.findAndCheckOwnership(id, userID); err != nil {
 		return err
 	}
-
-	if note.UserID != userID {
-		return domain.NewError(domain.ErrCodeForbidden, "この操作を行う権限がありません", nil)
-	}
-
 	return s.repo.ToggleFavorite(id)
 }
 
 // Archive は所有権を検証した後、ノートをアーカイブする。
 func (s *NoteService) Archive(id, userID uint) error {
-	note, err := s.repo.FindByID(id)
-	if err != nil {
+	if _, err := s.findAndCheckOwnership(id, userID); err != nil {
 		return err
 	}
-
-	if note.UserID != userID {
-		return domain.NewError(domain.ErrCodeForbidden, "この操作を行う権限がありません", nil)
-	}
-
 	return s.repo.Archive(id)
 }
 
 // Unarchive は所有権を検証した後、ノートのアーカイブを解除する。
 func (s *NoteService) Unarchive(id, userID uint) error {
-	note, err := s.repo.FindByID(id)
-	if err != nil {
+	if _, err := s.findAndCheckOwnership(id, userID); err != nil {
 		return err
 	}
-
-	if note.UserID != userID {
-		return domain.NewError(domain.ErrCodeForbidden, "この操作を行う権限がありません", nil)
-	}
-
 	return s.repo.Unarchive(id)
 }
 
@@ -158,15 +143,9 @@ func (s *NoteService) CountArchivedByUserID(userID uint) (int64, error) {
 // Duplicate は既存のノートを複製する。
 // タイトルに「(コピー)」を付与し、アーカイブ・お気に入り状態はリセットされる。
 func (s *NoteService) Duplicate(id uint, userID uint) (*model.Note, error) {
-	// 元ノートを取得
-	original, err := s.repo.FindByID(id)
+	original, err := s.findAndCheckOwnership(id, userID)
 	if err != nil {
 		return nil, err
-	}
-
-	// 所有者チェック
-	if original.UserID != userID {
-		return nil, domain.NewError(domain.ErrCodeForbidden, "この操作を行う権限がありません", nil)
 	}
 
 	// 複製ノートを作成
