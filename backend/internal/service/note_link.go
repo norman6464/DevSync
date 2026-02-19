@@ -29,6 +29,18 @@ func NewNoteLinkService(repo NoteLinkRepositoryInterface, noteRepo repository.No
 	}
 }
 
+// findAndCheckSourceNoteOwnership はソースノートの所有権を検証する。
+func (s *NoteLinkService) findAndCheckSourceNoteOwnership(sourceNoteID, userID uint) error {
+	sourceNote, err := s.noteRepo.FindByID(sourceNoteID)
+	if err != nil {
+		return domain.NewError(domain.ErrCodeNotFound, "ソースノートが見つかりません", err)
+	}
+	if sourceNote.UserID != userID {
+		return domain.NewError(domain.ErrCodeForbidden, "この操作を行う権限がありません", nil)
+	}
+	return nil
+}
+
 // CreateLink は新しいリンクを作成する。
 // ソースノートの所有権を検証した後、リンクを作成する。
 func (s *NoteLinkService) CreateLink(sourceNoteID, targetNoteID, userID uint) error {
@@ -38,17 +50,12 @@ func (s *NoteLinkService) CreateLink(sourceNoteID, targetNoteID, userID uint) er
 	}
 
 	// ソースノートの所有権を確認
-	sourceNote, err := s.noteRepo.FindByID(sourceNoteID)
-	if err != nil {
-		return domain.NewError(domain.ErrCodeNotFound, "ソースノートが見つかりません", err)
-	}
-	if sourceNote.UserID != userID {
-		return domain.NewError(domain.ErrCodeForbidden, "この操作を行う権限がありません", nil)
+	if err := s.findAndCheckSourceNoteOwnership(sourceNoteID, userID); err != nil {
+		return err
 	}
 
 	// ターゲットノートが存在するかチェック
-	_, err = s.noteRepo.FindByID(targetNoteID)
-	if err != nil {
+	if _, err := s.noteRepo.FindByID(targetNoteID); err != nil {
 		return domain.NewError(domain.ErrCodeNotFound, "リンク先のノートが見つかりません", err)
 	}
 
@@ -81,12 +88,8 @@ func (s *NoteLinkService) GetBacklinks(targetNoteID uint) ([]model.NoteLink, err
 
 // DeleteLink はソースノートの所有権を検証した後、リンクを削除する。
 func (s *NoteLinkService) DeleteLink(sourceNoteID, targetNoteID, userID uint) error {
-	sourceNote, err := s.noteRepo.FindByID(sourceNoteID)
-	if err != nil {
-		return domain.NewError(domain.ErrCodeNotFound, "ソースノートが見つかりません", err)
-	}
-	if sourceNote.UserID != userID {
-		return domain.NewError(domain.ErrCodeForbidden, "この操作を行う権限がありません", nil)
+	if err := s.findAndCheckSourceNoteOwnership(sourceNoteID, userID); err != nil {
+		return err
 	}
 	return s.repo.Delete(sourceNoteID, targetNoteID)
 }
