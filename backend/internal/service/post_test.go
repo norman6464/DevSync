@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/domain"
@@ -834,6 +835,34 @@ func TestPostUpdate_NotFound(t *testing.T) {
 	postRepo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
 
 	_, err := svc.Update(99, 1, "Title", "Content", "")
+	assert.Error(t, err)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostCreate_CreateRepoError(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	post := &model.Post{Title: "Test Post", Content: "Content", UserID: 1}
+
+	postRepo.On("Create", post).Return(errors.New("db error"))
+
+	result, err := svc.Create(post)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostUpdate_ValidationError(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	existing := &model.Post{Title: "Old Title", Content: "Old Content", UserID: 1}
+	existing.ID = 1
+
+	postRepo.On("FindByID", uint(1)).Return(existing, nil)
+
+	// タイトルが長すぎる場合 → バリデーションエラー
+	longTitle := strings.Repeat("a", 300)
+	_, err := svc.Update(1, 1, longTitle, "", "")
 	assert.Error(t, err)
 	postRepo.AssertExpectations(t)
 }
