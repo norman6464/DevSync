@@ -205,3 +205,96 @@ func TestYouTubeIsAvailable_WithoutClient(t *testing.T) {
 	svc, _, _ := newTestYouTubeService(nil)
 	assert.False(t, svc.IsAvailable())
 }
+
+// ============================================================
+// Search 追加テスト（カバレッジ向上）
+// ============================================================
+
+// TestYouTubeSearch_CacheHitButVideosFetchFailed はキャッシュエントリが存在するが
+// 動画フェッチが失敗した場合にAPIフォールバックが実行されることを確認する。
+func TestYouTubeSearch_CacheHitButVideosFetchFailed(t *testing.T) {
+	mockClient := new(MockYouTubeClient)
+	svc, repo, _ := newTestYouTubeService(mockClient)
+
+	cache := &model.YouTubeSearchCache{
+		Query:    "vue js",
+		Language: "ja",
+		VideoIDs: "vid1,vid2",
+	}
+	repo.On("FindCachedSearch", "vue js", "ja").Return(cache, nil)
+	// キャッシュに対応する動画取得が失敗 → APIフォールバックへ
+	repo.On("FindByVideoIDs", []string{"vid1", "vid2"}).Return([]model.YouTubeVideo{}, errors.New("db error"))
+
+	apiVideos := []model.YouTubeVideo{
+		{VideoID: "vid1", Title: "Vue.js Tutorial"},
+	}
+	mockClient.On("SearchVideos", "vue js", youtubeMaxResults, "ja").Return(apiVideos, nil)
+	repo.On("UpsertVideos", apiVideos).Return(nil)
+	repo.On("SaveSearchCache", mock.AnythingOfType("*model.YouTubeSearchCache")).Return(nil)
+
+	result, cached, err := svc.Search("vue js", "ja")
+	assert.NoError(t, err)
+	assert.False(t, cached)
+	assert.Len(t, result, 1)
+	mockClient.AssertCalled(t, "SearchVideos", "vue js", youtubeMaxResults, "ja")
+}
+
+// TestYouTubeSearch_EmptyAPIResult はAPIが0件を返した場合、
+// キャッシュ保存をスキップして空のスライスを返すことを確認する。
+func TestYouTubeSearch_EmptyAPIResult(t *testing.T) {
+	mockClient := new(MockYouTubeClient)
+	svc, repo, _ := newTestYouTubeService(mockClient)
+
+	repo.On("FindCachedSearch", "unknown query xyz", "ja").Return(nil, errors.New("not found"))
+	mockClient.On("SearchVideos", "unknown query xyz", youtubeMaxResults, "ja").Return([]model.YouTubeVideo{}, nil)
+
+	result, cached, err := svc.Search("unknown query xyz", "ja")
+	assert.NoError(t, err)
+	assert.False(t, cached)
+	assert.Empty(t, result)
+	// 0件の場合はUpsertVideos/SaveSearchCacheを呼ばない
+	repo.AssertNotCalled(t, "UpsertVideos")
+	repo.AssertNotCalled(t, "SaveSearchCache")
+}
+
+// TestYouTubeSearch_UpsertVideosFails はキャッシュ保存が失敗しても動画を正常に返すことを確認する。
+// UpsertVideosのエラーはログ出力のみで処理が続行される。
+func TestYouTubeSearch_UpsertVideosFails(t *testing.T) {
+	mockClient := new(MockYouTubeClient)
+	svc, repo, _ := newTestYouTubeService(mockClient)
+
+	repo.On("FindCachedSearch", "typescript", "ja").Return(nil, errors.New("not found"))
+	apiVideos := []model.YouTubeVideo{
+		{VideoID: "ts1", Title: "TypeScript Tutorial"},
+	}
+	mockClient.On("SearchVideos", "typescript", youtubeMaxResults, "ja").Return(apiVideos, nil)
+	// UpsertVideosがエラーを返しても処理継続（ログのみ）
+	repo.On("UpsertVideos", apiVideos).Return(errors.New("db error"))
+	repo.On("SaveSearchCache", mock.AnythingOfType("*model.YouTubeSearchCache")).Return(nil)
+
+	result, cached, err := svc.Search("typescript", "ja")
+	assert.NoError(t, err)
+	assert.False(t, cached)
+	assert.Len(t, result, 1)
+}
+
+// TestYouTubeSearch_SaveCacheFails はキャッシュ保存失敗時も動画を正常に返すことを確認する。
+// SaveSearchCacheのエラーはログ出力のみで処理が続行される。
+func TestYouTubeSearch_SaveCacheFails(t *testing.T) {
+	mockClient := new(MockYouTubeClient)
+	svc, repo, _ := newTestYouTubeService(mockClient)
+
+	repo.On("FindCachedSearch", "rust lang", "ja").Return(nil, errors.New("not found"))
+	apiVideos := []model.YouTubeVideo{
+		{VideoID: "rust1", Title: "Rust Programming"},
+	}
+	mockClient.On("SearchVideos", "rust lang", youtubeMaxResults, "ja").Return(apiVideos, nil)
+	repo.On("UpsertVideos", apiVideos).Return(nil)
+	// SaveSearchCacheがエラーを返しても処理継続（ログのみ）
+	repo.On("SaveSearchCache", mock.AnythingOfType("*model.YouTubeSearchCache")).Return(errors.New("cache error"))
+
+	result, cached, err := svc.Search("rust lang", "ja")
+	assert.NoError(t, err)
+	assert.False(t, cached)
+	assert.Len(t, result, 1)
+}
