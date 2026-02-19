@@ -667,6 +667,7 @@ func TestPostGetBookmarks_Empty(t *testing.T) {
 func TestPostAddReaction_Success(t *testing.T) {
 	svc, postRepo, _ := newTestPostService()
 
+	postRepo.On("FindByID", uint(10)).Return(&model.Post{UserID: 2}, nil)
 	postRepo.On("AddReaction", uint(1), uint(10), "👍").Return(nil)
 
 	err := svc.AddReaction(1, 10, "👍")
@@ -684,11 +685,32 @@ func TestPostAddReaction_InvalidEmoji(t *testing.T) {
 func TestPostAddReaction_Error(t *testing.T) {
 	svc, postRepo, _ := newTestPostService()
 
+	postRepo.On("FindByID", uint(10)).Return(&model.Post{UserID: 2}, nil)
 	postRepo.On("AddReaction", uint(1), uint(10), "🎉").Return(errors.New("duplicate"))
 
 	err := svc.AddReaction(1, 10, "🎉")
 	assert.Error(t, err)
 	postRepo.AssertExpectations(t)
+}
+
+func TestPostAddReaction_SelfReaction_Forbidden(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindByID", uint(10)).Return(&model.Post{UserID: 1}, nil)
+
+	err := svc.AddReaction(1, 10, "👍")
+	assert.ErrorIs(t, err, ErrForbidden)
+	postRepo.AssertNotCalled(t, "AddReaction")
+}
+
+func TestPostAddReaction_PostNotFound(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	err := svc.AddReaction(1, 99, "👍")
+	assert.ErrorIs(t, err, ErrNotFound)
+	postRepo.AssertNotCalled(t, "AddReaction")
 }
 
 func TestPostRemoveReaction_Success(t *testing.T) {
