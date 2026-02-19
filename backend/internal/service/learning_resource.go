@@ -143,12 +143,28 @@ func (s *LearningResourceService) Delete(id, userID uint) error {
 }
 
 // Like は学習リソースにいいねを追加する。
+// 自分のリソースにはいいねできない。
 func (s *LearningResourceService) Like(userID, resourceID uint) error {
+	resource, err := s.repo.FindByID(resourceID)
+	if err != nil {
+		return ErrNotFound
+	}
+	if resource.UserID == userID {
+		return ErrForbidden
+	}
 	return s.repo.Like(userID, resourceID)
 }
 
 // Unlike は学習リソースのいいねを取り消す。
+// 自分のリソースのいいねは取り消せない（そもそもいいねできないため）。
 func (s *LearningResourceService) Unlike(userID, resourceID uint) error {
+	resource, err := s.repo.FindByID(resourceID)
+	if err != nil {
+		return ErrNotFound
+	}
+	if resource.UserID == userID {
+		return ErrForbidden
+	}
 	return s.repo.Unlike(userID, resourceID)
 }
 

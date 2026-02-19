@@ -477,6 +477,9 @@ func TestLearningResourceSearch_Empty(t *testing.T) {
 
 func TestLearningResourceLike_Success(t *testing.T) {
 	svc, repo := newTestLearningResourceService()
+	resource := &model.LearningResource{UserID: 2, Title: "Other's resource"}
+	resource.ID = 10
+	repo.On("FindByID", uint(10)).Return(resource, nil)
 	repo.On("Like", uint(1), uint(10)).Return(nil)
 
 	err := svc.Like(1, 10)
@@ -484,8 +487,30 @@ func TestLearningResourceLike_Success(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestLearningResourceLike_SelfLike_Forbidden(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+	resource := &model.LearningResource{UserID: 1, Title: "My resource"}
+	resource.ID = 10
+	repo.On("FindByID", uint(10)).Return(resource, nil)
+
+	err := svc.Like(1, 10)
+	assert.ErrorIs(t, err, ErrForbidden)
+	repo.AssertNotCalled(t, "Like")
+}
+
+func TestLearningResourceLike_NotFound(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+	repo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	err := svc.Like(1, 999)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
 func TestLearningResourceLike_Error(t *testing.T) {
 	svc, repo := newTestLearningResourceService()
+	resource := &model.LearningResource{UserID: 2, Title: "Other's resource"}
+	resource.ID = 10
+	repo.On("FindByID", uint(10)).Return(resource, nil)
 	repo.On("Like", uint(1), uint(10)).Return(errors.New("already liked"))
 
 	err := svc.Like(1, 10)
@@ -495,6 +520,9 @@ func TestLearningResourceLike_Error(t *testing.T) {
 
 func TestLearningResourceUnlike_Success(t *testing.T) {
 	svc, repo := newTestLearningResourceService()
+	resource := &model.LearningResource{UserID: 2, Title: "Other's resource"}
+	resource.ID = 10
+	repo.On("FindByID", uint(10)).Return(resource, nil)
 	repo.On("Unlike", uint(1), uint(10)).Return(nil)
 
 	err := svc.Unlike(1, 10)
@@ -502,8 +530,22 @@ func TestLearningResourceUnlike_Success(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestLearningResourceUnlike_SelfUnlike_Forbidden(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+	resource := &model.LearningResource{UserID: 1, Title: "My resource"}
+	resource.ID = 10
+	repo.On("FindByID", uint(10)).Return(resource, nil)
+
+	err := svc.Unlike(1, 10)
+	assert.ErrorIs(t, err, ErrForbidden)
+	repo.AssertNotCalled(t, "Unlike")
+}
+
 func TestLearningResourceUnlike_Error(t *testing.T) {
 	svc, repo := newTestLearningResourceService()
+	resource := &model.LearningResource{UserID: 2, Title: "Other's resource"}
+	resource.ID = 10
+	repo.On("FindByID", uint(10)).Return(resource, nil)
 	repo.On("Unlike", uint(1), uint(10)).Return(errors.New("not liked"))
 
 	err := svc.Unlike(1, 10)
