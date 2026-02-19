@@ -640,7 +640,10 @@
     "deleted": "日誌已刪除",
     "confirmDelete": "確定要刪除這條日誌嗎？",
     "totalLogs": "過去一年{{count}}條日誌",
-    "logsOnDate": "{{date}}的日誌"
+    "logsOnDate": "{{date}}的日誌",
+    "exportCSV": "匯出CSV",
+    "exportDays": "最近{{days}}天",
+    "exportAll": "全部"
   },
   "reports": {
     "title": "活動報告",

@@ -1247,6 +1247,14 @@ func (m *MockLearningLogService) GetCalendarData(userID uint) ([]model.CalendarE
 	return args.Get(0).([]model.CalendarEntry), args.Error(1)
 }
 
+func (m *MockLearningLogService) ExportCSV(userID uint, days int) ([]byte, error) {
+	args := m.Called(userID, days)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]byte), args.Error(1)
+}
+
 // setupLearningLogHandler はLearningLogHandlerテスト用のセットアップを行う。
 func setupLearningLogHandler() (*LearningLogHandler, *MockLearningLogService) {
 	svc := new(MockLearningLogService)

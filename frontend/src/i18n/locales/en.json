@@ -640,7 +640,10 @@
     "deleted": "Log deleted",
     "confirmDelete": "Are you sure you want to delete this log?",
     "totalLogs": "{{count}} logs in the past year",
-    "logsOnDate": "Logs on {{date}}"
+    "logsOnDate": "Logs on {{date}}",
+    "exportCSV": "Export CSV",
+    "exportDays": "Last {{days}} days",
+    "exportAll": "All time"
   },
   "reports": {
     "title": "Activity Reports",

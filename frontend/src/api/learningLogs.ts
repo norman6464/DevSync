@@ -24,3 +24,8 @@ export const getCalendarData = (userId: number) =>
 
 export const getStreakInfo = (userId: number) =>
   client.get<StreakInfo>(`/learning-logs/streak/${userId}`);
+
+export type ExportPeriod = '7' | '30' | '90' | 'all';
+
+export const exportLogsCSV = (period: ExportPeriod = '30') =>
+  client.get<Blob>(`/learning-logs/export?period=${period}`, { responseType: 'blob' });

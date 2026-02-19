@@ -624,7 +624,10 @@
     "deleted": "ログを削除しました",
     "confirmDelete": "このログを削除してもよろしいですか？",
     "totalLogs": "過去1年で{{count}}件のログ",
-    "logsOnDate": "{{date}}のログ"
+    "logsOnDate": "{{date}}のログ",
+    "exportCSV": "CSVエクスポート",
+    "exportDays": "過去{{days}}日",
+    "exportAll": "全期間"
   },
   "reports": {
     "title": "アクティビティレポート",
