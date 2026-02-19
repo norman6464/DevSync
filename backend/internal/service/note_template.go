@@ -74,14 +74,23 @@ func (s *NoteTemplateService) GetDefaultByUserID(userID uint) (*model.NoteTempla
 	return s.repo.FindDefaultByUserID(userID)
 }
 
-// Update は所有権を検証した後、テンプレートを更新する。
-func (s *NoteTemplateService) Update(id, userID uint, name, description, defaultTitle, contentTemplate, defaultTags string, isDefault *bool) (*model.NoteTemplate, error) {
+// findAndCheckOwnership はテンプレートを取得し、指定ユーザーが所有者かを検証する。
+func (s *NoteTemplateService) findAndCheckOwnership(id, userID uint) (*model.NoteTemplate, error) {
 	template, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err
 	}
 	if template.UserID != userID {
 		return nil, ErrForbidden
+	}
+	return template, nil
+}
+
+// Update は所有権を検証した後、テンプレートを更新する。
+func (s *NoteTemplateService) Update(id, userID uint, name, description, defaultTitle, contentTemplate, defaultTags string, isDefault *bool) (*model.NoteTemplate, error) {
+	template, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return nil, err
 	}
 
 	if name != "" {
@@ -139,24 +148,17 @@ func (s *NoteTemplateService) Update(id, userID uint, name, description, default
 
 // Delete は所有権を検証した後、テンプレートを削除する。
 func (s *NoteTemplateService) Delete(id, userID uint) error {
-	template, err := s.repo.FindByID(id)
-	if err != nil {
+	if _, err := s.findAndCheckOwnership(id, userID); err != nil {
 		return err
-	}
-	if template.UserID != userID {
-		return ErrForbidden
 	}
 	return s.repo.Delete(id)
 }
 
 // UseTemplate は所有権を検証した後、テンプレートからノートを作成する。
 func (s *NoteTemplateService) UseTemplate(id, userID uint) (*model.Note, error) {
-	template, err := s.repo.FindByID(id)
+	template, err := s.findAndCheckOwnership(id, userID)
 	if err != nil {
 		return nil, err
-	}
-	if template.UserID != userID {
-		return nil, ErrForbidden
 	}
 
 	note := &model.Note{
