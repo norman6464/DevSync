@@ -111,6 +111,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerCommentStatsRoutes(protected, c)
 		registerNotificationStatsRoutes(protected, c)
 		registerMessageStatsRoutes(protected, c)
+		registerMentionStatsRoutes(protected, c)
 	}
 
 	return r
@@ -710,5 +711,12 @@ func registerMessageStatsRoutes(g *gin.RouterGroup, c *di.Container) {
 	users := g.Group("/users")
 	{
 		users.GET("/:id/message-stats", c.MessageStatsHandler.GetStats)
+	}
+}
+
+func registerMentionStatsRoutes(g *gin.RouterGroup, c *di.Container) {
+	users := g.Group("/users")
+	{
+		users.GET("/:id/mention-stats", c.MentionStatsHandler.GetStats)
 	}
 }
