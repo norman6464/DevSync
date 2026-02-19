@@ -2055,3 +2055,18 @@ func (m *MockNotificationStatsRepository) GetNotificationStats(userID uint) (*mo
 	}
 	return args.Get(0).(*model.NotificationStats), args.Error(1)
 }
+
+// MockMessageStatsRepository は repository.MessageStatsRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockMessageStatsRepository struct {
+	mock.Mock
+}
+
+func (m *MockMessageStatsRepository) GetMessageStats(userID uint) (*model.MessageStats, error) {
+	args := m.Called(userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.MessageStats), args.Error(1)
+}
