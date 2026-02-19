@@ -16,7 +16,7 @@ const (
 
 // Password validation constants
 const (
-	MinPasswordLength = 6
+	MinPasswordLength = 8
 	MaxPasswordLength = 128
 )
 

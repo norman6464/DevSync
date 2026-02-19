@@ -44,8 +44,8 @@ func TestValidatePassword(t *testing.T) {
 	}{
 		{"有効なパスワード", "password123", false},
 		{"有効なパスワード（記号付き）", "pass@word!", false},
-		{"有効なパスワード（最小長）", "pass1!", false},
-		{"無効なパスワード（短すぎる）", "pass", true},
+		{"有効なパスワード（最小長）", "passw0rd!", false},
+		{"無効なパスワード（短すぎる）", "pass1!", true},
 		{"無効なパスワード（数字記号なし）", "password", true},
 		{"無効なパスワード（空）", "", true},
 		{"無効なパスワード（長すぎる）", strings.Repeat("a", 130), true},
