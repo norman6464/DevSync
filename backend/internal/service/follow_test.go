@@ -93,11 +93,9 @@ func TestFollowService_Unfollow_SelfUnfollow(t *testing.T) {
 	repo := new(MockFollowRepository)
 	svc := NewFollowService(repo)
 
-	repo.On("Unfollow", uint(1), uint(1)).Return(nil)
-
 	err := svc.Unfollow(1, 1)
-	assert.NoError(t, err)
-	repo.AssertExpectations(t)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	repo.AssertNotCalled(t, "Unfollow")
 }
 
 func TestFollowService_GetFollowers_EmptyList(t *testing.T) {

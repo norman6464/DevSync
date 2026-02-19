@@ -23,8 +23,11 @@ func (s *FollowService) Follow(followerID, followeeID uint) error {
 	return s.repo.Follow(followerID, followeeID)
 }
 
-// Unfollow は指定ユーザーのフォローを解除する。
+// Unfollow は指定ユーザーのフォローを解除する。自分自身のアンフォローは許可しない。
 func (s *FollowService) Unfollow(followerID, followeeID uint) error {
+	if followerID == followeeID {
+		return ErrBadRequest
+	}
 	return s.repo.Unfollow(followerID, followeeID)
 }
 
