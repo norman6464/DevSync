@@ -20,10 +20,14 @@ func NewCommentLikeService(
 }
 
 // Like はコメントにいいねする。
-// コメントが存在しない場合やすでにいいね済みの場合はエラーを返す。
+// コメントが存在しない場合、自分のコメントの場合、すでにいいね済みの場合はエラーを返す。
 func (s *CommentLikeService) Like(userID, commentID uint) error {
-	if _, err := s.postRepo.FindCommentByID(commentID); err != nil {
+	comment, err := s.postRepo.FindCommentByID(commentID)
+	if err != nil {
 		return ErrNotFound
+	}
+	if comment.UserID == userID {
+		return ErrForbidden
 	}
 
 	liked, err := s.likeRepo.HasLiked(userID, commentID)
@@ -38,10 +42,14 @@ func (s *CommentLikeService) Like(userID, commentID uint) error {
 }
 
 // Unlike はコメントのいいねを取り消す。
-// コメントが存在しない場合やいいねしていない場合はエラーを返す。
+// コメントが存在しない場合、自分のコメントの場合、いいねしていない場合はエラーを返す。
 func (s *CommentLikeService) Unlike(userID, commentID uint) error {
-	if _, err := s.postRepo.FindCommentByID(commentID); err != nil {
+	comment, err := s.postRepo.FindCommentByID(commentID)
+	if err != nil {
 		return ErrNotFound
+	}
+	if comment.UserID == userID {
+		return ErrForbidden
 	}
 
 	liked, err := s.likeRepo.HasLiked(userID, commentID)

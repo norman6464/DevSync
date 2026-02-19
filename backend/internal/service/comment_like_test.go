@@ -56,6 +56,15 @@ func TestCommentLikeService_Like_AlreadyLiked(t *testing.T) {
 	likeRepo.AssertExpectations(t)
 }
 
+func TestCommentLikeService_Like_SelfLike_Forbidden(t *testing.T) {
+	svc, _, postRepo := newTestCommentLikeService()
+	postRepo.On("FindCommentByID", uint(1)).Return(makeComment(1, 10), nil)
+
+	err := svc.Like(10, 1)
+	assert.ErrorIs(t, err, ErrForbidden)
+	postRepo.AssertExpectations(t)
+}
+
 func TestCommentLikeService_Like_HasLikedError(t *testing.T) {
 	svc, likeRepo, postRepo := newTestCommentLikeService()
 	postRepo.On("FindCommentByID", uint(1)).Return(makeComment(1, 2), nil)
@@ -68,6 +77,15 @@ func TestCommentLikeService_Like_HasLikedError(t *testing.T) {
 }
 
 // --- Unlike ---
+
+func TestCommentLikeService_Unlike_SelfUnlike_Forbidden(t *testing.T) {
+	svc, _, postRepo := newTestCommentLikeService()
+	postRepo.On("FindCommentByID", uint(1)).Return(makeComment(1, 10), nil)
+
+	err := svc.Unlike(10, 1)
+	assert.ErrorIs(t, err, ErrForbidden)
+	postRepo.AssertExpectations(t)
+}
 
 func TestCommentLikeService_Unlike_Success(t *testing.T) {
 	svc, likeRepo, postRepo := newTestCommentLikeService()
