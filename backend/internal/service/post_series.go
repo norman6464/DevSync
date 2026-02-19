@@ -35,14 +35,23 @@ func (s *PostSeriesService) GetByUserID(userID uint) ([]model.PostSeries, error)
 	return s.repo.FindByUserID(userID)
 }
 
-// Update は所有権を検証した後、シリーズを更新する。
-func (s *PostSeriesService) Update(id, userID uint, updates *model.PostSeries) (*model.PostSeries, error) {
+// findAndCheckOwnership はシリーズを取得し、指定ユーザーが所有者かを検証する。
+func (s *PostSeriesService) findAndCheckOwnership(id, userID uint) (*model.PostSeries, error) {
 	series, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err
 	}
 	if series.UserID != userID {
 		return nil, ErrForbidden
+	}
+	return series, nil
+}
+
+// Update は所有権を検証した後、シリーズを更新する。
+func (s *PostSeriesService) Update(id, userID uint, updates *model.PostSeries) (*model.PostSeries, error) {
+	series, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return nil, err
 	}
 
 	if updates.Title != "" {
@@ -60,24 +69,16 @@ func (s *PostSeriesService) Update(id, userID uint, updates *model.PostSeries) (
 
 // Delete は所有権を検証した後、シリーズを削除する。
 func (s *PostSeriesService) Delete(id, userID uint) error {
-	series, err := s.repo.FindByID(id)
-	if err != nil {
+	if _, err := s.findAndCheckOwnership(id, userID); err != nil {
 		return err
-	}
-	if series.UserID != userID {
-		return ErrForbidden
 	}
 	return s.repo.Delete(id)
 }
 
 // AddPost は所有権を検証した後、シリーズに投稿を追加する。
 func (s *PostSeriesService) AddPost(seriesID, postID uint, orderIndex int, userID uint) error {
-	series, err := s.repo.FindByID(seriesID)
-	if err != nil {
+	if _, err := s.findAndCheckOwnership(seriesID, userID); err != nil {
 		return err
-	}
-	if series.UserID != userID {
-		return ErrForbidden
 	}
 
 	item := &model.PostSeriesItem{
@@ -90,12 +91,8 @@ func (s *PostSeriesService) AddPost(seriesID, postID uint, orderIndex int, userI
 
 // RemovePost は所有権を検証した後、シリーズから投稿を削除する。
 func (s *PostSeriesService) RemovePost(seriesID, postID, userID uint) error {
-	series, err := s.repo.FindByID(seriesID)
-	if err != nil {
+	if _, err := s.findAndCheckOwnership(seriesID, userID); err != nil {
 		return err
-	}
-	if series.UserID != userID {
-		return ErrForbidden
 	}
 	return s.repo.RemovePost(seriesID, postID)
 }
