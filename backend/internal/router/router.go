@@ -103,6 +103,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerBookReviewStatsRoutes(protected, c)
 		registerQAStatsRoutes(protected, c)
 		registerCodeSnippetStatsRoutes(protected, c)
+		registerLearningResourceStatsRoutes(protected, c)
 	}
 
 	return r
@@ -646,5 +647,12 @@ func registerCodeSnippetStatsRoutes(g *gin.RouterGroup, c *di.Container) {
 	users := g.Group("/users")
 	{
 		users.GET("/:id/code-snippet-stats", c.CodeSnippetStatsHandler.GetStats)
+	}
+}
+
+func registerLearningResourceStatsRoutes(g *gin.RouterGroup, c *di.Container) {
+	users := g.Group("/users")
+	{
+		users.GET("/:id/learning-resource-stats", c.LearningResourceStatsHandler.GetStats)
 	}
 }
