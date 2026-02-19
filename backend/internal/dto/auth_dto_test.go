@@ -24,6 +24,7 @@ func TestRegisterRequest_Validation(t *testing.T) {
 			name: "有効なリクエスト",
 			request: dto.RegisterRequest{
 				Name:            "Test User",
+				Username:        "testuser",
 				Email:           "test@example.com",
 				Password:        "password123",
 				ConfirmPassword: "password123",
@@ -34,6 +35,18 @@ func TestRegisterRequest_Validation(t *testing.T) {
 			name: "名前が空",
 			request: dto.RegisterRequest{
 				Name:            "",
+				Username:        "testuser",
+				Email:           "test@example.com",
+				Password:        "password123",
+				ConfirmPassword: "password123",
+			},
+			wantErr: true,
+		},
+		{
+			name: "ユーザー名が空",
+			request: dto.RegisterRequest{
+				Name:            "Test User",
+				Username:        "",
 				Email:           "test@example.com",
 				Password:        "password123",
 				ConfirmPassword: "password123",
@@ -44,6 +57,7 @@ func TestRegisterRequest_Validation(t *testing.T) {
 			name: "無効なメールアドレス",
 			request: dto.RegisterRequest{
 				Name:            "Test User",
+				Username:        "testuser",
 				Email:           "invalid-email",
 				Password:        "password123",
 				ConfirmPassword: "password123",
@@ -54,6 +68,7 @@ func TestRegisterRequest_Validation(t *testing.T) {
 			name: "パスワードが短すぎる",
 			request: dto.RegisterRequest{
 				Name:            "Test User",
+				Username:        "testuser",
 				Email:           "test@example.com",
 				Password:        "short",
 				ConfirmPassword: "short",
@@ -64,6 +79,7 @@ func TestRegisterRequest_Validation(t *testing.T) {
 			name: "確認パスワードが空",
 			request: dto.RegisterRequest{
 				Name:            "Test User",
+				Username:        "testuser",
 				Email:           "test@example.com",
 				Password:        "password123",
 				ConfirmPassword: "",

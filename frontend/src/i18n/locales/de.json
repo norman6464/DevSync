@@ -78,6 +78,8 @@
     "email": "E-Mail",
     "password": "Passwort",
     "name": "Name",
+    "username": "Benutzername",
+    "usernamePlaceholder": "Buchstaben, Zahlen, Unterstriche, Bindestriche",
     "confirmPassword": "Passwort bestätigen",
     "emailPlaceholder": "you@example.com",
     "passwordPlaceholder": "Mindestens 6 Zeichen",

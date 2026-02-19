@@ -78,6 +78,8 @@
     "email": "Email",
     "password": "Пароль",
     "name": "Имя",
+    "username": "Имя пользователя",
+    "usernamePlaceholder": "Буквы, цифры, подчёркивания, дефисы",
     "confirmPassword": "Подтвердите пароль",
     "emailPlaceholder": "you@example.com",
     "passwordPlaceholder": "Минимум 6 символов",

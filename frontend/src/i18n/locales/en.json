@@ -78,6 +78,8 @@
     "email": "Email",
     "password": "Password",
     "name": "Name",
+    "username": "Username",
+    "usernamePlaceholder": "Letters, numbers, underscores, hyphens",
     "confirmPassword": "Confirm Password",
     "emailPlaceholder": "you@example.com",
     "passwordPlaceholder": "6+ characters",

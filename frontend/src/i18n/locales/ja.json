@@ -79,6 +79,8 @@
     "email": "メールアドレス",
     "password": "パスワード",
     "name": "名前",
+    "username": "ユーザー名",
+    "usernamePlaceholder": "英数字・アンダースコア・ハイフン",
     "confirmPassword": "パスワード確認",
     "emailPlaceholder": "you@example.com",
     "passwordPlaceholder": "6文字以上",

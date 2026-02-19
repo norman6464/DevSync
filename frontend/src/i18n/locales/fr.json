@@ -78,6 +78,8 @@
     "email": "Email",
     "password": "Mot de passe",
     "name": "Nom",
+    "username": "Nom d'utilisateur",
+    "usernamePlaceholder": "Lettres, chiffres, tirets bas, tirets",
     "confirmPassword": "Confirmer le mot de passe",
     "emailPlaceholder": "you@example.com",
     "passwordPlaceholder": "6 caractères minimum",

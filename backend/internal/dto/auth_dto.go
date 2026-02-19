@@ -11,6 +11,7 @@ type UserResponse struct {
 // RegisterRequest は新規ユーザー登録リクエスト
 type RegisterRequest struct {
 	Name            string `json:"name" binding:"required" validate:"required"`
+	Username        string `json:"username" binding:"required" validate:"required"`
 	Email           string `json:"email" binding:"required,email" validate:"required,email"`
 	Password        string `json:"password" binding:"required,min=6" validate:"required,min=6"`
 	ConfirmPassword string `json:"confirm_password" binding:"required" validate:"required"`

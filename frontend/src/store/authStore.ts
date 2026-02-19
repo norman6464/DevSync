@@ -7,7 +7,7 @@ interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (name: string, username: string, email: string, password: string) => Promise<void>;
   loginWithGitHub: () => Promise<void>;
   handleGitHubCallback: (code: string, state: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -25,8 +25,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ user: data.user, isAuthenticated: true });
   },
 
-  register: async (name, email, password) => {
-    const { data } = await authApi.register(name, email, password);
+  register: async (name, username, email, password) => {
+    const { data } = await authApi.register(name, username, email, password);
     set({ user: data.user, isAuthenticated: true });
   },
 

@@ -29,11 +29,12 @@ func TestRegister_Success(t *testing.T) {
 	svc, userRepo, _ := newTestAuthService()
 
 	userRepo.On("FindByEmail", "test@example.com").Return(nil, errors.New("not found"))
-	userRepo.On("FindByUsername", "test").Return(nil, errors.New("not found"))
+	userRepo.On("FindByUsername", "testuser").Return(nil, errors.New("not found"))
 	userRepo.On("Create", mock.AnythingOfType("*model.User")).Return(nil)
 
 	resp, err := svc.Register(RegisterInput{
-		Name:     "testuser",
+		Name:     "Test User",
+		Username: "testuser",
 		Email:    "test@example.com",
 		Password: "password123",
 	})
@@ -41,9 +42,9 @@ func TestRegister_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
 	assert.NotEmpty(t, resp.Token)
-	assert.Equal(t, "testuser", resp.User.Name)
+	assert.Equal(t, "Test User", resp.User.Name)
 	assert.Equal(t, "test@example.com", resp.User.Email)
-	assert.Equal(t, "test", resp.User.Username)
+	assert.Equal(t, "testuser", resp.User.Username)
 	userRepo.AssertExpectations(t)
 }
 
@@ -55,6 +56,7 @@ func TestRegister_DuplicateEmail(t *testing.T) {
 
 	resp, err := svc.Register(RegisterInput{
 		Name:     "testuser",
+		Username: "testuser",
 		Email:    "test@example.com",
 		Password: "password123",
 	})
@@ -70,6 +72,7 @@ func TestRegister_InvalidEmail(t *testing.T) {
 
 	resp, err := svc.Register(RegisterInput{
 		Name:     "testuser",
+		Username: "testuser",
 		Email:    "invalid-email",
 		Password: "password123",
 	})
@@ -83,6 +86,7 @@ func TestRegister_InvalidPassword(t *testing.T) {
 
 	resp, err := svc.Register(RegisterInput{
 		Name:     "testuser",
+		Username: "testuser",
 		Email:    "test@example.com",
 		Password: "short",
 	})
@@ -95,7 +99,8 @@ func TestRegister_InvalidUsername(t *testing.T) {
 	svc, _, _ := newTestAuthService()
 
 	resp, err := svc.Register(RegisterInput{
-		Name:     "",
+		Name:     "testuser",
+		Username: "",
 		Email:    "test@example.com",
 		Password: "password123",
 	})
@@ -104,15 +109,36 @@ func TestRegister_InvalidUsername(t *testing.T) {
 	assert.Nil(t, resp)
 }
 
+func TestRegister_DuplicateUsername(t *testing.T) {
+	svc, userRepo, _ := newTestAuthService()
+
+	userRepo.On("FindByEmail", "new@example.com").Return(nil, errors.New("not found"))
+	existingUser := &model.User{Name: "Existing", Username: "taken"}
+	userRepo.On("FindByUsername", "taken").Return(existingUser, nil)
+
+	resp, err := svc.Register(RegisterInput{
+		Name:     "testuser",
+		Username: "taken",
+		Email:    "new@example.com",
+		Password: "password123",
+	})
+
+	assert.Error(t, err)
+	assert.Nil(t, resp)
+	assert.Contains(t, err.Error(), "このユーザー名は既に使用されています")
+	userRepo.AssertExpectations(t)
+}
+
 func TestRegister_CreateUserError(t *testing.T) {
 	svc, userRepo, _ := newTestAuthService()
 
 	userRepo.On("FindByEmail", "new@example.com").Return(nil, errors.New("not found"))
-	userRepo.On("FindByUsername", "new").Return(nil, errors.New("not found"))
+	userRepo.On("FindByUsername", "newuser").Return(nil, errors.New("not found"))
 	userRepo.On("Create", mock.AnythingOfType("*model.User")).Return(errors.New("db error"))
 
 	resp, err := svc.Register(RegisterInput{
 		Name:     "testuser",
+		Username: "newuser",
 		Email:    "new@example.com",
 		Password: "password123",
 	})
