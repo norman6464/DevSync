@@ -60,6 +60,7 @@ type Container struct {
 	PostViewHandler          *handler.PostViewHandler
 	CommentLikeHandler       *handler.CommentLikeHandler
 	MentionHandler           *handler.MentionHandler
+	UserDashboardHandler     *handler.UserDashboardHandler
 	YouTubeHandler           *handler.YouTubeHandler
 	SpotifyHandler           *handler.SpotifyHandler
 
@@ -249,6 +250,10 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	mentionRepo := repository.NewMentionRepository(db)
 	mentionService := service.NewMentionService(mentionRepo, userRepo, notificationService)
 	c.MentionHandler = handler.NewMentionHandler(mentionService)
+
+	userDashboardRepo := repository.NewUserDashboardRepository(db)
+	userDashboardService := service.NewUserDashboardService(userDashboardRepo)
+	c.UserDashboardHandler = handler.NewUserDashboardHandler(userDashboardService)
 
 	// Spotifyサービス
 	spotifyRepo := repository.NewSpotifyRepository(db)

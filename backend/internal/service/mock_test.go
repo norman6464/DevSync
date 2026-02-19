@@ -1839,3 +1839,19 @@ func (m *MockCommentLikeRepository) CountByCommentID(commentID uint) (int64, err
 	args := m.Called(commentID)
 	return args.Get(0).(int64), args.Error(1)
 }
+
+// ============================================================
+// MockUserDashboardRepository は repository.UserDashboardRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockUserDashboardRepository struct {
+	mock.Mock
+}
+
+func (m *MockUserDashboardRepository) GetDashboardStats(userID uint) (*model.UserDashboardStats, error) {
+	args := m.Called(userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.UserDashboardStats), args.Error(1)
+}

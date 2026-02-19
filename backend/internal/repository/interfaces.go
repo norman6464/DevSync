@@ -8,6 +8,11 @@ import (
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
+// UserDashboardRepositoryInterface はユーザーダッシュボード統計情報の取得契約を定義する。
+type UserDashboardRepositoryInterface interface {
+	GetDashboardStats(userID uint) (*model.UserDashboardStats, error)
+}
+
 // PostAdvancedSearchRepositoryInterface は投稿の高度な検索フィルター機能の契約を定義する。
 // タグ・日付範囲・ソート順による絞り込みを提供する。
 type PostAdvancedSearchRepositoryInterface interface {
