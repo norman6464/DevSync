@@ -139,13 +139,13 @@ export default function PostDetailPage() {
             {comments.map((comment) => (
               <div key={comment.id} className="px-6 py-4">
                 <div className="flex gap-3">
-                  <Link to={`/profile/${comment.user_id}`} className="flex-shrink-0">
+                  <Link to={`/profile/${comment.user?.username || comment.user_id}`} className="flex-shrink-0">
                     <Avatar name={comment.user?.name || 'U'} avatarUrl={comment.user?.avatar_url} size="sm" />
                   </Link>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <Link
-                        to={`/profile/${comment.user_id}`}
+                        to={`/profile/${comment.user?.username || comment.user_id}`}
                         className="font-medium text-sm hover:text-blue-400 transition-colors"
                       >
                         {comment.user?.name}
@@ -196,13 +196,13 @@ export default function PostDetailPage() {
                   <div className="ml-11 mt-3 space-y-3 border-l-2 border-gray-800 pl-4">
                     {comment.replies.map((reply) => (
                       <div key={reply.id} className="flex gap-2.5">
-                        <Link to={`/profile/${reply.user_id}`} className="flex-shrink-0">
+                        <Link to={`/profile/${reply.user?.username || reply.user_id}`} className="flex-shrink-0">
                           <Avatar name={reply.user?.name || 'U'} avatarUrl={reply.user?.avatar_url} size="xs" />
                         </Link>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <Link
-                              to={`/profile/${reply.user_id}`}
+                              to={`/profile/${reply.user?.username || reply.user_id}`}
                               className="font-medium text-xs hover:text-blue-400 transition-colors"
                             >
                               {reply.user?.name}

@@ -168,7 +168,7 @@ export default function ResourceCard({
         <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-700">
           {showUser && resource.user && (
             <Link
-              to={`/profile/${resource.user_id}`}
+              to={`/profile/${resource.user?.username || resource.user_id}`}
               className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             >
               <Avatar avatarUrl={resource.user.avatar_url} name={resource.user.name} size="sm" />

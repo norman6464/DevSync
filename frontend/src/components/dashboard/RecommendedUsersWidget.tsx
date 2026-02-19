@@ -64,12 +64,12 @@ export default function RecommendedUsersWidget() {
 
           return (
             <div key={rec.user.id} className="flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-gray-800/50 transition-colors">
-              <Link to={`/profile/${rec.user.id}`}>
+              <Link to={`/profile/${rec.user.username}`}>
                 <Avatar name={rec.user.name} avatarUrl={rec.user.avatar_url} size="sm" />
               </Link>
               <div className="flex-1 min-w-0">
                 <Link
-                  to={`/profile/${rec.user.id}`}
+                  to={`/profile/${rec.user.username}`}
                   className="text-xs font-medium text-gray-200 hover:text-white block truncate"
                 >
                   {rec.user.name}

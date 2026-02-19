@@ -97,7 +97,7 @@ export default function QuestionCard({ question, isOwner = false, onEdit, onDele
           <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-700/50">
             {question.user && (
               <Link
-                to={`/profile/${question.user_id}`}
+                to={`/profile/${question.user?.username || question.user_id}`}
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
                 <Avatar avatarUrl={question.user.avatar_url} name={question.user.name} size="sm" />

@@ -190,7 +190,7 @@ export default function Header() {
 
           {user && (
             <Link
-              to={`/profile/${user.id}`}
+              to={`/profile/${user.username}`}
               className="flex items-center gap-2 ml-1"
               aria-label={t('nav.profile')}
             >

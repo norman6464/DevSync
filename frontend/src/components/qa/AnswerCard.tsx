@@ -90,7 +90,7 @@ export default function AnswerCard({
             <div className="flex items-center gap-3">
               {answer.user && (
                 <Link
-                  to={`/profile/${answer.user_id}`}
+                  to={`/profile/${answer.user?.username || answer.user_id}`}
                   className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                 >
                   <Avatar avatarUrl={answer.user.avatar_url} name={answer.user.name} size="sm" />

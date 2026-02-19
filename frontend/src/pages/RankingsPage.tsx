@@ -139,7 +139,7 @@ export default function RankingsPage() {
           {rankings.map((entry, index) => (
             <Link
               key={entry.user_id}
-              to={`/profile/${entry.user_id}`}
+              to={`/profile/${entry.username}`}
               className="grid grid-cols-[3rem_1fr_auto] gap-4 items-center px-6 py-3 hover:bg-gray-800/50 transition-colors border-b border-gray-800/50 last:border-b-0"
             >
               <span className={`text-center font-bold text-lg ${medalColor(index)}`}>

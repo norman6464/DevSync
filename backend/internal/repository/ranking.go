@@ -15,7 +15,8 @@ func NewRankingRepository(db *gorm.DB) *RankingRepository {
 // RankingEntry はランキング表示用の1エントリを表す。
 type RankingEntry struct {
 	UserID    uint   `json:"user_id"`    // ユーザーID
-	Name      string `json:"name"`       // ユーザー名
+	Username  string `json:"username"`   // ユーザー名（URLスラッグ用）
+	Name      string `json:"name"`       // 表示名
 	AvatarURL string `json:"avatar_url"` // アバター画像URL
 	Score     int64  `json:"score"`      // ランキングスコア
 }
@@ -30,7 +31,7 @@ func (r *RankingRepository) ContributionRanking(period string) ([]RankingEntry, 
 
 	var entries []RankingEntry
 	err := r.db.Raw(`
-		SELECT u.id as user_id, u.name, u.avatar_url, COALESCE(SUM(gc.count), 0) as score
+		SELECT u.id as user_id, u.username, u.name, u.avatar_url, COALESCE(SUM(gc.count), 0) as score
 		FROM users u
 		JOIN git_hub_contributions gc ON gc.user_id = u.id
 		WHERE gc.date >= NOW() - INTERVAL '`+interval+`'
@@ -47,7 +48,7 @@ func (r *RankingRepository) ContributionRanking(period string) ([]RankingEntry, 
 func (r *RankingRepository) LanguageRanking(language, period string) ([]RankingEntry, error) {
 	var entries []RankingEntry
 	err := r.db.Raw(`
-		SELECT u.id as user_id, u.name, u.avatar_url, gls.bytes as score
+		SELECT u.id as user_id, u.username, u.name, u.avatar_url, gls.bytes as score
 		FROM users u
 		JOIN git_hub_language_stats gls ON gls.user_id = u.id
 		WHERE gls.language = ?
@@ -62,7 +63,7 @@ func (r *RankingRepository) LanguageRanking(language, period string) ([]RankingE
 func (r *RankingRepository) LevelRanking() ([]RankingEntry, error) {
 	var entries []RankingEntry
 	err := r.db.Raw(`
-		SELECT u.id as user_id, u.name, u.avatar_url,
+		SELECT u.id as user_id, u.username, u.name, u.avatar_url,
 			COALESCE(ll.xp, 0) + COALESCE(p.xp, 0) + COALESCE(gh.xp, 0) +
 			COALESCE(g.xp, 0) + COALESCE(c.xp, 0) + COALESCE(lk.xp, 0) as score
 		FROM users u

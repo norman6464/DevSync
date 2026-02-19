@@ -109,11 +109,11 @@ export default function PostCard({ post, isOwner = false, onEdit, onDelete, onUp
   return (
     <div className={cardDarkClass}>
       <div className="flex items-center gap-3 mb-3">
-        <Link to={`/profile/${post.user_id}`}>
+        <Link to={`/profile/${post.user?.username || post.user_id}`}>
           <Avatar name={post.user?.name || 'U'} avatarUrl={post.user?.avatar_url} size="sm" />
         </Link>
         <div className="min-w-0">
-          <Link to={`/profile/${post.user_id}`} className="font-medium text-sm hover:text-blue-400 transition-colors">
+          <Link to={`/profile/${post.user?.username || post.user_id}`} className="font-medium text-sm hover:text-blue-400 transition-colors">
             {post.user?.name}
           </Link>
           <p className="text-xs text-gray-500">

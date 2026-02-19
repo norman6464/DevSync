@@ -22,7 +22,7 @@ export default function MentionText({ text, className = '' }: MentionTextProps) 
     parts.push(
       <Link
         key={`${start}-${username}`}
-        to={`/profile/by-username/${username}`}
+        to={`/profile/${username}`}
         className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
       >
         @{username}
