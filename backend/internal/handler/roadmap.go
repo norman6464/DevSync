@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"strconv"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
@@ -88,8 +86,7 @@ func (h *RoadmapHandler) GetMyRoadmaps(c *gin.Context) {
 
 // GetPublicRoadmaps は公開ロードマップの一覧をページネーション付きで取得する。
 func (h *RoadmapHandler) GetPublicRoadmaps(c *gin.Context) {
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
-	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
+	limit, offset := parseLimitOffset(c)
 
 	roadmaps, total, err := h.service.GetPublicRoadmaps(limit, offset)
 	if err != nil {

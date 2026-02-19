@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
@@ -47,6 +48,25 @@ func parseLimitOffset(c *gin.Context) (limit, offset int) {
 	offset, _ = strconv.Atoi(c.DefaultQuery("offset", "0"))
 	limit, offset, _ = domain.ValidatePagination(limit, offset)
 	return limit, offset
+}
+
+// maxSearchQueryLen は検索クエリの最大文字数（ルーン数）。
+const maxSearchQueryLen = 500
+
+// parseSearchQuery はクエリパラメータ "q" を取得・検証する共通ヘルパー。
+// 未指定・空文字列・500文字超の場合は400を返しfalseを返す。
+// 前後の空白はTrimSpaceで除去して返す。
+func parseSearchQuery(c *gin.Context) (string, bool) {
+	query := c.Query("q")
+	if query == "" {
+		respondBadRequest(c, "query parameter 'q' is required")
+		return "", false
+	}
+	if len([]rune(query)) > maxSearchQueryLen {
+		respondBadRequest(c, "検索クエリは500文字以下である必要があります")
+		return "", false
+	}
+	return strings.TrimSpace(query), true
 }
 
 // bindJSON はリクエストボディをJSON構造体にバインドする。
