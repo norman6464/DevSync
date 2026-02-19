@@ -65,6 +65,20 @@ func TestProjectUpdate_NotFound(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestProjectUpdate_ValidationError(t *testing.T) {
+	svc, repo := newTestProjectService()
+
+	existing := &model.Project{UserID: 1, Title: "Old Title"}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	updates := &model.Project{DemoURL: "not-a-valid-url"}
+	result, err := svc.Update(1, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertNotCalled(t, "Update")
+}
+
 // ============================================================
 // 注目プロジェクト設定テスト
 // ============================================================
