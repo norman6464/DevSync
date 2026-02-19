@@ -144,15 +144,23 @@ func (s *LearningResourceService) Delete(id, userID uint) error {
 	return s.repo.Delete(id)
 }
 
-// Like は学習リソースにいいねを追加する。
-// 自分のリソースにはいいねできない。
-func (s *LearningResourceService) Like(userID, resourceID uint) error {
+// findAndPreventSelfAction はリソースを取得し、自分のリソースへの操作を防止する。
+func (s *LearningResourceService) findAndPreventSelfAction(userID, resourceID uint) error {
 	resource, err := s.repo.FindByID(resourceID)
 	if err != nil {
 		return ErrNotFound
 	}
 	if resource.UserID == userID {
 		return ErrForbidden
+	}
+	return nil
+}
+
+// Like は学習リソースにいいねを追加する。
+// 自分のリソースにはいいねできない。
+func (s *LearningResourceService) Like(userID, resourceID uint) error {
+	if err := s.findAndPreventSelfAction(userID, resourceID); err != nil {
+		return err
 	}
 	return s.repo.Like(userID, resourceID)
 }
@@ -160,12 +168,8 @@ func (s *LearningResourceService) Like(userID, resourceID uint) error {
 // Unlike は学習リソースのいいねを取り消す。
 // 自分のリソースのいいねは取り消せない（そもそもいいねできないため）。
 func (s *LearningResourceService) Unlike(userID, resourceID uint) error {
-	resource, err := s.repo.FindByID(resourceID)
-	if err != nil {
-		return ErrNotFound
-	}
-	if resource.UserID == userID {
-		return ErrForbidden
+	if err := s.findAndPreventSelfAction(userID, resourceID); err != nil {
+		return err
 	}
 	return s.repo.Unlike(userID, resourceID)
 }
@@ -173,12 +177,8 @@ func (s *LearningResourceService) Unlike(userID, resourceID uint) error {
 // Save は学習リソースを保存する。
 // 自分のリソースは保存できない。
 func (s *LearningResourceService) Save(userID, resourceID uint) error {
-	resource, err := s.repo.FindByID(resourceID)
-	if err != nil {
-		return ErrNotFound
-	}
-	if resource.UserID == userID {
-		return ErrForbidden
+	if err := s.findAndPreventSelfAction(userID, resourceID); err != nil {
+		return err
 	}
 	return s.repo.Save(userID, resourceID)
 }
@@ -186,12 +186,8 @@ func (s *LearningResourceService) Save(userID, resourceID uint) error {
 // Unsave は学習リソースの保存を取り消す。
 // 自分のリソースの保存は取り消せない（そもそも保存できないため）。
 func (s *LearningResourceService) Unsave(userID, resourceID uint) error {
-	resource, err := s.repo.FindByID(resourceID)
-	if err != nil {
-		return ErrNotFound
-	}
-	if resource.UserID == userID {
-		return ErrForbidden
+	if err := s.findAndPreventSelfAction(userID, resourceID); err != nil {
+		return err
 	}
 	return s.repo.Unsave(userID, resourceID)
 }
