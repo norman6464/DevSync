@@ -264,11 +264,38 @@ func TestSetBestAnswer_RepoError(t *testing.T) {
 func TestAnswerVote_Success(t *testing.T) {
 	svc, answerRepo, _ := newTestAnswerService()
 
+	// 回答者はuserID=99（投票者のuserID=1とは異なる）
+	answer := &model.Answer{UserID: 99}
+	answer.ID = 5
+	answerRepo.On("FindByID", uint(5)).Return(answer, nil)
 	answerRepo.On("Vote", uint(1), uint(5), 1).Return(nil)
 
 	err := svc.Vote(1, 5, 1)
 	assert.NoError(t, err)
 	answerRepo.AssertExpectations(t)
+}
+
+func TestAnswerVote_SelfVote_Forbidden(t *testing.T) {
+	svc, answerRepo, _ := newTestAnswerService()
+
+	// 自分の回答に投票しようとする（userID=1の回答にuserID=1が投票）
+	answer := &model.Answer{UserID: 1}
+	answer.ID = 5
+	answerRepo.On("FindByID", uint(5)).Return(answer, nil)
+
+	err := svc.Vote(1, 5, 1)
+	assert.ErrorIs(t, err, ErrForbidden)
+	answerRepo.AssertNotCalled(t, "Vote")
+}
+
+func TestAnswerVote_AnswerNotFound(t *testing.T) {
+	svc, answerRepo, _ := newTestAnswerService()
+
+	answerRepo.On("FindByID", uint(99)).Return(nil, ErrNotFound)
+
+	err := svc.Vote(1, 99, 1)
+	assert.ErrorIs(t, err, ErrNotFound)
+	answerRepo.AssertNotCalled(t, "Vote")
 }
 
 func TestAnswerRemoveVote_Success(t *testing.T) {
@@ -365,6 +392,10 @@ func TestAnswerVote_OutOfRangeValue(t *testing.T) {
 func TestAnswerVote_ValidUpvote(t *testing.T) {
 	svc, answerRepo, _ := newTestAnswerService()
 
+	// 回答者はuserID=99（投票者のuserID=1とは異なる）
+	answer := &model.Answer{UserID: 99}
+	answer.ID = 1
+	answerRepo.On("FindByID", uint(1)).Return(answer, nil)
 	answerRepo.On("Vote", uint(1), uint(1), 1).Return(nil)
 
 	err := svc.Vote(1, 1, 1)
@@ -375,6 +406,10 @@ func TestAnswerVote_ValidUpvote(t *testing.T) {
 func TestAnswerVote_ValidDownvote(t *testing.T) {
 	svc, answerRepo, _ := newTestAnswerService()
 
+	// 回答者はuserID=99（投票者のuserID=1とは異なる）
+	answer := &model.Answer{UserID: 99}
+	answer.ID = 1
+	answerRepo.On("FindByID", uint(1)).Return(answer, nil)
 	answerRepo.On("Vote", uint(1), uint(1), -1).Return(nil)
 
 	err := svc.Vote(1, 1, -1)
