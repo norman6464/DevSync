@@ -1980,3 +1980,18 @@ func (m *MockProjectStatsRepository) GetProjectStats(userID uint) (*model.Projec
 	}
 	return args.Get(0).(*model.ProjectStats), args.Error(1)
 }
+
+// MockFollowStatsRepository は repository.FollowStatsRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockFollowStatsRepository struct {
+	mock.Mock
+}
+
+func (m *MockFollowStatsRepository) GetFollowStats(userID uint) (*model.FollowStats, error) {
+	args := m.Called(userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.FollowStats), args.Error(1)
+}
