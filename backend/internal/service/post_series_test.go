@@ -327,3 +327,30 @@ func TestPostSeriesGetPosts_Empty(t *testing.T) {
 	assert.Empty(t, result)
 	repo.AssertExpectations(t)
 }
+
+func TestPostSeriesRemovePost_NotFound(t *testing.T) {
+	svc, repo := newTestPostSeriesService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	err := svc.RemovePost(99, 5, 1)
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestPostSeriesUpdate_Description(t *testing.T) {
+	svc, repo := newTestPostSeriesService()
+
+	existing := &model.PostSeries{Title: "Title", Description: "Old Desc", UserID: 1}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	updates := &model.PostSeries{Description: "New Desc"}
+	result, err := svc.Update(1, 1, updates)
+	assert.NoError(t, err)
+	assert.Equal(t, "Title", result.Title)
+	assert.Equal(t, "New Desc", result.Description)
+	repo.AssertExpectations(t)
+}

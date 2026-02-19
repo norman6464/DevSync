@@ -424,3 +424,281 @@ func TestGetInsights_RepoError(t *testing.T) {
 	assert.Nil(t, insights)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// analyzeWeeklyGrowth テスト（GetInsights経由）
+// ============================================================
+
+func TestGetInsights_WeeklyGrowthUp(t *testing.T) {
+	svc, repo := newTestAnalyticsService()
+
+	// 直近2週間で成長あり（prev=100, current=150 → +50%成長）
+	trends := []model.WeeklyTrend{
+		{TotalMinutes: 100},
+		{TotalMinutes: 150},
+	}
+
+	repo.On("GetHeatmapData", uint(1)).Return([]model.HeatmapEntry{}, nil)
+	repo.On("GetCategoryBreakdown", uint(1)).Return([]model.CategoryBreakdown{}, nil)
+	repo.On("GetWeeklyTrends", uint(1), 12).Return(trends, nil)
+	repo.On("GetProductivityStats", uint(1)).Return(&model.ProductivityStats{}, nil)
+
+	insights, err := svc.GetInsights(1)
+	assert.NoError(t, err)
+	// weekly_growth_upのインサイトが含まれているはず
+	found := false
+	for _, ins := range insights {
+		if ins.Type == "weekly_growth_up" {
+			found = true
+			break
+		}
+	}
+	assert.True(t, found, "weekly_growth_up インサイトが含まれていること")
+	repo.AssertExpectations(t)
+}
+
+func TestGetInsights_WeeklyGrowthDown(t *testing.T) {
+	svc, repo := newTestAnalyticsService()
+
+	// 直近2週間で大きく下落（prev=200, current=100 → -50%下落）
+	trends := []model.WeeklyTrend{
+		{TotalMinutes: 200},
+		{TotalMinutes: 100},
+	}
+
+	repo.On("GetHeatmapData", uint(1)).Return([]model.HeatmapEntry{}, nil)
+	repo.On("GetCategoryBreakdown", uint(1)).Return([]model.CategoryBreakdown{}, nil)
+	repo.On("GetWeeklyTrends", uint(1), 12).Return(trends, nil)
+	repo.On("GetProductivityStats", uint(1)).Return(&model.ProductivityStats{}, nil)
+
+	insights, err := svc.GetInsights(1)
+	assert.NoError(t, err)
+	// weekly_growth_downのインサイトが含まれているはず
+	found := false
+	for _, ins := range insights {
+		if ins.Type == "weekly_growth_down" {
+			found = true
+			break
+		}
+	}
+	assert.True(t, found, "weekly_growth_down インサイトが含まれていること")
+	repo.AssertExpectations(t)
+}
+
+func TestGetInsights_WeeklyGrowthNoChange(t *testing.T) {
+	svc, repo := newTestAnalyticsService()
+
+	// 変化なし（-20%以内の微小下落はnilを返す）
+	trends := []model.WeeklyTrend{
+		{TotalMinutes: 100},
+		{TotalMinutes: 90}, // -10%（-20%以内なのでweekly_growth_downなし）
+	}
+
+	repo.On("GetHeatmapData", uint(1)).Return([]model.HeatmapEntry{}, nil)
+	repo.On("GetCategoryBreakdown", uint(1)).Return([]model.CategoryBreakdown{}, nil)
+	repo.On("GetWeeklyTrends", uint(1), 12).Return(trends, nil)
+	repo.On("GetProductivityStats", uint(1)).Return(&model.ProductivityStats{}, nil)
+
+	insights, err := svc.GetInsights(1)
+	assert.NoError(t, err)
+	// weekly_growth系インサイトは含まれないはず
+	for _, ins := range insights {
+		assert.NotEqual(t, "weekly_growth_up", ins.Type)
+		assert.NotEqual(t, "weekly_growth_down", ins.Type)
+	}
+	repo.AssertExpectations(t)
+}
+
+func TestGetInsights_WeeklyGrowthPrevZero(t *testing.T) {
+	svc, repo := newTestAnalyticsService()
+
+	// prev=0の場合は除算を避けてnilを返す
+	trends := []model.WeeklyTrend{
+		{TotalMinutes: 0},
+		{TotalMinutes: 100},
+	}
+
+	repo.On("GetHeatmapData", uint(1)).Return([]model.HeatmapEntry{}, nil)
+	repo.On("GetCategoryBreakdown", uint(1)).Return([]model.CategoryBreakdown{}, nil)
+	repo.On("GetWeeklyTrends", uint(1), 12).Return(trends, nil)
+	repo.On("GetProductivityStats", uint(1)).Return(&model.ProductivityStats{}, nil)
+
+	insights, err := svc.GetInsights(1)
+	assert.NoError(t, err)
+	// weekly_growth系インサイトは含まれないはず（prev=0で除算スキップ）
+	for _, ins := range insights {
+		assert.NotEqual(t, "weekly_growth_up", ins.Type)
+		assert.NotEqual(t, "weekly_growth_down", ins.Type)
+	}
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// analyzeStreak 追加テスト
+// ============================================================
+
+func TestGetInsights_StreakRecord(t *testing.T) {
+	svc, repo := newTestAnalyticsService()
+
+	// CurrentStreak < 7 かつ LongestStreak > CurrentStreak → streak_record
+	stats := &model.ProductivityStats{
+		CurrentStreak: 3,
+		LongestStreak: 10,
+	}
+
+	repo.On("GetHeatmapData", uint(1)).Return([]model.HeatmapEntry{}, nil)
+	repo.On("GetCategoryBreakdown", uint(1)).Return([]model.CategoryBreakdown{}, nil)
+	repo.On("GetWeeklyTrends", uint(1), 12).Return([]model.WeeklyTrend{}, nil)
+	repo.On("GetProductivityStats", uint(1)).Return(stats, nil)
+
+	insights, err := svc.GetInsights(1)
+	assert.NoError(t, err)
+
+	hasStreakRecord := false
+	for _, ins := range insights {
+		if ins.Type == "streak_record" {
+			hasStreakRecord = true
+		}
+	}
+	assert.True(t, hasStreakRecord)
+	repo.AssertExpectations(t)
+}
+
+func TestGetInsights_StreakNil(t *testing.T) {
+	svc, repo := newTestAnalyticsService()
+
+	// CurrentStreak < 7 かつ LongestStreak == 0 → analyzeStreak nil
+	stats := &model.ProductivityStats{
+		CurrentStreak: 2,
+		LongestStreak: 0,
+	}
+
+	repo.On("GetHeatmapData", uint(1)).Return([]model.HeatmapEntry{}, nil)
+	repo.On("GetCategoryBreakdown", uint(1)).Return([]model.CategoryBreakdown{}, nil)
+	repo.On("GetWeeklyTrends", uint(1), 12).Return([]model.WeeklyTrend{}, nil)
+	repo.On("GetProductivityStats", uint(1)).Return(stats, nil)
+
+	insights, err := svc.GetInsights(1)
+	assert.NoError(t, err)
+	for _, ins := range insights {
+		assert.NotEqual(t, "streak_active", ins.Type)
+		assert.NotEqual(t, "streak_record", ins.Type)
+	}
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// analyzeCategoryFocus 追加テスト
+// ============================================================
+
+func TestGetInsights_CategoryFocusBelow70(t *testing.T) {
+	svc, repo := newTestAnalyticsService()
+
+	// 最大カテゴリが全体の50%（70%未満）→ nil
+	categories := []model.CategoryBreakdown{
+		{Category: "coding", TotalMinutes: 100},
+		{Category: "reading", TotalMinutes: 100},
+	}
+
+	repo.On("GetHeatmapData", uint(1)).Return([]model.HeatmapEntry{}, nil)
+	repo.On("GetCategoryBreakdown", uint(1)).Return(categories, nil)
+	repo.On("GetWeeklyTrends", uint(1), 12).Return([]model.WeeklyTrend{}, nil)
+	repo.On("GetProductivityStats", uint(1)).Return(&model.ProductivityStats{}, nil)
+
+	insights, err := svc.GetInsights(1)
+	assert.NoError(t, err)
+	for _, ins := range insights {
+		assert.NotEqual(t, "category_focus", ins.Type)
+	}
+	repo.AssertExpectations(t)
+}
+
+func TestGetInsights_CategoryFocusZeroMinutes(t *testing.T) {
+	svc, repo := newTestAnalyticsService()
+
+	// 全カテゴリのTotalMinutes=0 → totalMinutes==0でnil
+	categories := []model.CategoryBreakdown{
+		{Category: "coding", TotalMinutes: 0},
+	}
+
+	repo.On("GetHeatmapData", uint(1)).Return([]model.HeatmapEntry{}, nil)
+	repo.On("GetCategoryBreakdown", uint(1)).Return(categories, nil)
+	repo.On("GetWeeklyTrends", uint(1), 12).Return([]model.WeeklyTrend{}, nil)
+	repo.On("GetProductivityStats", uint(1)).Return(&model.ProductivityStats{}, nil)
+
+	insights, err := svc.GetInsights(1)
+	assert.NoError(t, err)
+	for _, ins := range insights {
+		assert.NotEqual(t, "category_focus", ins.Type)
+	}
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// GetInsights エラーパス 追加テスト
+// ============================================================
+
+func TestGetInsights_CategoryBreakdownError(t *testing.T) {
+	svc, repo := newTestAnalyticsService()
+
+	repo.On("GetHeatmapData", uint(1)).Return([]model.HeatmapEntry{}, nil)
+	repo.On("GetCategoryBreakdown", uint(1)).Return([]model.CategoryBreakdown(nil), assert.AnError)
+
+	insights, err := svc.GetInsights(1)
+	assert.Error(t, err)
+	assert.Nil(t, insights)
+	repo.AssertExpectations(t)
+}
+
+func TestGetInsights_WeeklyTrendsError(t *testing.T) {
+	svc, repo := newTestAnalyticsService()
+
+	repo.On("GetHeatmapData", uint(1)).Return([]model.HeatmapEntry{}, nil)
+	repo.On("GetCategoryBreakdown", uint(1)).Return([]model.CategoryBreakdown{}, nil)
+	repo.On("GetWeeklyTrends", uint(1), 12).Return([]model.WeeklyTrend(nil), assert.AnError)
+
+	insights, err := svc.GetInsights(1)
+	assert.Error(t, err)
+	assert.Nil(t, insights)
+	repo.AssertExpectations(t)
+}
+
+func TestGetInsights_ProductivityStatsError(t *testing.T) {
+	svc, repo := newTestAnalyticsService()
+
+	repo.On("GetHeatmapData", uint(1)).Return([]model.HeatmapEntry{}, nil)
+	repo.On("GetCategoryBreakdown", uint(1)).Return([]model.CategoryBreakdown{}, nil)
+	repo.On("GetWeeklyTrends", uint(1), 12).Return([]model.WeeklyTrend{}, nil)
+	repo.On("GetProductivityStats", uint(1)).Return((*model.ProductivityStats)(nil), assert.AnError)
+
+	insights, err := svc.GetInsights(1)
+	assert.Error(t, err)
+	assert.Nil(t, insights)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// analyzePeakTime 追加テスト
+// ============================================================
+
+func TestGetInsights_PeakTimeAllZeroMinutes(t *testing.T) {
+	svc, repo := newTestAnalyticsService()
+
+	// 全エントリのTotalMinutes=0 → maxEntry.TotalMinutes==0でnil
+	heatmap := []model.HeatmapEntry{
+		{DayOfWeek: 1, Hour: 10, TotalMinutes: 0},
+		{DayOfWeek: 2, Hour: 20, TotalMinutes: 0},
+	}
+
+	repo.On("GetHeatmapData", uint(1)).Return(heatmap, nil)
+	repo.On("GetCategoryBreakdown", uint(1)).Return([]model.CategoryBreakdown{}, nil)
+	repo.On("GetWeeklyTrends", uint(1), 12).Return([]model.WeeklyTrend{}, nil)
+	repo.On("GetProductivityStats", uint(1)).Return(&model.ProductivityStats{}, nil)
+
+	insights, err := svc.GetInsights(1)
+	assert.NoError(t, err)
+	for _, ins := range insights {
+		assert.NotEqual(t, "peak_time", ins.Type)
+	}
+	repo.AssertExpectations(t)
+}

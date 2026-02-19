@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -342,5 +343,15 @@ func TestPostCollectionGetPosts_Empty(t *testing.T) {
 	result, err := svc.GetPosts(10)
 	assert.NoError(t, err)
 	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestPostCollectionRemovePost_NotFound(t *testing.T) {
+	svc, repo := newTestPostCollectionService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	err := svc.RemovePost(99, 1, 5)
+	assert.Error(t, err)
 	repo.AssertExpectations(t)
 }

@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -338,4 +339,18 @@ func TestNoteFolderService_Delete_RepoError(t *testing.T) {
 	err := service.Delete(1, 1)
 	assert.Error(t, err)
 	mockRepo.AssertExpectations(t)
+}
+
+func TestNoteFolderService_Update_ValidateLongNameError(t *testing.T) {
+	mockRepo := new(MockNoteFolderRepository)
+	service := NewNoteFolderService(mockRepo)
+
+	existing := &model.NoteFolder{ID: 1, UserID: 1, Name: "元の名前"}
+	mockRepo.On("FindByID", uint(1)).Return(existing, nil)
+
+	// 101文字のフォルダ名 → ValidateUpdate でバリデーションエラー
+	longName := strings.Repeat("あ", 101)
+	result, err := service.Update(1, 1, longName, nil)
+	assert.Error(t, err)
+	assert.Nil(t, result)
 }

@@ -620,3 +620,98 @@ func TestGenerateUsername_AlreadyExists(t *testing.T) {
 	username := svc.generateUsername("testuser")
 	assert.Equal(t, "testuser2", username)
 }
+
+// ============================================================
+// Login 追加テスト
+// ============================================================
+
+func TestLogin_InvalidEmail(t *testing.T) {
+	svc, _, _ := newTestAuthService()
+
+	// 無効なメールアドレス
+	_, err := svc.Login(LoginInput{Email: "not-an-email", Password: "password123"})
+	assert.Error(t, err)
+}
+
+// ============================================================
+// RequestPasswordReset 追加テスト
+// ============================================================
+
+func TestRequestPasswordReset_CreateError(t *testing.T) {
+	svc, userRepo, passwordResetRepo := newTestAuthService()
+
+	user := &model.User{Email: "test@example.com"}
+	user.ID = 1
+
+	userRepo.On("FindByEmail", "test@example.com").Return(user, nil)
+	passwordResetRepo.On("InvalidateUserTokens", uint(1)).Return(nil)
+	passwordResetRepo.On("Create", mock.AnythingOfType("*model.PasswordResetToken")).Return(errors.New("db error"))
+
+	token, err := svc.RequestPasswordReset("test@example.com")
+	assert.Error(t, err)
+	assert.Empty(t, token)
+}
+
+// ============================================================
+// ValidateToken 追加テスト
+// ============================================================
+
+func TestValidateToken_EmptyString(t *testing.T) {
+	svc, _, _ := newTestAuthService()
+
+	// 空文字列トークンは無効
+	_, err := svc.ValidateToken("")
+	assert.Error(t, err)
+}
+
+func TestValidateToken_GeneratedToken(t *testing.T) {
+	svc, _, _ := newTestAuthService()
+
+	// generateTokenで生成したトークンが正しく検証できる
+	token, err := svc.generateToken(99)
+	assert.NoError(t, err)
+
+	userID, err := svc.ValidateToken(token)
+	assert.NoError(t, err)
+	assert.Equal(t, uint(99), userID)
+}
+
+// ============================================================
+// ResetPassword 追加テスト
+// ============================================================
+
+func TestResetPassword_WeakPassword(t *testing.T) {
+	svc, _, passwordResetRepo := newTestAuthService()
+
+	validToken := &model.PasswordResetToken{
+		Token:     "valid-token-for-weak-pw",
+		UserID:    1,
+		ExpiresAt: time.Now().Add(1 * time.Hour),
+		Used:      false,
+	}
+	validToken.ID = 1
+
+	passwordResetRepo.On("FindByToken", "valid-token-for-weak-pw").Return(validToken, nil)
+
+	// 弱いパスワード（短すぎる）
+	err := svc.ResetPassword("valid-token-for-weak-pw", "weak")
+	assert.Error(t, err)
+}
+
+func TestResetPassword_UpdatePasswordError(t *testing.T) {
+	svc, userRepo, passwordResetRepo := newTestAuthService()
+
+	validToken := &model.PasswordResetToken{
+		Token:     "valid-token-update-err",
+		UserID:    1,
+		ExpiresAt: time.Now().Add(1 * time.Hour),
+		Used:      false,
+	}
+	validToken.ID = 1
+
+	passwordResetRepo.On("FindByToken", "valid-token-update-err").Return(validToken, nil)
+	userRepo.On("UpdatePassword", uint(1), mock.AnythingOfType("string")).Return(errors.New("db error"))
+
+	err := svc.ResetPassword("valid-token-update-err", "ValidPassword123!")
+	assert.Error(t, err)
+}

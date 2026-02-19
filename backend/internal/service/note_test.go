@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -467,4 +468,30 @@ func TestNoteService_Update_WithAllFields(t *testing.T) {
 	assert.Equal(t, "新内容", result.Content)
 	assert.Equal(t, "React,Go", result.Tags)
 	assert.Equal(t, &folderID, result.FolderID)
+}
+
+func TestNoteService_Update_ValidationError(t *testing.T) {
+	svc, repo := newTestNoteService()
+	existing := &model.Note{ID: 1, UserID: 1, Title: "元"}
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	// 201文字のタイトル → ValidateUpdateNote でバリデーションエラー
+	longTitle := strings.Repeat("あ", 201)
+	result, err := svc.Update(1, 1, longTitle, "", "", nil)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestNoteService_Duplicate_ValidationError(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	// 198文字のタイトル → " (コピー)" (12バイト) 付加後 210バイト > 200 → バリデーションエラー
+	longTitle := strings.Repeat("a", 198)
+	existing := &model.Note{ID: 1, UserID: 1, Title: longTitle}
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	result, err := svc.Duplicate(1, 1)
+	assert.Error(t, err)
+	assert.Nil(t, result)
 }

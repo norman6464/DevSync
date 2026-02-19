@@ -434,6 +434,32 @@ func TestPostPublish_AlreadyPublished(t *testing.T) {
 	assert.Nil(t, result)
 }
 
+func TestPostPublish_NotFound(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	result, err := svc.Publish(99, 1)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostPublish_UpdateError(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	draft := &model.Post{Title: "Draft", UserID: 1, IsDraft: true}
+	draft.ID = 1
+
+	postRepo.On("FindByID", uint(1)).Return(draft, nil)
+	postRepo.On("Update", draft).Return(errors.New("db error"))
+
+	result, err := svc.Publish(1, 1)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	postRepo.AssertExpectations(t)
+}
+
 // ============================================================
 // 投稿作成 追加テスト
 // ============================================================
@@ -691,6 +717,28 @@ func TestEstimateReadTime_MixedContent(t *testing.T) {
 	assert.Equal(t, 2, result)
 }
 
+func TestPostCreate_FindByIDErrorAfterCreate(t *testing.T) {
+	svc, postRepo, notifRepo := newTestPostService()
+
+	post := &model.Post{Title: "Test", Content: "Content", UserID: 1}
+
+	postRepo.On("Create", post).Run(func(args mock.Arguments) {
+		p := args.Get(0).(*model.Post)
+		p.ID = 10
+	}).Return(nil)
+	// Createは成功するがFindByIDが失敗 → return post, nil
+	postRepo.On("FindByID", uint(10)).Return(nil, errors.New("not found"))
+
+	notifRepo.On("GetFollowerIDs", uint(1)).Return([]uint{}, nil).Maybe()
+	notifRepo.On("CreateBatch", mock.Anything).Return(nil).Maybe()
+
+	result, err := svc.Create(post)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, post, result) // FindByIDが失敗した場合は元のpostを返す
+	postRepo.AssertExpectations(t)
+}
+
 func TestPostCreate_SetsEstimatedReadTime(t *testing.T) {
 	svc, postRepo, notifRepo := newTestPostService()
 
@@ -713,4 +761,48 @@ func TestPostCreate_SetsEstimatedReadTime(t *testing.T) {
 	result, err := svc.Create(post)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, result.EstimatedReadTime)
+}
+
+// ============================================================
+// Update 追加テスト
+// ============================================================
+
+func TestPostUpdate_WithImageURLs(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	existing := &model.Post{Title: "Old Title", Content: "Old Content", UserID: 1}
+	existing.ID = 1
+
+	postRepo.On("FindByID", uint(1)).Return(existing, nil)
+	postRepo.On("Update", existing).Return(nil)
+
+	// imageUrlsをJSON配列形式で指定してアップデート
+	result, err := svc.Update(1, 1, "New Title", "New Content", `["https://example.com/img.jpg"]`)
+	assert.NoError(t, err)
+	assert.Equal(t, `["https://example.com/img.jpg"]`, result.ImageURLs)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostUpdate_RepoError(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	existing := &model.Post{Title: "Old Title", Content: "Old Content", UserID: 1}
+	existing.ID = 1
+
+	postRepo.On("FindByID", uint(1)).Return(existing, nil)
+	postRepo.On("Update", existing).Return(errors.New("db error"))
+
+	_, err := svc.Update(1, 1, "New Title", "New Content", "")
+	assert.Error(t, err)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostUpdate_NotFound(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	_, err := svc.Update(99, 1, "Title", "Content", "")
+	assert.Error(t, err)
+	postRepo.AssertExpectations(t)
 }

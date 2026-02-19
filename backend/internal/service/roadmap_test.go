@@ -859,3 +859,161 @@ func TestRoadmapUpdate_WithAllFields(t *testing.T) {
 	assert.Equal(t, "Desc", result.Description)
 	assert.Equal(t, model.RoadmapCategorySkill, result.Category)
 }
+
+// ============================================================
+// UpdateStep 追加テスト
+// ============================================================
+
+func TestUpdateStep_StepBelongsToDifferentRoadmap(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 1
+
+	// ステップが別ロードマップ（ID=2）に属している
+	step := &model.RoadmapStep{Title: "Step", RoadmapID: 2}
+	step.ID = 10
+
+	repo.On("FindByID", uint(1)).Return(roadmap, nil)
+	repo.On("FindStepByID", uint(10)).Return(step, nil)
+
+	updates := &model.RoadmapStep{Title: "Updated"}
+	_, err := svc.UpdateStep(1, 10, 1, updates)
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestUpdateStep_UpdateStepRepoError(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 1
+
+	step := &model.RoadmapStep{Title: "Step", RoadmapID: 1}
+	step.ID = 10
+
+	repo.On("FindByID", uint(1)).Return(roadmap, nil)
+	repo.On("FindStepByID", uint(10)).Return(step, nil)
+	repo.On("UpdateStep", step).Return(errors.New("db error"))
+
+	updates := &model.RoadmapStep{Title: "Updated"}
+	_, err := svc.UpdateStep(1, 10, 1, updates)
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestUpdateStep_FindStepError(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(roadmap, nil)
+	repo.On("FindStepByID", uint(10)).Return(nil, errors.New("step not found"))
+
+	updates := &model.RoadmapStep{Title: "Updated"}
+	_, err := svc.UpdateStep(1, 10, 1, updates)
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// ReorderSteps 追加テスト
+// ============================================================
+
+func TestRoadmapReorderSteps_NotFound(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	err := svc.ReorderSteps(99, 1, []model.StepOrder{})
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// CopyRoadmap 追加テスト
+// ============================================================
+
+func TestCopyRoadmap_NotFound(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	_, err := svc.CopyRoadmap(99, 1)
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestRoadmapDeleteStep_FindStepByIDError(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 10
+
+	repo.On("FindByID", uint(10)).Return(roadmap, nil)
+	repo.On("FindStepByID", uint(99)).Return(nil, errors.New("not found"))
+
+	err := svc.DeleteStep(10, 99, 1)
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestRoadmapDeleteStep_FindByIDError(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	err := svc.DeleteStep(99, 5, 1)
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestRoadmapUpdateStep_AllFields(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 10
+
+	step := &model.RoadmapStep{RoadmapID: 10, Title: "Old", Description: "Old Desc", ResourceURL: "https://old.example.com"}
+	step.ID = 5
+
+	repo.On("FindByID", uint(10)).Return(roadmap, nil)
+	repo.On("FindStepByID", uint(5)).Return(step, nil)
+	repo.On("UpdateStep", step).Return(nil)
+
+	updates := &model.RoadmapStep{
+		Title:       "New Step",
+		Description: "New Description",
+		ResourceURL: "https://new.example.com",
+	}
+	result, err := svc.UpdateStep(10, 5, 1, updates)
+	assert.NoError(t, err)
+	assert.Equal(t, "New Step", result.Title)
+	assert.Equal(t, "New Description", result.Description)
+	assert.Equal(t, "https://new.example.com", result.ResourceURL)
+	repo.AssertExpectations(t)
+}
+
+func TestRoadmapUpdateStep_FindByIDError(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	updates := &model.RoadmapStep{Title: "New"}
+	result, err := svc.UpdateStep(99, 5, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestRoadmapUpdateStepCompletion_FindByIDError(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	result, err := svc.UpdateStepCompletion(99, 5, 1, true)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}

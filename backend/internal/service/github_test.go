@@ -200,3 +200,16 @@ func TestGitHubService_GetRepos_Empty(t *testing.T) {
 	assert.Empty(t, result)
 	githubRepo.AssertExpectations(t)
 }
+
+// SyncUserData_Success は FindByID が成功して SyncData を呼び出すパスをカバーする
+func TestGitHubService_SyncUserData_UserFound_NoToken(t *testing.T) {
+	svc, userRepo, _ := newGitHubTestService()
+	user := &model.User{GitHubToken: ""}
+	user.ID = 1
+	userRepo.On("FindByID", uint(1)).Return(user, nil)
+
+	// SyncData は GitHubToken なしでエラーを返すが、SyncUserData の return s.SyncData(user) は実行される
+	err := svc.SyncUserData(1)
+	assert.Error(t, err)
+	userRepo.AssertExpectations(t)
+}
