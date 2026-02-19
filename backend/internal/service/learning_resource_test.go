@@ -205,6 +205,22 @@ func TestLearningResourceUpdate_NotFound(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestLearningResourceUpdate_ValidationError(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+
+	existing := &model.LearningResource{UserID: 1, Title: "Old Title"}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	// 無効なURL → バリデーションエラー
+	updates := &model.LearningResource{URL: "not-a-valid-url"}
+	result, err := svc.Update(1, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	// バリデーションエラーなのでUpdateは呼ばれない
+	repo.AssertNotCalled(t, "Update")
+}
+
 // ============================================================
 // 公開設定変更テスト
 // ============================================================
