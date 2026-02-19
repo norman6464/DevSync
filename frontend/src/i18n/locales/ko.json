@@ -23,8 +23,29 @@
     "menu": "메뉴",
     "scrollToTop": "맨 위로",
     "selectLanguage": "언어 선택",
-    "monthsShort": ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"],
-    "dayLabelsShort": ["", "월", "", "수", "", "금", ""],
+    "monthsShort": [
+      "1월",
+      "2월",
+      "3월",
+      "4월",
+      "5월",
+      "6월",
+      "7월",
+      "8월",
+      "9월",
+      "10월",
+      "11월",
+      "12월"
+    ],
+    "dayLabelsShort": [
+      "",
+      "월",
+      "",
+      "수",
+      "",
+      "금",
+      ""
+    ],
     "contributionsInLastYear": "지난 1년간 {{count}}개의 기여",
     "dateContributions": "{{date}}: {{count}}개의 기여",
     "dateLogs": "{{date}}: {{count}}개의 로그"
@@ -48,7 +69,8 @@
     "advice": "AI 어드바이저",
     "analytics": "학습 분석",
     "studyCircles": "스터디 서클",
-    "more": "더보기"
+    "more": "더보기",
+    "youtube": "YouTube 동영상"
   },
   "auth": {
     "login": "로그인",
@@ -58,14 +80,13 @@
     "name": "이름",
     "confirmPassword": "비밀번호 확인",
     "emailPlaceholder": "you@example.com",
-    "passwordPlaceholder": "••••••••",
+    "passwordPlaceholder": "6자 이상",
     "forgotPassword": "비밀번호를 잊으셨나요?",
     "noAccount": "계정이 없으신가요?",
     "hasAccount": "이미 계정이 있으신가요?",
     "signInWith": "{{provider}}로 로그인",
     "signUpWith": "{{provider}}로 가입",
-    "orContinueWith": "또는",
-    "passwordPlaceholder": "6자 이상"
+    "orContinueWith": "또는"
   },
   "dashboard": {
     "title": "대시보드",
@@ -1338,5 +1359,19 @@
     "mentionedYou": "당신을 멘션했습니다",
     "inPost": "게시물에서",
     "inComment": "댓글에서"
+  },
+  "youtube": {
+    "pageTitle": "YouTube 동영상",
+    "pageSubtitle": "프로그래밍 학습에 도움이 되는 YouTube 동영상을 찾아보세요",
+    "recommendTab": "추천",
+    "searchTab": "검색",
+    "searchPlaceholder": "키워드로 동영상 검색...",
+    "searchFailed": "동영상 검색에 실패했습니다",
+    "basedOnSkills": "당신의 스킬 기반",
+    "noRecommendations": "추천 동영상이 없습니다. 프로필에서 스킬을 설정해주세요",
+    "noResults": "검색 결과가 없습니다",
+    "cachedResult": "캐시된 결과를 표시하고 있습니다",
+    "watchOnYoutube": "YouTube에서 시청",
+    "unavailable": "YouTube 동영상 기능을 현재 사용할 수 없습니다"
   }
 }

@@ -23,8 +23,29 @@
     "menu": "Menu",
     "scrollToTop": "Back to top",
     "selectLanguage": "Select language",
-    "monthsShort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-    "dayLabelsShort": ["", "Mon", "", "Wed", "", "Fri", ""],
+    "monthsShort": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ],
+    "dayLabelsShort": [
+      "",
+      "Mon",
+      "",
+      "Wed",
+      "",
+      "Fri",
+      ""
+    ],
     "contributionsInLastYear": "{{count}} contributions in the last year",
     "dateContributions": "{{date}}: {{count}} contributions",
     "dateLogs": "{{date}}: {{count}} logs"
@@ -48,7 +69,8 @@
     "advice": "AI Advisor",
     "analytics": "Analytics",
     "studyCircles": "Study Circles",
-    "more": "More"
+    "more": "More",
+    "youtube": "YouTube Videos"
   },
   "auth": {
     "login": "Login",
@@ -58,14 +80,13 @@
     "name": "Name",
     "confirmPassword": "Confirm Password",
     "emailPlaceholder": "you@example.com",
-    "passwordPlaceholder": "••••••••",
+    "passwordPlaceholder": "6+ characters",
     "forgotPassword": "Forgot password?",
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?",
     "signInWith": "Sign in with {{provider}}",
     "signUpWith": "Sign up with {{provider}}",
-    "orContinueWith": "Or continue with",
-    "passwordPlaceholder": "6+ characters"
+    "orContinueWith": "Or continue with"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -1338,5 +1359,19 @@
     "mentionedYou": "mentioned you",
     "inPost": "in post",
     "inComment": "in comment"
+  },
+  "youtube": {
+    "pageTitle": "YouTube Videos",
+    "pageSubtitle": "Discover YouTube videos to boost your programming skills",
+    "recommendTab": "Recommended",
+    "searchTab": "Search",
+    "searchPlaceholder": "Search videos by keyword...",
+    "searchFailed": "Failed to search videos",
+    "basedOnSkills": "Based on your skills",
+    "noRecommendations": "No recommended videos. Set your skills in profile settings",
+    "noResults": "No results found",
+    "cachedResult": "Showing cached results",
+    "watchOnYoutube": "Watch on YouTube",
+    "unavailable": "YouTube video feature is currently unavailable"
   }
 }

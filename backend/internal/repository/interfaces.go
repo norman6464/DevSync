@@ -468,6 +468,14 @@ type MentionRepositoryInterface interface {
 	DeleteByCommentID(commentID uint) error
 }
 
+// YouTubeVideoRepositoryInterface はYouTube動画キャッシュデータ操作の契約を定義する。
+type YouTubeVideoRepositoryInterface interface {
+	UpsertVideos(videos []model.YouTubeVideo) error
+	FindByVideoIDs(videoIDs []string) ([]model.YouTubeVideo, error)
+	FindCachedSearch(query, language string) (*model.YouTubeSearchCache, error)
+	SaveSearchCache(cache *model.YouTubeSearchCache) error
+}
+
 // PostViewRepositoryInterface は投稿閲覧数データ操作の契約を定義する。
 type PostViewRepositoryInterface interface {
 	RecordView(view *model.PostView) error

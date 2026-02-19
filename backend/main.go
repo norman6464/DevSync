@@ -101,6 +101,8 @@ func main() {
 		&model.StudyCircleMemberProgress{},
 		&model.StudyCircleCheckin{},
 		&model.Mention{},
+		&model.YouTubeVideo{},
+		&model.YouTubeSearchCache{},
 	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}

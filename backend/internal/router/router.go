@@ -89,6 +89,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerRecommendationRoutes(protected, c)
 		registerStudyCircleRoutes(protected, c)
 		registerSearchRoutes(protected, c)
+		registerYouTubeRoutes(protected, c)
 	}
 
 	return r
@@ -554,5 +555,14 @@ func registerSearchRoutes(g *gin.RouterGroup, c *di.Container) {
 	{
 		search.GET("/posts", c.SearchHandler.SearchPosts)
 		search.GET("/circles", c.SearchHandler.SearchCircles)
+	}
+}
+
+func registerYouTubeRoutes(g *gin.RouterGroup, c *di.Container) {
+	youtube := g.Group("/youtube")
+	{
+		youtube.GET("/search", c.YouTubeHandler.Search)
+		youtube.GET("/recommend", c.YouTubeHandler.Recommend)
+		youtube.GET("/status", c.YouTubeHandler.Status)
 	}
 }

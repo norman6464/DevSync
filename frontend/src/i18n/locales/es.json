@@ -23,8 +23,29 @@
     "menu": "Menú",
     "scrollToTop": "Volver arriba",
     "selectLanguage": "Seleccionar idioma",
-    "monthsShort": ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
-    "dayLabelsShort": ["", "Lun", "", "Mié", "", "Vie", ""],
+    "monthsShort": [
+      "Ene",
+      "Feb",
+      "Mar",
+      "Abr",
+      "May",
+      "Jun",
+      "Jul",
+      "Ago",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dic"
+    ],
+    "dayLabelsShort": [
+      "",
+      "Lun",
+      "",
+      "Mié",
+      "",
+      "Vie",
+      ""
+    ],
     "contributionsInLastYear": "{{count}} contribuciones en el último año",
     "dateContributions": "{{date}}: {{count}} contribuciones",
     "dateLogs": "{{date}}: {{count}} registros"
@@ -48,7 +69,8 @@
     "advice": "Asesor IA",
     "analytics": "Análisis",
     "studyCircles": "Círculos de Estudio",
-    "more": "Más"
+    "more": "Más",
+    "youtube": "Videos de YouTube"
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -58,14 +80,13 @@
     "name": "Nombre",
     "confirmPassword": "Confirmar contraseña",
     "emailPlaceholder": "you@example.com",
-    "passwordPlaceholder": "••••••••",
+    "passwordPlaceholder": "6+ caracteres",
     "forgotPassword": "¿Olvidaste tu contraseña?",
     "noAccount": "¿No tienes cuenta?",
     "hasAccount": "¿Ya tienes cuenta?",
     "signInWith": "Iniciar sesión con {{provider}}",
     "signUpWith": "Registrarse con {{provider}}",
-    "orContinueWith": "O continuar con",
-    "passwordPlaceholder": "6+ caracteres"
+    "orContinueWith": "O continuar con"
   },
   "dashboard": {
     "title": "Panel",
@@ -1338,5 +1359,19 @@
     "mentionedYou": "te mencionó",
     "inPost": "en publicación",
     "inComment": "en comentario"
+  },
+  "youtube": {
+    "pageTitle": "Videos de YouTube",
+    "pageSubtitle": "Descubre videos de YouTube para mejorar tus habilidades de programación",
+    "recommendTab": "Recomendados",
+    "searchTab": "Buscar",
+    "searchPlaceholder": "Buscar videos por palabra clave...",
+    "searchFailed": "Error al buscar videos",
+    "basedOnSkills": "Basado en tus habilidades",
+    "noRecommendations": "No hay videos recomendados. Configura tus habilidades en el perfil",
+    "noResults": "No se encontraron resultados",
+    "cachedResult": "Mostrando resultados en caché",
+    "watchOnYoutube": "Ver en YouTube",
+    "unavailable": "La función de videos de YouTube no está disponible actualmente"
   }
 }

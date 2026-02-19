@@ -23,8 +23,29 @@
     "menu": "Menü",
     "scrollToTop": "Nach oben",
     "selectLanguage": "Sprache auswählen",
-    "monthsShort": ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"],
-    "dayLabelsShort": ["", "Mo", "", "Mi", "", "Fr", ""],
+    "monthsShort": [
+      "Jan",
+      "Feb",
+      "Mär",
+      "Apr",
+      "Mai",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Okt",
+      "Nov",
+      "Dez"
+    ],
+    "dayLabelsShort": [
+      "",
+      "Mo",
+      "",
+      "Mi",
+      "",
+      "Fr",
+      ""
+    ],
     "contributionsInLastYear": "{{count}} Beiträge im letzten Jahr",
     "dateContributions": "{{date}}: {{count}} Beiträge",
     "dateLogs": "{{date}}: {{count}} Einträge"
@@ -48,7 +69,8 @@
     "advice": "KI-Berater",
     "analytics": "Analytik",
     "studyCircles": "Lernkreise",
-    "more": "Mehr"
+    "more": "Mehr",
+    "youtube": "YouTube-Videos"
   },
   "auth": {
     "login": "Anmelden",
@@ -58,14 +80,13 @@
     "name": "Name",
     "confirmPassword": "Passwort bestätigen",
     "emailPlaceholder": "you@example.com",
-    "passwordPlaceholder": "••••••••",
+    "passwordPlaceholder": "Mindestens 6 Zeichen",
     "forgotPassword": "Passwort vergessen?",
     "noAccount": "Kein Konto?",
     "hasAccount": "Bereits ein Konto?",
     "signInWith": "Mit {{provider}} anmelden",
     "signUpWith": "Mit {{provider}} registrieren",
-    "orContinueWith": "Oder weiter mit",
-    "passwordPlaceholder": "Mindestens 6 Zeichen"
+    "orContinueWith": "Oder weiter mit"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -1338,5 +1359,19 @@
     "mentionedYou": "hat dich erwähnt",
     "inPost": "im Beitrag",
     "inComment": "im Kommentar"
+  },
+  "youtube": {
+    "pageTitle": "YouTube-Videos",
+    "pageSubtitle": "Entdecke YouTube-Videos zur Verbesserung deiner Programmierkenntnisse",
+    "recommendTab": "Empfohlen",
+    "searchTab": "Suchen",
+    "searchPlaceholder": "Videos nach Stichwort suchen...",
+    "searchFailed": "Videosuche fehlgeschlagen",
+    "basedOnSkills": "Basierend auf deinen Fähigkeiten",
+    "noRecommendations": "Keine empfohlenen Videos. Stelle deine Fähigkeiten im Profil ein",
+    "noResults": "Keine Ergebnisse gefunden",
+    "cachedResult": "Zwischengespeicherte Ergebnisse werden angezeigt",
+    "watchOnYoutube": "Auf YouTube ansehen",
+    "unavailable": "Die YouTube-Video-Funktion ist derzeit nicht verfügbar"
   }
 }

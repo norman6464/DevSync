@@ -14,6 +14,7 @@ import {
   Lightbulb,
   LineChart,
   Users,
+  Youtube,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import Avatar from '../common/Avatar';
@@ -43,6 +44,7 @@ const moreItems = [
   { path: '/book-reviews', key: 'nav.bookReviews', icon: Library },
   { path: '/study-circles', key: 'nav.studyCircles', icon: Users },
   { path: '/advice', key: 'nav.advice', icon: Lightbulb },
+  { path: '/youtube', key: 'nav.youtube', icon: Youtube },
   { path: '/settings', key: 'nav.settings', icon: Settings },
 ] as const;
 
