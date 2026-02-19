@@ -275,7 +275,15 @@ func (s *PostService) AddReaction(userID, postID uint, emoji string) error {
 }
 
 // RemoveReaction は投稿のリアクションを削除する。
+// 自分の投稿へのリアクション削除は禁止する（そもそもリアクションできないため）。
 func (s *PostService) RemoveReaction(userID, postID uint, emoji string) error {
+	post, err := s.repo.FindByID(postID)
+	if err != nil {
+		return ErrNotFound
+	}
+	if post.UserID == userID {
+		return ErrForbidden
+	}
 	return s.repo.RemoveReaction(userID, postID, emoji)
 }
 

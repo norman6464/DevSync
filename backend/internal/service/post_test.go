@@ -762,6 +762,9 @@ func TestPostAddReaction_PostNotFound(t *testing.T) {
 func TestPostRemoveReaction_Success(t *testing.T) {
 	svc, postRepo, _ := newTestPostService()
 
+	post := &model.Post{UserID: 99}
+	post.ID = 10
+	postRepo.On("FindByID", uint(10)).Return(post, nil)
 	postRepo.On("RemoveReaction", uint(1), uint(10), "👍").Return(nil)
 
 	err := svc.RemoveReaction(1, 10, "👍")
@@ -772,11 +775,36 @@ func TestPostRemoveReaction_Success(t *testing.T) {
 func TestPostRemoveReaction_Error(t *testing.T) {
 	svc, postRepo, _ := newTestPostService()
 
+	post := &model.Post{UserID: 99}
+	post.ID = 10
+	postRepo.On("FindByID", uint(10)).Return(post, nil)
 	postRepo.On("RemoveReaction", uint(1), uint(10), "👍").Return(errors.New("not found"))
 
 	err := svc.RemoveReaction(1, 10, "👍")
 	assert.Error(t, err)
 	postRepo.AssertExpectations(t)
+}
+
+func TestPostRemoveReaction_SelfReaction_Forbidden(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	post := &model.Post{UserID: 1}
+	post.ID = 10
+	postRepo.On("FindByID", uint(10)).Return(post, nil)
+
+	err := svc.RemoveReaction(1, 10, "👍")
+	assert.ErrorIs(t, err, ErrForbidden)
+	postRepo.AssertNotCalled(t, "RemoveReaction")
+}
+
+func TestPostRemoveReaction_PostNotFound(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	err := svc.RemoveReaction(1, 99, "👍")
+	assert.ErrorIs(t, err, ErrNotFound)
+	postRepo.AssertNotCalled(t, "RemoveReaction")
 }
 
 func TestPostGetReactionsByPostID_Success(t *testing.T) {
