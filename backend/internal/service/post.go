@@ -243,10 +243,17 @@ func (s *PostService) GetBookmarks(userID uint, page, limit int) ([]model.Post, 
 }
 
 // AddReaction は投稿にリアクション（絵文字）を追加する。
-// 許可された絵文字のみ使用可能。
+// 許可された絵文字のみ使用可能。自分の投稿への自己リアクションは禁止する。
 func (s *PostService) AddReaction(userID, postID uint, emoji string) error {
 	if !allowedEmojis[emoji] {
 		return domain.NewError(domain.ErrCodeBadRequest, "許可されていない絵文字です: "+emoji, nil)
+	}
+	post, err := s.repo.FindByID(postID)
+	if err != nil {
+		return ErrNotFound
+	}
+	if post.UserID == userID {
+		return ErrForbidden
 	}
 	return s.repo.AddReaction(userID, postID, emoji)
 }
