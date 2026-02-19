@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -698,7 +697,7 @@ func TestRoadmapReorderSteps_Success(t *testing.T) {
 	roadmap := &model.Roadmap{UserID: 1}
 	roadmap.ID = 10
 
-	orders := []repository.StepOrder{
+	orders := []model.StepOrder{
 		{StepID: 1, OrderIndex: 0},
 		{StepID: 2, OrderIndex: 1},
 	}
@@ -719,7 +718,7 @@ func TestRoadmapReorderSteps_Forbidden(t *testing.T) {
 
 	repo.On("FindByID", uint(10)).Return(roadmap, nil)
 
-	orders := []repository.StepOrder{{StepID: 1, OrderIndex: 0}}
+	orders := []model.StepOrder{{StepID: 1, OrderIndex: 0}}
 	err := svc.ReorderSteps(10, 999, orders)
 	assert.ErrorIs(t, err, ErrForbidden)
 	repo.AssertExpectations(t)

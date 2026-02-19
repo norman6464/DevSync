@@ -33,20 +33,10 @@ func (r *MessageRepository) GetConversation(userID, otherUserID uint, page, limi
 	return messages, err
 }
 
-// ConversationSummary は会話一覧表示用のサマリー情報を表す。
-type ConversationSummary struct {
-	UserID      uint   `json:"user_id"`     // 会話相手のユーザーID
-	Name        string `json:"name"`        // 会話相手の名前
-	AvatarURL   string `json:"avatar_url"`  // 会話相手のアバターURL
-	LastMessage string `json:"last_message"` // 最新メッセージの内容
-	LastTime    string `json:"last_time"`   // 最新メッセージの日時
-	UnreadCount int    `json:"unread_count"` // 未読メッセージ数
-}
-
 // GetConversations はユーザーの全会話一覧をサマリー形式で取得する。
 // DISTINCT ON を使用して各会話相手との最新メッセージを1件ずつ取得する。
-func (r *MessageRepository) GetConversations(userID uint) ([]ConversationSummary, error) {
-	var conversations []ConversationSummary
+func (r *MessageRepository) GetConversations(userID uint) ([]model.ConversationSummary, error) {
+	var conversations []model.ConversationSummary
 	err := r.db.Raw(`
 		SELECT DISTINCT ON (other_id) other_id as user_id, u.name, u.avatar_url, m.content as last_message, m.created_at as last_time,
 			(SELECT COUNT(*) FROM messages WHERE sender_id = other_id AND receiver_id = ? AND read = false) as unread_count

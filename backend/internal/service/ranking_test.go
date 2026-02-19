@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/norman6464/devsync/backend/internal/repository"
+	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,7 +13,7 @@ func TestRankingService_ContributionRanking(t *testing.T) {
 		repo := new(MockRankingRepository)
 		svc := NewRankingService(repo)
 
-		expected := []repository.RankingEntry{
+		expected := []model.RankingEntry{
 			{UserID: 1, Name: "alice", Score: 100},
 			{UserID: 2, Name: "bob", Score: 80},
 		}
@@ -29,7 +29,7 @@ func TestRankingService_ContributionRanking(t *testing.T) {
 		repo := new(MockRankingRepository)
 		svc := NewRankingService(repo)
 
-		repo.On("ContributionRanking", "monthly").Return([]repository.RankingEntry(nil), errors.New("db error"))
+		repo.On("ContributionRanking", "monthly").Return([]model.RankingEntry(nil), errors.New("db error"))
 
 		result, err := svc.ContributionRanking("monthly")
 		assert.Error(t, err)
@@ -43,7 +43,7 @@ func TestRankingService_LanguageRanking(t *testing.T) {
 		repo := new(MockRankingRepository)
 		svc := NewRankingService(repo)
 
-		expected := []repository.RankingEntry{
+		expected := []model.RankingEntry{
 			{UserID: 1, Name: "alice", Score: 50},
 		}
 		repo.On("LanguageRanking", "Go", "weekly").Return(expected, nil)
@@ -58,7 +58,7 @@ func TestRankingService_LanguageRanking(t *testing.T) {
 		repo := new(MockRankingRepository)
 		svc := NewRankingService(repo)
 
-		repo.On("LanguageRanking", "Python", "monthly").Return([]repository.RankingEntry(nil), errors.New("db error"))
+		repo.On("LanguageRanking", "Python", "monthly").Return([]model.RankingEntry(nil), errors.New("db error"))
 
 		result, err := svc.LanguageRanking("Python", "monthly")
 		assert.Error(t, err)
@@ -72,7 +72,7 @@ func TestRankingService_LevelRanking(t *testing.T) {
 		repo := new(MockRankingRepository)
 		svc := NewRankingService(repo)
 
-		expected := []repository.RankingEntry{
+		expected := []model.RankingEntry{
 			{UserID: 3, Name: "charlie", Score: 200},
 			{UserID: 1, Name: "alice", Score: 150},
 		}
@@ -88,7 +88,7 @@ func TestRankingService_LevelRanking(t *testing.T) {
 		repo := new(MockRankingRepository)
 		svc := NewRankingService(repo)
 
-		repo.On("LevelRanking").Return([]repository.RankingEntry(nil), errors.New("db error"))
+		repo.On("LevelRanking").Return([]model.RankingEntry(nil), errors.New("db error"))
 
 		result, err := svc.LevelRanking()
 		assert.Error(t, err)
@@ -128,7 +128,7 @@ func TestRankingService_ContributionRanking_EmptyList(t *testing.T) {
 	repo := new(MockRankingRepository)
 	svc := NewRankingService(repo)
 
-	repo.On("ContributionRanking", "weekly").Return([]repository.RankingEntry{}, nil)
+	repo.On("ContributionRanking", "weekly").Return([]model.RankingEntry{}, nil)
 
 	result, err := svc.ContributionRanking("weekly")
 	assert.NoError(t, err)
@@ -140,7 +140,7 @@ func TestRankingService_LanguageRanking_EmptyList(t *testing.T) {
 	repo := new(MockRankingRepository)
 	svc := NewRankingService(repo)
 
-	repo.On("LanguageRanking", "Rust", "weekly").Return([]repository.RankingEntry{}, nil)
+	repo.On("LanguageRanking", "Rust", "weekly").Return([]model.RankingEntry{}, nil)
 
 	result, err := svc.LanguageRanking("Rust", "weekly")
 	assert.NoError(t, err)
@@ -152,7 +152,7 @@ func TestRankingService_LevelRanking_EmptyList(t *testing.T) {
 	repo := new(MockRankingRepository)
 	svc := NewRankingService(repo)
 
-	repo.On("LevelRanking").Return([]repository.RankingEntry{}, nil)
+	repo.On("LevelRanking").Return([]model.RankingEntry{}, nil)
 
 	result, err := svc.LevelRanking()
 	assert.NoError(t, err)
@@ -176,7 +176,7 @@ func TestRankingService_ContributionRanking_LargeScores(t *testing.T) {
 	repo := new(MockRankingRepository)
 	svc := NewRankingService(repo)
 
-	expected := []repository.RankingEntry{
+	expected := []model.RankingEntry{
 		{UserID: 1, Name: "top-user", Score: 999999},
 		{UserID: 2, Name: "second-user", Score: 0},
 	}

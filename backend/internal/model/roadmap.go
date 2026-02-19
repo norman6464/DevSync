@@ -2,6 +2,13 @@ package model
 
 import "time"
 
+// StepOrder はステップの並び替え情報を表す。
+// ロードマップ・スタディサークルのステップ並び替えに使用する。
+type StepOrder struct {
+	StepID     uint `json:"step_id"`     // ステップID
+	OrderIndex int  `json:"order_index"` // 新しい表示順序
+}
+
 // RoadmapCategory は学習ロードマップのカテゴリを表す型。
 type RoadmapCategory string
 

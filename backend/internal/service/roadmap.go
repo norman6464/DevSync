@@ -7,8 +7,6 @@ import (
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
-// StepOrder はステップの並び替え情報を表す型エイリアス。
-type StepOrder = repository.StepOrder
 
 // RoadmapService は学習ロードマップのビジネスロジックを提供する。
 // ロードマップとステップのCRUD操作、可視性制御、コピー機能を担当する。
@@ -409,7 +407,7 @@ func (s *RoadmapService) SeedTemplates(userID uint) error {
 }
 
 // ReorderSteps は所有権を検証した後、ステップの表示順序を一括更新する。
-func (s *RoadmapService) ReorderSteps(roadmapID, userID uint, orders []repository.StepOrder) error {
+func (s *RoadmapService) ReorderSteps(roadmapID, userID uint, orders []model.StepOrder) error {
 	roadmap, err := s.repo.FindByID(roadmapID)
 	if err != nil {
 		return err

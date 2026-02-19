@@ -321,9 +321,9 @@ func (m *MockMessageRepository) GetConversation(userID, otherUserID uint, page, 
 	return args.Get(0).([]model.Message), args.Error(1)
 }
 
-func (m *MockMessageRepository) GetConversations(userID uint) ([]repository.ConversationSummary, error) {
+func (m *MockMessageRepository) GetConversations(userID uint) ([]model.ConversationSummary, error) {
 	args := m.Called(userID)
-	return args.Get(0).([]repository.ConversationSummary), args.Error(1)
+	return args.Get(0).([]model.ConversationSummary), args.Error(1)
 }
 
 func (m *MockMessageRepository) MarkAsRead(senderID, receiverID uint) error {
@@ -835,7 +835,7 @@ func (m *MockRoadmapRepository) FindStepByID(stepID uint) (*model.RoadmapStep, e
 	return args.Get(0).(*model.RoadmapStep), args.Error(1)
 }
 
-func (m *MockRoadmapRepository) ReorderSteps(roadmapID uint, stepOrders []repository.StepOrder) error {
+func (m *MockRoadmapRepository) ReorderSteps(roadmapID uint, stepOrders []model.StepOrder) error {
 	args := m.Called(roadmapID, stepOrders)
 	return args.Error(0)
 }
@@ -1358,7 +1358,7 @@ func (m *MockStudyCircleRepository) FindStepByID(stepID uint) (*model.StudyCircl
 	return args.Get(0).(*model.StudyCircleStep), args.Error(1)
 }
 
-func (m *MockStudyCircleRepository) ReorderSteps(circleID uint, stepOrders []repository.StepOrder) error {
+func (m *MockStudyCircleRepository) ReorderSteps(circleID uint, stepOrders []model.StepOrder) error {
 	args := m.Called(circleID, stepOrders)
 	return args.Error(0)
 }
@@ -1450,19 +1450,19 @@ type MockRankingRepository struct {
 
 var _ repository.RankingRepositoryInterface = (*MockRankingRepository)(nil)
 
-func (m *MockRankingRepository) ContributionRanking(period string) ([]repository.RankingEntry, error) {
+func (m *MockRankingRepository) ContributionRanking(period string) ([]model.RankingEntry, error) {
 	args := m.Called(period)
-	return args.Get(0).([]repository.RankingEntry), args.Error(1)
+	return args.Get(0).([]model.RankingEntry), args.Error(1)
 }
 
-func (m *MockRankingRepository) LanguageRanking(language, period string) ([]repository.RankingEntry, error) {
+func (m *MockRankingRepository) LanguageRanking(language, period string) ([]model.RankingEntry, error) {
 	args := m.Called(language, period)
-	return args.Get(0).([]repository.RankingEntry), args.Error(1)
+	return args.Get(0).([]model.RankingEntry), args.Error(1)
 }
 
-func (m *MockRankingRepository) LevelRanking() ([]repository.RankingEntry, error) {
+func (m *MockRankingRepository) LevelRanking() ([]model.RankingEntry, error) {
 	args := m.Called()
-	return args.Get(0).([]repository.RankingEntry), args.Error(1)
+	return args.Get(0).([]model.RankingEntry), args.Error(1)
 }
 
 func (m *MockRankingRepository) AvailableLanguages() ([]string, error) {

@@ -2,14 +2,14 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/repository"
+	"github.com/norman6464/devsync/backend/internal/model"
 )
 
 // RankingServiceInterface はRankingHandlerが依存するサービスメソッドを定義する。
 type RankingServiceInterface interface {
-	ContributionRanking(period string) ([]repository.RankingEntry, error)
-	LanguageRanking(language, period string) ([]repository.RankingEntry, error)
-	LevelRanking() ([]repository.RankingEntry, error)
+	ContributionRanking(period string) ([]model.RankingEntry, error)
+	LanguageRanking(language, period string) ([]model.RankingEntry, error)
+	LevelRanking() ([]model.RankingEntry, error)
 	AvailableLanguages() ([]string, error)
 }
 

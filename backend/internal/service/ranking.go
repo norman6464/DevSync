@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
@@ -16,17 +17,17 @@ func NewRankingService(repo repository.RankingRepositoryInterface) *RankingServi
 }
 
 // ContributionRanking は指定期間のコントリビューションランキングを返す。
-func (s *RankingService) ContributionRanking(period string) ([]repository.RankingEntry, error) {
+func (s *RankingService) ContributionRanking(period string) ([]model.RankingEntry, error) {
 	return s.repo.ContributionRanking(period)
 }
 
 // LanguageRanking は指定言語・期間の言語別ランキングを返す。
-func (s *RankingService) LanguageRanking(language, period string) ([]repository.RankingEntry, error) {
+func (s *RankingService) LanguageRanking(language, period string) ([]model.RankingEntry, error) {
 	return s.repo.LanguageRanking(language, period)
 }
 
 // LevelRanking はXP合計に基づくレベルランキングを返す。
-func (s *RankingService) LevelRanking() ([]repository.RankingEntry, error) {
+func (s *RankingService) LevelRanking() ([]model.RankingEntry, error) {
 	return s.repo.LevelRanking()
 }
 

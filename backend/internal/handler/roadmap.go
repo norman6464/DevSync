@@ -7,7 +7,6 @@ import (
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
 )
 
 // RoadmapServiceInterface はRoadmapHandlerが依存するサービスメソッドを定義する。
@@ -26,7 +25,7 @@ type RoadmapServiceInterface interface {
 	UpdateStep(roadmapID, stepID, userID uint, updates *model.RoadmapStep) (*model.RoadmapStep, error)
 	UpdateStepCompletion(roadmapID, stepID, userID uint, isCompleted bool) (*model.RoadmapStep, error)
 	DeleteStep(roadmapID, stepID, userID uint) error
-	ReorderSteps(roadmapID, userID uint, orders []service.StepOrder) error
+	ReorderSteps(roadmapID, userID uint, orders []model.StepOrder) error
 }
 
 // RoadmapHandler はロードマップ関連のHTTPハンドラ。

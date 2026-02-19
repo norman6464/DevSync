@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/norman6464/devsync/backend/internal/repository"
+import "github.com/norman6464/devsync/backend/internal/model"
 
 // CreateStudyCircleRequest はスタディサークル作成リクエストのDTO。
 type CreateStudyCircleRequest struct {
@@ -39,7 +39,7 @@ type UpdateStudyCircleStepRequest struct {
 
 // ReorderStudyCircleStepsRequest はスタディサークルステップ並べ替えリクエストのDTO。
 type ReorderStudyCircleStepsRequest struct {
-	Orders []repository.StepOrder `json:"orders" binding:"required"`
+	Orders []model.StepOrder `json:"orders" binding:"required"`
 }
 
 // UpdateStudyCircleProgressRequest はスタディサークル進捗更新リクエストのDTO。

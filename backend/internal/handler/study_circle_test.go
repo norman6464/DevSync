@@ -532,7 +532,7 @@ func TestStudyCircleReorderSteps_Success(t *testing.T) {
 	circle := &model.StudyCircle{OwnerID: 1}
 	circle.ID = 10
 	repo.On("FindByID", uint(10)).Return(circle, nil)
-	repo.On("ReorderSteps", uint(10), mock.AnythingOfType("[]repository.StepOrder")).Return(nil)
+	repo.On("ReorderSteps", uint(10), mock.AnythingOfType("[]model.StepOrder")).Return(nil)
 
 	w := doRequest(r, http.MethodPut, "/study-circles/10/steps/reorder", map[string]interface{}{
 		"orders": []map[string]interface{}{
