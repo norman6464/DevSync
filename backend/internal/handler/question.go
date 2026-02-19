@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
@@ -60,14 +59,9 @@ func (h *QuestionHandler) Create(c *gin.Context) {
 
 // GetAll は質問一覧をページネーション・タグ・ソート付きで取得する。
 func (h *QuestionHandler) GetAll(c *gin.Context) {
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
-	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
+	limit, offset := parseLimitOffset(c)
 	tag := c.Query("tag")
 	sort := c.DefaultQuery("sort", "newest")
-
-	if limit > 100 {
-		limit = 100
-	}
 
 	questions, total, err := h.service.GetAll(limit, offset, tag, sort)
 	if err != nil {
@@ -91,12 +85,7 @@ func (h *QuestionHandler) Search(c *gin.Context) {
 		return
 	}
 
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
-	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
-
-	if limit > 100 {
-		limit = 100
-	}
+	limit, offset := parseLimitOffset(c)
 
 	questions, total, err := h.service.Search(q, limit, offset)
 	if err != nil {
