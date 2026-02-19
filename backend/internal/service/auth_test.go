@@ -29,6 +29,7 @@ func TestRegister_Success(t *testing.T) {
 	svc, userRepo, _ := newTestAuthService()
 
 	userRepo.On("FindByEmail", "test@example.com").Return(nil, errors.New("not found"))
+	userRepo.On("FindByUsername", "test").Return(nil, errors.New("not found"))
 	userRepo.On("Create", mock.AnythingOfType("*model.User")).Return(nil)
 
 	resp, err := svc.Register(RegisterInput{
@@ -42,6 +43,7 @@ func TestRegister_Success(t *testing.T) {
 	assert.NotEmpty(t, resp.Token)
 	assert.Equal(t, "testuser", resp.User.Name)
 	assert.Equal(t, "test@example.com", resp.User.Email)
+	assert.Equal(t, "test", resp.User.Username)
 	userRepo.AssertExpectations(t)
 }
 
@@ -106,6 +108,7 @@ func TestRegister_CreateUserError(t *testing.T) {
 	svc, userRepo, _ := newTestAuthService()
 
 	userRepo.On("FindByEmail", "new@example.com").Return(nil, errors.New("not found"))
+	userRepo.On("FindByUsername", "new").Return(nil, errors.New("not found"))
 	userRepo.On("Create", mock.AnythingOfType("*model.User")).Return(errors.New("db error"))
 
 	resp, err := svc.Register(RegisterInput{
@@ -443,6 +446,7 @@ func TestGitHubLogin_CreateNewUser(t *testing.T) {
 	// GitHub IDもメールも見つからない
 	userRepo.On("FindByGitHubID", int64(12345)).Return(nil, errors.New("not found"))
 	userRepo.On("FindByEmail", "new@example.com").Return(nil, errors.New("not found"))
+	userRepo.On("FindByUsername", "newghuser").Return(nil, errors.New("not found"))
 	userRepo.On("Create", mock.AnythingOfType("*model.User")).Return(nil)
 
 	ghUser := &GitHubUserInfo{
@@ -464,11 +468,13 @@ func TestGitHubLogin_NoEmailFallback(t *testing.T) {
 
 	// GitHub IDが見つからず、メールも未提供
 	userRepo.On("FindByGitHubID", int64(12345)).Return(nil, errors.New("not found"))
+	userRepo.On("FindByUsername", "ghuser").Return(nil, errors.New("not found"))
 	userRepo.On("Create", mock.AnythingOfType("*model.User")).Run(func(args mock.Arguments) {
 		user := args.Get(0).(*model.User)
 		// メール無しの場合、login@github.local がフォールバック
 		assert.Equal(t, "ghuser@github.local", user.Email)
 		assert.Equal(t, "ghuser", user.Name) // Name空の場合、Loginがフォールバック
+		assert.Equal(t, "ghuser", user.Username)
 	}).Return(nil)
 
 	ghUser := &GitHubUserInfo{
