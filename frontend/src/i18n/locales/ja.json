@@ -24,8 +24,29 @@
     "scrollToTop": "ページ上部に戻る",
     "dismiss": "閉じる",
     "selectLanguage": "言語を選択",
-    "monthsShort": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
-    "dayLabelsShort": ["", "月", "", "水", "", "金", ""],
+    "monthsShort": [
+      "1月",
+      "2月",
+      "3月",
+      "4月",
+      "5月",
+      "6月",
+      "7月",
+      "8月",
+      "9月",
+      "10月",
+      "11月",
+      "12月"
+    ],
+    "dayLabelsShort": [
+      "",
+      "月",
+      "",
+      "水",
+      "",
+      "金",
+      ""
+    ],
     "contributionsInLastYear": "過去1年間に{{count}}コントリビューション",
     "dateContributions": "{{date}}: {{count}}コントリビューション",
     "dateLogs": "{{date}}: {{count}}件のログ"
@@ -49,7 +70,8 @@
     "advice": "AIアドバイザー",
     "analytics": "学習分析",
     "studyCircles": "スタディサークル",
-    "more": "その他"
+    "more": "その他",
+    "youtube": "YouTube動画"
   },
   "auth": {
     "login": "ログイン",
@@ -59,14 +81,13 @@
     "name": "名前",
     "confirmPassword": "パスワード確認",
     "emailPlaceholder": "you@example.com",
-    "passwordPlaceholder": "••••••••",
+    "passwordPlaceholder": "6文字以上",
     "forgotPassword": "パスワードを忘れた方",
     "noAccount": "アカウントをお持ちでない方",
     "hasAccount": "すでにアカウントをお持ちの方",
     "signInWith": "{{provider}}でログイン",
     "signUpWith": "{{provider}}で登録",
-    "orContinueWith": "または",
-    "passwordPlaceholder": "6文字以上"
+    "orContinueWith": "または"
   },
   "dashboard": {
     "title": "ダッシュボード",
@@ -1239,5 +1260,19 @@
     "mentionedYou": "あなたをメンションしました",
     "inPost": "投稿内",
     "inComment": "コメント内"
+  },
+  "youtube": {
+    "pageTitle": "YouTube動画",
+    "pageSubtitle": "プログラミング学習に役立つYouTube動画を見つけよう",
+    "recommendTab": "おすすめ",
+    "searchTab": "検索",
+    "searchPlaceholder": "キーワードで動画を検索...",
+    "searchFailed": "動画の検索に失敗しました",
+    "basedOnSkills": "あなたのスキルに基づく",
+    "noRecommendations": "おすすめ動画がありません。プロフィールでスキルを設定してください",
+    "noResults": "検索結果がありません",
+    "cachedResult": "キャッシュされた結果を表示しています",
+    "watchOnYoutube": "YouTubeで視聴",
+    "unavailable": "YouTube動画機能は現在利用できません"
   }
 }

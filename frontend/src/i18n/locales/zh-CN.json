@@ -23,8 +23,29 @@
     "menu": "菜单",
     "scrollToTop": "返回顶部",
     "selectLanguage": "选择语言",
-    "monthsShort": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
-    "dayLabelsShort": ["", "一", "", "三", "", "五", ""],
+    "monthsShort": [
+      "1月",
+      "2月",
+      "3月",
+      "4月",
+      "5月",
+      "6月",
+      "7月",
+      "8月",
+      "9月",
+      "10月",
+      "11月",
+      "12月"
+    ],
+    "dayLabelsShort": [
+      "",
+      "一",
+      "",
+      "三",
+      "",
+      "五",
+      ""
+    ],
     "contributionsInLastYear": "过去一年 {{count}} 次贡献",
     "dateContributions": "{{date}}: {{count}} 次贡献",
     "dateLogs": "{{date}}: {{count}} 条日志"
@@ -48,7 +69,8 @@
     "advice": "AI顾问",
     "analytics": "学习分析",
     "studyCircles": "学习圈",
-    "more": "更多"
+    "more": "更多",
+    "youtube": "YouTube视频"
   },
   "auth": {
     "login": "登录",
@@ -58,14 +80,13 @@
     "name": "姓名",
     "confirmPassword": "确认密码",
     "emailPlaceholder": "you@example.com",
-    "passwordPlaceholder": "••••••••",
+    "passwordPlaceholder": "6个字符以上",
     "forgotPassword": "忘记密码？",
     "noAccount": "没有账号？",
     "hasAccount": "已有账号？",
     "signInWith": "使用 {{provider}} 登录",
     "signUpWith": "使用 {{provider}} 注册",
-    "orContinueWith": "或者",
-    "passwordPlaceholder": "6个字符以上"
+    "orContinueWith": "或者"
   },
   "dashboard": {
     "title": "仪表板",
@@ -1338,5 +1359,19 @@
     "mentionedYou": "提到了你",
     "inPost": "在帖子中",
     "inComment": "在评论中"
+  },
+  "youtube": {
+    "pageTitle": "YouTube视频",
+    "pageSubtitle": "发现有助于编程学习的YouTube视频",
+    "recommendTab": "推荐",
+    "searchTab": "搜索",
+    "searchPlaceholder": "按关键词搜索视频...",
+    "searchFailed": "视频搜索失败",
+    "basedOnSkills": "基于您的技能",
+    "noRecommendations": "暂无推荐视频。请在个人资料中设置技能",
+    "noResults": "未找到搜索结果",
+    "cachedResult": "正在显示缓存结果",
+    "watchOnYoutube": "在YouTube上观看",
+    "unavailable": "YouTube视频功能当前不可用"
   }
 }

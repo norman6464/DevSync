@@ -23,8 +23,29 @@
     "menu": "Меню",
     "scrollToTop": "Наверх",
     "selectLanguage": "Выбрать язык",
-    "monthsShort": ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"],
-    "dayLabelsShort": ["", "Пн", "", "Ср", "", "Пт", ""],
+    "monthsShort": [
+      "Янв",
+      "Фев",
+      "Мар",
+      "Апр",
+      "Май",
+      "Июн",
+      "Июл",
+      "Авг",
+      "Сен",
+      "Окт",
+      "Ноя",
+      "Дек"
+    ],
+    "dayLabelsShort": [
+      "",
+      "Пн",
+      "",
+      "Ср",
+      "",
+      "Пт",
+      ""
+    ],
     "contributionsInLastYear": "{{count}} вкладов за последний год",
     "dateContributions": "{{date}}: {{count}} вкладов",
     "dateLogs": "{{date}}: {{count}} записей"
@@ -48,7 +69,8 @@
     "advice": "ИИ-советник",
     "analytics": "Аналитика",
     "studyCircles": "Учебные Кружки",
-    "more": "Ещё"
+    "more": "Ещё",
+    "youtube": "Видео YouTube"
   },
   "auth": {
     "login": "Войти",
@@ -58,14 +80,13 @@
     "name": "Имя",
     "confirmPassword": "Подтвердите пароль",
     "emailPlaceholder": "you@example.com",
-    "passwordPlaceholder": "••••••••",
+    "passwordPlaceholder": "Минимум 6 символов",
     "forgotPassword": "Забыли пароль?",
     "noAccount": "Нет аккаунта?",
     "hasAccount": "Уже есть аккаунт?",
     "signInWith": "Войти через {{provider}}",
     "signUpWith": "Регистрация через {{provider}}",
-    "orContinueWith": "Или продолжить с",
-    "passwordPlaceholder": "Минимум 6 символов"
+    "orContinueWith": "Или продолжить с"
   },
   "dashboard": {
     "title": "Панель",
@@ -1338,5 +1359,19 @@
     "mentionedYou": "упомянул вас",
     "inPost": "в публикации",
     "inComment": "в комментарии"
+  },
+  "youtube": {
+    "pageTitle": "Видео YouTube",
+    "pageSubtitle": "Откройте для себя видео YouTube для улучшения навыков программирования",
+    "recommendTab": "Рекомендации",
+    "searchTab": "Поиск",
+    "searchPlaceholder": "Поиск видео по ключевому слову...",
+    "searchFailed": "Не удалось найти видео",
+    "basedOnSkills": "На основе ваших навыков",
+    "noRecommendations": "Нет рекомендованных видео. Укажите навыки в настройках профиля",
+    "noResults": "Результатов не найдено",
+    "cachedResult": "Отображаются кэшированные результаты",
+    "watchOnYoutube": "Смотреть на YouTube",
+    "unavailable": "Функция видео YouTube в настоящее время недоступна"
   }
 }

@@ -35,6 +35,7 @@ services:
       GITHUB_REDIRECT_URL: ${GITHUB_REDIRECT_URL:-http://localhost:5173/github/callback}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      YOUTUBE_API_KEY: ${YOUTUBE_API_KEY:-}
       SMTP_HOST: ${SMTP_HOST:-mailhog}
       SMTP_PORT: ${SMTP_PORT:-1025}
       SMTP_USER: ${SMTP_USER:-}

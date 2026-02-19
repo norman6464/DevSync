@@ -37,6 +37,7 @@ import NotesPage from './pages/NotesPage';
 import OnboardingPage from './pages/OnboardingPage';
 import PostSeriesDetailPage from './pages/PostSeriesDetailPage';
 import PostCollectionDetailPage from './pages/PostCollectionDetailPage';
+import YouTubePage from './pages/YouTubePage';
 import NotFoundPage from './pages/NotFoundPage';
 import { ToastProvider } from './contexts/ToastContext';
 import ToastContainer from './components/common/Toast';
@@ -101,6 +102,7 @@ export default function App() {
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/study-circles" element={<StudyCirclesPage />} />
           <Route path="/study-circles/:id" element={<StudyCircleDetailPage />} />
+          <Route path="/youtube" element={<YouTubePage />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFoundPage />} />

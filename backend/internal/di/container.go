@@ -59,6 +59,7 @@ type Container struct {
 	PostPinHandler           *handler.PostPinHandler
 	PostViewHandler          *handler.PostViewHandler
 	MentionHandler           *handler.MentionHandler
+	YouTubeHandler           *handler.YouTubeHandler
 
 	// ミドルウェア・コールバック用
 	AuthService      *service.AuthService
@@ -241,6 +242,18 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	mentionRepo := repository.NewMentionRepository(db)
 	mentionService := service.NewMentionService(mentionRepo, userRepo, notificationService)
 	c.MentionHandler = handler.NewMentionHandler(mentionService)
+
+	// YouTubeサービス（APIキー設定時のみクライアント初期化）
+	youtubeVideoRepo := repository.NewYouTubeVideoRepository(db)
+	var youtubeClient service.YouTubeClientInterface
+	if cfg.YouTubeAPIKey != "" {
+		youtubeClient = service.NewYouTubeClient(cfg.YouTubeAPIKey)
+		log.Println("YouTube APIキーが設定されています。YouTube動画検索機能が有効です。")
+	} else {
+		log.Println("YouTube APIキー未設定。YouTube動画検索機能は無効です。")
+	}
+	youtubeService := service.NewYouTubeService(youtubeVideoRepo, userRepo, youtubeClient)
+	c.YouTubeHandler = handler.NewYouTubeHandler(youtubeService)
 
 	// HubのGetRoomMembersコールバックを設定
 	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs
