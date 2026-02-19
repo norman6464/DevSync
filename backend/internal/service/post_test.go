@@ -275,6 +275,15 @@ func TestPostUnlike_SelfUnlike_Forbidden(t *testing.T) {
 	postRepo.AssertNotCalled(t, "Unlike")
 }
 
+func TestPostUnlike_PostNotFound(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	err := svc.Unlike(1, 999)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
 func TestPostHasLiked(t *testing.T) {
 	svc, postRepo, _ := newTestPostService()
 
