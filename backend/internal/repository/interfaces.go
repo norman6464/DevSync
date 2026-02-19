@@ -581,3 +581,8 @@ type CommentStatsRepositoryInterface interface {
 type NotificationStatsRepositoryInterface interface {
 	GetNotificationStats(userID uint) (*model.NotificationStats, error)
 }
+
+// MessageStatsRepositoryInterface はユーザーメッセージ集計統計データ操作の契約を定義する。
+type MessageStatsRepositoryInterface interface {
+	GetMessageStats(userID uint) (*model.MessageStats, error)
+}
