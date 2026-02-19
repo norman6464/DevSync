@@ -623,6 +623,15 @@ func TestLearningResourceUnsave_Error(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestLearningResourceUnsave_ResourceNotFound(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+	repo.On("FindByID", uint(10)).Return(nil, errors.New("not found"))
+
+	err := svc.Unsave(1, 10)
+	assert.ErrorIs(t, err, ErrNotFound)
+	repo.AssertNotCalled(t, "Unsave")
+}
+
 func TestLearningResourceUnsave_SelfUnsave_Forbidden(t *testing.T) {
 	svc, repo := newTestLearningResourceService()
 	repo.On("FindByID", uint(10)).Return(&model.LearningResource{UserID: 1}, nil)
