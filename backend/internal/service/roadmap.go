@@ -52,15 +52,39 @@ func (s *RoadmapService) GetStats(userID uint) (*model.RoadmapStats, error) {
 	return s.repo.GetStats(userID)
 }
 
-// Update は所有権を検証した後、ロードマップを更新する。
-// ステータスが「完了」に変更された場合、完了日時を自動設定する。
-func (s *RoadmapService) Update(id, userID uint, updates *model.Roadmap) (*model.Roadmap, error) {
+// findAndCheckOwnership は指定IDのロードマップを取得し、所有権を検証する。
+func (s *RoadmapService) findAndCheckOwnership(id, userID uint) (*model.Roadmap, error) {
 	roadmap, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err
 	}
 	if roadmap.UserID != userID {
 		return nil, ErrForbidden
+	}
+	return roadmap, nil
+}
+
+// findAndCheckStepOwnership はロードマップの所有権とステップの所属を検証する。
+func (s *RoadmapService) findAndCheckStepOwnership(roadmapID, stepID, userID uint) (*model.RoadmapStep, error) {
+	if _, err := s.findAndCheckOwnership(roadmapID, userID); err != nil {
+		return nil, err
+	}
+	step, err := s.repo.FindStepByID(stepID)
+	if err != nil {
+		return nil, err
+	}
+	if step.RoadmapID != roadmapID {
+		return nil, ErrBadRequest
+	}
+	return step, nil
+}
+
+// Update は所有権を検証した後、ロードマップを更新する。
+// ステータスが「完了」に変更された場合、完了日時を自動設定する。
+func (s *RoadmapService) Update(id, userID uint, updates *model.Roadmap) (*model.Roadmap, error) {
+	roadmap, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return nil, err
 	}
 
 	if updates.Title != "" {
@@ -88,12 +112,9 @@ func (s *RoadmapService) Update(id, userID uint, updates *model.Roadmap) (*model
 
 // UpdateVisibility は所有権を検証した後、ロードマップの公開/非公開状態を更新する。
 func (s *RoadmapService) UpdateVisibility(id, userID uint, isPublic bool) (*model.Roadmap, error) {
-	roadmap, err := s.repo.FindByID(id)
+	roadmap, err := s.findAndCheckOwnership(id, userID)
 	if err != nil {
 		return nil, err
-	}
-	if roadmap.UserID != userID {
-		return nil, ErrForbidden
 	}
 
 	roadmap.IsPublic = isPublic
@@ -106,12 +127,8 @@ func (s *RoadmapService) UpdateVisibility(id, userID uint, isPublic bool) (*mode
 
 // Delete は所有権を検証した後、ロードマップを削除する。
 func (s *RoadmapService) Delete(id, userID uint) error {
-	roadmap, err := s.repo.FindByID(id)
-	if err != nil {
+	if _, err := s.findAndCheckOwnership(id, userID); err != nil {
 		return err
-	}
-	if roadmap.UserID != userID {
-		return ErrForbidden
 	}
 	return s.repo.Delete(id)
 }
@@ -131,12 +148,8 @@ func (s *RoadmapService) CopyRoadmap(roadmapID, userID uint) (*model.Roadmap, er
 
 // CreateStep は所有権を検証した後、ロードマップにステップを追加する。
 func (s *RoadmapService) CreateStep(roadmapID, userID uint, step *model.RoadmapStep) error {
-	roadmap, err := s.repo.FindByID(roadmapID)
-	if err != nil {
+	if _, err := s.findAndCheckOwnership(roadmapID, userID); err != nil {
 		return err
-	}
-	if roadmap.UserID != userID {
-		return ErrForbidden
 	}
 
 	step.RoadmapID = roadmapID
@@ -145,20 +158,9 @@ func (s *RoadmapService) CreateStep(roadmapID, userID uint, step *model.RoadmapS
 
 // UpdateStep はロードマップの所有権とステップの所属を検証した後、ステップを更新する。
 func (s *RoadmapService) UpdateStep(roadmapID, stepID, userID uint, updates *model.RoadmapStep) (*model.RoadmapStep, error) {
-	roadmap, err := s.repo.FindByID(roadmapID)
+	step, err := s.findAndCheckStepOwnership(roadmapID, stepID, userID)
 	if err != nil {
 		return nil, err
-	}
-	if roadmap.UserID != userID {
-		return nil, ErrForbidden
-	}
-
-	step, err := s.repo.FindStepByID(stepID)
-	if err != nil {
-		return nil, err
-	}
-	if step.RoadmapID != roadmapID {
-		return nil, ErrBadRequest
 	}
 
 	if updates.Title != "" {
@@ -180,20 +182,9 @@ func (s *RoadmapService) UpdateStep(roadmapID, stepID, userID uint, updates *mod
 // UpdateStepCompletion はステップの完了状態を更新する。
 // 完了時にはCompletedAtを設定し、未完了に戻す場合はnilにリセットする。
 func (s *RoadmapService) UpdateStepCompletion(roadmapID, stepID, userID uint, isCompleted bool) (*model.RoadmapStep, error) {
-	roadmap, err := s.repo.FindByID(roadmapID)
+	step, err := s.findAndCheckStepOwnership(roadmapID, stepID, userID)
 	if err != nil {
 		return nil, err
-	}
-	if roadmap.UserID != userID {
-		return nil, ErrForbidden
-	}
-
-	step, err := s.repo.FindStepByID(stepID)
-	if err != nil {
-		return nil, err
-	}
-	if step.RoadmapID != roadmapID {
-		return nil, ErrBadRequest
 	}
 
 	step.IsCompleted = isCompleted
@@ -212,22 +203,9 @@ func (s *RoadmapService) UpdateStepCompletion(roadmapID, stepID, userID uint, is
 
 // DeleteStep はロードマップの所有権とステップの所属を検証した後、ステップを削除する。
 func (s *RoadmapService) DeleteStep(roadmapID, stepID, userID uint) error {
-	roadmap, err := s.repo.FindByID(roadmapID)
-	if err != nil {
+	if _, err := s.findAndCheckStepOwnership(roadmapID, stepID, userID); err != nil {
 		return err
 	}
-	if roadmap.UserID != userID {
-		return ErrForbidden
-	}
-
-	step, err := s.repo.FindStepByID(stepID)
-	if err != nil {
-		return err
-	}
-	if step.RoadmapID != roadmapID {
-		return ErrBadRequest
-	}
-
 	return s.repo.DeleteStep(stepID)
 }
 
@@ -408,12 +386,8 @@ func (s *RoadmapService) SeedTemplates(userID uint) error {
 
 // ReorderSteps は所有権を検証した後、ステップの表示順序を一括更新する。
 func (s *RoadmapService) ReorderSteps(roadmapID, userID uint, orders []model.StepOrder) error {
-	roadmap, err := s.repo.FindByID(roadmapID)
-	if err != nil {
+	if _, err := s.findAndCheckOwnership(roadmapID, userID); err != nil {
 		return err
-	}
-	if roadmap.UserID != userID {
-		return ErrForbidden
 	}
 	return s.repo.ReorderSteps(roadmapID, orders)
 }
