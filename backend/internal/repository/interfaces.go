@@ -546,3 +546,8 @@ type QAStatsRepositoryInterface interface {
 type CodeSnippetStatsRepositoryInterface interface {
 	GetCodeSnippetStats(userID uint) (*model.CodeSnippetStats, error)
 }
+
+// LearningResourceStatsRepositoryInterface はユーザー学習リソース活動集計統計データ操作の契約を定義する。
+type LearningResourceStatsRepositoryInterface interface {
+	GetLearningResourceStats(userID uint) (*model.LearningResourceStats, error)
+}
