@@ -25,6 +25,12 @@ func newTestAtCoderService(fn roundTripFunc) *AtCoderService {
 	}
 }
 
+func TestNewAtCoderService(t *testing.T) {
+	svc := NewAtCoderService()
+	assert.NotNil(t, svc)
+	assert.NotNil(t, svc.client)
+}
+
 func TestRatingToColor(t *testing.T) {
 	tests := []struct {
 		name   string

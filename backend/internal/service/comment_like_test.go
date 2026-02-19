@@ -101,6 +101,17 @@ func TestCommentLikeService_Unlike_NotLiked(t *testing.T) {
 	likeRepo.AssertExpectations(t)
 }
 
+func TestCommentLikeService_Unlike_HasLikedError(t *testing.T) {
+	svc, likeRepo, postRepo := newTestCommentLikeService()
+	postRepo.On("FindCommentByID", uint(1)).Return(makeComment(1, 2), nil)
+	likeRepo.On("HasLiked", uint(10), uint(1)).Return(false, errors.New("db error"))
+
+	err := svc.Unlike(10, 1)
+	assert.Error(t, err)
+	postRepo.AssertExpectations(t)
+	likeRepo.AssertExpectations(t)
+}
+
 // --- GetStatus ---
 
 func TestCommentLikeService_GetStatus_Success(t *testing.T) {
@@ -126,6 +137,19 @@ func TestCommentLikeService_GetStatus_CommentNotFound(t *testing.T) {
 	assert.False(t, liked)
 	assert.Equal(t, int64(0), count)
 	postRepo.AssertExpectations(t)
+}
+
+func TestCommentLikeService_GetStatus_HasLikedError(t *testing.T) {
+	svc, likeRepo, postRepo := newTestCommentLikeService()
+	postRepo.On("FindCommentByID", uint(1)).Return(makeComment(1, 2), nil)
+	likeRepo.On("HasLiked", uint(10), uint(1)).Return(false, errors.New("db error"))
+
+	liked, count, err := svc.GetStatus(10, 1)
+	assert.Error(t, err)
+	assert.False(t, liked)
+	assert.Equal(t, int64(0), count)
+	postRepo.AssertExpectations(t)
+	likeRepo.AssertExpectations(t)
 }
 
 func TestCommentLikeService_GetStatus_CountError(t *testing.T) {
