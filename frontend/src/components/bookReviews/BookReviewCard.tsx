@@ -101,7 +101,7 @@ export default function BookReviewCard({
           <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-700">
             {showUser && review.user && (
               <Link
-                to={`/profile/${review.user_id}`}
+                to={`/profile/${review.user?.username || review.user_id}`}
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
                 <Avatar avatarUrl={review.user.avatar_url} name={review.user.name} size="sm" />

@@ -129,7 +129,7 @@ export default function QADetailPage() {
             <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-700/50">
               {question.user && (
                 <Link
-                  to={`/profile/${question.user_id}`}
+                  to={`/profile/${question.user?.username || question.user_id}`}
                   className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                 >
                   <Avatar avatarUrl={question.user.avatar_url} name={question.user.name} size="sm" />

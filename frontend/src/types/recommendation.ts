@@ -2,6 +2,7 @@
 export interface RecommendedUser {
   user: {
     id: number;
+    username: string;
     name: string;
     avatar_url: string;
     github_username: string;

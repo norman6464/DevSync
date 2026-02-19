@@ -198,7 +198,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-3 mb-3">
               <Avatar name={user.name} avatarUrl={user.avatar_url} size="md" />
               <div className="min-w-0">
-                <Link to={`/profile/${user.id}`} className="font-medium text-sm hover:text-blue-400 block truncate">
+                <Link to={`/profile/${user.username}`} className="font-medium text-sm hover:text-blue-400 block truncate">
                   {user.name}
                 </Link>
                 {user.github_username && (
@@ -207,7 +207,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="space-y-0.5">
-              <Link to={`/profile/${user.id}`} className="flex items-center gap-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800 py-1.5 px-2 rounded-md transition-colors">
+              <Link to={`/profile/${user.username}`} className="flex items-center gap-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800 py-1.5 px-2 rounded-md transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.9 17.9 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
                 {t('dashboard.yourProfile')}
               </Link>

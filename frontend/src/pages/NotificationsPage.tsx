@@ -27,13 +27,13 @@ function getNotificationLink(notification: Notification): string {
     case 'comment':
       return notification.post_id ? `/posts/${notification.post_id}` : '/';
     case 'follow':
-      return `/profile/${notification.actor_id}`;
+      return `/profile/${notification.actor.username}`;
     case 'message':
       return '/chat';
     case 'answer':
       return notification.question_id ? `/qa/${notification.question_id}` : '/';
     case 'badge':
-      return `/profile/${notification.actor_id}`;
+      return `/profile/${notification.actor.username}`;
     default:
       return '/';
   }
