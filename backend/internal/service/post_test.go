@@ -201,6 +201,18 @@ func TestPostGetDrafts_Success(t *testing.T) {
 	assert.True(t, result[0].IsDraft)
 }
 
+func TestPostGetDrafts_RepoError(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindDraftsByUserID", uint(1)).Return([]model.Post(nil), errors.New("db error"))
+
+	result, err := svc.GetDrafts(1)
+	assert.Error(t, err)
+	assert.Equal(t, "db error", err.Error())
+	assert.Nil(t, result)
+	postRepo.AssertExpectations(t)
+}
+
 func TestPostTimeline_Success(t *testing.T) {
 	svc, postRepo, _ := newTestPostService()
 
