@@ -8,6 +8,7 @@ export interface User {
   github_id: number;
   github_username: string;
   github_connected: boolean;
+  spotify_connected: boolean;
   zenn_username: string;
   qiita_username: string;
   atcoder_username: string;

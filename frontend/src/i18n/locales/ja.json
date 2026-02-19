@@ -323,6 +323,8 @@
     "zennUsernamePlaceholder": "Zennのユーザー名を入力",
     "qiitaUsernamePlaceholder": "Qiitaのユーザー名を入力",
     "atcoderUsernamePlaceholder": "AtCoderのユーザー名を入力",
+    "spotify": "Spotify",
+    "spotifyDescription": "Spotifyを連携して、現在再生中の曲をプロフィールに表示します。",
     "setTheme": "{{theme}}テーマに設定"
   },
   "explore": {
@@ -1198,6 +1200,17 @@
     "backToSettings": "設定に戻る",
     "loggingIn": "GitHubでログイン中...",
     "connecting": "GitHub連携中..."
+  },
+  "spotify": {
+    "nowPlaying": "再生中",
+    "recentlyPlayed": "最近再生した曲"
+  },
+  "spotifyCallback": {
+    "connecting": "Spotifyアカウントを連携中...",
+    "connectSuccess": "Spotifyアカウントが連携されました",
+    "connectFailed": "Spotifyの連携に失敗しました",
+    "missingParams": "認証パラメータが不足しています",
+    "backToSettings": "設定に戻る"
   },
   "editor": {
     "write": "書く",

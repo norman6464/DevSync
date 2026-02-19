@@ -59,6 +59,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		auth.POST("/password-reset/confirm", c.AuthHandler.ResetPassword)
 	}
 	api.GET("/github/callback", c.GitHubHandler.Callback)
+	api.GET("/spotify/callback", c.SpotifyHandler.Callback)
 
 	// 認証必須ルート
 	protected := api.Group("")
@@ -90,6 +91,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerStudyCircleRoutes(protected, c)
 		registerSearchRoutes(protected, c)
 		registerYouTubeRoutes(protected, c)
+		registerSpotifyRoutes(protected, c)
 	}
 
 	return r
@@ -564,5 +566,15 @@ func registerYouTubeRoutes(g *gin.RouterGroup, c *di.Container) {
 		youtube.GET("/search", c.YouTubeHandler.Search)
 		youtube.GET("/recommend", c.YouTubeHandler.Recommend)
 		youtube.GET("/status", c.YouTubeHandler.Status)
+	}
+}
+
+func registerSpotifyRoutes(g *gin.RouterGroup, c *di.Container) {
+	spotify := g.Group("/spotify")
+	{
+		spotify.GET("/connect", c.SpotifyHandler.Connect)
+		spotify.DELETE("/disconnect", c.SpotifyHandler.Disconnect)
+		spotify.GET("/currently-playing/:userId", c.SpotifyHandler.GetCurrentlyPlaying)
+		spotify.GET("/recently-played/:userId", c.SpotifyHandler.GetRecentlyPlayed)
 	}
 }

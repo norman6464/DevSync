@@ -6,6 +6,7 @@ import { getGitHubConnectURL, disconnectGitHub, syncGitHub } from '../api/github
 import { connectZenn, disconnectZenn, syncZenn } from '../api/zenn';
 import { connectQiita, disconnectQiita, syncQiita } from '../api/qiita';
 import { connectAtCoder, disconnectAtCoder } from '../api/atcoder';
+import { getSpotifyConnectURL, disconnectSpotify } from '../api/spotify';
 import { deleteAccount } from '../api/auth';
 import { getEmailPreferences, updateEmailPreferences } from '../api/emailPreferences';
 import toast from 'react-hot-toast';
@@ -262,6 +263,26 @@ export function useSettings() {
     }
   };
 
+  const handleConnectSpotify = async () => {
+    try {
+      const { data } = await getSpotifyConnectURL();
+      window.location.href = data.url;
+    } catch {
+      toast.error(t('errors.somethingWrong'));
+    }
+  };
+
+  const handleDisconnectSpotify = async () => {
+    if (!user) return;
+    try {
+      await disconnectSpotify();
+      setUser({ ...user, spotify_connected: false });
+      toast.success(t('settings.saved'));
+    } catch {
+      toast.error(t('errors.somethingWrong'));
+    }
+  };
+
   const handleSavePaizaRank = async () => {
     if (!user) return;
     setSavingPaiza(true);
@@ -306,6 +327,8 @@ export function useSettings() {
     qiitaUsername, setQiitaUsername, connectingQiita, syncingQiita, handleConnectQiita, handleDisconnectQiita, handleSyncQiita,
     // AtCoder
     atcoderUsername, setAtcoderUsername, connectingAtcoder, handleConnectAtCoder, handleDisconnectAtCoder,
+    // Spotify
+    handleConnectSpotify, handleDisconnectSpotify,
     // Paiza
     paizaRank, setPaizaRank, savingPaiza, handleSavePaizaRank,
     // Account deletion

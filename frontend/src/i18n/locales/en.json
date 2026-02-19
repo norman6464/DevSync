@@ -310,6 +310,8 @@
     "zennUsernamePlaceholder": "Enter your Zenn username",
     "qiitaUsernamePlaceholder": "Enter your Qiita username",
     "atcoderUsernamePlaceholder": "Enter your AtCoder username",
+    "spotify": "Spotify",
+    "spotifyDescription": "Connect Spotify to display currently playing tracks on your profile.",
     "setTheme": "Set {{theme}} theme"
   },
   "explore": {
@@ -1297,6 +1299,17 @@
     "backToSettings": "Back to Settings",
     "loggingIn": "Logging in with GitHub...",
     "connecting": "Connecting GitHub..."
+  },
+  "spotify": {
+    "nowPlaying": "Now Playing",
+    "recentlyPlayed": "Recently Played"
+  },
+  "spotifyCallback": {
+    "connecting": "Connecting Spotify account...",
+    "connectSuccess": "Spotify account connected successfully!",
+    "connectFailed": "Failed to connect Spotify",
+    "missingParams": "Missing authentication parameters",
+    "backToSettings": "Back to Settings"
   },
   "editor": {
     "write": "Write",

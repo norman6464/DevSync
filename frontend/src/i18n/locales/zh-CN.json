@@ -310,6 +310,8 @@
     "zennUsernamePlaceholder": "输入Zenn用户名",
     "qiitaUsernamePlaceholder": "输入Qiita用户名",
     "atcoderUsernamePlaceholder": "输入AtCoder用户名",
+    "spotify": "Spotify",
+    "spotifyDescription": "连接Spotify，在个人资料中显示正在播放的歌曲。",
     "setTheme": "设置{{theme}}主题"
   },
   "explore": {
@@ -1297,6 +1299,17 @@
     "backToSettings": "返回设置",
     "loggingIn": "正在通过GitHub登录...",
     "connecting": "正在连接GitHub..."
+  },
+  "spotify": {
+    "nowPlaying": "正在播放",
+    "recentlyPlayed": "最近播放"
+  },
+  "spotifyCallback": {
+    "connecting": "正在连接Spotify账号...",
+    "connectSuccess": "Spotify账号已连接",
+    "connectFailed": "Spotify连接失败",
+    "missingParams": "缺少认证参数",
+    "backToSettings": "返回设置"
   },
   "editor": {
     "write": "编辑",

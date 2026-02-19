@@ -310,6 +310,8 @@
     "zennUsernamePlaceholder": "Zenn-Benutzername eingeben",
     "qiitaUsernamePlaceholder": "Qiita-Benutzername eingeben",
     "atcoderUsernamePlaceholder": "AtCoder-Benutzername eingeben",
+    "spotify": "Spotify",
+    "spotifyDescription": "Verbinde Spotify, um den aktuell gespielten Song in deinem Profil anzuzeigen.",
     "setTheme": "{{theme}}-Design einstellen"
   },
   "explore": {
@@ -1297,6 +1299,17 @@
     "backToSettings": "Zurück zu Einstellungen",
     "loggingIn": "Anmeldung mit GitHub...",
     "connecting": "GitHub wird verbunden..."
+  },
+  "spotify": {
+    "nowPlaying": "Wird gerade gespielt",
+    "recentlyPlayed": "Kürzlich gehört"
+  },
+  "spotifyCallback": {
+    "connecting": "Spotify-Konto wird verbunden...",
+    "connectSuccess": "Spotify-Konto erfolgreich verbunden",
+    "connectFailed": "Spotify-Verbindung fehlgeschlagen",
+    "missingParams": "Fehlende Authentifizierungsparameter",
+    "backToSettings": "Zurück zu Einstellungen"
   },
   "editor": {
     "write": "Schreiben",

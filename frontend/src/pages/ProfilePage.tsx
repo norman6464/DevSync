@@ -17,6 +17,7 @@ import PostCard from '../components/posts/PostCard';
 import PostSeriesCard from '../components/series/PostSeriesCard';
 import ShareModal from '../components/profile/ShareModal';
 import PortfolioModal from '../components/profile/PortfolioModal';
+import SpotifyNowPlaying from '../components/profile/SpotifyNowPlaying';
 
 const categoryIcons: Record<string, typeof Monitor> = { language: Monitor, framework: Rocket, skill: Target, project: FolderOpen, other: FileText };
 const statusColors: Record<string, string> = { active: 'text-green-400 bg-green-400/10', completed: 'text-blue-400 bg-blue-400/10', paused: 'text-yellow-400 bg-yellow-400/10' };
@@ -207,6 +208,9 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
+
+      {/* Spotify Now Playing */}
+      {user.spotify_connected && <SpotifyNowPlaying userId={user.id} />}
 
       {/* GitHub Data */}
       {user.github_connected && (

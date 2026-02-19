@@ -24,6 +24,9 @@ type Config struct {
 	CORSOrigins        string // CORS許可オリジン（カンマ区切り）
 	OpenAIAPIKey       string // OpenAI APIキー（LLM機能用、空なら無効）
 	YouTubeAPIKey      string // YouTube Data API v3キー（空なら無効）
+	SpotifyClientID     string // Spotify OAuth クライアントID（空なら無効）
+	SpotifyClientSecret string // Spotify OAuth クライアントシークレット
+	SpotifyRedirectURL  string // Spotify OAuth リダイレクトURL
 	SMTPHost           string // SMTPサーバーホスト（空ならメール機能無効）
 	SMTPPort           string // SMTPポート番号
 	SMTPUser           string // SMTP認証ユーザー名
@@ -50,6 +53,9 @@ func Load() *Config {
 		CORSOrigins:       getEnv("CORS_ORIGINS", "http://localhost:5173"),
 		OpenAIAPIKey:      getEnv("OPENAI_API_KEY", ""),
 		YouTubeAPIKey:     getEnv("YOUTUBE_API_KEY", ""),
+		SpotifyClientID:     getEnv("SPOTIFY_CLIENT_ID", ""),
+		SpotifyClientSecret: getEnv("SPOTIFY_CLIENT_SECRET", ""),
+		SpotifyRedirectURL:  getEnv("SPOTIFY_REDIRECT_URL", "http://localhost:5173/spotify/callback"),
 		SMTPHost:          getEnv("SMTP_HOST", ""),
 		SMTPPort:          getEnv("SMTP_PORT", "587"),
 		SMTPUser:          getEnv("SMTP_USER", ""),

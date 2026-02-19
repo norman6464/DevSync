@@ -1743,3 +1743,18 @@ func (m *MockWeeklyReportSender) SendAllWeeklyReports() error {
 	args := m.Called()
 	return args.Error(0)
 }
+
+// ============================================================
+// MockSpotifyRepository は repository.SpotifyRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockSpotifyRepository struct {
+	mock.Mock
+}
+
+var _ repository.SpotifyRepositoryInterface = (*MockSpotifyRepository)(nil)
+
+func (m *MockSpotifyRepository) DeleteUserData(userID uint) error {
+	args := m.Called(userID)
+	return args.Error(0)
+}
