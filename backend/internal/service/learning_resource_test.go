@@ -541,6 +541,14 @@ func TestLearningResourceUnlike_SelfUnlike_Forbidden(t *testing.T) {
 	repo.AssertNotCalled(t, "Unlike")
 }
 
+func TestLearningResourceUnlike_NotFound(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+	repo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	err := svc.Unlike(1, 999)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
 func TestLearningResourceUnlike_Error(t *testing.T) {
 	svc, repo := newTestLearningResourceService()
 	resource := &model.LearningResource{UserID: 2, Title: "Other's resource"}
