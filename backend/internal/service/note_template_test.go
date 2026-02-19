@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -309,6 +310,20 @@ func TestNoteTemplateService_Update_ClearDefaultFlagError(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestNoteTemplateService_Update_ValidationNameError(t *testing.T) {
+	svc, repo, _ := newTestNoteTemplateService()
+
+	existing := &model.NoteTemplate{ID: 1, UserID: 1, Name: "テンプレ"}
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	// 101文字の名前 → バリデーションエラー
+	longName := strings.Repeat("あ", 101)
+	result, err := svc.Update(1, 1, longName, "", "", "", "", nil)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
 // ============================================================
 // Delete テスト
 // ============================================================
@@ -456,4 +471,30 @@ func TestNoteTemplateService_GetDefaultByUserID_NotFound(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	repo.AssertExpectations(t)
+}
+
+func TestNoteTemplateService_Delete_NotFound(t *testing.T) {
+	svc, repo, _ := newTestNoteTemplateService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	err := svc.Delete(99, 1)
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteTemplateService_Create_DefaultTitleValidationError(t *testing.T) {
+	svc, _, _ := newTestNoteTemplateService()
+
+	// 101文字のデフォルトタイトル → バリデーションエラー
+	longTitle := strings.Repeat("あ", 101)
+	template := &model.NoteTemplate{
+		UserID:          1,
+		Name:            "テンプレート",
+		ContentTemplate: "本文",
+		DefaultTitle:    longTitle,
+	}
+
+	err := svc.Create(template)
+	assert.Error(t, err)
 }

@@ -234,3 +234,22 @@ func TestRenderWeeklyReportHTML_UnsupportedLanguageFallback(t *testing.T) {
 	// 日本語テキストが含まれることを確認
 	assert.True(t, strings.Contains(html, "コントリビューション"))
 }
+
+func TestSendAllWeeklyReports_GetWeeklyReportError(t *testing.T) {
+	svc, _, userRepo, reportRepo := newTestWeeklyReportEmailService()
+
+	users := []model.User{
+		{Name: "ユーザー1", Email: "user1@example.com", EmailWeeklyReport: true, EmailLanguage: "ja"},
+	}
+	users[0].ID = 1
+
+	userRepo.On("FindAll").Return(users, nil)
+	// GetWeeklyReport がエラーを返す → continue でスキップ
+	reportRepo.On("GetWeeklyReport", uint(1)).Return((*model.ActivityReport)(nil), errors.New("report error"))
+
+	err := svc.SendAllWeeklyReports()
+	// 一部エラーでもnilを返す
+	assert.NoError(t, err)
+	userRepo.AssertExpectations(t)
+	reportRepo.AssertExpectations(t)
+}

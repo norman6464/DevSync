@@ -287,3 +287,28 @@ func TestLearningLogDelete_NotFound(t *testing.T) {
 	err := svc.Delete(99, 1)
 	assert.Error(t, err)
 }
+
+func TestLearningLogUpdate_AllFields(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	existing := &model.LearningLog{Title: "Old", Content: "Old Content", UserID: 1, Duration: 30}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	// 全フィールドを更新
+	updates := &model.LearningLog{
+		Title:    "New Title",
+		Content:  "New Content",
+		Category: model.LogCategoryCoding,
+		Duration: 90,
+	}
+	result, err := svc.Update(1, 1, updates)
+	assert.NoError(t, err)
+	assert.Equal(t, "New Title", result.Title)
+	assert.Equal(t, "New Content", result.Content)
+	assert.Equal(t, model.LogCategoryCoding, result.Category)
+	assert.Equal(t, 90, result.Duration)
+	repo.AssertExpectations(t)
+}

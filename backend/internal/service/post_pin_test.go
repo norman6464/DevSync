@@ -174,3 +174,25 @@ func TestPostPinService_IsPinned_False(t *testing.T) {
 	assert.NoError(t, err)
 	assert.False(t, result)
 }
+
+func TestPostPinService_Unpin_IsPinnedError(t *testing.T) {
+	svc, pinRepo, _ := newPostPinTestService()
+	pinRepo.On("IsPinned", uint(1), uint(10)).Return(false, errors.New("db error"))
+
+	err := svc.Unpin(1, 10)
+	assert.Error(t, err)
+	pinRepo.AssertExpectations(t)
+}
+
+func TestPostPinService_Pin_CountError(t *testing.T) {
+	svc, pinRepo, postRepo := newPostPinTestService()
+	post := &model.Post{UserID: 1}
+	post.ID = 10
+	postRepo.On("FindByID", uint(10)).Return(post, nil)
+	pinRepo.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	err := svc.Pin(1, 10)
+	assert.Error(t, err)
+	pinRepo.AssertExpectations(t)
+	postRepo.AssertExpectations(t)
+}

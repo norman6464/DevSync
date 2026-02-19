@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -278,4 +279,52 @@ func TestQuestionVote_InvalidValueTwo(t *testing.T) {
 	// 2は無効な投票値
 	err := svc.Vote(1, 10, 2)
 	assert.Error(t, err)
+}
+
+// ============================================================
+// Delete 追加テスト
+// ============================================================
+
+func TestQuestionDelete_NotFound(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	err := svc.Delete(99, 1)
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// Update 追加テスト
+// ============================================================
+
+func TestQuestionUpdate_RepoError(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	existing := &model.Question{UserID: 1, Title: "Old", Body: "Body"}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(errors.New("db error"))
+
+	_, err := svc.Update(1, 1, "New Title", "New Body", "go")
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestQuestionUpdate_ValidationError(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	existing := &model.Question{UserID: 1, Title: "Old"}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	// 501文字のタイトルでバリデーションエラーを発生させる
+	longTitle := strings.Repeat("a", 501)
+	result, err := svc.Update(1, 1, longTitle, "", "")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
 }

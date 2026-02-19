@@ -563,3 +563,47 @@ func TestLearningResourceGetSavedByUserID_Empty(t *testing.T) {
 	assert.Equal(t, int64(0), total)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// UpdateVisibility 追加テスト
+// ============================================================
+
+func TestLearningResourceUpdateVisibility_NotFound(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	result, err := svc.UpdateVisibility(99, 1, true)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningResourceUpdateVisibility_UpdateError(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+
+	existing := &model.LearningResource{UserID: 1, IsPublic: false}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(errors.New("db error"))
+
+	result, err := svc.UpdateVisibility(1, 1, true)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// Delete 追加テスト
+// ============================================================
+
+func TestLearningResourceDelete_NotFound(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	err := svc.Delete(99, 1)
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}

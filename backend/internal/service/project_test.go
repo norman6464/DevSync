@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/stretchr/testify/assert"
@@ -313,6 +314,56 @@ func TestProjectUpdateFeatured_NotFound(t *testing.T) {
 	repo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
 
 	result, err := svc.UpdateFeatured(999, 1, true)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestProjectUpdate_AllFields(t *testing.T) {
+	svc, repo := newTestProjectService()
+
+	now := time.Now()
+	repoID := uint(42)
+	existing := &model.Project{Title: "Old", UserID: 1}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	updates := &model.Project{
+		Title:        "New Title",
+		Description:  "New Description",
+		TechStack:    "Go, React, PostgreSQL",
+		DemoURL:      "https://demo.example.com",
+		GithubURL:    "https://github.com/example/repo",
+		ImageURL:     "https://example.com/image.jpg",
+		Role:         "Backend Developer",
+		StartDate:    &now,
+		EndDate:      &now,
+		GithubRepoID: &repoID,
+	}
+	result, err := svc.Update(1, 1, updates)
+	assert.NoError(t, err)
+	assert.Equal(t, "New Title", result.Title)
+	assert.Equal(t, "New Description", result.Description)
+	assert.Equal(t, "Go, React, PostgreSQL", result.TechStack)
+	assert.Equal(t, "https://demo.example.com", result.DemoURL)
+	assert.Equal(t, "https://github.com/example/repo", result.GithubURL)
+	assert.Equal(t, "https://example.com/image.jpg", result.ImageURL)
+	assert.Equal(t, "Backend Developer", result.Role)
+	repo.AssertExpectations(t)
+}
+
+func TestProjectUpdateFeatured_UpdateError(t *testing.T) {
+	svc, repo := newTestProjectService()
+
+	existing := &model.Project{UserID: 1, Featured: false}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(errors.New("db error"))
+
+	result, err := svc.UpdateFeatured(1, 1, true)
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	repo.AssertExpectations(t)

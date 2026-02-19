@@ -243,3 +243,29 @@ func TestReminderSettingsService_SendReminder_Error(t *testing.T) {
 	assert.Error(t, err)
 	repo.AssertExpectations(t)
 }
+
+func TestReminderSettingsService_UpdateSettings_WithNotificationTimeAndInactiveDays(t *testing.T) {
+	svc, repo := newTestReminderSettingsService()
+
+	existingSettings := &model.ReminderSettings{
+		ID:     1,
+		UserID: 1,
+	}
+
+	updates := &model.ReminderSettings{
+		NotificationTime: "20:00",
+		InactiveDays:     7,
+		Enabled:          true,
+	}
+
+	repo.On("GetByUserID", uint(1)).Return(existingSettings, nil)
+	repo.On("CreateOrUpdate", mock.MatchedBy(func(s *model.ReminderSettings) bool {
+		return s.NotificationTime == "20:00" && s.InactiveDays == 7
+	})).Return(nil)
+
+	result, err := svc.UpdateSettings(1, updates)
+	assert.NoError(t, err)
+	assert.Equal(t, "20:00", result.NotificationTime)
+	assert.Equal(t, 7, result.InactiveDays)
+	repo.AssertExpectations(t)
+}

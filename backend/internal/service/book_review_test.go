@@ -212,3 +212,32 @@ func TestBookReviewDelete_NotFound(t *testing.T) {
 	err := svc.Delete(99, 1)
 	assert.Error(t, err)
 }
+
+func TestBookReviewUpdate_AllFields(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	existing := &model.BookReview{UserID: 1, Title: "Old", Author: "Old Author"}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	// 全フィールドを更新
+	updates := &model.BookReview{
+		Title:    "New Title",
+		Author:   "New Author",
+		ISBN:     "978-1234567890",
+		Rating:   5,
+		Review:   "Great book!",
+		ImageURL: "https://example.com/image.jpg",
+	}
+	result, err := svc.Update(1, 1, updates)
+	assert.NoError(t, err)
+	assert.Equal(t, "New Title", result.Title)
+	assert.Equal(t, "New Author", result.Author)
+	assert.Equal(t, "978-1234567890", result.ISBN)
+	assert.Equal(t, 5, result.Rating)
+	assert.Equal(t, "Great book!", result.Review)
+	assert.Equal(t, "https://example.com/image.jpg", result.ImageURL)
+	repo.AssertExpectations(t)
+}

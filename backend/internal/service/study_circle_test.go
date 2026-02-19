@@ -57,6 +57,17 @@ func TestStudyCircleCreate_NormalizesMaxMembers(t *testing.T) {
 	assert.Equal(t, 5, circle.MaxMembers) // 3〜10の範囲外 → 5にリセット
 }
 
+func TestStudyCircleCreate_CreateError(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	circle := &model.StudyCircle{Name: "Test", Topic: "Test", OwnerID: 1, MaxMembers: 5}
+	repo.On("Create", circle).Return(errors.New("db error"))
+
+	err := svc.Create(circle, nil)
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
 // --- GetByID ---
 
 func TestStudyCircleGetByID_Success(t *testing.T) {
@@ -612,6 +623,14 @@ func TestStudyCircleDeleteStep_StepNotFound(t *testing.T) {
 	assert.ErrorIs(t, err, ErrNotFound)
 }
 
+func TestStudyCircleDeleteStep_CircleNotFound(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+	err := svc.DeleteStep(99, 1, 5)
+	assert.ErrorIs(t, err, ErrNotFound)
+	repo.AssertExpectations(t)
+}
+
 func TestStudyCircleDeleteStep_StepBelongsToDifferentCircle(t *testing.T) {
 	svc, repo := newTestStudyCircleService()
 	circle := &model.StudyCircle{ID: 1, OwnerID: 1}
@@ -792,4 +811,84 @@ func TestSearchCircles_RepoError(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Nil(t, result)
+}
+
+func TestStudyCircleUpdateStep_WithDescription(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	circle := &model.StudyCircle{OwnerID: 1}
+	circle.ID = 1
+	step := &model.StudyCircleStep{CircleID: 1, Title: "Title", Description: "Old Desc"}
+	step.ID = 5
+
+	repo.On("FindByID", uint(1)).Return(circle, nil)
+	repo.On("FindStepByID", uint(5)).Return(step, nil)
+	repo.On("UpdateStep", step).Return(nil)
+
+	newDesc := "New Description"
+	result, err := svc.UpdateStep(1, 1, 5, nil, &newDesc)
+	assert.NoError(t, err)
+	assert.Equal(t, "New Description", result.Description)
+	repo.AssertExpectations(t)
+}
+
+func TestStudyCircleReorderSteps_NotFound(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	err := svc.ReorderSteps(99, 1, []model.StepOrder{})
+	assert.ErrorIs(t, err, ErrNotFound)
+	repo.AssertExpectations(t)
+}
+
+func TestStudyCircleUpdate_FindByIDError(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	newName := "変更"
+	result, err := svc.Update(99, 1, &newName, nil, nil)
+	assert.Nil(t, result)
+	assert.ErrorIs(t, err, ErrNotFound)
+	repo.AssertExpectations(t)
+}
+
+func TestStudyCircleUpdate_TopicAndDescription(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	circle := &model.StudyCircle{ID: 1, OwnerID: 1}
+	repo.On("FindByID", uint(1)).Return(circle, nil)
+	repo.On("Update", circle).Return(nil)
+
+	newTopic := "新トピック"
+	newDesc := "新説明"
+	result, err := svc.Update(1, 1, nil, &newTopic, &newDesc)
+	assert.NoError(t, err)
+	assert.Equal(t, "新トピック", result.Topic)
+	assert.Equal(t, "新説明", result.Description)
+	repo.AssertExpectations(t)
+}
+
+func TestStudyCircleUpdateStep_CircleNotFound(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	newTitle := "Title"
+	result, err := svc.UpdateStep(99, 1, 5, &newTitle, nil)
+	assert.ErrorIs(t, err, ErrNotFound)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestStudyCircleCreateCheckin_IsMemberError(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	repo.On("IsMember", uint(1), uint(1)).Return(false, errors.New("db error"))
+
+	result, err := svc.CreateCheckin(1, 1, "content")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
 }
