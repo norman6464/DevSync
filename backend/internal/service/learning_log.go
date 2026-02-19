@@ -49,14 +49,23 @@ func (s *LearningLogService) GetByUserID(userID uint) ([]model.LearningLog, erro
 	return s.repo.GetByUserID(userID)
 }
 
-// Update は所有権を検証した後、学習ログを更新する。
-func (s *LearningLogService) Update(id, userID uint, updates *model.LearningLog) (*model.LearningLog, error) {
+// findAndCheckOwnership は学習ログを取得し、指定ユーザーが所有者かを検証する。
+func (s *LearningLogService) findAndCheckOwnership(id, userID uint) (*model.LearningLog, error) {
 	log, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err
 	}
 	if log.UserID != userID {
 		return nil, ErrForbidden
+	}
+	return log, nil
+}
+
+// Update は所有権を検証した後、学習ログを更新する。
+func (s *LearningLogService) Update(id, userID uint, updates *model.LearningLog) (*model.LearningLog, error) {
+	log, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return nil, err
 	}
 
 	if updates.Title != "" {
@@ -80,12 +89,8 @@ func (s *LearningLogService) Update(id, userID uint, updates *model.LearningLog)
 
 // Delete は所有権を検証した後、学習ログを削除する。
 func (s *LearningLogService) Delete(id, userID uint) error {
-	log, err := s.repo.FindByID(id)
-	if err != nil {
+	if _, err := s.findAndCheckOwnership(id, userID); err != nil {
 		return err
-	}
-	if log.UserID != userID {
-		return ErrForbidden
 	}
 	return s.repo.Delete(id, userID)
 }
