@@ -289,6 +289,23 @@ func TestPostCreateComment_ValidationError(t *testing.T) {
 	assertStatus(t, w, http.StatusBadRequest)
 }
 
+func TestPostCreateReply_Success(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts/:id/comments", h.CreateComment)
+
+	parentComment := &model.Comment{PostID: 5, ParentID: nil}
+	parentComment.ID = 10
+	postRepo.On("FindCommentByID", uint(10)).Return(parentComment, nil)
+	postRepo.On("CreateComment", mock.AnythingOfType("*model.Comment")).Return(nil)
+
+	w := doRequest(r, http.MethodPost, "/posts/5/comments", map[string]interface{}{
+		"content":   "Reply to comment!",
+		"parent_id": 10,
+	})
+	assertStatus(t, w, http.StatusCreated)
+}
+
 func TestPostDeleteComment_Success(t *testing.T) {
 	h, postRepo, _, _ := setupPostHandler()
 	r := newRouter(1)

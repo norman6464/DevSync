@@ -156,11 +156,27 @@ func (s *PostService) HasLiked(userID, postID uint) bool {
 }
 
 // CreateComment は投稿にコメントを作成する。
+// ParentIDが指定された場合は親コメントの存在確認と深さ制限（1階層）を行う。
 func (s *PostService) CreateComment(comment *model.Comment) error {
 	// バリデーション
 	v := validator.NewPostValidator()
 	if err := v.ValidateComment(comment.Content); err != nil {
 		return err
+	}
+
+	// 返信の場合: 親コメントの存在確認と深さ制限
+	if comment.ParentID != nil {
+		parent, err := s.repo.FindCommentByID(*comment.ParentID)
+		if err != nil {
+			return domain.NewError(domain.ErrCodeNotFound, "親コメントが見つかりません", err)
+		}
+		if parent.PostID != comment.PostID {
+			return domain.NewError(domain.ErrCodeBadRequest, "親コメントが別の投稿に属しています", nil)
+		}
+		// 深さ制限: 返信への返信は不可（1階層のみ）
+		if parent.ParentID != nil {
+			return domain.NewError(domain.ErrCodeBadRequest, "返信への返信はできません", nil)
+		}
 	}
 
 	return s.repo.CreateComment(comment)

@@ -26,8 +26,10 @@ type UpdatePostRequest struct {
 }
 
 // CreateCommentRequest はコメント作成リクエスト。
+// ParentIDが指定された場合は返信コメントとして作成する。
 type CreateCommentRequest struct {
-	Content string `json:"content" binding:"required,max=5000"`
+	Content  string `json:"content" binding:"required,max=5000"`
+	ParentID *uint  `json:"parent_id,omitempty"`
 }
 
 // PostDetailResponse は投稿詳細レスポンス（いいね済み・ブックマーク済みフラグ付き）。
