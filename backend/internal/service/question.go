@@ -95,10 +95,18 @@ func (s *QuestionService) Delete(id, userID uint) error {
 }
 
 // Vote は質問に投票する。
+// 自分の質問への自己投票は禁止する。
 func (s *QuestionService) Vote(userID, questionID uint, value int) error {
 	v := validator.NewQuestionValidator()
 	if err := v.ValidateVote(value); err != nil {
 		return err
+	}
+	question, err := s.repo.FindByID(questionID)
+	if err != nil {
+		return ErrNotFound
+	}
+	if question.UserID == userID {
+		return ErrForbidden
 	}
 	return s.repo.Vote(userID, questionID, value)
 }
