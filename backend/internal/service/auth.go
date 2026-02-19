@@ -3,6 +3,8 @@ package service
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -72,10 +74,15 @@ func (s *AuthService) Register(input RegisterInput) (*AuthResponse, error) {
 		return nil, err
 	}
 
+	// メールアドレスの@より前をベースにユニークなユーザー名を生成
+	usernameBase := strings.Split(input.Email, "@")[0]
+	username := s.generateUsername(usernameBase)
+
 	user := &model.User{
 		Name:     input.Name,
 		Email:    input.Email,
 		Password: string(hashed),
+		Username: username,
 	}
 
 	if err := s.userRepo.Create(user); err != nil {
@@ -221,9 +228,13 @@ func (s *AuthService) GitHubLogin(ghUser *GitHubUserInfo, accessToken string) (*
 		email = ghUser.Login + "@github.local"
 	}
 
+	// GitHubのログイン名をベースにユニークなユーザー名を生成
+	username := s.generateUsername(ghUser.Login)
+
 	newUser := &model.User{
 		Name:            name,
 		Email:           email,
+		Username:        username,
 		GitHubID:        ghUser.ID,
 		GitHubUsername:  ghUser.Login,
 		GitHubToken:     accessToken,
@@ -360,6 +371,19 @@ func (s *AuthService) ResetPassword(token string, newPassword string) error {
 
 	s.passwordResetRepo.MarkAsUsed(resetToken.ID)
 	return nil
+}
+
+// generateUsername は候補のユーザー名からユニークなユーザー名を生成する。
+// 候補が既に使われている場合は末尾に連番を付与する（例: alice → alice2 → alice3）。
+func (s *AuthService) generateUsername(base string) string {
+	candidate := base
+	for i := 2; ; i++ {
+		existing, _ := s.userRepo.FindByUsername(candidate)
+		if existing == nil {
+			return candidate
+		}
+		candidate = fmt.Sprintf("%s%d", base, i)
+	}
 }
 
 // generateToken は指定ユーザーIDのJWTトークンを生成する（有効期限72時間）。

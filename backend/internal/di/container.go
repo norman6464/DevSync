@@ -322,6 +322,7 @@ func seedTemplateRoadmaps(db *gorm.DB, roadmapService *service.RoadmapService) {
 		user = model.User{
 			Name:           "DevSync System",
 			Email:          systemEmail,
+			Username:       "__system__",
 			GitHubID:       -1,
 			GitHubUsername: "__system__",
 		}
