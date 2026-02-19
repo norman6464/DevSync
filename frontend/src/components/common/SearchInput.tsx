@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react';
-import { buttonSecondaryClass } from '../../constants/styles';
+import { buttonSecondaryClass, searchInputClass } from '../../constants/styles';
 
 interface SearchInputProps {
   value: string;
@@ -29,7 +29,7 @@ export default function SearchInput({ value, onChange, onSearch, placeholder, sh
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="w-full pl-10 pr-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+          className={searchInputClass}
         />
       </div>
       {showButton && onSearch && (

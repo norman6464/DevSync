@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { Plus } from 'lucide-react';
+import { inputClass } from '../../constants/styles';
 import MarkdownEditor from './MarkdownEditor';
 import CodeSnippetInput, { type SnippetInputData } from './CodeSnippetInput';
 
@@ -80,7 +81,7 @@ export default function PostForm({ post, onSubmit, onCancel, loading: externalLo
         onChange={(e) => setTitle(e.target.value)}
         onFocus={() => setExpanded(true)}
         placeholder={t('post.createTitle')}
-        className="w-full px-3 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+        className={inputClass}
       />
       {expanded && (
         <>

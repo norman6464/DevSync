@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { usePostDetail, useConfirm } from '../hooks';
-import { sectionContainerClass } from '../constants/styles';
+import { sectionContainerClass, messageInputClass } from '../constants/styles';
 import { deletePost } from '../api/posts';
 import { useAuthStore } from '../store/authStore';
 import PostCard from '../components/posts/PostCard';
@@ -116,7 +116,7 @@ export default function PostDetailPage() {
               value={newComment}
               onChange={setNewComment}
               placeholder={t('post.writeComment')}
-              className="flex-1 px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+              className={messageInputClass}
               disabled={submitting}
             />
             <button
@@ -177,7 +177,7 @@ export default function PostDetailPage() {
                         value={replyContent}
                         onChange={setReplyContent}
                         placeholder={t('post.writeReply')}
-                        className="flex-1 px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                        className={messageInputClass}
                         disabled={submitting}
                       />
                       <button

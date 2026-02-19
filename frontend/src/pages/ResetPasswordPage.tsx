@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { resetPassword } from '../api/auth';
-import { labelClass } from '../constants/styles';
+import { inputClass, labelClass } from '../constants/styles';
 
 export default function ResetPasswordPage() {
   const { t } = useTranslation();
@@ -108,7 +108,7 @@ export default function ResetPasswordPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  className={inputClass}
                   placeholder={t('auth.passwordPlaceholder')}
                   required
                   minLength={6}
@@ -123,7 +123,7 @@ export default function ResetPasswordPage() {
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  className={inputClass}
                   placeholder={t('auth.passwordPlaceholder')}
                   required
                   minLength={6}

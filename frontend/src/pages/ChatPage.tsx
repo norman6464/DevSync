@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MessageSquare, Users, Plus, Settings, Send } from 'lucide-react';
 import { useChat } from '../hooks/useChat';
+import { messageInputClass } from '../constants/styles';
 import type { Message } from '../types/message';
 import type { ChatRoom } from '../types/chat';
 import Avatar from '../components/common/Avatar';
@@ -245,7 +246,7 @@ export default function ChatPage() {
                 value={c.newMessage}
                 onChange={(e) => c.setNewMessage(e.target.value)}
                 placeholder={t('chat.groupMessagePlaceholder')}
-                className="flex-1 px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                className={messageInputClass}
               />
               <button
                 type="submit"
@@ -312,7 +313,7 @@ export default function ChatPage() {
                 value={c.newMessage}
                 onChange={(e) => c.setNewMessage(e.target.value)}
                 placeholder={t('chat.typeMessage')}
-                className="flex-1 px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                className={messageInputClass}
               />
               <button
                 type="submit"
