@@ -255,6 +255,19 @@ func TestQuestionGetAll_Success(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestQuestionGetAll_RepoError(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	repo.On("FindAll", 10, 0, "", "newest").Return([]model.Question(nil), int64(0), errors.New("db error"))
+
+	result, total, err := svc.GetAll(10, 0, "", "newest")
+	assert.Error(t, err)
+	assert.Equal(t, "db error", err.Error())
+	assert.Nil(t, result)
+	assert.Equal(t, int64(0), total)
+	repo.AssertExpectations(t)
+}
+
 func TestQuestionSearch_Success(t *testing.T) {
 	svc, repo := newTestQuestionService()
 
