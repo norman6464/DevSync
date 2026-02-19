@@ -582,6 +582,34 @@ func TestValidateLoginState_WrongPurpose(t *testing.T) {
 // ValidateOAuthState 追加テスト
 // ============================================================
 
+func TestValidateOAuthState_RoundTrip(t *testing.T) {
+	svc, _, _ := newTestAuthService()
+
+	state, err := svc.GenerateOAuthState(42)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, state)
+
+	userID, err := svc.ValidateOAuthState(state)
+	assert.NoError(t, err)
+	assert.Equal(t, uint(42), userID)
+}
+
+func TestValidateOAuthState_MissingUserID(t *testing.T) {
+	svc, _, _ := newTestAuthService()
+
+	// user_idなしのトークンを手動生成
+	claims := jwt.MapClaims{
+		"purpose": "oauth_state",
+		"exp":     time.Now().Add(5 * time.Minute).Unix(),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	state, err := token.SignedString([]byte(testJWTSecret))
+	assert.NoError(t, err)
+
+	_, err = svc.ValidateOAuthState(state)
+	assert.Error(t, err)
+}
+
 func TestValidateOAuthState_WrongPurpose(t *testing.T) {
 	svc, _, _ := newTestAuthService()
 
