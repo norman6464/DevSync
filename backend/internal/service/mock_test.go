@@ -1919,3 +1919,19 @@ func (m *MockBookReviewStatsRepository) GetBookReviewStats(userID uint) (*model.
 	}
 	return args.Get(0).(*model.BookReviewStats), args.Error(1)
 }
+
+// ============================================================
+// MockQAStatsRepository は repository.QAStatsRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockQAStatsRepository struct {
+	mock.Mock
+}
+
+func (m *MockQAStatsRepository) GetQAStats(userID uint) (*model.QAStats, error) {
+	args := m.Called(userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.QAStats), args.Error(1)
+}
