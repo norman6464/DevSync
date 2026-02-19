@@ -298,6 +298,17 @@ func TestChatRoomAddMember_AlreadyMember(t *testing.T) {
 	roomRepo.AssertNotCalled(t, "AddMember")
 }
 
+func TestChatRoomAddMember_TargetIsMemberError(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	roomRepo.On("IsMember", uint(10), uint(1)).Return(true, nil)
+	roomRepo.On("IsMember", uint(10), uint(3)).Return(false, errors.New("db error"))
+
+	err := svc.AddMember(10, 1, 3)
+	assert.Error(t, err)
+	roomRepo.AssertNotCalled(t, "AddMember")
+}
+
 func TestChatRoomAddMember_NotMember(t *testing.T) {
 	svc, roomRepo, _ := newTestChatRoomService()
 
