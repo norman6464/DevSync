@@ -361,6 +361,10 @@ func (s *AuthService) ResetPassword(token string, newPassword string) error {
 		return ErrBadRequest
 	}
 
+	if err := domain.ValidatePassword(newPassword); err != nil {
+		return err
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 	if err != nil {
 		return err

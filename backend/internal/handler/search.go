@@ -33,6 +33,9 @@ func NewSearchHandler(searchService PostSearchService, circleService CircleSearc
 	}
 }
 
+// maxSearchQueryLength は検索クエリの最大文字数。
+const maxSearchQueryLength = 500
+
 // SearchPosts handles post search requests with advanced filtering
 func (h *SearchHandler) SearchPosts(c *gin.Context) {
 	query := c.Query("q")
@@ -40,6 +43,11 @@ func (h *SearchHandler) SearchPosts(c *gin.Context) {
 		respondBadRequest(c, "query parameter 'q' is required")
 		return
 	}
+	if len([]rune(query)) > maxSearchQueryLength {
+		respondBadRequest(c, "検索クエリは500文字以下である必要があります")
+		return
+	}
+	query = strings.TrimSpace(query)
 
 	limit, offset := parseLimitOffset(c)
 
@@ -96,6 +104,11 @@ func (h *SearchHandler) SearchCircles(c *gin.Context) {
 		respondBadRequest(c, "query parameter 'q' is required")
 		return
 	}
+	if len([]rune(query)) > maxSearchQueryLength {
+		respondBadRequest(c, "検索クエリは500文字以下である必要があります")
+		return
+	}
+	query = strings.TrimSpace(query)
 
 	limit, offset := parseLimitOffset(c)
 
