@@ -32,7 +32,11 @@ func (s *MessageService) GetConversation(userID, otherUserID uint, page, limit i
 }
 
 // SendMessage はメッセージを送信し、受信者に非同期で通知を作成する。
+// 自分自身へのメッセージ送信は許可しない。
 func (s *MessageService) SendMessage(msg *model.Message) error {
+	if msg.SenderID == msg.ReceiverID {
+		return ErrBadRequest
+	}
 	if err := s.repo.Create(msg); err != nil {
 		return err
 	}
