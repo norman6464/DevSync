@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
@@ -80,8 +81,13 @@ func (s *AnswerService) SetBestAnswer(questionID, answerID, userID uint) error {
 	return s.answerRepo.SetBestAnswer(questionID, answerID)
 }
 
-// Vote は回答に投票する。
+// Vote は投票値を検証した後、回答に投票する。
+// valueは1（賛成）または-1（反対）のみ許可される。
 func (s *AnswerService) Vote(userID, answerID uint, value int) error {
+	v := validator.NewQuestionValidator()
+	if err := v.ValidateVote(value); err != nil {
+		return err
+	}
 	return s.answerRepo.Vote(userID, answerID, value)
 }
 

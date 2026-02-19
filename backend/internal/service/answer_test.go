@@ -339,3 +339,45 @@ func TestAnswerGetUserVotes_Empty(t *testing.T) {
 	assert.Empty(t, result)
 	answerRepo.AssertExpectations(t)
 }
+
+// ============================================================
+// Vote バリデーションテスト
+// ============================================================
+
+func TestAnswerVote_InvalidValue(t *testing.T) {
+	svc, _, _ := newTestAnswerService()
+
+	// 0は無効な投票値
+	err := svc.Vote(1, 1, 0)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "投票値は1または-1")
+}
+
+func TestAnswerVote_OutOfRangeValue(t *testing.T) {
+	svc, _, _ := newTestAnswerService()
+
+	// 99は無効な投票値
+	err := svc.Vote(1, 1, 99)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "投票値は1または-1")
+}
+
+func TestAnswerVote_ValidUpvote(t *testing.T) {
+	svc, answerRepo, _ := newTestAnswerService()
+
+	answerRepo.On("Vote", uint(1), uint(1), 1).Return(nil)
+
+	err := svc.Vote(1, 1, 1)
+	assert.NoError(t, err)
+	answerRepo.AssertExpectations(t)
+}
+
+func TestAnswerVote_ValidDownvote(t *testing.T) {
+	svc, answerRepo, _ := newTestAnswerService()
+
+	answerRepo.On("Vote", uint(1), uint(1), -1).Return(nil)
+
+	err := svc.Vote(1, 1, -1)
+	assert.NoError(t, err)
+	answerRepo.AssertExpectations(t)
+}
