@@ -78,6 +78,8 @@
     "email": "邮箱",
     "password": "密码",
     "name": "姓名",
+    "username": "用户名",
+    "usernamePlaceholder": "字母、数字、下划线、连字符",
     "confirmPassword": "确认密码",
     "emailPlaceholder": "you@example.com",
     "passwordPlaceholder": "6个字符以上",

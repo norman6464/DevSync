@@ -78,6 +78,8 @@
     "email": "이메일",
     "password": "비밀번호",
     "name": "이름",
+    "username": "사용자 이름",
+    "usernamePlaceholder": "영문, 숫자, 밑줄, 하이픈",
     "confirmPassword": "비밀번호 확인",
     "emailPlaceholder": "you@example.com",
     "passwordPlaceholder": "6자 이상",

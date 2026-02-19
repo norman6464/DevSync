@@ -237,10 +237,12 @@ func TestRegister_SetsCookie(t *testing.T) {
 	r, mockUserRepo := setupLoginTest()
 
 	mockUserRepo.On("FindByEmail", "new@example.com").Return(nil, assert.AnError)
+	mockUserRepo.On("FindByUsername", "newuser").Return(nil, assert.AnError)
 	mockUserRepo.On("Create", mock.AnythingOfType("*model.User")).Return(nil)
 
 	body, _ := json.Marshal(map[string]string{
 		"name":             "NewUser",
+		"username":         "newuser",
 		"email":            "new@example.com",
 		"password":         "password123",
 		"confirm_password": "password123",

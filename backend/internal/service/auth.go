@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -34,6 +33,7 @@ func NewAuthService(userRepo repository.UserRepositoryInterface, passwordResetRe
 // RegisterInput はユーザー登録リクエストの入力値を表す。
 type RegisterInput struct {
 	Name     string `json:"name" binding:"required"`
+	Username string `json:"username" binding:"required"`
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=6"`
 }
@@ -60,7 +60,7 @@ func (s *AuthService) Register(input RegisterInput) (*AuthResponse, error) {
 	if err := domain.ValidatePassword(input.Password); err != nil {
 		return nil, err
 	}
-	if err := domain.ValidateUsername(input.Name); err != nil {
+	if err := domain.ValidateUsername(input.Username); err != nil {
 		return nil, err
 	}
 
@@ -69,20 +69,21 @@ func (s *AuthService) Register(input RegisterInput) (*AuthResponse, error) {
 		return nil, domain.NewError(domain.ErrCodeAlreadyExists, "このメールアドレスは既に登録されています", nil)
 	}
 
+	existingUsername, _ := s.userRepo.FindByUsername(input.Username)
+	if existingUsername != nil {
+		return nil, domain.NewError(domain.ErrCodeAlreadyExists, "このユーザー名は既に使用されています", nil)
+	}
+
 	hashed, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
 
-	// メールアドレスの@より前をベースにユニークなユーザー名を生成
-	usernameBase := strings.Split(input.Email, "@")[0]
-	username := s.generateUsername(usernameBase)
-
 	user := &model.User{
 		Name:     input.Name,
 		Email:    input.Email,
 		Password: string(hashed),
-		Username: username,
+		Username: input.Username,
 	}
 
 	if err := s.userRepo.Create(user); err != nil {

@@ -8,6 +8,7 @@ import { labelClass } from '../constants/styles';
 export default function RegisterPage() {
   const { t } = useTranslation();
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,14 +24,14 @@ export default function RegisterPage() {
     }
     setLoading(true);
     try {
-      await register(name, email, password);
+      await register(name, username, email, password);
       navigate('/');
     } catch {
       toast.error(t('errors.somethingWrong'));
     } finally {
       setLoading(false);
     }
-  }, [password, name, email, register, navigate, t]);
+  }, [password, name, username, email, register, navigate, t]);
 
   const handleGitHubLogin = useCallback(async () => {
     setLoading(true);
@@ -43,6 +44,7 @@ export default function RegisterPage() {
   }, [loginWithGitHub, t]);
 
   const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value), []);
+  const handleUsernameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value), []);
   const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value), []);
   const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value), []);
 
@@ -89,6 +91,23 @@ export default function RegisterPage() {
                 value={name}
                 onChange={handleNameChange}
                 required
+                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+              />
+            </div>
+            <div>
+              <label htmlFor="register-username" className={labelClass}>
+                {t('auth.username')}
+              </label>
+              <input
+                id="register-username"
+                type="text"
+                value={username}
+                onChange={handleUsernameChange}
+                required
+                minLength={2}
+                maxLength={30}
+                pattern="[a-zA-Z0-9_\-]+"
+                placeholder={t('auth.usernamePlaceholder')}
                 className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
               />
             </div>

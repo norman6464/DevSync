@@ -73,6 +73,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	// DTOをservice層の入力に変換
 	input := service.RegisterInput{
 		Name:     req.Name,
+		Username: req.Username,
 		Email:    req.Email,
 		Password: req.Password,
 	}
