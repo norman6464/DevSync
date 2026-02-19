@@ -141,12 +141,28 @@ func (s *PostService) Delete(id, userID uint) error {
 }
 
 // Like は投稿にいいねを追加する。
+// 自分の投稿にはいいねできない。
 func (s *PostService) Like(userID, postID uint) error {
+	post, err := s.repo.FindByID(postID)
+	if err != nil {
+		return ErrNotFound
+	}
+	if post.UserID == userID {
+		return ErrForbidden
+	}
 	return s.repo.Like(userID, postID)
 }
 
 // Unlike は投稿のいいねを取り消す。
+// 自分の投稿のいいねは取り消せない（そもそもいいねできないため）。
 func (s *PostService) Unlike(userID, postID uint) error {
+	post, err := s.repo.FindByID(postID)
+	if err != nil {
+		return ErrNotFound
+	}
+	if post.UserID == userID {
+		return ErrForbidden
+	}
 	return s.repo.Unlike(userID, postID)
 }
 
