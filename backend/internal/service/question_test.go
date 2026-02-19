@@ -155,6 +155,9 @@ func TestQuestionVote_QuestionNotFound(t *testing.T) {
 func TestQuestionRemoveVote_Success(t *testing.T) {
 	svc, repo := newTestQuestionService()
 
+	question := &model.Question{UserID: 99}
+	question.ID = 10
+	repo.On("FindByID", uint(10)).Return(question, nil)
 	repo.On("RemoveVote", uint(1), uint(10)).Return(nil)
 
 	err := svc.RemoveVote(1, 10)
@@ -165,12 +168,37 @@ func TestQuestionRemoveVote_Success(t *testing.T) {
 func TestQuestionRemoveVote_RepoError(t *testing.T) {
 	svc, repo := newTestQuestionService()
 
+	question := &model.Question{UserID: 99}
+	question.ID = 10
+	repo.On("FindByID", uint(10)).Return(question, nil)
 	repo.On("RemoveVote", uint(1), uint(10)).Return(errors.New("db error"))
 
 	err := svc.RemoveVote(1, 10)
 	assert.Error(t, err)
 	assert.Equal(t, "db error", err.Error())
 	repo.AssertExpectations(t)
+}
+
+func TestQuestionRemoveVote_SelfVote_Forbidden(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	question := &model.Question{UserID: 1}
+	question.ID = 10
+	repo.On("FindByID", uint(10)).Return(question, nil)
+
+	err := svc.RemoveVote(1, 10)
+	assert.ErrorIs(t, err, ErrForbidden)
+	repo.AssertNotCalled(t, "RemoveVote")
+}
+
+func TestQuestionRemoveVote_QuestionNotFound(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	err := svc.RemoveVote(1, 99)
+	assert.ErrorIs(t, err, ErrNotFound)
+	repo.AssertNotCalled(t, "RemoveVote")
 }
 
 // ============================================================
