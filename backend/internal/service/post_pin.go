@@ -64,10 +64,27 @@ func (s *PostPinService) GetByUserID(userID uint) ([]model.PostPin, error) {
 }
 
 // Reorder はピン留め投稿の表示順序を変更する。
+// 渡されたpostIDsが全てuserIDのピン留め済み投稿であることを検証する。
 func (s *PostPinService) Reorder(userID uint, postIDs []uint) error {
 	if len(postIDs) > maxPinsPerUser {
 		return domain.NewError(domain.ErrCodeBadRequest, "ピン留めは最大3件までです", nil)
 	}
+
+	// 現在のピン留め投稿を取得して所有権を検証
+	pins, err := s.pinRepo.GetByUserID(userID)
+	if err != nil {
+		return err
+	}
+	pinnedSet := make(map[uint]bool, len(pins))
+	for _, pin := range pins {
+		pinnedSet[pin.PostID] = true
+	}
+	for _, postID := range postIDs {
+		if !pinnedSet[postID] {
+			return domain.NewError(domain.ErrCodeForbidden, "自分のピン留め投稿のみ順序変更できます", nil)
+		}
+	}
+
 	return s.pinRepo.UpdateOrder(userID, postIDs)
 }
 

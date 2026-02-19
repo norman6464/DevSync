@@ -133,6 +133,9 @@ func TestPostPinService_GetByUserID_Empty(t *testing.T) {
 
 func TestPostPinService_Reorder_Success(t *testing.T) {
 	svc, pinRepo, _ := newPostPinTestService()
+
+	pins := []model.PostPin{{PostID: 20}, {PostID: 10}}
+	pinRepo.On("GetByUserID", uint(1)).Return(pins, nil)
 	pinRepo.On("UpdateOrder", uint(1), []uint{20, 10}).Return(nil)
 
 	err := svc.Reorder(1, []uint{20, 10})
@@ -147,8 +150,34 @@ func TestPostPinService_Reorder_TooMany(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestPostPinService_Reorder_Forbidden(t *testing.T) {
+	svc, pinRepo, _ := newPostPinTestService()
+
+	// userID=1のピン留めはpostID=10のみ。postID=99は他ユーザーの投稿
+	pins := []model.PostPin{{PostID: 10}}
+	pinRepo.On("GetByUserID", uint(1)).Return(pins, nil)
+
+	err := svc.Reorder(1, []uint{10, 99})
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "自分のピン留め投稿のみ")
+	pinRepo.AssertNotCalled(t, "UpdateOrder")
+}
+
+func TestPostPinService_Reorder_GetByUserIDError(t *testing.T) {
+	svc, pinRepo, _ := newPostPinTestService()
+
+	pinRepo.On("GetByUserID", uint(1)).Return([]model.PostPin{}, errors.New("db error"))
+
+	err := svc.Reorder(1, []uint{10})
+	assert.Error(t, err)
+	pinRepo.AssertNotCalled(t, "UpdateOrder")
+}
+
 func TestPostPinService_Reorder_RepoError(t *testing.T) {
 	svc, pinRepo, _ := newPostPinTestService()
+
+	pins := []model.PostPin{{PostID: 10}}
+	pinRepo.On("GetByUserID", uint(1)).Return(pins, nil)
 	pinRepo.On("UpdateOrder", uint(1), []uint{10}).Return(errors.New("db error"))
 
 	err := svc.Reorder(1, []uint{10})
