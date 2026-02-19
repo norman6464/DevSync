@@ -104,10 +104,18 @@ func (s *ChatRoomService) GetMembers(roomID, userID uint) ([]model.ChatRoomMembe
 }
 
 // AddMember はリクエスト者のメンバーシップを検証した後、新しいメンバーを追加する。
+// 既にメンバーのユーザーは追加できない。
 func (s *ChatRoomService) AddMember(roomID, userID, targetUserID uint) error {
 	isMember, err := s.roomRepo.IsMember(roomID, userID)
 	if err != nil || !isMember {
 		return ErrForbidden
+	}
+	alreadyMember, err := s.roomRepo.IsMember(roomID, targetUserID)
+	if err != nil {
+		return err
+	}
+	if alreadyMember {
+		return ErrBadRequest
 	}
 	return s.roomRepo.AddMember(roomID, targetUserID)
 }
