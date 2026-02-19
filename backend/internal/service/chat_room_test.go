@@ -279,11 +279,23 @@ func TestChatRoomAddMember_Success(t *testing.T) {
 	svc, roomRepo, _ := newTestChatRoomService()
 
 	roomRepo.On("IsMember", uint(10), uint(1)).Return(true, nil)
+	roomRepo.On("IsMember", uint(10), uint(3)).Return(false, nil)
 	roomRepo.On("AddMember", uint(10), uint(3)).Return(nil)
 
 	err := svc.AddMember(10, 1, 3)
 	assert.NoError(t, err)
 	roomRepo.AssertExpectations(t)
+}
+
+func TestChatRoomAddMember_AlreadyMember(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	roomRepo.On("IsMember", uint(10), uint(1)).Return(true, nil)
+	roomRepo.On("IsMember", uint(10), uint(3)).Return(true, nil)
+
+	err := svc.AddMember(10, 1, 3)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	roomRepo.AssertNotCalled(t, "AddMember")
 }
 
 func TestChatRoomAddMember_NotMember(t *testing.T) {
