@@ -50,3 +50,4 @@ export { useAutoSave } from './useAutoSave';
 export { useConfirm } from './useConfirm';
 export { useOnboarding } from './useOnboarding';
 export { useYoutube } from './useYoutube';
+export { useCommentLike } from './useCommentLike';

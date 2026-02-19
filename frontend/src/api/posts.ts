@@ -113,3 +113,12 @@ export const addReaction = (postId: number, emoji: string) =>
 
 export const removeReaction = (postId: number, emoji: string) =>
   client.delete(`/posts/${postId}/reactions`, { data: { emoji } });
+
+export const likeComment = (commentId: number) =>
+  client.post(`/comments/${commentId}/likes`);
+
+export const unlikeComment = (commentId: number) =>
+  client.delete(`/comments/${commentId}/likes`);
+
+export const getCommentLikeStatus = (commentId: number) =>
+  client.get<{ liked: boolean; like_count: number }>(`/comments/${commentId}/likes`);
