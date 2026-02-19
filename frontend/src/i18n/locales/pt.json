@@ -640,7 +640,10 @@
     "deleted": "Registro excluído",
     "confirmDelete": "Tem certeza de que deseja excluir este registro?",
     "totalLogs": "{{count}} registros no último ano",
-    "logsOnDate": "Registros em {{date}}"
+    "logsOnDate": "Registros em {{date}}",
+    "exportCSV": "Exportar CSV",
+    "exportDays": "Últimos {{days}} dias",
+    "exportAll": "Todo o período"
   },
   "reports": {
     "title": "Relatórios de Atividade",

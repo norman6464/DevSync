@@ -640,7 +640,10 @@
     "deleted": "Eintrag gelöscht",
     "confirmDelete": "Möchten Sie diesen Eintrag wirklich löschen?",
     "totalLogs": "{{count}} Einträge im letzten Jahr",
-    "logsOnDate": "Einträge am {{date}}"
+    "logsOnDate": "Einträge am {{date}}",
+    "exportCSV": "CSV exportieren",
+    "exportDays": "Letzte {{days}} Tage",
+    "exportAll": "Gesamter Zeitraum"
   },
   "reports": {
     "title": "Aktivitätsberichte",

@@ -640,7 +640,10 @@
     "deleted": "Запись удалена",
     "confirmDelete": "Вы уверены, что хотите удалить эту запись?",
     "totalLogs": "{{count}} записей за последний год",
-    "logsOnDate": "Записи за {{date}}"
+    "logsOnDate": "Записи за {{date}}",
+    "exportCSV": "Экспорт CSV",
+    "exportDays": "Последние {{days}} дней",
+    "exportAll": "Весь период"
   },
   "reports": {
     "title": "Отчёты об Активности",

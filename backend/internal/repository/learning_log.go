@@ -50,6 +50,19 @@ func (r *LearningLogRepository) GetByUserID(userID uint) ([]model.LearningLog, e
 	return logs, err
 }
 
+// GetByPeriod は指定ユーザーの指定期間分の学習ログを取得する。
+// days=0 の場合は全期間を取得する。
+func (r *LearningLogRepository) GetByPeriod(userID uint, days int) ([]model.LearningLog, error) {
+	var logs []model.LearningLog
+	query := r.db.Where("user_id = ?", userID)
+	if days > 0 {
+		since := time.Now().AddDate(0, 0, -days)
+		query = query.Where("created_at >= ?", since)
+	}
+	err := query.Order("created_at DESC").Find(&logs).Error
+	return logs, err
+}
+
 // GetStreakInfo は学習ログから連続学習情報を算出する。
 // 現在の連続日数、最長連続日数、合計学習日数、最終ログ日を返す。
 func (r *LearningLogRepository) GetStreakInfo(userID uint) (*model.StreakInfo, error) {

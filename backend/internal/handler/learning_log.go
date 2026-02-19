@@ -1,6 +1,10 @@
 package handler
 
 import (
+	"fmt"
+	"strconv"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -15,6 +19,7 @@ type LearningLogServiceInterface interface {
 	Delete(id, userID uint) error
 	GetStreakInfo(userID uint) (*model.StreakInfo, error)
 	GetCalendarData(userID uint) ([]model.CalendarEntry, error)
+	ExportCSV(userID uint, days int) ([]byte, error)
 }
 
 // LearningLogHandler は学習ログ関連のHTTPハンドラ。
@@ -188,4 +193,38 @@ func (h *LearningLogHandler) GetCalendarData(c *gin.Context) {
 	}
 
 	respondOK(c, entries)
+}
+
+// ExportLogs は学習ログをCSV形式でダウンロードする。
+// クエリパラメータ: period=7|30|90|all（デフォルト30日）
+func (h *LearningLogHandler) ExportLogs(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	days := 30
+	if p := c.Query("period"); p != "" {
+		if p == "all" {
+			days = 0
+		} else {
+			n, err := strconv.Atoi(p)
+			if err != nil || n < 0 {
+				respondBadRequest(c, "periodは7/30/90/allのいずれかを指定してください")
+				return
+			}
+			days = n
+		}
+	}
+
+	csvBytes, err := h.service.ExportCSV(userID, days)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	filename := fmt.Sprintf("learning-logs-%ddays-%s.csv", days, time.Now().Format("20060102"))
+	if days == 0 {
+		filename = fmt.Sprintf("learning-logs-all-%s.csv", time.Now().Format("20060102"))
+	}
+
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+	c.Data(200, "text/csv; charset=utf-8", csvBytes)
 }
