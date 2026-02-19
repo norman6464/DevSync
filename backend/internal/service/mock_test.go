@@ -2040,3 +2040,18 @@ func (m *MockCommentStatsRepository) GetCommentStats(userID uint) (*model.Commen
 	}
 	return args.Get(0).(*model.CommentStats), args.Error(1)
 }
+
+// MockNotificationStatsRepository は repository.NotificationStatsRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockNotificationStatsRepository struct {
+	mock.Mock
+}
+
+func (m *MockNotificationStatsRepository) GetNotificationStats(userID uint) (*model.NotificationStats, error) {
+	args := m.Called(userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.NotificationStats), args.Error(1)
+}
