@@ -301,6 +301,9 @@ func TestAnswerVote_AnswerNotFound(t *testing.T) {
 func TestAnswerRemoveVote_Success(t *testing.T) {
 	svc, answerRepo, _ := newTestAnswerService()
 
+	answer := &model.Answer{UserID: 99}
+	answer.ID = 5
+	answerRepo.On("FindByID", uint(5)).Return(answer, nil)
 	answerRepo.On("RemoveVote", uint(1), uint(5)).Return(nil)
 
 	err := svc.RemoveVote(1, 5)
@@ -311,12 +314,37 @@ func TestAnswerRemoveVote_Success(t *testing.T) {
 func TestAnswerRemoveVote_RepoError(t *testing.T) {
 	svc, answerRepo, _ := newTestAnswerService()
 
+	answer := &model.Answer{UserID: 99}
+	answer.ID = 5
+	answerRepo.On("FindByID", uint(5)).Return(answer, nil)
 	answerRepo.On("RemoveVote", uint(1), uint(5)).Return(errors.New("db error"))
 
 	err := svc.RemoveVote(1, 5)
 	assert.Error(t, err)
 	assert.Equal(t, "db error", err.Error())
 	answerRepo.AssertExpectations(t)
+}
+
+func TestAnswerRemoveVote_SelfVote_Forbidden(t *testing.T) {
+	svc, answerRepo, _ := newTestAnswerService()
+
+	answer := &model.Answer{UserID: 1}
+	answer.ID = 5
+	answerRepo.On("FindByID", uint(5)).Return(answer, nil)
+
+	err := svc.RemoveVote(1, 5)
+	assert.ErrorIs(t, err, ErrForbidden)
+	answerRepo.AssertNotCalled(t, "RemoveVote")
+}
+
+func TestAnswerRemoveVote_AnswerNotFound(t *testing.T) {
+	svc, answerRepo, _ := newTestAnswerService()
+
+	answerRepo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	err := svc.RemoveVote(1, 99)
+	assert.ErrorIs(t, err, ErrNotFound)
+	answerRepo.AssertNotCalled(t, "RemoveVote")
 }
 
 // ============================================================

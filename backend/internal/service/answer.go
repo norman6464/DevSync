@@ -106,7 +106,15 @@ func (s *AnswerService) Vote(userID, answerID uint, value int) error {
 }
 
 // RemoveVote は回答への投票を取り消す。
+// 自分の回答への投票削除は禁止する（そもそも投票できないため）。
 func (s *AnswerService) RemoveVote(userID, answerID uint) error {
+	answer, err := s.answerRepo.FindByID(answerID)
+	if err != nil {
+		return ErrNotFound
+	}
+	if answer.UserID == userID {
+		return ErrForbidden
+	}
 	return s.answerRepo.RemoveVote(userID, answerID)
 }
 
