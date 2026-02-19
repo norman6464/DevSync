@@ -582,6 +582,7 @@ func TestPostCreate_ValidationError(t *testing.T) {
 func TestPostBookmark_Success(t *testing.T) {
 	svc, postRepo, _ := newTestPostService()
 
+	postRepo.On("FindByID", uint(10)).Return(&model.Post{UserID: 2}, nil)
 	postRepo.On("Bookmark", uint(1), uint(10)).Return(nil)
 
 	err := svc.Bookmark(1, 10)
@@ -592,6 +593,7 @@ func TestPostBookmark_Success(t *testing.T) {
 func TestPostBookmark_Error(t *testing.T) {
 	svc, postRepo, _ := newTestPostService()
 
+	postRepo.On("FindByID", uint(10)).Return(&model.Post{UserID: 2}, nil)
 	postRepo.On("Bookmark", uint(1), uint(10)).Return(errors.New("already bookmarked"))
 
 	err := svc.Bookmark(1, 10)
@@ -599,9 +601,30 @@ func TestPostBookmark_Error(t *testing.T) {
 	postRepo.AssertExpectations(t)
 }
 
+func TestPostBookmark_SelfBookmark_Forbidden(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindByID", uint(10)).Return(&model.Post{UserID: 1}, nil)
+
+	err := svc.Bookmark(1, 10)
+	assert.ErrorIs(t, err, ErrForbidden)
+	postRepo.AssertNotCalled(t, "Bookmark")
+}
+
+func TestPostBookmark_PostNotFound(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	err := svc.Bookmark(1, 99)
+	assert.ErrorIs(t, err, ErrNotFound)
+	postRepo.AssertNotCalled(t, "Bookmark")
+}
+
 func TestPostUnbookmark_Success(t *testing.T) {
 	svc, postRepo, _ := newTestPostService()
 
+	postRepo.On("FindByID", uint(10)).Return(&model.Post{UserID: 2}, nil)
 	postRepo.On("Unbookmark", uint(1), uint(10)).Return(nil)
 
 	err := svc.Unbookmark(1, 10)
@@ -612,11 +635,22 @@ func TestPostUnbookmark_Success(t *testing.T) {
 func TestPostUnbookmark_Error(t *testing.T) {
 	svc, postRepo, _ := newTestPostService()
 
+	postRepo.On("FindByID", uint(10)).Return(&model.Post{UserID: 2}, nil)
 	postRepo.On("Unbookmark", uint(1), uint(10)).Return(errors.New("not bookmarked"))
 
 	err := svc.Unbookmark(1, 10)
 	assert.Error(t, err)
 	postRepo.AssertExpectations(t)
+}
+
+func TestPostUnbookmark_SelfUnbookmark_Forbidden(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindByID", uint(10)).Return(&model.Post{UserID: 1}, nil)
+
+	err := svc.Unbookmark(1, 10)
+	assert.ErrorIs(t, err, ErrForbidden)
+	postRepo.AssertNotCalled(t, "Unbookmark")
 }
 
 func TestPostHasBookmarked_True(t *testing.T) {
