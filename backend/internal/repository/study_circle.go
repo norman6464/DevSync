@@ -144,7 +144,7 @@ func (r *StudyCircleRepository) FindStepByID(stepID uint) (*model.StudyCircleSte
 }
 
 // ReorderSteps はステップの表示順序を更新する。
-func (r *StudyCircleRepository) ReorderSteps(circleID uint, stepOrders []StepOrder) error {
+func (r *StudyCircleRepository) ReorderSteps(circleID uint, stepOrders []model.StepOrder) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		for _, o := range stepOrders {
 			if err := tx.Model(&model.StudyCircleStep{}).

@@ -6,12 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
 // MessageServiceInterface はMessageHandlerが依存するサービスのインターフェース。
 type MessageServiceInterface interface {
-	GetConversations(userID uint) ([]repository.ConversationSummary, error)
+	GetConversations(userID uint) ([]model.ConversationSummary, error)
 	GetConversation(userID, otherUserID uint, page, limit int) ([]model.Message, error)
 	SendMessage(msg *model.Message) error
 }

@@ -391,7 +391,7 @@ func TestRoadmapReorderSteps_Success(t *testing.T) {
 	rm.ID = 10
 	rm.UserID = 1
 	repo.On("FindByID", uint(10)).Return(rm, nil)
-	repo.On("ReorderSteps", uint(10), mock.AnythingOfType("[]repository.StepOrder")).Return(nil)
+	repo.On("ReorderSteps", uint(10), mock.AnythingOfType("[]model.StepOrder")).Return(nil)
 
 	w := doRequest(r, http.MethodPut, "/roadmaps/10/steps/reorder", map[string]interface{}{
 		"orders": []map[string]interface{}{

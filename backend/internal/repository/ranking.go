@@ -3,6 +3,7 @@ package repository
 import (
 	"time"
 
+	"github.com/norman6464/devsync/backend/internal/model"
 	"gorm.io/gorm"
 )
 
@@ -16,25 +17,16 @@ func NewRankingRepository(db *gorm.DB) *RankingRepository {
 	return &RankingRepository{db: db}
 }
 
-// RankingEntry はランキング表示用の1エントリを表す。
-type RankingEntry struct {
-	UserID    uint   `json:"user_id"`    // ユーザーID
-	Username  string `json:"username"`   // ユーザー名（URLスラッグ用）
-	Name      string `json:"name"`       // 表示名
-	AvatarURL string `json:"avatar_url"` // アバター画像URL
-	Score     int64  `json:"score"`      // ランキングスコア
-}
-
 // ContributionRanking は指定期間（weekly/monthly）のGitHubコントリビューションランキングを取得する。
 // コントリビューション数の合計で降順ソートし、上位50件を返す。
-func (r *RankingRepository) ContributionRanking(period string) ([]RankingEntry, error) {
+func (r *RankingRepository) ContributionRanking(period string) ([]model.RankingEntry, error) {
 	days := 7
 	if period == "monthly" {
 		days = 30
 	}
 	since := time.Now().AddDate(0, 0, -days)
 
-	var entries []RankingEntry
+	var entries []model.RankingEntry
 	err := r.db.Raw(`
 		SELECT u.id as user_id, u.username, u.name, u.avatar_url, COALESCE(SUM(gc.count), 0) as score
 		FROM users u
@@ -50,8 +42,8 @@ func (r *RankingRepository) ContributionRanking(period string) ([]RankingEntry, 
 
 // LanguageRanking は指定プログラミング言語のバイト数ランキングを取得する。
 // GitHubの言語統計データに基づき、上位50件を返す。
-func (r *RankingRepository) LanguageRanking(language, period string) ([]RankingEntry, error) {
-	var entries []RankingEntry
+func (r *RankingRepository) LanguageRanking(language, period string) ([]model.RankingEntry, error) {
+	var entries []model.RankingEntry
 	err := r.db.Raw(`
 		SELECT u.id as user_id, u.username, u.name, u.avatar_url, gls.bytes as score
 		FROM users u
@@ -65,8 +57,8 @@ func (r *RankingRepository) LanguageRanking(language, period string) ([]RankingE
 
 // LevelRanking はユーザーのXP合計に基づくレベルランキングを取得する。
 // 各種アクティビティから獲得したXPの合計で降順ソートし、上位50件を返す。
-func (r *RankingRepository) LevelRanking() ([]RankingEntry, error) {
-	var entries []RankingEntry
+func (r *RankingRepository) LevelRanking() ([]model.RankingEntry, error) {
+	var entries []model.RankingEntry
 	err := r.db.Raw(`
 		SELECT u.id as user_id, u.username, u.name, u.avatar_url,
 			COALESCE(ll.xp, 0) + COALESCE(p.xp, 0) + COALESCE(gh.xp, 0) +

@@ -253,7 +253,7 @@ func (r *RoadmapRepository) FindStepByID(stepID uint) (*model.RoadmapStep, error
 }
 
 // ReorderSteps は複数ステップの表示順序を一括で更新する。
-func (r *RoadmapRepository) ReorderSteps(roadmapID uint, stepOrders []StepOrder) error {
+func (r *RoadmapRepository) ReorderSteps(roadmapID uint, stepOrders []model.StepOrder) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		for _, order := range stepOrders {
 			if err := tx.Model(&model.RoadmapStep{}).
@@ -278,8 +278,3 @@ func (r *RoadmapRepository) GetTemplates() ([]model.Roadmap, error) {
 	return templates, err
 }
 
-// StepOrder はステップの並び替え情報を表す。
-type StepOrder struct {
-	StepID     uint `json:"step_id"`     // ステップID
-	OrderIndex int  `json:"order_index"` // 新しい表示順序
-}

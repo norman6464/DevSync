@@ -226,7 +226,7 @@ func (s *StudyCircleService) DeleteStep(circleID, userID, stepID uint) error {
 }
 
 // ReorderSteps はステップの順序を変更する。オーナーのみ。
-func (s *StudyCircleService) ReorderSteps(circleID, userID uint, orders []repository.StepOrder) error {
+func (s *StudyCircleService) ReorderSteps(circleID, userID uint, orders []model.StepOrder) error {
 	circle, err := s.repo.FindByID(circleID)
 	if err != nil {
 		return ErrNotFound

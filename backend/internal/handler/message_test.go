@@ -6,13 +6,12 @@ import (
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
 	"github.com/stretchr/testify/mock"
 )
 
 func TestMessage_GetConversations_Success(t *testing.T) {
 	h, svc := setupMessageHandler()
-	svc.On("GetConversations", uint(1)).Return([]repository.ConversationSummary{
+	svc.On("GetConversations", uint(1)).Return([]model.ConversationSummary{
 		{UserID: 2, Name: "Alice", LastMessage: "Hello"},
 		{UserID: 3, Name: "Bob", LastMessage: "Hi"},
 	}, nil)
@@ -27,7 +26,7 @@ func TestMessage_GetConversations_Success(t *testing.T) {
 
 func TestMessage_GetConversations_ServiceError(t *testing.T) {
 	h, svc := setupMessageHandler()
-	svc.On("GetConversations", uint(1)).Return([]repository.ConversationSummary(nil), errors.New("db error"))
+	svc.On("GetConversations", uint(1)).Return([]model.ConversationSummary(nil), errors.New("db error"))
 
 	r := newRouter(1)
 	r.GET("/conversations", h.GetConversations)

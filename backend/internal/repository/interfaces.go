@@ -85,7 +85,7 @@ type NotificationRepositoryInterface interface {
 type MessageRepositoryInterface interface {
 	Create(msg *model.Message) error
 	GetConversation(userID, otherUserID uint, page, limit int) ([]model.Message, error)
-	GetConversations(userID uint) ([]ConversationSummary, error)
+	GetConversations(userID uint) ([]model.ConversationSummary, error)
 	MarkAsRead(senderID, receiverID uint) error
 }
 
@@ -146,9 +146,9 @@ type LearningGoalRepositoryInterface interface {
 // RankingRepositoryInterface はランキングデータ操作の契約を定義する。
 // GitHubコントリビューションと言語別ランキングを提供する。
 type RankingRepositoryInterface interface {
-	ContributionRanking(period string) ([]RankingEntry, error)
-	LanguageRanking(language, period string) ([]RankingEntry, error)
-	LevelRanking() ([]RankingEntry, error)
+	ContributionRanking(period string) ([]model.RankingEntry, error)
+	LanguageRanking(language, period string) ([]model.RankingEntry, error)
+	LevelRanking() ([]model.RankingEntry, error)
 	AvailableLanguages() ([]string, error)
 }
 
@@ -207,7 +207,7 @@ type RoadmapRepositoryInterface interface {
 	UpdateStep(step *model.RoadmapStep) error
 	DeleteStep(stepID uint) error
 	FindStepByID(stepID uint) (*model.RoadmapStep, error)
-	ReorderSteps(roadmapID uint, stepOrders []StepOrder) error
+	ReorderSteps(roadmapID uint, stepOrders []model.StepOrder) error
 	GetTemplates() ([]model.Roadmap, error)
 }
 
@@ -370,7 +370,7 @@ type StudyCircleRepositoryInterface interface {
 	UpdateStep(step *model.StudyCircleStep) error
 	DeleteStep(stepID uint) error
 	FindStepByID(stepID uint) (*model.StudyCircleStep, error)
-	ReorderSteps(circleID uint, stepOrders []StepOrder) error
+	ReorderSteps(circleID uint, stepOrders []model.StepOrder) error
 
 	// 進捗管理
 	UpsertProgress(progress *model.StudyCircleMemberProgress) error

@@ -6,7 +6,6 @@ import (
 
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -465,7 +464,7 @@ func TestStudyCircleReorderSteps_Success(t *testing.T) {
 	svc, repo := newTestStudyCircleService()
 
 	circle := &model.StudyCircle{ID: 1, OwnerID: 1}
-	orders := []repository.StepOrder{
+	orders := []model.StepOrder{
 		{StepID: 1, OrderIndex: 0},
 		{StepID: 2, OrderIndex: 1},
 	}
@@ -484,7 +483,7 @@ func TestStudyCircleReorderSteps_Forbidden(t *testing.T) {
 	circle := &model.StudyCircle{ID: 1, OwnerID: 1}
 	repo.On("FindByID", uint(1)).Return(circle, nil)
 
-	orders := []repository.StepOrder{{StepID: 1, OrderIndex: 0}}
+	orders := []model.StepOrder{{StepID: 1, OrderIndex: 0}}
 	err := svc.ReorderSteps(1, 99, orders)
 	assert.ErrorIs(t, err, ErrForbidden)
 }

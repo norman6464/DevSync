@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -26,7 +25,7 @@ func newTestMessageService() (*MessageService, *MockMessageRepository, *MockNoti
 func TestMessageGetConversations_Success(t *testing.T) {
 	svc, msgRepo, _ := newTestMessageService()
 
-	summaries := []repository.ConversationSummary{
+	summaries := []model.ConversationSummary{
 		{UserID: 2, Name: "Alice", LastMessage: "Hello"},
 	}
 	msgRepo.On("GetConversations", uint(1)).Return(summaries, nil)
@@ -97,7 +96,7 @@ func TestMessageMarkAsRead_Success(t *testing.T) {
 func TestMessageGetConversations_RepoError(t *testing.T) {
 	svc, msgRepo, _ := newTestMessageService()
 
-	msgRepo.On("GetConversations", uint(1)).Return([]repository.ConversationSummary(nil), errors.New("db error"))
+	msgRepo.On("GetConversations", uint(1)).Return([]model.ConversationSummary(nil), errors.New("db error"))
 
 	result, err := svc.GetConversations(1)
 	assert.Error(t, err)
@@ -108,7 +107,7 @@ func TestMessageGetConversations_RepoError(t *testing.T) {
 func TestMessageGetConversations_Empty(t *testing.T) {
 	svc, msgRepo, _ := newTestMessageService()
 
-	msgRepo.On("GetConversations", uint(1)).Return([]repository.ConversationSummary{}, nil)
+	msgRepo.On("GetConversations", uint(1)).Return([]model.ConversationSummary{}, nil)
 
 	result, err := svc.GetConversations(1)
 	assert.NoError(t, err)

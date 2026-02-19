@@ -5,7 +5,6 @@ import (
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
 // StudyCircleServiceInterface はStudyCircleHandlerが依存するサービスメソッドを定義する。
@@ -21,7 +20,7 @@ type StudyCircleServiceInterface interface {
 	CreateStep(circleID, userID uint, step *model.StudyCircleStep) error
 	UpdateStep(circleID, userID, stepID uint, title, description *string) (*model.StudyCircleStep, error)
 	DeleteStep(circleID, userID, stepID uint) error
-	ReorderSteps(circleID, userID uint, orders []repository.StepOrder) error
+	ReorderSteps(circleID, userID uint, orders []model.StepOrder) error
 	UpdateProgress(circleID, userID, stepID uint, isCompleted bool) error
 	GetProgress(circleID, userID uint) ([]model.StudyCircleMemberProgress, error)
 	CreateCheckin(circleID, userID uint, content string) (*model.StudyCircleCheckin, error)

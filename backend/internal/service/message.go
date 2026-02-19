@@ -18,7 +18,7 @@ func NewMessageService(repo repository.MessageRepositoryInterface, notificationS
 }
 
 // GetConversations は指定ユーザーの全会話一覧を取得する。
-func (s *MessageService) GetConversations(userID uint) ([]repository.ConversationSummary, error) {
+func (s *MessageService) GetConversations(userID uint) ([]model.ConversationSummary, error) {
 	return s.repo.GetConversations(userID)
 }
 

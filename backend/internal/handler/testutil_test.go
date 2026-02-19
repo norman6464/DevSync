@@ -10,7 +10,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
 	"github.com/norman6464/devsync/backend/internal/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -375,7 +374,7 @@ func (m *MockRoadmapRepository) FindStepByID(stepID uint) (*model.RoadmapStep, e
 	}
 	return nil, args.Error(1)
 }
-func (m *MockRoadmapRepository) ReorderSteps(roadmapID uint, stepOrders []repository.StepOrder) error {
+func (m *MockRoadmapRepository) ReorderSteps(roadmapID uint, stepOrders []model.StepOrder) error {
 	return m.Called(roadmapID, stepOrders).Error(0)
 }
 func (m *MockRoadmapRepository) GetTemplates() ([]model.Roadmap, error) {
@@ -658,7 +657,7 @@ func (m *MockStudyCircleRepository) FindStepByID(stepID uint) (*model.StudyCircl
 	}
 	return nil, args.Error(1)
 }
-func (m *MockStudyCircleRepository) ReorderSteps(circleID uint, stepOrders []repository.StepOrder) error {
+func (m *MockStudyCircleRepository) ReorderSteps(circleID uint, stepOrders []model.StepOrder) error {
 	return m.Called(circleID, stepOrders).Error(0)
 }
 func (m *MockStudyCircleRepository) UpsertProgress(progress *model.StudyCircleMemberProgress) error {
@@ -955,7 +954,7 @@ func (m *MockRoadmapService) UpdateStepCompletion(roadmapID, stepID, userID uint
 func (m *MockRoadmapService) DeleteStep(roadmapID, stepID, userID uint) error {
 	return m.Called(roadmapID, stepID, userID).Error(0)
 }
-func (m *MockRoadmapService) ReorderSteps(roadmapID, userID uint, orders []service.StepOrder) error {
+func (m *MockRoadmapService) ReorderSteps(roadmapID, userID uint, orders []model.StepOrder) error {
 	return m.Called(roadmapID, userID, orders).Error(0)
 }
 
@@ -987,17 +986,17 @@ func setupBadgeHandler() (*BadgeHandler, *MockBadgeService) {
 // MockRankingService は RankingServiceInterface のモック実装。
 type MockRankingService struct{ mock.Mock }
 
-func (m *MockRankingService) ContributionRanking(period string) ([]repository.RankingEntry, error) {
+func (m *MockRankingService) ContributionRanking(period string) ([]model.RankingEntry, error) {
 	args := m.Called(period)
-	return args.Get(0).([]repository.RankingEntry), args.Error(1)
+	return args.Get(0).([]model.RankingEntry), args.Error(1)
 }
-func (m *MockRankingService) LanguageRanking(language, period string) ([]repository.RankingEntry, error) {
+func (m *MockRankingService) LanguageRanking(language, period string) ([]model.RankingEntry, error) {
 	args := m.Called(language, period)
-	return args.Get(0).([]repository.RankingEntry), args.Error(1)
+	return args.Get(0).([]model.RankingEntry), args.Error(1)
 }
-func (m *MockRankingService) LevelRanking() ([]repository.RankingEntry, error) {
+func (m *MockRankingService) LevelRanking() ([]model.RankingEntry, error) {
 	args := m.Called()
-	return args.Get(0).([]repository.RankingEntry), args.Error(1)
+	return args.Get(0).([]model.RankingEntry), args.Error(1)
 }
 func (m *MockRankingService) AvailableLanguages() ([]string, error) {
 	args := m.Called()
@@ -1265,9 +1264,9 @@ func setupLearningLogHandler() (*LearningLogHandler, *MockLearningLogService) {
 // MockMessageService は MessageServiceInterface のモック実装。
 type MockMessageService struct{ mock.Mock }
 
-func (m *MockMessageService) GetConversations(userID uint) ([]repository.ConversationSummary, error) {
+func (m *MockMessageService) GetConversations(userID uint) ([]model.ConversationSummary, error) {
 	args := m.Called(userID)
-	return args.Get(0).([]repository.ConversationSummary), args.Error(1)
+	return args.Get(0).([]model.ConversationSummary), args.Error(1)
 }
 func (m *MockMessageService) GetConversation(userID, otherUserID uint, page, limit int) ([]model.Message, error) {
 	args := m.Called(userID, otherUserID, page, limit)

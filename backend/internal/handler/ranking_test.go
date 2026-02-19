@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/norman6464/devsync/backend/internal/repository"
+	"github.com/norman6464/devsync/backend/internal/model"
 )
 
 // ---------- ContributionRanking ----------
 
 func TestRankingContribution_Success(t *testing.T) {
 	h, svc := setupRankingHandler()
-	entries := []repository.RankingEntry{{UserID: 1, Score: 100}}
+	entries := []model.RankingEntry{{UserID: 1, Score: 100}}
 	svc.On("ContributionRanking", "weekly").Return(entries, nil)
 
 	r := newRouter(1)
@@ -24,7 +24,7 @@ func TestRankingContribution_Success(t *testing.T) {
 
 func TestRankingContribution_WithPeriod(t *testing.T) {
 	h, svc := setupRankingHandler()
-	entries := []repository.RankingEntry{{UserID: 1, Score: 50}}
+	entries := []model.RankingEntry{{UserID: 1, Score: 50}}
 	svc.On("ContributionRanking", "monthly").Return(entries, nil)
 
 	r := newRouter(1)
@@ -37,7 +37,7 @@ func TestRankingContribution_WithPeriod(t *testing.T) {
 
 func TestRankingContribution_ServiceError(t *testing.T) {
 	h, svc := setupRankingHandler()
-	svc.On("ContributionRanking", "weekly").Return([]repository.RankingEntry{}, fmt.Errorf("internal error"))
+	svc.On("ContributionRanking", "weekly").Return([]model.RankingEntry{}, fmt.Errorf("internal error"))
 
 	r := newRouter(1)
 	r.GET("/rankings/contributions", h.ContributionRanking)
@@ -51,7 +51,7 @@ func TestRankingContribution_ServiceError(t *testing.T) {
 
 func TestRankingLanguage_Success(t *testing.T) {
 	h, svc := setupRankingHandler()
-	entries := []repository.RankingEntry{{UserID: 1, Score: 80}}
+	entries := []model.RankingEntry{{UserID: 1, Score: 80}}
 	svc.On("LanguageRanking", "Go", "weekly").Return(entries, nil)
 
 	r := newRouter(1)
@@ -66,7 +66,7 @@ func TestRankingLanguage_Success(t *testing.T) {
 
 func TestRankingLevel_Success(t *testing.T) {
 	h, svc := setupRankingHandler()
-	entries := []repository.RankingEntry{{UserID: 1, Score: 500}}
+	entries := []model.RankingEntry{{UserID: 1, Score: 500}}
 	svc.On("LevelRanking").Return(entries, nil)
 
 	r := newRouter(1)
