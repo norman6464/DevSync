@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { usePostDetail, useConfirm } from '../hooks';
 import { sectionContainerClass, messageInputClass } from '../constants/styles';
@@ -8,13 +8,10 @@ import { useAuthStore } from '../store/authStore';
 import PostCard from '../components/posts/PostCard';
 import PostForm from '../components/posts/PostForm';
 import CodeSnippetViewer from '../components/posts/CodeSnippetViewer';
-import Avatar from '../components/common/Avatar';
+import CommentItem from '../components/posts/CommentItem';
 import MentionInput from '../components/common/MentionInput';
-import MentionText from '../components/common/MentionText';
 import { PageLoader, Modal } from '../components/common';
-import CommentLikeButton from '../components/posts/CommentLikeButton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
-import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 
 export default function PostDetailPage() {
@@ -45,6 +42,11 @@ export default function PostDetailPage() {
       setReplyingTo(null);
     }
   }, [replyContent, submitComment]);
+
+  const handleReply = useCallback((commentId: number) => {
+    setReplyingTo((prev) => (prev === commentId ? null : commentId));
+    setReplyContent('');
+  }, []);
 
   const handleDeletePost = useCallback(async () => {
     if (!post) return;
@@ -90,7 +92,7 @@ export default function PostDetailPage() {
       {post.code_snippets && post.code_snippets.length > 0 && (
         <div className="space-y-4">
           <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
-            <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg aria-hidden="true" className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
             </svg>
             {t('post.codeSnippets')} ({post.code_snippets.length})
@@ -104,7 +106,7 @@ export default function PostDetailPage() {
       {/* Comments Section */}
       <div className={sectionContainerClass}>
         <div className="px-6 py-4 border-b border-gray-800 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <svg aria-hidden="true" className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337Z" />
           </svg>
           <h3 className="text-sm font-semibold">{t('post.comments')} ({comments.length})</h3>
@@ -139,43 +141,11 @@ export default function PostDetailPage() {
           <div className="divide-y divide-gray-800/50">
             {comments.map((comment) => (
               <div key={comment.id} className="px-6 py-4">
-                <div className="flex gap-3">
-                  <Link to={`/profile/${comment.user?.username || comment.user_id}`} className="flex-shrink-0">
-                    <Avatar name={comment.user?.name || 'U'} avatarUrl={comment.user?.avatar_url} size="sm" />
-                  </Link>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Link
-                        to={`/profile/${comment.user?.username || comment.user_id}`}
-                        className="font-medium text-sm hover:text-blue-400 transition-colors"
-                      >
-                        {comment.user?.name}
-                      </Link>
-                      <span className="text-xs text-gray-600">
-                        {format(new Date(comment.created_at), 'MMM d, yyyy · HH:mm')}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-300 mt-1 leading-relaxed">
-                      <MentionText text={comment.content} />
-                    </p>
-                    <div className="flex items-center gap-3 mt-1.5">
-                      <CommentLikeButton
-                        commentId={comment.id}
-                        initialLiked={comment.liked ?? false}
-                        initialCount={comment.like_count ?? 0}
-                      />
-                      <button
-                        onClick={() => {
-                          setReplyingTo(replyingTo === comment.id ? null : comment.id);
-                          setReplyContent('');
-                        }}
-                        className="text-xs text-gray-500 hover:text-blue-400 transition-colors"
-                      >
-                        {t('post.reply')}
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <CommentItem
+                  comment={comment}
+                  onReply={handleReply}
+                  isReplying={replyingTo === comment.id}
+                />
 
                 {/* Reply Form */}
                 {replyingTo === comment.id && (
@@ -203,34 +173,7 @@ export default function PostDetailPage() {
                 {comment.replies && comment.replies.length > 0 && (
                   <div className="ml-11 mt-3 space-y-3 border-l-2 border-gray-800 pl-4">
                     {comment.replies.map((reply) => (
-                      <div key={reply.id} className="flex gap-2.5">
-                        <Link to={`/profile/${reply.user?.username || reply.user_id}`} className="flex-shrink-0">
-                          <Avatar name={reply.user?.name || 'U'} avatarUrl={reply.user?.avatar_url} size="xs" />
-                        </Link>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <Link
-                              to={`/profile/${reply.user?.username || reply.user_id}`}
-                              className="font-medium text-xs hover:text-blue-400 transition-colors"
-                            >
-                              {reply.user?.name}
-                            </Link>
-                            <span className="text-xs text-gray-600">
-                              {format(new Date(reply.created_at), 'MMM d, yyyy · HH:mm')}
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-300 mt-0.5 leading-relaxed">
-                            <MentionText text={reply.content} />
-                          </p>
-                          <div className="mt-1">
-                            <CommentLikeButton
-                              commentId={reply.id}
-                              initialLiked={reply.liked ?? false}
-                              initialCount={reply.like_count ?? 0}
-                            />
-                          </div>
-                        </div>
-                      </div>
+                      <CommentItem key={reply.id} comment={reply} size="xs" />
                     ))}
                   </div>
                 )}
