@@ -1965,3 +1965,18 @@ func (m *MockLearningResourceStatsRepository) GetLearningResourceStats(userID ui
 	}
 	return args.Get(0).(*model.LearningResourceStats), args.Error(1)
 }
+
+// MockProjectStatsRepository は repository.ProjectStatsRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockProjectStatsRepository struct {
+	mock.Mock
+}
+
+func (m *MockProjectStatsRepository) GetProjectStats(userID uint) (*model.ProjectStats, error) {
+	args := m.Called(userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.ProjectStats), args.Error(1)
+}
