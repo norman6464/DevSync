@@ -162,6 +162,17 @@ func TestQuestionRemoveVote_Success(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestQuestionRemoveVote_RepoError(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	repo.On("RemoveVote", uint(1), uint(10)).Return(errors.New("db error"))
+
+	err := svc.RemoveVote(1, 10)
+	assert.Error(t, err)
+	assert.Equal(t, "db error", err.Error())
+	repo.AssertExpectations(t)
+}
+
 // ============================================================
 // 質問作成テスト
 // ============================================================
