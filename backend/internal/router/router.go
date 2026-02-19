@@ -108,6 +108,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerFollowStatsRoutes(protected, c)
 		registerRoadmapStatsRoutes(protected, c)
 		registerLearningLogStatsRoutes(protected, c)
+		registerCommentStatsRoutes(protected, c)
 	}
 
 	return r
@@ -686,5 +687,12 @@ func registerLearningLogStatsRoutes(g *gin.RouterGroup, c *di.Container) {
 	users := g.Group("/users")
 	{
 		users.GET("/:id/learning-log-stats", c.LearningLogStatsHandler.GetStats)
+	}
+}
+
+func registerCommentStatsRoutes(g *gin.RouterGroup, c *di.Container) {
+	users := g.Group("/users")
+	{
+		users.GET("/:id/comment-stats", c.CommentStatsHandler.GetStats)
 	}
 }

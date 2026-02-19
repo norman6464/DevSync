@@ -2025,3 +2025,18 @@ func (m *MockLearningLogStatsRepository) GetLearningLogStats(userID uint) (*mode
 	}
 	return args.Get(0).(*model.LearningLogStats), args.Error(1)
 }
+
+// MockCommentStatsRepository は repository.CommentStatsRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockCommentStatsRepository struct {
+	mock.Mock
+}
+
+func (m *MockCommentStatsRepository) GetCommentStats(userID uint) (*model.CommentStats, error) {
+	args := m.Called(userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.CommentStats), args.Error(1)
+}
