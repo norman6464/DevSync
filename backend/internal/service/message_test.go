@@ -150,6 +150,16 @@ func TestMessageGetConversation_RepoError(t *testing.T) {
 // メッセージ送信エラーテスト
 // ============================================================
 
+func TestMessageSendMessage_SelfMessage_BadRequest(t *testing.T) {
+	svc, msgRepo, _ := newTestMessageService()
+
+	msg := &model.Message{SenderID: 1, ReceiverID: 1, Content: "Hello myself!"}
+
+	err := svc.SendMessage(msg)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	msgRepo.AssertNotCalled(t, "Create")
+}
+
 func TestMessageSendMessage_CreateError(t *testing.T) {
 	svc, msgRepo, notifRepo := newTestMessageService()
 
