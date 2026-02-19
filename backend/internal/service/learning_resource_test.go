@@ -567,6 +567,7 @@ func TestLearningResourceUnlike_Error(t *testing.T) {
 
 func TestLearningResourceSave_Success(t *testing.T) {
 	svc, repo := newTestLearningResourceService()
+	repo.On("FindByID", uint(10)).Return(&model.LearningResource{UserID: 2}, nil)
 	repo.On("Save", uint(1), uint(10)).Return(nil)
 
 	err := svc.Save(1, 10)
@@ -576,6 +577,7 @@ func TestLearningResourceSave_Success(t *testing.T) {
 
 func TestLearningResourceSave_Error(t *testing.T) {
 	svc, repo := newTestLearningResourceService()
+	repo.On("FindByID", uint(10)).Return(&model.LearningResource{UserID: 2}, nil)
 	repo.On("Save", uint(1), uint(10)).Return(errors.New("already saved"))
 
 	err := svc.Save(1, 10)
@@ -583,8 +585,27 @@ func TestLearningResourceSave_Error(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestLearningResourceSave_SelfSave_Forbidden(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+	repo.On("FindByID", uint(10)).Return(&model.LearningResource{UserID: 1}, nil)
+
+	err := svc.Save(1, 10)
+	assert.ErrorIs(t, err, ErrForbidden)
+	repo.AssertNotCalled(t, "Save")
+}
+
+func TestLearningResourceSave_NotFound(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	err := svc.Save(1, 99)
+	assert.ErrorIs(t, err, ErrNotFound)
+	repo.AssertNotCalled(t, "Save")
+}
+
 func TestLearningResourceUnsave_Success(t *testing.T) {
 	svc, repo := newTestLearningResourceService()
+	repo.On("FindByID", uint(10)).Return(&model.LearningResource{UserID: 2}, nil)
 	repo.On("Unsave", uint(1), uint(10)).Return(nil)
 
 	err := svc.Unsave(1, 10)
@@ -594,11 +615,21 @@ func TestLearningResourceUnsave_Success(t *testing.T) {
 
 func TestLearningResourceUnsave_Error(t *testing.T) {
 	svc, repo := newTestLearningResourceService()
+	repo.On("FindByID", uint(10)).Return(&model.LearningResource{UserID: 2}, nil)
 	repo.On("Unsave", uint(1), uint(10)).Return(errors.New("not saved"))
 
 	err := svc.Unsave(1, 10)
 	assert.Error(t, err)
 	repo.AssertExpectations(t)
+}
+
+func TestLearningResourceUnsave_SelfUnsave_Forbidden(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+	repo.On("FindByID", uint(10)).Return(&model.LearningResource{UserID: 1}, nil)
+
+	err := svc.Unsave(1, 10)
+	assert.ErrorIs(t, err, ErrForbidden)
+	repo.AssertNotCalled(t, "Unsave")
 }
 
 // ============================================================

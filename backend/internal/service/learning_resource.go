@@ -171,12 +171,28 @@ func (s *LearningResourceService) Unlike(userID, resourceID uint) error {
 }
 
 // Save は学習リソースを保存する。
+// 自分のリソースは保存できない。
 func (s *LearningResourceService) Save(userID, resourceID uint) error {
+	resource, err := s.repo.FindByID(resourceID)
+	if err != nil {
+		return ErrNotFound
+	}
+	if resource.UserID == userID {
+		return ErrForbidden
+	}
 	return s.repo.Save(userID, resourceID)
 }
 
 // Unsave は学習リソースの保存を取り消す。
+// 自分のリソースの保存は取り消せない（そもそも保存できないため）。
 func (s *LearningResourceService) Unsave(userID, resourceID uint) error {
+	resource, err := s.repo.FindByID(resourceID)
+	if err != nil {
+		return ErrNotFound
+	}
+	if resource.UserID == userID {
+		return ErrForbidden
+	}
 	return s.repo.Unsave(userID, resourceID)
 }
 
