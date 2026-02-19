@@ -329,6 +329,18 @@ func TestPostGetComments_Success(t *testing.T) {
 	assert.Len(t, result, 2)
 }
 
+func TestPostGetComments_RepoError(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("GetComments", uint(10)).Return([]model.Comment(nil), errors.New("db error"))
+
+	result, err := svc.GetComments(10)
+	assert.Error(t, err)
+	assert.Equal(t, "db error", err.Error())
+	assert.Nil(t, result)
+	postRepo.AssertExpectations(t)
+}
+
 func TestPostDeleteComment_Success(t *testing.T) {
 	svc, postRepo, _ := newTestPostService()
 
