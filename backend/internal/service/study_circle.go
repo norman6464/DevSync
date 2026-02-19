@@ -18,6 +18,31 @@ func NewStudyCircleService(repo repository.StudyCircleRepositoryInterface) *Stud
 	return &StudyCircleService{repo: repo}
 }
 
+func (s *StudyCircleService) findAndCheckOwnership(id, userID uint) (*model.StudyCircle, error) {
+	circle, err := s.repo.FindByID(id)
+	if err != nil {
+		return nil, ErrNotFound
+	}
+	if circle.OwnerID != userID {
+		return nil, ErrForbidden
+	}
+	return circle, nil
+}
+
+func (s *StudyCircleService) findAndCheckStepOwnership(circleID, stepID, userID uint) (*model.StudyCircleStep, error) {
+	if _, err := s.findAndCheckOwnership(circleID, userID); err != nil {
+		return nil, err
+	}
+	step, err := s.repo.FindStepByID(stepID)
+	if err != nil {
+		return nil, ErrNotFound
+	}
+	if step.CircleID != circleID {
+		return nil, ErrNotFound
+	}
+	return step, nil
+}
+
 // Create はサークルを作成し、オーナーをメンバーとして自動追加する。
 func (s *StudyCircleService) Create(circle *model.StudyCircle, memberIDs []uint) error {
 	if circle.MaxMembers < 3 || circle.MaxMembers > 10 {
@@ -67,12 +92,9 @@ func (s *StudyCircleService) GetByID(id, userID uint) (*model.StudyCircle, error
 
 // Update はサークル情報を更新する。オーナーのみ。
 func (s *StudyCircleService) Update(id, userID uint, name, topic, description *string) (*model.StudyCircle, error) {
-	circle, err := s.repo.FindByID(id)
+	circle, err := s.findAndCheckOwnership(id, userID)
 	if err != nil {
-		return nil, ErrNotFound
-	}
-	if circle.OwnerID != userID {
-		return nil, ErrForbidden
+		return nil, err
 	}
 
 	if name != nil {
@@ -93,12 +115,8 @@ func (s *StudyCircleService) Update(id, userID uint, name, topic, description *s
 
 // Delete はサークルを削除する。オーナーのみ。
 func (s *StudyCircleService) Delete(id, userID uint) error {
-	circle, err := s.repo.FindByID(id)
-	if err != nil {
-		return ErrNotFound
-	}
-	if circle.OwnerID != userID {
-		return ErrForbidden
+	if _, err := s.findAndCheckOwnership(id, userID); err != nil {
+		return err
 	}
 	return s.repo.Delete(id)
 }
@@ -161,12 +179,8 @@ func (s *StudyCircleService) RemoveMember(circleID, userID, targetUserID uint) e
 
 // CreateStep はステップを追加する。オーナーのみ。
 func (s *StudyCircleService) CreateStep(circleID, userID uint, step *model.StudyCircleStep) error {
-	circle, err := s.repo.FindByID(circleID)
-	if err != nil {
-		return ErrNotFound
-	}
-	if circle.OwnerID != userID {
-		return ErrForbidden
+	if _, err := s.findAndCheckOwnership(circleID, userID); err != nil {
+		return err
 	}
 
 	step.CircleID = circleID
@@ -175,20 +189,9 @@ func (s *StudyCircleService) CreateStep(circleID, userID uint, step *model.Study
 
 // UpdateStep はステップを更新する。オーナーのみ。
 func (s *StudyCircleService) UpdateStep(circleID, userID, stepID uint, title, description *string) (*model.StudyCircleStep, error) {
-	circle, err := s.repo.FindByID(circleID)
+	step, err := s.findAndCheckStepOwnership(circleID, stepID, userID)
 	if err != nil {
-		return nil, ErrNotFound
-	}
-	if circle.OwnerID != userID {
-		return nil, ErrForbidden
-	}
-
-	step, err := s.repo.FindStepByID(stepID)
-	if err != nil {
-		return nil, ErrNotFound
-	}
-	if step.CircleID != circleID {
-		return nil, ErrNotFound
+		return nil, err
 	}
 
 	if title != nil {
@@ -206,33 +209,16 @@ func (s *StudyCircleService) UpdateStep(circleID, userID, stepID uint, title, de
 
 // DeleteStep はステップを削除する。オーナーのみ。
 func (s *StudyCircleService) DeleteStep(circleID, userID, stepID uint) error {
-	circle, err := s.repo.FindByID(circleID)
-	if err != nil {
-		return ErrNotFound
+	if _, err := s.findAndCheckStepOwnership(circleID, stepID, userID); err != nil {
+		return err
 	}
-	if circle.OwnerID != userID {
-		return ErrForbidden
-	}
-
-	step, err := s.repo.FindStepByID(stepID)
-	if err != nil {
-		return ErrNotFound
-	}
-	if step.CircleID != circleID {
-		return ErrNotFound
-	}
-
 	return s.repo.DeleteStep(stepID)
 }
 
 // ReorderSteps はステップの順序を変更する。オーナーのみ。
 func (s *StudyCircleService) ReorderSteps(circleID, userID uint, orders []model.StepOrder) error {
-	circle, err := s.repo.FindByID(circleID)
-	if err != nil {
-		return ErrNotFound
-	}
-	if circle.OwnerID != userID {
-		return ErrForbidden
+	if _, err := s.findAndCheckOwnership(circleID, userID); err != nil {
+		return err
 	}
 	return s.repo.ReorderSteps(circleID, orders)
 }
