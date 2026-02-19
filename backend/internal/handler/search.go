@@ -5,12 +5,12 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/model"
 )
 
 // PostSearchService は投稿の高度な検索サービスのインターフェース。
 type PostSearchService interface {
-	SearchPosts(params service.PostSearchParams) (*service.PostSearchResult, error)
+	SearchPosts(params model.PostSearchParams) (*model.PostSearchResult, error)
 }
 
 // CircleSearchService はスタディサークル検索のサービスインターフェース。
@@ -63,7 +63,7 @@ func (h *SearchHandler) SearchPosts(c *gin.Context) {
 	}
 
 	// ソート順
-	sortBy := service.SearchSortBy(c.DefaultQuery("sort_by", string(service.SearchSortByLatest)))
+	sortBy := model.SearchSortBy(c.DefaultQuery("sort_by", string(model.SearchSortByLatest)))
 
 	// 日付範囲フィルター
 	var dateFrom, dateTo *time.Time
@@ -78,7 +78,7 @@ func (h *SearchHandler) SearchPosts(c *gin.Context) {
 		}
 	}
 
-	params := service.PostSearchParams{
+	params := model.PostSearchParams{
 		Query:    query,
 		Tags:     tags,
 		SortBy:   sortBy,
