@@ -69,14 +69,23 @@ func (s *LearningResourceService) Search(query string, limit, offset int) ([]mod
 	return s.repo.Search(query, limit, offset)
 }
 
-// Update は所有権を検証した後、学習リソースを更新する。
-func (s *LearningResourceService) Update(id, userID uint, updates *model.LearningResource) (*model.LearningResource, error) {
+// findAndCheckOwnership はリソースを取得し、指定ユーザーが所有者かを検証する。
+func (s *LearningResourceService) findAndCheckOwnership(id, userID uint) (*model.LearningResource, error) {
 	resource, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err
 	}
 	if resource.UserID != userID {
 		return nil, ErrForbidden
+	}
+	return resource, nil
+}
+
+// Update は所有権を検証した後、学習リソースを更新する。
+func (s *LearningResourceService) Update(id, userID uint, updates *model.LearningResource) (*model.LearningResource, error) {
+	resource, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return nil, err
 	}
 
 	v := validator.NewResourceValidator()
@@ -114,12 +123,9 @@ func (s *LearningResourceService) Update(id, userID uint, updates *model.Learnin
 
 // UpdateVisibility は所有権を検証した後、リソースの公開/非公開状態を更新する。
 func (s *LearningResourceService) UpdateVisibility(id, userID uint, isPublic bool) (*model.LearningResource, error) {
-	resource, err := s.repo.FindByID(id)
+	resource, err := s.findAndCheckOwnership(id, userID)
 	if err != nil {
 		return nil, err
-	}
-	if resource.UserID != userID {
-		return nil, ErrForbidden
 	}
 
 	resource.IsPublic = isPublic
@@ -132,12 +138,8 @@ func (s *LearningResourceService) UpdateVisibility(id, userID uint, isPublic boo
 
 // Delete は所有権を検証した後、学習リソースを削除する。
 func (s *LearningResourceService) Delete(id, userID uint) error {
-	resource, err := s.repo.FindByID(id)
-	if err != nil {
+	if _, err := s.findAndCheckOwnership(id, userID); err != nil {
 		return err
-	}
-	if resource.UserID != userID {
-		return ErrForbidden
 	}
 	return s.repo.Delete(id)
 }
