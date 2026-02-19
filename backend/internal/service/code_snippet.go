@@ -43,15 +43,24 @@ func (s *CodeSnippetService) GetByPostID(postID uint) ([]model.CodeSnippet, erro
 	return s.repo.FindByPostID(postID)
 }
 
-// Update はスニペットを更新する。所有者のみ更新可能。
-// 空文字列のフィールドは更新しない（部分更新対応）。
-func (s *CodeSnippetService) Update(id, userID uint, language, fileName, code string) (*model.CodeSnippet, error) {
+// findAndCheckOwnership はスニペットを取得し、指定ユーザーが所有者かを検証する。
+func (s *CodeSnippetService) findAndCheckOwnership(id, userID uint) (*model.CodeSnippet, error) {
 	snippet, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err
 	}
 	if snippet.UserID != userID {
 		return nil, ErrForbidden
+	}
+	return snippet, nil
+}
+
+// Update はスニペットを更新する。所有者のみ更新可能。
+// 空文字列のフィールドは更新しない（部分更新対応）。
+func (s *CodeSnippetService) Update(id, userID uint, language, fileName, code string) (*model.CodeSnippet, error) {
+	snippet, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return nil, err
 	}
 
 	if language != "" {
@@ -72,12 +81,8 @@ func (s *CodeSnippetService) Update(id, userID uint, language, fileName, code st
 
 // Delete はスニペットを削除する。所有者のみ削除可能。
 func (s *CodeSnippetService) Delete(id, userID uint) error {
-	snippet, err := s.repo.FindByID(id)
-	if err != nil {
+	if _, err := s.findAndCheckOwnership(id, userID); err != nil {
 		return err
-	}
-	if snippet.UserID != userID {
-		return ErrForbidden
 	}
 	return s.repo.Delete(id)
 }
