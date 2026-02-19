@@ -43,15 +43,24 @@ func (s *LearningGoalService) GetStats(userID uint) (*model.LearningGoalStats, e
 	return s.repo.GetStats(userID)
 }
 
-// Update は所有権を検証した後、学習目標を更新する。
-// 進捗が100%に達した場合、ステータスを自動的に「完了」に変更する。
-func (s *LearningGoalService) Update(id, userID uint, updates *model.LearningGoal) (*model.LearningGoal, error) {
+// findAndCheckOwnership は学習目標を取得し、指定ユーザーが所有者かを検証する。
+func (s *LearningGoalService) findAndCheckOwnership(id, userID uint) (*model.LearningGoal, error) {
 	goal, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err
 	}
 	if goal.UserID != userID {
 		return nil, ErrForbidden
+	}
+	return goal, nil
+}
+
+// Update は所有権を検証した後、学習目標を更新する。
+// 進捗が100%に達した場合、ステータスを自動的に「完了」に変更する。
+func (s *LearningGoalService) Update(id, userID uint, updates *model.LearningGoal) (*model.LearningGoal, error) {
+	goal, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return nil, err
 	}
 
 	if updates.Title != "" {
@@ -147,12 +156,8 @@ func (s *LearningGoalService) GetDeadlineAlerts(userID uint) ([]model.GoalDeadli
 
 // Delete は所有権を検証した後、学習目標を削除する。
 func (s *LearningGoalService) Delete(id, userID uint) error {
-	goal, err := s.repo.FindByID(id)
-	if err != nil {
+	if _, err := s.findAndCheckOwnership(id, userID); err != nil {
 		return err
-	}
-	if goal.UserID != userID {
-		return ErrForbidden
 	}
 	return s.repo.Delete(id)
 }
