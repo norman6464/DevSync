@@ -223,12 +223,28 @@ func (s *PostService) DeleteComment(id, userID uint) error {
 }
 
 // Bookmark は投稿をブックマークする。
+// 自分の投稿へのブックマークは禁止する。
 func (s *PostService) Bookmark(userID, postID uint) error {
+	post, err := s.repo.FindByID(postID)
+	if err != nil {
+		return ErrNotFound
+	}
+	if post.UserID == userID {
+		return ErrForbidden
+	}
 	return s.repo.Bookmark(userID, postID)
 }
 
 // Unbookmark は投稿のブックマークを解除する。
+// 自分の投稿のブックマークは解除できない（そもそもブックマークできないため）。
 func (s *PostService) Unbookmark(userID, postID uint) error {
+	post, err := s.repo.FindByID(postID)
+	if err != nil {
+		return ErrNotFound
+	}
+	if post.UserID == userID {
+		return ErrForbidden
+	}
 	return s.repo.Unbookmark(userID, postID)
 }
 
