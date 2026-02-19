@@ -13,6 +13,7 @@ type LearningGoalServiceInterface interface {
 	Create(goal *model.LearningGoal) error
 	GetByID(id uint) (*model.LearningGoal, error)
 	GetByUserID(userID uint) ([]model.LearningGoal, error)
+	GetByCategory(userID uint, category string) ([]model.LearningGoal, error)
 	GetStats(userID uint) (*model.LearningGoalStats, error)
 	Update(id, userID uint, updates *model.LearningGoal) (*model.LearningGoal, error)
 	Delete(id, userID uint) error
@@ -193,6 +194,23 @@ func (h *LearningGoalHandler) GetDeadlineAlerts(c *gin.Context) {
 	}
 
 	respondOK(c, alerts)
+}
+
+// GetByCategory は認証ユーザーの学習目標をカテゴリでフィルタリングして取得する。
+func (h *LearningGoalHandler) GetByCategory(c *gin.Context) {
+	userID := c.GetUint("userID")
+	category := c.Param("category")
+
+	goals, err := h.service.GetByCategory(userID, category)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	if goals == nil {
+		goals = []model.LearningGoal{}
+	}
+
+	respondOK(c, goals)
 }
 
 // GetStats は指定されたユーザーの学習目標統計情報を取得する。

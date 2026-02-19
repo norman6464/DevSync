@@ -324,6 +324,7 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 		goals.GET("/user/:userId", c.LearningGoalHandler.GetByUserID)
 		goals.GET("/stats/:userId", c.LearningGoalHandler.GetStats)
 		goals.GET("/deadline-alerts", c.LearningGoalHandler.GetDeadlineAlerts)
+		goals.GET("/category/:category", c.LearningGoalHandler.GetByCategory)
 	}
 
 	// アクティビティレポート

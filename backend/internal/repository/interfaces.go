@@ -163,6 +163,7 @@ type LearningGoalRepositoryInterface interface {
 	FindByID(id uint) (*model.LearningGoal, error)
 	GetByUserID(userID uint) ([]model.LearningGoal, error)
 	GetActiveByUserID(userID uint) ([]model.LearningGoal, error)
+	GetByCategory(userID uint, category string) ([]model.LearningGoal, error)
 	GetStats(userID uint) (*model.LearningGoalStats, error)
 }
 
