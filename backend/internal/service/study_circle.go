@@ -134,6 +134,7 @@ func (s *StudyCircleService) GetMembers(circleID, userID uint) ([]model.StudyCir
 }
 
 // AddMember はメンバーを追加する。リクエスト者がメンバーであること＋上限チェック。
+// 既にメンバーのユーザーは追加できない。
 func (s *StudyCircleService) AddMember(circleID, userID, targetUserID uint) error {
 	isMember, err := s.repo.IsMember(circleID, userID)
 	if err != nil {
@@ -141,6 +142,14 @@ func (s *StudyCircleService) AddMember(circleID, userID, targetUserID uint) erro
 	}
 	if !isMember {
 		return ErrForbidden
+	}
+
+	alreadyMember, err := s.repo.IsMember(circleID, targetUserID)
+	if err != nil {
+		return err
+	}
+	if alreadyMember {
+		return ErrBadRequest
 	}
 
 	circle, err := s.repo.FindByID(circleID)

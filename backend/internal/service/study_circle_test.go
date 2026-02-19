@@ -175,6 +175,7 @@ func TestStudyCircleAddMember_Success(t *testing.T) {
 
 	circle := &model.StudyCircle{ID: 1, MaxMembers: 5}
 	repo.On("IsMember", uint(1), uint(1)).Return(true, nil)
+	repo.On("IsMember", uint(1), uint(5)).Return(false, nil)
 	repo.On("FindByID", uint(1)).Return(circle, nil)
 	repo.On("GetMemberCount", uint(1)).Return(3, nil)
 	repo.On("AddMember", uint(1), uint(5), model.StudyCircleRoleMember).Return(nil)
@@ -183,11 +184,23 @@ func TestStudyCircleAddMember_Success(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestStudyCircleAddMember_AlreadyMember(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	repo.On("IsMember", uint(1), uint(1)).Return(true, nil)
+	repo.On("IsMember", uint(1), uint(5)).Return(true, nil)
+
+	err := svc.AddMember(1, 1, 5)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	repo.AssertNotCalled(t, "AddMember")
+}
+
 func TestStudyCircleAddMember_MemberLimitReached(t *testing.T) {
 	svc, repo := newTestStudyCircleService()
 
 	circle := &model.StudyCircle{ID: 1, MaxMembers: 5}
 	repo.On("IsMember", uint(1), uint(1)).Return(true, nil)
+	repo.On("IsMember", uint(1), uint(10)).Return(false, nil)
 	repo.On("FindByID", uint(1)).Return(circle, nil)
 	repo.On("GetMemberCount", uint(1)).Return(5, nil)
 
@@ -677,6 +690,7 @@ func TestStudyCircleAddMember_IsMemberError(t *testing.T) {
 func TestStudyCircleAddMember_FindByIDError(t *testing.T) {
 	svc, repo := newTestStudyCircleService()
 	repo.On("IsMember", uint(1), uint(1)).Return(true, nil)
+	repo.On("IsMember", uint(1), uint(5)).Return(false, nil)
 	repo.On("FindByID", uint(1)).Return(nil, errors.New("not found"))
 	err := svc.AddMember(1, 1, 5)
 	assert.ErrorIs(t, err, ErrNotFound)
@@ -686,6 +700,7 @@ func TestStudyCircleAddMember_GetMemberCountError(t *testing.T) {
 	svc, repo := newTestStudyCircleService()
 	circle := &model.StudyCircle{ID: 1, MaxMembers: 5}
 	repo.On("IsMember", uint(1), uint(1)).Return(true, nil)
+	repo.On("IsMember", uint(1), uint(5)).Return(false, nil)
 	repo.On("FindByID", uint(1)).Return(circle, nil)
 	repo.On("GetMemberCount", uint(1)).Return(0, errors.New("db error"))
 	err := svc.AddMember(1, 1, 5)
