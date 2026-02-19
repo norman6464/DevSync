@@ -526,3 +526,8 @@ type PostViewRepositoryInterface interface {
 	HasViewed(userID, postID uint) (bool, error)
 	GetMostViewed(limit int) ([]model.ViewCount, error)
 }
+
+// PostStatsRepositoryInterface はユーザー投稿集計統計データ操作の契約を定義する。
+type PostStatsRepositoryInterface interface {
+	GetPostStats(userID uint) (*model.PostStats, error)
+}
