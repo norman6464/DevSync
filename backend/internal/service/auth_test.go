@@ -561,3 +561,62 @@ func TestValidateLoginState_InvalidState(t *testing.T) {
 	err := svc.ValidateLoginState("invalid-state")
 	assert.Error(t, err)
 }
+
+// ============================================================
+// ValidateLoginState 追加テスト
+// ============================================================
+
+func TestValidateLoginState_WrongPurpose(t *testing.T) {
+	svc, _, _ := newTestAuthService()
+
+	// purposeが"oauth_state"のトークンはgithub_loginとして無効
+	state, err := svc.GenerateOAuthState(1)
+	assert.NoError(t, err)
+
+	err = svc.ValidateLoginState(state)
+	assert.Error(t, err)
+}
+
+// ============================================================
+// ValidateOAuthState 追加テスト
+// ============================================================
+
+func TestValidateOAuthState_WrongPurpose(t *testing.T) {
+	svc, _, _ := newTestAuthService()
+
+	// purposeが"github_login"のトークンはoauth_stateとして無効
+	state, err := svc.GenerateLoginState()
+	assert.NoError(t, err)
+
+	_, err = svc.ValidateOAuthState(state)
+	assert.Error(t, err)
+}
+
+// ============================================================
+// generateUsername テスト
+// ============================================================
+
+func TestGenerateUsername_UniqueBase(t *testing.T) {
+	svc, userRepo, _ := newTestAuthService()
+
+	// ユーザー名候補が重複しない場合、そのまま返す
+	userRepo.On("FindByUsername", "testuser").Return(nil, errors.New("not found"))
+
+	username := svc.generateUsername("testuser")
+	assert.Equal(t, "testuser", username)
+}
+
+func TestGenerateUsername_AlreadyExists(t *testing.T) {
+	svc, userRepo, _ := newTestAuthService()
+
+	// 最初の候補が重複している場合、数字サフィックスを追加
+	existingUser := &model.User{Username: "testuser"}
+	existingUser.ID = 1
+
+	// 最初の呼び出しでは存在する、2回目以降は存在しない
+	userRepo.On("FindByUsername", "testuser").Return(existingUser, nil)
+	userRepo.On("FindByUsername", "testuser2").Return(nil, errors.New("not found"))
+
+	username := svc.generateUsername("testuser")
+	assert.Equal(t, "testuser2", username)
+}

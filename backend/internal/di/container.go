@@ -218,7 +218,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	c.RecommendationHandler = handler.NewRecommendationHandler(recommendationService)
 	c.StudyCircleHandler = handler.NewStudyCircleHandler(studyCircleService)
 	searchService := service.NewSearchService(postRepo)
-	c.SearchHandler = handler.NewSearchHandler(searchService, studyCircleRepo)
+	c.SearchHandler = handler.NewSearchHandler(searchService, studyCircleService)
 	c.NoteHandler = handler.NewNoteHandler(noteService)
 	c.NoteFolderHandler = handler.NewNoteFolderHandler(noteFolderService)
 	c.NoteTemplateHandler = handler.NewNoteTemplateHandler(noteTemplateService)
