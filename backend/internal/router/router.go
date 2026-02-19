@@ -95,6 +95,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerSearchRoutes(protected, c)
 		registerYouTubeRoutes(protected, c)
 		registerSpotifyRoutes(protected, c)
+		registerCommentLikeRoutes(protected, c)
 	}
 
 	return r
@@ -580,5 +581,14 @@ func registerSpotifyRoutes(g *gin.RouterGroup, c *di.Container) {
 		spotify.DELETE("/disconnect", c.SpotifyHandler.Disconnect)
 		spotify.GET("/currently-playing/:userId", c.SpotifyHandler.GetCurrentlyPlaying)
 		spotify.GET("/recently-played/:userId", c.SpotifyHandler.GetRecentlyPlayed)
+	}
+}
+
+func registerCommentLikeRoutes(g *gin.RouterGroup, c *di.Container) {
+	comments := g.Group("/comments")
+	{
+		comments.POST("/:id/likes", c.CommentLikeHandler.Like)
+		comments.DELETE("/:id/likes", c.CommentLikeHandler.Unlike)
+		comments.GET("/:id/likes", c.CommentLikeHandler.GetStatus)
 	}
 }

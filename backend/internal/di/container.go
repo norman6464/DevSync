@@ -58,6 +58,7 @@ type Container struct {
 	PostTagHandler           *handler.PostTagHandler
 	PostPinHandler           *handler.PostPinHandler
 	PostViewHandler          *handler.PostViewHandler
+	CommentLikeHandler       *handler.CommentLikeHandler
 	MentionHandler           *handler.MentionHandler
 	YouTubeHandler           *handler.YouTubeHandler
 	SpotifyHandler           *handler.SpotifyHandler
@@ -236,6 +237,10 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	postPinRepo := repository.NewPostPinRepository(db)
 	postPinService := service.NewPostPinService(postPinRepo, postRepo)
 	c.PostPinHandler = handler.NewPostPinHandler(postPinService)
+
+	commentLikeRepo := repository.NewCommentLikeRepository(db)
+	commentLikeService := service.NewCommentLikeService(commentLikeRepo, postRepo)
+	c.CommentLikeHandler = handler.NewCommentLikeHandler(commentLikeService)
 
 	postViewRepo := repository.NewPostViewRepository(db)
 	postViewService := service.NewPostViewService(postViewRepo)
