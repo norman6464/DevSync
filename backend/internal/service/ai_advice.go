@@ -72,14 +72,22 @@ func (s *AIAdviceService) GetDailyChatRemaining(userID uint) (int, error) {
 	return remaining, nil
 }
 
-// DeleteConversation は会話を削除する。所有者チェックを行う。
-func (s *AIAdviceService) DeleteConversation(id, userID uint) error {
+// findAndCheckConversationOwnership は会話を取得し、指定ユーザーが所有者かを検証する。
+func (s *AIAdviceService) findAndCheckConversationOwnership(id, userID uint) (*model.AIConversation, error) {
 	conv, err := s.convRepo.FindConversationByID(id)
 	if err != nil {
-		return ErrNotFound
+		return nil, ErrNotFound
 	}
 	if conv.UserID != userID {
-		return ErrForbidden
+		return nil, ErrForbidden
+	}
+	return conv, nil
+}
+
+// DeleteConversation は会話を削除する。所有者チェックを行う。
+func (s *AIAdviceService) DeleteConversation(id, userID uint) error {
+	if _, err := s.findAndCheckConversationOwnership(id, userID); err != nil {
+		return err
 	}
 	return s.convRepo.DeleteConversation(id, userID)
 }
@@ -91,12 +99,5 @@ func (s *AIAdviceService) GetConversations(userID uint, limit, offset int) ([]mo
 
 // GetConversation は会話詳細を取得する。
 func (s *AIAdviceService) GetConversation(id, userID uint) (*model.AIConversation, error) {
-	conv, err := s.convRepo.FindConversationByID(id)
-	if err != nil {
-		return nil, ErrNotFound
-	}
-	if conv.UserID != userID {
-		return nil, ErrForbidden
-	}
-	return conv, nil
+	return s.findAndCheckConversationOwnership(id, userID)
 }
