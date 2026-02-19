@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -282,10 +283,40 @@ func TestPostGetComments_Success(t *testing.T) {
 func TestPostDeleteComment_Success(t *testing.T) {
 	svc, postRepo, _ := newTestPostService()
 
-	postRepo.On("DeleteComment", uint(5), uint(1)).Return(nil)
+	comment := &model.Comment{PostID: 10}
+	comment.ID = 5
+	comment.UserID = 1
+	postRepo.On("FindCommentByID", uint(5)).Return(comment, nil)
+	postRepo.On("DeleteComment", uint(5)).Return(nil)
 
 	err := svc.DeleteComment(5, 1)
 	assert.NoError(t, err)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostDeleteComment_Forbidden(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	comment := &model.Comment{PostID: 10}
+	comment.ID = 5
+	comment.UserID = 1
+	postRepo.On("FindCommentByID", uint(5)).Return(comment, nil)
+
+	err := svc.DeleteComment(5, 999)
+	assert.Error(t, err)
+	var domainErr *domain.DomainError
+	assert.ErrorAs(t, err, &domainErr)
+	assert.Equal(t, domain.ErrCodeForbidden, domainErr.Code)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostDeleteComment_NotFound(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindCommentByID", uint(99)).Return(nil, errors.New("not found"))
+
+	err := svc.DeleteComment(99, 1)
+	assert.Error(t, err)
 	postRepo.AssertExpectations(t)
 }
 

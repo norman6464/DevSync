@@ -130,14 +130,11 @@ func (r *PostRepository) GetReplies(parentID uint) ([]model.Comment, error) {
 }
 
 // DeleteComment はコメントを削除し、投稿のcomment_countをデクリメントする。
-// userIDによる所有権チェックを行う。
-func (r *PostRepository) DeleteComment(id, userID uint) error {
+// 所有権チェックはservice層で実施済みであること。
+func (r *PostRepository) DeleteComment(id uint) error {
 	var comment model.Comment
 	if err := r.db.First(&comment, id).Error; err != nil {
 		return err
-	}
-	if comment.UserID != userID {
-		return gorm.ErrRecordNotFound
 	}
 	r.db.Model(&model.Post{}).Where("id = ?", comment.PostID).UpdateColumn("comment_count", gorm.Expr("GREATEST(comment_count - 1, 0)"))
 	return r.db.Delete(&comment).Error

@@ -174,8 +174,8 @@ func (m *MockPostRepository) GetReplies(parentID uint) ([]model.Comment, error) 
 	return args.Get(0).([]model.Comment), args.Error(1)
 }
 
-func (m *MockPostRepository) DeleteComment(id, userID uint) error {
-	args := m.Called(id, userID)
+func (m *MockPostRepository) DeleteComment(id uint) error {
+	args := m.Called(id)
 	return args.Error(0)
 }
 
