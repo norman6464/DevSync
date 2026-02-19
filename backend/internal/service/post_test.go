@@ -224,6 +224,18 @@ func TestPostTimeline_Success(t *testing.T) {
 	assert.Len(t, result, 1)
 }
 
+func TestPostTimeline_RepoError(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("Timeline", uint(1), 1, 10).Return([]model.Post(nil), errors.New("db error"))
+
+	result, err := svc.Timeline(1, 1, 10)
+	assert.Error(t, err)
+	assert.Equal(t, "db error", err.Error())
+	assert.Nil(t, result)
+	postRepo.AssertExpectations(t)
+}
+
 // ============================================================
 // いいねテスト
 // ============================================================
