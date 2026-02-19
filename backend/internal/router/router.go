@@ -97,6 +97,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerSpotifyRoutes(protected, c)
 		registerCommentLikeRoutes(protected, c)
 		registerUserDashboardRoutes(protected, c)
+		registerNoteStatsRoutes(protected, c)
 	}
 
 	return r
@@ -598,5 +599,12 @@ func registerUserDashboardRoutes(g *gin.RouterGroup, c *di.Container) {
 	users := g.Group("/users")
 	{
 		users.GET("/:id/dashboard-stats", c.UserDashboardHandler.GetStats)
+	}
+}
+
+func registerNoteStatsRoutes(g *gin.RouterGroup, c *di.Container) {
+	users := g.Group("/users")
+	{
+		users.GET("/:id/note-stats", c.NoteStatsHandler.GetStats)
 	}
 }

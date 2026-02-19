@@ -13,6 +13,11 @@ type UserDashboardRepositoryInterface interface {
 	GetDashboardStats(userID uint) (*model.UserDashboardStats, error)
 }
 
+// NoteStatsRepositoryInterface はユーザーのノート集計統計の取得契約を定義する。
+type NoteStatsRepositoryInterface interface {
+	GetNoteStats(userID uint) (*model.NoteStats, error)
+}
+
 // PostAdvancedSearchRepositoryInterface は投稿の高度な検索フィルター機能の契約を定義する。
 // タグ・日付範囲・ソート順による絞り込みを提供する。
 type PostAdvancedSearchRepositoryInterface interface {
