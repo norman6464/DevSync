@@ -12,34 +12,6 @@ const (
 	maxSearchLimit     = 100
 )
 
-// SearchSortBy は検索結果のソート順を表す。
-type SearchSortBy string
-
-const (
-	SearchSortByLatest  SearchSortBy = "latest"  // 最新順
-	SearchSortByPopular SearchSortBy = "popular" // 人気順（いいね数）
-	SearchSortByViews   SearchSortBy = "views"   // 閲覧数順
-)
-
-// PostSearchParams は投稿検索のパラメータ。
-type PostSearchParams struct {
-	Query    string
-	Tags     []string
-	SortBy   SearchSortBy
-	DateFrom *time.Time
-	DateTo   *time.Time
-	Limit    int
-	Offset   int
-}
-
-// PostSearchResult は投稿検索結果のレスポンス。
-type PostSearchResult struct {
-	Posts  []model.Post `json:"posts"`
-	Total  int64        `json:"total"`
-	Limit  int          `json:"limit"`
-	Offset int          `json:"offset"`
-}
-
 // PostAdvancedSearchRepo は投稿の高度な検索リポジトリのインターフェース。
 type PostAdvancedSearchRepo interface {
 	SearchWithFilter(query string, tags []string, sortBy string, dateFrom, dateTo *time.Time, limit, offset int) ([]model.Post, int64, error)
@@ -57,7 +29,7 @@ func NewSearchService(postSearchRepo PostAdvancedSearchRepo) *SearchService {
 
 // SearchPosts は投稿の高度な検索を実行する。
 // タグフィルター・日付範囲・ソート順に対応する。
-func (s *SearchService) SearchPosts(params PostSearchParams) (*PostSearchResult, error) {
+func (s *SearchService) SearchPosts(params model.PostSearchParams) (*model.PostSearchResult, error) {
 	if params.Query == "" {
 		return nil, domain.NewError(domain.ErrCodeBadRequest, "検索クエリは必須です", nil)
 	}
@@ -73,7 +45,7 @@ func (s *SearchService) SearchPosts(params PostSearchParams) (*PostSearchResult,
 	// ソート順の正規化
 	sortBy := string(params.SortBy)
 	if sortBy == "" {
-		sortBy = string(SearchSortByLatest)
+		sortBy = string(model.SearchSortByLatest)
 	}
 
 	posts, total, err := s.postSearchRepo.SearchWithFilter(
@@ -89,7 +61,7 @@ func (s *SearchService) SearchPosts(params PostSearchParams) (*PostSearchResult,
 		return nil, err
 	}
 
-	return &PostSearchResult{
+	return &model.PostSearchResult{
 		Posts:  posts,
 		Total:  total,
 		Limit:  limit,

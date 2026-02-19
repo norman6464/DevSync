@@ -8,7 +8,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -18,12 +17,12 @@ type MockPostSearchService struct {
 	mock.Mock
 }
 
-func (m *MockPostSearchService) SearchPosts(params service.PostSearchParams) (*service.PostSearchResult, error) {
+func (m *MockPostSearchService) SearchPosts(params model.PostSearchParams) (*model.PostSearchResult, error) {
 	args := m.Called(params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*service.PostSearchResult), args.Error(1)
+	return args.Get(0).(*model.PostSearchResult), args.Error(1)
 }
 
 // MockCircleSearchService は CircleSearchService のテスト用モック。
@@ -40,10 +39,10 @@ func TestSearchPosts_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	mockSvc := new(MockPostSearchService)
-	mockSvc.On("SearchPosts", mock.MatchedBy(func(p service.PostSearchParams) bool {
+	mockSvc.On("SearchPosts", mock.MatchedBy(func(p model.PostSearchParams) bool {
 		return p.Query == "test" && p.Limit == 20 && p.Offset == 0
 	})).Return(
-		&service.PostSearchResult{
+		&model.PostSearchResult{
 			Posts: []model.Post{{ID: 1, Title: "Test Post", Content: "Test content"}},
 			Total: 1,
 			Limit: 20,
@@ -61,7 +60,7 @@ func TestSearchPosts_Success(t *testing.T) {
 	h.SearchPosts(c)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	var response service.PostSearchResult
+	var response model.PostSearchResult
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(1), response.Total)
@@ -88,11 +87,11 @@ func TestSearchPosts_WithTagFilter(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	mockSvc := new(MockPostSearchService)
-	mockSvc.On("SearchPosts", mock.MatchedBy(func(p service.PostSearchParams) bool {
+	mockSvc.On("SearchPosts", mock.MatchedBy(func(p model.PostSearchParams) bool {
 		return p.Query == "Go" && len(p.Tags) == 2 &&
 			p.Tags[0] == "golang" && p.Tags[1] == "beginner"
 	})).Return(
-		&service.PostSearchResult{
+		&model.PostSearchResult{
 			Posts: []model.Post{{Title: "Go入門"}},
 			Total: 1,
 			Limit: 20,
@@ -117,10 +116,10 @@ func TestSearchPosts_WithSortBy(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	mockSvc := new(MockPostSearchService)
-	mockSvc.On("SearchPosts", mock.MatchedBy(func(p service.PostSearchParams) bool {
-		return p.Query == "記事" && p.SortBy == service.SearchSortByPopular
+	mockSvc.On("SearchPosts", mock.MatchedBy(func(p model.PostSearchParams) bool {
+		return p.Query == "記事" && p.SortBy == model.SearchSortByPopular
 	})).Return(
-		&service.PostSearchResult{
+		&model.PostSearchResult{
 			Posts: []model.Post{{Title: "人気記事", LikeCount: 100}},
 			Total: 1,
 			Limit: 20,

@@ -50,7 +50,7 @@ func TestSearchPosts_NoFilter_Success(t *testing.T) {
 	repo.On("SearchWithFilter", "Go", []string(nil), "latest", (*time.Time)(nil), (*time.Time)(nil), 20, 0).
 		Return(expected, int64(2), nil)
 
-	params := PostSearchParams{Query: "Go", Limit: 20, Offset: 0}
+	params := model.PostSearchParams{Query: "Go", Limit: 20, Offset: 0}
 	result, err := svc.SearchPosts(params)
 
 	assert.NoError(t, err)
@@ -71,7 +71,7 @@ func TestSearchPosts_WithTagFilter_Success(t *testing.T) {
 	repo.On("SearchWithFilter", "Go", tags, "latest", (*time.Time)(nil), (*time.Time)(nil), 20, 0).
 		Return(expected, int64(1), nil)
 
-	params := PostSearchParams{
+	params := model.PostSearchParams{
 		Query:  "Go",
 		Tags:   tags,
 		Limit:  20,
@@ -96,9 +96,9 @@ func TestSearchPosts_WithSortPopular_Success(t *testing.T) {
 	repo.On("SearchWithFilter", "記事", []string(nil), "popular", (*time.Time)(nil), (*time.Time)(nil), 20, 0).
 		Return(expected, int64(2), nil)
 
-	params := PostSearchParams{
+	params := model.PostSearchParams{
 		Query:  "記事",
-		SortBy: SearchSortByPopular,
+		SortBy: model.SearchSortByPopular,
 		Limit:  20,
 		Offset: 0,
 	}
@@ -123,7 +123,7 @@ func TestSearchPosts_WithDateRange_Success(t *testing.T) {
 	repo.On("SearchWithFilter", "記事", []string(nil), "latest", &from, &to, 20, 0).
 		Return(expected, int64(1), nil)
 
-	params := PostSearchParams{
+	params := model.PostSearchParams{
 		Query:    "記事",
 		DateFrom: &from,
 		DateTo:   &to,
@@ -141,7 +141,7 @@ func TestSearchPosts_WithDateRange_Success(t *testing.T) {
 func TestSearchPosts_EmptyQuery_Error(t *testing.T) {
 	svc, _ := newTestSearchService()
 
-	params := PostSearchParams{Query: "", Limit: 20}
+	params := model.PostSearchParams{Query: "", Limit: 20}
 	result, err := svc.SearchPosts(params)
 
 	assert.Error(t, err)
@@ -155,7 +155,7 @@ func TestSearchPosts_LimitCapped_Success(t *testing.T) {
 	repo.On("SearchWithFilter", "Go", []string(nil), "latest", (*time.Time)(nil), (*time.Time)(nil), 100, 0).
 		Return([]model.Post{}, int64(0), nil)
 
-	params := PostSearchParams{Query: "Go", Limit: 200, Offset: 0}
+	params := model.PostSearchParams{Query: "Go", Limit: 200, Offset: 0}
 	_, err := svc.SearchPosts(params)
 
 	assert.NoError(t, err)
@@ -169,7 +169,7 @@ func TestSearchPosts_DefaultLimit_Success(t *testing.T) {
 	repo.On("SearchWithFilter", "Go", []string(nil), "latest", (*time.Time)(nil), (*time.Time)(nil), 20, 0).
 		Return([]model.Post{}, int64(0), nil)
 
-	params := PostSearchParams{Query: "Go"}
+	params := model.PostSearchParams{Query: "Go"}
 	_, err := svc.SearchPosts(params)
 
 	assert.NoError(t, err)
@@ -183,7 +183,7 @@ func TestSearchPosts_RepositoryError(t *testing.T) {
 	repo.On("SearchWithFilter", "Go", []string(nil), "latest", (*time.Time)(nil), (*time.Time)(nil), 20, 0).
 		Return(nil, int64(0), errors.New("db error"))
 
-	params := PostSearchParams{Query: "Go", Limit: 20}
+	params := model.PostSearchParams{Query: "Go", Limit: 20}
 	result, err := svc.SearchPosts(params)
 
 	assert.Error(t, err)
