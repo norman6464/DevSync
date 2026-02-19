@@ -30,14 +30,24 @@ func NewNoteLinkService(repo NoteLinkRepositoryInterface, noteRepo repository.No
 }
 
 // CreateLink は新しいリンクを作成する。
-func (s *NoteLinkService) CreateLink(sourceNoteID, targetNoteID uint) error {
+// ソースノートの所有権を検証した後、リンクを作成する。
+func (s *NoteLinkService) CreateLink(sourceNoteID, targetNoteID, userID uint) error {
 	// 同じノートへのリンクは作成できない
 	if sourceNoteID == targetNoteID {
 		return domain.NewError(domain.ErrCodeValidation, "同じノートへのリンクは作成できません", nil)
 	}
 
+	// ソースノートの所有権を確認
+	sourceNote, err := s.noteRepo.FindByID(sourceNoteID)
+	if err != nil {
+		return domain.NewError(domain.ErrCodeNotFound, "ソースノートが見つかりません", err)
+	}
+	if sourceNote.UserID != userID {
+		return domain.NewError(domain.ErrCodeForbidden, "この操作を行う権限がありません", nil)
+	}
+
 	// ターゲットノートが存在するかチェック
-	_, err := s.noteRepo.FindByID(targetNoteID)
+	_, err = s.noteRepo.FindByID(targetNoteID)
 	if err != nil {
 		return domain.NewError(domain.ErrCodeNotFound, "リンク先のノートが見つかりません", err)
 	}
@@ -69,7 +79,14 @@ func (s *NoteLinkService) GetBacklinks(targetNoteID uint) ([]model.NoteLink, err
 	return s.repo.FindByTargetNoteID(targetNoteID)
 }
 
-// DeleteLink はリンクを削除する。
-func (s *NoteLinkService) DeleteLink(sourceNoteID, targetNoteID uint) error {
+// DeleteLink はソースノートの所有権を検証した後、リンクを削除する。
+func (s *NoteLinkService) DeleteLink(sourceNoteID, targetNoteID, userID uint) error {
+	sourceNote, err := s.noteRepo.FindByID(sourceNoteID)
+	if err != nil {
+		return domain.NewError(domain.ErrCodeNotFound, "ソースノートが見つかりません", err)
+	}
+	if sourceNote.UserID != userID {
+		return domain.NewError(domain.ErrCodeForbidden, "この操作を行う権限がありません", nil)
+	}
 	return s.repo.Delete(sourceNoteID, targetNoteID)
 }
