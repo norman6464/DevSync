@@ -118,11 +118,38 @@ func TestQuestionDelete_Forbidden(t *testing.T) {
 func TestQuestionVote_Success(t *testing.T) {
 	svc, repo := newTestQuestionService()
 
+	// 質問者はuserID=99（投票者のuserID=1とは異なる）
+	question := &model.Question{UserID: 99}
+	question.ID = 10
+	repo.On("FindByID", uint(10)).Return(question, nil)
 	repo.On("Vote", uint(1), uint(10), 1).Return(nil)
 
 	err := svc.Vote(1, 10, 1)
 	assert.NoError(t, err)
 	repo.AssertExpectations(t)
+}
+
+func TestQuestionVote_SelfVote_Forbidden(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	// 自分の質問に投票しようとする（userID=1の質問にuserID=1が投票）
+	question := &model.Question{UserID: 1}
+	question.ID = 10
+	repo.On("FindByID", uint(10)).Return(question, nil)
+
+	err := svc.Vote(1, 10, 1)
+	assert.ErrorIs(t, err, ErrForbidden)
+	repo.AssertNotCalled(t, "Vote")
+}
+
+func TestQuestionVote_QuestionNotFound(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	repo.On("FindByID", uint(99)).Return(nil, ErrNotFound)
+
+	err := svc.Vote(1, 99, 1)
+	assert.ErrorIs(t, err, ErrNotFound)
+	repo.AssertNotCalled(t, "Vote")
 }
 
 func TestQuestionRemoveVote_Success(t *testing.T) {
