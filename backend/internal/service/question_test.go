@@ -285,6 +285,19 @@ func TestQuestionSearch_Success(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestQuestionSearch_RepoError(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	repo.On("Search", "エラー", 10, 0).Return([]model.Question(nil), int64(0), errors.New("db error"))
+
+	result, total, err := svc.Search("エラー", 10, 0)
+	assert.Error(t, err)
+	assert.Equal(t, "db error", err.Error())
+	assert.Nil(t, result)
+	assert.Equal(t, int64(0), total)
+	repo.AssertExpectations(t)
+}
+
 func TestQuestionGetByUserID_Success(t *testing.T) {
 	svc, repo := newTestQuestionService()
 
