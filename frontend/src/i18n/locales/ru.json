@@ -343,7 +343,17 @@
     },
     "viewProfile": "Посмотреть профиль",
     "likesCount": "{{count}} лайков",
-    "commentsCount": "{{count}} комментариев"
+    "commentsCount": "{{count}} комментариев",
+    "filters": "Фильтры",
+    "sortBy": "Сортировать по",
+    "sortLatest": "Новейшие",
+    "sortPopular": "Популярные",
+    "sortViews": "Наиболее просматриваемые",
+    "tagFilter": "Фильтр по тегам",
+    "tagPlaceholder": "Введите тег...",
+    "dateFrom": "Дата начала",
+    "dateTo": "Дата окончания",
+    "totalResults": "Найдено {{count}} результатов"
   },
   "chat": {
     "title": "Сообщения",

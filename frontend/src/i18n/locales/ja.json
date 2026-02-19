@@ -351,7 +351,17 @@
     },
     "viewProfile": "プロフィール",
     "likesCount": "{{count}}件のいいね",
-    "commentsCount": "{{count}}件のコメント"
+    "commentsCount": "{{count}}件のコメント",
+    "filters": "フィルター",
+    "sortBy": "ソート順",
+    "sortLatest": "最新順",
+    "sortPopular": "人気順",
+    "sortViews": "閲覧数順",
+    "tagFilter": "タグフィルター",
+    "tagPlaceholder": "タグを入力...",
+    "dateFrom": "開始日",
+    "dateTo": "終了日",
+    "totalResults": "{{count}}件の検索結果"
   },
   "chat": {
     "title": "メッセージ",

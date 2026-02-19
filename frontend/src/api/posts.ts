@@ -72,8 +72,32 @@ export const getReplies = (postId: number, commentId: number) =>
 export const deleteComment = (id: number) =>
   client.delete(`/comments/${id}`);
 
-export const searchPosts = (query: string, limit = 20, offset = 0) =>
-  client.get<Post[]>('/search/posts', { params: { q: query, limit, offset } });
+export interface PostSearchFilters {
+  tags?: string[];
+  sortBy?: 'latest' | 'popular' | 'views';
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+export interface PostSearchResponse {
+  posts: Post[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export const searchPosts = (query: string, limit = 20, offset = 0, filters?: PostSearchFilters) =>
+  client.get<PostSearchResponse>('/search/posts', {
+    params: {
+      q: query,
+      limit,
+      offset,
+      ...(filters?.tags?.length ? { tags: filters.tags.join(',') } : {}),
+      ...(filters?.sortBy ? { sort_by: filters.sortBy } : {}),
+      ...(filters?.dateFrom ? { date_from: filters.dateFrom } : {}),
+      ...(filters?.dateTo ? { date_to: filters.dateTo } : {}),
+    },
+  });
 
 export const getDrafts = () =>
   client.get<Post[]>('/posts/drafts');

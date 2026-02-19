@@ -343,7 +343,17 @@
     },
     "viewProfile": "查看资料",
     "likesCount": "{{count}} 个赞",
-    "commentsCount": "{{count}} 条评论"
+    "commentsCount": "{{count}} 条评论",
+    "filters": "筛选",
+    "sortBy": "排序",
+    "sortLatest": "最新",
+    "sortPopular": "最受欢迎",
+    "sortViews": "最多浏览",
+    "tagFilter": "标签筛选",
+    "tagPlaceholder": "输入标签...",
+    "dateFrom": "开始日期",
+    "dateTo": "结束日期",
+    "totalResults": "共 {{count}} 条结果"
   },
   "chat": {
     "title": "消息",

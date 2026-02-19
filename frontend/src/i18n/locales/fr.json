@@ -343,7 +343,17 @@
     },
     "viewProfile": "Voir le profil",
     "likesCount": "{{count}} j'aime",
-    "commentsCount": "{{count}} commentaires"
+    "commentsCount": "{{count}} commentaires",
+    "filters": "Filtres",
+    "sortBy": "Trier par",
+    "sortLatest": "Plus récent",
+    "sortPopular": "Plus populaire",
+    "sortViews": "Plus vu",
+    "tagFilter": "Filtre par tag",
+    "tagPlaceholder": "Entrez un tag...",
+    "dateFrom": "Date de début",
+    "dateTo": "Date de fin",
+    "totalResults": "{{count}} résultats"
   },
   "chat": {
     "title": "Messages",

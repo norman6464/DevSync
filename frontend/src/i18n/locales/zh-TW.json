@@ -343,7 +343,17 @@
     },
     "viewProfile": "查看資料",
     "likesCount": "{{count}} 個讚",
-    "commentsCount": "{{count}} 則留言"
+    "commentsCount": "{{count}} 則留言",
+    "filters": "篩選",
+    "sortBy": "排序",
+    "sortLatest": "最新",
+    "sortPopular": "最受歡迎",
+    "sortViews": "最多瀏覽",
+    "tagFilter": "標籤篩選",
+    "tagPlaceholder": "輸入標籤...",
+    "dateFrom": "開始日期",
+    "dateTo": "結束日期",
+    "totalResults": "共 {{count}} 條結果"
   },
   "chat": {
     "title": "訊息",

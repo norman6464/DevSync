@@ -343,7 +343,17 @@
     },
     "viewProfile": "프로필 보기",
     "likesCount": "좋아요 {{count}}개",
-    "commentsCount": "댓글 {{count}}개"
+    "commentsCount": "댓글 {{count}}개",
+    "filters": "필터",
+    "sortBy": "정렬 순서",
+    "sortLatest": "최신순",
+    "sortPopular": "인기순",
+    "sortViews": "조회수순",
+    "tagFilter": "태그 필터",
+    "tagPlaceholder": "태그 입력...",
+    "dateFrom": "시작일",
+    "dateTo": "종료일",
+    "totalResults": "검색 결과 {{count}}건"
   },
   "chat": {
     "title": "메시지",

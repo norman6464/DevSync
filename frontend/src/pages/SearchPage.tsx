@@ -12,12 +12,14 @@ import { UserCardSkeleton, PostCardSkeleton } from '../components/common/Skeleto
 import type { User } from '../types/user';
 import type { Post } from '../types/post';
 import type { StudyCircle } from '../types/studyCircle';
+import type { PostSearchFilters } from '../api/posts';
 
 export default function NewSearchPage() {
   const { t } = useTranslation();
   const currentUser = useAuthStore((s) => s.user);
   const [activeTab, setActiveTab] = useState<SearchTab>('users');
   const [globalQuery, setGlobalQuery] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
 
   // デバウンス処理（300ms）
   const debouncedQuery = useDebounce(globalQuery, 300);
@@ -46,7 +48,15 @@ export default function NewSearchPage() {
       postSearch.handleSearch(debouncedQuery);
       circleSearch.handleSearch(debouncedQuery);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedQuery]);
+
+  const handleFiltersChange = useCallback((filters: PostSearchFilters) => {
+    postSearch.setFilters(filters);
+    if (debouncedQuery) {
+      postSearch.handleSearch(debouncedQuery, filters);
+    }
+  }, [debouncedQuery, postSearch]);
 
   const counts = useMemo(() => ({
     users: userSearch.filteredUsers?.length || 0,
@@ -66,12 +76,36 @@ export default function NewSearchPage() {
       </div>
 
       {/* Search Bar */}
-      <SearchBar
-        value={globalQuery}
-        onChange={handleGlobalQueryChange}
-        onSearch={handleGlobalSearch}
-        placeholder={t('search.placeholder')}
-      />
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <SearchBar
+            value={globalQuery}
+            onChange={handleGlobalQueryChange}
+            onSearch={handleGlobalSearch}
+            placeholder={t('search.placeholder')}
+          />
+        </div>
+        {activeTab === 'posts' && (
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+              showFilters
+                ? 'border-blue-500 text-blue-400 bg-blue-500/10'
+                : 'border-gray-700 text-gray-400 hover:border-gray-600'
+            }`}
+          >
+            {t('search.filters')}
+          </button>
+        )}
+      </div>
+
+      {/* Filter Panel (posts tab only) */}
+      {activeTab === 'posts' && showFilters && (
+        <PostFilterPanel
+          filters={postSearch.filters}
+          onFiltersChange={handleFiltersChange}
+        />
+      )}
 
       {/* Tabs */}
       <SearchTabs activeTab={activeTab} onTabChange={setActiveTab} counts={counts} />
@@ -85,10 +119,137 @@ export default function NewSearchPage() {
         ) : activeTab === 'users' ? (
           <UserResults users={userSearch.filteredUsers} currentUserId={currentUser?.id} query={globalQuery} />
         ) : activeTab === 'posts' ? (
-          <PostResults posts={postSearch.results} query={globalQuery} />
+          <PostResults posts={postSearch.results} total={postSearch.total} query={globalQuery} />
         ) : (
           <CircleResults circles={circleSearch.results} query={globalQuery} />
         )}
+      </div>
+    </div>
+  );
+}
+
+// フィルターパネル（投稿タブ用）
+function PostFilterPanel({
+  filters,
+  onFiltersChange,
+}: {
+  filters: PostSearchFilters;
+  onFiltersChange: (f: PostSearchFilters) => void;
+}) {
+  const { t } = useTranslation();
+  const [tagInput, setTagInput] = useState('');
+
+  const handleSortChange = (sortBy: PostSearchFilters['sortBy']) => {
+    onFiltersChange({ ...filters, sortBy });
+  };
+
+  const handleAddTag = () => {
+    const tag = tagInput.trim();
+    if (tag && !filters.tags?.includes(tag)) {
+      onFiltersChange({ ...filters, tags: [...(filters.tags || []), tag] });
+      setTagInput('');
+    }
+  };
+
+  const handleRemoveTag = (tag: string) => {
+    onFiltersChange({ ...filters, tags: filters.tags?.filter((t) => t !== tag) });
+  };
+
+  const handleDateFromChange = (value: string) => {
+    onFiltersChange({ ...filters, dateFrom: value || undefined });
+  };
+
+  const handleDateToChange = (value: string) => {
+    onFiltersChange({ ...filters, dateTo: value || undefined });
+  };
+
+  const sortOptions: { value: PostSearchFilters['sortBy']; label: string }[] = [
+    { value: 'latest', label: t('search.sortLatest') },
+    { value: 'popular', label: t('search.sortPopular') },
+    { value: 'views', label: t('search.sortViews') },
+  ];
+
+  return (
+    <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
+      {/* ソート順 */}
+      <div>
+        <label className="block text-xs font-medium text-gray-400 mb-2">{t('search.sortBy')}</label>
+        <div className="flex gap-2">
+          {sortOptions.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => handleSortChange(opt.value)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                filters.sortBy === opt.value
+                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50'
+                  : 'bg-gray-800 text-gray-400 border border-gray-700 hover:border-gray-600'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* タグフィルター */}
+      <div>
+        <label className="block text-xs font-medium text-gray-400 mb-2">{t('search.tagFilter')}</label>
+        <div className="flex gap-2 mb-2">
+          <input
+            type="text"
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
+            placeholder={t('search.tagPlaceholder')}
+            className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-blue-500"
+          />
+          <button
+            onClick={handleAddTag}
+            className="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-300 hover:border-gray-600 transition-colors"
+          >
+            {t('common.add')}
+          </button>
+        </div>
+        {filters.tags && filters.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {filters.tags.map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center gap-1 px-2 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-full text-xs"
+              >
+                #{tag}
+                <button
+                  onClick={() => handleRemoveTag(tag)}
+                  className="hover:text-blue-300 ml-0.5"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 日付範囲フィルター */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs font-medium text-gray-400 mb-1">{t('search.dateFrom')}</label>
+          <input
+            type="date"
+            value={filters.dateFrom || ''}
+            onChange={(e) => handleDateFromChange(e.target.value)}
+            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-gray-100 focus:outline-none focus:border-blue-500"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-400 mb-1">{t('search.dateTo')}</label>
+          <input
+            type="date"
+            value={filters.dateTo || ''}
+            onChange={(e) => handleDateToChange(e.target.value)}
+            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-gray-100 focus:outline-none focus:border-blue-500"
+          />
+        </div>
       </div>
     </div>
   );
@@ -186,7 +347,7 @@ function UserCard({ user, currentUserId, t }: { user: User; currentUserId?: numb
   );
 }
 
-function PostResults({ posts, query }: { posts: Post[]; query: string }) {
+function PostResults({ posts, total, query }: { posts: Post[]; total: number; query: string }) {
   const { t } = useTranslation();
 
   if (posts.length === 0) {
@@ -200,6 +361,11 @@ function PostResults({ posts, query }: { posts: Post[]; query: string }) {
 
   return (
     <div className="space-y-4">
+      {total > posts.length && (
+        <p className="text-sm text-gray-400">
+          {t('search.totalResults', { count: total })}
+        </p>
+      )}
       {posts.map((post) => (
         <PostCard key={post.id} post={post} />
       ))}
