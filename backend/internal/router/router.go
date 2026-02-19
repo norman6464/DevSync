@@ -98,6 +98,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerCommentLikeRoutes(protected, c)
 		registerUserDashboardRoutes(protected, c)
 		registerNoteStatsRoutes(protected, c)
+		registerStudyCircleStatsRoutes(protected, c)
 	}
 
 	return r
@@ -606,5 +607,12 @@ func registerNoteStatsRoutes(g *gin.RouterGroup, c *di.Container) {
 	users := g.Group("/users")
 	{
 		users.GET("/:id/note-stats", c.NoteStatsHandler.GetStats)
+	}
+}
+
+func registerStudyCircleStatsRoutes(g *gin.RouterGroup, c *di.Container) {
+	circles := g.Group("/study-circles")
+	{
+		circles.GET("/:id/stats", c.StudyCircleStatsHandler.GetStats)
 	}
 }

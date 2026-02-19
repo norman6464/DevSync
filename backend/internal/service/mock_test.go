@@ -1871,3 +1871,19 @@ func (m *MockNoteStatsRepository) GetNoteStats(userID uint) (*model.NoteStats, e
 	}
 	return args.Get(0).(*model.NoteStats), args.Error(1)
 }
+
+// ============================================================
+// MockStudyCircleStatsRepository は repository.StudyCircleStatsRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockStudyCircleStatsRepository struct {
+	mock.Mock
+}
+
+func (m *MockStudyCircleStatsRepository) GetCircleStats(circleID uint) (*model.StudyCircleStats, error) {
+	args := m.Called(circleID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.StudyCircleStats), args.Error(1)
+}
