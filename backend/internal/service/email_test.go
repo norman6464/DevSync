@@ -235,6 +235,17 @@ func TestRenderWeeklyReportHTML_UnsupportedLanguageFallback(t *testing.T) {
 	assert.True(t, strings.Contains(html, "コントリビューション"))
 }
 
+// ============================================================
+// SetAppURL テスト
+// ============================================================
+
+func TestWeeklyReportEmailService_SetAppURL(t *testing.T) {
+	svc, _, _, _ := newTestWeeklyReportEmailService()
+
+	svc.SetAppURL("https://devsync.example.com")
+	assert.Equal(t, "https://devsync.example.com", svc.appURL)
+}
+
 func TestSendAllWeeklyReports_GetWeeklyReportError(t *testing.T) {
 	svc, _, userRepo, reportRepo := newTestWeeklyReportEmailService()
 

@@ -534,6 +534,28 @@ func TestSeedTemplates_SkipsIfAlreadyExist(t *testing.T) {
 	repo.AssertNotCalled(t, "Create", mock.Anything)
 }
 
+func TestSeedTemplates_GetTemplatesError(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	repo.On("GetTemplates").Return([]model.Roadmap(nil), errors.New("db error"))
+
+	err := svc.SeedTemplates(uint(1))
+	assert.Error(t, err)
+	assert.Equal(t, "db error", err.Error())
+	repo.AssertExpectations(t)
+}
+
+func TestSeedTemplates_CreateError(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	repo.On("GetTemplates").Return([]model.Roadmap{}, nil)
+	repo.On("Create", mock.AnythingOfType("*model.Roadmap")).Return(errors.New("create error"))
+
+	err := svc.SeedTemplates(uint(1))
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
 // ============================================================
 // Create テスト
 // ============================================================

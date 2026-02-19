@@ -8,7 +8,9 @@ import (
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/domain"
+	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 // newTestQiitaService はテスト用のQiitaServiceを生成する。
@@ -16,6 +18,25 @@ func newTestQiitaService(fn roundTripFunc) *QiitaService {
 	return &QiitaService{
 		httpClient: &http.Client{Transport: fn},
 	}
+}
+
+// newTestQiitaServiceWithRepos はリポジトリ付きのQiitaServiceテスト用インスタンスを生成する。
+func newTestQiitaServiceWithRepos(fn roundTripFunc) (*QiitaService, *MockUserRepository, *MockQiitaRepository) {
+	userRepo := new(MockUserRepository)
+	qiitaRepo := new(MockQiitaRepository)
+	return &QiitaService{
+		httpClient: &http.Client{Transport: fn},
+		userRepo:   userRepo,
+		qiitaRepo:  qiitaRepo,
+	}, userRepo, qiitaRepo
+}
+
+func TestNewQiitaService(t *testing.T) {
+	userRepo := new(MockUserRepository)
+	qiitaRepo := new(MockQiitaRepository)
+	svc := NewQiitaService(userRepo, qiitaRepo)
+	assert.NotNil(t, svc)
+	assert.NotNil(t, svc.httpClient)
 }
 
 func TestFetchArticles_Success(t *testing.T) {
@@ -236,6 +257,118 @@ func TestQiitaValidateUsername_ServerError(t *testing.T) {
 	valid, err := svc.ValidateUsername("testuser")
 	assert.NoError(t, err)
 	assert.False(t, valid)
+}
+
+// ============================================================
+// Disconnect テスト
+// ============================================================
+
+func TestQiitaDisconnect_Success(t *testing.T) {
+	svc, userRepo, qiitaRepo := newTestQiitaServiceWithRepos(nil)
+
+	user := &model.User{}
+	user.ID = 1
+	user.QiitaUsername = "testuser"
+
+	userRepo.On("FindByID", uint(1)).Return(user, nil)
+	userRepo.On("Update", mock.MatchedBy(func(u *model.User) bool {
+		return u.QiitaUsername == ""
+	})).Return(nil)
+	qiitaRepo.On("DeleteUserArticles", uint(1)).Return(nil)
+
+	err := svc.Disconnect(1)
+	assert.NoError(t, err)
+	userRepo.AssertExpectations(t)
+	qiitaRepo.AssertExpectations(t)
+}
+
+func TestQiitaDisconnect_UserNotFound(t *testing.T) {
+	svc, userRepo, _ := newTestQiitaServiceWithRepos(nil)
+
+	userRepo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	err := svc.Disconnect(999)
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrNotFound)
+	userRepo.AssertExpectations(t)
+}
+
+func TestQiitaDisconnect_UpdateError(t *testing.T) {
+	svc, userRepo, _ := newTestQiitaServiceWithRepos(nil)
+
+	user := &model.User{}
+	user.ID = 1
+
+	userRepo.On("FindByID", uint(1)).Return(user, nil)
+	userRepo.On("Update", mock.Anything).Return(errors.New("db error"))
+
+	err := svc.Disconnect(1)
+	assert.Error(t, err)
+	assert.Equal(t, "db error", err.Error())
+	userRepo.AssertExpectations(t)
+}
+
+// ============================================================
+// GetArticles テスト
+// ============================================================
+
+func TestQiitaGetArticles_Success(t *testing.T) {
+	svc, _, qiitaRepo := newTestQiitaServiceWithRepos(nil)
+
+	expected := []model.QiitaArticle{
+		{QiitaID: "abc123", Title: "Go入門", LikesCount: 10},
+		{QiitaID: "def456", Title: "React入門", LikesCount: 5},
+	}
+	qiitaRepo.On("GetArticles", uint(1)).Return(expected, nil)
+
+	articles, err := svc.GetArticles(1)
+	assert.NoError(t, err)
+	assert.Len(t, articles, 2)
+	assert.Equal(t, "Go入門", articles[0].Title)
+	qiitaRepo.AssertExpectations(t)
+}
+
+func TestQiitaGetArticles_Error(t *testing.T) {
+	svc, _, qiitaRepo := newTestQiitaServiceWithRepos(nil)
+
+	qiitaRepo.On("GetArticles", uint(1)).Return([]model.QiitaArticle(nil), errors.New("db error"))
+
+	articles, err := svc.GetArticles(1)
+	assert.Error(t, err)
+	assert.Nil(t, articles)
+	qiitaRepo.AssertExpectations(t)
+}
+
+// ============================================================
+// GetStats テスト
+// ============================================================
+
+func TestQiitaGetStats_Success(t *testing.T) {
+	svc, _, qiitaRepo := newTestQiitaServiceWithRepos(nil)
+
+	expected := &model.QiitaStats{
+		TotalArticles: 10,
+		TotalLikes:    50,
+		TotalComments: 20,
+	}
+	qiitaRepo.On("GetStats", uint(1)).Return(expected, nil)
+
+	stats, err := svc.GetStats(1)
+	assert.NoError(t, err)
+	assert.Equal(t, 10, stats.TotalArticles)
+	assert.Equal(t, 50, stats.TotalLikes)
+	qiitaRepo.AssertExpectations(t)
+}
+
+func TestQiitaGetStats_Error(t *testing.T) {
+	svc, _, qiitaRepo := newTestQiitaServiceWithRepos(nil)
+
+	qiitaRepo.On("GetStats", uint(1)).Return(nil, errors.New("db error"))
+
+	stats, err := svc.GetStats(1)
+	assert.Error(t, err)
+	assert.Nil(t, stats)
+	qiitaRepo.AssertExpectations(t)
 }
 
 func TestQiitaValidateUsername_RequestURL(t *testing.T) {

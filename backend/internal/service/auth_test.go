@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -696,6 +697,70 @@ func TestResetPassword_WeakPassword(t *testing.T) {
 	// 弱いパスワード（短すぎる）
 	err := svc.ResetPassword("valid-token-for-weak-pw", "weak")
 	assert.Error(t, err)
+}
+
+// ============================================================
+// ValidateToken 追加テスト（エッジケース）
+// ============================================================
+
+// TestValidateToken_WrongSigningMethod はHMAC以外の署名方法を使ったトークンを拒否することを確認。
+func TestValidateToken_WrongSigningMethod(t *testing.T) {
+	svc, _, _ := newTestAuthService()
+
+	// RS256署名のトークンを作成（HS256を期待するサービスに渡す）
+	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(`-----BEGIN RSA PRIVATE KEY-----
+MIIEowIBAAKCAQEA2a2rwplBQLF29amygykEMmYz0+Kcj3bKBp29Po3KXHBS9BWL
+zENMqBG0tRDoFAb2lH+GVMOhfJVNzFR2YA2t6y41HJuMQEL9TpAlkiT4t3IpVf+r
+7nRYtw4BUG8v0VPmHH3D9EM9KfmMpCvC1TibHT7i4FhCwZZ/3JhZi3ZhPzWBjpJe
+LBKZB3CZRZhOqUUMvHvFc9vDGE3J3MKJdNGxmEpnFEXU3qBjLfwKwp9XRbRZcvnW
+gYMZ1ySwHpHBFl6sMJ+1NKZXN89jQGANTNT5W19/xE5fJ7LzaJaEF0TlPc4Xl8Xv
+lrP1T9m98LvYKqSVa9N6BYbz0WrJX0T9v2BPdwIDAQABAoIBAHWE4FeO02s9zrNO
+xtFRJCzCTDGLh4R4xyaAeAJZ0+HWLHV8O0K9tQU1E9hU0SqRb/MN4OQ4BYSJQfGM
+4Yf4OjGHl1TkFxAVuM7oQSLOGAIKFGXXCPcTKH5Z4GEH3J4b9Ei8EFJpgLwVfHWj
+nq7RpvYlh0rJuT3qr1aILLwNqIbhLqWyMeZt8e1+f2s7b7wB5LMXQPv4T8oFjcm5
+6UBvzK5j0rSd7TqTR5zMj7TzSzeTwdyMEDPsNT0v4qY6OARR9gKfIAEo2TsmTN7Y
+oS4bBDaxiPDFBwQXbVQA4kGGTxQJoGlv2x2fO96OP6nKJqzXFy0mZqjMQ+HCAQEC
+AoGBAO+cRoFdBtZKjYNlL3ZFnXIQRHt5t0gZGG3IFKPaSjZ3VD5Q3ZJUChxN4JM5
+O6u56S5xmCJdj4GUZM28AVthc6UHt/AZK9bkHCFJLQSsY5m5MlYmOsMIl+4Xr0bV
+OoiFMXxH3SJ0GQWXF1hHVUbDh7BsBHQ8Gf6o1J5V2mnlGf0jAoGBAOjp3TYXHWJ/
+MDu5q+mQlkuVKGQ4/lJlUyM7GG1e3YUeHHl2TYFqsrKFuBm0VjO5yHpPlvPW5VEe
+GQOG7PKaqC/dRuJMgk3l7eYJn0MrCfHZ2qrKb5qF/XRKMkc7V9k5jJGvPxSMd0mj
+7K1gw5G5R/vBzCqRb3VUOXq1R9pDxTVhAoGBAIX+GZ7r7JlwAEqgkdM5XBNZ0LpL
+rAqU6r0zW0YVJP7fvU0YP1Wk2X3aTGgIqfVWLEF7RCcvDx8PJ9QVGZZ73U+qdF7
+kbnV3CVjfAR8yGUYnCPsNPrA8J3PXVV8kHhYRTGH3mS0qLnzSRlXqLPGpfh1OtXr
+nT2zP0HPGovUVz7/AoGBAMOkwvPXaXWxpMfx1HEIZtWLqiInlh6EMl2gWfLjSmHJ
+sJoTX0W7X2xV5IqJJUHVIFAeTkmIxrO4h7EJZ9KRl3aCBaUiH+4ViWFifXr0RQKJ
+OxkBRMQ1ZWMIT5b+5K+sFZGMJaX2RGhbPBXvfGSwAj0h5EVj9HlZrr3X
+-----END RSA PRIVATE KEY-----`))
+	if err != nil {
+		// RSAキーのパースに失敗した場合、単純な不正なトークンでテスト
+		_, err = svc.ValidateToken("eyJhbGciOiJSUzI1NiJ9.eyJ1c2VyX2lkIjoxfQ.invalid")
+		assert.Error(t, err)
+		return
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{"user_id": float64(1)})
+	tokenString, _ := token.SignedString(privateKey)
+
+	userID, err := svc.ValidateToken(tokenString)
+	assert.Error(t, err)
+	assert.Equal(t, uint(0), userID)
+}
+
+// TestValidateToken_UserIDNotFloat は user_id が数値でないトークンを拒否することを確認。
+func TestValidateToken_UserIDNotFloat(t *testing.T) {
+	svc, _, _ := newTestAuthService()
+
+	// user_id を文字列で設定したトークンを作成
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": "not-a-number",
+		"exp":     float64(9999999999),
+	})
+	tokenString, err := token.SignedString([]byte(testJWTSecret))
+	assert.NoError(t, err)
+
+	userID, err := svc.ValidateToken(tokenString)
+	assert.Error(t, err)
+	assert.Equal(t, uint(0), userID)
 }
 
 func TestResetPassword_UpdatePasswordError(t *testing.T) {

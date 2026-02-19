@@ -149,6 +149,38 @@ func TestCreateNotification_RepoError(t *testing.T) {
 }
 
 // ============================================================
+// CreateBatch テスト
+// ============================================================
+
+func TestCreateBatch_Success(t *testing.T) {
+	svc, repo := newTestNotificationService()
+
+	notifications := []*model.Notification{
+		{UserID: 2, Type: model.NotificationTypePost, ActorID: 1},
+		{UserID: 3, Type: model.NotificationTypePost, ActorID: 1},
+	}
+	repo.On("CreateBatch", notifications).Return(nil)
+
+	err := svc.CreateBatch(notifications)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestCreateBatch_Error(t *testing.T) {
+	svc, repo := newTestNotificationService()
+
+	notifications := []*model.Notification{
+		{UserID: 2, Type: model.NotificationTypePost, ActorID: 1},
+	}
+	repo.On("CreateBatch", notifications).Return(errors.New("db error"))
+
+	err := svc.CreateBatch(notifications)
+	assert.Error(t, err)
+	assert.Equal(t, "db error", err.Error())
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
 // GetByUserID テスト
 // ============================================================
 

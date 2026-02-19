@@ -107,6 +107,21 @@ func TestSpotifyGetCurrentlyPlaying_NotConnected(t *testing.T) {
 	assert.Contains(t, err.Error(), "連携されていません")
 }
 
+func TestSpotifyGetRecentlyPlayed_NotConnected(t *testing.T) {
+	svc, userRepo, _ := newSpotifyTestService()
+
+	user := &model.User{SpotifyConnected: false, SpotifyRefreshToken: ""}
+	user.ID = 1
+
+	userRepo.On("FindByID", uint(1)).Return(user, nil)
+
+	result, err := svc.GetRecentlyPlayed(1)
+
+	assert.Nil(t, result)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "連携されていません")
+}
+
 func TestSpotifyGetRecentlyPlayed_UserNotFound(t *testing.T) {
 	svc, userRepo, _ := newSpotifyTestService()
 
