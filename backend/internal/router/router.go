@@ -113,6 +113,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerMessageStatsRoutes(protected, c)
 		registerMentionStatsRoutes(protected, c)
 		registerReactionStatsRoutes(protected, c)
+		registerBookmarkStatsRoutes(protected, c)
 	}
 
 	return r
@@ -726,5 +727,12 @@ func registerReactionStatsRoutes(g *gin.RouterGroup, c *di.Container) {
 	users := g.Group("/users")
 	{
 		users.GET("/:id/reaction-stats", c.ReactionStatsHandler.GetStats)
+	}
+}
+
+func registerBookmarkStatsRoutes(g *gin.RouterGroup, c *di.Container) {
+	users := g.Group("/users")
+	{
+		users.GET("/:id/bookmark-stats", c.BookmarkStatsHandler.GetStats)
 	}
 }
