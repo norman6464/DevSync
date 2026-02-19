@@ -83,10 +83,18 @@ func (s *AnswerService) SetBestAnswer(questionID, answerID, userID uint) error {
 
 // Vote は投票値を検証した後、回答に投票する。
 // valueは1（賛成）または-1（反対）のみ許可される。
+// 自分の回答への自己投票は禁止する。
 func (s *AnswerService) Vote(userID, answerID uint, value int) error {
 	v := validator.NewQuestionValidator()
 	if err := v.ValidateVote(value); err != nil {
 		return err
+	}
+	answer, err := s.answerRepo.FindByID(answerID)
+	if err != nil {
+		return ErrNotFound
+	}
+	if answer.UserID == userID {
+		return ErrForbidden
 	}
 	return s.answerRepo.Vote(userID, answerID, value)
 }
