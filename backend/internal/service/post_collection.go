@@ -43,14 +43,23 @@ func (s *PostCollectionService) GetPublicByUserID(userID uint) ([]model.PostColl
 	return s.repo.FindPublicByUserID(userID)
 }
 
-// Update は所有権を検証した後、コレクションを更新する。
-func (s *PostCollectionService) Update(id, userID uint, title, description string, isPublic bool) (*model.PostCollection, error) {
+// findAndCheckOwnership はコレクションを取得し、指定ユーザーが所有者かを検証する。
+func (s *PostCollectionService) findAndCheckOwnership(id, userID uint) (*model.PostCollection, error) {
 	collection, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err
 	}
 	if collection.UserID != userID {
 		return nil, ErrForbidden
+	}
+	return collection, nil
+}
+
+// Update は所有権を検証した後、コレクションを更新する。
+func (s *PostCollectionService) Update(id, userID uint, title, description string, isPublic bool) (*model.PostCollection, error) {
+	collection, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return nil, err
 	}
 
 	collection.Title = title
@@ -65,24 +74,16 @@ func (s *PostCollectionService) Update(id, userID uint, title, description strin
 
 // Delete は所有権を検証した後、コレクションを削除する。
 func (s *PostCollectionService) Delete(id, userID uint) error {
-	collection, err := s.repo.FindByID(id)
-	if err != nil {
+	if _, err := s.findAndCheckOwnership(id, userID); err != nil {
 		return err
-	}
-	if collection.UserID != userID {
-		return ErrForbidden
 	}
 	return s.repo.Delete(id)
 }
 
 // AddPost は所有権を検証した後、コレクションに投稿を追加する。
 func (s *PostCollectionService) AddPost(collectionID, userID, postID uint, note string) error {
-	collection, err := s.repo.FindByID(collectionID)
-	if err != nil {
+	if _, err := s.findAndCheckOwnership(collectionID, userID); err != nil {
 		return err
-	}
-	if collection.UserID != userID {
-		return ErrForbidden
 	}
 
 	item := &model.PostCollectionItem{
@@ -95,12 +96,8 @@ func (s *PostCollectionService) AddPost(collectionID, userID, postID uint, note 
 
 // RemovePost は所有権を検証した後、コレクションから投稿を削除する。
 func (s *PostCollectionService) RemovePost(collectionID, userID, postID uint) error {
-	collection, err := s.repo.FindByID(collectionID)
-	if err != nil {
+	if _, err := s.findAndCheckOwnership(collectionID, userID); err != nil {
 		return err
-	}
-	if collection.UserID != userID {
-		return ErrForbidden
 	}
 	return s.repo.RemovePost(collectionID, postID)
 }
