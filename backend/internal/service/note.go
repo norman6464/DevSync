@@ -78,8 +78,17 @@ func (s *NoteService) Update(id, userID uint, title, content, tags string, folde
 	return note, nil
 }
 
-// Delete はノートを削除する。
-func (s *NoteService) Delete(id uint) error {
+// Delete は所有権を検証した後、ノートを削除する。
+func (s *NoteService) Delete(id, userID uint) error {
+	note, err := s.repo.FindByID(id)
+	if err != nil {
+		return err
+	}
+
+	if note.UserID != userID {
+		return domain.NewError(domain.ErrCodeForbidden, "この操作を行う権限がありません", nil)
+	}
+
 	return s.repo.Delete(id)
 }
 
@@ -94,18 +103,45 @@ func (s *NoteService) CountByUserID(userID uint) (int64, error) {
 	return s.repo.CountByUserID(userID)
 }
 
-// ToggleFavorite はノートのお気に入り状態を切り替える。
-func (s *NoteService) ToggleFavorite(id uint) error {
+// ToggleFavorite は所有権を検証した後、ノートのお気に入り状態を切り替える。
+func (s *NoteService) ToggleFavorite(id, userID uint) error {
+	note, err := s.repo.FindByID(id)
+	if err != nil {
+		return err
+	}
+
+	if note.UserID != userID {
+		return domain.NewError(domain.ErrCodeForbidden, "この操作を行う権限がありません", nil)
+	}
+
 	return s.repo.ToggleFavorite(id)
 }
 
-// Archive はノートをアーカイブする。
-func (s *NoteService) Archive(id uint) error {
+// Archive は所有権を検証した後、ノートをアーカイブする。
+func (s *NoteService) Archive(id, userID uint) error {
+	note, err := s.repo.FindByID(id)
+	if err != nil {
+		return err
+	}
+
+	if note.UserID != userID {
+		return domain.NewError(domain.ErrCodeForbidden, "この操作を行う権限がありません", nil)
+	}
+
 	return s.repo.Archive(id)
 }
 
-// Unarchive はノートのアーカイブを解除する。
-func (s *NoteService) Unarchive(id uint) error {
+// Unarchive は所有権を検証した後、ノートのアーカイブを解除する。
+func (s *NoteService) Unarchive(id, userID uint) error {
+	note, err := s.repo.FindByID(id)
+	if err != nil {
+		return err
+	}
+
+	if note.UserID != userID {
+		return domain.NewError(domain.ErrCodeForbidden, "この操作を行う権限がありません", nil)
+	}
+
 	return s.repo.Unarchive(id)
 }
 
