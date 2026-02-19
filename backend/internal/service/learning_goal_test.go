@@ -492,3 +492,48 @@ func TestLearningGoalUpdate_WithTargetDate(t *testing.T) {
 	assert.Equal(t, "Desc", result.Description)
 	assert.NotNil(t, result.TargetDate)
 }
+
+// ============================================================
+// カテゴリ別取得テスト
+// ============================================================
+
+func TestLearningGoalGetByCategory_Success(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+	expected := []model.LearningGoal{
+		{ID: 1, UserID: 1, Title: "Go習得", Category: model.GoalCategoryLanguage},
+		{ID: 2, UserID: 1, Title: "Rust入門", Category: model.GoalCategoryLanguage},
+	}
+	repo.On("GetByCategory", uint(1), "language").Return(expected, nil)
+
+	result, err := svc.GetByCategory(1, "language")
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningGoalGetByCategory_EmptyResult(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+	repo.On("GetByCategory", uint(1), "framework").Return([]model.LearningGoal{}, nil)
+
+	result, err := svc.GetByCategory(1, "framework")
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningGoalGetByCategory_InvalidCategory(t *testing.T) {
+	svc, _ := newTestLearningGoalService()
+
+	_, err := svc.GetByCategory(1, "invalid")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "無効なカテゴリ")
+}
+
+func TestLearningGoalGetByCategory_RepoError(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+	repo.On("GetByCategory", uint(1), "language").Return([]model.LearningGoal{}, errors.New("db error"))
+
+	_, err := svc.GetByCategory(1, "language")
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}

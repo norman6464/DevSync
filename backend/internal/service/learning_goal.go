@@ -3,6 +3,7 @@ package service
 import (
 	"time"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
@@ -36,6 +37,23 @@ func (s *LearningGoalService) GetByUserID(userID uint) ([]model.LearningGoal, er
 // GetActiveByUserID は指定ユーザーのアクティブな学習目標のみを取得する。
 func (s *LearningGoalService) GetActiveByUserID(userID uint) ([]model.LearningGoal, error) {
 	return s.repo.GetActiveByUserID(userID)
+}
+
+// validGoalCategories は有効なGoalCategoryの集合。
+var validGoalCategories = map[string]bool{
+	string(model.GoalCategoryLanguage):  true,
+	string(model.GoalCategoryFramework): true,
+	string(model.GoalCategorySkill):     true,
+	string(model.GoalCategoryProject):   true,
+	string(model.GoalCategoryOther):     true,
+}
+
+// GetByCategory は指定ユーザーの学習目標をカテゴリでフィルタリングして取得する。
+func (s *LearningGoalService) GetByCategory(userID uint, category string) ([]model.LearningGoal, error) {
+	if !validGoalCategories[category] {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "無効なカテゴリです", nil)
+	}
+	return s.repo.GetByCategory(userID, category)
 }
 
 // GetStats は指定ユーザーの学習目標統計情報を取得する。
