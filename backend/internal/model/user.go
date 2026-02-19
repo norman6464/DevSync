@@ -18,6 +18,10 @@ type User struct {
 	GitHubUsername      string    `json:"github_username"`
 	GitHubToken         string    `json:"-"`                                         // json:"-" でAPIレスポンスから除外
 	GitHubConnected     bool      `json:"github_connected" gorm:"default:false"`     // GitHub連携済みフラグ
+	SpotifyConnected    bool      `json:"spotify_connected" gorm:"default:false"`   // Spotify連携済みフラグ
+	SpotifyToken        string    `json:"-"`                                        // Spotifyアクセストークン（APIレスポンスから除外）
+	SpotifyRefreshToken string    `json:"-"`                                        // Spotifyリフレッシュトークン（APIレスポンスから除外）
+	SpotifyTokenExpiry  time.Time `json:"-"`                                        // Spotifyトークン有効期限
 	ZennUsername        string    `json:"zenn_username"`
 	QiitaUsername       string    `json:"qiita_username"`
 	AtCoderUsername     string    `json:"atcoder_username"`                          // AtCoderユーザー名

@@ -310,6 +310,8 @@
     "zennUsernamePlaceholder": "Ingresa tu usuario de Zenn",
     "qiitaUsernamePlaceholder": "Ingresa tu usuario de Qiita",
     "atcoderUsernamePlaceholder": "Ingresa tu usuario de AtCoder",
+    "spotify": "Spotify",
+    "spotifyDescription": "Conecta Spotify para mostrar la canción que estás escuchando en tu perfil.",
     "setTheme": "Establecer tema {{theme}}"
   },
   "explore": {
@@ -1297,6 +1299,17 @@
     "backToSettings": "Volver a configuración",
     "loggingIn": "Iniciando sesión con GitHub...",
     "connecting": "Conectando GitHub..."
+  },
+  "spotify": {
+    "nowPlaying": "Reproduciendo ahora",
+    "recentlyPlayed": "Reproducido recientemente"
+  },
+  "spotifyCallback": {
+    "connecting": "Conectando cuenta de Spotify...",
+    "connectSuccess": "Cuenta de Spotify conectada exitosamente",
+    "connectFailed": "Error al conectar Spotify",
+    "missingParams": "Faltan parámetros de autenticación",
+    "backToSettings": "Volver a Configuración"
   },
   "editor": {
     "write": "Escribir",

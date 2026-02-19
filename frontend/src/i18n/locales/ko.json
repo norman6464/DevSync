@@ -310,6 +310,8 @@
     "zennUsernamePlaceholder": "Zenn 사용자명 입력",
     "qiitaUsernamePlaceholder": "Qiita 사용자명 입력",
     "atcoderUsernamePlaceholder": "AtCoder 사용자명 입력",
+    "spotify": "Spotify",
+    "spotifyDescription": "Spotify를 연동하여 현재 재생 중인 곡을 프로필에 표시합니다.",
     "setTheme": "{{theme}} 테마로 설정"
   },
   "explore": {
@@ -1297,6 +1299,17 @@
     "backToSettings": "설정으로 돌아가기",
     "loggingIn": "GitHub으로 로그인 중...",
     "connecting": "GitHub 연결 중..."
+  },
+  "spotify": {
+    "nowPlaying": "재생 중",
+    "recentlyPlayed": "최근 재생한 곡"
+  },
+  "spotifyCallback": {
+    "connecting": "Spotify 계정 연동 중...",
+    "connectSuccess": "Spotify 계정이 연동되었습니다",
+    "connectFailed": "Spotify 연동에 실패했습니다",
+    "missingParams": "인증 매개변수가 누락되었습니다",
+    "backToSettings": "설정으로 돌아가기"
   },
   "editor": {
     "write": "작성",

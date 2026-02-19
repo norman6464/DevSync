@@ -17,6 +17,7 @@ import ChatPage from './pages/ChatPage';
 import PostDetailPage from './pages/PostDetailPage';
 import FollowListPage from './pages/FollowListPage';
 import GitHubCallbackPage from './pages/GitHubCallbackPage';
+import SpotifyCallbackPage from './pages/SpotifyCallbackPage';
 import GoalsPage from './pages/GoalsPage';
 import ReportsPage from './pages/ReportsPage';
 import ProjectsPage from './pages/ProjectsPage';
@@ -70,6 +71,7 @@ export default function App() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/github/callback" element={<GitHubCallbackPage />} />
+      <Route path="/spotify/callback" element={<SpotifyCallbackPage />} />
       <Route element={<ProtectedRoute />}>
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route element={<Layout />}>

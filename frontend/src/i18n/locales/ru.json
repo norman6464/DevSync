@@ -310,6 +310,8 @@
     "zennUsernamePlaceholder": "Введите имя пользователя Zenn",
     "qiitaUsernamePlaceholder": "Введите имя пользователя Qiita",
     "atcoderUsernamePlaceholder": "Введите имя пользователя AtCoder",
+    "spotify": "Spotify",
+    "spotifyDescription": "Подключите Spotify, чтобы отображать текущий трек в профиле.",
     "setTheme": "Установить тему {{theme}}"
   },
   "explore": {
@@ -1297,6 +1299,17 @@
     "backToSettings": "Вернуться к настройкам",
     "loggingIn": "Вход через GitHub...",
     "connecting": "Подключение GitHub..."
+  },
+  "spotify": {
+    "nowPlaying": "Сейчас играет",
+    "recentlyPlayed": "Недавно прослушанное"
+  },
+  "spotifyCallback": {
+    "connecting": "Подключение аккаунта Spotify...",
+    "connectSuccess": "Аккаунт Spotify успешно подключён",
+    "connectFailed": "Не удалось подключить Spotify",
+    "missingParams": "Отсутствуют параметры аутентификации",
+    "backToSettings": "Вернуться к настройкам"
   },
   "editor": {
     "write": "Написать",

@@ -103,6 +103,7 @@ func main() {
 		&model.Mention{},
 		&model.YouTubeVideo{},
 		&model.YouTubeSearchCache{},
+		&model.SpotifyRecentTrack{},
 	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}

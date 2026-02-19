@@ -54,6 +54,7 @@ export default function SettingsPage() {
         atcoderUsername={s.atcoderUsername} setAtcoderUsername={s.setAtcoderUsername}
         connectingAtcoder={s.connectingAtcoder}
         onConnectAtCoder={s.handleConnectAtCoder} onDisconnectAtCoder={s.handleDisconnectAtCoder}
+        onConnectSpotify={s.handleConnectSpotify} onDisconnectSpotify={s.handleDisconnectSpotify}
         paizaRank={s.paizaRank} setPaizaRank={s.setPaizaRank}
         savingPaiza={s.savingPaiza} onSavePaizaRank={s.handleSavePaizaRank}
       />

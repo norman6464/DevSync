@@ -60,6 +60,7 @@ type Container struct {
 	PostViewHandler          *handler.PostViewHandler
 	MentionHandler           *handler.MentionHandler
 	YouTubeHandler           *handler.YouTubeHandler
+	SpotifyHandler           *handler.SpotifyHandler
 
 	// ミドルウェア・コールバック用
 	AuthService      *service.AuthService
@@ -242,6 +243,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	mentionRepo := repository.NewMentionRepository(db)
 	mentionService := service.NewMentionService(mentionRepo, userRepo, notificationService)
 	c.MentionHandler = handler.NewMentionHandler(mentionService)
+
+	// Spotifyサービス
+	spotifyRepo := repository.NewSpotifyRepository(db)
+	spotifyService := service.NewSpotifyService(cfg, userRepo, spotifyRepo)
+	c.SpotifyHandler = handler.NewSpotifyHandler(spotifyService, authService)
 
 	// YouTubeサービス（APIキー設定時のみクライアント初期化）
 	youtubeVideoRepo := repository.NewYouTubeVideoRepository(db)
