@@ -219,6 +219,9 @@ func TestPostTimeline_Success(t *testing.T) {
 func TestPostLike_Success(t *testing.T) {
 	svc, postRepo, _ := newTestPostService()
 
+	post := &model.Post{UserID: 2, Title: "Other's post"}
+	post.ID = 10
+	postRepo.On("FindByID", uint(10)).Return(post, nil)
 	postRepo.On("Like", uint(1), uint(10)).Return(nil)
 
 	err := svc.Like(1, 10)
@@ -226,14 +229,50 @@ func TestPostLike_Success(t *testing.T) {
 	postRepo.AssertExpectations(t)
 }
 
+func TestPostLike_SelfLike_Forbidden(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	post := &model.Post{UserID: 1, Title: "My post"}
+	post.ID = 10
+	postRepo.On("FindByID", uint(10)).Return(post, nil)
+
+	err := svc.Like(1, 10)
+	assert.ErrorIs(t, err, ErrForbidden)
+	postRepo.AssertNotCalled(t, "Like")
+}
+
+func TestPostLike_PostNotFound(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	err := svc.Like(1, 999)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
 func TestPostUnlike_Success(t *testing.T) {
 	svc, postRepo, _ := newTestPostService()
 
+	post := &model.Post{UserID: 2, Title: "Other's post"}
+	post.ID = 10
+	postRepo.On("FindByID", uint(10)).Return(post, nil)
 	postRepo.On("Unlike", uint(1), uint(10)).Return(nil)
 
 	err := svc.Unlike(1, 10)
 	assert.NoError(t, err)
 	postRepo.AssertExpectations(t)
+}
+
+func TestPostUnlike_SelfUnlike_Forbidden(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	post := &model.Post{UserID: 1, Title: "My post"}
+	post.ID = 10
+	postRepo.On("FindByID", uint(10)).Return(post, nil)
+
+	err := svc.Unlike(1, 10)
+	assert.ErrorIs(t, err, ErrForbidden)
+	postRepo.AssertNotCalled(t, "Unlike")
 }
 
 func TestPostHasLiked(t *testing.T) {
