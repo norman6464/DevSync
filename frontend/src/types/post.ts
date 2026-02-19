@@ -33,6 +33,8 @@ export interface Comment {
   post_id: number;
   parent_id?: number;
   content: string;
+  like_count: number;
+  liked?: boolean;
   replies?: Comment[];
   created_at: string;
   updated_at: string;

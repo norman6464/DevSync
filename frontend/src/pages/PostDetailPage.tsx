@@ -12,6 +12,7 @@ import Avatar from '../components/common/Avatar';
 import MentionInput from '../components/common/MentionInput';
 import MentionText from '../components/common/MentionText';
 import { PageLoader, Modal } from '../components/common';
+import CommentLikeButton from '../components/posts/CommentLikeButton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -157,15 +158,22 @@ export default function PostDetailPage() {
                     <p className="text-sm text-gray-300 mt-1 leading-relaxed">
                       <MentionText text={comment.content} />
                     </p>
-                    <button
-                      onClick={() => {
-                        setReplyingTo(replyingTo === comment.id ? null : comment.id);
-                        setReplyContent('');
-                      }}
-                      className="mt-1.5 text-xs text-gray-500 hover:text-blue-400 transition-colors"
-                    >
-                      {t('post.reply')}
-                    </button>
+                    <div className="flex items-center gap-3 mt-1.5">
+                      <CommentLikeButton
+                        commentId={comment.id}
+                        initialLiked={comment.liked ?? false}
+                        initialCount={comment.like_count ?? 0}
+                      />
+                      <button
+                        onClick={() => {
+                          setReplyingTo(replyingTo === comment.id ? null : comment.id);
+                          setReplyContent('');
+                        }}
+                        className="text-xs text-gray-500 hover:text-blue-400 transition-colors"
+                      >
+                        {t('post.reply')}
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -214,6 +222,13 @@ export default function PostDetailPage() {
                           <p className="text-sm text-gray-300 mt-0.5 leading-relaxed">
                             <MentionText text={reply.content} />
                           </p>
+                          <div className="mt-1">
+                            <CommentLikeButton
+                              commentId={reply.id}
+                              initialLiked={reply.liked ?? false}
+                              initialCount={reply.like_count ?? 0}
+                            />
+                          </div>
                         </div>
                       </div>
                     ))}
