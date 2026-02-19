@@ -14,6 +14,14 @@ type PostAdvancedSearchRepositoryInterface interface {
 	SearchWithFilter(query string, tags []string, sortBy string, dateFrom, dateTo *time.Time, limit, offset int) ([]model.Post, int64, error)
 }
 
+// CommentLikeRepositoryInterface はコメントへのいいね操作の契約を定義する。
+type CommentLikeRepositoryInterface interface {
+	Like(userID, commentID uint) error
+	Unlike(userID, commentID uint) error
+	HasLiked(userID, commentID uint) (bool, error)
+	CountByCommentID(commentID uint) (int64, error)
+}
+
 // UserRepositoryInterface はユーザーデータ操作の契約を定義する。
 type UserRepositoryInterface interface {
 	FindAll() ([]model.User, error)

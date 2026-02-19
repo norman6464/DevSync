@@ -151,7 +151,17 @@ type Comment struct {
 	PostID    uint       `json:"post_id" gorm:"not null;index"`
 	ParentID  *uint      `json:"parent_id,omitempty" gorm:"index"`
 	Content   string     `json:"content" gorm:"type:text;not null"`
+	LikeCount int        `json:"like_count" gorm:"default:0"`
 	Replies   []Comment  `json:"replies,omitempty" gorm:"foreignKey:ParentID"`
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at"`
+}
+
+// CommentLike はコメントへの「いいね」を記録する。
+// uniqueIndex制約でユーザーごとに1コメント1いいねを保証する。
+type CommentLike struct {
+	ID        uint      `json:"id" gorm:"primaryKey"`
+	UserID    uint      `json:"user_id" gorm:"not null;uniqueIndex:idx_user_comment_like"`
+	CommentID uint      `json:"comment_id" gorm:"not null;uniqueIndex:idx_user_comment_like;index"`
+	CreatedAt time.Time `json:"created_at"`
 }
