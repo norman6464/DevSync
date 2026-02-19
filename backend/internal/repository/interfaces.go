@@ -596,3 +596,8 @@ type MentionStatsRepositoryInterface interface {
 type ReactionStatsRepositoryInterface interface {
 	GetReactionStats(userID uint) (*model.ReactionStats, error)
 }
+
+// BookmarkStatsRepositoryInterface はユーザーブックマーク集計統計データ操作の契約を定義する。
+type BookmarkStatsRepositoryInterface interface {
+	GetBookmarkStats(userID uint) (*model.BookmarkStats, error)
+}
