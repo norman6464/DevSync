@@ -192,9 +192,18 @@ func (s *PostService) GetReplies(parentID uint) ([]model.Comment, error) {
 	return s.repo.GetReplies(parentID)
 }
 
-// DeleteComment はコメントを削除する。
+// DeleteComment は所有権を検証した後、コメントを削除する。
 func (s *PostService) DeleteComment(id, userID uint) error {
-	return s.repo.DeleteComment(id, userID)
+	comment, err := s.repo.FindCommentByID(id)
+	if err != nil {
+		return err
+	}
+
+	if comment.UserID != userID {
+		return domain.NewError(domain.ErrCodeForbidden, "この操作を行う権限がありません", nil)
+	}
+
+	return s.repo.DeleteComment(id)
 }
 
 // Bookmark は投稿をブックマークする。

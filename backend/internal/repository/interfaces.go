@@ -55,7 +55,7 @@ type PostRepositoryInterface interface {
 	FindCommentByID(id uint) (*model.Comment, error)
 	GetComments(postID uint) ([]model.Comment, error)
 	GetReplies(parentID uint) ([]model.Comment, error)
-	DeleteComment(id, userID uint) error
+	DeleteComment(id uint) error
 	Bookmark(userID, postID uint) error
 	Unbookmark(userID, postID uint) error
 	HasBookmarked(userID, postID uint) bool
