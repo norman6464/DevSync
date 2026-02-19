@@ -52,15 +52,17 @@ func newTestNoteLinkService() (*NoteLinkService, *MockNoteLinkRepository, *MockN
 func TestNoteLinkService_CreateLink(t *testing.T) {
 	svc, linkRepo, noteRepo := newTestNoteLinkService()
 
+	sourceNote := &model.Note{ID: 1, UserID: 1, Title: "ソースノート"}
 	targetNote := &model.Note{ID: 2, UserID: 1, Title: "リンク先ノート"}
 
+	noteRepo.On("FindByID", uint(1)).Return(sourceNote, nil)
 	noteRepo.On("FindByID", uint(2)).Return(targetNote, nil)
 	linkRepo.On("Exists", uint(1), uint(2)).Return(false, nil)
 	linkRepo.On("Create", mock.MatchedBy(func(l *model.NoteLink) bool {
 		return l.SourceNoteID == 1 && l.TargetNoteID == 2
 	})).Return(nil)
 
-	err := svc.CreateLink(1, 2)
+	err := svc.CreateLink(1, 2, 1)
 	assert.NoError(t, err)
 	linkRepo.AssertExpectations(t)
 	noteRepo.AssertExpectations(t)
@@ -69,20 +71,46 @@ func TestNoteLinkService_CreateLink(t *testing.T) {
 func TestNoteLinkService_CreateLink_SelfLink(t *testing.T) {
 	svc, _, _ := newTestNoteLinkService()
 
-	err := svc.CreateLink(1, 1)
+	err := svc.CreateLink(1, 1, 1)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "同じノートへのリンクは作成できません")
+}
+
+func TestNoteLinkService_CreateLink_SourceNotFound(t *testing.T) {
+	svc, _, noteRepo := newTestNoteLinkService()
+
+	noteRepo.On("FindByID", uint(1)).Return((*model.Note)(nil), errors.New("not found"))
+
+	err := svc.CreateLink(1, 2, 1)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "ソースノートが見つかりません")
+	noteRepo.AssertExpectations(t)
+}
+
+func TestNoteLinkService_CreateLink_Forbidden(t *testing.T) {
+	svc, _, noteRepo := newTestNoteLinkService()
+
+	// ソースノートは別ユーザーが所有
+	sourceNote := &model.Note{ID: 1, UserID: 99, Title: "他ユーザーのノート"}
+	noteRepo.On("FindByID", uint(1)).Return(sourceNote, nil)
+
+	err := svc.CreateLink(1, 2, 1)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "この操作を行う権限がありません")
+	noteRepo.AssertExpectations(t)
 }
 
 func TestNoteLinkService_CreateLink_AlreadyExists(t *testing.T) {
 	svc, linkRepo, noteRepo := newTestNoteLinkService()
 
+	sourceNote := &model.Note{ID: 1, UserID: 1, Title: "ソースノート"}
 	targetNote := &model.Note{ID: 2, UserID: 1, Title: "リンク先ノート"}
 
+	noteRepo.On("FindByID", uint(1)).Return(sourceNote, nil)
 	noteRepo.On("FindByID", uint(2)).Return(targetNote, nil)
 	linkRepo.On("Exists", uint(1), uint(2)).Return(true, nil)
 
-	err := svc.CreateLink(1, 2)
+	err := svc.CreateLink(1, 2, 1)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "このリンクは既に存在します")
 	linkRepo.AssertExpectations(t)
@@ -134,13 +162,40 @@ func TestNoteLinkService_GetBacklinks(t *testing.T) {
 // ============================================================
 
 func TestNoteLinkService_DeleteLink(t *testing.T) {
-	svc, linkRepo, _ := newTestNoteLinkService()
+	svc, linkRepo, noteRepo := newTestNoteLinkService()
 
+	sourceNote := &model.Note{ID: 1, UserID: 1, Title: "ソースノート"}
+	noteRepo.On("FindByID", uint(1)).Return(sourceNote, nil)
 	linkRepo.On("Delete", uint(1), uint(2)).Return(nil)
 
-	err := svc.DeleteLink(1, 2)
+	err := svc.DeleteLink(1, 2, 1)
 	assert.NoError(t, err)
 	linkRepo.AssertExpectations(t)
+	noteRepo.AssertExpectations(t)
+}
+
+func TestNoteLinkService_DeleteLink_SourceNotFound(t *testing.T) {
+	svc, _, noteRepo := newTestNoteLinkService()
+
+	noteRepo.On("FindByID", uint(1)).Return((*model.Note)(nil), errors.New("not found"))
+
+	err := svc.DeleteLink(1, 2, 1)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "ソースノートが見つかりません")
+	noteRepo.AssertExpectations(t)
+}
+
+func TestNoteLinkService_DeleteLink_Forbidden(t *testing.T) {
+	svc, _, noteRepo := newTestNoteLinkService()
+
+	// ソースノートは別ユーザーが所有
+	sourceNote := &model.Note{ID: 1, UserID: 99, Title: "他ユーザーのノート"}
+	noteRepo.On("FindByID", uint(1)).Return(sourceNote, nil)
+
+	err := svc.DeleteLink(1, 2, 1)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "この操作を行う権限がありません")
+	noteRepo.AssertExpectations(t)
 }
 
 // ============================================================
@@ -150,9 +205,11 @@ func TestNoteLinkService_DeleteLink(t *testing.T) {
 func TestNoteLinkService_CreateLink_TargetNotFound(t *testing.T) {
 	svc, _, noteRepo := newTestNoteLinkService()
 
+	sourceNote := &model.Note{ID: 1, UserID: 1, Title: "ソースノート"}
+	noteRepo.On("FindByID", uint(1)).Return(sourceNote, nil)
 	noteRepo.On("FindByID", uint(2)).Return((*model.Note)(nil), errors.New("not found"))
 
-	err := svc.CreateLink(1, 2)
+	err := svc.CreateLink(1, 2, 1)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "リンク先のノートが見つかりません")
 	noteRepo.AssertExpectations(t)
@@ -161,11 +218,13 @@ func TestNoteLinkService_CreateLink_TargetNotFound(t *testing.T) {
 func TestNoteLinkService_CreateLink_ExistsError(t *testing.T) {
 	svc, linkRepo, noteRepo := newTestNoteLinkService()
 
+	sourceNote := &model.Note{ID: 1, UserID: 1, Title: "ソースノート"}
 	targetNote := &model.Note{ID: 2, UserID: 1, Title: "ノート"}
+	noteRepo.On("FindByID", uint(1)).Return(sourceNote, nil)
 	noteRepo.On("FindByID", uint(2)).Return(targetNote, nil)
 	linkRepo.On("Exists", uint(1), uint(2)).Return(false, errors.New("db error"))
 
-	err := svc.CreateLink(1, 2)
+	err := svc.CreateLink(1, 2, 1)
 	assert.Error(t, err)
 	linkRepo.AssertExpectations(t)
 	noteRepo.AssertExpectations(t)
@@ -174,12 +233,14 @@ func TestNoteLinkService_CreateLink_ExistsError(t *testing.T) {
 func TestNoteLinkService_CreateLink_CreateError(t *testing.T) {
 	svc, linkRepo, noteRepo := newTestNoteLinkService()
 
+	sourceNote := &model.Note{ID: 1, UserID: 1, Title: "ソースノート"}
 	targetNote := &model.Note{ID: 2, UserID: 1, Title: "ノート"}
+	noteRepo.On("FindByID", uint(1)).Return(sourceNote, nil)
 	noteRepo.On("FindByID", uint(2)).Return(targetNote, nil)
 	linkRepo.On("Exists", uint(1), uint(2)).Return(false, nil)
 	linkRepo.On("Create", mock.AnythingOfType("*model.NoteLink")).Return(errors.New("db error"))
 
-	err := svc.CreateLink(1, 2)
+	err := svc.CreateLink(1, 2, 1)
 	assert.Error(t, err)
 	linkRepo.AssertExpectations(t)
 	noteRepo.AssertExpectations(t)
@@ -208,11 +269,14 @@ func TestNoteLinkService_GetBacklinks_Error(t *testing.T) {
 }
 
 func TestNoteLinkService_DeleteLink_Error(t *testing.T) {
-	svc, linkRepo, _ := newTestNoteLinkService()
+	svc, linkRepo, noteRepo := newTestNoteLinkService()
 
+	sourceNote := &model.Note{ID: 1, UserID: 1, Title: "ソースノート"}
+	noteRepo.On("FindByID", uint(1)).Return(sourceNote, nil)
 	linkRepo.On("Delete", uint(1), uint(2)).Return(errors.New("db error"))
 
-	err := svc.DeleteLink(1, 2)
+	err := svc.DeleteLink(1, 2, 1)
 	assert.Error(t, err)
 	linkRepo.AssertExpectations(t)
+	noteRepo.AssertExpectations(t)
 }

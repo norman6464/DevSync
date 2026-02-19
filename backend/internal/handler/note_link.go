@@ -8,10 +8,10 @@ import (
 
 // NoteLinkServiceInterface はNoteLinkServiceのインターフェース。
 type NoteLinkServiceInterface interface {
-	CreateLink(sourceNoteID, targetNoteID uint) error
+	CreateLink(sourceNoteID, targetNoteID, userID uint) error
 	GetLinks(sourceNoteID uint) ([]model.NoteLink, error)
 	GetBacklinks(targetNoteID uint) ([]model.NoteLink, error)
-	DeleteLink(sourceNoteID, targetNoteID uint) error
+	DeleteLink(sourceNoteID, targetNoteID, userID uint) error
 }
 
 // NoteLinkHandler はノート間リンク関連のHTTPハンドラ。
@@ -36,12 +36,14 @@ func (h *NoteLinkHandler) CreateLink(c *gin.Context) {
 		return
 	}
 
+	userID := c.GetUint("userID")
+
 	input := bindJSON[CreateLinkInput](c)
 	if input == nil {
 		return
 	}
 
-	if err := h.service.CreateLink(sourceNoteID, input.TargetNoteID); err != nil {
+	if err := h.service.CreateLink(sourceNoteID, input.TargetNoteID, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -92,7 +94,9 @@ func (h *NoteLinkHandler) DeleteLink(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.DeleteLink(sourceNoteID, targetNoteID); err != nil {
+	userID := c.GetUint("userID")
+
+	if err := h.service.DeleteLink(sourceNoteID, targetNoteID, userID); err != nil {
 		respondError(c, err)
 		return
 	}
