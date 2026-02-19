@@ -746,3 +746,51 @@ func TestStudyCircleUpdateProgress_IsMemberError(t *testing.T) {
 	err := svc.UpdateProgress(1, 1, 5, true)
 	assert.Error(t, err)
 }
+
+// ============================================================
+// SearchCircles テスト
+// ============================================================
+
+func TestSearchCircles_Success(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	expected := []model.StudyCircle{
+		{Name: "Golang勉強会", Topic: "プログラミング"},
+		{Name: "Go入門", Topic: "バックエンド"},
+	}
+	repo.On("Search", "Go", 20, 0).Return(expected, int64(2), nil)
+
+	result, total, err := svc.SearchCircles("Go", 20, 0)
+
+	assert.NoError(t, err)
+	assert.Equal(t, int64(2), total)
+	circles, ok := result.([]model.StudyCircle)
+	assert.True(t, ok)
+	assert.Len(t, circles, 2)
+	repo.AssertExpectations(t)
+}
+
+func TestSearchCircles_EmptyResult(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	repo.On("Search", "存在しない", 20, 0).Return([]model.StudyCircle{}, int64(0), nil)
+
+	result, total, err := svc.SearchCircles("存在しない", 20, 0)
+
+	assert.NoError(t, err)
+	assert.Equal(t, int64(0), total)
+	circles, ok := result.([]model.StudyCircle)
+	assert.True(t, ok)
+	assert.Len(t, circles, 0)
+}
+
+func TestSearchCircles_RepoError(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	repo.On("Search", "Go", 20, 0).Return(nil, int64(0), errors.New("db error"))
+
+	result, _, err := svc.SearchCircles("Go", 20, 0)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
