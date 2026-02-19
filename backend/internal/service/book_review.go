@@ -35,14 +35,23 @@ func (s *BookReviewService) GetAll(limit, offset int) ([]model.BookReview, int64
 	return s.repo.FindAll(limit, offset)
 }
 
-// Update は所有権を検証した後、書籍レビューを更新する。
-func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (*model.BookReview, error) {
+// findAndCheckOwnership は書籍レビューを取得し、指定ユーザーが所有者かを検証する。
+func (s *BookReviewService) findAndCheckOwnership(id, userID uint) (*model.BookReview, error) {
 	review, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err
 	}
 	if review.UserID != userID {
 		return nil, ErrForbidden
+	}
+	return review, nil
+}
+
+// Update は所有権を検証した後、書籍レビューを更新する。
+func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (*model.BookReview, error) {
+	review, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return nil, err
 	}
 
 	if updates.Title != "" {
@@ -72,12 +81,8 @@ func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (
 
 // Delete は所有権を検証した後、書籍レビューを削除する。
 func (s *BookReviewService) Delete(id, userID uint) error {
-	review, err := s.repo.FindByID(id)
-	if err != nil {
+	if _, err := s.findAndCheckOwnership(id, userID); err != nil {
 		return err
-	}
-	if review.UserID != userID {
-		return ErrForbidden
 	}
 	return s.repo.Delete(id)
 }
