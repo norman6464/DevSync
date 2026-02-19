@@ -32,10 +32,13 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		AllowCredentials: true,
 	}))
 
-	// アップロードファイルの静的配信（セキュリティヘッダー付き）
+	// セキュリティヘッダー（全エンドポイント）
 	r.Use(func(ctx *gin.Context) {
+		ctx.Header("X-Content-Type-Options", "nosniff")
+		ctx.Header("X-Frame-Options", "DENY")
+		ctx.Header("X-XSS-Protection", "1; mode=block")
+		ctx.Header("Referrer-Policy", "strict-origin-when-cross-origin")
 		if strings.HasPrefix(ctx.Request.URL.Path, "/uploads/") {
-			ctx.Header("X-Content-Type-Options", "nosniff")
 			ctx.Header("Content-Security-Policy", "default-src 'none'; img-src 'self'; style-src 'none'; script-src 'none'")
 		}
 		ctx.Next()
