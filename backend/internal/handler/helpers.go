@@ -40,6 +40,15 @@ func parsePagination(c *gin.Context) (page, limit int) {
 	return page, limit
 }
 
+// parseLimitOffset はクエリパラメータからlimit/offsetを取得し正規化する。
+// デフォルト: limit=20, offset=0。limitの上限は100（domain.ValidatePagination準拠）。
+func parseLimitOffset(c *gin.Context) (limit, offset int) {
+	limit, _ = strconv.Atoi(c.DefaultQuery("limit", "20"))
+	offset, _ = strconv.Atoi(c.DefaultQuery("offset", "0"))
+	limit, offset, _ = domain.ValidatePagination(limit, offset)
+	return limit, offset
+}
+
 // bindJSON はリクエストボディをJSON構造体にバインドする。
 // バインド失敗時は400レスポンスを返しnilを返す。
 func bindJSON[T any](c *gin.Context) *T {

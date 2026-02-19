@@ -354,6 +354,9 @@ type StudyCircleRepositoryInterface interface {
 	Update(circle *model.StudyCircle) error
 	Delete(id uint) error
 
+	// 検索
+	Search(query string, limit, offset int) (interface{}, int64, error)
+
 	// メンバー管理
 	AddMember(circleID, userID uint, role model.StudyCircleMemberRole) error
 	RemoveMember(circleID, userID uint) error

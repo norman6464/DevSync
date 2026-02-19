@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -215,12 +214,7 @@ func (h *ProjectHandler) Delete(c *gin.Context) {
 
 // GetAll はプロジェクトの一覧をページネーション付きで取得する。
 func (h *ProjectHandler) GetAll(c *gin.Context) {
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
-	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
-
-	if limit > 100 {
-		limit = 100
-	}
+	limit, offset := parseLimitOffset(c)
 
 	projects, total, err := h.service.GetAll(limit, offset)
 	if err != nil {

@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
@@ -90,12 +89,7 @@ func (h *BookReviewHandler) GetByUserID(c *gin.Context) {
 
 // GetAll は書籍レビューの一覧をページネーション付きで取得する。
 func (h *BookReviewHandler) GetAll(c *gin.Context) {
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
-	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
-
-	if limit > 100 {
-		limit = 100
-	}
+	limit, offset := parseLimitOffset(c)
 
 	reviews, total, err := h.service.GetAll(limit, offset)
 	if err != nil {

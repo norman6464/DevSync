@@ -26,6 +26,16 @@ func (m *MockPostSearchService) SearchPosts(params service.PostSearchParams) (*s
 	return args.Get(0).(*service.PostSearchResult), args.Error(1)
 }
 
+// MockCircleSearchService は CircleSearchService のテスト用モック。
+type MockCircleSearchService struct {
+	mock.Mock
+}
+
+func (m *MockCircleSearchService) SearchCircles(query string, limit, offset int) (interface{}, int64, error) {
+	args := m.Called(query, limit, offset)
+	return args.Get(0), args.Get(1).(int64), args.Error(2)
+}
+
 func TestSearchPosts_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
@@ -134,14 +144,14 @@ func TestSearchPosts_WithSortBy(t *testing.T) {
 func TestSearchCircles_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	mockRepo := new(MockStudyCircleRepository)
-	mockRepo.On("Search", "golang", 20, 0).Return(
+	mockCircleSvc := new(MockCircleSearchService)
+	mockCircleSvc.On("SearchCircles", "golang", 20, 0).Return(
 		[]model.StudyCircle{{ID: 1, Name: "Golang Study", Topic: "Programming"}},
 		int64(1),
 		nil,
 	)
 
-	h := &SearchHandler{circleRepo: mockRepo}
+	h := &SearchHandler{circleService: mockCircleSvc}
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -161,8 +171,8 @@ func TestSearchCircles_Success(t *testing.T) {
 func TestSearchCircles_EmptyQuery(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	mockRepo := new(MockStudyCircleRepository)
-	h := &SearchHandler{circleRepo: mockRepo}
+	mockCircleSvc := new(MockCircleSearchService)
+	h := &SearchHandler{circleService: mockCircleSvc}
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)

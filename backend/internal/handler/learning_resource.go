@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
@@ -144,14 +143,9 @@ func (h *LearningResourceHandler) GetByUserID(c *gin.Context) {
 
 // GetPublic は公開学習リソース一覧をページネーション・フィルター付きで取得する。
 func (h *LearningResourceHandler) GetPublic(c *gin.Context) {
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
-	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
+	limit, offset := parseLimitOffset(c)
 	category := c.Query("category")
 	difficulty := c.Query("difficulty")
-
-	if limit > 100 {
-		limit = 100
-	}
 
 	resources, total, err := h.service.GetPublic(limit, offset, category, difficulty)
 	if err != nil {
@@ -170,12 +164,7 @@ func (h *LearningResourceHandler) GetPublic(c *gin.Context) {
 // Search はキーワードで学習リソースを検索する。
 func (h *LearningResourceHandler) Search(c *gin.Context) {
 	query := c.Query("q")
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
-	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
-
-	if limit > 100 {
-		limit = 100
-	}
+	limit, offset := parseLimitOffset(c)
 
 	resources, total, err := h.service.Search(query, limit, offset)
 	if err != nil {
@@ -328,12 +317,7 @@ func (h *LearningResourceHandler) UnsaveResource(c *gin.Context) {
 // GetSaved は認証ユーザーの保存済み学習リソース一覧を取得する。
 func (h *LearningResourceHandler) GetSaved(c *gin.Context) {
 	userID := c.GetUint("userID")
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
-	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
-
-	if limit > 100 {
-		limit = 100
-	}
+	limit, offset := parseLimitOffset(c)
 
 	resources, total, err := h.service.GetSavedByUserID(userID, limit, offset)
 	if err != nil {
