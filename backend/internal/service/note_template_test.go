@@ -324,6 +324,47 @@ func TestNoteTemplateService_Update_ValidationNameError(t *testing.T) {
 	assert.Nil(t, result)
 }
 
+func TestNoteTemplateService_Update_ValidationContentTemplateError(t *testing.T) {
+	svc, repo, _ := newTestNoteTemplateService()
+
+	existing := &model.NoteTemplate{ID: 1, UserID: 1, Name: "テンプレ"}
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	// 空白のみのcontentTemplate → TrimSpace後に空 → バリデーションエラー
+	result, err := svc.Update(1, 1, "", "", "", "   ", "", nil)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestNoteTemplateService_Update_ValidationDescriptionError(t *testing.T) {
+	svc, repo, _ := newTestNoteTemplateService()
+
+	existing := &model.NoteTemplate{ID: 1, UserID: 1, Name: "テンプレ"}
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	// 501文字の説明 → バリデーションエラー
+	longDesc := strings.Repeat("a", 501)
+	result, err := svc.Update(1, 1, "", longDesc, "", "", "", nil)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestNoteTemplateService_Update_ValidationDefaultTitleError(t *testing.T) {
+	svc, repo, _ := newTestNoteTemplateService()
+
+	existing := &model.NoteTemplate{ID: 1, UserID: 1, Name: "テンプレ"}
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	// 201文字のデフォルトタイトル → バリデーションエラー
+	longTitle := strings.Repeat("a", 201)
+	result, err := svc.Update(1, 1, "", "", longTitle, "", "", nil)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
 // ============================================================
 // Delete テスト
 // ============================================================
