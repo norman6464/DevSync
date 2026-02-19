@@ -75,6 +75,7 @@ type Container struct {
 	CommentStatsHandler           *handler.CommentStatsHandler
 	NotificationStatsHandler      *handler.NotificationStatsHandler
 	MessageStatsHandler           *handler.MessageStatsHandler
+	MentionStatsHandler           *handler.MentionStatsHandler
 	YouTubeHandler                *handler.YouTubeHandler
 	SpotifyHandler           *handler.SpotifyHandler
 
@@ -324,6 +325,10 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	messageStatsRepo := repository.NewMessageStatsRepository(db)
 	messageStatsService := service.NewMessageStatsService(messageStatsRepo)
 	c.MessageStatsHandler = handler.NewMessageStatsHandler(messageStatsService)
+
+	mentionStatsRepo := repository.NewMentionStatsRepository(db)
+	mentionStatsService := service.NewMentionStatsService(mentionStatsRepo)
+	c.MentionStatsHandler = handler.NewMentionStatsHandler(mentionStatsService)
 
 	// Spotifyサービス
 	spotifyRepo := repository.NewSpotifyRepository(db)

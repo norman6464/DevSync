@@ -2070,3 +2070,18 @@ func (m *MockMessageStatsRepository) GetMessageStats(userID uint) (*model.Messag
 	}
 	return args.Get(0).(*model.MessageStats), args.Error(1)
 }
+
+// MockMentionStatsRepository は repository.MentionStatsRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockMentionStatsRepository struct {
+	mock.Mock
+}
+
+func (m *MockMentionStatsRepository) GetMentionStats(userID uint) (*model.MentionStats, error) {
+	args := m.Called(userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.MentionStats), args.Error(1)
+}
