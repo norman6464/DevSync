@@ -308,6 +308,17 @@ func TestAnswerRemoveVote_Success(t *testing.T) {
 	answerRepo.AssertExpectations(t)
 }
 
+func TestAnswerRemoveVote_RepoError(t *testing.T) {
+	svc, answerRepo, _ := newTestAnswerService()
+
+	answerRepo.On("RemoveVote", uint(1), uint(5)).Return(errors.New("db error"))
+
+	err := svc.RemoveVote(1, 5)
+	assert.Error(t, err)
+	assert.Equal(t, "db error", err.Error())
+	answerRepo.AssertExpectations(t)
+}
+
 // ============================================================
 // 質問IDによる回答取得テスト
 // ============================================================
