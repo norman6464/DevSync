@@ -2,7 +2,9 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/stretchr/testify/assert"
@@ -310,5 +312,58 @@ func TestLearningLogUpdate_AllFields(t *testing.T) {
 	assert.Equal(t, "New Content", result.Content)
 	assert.Equal(t, model.LogCategoryCoding, result.Category)
 	assert.Equal(t, 90, result.Duration)
+	repo.AssertExpectations(t)
+}
+
+// --- ExportCSV ---
+
+func TestLearningLogExportCSV_Success(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	logs := []model.LearningLog{
+		{Title: "Goの勉強", Content: "基礎を学んだ", Category: model.LogCategoryCoding, Duration: 60, CreatedAt: time.Date(2026, 2, 19, 0, 0, 0, 0, time.UTC)},
+		{Title: "設計復習", Content: "DDD読んだ", Category: model.LogCategoryReading, Duration: 30, CreatedAt: time.Date(2026, 2, 18, 0, 0, 0, 0, time.UTC)},
+	}
+	repo.On("GetByPeriod", uint(1), 30).Return(logs, nil)
+
+	data, err := svc.ExportCSV(1, 30)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, data)
+
+	// BOM付きUTF-8ヘッダー確認
+	content := string(data)
+	assert.True(t, strings.HasPrefix(content, "\xef\xbb\xbf"))
+	assert.Contains(t, content, "Goの勉強")
+	assert.Contains(t, content, "設計復習")
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogExportCSV_EmptyLogs(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+	repo.On("GetByPeriod", uint(1), 0).Return([]model.LearningLog{}, nil)
+
+	data, err := svc.ExportCSV(1, 0)
+	assert.NoError(t, err)
+	// ヘッダー行のみ含まれる
+	content := string(data)
+	assert.Contains(t, content, "日付")
+	assert.Contains(t, content, "タイトル")
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogExportCSV_NegativeDays(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	_, err := svc.ExportCSV(1, -1)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "期間は0以上の値")
+}
+
+func TestLearningLogExportCSV_RepoError(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+	repo.On("GetByPeriod", uint(1), 7).Return([]model.LearningLog{}, errors.New("db error"))
+
+	_, err := svc.ExportCSV(1, 7)
+	assert.Error(t, err)
 	repo.AssertExpectations(t)
 }
