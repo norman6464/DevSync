@@ -297,12 +297,59 @@ func TestPostCreateReply_Success(t *testing.T) {
 	svc, postRepo, _ := newTestPostService()
 
 	parentID := uint(5)
+	parentComment := &model.Comment{PostID: 10, ParentID: nil}
+	parentComment.ID = 5
+	postRepo.On("FindCommentByID", uint(5)).Return(parentComment, nil)
+
 	reply := &model.Comment{Content: "Great reply!", UserID: 2, PostID: 10, ParentID: &parentID}
 	postRepo.On("CreateComment", reply).Return(nil)
 
 	err := svc.CreateComment(reply)
 	assert.NoError(t, err)
 	postRepo.AssertExpectations(t)
+}
+
+func TestPostCreateReply_ParentNotFound(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	parentID := uint(999)
+	reply := &model.Comment{Content: "Reply", UserID: 2, PostID: 10, ParentID: &parentID}
+	postRepo.On("FindCommentByID", uint(999)).Return(nil, errors.New("not found"))
+
+	err := svc.CreateComment(reply)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "親コメントが見つかりません")
+}
+
+func TestPostCreateReply_ParentOnDifferentPost(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	parentID := uint(5)
+	parentComment := &model.Comment{PostID: 20, ParentID: nil}
+	parentComment.ID = 5
+	postRepo.On("FindCommentByID", uint(5)).Return(parentComment, nil)
+
+	reply := &model.Comment{Content: "Reply", UserID: 2, PostID: 10, ParentID: &parentID}
+
+	err := svc.CreateComment(reply)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "別の投稿に属しています")
+}
+
+func TestPostCreateReply_NestedReplyNotAllowed(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	grandParentID := uint(3)
+	parentID := uint(5)
+	parentComment := &model.Comment{PostID: 10, ParentID: &grandParentID}
+	parentComment.ID = 5
+	postRepo.On("FindCommentByID", uint(5)).Return(parentComment, nil)
+
+	reply := &model.Comment{Content: "Nested reply", UserID: 2, PostID: 10, ParentID: &parentID}
+
+	err := svc.CreateComment(reply)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "返信への返信はできません")
 }
 
 func TestPostGetReplies_Success(t *testing.T) {

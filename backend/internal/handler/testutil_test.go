@@ -97,6 +97,13 @@ func (m *MockPostRepository) HasLiked(userID, postID uint) bool {
 func (m *MockPostRepository) CreateComment(comment *model.Comment) error {
 	return m.Called(comment).Error(0)
 }
+func (m *MockPostRepository) FindCommentByID(id uint) (*model.Comment, error) {
+	args := m.Called(id)
+	if p := args.Get(0); p != nil {
+		return p.(*model.Comment), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
 func (m *MockPostRepository) GetComments(postID uint) ([]model.Comment, error) {
 	args := m.Called(postID)
 	return args.Get(0).([]model.Comment), args.Error(1)

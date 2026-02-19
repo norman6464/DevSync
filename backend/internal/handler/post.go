@@ -251,7 +251,7 @@ func (h *PostHandler) CreateComment(c *gin.Context) {
 		return
 	}
 
-	comment := &model.Comment{UserID: userID, PostID: id, Content: input.Content}
+	comment := &model.Comment{UserID: userID, PostID: id, Content: input.Content, ParentID: input.ParentID}
 	if err := h.service.CreateComment(comment); err != nil {
 		respondError(c, err)
 		return

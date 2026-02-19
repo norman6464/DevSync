@@ -34,6 +34,7 @@ type PostRepositoryInterface interface {
 	Unlike(userID, postID uint) error
 	HasLiked(userID, postID uint) bool
 	CreateComment(comment *model.Comment) error
+	FindCommentByID(id uint) (*model.Comment, error)
 	GetComments(postID uint) ([]model.Comment, error)
 	GetReplies(parentID uint) ([]model.Comment, error)
 	DeleteComment(id, userID uint) error

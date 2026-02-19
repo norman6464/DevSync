@@ -103,6 +103,15 @@ func (r *PostRepository) CreateComment(comment *model.Comment) error {
 	return r.db.Model(&model.Post{}).Where("id = ?", comment.PostID).UpdateColumn("comment_count", gorm.Expr("comment_count + 1")).Error
 }
 
+// FindCommentByID はコメントをIDで取得する。
+func (r *PostRepository) FindCommentByID(id uint) (*model.Comment, error) {
+	var comment model.Comment
+	if err := r.db.First(&comment, id).Error; err != nil {
+		return nil, err
+	}
+	return &comment, nil
+}
+
 // GetComments は指定投稿の全コメントをユーザー情報付きで取得する（古い順）。
 func (r *PostRepository) GetComments(postID uint) ([]model.Comment, error) {
 	var comments []model.Comment

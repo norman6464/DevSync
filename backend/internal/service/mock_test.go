@@ -156,6 +156,14 @@ func (m *MockPostRepository) CreateComment(comment *model.Comment) error {
 	return args.Error(0)
 }
 
+func (m *MockPostRepository) FindCommentByID(id uint) (*model.Comment, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.Comment), args.Error(1)
+}
+
 func (m *MockPostRepository) GetComments(postID uint) ([]model.Comment, error) {
 	args := m.Called(postID)
 	return args.Get(0).([]model.Comment), args.Error(1)
