@@ -105,6 +105,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerCodeSnippetStatsRoutes(protected, c)
 		registerLearningResourceStatsRoutes(protected, c)
 		registerProjectStatsRoutes(protected, c)
+		registerFollowStatsRoutes(protected, c)
 	}
 
 	return r
@@ -662,5 +663,12 @@ func registerProjectStatsRoutes(g *gin.RouterGroup, c *di.Container) {
 	users := g.Group("/users")
 	{
 		users.GET("/:id/project-stats", c.ProjectStatsHandler.GetStats)
+	}
+}
+
+func registerFollowStatsRoutes(g *gin.RouterGroup, c *di.Container) {
+	users := g.Group("/users")
+	{
+		users.GET("/:id/follow-stats", c.FollowStatsHandler.GetStats)
 	}
 }
