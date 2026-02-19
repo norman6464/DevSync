@@ -1903,3 +1903,19 @@ func (m *MockPostStatsRepository) GetPostStats(userID uint) (*model.PostStats, e
 	}
 	return args.Get(0).(*model.PostStats), args.Error(1)
 }
+
+// ============================================================
+// MockBookReviewStatsRepository は repository.BookReviewStatsRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockBookReviewStatsRepository struct {
+	mock.Mock
+}
+
+func (m *MockBookReviewStatsRepository) GetBookReviewStats(userID uint) (*model.BookReviewStats, error) {
+	args := m.Called(userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.BookReviewStats), args.Error(1)
+}
