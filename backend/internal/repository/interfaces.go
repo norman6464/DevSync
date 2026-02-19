@@ -571,3 +571,8 @@ type RoadmapStatsRepositoryInterface interface {
 type LearningLogStatsRepositoryInterface interface {
 	GetLearningLogStats(userID uint) (*model.LearningLogStats, error)
 }
+
+// CommentStatsRepositoryInterface はユーザーコメント活動集計統計データ操作の契約を定義する。
+type CommentStatsRepositoryInterface interface {
+	GetCommentStats(userID uint) (*model.CommentStats, error)
+}
