@@ -243,6 +243,20 @@ func TestChatRoomRemoveMember_MemberCanRemoveSelf(t *testing.T) {
 	roomRepo.AssertExpectations(t)
 }
 
+func TestChatRoomRemoveMember_OwnerCannotRemoveSelf(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	room := &model.ChatRoom{OwnerID: 1}
+	room.ID = 10
+
+	roomRepo.On("FindByID", uint(10)).Return(room, nil)
+
+	// オーナー(1)が自分自身を退出しようとする
+	err := svc.RemoveMember(10, 1, 1)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	roomRepo.AssertNotCalled(t, "RemoveMember")
+}
+
 func TestChatRoomRemoveMember_NonOwnerCannotRemoveOthers(t *testing.T) {
 	svc, roomRepo, _ := newTestChatRoomService()
 

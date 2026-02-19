@@ -119,6 +119,9 @@ func (s *ChatRoomService) RemoveMember(roomID, userID, targetUserID uint) error 
 	if err != nil {
 		return err
 	}
+	if room.OwnerID == targetUserID {
+		return ErrBadRequest
+	}
 	if room.OwnerID != userID && userID != targetUserID {
 		return ErrForbidden
 	}
