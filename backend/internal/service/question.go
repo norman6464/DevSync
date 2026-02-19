@@ -51,14 +51,23 @@ func (s *QuestionService) GetUserVote(userID, questionID uint) (int, error) {
 	return s.repo.GetUserVote(userID, questionID)
 }
 
-// Update は所有権を検証した後、質問を更新する。
-func (s *QuestionService) Update(id, userID uint, title, body, tags string) (*model.Question, error) {
+// findAndCheckOwnership は質問を取得し、指定ユーザーが所有者かを検証する。
+func (s *QuestionService) findAndCheckOwnership(id, userID uint) (*model.Question, error) {
 	question, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err
 	}
 	if question.UserID != userID {
 		return nil, ErrForbidden
+	}
+	return question, nil
+}
+
+// Update は所有権を検証した後、質問を更新する。
+func (s *QuestionService) Update(id, userID uint, title, body, tags string) (*model.Question, error) {
+	question, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return nil, err
 	}
 
 	v := validator.NewQuestionValidator()
@@ -84,12 +93,8 @@ func (s *QuestionService) Update(id, userID uint, title, body, tags string) (*mo
 
 // Delete は所有権を検証した後、質問を削除する。
 func (s *QuestionService) Delete(id, userID uint) error {
-	question, err := s.repo.FindByID(id)
-	if err != nil {
+	if _, err := s.findAndCheckOwnership(id, userID); err != nil {
 		return err
-	}
-	if question.UserID != userID {
-		return ErrForbidden
 	}
 	return s.repo.Delete(id)
 }
