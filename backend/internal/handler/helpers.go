@@ -54,7 +54,7 @@ func parseLimitOffset(c *gin.Context) (limit, offset int) {
 func bindJSON[T any](c *gin.Context) *T {
 	var req T
 	if err := c.ShouldBindJSON(&req); err != nil {
-		respondBadRequest(c, err.Error())
+		respondBadRequest(c, "リクエストの形式が不正です")
 		return nil
 	}
 	return &req
@@ -70,8 +70,8 @@ func respondError(c *gin.Context, err error) {
 		return
 	}
 
-	// DomainError でない場合は内部エラーとして扱う
-	response := domain.NewErrorResponse(err.Error(), "", nil)
+	// DomainError でない場合は内部エラーとして扱う（内部エラーの詳細は隠蔽）
+	response := domain.NewErrorResponse("内部エラーが発生しました", string(domain.ErrCodeInternal), nil)
 	c.JSON(http.StatusInternalServerError, response)
 }
 
