@@ -243,10 +243,33 @@ func TestNoteService_Update_NotFound(t *testing.T) {
 func TestNoteService_Delete(t *testing.T) {
 	svc, repo := newTestNoteService()
 
+	note := &model.Note{ID: 1, UserID: 1, Title: "ノート"}
+	repo.On("FindByID", uint(1)).Return(note, nil)
 	repo.On("Delete", uint(1)).Return(nil)
 
-	err := svc.Delete(1)
+	err := svc.Delete(1, 1)
 	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteService_Delete_Forbidden(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	note := &model.Note{ID: 1, UserID: 1, Title: "ノート"}
+	repo.On("FindByID", uint(1)).Return(note, nil)
+
+	err := svc.Delete(1, 999)
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteService_Delete_NotFound(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	err := svc.Delete(99, 1)
+	assert.Error(t, err)
 	repo.AssertExpectations(t)
 }
 
@@ -312,10 +335,33 @@ func TestNoteService_CountByUserID(t *testing.T) {
 func TestNoteService_ToggleFavorite(t *testing.T) {
 	svc, repo := newTestNoteService()
 
+	note := &model.Note{ID: 1, UserID: 1, Title: "ノート"}
+	repo.On("FindByID", uint(1)).Return(note, nil)
 	repo.On("ToggleFavorite", uint(1)).Return(nil)
 
-	err := svc.ToggleFavorite(1)
+	err := svc.ToggleFavorite(1, 1)
 	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteService_ToggleFavorite_Forbidden(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	note := &model.Note{ID: 1, UserID: 1, Title: "ノート"}
+	repo.On("FindByID", uint(1)).Return(note, nil)
+
+	err := svc.ToggleFavorite(1, 999)
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteService_ToggleFavorite_NotFound(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	err := svc.ToggleFavorite(99, 1)
+	assert.Error(t, err)
 	repo.AssertExpectations(t)
 }
 
@@ -326,20 +372,66 @@ func TestNoteService_ToggleFavorite(t *testing.T) {
 func TestNoteService_Archive(t *testing.T) {
 	svc, repo := newTestNoteService()
 
+	note := &model.Note{ID: 1, UserID: 1, Title: "ノート"}
+	repo.On("FindByID", uint(1)).Return(note, nil)
 	repo.On("Archive", uint(1)).Return(nil)
 
-	err := svc.Archive(1)
+	err := svc.Archive(1, 1)
 	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteService_Archive_Forbidden(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	note := &model.Note{ID: 1, UserID: 1, Title: "ノート"}
+	repo.On("FindByID", uint(1)).Return(note, nil)
+
+	err := svc.Archive(1, 999)
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteService_Archive_NotFound(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	err := svc.Archive(99, 1)
+	assert.Error(t, err)
 	repo.AssertExpectations(t)
 }
 
 func TestNoteService_Unarchive(t *testing.T) {
 	svc, repo := newTestNoteService()
 
+	note := &model.Note{ID: 1, UserID: 1, Title: "ノート"}
+	repo.On("FindByID", uint(1)).Return(note, nil)
 	repo.On("Unarchive", uint(1)).Return(nil)
 
-	err := svc.Unarchive(1)
+	err := svc.Unarchive(1, 1)
 	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteService_Unarchive_Forbidden(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	note := &model.Note{ID: 1, UserID: 1, Title: "ノート"}
+	repo.On("FindByID", uint(1)).Return(note, nil)
+
+	err := svc.Unarchive(1, 999)
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteService_Unarchive_NotFound(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	err := svc.Unarchive(99, 1)
+	assert.Error(t, err)
 	repo.AssertExpectations(t)
 }
 

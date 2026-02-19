@@ -14,12 +14,12 @@ type NoteServiceInterface interface {
 	GetByUserID(userID uint, page, limit int) ([]model.Note, error)
 	GetByFolderID(folderID uint) ([]model.Note, error)
 	Update(id, userID uint, title, content, tags string, folderID *uint) (*model.Note, error)
-	Delete(id uint) error
+	Delete(id, userID uint) error
 	Search(userID uint, query string, page, limit int) ([]model.Note, int64, error)
 	CountByUserID(userID uint) (int64, error)
-	ToggleFavorite(id uint) error
-	Archive(id uint) error
-	Unarchive(id uint) error
+	ToggleFavorite(id, userID uint) error
+	Archive(id, userID uint) error
+	Unarchive(id, userID uint) error
 	GetArchived(userID uint, page, limit int) ([]model.Note, error)
 	CountArchivedByUserID(userID uint) (int64, error)
 	Duplicate(id uint, userID uint) (*model.Note, error)
@@ -156,8 +156,9 @@ func (h *NoteHandler) Delete(c *gin.Context) {
 	if !ok {
 		return
 	}
+	userID := c.GetUint("userID")
 
-	if err := h.service.Delete(id); err != nil {
+	if err := h.service.Delete(id, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -191,8 +192,9 @@ func (h *NoteHandler) ToggleFavorite(c *gin.Context) {
 	if !ok {
 		return
 	}
+	userID := c.GetUint("userID")
 
-	if err := h.service.ToggleFavorite(id); err != nil {
+	if err := h.service.ToggleFavorite(id, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -206,8 +208,9 @@ func (h *NoteHandler) Archive(c *gin.Context) {
 	if !ok {
 		return
 	}
+	userID := c.GetUint("userID")
 
-	if err := h.service.Archive(id); err != nil {
+	if err := h.service.Archive(id, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -221,8 +224,9 @@ func (h *NoteHandler) Unarchive(c *gin.Context) {
 	if !ok {
 		return
 	}
+	userID := c.GetUint("userID")
 
-	if err := h.service.Unarchive(id); err != nil {
+	if err := h.service.Unarchive(id, userID); err != nil {
 		respondError(c, err)
 		return
 	}
