@@ -832,6 +832,11 @@
       "intermediate": "中级",
       "advanced": "高级"
     },
+    "difficultyDesc": {
+      "beginner": "适合编程初学者或该领域新手",
+      "intermediate": "适合有基础知识、希望深入理解的学习者",
+      "advanced": "适合有丰富经验、挑战高级主题的开发者"
+    },
     "createSuccess": "资源创建成功",
     "updateSuccess": "资源更新成功",
     "deleteSuccess": "资源删除成功",

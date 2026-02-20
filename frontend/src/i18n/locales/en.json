@@ -832,6 +832,11 @@
       "intermediate": "Intermediate",
       "advanced": "Advanced"
     },
+    "difficultyDesc": {
+      "beginner": "For beginners or those new to this topic",
+      "intermediate": "For those with basic knowledge looking to deepen understanding",
+      "advanced": "For experienced developers tackling advanced topics"
+    },
     "createSuccess": "Resource created successfully",
     "updateSuccess": "Resource updated successfully",
     "deleteSuccess": "Resource deleted successfully",

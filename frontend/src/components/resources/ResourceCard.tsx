@@ -96,7 +96,10 @@ export default function ResourceCard({
                 {t(`resources.categories.${resource.category}`)}
               </span>
               {resource.difficulty && (
-                <span className={`ml-2 ${badgeBaseClass} ${difficultyColors[resource.difficulty]}`}>
+                <span
+                  className={`ml-2 ${badgeBaseClass} ${difficultyColors[resource.difficulty]}`}
+                  title={t(`resources.difficultyDesc.${resource.difficulty}`)}
+                >
                   {t(`resources.difficulty.${resource.difficulty}`)}
                 </span>
               )}

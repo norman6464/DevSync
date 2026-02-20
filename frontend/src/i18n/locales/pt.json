@@ -832,6 +832,11 @@
       "intermediate": "Intermediário",
       "advanced": "Avançado"
     },
+    "difficultyDesc": {
+      "beginner": "Para iniciantes ou quem é novo neste assunto",
+      "intermediate": "Para quem tem conhecimentos básicos e quer aprofundar",
+      "advanced": "Para desenvolvedores experientes que enfrentam tópicos avançados"
+    },
     "createSuccess": "Recurso criado com sucesso",
     "updateSuccess": "Recurso atualizado com sucesso",
     "deleteSuccess": "Recurso excluído com sucesso",

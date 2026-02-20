@@ -796,6 +796,11 @@
       "intermediate": "中級",
       "advanced": "上級"
     },
+    "difficultyDesc": {
+      "beginner": "プログラミング初心者やこの分野が初めての方向け",
+      "intermediate": "基礎知識があり、さらに理解を深めたい方向け",
+      "advanced": "豊富な経験があり、高度なトピックに挑戦したい方向け"
+    },
     "createSuccess": "教材を追加しました",
     "updateSuccess": "教材を更新しました",
     "deleteSuccess": "教材を削除しました",

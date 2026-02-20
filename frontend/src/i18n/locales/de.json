@@ -832,6 +832,11 @@
       "intermediate": "Fortgeschritten",
       "advanced": "Experte"
     },
+    "difficultyDesc": {
+      "beginner": "Für Anfänger oder Neueinsteiger in diesem Bereich",
+      "intermediate": "Für Lernende mit Grundkenntnissen, die ihr Verständnis vertiefen möchten",
+      "advanced": "Für erfahrene Entwickler, die sich an fortgeschrittene Themen wagen"
+    },
     "createSuccess": "Ressource erfolgreich erstellt",
     "updateSuccess": "Ressource erfolgreich aktualisiert",
     "deleteSuccess": "Ressource erfolgreich gelöscht",
