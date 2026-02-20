@@ -278,3 +278,87 @@ func TestCodeSnippet_GetByUserLanguage_ServiceError(t *testing.T) {
 	assertStatus(t, w, http.StatusNotFound)
 	svc.AssertExpectations(t)
 }
+
+func TestCodeSnippetGetByID_InvalidID(t *testing.T) {
+	h, _ := setupCodeSnippetHandler()
+
+	r := newRouter(1)
+	r.GET("/snippets/:id", h.GetByID)
+	w := doRequest(r, "GET", "/snippets/abc", nil)
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestCodeSnippetGetByID_ServiceError(t *testing.T) {
+	h, svc := setupCodeSnippetHandler()
+	svc.On("GetByPostID", uint(1)).Return([]model.CodeSnippet(nil), service.ErrNotFound)
+
+	r := newRouter(1)
+	r.GET("/snippets/:id", h.GetByID)
+	w := doRequest(r, "GET", "/snippets/1", nil)
+
+	assertStatus(t, w, http.StatusNotFound)
+	svc.AssertExpectations(t)
+}
+
+func TestCodeSnippetGetByPostID_InvalidID(t *testing.T) {
+	h, _ := setupCodeSnippetHandler()
+
+	r := newRouter(1)
+	r.GET("/posts/:id/snippets", h.GetByPostID)
+	w := doRequest(r, "GET", "/posts/abc/snippets", nil)
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestCodeSnippetUpdate_InvalidID(t *testing.T) {
+	h, _ := setupCodeSnippetHandler()
+
+	r := newRouter(1)
+	r.PUT("/snippets/:id", h.Update)
+	w := doRequest(r, "PUT", "/snippets/abc", map[string]string{"language": "Go"})
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestCodeSnippetDelete_InvalidID(t *testing.T) {
+	h, _ := setupCodeSnippetHandler()
+
+	r := newRouter(1)
+	r.DELETE("/snippets/:id", h.Delete)
+	w := doRequest(r, "DELETE", "/snippets/abc", nil)
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestCodeSnippetGetComments_InvalidID(t *testing.T) {
+	h, _ := setupCodeSnippetHandler()
+
+	r := newRouter(1)
+	r.GET("/snippets/:id/comments", h.GetComments)
+	w := doRequest(r, "GET", "/snippets/abc/comments", nil)
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestCodeSnippetCreateComment_InvalidID(t *testing.T) {
+	h, _ := setupCodeSnippetHandler()
+
+	r := newRouter(1)
+	r.POST("/snippets/:id/comments", h.CreateComment)
+	w := doRequest(r, "POST", "/snippets/abc/comments", map[string]interface{}{
+		"line_number": 5, "content": "test",
+	})
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestCodeSnippetDeleteComment_InvalidID(t *testing.T) {
+	h, _ := setupCodeSnippetHandler()
+
+	r := newRouter(1)
+	r.DELETE("/snippets/:id/comments/:commentId", h.DeleteComment)
+	w := doRequest(r, "DELETE", "/snippets/1/comments/abc", nil)
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
