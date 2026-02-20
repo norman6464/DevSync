@@ -1,6 +1,8 @@
 package service
 
 import (
+	"strings"
+
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
@@ -57,6 +59,9 @@ func (s *PostCollectionService) findAndCheckOwnership(id, userID uint) (*model.P
 
 // Update は所有権を検証した後、コレクションを更新する。
 func (s *PostCollectionService) Update(id, userID uint, title, description string, isPublic bool) (*model.PostCollection, error) {
+	if strings.TrimSpace(title) == "" {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "タイトルは必須です", nil)
+	}
 	collection, err := s.findAndCheckOwnership(id, userID)
 	if err != nil {
 		return nil, err

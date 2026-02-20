@@ -207,6 +207,24 @@ func TestPostCollectionUpdate_RepoError(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestPostCollectionUpdate_EmptyTitle(t *testing.T) {
+	svc, _ := newTestPostCollectionService()
+
+	result, err := svc.Update(10, 1, "", "desc", false)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "タイトルは必須です")
+}
+
+func TestPostCollectionUpdate_WhitespaceTitle(t *testing.T) {
+	svc, _ := newTestPostCollectionService()
+
+	result, err := svc.Update(10, 1, "   ", "desc", false)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "タイトルは必須です")
+}
+
 // ============================================================
 // Delete テスト（所有権チェック）
 // ============================================================
