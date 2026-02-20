@@ -423,3 +423,141 @@ func TestLearningGoalGetStats_InvalidID(t *testing.T) {
 	w := doRequest(r, http.MethodGet, "/users/abc/goals/stats", nil)
 	assertStatus(t, w, http.StatusBadRequest)
 }
+
+// ========== Create - 追加パスカバレッジ ==========
+
+func TestLearningGoalCreate_WithCategoryAndTargetDate(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.POST("/goals", h.Create)
+
+	repo.On("Create", mock.AnythingOfType("*model.LearningGoal")).Return(nil)
+
+	w := doRequest(r, http.MethodPost, "/goals", map[string]interface{}{
+		"title":       "Learn Go",
+		"category":    "coding",
+		"target_date": "2026-06-01",
+	})
+
+	assertStatus(t, w, http.StatusCreated)
+}
+
+func TestLearningGoalCreate_DefaultCategory(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.POST("/goals", h.Create)
+
+	repo.On("Create", mock.MatchedBy(func(g *model.LearningGoal) bool {
+		return g.Category == model.GoalCategoryOther
+	})).Return(nil)
+
+	w := doRequest(r, http.MethodPost, "/goals", map[string]interface{}{
+		"title": "My Goal",
+	})
+
+	assertStatus(t, w, http.StatusCreated)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningGoalCreate_ServiceError(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.POST("/goals", h.Create)
+
+	repo.On("Create", mock.AnythingOfType("*model.LearningGoal")).Return(service.ErrBadRequest)
+
+	w := doRequest(r, http.MethodPost, "/goals", map[string]interface{}{
+		"title": "My Goal",
+	})
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// ========== Update - 追加パスカバレッジ ==========
+
+func TestLearningGoalUpdate_AllFields(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.PUT("/goals/:id", h.Update)
+
+	goal := &model.LearningGoal{}
+	goal.ID = 10
+	goal.UserID = 1
+	goal.Title = "Old Title"
+
+	repo.On("FindByID", uint(10)).Return(goal, nil)
+	repo.On("Update", mock.AnythingOfType("*model.LearningGoal")).Return(nil)
+
+	title := "New Title"
+	desc := "New Description"
+	category := "coding"
+	targetDate := "2026-12-31"
+	progress := 50
+	status := "completed"
+
+	w := doRequest(r, http.MethodPut, "/goals/10", map[string]interface{}{
+		"title":       &title,
+		"description": &desc,
+		"category":    &category,
+		"target_date": &targetDate,
+		"progress":    &progress,
+		"status":      &status,
+	})
+
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningGoalUpdate_ClearTargetDate(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.PUT("/goals/:id", h.Update)
+
+	goal := &model.LearningGoal{}
+	goal.ID = 10
+	goal.UserID = 1
+
+	repo.On("FindByID", uint(10)).Return(goal, nil)
+	repo.On("Update", mock.AnythingOfType("*model.LearningGoal")).Return(nil)
+
+	emptyDate := ""
+	w := doRequest(r, http.MethodPut, "/goals/10", map[string]interface{}{
+		"target_date": &emptyDate,
+	})
+
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestLearningGoalUpdate_InvalidJSON(t *testing.T) {
+	h, _ := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.PUT("/goals/:id", h.Update)
+
+	w := doRequestRaw(r, http.MethodPut, "/goals/10", "{invalid}")
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestLearningGoalUpdate_InvalidID(t *testing.T) {
+	h, _ := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.PUT("/goals/:id", h.Update)
+
+	title := "test"
+	w := doRequest(r, http.MethodPut, "/goals/abc", map[string]interface{}{
+		"title": &title,
+	})
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// ========== GetMyGoals - 追加パスカバレッジ ==========
+
+func TestLearningGoalGetMyGoals_ServiceError(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.GET("/goals/me", h.GetMyGoals)
+
+	repo.On("GetByUserID", uint(1), 20, 0).Return([]model.LearningGoal(nil), int64(0), service.ErrNotFound)
+
+	w := doRequest(r, http.MethodGet, "/goals/me", nil)
+	assertStatus(t, w, http.StatusNotFound)
+}
