@@ -43,6 +43,9 @@ export const labelClass =
 export const emptyStateClass =
   'bg-gray-900 border border-gray-800 rounded-md p-12 text-center';
 
+export const chipButtonClass =
+  'px-3 py-1.5 rounded-lg text-xs font-medium transition-all border';
+
 export const iconButtonClass =
   'p-1.5 text-gray-400 hover:text-white transition-colors';
 
