@@ -55,7 +55,7 @@ export default function SkillsSection({
             <div className="mt-3 p-3 bg-gray-800/50 rounded-lg">
               <p className="text-xs text-gray-500 mb-2">{t('settings.preview')}:</p>
               <img
-                src={`https://skillicons.dev/icons?i=${selectedLanguages.join(',')}&theme=dark`}
+                src={`https://skillicons.dev/icons?${new URLSearchParams({ i: selectedLanguages.join(','), theme: 'dark' })}`}
                 alt="Selected languages"
                 className="h-12"
               />
@@ -91,7 +91,7 @@ export default function SkillsSection({
             <div className="mt-3 p-3 bg-gray-800/50 rounded-lg">
               <p className="text-xs text-gray-500 mb-2">{t('settings.preview')}:</p>
               <img
-                src={`https://skillicons.dev/icons?i=${selectedFrameworks.join(',')}&theme=dark`}
+                src={`https://skillicons.dev/icons?${new URLSearchParams({ i: selectedFrameworks.join(','), theme: 'dark' })}`}
                 alt="Selected frameworks"
                 className="h-12"
               />
