@@ -42,10 +42,12 @@ func (s *SearchService) SearchPosts(params model.PostSearchParams) (*model.PostS
 		limit = maxSearchLimit
 	}
 
-	// ソート順の正規化
+	// ソート順の正規化・バリデーション
 	sortBy := string(params.SortBy)
 	if sortBy == "" {
 		sortBy = string(model.SearchSortByLatest)
+	} else if !model.ValidSearchSortBy[params.SortBy] {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "無効なソート順です", nil)
 	}
 
 	posts, total, err := s.postSearchRepo.SearchWithFilter(
