@@ -18,6 +18,7 @@ export default function YouTubeVideoCard({ video }: YouTubeVideoCardProps) {
         <img
           src={video.thumbnail_url}
           alt={video.title}
+          referrerPolicy="no-referrer"
           className="w-full aspect-video object-cover"
           loading="lazy"
         />

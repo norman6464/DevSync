@@ -20,6 +20,7 @@ export default function Avatar({ name, avatarUrl, size = 'md' }: AvatarProps) {
       <img
         src={safeUrl}
         alt={name}
+        referrerPolicy="no-referrer"
         className={`${sizeClasses[size]} rounded-full object-cover`}
       />
     );

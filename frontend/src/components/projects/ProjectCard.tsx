@@ -27,6 +27,7 @@ export default function ProjectCard({ project, onEdit, onDelete, isOwner }: Proj
           <img
             src={project.image_url}
             alt={project.title}
+            referrerPolicy="no-referrer"
             className="w-full h-full object-cover"
           />
         </div>

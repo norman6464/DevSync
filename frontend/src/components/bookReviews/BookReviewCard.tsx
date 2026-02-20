@@ -60,6 +60,7 @@ export default function BookReviewCard({
             <img
               src={review.image_url}
               alt={review.title}
+              referrerPolicy="no-referrer"
               className="w-full h-full object-cover"
             />
           </div>
