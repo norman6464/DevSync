@@ -644,6 +644,7 @@
     "sortOldest": "最旧",
     "sortDurationDesc": "学习时长（从长到短）",
     "sortDurationAsc": "学习时长（从短到长）",
+    "searchPlaceholder": "按标题或内容搜索...",
     "noLogs": "还没有日志",
     "noLogsOnDate": "这一天没有日志",
     "created": "日志已创建",

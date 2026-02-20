@@ -19,6 +19,7 @@ export function useLearningLogForm() {
   const [filterCategory, setFilterCategory] = useState<'all' | LogCategory>('all');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [sortBy, setSortBy] = useState<'latest' | 'oldest' | 'duration_desc' | 'duration_asc'>('latest');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // フォーム状態
   const [title, setTitle] = useState('');
@@ -85,10 +86,12 @@ export function useLearningLogForm() {
   }, []);
 
   const filteredLogs = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
     const filtered = logs.filter((log) => {
       if (filterDate && log.created_at.split('T')[0] !== filterDate) return false;
       if (filterCategory !== 'all' && log.category !== filterCategory) return false;
       if (showFavoritesOnly && !log.is_favorite) return false;
+      if (q && !log.title.toLowerCase().includes(q) && !log.content.toLowerCase().includes(q)) return false;
       return true;
     });
     return [...filtered].sort((a, b) => {
@@ -103,7 +106,7 @@ export function useLearningLogForm() {
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       }
     });
-  }, [logs, filterDate, filterCategory, showFavoritesOnly, sortBy]);
+  }, [logs, filterDate, filterCategory, showFavoritesOnly, sortBy, searchQuery]);
 
   return {
     // データ
@@ -116,6 +119,7 @@ export function useLearningLogForm() {
     filterCategory, setFilterCategory,
     showFavoritesOnly, setShowFavoritesOnly,
     sortBy, setSortBy,
+    searchQuery, setSearchQuery,
     // フォーム状態
     title, setTitle,
     content, setContent,
