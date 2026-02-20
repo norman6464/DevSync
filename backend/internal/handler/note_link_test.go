@@ -115,3 +115,53 @@ func TestNoteLinkDeleteLink_ServiceError(t *testing.T) {
 	assertStatus(t, w, http.StatusNotFound)
 	svc.AssertExpectations(t)
 }
+
+func TestNoteLinkCreateLink_BadRequest(t *testing.T) {
+	h, _ := setupNoteLinkHandler()
+
+	r := newRouter(1)
+	r.POST("/notes/:id/links", h.CreateLink)
+	w := doRequest(r, "POST", "/notes/1/links", map[string]interface{}{})
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestNoteLinkGetLinks_InvalidID(t *testing.T) {
+	h, _ := setupNoteLinkHandler()
+
+	r := newRouter(1)
+	r.GET("/notes/:id/links", h.GetLinks)
+	w := doRequest(r, "GET", "/notes/abc/links", nil)
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestNoteLinkGetBacklinks_InvalidID(t *testing.T) {
+	h, _ := setupNoteLinkHandler()
+
+	r := newRouter(1)
+	r.GET("/notes/:id/backlinks", h.GetBacklinks)
+	w := doRequest(r, "GET", "/notes/abc/backlinks", nil)
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestNoteLinkDeleteLink_InvalidID(t *testing.T) {
+	h, _ := setupNoteLinkHandler()
+
+	r := newRouter(1)
+	r.DELETE("/notes/:id/links/:targetId", h.DeleteLink)
+	w := doRequest(r, "DELETE", "/notes/abc/links/2", nil)
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestNoteLinkDeleteLink_InvalidTargetID(t *testing.T) {
+	h, _ := setupNoteLinkHandler()
+
+	r := newRouter(1)
+	r.DELETE("/notes/:id/links/:targetId", h.DeleteLink)
+	w := doRequest(r, "DELETE", "/notes/1/links/abc", nil)
+
+	assertStatus(t, w, http.StatusBadRequest)
+}

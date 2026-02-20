@@ -202,3 +202,53 @@ func TestNoteTemplateGetDefault_ServiceError(t *testing.T) {
 
 	assertStatus(t, w, http.StatusInternalServerError)
 }
+
+func TestNoteTemplateCreate_BadRequest(t *testing.T) {
+	h, _ := setupNoteTemplateHandler()
+
+	r := newRouter(1)
+	r.POST("/note-templates", h.Create)
+	w := doRequest(r, "POST", "/note-templates", map[string]interface{}{})
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestNoteTemplateGetByID_InvalidID(t *testing.T) {
+	h, _ := setupNoteTemplateHandler()
+
+	r := newRouter(1)
+	r.GET("/note-templates/:id", h.GetByID)
+	w := doRequest(r, "GET", "/note-templates/abc", nil)
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestNoteTemplateUpdate_InvalidID(t *testing.T) {
+	h, _ := setupNoteTemplateHandler()
+
+	r := newRouter(1)
+	r.PUT("/note-templates/:id", h.Update)
+	w := doRequest(r, "PUT", "/note-templates/abc", map[string]interface{}{"name": "テスト"})
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestNoteTemplateDelete_InvalidID(t *testing.T) {
+	h, _ := setupNoteTemplateHandler()
+
+	r := newRouter(1)
+	r.DELETE("/note-templates/:id", h.Delete)
+	w := doRequest(r, "DELETE", "/note-templates/abc", nil)
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestNoteTemplateUseTemplate_InvalidID(t *testing.T) {
+	h, _ := setupNoteTemplateHandler()
+
+	r := newRouter(1)
+	r.POST("/note-templates/:id/use", h.UseTemplate)
+	w := doRequest(r, "POST", "/note-templates/abc/use", nil)
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
