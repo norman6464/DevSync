@@ -613,6 +613,7 @@
     "completedGoals": "완료",
     "pausedGoals": "일시 중지",
     "overdueGoals": "기한 초과",
+    "overdueWarning": "{{count}}개의 목표가 기한을 초과했습니다",
     "sort": "정렬",
     "sortNewest": "최신순",
     "sortOldest": "오래된순",

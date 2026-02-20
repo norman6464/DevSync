@@ -613,6 +613,7 @@
     "completedGoals": "Abgeschlossen",
     "pausedGoals": "Pausiert",
     "overdueGoals": "Überfällig",
+    "overdueWarning": "{{count}} Ziele haben ihre Frist überschritten",
     "sort": "Sortieren",
     "sortNewest": "Neueste",
     "sortOldest": "Älteste",

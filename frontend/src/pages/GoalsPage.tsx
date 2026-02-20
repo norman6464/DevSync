@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Target, Search } from 'lucide-react';
+import { Target, Search, AlertTriangle } from 'lucide-react';
 import { useGoalForm } from '../hooks';
 import { PageLoader } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
@@ -55,6 +55,16 @@ export default function GoalsPage() {
         paused={pausedGoals.length}
         overdue={overdueGoals.length}
       />
+
+      {/* Overdue Warning */}
+      {overdueGoals.length > 0 && (
+        <div className="flex items-center gap-3 px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+          <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
+          <span className="text-sm text-red-400">
+            {t('goals.overdueWarning', { count: overdueGoals.length })}
+          </span>
+        </div>
+      )}
 
       {/* Search */}
       <div className="relative">

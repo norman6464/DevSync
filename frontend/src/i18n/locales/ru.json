@@ -613,6 +613,7 @@
     "completedGoals": "Завершённые",
     "pausedGoals": "Приостановленные",
     "overdueGoals": "Просроченные",
+    "overdueWarning": "{{count}} целей просрочены",
     "sort": "Сортировка",
     "sortNewest": "Новые",
     "sortOldest": "Старые",
