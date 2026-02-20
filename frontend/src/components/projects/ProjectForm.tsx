@@ -199,6 +199,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
             type="url"
             value={demoUrl}
             onChange={(e) => setDemoUrl(e.target.value)}
+            maxLength={2048}
             className={inputClass}
             placeholder="https://..."
           />
@@ -211,6 +212,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
             type="url"
             value={githubUrl}
             onChange={(e) => setGithubUrl(e.target.value)}
+            maxLength={2048}
             className={inputClass}
             placeholder="https://github.com/..."
           />
@@ -226,6 +228,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
           type="url"
           value={imageUrl}
           onChange={(e) => setImageUrl(e.target.value)}
+          maxLength={2048}
           className={inputClass}
           placeholder="https://..."
         />
