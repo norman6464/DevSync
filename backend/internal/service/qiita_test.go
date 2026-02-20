@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -369,6 +370,40 @@ func TestQiitaGetStats_Error(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, stats)
 	qiitaRepo.AssertExpectations(t)
+}
+
+func TestFetchArticles_Pagination(t *testing.T) {
+	callCount := 0
+	svc := newTestQiitaService(func(req *http.Request) (*http.Response, error) {
+		callCount++
+		if callCount == 1 {
+			// page=1: 100件返す（perPage=100なのでもう1ページあると判断）
+			assert.Contains(t, req.URL.String(), "page=1")
+			var articles []string
+			for i := 0; i < 100; i++ {
+				articles = append(articles, fmt.Sprintf(`{"id":"p1_%d","title":"記事%d","url":"https://qiita.com/u/items/p1_%d","likes_count":%d,"comments_count":0,"tags":[],"created_at":"2025-01-01T00:00:00+09:00"}`, i, i, i, i))
+			}
+			body := "[" + strings.Join(articles, ",") + "]"
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       io.NopCloser(strings.NewReader(body)),
+			}, nil
+		}
+		// page=2: 2件返す（100未満なので最終ページ）
+		assert.Contains(t, req.URL.String(), "page=2")
+		body := `[{"id":"p2_0","title":"最終記事1","url":"https://qiita.com/u/items/p2_0","likes_count":5,"comments_count":1,"tags":[{"name":"Go"}],"created_at":"2025-02-01T00:00:00+09:00"},{"id":"p2_1","title":"最終記事2","url":"https://qiita.com/u/items/p2_1","likes_count":3,"comments_count":0,"tags":[],"created_at":"2025-02-02T00:00:00+09:00"}]`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       io.NopCloser(strings.NewReader(body)),
+		}, nil
+	})
+
+	articles, err := svc.FetchArticles("testuser")
+	assert.NoError(t, err)
+	assert.Len(t, articles, 102)
+	assert.Equal(t, "p1_0", articles[0].QiitaID)
+	assert.Equal(t, "p2_1", articles[101].QiitaID)
+	assert.Equal(t, 2, callCount)
 }
 
 func TestQiitaValidateUsername_RequestURL(t *testing.T) {
