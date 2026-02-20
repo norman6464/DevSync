@@ -787,6 +787,10 @@ func (m *MockAnswerService) Vote(userID, answerID uint, value int) error {
 func (m *MockAnswerService) RemoveVote(userID, answerID uint) error {
 	return m.Called(userID, answerID).Error(0)
 }
+func (m *MockAnswerService) GetByVoteRange(questionID uint, minVote, maxVote int) ([]model.Answer, error) {
+	args := m.Called(questionID, minVote, maxVote)
+	return args.Get(0).([]model.Answer), args.Error(1)
+}
 
 // setupAnswerHandler はAnswerHandlerテスト用のセットアップを行う。
 func setupAnswerHandler() (*AnswerHandler, *MockAnswerService) {

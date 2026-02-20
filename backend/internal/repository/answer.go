@@ -125,6 +125,16 @@ func (r *AnswerRepository) RemoveVote(userID, answerID uint) error {
 		UpdateColumn("vote_count", gorm.Expr("vote_count - ?", oldValue)).Error
 }
 
+// FindByVoteRange は指定質問の回答を投票スコア範囲でフィルタリングして取得する。
+func (r *AnswerRepository) FindByVoteRange(questionID uint, minVote, maxVote int) ([]model.Answer, error) {
+	var answers []model.Answer
+	err := r.db.Preload("User").
+		Where("question_id = ? AND vote_count >= ? AND vote_count <= ?", questionID, minVote, maxVote).
+		Order("vote_count DESC, created_at ASC").
+		Find(&answers).Error
+	return answers, err
+}
+
 // GetUserVotes は指定ユーザーの複数回答への投票値をマップで取得する。
 func (r *AnswerRepository) GetUserVotes(userID uint, answerIDs []uint) (map[uint]int, error) {
 	var votes []model.AnswerVote

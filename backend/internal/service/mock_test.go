@@ -453,6 +453,11 @@ func (m *MockAnswerRepository) GetUserVotes(userID uint, answerIDs []uint) (map[
 	return args.Get(0).(map[uint]int), args.Error(1)
 }
 
+func (m *MockAnswerRepository) FindByVoteRange(questionID uint, minVote, maxVote int) ([]model.Answer, error) {
+	args := m.Called(questionID, minVote, maxVote)
+	return args.Get(0).([]model.Answer), args.Error(1)
+}
+
 // ============================================================
 // MockLearningLogRepository は repository.LearningLogRepositoryInterface のテスト用モック実装。
 // ============================================================

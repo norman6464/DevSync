@@ -132,3 +132,11 @@ func (s *AnswerService) RemoveVote(userID, answerID uint) error {
 func (s *AnswerService) GetUserVotes(userID uint, answerIDs []uint) (map[uint]int, error) {
 	return s.answerRepo.GetUserVotes(userID, answerIDs)
 }
+
+// GetByVoteRange は指定質問の回答を投票スコア範囲でフィルタリングして取得する。
+func (s *AnswerService) GetByVoteRange(questionID uint, minVote, maxVote int) ([]model.Answer, error) {
+	if minVote > maxVote {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "投票範囲が無効です", nil)
+	}
+	return s.answerRepo.FindByVoteRange(questionID, minVote, maxVote)
+}

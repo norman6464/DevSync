@@ -140,6 +140,7 @@ type AnswerRepositoryInterface interface {
 	Vote(userID, answerID uint, value int) error
 	RemoveVote(userID, answerID uint) error
 	GetUserVotes(userID uint, answerIDs []uint) (map[uint]int, error)
+	FindByVoteRange(questionID uint, minVote, maxVote int) ([]model.Answer, error)
 }
 
 // LearningLogRepositoryInterface は学習ログデータ操作の契約を定義する。
