@@ -1405,7 +1405,9 @@
     "collapse": "Свернуть",
     "createdAt": "Создано",
     "tagsPlaceholder": "Напр.: React, TypeScript, Go",
-    "allTags": "Все теги"
+    "allTags": "Все теги",
+    "volumeRegular": "Обычная",
+    "volumeDetailed": "Подробная"
   },
   "githubCallback": {
     "missingOAuthParams": "Отсутствуют параметры OAuth",

@@ -1405,7 +1405,9 @@
     "collapse": "收起",
     "createdAt": "创建时间",
     "tagsPlaceholder": "例如：React, TypeScript, Go",
-    "allTags": "所有标签"
+    "allTags": "所有标签",
+    "volumeRegular": "标准",
+    "volumeDetailed": "详细"
   },
   "githubCallback": {
     "missingOAuthParams": "缺少OAuth参数",

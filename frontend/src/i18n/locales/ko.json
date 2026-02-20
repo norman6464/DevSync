@@ -1405,7 +1405,9 @@
     "collapse": "접기",
     "createdAt": "생성일",
     "tagsPlaceholder": "예: React, TypeScript, Go",
-    "allTags": "모든 태그"
+    "allTags": "모든 태그",
+    "volumeRegular": "보통",
+    "volumeDetailed": "상세"
   },
   "githubCallback": {
     "missingOAuthParams": "OAuth 매개변수가 없습니다",

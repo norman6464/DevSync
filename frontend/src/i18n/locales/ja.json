@@ -1306,7 +1306,9 @@
     "collapse": "折りたたむ",
     "createdAt": "作成日時",
     "tagsPlaceholder": "例: React, TypeScript, Go",
-    "allTags": "すべてのタグ"
+    "allTags": "すべてのタグ",
+    "volumeRegular": "標準",
+    "volumeDetailed": "充実"
   },
   "githubCallback": {
     "missingOAuthParams": "OAuthパラメータが不足しています",

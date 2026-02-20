@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Star, Edit, Trash2 } from 'lucide-react';
+import { Star, Edit, Trash2, FileText, BookOpen } from 'lucide-react';
 import type { Note } from '../../api/notes';
 import { formatDistanceToNow } from '../../utils/timeFormat';
 import { linkSmallClass } from '../../constants/styles';
@@ -53,6 +53,17 @@ export default function NoteCard({ note, onToggleFavorite, onEdit, onDelete }: N
             <span>{t('notes.lastUpdated')}: {formatDistanceToNow(note.updated_at)}</span>
             <span className="text-gray-600">·</span>
             <span>{note.content.length.toLocaleString()} {t('notes.chars')}</span>
+            {note.content.length >= 500 ? (
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-xs rounded bg-purple-400/10 text-purple-400">
+                <BookOpen className="w-3 h-3" />
+                {t('notes.volumeDetailed')}
+              </span>
+            ) : note.content.length >= 200 ? (
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-xs rounded bg-yellow-400/10 text-yellow-400">
+                <FileText className="w-3 h-3" />
+                {t('notes.volumeRegular')}
+              </span>
+            ) : null}
           </div>
         </div>
         <div className="flex gap-2 ml-4">
