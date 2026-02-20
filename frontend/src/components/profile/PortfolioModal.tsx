@@ -58,7 +58,7 @@ export default function PortfolioModal({
   const handleOpenInNewTab = () => {
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
+    window.open(url, '_blank', 'noopener');
   };
 
   if (!isOpen) return null;
