@@ -313,6 +313,9 @@ func (s *PostService) AddReaction(userID, postID uint, emoji string) error {
 // RemoveReaction は投稿のリアクションを削除する。
 // 自分の投稿へのリアクション削除は禁止する（そもそもリアクションできないため）。
 func (s *PostService) RemoveReaction(userID, postID uint, emoji string) error {
+	if !allowedEmojis[emoji] {
+		return domain.NewError(domain.ErrCodeBadRequest, "許可されていない絵文字です: "+emoji, nil)
+	}
 	if err := s.findAndPreventSelfAction(userID, postID); err != nil {
 		return err
 	}
