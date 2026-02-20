@@ -344,6 +344,7 @@
     "placeholder": "輸入關鍵詞...",
     "emptyInitial": "請輸入搜尋關鍵詞",
     "noResults": "未找到結果",
+    "resultsCount": "{{count}}筆結果",
     "tabs": {
       "users": "使用者",
       "posts": "貼文",

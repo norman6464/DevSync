@@ -59,6 +59,7 @@ export default function NewSearchPage() {
     circles: circleSearch.results.length,
   }), [userSearch.filteredUsers, postSearch.results, circleSearch.results]);
 
+  const totalCount = counts.users + counts.posts + counts.circles;
   const isLoading = userSearch.loading || postSearch.loading || circleSearch.loading;
   const hasSearched = userSearch.searched || postSearch.searched || circleSearch.searched;
 
@@ -104,6 +105,13 @@ export default function NewSearchPage() {
 
       {/* Tabs */}
       <SearchTabs activeTab={activeTab} onTabChange={setActiveTab} counts={counts} />
+
+      {/* Results Count */}
+      {hasSearched && !isLoading && (
+        <p className="text-sm text-gray-400">
+          {t('search.resultsCount', { count: totalCount })}
+        </p>
+      )}
 
       {/* Results */}
       <div>

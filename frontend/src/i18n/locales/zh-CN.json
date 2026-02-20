@@ -344,6 +344,7 @@
     "placeholder": "输入关键词...",
     "emptyInitial": "请输入搜索关键词",
     "noResults": "未找到结果",
+    "resultsCount": "{{count}}条结果",
     "tabs": {
       "users": "用户",
       "posts": "帖子",

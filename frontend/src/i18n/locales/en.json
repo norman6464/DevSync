@@ -344,6 +344,7 @@
     "placeholder": "Enter keywords...",
     "emptyInitial": "Enter search keywords",
     "noResults": "No results found",
+    "resultsCount": "{{count}} results",
     "tabs": {
       "users": "Users",
       "posts": "Posts",

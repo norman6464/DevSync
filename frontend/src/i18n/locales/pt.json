@@ -344,6 +344,7 @@
     "placeholder": "Digite palavras-chave...",
     "emptyInitial": "Digite palavras-chave de pesquisa",
     "noResults": "Nenhum resultado encontrado",
+    "resultsCount": "{{count}} resultados",
     "tabs": {
       "users": "Usuários",
       "posts": "Postagens",

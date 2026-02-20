@@ -352,6 +352,7 @@
     "placeholder": "キーワードを入力...",
     "emptyInitial": "検索キーワードを入力してください",
     "noResults": "結果が見つかりませんでした",
+    "resultsCount": "{{count}}件の結果",
     "tabs": {
       "users": "ユーザー",
       "posts": "投稿",

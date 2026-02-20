@@ -344,6 +344,7 @@
     "placeholder": "Suchbegriffe eingeben...",
     "emptyInitial": "Geben Sie Suchbegriffe ein",
     "noResults": "Keine Ergebnisse gefunden",
+    "resultsCount": "{{count}} Ergebnisse",
     "tabs": {
       "users": "Benutzer",
       "posts": "Beiträge",
