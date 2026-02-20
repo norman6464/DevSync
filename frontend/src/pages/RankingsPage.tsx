@@ -1,8 +1,9 @@
 import { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Search } from 'lucide-react';
 import { useRankings } from '../hooks';
-import { sectionContainerClass } from '../constants/styles';
+import { sectionContainerClass, inputClass } from '../constants/styles';
 import Avatar from '../components/common/Avatar';
 import { PageLoader } from '../components/common';
 
@@ -11,6 +12,7 @@ export default function RankingsPage() {
   const {
     rankings, languages, loading,
     tab, setTab, period, setPeriod, language, setLanguage,
+    searchQuery, setSearchQuery,
   } = useRankings();
 
   const medalColor = useCallback((index: number) => {
@@ -121,6 +123,18 @@ export default function RankingsPage() {
           </div>
         </div>
       )}
+
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder={t('rankings.searchPlaceholder')}
+          className={`${inputClass} pl-9`}
+        />
+      </div>
 
       {/* Rankings Table */}
       {loading ? (

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { getContributionRanking, getLanguageRanking, getLevelRanking, getAvailableLanguages } from '../api/rankings';
 import type { RankingEntry } from '../types/ranking';
 import { useAsyncData } from './useAsyncData';
@@ -25,6 +25,8 @@ export function useRankings() {
     { initialData: DEFAULT_LANGUAGES }
   );
 
+  const [searchQuery, setSearchQuery] = useState('');
+
   const { data: rankings, loading } = useAsyncData(
     async () => {
       if (tab === 'contributions') {
@@ -44,8 +46,16 @@ export function useRankings() {
     { initialData: [] as RankingEntry[], deps: [tab, period, language] }
   );
 
+  const filteredRankings = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return rankings;
+    return rankings.filter(
+      (entry) => entry.name.toLowerCase().includes(q) || entry.username.toLowerCase().includes(q)
+    );
+  }, [rankings, searchQuery]);
+
   return {
-    rankings,
+    rankings: filteredRankings,
     languages,
     loading,
     tab,
@@ -54,5 +64,7 @@ export function useRankings() {
     setPeriod,
     language,
     setLanguage,
+    searchQuery,
+    setSearchQuery,
   };
 }

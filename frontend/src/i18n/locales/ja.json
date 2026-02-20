@@ -417,7 +417,8 @@
     "thisWeek": "今週",
     "thisMonth": "今月",
     "selectLanguage": "言語を選択",
-    "noData": "ランキングデータがありません"
+    "noData": "ランキングデータがありません",
+    "searchPlaceholder": "名前やユーザー名で検索..."
   },
   "badges": {
     "firstCommit": "ファーストコミット",
