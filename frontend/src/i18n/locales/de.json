@@ -517,6 +517,7 @@
     "deleteNotification": "Benachrichtigung löschen",
     "filterGroup": "Benachrichtigungsfilter",
     "listLabel": "Benachrichtigungsliste",
+    "countSummary": "{{unread}} ungelesen / {{total}} gesamt",
     "deleted": "Benachrichtigung gelöscht",
     "levelUp": "Sie haben Stufe {{level}} erreicht!",
     "filterLevel": "Aufgestiegen"

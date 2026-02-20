@@ -517,6 +517,7 @@
     "deleteNotification": "Удалить уведомление",
     "filterGroup": "Фильтры уведомлений",
     "listLabel": "Список уведомлений",
+    "countSummary": "{{unread}} непрочитанных / {{total}} всего",
     "deleted": "Уведомление удалено",
     "levelUp": "Вы достигли уровня {{level}}!",
     "filterLevel": "Повышение уровня"
