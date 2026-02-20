@@ -3,6 +3,7 @@ package repository
 import (
 	"time"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"gorm.io/gorm"
 )
@@ -42,7 +43,7 @@ func (r *NoteStatsRepository) GetNoteStats(userID uint) (*model.NoteStats, error
 	}
 
 	// 今週作成したノート数（過去7日間）
-	weekAgo := time.Now().AddDate(0, 0, -7)
+	weekAgo := domain.DaysAgo(time.Now(), 7)
 	if err := r.db.Model(&model.Note{}).Where("user_id = ? AND created_at >= ?", userID, weekAgo).Count(&stats.NotesThisWeek).Error; err != nil {
 		return nil, err
 	}

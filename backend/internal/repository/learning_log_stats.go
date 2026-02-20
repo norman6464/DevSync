@@ -3,6 +3,7 @@ package repository
 import (
 	"time"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"gorm.io/gorm"
 )
@@ -37,8 +38,7 @@ func (r *LearningLogStatsRepository) GetLearningLogStats(userID uint) (*model.Le
 	}
 
 	// 今月のログ数
-	now := time.Now()
-	monthStart := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+	monthStart := domain.StartOfMonth(time.Now())
 	if err := r.db.Model(&model.LearningLog{}).Where("user_id = ? AND created_at >= ?", userID, monthStart).Count(&stats.LogsThisMonth).Error; err != nil {
 		return nil, err
 	}
