@@ -1365,6 +1365,8 @@
     "sortOldest": "오래된순",
     "sortUpdated": "최근 수정순",
     "sortFavorites": "즐겨찾기 우선",
+    "viewList": "목록 보기",
+    "viewGrid": "그리드 보기",
     "created": "노트가 생성되었습니다",
     "updated": "노트가 업데이트되었습니다",
     "deleted": "노트가 삭제되었습니다",

@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BookOpen, Plus, ArrowDownWideNarrow, Tag } from 'lucide-react';
+import { BookOpen, Plus, ArrowDownWideNarrow, Tag, List, LayoutGrid } from 'lucide-react';
 import { useNoteForm } from '../hooks';
 import { PageLoader, SearchInput } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
@@ -13,7 +13,7 @@ export default function NotesPage() {
   const {
     filteredNotes, loading, saving,
     showForm, setShowForm, editingNote, searchQuery, setSearchQuery, sortBy, setSortBy,
-    filterTag, setFilterTag, allTags,
+    filterTag, setFilterTag, allTags, viewMode, setViewMode,
     title, setTitle, content, setContent, tags, setTags,
     resetForm, handleSubmit, handleEdit, deleteNote, toggleFavorite,
   } = useNoteForm();
@@ -47,28 +47,46 @@ export default function NotesPage() {
         />
       </div>
 
-      {/* Sort */}
-      <div className="flex items-center gap-3 mb-6">
-        <ArrowDownWideNarrow className="w-4 h-4 text-gray-400" />
-        <div className="flex flex-wrap gap-2">
-          {([
-            { value: 'latest', label: 'notes.sortLatest' },
-            { value: 'oldest', label: 'notes.sortOldest' },
-            { value: 'updated', label: 'notes.sortUpdated' },
-            { value: 'favorites_first', label: 'notes.sortFavorites' },
-          ] as const).map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => setSortBy(opt.value)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                sortBy === opt.value
-                  ? 'bg-blue-500/20 text-blue-400'
-                  : 'bg-gray-800/50 text-gray-400 hover:text-white'
-              }`}
-            >
-              {t(opt.label)}
-            </button>
-          ))}
+      {/* Sort & View Toggle */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <ArrowDownWideNarrow className="w-4 h-4 text-gray-400" />
+          <div className="flex flex-wrap gap-2">
+            {([
+              { value: 'latest', label: 'notes.sortLatest' },
+              { value: 'oldest', label: 'notes.sortOldest' },
+              { value: 'updated', label: 'notes.sortUpdated' },
+              { value: 'favorites_first', label: 'notes.sortFavorites' },
+            ] as const).map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setSortBy(opt.value)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  sortBy === opt.value
+                    ? 'bg-blue-500/20 text-blue-400'
+                    : 'bg-gray-800/50 text-gray-400 hover:text-white'
+                }`}
+              >
+                {t(opt.label)}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="flex gap-1">
+          <button
+            onClick={() => setViewMode('list')}
+            className={`p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-blue-500/20 text-blue-400' : 'text-gray-400 hover:text-white'}`}
+            title={t('notes.viewList')}
+          >
+            <List className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-blue-500/20 text-blue-400' : 'text-gray-400 hover:text-white'}`}
+            title={t('notes.viewGrid')}
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
@@ -128,7 +146,7 @@ export default function NotesPage() {
           description=""
         />
       ) : (
-        <div className="grid gap-4">
+        <div className={viewMode === 'grid' ? 'grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid gap-4'}>
           {filteredNotes.map((note) => (
             <NoteCard
               key={note.id}
