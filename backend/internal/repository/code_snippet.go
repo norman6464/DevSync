@@ -34,6 +34,13 @@ func (r *CodeSnippetRepository) FindByPostID(postID uint) ([]model.CodeSnippet, 
 	return snippets, err
 }
 
+// FindByUserIDAndLanguage は指定ユーザーのスニペットをプログラミング言語でフィルタリングして取得する。
+func (r *CodeSnippetRepository) FindByUserIDAndLanguage(userID uint, language string) ([]model.CodeSnippet, error) {
+	var snippets []model.CodeSnippet
+	err := r.db.Where("user_id = ? AND language = ?", userID, language).Order("created_at DESC").Find(&snippets).Error
+	return snippets, err
+}
+
 // Update は既存のコードスニペットを更新する。
 func (r *CodeSnippetRepository) Update(snippet *model.CodeSnippet) error {
 	return r.db.Save(snippet).Error

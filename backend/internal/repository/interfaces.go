@@ -263,6 +263,7 @@ type CodeSnippetRepositoryInterface interface {
 	Create(snippet *model.CodeSnippet) error
 	FindByID(id uint) (*model.CodeSnippet, error)
 	FindByPostID(postID uint) ([]model.CodeSnippet, error)
+	FindByUserIDAndLanguage(userID uint, language string) ([]model.CodeSnippet, error)
 	Update(snippet *model.CodeSnippet) error
 	Delete(id uint) error
 	CreateComment(comment *model.SnippetComment) error

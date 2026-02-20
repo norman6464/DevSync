@@ -959,6 +959,11 @@ func (m *MockCodeSnippetRepository) FindByPostID(postID uint) ([]model.CodeSnipp
 	return args.Get(0).([]model.CodeSnippet), args.Error(1)
 }
 
+func (m *MockCodeSnippetRepository) FindByUserIDAndLanguage(userID uint, language string) ([]model.CodeSnippet, error) {
+	args := m.Called(userID, language)
+	return args.Get(0).([]model.CodeSnippet), args.Error(1)
+}
+
 func (m *MockCodeSnippetRepository) Update(snippet *model.CodeSnippet) error {
 	args := m.Called(snippet)
 	return args.Error(0)
