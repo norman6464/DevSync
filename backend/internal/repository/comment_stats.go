@@ -3,6 +3,7 @@ package repository
 import (
 	"time"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"gorm.io/gorm"
 )
@@ -40,8 +41,7 @@ func (r *CommentStatsRepository) GetCommentStats(userID uint) (*model.CommentSta
 	}
 
 	// 今月のコメント数
-	now := time.Now()
-	startOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+	startOfMonth := domain.StartOfMonth(time.Now())
 	if err := r.db.Model(&model.Comment{}).Where("user_id = ? AND created_at >= ?", userID, startOfMonth).Count(&stats.CommentsThisMonth).Error; err != nil {
 		return nil, err
 	}

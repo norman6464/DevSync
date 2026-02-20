@@ -3,6 +3,7 @@ package repository
 import (
 	"time"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"gorm.io/gorm"
 )
@@ -39,8 +40,7 @@ func (r *ReactionStatsRepository) GetReactionStats(userID uint) (*model.Reaction
 	}
 
 	// 今月受け取ったリアクション数
-	now := time.Now()
-	startOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+	startOfMonth := domain.StartOfMonth(time.Now())
 	if err := r.db.Model(&model.Reaction{}).
 		Joins("JOIN posts ON posts.id = reactions.post_id").
 		Where("posts.user_id = ? AND reactions.created_at >= ?", userID, startOfMonth).

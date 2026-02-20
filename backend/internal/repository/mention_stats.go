@@ -3,6 +3,7 @@ package repository
 import (
 	"time"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"gorm.io/gorm"
 )
@@ -32,8 +33,7 @@ func (r *MentionStatsRepository) GetMentionStats(userID uint) (*model.MentionSta
 	}
 
 	// 今月メンションされた回数
-	now := time.Now()
-	startOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+	startOfMonth := domain.StartOfMonth(time.Now())
 	if err := r.db.Model(&model.Mention{}).Where("user_id = ? AND created_at >= ?", userID, startOfMonth).Count(&stats.MentionsThisMonth).Error; err != nil {
 		return nil, err
 	}

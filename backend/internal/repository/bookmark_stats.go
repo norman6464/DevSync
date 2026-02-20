@@ -3,6 +3,7 @@ package repository
 import (
 	"time"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"gorm.io/gorm"
 )
@@ -35,8 +36,7 @@ func (r *BookmarkStatsRepository) GetBookmarkStats(userID uint) (*model.Bookmark
 	}
 
 	// 今月ブックマークした数
-	now := time.Now()
-	startOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+	startOfMonth := domain.StartOfMonth(time.Now())
 	if err := r.db.Model(&model.Bookmark{}).Where("user_id = ? AND created_at >= ?", userID, startOfMonth).Count(&stats.BookmarksThisMonth).Error; err != nil {
 		return nil, err
 	}
