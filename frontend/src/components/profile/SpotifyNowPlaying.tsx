@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getCurrentlyPlaying, getRecentlyPlayed } from '../../api/spotify';
 import type { SpotifyCurrentlyPlaying, SpotifyRecentTrack } from '../../types/spotify';
+import { sanitizeUrl } from '../../utils/url';
 
 interface Props {
   userId: number;
@@ -59,7 +60,7 @@ export default function SpotifyNowPlaying({ userId }: Props) {
 
       {currentTrack ? (
         <a
-          href={currentTrack.track_url}
+          href={sanitizeUrl(currentTrack.track_url) || '#'}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-4 p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-colors"
@@ -103,7 +104,7 @@ export default function SpotifyNowPlaying({ userId }: Props) {
           {recentTracks.slice(0, 5).map((track, index) => (
             <a
               key={`${track.track_url}-${index}`}
-              href={track.track_url}
+              href={sanitizeUrl(track.track_url) || '#'}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-800/50 transition-colors"
