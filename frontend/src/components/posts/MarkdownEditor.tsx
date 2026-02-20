@@ -306,6 +306,7 @@ export default function MarkdownEditor({
       <div className="border-t border-gray-700 px-4 py-2 text-xs text-gray-500 flex items-center gap-4">
         <span>{t('editor.markdownSupported')}</span>
         <span>{t('editor.pasteOrDragImages')}</span>
+        <span className="ml-auto">{value.length.toLocaleString()} / 10,000</span>
       </div>
     </div>
   );
