@@ -103,24 +103,8 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerYouTubeRoutes(protected, c)
 		registerSpotifyRoutes(protected, c)
 		registerCommentLikeRoutes(protected, c)
-		registerUserDashboardRoutes(protected, c)
-		registerNoteStatsRoutes(protected, c)
+		registerUserStatsRoutes(protected, c)
 		registerStudyCircleStatsRoutes(protected, c)
-		registerPostStatsRoutes(protected, c)
-		registerBookReviewStatsRoutes(protected, c)
-		registerQAStatsRoutes(protected, c)
-		registerCodeSnippetStatsRoutes(protected, c)
-		registerLearningResourceStatsRoutes(protected, c)
-		registerProjectStatsRoutes(protected, c)
-		registerFollowStatsRoutes(protected, c)
-		registerRoadmapStatsRoutes(protected, c)
-		registerLearningLogStatsRoutes(protected, c)
-		registerCommentStatsRoutes(protected, c)
-		registerNotificationStatsRoutes(protected, c)
-		registerMessageStatsRoutes(protected, c)
-		registerMentionStatsRoutes(protected, c)
-		registerReactionStatsRoutes(protected, c)
-		registerBookmarkStatsRoutes(protected, c)
 	}
 
 	return r
@@ -637,17 +621,28 @@ func registerCommentLikeRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerUserDashboardRoutes(g *gin.RouterGroup, c *di.Container) {
+// registerUserStatsRoutes はユーザー統計系のエンドポイントをまとめて登録する。
+// 全て /users/:id/xxx-stats の形式で統一されている。
+func registerUserStatsRoutes(g *gin.RouterGroup, c *di.Container) {
 	users := g.Group("/users")
 	{
 		users.GET("/:id/dashboard-stats", c.UserDashboardHandler.GetStats)
-	}
-}
-
-func registerNoteStatsRoutes(g *gin.RouterGroup, c *di.Container) {
-	users := g.Group("/users")
-	{
 		users.GET("/:id/note-stats", c.NoteStatsHandler.GetStats)
+		users.GET("/:id/post-stats", c.PostStatsHandler.GetStats)
+		users.GET("/:id/book-review-stats", c.BookReviewStatsHandler.GetStats)
+		users.GET("/:id/qa-stats", c.QAStatsHandler.GetStats)
+		users.GET("/:id/code-snippet-stats", c.CodeSnippetStatsHandler.GetStats)
+		users.GET("/:id/learning-resource-stats", c.LearningResourceStatsHandler.GetStats)
+		users.GET("/:id/project-stats", c.ProjectStatsHandler.GetStats)
+		users.GET("/:id/follow-stats", c.FollowStatsHandler.GetStats)
+		users.GET("/:id/roadmap-stats", c.RoadmapStatsHandler.GetStats)
+		users.GET("/:id/learning-log-stats", c.LearningLogStatsHandler.GetStats)
+		users.GET("/:id/comment-stats", c.CommentStatsHandler.GetStats)
+		users.GET("/:id/notification-stats", c.NotificationStatsHandler.GetStats)
+		users.GET("/:id/message-stats", c.MessageStatsHandler.GetStats)
+		users.GET("/:id/mention-stats", c.MentionStatsHandler.GetStats)
+		users.GET("/:id/reaction-stats", c.ReactionStatsHandler.GetStats)
+		users.GET("/:id/bookmark-stats", c.BookmarkStatsHandler.GetStats)
 	}
 }
 
@@ -655,110 +650,5 @@ func registerStudyCircleStatsRoutes(g *gin.RouterGroup, c *di.Container) {
 	circles := g.Group("/study-circles")
 	{
 		circles.GET("/:id/stats", c.StudyCircleStatsHandler.GetStats)
-	}
-}
-
-func registerPostStatsRoutes(g *gin.RouterGroup, c *di.Container) {
-	users := g.Group("/users")
-	{
-		users.GET("/:id/post-stats", c.PostStatsHandler.GetStats)
-	}
-}
-
-func registerBookReviewStatsRoutes(g *gin.RouterGroup, c *di.Container) {
-	users := g.Group("/users")
-	{
-		users.GET("/:id/book-review-stats", c.BookReviewStatsHandler.GetStats)
-	}
-}
-
-func registerQAStatsRoutes(g *gin.RouterGroup, c *di.Container) {
-	users := g.Group("/users")
-	{
-		users.GET("/:id/qa-stats", c.QAStatsHandler.GetStats)
-	}
-}
-
-func registerCodeSnippetStatsRoutes(g *gin.RouterGroup, c *di.Container) {
-	users := g.Group("/users")
-	{
-		users.GET("/:id/code-snippet-stats", c.CodeSnippetStatsHandler.GetStats)
-	}
-}
-
-func registerLearningResourceStatsRoutes(g *gin.RouterGroup, c *di.Container) {
-	users := g.Group("/users")
-	{
-		users.GET("/:id/learning-resource-stats", c.LearningResourceStatsHandler.GetStats)
-	}
-}
-
-func registerProjectStatsRoutes(g *gin.RouterGroup, c *di.Container) {
-	users := g.Group("/users")
-	{
-		users.GET("/:id/project-stats", c.ProjectStatsHandler.GetStats)
-	}
-}
-
-func registerFollowStatsRoutes(g *gin.RouterGroup, c *di.Container) {
-	users := g.Group("/users")
-	{
-		users.GET("/:id/follow-stats", c.FollowStatsHandler.GetStats)
-	}
-}
-
-func registerRoadmapStatsRoutes(g *gin.RouterGroup, c *di.Container) {
-	users := g.Group("/users")
-	{
-		users.GET("/:id/roadmap-stats", c.RoadmapStatsHandler.GetStats)
-	}
-}
-
-func registerLearningLogStatsRoutes(g *gin.RouterGroup, c *di.Container) {
-	users := g.Group("/users")
-	{
-		users.GET("/:id/learning-log-stats", c.LearningLogStatsHandler.GetStats)
-	}
-}
-
-func registerCommentStatsRoutes(g *gin.RouterGroup, c *di.Container) {
-	users := g.Group("/users")
-	{
-		users.GET("/:id/comment-stats", c.CommentStatsHandler.GetStats)
-	}
-}
-
-func registerNotificationStatsRoutes(g *gin.RouterGroup, c *di.Container) {
-	users := g.Group("/users")
-	{
-		users.GET("/:id/notification-stats", c.NotificationStatsHandler.GetStats)
-	}
-}
-
-func registerMessageStatsRoutes(g *gin.RouterGroup, c *di.Container) {
-	users := g.Group("/users")
-	{
-		users.GET("/:id/message-stats", c.MessageStatsHandler.GetStats)
-	}
-}
-
-func registerMentionStatsRoutes(g *gin.RouterGroup, c *di.Container) {
-	users := g.Group("/users")
-	{
-		users.GET("/:id/mention-stats", c.MentionStatsHandler.GetStats)
-	}
-}
-
-func registerReactionStatsRoutes(g *gin.RouterGroup, c *di.Container) {
-	users := g.Group("/users")
-	{
-		users.GET("/:id/reaction-stats", c.ReactionStatsHandler.GetStats)
-	}
-}
-
-func registerBookmarkStatsRoutes(g *gin.RouterGroup, c *di.Container) {
-	users := g.Group("/users")
-	{
-		users.GET("/:id/bookmark-stats", c.BookmarkStatsHandler.GetStats)
 	}
 }
