@@ -50,6 +50,13 @@ func (r *LearningLogRepository) GetByUserID(userID uint) ([]model.LearningLog, e
 	return logs, err
 }
 
+// GetByCategory は指定ユーザーの学習ログをカテゴリでフィルタリングして取得する（新しい順）。
+func (r *LearningLogRepository) GetByCategory(userID uint, category string) ([]model.LearningLog, error) {
+	var logs []model.LearningLog
+	err := r.db.Where("user_id = ? AND category = ?", userID, category).Order("created_at DESC").Find(&logs).Error
+	return logs, err
+}
+
 // GetByPeriod は指定ユーザーの指定期間分の学習ログを取得する。
 // days=0 の場合は全期間を取得する。
 func (r *LearningLogRepository) GetByPeriod(userID uint, days int) ([]model.LearningLog, error) {

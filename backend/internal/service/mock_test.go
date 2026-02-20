@@ -484,6 +484,11 @@ func (m *MockLearningLogRepository) GetByUserID(userID uint) ([]model.LearningLo
 	return args.Get(0).([]model.LearningLog), args.Error(1)
 }
 
+func (m *MockLearningLogRepository) GetByCategory(userID uint, category string) ([]model.LearningLog, error) {
+	args := m.Called(userID, category)
+	return args.Get(0).([]model.LearningLog), args.Error(1)
+}
+
 func (m *MockLearningLogRepository) GetByPeriod(userID uint, days int) ([]model.LearningLog, error) {
 	args := m.Called(userID, days)
 	return args.Get(0).([]model.LearningLog), args.Error(1)

@@ -49,6 +49,14 @@ func (s *LearningLogService) GetByUserID(userID uint) ([]model.LearningLog, erro
 	return s.repo.GetByUserID(userID)
 }
 
+// GetByCategory は指定ユーザーの学習ログをカテゴリでフィルタリングして取得する。
+func (s *LearningLogService) GetByCategory(userID uint, category string) ([]model.LearningLog, error) {
+	if !model.ValidCategories[model.LogCategory(category)] {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "無効なカテゴリです", nil)
+	}
+	return s.repo.GetByCategory(userID, category)
+}
+
 // findAndCheckOwnership は学習ログを取得し、指定ユーザーが所有者かを検証する。
 func (s *LearningLogService) findAndCheckOwnership(id, userID uint) (*model.LearningLog, error) {
 	log, err := s.repo.FindByID(id)

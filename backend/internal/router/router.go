@@ -374,6 +374,7 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 		learningLogs.POST("", c.LearningLogHandler.Create)
 		learningLogs.GET("", c.LearningLogHandler.GetMyLogs)
 		learningLogs.GET("/export", c.LearningLogHandler.ExportLogs)
+		learningLogs.GET("/category/:category", c.LearningLogHandler.GetByCategory)
 		learningLogs.GET("/user/:userId", c.LearningLogHandler.GetByUserID)
 		learningLogs.GET("/calendar/:userId", c.LearningLogHandler.GetCalendarData)
 		learningLogs.GET("/streak/:userId", c.LearningLogHandler.GetStreakInfo)

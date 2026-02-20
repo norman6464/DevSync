@@ -149,6 +149,7 @@ type LearningLogRepositoryInterface interface {
 	Delete(id, userID uint) error
 	FindByID(id uint) (*model.LearningLog, error)
 	GetByUserID(userID uint) ([]model.LearningLog, error)
+	GetByCategory(userID uint, category string) ([]model.LearningLog, error)
 	GetByPeriod(userID uint, days int) ([]model.LearningLog, error)
 	GetStreakInfo(userID uint) (*model.StreakInfo, error)
 	GetCalendarData(userID uint) ([]model.CalendarEntry, error)
