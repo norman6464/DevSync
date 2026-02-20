@@ -839,7 +839,22 @@
     "createFailed": "Rezension konnte nicht erstellt werden",
     "updateFailed": "Rezension konnte nicht aktualisiert werden",
     "deleteFailed": "Rezension konnte nicht gelöscht werden",
-    "confirmDelete": "Bist du sicher, dass du diese Rezension löschen möchtest?"
+    "confirmDelete": "Bist du sicher, dass du diese Rezension löschen möchtest?",
+    "status": {
+      "not_started": "Nicht begonnen",
+      "reading": "Wird gelesen",
+      "completed": "Abgeschlossen"
+    },
+    "statusAll": "Alle",
+    "archivedLabel": "Archiviert",
+    "archive": "Archivieren",
+    "unarchive": "Entarchivieren",
+    "archived": "Rezension archiviert",
+    "unarchived": "Rezension entarchiviert",
+    "archiveFailed": "Archivierung fehlgeschlagen",
+    "unarchiveFailed": "Entarchivierung fehlgeschlagen",
+    "statusUpdated": "Status aktualisiert",
+    "statusUpdateFailed": "Statusaktualisierung fehlgeschlagen"
   },
   "qa": {
     "pageTitle": "Tech Q&A",

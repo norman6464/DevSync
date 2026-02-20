@@ -839,7 +839,22 @@
     "createFailed": "Falha ao criar resenha",
     "updateFailed": "Falha ao atualizar resenha",
     "deleteFailed": "Falha ao excluir resenha",
-    "confirmDelete": "Tem certeza de que deseja excluir esta resenha?"
+    "confirmDelete": "Tem certeza de que deseja excluir esta resenha?",
+    "status": {
+      "not_started": "Não iniciado",
+      "reading": "Lendo",
+      "completed": "Concluído"
+    },
+    "statusAll": "Todos",
+    "archivedLabel": "Arquivado",
+    "archive": "Arquivar",
+    "unarchive": "Desarquivar",
+    "archived": "Resenha arquivada",
+    "unarchived": "Resenha desarquivada",
+    "archiveFailed": "Falha ao arquivar",
+    "unarchiveFailed": "Falha ao desarquivar",
+    "statusUpdated": "Status atualizado",
+    "statusUpdateFailed": "Falha ao atualizar status"
   },
   "qa": {
     "pageTitle": "Q&A Técnico",

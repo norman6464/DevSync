@@ -839,7 +839,22 @@
     "createFailed": "Error al crear reseña",
     "updateFailed": "Error al actualizar reseña",
     "deleteFailed": "Error al eliminar reseña",
-    "confirmDelete": "¿Estás seguro de que deseas eliminar esta reseña?"
+    "confirmDelete": "¿Estás seguro de que deseas eliminar esta reseña?",
+    "status": {
+      "not_started": "No iniciado",
+      "reading": "Leyendo",
+      "completed": "Completado"
+    },
+    "statusAll": "Todos",
+    "archivedLabel": "Archivado",
+    "archive": "Archivar",
+    "unarchive": "Desarchivar",
+    "archived": "Reseña archivada",
+    "unarchived": "Reseña desarchivada",
+    "archiveFailed": "Error al archivar",
+    "unarchiveFailed": "Error al desarchivar",
+    "statusUpdated": "Estado actualizado",
+    "statusUpdateFailed": "Error al actualizar el estado"
   },
   "qa": {
     "pageTitle": "Q&A Técnico",

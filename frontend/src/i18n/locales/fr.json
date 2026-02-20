@@ -839,7 +839,22 @@
     "createFailed": "Échec de la création de la critique",
     "updateFailed": "Échec de la mise à jour de la critique",
     "deleteFailed": "Échec de la suppression de la critique",
-    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette critique ?"
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette critique ?",
+    "status": {
+      "not_started": "Non commencé",
+      "reading": "En lecture",
+      "completed": "Terminé"
+    },
+    "statusAll": "Tous",
+    "archivedLabel": "Archivé",
+    "archive": "Archiver",
+    "unarchive": "Désarchiver",
+    "archived": "Avis archivé",
+    "unarchived": "Avis désarchivé",
+    "archiveFailed": "Échec de l'archivage",
+    "unarchiveFailed": "Échec du désarchivage",
+    "statusUpdated": "Statut mis à jour",
+    "statusUpdateFailed": "Échec de la mise à jour du statut"
   },
   "qa": {
     "pageTitle": "Q&A Technique",

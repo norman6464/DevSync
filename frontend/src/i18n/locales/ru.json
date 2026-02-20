@@ -839,7 +839,22 @@
     "createFailed": "Не удалось создать обзор",
     "updateFailed": "Не удалось обновить обзор",
     "deleteFailed": "Не удалось удалить обзор",
-    "confirmDelete": "Вы уверены, что хотите удалить этот обзор?"
+    "confirmDelete": "Вы уверены, что хотите удалить этот обзор?",
+    "status": {
+      "not_started": "Не начато",
+      "reading": "Читаю",
+      "completed": "Прочитано"
+    },
+    "statusAll": "Все",
+    "archivedLabel": "В архиве",
+    "archive": "Архивировать",
+    "unarchive": "Разархивировать",
+    "archived": "Отзыв архивирован",
+    "unarchived": "Отзыв разархивирован",
+    "archiveFailed": "Не удалось архивировать",
+    "unarchiveFailed": "Не удалось разархивировать",
+    "statusUpdated": "Статус обновлён",
+    "statusUpdateFailed": "Не удалось обновить статус"
   },
   "qa": {
     "pageTitle": "Технический Q&A",

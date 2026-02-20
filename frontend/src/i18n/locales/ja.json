@@ -793,7 +793,22 @@
     "createFailed": "レビューの作成に失敗しました",
     "updateFailed": "レビューの更新に失敗しました",
     "deleteFailed": "レビューの削除に失敗しました",
-    "confirmDelete": "このレビューを削除してもよろしいですか？"
+    "confirmDelete": "このレビューを削除してもよろしいですか？",
+    "status": {
+      "not_started": "未読",
+      "reading": "読書中",
+      "completed": "読了"
+    },
+    "statusAll": "すべて",
+    "archivedLabel": "アーカイブ済み",
+    "archive": "アーカイブ",
+    "unarchive": "アーカイブ解除",
+    "archived": "アーカイブしました",
+    "unarchived": "アーカイブを解除しました",
+    "archiveFailed": "アーカイブに失敗しました",
+    "unarchiveFailed": "アーカイブ解除に失敗しました",
+    "statusUpdated": "ステータスを更新しました",
+    "statusUpdateFailed": "ステータスの更新に失敗しました"
   },
   "qa": {
     "pageTitle": "技術Q&A",

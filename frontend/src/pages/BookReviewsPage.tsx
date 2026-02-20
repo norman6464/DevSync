@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BookOpen } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import type { BookReview } from '../types/bookReview';
+import type { BookReview, ReviewStatus } from '../types/bookReview';
 import { useBookReviews, useConfirm } from '../hooks';
 import BookReviewCard from '../components/bookReviews/BookReviewCard';
 import BookReviewForm from '../components/bookReviews/BookReviewForm';
@@ -14,7 +14,9 @@ export default function BookReviewsPage() {
   const user = useAuthStore((s) => s.user);
   const {
     reviews, total, loading, saving, page, setPage, limit,
+    statusFilter, setStatusFilter, showArchived, setShowArchived,
     createReview, updateReview, deleteReview,
+    updateStatus, archiveReview, unarchiveReview,
   } = useBookReviews();
 
   const { confirm, dialogProps } = useConfirm();
@@ -50,6 +52,33 @@ export default function BookReviewsPage() {
         actionLabel={t('bookReviews.addReview')}
         onAction={() => setShowForm(true)}
       />
+
+      {/* Filter Bar */}
+      <div className="flex flex-wrap items-center gap-3 mb-6">
+        {(['all', 'not_started', 'reading', 'completed'] as const).map(status => (
+          <button
+            key={status}
+            onClick={() => setStatusFilter(status)}
+            className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+              statusFilter === status
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
+          >
+            {status === 'all' ? t('bookReviews.statusAll') : t(`bookReviews.status.${status}`)}
+          </button>
+        ))}
+        <button
+          onClick={() => setShowArchived(!showArchived)}
+          className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+            showArchived
+              ? 'bg-yellow-700 text-yellow-200'
+              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+          }`}
+        >
+          {t('bookReviews.archivedLabel')}
+        </button>
+      </div>
 
       {/* Form Modal */}
       <Modal
@@ -87,6 +116,9 @@ export default function BookReviewsPage() {
                 showUser={true}
                 onEdit={() => setEditingReview(review)}
                 onDelete={() => handleDeleteReview(review)}
+                onStatusChange={updateStatus}
+                onArchive={archiveReview}
+                onUnarchive={unarchiveReview}
               />
             ))}
           </div>
