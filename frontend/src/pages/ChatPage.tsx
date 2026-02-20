@@ -1,15 +1,14 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MessageSquare, Users, Settings, Send } from 'lucide-react';
+import { MessageSquare, Users, Settings } from 'lucide-react';
 import { useChat } from '../hooks/useChat';
-import { messageInputClass } from '../constants/styles';
-import type { Message } from '../types/message';
 import type { ChatRoom } from '../types/chat';
 import Avatar from '../components/common/Avatar';
 import ChatSidebar from '../components/chat/ChatSidebar';
 import CreateRoomModal from '../components/chat/CreateRoomModal';
 import RoomSettingsModal from '../components/chat/RoomSettingsModal';
-import { format } from 'date-fns';
+import MessageBubble from '../components/chat/MessageBubble';
+import MessageInputForm from '../components/chat/MessageInputForm';
 
 export default function ChatPage() {
   const { t } = useTranslation();
@@ -74,66 +73,25 @@ export default function ChatPage() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-3">
-              {c.groupMessages.map((msg) => {
-                const isOwn = msg.sender_id === c.currentUser?.id;
-                return (
-                  <div
-                    key={msg.id}
-                    className={`flex items-end gap-2 ${isOwn ? 'justify-end' : 'justify-start'}`}
-                  >
-                    {!isOwn && (
-                      <Avatar
-                        name={msg.sender?.name || ''}
-                        avatarUrl={msg.sender?.avatar_url}
-                        size="xs"
-                      />
-                    )}
-                    {isOwn && (
-                      <span className="chat-bubble-time-own text-xs mb-0.5">
-                        {format(new Date(msg.created_at), 'HH:mm')}
-                      </span>
-                    )}
-                    <div>
-                      {!isOwn && (
-                        <p className="text-xs text-gray-400 mb-1">{msg.sender?.name}</p>
-                      )}
-                      <div
-                        className={`px-4 py-2.5 rounded-md ${
-                          isOwn
-                            ? 'chat-bubble-own rounded-br-md'
-                            : 'chat-bubble-other rounded-bl-md'
-                        }`}
-                      >
-                        <p className="text-sm leading-relaxed">{msg.content}</p>
-                      </div>
-                    </div>
-                    {!isOwn && (
-                      <span className="chat-bubble-time-other text-xs mb-0.5">
-                        {format(new Date(msg.created_at), 'HH:mm')}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
+              {c.groupMessages.map((msg) => (
+                <MessageBubble
+                  key={msg.id}
+                  content={msg.content}
+                  createdAt={msg.created_at}
+                  isOwn={msg.sender_id === c.currentUser?.id}
+                  senderName={msg.sender?.name}
+                  senderAvatarUrl={msg.sender?.avatar_url}
+                  showSenderInfo
+                />
+              ))}
             </div>
 
-            <form onSubmit={c.handleSend} className="p-4 border-t border-gray-800 flex gap-3">
-              <input
-                type="text"
-                value={c.newMessage}
-                onChange={(e) => c.setNewMessage(e.target.value)}
-                placeholder={t('chat.groupMessagePlaceholder')}
-                className={messageInputClass}
-              />
-              <button
-                type="submit"
-                disabled={!c.newMessage.trim()}
-                className="px-5 py-2.5 bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:hover:bg-gray-700 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-2"
-              >
-                <Send className="w-4 h-4" />
-                {t('chat.send')}
-              </button>
-            </form>
+            <MessageInputForm
+              value={c.newMessage}
+              onChange={c.setNewMessage}
+              onSubmit={c.handleSend}
+              placeholder={t('chat.groupMessagePlaceholder')}
+            />
           </>
         ) : c.selectedUserId ? (
           <>
@@ -153,54 +111,22 @@ export default function ChatPage() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-3">
-              {c.activeMessages.map((msg: Message) => {
-                const isOwn = msg.sender_id === c.currentUser?.id;
-                return (
-                  <div
-                    key={msg.id}
-                    className={`flex items-end gap-2 ${isOwn ? 'justify-end' : 'justify-start'}`}
-                  >
-                    {isOwn && (
-                      <span className="chat-bubble-time-own text-xs mb-0.5">
-                        {format(new Date(msg.created_at), 'HH:mm')}
-                      </span>
-                    )}
-                    <div
-                      className={`max-w-sm px-4 py-2.5 rounded-md ${
-                        isOwn
-                          ? 'chat-bubble-own rounded-br-md'
-                          : 'chat-bubble-other rounded-bl-md'
-                      }`}
-                    >
-                      <p className="text-sm leading-relaxed">{msg.content}</p>
-                    </div>
-                    {!isOwn && (
-                      <span className="chat-bubble-time-other text-xs mb-0.5">
-                        {format(new Date(msg.created_at), 'HH:mm')}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
+              {c.activeMessages.map((msg) => (
+                <MessageBubble
+                  key={msg.id}
+                  content={msg.content}
+                  createdAt={msg.created_at}
+                  isOwn={msg.sender_id === c.currentUser?.id}
+                />
+              ))}
             </div>
 
-            <form onSubmit={c.handleSend} className="p-4 border-t border-gray-800 flex gap-3">
-              <input
-                type="text"
-                value={c.newMessage}
-                onChange={(e) => c.setNewMessage(e.target.value)}
-                placeholder={t('chat.typeMessage')}
-                className={messageInputClass}
-              />
-              <button
-                type="submit"
-                disabled={!c.newMessage.trim()}
-                className="px-5 py-2.5 bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:hover:bg-gray-700 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-2"
-              >
-                <Send className="w-4 h-4" />
-                {t('chat.send')}
-              </button>
-            </form>
+            <MessageInputForm
+              value={c.newMessage}
+              onChange={c.setNewMessage}
+              onSubmit={c.handleSend}
+              placeholder={t('chat.typeMessage')}
+            />
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-gray-500">
