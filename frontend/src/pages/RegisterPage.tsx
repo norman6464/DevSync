@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff } from 'lucide-react';
@@ -44,6 +44,16 @@ export default function RegisterPage() {
       setLoading(false);
     }
   }, [loginWithGitHub, t]);
+
+  const passwordStrength = useMemo(() => {
+    if (!password) return 0;
+    let score = 0;
+    if (password.length >= 8) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^a-zA-Z0-9]/.test(password)) score++;
+    return score;
+  }, [password]);
 
   const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value), []);
   const handleUsernameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value), []);
@@ -155,6 +165,25 @@ export default function RegisterPage() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {password && (
+                <div className="mt-1.5 space-y-1">
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4].map((level) => (
+                      <div
+                        key={level}
+                        className={`h-1 flex-1 rounded-full transition-colors ${
+                          level <= passwordStrength
+                            ? passwordStrength <= 1 ? 'bg-red-500' : passwordStrength <= 2 ? 'bg-yellow-500' : 'bg-green-500'
+                            : 'bg-gray-700'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <p className={`text-xs ${passwordStrength <= 1 ? 'text-red-400' : passwordStrength <= 2 ? 'text-yellow-400' : 'text-green-400'}`}>
+                    {passwordStrength <= 1 ? t('auth.passwordStrengthWeak') : passwordStrength <= 2 ? t('auth.passwordStrengthMedium') : t('auth.passwordStrengthStrong')}
+                  </p>
+                </div>
+              )}
             </div>
             <button
               type="submit"
