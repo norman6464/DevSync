@@ -919,6 +919,7 @@
     "complete": "完了",
     "completed": "完了",
     "stepsCompleted": "ステップ完了",
+    "stepsProgress": "{{completed}} / {{total}} ステップ完了",
     "notFound": "ロードマップが見つかりません",
     "backToList": "一覧に戻る",
     "addStep": "ステップを追加",

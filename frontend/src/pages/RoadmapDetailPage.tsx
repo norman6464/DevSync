@@ -218,6 +218,19 @@ export default function RoadmapDetailPage() {
         </form>
       </Modal>
 
+      {/* Steps Summary */}
+      {roadmap.steps && roadmap.steps.length > 0 && (
+        <div className="flex items-center justify-between text-sm text-gray-400 mb-2">
+          <span>
+            {t('roadmaps.stepsProgress', {
+              completed: roadmap.completed_step_count,
+              total: roadmap.step_count,
+            })}
+          </span>
+          <span className="text-gray-500">{roadmap.progress}%</span>
+        </div>
+      )}
+
       {/* Steps List */}
       {roadmap.steps && roadmap.steps.length === 0 ? (
         <EmptyState

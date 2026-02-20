@@ -969,6 +969,7 @@
     "complete": "完成",
     "completed": "已完成",
     "stepsCompleted": "步驟完成",
+    "stepsProgress": "{{completed}} / {{total}} 步驟已完成",
     "notFound": "未找到路線圖",
     "backToList": "返回列表",
     "addStep": "新增步驟",

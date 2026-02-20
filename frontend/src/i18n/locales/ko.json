@@ -969,6 +969,7 @@
     "complete": "완료",
     "completed": "완료",
     "stepsCompleted": "단계 완료",
+    "stepsProgress": "{{completed}} / {{total}} 단계 완료",
     "notFound": "로드맵을 찾을 수 없습니다",
     "backToList": "목록으로",
     "addStep": "단계 추가",
