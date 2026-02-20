@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -42,7 +43,7 @@ func (h *PostTagHandler) SetTags(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, gin.H{"message": "タグを更新しました"})
+	respondOK(c, domain.NewMessageResponse("タグを更新しました"))
 }
 
 // GetByPostID は投稿のタグ一覧を取得する。
