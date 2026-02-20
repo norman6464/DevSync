@@ -33,9 +33,9 @@ func (m *MockNoteFolderService) GetByID(id uint) (*model.NoteFolder, error) {
 	return nil, args.Error(1)
 }
 
-func (m *MockNoteFolderService) GetByUserID(userID uint) ([]model.NoteFolder, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.NoteFolder), args.Error(1)
+func (m *MockNoteFolderService) GetByUserID(userID uint, limit, offset int) ([]model.NoteFolder, int64, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.NoteFolder), args.Get(1).(int64), args.Error(2)
 }
 
 func (m *MockNoteFolderService) GetChildren(parentID uint) ([]model.NoteFolder, error) {
@@ -141,7 +141,7 @@ func TestNoteFolderHandler_GetByUserID(t *testing.T) {
 		{ID: 2, UserID: 1, Name: "フォルダ2"},
 	}
 
-	mockService.On("GetByUserID", uint(1)).Return(folders, nil)
+	mockService.On("GetByUserID", uint(1), 20, 0).Return(folders, int64(2), nil)
 
 	req, _ := http.NewRequest("GET", "/folders", nil)
 	w := httptest.NewRecorder()
@@ -303,7 +303,7 @@ func TestNoteFolderHandler_GetByUserID_ServiceError(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/folders", h.GetByUserID)
 
-	svc.On("GetByUserID", uint(1)).Return([]model.NoteFolder(nil), errors.New("db error"))
+	svc.On("GetByUserID", uint(1), 20, 0).Return([]model.NoteFolder(nil), int64(0), errors.New("db error"))
 
 	w := doRequest(r, "GET", "/folders", nil)
 	assertStatus(t, w, http.StatusInternalServerError)

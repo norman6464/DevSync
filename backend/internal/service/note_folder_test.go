@@ -28,9 +28,9 @@ func (m *MockNoteFolderRepository) FindByID(id uint) (*model.NoteFolder, error) 
 	return args.Get(0).(*model.NoteFolder), args.Error(1)
 }
 
-func (m *MockNoteFolderRepository) FindByUserID(userID uint) ([]model.NoteFolder, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.NoteFolder), args.Error(1)
+func (m *MockNoteFolderRepository) FindByUserID(userID uint, limit, offset int) ([]model.NoteFolder, int64, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.NoteFolder), args.Get(1).(int64), args.Error(2)
 }
 
 func (m *MockNoteFolderRepository) FindByParentID(parentID uint) ([]model.NoteFolder, error) {
@@ -96,11 +96,12 @@ func TestNoteFolderService_GetByUserID(t *testing.T) {
 		{ID: 2, UserID: 1, Name: "フォルダ2"},
 	}
 
-	mockRepo.On("FindByUserID", uint(1)).Return(expected, nil)
+	mockRepo.On("FindByUserID", uint(1), 20, 0).Return(expected, int64(2), nil)
 
-	result, err := service.GetByUserID(1)
+	folders, total, err := service.GetByUserID(1, 20, 0)
 	assert.NoError(t, err)
-	assert.Len(t, result, 2)
+	assert.Len(t, folders, 2)
+	assert.Equal(t, int64(2), total)
 	mockRepo.AssertExpectations(t)
 }
 
@@ -253,11 +254,12 @@ func TestNoteFolderService_GetByUserID_Error(t *testing.T) {
 	mockRepo := new(MockNoteFolderRepository)
 	service := NewNoteFolderService(mockRepo)
 
-	mockRepo.On("FindByUserID", uint(1)).Return([]model.NoteFolder(nil), errors.New("db error"))
+	mockRepo.On("FindByUserID", uint(1), 20, 0).Return([]model.NoteFolder(nil), int64(0), errors.New("db error"))
 
-	result, err := service.GetByUserID(1)
+	result, total, err := service.GetByUserID(1, 20, 0)
 	assert.Error(t, err)
 	assert.Nil(t, result)
+	assert.Equal(t, int64(0), total)
 	mockRepo.AssertExpectations(t)
 }
 

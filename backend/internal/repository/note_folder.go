@@ -30,11 +30,14 @@ func (r *NoteFolderRepository) FindByID(id uint) (*model.NoteFolder, error) {
 	return &folder, nil
 }
 
-// FindByUserID は指定ユーザーの全フォルダを取得する。
-func (r *NoteFolderRepository) FindByUserID(userID uint) ([]model.NoteFolder, error) {
+// FindByUserID は指定ユーザーのフォルダをページネーション付きで取得する。
+func (r *NoteFolderRepository) FindByUserID(userID uint, limit, offset int) ([]model.NoteFolder, int64, error) {
 	var folders []model.NoteFolder
-	err := r.db.Where("user_id = ?", userID).Order("created_at DESC").Find(&folders).Error
-	return folders, err
+	var total int64
+	query := r.db.Where("user_id = ?", userID)
+	query.Model(&model.NoteFolder{}).Count(&total)
+	err := query.Order("created_at DESC").Limit(limit).Offset(offset).Find(&folders).Error
+	return folders, total, err
 }
 
 // FindByParentID は指定親フォルダ配下のサブフォルダを取得する。
