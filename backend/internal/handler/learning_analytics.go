@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"strconv"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
@@ -82,12 +80,7 @@ func (h *LearningAnalyticsHandler) GetWeeklyTrends(c *gin.Context) {
 		return
 	}
 
-	weeks := 12
-	if w := c.Query("weeks"); w != "" {
-		if parsed, err := strconv.Atoi(w); err == nil && parsed > 0 {
-			weeks = parsed
-		}
-	}
+	weeks := parseQueryIntSilent(c, "weeks", 12)
 
 	data, err := h.service.GetWeeklyTrends(userID, weeks)
 	if err != nil {
