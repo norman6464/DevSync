@@ -4,15 +4,29 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
 // DailyChatLimit は1日あたりのLLMチャット回数制限。
 const DailyChatLimit = 5
 
+// MaxChatMessageLength はチャットメッセージの最大文字数。
+const MaxChatMessageLength = 5000
+
 // Chat はLLMとの会話を行い、結果を保存して返す。
 // conversationID が0の場合は新規会話を作成する。
 func (s *AIAdviceService) Chat(userID uint, message string, conversationID uint) (*model.AIConversation, error) {
+	// メッセージバリデーション
+	trimmed := strings.TrimSpace(message)
+	if trimmed == "" {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "メッセージを入力してください", nil)
+	}
+	if len(trimmed) > MaxChatMessageLength {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "メッセージは5000文字以内で入力してください", nil)
+	}
+	message = trimmed
+
 	// LLM利用可否チェック
 	if s.llmClient == nil {
 		return nil, ErrLLMNotConfigured
