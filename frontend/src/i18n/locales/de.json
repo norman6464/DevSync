@@ -644,6 +644,7 @@
     "sortOldest": "Älteste",
     "sortDurationDesc": "Dauer (längste)",
     "sortDurationAsc": "Dauer (kürzeste)",
+    "searchPlaceholder": "Nach Titel oder Inhalt suchen...",
     "noLogs": "Noch keine Einträge",
     "noLogsOnDate": "Keine Einträge an diesem Tag",
     "created": "Eintrag erstellt",

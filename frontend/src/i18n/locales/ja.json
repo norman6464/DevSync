@@ -628,6 +628,7 @@
     "sortOldest": "古い順",
     "sortDurationDesc": "学習時間（長い順）",
     "sortDurationAsc": "学習時間（短い順）",
+    "searchPlaceholder": "タイトルや内容で検索...",
     "noLogs": "まだログがありません",
     "noLogsOnDate": "この日のログはありません",
     "created": "ログを作成しました",

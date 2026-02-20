@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Calendar, List, Download, Star, ArrowDownWideNarrow } from 'lucide-react';
+import { Calendar, List, Download, Star, ArrowDownWideNarrow, Search } from 'lucide-react';
 import { useLearningLogForm } from '../hooks/useLearningLogForm';
 import { useWeeklyDuration, useStreak } from '../hooks';
 import { useAuthStore } from '../store/authStore';
@@ -29,6 +29,7 @@ export default function LearningLogsPage() {
     filterCategory, setFilterCategory,
     showFavoritesOnly, setShowFavoritesOnly,
     sortBy, setSortBy,
+    searchQuery, setSearchQuery,
     title, setTitle,
     content, setContent,
     category, setCategory,
@@ -60,6 +61,7 @@ export default function LearningLogsPage() {
   const handleContentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => setContent(e.target.value), [setContent]);
   const handleCategoryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => setCategory(e.target.value as LogCategory), [setCategory]);
   const handleDurationChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setDuration(e.target.value), [setDuration]);
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value), [setSearchQuery]);
 
   if (loading) return <div className="py-12"><LoadingSpinner /></div>;
 
@@ -106,6 +108,18 @@ export default function LearningLogsPage() {
         streakInfo={streakInfo}
         logCount={filteredLogs.length}
       />
+
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={handleSearchChange}
+          placeholder={t('learningLogs.searchPlaceholder')}
+          className={`${inputClass} pl-9`}
+        />
+      </div>
 
       {/* View Toggle */}
       <div className="flex items-center gap-2">
