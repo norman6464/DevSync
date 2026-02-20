@@ -370,6 +370,24 @@ func TestNoteFolderService_Update_CircularCheckRepoError(t *testing.T) {
 	assert.Nil(t, result)
 }
 
+func TestNoteFolderService_Update_CircularCheckRecursiveError(t *testing.T) {
+	mockRepo := new(MockNoteFolderRepository)
+	service := NewNoteFolderService(mockRepo)
+
+	// フォルダA(ID=1) → 子フォルダB(ID=2) → 再帰呼び出し時にエラー
+	existing := &model.NoteFolder{ID: 1, UserID: 1, Name: "フォルダA"}
+	mockRepo.On("FindByID", uint(1)).Return(existing, nil)
+	mockRepo.On("FindByParentID", uint(1)).Return([]model.NoteFolder{
+		{ID: 2, UserID: 1, Name: "フォルダB"},
+	}, nil)
+	mockRepo.On("FindByParentID", uint(2)).Return([]model.NoteFolder{}, errors.New("db error"))
+
+	parentID := uint(5)
+	result, err := service.Update(1, 1, "", &parentID)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
 func TestNoteFolderService_Delete_FindByIDError(t *testing.T) {
 	mockRepo := new(MockNoteFolderRepository)
 	service := NewNoteFolderService(mockRepo)
