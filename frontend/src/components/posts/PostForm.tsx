@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { Plus } from 'lucide-react';
 import { inputClass } from '../../constants/styles';
+import { useConfirm } from '../../hooks';
+import ConfirmDialog from '../common/ConfirmDialog';
 import MarkdownEditor from './MarkdownEditor';
 import CodeSnippetInput, { type SnippetInputData } from './CodeSnippetInput';
 
@@ -29,6 +31,7 @@ export default function PostForm({ post, onSubmit, onCancel, loading: externalLo
   const [snippets, setSnippets] = useState<SnippetInputData[]>([]);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(!!post);
+  const { confirm, dialogProps } = useConfirm();
 
   const addSnippet = () => {
     setSnippets([...snippets, { language: '', file_name: '', code: '' }]);
@@ -128,7 +131,16 @@ export default function PostForm({ post, onSubmit, onCancel, loading: externalLo
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => {
+                onClick={async () => {
+                  if (title.trim() || content.trim()) {
+                    const confirmed = await confirm({
+                      title: t('common.confirm'),
+                      message: t('post.confirmDiscard'),
+                      variant: 'warning',
+                      confirmText: t('common.discard'),
+                    });
+                    if (!confirmed) return;
+                  }
                   if (onCancel) {
                     onCancel();
                   } else {
@@ -164,6 +176,7 @@ export default function PostForm({ post, onSubmit, onCancel, loading: externalLo
           </div>
         </>
       )}
+      <ConfirmDialog {...dialogProps} />
     </form>
   );
 }
