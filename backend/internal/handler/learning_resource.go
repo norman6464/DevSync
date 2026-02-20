@@ -14,7 +14,7 @@ type LearningResourceServiceInterface interface {
 	GetByID(id, userID uint) (*model.LearningResource, error)
 	HasLiked(userID, resourceID uint) (bool, error)
 	HasSaved(userID, resourceID uint) (bool, error)
-	GetByUserID(targetUserID, currentUserID uint) ([]model.LearningResource, error)
+	GetByUserID(targetUserID, currentUserID uint, limit, offset int) ([]model.LearningResource, int64, error)
 	GetPublic(limit, offset int, category, difficulty string) ([]model.LearningResource, int64, error)
 	Search(query string, limit, offset int) ([]model.LearningResource, int64, error)
 	Update(id, userID uint, updates *model.LearningResource) (*model.LearningResource, error)
@@ -124,7 +124,7 @@ func (h *LearningResourceHandler) GetByID(c *gin.Context) {
 	})
 }
 
-// GetByUserID は指定されたユーザーの学習リソース一覧を取得する。
+// GetByUserID は指定されたユーザーの学習リソース一覧をページネーション付きで取得する。
 func (h *LearningResourceHandler) GetByUserID(c *gin.Context) {
 	targetUserID, ok := parseID(c, "userId")
 	if !ok {
@@ -132,14 +132,20 @@ func (h *LearningResourceHandler) GetByUserID(c *gin.Context) {
 	}
 
 	currentUserID := c.GetUint("userID")
+	limit, offset := parseLimitOffset(c)
 
-	resources, err := h.service.GetByUserID(targetUserID, currentUserID)
+	resources, total, err := h.service.GetByUserID(targetUserID, currentUserID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
 
-	respondOK(c, resources)
+	respondOK(c, dto.ResourceListResponse{
+		Resources: resources,
+		Total:     total,
+		Limit:     limit,
+		Offset:    offset,
+	})
 }
 
 // GetPublic は公開学習リソース一覧をページネーション・フィルター付きで取得する。

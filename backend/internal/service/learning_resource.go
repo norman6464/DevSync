@@ -53,11 +53,11 @@ func (s *LearningResourceService) HasSaved(userID, resourceID uint) (bool, error
 	return s.repo.HasSaved(userID, resourceID)
 }
 
-// GetByUserID は指定ユーザーの学習リソースを取得する。
+// GetByUserID は指定ユーザーの学習リソースをページネーション付きで取得する。
 // 自分のリソースの場合は非公開も含め、他ユーザーの場合は公開のみ返す。
-func (s *LearningResourceService) GetByUserID(targetUserID, currentUserID uint) ([]model.LearningResource, error) {
+func (s *LearningResourceService) GetByUserID(targetUserID, currentUserID uint, limit, offset int) ([]model.LearningResource, int64, error) {
 	includePrivate := currentUserID == targetUserID
-	return s.repo.FindByUserID(targetUserID, includePrivate)
+	return s.repo.FindByUserID(targetUserID, includePrivate, limit, offset)
 }
 
 // GetPublic は公開学習リソースをページネーション・フィルタ付きで取得する。

@@ -76,7 +76,7 @@ func TestRuleEngine_StreakBroken(t *testing.T) {
 	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 	deps.logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
-	deps.resourceRepo.On("FindByUserID", uint(1), true).Return([]model.LearningResource{}, nil)
+	deps.resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{}, int64(0), nil)
 	deps.userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
 	advices := svc.GenerateAdvice(1)
@@ -111,7 +111,7 @@ func TestRuleEngine_RoadmapStalled(t *testing.T) {
 	}, nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 	deps.logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
-	deps.resourceRepo.On("FindByUserID", uint(1), true).Return([]model.LearningResource{}, nil)
+	deps.resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{}, int64(0), nil)
 	deps.userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
 	advices := svc.GenerateAdvice(1)
@@ -139,7 +139,7 @@ func TestRuleEngine_GoalOverdue(t *testing.T) {
 	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 	deps.logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
-	deps.resourceRepo.On("FindByUserID", uint(1), true).Return([]model.LearningResource{}, nil)
+	deps.resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{}, int64(0), nil)
 	deps.userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
 	advices := svc.GenerateAdvice(1)
@@ -169,7 +169,7 @@ func TestRuleEngine_TechGapReact(t *testing.T) {
 		{Language: "JavaScript", Bytes: 50000, RepoCount: 3},
 	}, nil)
 	deps.logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
-	deps.resourceRepo.On("FindByUserID", uint(1), true).Return([]model.LearningResource{}, nil)
+	deps.resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{}, int64(0), nil)
 	deps.userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
 	advices := svc.GenerateAdvice(1)
@@ -196,7 +196,7 @@ func TestRuleEngine_NoGoalsWithGitHub(t *testing.T) {
 		{Language: "Go", Bytes: 80000, RepoCount: 3},
 	}, nil)
 	deps.logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
-	deps.resourceRepo.On("FindByUserID", uint(1), true).Return([]model.LearningResource{}, nil)
+	deps.resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{}, int64(0), nil)
 	deps.userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
 	advices := svc.GenerateAdvice(1)
@@ -230,9 +230,9 @@ func TestRuleEngine_HighCompletionRate(t *testing.T) {
 	}, nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 	deps.logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
-	deps.resourceRepo.On("FindByUserID", uint(1), true).Return([]model.LearningResource{
+	deps.resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{
 		{}, {}, {},
-	}, nil)
+	}, int64(3), nil)
 	deps.userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
 	advices := svc.GenerateAdvice(1)
@@ -270,9 +270,9 @@ func TestRuleEngine_ConsistentLearner(t *testing.T) {
 		}
 	}
 	deps.logRepo.On("GetByUserID", uint(1)).Return(logs, nil)
-	deps.resourceRepo.On("FindByUserID", uint(1), true).Return([]model.LearningResource{
+	deps.resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{
 		{}, {}, {},
-	}, nil)
+	}, int64(3), nil)
 	deps.userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
 	advices := svc.GenerateAdvice(1)
@@ -299,7 +299,7 @@ func TestRuleEngine_NoRoadmap(t *testing.T) {
 	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 	deps.logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
-	deps.resourceRepo.On("FindByUserID", uint(1), true).Return([]model.LearningResource{}, nil)
+	deps.resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{}, int64(0), nil)
 	deps.userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
 	advices := svc.GenerateAdvice(1)
@@ -329,7 +329,7 @@ func TestRuleEngine_PriorityOrdering(t *testing.T) {
 	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 	deps.logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
-	deps.resourceRepo.On("FindByUserID", uint(1), true).Return([]model.LearningResource{}, nil)
+	deps.resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{}, int64(0), nil)
 	deps.userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
 	advices := svc.GenerateAdvice(1)
@@ -353,7 +353,7 @@ func TestRuleEngine_NewUserNoData(t *testing.T) {
 	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 	deps.logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
-	deps.resourceRepo.On("FindByUserID", uint(1), true).Return([]model.LearningResource{}, nil)
+	deps.resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{}, int64(0), nil)
 	deps.userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
 	advices := svc.GenerateAdvice(1)

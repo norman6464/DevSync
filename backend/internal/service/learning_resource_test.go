@@ -87,11 +87,12 @@ func TestLearningResourceGetByUserID_Self(t *testing.T) {
 		{Title: "Private", IsPublic: false},
 	}
 	// 自分 → includePrivate=true
-	repo.On("FindByUserID", uint(1), true).Return(resources, nil)
+	repo.On("FindByUserID", uint(1), true, 20, 0).Return(resources, int64(2), nil)
 
-	result, err := svc.GetByUserID(1, 1)
+	result, total, err := svc.GetByUserID(1, 1, 20, 0)
 	assert.NoError(t, err)
 	assert.Len(t, result, 2)
+	assert.Equal(t, int64(2), total)
 	repo.AssertExpectations(t)
 }
 
@@ -102,11 +103,24 @@ func TestLearningResourceGetByUserID_Other(t *testing.T) {
 		{Title: "Public Only", IsPublic: true},
 	}
 	// 他人 → includePrivate=false
-	repo.On("FindByUserID", uint(1), false).Return(resources, nil)
+	repo.On("FindByUserID", uint(1), false, 20, 0).Return(resources, int64(1), nil)
 
-	result, err := svc.GetByUserID(1, 999)
+	result, total, err := svc.GetByUserID(1, 999, 20, 0)
 	assert.NoError(t, err)
 	assert.Len(t, result, 1)
+	assert.Equal(t, int64(1), total)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningResourceGetByUserID_Page2(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+
+	repo.On("FindByUserID", uint(1), true, 10, 10).Return([]model.LearningResource{}, int64(15), nil)
+
+	result, total, err := svc.GetByUserID(1, 1, 10, 10)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	assert.Equal(t, int64(15), total)
 	repo.AssertExpectations(t)
 }
 

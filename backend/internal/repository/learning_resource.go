@@ -32,14 +32,16 @@ func (r *LearningResourceRepository) FindByID(id uint) (*model.LearningResource,
 
 // FindByUserID は指定ユーザーの学習リソースを取得する。
 // includePrivateがfalseの場合、公開リソースのみを返す。
-func (r *LearningResourceRepository) FindByUserID(userID uint, includePrivate bool) ([]model.LearningResource, error) {
+func (r *LearningResourceRepository) FindByUserID(userID uint, includePrivate bool, limit, offset int) ([]model.LearningResource, int64, error) {
 	var resources []model.LearningResource
+	var total int64
 	query := r.db.Where("user_id = ?", userID)
 	if !includePrivate {
 		query = query.Where("is_public = ?", true)
 	}
-	err := query.Order("created_at DESC").Find(&resources).Error
-	return resources, err
+	query.Model(&model.LearningResource{}).Count(&total)
+	err := query.Order("created_at DESC").Limit(limit).Offset(offset).Find(&resources).Error
+	return resources, total, err
 }
 
 // FindPublic は公開学習リソースをフィルタ・ページネーション付きで取得する。

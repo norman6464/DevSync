@@ -209,7 +209,7 @@ type BookReviewRepositoryInterface interface {
 type LearningResourceRepositoryInterface interface {
 	Create(resource *model.LearningResource) error
 	FindByID(id uint) (*model.LearningResource, error)
-	FindByUserID(userID uint, includePrivate bool) ([]model.LearningResource, error)
+	FindByUserID(userID uint, includePrivate bool, limit, offset int) ([]model.LearningResource, int64, error)
 	FindPublic(limit, offset int, category string, difficulty string) ([]model.LearningResource, int64, error)
 	Update(resource *model.LearningResource) error
 	Delete(id uint) error
