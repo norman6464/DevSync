@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, Star } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import type { BookReview, ReviewStatus } from '../types/bookReview';
 import { useBookReviews, useConfirm } from '../hooks';
@@ -15,7 +15,7 @@ export default function BookReviewsPage() {
   const {
     reviews, total, loading, saving, page, setPage, limit,
     statusFilter, setStatusFilter, showArchived, setShowArchived,
-    sortBy, setSortBy,
+    sortBy, setSortBy, ratingFilter, setRatingFilter,
     createReview, updateReview, deleteReview,
     updateStatus, archiveReview, unarchiveReview,
   } = useBookReviews();
@@ -92,6 +92,34 @@ export default function BookReviewsPage() {
             }`}
           >
             {t(`bookReviews.sort.${sort}`)}
+          </button>
+        ))}
+      </div>
+
+      {/* Rating Filter */}
+      <div className="flex flex-wrap items-center gap-2 mb-6">
+        <Star className="w-4 h-4 text-yellow-400" />
+        <button
+          onClick={() => setRatingFilter(0)}
+          className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+            ratingFilter === 0
+              ? 'bg-yellow-600 text-white'
+              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+          }`}
+        >
+          {t('bookReviews.ratingFilter.all')}
+        </button>
+        {[3, 4, 5].map(star => (
+          <button
+            key={star}
+            onClick={() => setRatingFilter(star)}
+            className={`px-3 py-1.5 text-sm rounded-lg transition-colors inline-flex items-center gap-1 ${
+              ratingFilter === star
+                ? 'bg-yellow-600 text-white'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
+          >
+            {t('bookReviews.ratingFilter.minRating', { stars: star })}
           </button>
         ))}
       </div>

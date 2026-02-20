@@ -15,6 +15,7 @@ export function useBookReviews() {
   const [statusFilter, setStatusFilter] = useState<ReviewStatus | 'all'>('all');
   const [showArchived, setShowArchived] = useState(false);
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'ratingDesc' | 'ratingAsc'>('newest');
+  const [ratingFilter, setRatingFilter] = useState<number>(0);
   const limit = 20;
 
   const { data, loading, refetch } = useAsyncData(
@@ -33,6 +34,7 @@ export function useBookReviews() {
     if (!showArchived && r.is_archived) return false;
     if (showArchived && !r.is_archived) return false;
     if (statusFilter !== 'all' && r.status !== statusFilter) return false;
+    if (ratingFilter > 0 && r.rating < ratingFilter) return false;
     return true;
   });
 
@@ -140,6 +142,8 @@ export function useBookReviews() {
     setShowArchived,
     sortBy,
     setSortBy,
+    ratingFilter,
+    setRatingFilter,
     createReview: handleCreate,
     updateReview: handleUpdate,
     deleteReview: handleDelete,

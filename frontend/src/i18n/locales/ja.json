@@ -843,6 +843,10 @@
       "oldest": "古い順",
       "ratingDesc": "評価が高い順",
       "ratingAsc": "評価が低い順"
+    },
+    "ratingFilter": {
+      "all": "全評価",
+      "minRating": "★{{stars}}以上"
     }
   },
   "qa": {

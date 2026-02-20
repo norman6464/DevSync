@@ -889,6 +889,10 @@
       "oldest": "Старые",
       "ratingDesc": "Высокий рейтинг",
       "ratingAsc": "Низкий рейтинг"
+    },
+    "ratingFilter": {
+      "all": "Все оценки",
+      "minRating": "★{{stars}}+"
     }
   },
   "qa": {

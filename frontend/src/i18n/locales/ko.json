@@ -889,6 +889,10 @@
       "oldest": "오래된순",
       "ratingDesc": "평점 높은순",
       "ratingAsc": "평점 낮은순"
+    },
+    "ratingFilter": {
+      "all": "전체 평점",
+      "minRating": "★{{stars}}이상"
     }
   },
   "qa": {
