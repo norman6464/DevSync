@@ -43,13 +43,15 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		ctx.Header("X-XSS-Protection", "1; mode=block")
 		ctx.Header("Referrer-Policy", "strict-origin-when-cross-origin")
 		ctx.Header("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
-		if os.Getenv("ENVIRONMENT") == "production" {
-			ctx.Header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
-		}
 		if strings.HasPrefix(ctx.Request.URL.Path, "/uploads/") {
+			ctx.Header("Cache-Control", "public, max-age=86400")
 			ctx.Header("Content-Security-Policy", "default-src 'none'; img-src 'self'; style-src 'none'; script-src 'none'")
 		} else {
+			ctx.Header("Cache-Control", "no-store")
 			ctx.Header("Content-Security-Policy", "default-src 'none'")
+		}
+		if os.Getenv("ENVIRONMENT") == "production" {
+			ctx.Header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
 		}
 		ctx.Next()
 	})
