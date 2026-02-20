@@ -4,6 +4,7 @@ import { UserPlus, UserMinus } from 'lucide-react';
 import type { User } from '../../types/user';
 import type { ChatRoomMember } from '../../types/chat';
 import Avatar from '../common/Avatar';
+import { linkSmallClass } from '../../constants/styles';
 
 interface ChatRoomMemberSectionProps {
   members: ChatRoomMember[];
@@ -35,7 +36,7 @@ export default function ChatRoomMemberSection({
         </h3>
         <button
           onClick={() => setShowAddMember(!showAddMember)}
-          className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300"
+          className={`${linkSmallClass} flex items-center gap-1`}
         >
           <UserPlus className="w-3.5 h-3.5" />
           {t('chat.addMember')}

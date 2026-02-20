@@ -4,6 +4,7 @@ import { Lightbulb, ChevronRight, MessageSquare } from 'lucide-react';
 import { useAdvice } from '../../hooks/useAdvice';
 import AdviceIcon from '../advice/AdviceIcon';
 import { parseJsonObject } from '../../utils/json';
+import { linkSmallClass } from '../../constants/styles';
 
 export default function AIAdviceWidget() {
   const { t } = useTranslation();
@@ -34,7 +35,7 @@ export default function AIAdviceWidget() {
         </div>
         <button
           onClick={() => navigate('/advice')}
-          className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1"
+          className={`${linkSmallClass} flex items-center gap-1`}
         >
           {t('advice.viewAll')}
           <ChevronRight size={14} />

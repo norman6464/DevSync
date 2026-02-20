@@ -5,6 +5,7 @@ import { useNotifications } from '../../hooks';
 import Avatar from '../common/Avatar';
 import { getNotificationLink, getNotificationMessage } from './NotificationItem';
 import { formatDistanceToNow } from '../../utils/timeFormat';
+import { linkSmallClass } from '../../constants/styles';
 
 export default function NotificationDropdown() {
   const { t } = useTranslation();
@@ -64,7 +65,7 @@ export default function NotificationDropdown() {
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
-                className="text-xs text-blue-400 hover:text-blue-300"
+                className={linkSmallClass}
               >
                 {t('notifications.markAllRead')}
               </button>

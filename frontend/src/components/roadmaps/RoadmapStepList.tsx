@@ -3,7 +3,7 @@ import { List } from 'lucide-react';
 import { type RoadmapStep } from '../../api/roadmaps';
 import EmptyState from '../common/EmptyState';
 import { sanitizeUrl } from '../../utils/url';
-import { deleteIconButtonClass } from '../../constants/styles';
+import { deleteIconButtonClass, linkSmallClass } from '../../constants/styles';
 import { formatDate } from '../../utils/timeFormat';
 
 interface RoadmapStepListProps {
@@ -86,7 +86,7 @@ export default function RoadmapStepList({
                       href={sanitizeUrl(step.resource_url)!}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-blue-400 hover:text-blue-300 mt-2 inline-flex items-center gap-1"
+                      className={`${linkSmallClass} mt-2 inline-flex items-center gap-1`}
                     >
                       {t('roadmaps.viewResource')}
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">

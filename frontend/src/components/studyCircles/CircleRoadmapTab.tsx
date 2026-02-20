@@ -4,6 +4,7 @@ import { Plus, Trash2, Check, ExternalLink } from 'lucide-react';
 import type { StudyCircle, StudyCircleMemberProgress } from '../../types/studyCircle';
 import type { User } from '../../types/user';
 import { sanitizeUrl } from '../../utils/url';
+import { linkSmallClass } from '../../constants/styles';
 
 interface CircleRoadmapTabProps {
   circle: StudyCircle;
@@ -89,7 +90,7 @@ export default function CircleRoadmapTab({
                         href={sanitizeUrl(step.resource_url)!}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 mt-1"
+                        className={`${linkSmallClass} inline-flex items-center gap-1 mt-1`}
                       >
                         <ExternalLink className="w-3 h-3" />
                         {t('studyCircle.steps.resourceUrl')}
