@@ -108,6 +108,69 @@ func TestLearningLog_GetByUserID_Success(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
+func TestLearningLog_GetMyLogs_ServiceError(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	svc.On("GetByUserID", uint(1), 20, 0).Return([]model.LearningLog(nil), int64(0), errors.New("db error"))
+
+	r := newRouter(1)
+	r.GET("/me/logs", h.GetMyLogs)
+
+	w := doRequest(r, http.MethodGet, "/me/logs", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+func TestLearningLog_GetByUserID_ServiceError(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	svc.On("GetByUserID", uint(5), 20, 0).Return([]model.LearningLog(nil), int64(0), errors.New("db error"))
+
+	r := newRouter(1)
+	r.GET("/users/:userId/logs", h.GetByUserID)
+
+	w := doRequest(r, http.MethodGet, "/users/5/logs", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+func TestLearningLog_GetByUserID_InvalidID(t *testing.T) {
+	h, _ := setupLearningLogHandler()
+	r := newRouter(1)
+	r.GET("/users/:userId/logs", h.GetByUserID)
+
+	w := doRequest(r, http.MethodGet, "/users/abc/logs", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestLearningLog_Update_InvalidJSON(t *testing.T) {
+	h, _ := setupLearningLogHandler()
+	r := newRouter(1)
+	r.PUT("/logs/:id", h.Update)
+
+	w := doRequestRaw(r, http.MethodPut, "/logs/1", "not json")
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestLearningLog_Update_InvalidID(t *testing.T) {
+	h, _ := setupLearningLogHandler()
+	r := newRouter(1)
+	r.PUT("/logs/:id", h.Update)
+
+	w := doRequest(r, http.MethodPut, "/logs/abc", map[string]interface{}{"title": "test"})
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestLearningLog_Update_ServiceError(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	svc.On("Update", uint(1), uint(1), mock.AnythingOfType("*model.LearningLog")).Return(nil, errors.New("db error"))
+
+	r := newRouter(1)
+	r.PUT("/logs/:id", h.Update)
+
+	w := doRequest(r, http.MethodPut, "/logs/1", map[string]interface{}{"title": "Updated"})
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
 func TestLearningLog_Update_Success(t *testing.T) {
 	h, svc := setupLearningLogHandler()
 	updated := &model.LearningLog{Title: "Updated"}
