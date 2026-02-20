@@ -57,9 +57,15 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }, 3000);
     };
     ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'group_message') {
-        const wsMsg = data as WSGroupMessage;
+      let data: unknown;
+      try {
+        data = JSON.parse(event.data);
+      } catch {
+        return;
+      }
+      const msg = data as Record<string, unknown>;
+      if (msg.type === 'group_message') {
+        const wsMsg = msg as unknown as WSGroupMessage;
         const state = get();
         if (state.activeRoomId === wsMsg.room_id) {
           const groupMsg: GroupMessage = {
@@ -73,7 +79,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           set((s) => ({ groupMessages: [...s.groupMessages, groupMsg] }));
         }
       } else {
-        const message = data as Message;
+        const message = msg as unknown as Message;
         set((state) => ({
           activeMessages: [...state.activeMessages, message],
         }));
