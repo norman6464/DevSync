@@ -209,6 +209,8 @@
     "notFound": "Publicação não encontrada",
     "bookmark": "Favorito",
     "unbookmark": "Remover favorito",
+    "copyLink": "Copiar link",
+    "linkCopied": "Link copiado para a área de transferência",
     "bookmarks": "Favoritos",
     "noBookmarks": "Nenhuma publicação favoritada",
     "addReaction": "Reagir",

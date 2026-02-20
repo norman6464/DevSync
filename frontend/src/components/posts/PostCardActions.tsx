@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
 import { likePost, unlikePost, bookmarkPost, unbookmarkPost, getReactions, addReaction, removeReaction } from '../../api/posts';
 import type { ReactionCount } from '../../types/post';
 import { useEffect } from 'react';
@@ -35,6 +36,18 @@ export default function PostCardActions({
   const [reactions, setReactions] = useState<ReactionCount[]>([]);
   const [userReactions, setUserReactions] = useState<string[]>([]);
   const [showReactionPicker, setShowReactionPicker] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const handleCopyLink = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/posts/${postId}`);
+      setLinkCopied(true);
+      toast.success(t('post.linkCopied'));
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      toast.error(t('errors.somethingWrong'));
+    }
+  }, [postId, t]);
 
   useEffect(() => {
     getReactions(postId).then((res) => {
@@ -188,10 +201,21 @@ export default function PostCardActions({
           </span>
         )}
         <button
+          onClick={handleCopyLink}
+          aria-label={t('post.copyLink')}
+          className={`flex items-center gap-1.5 text-sm transition-colors ml-auto ${
+            linkCopied ? 'text-green-400' : 'text-gray-500 hover:text-gray-300'
+          }`}
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0-12.814a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186-9.566 5.314M16.5 6a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm0 12a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
+          </svg>
+        </button>
+        <button
           onClick={handleBookmark}
           aria-label={bookmarked ? t('post.unbookmark') : t('post.bookmark')}
           aria-pressed={bookmarked}
-          className={`flex items-center gap-1.5 text-sm transition-colors ml-auto ${
+          className={`flex items-center gap-1.5 text-sm transition-colors ${
             bookmarked ? 'text-yellow-400' : 'text-gray-500 hover:text-yellow-400'
           }`}
         >

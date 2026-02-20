@@ -209,6 +209,8 @@
     "notFound": "Post not found",
     "bookmark": "Bookmark",
     "unbookmark": "Remove Bookmark",
+    "copyLink": "Copy Link",
+    "linkCopied": "Link copied to clipboard",
     "bookmarks": "Bookmarks",
     "noBookmarks": "No bookmarked posts",
     "addReaction": "React",

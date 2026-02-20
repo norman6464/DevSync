@@ -209,6 +209,8 @@
     "notFound": "Beitrag nicht gefunden",
     "bookmark": "Lesezeichen",
     "unbookmark": "Lesezeichen entfernen",
+    "copyLink": "Link kopieren",
+    "linkCopied": "Link in die Zwischenablage kopiert",
     "bookmarks": "Lesezeichen",
     "noBookmarks": "Keine markierten Beiträge",
     "addReaction": "Reagieren",
