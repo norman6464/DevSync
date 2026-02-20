@@ -87,6 +87,7 @@ export default function RoadmapsPage() {
               value={title}
               onChange={e => setTitle(e.target.value)}
               placeholder={t('roadmaps.titlePlaceholder')}
+              maxLength={200}
               className={inputClass}
               required
             />
@@ -98,6 +99,7 @@ export default function RoadmapsPage() {
               onChange={e => setDescription(e.target.value)}
               placeholder={t('roadmaps.descriptionPlaceholder')}
               rows={3}
+              maxLength={2000}
               className={`${inputClass} resize-none`}
             />
           </div>
