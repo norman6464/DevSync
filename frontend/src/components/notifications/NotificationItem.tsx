@@ -1,7 +1,28 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Heart, MessageCircle, UserPlus, Mail, FileText, Award, HelpCircle, type LucideIcon } from 'lucide-react';
 import type { Notification } from '../../types/notification';
+
+function getTypeIcon(type: Notification['type']): { icon: LucideIcon; color: string } {
+  switch (type) {
+    case 'like':
+      return { icon: Heart, color: 'text-pink-400' };
+    case 'comment':
+      return { icon: MessageCircle, color: 'text-blue-400' };
+    case 'follow':
+      return { icon: UserPlus, color: 'text-purple-400' };
+    case 'message':
+      return { icon: Mail, color: 'text-yellow-400' };
+    case 'post':
+      return { icon: FileText, color: 'text-gray-400' };
+    case 'badge':
+      return { icon: Award, color: 'text-orange-400' };
+    case 'answer':
+      return { icon: HelpCircle, color: 'text-green-400' };
+    default:
+      return { icon: FileText, color: 'text-gray-400' };
+  }
+}
 import Avatar from '../common/Avatar';
 import { formatDistanceToNow } from '../../utils/timeFormat';
 
@@ -69,11 +90,21 @@ export default function NotificationItem({ notification, onMarkAsRead, onDelete 
         }}
         className="flex items-start gap-3 flex-1 min-w-0"
       >
-        <Avatar
-          name={notification.actor.name}
-          avatarUrl={notification.actor.avatar_url}
-          size="sm"
-        />
+        <div className="relative shrink-0">
+          <Avatar
+            name={notification.actor.name}
+            avatarUrl={notification.actor.avatar_url}
+            size="sm"
+          />
+          {(() => {
+            const { icon: Icon, color } = getTypeIcon(notification.type);
+            return (
+              <span className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-gray-900 flex items-center justify-center ring-1 ring-gray-700`}>
+                <Icon className={`w-2.5 h-2.5 ${color}`} aria-hidden="true" />
+              </span>
+            );
+          })()}
+        </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm text-gray-100">
             {getNotificationMessage(notification, t)}
