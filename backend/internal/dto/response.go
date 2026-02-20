@@ -43,3 +43,13 @@ type AvailabilityResponse struct {
 	Available bool `json:"available"`
 }
 
+// TagsResponse はタグ一覧レスポンス
+type TagsResponse struct {
+	Tags interface{} `json:"tags"`
+}
+
+// PinsResponse はピン留め一覧レスポンス
+type PinsResponse struct {
+	Pins interface{} `json:"pins"`
+}
+

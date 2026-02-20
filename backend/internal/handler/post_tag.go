@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -58,7 +59,7 @@ func (h *PostTagHandler) GetByPostID(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, gin.H{"tags": tags})
+	respondOK(c, dto.TagsResponse{Tags: tags})
 }
 
 // FindPostsByTag はタグで投稿を検索する。
@@ -87,5 +88,5 @@ func (h *PostTagHandler) GetPopularTags(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, gin.H{"tags": tags})
+	respondOK(c, dto.TagsResponse{Tags: tags})
 }
