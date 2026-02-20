@@ -16,10 +16,18 @@ func NewBookReviewService(repo repository.BookReviewRepositoryInterface) *BookRe
 	return &BookReviewService{repo: repo}
 }
 
+// validateRating は評価値が1〜5の範囲内かを検証する。
+func validateRating(rating int) error {
+	if rating < 1 || rating > 5 {
+		return domain.NewError(domain.ErrCodeBadRequest, "評価は1〜5の範囲で指定してください", nil)
+	}
+	return nil
+}
+
 // Create は新しい書籍レビューを作成する。
 func (s *BookReviewService) Create(review *model.BookReview) error {
-	if review.Rating < 1 || review.Rating > 5 {
-		return domain.NewError(domain.ErrCodeBadRequest, "評価は1〜5の範囲で指定してください", nil)
+	if err := validateRating(review.Rating); err != nil {
+		return err
 	}
 	return s.repo.Create(review)
 }
@@ -68,8 +76,8 @@ func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (
 		review.ISBN = updates.ISBN
 	}
 	if updates.Rating != 0 {
-		if updates.Rating < 1 || updates.Rating > 5 {
-			return nil, domain.NewError(domain.ErrCodeBadRequest, "評価は1〜5の範囲で指定してください", nil)
+		if err := validateRating(updates.Rating); err != nil {
+			return nil, err
 		}
 		review.Rating = updates.Rating
 	}
