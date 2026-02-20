@@ -461,7 +461,7 @@ type NoteRepositoryInterface interface {
 type NoteFolderRepositoryInterface interface {
 	Create(folder *model.NoteFolder) error
 	FindByID(id uint) (*model.NoteFolder, error)
-	FindByUserID(userID uint) ([]model.NoteFolder, error)
+	FindByUserID(userID uint, limit, offset int) ([]model.NoteFolder, int64, error)
 	FindByParentID(parentID uint) ([]model.NoteFolder, error)
 	GetRootFolders(userID uint) ([]model.NoteFolder, error)
 	Update(folder *model.NoteFolder) error

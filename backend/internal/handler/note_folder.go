@@ -11,7 +11,7 @@ import (
 type NoteFolderServiceInterface interface {
 	Create(folder *model.NoteFolder) error
 	GetByID(id uint) (*model.NoteFolder, error)
-	GetByUserID(userID uint) ([]model.NoteFolder, error)
+	GetByUserID(userID uint, limit, offset int) ([]model.NoteFolder, int64, error)
 	GetChildren(parentID uint) ([]model.NoteFolder, error)
 	GetRootFolders(userID uint) ([]model.NoteFolder, error)
 	Update(id, userID uint, name string, parentID *uint) (*model.NoteFolder, error)
@@ -67,17 +67,23 @@ func (h *NoteFolderHandler) GetByID(c *gin.Context) {
 	respondOK(c, folder)
 }
 
-// GetByUserID は現在のユーザーのフォルダ一覧を取得する。
+// GetByUserID は現在のユーザーのフォルダ一覧をページネーション付きで取得する。
 func (h *NoteFolderHandler) GetByUserID(c *gin.Context) {
 	userID := c.GetUint("userID")
+	limit, offset := parseLimitOffset(c)
 
-	folders, err := h.service.GetByUserID(userID)
+	folders, total, err := h.service.GetByUserID(userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
 
-	respondOK(c, ensureSlice(folders))
+	respondOK(c, dto.NoteFolderListResponse{
+		Folders: ensureSlice(folders),
+		Total:   total,
+		Limit:   limit,
+		Offset:  offset,
+	})
 }
 
 // GetChildren は指定フォルダの子フォルダ一覧を取得する。

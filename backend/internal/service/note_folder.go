@@ -35,9 +35,9 @@ func (s *NoteFolderService) GetByID(id uint) (*model.NoteFolder, error) {
 	return s.repo.FindByID(id)
 }
 
-// GetByUserID は指定ユーザーの全フォルダを取得する。
-func (s *NoteFolderService) GetByUserID(userID uint) ([]model.NoteFolder, error) {
-	return s.repo.FindByUserID(userID)
+// GetByUserID は指定ユーザーのフォルダをページネーション付きで取得する。
+func (s *NoteFolderService) GetByUserID(userID uint, limit, offset int) ([]model.NoteFolder, int64, error) {
+	return s.repo.FindByUserID(userID, limit, offset)
 }
 
 // GetChildren は指定フォルダの子フォルダを取得する。
