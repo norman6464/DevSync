@@ -375,3 +375,28 @@ func TestProjectDelete_InvalidID(t *testing.T) {
 
 	assertStatus(t, w, 400)
 }
+
+func TestProjectCreate_InvalidDemoURL(t *testing.T) {
+	h, _ := setupProjectHandler()
+
+	r := newRouter(1)
+	r.POST("/projects", h.Create)
+	w := doRequest(r, "POST", "/projects", map[string]interface{}{
+		"title":    "Test Project",
+		"demo_url": "javascript:alert('xss')",
+	})
+
+	assertStatus(t, w, 400)
+}
+
+func TestProjectUpdate_InvalidGithubURL(t *testing.T) {
+	h, _ := setupProjectHandler()
+
+	r := newRouter(1)
+	r.PUT("/projects/:id", h.Update)
+	w := doRequest(r, "PUT", "/projects/1", map[string]interface{}{
+		"github_url": "data:text/html,<script>alert('xss')</script>",
+	})
+
+	assertStatus(t, w, 400)
+}
