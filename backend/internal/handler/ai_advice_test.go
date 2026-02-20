@@ -203,6 +203,43 @@ func TestAIAdviceGetUnreadAdvice_Empty(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
+// ============================================================
+// DeleteConversation テスト
+// ============================================================
+
+func TestAIAdviceDeleteConversation_Success(t *testing.T) {
+	h, svc := setupAIAdviceHandler()
+	r := newRouter(1)
+	r.DELETE("/ai-advice/conversations/:id", h.DeleteConversation)
+
+	svc.On("DeleteConversation", uint(5), uint(1)).Return(nil)
+
+	w := doRequest(r, http.MethodDelete, "/ai-advice/conversations/5", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestAIAdviceDeleteConversation_ServiceError(t *testing.T) {
+	h, svc := setupAIAdviceHandler()
+	r := newRouter(1)
+	r.DELETE("/ai-advice/conversations/:id", h.DeleteConversation)
+
+	svc.On("DeleteConversation", uint(99), uint(1)).Return(errors.New("not found"))
+
+	w := doRequest(r, http.MethodDelete, "/ai-advice/conversations/99", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+func TestAIAdviceDeleteConversation_InvalidID(t *testing.T) {
+	h, _ := setupAIAdviceHandler()
+	r := newRouter(1)
+	r.DELETE("/ai-advice/conversations/:id", h.DeleteConversation)
+
+	w := doRequest(r, http.MethodDelete, "/ai-advice/conversations/abc", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
 func TestAIAdviceGetUnreadAdvice_ServiceError(t *testing.T) {
 	h, svc := setupAIAdviceHandler()
 	r := newRouter(1)

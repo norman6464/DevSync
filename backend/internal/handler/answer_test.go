@@ -316,6 +316,31 @@ func TestAnswerGetByVoteRange_InvalidID(t *testing.T) {
 	assertStatus(t, w, http.StatusBadRequest)
 }
 
+// ============================================================
+// RemoveVote テスト
+// ============================================================
+
+func TestAnswerRemoveVote_ServiceError(t *testing.T) {
+	h, svc := setupAnswerHandler()
+	r := newRouter(1)
+	r.DELETE("/answers/:answerId/vote", h.RemoveVote)
+
+	svc.On("RemoveVote", uint(1), uint(5)).Return(errors.New("not found"))
+
+	w := doRequest(r, http.MethodDelete, "/answers/5/vote", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+func TestAnswerRemoveVote_InvalidID(t *testing.T) {
+	h, _ := setupAnswerHandler()
+	r := newRouter(1)
+	r.DELETE("/answers/:answerId/vote", h.RemoveVote)
+
+	w := doRequest(r, http.MethodDelete, "/answers/abc/vote", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
 func TestAnswerGetByVoteRange_ServiceError(t *testing.T) {
 	h, svc := setupAnswerHandler()
 	r := newRouter(1)

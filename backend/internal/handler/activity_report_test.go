@@ -118,6 +118,59 @@ func TestActivityReport_GetComparison_Success(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
+// ============================================================
+// GetMonthlyReport テスト
+// ============================================================
+
+func TestActivityReport_GetMonthlyReport_ServiceError(t *testing.T) {
+	h, svc := setupActivityReportHandler()
+	svc.On("GetMonthlyReport", uint(1)).Return(nil, errors.New("db error"))
+
+	r := newRouter(1)
+	r.GET("/users/:userId/reports/monthly", h.GetMonthlyReport)
+
+	w := doRequest(r, http.MethodGet, "/users/1/reports/monthly", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+func TestActivityReport_GetMonthlyReport_InvalidID(t *testing.T) {
+	h, _ := setupActivityReportHandler()
+	r := newRouter(1)
+	r.GET("/users/:userId/reports/monthly", h.GetMonthlyReport)
+
+	w := doRequest(r, http.MethodGet, "/users/abc/reports/monthly", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// ============================================================
+// GetMyWeeklyReport / GetMyMonthlyReport テスト
+// ============================================================
+
+func TestActivityReport_GetMyWeeklyReport_ServiceError(t *testing.T) {
+	h, svc := setupActivityReportHandler()
+	svc.On("GetWeeklyReport", uint(1)).Return(nil, errors.New("db error"))
+
+	r := newRouter(1)
+	r.GET("/me/reports/weekly", h.GetMyWeeklyReport)
+
+	w := doRequest(r, http.MethodGet, "/me/reports/weekly", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+func TestActivityReport_GetMyMonthlyReport_ServiceError(t *testing.T) {
+	h, svc := setupActivityReportHandler()
+	svc.On("GetMonthlyReport", uint(1)).Return(nil, errors.New("db error"))
+
+	r := newRouter(1)
+	r.GET("/me/reports/monthly", h.GetMyMonthlyReport)
+
+	w := doRequest(r, http.MethodGet, "/me/reports/monthly", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
 func TestActivityReport_GetComparison_Monthly(t *testing.T) {
 	h, svc := setupActivityReportHandler()
 	comp := &model.ReportComparison{ContributionsDiff: -2}
