@@ -86,6 +86,8 @@
     "confirmPassword": "Confirmar senha",
     "emailPlaceholder": "you@example.com",
     "passwordPlaceholder": "6+ caracteres",
+    "showPassword": "Mostrar senha",
+    "hidePassword": "Ocultar senha",
     "forgotPassword": "Esqueceu a senha?",
     "noAccount": "Não tem conta?",
     "hasAccount": "Já tem conta?",

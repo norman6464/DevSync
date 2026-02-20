@@ -87,6 +87,8 @@
     "confirmPassword": "パスワード確認",
     "emailPlaceholder": "you@example.com",
     "passwordPlaceholder": "6文字以上",
+    "showPassword": "パスワードを表示",
+    "hidePassword": "パスワードを非表示",
     "forgotPassword": "パスワードを忘れた方",
     "noAccount": "アカウントをお持ちでない方",
     "hasAccount": "すでにアカウントをお持ちの方",
