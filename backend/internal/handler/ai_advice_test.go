@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAIAdvice_GetAdvice_Success(t *testing.T) {
@@ -165,6 +166,51 @@ func TestAIAdvice_GetConversation_ServiceError(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/conversations/99", nil)
 	r.ServeHTTP(w, req)
 
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+// ============================================================
+// GetUnreadAdvice テスト
+// ============================================================
+
+func TestAIAdviceGetUnreadAdvice_Success(t *testing.T) {
+	h, svc := setupAIAdviceHandler()
+	r := newRouter(1)
+	r.GET("/ai-advice/unread", h.GetUnreadAdvice)
+
+	advices := []model.AIAdvice{
+		{TitleKey: "advice.study_daily"},
+	}
+	svc.On("GetUnreadAdvice", uint(1)).Return(advices, nil)
+
+	w := doRequest(r, http.MethodGet, "/ai-advice/unread", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestAIAdviceGetUnreadAdvice_Empty(t *testing.T) {
+	h, svc := setupAIAdviceHandler()
+	r := newRouter(1)
+	r.GET("/ai-advice/unread", h.GetUnreadAdvice)
+
+	svc.On("GetUnreadAdvice", uint(1)).Return([]model.AIAdvice(nil), nil)
+
+	w := doRequest(r, http.MethodGet, "/ai-advice/unread", nil)
+	assertStatus(t, w, http.StatusOK)
+	// nilの場合は空配列[]に変換されるべき
+	assert.Equal(t, "[]", w.Body.String())
+	svc.AssertExpectations(t)
+}
+
+func TestAIAdviceGetUnreadAdvice_ServiceError(t *testing.T) {
+	h, svc := setupAIAdviceHandler()
+	r := newRouter(1)
+	r.GET("/ai-advice/unread", h.GetUnreadAdvice)
+
+	svc.On("GetUnreadAdvice", uint(1)).Return([]model.AIAdvice(nil), errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/ai-advice/unread", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
 	svc.AssertExpectations(t)
 }
