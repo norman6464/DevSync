@@ -54,6 +54,15 @@ func (r *BookReviewRepository) FindAll(limit, offset int) ([]model.BookReview, i
 	return reviews, total, err
 }
 
+// FindByRating は指定ユーザーの書籍レビューを評価範囲でフィルタリングして取得する（新しい順）。
+func (r *BookReviewRepository) FindByRating(userID uint, minRating, maxRating int) ([]model.BookReview, error) {
+	var reviews []model.BookReview
+	err := r.db.Where("user_id = ? AND rating >= ? AND rating <= ?", userID, minRating, maxRating).
+		Order("created_at DESC").
+		Find(&reviews).Error
+	return reviews, err
+}
+
 // Update は既存の書籍レビューを更新する。
 func (r *BookReviewRepository) Update(review *model.BookReview) error {
 	return r.db.Save(review).Error

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
@@ -15,6 +16,7 @@ type BookReviewServiceInterface interface {
 	GetAll(limit, offset int) ([]model.BookReview, int64, error)
 	Update(id, userID uint, updates *model.BookReview) (*model.BookReview, error)
 	Delete(id, userID uint) error
+	GetByRating(userID uint, minRating, maxRating int) ([]model.BookReview, error)
 }
 
 // BookReviewHandler は書籍レビュー関連のHTTPハンドラ。
@@ -145,6 +147,31 @@ func (h *BookReviewHandler) Update(c *gin.Context) {
 	}
 
 	respondOK(c, review)
+}
+
+// GetByRating は評価範囲で書籍レビューをフィルタリングして取得する。
+// クエリパラメータ: min_rating, max_rating（1〜5）
+func (h *BookReviewHandler) GetByRating(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	minRating, err := strconv.Atoi(c.Query("min_rating"))
+	if err != nil {
+		respondBadRequest(c, "min_ratingは数値で指定してください")
+		return
+	}
+	maxRating, err := strconv.Atoi(c.Query("max_rating"))
+	if err != nil {
+		respondBadRequest(c, "max_ratingは数値で指定してください")
+		return
+	}
+
+	reviews, err := h.service.GetByRating(userID, minRating, maxRating)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, reviews)
 }
 
 // Delete は指定IDの書籍レビューを削除する。

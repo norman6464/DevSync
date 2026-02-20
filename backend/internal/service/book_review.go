@@ -47,6 +47,14 @@ func (s *BookReviewService) GetAll(limit, offset int) ([]model.BookReview, int64
 	return s.repo.FindAll(limit, offset)
 }
 
+// GetByRating は指定ユーザーの書籍レビューを評価範囲でフィルタリングして取得する。
+func (s *BookReviewService) GetByRating(userID uint, minRating, maxRating int) ([]model.BookReview, error) {
+	if minRating < 1 || minRating > 5 || maxRating < 1 || maxRating > 5 || minRating > maxRating {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "評価範囲が無効です", nil)
+	}
+	return s.repo.FindByRating(userID, minRating, maxRating)
+}
+
 // findAndCheckOwnership は書籍レビューを取得し、指定ユーザーが所有者かを検証する。
 func (s *BookReviewService) findAndCheckOwnership(id, userID uint) (*model.BookReview, error) {
 	review, err := s.repo.FindByID(id)
