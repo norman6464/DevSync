@@ -480,6 +480,54 @@ func TestQuestionUpdate_TagsTooLong(t *testing.T) {
 	assert.Nil(t, result)
 }
 
+func TestQuestionUpdate_WhitespaceOnlyTitle(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	existing := &model.Question{Title: "Old Title", Body: "Old Body", Tags: "go", UserID: 1}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	// 空白のみのタイトル → 変更なし（エラーにならない）
+	result, err := svc.Update(1, 1, "   ", "", "")
+	assert.NoError(t, err)
+	assert.Equal(t, "Old Title", result.Title) // 元のタイトルが維持される
+	repo.AssertExpectations(t)
+}
+
+func TestQuestionUpdate_WhitespaceOnlyBody(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	existing := &model.Question{Title: "Old Title", Body: "Old Body", Tags: "go", UserID: 1}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	// 空白のみの本文 → 変更なし
+	result, err := svc.Update(1, 1, "", "   ", "")
+	assert.NoError(t, err)
+	assert.Equal(t, "Old Body", result.Body)
+	repo.AssertExpectations(t)
+}
+
+func TestQuestionUpdate_WhitespaceOnlyTags(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	existing := &model.Question{Title: "Old Title", Body: "Old Body", Tags: "go", UserID: 1}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	// 空白のみのタグ → 変更なし
+	result, err := svc.Update(1, 1, "", "", "   ")
+	assert.NoError(t, err)
+	assert.Equal(t, "go", result.Tags)
+	repo.AssertExpectations(t)
+}
+
 // ============================================================
 // GetSolved テスト
 // ============================================================

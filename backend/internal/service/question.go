@@ -1,6 +1,8 @@
 package service
 
 import (
+	"strings"
+
 	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
@@ -69,6 +71,11 @@ func (s *QuestionService) Update(id, userID uint, title, body, tags string) (*mo
 	if err != nil {
 		return nil, err
 	}
+
+	// 空白のみの入力を正規化（空白のみ→変更なしとして扱う）
+	title = strings.TrimSpace(title)
+	body = strings.TrimSpace(body)
+	tags = strings.TrimSpace(tags)
 
 	v := validator.NewQuestionValidator()
 	if err := v.ValidateUpdateQuestion(title, body, tags); err != nil {

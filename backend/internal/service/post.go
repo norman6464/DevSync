@@ -1,6 +1,7 @@
 package service
 
 import (
+	"strings"
 	"unicode/utf8"
 
 	"github.com/norman6464/devsync/backend/internal/domain"
@@ -106,6 +107,11 @@ func (s *PostService) Update(id, userID uint, title, content, imageUrls string) 
 	if err != nil {
 		return nil, err
 	}
+
+	// 空白のみの入力を正規化（空白のみ→変更なしとして扱う）
+	title = strings.TrimSpace(title)
+	content = strings.TrimSpace(content)
+	imageUrls = strings.TrimSpace(imageUrls)
 
 	// バリデーション
 	v := validator.NewPostValidator()
