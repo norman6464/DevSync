@@ -1123,6 +1123,39 @@ func TestPostUnpublish_UpdateError(t *testing.T) {
 // 投稿取得系 エラーパステスト
 // ============================================================
 
+func TestPostCountAll_Success(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("CountAll").Return(int64(42), nil)
+
+	count, err := svc.CountAll()
+	assert.NoError(t, err)
+	assert.Equal(t, int64(42), count)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostCountAll_Zero(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("CountAll").Return(int64(0), nil)
+
+	count, err := svc.CountAll()
+	assert.NoError(t, err)
+	assert.Equal(t, int64(0), count)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostCountAll_RepoError(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("CountAll").Return(int64(0), errors.New("db error"))
+
+	count, err := svc.CountAll()
+	assert.Error(t, err)
+	assert.Equal(t, int64(0), count)
+	postRepo.AssertExpectations(t)
+}
+
 func TestPostGetAll_RepoError(t *testing.T) {
 	svc, postRepo, _ := newTestPostService()
 

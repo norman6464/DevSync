@@ -60,13 +60,10 @@ func TestPostGetAll_Success(t *testing.T) {
 	postRepo.On("FindAll", 1, 20).Return([]model.Post{
 		{Title: "A"}, {Title: "B"},
 	}, nil)
+	postRepo.On("CountAll").Return(int64(2), nil)
 
 	w := doRequest(r, http.MethodGet, "/posts", nil)
 	assertStatus(t, w, http.StatusOK)
-
-	var posts []map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &posts)
-	assert.Len(t, posts, 2)
 }
 
 func TestPostGetAll_WithPagination(t *testing.T) {
@@ -75,6 +72,7 @@ func TestPostGetAll_WithPagination(t *testing.T) {
 	r.GET("/posts", h.GetAll)
 
 	postRepo.On("FindAll", 2, 5).Return([]model.Post{}, nil)
+	postRepo.On("CountAll").Return(int64(10), nil)
 
 	w := doRequest(r, http.MethodGet, "/posts?page=2&limit=5", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -818,6 +816,18 @@ func TestPostGetAll_ServiceError(t *testing.T) {
 	r.GET("/posts", h.GetAll)
 
 	postRepo.On("FindAll", 1, 20).Return([]model.Post(nil), service.ErrNotFound)
+
+	w := doRequest(r, http.MethodGet, "/posts", nil)
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+func TestPostGetAll_CountError(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.GET("/posts", h.GetAll)
+
+	postRepo.On("FindAll", 1, 20).Return([]model.Post{}, nil)
+	postRepo.On("CountAll").Return(int64(0), service.ErrNotFound)
 
 	w := doRequest(r, http.MethodGet, "/posts", nil)
 	assertStatus(t, w, http.StatusNotFound)

@@ -12,6 +12,7 @@ type PostServiceInterface interface {
 	Create(post *model.Post) (*model.Post, error)
 	GetByID(id uint) (*model.Post, error)
 	GetAll(page, limit int) ([]model.Post, error)
+	CountAll() (int64, error)
 	GetByUserID(userID uint) ([]model.Post, error)
 	GetDrafts(userID uint) ([]model.Post, error)
 	Timeline(userID uint, page, limit int) ([]model.Post, error)
@@ -107,7 +108,14 @@ func (h *PostHandler) GetAll(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, posts)
+
+	total, err := h.service.CountAll()
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondPaginated(c, posts, total, page, limit)
 }
 
 // GetByID は指定IDの投稿を返す。いいね済みフラグも付与する。

@@ -39,6 +39,13 @@ func (r *PostRepository) FindAll(page, limit int) ([]model.Post, error) {
 	return posts, err
 }
 
+// CountAll は公開済み投稿の総数を取得する（下書きを除く）。
+func (r *PostRepository) CountAll() (int64, error) {
+	var count int64
+	err := r.db.Model(&model.Post{}).Where("is_draft = ?", false).Count(&count).Error
+	return count, err
+}
+
 // FindByUserID は指定ユーザーの全投稿を取得する（新しい順）。下書きは除外。
 func (r *PostRepository) FindByUserID(userID uint) ([]model.Post, error) {
 	var posts []model.Post

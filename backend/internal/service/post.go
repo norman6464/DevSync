@@ -80,6 +80,11 @@ func (s *PostService) GetAll(page, limit int) ([]model.Post, error) {
 	return s.repo.FindAll(page, limit)
 }
 
+// CountAll は公開済み投稿の総数を取得する。
+func (s *PostService) CountAll() (int64, error) {
+	return s.repo.CountAll()
+}
+
 // GetByUserID は指定ユーザーの全投稿を取得する。
 func (s *PostService) GetByUserID(userID uint) ([]model.Post, error) {
 	return s.repo.FindByUserID(userID)
