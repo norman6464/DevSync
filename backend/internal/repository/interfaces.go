@@ -383,6 +383,9 @@ type StudyCircleRepositoryInterface interface {
 	Update(circle *model.StudyCircle) error
 	Delete(id uint) error
 
+	// フィルタリング
+	GetByStatus(userID uint, status string) ([]model.StudyCircle, error)
+
 	// 検索
 	Search(query string, limit, offset int) (interface{}, int64, error)
 

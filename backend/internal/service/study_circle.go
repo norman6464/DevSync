@@ -72,6 +72,21 @@ func (s *StudyCircleService) GetMyCircles(userID uint) ([]model.StudyCircle, err
 	return s.repo.FindByUserID(userID)
 }
 
+// validStudyCircleStatuses は有効なスタディサークルステータスのマップ。
+var validStudyCircleStatuses = map[string]bool{
+	string(model.StudyCircleStatusActive):    true,
+	string(model.StudyCircleStatusCompleted): true,
+	string(model.StudyCircleStatusArchived):  true,
+}
+
+// GetByStatus はユーザーが参加しているサークルをステータスでフィルタリングして返す。
+func (s *StudyCircleService) GetByStatus(userID uint, status string) ([]model.StudyCircle, error) {
+	if !validStudyCircleStatuses[status] {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "無効なステータスです", nil)
+	}
+	return s.repo.GetByStatus(userID, status)
+}
+
 // GetByID はサークル詳細を返す。メンバーのみアクセス可能。
 func (s *StudyCircleService) GetByID(id, userID uint) (*model.StudyCircle, error) {
 	circle, err := s.repo.FindByID(id)

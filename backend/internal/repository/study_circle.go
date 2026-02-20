@@ -41,6 +41,20 @@ func (r *StudyCircleRepository) FindByID(id uint) (*model.StudyCircle, error) {
 	return &circle, nil
 }
 
+// GetByStatus はユーザーが参加しているサークルをステータスでフィルタリングして返す。
+func (r *StudyCircleRepository) GetByStatus(userID uint, status string) ([]model.StudyCircle, error) {
+	var circles []model.StudyCircle
+	err := r.db.
+		Preload("Owner").
+		Preload("Members").
+		Preload("Members.User").
+		Joins("JOIN study_circle_members ON study_circle_members.circle_id = study_circles.id").
+		Where("study_circle_members.user_id = ? AND study_circles.status = ?", userID, status).
+		Order("study_circles.updated_at DESC").
+		Find(&circles).Error
+	return circles, err
+}
+
 // FindByUserID はユーザーが参加しているサークル一覧を返す。
 func (r *StudyCircleRepository) FindByUserID(userID uint) ([]model.StudyCircle, error) {
 	var circles []model.StudyCircle

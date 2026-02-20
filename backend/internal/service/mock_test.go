@@ -1456,6 +1456,11 @@ func (m *MockStudyCircleRepository) Search(query string, limit, offset int) (int
 	return args.Get(0), args.Get(1).(int64), args.Error(2)
 }
 
+func (m *MockStudyCircleRepository) GetByStatus(userID uint, status string) ([]model.StudyCircle, error) {
+	args := m.Called(userID, status)
+	return args.Get(0).([]model.StudyCircle), args.Error(1)
+}
+
 // インターフェース適合チェック
 var _ EmailSenderInterface = (*MockEmailSender)(nil)
 var _ repository.ActivityReportRepositoryInterface = (*MockActivityReportRepository)(nil)
