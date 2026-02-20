@@ -634,6 +634,7 @@
     "categorySkill": "Compétence",
     "categoryProject": "Projet",
     "categoryOther": "Autre",
+    "completedAt": "Terminé le",
     "stats": {
       "total": "Total des objectifs",
       "activeCount": "Actifs",

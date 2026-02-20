@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Monitor, Rocket, Target, FolderOpen, FileText, Copy, Pencil, Trash2, type LucideIcon } from 'lucide-react';
+import { Monitor, Rocket, Target, FolderOpen, FileText, Copy, Pencil, Trash2, CheckCircle2, type LucideIcon } from 'lucide-react';
 import { type GoalCategory, type GoalStatus, type LearningGoal } from '../../api/goals';
 import { formatDate } from '../../utils/timeFormat';
 import { badgeBaseClass } from '../../constants/styles';
@@ -80,6 +80,12 @@ const GoalCard = memo(function GoalCard({
               {goal.target_date && (
                 <span>
                   {t('goals.targetDateLabel')}: {formatDate(goal.target_date)}
+                </span>
+              )}
+              {goal.status === 'completed' && goal.completed_at && (
+                <span className="inline-flex items-center gap-0.5 text-green-400">
+                  <CheckCircle2 className="w-3 h-3" />
+                  {t('goals.completedAt')}: {formatDate(goal.completed_at)}
                 </span>
               )}
               {(() => {

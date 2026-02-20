@@ -634,6 +634,7 @@
     "categorySkill": "Навык",
     "categoryProject": "Проект",
     "categoryOther": "Другое",
+    "completedAt": "Завершено",
     "stats": {
       "total": "Всего целей",
       "activeCount": "Активных",
