@@ -222,3 +222,66 @@ func TestPostTagGetPopularTags_Error(t *testing.T) {
 	assert.Empty(t, result)
 	tagRepo.AssertExpectations(t)
 }
+
+// ============================================================
+// SetAutoTags（コンテンツからハッシュタグ自動抽出・設定）
+// ============================================================
+
+func TestPostTagSetAutoTags_ExtractsAndSets(t *testing.T) {
+	svc, tagRepo, postRepo := newTestPostTagService()
+
+	post := &model.Post{UserID: 1}
+	post.ID = 10
+
+	postRepo.On("FindByID", uint(10)).Return(post, nil)
+	tagRepo.On("SetTags", uint(10), []string{"golang", "react"}).Return(nil)
+
+	err := svc.SetAutoTags(10, 1, "今日は #golang と #React を学んだ")
+	assert.NoError(t, err)
+	tagRepo.AssertExpectations(t)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostTagSetAutoTags_NoHashtags(t *testing.T) {
+	svc, tagRepo, _ := newTestPostTagService()
+
+	// ハッシュタグがない場合はSetTagsを呼ばない
+	err := svc.SetAutoTags(10, 1, "ハッシュタグなしの通常テキスト")
+	assert.NoError(t, err)
+	tagRepo.AssertNotCalled(t, "SetTags")
+}
+
+func TestPostTagSetAutoTags_IgnoresCodeBlocks(t *testing.T) {
+	svc, tagRepo, postRepo := newTestPostTagService()
+
+	post := &model.Post{UserID: 1}
+	post.ID = 10
+
+	postRepo.On("FindByID", uint(10)).Return(post, nil)
+	tagRepo.On("SetTags", uint(10), []string{"validtag"}).Return(nil)
+
+	content := "#validTag を紹介\n```\n#notATag\n```"
+	err := svc.SetAutoTags(10, 1, content)
+	assert.NoError(t, err)
+	tagRepo.AssertExpectations(t)
+}
+
+func TestPostTagSetAutoTags_Forbidden(t *testing.T) {
+	svc, _, postRepo := newTestPostTagService()
+
+	post := &model.Post{UserID: 1}
+	post.ID = 10
+
+	postRepo.On("FindByID", uint(10)).Return(post, nil)
+
+	err := svc.SetAutoTags(10, 999, "#golang を学んだ")
+	assert.ErrorIs(t, err, ErrForbidden)
+}
+
+func TestPostTagSetAutoTags_EmptyContent(t *testing.T) {
+	svc, tagRepo, _ := newTestPostTagService()
+
+	err := svc.SetAutoTags(10, 1, "")
+	assert.NoError(t, err)
+	tagRepo.AssertNotCalled(t, "SetTags")
+}

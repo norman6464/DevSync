@@ -47,11 +47,18 @@ type CodeSnippetServiceInterface interface {
 type PostHandler struct {
 	service        PostServiceInterface
 	snippetService CodeSnippetServiceInterface
+	tagService     PostTagServiceInterface
 }
 
 // NewPostHandler は新しいPostHandlerインスタンスを生成する。
 func NewPostHandler(s PostServiceInterface, snippetService CodeSnippetServiceInterface) *PostHandler {
 	return &PostHandler{service: s, snippetService: snippetService}
+}
+
+// SetTagService はオプショナルなタグサービスを設定する。
+// 設定すると、投稿の作成・更新時にコンテンツからハッシュタグを自動抽出してタグを設定する。
+func (h *PostHandler) SetTagService(tagService PostTagServiceInterface) {
+	h.tagService = tagService
 }
 
 // Create は新しい投稿を作成する。
@@ -94,6 +101,11 @@ func (h *PostHandler) Create(c *gin.Context) {
 		if updated, err := h.service.GetByID(created.ID); err == nil {
 			created = updated
 		}
+	}
+
+	// コンテンツからハッシュタグを自動抽出してタグを設定
+	if h.tagService != nil {
+		_ = h.tagService.SetAutoTags(created.ID, userID, input.Content)
 	}
 
 	respondCreated(c, created)
@@ -157,6 +169,12 @@ func (h *PostHandler) Update(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
+
+	// コンテンツ更新時にハッシュタグを自動再抽出
+	if h.tagService != nil && input.Content != "" {
+		_ = h.tagService.SetAutoTags(id, userID, input.Content)
+	}
+
 	respondOK(c, post)
 }
 

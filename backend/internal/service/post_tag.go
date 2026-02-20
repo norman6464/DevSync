@@ -56,6 +56,16 @@ func (s *PostTagService) GetPopularTags(limit int) ([]model.TagCount, error) {
 	return s.tagRepo.GetPopularTags(limit)
 }
 
+// SetAutoTags はコンテンツからハッシュタグを自動抽出し、投稿のタグとして設定する。
+// ハッシュタグが見つからない場合は何もしない。
+func (s *PostTagService) SetAutoTags(postID, userID uint, content string) error {
+	tags := ExtractHashtags(content)
+	if len(tags) == 0 {
+		return nil
+	}
+	return s.SetTags(postID, userID, tags)
+}
+
 // normalizeTags はタグを正規化する（小文字変換・トリム・空文字除外・重複除外）。
 func normalizeTags(tags []string) []string {
 	seen := make(map[string]bool)

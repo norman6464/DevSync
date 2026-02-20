@@ -16,6 +16,9 @@ type MockPostTagService struct{ mock.Mock }
 func (m *MockPostTagService) SetTags(postID, userID uint, tags []string) error {
 	return m.Called(postID, userID, tags).Error(0)
 }
+func (m *MockPostTagService) SetAutoTags(postID, userID uint, content string) error {
+	return m.Called(postID, userID, content).Error(0)
+}
 func (m *MockPostTagService) GetByPostID(postID uint) ([]string, error) {
 	args := m.Called(postID)
 	if v := args.Get(0); v != nil {
