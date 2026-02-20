@@ -87,6 +87,7 @@ export default function PostForm({ post, onSubmit, onCancel, loading: externalLo
         maxLength={300}
         className={inputClass}
       />
+      <p className="text-xs text-gray-500 text-right mt-1">{title.length}/300</p>
       {expanded && (
         <>
           <div className="mt-3">
