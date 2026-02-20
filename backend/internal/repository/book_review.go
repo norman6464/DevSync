@@ -30,13 +30,14 @@ func (r *BookReviewRepository) FindByID(id uint) (*model.BookReview, error) {
 	return &review, nil
 }
 
-// FindByUserID は指定ユーザーの全書籍レビューを取得する（新しい順）。
-func (r *BookReviewRepository) FindByUserID(userID uint) ([]model.BookReview, error) {
+// FindByUserID は指定ユーザーの書籍レビューをページネーション付きで取得する（新しい順）。
+func (r *BookReviewRepository) FindByUserID(userID uint, limit, offset int) ([]model.BookReview, int64, error) {
 	var reviews []model.BookReview
-	err := r.db.Where("user_id = ?", userID).
-		Order("created_at DESC").
-		Find(&reviews).Error
-	return reviews, err
+	var total int64
+	query := r.db.Where("user_id = ?", userID)
+	query.Model(&model.BookReview{}).Count(&total)
+	err := query.Order("created_at DESC").Limit(limit).Offset(offset).Find(&reviews).Error
+	return reviews, total, err
 }
 
 // FindAll は全書籍レビューをページネーション付きで取得する。

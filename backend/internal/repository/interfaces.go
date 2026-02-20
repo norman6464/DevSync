@@ -197,7 +197,7 @@ type ProjectRepositoryInterface interface {
 type BookReviewRepositoryInterface interface {
 	Create(review *model.BookReview) error
 	FindByID(id uint) (*model.BookReview, error)
-	FindByUserID(userID uint) ([]model.BookReview, error)
+	FindByUserID(userID uint, limit, offset int) ([]model.BookReview, int64, error)
 	FindAll(limit, offset int) ([]model.BookReview, int64, error)
 	FindByRating(userID uint, minRating, maxRating int) ([]model.BookReview, error)
 	Update(review *model.BookReview) error

@@ -12,7 +12,7 @@ import (
 type BookReviewServiceInterface interface {
 	Create(review *model.BookReview) error
 	GetByID(id uint) (*model.BookReview, error)
-	GetByUserID(userID uint) ([]model.BookReview, error)
+	GetByUserID(userID uint, limit, offset int) ([]model.BookReview, int64, error)
 	GetAll(limit, offset int) ([]model.BookReview, int64, error)
 	Update(id, userID uint, updates *model.BookReview) (*model.BookReview, error)
 	Delete(id, userID uint) error
@@ -73,20 +73,27 @@ func (h *BookReviewHandler) GetByID(c *gin.Context) {
 	respondOK(c, review)
 }
 
-// GetByUserID は指定ユーザーの書籍レビュー一覧を取得する。
+// GetByUserID は指定ユーザーの書籍レビュー一覧をページネーション付きで取得する。
 func (h *BookReviewHandler) GetByUserID(c *gin.Context) {
 	userID, ok := parseID(c, "userId")
 	if !ok {
 		return
 	}
 
-	reviews, err := h.service.GetByUserID(userID)
+	limit, offset := parseLimitOffset(c)
+
+	reviews, total, err := h.service.GetByUserID(userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
 
-	respondOK(c, reviews)
+	respondOK(c, dto.BookReviewListResponse{
+		Reviews: reviews,
+		Total:   total,
+		Limit:   limit,
+		Offset:  offset,
+	})
 }
 
 // GetAll は書籍レビューの一覧をページネーション付きで取得する。

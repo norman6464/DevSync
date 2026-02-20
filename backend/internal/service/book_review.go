@@ -39,9 +39,9 @@ func (s *BookReviewService) GetByID(id uint) (*model.BookReview, error) {
 	return s.repo.FindByID(id)
 }
 
-// GetByUserID は指定ユーザーの全書籍レビューを取得する。
-func (s *BookReviewService) GetByUserID(userID uint) ([]model.BookReview, error) {
-	return s.repo.FindByUserID(userID)
+// GetByUserID は指定ユーザーの書籍レビューをページネーション付きで取得する。
+func (s *BookReviewService) GetByUserID(userID uint, limit, offset int) ([]model.BookReview, int64, error) {
+	return s.repo.FindByUserID(userID, limit, offset)
 }
 
 // GetAll は書籍レビュー一覧をページネーション付きで取得する。
