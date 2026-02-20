@@ -5,6 +5,7 @@ import { useNoteForm } from '../hooks';
 import { PageLoader, SearchInput } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
 import { buttonPrimaryClass, buttonSecondaryClass } from '../constants/styles';
+import { formatDistanceToNow } from '../utils/timeFormat';
 
 export default function NotesPage() {
   const { t } = useTranslation();
@@ -172,7 +173,7 @@ export default function NotesPage() {
                     </div>
                   )}
                   <p className="text-sm text-gray-500">
-                    {t('notes.lastUpdated')}: {new Date(note.updated_at).toLocaleString()}
+                    {t('notes.lastUpdated')}: {formatDistanceToNow(note.updated_at)}
                   </p>
                 </div>
                 <div className="flex gap-2 ml-4">
