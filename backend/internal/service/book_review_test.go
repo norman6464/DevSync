@@ -40,7 +40,7 @@ func TestBookReviewCreate_Success(t *testing.T) {
 func TestBookReviewCreate_RepoError(t *testing.T) {
 	svc, repo := newTestBookReviewService()
 
-	review := &model.BookReview{UserID: 1, Title: "テスト本"}
+	review := &model.BookReview{UserID: 1, Title: "テスト本", Rating: 3}
 
 	repo.On("Create", review).Return(errors.New("db error"))
 
@@ -240,4 +240,52 @@ func TestBookReviewUpdate_AllFields(t *testing.T) {
 	assert.Equal(t, "Great book!", result.Review)
 	assert.Equal(t, "https://example.com/image.jpg", result.ImageURL)
 	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// Rating バリデーションテスト
+// ============================================================
+
+func TestBookReviewCreate_InvalidRatingTooLow(t *testing.T) {
+	svc, _ := newTestBookReviewService()
+
+	review := &model.BookReview{
+		Title:  "テスト本",
+		Author: "テスト著者",
+		UserID: 1,
+		Rating: 0,
+	}
+
+	err := svc.Create(review)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "評価は1〜5")
+}
+
+func TestBookReviewCreate_InvalidRatingTooHigh(t *testing.T) {
+	svc, _ := newTestBookReviewService()
+
+	review := &model.BookReview{
+		Title:  "テスト本",
+		Author: "テスト著者",
+		UserID: 1,
+		Rating: 6,
+	}
+
+	err := svc.Create(review)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "評価は1〜5")
+}
+
+func TestBookReviewUpdate_InvalidRating(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	existing := &model.BookReview{Title: "Old", Author: "Author", UserID: 1, Rating: 3}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	updates := &model.BookReview{Rating: -1}
+	result, err := svc.Update(1, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "評価は1〜5")
 }
