@@ -40,9 +40,9 @@ func (s *LearningLogService) Create(log *model.LearningLog) error {
 	return s.repo.Create(log)
 }
 
-// GetByID は指定IDの学習ログを取得する。
-func (s *LearningLogService) GetByID(id uint) (*model.LearningLog, error) {
-	return s.repo.FindByID(id)
+// GetByID は指定IDの学習ログを取得する。所有権を検証する。
+func (s *LearningLogService) GetByID(id, userID uint) (*model.LearningLog, error) {
+	return s.findAndCheckOwnership(id, userID)
 }
 
 // GetByUserID は指定ユーザーの学習ログをページネーション付きで取得する。

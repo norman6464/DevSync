@@ -1273,8 +1273,8 @@ type MockLearningLogService struct{ mock.Mock }
 func (m *MockLearningLogService) Create(log *model.LearningLog) error {
 	return m.Called(log).Error(0)
 }
-func (m *MockLearningLogService) GetByID(id uint) (*model.LearningLog, error) {
-	args := m.Called(id)
+func (m *MockLearningLogService) GetByID(id, userID uint) (*model.LearningLog, error) {
+	args := m.Called(id, userID)
 	if l := args.Get(0); l != nil {
 		return l.(*model.LearningLog), args.Error(1)
 	}

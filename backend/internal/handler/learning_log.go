@@ -12,7 +12,7 @@ import (
 // LearningLogServiceInterface はLearningLogHandlerが依存するサービスのインターフェース。
 type LearningLogServiceInterface interface {
 	Create(log *model.LearningLog) error
-	GetByID(id uint) (*model.LearningLog, error)
+	GetByID(id, userID uint) (*model.LearningLog, error)
 	GetByUserID(userID uint, limit, offset int) ([]model.LearningLog, int64, error)
 	Update(id, userID uint, updates *model.LearningLog) (*model.LearningLog, error)
 	Delete(id, userID uint) error
@@ -122,12 +122,13 @@ func (h *LearningLogHandler) Delete(c *gin.Context) {
 
 // GetByID は指定されたIDの学習ログを取得する。
 func (h *LearningLogHandler) GetByID(c *gin.Context) {
+	userID := c.GetUint("userID")
 	logID, ok := parseID(c, "id")
 	if !ok {
 		return
 	}
 
-	log, err := h.service.GetByID(logID)
+	log, err := h.service.GetByID(logID, userID)
 	if err != nil {
 		respondError(c, err)
 		return
