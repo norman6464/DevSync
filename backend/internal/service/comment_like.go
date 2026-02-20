@@ -19,15 +19,23 @@ func NewCommentLikeService(
 	return &CommentLikeService{likeRepo: likeRepo, postRepo: postRepo}
 }
 
-// Like はコメントにいいねする。
-// コメントが存在しない場合、自分のコメントの場合、すでにいいね済みの場合はエラーを返す。
-func (s *CommentLikeService) Like(userID, commentID uint) error {
+// findAndPreventSelfAction はコメントを取得し、自己操作でないことを検証する。
+func (s *CommentLikeService) findAndPreventSelfAction(userID, commentID uint) error {
 	comment, err := s.postRepo.FindCommentByID(commentID)
 	if err != nil {
 		return ErrNotFound
 	}
 	if comment.UserID == userID {
 		return ErrForbidden
+	}
+	return nil
+}
+
+// Like はコメントにいいねする。
+// コメントが存在しない場合、自分のコメントの場合、すでにいいね済みの場合はエラーを返す。
+func (s *CommentLikeService) Like(userID, commentID uint) error {
+	if err := s.findAndPreventSelfAction(userID, commentID); err != nil {
+		return err
 	}
 
 	liked, err := s.likeRepo.HasLiked(userID, commentID)
@@ -44,12 +52,8 @@ func (s *CommentLikeService) Like(userID, commentID uint) error {
 // Unlike はコメントのいいねを取り消す。
 // コメントが存在しない場合、自分のコメントの場合、いいねしていない場合はエラーを返す。
 func (s *CommentLikeService) Unlike(userID, commentID uint) error {
-	comment, err := s.postRepo.FindCommentByID(commentID)
-	if err != nil {
-		return ErrNotFound
-	}
-	if comment.UserID == userID {
-		return ErrForbidden
+	if err := s.findAndPreventSelfAction(userID, commentID); err != nil {
+		return err
 	}
 
 	liked, err := s.likeRepo.HasLiked(userID, commentID)
