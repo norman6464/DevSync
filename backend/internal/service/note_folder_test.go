@@ -308,6 +308,7 @@ func TestNoteFolderService_Update_ValidationError(t *testing.T) {
 	// name="" の場合は更新されないのでバリデーションは通る
 	// 代わりにparentID付きの正常更新をテスト
 	parentID := uint(5)
+	mockRepo.On("FindByParentID", uint(1)).Return([]model.NoteFolder{}, nil)
 	mockRepo.On("Update", mock.AnythingOfType("*model.NoteFolder")).Return(nil)
 
 	result, err := service.Update(1, 1, "更新名", &parentID)
@@ -315,6 +316,58 @@ func TestNoteFolderService_Update_ValidationError(t *testing.T) {
 	assert.Equal(t, "更新名", result.Name)
 	assert.Equal(t, &parentID, result.ParentID)
 	mockRepo.AssertExpectations(t)
+}
+
+func TestNoteFolderService_Update_SelfReference(t *testing.T) {
+	mockRepo := new(MockNoteFolderRepository)
+	service := NewNoteFolderService(mockRepo)
+
+	existing := &model.NoteFolder{ID: 1, UserID: 1, Name: "フォルダA"}
+	mockRepo.On("FindByID", uint(1)).Return(existing, nil)
+
+	// 自分自身を親に設定 → エラー
+	selfID := uint(1)
+	result, err := service.Update(1, 1, "", &selfID)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "自分自身")
+}
+
+func TestNoteFolderService_Update_CircularReference(t *testing.T) {
+	mockRepo := new(MockNoteFolderRepository)
+	service := NewNoteFolderService(mockRepo)
+
+	// フォルダA(ID=1) → 子フォルダB(ID=2) → 子フォルダC(ID=3)
+	existing := &model.NoteFolder{ID: 1, UserID: 1, Name: "フォルダA"}
+	mockRepo.On("FindByID", uint(1)).Return(existing, nil)
+	mockRepo.On("FindByParentID", uint(1)).Return([]model.NoteFolder{
+		{ID: 2, UserID: 1, Name: "フォルダB"},
+	}, nil)
+	mockRepo.On("FindByParentID", uint(2)).Return([]model.NoteFolder{
+		{ID: 3, UserID: 1, Name: "フォルダC"},
+	}, nil)
+	mockRepo.On("FindByParentID", uint(3)).Return([]model.NoteFolder{}, nil)
+
+	// フォルダAの親をフォルダC(孫)に設定 → 循環参照エラー
+	childID := uint(3)
+	result, err := service.Update(1, 1, "", &childID)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "循環参照")
+}
+
+func TestNoteFolderService_Update_CircularCheckRepoError(t *testing.T) {
+	mockRepo := new(MockNoteFolderRepository)
+	service := NewNoteFolderService(mockRepo)
+
+	existing := &model.NoteFolder{ID: 1, UserID: 1, Name: "フォルダA"}
+	mockRepo.On("FindByID", uint(1)).Return(existing, nil)
+	mockRepo.On("FindByParentID", uint(1)).Return([]model.NoteFolder{}, errors.New("db error"))
+
+	parentID := uint(5)
+	result, err := service.Update(1, 1, "", &parentID)
+	assert.Error(t, err)
+	assert.Nil(t, result)
 }
 
 func TestNoteFolderService_Delete_FindByIDError(t *testing.T) {
