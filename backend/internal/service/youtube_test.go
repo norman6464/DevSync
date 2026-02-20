@@ -191,6 +191,33 @@ func TestYouTubeGetRecommendations_NilClient(t *testing.T) {
 	assert.Contains(t, err.Error(), "YouTube APIが設定されていません")
 }
 
+func TestYouTubeGetRecommendations_SearchError(t *testing.T) {
+	mockClient := new(MockYouTubeClient)
+	svc, repo, userRepo := newTestYouTubeService(mockClient)
+
+	user := &model.User{SkillsLanguages: "Go,Rust", SkillsFrameworks: ""}
+	userRepo.On("FindByID", uint(1)).Return(user, nil)
+
+	// Go検索は失敗
+	repo.On("FindCachedSearch", "go プログラミング チュートリアル", "ja").Return(nil, errors.New("not found"))
+	mockClient.On("SearchVideos", "Go プログラミング チュートリアル", youtubeMaxResults, "ja").Return([]model.YouTubeVideo{}, errors.New("api error"))
+
+	// Rust検索は成功
+	repo.On("FindCachedSearch", "rust プログラミング チュートリアル", "ja").Return(nil, errors.New("not found"))
+	rustVideos := []model.YouTubeVideo{
+		{VideoID: "rust1", Title: "Rust チュートリアル"},
+	}
+	mockClient.On("SearchVideos", "Rust プログラミング チュートリアル", youtubeMaxResults, "ja").Return(rustVideos, nil)
+	repo.On("UpsertVideos", mock.Anything).Return(nil)
+	repo.On("SaveSearchCache", mock.AnythingOfType("*model.YouTubeSearchCache")).Return(nil)
+
+	videos, skills, err := svc.GetRecommendations(1)
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"Go", "Rust"}, skills)
+	assert.Len(t, videos, 1)
+	assert.Equal(t, "rust1", videos[0].VideoID)
+}
+
 // ============================================================
 // IsAvailable テスト
 // ============================================================
