@@ -52,7 +52,7 @@ func (s *AIAdviceService) collectContext(userID uint) (*userContext, error) {
 		return nil, err
 	}
 
-	ctx.logs, err = s.logRepo.GetByUserID(userID)
+	ctx.logs, _, err = s.logRepo.GetByUserID(userID, 100, 0)
 	if err != nil {
 		return nil, err
 	}

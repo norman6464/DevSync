@@ -151,7 +151,7 @@ type LearningLogRepositoryInterface interface {
 	Update(log *model.LearningLog) error
 	Delete(id, userID uint) error
 	FindByID(id uint) (*model.LearningLog, error)
-	GetByUserID(userID uint) ([]model.LearningLog, error)
+	GetByUserID(userID uint, limit, offset int) ([]model.LearningLog, int64, error)
 	GetByCategory(userID uint, category string) ([]model.LearningLog, error)
 	GetByPeriod(userID uint, days int) ([]model.LearningLog, error)
 	GetBySource(userID uint, source string) ([]model.LearningLog, error)

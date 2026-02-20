@@ -45,7 +45,7 @@ func setupDefaultMocks(
 	goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
 	roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
 	githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
-	logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+	logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 	resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{}, int64(0), nil)
 	userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 }
@@ -58,7 +58,7 @@ func TestGenerateAdvice_StreakBroken(t *testing.T) {
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
 		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
-		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
 		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -83,7 +83,7 @@ func TestGenerateAdvice_StreakBroken(t *testing.T) {
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
 		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
-		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
 		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -106,7 +106,7 @@ func TestGenerateAdvice_StalledRoadmap(t *testing.T) {
 			{Status: model.RoadmapStatusActive, StepCount: 5, CompletedStepCount: 2, UpdatedAt: staleTime},
 		}, nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
-		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
 		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -135,7 +135,7 @@ func TestGenerateAdvice_GoalOverdue(t *testing.T) {
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{TotalGoals: 1, ActiveGoals: 1}, nil)
 		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
-		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
 		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -165,7 +165,7 @@ func TestGenerateAdvice_ReactSuggestion(t *testing.T) {
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{
 			{Language: "TypeScript", Bytes: 50000},
 		}, nil)
-		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
 		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -193,7 +193,7 @@ func TestGenerateAdvice_ReactSuggestion(t *testing.T) {
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{
 			{Language: "TypeScript", Bytes: 50000},
 		}, nil)
-		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
 		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -217,7 +217,7 @@ func TestGenerateAdvice_NoGoals(t *testing.T) {
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{
 			{Language: "Go", Bytes: 20000},
 		}, nil)
-		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
 		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -245,7 +245,7 @@ func TestGenerateAdvice_NoRoadmap(t *testing.T) {
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{TotalGoals: 1}, nil)
 		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
-		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
 		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -271,7 +271,7 @@ func TestGenerateAdvice_DifficultyUp(t *testing.T) {
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{CompletedGoals: 5, AverageProgress: 80}, nil)
 		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
-		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
 		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -304,7 +304,7 @@ func TestGenerateAdvice_Praise(t *testing.T) {
 			logs[i] = model.LearningLog{Duration: 90}
 			logs[i].CreatedAt = now.Add(-time.Duration(i) * 24 * time.Hour)
 		}
-		logRepo.On("GetByUserID", uint(1)).Return(logs, nil)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return(logs, int64(len(logs)), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
 		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -330,7 +330,7 @@ func TestGenerateAdvice_ExploreResources(t *testing.T) {
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
 		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
-		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}}, int64(2), nil)
 		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -354,7 +354,7 @@ func TestGenerateAdvice_ExploreResources(t *testing.T) {
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
 		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
-		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
 		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -382,7 +382,7 @@ func TestGenerateAdvice_LowStudyTime(t *testing.T) {
 		}
 		logs[0].CreatedAt = now.Add(-1 * 24 * time.Hour)
 		logs[1].CreatedAt = now.Add(-3 * 24 * time.Hour)
-		logRepo.On("GetByUserID", uint(1)).Return(logs, nil)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return(logs, int64(len(logs)), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
 		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -417,7 +417,7 @@ func TestGenerateAdvice_LowStudyTime(t *testing.T) {
 		logs[0].CreatedAt = now.Add(-1 * 24 * time.Hour)
 		logs[1].CreatedAt = now.Add(-3 * 24 * time.Hour)
 		logs[2].CreatedAt = now.Add(-5 * 24 * time.Hour)
-		logRepo.On("GetByUserID", uint(1)).Return(logs, nil)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return(logs, int64(len(logs)), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
 		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -445,7 +445,7 @@ func TestGenerateAdvice_TechSuggestionFromTopLanguage(t *testing.T) {
 			{Language: "Go", Bytes: 80000, RepoCount: 5},
 			{Language: "Python", Bytes: 30000, RepoCount: 2},
 		}, nil)
-		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
 		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -474,7 +474,7 @@ func TestGenerateAdvice_TechSuggestionFromTopLanguage(t *testing.T) {
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{
 			{Language: "Go", Bytes: 80000, RepoCount: 5},
 		}, nil)
-		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
 		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -495,7 +495,7 @@ func TestGenerateAdvice_TechSuggestionFromTopLanguage(t *testing.T) {
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{
 			{Language: "Go", Bytes: 5000, RepoCount: 1},
 		}, nil)
-		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
 		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -519,7 +519,7 @@ func TestGenerateAdvice_TechSuggestionTopLangNotFirst(t *testing.T) {
 			{Language: "Python", Bytes: 5000, RepoCount: 1},
 			{Language: "Go", Bytes: 80000, RepoCount: 5},
 		}, nil)
-		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
 		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -548,7 +548,7 @@ func TestGenerateAdvice_StalledRoadmapEdgeCases(t *testing.T) {
 			{Status: model.RoadmapStatusCompleted, StepCount: 5, CompletedStepCount: 5, UpdatedAt: staleTime},
 		}, nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
-		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
 		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -570,7 +570,7 @@ func TestGenerateAdvice_StalledRoadmapEdgeCases(t *testing.T) {
 			{Status: model.RoadmapStatusActive, StepCount: 5, CompletedStepCount: 5, UpdatedAt: staleTime},
 		}, nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
-		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
 		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -594,7 +594,7 @@ func TestGenerateAdvice_PrioritySorting(t *testing.T) {
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{
 			{Language: "Go", Bytes: 20000},
 		}, nil)
-		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}}, int64(1), nil)
 		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -700,7 +700,7 @@ func TestGenerateAdvice_ContextCollectionError_Logs(t *testing.T) {
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
 		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
-		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, assert.AnError)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), assert.AnError)
 
 		advices := svc.GenerateAdvice(1)
 		assert.Empty(t, advices)
@@ -716,7 +716,7 @@ func TestGenerateAdvice_ContextCollectionError_Resources(t *testing.T) {
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
 		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
-		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{}, int64(0), assert.AnError)
 
 		advices := svc.GenerateAdvice(1)
@@ -733,7 +733,7 @@ func TestGenerateAdvice_ContextCollectionError_User(t *testing.T) {
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
 		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
-		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{}, int64(0), nil)
 		userRepo.On("FindByID", uint(1)).Return(nil, assert.AnError)
 

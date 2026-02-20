@@ -43,11 +43,14 @@ func (r *LearningLogRepository) FindByID(id uint) (*model.LearningLog, error) {
 	return &log, nil
 }
 
-// GetByUserID は指定ユーザーの全学習ログを取得する（新しい順）。
-func (r *LearningLogRepository) GetByUserID(userID uint) ([]model.LearningLog, error) {
+// GetByUserID は指定ユーザーの学習ログをページネーション付きで取得する（新しい順）。
+func (r *LearningLogRepository) GetByUserID(userID uint, limit, offset int) ([]model.LearningLog, int64, error) {
 	var logs []model.LearningLog
-	err := r.db.Where("user_id = ?", userID).Order("created_at DESC").Find(&logs).Error
-	return logs, err
+	var total int64
+	query := r.db.Where("user_id = ?", userID)
+	query.Model(&model.LearningLog{}).Count(&total)
+	err := query.Order("created_at DESC").Limit(limit).Offset(offset).Find(&logs).Error
+	return logs, total, err
 }
 
 // GetByCategory は指定ユーザーの学習ログをカテゴリでフィルタリングして取得する（新しい順）。

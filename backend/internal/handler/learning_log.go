@@ -13,7 +13,7 @@ import (
 type LearningLogServiceInterface interface {
 	Create(log *model.LearningLog) error
 	GetByID(id uint) (*model.LearningLog, error)
-	GetByUserID(userID uint) ([]model.LearningLog, error)
+	GetByUserID(userID uint, limit, offset int) ([]model.LearningLog, int64, error)
 	Update(id, userID uint, updates *model.LearningLog) (*model.LearningLog, error)
 	Delete(id, userID uint) error
 	GetStreakInfo(userID uint) (*model.StreakInfo, error)
@@ -136,14 +136,20 @@ func (h *LearningLogHandler) GetByID(c *gin.Context) {
 // GetMyLogs は認証ユーザー自身の学習ログ一覧を取得する。
 func (h *LearningLogHandler) GetMyLogs(c *gin.Context) {
 	userID := c.GetUint("userID")
+	limit, offset := parseLimitOffset(c)
 
-	logs, err := h.service.GetByUserID(userID)
+	logs, total, err := h.service.GetByUserID(userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
 
-	respondOK(c, logs)
+	respondOK(c, dto.LearningLogListResponse{
+		Logs:   logs,
+		Total:  total,
+		Limit:  limit,
+		Offset: offset,
+	})
 }
 
 // GetByUserID は指定されたユーザーの学習ログ一覧を取得する。
@@ -152,14 +158,20 @@ func (h *LearningLogHandler) GetByUserID(c *gin.Context) {
 	if !ok {
 		return
 	}
+	limit, offset := parseLimitOffset(c)
 
-	logs, err := h.service.GetByUserID(userID)
+	logs, total, err := h.service.GetByUserID(userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
 
-	respondOK(c, logs)
+	respondOK(c, dto.LearningLogListResponse{
+		Logs:   logs,
+		Total:  total,
+		Limit:  limit,
+		Offset: offset,
+	})
 }
 
 // GetStreakInfo は指定されたユーザーのストリーク情報を取得する。
