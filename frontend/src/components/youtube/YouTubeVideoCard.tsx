@@ -11,8 +11,8 @@ interface YouTubeVideoCardProps {
 
 export default function YouTubeVideoCard({ video }: YouTubeVideoCardProps) {
   const { t } = useTranslation();
-  const videoURL = `https://www.youtube.com/watch?v=${video.video_id}`;
-  const channelURL = `https://www.youtube.com/channel/${video.channel_id}`;
+  const videoURL = `https://www.youtube.com/watch?v=${encodeURIComponent(video.video_id)}`;
+  const channelURL = `https://www.youtube.com/channel/${encodeURIComponent(video.channel_id)}`;
 
   return (
     <div className={cardClass}>

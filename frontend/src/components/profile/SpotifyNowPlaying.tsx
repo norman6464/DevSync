@@ -67,7 +67,7 @@ export default function SpotifyNowPlaying({ userId }: Props) {
         >
           {currentTrack.album_image && (
             <img
-              src={currentTrack.album_image}
+              src={sanitizeUrl(currentTrack.album_image) ?? ''}
               alt={currentTrack.album_name}
               referrerPolicy="no-referrer"
               className="w-16 h-16 rounded-lg object-cover"
@@ -112,7 +112,7 @@ export default function SpotifyNowPlaying({ userId }: Props) {
             >
               {track.album_image && (
                 <img
-                  src={track.album_image}
+                  src={sanitizeUrl(track.album_image) ?? ''}
                   alt={track.album_name}
                   referrerPolicy="no-referrer"
                   className="w-10 h-10 rounded object-cover"

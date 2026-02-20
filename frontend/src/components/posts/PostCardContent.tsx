@@ -7,6 +7,7 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTranslation } from 'react-i18next';
 import { Code2 } from 'lucide-react';
 import type { Post } from '../../types/post';
+import { sanitizeUrl } from '../../utils/url';
 
 interface PostCardContentProps {
   post: Post;
@@ -60,7 +61,7 @@ export default function PostCardContent({ post, imageUrls }: PostCardContentProp
           {imageUrls.slice(0, 4).map((url, i) => (
             <div key={i} className="relative">
               <img
-                src={url}
+                src={sanitizeUrl(url) ?? ''}
                 alt=""
                 className="w-20 h-20 object-cover rounded-lg border border-gray-700"
               />
