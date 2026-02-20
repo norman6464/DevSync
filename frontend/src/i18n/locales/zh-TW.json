@@ -289,6 +289,7 @@
     "email": "電子郵件",
     "saved": "設定已儲存",
     "saveFailed": "儲存設定失敗",
+    "invalidAvatarUrl": "頭像URL無效，請輸入http/https URL",
     "skills": "技能",
     "selectLanguages": "選擇程式語言",
     "selectFrameworks": "選擇框架和函式庫",

@@ -72,6 +72,10 @@ export function useSettings() {
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+    if (avatarUrl && !isHttpUrl(avatarUrl)) {
+      toast.error(t('settings.invalidAvatarUrl'));
+      return;
+    }
     setSaving(true);
     try {
       const { data } = await updateUser(user.id, { name, bio, avatar_url: avatarUrl });

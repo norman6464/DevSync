@@ -289,6 +289,7 @@
     "email": "邮箱",
     "saved": "设置已保存",
     "saveFailed": "保存设置失败",
+    "invalidAvatarUrl": "头像URL无效，请输入http/https URL",
     "skills": "技能",
     "selectLanguages": "选择编程语言",
     "selectFrameworks": "选择框架和库",

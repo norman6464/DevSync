@@ -289,6 +289,7 @@
     "email": "E-Mail",
     "saved": "Einstellungen gespeichert",
     "saveFailed": "Speichern fehlgeschlagen",
+    "invalidAvatarUrl": "Ungültige Avatar-URL. Bitte geben Sie eine http/https-URL ein",
     "skills": "Fähigkeiten",
     "selectLanguages": "Programmiersprachen auswählen",
     "selectFrameworks": "Frameworks & Bibliotheken auswählen",

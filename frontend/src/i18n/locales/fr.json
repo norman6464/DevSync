@@ -289,6 +289,7 @@
     "email": "Email",
     "saved": "Paramètres enregistrés",
     "saveFailed": "Échec de l'enregistrement",
+    "invalidAvatarUrl": "URL d'avatar invalide. Veuillez entrer une URL http/https",
     "skills": "Compétences",
     "selectLanguages": "Sélectionner les langages de programmation",
     "selectFrameworks": "Sélectionner les frameworks et bibliothèques",

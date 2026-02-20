@@ -289,6 +289,7 @@
     "email": "Email",
     "saved": "Настройки сохранены",
     "saveFailed": "Ошибка сохранения настроек",
+    "invalidAvatarUrl": "Недопустимый URL аватара. Введите URL http/https",
     "skills": "Навыки",
     "selectLanguages": "Выберите языки программирования",
     "selectFrameworks": "Выберите фреймворки и библиотеки",

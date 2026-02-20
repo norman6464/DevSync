@@ -302,6 +302,7 @@
     "email": "メールアドレス",
     "saved": "設定を保存しました",
     "saveFailed": "設定の保存に失敗しました",
+    "invalidAvatarUrl": "アバターURLが無効です。http/httpsのURLを入力してください",
     "skills": "スキル",
     "selectLanguages": "プログラミング言語を選択",
     "selectFrameworks": "フレームワーク＆ライブラリを選択",

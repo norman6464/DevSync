@@ -289,6 +289,7 @@
     "email": "이메일",
     "saved": "설정이 저장되었습니다",
     "saveFailed": "설정 저장에 실패했습니다",
+    "invalidAvatarUrl": "잘못된 아바타 URL입니다. http/https URL을 입력하세요",
     "skills": "스킬",
     "selectLanguages": "프로그래밍 언어 선택",
     "selectFrameworks": "프레임워크 및 라이브러리 선택",
