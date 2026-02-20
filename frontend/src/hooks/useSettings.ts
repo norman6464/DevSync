@@ -9,6 +9,7 @@ import { connectAtCoder, disconnectAtCoder } from '../api/atcoder';
 import { getSpotifyConnectURL, disconnectSpotify } from '../api/spotify';
 import { deleteAccount } from '../api/auth';
 import { getEmailPreferences, updateEmailPreferences } from '../api/emailPreferences';
+import { isHttpUrl } from '../utils/url';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 
@@ -130,6 +131,7 @@ export function useSettings() {
   const handleConnectGitHub = async () => {
     try {
       const { data } = await getGitHubConnectURL();
+      if (!isHttpUrl(data.url)) throw new Error('Invalid OAuth URL');
       window.location.href = data.url;
     } catch {
       toast.error(t('errors.somethingWrong'));
@@ -266,6 +268,7 @@ export function useSettings() {
   const handleConnectSpotify = async () => {
     try {
       const { data } = await getSpotifyConnectURL();
+      if (!isHttpUrl(data.url)) throw new Error('Invalid OAuth URL');
       window.location.href = data.url;
     } catch {
       toast.error(t('errors.somethingWrong'));
