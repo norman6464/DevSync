@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -21,6 +21,7 @@ import Avatar from '../common/Avatar';
 import ThemeToggle from '../common/ThemeToggle';
 import LanguageSelector from '../common/LanguageSelector';
 import NotificationDropdown from '../notifications/NotificationDropdown';
+import { useClickOutside } from '../../hooks/useClickOutside';
 
 /** 常に表示する主要ナビ（5個以内に抑える） */
 const navItems = [
@@ -76,29 +77,10 @@ export default function Header() {
     setMoreOpen(false);
   }, [location.pathname]);
 
-  // Close mobile menu on outside click
-  useEffect(() => {
-    if (!mobileOpen) return;
-    const handleClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMobileOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [mobileOpen]);
-
-  // Close more dropdown on outside click
-  useEffect(() => {
-    if (!moreOpen) return;
-    const handleClick = (e: MouseEvent) => {
-      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
-        setMoreOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [moreOpen]);
+  const closeMobile = useCallback(() => setMobileOpen(false), []);
+  const closeMore = useCallback(() => setMoreOpen(false), []);
+  useClickOutside(menuRef, mobileOpen, closeMobile);
+  useClickOutside(moreRef, moreOpen, closeMore);
 
   return (
     <header className="bg-gray-900/80 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-50">

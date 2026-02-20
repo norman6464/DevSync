@@ -52,3 +52,4 @@ export { useOnboarding } from './useOnboarding';
 export { useYoutube } from './useYoutube';
 export { useCommentLike } from './useCommentLike';
 export { useReactions } from './useReactions';
+export { useClickOutside } from './useClickOutside';
