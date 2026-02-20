@@ -1730,3 +1730,25 @@ func setupNoteTemplateHandler() (*NoteTemplateHandler, *MockNoteTemplateService)
 	h := NewNoteTemplateHandler(svc)
 	return h, svc
 }
+
+// ---------- CommentLikeHandler モック ----------
+
+// MockCommentLikeService は CommentLikeServiceInterface のモック実装。
+type MockCommentLikeService struct{ mock.Mock }
+
+func (m *MockCommentLikeService) Like(userID, commentID uint) error {
+	return m.Called(userID, commentID).Error(0)
+}
+func (m *MockCommentLikeService) Unlike(userID, commentID uint) error {
+	return m.Called(userID, commentID).Error(0)
+}
+func (m *MockCommentLikeService) GetStatus(userID, commentID uint) (bool, int64, error) {
+	args := m.Called(userID, commentID)
+	return args.Bool(0), args.Get(1).(int64), args.Error(2)
+}
+
+func setupCommentLikeHandler() (*CommentLikeHandler, *MockCommentLikeService) {
+	svc := new(MockCommentLikeService)
+	h := NewCommentLikeHandler(svc)
+	return h, svc
+}
