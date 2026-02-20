@@ -185,7 +185,7 @@ func (h *PostHandler) Timeline(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, posts)
+	respondOK(c, ensureSlice(posts))
 }
 
 // GetUserPosts は指定ユーザーの投稿一覧をページネーション付きで返す。
@@ -252,7 +252,7 @@ func (h *PostHandler) GetComments(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, comments)
+	respondOK(c, ensureSlice(comments))
 }
 
 // CreateComment は投稿にコメントを作成する。
@@ -288,7 +288,7 @@ func (h *PostHandler) GetReplies(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, replies)
+	respondOK(c, ensureSlice(replies))
 }
 
 // DeleteComment はコメントを削除する。所有者のみ削除可能。
@@ -315,7 +315,7 @@ func (h *PostHandler) GetDrafts(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, drafts)
+	respondOK(c, ensureSlice(drafts))
 }
 
 // Publish は下書き投稿を公開する。所有者のみ公開可能。

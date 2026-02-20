@@ -68,7 +68,7 @@ func (h *CodeSnippetHandler) GetByPostID(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, snippets)
+	respondOK(c, ensureSlice(snippets))
 }
 
 // GetByID は指定IDのスニペットを返す。
@@ -83,7 +83,7 @@ func (h *CodeSnippetHandler) GetByID(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, snippets)
+	respondOK(c, ensureSlice(snippets))
 }
 
 // Update はスニペットを更新する。所有者のみ更新可能。
@@ -134,7 +134,7 @@ func (h *CodeSnippetHandler) GetComments(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, comments)
+	respondOK(c, ensureSlice(comments))
 }
 
 // CreateComment はスニペットにインラインコメントを作成する。

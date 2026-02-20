@@ -148,7 +148,7 @@ func (h *PostSeriesHandler) GetPosts(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, items)
+	respondOK(c, ensureSlice(items))
 }
 
 // AddPost はシリーズに投稿を追加する。

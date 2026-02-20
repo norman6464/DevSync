@@ -203,7 +203,7 @@ func (h *LearningLogHandler) GetCalendarData(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, entries)
+	respondOK(c, ensureSlice(entries))
 }
 
 // GetByCategory はカテゴリで学習ログをフィルタリングして取得する。
