@@ -425,3 +425,17 @@ func TestNoteFolderService_Update_ValidateLongNameError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, result)
 }
+
+func TestNoteFolderService_Update_WhitespaceName(t *testing.T) {
+	mockRepo := new(MockNoteFolderRepository)
+	service := NewNoteFolderService(mockRepo)
+
+	existing := &model.NoteFolder{ID: 1, UserID: 1, Name: "元の名前"}
+	mockRepo.On("FindByID", uint(1)).Return(existing, nil)
+
+	// 空白のみの名前 → バリデーションエラーになるべき
+	result, err := service.Update(1, 1, "   \t\n  ", nil)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "フォルダ名は空白のみにできません")
+}
