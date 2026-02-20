@@ -22,6 +22,7 @@
     "and": "그리고",
     "menu": "메뉴",
     "scrollToTop": "맨 위로",
+    "invalidUrl": "{{field}}은(는) 유효한 URL이 아닙니다",
     "selectLanguage": "언어 선택",
     "monthsShort": [
       "1월",

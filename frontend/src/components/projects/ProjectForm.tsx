@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import type { Project, CreateProjectRequest } from '../../types/project';
 import type { GitHubRepository } from '../../types/github';
 import { buttonSecondaryClass, inputClass, labelClass, textareaClass } from '../../constants/styles';
+import { isHttpUrl } from '../../utils/url';
+import toast from 'react-hot-toast';
 
 interface ProjectFormProps {
   project?: Project;
@@ -62,6 +64,17 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const urlFields = [
+      { value: demoUrl, label: t('projects.demoUrl') },
+      { value: githubUrl, label: t('projects.githubUrl') },
+      { value: imageUrl, label: t('projects.imageUrl') },
+    ];
+    for (const field of urlFields) {
+      if (field.value && !isHttpUrl(field.value)) {
+        toast.error(t('common.invalidUrl', { field: field.label }));
+        return;
+      }
+    }
     await onSubmit({
       title,
       description,

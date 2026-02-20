@@ -22,6 +22,7 @@
     "and": "和",
     "menu": "菜单",
     "scrollToTop": "返回顶部",
+    "invalidUrl": "{{field}}不是有效的URL",
     "selectLanguage": "选择语言",
     "monthsShort": [
       "1月",

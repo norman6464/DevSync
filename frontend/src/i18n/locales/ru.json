@@ -22,6 +22,7 @@
     "and": "и",
     "menu": "Меню",
     "scrollToTop": "Наверх",
+    "invalidUrl": "{{field}} не является допустимым URL",
     "selectLanguage": "Выбрать язык",
     "monthsShort": [
       "Янв",
