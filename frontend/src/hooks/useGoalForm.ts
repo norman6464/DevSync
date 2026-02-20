@@ -17,6 +17,7 @@ export function useGoalForm() {
   const [filterStatus, setFilterStatus] = useState<GoalStatus | 'all'>('all');
   const [filterCategory, setFilterCategory] = useState<GoalCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'deadline' | 'progress'>('newest');
 
   const resetForm = () => {
     setTitle('');
@@ -82,6 +83,20 @@ export function useGoalForm() {
     const q = searchQuery.toLowerCase().trim();
     if (q && !g.title.toLowerCase().includes(q) && !g.description.toLowerCase().includes(q)) return false;
     return true;
+  }).sort((a, b) => {
+    switch (sortBy) {
+      case 'oldest':
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      case 'deadline':
+        if (!a.target_date && !b.target_date) return 0;
+        if (!a.target_date) return 1;
+        if (!b.target_date) return -1;
+        return new Date(a.target_date).getTime() - new Date(b.target_date).getTime();
+      case 'progress':
+        return b.progress - a.progress;
+      default:
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    }
   });
 
   const filteredActiveGoals = filteredGoals.filter(g => g.status === 'active');
@@ -100,6 +115,8 @@ export function useGoalForm() {
     setFilterCategory,
     searchQuery,
     setSearchQuery,
+    sortBy,
+    setSortBy,
     showForm,
     setShowForm,
     editingGoal,
