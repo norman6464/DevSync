@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Target, ChevronRight } from 'lucide-react';
 import type { LearningGoal } from '../../api/goals';
-import { panelClass } from '../../constants/styles';
+import { panelClass, linkSmallClass } from '../../constants/styles';
 
 interface GoalsProgressWidgetProps {
   activeGoals: LearningGoal[];
@@ -36,7 +36,7 @@ export default function GoalsProgressWidget({ activeGoals, completedGoals, avgPr
           <p className="text-xs text-gray-500 mb-2">{t('dashboard.noActiveGoals')}</p>
           <Link
             to="/goals"
-            className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+            className={linkSmallClass}
           >
             {t('dashboard.createGoal')}
           </Link>

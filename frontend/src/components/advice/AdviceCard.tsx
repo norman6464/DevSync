@@ -4,6 +4,7 @@ import { Check } from 'lucide-react';
 import AdviceIcon from './AdviceIcon';
 import type { AIAdvice } from '../../api/advice';
 import { parseJsonObject } from '../../utils/json';
+import { linkSmallClass } from '../../constants/styles';
 
 interface AdviceCardProps {
   advice: AIAdvice;
@@ -43,7 +44,7 @@ export default function AdviceCard({ advice, onMarkRead }: AdviceCardProps) {
             {advice.action_url?.startsWith('/') && (
               <button
                 onClick={() => navigate(advice.action_url)}
-                className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                className={linkSmallClass}
               >
                 {t('advice.viewAll')} &rarr;
               </button>

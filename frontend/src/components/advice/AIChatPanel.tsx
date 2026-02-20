@@ -4,6 +4,7 @@ import { Send, Loader2, Plus, MessageSquare, Trash2 } from 'lucide-react';
 import { useConfirm } from '../../hooks';
 import ConfirmDialog from '../common/ConfirmDialog';
 import type { AIMessage } from '../../api/advice';
+import { linkSmallClass } from '../../constants/styles';
 
 interface AIChatPanelProps {
   messages: AIMessage[];
@@ -71,7 +72,7 @@ export default function AIChatPanel({
           )}
           <button
             onClick={onNewChat}
-            className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1"
+            className={`${linkSmallClass} flex items-center gap-1`}
           >
             <Plus size={14} />
             {t('advice.newChat')}

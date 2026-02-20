@@ -60,3 +60,6 @@ export const modalOverlayClass =
 
 export const modalContentClass =
   'bg-gray-800 rounded-md p-6 w-full max-h-[90vh] overflow-y-auto';
+
+export const linkSmallClass =
+  'text-xs text-blue-400 hover:text-blue-300 transition-colors';
