@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { ProductivityScore } from '../../types/analytics';
+import { panelClass } from '../../constants/styles';
 
 interface Props {
   score: ProductivityScore | null;
@@ -25,7 +26,7 @@ export default function ProductivityScoreCard({ score, loading }: Props) {
 
   if (loading) {
     return (
-      <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
+      <div className={panelClass}>
         <div className="h-5 bg-gray-800 rounded animate-pulse w-1/3 mb-4" />
         <div className="h-24 bg-gray-800 rounded animate-pulse" />
       </div>
@@ -41,7 +42,7 @@ export default function ProductivityScoreCard({ score, loading }: Props) {
   ];
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
+    <div className={panelClass}>
       <h3 className="text-sm font-medium text-white mb-4">{t('analytics.productivityTitle')}</h3>
 
       {/* 総合スコア */}
