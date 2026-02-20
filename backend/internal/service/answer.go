@@ -87,6 +87,18 @@ func (s *AnswerService) SetBestAnswer(questionID, answerID, userID uint) error {
 	return s.answerRepo.SetBestAnswer(questionID, answerID)
 }
 
+// findAndPreventSelfVote は回答を取得し、自己投票でないことを検証する。
+func (s *AnswerService) findAndPreventSelfVote(userID, answerID uint) error {
+	answer, err := s.answerRepo.FindByID(answerID)
+	if err != nil {
+		return ErrNotFound
+	}
+	if answer.UserID == userID {
+		return ErrForbidden
+	}
+	return nil
+}
+
 // Vote は投票値を検証した後、回答に投票する。
 // valueは1（賛成）または-1（反対）のみ許可される。
 // 自分の回答への自己投票は禁止する。
@@ -95,12 +107,8 @@ func (s *AnswerService) Vote(userID, answerID uint, value int) error {
 	if err := v.ValidateVote(value); err != nil {
 		return err
 	}
-	answer, err := s.answerRepo.FindByID(answerID)
-	if err != nil {
-		return ErrNotFound
-	}
-	if answer.UserID == userID {
-		return ErrForbidden
+	if err := s.findAndPreventSelfVote(userID, answerID); err != nil {
+		return err
 	}
 	return s.answerRepo.Vote(userID, answerID, value)
 }
@@ -108,12 +116,8 @@ func (s *AnswerService) Vote(userID, answerID uint, value int) error {
 // RemoveVote は回答への投票を取り消す。
 // 自分の回答への投票削除は禁止する（そもそも投票できないため）。
 func (s *AnswerService) RemoveVote(userID, answerID uint) error {
-	answer, err := s.answerRepo.FindByID(answerID)
-	if err != nil {
-		return ErrNotFound
-	}
-	if answer.UserID == userID {
-		return ErrForbidden
+	if err := s.findAndPreventSelfVote(userID, answerID); err != nil {
+		return err
 	}
 	return s.answerRepo.RemoveVote(userID, answerID)
 }
