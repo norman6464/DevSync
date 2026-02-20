@@ -106,6 +106,7 @@ export default function OnboardingIntegrationsStep({
                 value={zennUsername}
                 onChange={handleZennChange}
                 placeholder={t('settings.zennUsername')}
+                maxLength={50}
                 className={`${inputClass} flex-1`}
               />
               <button
@@ -140,6 +141,7 @@ export default function OnboardingIntegrationsStep({
                 value={qiitaUsername}
                 onChange={handleQiitaChange}
                 placeholder={t('settings.qiitaUsername')}
+                maxLength={50}
                 className={`${inputClass} flex-1`}
               />
               <button
@@ -174,6 +176,7 @@ export default function OnboardingIntegrationsStep({
                 value={atcoderUsername}
                 onChange={handleAtcoderChange}
                 placeholder={t('settings.atcoderUsername')}
+                maxLength={50}
                 className={`${inputClass} flex-1`}
               />
               <button
