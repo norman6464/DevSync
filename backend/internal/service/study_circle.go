@@ -71,9 +71,9 @@ func (s *StudyCircleService) Create(circle *model.StudyCircle, memberIDs []uint)
 	return nil
 }
 
-// GetMyCircles はユーザーが参加しているサークル一覧を返す。
-func (s *StudyCircleService) GetMyCircles(userID uint) ([]model.StudyCircle, error) {
-	return s.repo.FindByUserID(userID)
+// GetMyCircles はユーザーが参加しているサークル一覧をページネーション付きで返す。
+func (s *StudyCircleService) GetMyCircles(userID uint, limit, offset int) ([]model.StudyCircle, int64, error) {
+	return s.repo.FindByUserID(userID, limit, offset)
 }
 
 // validStudyCircleStatuses は有効なスタディサークルステータスのマップ。

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -42,12 +43,20 @@ func TestStudyCircleGetMyCircles_Success(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/study-circles", h.GetMyCircles)
 
-	repo.On("FindByUserID", uint(1)).Return([]model.StudyCircle{
+	repo.On("FindByUserID", uint(1), 20, 0).Return([]model.StudyCircle{
 		{Name: "Circle A"}, {Name: "Circle B"},
-	}, nil)
+	}, int64(2), nil)
 
 	w := doRequest(r, http.MethodGet, "/study-circles", nil)
 	assertStatus(t, w, http.StatusOK)
+
+	var resp map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &resp)
+	circles := resp["circles"].([]interface{})
+	assert.Len(t, circles, 2)
+	assert.Equal(t, float64(2), resp["total"])
+	assert.Equal(t, float64(20), resp["limit"])
+	assert.Equal(t, float64(0), resp["offset"])
 }
 
 // ---------- GetByID ----------
