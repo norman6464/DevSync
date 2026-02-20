@@ -140,15 +140,23 @@ func (s *PostService) Delete(id, userID uint) error {
 	return s.repo.Delete(id)
 }
 
-// Like は投稿にいいねを追加する。
-// 自分の投稿にはいいねできない。
-func (s *PostService) Like(userID, postID uint) error {
+// findAndPreventSelfAction は投稿を取得し、自己操作でないことを検証する。
+func (s *PostService) findAndPreventSelfAction(userID, postID uint) error {
 	post, err := s.repo.FindByID(postID)
 	if err != nil {
 		return ErrNotFound
 	}
 	if post.UserID == userID {
 		return ErrForbidden
+	}
+	return nil
+}
+
+// Like は投稿にいいねを追加する。
+// 自分の投稿にはいいねできない。
+func (s *PostService) Like(userID, postID uint) error {
+	if err := s.findAndPreventSelfAction(userID, postID); err != nil {
+		return err
 	}
 	return s.repo.Like(userID, postID)
 }
@@ -156,12 +164,8 @@ func (s *PostService) Like(userID, postID uint) error {
 // Unlike は投稿のいいねを取り消す。
 // 自分の投稿のいいねは取り消せない（そもそもいいねできないため）。
 func (s *PostService) Unlike(userID, postID uint) error {
-	post, err := s.repo.FindByID(postID)
-	if err != nil {
-		return ErrNotFound
-	}
-	if post.UserID == userID {
-		return ErrForbidden
+	if err := s.findAndPreventSelfAction(userID, postID); err != nil {
+		return err
 	}
 	return s.repo.Unlike(userID, postID)
 }
@@ -225,12 +229,8 @@ func (s *PostService) DeleteComment(id, userID uint) error {
 // Bookmark は投稿をブックマークする。
 // 自分の投稿へのブックマークは禁止する。
 func (s *PostService) Bookmark(userID, postID uint) error {
-	post, err := s.repo.FindByID(postID)
-	if err != nil {
-		return ErrNotFound
-	}
-	if post.UserID == userID {
-		return ErrForbidden
+	if err := s.findAndPreventSelfAction(userID, postID); err != nil {
+		return err
 	}
 	return s.repo.Bookmark(userID, postID)
 }
@@ -238,12 +238,8 @@ func (s *PostService) Bookmark(userID, postID uint) error {
 // Unbookmark は投稿のブックマークを解除する。
 // 自分の投稿のブックマークは解除できない（そもそもブックマークできないため）。
 func (s *PostService) Unbookmark(userID, postID uint) error {
-	post, err := s.repo.FindByID(postID)
-	if err != nil {
-		return ErrNotFound
-	}
-	if post.UserID == userID {
-		return ErrForbidden
+	if err := s.findAndPreventSelfAction(userID, postID); err != nil {
+		return err
 	}
 	return s.repo.Unbookmark(userID, postID)
 }
@@ -264,12 +260,8 @@ func (s *PostService) AddReaction(userID, postID uint, emoji string) error {
 	if !allowedEmojis[emoji] {
 		return domain.NewError(domain.ErrCodeBadRequest, "許可されていない絵文字です: "+emoji, nil)
 	}
-	post, err := s.repo.FindByID(postID)
-	if err != nil {
-		return ErrNotFound
-	}
-	if post.UserID == userID {
-		return ErrForbidden
+	if err := s.findAndPreventSelfAction(userID, postID); err != nil {
+		return err
 	}
 	return s.repo.AddReaction(userID, postID, emoji)
 }
@@ -277,12 +269,8 @@ func (s *PostService) AddReaction(userID, postID uint, emoji string) error {
 // RemoveReaction は投稿のリアクションを削除する。
 // 自分の投稿へのリアクション削除は禁止する（そもそもリアクションできないため）。
 func (s *PostService) RemoveReaction(userID, postID uint, emoji string) error {
-	post, err := s.repo.FindByID(postID)
-	if err != nil {
-		return ErrNotFound
-	}
-	if post.UserID == userID {
-		return ErrForbidden
+	if err := s.findAndPreventSelfAction(userID, postID); err != nil {
+		return err
 	}
 	return s.repo.RemoveReaction(userID, postID, emoji)
 }
