@@ -16,3 +16,12 @@ var (
 	ErrRateLimitExceeded = domain.ErrRateLimitExceeded // レート制限超過（429）
 	ErrLLMNotConfigured  = domain.ErrServiceUnavailable // LLM未設定（503）
 )
+
+// validateRequiredID はIDが0でないことを検証する。
+// 0の場合はBadRequestエラーを返す。
+func validateRequiredID(id uint, name string) error {
+	if id == 0 {
+		return domain.NewError(domain.ErrCodeBadRequest, name+"は必須です", nil)
+	}
+	return nil
+}

@@ -1,7 +1,6 @@
 package service
 
 import (
-	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
@@ -19,8 +18,8 @@ func NewUserDashboardService(repo repository.UserDashboardRepositoryInterface) *
 // GetStats は指定ユーザーのダッシュボード統計情報を取得する。
 // userID=0 の場合はBadRequestエラーを返す。
 func (s *UserDashboardService) GetStats(userID uint) (*model.UserDashboardStats, error) {
-	if userID == 0 {
-		return nil, domain.NewError(domain.ErrCodeBadRequest, "userIDは必須です", nil)
+	if err := validateRequiredID(userID, "userID"); err != nil {
+		return nil, err
 	}
 	return s.repo.GetDashboardStats(userID)
 }
