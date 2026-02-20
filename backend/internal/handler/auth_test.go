@@ -581,3 +581,216 @@ func TestAuthDeleteAccountMock_Success(t *testing.T) {
 	assertStatus(t, w, http.StatusOK)
 	authSvc.AssertExpectations(t)
 }
+
+// TestResetPasswordMock_Success はパスワードリセット成功テスト。
+func TestResetPasswordMock_Success(t *testing.T) {
+	h, authSvc, _ := setupAuthHandlerMock()
+	authSvc.On("ResetPassword", "valid-token", "newpassword123").Return(nil)
+
+	r := gin.New()
+	r.POST("/password-reset/confirm", h.ResetPassword)
+	w := doRequest(r, "POST", "/password-reset/confirm", map[string]string{
+		"token":        "valid-token",
+		"new_password": "newpassword123",
+	})
+
+	assertStatus(t, w, http.StatusOK)
+	authSvc.AssertExpectations(t)
+}
+
+// TestResetPasswordMock_ServiceError はパスワードリセットのサービスエラーテスト。
+func TestResetPasswordMock_ServiceError(t *testing.T) {
+	h, authSvc, _ := setupAuthHandlerMock()
+	authSvc.On("ResetPassword", "expired-token", "newpassword123").Return(service.ErrBadRequest)
+
+	r := gin.New()
+	r.POST("/password-reset/confirm", h.ResetPassword)
+	w := doRequest(r, "POST", "/password-reset/confirm", map[string]string{
+		"token":        "expired-token",
+		"new_password": "newpassword123",
+	})
+
+	assertStatus(t, w, http.StatusBadRequest)
+	authSvc.AssertExpectations(t)
+}
+
+// TestRequestPasswordResetMock_ServiceError はパスワードリセット要求のサービスエラーテスト。
+func TestRequestPasswordResetMock_ServiceError(t *testing.T) {
+	h, authSvc, _ := setupAuthHandlerMock()
+	authSvc.On("RequestPasswordReset", "notfound@example.com").Return("", service.ErrNotFound)
+
+	r := gin.New()
+	r.POST("/password-reset", h.RequestPasswordReset)
+	w := doRequest(r, "POST", "/password-reset", map[string]string{
+		"email": "notfound@example.com",
+	})
+
+	assertStatus(t, w, http.StatusNotFound)
+	authSvc.AssertExpectations(t)
+}
+
+// TestRegisterMock_Success はモック版の登録成功テスト。
+func TestRegisterMock_Success(t *testing.T) {
+	h, authSvc, _ := setupAuthHandlerMock()
+	resp := &service.AuthResponse{
+		Token: "test-token",
+		User:  model.User{Name: "New User", Email: "new@example.com"},
+	}
+	authSvc.On("Register", mock.Anything).Return(resp, nil)
+
+	r := gin.New()
+	r.POST("/register", h.Register)
+	w := doRequest(r, "POST", "/register", map[string]string{
+		"name":             "New User",
+		"username":         "newuser",
+		"email":            "new@example.com",
+		"password":         "password123",
+		"confirm_password": "password123",
+	})
+
+	assertStatus(t, w, http.StatusCreated)
+	authSvc.AssertExpectations(t)
+}
+
+// TestRegisterMock_ServiceError はモック版の登録サービスエラーテスト。
+func TestRegisterMock_ServiceError(t *testing.T) {
+	h, authSvc, _ := setupAuthHandlerMock()
+	authSvc.On("Register", mock.Anything).Return(nil, service.ErrBadRequest)
+
+	r := gin.New()
+	r.POST("/register", h.Register)
+	w := doRequest(r, "POST", "/register", map[string]string{
+		"name":             "New User",
+		"username":         "newuser",
+		"email":            "new@example.com",
+		"password":         "password123",
+		"confirm_password": "password123",
+	})
+
+	assertStatus(t, w, http.StatusBadRequest)
+	authSvc.AssertExpectations(t)
+}
+
+// TestRegisterMock_InvalidBody は不正なリクエストボディのテスト。
+func TestRegisterMock_InvalidBody(t *testing.T) {
+	h, _, _ := setupAuthHandlerMock()
+
+	r := gin.New()
+	r.POST("/register", h.Register)
+	w := doRequest(r, "POST", "/register", map[string]string{
+		"email": "invalid",
+	})
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// TestGitHubLoginCallback_Success はGitHubコールバック成功テスト。
+func TestGitHubLoginCallback_Success(t *testing.T) {
+	h, authSvc, ghSvc := setupAuthHandlerMock()
+
+	authSvc.On("ValidateLoginState", "valid-state").Return(nil)
+	ghSvc.On("ExchangeCode", "valid-code").Return("access-token", nil)
+	ghSvc.On("GetGitHubUser", "access-token").Return(&service.GitHubUserInfo{
+		ID:    12345,
+		Login: "testuser",
+		Email: "test@example.com",
+	}, nil)
+	authSvc.On("GitHubLogin", mock.Anything, "access-token").Return(&service.AuthResponse{
+		Token: "jwt-token",
+		User:  model.User{Name: "Test User"},
+	}, nil)
+	// SyncUserDataはgoroutineで呼ばれるためMaybeで登録
+	ghSvc.On("SyncUserData", mock.Anything).Return(nil).Maybe()
+
+	r := gin.New()
+	r.GET("/callback", h.GitHubLoginCallback)
+	w := doRequest(r, "GET", "/callback?code=valid-code&state=valid-state", nil)
+
+	assertStatus(t, w, http.StatusOK)
+	authSvc.AssertExpectations(t)
+}
+
+// TestGitHubLoginCallback_MissingParams はcode/state欠落テスト。
+func TestGitHubLoginCallback_MissingParams(t *testing.T) {
+	h, _, _ := setupAuthHandlerMock()
+
+	r := gin.New()
+	r.GET("/callback", h.GitHubLoginCallback)
+
+	// code欠落
+	w := doRequest(r, "GET", "/callback?state=some-state", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+
+	// state欠落
+	w = doRequest(r, "GET", "/callback?code=some-code", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+
+	// 両方欠落
+	w = doRequest(r, "GET", "/callback", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// TestGitHubLoginCallback_InvalidState はstate検証失敗テスト。
+func TestGitHubLoginCallback_InvalidState(t *testing.T) {
+	h, authSvc, _ := setupAuthHandlerMock()
+	authSvc.On("ValidateLoginState", "invalid-state").Return(service.ErrBadRequest)
+
+	r := gin.New()
+	r.GET("/callback", h.GitHubLoginCallback)
+	w := doRequest(r, "GET", "/callback?code=some-code&state=invalid-state", nil)
+
+	assertStatus(t, w, http.StatusBadRequest)
+	authSvc.AssertExpectations(t)
+}
+
+// TestGitHubLoginCallback_ExchangeCodeError はコード交換エラーテスト。
+func TestGitHubLoginCallback_ExchangeCodeError(t *testing.T) {
+	h, authSvc, ghSvc := setupAuthHandlerMock()
+	authSvc.On("ValidateLoginState", "valid-state").Return(nil)
+	ghSvc.On("ExchangeCode", "bad-code").Return("", assert.AnError)
+
+	r := gin.New()
+	r.GET("/callback", h.GitHubLoginCallback)
+	w := doRequest(r, "GET", "/callback?code=bad-code&state=valid-state", nil)
+
+	assertStatus(t, w, http.StatusInternalServerError)
+	authSvc.AssertExpectations(t)
+	ghSvc.AssertExpectations(t)
+}
+
+// TestGitHubLoginCallback_GetUserError はGitHubユーザー取得エラーテスト。
+func TestGitHubLoginCallback_GetUserError(t *testing.T) {
+	h, authSvc, ghSvc := setupAuthHandlerMock()
+	authSvc.On("ValidateLoginState", "valid-state").Return(nil)
+	ghSvc.On("ExchangeCode", "valid-code").Return("access-token", nil)
+	ghSvc.On("GetGitHubUser", "access-token").Return(nil, assert.AnError)
+
+	r := gin.New()
+	r.GET("/callback", h.GitHubLoginCallback)
+	w := doRequest(r, "GET", "/callback?code=valid-code&state=valid-state", nil)
+
+	assertStatus(t, w, http.StatusInternalServerError)
+	authSvc.AssertExpectations(t)
+	ghSvc.AssertExpectations(t)
+}
+
+// TestGitHubLoginCallback_LoginError はGitHubログインエラーテスト。
+func TestGitHubLoginCallback_LoginError(t *testing.T) {
+	h, authSvc, ghSvc := setupAuthHandlerMock()
+	authSvc.On("ValidateLoginState", "valid-state").Return(nil)
+	ghSvc.On("ExchangeCode", "valid-code").Return("access-token", nil)
+	ghSvc.On("GetGitHubUser", "access-token").Return(&service.GitHubUserInfo{
+		ID:    12345,
+		Login: "testuser",
+		Email: "test@example.com",
+	}, nil)
+	authSvc.On("GitHubLogin", mock.Anything, "access-token").Return(nil, assert.AnError)
+
+	r := gin.New()
+	r.GET("/callback", h.GitHubLoginCallback)
+	w := doRequest(r, "GET", "/callback?code=valid-code&state=valid-state", nil)
+
+	assertStatus(t, w, http.StatusInternalServerError)
+	authSvc.AssertExpectations(t)
+	ghSvc.AssertExpectations(t)
+}
