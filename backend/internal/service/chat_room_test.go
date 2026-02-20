@@ -555,3 +555,42 @@ func TestChatRoomRemoveMember_NotFound(t *testing.T) {
 	err := svc.RemoveMember(99, 1, 2)
 	assert.Error(t, err)
 }
+
+// ============================================================
+// 空白のみ入力バリデーションテスト
+// ============================================================
+
+func TestChatRoomCreate_WhitespaceName(t *testing.T) {
+	svc, _, _ := newTestChatRoomService()
+
+	room := &model.ChatRoom{Name: "   ", OwnerID: 1}
+	_, err := svc.Create(room, nil)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "空白のみ")
+}
+
+func TestChatRoomUpdate_WhitespaceName(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	room := &model.ChatRoom{Name: "Room", OwnerID: 1}
+	room.ID = 10
+	roomRepo.On("FindByID", uint(10)).Return(room, nil)
+
+	result, err := svc.Update(10, 1, "   ", "Valid description")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "空白のみ")
+}
+
+func TestChatRoomUpdate_WhitespaceDescription(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	room := &model.ChatRoom{Name: "Room", OwnerID: 1}
+	room.ID = 10
+	roomRepo.On("FindByID", uint(10)).Return(room, nil)
+
+	result, err := svc.Update(10, 1, "New Name", "   \t  ")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "空白のみ")
+}

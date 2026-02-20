@@ -2,7 +2,9 @@ package service
 
 import (
 	"encoding/json"
+	"strings"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
@@ -22,6 +24,9 @@ func NewChatRoomService(roomRepo repository.ChatRoomRepositoryInterface, message
 
 // Create は新しいチャットルームを作成し、オーナーと指定メンバーを追加する。
 func (s *ChatRoomService) Create(room *model.ChatRoom, memberIDs []uint) (*model.ChatRoom, error) {
+	if strings.TrimSpace(room.Name) == "" {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "チャットルーム名は空白のみでは入力できません", nil)
+	}
 	if err := s.roomRepo.Create(room); err != nil {
 		return nil, err
 	}
@@ -88,7 +93,13 @@ func (s *ChatRoomService) Update(roomID, userID uint, name, description string) 
 	}
 
 	if name != "" {
+		if strings.TrimSpace(name) == "" {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, "チャットルーム名は空白のみでは入力できません", nil)
+		}
 		room.Name = name
+	}
+	if description != "" && strings.TrimSpace(description) == "" {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "説明は空白のみでは入力できません", nil)
 	}
 	room.Description = description
 
