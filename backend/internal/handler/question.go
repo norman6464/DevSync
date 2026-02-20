@@ -20,6 +20,7 @@ type QuestionServiceInterface interface {
 	Delete(id, userID uint) error
 	Vote(userID, questionID uint, value int) error
 	RemoveVote(userID, questionID uint) error
+	GetSolved(limit, offset int) ([]model.Question, int64, error)
 }
 
 // QuestionHandler は質問関連のHTTPハンドラ。
@@ -196,6 +197,24 @@ func (h *QuestionHandler) Vote(c *gin.Context) {
 	}
 
 	respondOK(c, domain.NewMessageResponse("Voted successfully"))
+}
+
+// GetSolved は解決済みの質問一覧を取得する。
+func (h *QuestionHandler) GetSolved(c *gin.Context) {
+	limit, offset := parseLimitOffset(c)
+
+	questions, total, err := h.service.GetSolved(limit, offset)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, dto.QuestionListResponse{
+		Questions: questions,
+		Total:     total,
+		Limit:     limit,
+		Offset:    offset,
+	})
 }
 
 // RemoveVote は質問への投票を取り消す。
