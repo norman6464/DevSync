@@ -467,3 +467,177 @@ func TestRoadmapReorderSteps_ValidationError(t *testing.T) {
 	w := doRequest(r, http.MethodPut, "/roadmaps/10/steps/reorder", map[string]string{})
 	assertStatus(t, w, http.StatusBadRequest)
 }
+
+// ---------- CreateFromTemplate ----------
+
+func TestRoadmapCreateFromTemplate_Success(t *testing.T) {
+	h, svc := setupRoadmapHandlerMock()
+	r := newRouter(1)
+	r.POST("/roadmaps/templates/:id/create", h.CreateFromTemplate)
+
+	roadmap := &model.Roadmap{Title: "From Template"}
+	roadmap.ID = 10
+	svc.On("CreateFromTemplate", uint(5), uint(1)).Return(roadmap, nil)
+
+	w := doRequest(r, http.MethodPost, "/roadmaps/templates/5/create", nil)
+	assertStatus(t, w, http.StatusCreated)
+	svc.AssertExpectations(t)
+}
+
+func TestRoadmapCreateFromTemplate_InvalidID(t *testing.T) {
+	h, _ := setupRoadmapHandlerMock()
+	r := newRouter(1)
+	r.POST("/roadmaps/templates/:id/create", h.CreateFromTemplate)
+
+	w := doRequest(r, http.MethodPost, "/roadmaps/templates/abc/create", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestRoadmapCreateFromTemplate_ServiceError(t *testing.T) {
+	h, svc := setupRoadmapHandlerMock()
+	r := newRouter(1)
+	r.POST("/roadmaps/templates/:id/create", h.CreateFromTemplate)
+
+	svc.On("CreateFromTemplate", uint(5), uint(1)).Return(nil, service.ErrNotFound)
+
+	w := doRequest(r, http.MethodPost, "/roadmaps/templates/5/create", nil)
+	assertStatus(t, w, http.StatusNotFound)
+	svc.AssertExpectations(t)
+}
+
+// ---------- GetTemplates エラーパス ----------
+
+func TestRoadmapGetTemplates_ServiceError(t *testing.T) {
+	h, svc := setupRoadmapHandlerMock()
+	r := newRouter(1)
+	r.GET("/roadmaps/templates", h.GetTemplates)
+
+	svc.On("GetTemplates").Return([]model.Roadmap(nil), assert.AnError)
+
+	w := doRequest(r, http.MethodGet, "/roadmaps/templates", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+// ---------- GetMyRoadmaps エラーパス ----------
+
+func TestRoadmapGetMy_ServiceError(t *testing.T) {
+	h, svc := setupRoadmapHandlerMock()
+	r := newRouter(1)
+	r.GET("/roadmaps", h.GetMyRoadmaps)
+
+	svc.On("GetByUserID", uint(1), 20, 0).Return([]model.Roadmap(nil), int64(0), assert.AnError)
+
+	w := doRequest(r, http.MethodGet, "/roadmaps", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+// ---------- GetPublicRoadmaps エラーパス ----------
+
+func TestRoadmapGetPublic_ServiceError(t *testing.T) {
+	h, svc := setupRoadmapHandlerMock()
+	r := newRouter(1)
+	r.GET("/roadmaps/public", h.GetPublicRoadmaps)
+
+	svc.On("GetPublicRoadmaps", 20, 0).Return([]model.Roadmap(nil), int64(0), assert.AnError)
+
+	w := doRequest(r, http.MethodGet, "/roadmaps/public", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+// ---------- UpdateStep (完了ステータスのみ) ----------
+
+func TestRoadmapUpdateStep_CompletionOnly(t *testing.T) {
+	h, svc := setupRoadmapHandlerMock()
+	r := newRouter(1)
+	r.PUT("/roadmaps/:id/steps/:stepId", h.UpdateStep)
+
+	completed := true
+	step := &model.RoadmapStep{Title: "Step1"}
+	step.ID = 2
+	svc.On("UpdateStepCompletion", uint(1), uint(2), uint(1), completed).Return(step, nil)
+
+	w := doRequest(r, http.MethodPut, "/roadmaps/1/steps/2", map[string]interface{}{
+		"is_completed": true,
+	})
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestRoadmapUpdateStep_CompletionError(t *testing.T) {
+	h, svc := setupRoadmapHandlerMock()
+	r := newRouter(1)
+	r.PUT("/roadmaps/:id/steps/:stepId", h.UpdateStep)
+
+	svc.On("UpdateStepCompletion", uint(1), uint(2), uint(1), true).Return(nil, service.ErrForbidden)
+
+	w := doRequest(r, http.MethodPut, "/roadmaps/1/steps/2", map[string]interface{}{
+		"is_completed": true,
+	})
+	assertStatus(t, w, http.StatusForbidden)
+	svc.AssertExpectations(t)
+}
+
+// ---------- UpdateStep InvalidStepID ----------
+
+func TestRoadmapUpdateStep_InvalidStepID(t *testing.T) {
+	h, _ := setupRoadmapHandlerMock()
+	r := newRouter(1)
+	r.PUT("/roadmaps/:id/steps/:stepId", h.UpdateStep)
+
+	w := doRequest(r, http.MethodPut, "/roadmaps/1/steps/abc", map[string]interface{}{
+		"title": "test",
+	})
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// ---------- DeleteStep InvalidStepID ----------
+
+func TestRoadmapDeleteStep_InvalidStepID(t *testing.T) {
+	h, _ := setupRoadmapHandlerMock()
+	r := newRouter(1)
+	r.DELETE("/roadmaps/:id/steps/:stepId", h.DeleteStep)
+
+	w := doRequest(r, http.MethodDelete, "/roadmaps/1/steps/abc", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// ---------- CopyRoadmap InvalidID ----------
+
+func TestRoadmapCopy_InvalidID(t *testing.T) {
+	h, _ := setupRoadmapHandlerMock()
+	r := newRouter(1)
+	r.POST("/roadmaps/:id/copy", h.CopyRoadmap)
+
+	w := doRequest(r, http.MethodPost, "/roadmaps/abc/copy", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// ---------- CopyRoadmap ServiceError ----------
+
+func TestRoadmapCopy_ServiceError(t *testing.T) {
+	h, svc := setupRoadmapHandlerMock()
+	r := newRouter(1)
+	r.POST("/roadmaps/:id/copy", h.CopyRoadmap)
+
+	svc.On("CopyRoadmap", uint(5), uint(1)).Return(nil, assert.AnError)
+
+	w := doRequest(r, http.MethodPost, "/roadmaps/5/copy", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+// ---------- ReorderSteps InvalidID ----------
+
+func TestRoadmapReorderSteps_InvalidID(t *testing.T) {
+	h, _ := setupRoadmapHandlerMock()
+	r := newRouter(1)
+	r.PUT("/roadmaps/:id/steps/reorder", h.ReorderSteps)
+
+	w := doRequest(r, http.MethodPut, "/roadmaps/abc/steps/reorder", map[string]interface{}{
+		"orders": []map[string]interface{}{{"step_id": 1, "order_index": 0}},
+	})
+	assertStatus(t, w, http.StatusBadRequest)
+}

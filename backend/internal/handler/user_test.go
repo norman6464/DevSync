@@ -216,4 +216,70 @@ func TestUserHandler_Update(t *testing.T) {
 		assertStatus(t, w, http.StatusNotFound)
 		svc.AssertExpectations(t)
 	})
+
+	t.Run("無効なIDの場合400を返す", func(t *testing.T) {
+		h, _ := newTestUserHandler()
+		r := newRouter(1)
+		r.PUT("/users/:id", h.Update)
+
+		w := doRequest(r, "PUT", "/users/abc", map[string]interface{}{"name": "テスト"})
+		assertStatus(t, w, http.StatusBadRequest)
+	})
+
+	t.Run("不正なJSONで400を返す", func(t *testing.T) {
+		h, svc := newTestUserHandler()
+		r := newRouter(1)
+		r.PUT("/users/:id", h.Update)
+
+		existing := &model.User{ID: 1, Name: "旧名前"}
+		svc.On("GetByID", uint(1)).Return(existing, nil)
+
+		w := doRequestRaw(r, "PUT", "/users/1", "invalid json")
+		assertStatus(t, w, http.StatusBadRequest)
+	})
+
+	t.Run("サービスエラー時に500を返す", func(t *testing.T) {
+		h, svc := newTestUserHandler()
+		r := newRouter(1)
+		r.PUT("/users/:id", h.Update)
+
+		existing := &model.User{ID: 1, Name: "旧名前"}
+		svc.On("GetByID", uint(1)).Return(existing, nil)
+		svc.On("Update", mock.AnythingOfType("*model.User")).Return(errors.New("db error"))
+
+		w := doRequest(r, "PUT", "/users/1", map[string]interface{}{"name": "新名前"})
+		assertStatus(t, w, http.StatusInternalServerError)
+		svc.AssertExpectations(t)
+	})
+}
+
+// ============================================================
+// GetProfileCompleteness テスト
+// ============================================================
+
+func TestUserHandler_GetProfileCompleteness(t *testing.T) {
+	t.Run("正常にプロフィール完成度を取得", func(t *testing.T) {
+		h, svc := newTestUserHandler()
+		r := newRouter(1)
+		r.GET("/users/me/completeness", h.GetProfileCompleteness)
+
+		result := &service.ProfileCompleteness{Percentage: 80}
+		svc.On("GetProfileCompleteness", uint(1)).Return(result, nil)
+
+		w := doRequest(r, "GET", "/users/me/completeness", nil)
+		assertStatus(t, w, http.StatusOK)
+		svc.AssertExpectations(t)
+	})
+
+	t.Run("サービスエラー時に500を返す", func(t *testing.T) {
+		h, svc := newTestUserHandler()
+		r := newRouter(1)
+		r.GET("/users/me/completeness", h.GetProfileCompleteness)
+
+		svc.On("GetProfileCompleteness", uint(1)).Return(nil, errors.New("db error"))
+
+		w := doRequest(r, "GET", "/users/me/completeness", nil)
+		assertStatus(t, w, http.StatusInternalServerError)
+		svc.AssertExpectations(t)
+	})
 }

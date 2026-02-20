@@ -249,3 +249,129 @@ func TestProjectGetAll_ServiceError(t *testing.T) {
 	assertStatus(t, w, 500)
 	svc.AssertExpectations(t)
 }
+
+// ---------- Create (日付付き) ----------
+
+func TestProjectCreate_WithDates(t *testing.T) {
+	h, svc := setupProjectHandler()
+	svc.On("Create", mock.AnythingOfType("*model.Project")).Return(nil)
+
+	r := newRouter(1)
+	r.POST("/projects", h.Create)
+	w := doRequest(r, "POST", "/projects", map[string]interface{}{
+		"title":      "日付付きプロジェクト",
+		"start_date": "2024-01-15",
+		"end_date":   "2024-06-30",
+	})
+
+	assertStatus(t, w, 201)
+	svc.AssertExpectations(t)
+}
+
+// ---------- GetByUserID (エラーパス) ----------
+
+func TestProjectGetByUserID_InvalidID(t *testing.T) {
+	h, _ := setupProjectHandler()
+
+	r := newRouter(1)
+	r.GET("/users/:userId/projects", h.GetByUserID)
+	w := doRequest(r, "GET", "/users/abc/projects", nil)
+
+	assertStatus(t, w, 400)
+}
+
+func TestProjectGetByUserID_ServiceError(t *testing.T) {
+	h, svc := setupProjectHandler()
+	svc.On("GetByUserID", uint(1), 20, 0).Return([]model.Project(nil), int64(0), fmt.Errorf("db error"))
+
+	r := newRouter(1)
+	r.GET("/users/:userId/projects", h.GetByUserID)
+	w := doRequest(r, "GET", "/users/1/projects", nil)
+
+	assertStatus(t, w, 500)
+	svc.AssertExpectations(t)
+}
+
+// ---------- GetFeatured (エラーパス) ----------
+
+func TestProjectGetFeatured_InvalidID(t *testing.T) {
+	h, _ := setupProjectHandler()
+
+	r := newRouter(1)
+	r.GET("/users/:userId/projects/featured", h.GetFeatured)
+	w := doRequest(r, "GET", "/users/abc/projects/featured", nil)
+
+	assertStatus(t, w, 400)
+}
+
+func TestProjectGetFeatured_ServiceError(t *testing.T) {
+	h, svc := setupProjectHandler()
+	svc.On("GetFeaturedByUserID", uint(1)).Return([]model.Project(nil), fmt.Errorf("db error"))
+
+	r := newRouter(1)
+	r.GET("/users/:userId/projects/featured", h.GetFeatured)
+	w := doRequest(r, "GET", "/users/1/projects/featured", nil)
+
+	assertStatus(t, w, 500)
+	svc.AssertExpectations(t)
+}
+
+// ---------- Update (エラーパス) ----------
+
+func TestProjectUpdate_InvalidID(t *testing.T) {
+	h, _ := setupProjectHandler()
+
+	r := newRouter(1)
+	r.PUT("/projects/:id", h.Update)
+	w := doRequest(r, "PUT", "/projects/abc", map[string]interface{}{"title": "t"})
+
+	assertStatus(t, w, 400)
+}
+
+func TestProjectUpdate_FeaturedError(t *testing.T) {
+	h, svc := setupProjectHandler()
+	updated := &model.Project{Title: "Updated"}
+	updated.ID = 1
+	svc.On("Update", uint(1), uint(1), mock.AnythingOfType("*model.Project")).Return(updated, nil)
+	svc.On("UpdateFeatured", uint(1), uint(1), true).Return(nil, service.ErrForbidden)
+
+	r := newRouter(1)
+	r.PUT("/projects/:id", h.Update)
+	w := doRequest(r, "PUT", "/projects/1", map[string]interface{}{
+		"title":    "Updated",
+		"featured": true,
+	})
+
+	assertStatus(t, w, 403)
+	svc.AssertExpectations(t)
+}
+
+func TestProjectUpdate_WithDates(t *testing.T) {
+	h, svc := setupProjectHandler()
+	updated := &model.Project{Title: "Updated"}
+	updated.ID = 1
+	svc.On("Update", uint(1), uint(1), mock.AnythingOfType("*model.Project")).Return(updated, nil)
+
+	r := newRouter(1)
+	r.PUT("/projects/:id", h.Update)
+	w := doRequest(r, "PUT", "/projects/1", map[string]interface{}{
+		"title":      "Updated",
+		"start_date": "2024-01-01",
+		"end_date":   "2024-12-31",
+	})
+
+	assertStatus(t, w, 200)
+	svc.AssertExpectations(t)
+}
+
+// ---------- Delete (エラーパス) ----------
+
+func TestProjectDelete_InvalidID(t *testing.T) {
+	h, _ := setupProjectHandler()
+
+	r := newRouter(1)
+	r.DELETE("/projects/:id", h.Delete)
+	w := doRequest(r, "DELETE", "/projects/abc", nil)
+
+	assertStatus(t, w, 400)
+}
