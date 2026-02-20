@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ExternalLink } from 'lucide-react';
 import type { User } from '../../types/user';
 import Avatar from '../common/Avatar';
 import FollowButton from './FollowButton';
@@ -30,9 +31,7 @@ export default function ProfileHeader({
     { key: 'atcoder', username: user.atcoder_username, href: `https://atcoder.jp/users/${encodeURIComponent(user.atcoder_username || '')}`, color: 'hover:text-cyan-400', badge: <span className="w-4 h-4 bg-gray-700 rounded text-white text-xs flex items-center justify-center font-bold">A</span> },
   ];
 
-  const externalLinkIcon = (
-    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
-  );
+  const externalLinkIcon = <ExternalLink className="w-3 h-3" />;
 
   return (
     <div className="bg-gray-900 border border-gray-800 rounded-md p-6">
