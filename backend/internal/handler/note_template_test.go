@@ -43,7 +43,7 @@ func TestNoteTemplateCreate_ServiceError(t *testing.T) {
 func TestNoteTemplateGetByID_Success(t *testing.T) {
 	h, svc := setupNoteTemplateHandler()
 	tmpl := &model.NoteTemplate{ID: 1, UserID: 1, Name: "テスト"}
-	svc.On("GetByID", uint(1)).Return(tmpl, nil)
+	svc.On("GetByID", uint(1), uint(1)).Return(tmpl, nil)
 
 	r := newRouter(1)
 	r.GET("/note-templates/:id", h.GetByID)
@@ -53,9 +53,21 @@ func TestNoteTemplateGetByID_Success(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
+func TestNoteTemplateGetByID_Forbidden(t *testing.T) {
+	h, svc := setupNoteTemplateHandler()
+	svc.On("GetByID", uint(1), uint(1)).Return(nil, service.ErrForbidden)
+
+	r := newRouter(1)
+	r.GET("/note-templates/:id", h.GetByID)
+	w := doRequest(r, "GET", "/note-templates/1", nil)
+
+	assertStatus(t, w, http.StatusForbidden)
+	svc.AssertExpectations(t)
+}
+
 func TestNoteTemplateGetByID_NotFound(t *testing.T) {
 	h, svc := setupNoteTemplateHandler()
-	svc.On("GetByID", uint(99)).Return(nil, service.ErrNotFound)
+	svc.On("GetByID", uint(99), uint(1)).Return(nil, service.ErrNotFound)
 
 	r := newRouter(1)
 	r.GET("/note-templates/:id", h.GetByID)

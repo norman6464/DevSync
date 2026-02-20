@@ -1730,8 +1730,8 @@ type MockNoteTemplateService struct{ mock.Mock }
 func (m *MockNoteTemplateService) Create(template *model.NoteTemplate) error {
 	return m.Called(template).Error(0)
 }
-func (m *MockNoteTemplateService) GetByID(id uint) (*model.NoteTemplate, error) {
-	args := m.Called(id)
+func (m *MockNoteTemplateService) GetByID(id, userID uint) (*model.NoteTemplate, error) {
+	args := m.Called(id, userID)
 	if t := args.Get(0); t != nil {
 		return t.(*model.NoteTemplate), args.Error(1)
 	}

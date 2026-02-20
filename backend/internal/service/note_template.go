@@ -61,9 +61,9 @@ func (s *NoteTemplateService) Create(template *model.NoteTemplate) error {
 	return s.repo.Create(template)
 }
 
-// GetByID は指定IDのテンプレートを取得する。
-func (s *NoteTemplateService) GetByID(id uint) (*model.NoteTemplate, error) {
-	return s.repo.FindByID(id)
+// GetByID は指定IDのテンプレートを取得する。所有権を検証する。
+func (s *NoteTemplateService) GetByID(id, userID uint) (*model.NoteTemplate, error) {
+	return s.findAndCheckOwnership(id, userID)
 }
 
 // GetByUserID は指定ユーザーの全テンプレートを取得する。
