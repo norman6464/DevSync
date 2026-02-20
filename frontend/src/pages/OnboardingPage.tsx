@@ -1,10 +1,12 @@
 import { useCallback } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { User, Code, Link, CheckCircle, ChevronRight, ChevronLeft } from 'lucide-react';
-import { sectionContainerClass, inputClass, labelClass, buttonPrimaryClass } from '../constants/styles';
-import { LANGUAGES, FRAMEWORKS } from '../constants/skills';
+import { User, Code, Link, CheckCircle } from 'lucide-react';
+import { sectionContainerClass } from '../constants/styles';
 import { useOnboarding } from '../hooks/useOnboarding';
+import OnboardingProfileStep from '../components/onboarding/OnboardingProfileStep';
+import OnboardingSkillsStep from '../components/onboarding/OnboardingSkillsStep';
+import OnboardingIntegrationsStep from '../components/onboarding/OnboardingIntegrationsStep';
+import OnboardingCompleteStep from '../components/onboarding/OnboardingCompleteStep';
 
 const STEPS = [
   { id: 1, icon: User },
@@ -14,7 +16,6 @@ const STEPS = [
 ];
 
 export default function OnboardingPage() {
-  const { t } = useTranslation();
   const {
     user,
     step,
@@ -49,12 +50,6 @@ export default function OnboardingPage() {
     handleComplete,
   } = useOnboarding();
 
-  const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value), [setName]);
-  const handleBioChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => setBio(e.target.value), [setBio]);
-  const handleZennUsernameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setZennUsername(e.target.value), [setZennUsername]);
-  const handleQiitaUsernameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setQiitaUsername(e.target.value), [setQiitaUsername]);
-  const handleAtcoderUsernameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setAtcoderUsername(e.target.value), [setAtcoderUsername]);
-  const handlePaizaRankChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => setPaizaRank(e.target.value), [setPaizaRank]);
   const handleGoToStep1 = useCallback(() => setStep(1), [setStep]);
   const handleGoToStep2 = useCallback(() => setStep(2), [setStep]);
   const handleGoToStep3 = useCallback(() => setStep(3), [setStep]);
@@ -106,366 +101,57 @@ export default function OnboardingPage() {
 
         {/* Step Content */}
         <div className={sectionContainerClass}>
-          {/* Step 1: Profile */}
           {step === 1 && (
-            <div>
-              <div className="px-6 py-5 border-b border-gray-800">
-                <h2 className="text-xl font-semibold text-white">{t('onboarding.welcomeTitle')}</h2>
-                <p className="text-sm text-gray-400 mt-1">{t('onboarding.welcomeDescription')}</p>
-              </div>
-              <div className="p-6 space-y-4">
-                <div>
-                  <label className={labelClass}>
-                    {t('settings.name')}
-                  </label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={handleNameChange}
-                    placeholder={t('onboarding.namePlaceholder')}
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>
-                    {t('settings.bio')}
-                  </label>
-                  <textarea
-                    value={bio}
-                    onChange={handleBioChange}
-                    rows={3}
-                    placeholder={t('onboarding.bioPlaceholder')}
-                    className={`${inputClass} resize-none`}
-                  />
-                </div>
-              </div>
-              <div className="px-6 py-4 border-t border-gray-800 flex justify-end gap-3">
-                <button
-                  onClick={handleGoToStep2}
-                  className="px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors"
-                >
-                  {t('onboarding.skip')}
-                </button>
-                <button
-                  onClick={handleSaveProfile}
-                  disabled={saving}
-                  className="px-5 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors inline-flex items-center gap-1"
-                >
-                  {saving ? t('common.loading') : t('onboarding.next')}
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
+            <OnboardingProfileStep
+              name={name}
+              setName={setName}
+              bio={bio}
+              setBio={setBio}
+              saving={saving}
+              onSave={handleSaveProfile}
+              onSkip={handleGoToStep2}
+            />
           )}
-
-          {/* Step 2: Skills */}
           {step === 2 && (
-            <div>
-              <div className="px-6 py-5 border-b border-gray-800">
-                <h2 className="text-xl font-semibold text-white">{t('onboarding.skillsTitle')}</h2>
-                <p className="text-sm text-gray-400 mt-1">{t('onboarding.skillsDescription')}</p>
-              </div>
-              <div className="p-6 space-y-6">
-                {/* Languages */}
-                <div>
-                  <h3 className="text-sm font-medium text-gray-300 mb-3">{t('profile.languages')}</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {LANGUAGES.map((lang) => (
-                      <button
-                        key={lang}
-                        type="button"
-                        onClick={() => toggleLanguage(lang)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
-                          selectedLanguages.includes(lang)
-                            ? 'bg-blue-600/20 text-blue-300 border-blue-500/50'
-                            : 'bg-gray-800 text-gray-400 border-gray-700 hover:border-gray-500'
-                        }`}
-                      >
-                        {lang}
-                      </button>
-                    ))}
-                  </div>
-                  {selectedLanguages.length > 0 && (
-                    <div className="mt-3 p-3 bg-gray-800/50 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-2">{t('settings.preview')}:</p>
-                      <img
-                        src={`https://skillicons.dev/icons?i=${selectedLanguages.join(',')}&theme=dark`}
-                        alt="Selected languages"
-                        className="h-12"
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Frameworks */}
-                <div>
-                  <h3 className="text-sm font-medium text-gray-300 mb-3">{t('profile.frameworks')}</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {FRAMEWORKS.map((fw) => (
-                      <button
-                        key={fw}
-                        type="button"
-                        onClick={() => toggleFramework(fw)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
-                          selectedFrameworks.includes(fw)
-                            ? 'bg-purple-600/20 text-purple-300 border-purple-500/50'
-                            : 'bg-gray-800 text-gray-400 border-gray-700 hover:border-gray-500'
-                        }`}
-                      >
-                        {fw}
-                      </button>
-                    ))}
-                  </div>
-                  {selectedFrameworks.length > 0 && (
-                    <div className="mt-3 p-3 bg-gray-800/50 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-2">{t('settings.preview')}:</p>
-                      <img
-                        src={`https://skillicons.dev/icons?i=${selectedFrameworks.join(',')}&theme=dark`}
-                        alt="Selected frameworks"
-                        className="h-12"
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="px-6 py-4 border-t border-gray-800 flex justify-between">
-                <button
-                  onClick={handleGoToStep1}
-                  className="px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors inline-flex items-center gap-1"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  {t('onboarding.back')}
-                </button>
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleGoToStep3}
-                    className="px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors"
-                  >
-                    {t('onboarding.skip')}
-                  </button>
-                  <button
-                    onClick={handleSaveSkills}
-                    disabled={saving}
-                    className="px-5 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors inline-flex items-center gap-1"
-                  >
-                    {saving ? t('common.loading') : t('onboarding.next')}
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
+            <OnboardingSkillsStep
+              selectedLanguages={selectedLanguages}
+              selectedFrameworks={selectedFrameworks}
+              toggleLanguage={toggleLanguage}
+              toggleFramework={toggleFramework}
+              saving={saving}
+              onSave={handleSaveSkills}
+              onBack={handleGoToStep1}
+              onSkip={handleGoToStep3}
+            />
           )}
-
-          {/* Step 3: Integrations */}
           {step === 3 && (
-            <div>
-              <div className="px-6 py-5 border-b border-gray-800">
-                <h2 className="text-xl font-semibold text-white">{t('onboarding.integrationsTitle')}</h2>
-                <p className="text-sm text-gray-400 mt-1">{t('onboarding.integrationsDescription')}</p>
-              </div>
-              <div className="p-6 space-y-4">
-                {/* GitHub */}
-                <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-                  <div className="flex items-center gap-3 mb-3">
-                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                    <div>
-                      <h3 className="text-sm font-medium text-white">GitHub</h3>
-                      <p className="text-xs text-gray-400">{t('onboarding.githubDescription')}</p>
-                    </div>
-                  </div>
-                  {user.github_connected ? (
-                    <div className="flex items-center gap-2 text-green-400 text-sm">
-                      <CheckCircle className="w-4 h-4" />
-                      <span>{t('settings.connected')} - @{user.github_username}</span>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={handleConnectGitHub}
-                      className="w-full py-2 bg-white hover:bg-gray-100 text-gray-900 rounded-lg font-medium text-sm transition-colors inline-flex items-center justify-center gap-2"
-                    >
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                      {t('settings.connect')} GitHub
-                    </button>
-                  )}
-                </div>
-
-                {/* Zenn */}
-                <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center text-white font-bold text-xs">Z</div>
-                    <div>
-                      <h3 className="text-sm font-medium text-white">Zenn</h3>
-                      <p className="text-xs text-gray-400">{t('onboarding.zennDescription')}</p>
-                    </div>
-                  </div>
-                  {user.zenn_username ? (
-                    <div className="flex items-center gap-2 text-green-400 text-sm">
-                      <CheckCircle className="w-4 h-4" />
-                      <span>{t('settings.connected')} - @{user.zenn_username}</span>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={zennUsername}
-                        onChange={handleZennUsernameChange}
-                        placeholder={t('settings.zennUsername')}
-                        className={`${inputClass} flex-1`}
-                      />
-                      <button
-                        onClick={handleConnectZenn}
-                        disabled={connectingZenn || !zennUsername.trim()}
-                        className={`${buttonPrimaryClass} text-sm disabled:opacity-50 whitespace-nowrap`}
-                      >
-                        {connectingZenn ? t('common.loading') : t('settings.connect')}
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Qiita */}
-                <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-6 h-6 bg-green-500 rounded flex items-center justify-center text-white font-bold text-xs">Q</div>
-                    <div>
-                      <h3 className="text-sm font-medium text-white">Qiita</h3>
-                      <p className="text-xs text-gray-400">{t('onboarding.qiitaDescription')}</p>
-                    </div>
-                  </div>
-                  {user.qiita_username ? (
-                    <div className="flex items-center gap-2 text-green-400 text-sm">
-                      <CheckCircle className="w-4 h-4" />
-                      <span>{t('settings.connected')} - @{user.qiita_username}</span>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={qiitaUsername}
-                        onChange={handleQiitaUsernameChange}
-                        placeholder={t('settings.qiitaUsername')}
-                        className={`${inputClass} flex-1`}
-                      />
-                      <button
-                        onClick={handleConnectQiita}
-                        disabled={connectingQiita || !qiitaUsername.trim()}
-                        className="px-4 py-2 bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors whitespace-nowrap"
-                      >
-                        {connectingQiita ? t('common.loading') : t('settings.connect')}
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* AtCoder */}
-                <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-6 h-6 bg-gray-700 rounded flex items-center justify-center text-white font-bold text-xs">A</div>
-                    <div>
-                      <h3 className="text-sm font-medium text-white">AtCoder</h3>
-                      <p className="text-xs text-gray-400">{t('onboarding.atcoderDescription')}</p>
-                    </div>
-                  </div>
-                  {user.atcoder_username ? (
-                    <div className="flex items-center gap-2 text-green-400 text-sm">
-                      <CheckCircle className="w-4 h-4" />
-                      <span>{t('settings.connected')} - @{user.atcoder_username}</span>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={atcoderUsername}
-                        onChange={handleAtcoderUsernameChange}
-                        placeholder={t('settings.atcoderUsername')}
-                        className={`${inputClass} flex-1`}
-                      />
-                      <button
-                        onClick={handleConnectAtCoder}
-                        disabled={connectingAtcoder || !atcoderUsername.trim()}
-                        className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors whitespace-nowrap"
-                      >
-                        {connectingAtcoder ? t('common.loading') : t('settings.connect')}
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* paiza */}
-                <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-6 h-6 bg-emerald-700 rounded flex items-center justify-center text-white font-bold text-xs">P</div>
-                    <div>
-                      <h3 className="text-sm font-medium text-white">paiza</h3>
-                      <p className="text-xs text-gray-400">{t('onboarding.paizaDescription')}</p>
-                    </div>
-                  </div>
-                  {user.paiza_rank ? (
-                    <div className="flex items-center gap-2 text-green-400 text-sm">
-                      <CheckCircle className="w-4 h-4" />
-                      <span>{t('settings.connected')} - {t('settings.paizaRankLabel')}: {user.paiza_rank}</span>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <select
-                        value={paizaRank}
-                        onChange={handlePaizaRankChange}
-                        className={`${inputClass} flex-1`}
-                      >
-                        <option value="">{t('settings.paizaSelectRank')}</option>
-                        <option value="S">S</option>
-                        <option value="A">A</option>
-                        <option value="B">B</option>
-                        <option value="C">C</option>
-                        <option value="D">D</option>
-                        <option value="E">E</option>
-                      </select>
-                      <button
-                        onClick={handleSavePaizaRank}
-                        disabled={!paizaRank}
-                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors whitespace-nowrap"
-                      >
-                        {t('common.save')}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="px-6 py-4 border-t border-gray-800 flex justify-between">
-                <button
-                  onClick={handleGoToStep2}
-                  className="px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors inline-flex items-center gap-1"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  {t('onboarding.back')}
-                </button>
-                <button
-                  onClick={handleGoToStep4}
-                  className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium text-sm transition-colors inline-flex items-center gap-1"
-                >
-                  {t('onboarding.next')}
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
+            <OnboardingIntegrationsStep
+              user={user}
+              zennUsername={zennUsername}
+              setZennUsername={setZennUsername}
+              qiitaUsername={qiitaUsername}
+              setQiitaUsername={setQiitaUsername}
+              atcoderUsername={atcoderUsername}
+              setAtcoderUsername={setAtcoderUsername}
+              paizaRank={paizaRank}
+              setPaizaRank={setPaizaRank}
+              connectingZenn={connectingZenn}
+              connectingQiita={connectingQiita}
+              connectingAtcoder={connectingAtcoder}
+              onConnectGitHub={handleConnectGitHub}
+              onConnectZenn={handleConnectZenn}
+              onConnectQiita={handleConnectQiita}
+              onConnectAtCoder={handleConnectAtCoder}
+              onSavePaizaRank={handleSavePaizaRank}
+              onBack={handleGoToStep2}
+              onNext={handleGoToStep4}
+            />
           )}
-
-          {/* Step 4: Complete */}
           {step === 4 && (
-            <div className="p-8 text-center">
-              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-8 h-8 text-green-400" />
-              </div>
-              <h2 className="text-xl font-semibold text-white mb-2">{t('onboarding.completeTitle')}</h2>
-              <p className="text-sm text-gray-400 mb-6">{t('onboarding.completeDescription')}</p>
-              <button
-                onClick={handleComplete}
-                disabled={saving}
-                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors"
-              >
-                {saving ? t('common.loading') : t('onboarding.goToDashboard')}
-              </button>
-            </div>
+            <OnboardingCompleteStep
+              saving={saving}
+              onComplete={handleComplete}
+            />
           )}
         </div>
       </div>
