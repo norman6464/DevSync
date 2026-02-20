@@ -96,7 +96,7 @@ func TestNoteLinkService_CreateLink_Forbidden(t *testing.T) {
 
 	err := svc.CreateLink(1, 2, 1)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "この操作を行う権限がありません")
+	assert.ErrorIs(t, err, ErrForbidden)
 	noteRepo.AssertExpectations(t)
 }
 
@@ -194,7 +194,7 @@ func TestNoteLinkService_DeleteLink_Forbidden(t *testing.T) {
 
 	err := svc.DeleteLink(1, 2, 1)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "この操作を行う権限がありません")
+	assert.ErrorIs(t, err, ErrForbidden)
 	noteRepo.AssertExpectations(t)
 }
 
