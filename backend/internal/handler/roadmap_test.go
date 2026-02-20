@@ -420,6 +420,48 @@ func TestRoadmapReorderSteps_Forbidden(t *testing.T) {
 	assertStatus(t, w, http.StatusForbidden)
 }
 
+// ============================================================
+// GetByStatus テスト
+// ============================================================
+
+func TestRoadmap_GetByStatus_Success(t *testing.T) {
+	h, svc := setupRoadmapHandlerMock()
+	r := newRouter(1)
+	r.GET("/roadmaps/status/:status", h.GetByStatus)
+
+	roadmaps := []model.Roadmap{{Title: "Go入門"}}
+	svc.On("GetByStatus", uint(1), "active").Return(roadmaps, nil)
+
+	w := doRequest(r, http.MethodGet, "/roadmaps/status/active", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestRoadmap_GetByStatus_NilResult(t *testing.T) {
+	h, svc := setupRoadmapHandlerMock()
+	r := newRouter(1)
+	r.GET("/roadmaps/status/:status", h.GetByStatus)
+
+	svc.On("GetByStatus", uint(1), "completed").Return([]model.Roadmap(nil), nil)
+
+	w := doRequest(r, http.MethodGet, "/roadmaps/status/completed", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Equal(t, "[]", w.Body.String())
+	svc.AssertExpectations(t)
+}
+
+func TestRoadmap_GetByStatus_ServiceError(t *testing.T) {
+	h, svc := setupRoadmapHandlerMock()
+	r := newRouter(1)
+	r.GET("/roadmaps/status/:status", h.GetByStatus)
+
+	svc.On("GetByStatus", uint(1), "invalid").Return([]model.Roadmap(nil), service.ErrNotFound)
+
+	w := doRequest(r, http.MethodGet, "/roadmaps/status/invalid", nil)
+	assertStatus(t, w, http.StatusNotFound)
+	svc.AssertExpectations(t)
+}
+
 func TestRoadmapReorderSteps_ValidationError(t *testing.T) {
 	h, _ := setupRoadmapHandler()
 	r := newRouter(1)
