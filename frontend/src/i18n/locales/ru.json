@@ -176,6 +176,7 @@
     "reply": "Ответить",
     "share": "Поделиться",
     "markdownSupported": "Поддерживает **жирный**, *курсив*, `код` и др.",
+    "submitShortcut": "Ctrl+Enter для публикации",
     "write": "Писать",
     "preview": "Предпросмотр",
     "nothingToPreview": "Нечего показывать",

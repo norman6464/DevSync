@@ -177,6 +177,7 @@
     "reply": "返信",
     "share": "共有",
     "markdownSupported": "**太字**、*斜体*、`コード`などに対応",
+    "submitShortcut": "Ctrl+Enterで投稿",
     "write": "編集",
     "preview": "プレビュー",
     "nothingToPreview": "プレビューするものがありません",

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Send, FileText, Check, Clock } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
@@ -63,6 +63,15 @@ export default function QuickPostForm({ onSubmit }: QuickPostFormProps) {
     }
   };
 
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      if (content.trim() && !isSubmitting) {
+        handleSubmit(false);
+      }
+    }
+  }, [content, isSubmitting]);
+
   // 保存状態の表示テキスト
   const getSaveStatusText = () => {
     if (saveStatus === 'saving') return t('post.saving');
@@ -107,6 +116,7 @@ export default function QuickPostForm({ onSubmit }: QuickPostFormProps) {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onFocus={() => setIsFocused(true)}
+            onKeyDown={handleKeyDown}
             placeholder={t('post.createTitle')}
             maxLength={5000}
             className={`w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none transition-all ${
@@ -119,7 +129,7 @@ export default function QuickPostForm({ onSubmit }: QuickPostFormProps) {
             <div className="mt-3 flex items-center justify-between animate-in fade-in duration-200">
               <div className="flex items-center gap-2">
                 <p className="text-xs text-gray-500">
-                  {t('post.markdownSupported')}
+                  {t('post.markdownSupported')} · {t('post.submitShortcut')}
                 </p>
                 {/* 保存状態の表示 */}
                 {saveStatus !== 'idle' && (

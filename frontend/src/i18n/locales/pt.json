@@ -176,6 +176,7 @@
     "reply": "Responder",
     "share": "Compartilhar",
     "markdownSupported": "Suporta **negrito**, *itálico*, `código`, e mais",
+    "submitShortcut": "Ctrl+Enter para publicar",
     "write": "Escrever",
     "preview": "Pré-visualizar",
     "nothingToPreview": "Nada para pré-visualizar",
