@@ -126,7 +126,7 @@ export default function PortfolioModal({
             <div className="bg-white rounded-lg overflow-hidden">
               <iframe
                 srcDoc={html}
-                sandbox="allow-same-origin"
+                sandbox=""
                 className="w-full h-96 border-0"
                 title={t('portfolio.preview')}
               />
