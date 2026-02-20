@@ -5,7 +5,7 @@ import { BookOpen, Video, FileText, GraduationCap, BookMarked, Mic, Wrench, Pin,
 import type { LearningResource, ResourceCategory, ResourceDifficulty } from '../../types/resource';
 import { parseJsonArray } from '../../utils/json';
 import Avatar from '../common/Avatar';
-import { cardClass } from '../../constants/styles';
+import { cardClass, iconButtonClass } from '../../constants/styles';
 import { sanitizeUrl } from '../../utils/url';
 
 interface ResourceCardProps {
@@ -107,7 +107,7 @@ export default function ResourceCard({
             <div className="flex gap-1">
               <button
                 onClick={onEdit}
-                className="p-1.5 text-gray-400 hover:text-white transition-colors"
+                className={iconButtonClass}
                 title={t('common.edit')}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { Post } from '../../types/post';
 import Avatar from '../common/Avatar';
 import { format } from 'date-fns';
-import { cardDarkClass } from '../../constants/styles';
+import { cardDarkClass, iconButtonClass } from '../../constants/styles';
 import { parseJsonArray } from '../../utils/json';
 import PostCardContent from './PostCardContent';
 import PostCardActions from './PostCardActions';
@@ -57,7 +57,7 @@ export default function PostCard({ post, isOwner = false, onEdit, onDelete, onUp
           <div className="flex gap-1 flex-shrink-0">
             <button
               onClick={onEdit}
-              className="p-1.5 text-gray-400 hover:text-white transition-colors"
+              className={iconButtonClass}
               aria-label={t('common.edit')}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
