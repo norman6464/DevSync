@@ -1366,7 +1366,8 @@
     "lastUpdated": "最後更新",
     "chars": "字元",
     "createdAt": "創建時間",
-    "tagsPlaceholder": "例如：React, TypeScript, Go"
+    "tagsPlaceholder": "例如：React, TypeScript, Go",
+    "allTags": "所有標籤"
   },
   "githubCallback": {
     "missingOAuthParams": "缺少OAuth參數",

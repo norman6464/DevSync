@@ -1366,7 +1366,8 @@
     "lastUpdated": "Последнее обновление",
     "chars": "символов",
     "createdAt": "Создано",
-    "tagsPlaceholder": "Напр.: React, TypeScript, Go"
+    "tagsPlaceholder": "Напр.: React, TypeScript, Go",
+    "allTags": "Все теги"
   },
   "githubCallback": {
     "missingOAuthParams": "Отсутствуют параметры OAuth",

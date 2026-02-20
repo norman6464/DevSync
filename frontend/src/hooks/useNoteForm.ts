@@ -9,9 +9,23 @@ export function useNoteForm() {
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'latest' | 'oldest' | 'updated' | 'favorites_first'>('latest');
+  const [filterTag, setFilterTag] = useState('');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [tags, setTags] = useState('');
+
+  const allTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    notes.forEach(note => {
+      if (note.tags) {
+        note.tags.split(',').forEach(t => {
+          const trimmed = t.trim();
+          if (trimmed) tagSet.add(trimmed);
+        });
+      }
+    });
+    return Array.from(tagSet).sort();
+  }, [notes]);
 
   const resetForm = useCallback(() => {
     setTitle('');
@@ -43,12 +57,17 @@ export function useNoteForm() {
   }, []);
 
   const filteredNotes = useMemo(() => {
-    const filtered = searchQuery
+    let filtered = searchQuery
       ? notes.filter(note =>
           note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           note.content.toLowerCase().includes(searchQuery.toLowerCase())
         )
       : notes;
+    if (filterTag) {
+      filtered = filtered.filter(note =>
+        note.tags?.split(',').some(t => t.trim() === filterTag)
+      );
+    }
     return [...filtered].sort((a, b) => {
       switch (sortBy) {
         case 'oldest':
@@ -62,13 +81,13 @@ export function useNoteForm() {
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       }
     });
-  }, [notes, searchQuery, sortBy]);
+  }, [notes, searchQuery, sortBy, filterTag]);
 
   return {
     // Data
     notes, favoriteNotes, filteredNotes, loading, saving,
     // Form state
-    showForm, setShowForm, editingNote, searchQuery, setSearchQuery, sortBy, setSortBy,
+    showForm, setShowForm, editingNote, searchQuery, setSearchQuery, sortBy, setSortBy, filterTag, setFilterTag, allTags,
     title, setTitle, content, setContent, tags, setTags,
     // Actions
     resetForm, handleSubmit, handleEdit, deleteNote, toggleFavorite,

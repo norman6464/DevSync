@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BookOpen, Star, Plus, Edit, Trash2, ArrowDownWideNarrow } from 'lucide-react';
+import { BookOpen, Star, Plus, Edit, Trash2, ArrowDownWideNarrow, Tag } from 'lucide-react';
 import { useNoteForm } from '../hooks';
 import { PageLoader, SearchInput } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
@@ -12,6 +12,7 @@ export default function NotesPage() {
   const {
     filteredNotes, loading, saving,
     showForm, setShowForm, editingNote, searchQuery, setSearchQuery, sortBy, setSortBy,
+    filterTag, setFilterTag, allTags,
     title, setTitle, content, setContent, tags, setTags,
     resetForm, handleSubmit, handleEdit, deleteNote, toggleFavorite,
   } = useNoteForm();
@@ -72,6 +73,38 @@ export default function NotesPage() {
           ))}
         </div>
       </div>
+
+      {/* Tag Filter */}
+      {allTags.length > 0 && (
+        <div className="flex items-center gap-3 mb-6">
+          <Tag className="w-4 h-4 text-gray-400" />
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setFilterTag('')}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                filterTag === ''
+                  ? 'bg-green-500/20 text-green-400'
+                  : 'bg-gray-800/50 text-gray-400 hover:text-white'
+              }`}
+            >
+              {t('notes.allTags')}
+            </button>
+            {allTags.map(tag => (
+              <button
+                key={tag}
+                onClick={() => setFilterTag(filterTag === tag ? '' : tag)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  filterTag === tag
+                    ? 'bg-green-500/20 text-green-400'
+                    : 'bg-gray-800/50 text-gray-400 hover:text-white'
+                }`}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Create/Edit Form */}
       {showForm && (
