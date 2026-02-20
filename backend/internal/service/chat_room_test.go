@@ -360,11 +360,12 @@ func TestChatRoomGetByUserID_Success(t *testing.T) {
 		{Name: "Room A", OwnerID: 1},
 		{Name: "Room B", OwnerID: 2},
 	}
-	roomRepo.On("FindByUserID", uint(1)).Return(rooms, nil)
+	roomRepo.On("FindByUserID", uint(1), 20, 0).Return(rooms, int64(2), nil)
 
-	result, err := svc.GetByUserID(1)
+	result, total, err := svc.GetByUserID(1, 20, 0)
 	assert.NoError(t, err)
 	assert.Len(t, result, 2)
+	assert.Equal(t, int64(2), total)
 	assert.Equal(t, "Room A", result[0].Name)
 	roomRepo.AssertExpectations(t)
 }
@@ -372,20 +373,21 @@ func TestChatRoomGetByUserID_Success(t *testing.T) {
 func TestChatRoomGetByUserID_Empty(t *testing.T) {
 	svc, roomRepo, _ := newTestChatRoomService()
 
-	roomRepo.On("FindByUserID", uint(999)).Return([]model.ChatRoom{}, nil)
+	roomRepo.On("FindByUserID", uint(999), 20, 0).Return([]model.ChatRoom{}, int64(0), nil)
 
-	result, err := svc.GetByUserID(999)
+	result, total, err := svc.GetByUserID(999, 20, 0)
 	assert.NoError(t, err)
 	assert.Empty(t, result)
+	assert.Equal(t, int64(0), total)
 	roomRepo.AssertExpectations(t)
 }
 
 func TestChatRoomGetByUserID_RepoError(t *testing.T) {
 	svc, roomRepo, _ := newTestChatRoomService()
 
-	roomRepo.On("FindByUserID", uint(1)).Return([]model.ChatRoom{}, assert.AnError)
+	roomRepo.On("FindByUserID", uint(1), 20, 0).Return([]model.ChatRoom{}, int64(0), assert.AnError)
 
-	result, err := svc.GetByUserID(1)
+	result, _, err := svc.GetByUserID(1, 20, 0)
 	assert.Error(t, err)
 	assert.Empty(t, result)
 	roomRepo.AssertExpectations(t)

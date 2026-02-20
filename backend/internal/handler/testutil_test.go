@@ -415,9 +415,9 @@ func (m *MockChatRoomRepository) FindByID(id uint) (*model.ChatRoom, error) {
 	}
 	return nil, args.Error(1)
 }
-func (m *MockChatRoomRepository) FindByUserID(userID uint) ([]model.ChatRoom, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.ChatRoom), args.Error(1)
+func (m *MockChatRoomRepository) FindByUserID(userID uint, limit, offset int) ([]model.ChatRoom, int64, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.ChatRoom), args.Get(1).(int64), args.Error(2)
 }
 func (m *MockChatRoomRepository) Update(room *model.ChatRoom) error {
 	return m.Called(room).Error(0)
@@ -1197,9 +1197,9 @@ func (m *MockChatRoomService) Create(room *model.ChatRoom, memberIDs []uint) (*m
 	}
 	return nil, args.Error(1)
 }
-func (m *MockChatRoomService) GetByUserID(userID uint) ([]model.ChatRoom, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.ChatRoom), args.Error(1)
+func (m *MockChatRoomService) GetByUserID(userID uint, limit, offset int) ([]model.ChatRoom, int64, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.ChatRoom), args.Get(1).(int64), args.Error(2)
 }
 func (m *MockChatRoomService) GetByID(roomID, userID uint) (*model.ChatRoom, error) {
 	args := m.Called(roomID, userID)

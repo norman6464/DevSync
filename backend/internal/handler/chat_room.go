@@ -10,7 +10,7 @@ import (
 // ChatRoomServiceInterface はChatRoomHandlerが依存するサービスのインターフェース。
 type ChatRoomServiceInterface interface {
 	Create(room *model.ChatRoom, memberIDs []uint) (*model.ChatRoom, error)
-	GetByUserID(userID uint) ([]model.ChatRoom, error)
+	GetByUserID(userID uint, limit, offset int) ([]model.ChatRoom, int64, error)
 	GetByID(roomID, userID uint) (*model.ChatRoom, error)
 	Update(roomID, userID uint, name, description string) (*model.ChatRoom, error)
 	Delete(roomID, userID uint) error
@@ -59,12 +59,18 @@ func (h *ChatRoomHandler) Create(c *gin.Context) {
 // GetMyRooms は現在のユーザーが参加しているチャットルーム一覧を取得する。
 func (h *ChatRoomHandler) GetMyRooms(c *gin.Context) {
 	userID := c.GetUint("userID")
-	rooms, err := h.service.GetByUserID(userID)
+	limit, offset := parseLimitOffset(c)
+	rooms, total, err := h.service.GetByUserID(userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, ensureSlice(rooms))
+	respondOK(c, dto.ChatRoomListResponse{
+		Rooms:  ensureSlice(rooms),
+		Total:  total,
+		Limit:  limit,
+		Offset: offset,
+	})
 }
 
 // GetByID は指定IDのチャットルーム詳細を取得する。

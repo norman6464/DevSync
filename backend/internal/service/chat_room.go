@@ -60,9 +60,9 @@ func (s *ChatRoomService) checkMembership(roomID, userID uint) error {
 	return nil
 }
 
-// GetByUserID は指定ユーザーが参加している全チャットルームを取得する。
-func (s *ChatRoomService) GetByUserID(userID uint) ([]model.ChatRoom, error) {
-	return s.roomRepo.FindByUserID(userID)
+// GetByUserID は指定ユーザーが参加しているチャットルームをページネーション付きで取得する。
+func (s *ChatRoomService) GetByUserID(userID uint, limit, offset int) ([]model.ChatRoom, int64, error) {
+	return s.roomRepo.FindByUserID(userID, limit, offset)
 }
 
 // GetByID はメンバーシップを検証した後、チャットルームを取得する。

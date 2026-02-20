@@ -56,16 +56,20 @@ func TestChatRoomGetMyRooms_Success(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/rooms", h.GetMyRooms)
 
-	roomRepo.On("FindByUserID", uint(1)).Return([]model.ChatRoom{
+	roomRepo.On("FindByUserID", uint(1), 20, 0).Return([]model.ChatRoom{
 		{Name: "Room A"}, {Name: "Room B"},
-	}, nil)
+	}, int64(2), nil)
 
 	w := doRequest(r, http.MethodGet, "/rooms", nil)
 	assertStatus(t, w, http.StatusOK)
 
-	var rooms []map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &rooms)
+	var resp map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &resp)
+	rooms := resp["rooms"].([]interface{})
 	assert.Len(t, rooms, 2)
+	assert.Equal(t, float64(2), resp["total"])
+	assert.Equal(t, float64(20), resp["limit"])
+	assert.Equal(t, float64(0), resp["offset"])
 }
 
 // ---------- GetByID ----------
