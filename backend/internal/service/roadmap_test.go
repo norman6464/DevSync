@@ -584,6 +584,23 @@ func TestRoadmapCreate_Success(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestRoadmapCreate_WhitespaceTitle(t *testing.T) {
+	svc, _ := newTestRoadmapService()
+
+	roadmap := &model.Roadmap{Title: "   \t\n  ", UserID: 1}
+	err := svc.Create(roadmap)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "タイトルは必須です")
+}
+
+func TestRoadmapCreate_EmptyTitle(t *testing.T) {
+	svc, _ := newTestRoadmapService()
+
+	roadmap := &model.Roadmap{Title: "", UserID: 1}
+	err := svc.Create(roadmap)
+	assert.Error(t, err)
+}
+
 // ============================================================
 // GetByUserID テスト
 // ============================================================

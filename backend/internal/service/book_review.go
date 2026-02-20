@@ -28,6 +28,9 @@ func validateRating(rating int) error {
 
 // Create は新しい書籍レビューを作成する。
 func (s *BookReviewService) Create(review *model.BookReview) error {
+	if strings.TrimSpace(review.Title) == "" {
+		return domain.NewError(domain.ErrCodeBadRequest, "タイトルは必須です", nil)
+	}
 	if err := validateRating(review.Rating); err != nil {
 		return err
 	}
