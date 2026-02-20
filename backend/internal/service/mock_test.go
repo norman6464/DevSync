@@ -548,6 +548,11 @@ func (m *MockLearningGoalRepository) GetByCategory(userID uint, category string)
 	return args.Get(0).([]model.LearningGoal), args.Error(1)
 }
 
+func (m *MockLearningGoalRepository) GetByStatus(userID uint, status string) ([]model.LearningGoal, error) {
+	args := m.Called(userID, status)
+	return args.Get(0).([]model.LearningGoal), args.Error(1)
+}
+
 func (m *MockLearningGoalRepository) GetStats(userID uint) (*model.LearningGoalStats, error) {
 	args := m.Called(userID)
 	if args.Get(0) == nil {

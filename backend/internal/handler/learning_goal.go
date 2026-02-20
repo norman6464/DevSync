@@ -14,6 +14,7 @@ type LearningGoalServiceInterface interface {
 	GetByID(id uint) (*model.LearningGoal, error)
 	GetByUserID(userID uint) ([]model.LearningGoal, error)
 	GetByCategory(userID uint, category string) ([]model.LearningGoal, error)
+	GetByStatus(userID uint, status string) ([]model.LearningGoal, error)
 	GetStats(userID uint) (*model.LearningGoalStats, error)
 	Update(id, userID uint, updates *model.LearningGoal) (*model.LearningGoal, error)
 	Delete(id, userID uint) error
@@ -202,6 +203,23 @@ func (h *LearningGoalHandler) GetByCategory(c *gin.Context) {
 	category := c.Param("category")
 
 	goals, err := h.service.GetByCategory(userID, category)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	if goals == nil {
+		goals = []model.LearningGoal{}
+	}
+
+	respondOK(c, goals)
+}
+
+// GetByStatus は認証ユーザーの学習目標をステータスでフィルタリングして取得する。
+func (h *LearningGoalHandler) GetByStatus(c *gin.Context) {
+	userID := c.GetUint("userID")
+	status := c.Param("status")
+
+	goals, err := h.service.GetByStatus(userID, status)
 	if err != nil {
 		respondError(c, err)
 		return

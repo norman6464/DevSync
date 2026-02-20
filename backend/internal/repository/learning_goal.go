@@ -61,6 +61,13 @@ func (r *LearningGoalRepository) GetByCategory(userID uint, category string) ([]
 	return goals, err
 }
 
+// GetByStatus は指定ユーザーの学習目標をステータスでフィルタリングして取得する（新しい順）。
+func (r *LearningGoalRepository) GetByStatus(userID uint, status string) ([]model.LearningGoal, error) {
+	var goals []model.LearningGoal
+	err := r.db.Where("user_id = ? AND status = ?", userID, status).Order("created_at DESC").Find(&goals).Error
+	return goals, err
+}
+
 // GetStats は指定ユーザーの学習目標統計情報を算出する。
 // 目標総数、アクティブ数、完了数、平均進捗率を返す。
 func (r *LearningGoalRepository) GetStats(userID uint) (*model.LearningGoalStats, error) {

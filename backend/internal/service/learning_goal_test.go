@@ -537,3 +537,48 @@ func TestLearningGoalGetByCategory_RepoError(t *testing.T) {
 	assert.Error(t, err)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// ステータス別目標取得テスト
+// ============================================================
+
+func TestLearningGoalGetByStatus_Success(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+	expected := []model.LearningGoal{
+		{UserID: 1, Title: "Go学習", Status: model.GoalStatusCompleted},
+		{UserID: 1, Title: "React学習", Status: model.GoalStatusCompleted},
+	}
+	repo.On("GetByStatus", uint(1), "completed").Return(expected, nil)
+
+	result, err := svc.GetByStatus(1, "completed")
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningGoalGetByStatus_EmptyResult(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+	repo.On("GetByStatus", uint(1), "paused").Return([]model.LearningGoal{}, nil)
+
+	result, err := svc.GetByStatus(1, "paused")
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningGoalGetByStatus_InvalidStatus(t *testing.T) {
+	svc, _ := newTestLearningGoalService()
+
+	_, err := svc.GetByStatus(1, "invalid")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "無効なステータスです")
+}
+
+func TestLearningGoalGetByStatus_RepoError(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+	repo.On("GetByStatus", uint(1), "active").Return([]model.LearningGoal{}, errors.New("db error"))
+
+	_, err := svc.GetByStatus(1, "active")
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
