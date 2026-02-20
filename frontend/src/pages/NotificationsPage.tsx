@@ -8,6 +8,7 @@ import Avatar from '../components/common/Avatar';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import EmptyState from '../components/common/EmptyState';
 import { buttonSecondaryClass } from '../constants/styles';
+import { formatDistanceToNow } from '../utils/timeFormat';
 
 const FILTER_TYPES: { key: NotificationType | ''; labelKey: string }[] = [
   { key: '', labelKey: 'notifications.filterAll' },
@@ -37,20 +38,6 @@ function getNotificationLink(notification: Notification): string {
     default:
       return '/';
   }
-}
-
-function formatTime(dateString: string, t: (key: string, opts?: Record<string, unknown>) => string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-
-  if (diffMins < 1) return t('notifications.justNow');
-  if (diffMins < 60) return t('notifications.minutesAgo', { count: diffMins });
-  if (diffHours < 24) return t('notifications.hoursAgo', { count: diffHours });
-  return t('notifications.daysAgo', { count: diffDays });
 }
 
 export default function NotificationsPage() {
@@ -196,7 +183,7 @@ export default function NotificationsPage() {
                       </p>
                     )}
                     <p className="text-xs text-gray-500 mt-1">
-                      {formatTime(notification.created_at, t)}
+                      {formatDistanceToNow(notification.created_at)}
                     </p>
                   </div>
                   {!notification.read && (
