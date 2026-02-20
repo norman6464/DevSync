@@ -421,6 +421,36 @@ func TestQuestionUpdate_ValidationError(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestQuestionUpdate_BodyTooLong(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	existing := &model.Question{UserID: 1, Title: "Old", Body: "Old Body"}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	// 10001文字の本文でバリデーションエラー
+	longBody := strings.Repeat("a", 10001)
+	result, err := svc.Update(1, 1, "", longBody, "")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestQuestionUpdate_TagsTooLong(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	existing := &model.Question{UserID: 1, Title: "Old", Body: "Body", Tags: "go"}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	// 301文字のタグでバリデーションエラー
+	longTags := strings.Repeat("a", 301)
+	result, err := svc.Update(1, 1, "", "", longTags)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
 // ============================================================
 // GetSolved テスト
 // ============================================================
