@@ -32,6 +32,7 @@ export default function CodeSnippetInput({ value, onChange, onRemove, index }: C
           value={value.file_name}
           onChange={(e) => onChange({ ...value, file_name: e.target.value })}
           placeholder={t('post.fileName')}
+          maxLength={255}
           className="flex-1 px-3 py-1.5 bg-gray-900/50 border border-gray-700 rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
         <button
