@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Sparkles } from 'lucide-react';
 import type { Answer } from '../../types/qa';
 import Avatar from '../common/Avatar';
 import { iconButtonClass, deleteIconButtonClass } from '../../constants/styles';
@@ -30,6 +30,7 @@ export default function AnswerCard({
 }: AnswerCardProps) {
   const { t } = useTranslation();
   const [voting, setVoting] = useState(false);
+  const isNew = Date.now() - new Date(answer.created_at).getTime() < 24 * 60 * 60 * 1000;
 
   const handleVote = async (value: 1 | -1) => {
     if (voting) return;
@@ -103,6 +104,12 @@ export default function AnswerCard({
               <span className="text-xs text-gray-500">
                 {formatDate(answer.created_at)}
               </span>
+              {isNew && (
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-xs rounded bg-green-400/10 text-green-400">
+                  <Sparkles className="w-3 h-3" />
+                  {t('qa.newAnswer')}
+                </span>
+              )}
             </div>
 
             <div className="flex items-center gap-2">
