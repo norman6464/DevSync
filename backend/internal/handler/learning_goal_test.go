@@ -215,12 +215,28 @@ func TestLearningGoalGetByID_Success(t *testing.T) {
 
 	goal := &model.LearningGoal{}
 	goal.ID = 10
+	goal.UserID = 1
 	goal.Title = "Test Goal"
 
 	repo.On("FindByID", uint(10)).Return(goal, nil)
 
 	w := doRequest(r, http.MethodGet, "/goals/10", nil)
 	assertStatus(t, w, http.StatusOK)
+}
+
+func TestLearningGoalGetByID_Forbidden(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.GET("/goals/:id", h.GetByID)
+
+	goal := &model.LearningGoal{}
+	goal.ID = 10
+	goal.UserID = 999 // 別のユーザー
+
+	repo.On("FindByID", uint(10)).Return(goal, nil)
+
+	w := doRequest(r, http.MethodGet, "/goals/10", nil)
+	assertStatus(t, w, http.StatusForbidden)
 }
 
 func TestLearningGoalGetByID_NotFound(t *testing.T) {
