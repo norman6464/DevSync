@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Monitor, Rocket, Target, FolderOpen, FileText, BookOpen, ChevronDown, ChevronUp, type LucideIcon } from 'lucide-react';
 import { type RoadmapCategory, type Roadmap } from '../../api/roadmaps';
+import { badgeBaseClass } from '../../constants/styles';
 
 const CATEGORIES: { value: RoadmapCategory; label: string; Icon: LucideIcon }[] = [
   { value: 'language', label: 'roadmaps.categoryLanguage', Icon: Monitor },
@@ -80,7 +81,7 @@ export default function RoadmapTemplatesSection({
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="font-medium text-white">{template.title}</h3>
-                          <span className="px-2 py-0.5 text-xs rounded-full bg-purple-500/10 text-purple-400">
+                          <span className={`${badgeBaseClass} bg-purple-500/10 text-purple-400`}>
                             {t('roadmaps.template')}
                           </span>
                         </div>

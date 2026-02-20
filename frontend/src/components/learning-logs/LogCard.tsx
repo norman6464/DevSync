@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Code, BookOpen, GraduationCap, Users, FileText, Star, type LucideIcon } from 'lucide-react';
 import type { LearningLog, LogCategory } from '../../types/learningLog';
 import { formatDate } from '../../utils/timeFormat';
-import { panelClass } from '../../constants/styles';
+import { panelClass, badgeBaseClass } from '../../constants/styles';
 
 export const CATEGORIES: { value: LogCategory; label: string; Icon: LucideIcon }[] = [
   { value: 'coding', label: 'learningLogs.categoryCoding', Icon: Code },
@@ -45,7 +45,7 @@ export default function LogCard({ log, onEdit, onDelete, onToggleFavorite }: Log
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-medium">{log.title}</h3>
-              <span className={`px-2 py-0.5 text-xs rounded-full ${getCategoryColor(log.category)}`}>
+              <span className={`${badgeBaseClass} ${getCategoryColor(log.category)}`}>
                 {t(catInfo.label)}
               </span>
             </div>

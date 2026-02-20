@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { Project } from '../../types/project';
-import { cardClass, iconButtonClass, deleteIconButtonClass } from '../../constants/styles';
+import { cardClass, iconButtonClass, deleteIconButtonClass, badgeBaseClass } from '../../constants/styles';
 import { parseJsonArray } from '../../utils/json';
 import { sanitizeUrl } from '../../utils/url';
 import { formatDate } from '../../utils/timeFormat';
@@ -36,7 +36,7 @@ export default function ProjectCard({ project, onEdit, onDelete, isOwner }: Proj
             <div className="flex items-center gap-2">
               <h3 className="text-lg font-semibold text-white">{project.title}</h3>
               {project.featured && (
-                <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs rounded-full">
+                <span className={`${badgeBaseClass} bg-yellow-500/20 text-yellow-400`}>
                   {t('projects.featured')}
                 </span>
               )}

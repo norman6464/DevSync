@@ -5,7 +5,7 @@ import { BookOpen, Video, FileText, GraduationCap, BookMarked, Mic, Wrench, Pin,
 import type { LearningResource, ResourceCategory, ResourceDifficulty } from '../../types/resource';
 import { parseJsonArray } from '../../utils/json';
 import Avatar from '../common/Avatar';
-import { cardClass, iconButtonClass, deleteIconButtonClass } from '../../constants/styles';
+import { cardClass, iconButtonClass, deleteIconButtonClass, badgeBaseClass } from '../../constants/styles';
 import { sanitizeUrl } from '../../utils/url';
 
 interface ResourceCardProps {
@@ -96,7 +96,7 @@ export default function ResourceCard({
                 {t(`resources.categories.${resource.category}`)}
               </span>
               {resource.difficulty && (
-                <span className={`ml-2 px-2 py-0.5 text-xs rounded-full ${difficultyColors[resource.difficulty]}`}>
+                <span className={`ml-2 ${badgeBaseClass} ${difficultyColors[resource.difficulty]}`}>
                   {t(`resources.difficulty.${resource.difficulty}`)}
                 </span>
               )}
