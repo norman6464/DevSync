@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -199,6 +200,131 @@ func TestLearningLog_GetCalendarData_ServiceError(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/users/99/calendar", nil)
 	r.ServeHTTP(w, req)
 
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+// ============================================================
+// GetByCategory テスト
+// ============================================================
+
+func TestLearningLog_GetByCategory_Success(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	r := newRouter(1)
+	r.GET("/learning-logs/category/:category", h.GetByCategory)
+
+	logs := []model.LearningLog{{Category: "programming"}}
+	svc.On("GetByCategory", uint(1), "programming").Return(logs, nil)
+
+	w := doRequest(r, http.MethodGet, "/learning-logs/category/programming", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestLearningLog_GetByCategory_NilResult(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	r := newRouter(1)
+	r.GET("/learning-logs/category/:category", h.GetByCategory)
+
+	svc.On("GetByCategory", uint(1), "reading").Return([]model.LearningLog(nil), nil)
+
+	w := doRequest(r, http.MethodGet, "/learning-logs/category/reading", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Equal(t, "[]", w.Body.String())
+	svc.AssertExpectations(t)
+}
+
+func TestLearningLog_GetByCategory_ServiceError(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	r := newRouter(1)
+	r.GET("/learning-logs/category/:category", h.GetByCategory)
+
+	svc.On("GetByCategory", uint(1), "invalid").Return([]model.LearningLog(nil), errors.New("bad category"))
+
+	w := doRequest(r, http.MethodGet, "/learning-logs/category/invalid", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+// ============================================================
+// GetBySource テスト
+// ============================================================
+
+func TestLearningLog_GetBySource_Success(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	r := newRouter(1)
+	r.GET("/learning-logs/source/:source", h.GetBySource)
+
+	logs := []model.LearningLog{{Source: "manual"}}
+	svc.On("GetBySource", uint(1), "manual").Return(logs, nil)
+
+	w := doRequest(r, http.MethodGet, "/learning-logs/source/manual", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestLearningLog_GetBySource_ServiceError(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	r := newRouter(1)
+	r.GET("/learning-logs/source/:source", h.GetBySource)
+
+	svc.On("GetBySource", uint(1), "invalid").Return([]model.LearningLog(nil), errors.New("bad source"))
+
+	w := doRequest(r, http.MethodGet, "/learning-logs/source/invalid", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+// ============================================================
+// ExportLogs テスト
+// ============================================================
+
+func TestLearningLog_ExportLogs_Success(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	r := newRouter(1)
+	r.GET("/learning-logs/export", h.ExportLogs)
+
+	csvData := []byte("date,category,minutes\n2026-01-01,programming,60")
+	svc.On("ExportCSV", uint(1), 30).Return(csvData, nil)
+
+	w := doRequest(r, http.MethodGet, "/learning-logs/export", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Contains(t, w.Header().Get("Content-Disposition"), "attachment")
+	assert.Contains(t, w.Header().Get("Content-Type"), "text/csv")
+	svc.AssertExpectations(t)
+}
+
+func TestLearningLog_ExportLogs_AllPeriod(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	r := newRouter(1)
+	r.GET("/learning-logs/export", h.ExportLogs)
+
+	csvData := []byte("date,category,minutes\n")
+	svc.On("ExportCSV", uint(1), 0).Return(csvData, nil)
+
+	w := doRequest(r, http.MethodGet, "/learning-logs/export?period=all", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Contains(t, w.Header().Get("Content-Disposition"), "learning-logs-all-")
+	svc.AssertExpectations(t)
+}
+
+func TestLearningLog_ExportLogs_InvalidPeriod(t *testing.T) {
+	h, _ := setupLearningLogHandler()
+	r := newRouter(1)
+	r.GET("/learning-logs/export", h.ExportLogs)
+
+	w := doRequest(r, http.MethodGet, "/learning-logs/export?period=abc", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestLearningLog_ExportLogs_ServiceError(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	r := newRouter(1)
+	r.GET("/learning-logs/export", h.ExportLogs)
+
+	svc.On("ExportCSV", uint(1), 30).Return(nil, errors.New("export error"))
+
+	w := doRequest(r, http.MethodGet, "/learning-logs/export", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
 	svc.AssertExpectations(t)
 }
