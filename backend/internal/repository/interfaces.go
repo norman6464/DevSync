@@ -449,6 +449,7 @@ type NoteRepositoryInterface interface {
 	CountByUserID(userID uint) (int64, error)
 	ToggleFavorite(id uint) error
 	FindFavorites(userID uint, page, limit int) ([]model.Note, error)
+	CountFavoritesByUserID(userID uint) (int64, error)
 	Archive(id uint) error
 	Unarchive(id uint) error
 	FindArchived(userID uint, page, limit int) ([]model.Note, error)

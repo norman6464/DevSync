@@ -71,6 +71,11 @@ func (m *MockNoteService) GetFavorites(userID uint, page, limit int) ([]model.No
 	return args.Get(0).([]model.Note), args.Error(1)
 }
 
+func (m *MockNoteService) CountFavoritesByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 func (m *MockNoteService) Archive(id, userID uint) error {
 	return m.Called(id, userID).Error(0)
 }
@@ -912,6 +917,7 @@ func TestNoteHandler_GetFavorites_Success(t *testing.T) {
 	}
 
 	mockService.On("GetFavorites", uint(1), 1, 20).Return(notes, nil)
+	mockService.On("CountFavoritesByUserID", uint(1)).Return(int64(1), nil)
 
 	req, _ := http.NewRequest("GET", "/notes/favorites?page=1&limit=20", nil)
 	w := httptest.NewRecorder()
@@ -931,6 +937,30 @@ func TestNoteHandler_GetFavorites_ServiceError(t *testing.T) {
 	})
 
 	mockService.On("GetFavorites", uint(1), 1, 20).Return([]model.Note{}, assert.AnError)
+
+	req, _ := http.NewRequest("GET", "/notes/favorites?page=1&limit=20", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	mockService.AssertExpectations(t)
+}
+
+func TestNoteHandler_GetFavorites_CountError(t *testing.T) {
+	handler, mockService := newTestNoteHandler()
+	router := setupRouter()
+
+	router.GET("/notes/favorites", func(c *gin.Context) {
+		c.Set("userID", uint(1))
+		handler.GetFavorites(c)
+	})
+
+	notes := []model.Note{
+		{ID: 1, UserID: 1, Title: "お気に入りノート"},
+	}
+
+	mockService.On("GetFavorites", uint(1), 1, 20).Return(notes, nil)
+	mockService.On("CountFavoritesByUserID", uint(1)).Return(int64(0), assert.AnError)
 
 	req, _ := http.NewRequest("GET", "/notes/favorites?page=1&limit=20", nil)
 	w := httptest.NewRecorder()

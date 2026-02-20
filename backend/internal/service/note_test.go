@@ -82,6 +82,11 @@ func (m *MockNoteRepository) FindFavorites(userID uint, page, limit int) ([]mode
 	return args.Get(0).([]model.Note), args.Error(1)
 }
 
+func (m *MockNoteRepository) CountFavoritesByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 // newTestNoteService はテスト用のNoteServiceを生成する。
 func newTestNoteService() (*NoteService, *MockNoteRepository) {
 	repo := new(MockNoteRepository)
@@ -661,4 +666,41 @@ func TestNoteService_Update_WhitespaceContent(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), "本文は空白のみにできません")
+}
+
+// ============================================================
+// CountFavoritesByUserID テスト
+// ============================================================
+
+func TestNoteService_CountFavoritesByUserID_Success(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	repo.On("CountFavoritesByUserID", uint(1)).Return(int64(5), nil)
+
+	count, err := svc.CountFavoritesByUserID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(5), count)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteService_CountFavoritesByUserID_Zero(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	repo.On("CountFavoritesByUserID", uint(1)).Return(int64(0), nil)
+
+	count, err := svc.CountFavoritesByUserID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(0), count)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteService_CountFavoritesByUserID_RepoError(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	repo.On("CountFavoritesByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	count, err := svc.CountFavoritesByUserID(1)
+	assert.Error(t, err)
+	assert.Equal(t, int64(0), count)
+	repo.AssertExpectations(t)
 }

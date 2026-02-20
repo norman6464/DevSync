@@ -103,6 +103,13 @@ func (r *NoteRepository) FindFavorites(userID uint, page, limit int) ([]model.No
 	return notes, err
 }
 
+// CountFavoritesByUserID は指定ユーザーのお気に入りノート総数を取得する。
+func (r *NoteRepository) CountFavoritesByUserID(userID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.Note{}).Where("user_id = ? AND is_favorite = ?", userID, true).Count(&count).Error
+	return count, err
+}
+
 // Archive は指定IDのノートをアーカイブする。
 func (r *NoteRepository) Archive(id uint) error {
 	return r.db.Model(&model.Note{}).Where("id = ?", id).
