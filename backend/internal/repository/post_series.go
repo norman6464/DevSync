@@ -30,13 +30,22 @@ func (r *PostSeriesRepository) FindByID(id uint) (*model.PostSeries, error) {
 	return &series, nil
 }
 
-// FindByUserID は指定ユーザーの全シリーズを取得する（新しい順）。
-func (r *PostSeriesRepository) FindByUserID(userID uint) ([]model.PostSeries, error) {
+// FindByUserID は指定ユーザーのシリーズをページネーション付きで取得する（新しい順）。
+func (r *PostSeriesRepository) FindByUserID(userID uint, offset, limit int) ([]model.PostSeries, error) {
 	var series []model.PostSeries
 	err := r.db.Where("user_id = ?", userID).
 		Order("created_at DESC").
+		Offset(offset).
+		Limit(limit).
 		Find(&series).Error
 	return series, err
+}
+
+// CountByUser は指定ユーザーのシリーズ数をカウントする。
+func (r *PostSeriesRepository) CountByUser(userID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.PostSeries{}).Where("user_id = ?", userID).Count(&count).Error
+	return count, err
 }
 
 // Update は既存のシリーズを更新する。

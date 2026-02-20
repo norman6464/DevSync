@@ -22,12 +22,16 @@ func (m *MockPostSeriesService) GetByID(id uint) (*model.PostSeries, error) {
 	}
 	return nil, args.Error(1)
 }
-func (m *MockPostSeriesService) GetByUserID(userID uint) ([]model.PostSeries, error) {
-	args := m.Called(userID)
+func (m *MockPostSeriesService) GetByUserID(userID uint, page, limit int) ([]model.PostSeries, error) {
+	args := m.Called(userID, page, limit)
 	if v := args.Get(0); v != nil {
 		return v.([]model.PostSeries), args.Error(1)
 	}
 	return nil, args.Error(1)
+}
+func (m *MockPostSeriesService) CountByUser(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
 }
 func (m *MockPostSeriesService) Update(id, userID uint, updates *model.PostSeries) (*model.PostSeries, error) {
 	args := m.Called(id, userID, updates)
@@ -148,7 +152,8 @@ func TestPostSeriesGetByID_ServiceError(t *testing.T) {
 func TestPostSeriesGetByUserID_Success(t *testing.T) {
 	h, svc := setupPostSeriesHandler()
 	seriesList := []model.PostSeries{{Title: "Go入門シリーズ", UserID: 1}}
-	svc.On("GetByUserID", uint(1)).Return(seriesList, nil)
+	svc.On("GetByUserID", uint(1), 1, 20).Return(seriesList, nil)
+	svc.On("CountByUser", uint(1)).Return(int64(1), nil)
 
 	r := newRouter(1)
 	r.GET("/users/:userId/series", h.GetByUserID)
@@ -170,7 +175,21 @@ func TestPostSeriesGetByUserID_InvalidID(t *testing.T) {
 
 func TestPostSeriesGetByUserID_ServiceError(t *testing.T) {
 	h, svc := setupPostSeriesHandler()
-	svc.On("GetByUserID", uint(1)).Return(nil, errors.New("db error"))
+	svc.On("GetByUserID", uint(1), 1, 20).Return(nil, errors.New("db error"))
+
+	r := newRouter(1)
+	r.GET("/users/:userId/series", h.GetByUserID)
+
+	w := doRequest(r, http.MethodGet, "/users/1/series", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+func TestPostSeriesGetByUserID_CountError(t *testing.T) {
+	h, svc := setupPostSeriesHandler()
+	seriesList := []model.PostSeries{{Title: "Go入門シリーズ", UserID: 1}}
+	svc.On("GetByUserID", uint(1), 1, 20).Return(seriesList, nil)
+	svc.On("CountByUser", uint(1)).Return(int64(0), errors.New("db error"))
 
 	r := newRouter(1)
 	r.GET("/users/:userId/series", h.GetByUserID)
