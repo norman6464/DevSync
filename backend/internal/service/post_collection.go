@@ -81,9 +81,18 @@ func (s *PostCollectionService) Delete(id, userID uint) error {
 }
 
 // AddPost は所有権を検証した後、コレクションに投稿を追加する。
+// 同じ投稿がすでに追加されている場合はエラーを返す。
 func (s *PostCollectionService) AddPost(collectionID, userID, postID uint, note string) error {
 	if _, err := s.findAndCheckOwnership(collectionID, userID); err != nil {
 		return err
+	}
+
+	exists, err := s.repo.HasPost(collectionID, postID)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return domain.NewError(domain.ErrCodeBadRequest, "すでに追加済みの投稿です", nil)
 	}
 
 	item := &model.PostCollectionItem{
