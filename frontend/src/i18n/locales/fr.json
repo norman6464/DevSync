@@ -86,6 +86,8 @@
     "confirmPassword": "Confirmer le mot de passe",
     "emailPlaceholder": "you@example.com",
     "passwordPlaceholder": "6 caractères minimum",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
     "forgotPassword": "Mot de passe oublié ?",
     "noAccount": "Pas de compte ?",
     "hasAccount": "Déjà un compte ?",

@@ -86,6 +86,8 @@
     "confirmPassword": "Подтвердите пароль",
     "emailPlaceholder": "you@example.com",
     "passwordPlaceholder": "Минимум 6 символов",
+    "showPassword": "Показать пароль",
+    "hidePassword": "Скрыть пароль",
     "forgotPassword": "Забыли пароль?",
     "noAccount": "Нет аккаунта?",
     "hasAccount": "Уже есть аккаунт?",

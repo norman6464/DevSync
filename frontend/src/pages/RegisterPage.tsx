@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import toast from 'react-hot-toast';
 import { inputClass, labelClass } from '../constants/styles';
@@ -12,6 +13,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const register = useAuthStore((s) => s.register);
   const loginWithGitHub = useAuthStore((s) => s.loginWithGitHub);
   const navigate = useNavigate();
@@ -131,18 +133,28 @@ export default function RegisterPage() {
               <label htmlFor="register-password" className={labelClass}>
                 {t('auth.password')}
               </label>
-              <input
-                id="register-password"
-                type="password"
-                autoComplete="new-password"
-                value={password}
-                onChange={handlePasswordChange}
-                required
-                minLength={8}
-                maxLength={128}
-                placeholder={t('auth.passwordPlaceholder')}
-                className={inputClass}
-              />
+              <div className="relative">
+                <input
+                  id="register-password"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  value={password}
+                  onChange={handlePasswordChange}
+                  required
+                  minLength={8}
+                  maxLength={128}
+                  placeholder={t('auth.passwordPlaceholder')}
+                  className={inputClass}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                  aria-label={t(showPassword ? 'auth.hidePassword' : 'auth.showPassword')}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
             <button
               type="submit"

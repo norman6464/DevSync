@@ -86,6 +86,8 @@
     "confirmPassword": "確認密碼",
     "emailPlaceholder": "you@example.com",
     "passwordPlaceholder": "6個字元以上",
+    "showPassword": "顯示密碼",
+    "hidePassword": "隱藏密碼",
     "forgotPassword": "忘記密碼？",
     "noAccount": "沒有帳號？",
     "hasAccount": "已有帳號？",

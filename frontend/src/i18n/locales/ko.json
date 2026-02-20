@@ -86,6 +86,8 @@
     "confirmPassword": "비밀번호 확인",
     "emailPlaceholder": "you@example.com",
     "passwordPlaceholder": "6자 이상",
+    "showPassword": "비밀번호 표시",
+    "hidePassword": "비밀번호 숨기기",
     "forgotPassword": "비밀번호를 잊으셨나요?",
     "noAccount": "계정이 없으신가요?",
     "hasAccount": "이미 계정이 있으신가요?",

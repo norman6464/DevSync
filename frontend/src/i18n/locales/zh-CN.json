@@ -86,6 +86,8 @@
     "confirmPassword": "确认密码",
     "emailPlaceholder": "you@example.com",
     "passwordPlaceholder": "6个字符以上",
+    "showPassword": "显示密码",
+    "hidePassword": "隐藏密码",
     "forgotPassword": "忘记密码？",
     "noAccount": "没有账号？",
     "hasAccount": "已有账号？",
