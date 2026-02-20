@@ -209,6 +209,8 @@
     "notFound": "Publication introuvable",
     "bookmark": "Signet",
     "unbookmark": "Retirer le signet",
+    "copyLink": "Copier le lien",
+    "linkCopied": "Lien copié dans le presse-papiers",
     "bookmarks": "Signets",
     "noBookmarks": "Aucune publication enregistrée",
     "addReaction": "Réagir",

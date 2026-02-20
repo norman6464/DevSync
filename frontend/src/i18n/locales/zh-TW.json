@@ -209,6 +209,8 @@
     "notFound": "找不到貼文",
     "bookmark": "書籤",
     "unbookmark": "取消書籤",
+    "copyLink": "複製連結",
+    "linkCopied": "連結已複製到剪貼簿",
     "bookmarks": "書籤列表",
     "noBookmarks": "沒有收藏的貼文",
     "addReaction": "表情回應",

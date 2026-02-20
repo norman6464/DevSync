@@ -209,6 +209,8 @@
     "notFound": "未找到帖子",
     "bookmark": "书签",
     "unbookmark": "取消书签",
+    "copyLink": "复制链接",
+    "linkCopied": "链接已复制到剪贴板",
     "bookmarks": "书签列表",
     "noBookmarks": "没有收藏的帖子",
     "addReaction": "表情回应",

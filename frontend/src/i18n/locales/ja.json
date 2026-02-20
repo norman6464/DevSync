@@ -229,6 +229,8 @@
     "notFound": "投稿が見つかりません",
     "bookmark": "ブックマーク",
     "unbookmark": "ブックマーク解除",
+    "copyLink": "リンクをコピー",
+    "linkCopied": "リンクをコピーしました",
     "bookmarks": "ブックマーク一覧",
     "noBookmarks": "ブックマークした投稿はありません",
     "addReaction": "リアクション"
