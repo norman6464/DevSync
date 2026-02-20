@@ -57,6 +57,15 @@ func (r *PostSeriesRepository) AddPost(item *model.PostSeriesItem) error {
 	return r.db.Create(item).Error
 }
 
+// HasPost は指定シリーズに指定投稿が存在するかを確認する。
+func (r *PostSeriesRepository) HasPost(seriesID, postID uint) (bool, error) {
+	var count int64
+	err := r.db.Model(&model.PostSeriesItem{}).
+		Where("series_id = ? AND post_id = ?", seriesID, postID).
+		Count(&count).Error
+	return count > 0, err
+}
+
 // RemovePost はシリーズから投稿を削除する。
 func (r *PostSeriesRepository) RemovePost(seriesID, postID uint) error {
 	return r.db.Where("series_id = ? AND post_id = ?", seriesID, postID).

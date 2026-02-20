@@ -234,6 +234,7 @@ func TestPostSeriesAddPost_Success(t *testing.T) {
 	existing.ID = 1
 
 	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("HasPost", uint(1), uint(10)).Return(false, nil)
 	repo.On("AddPost", &model.PostSeriesItem{SeriesID: 1, PostID: 10, OrderIndex: 0}).Return(nil)
 
 	err := svc.AddPost(1, 10, 0, 1)
@@ -261,6 +262,37 @@ func TestPostSeriesAddPost_NotFound(t *testing.T) {
 
 	err := svc.AddPost(999, 10, 0, 1)
 	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestPostSeriesAddPost_Duplicate(t *testing.T) {
+	svc, repo := newTestPostSeriesService()
+
+	existing := &model.PostSeries{UserID: 1}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("HasPost", uint(1), uint(10)).Return(true, nil)
+
+	err := svc.AddPost(1, 10, 0, 1)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "すでに追加済み")
+	repo.AssertNotCalled(t, "AddPost")
+	repo.AssertExpectations(t)
+}
+
+func TestPostSeriesAddPost_HasPostError(t *testing.T) {
+	svc, repo := newTestPostSeriesService()
+
+	existing := &model.PostSeries{UserID: 1}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("HasPost", uint(1), uint(10)).Return(false, errors.New("db error"))
+
+	err := svc.AddPost(1, 10, 0, 1)
+	assert.Error(t, err)
+	repo.AssertNotCalled(t, "AddPost")
 	repo.AssertExpectations(t)
 }
 
