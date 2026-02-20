@@ -39,7 +39,7 @@ export default function AdviceCard({ advice, onMarkRead }: AdviceCardProps) {
             {t(advice.message_key, params)}
           </p>
           <div className="flex items-center gap-2 mt-3">
-            {advice.action_url && (
+            {advice.action_url?.startsWith('/') && (
               <button
                 onClick={() => navigate(advice.action_url)}
                 className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
