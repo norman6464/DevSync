@@ -303,6 +303,20 @@ func TestPostCollectionAddPost_Duplicate(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestPostCollectionAddPost_HasPostError(t *testing.T) {
+	svc, repo := newTestPostCollectionService()
+
+	collection := &model.PostCollection{UserID: 1}
+	collection.ID = 10
+	repo.On("FindByID", uint(10)).Return(collection, nil)
+	repo.On("HasPost", uint(10), uint(5)).Return(false, errors.New("db error"))
+
+	err := svc.AddPost(10, 1, 5, "メモ")
+	assert.Error(t, err)
+	repo.AssertNotCalled(t, "AddPost")
+	repo.AssertExpectations(t)
+}
+
 // ============================================================
 // RemovePost テスト（所有権チェック）
 // ============================================================
