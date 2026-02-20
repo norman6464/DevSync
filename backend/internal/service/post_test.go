@@ -577,6 +577,60 @@ func TestPostPublish_UpdateError(t *testing.T) {
 }
 
 // ============================================================
+// 投稿非公開化（Unpublish）テスト
+// ============================================================
+
+func TestPostUnpublish_Success(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	published := &model.Post{Title: "Published Post", UserID: 1, IsDraft: false}
+	published.ID = 1
+
+	postRepo.On("FindByID", uint(1)).Return(published, nil)
+	postRepo.On("Update", published).Return(nil)
+
+	result, err := svc.Unpublish(1, 1)
+	assert.NoError(t, err)
+	assert.True(t, result.IsDraft)
+}
+
+func TestPostUnpublish_AlreadyDraft(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	draft := &model.Post{Title: "Draft", UserID: 1, IsDraft: true}
+	draft.ID = 1
+
+	postRepo.On("FindByID", uint(1)).Return(draft, nil)
+
+	result, err := svc.Unpublish(1, 1)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	assert.Nil(t, result)
+}
+
+func TestPostUnpublish_Forbidden(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	published := &model.Post{Title: "Published", UserID: 1, IsDraft: false}
+	published.ID = 1
+
+	postRepo.On("FindByID", uint(1)).Return(published, nil)
+
+	result, err := svc.Unpublish(1, 999)
+	assert.ErrorIs(t, err, ErrForbidden)
+	assert.Nil(t, result)
+}
+
+func TestPostUnpublish_NotFound(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	result, err := svc.Unpublish(99, 1)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+// ============================================================
 // 投稿作成 追加テスト
 // ============================================================
 

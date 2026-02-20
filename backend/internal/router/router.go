@@ -157,6 +157,7 @@ func registerPostRoutes(g *gin.RouterGroup, c *di.Container) {
 		posts.GET("/:id", c.PostHandler.GetByID)
 		posts.PUT("/:id", c.PostHandler.Update)
 		posts.PUT("/:id/publish", c.PostHandler.Publish)
+		posts.PUT("/:id/unpublish", c.PostHandler.Unpublish)
 		posts.DELETE("/:id", c.PostHandler.Delete)
 		posts.POST("/:id/like", c.PostHandler.Like)
 		posts.DELETE("/:id/like", c.PostHandler.Unlike)
