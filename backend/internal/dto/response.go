@@ -38,3 +38,8 @@ type ViewCountResponse struct {
 	ViewCount int64 `json:"view_count"`
 }
 
+// AvailabilityResponse は利用可能状態レスポンス
+type AvailabilityResponse struct {
+	Available bool `json:"available"`
+}
+
