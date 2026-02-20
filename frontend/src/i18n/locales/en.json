@@ -1405,7 +1405,9 @@
     "collapse": "Show less",
     "createdAt": "Created at",
     "tagsPlaceholder": "e.g., React, TypeScript, Go",
-    "allTags": "All Tags"
+    "allTags": "All Tags",
+    "volumeRegular": "Regular",
+    "volumeDetailed": "Detailed"
   },
   "githubCallback": {
     "missingOAuthParams": "Missing OAuth parameters",

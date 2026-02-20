@@ -1405,7 +1405,9 @@
     "collapse": "收起",
     "createdAt": "創建時間",
     "tagsPlaceholder": "例如：React, TypeScript, Go",
-    "allTags": "所有標籤"
+    "allTags": "所有標籤",
+    "volumeRegular": "標準",
+    "volumeDetailed": "詳細"
   },
   "githubCallback": {
     "missingOAuthParams": "缺少OAuth參數",
