@@ -66,6 +66,11 @@ func (m *MockNoteService) ToggleFavorite(id, userID uint) error {
 	return m.Called(id, userID).Error(0)
 }
 
+func (m *MockNoteService) GetFavorites(userID uint, page, limit int) ([]model.Note, error) {
+	args := m.Called(userID, page, limit)
+	return args.Get(0).([]model.Note), args.Error(1)
+}
+
 func (m *MockNoteService) Archive(id, userID uint) error {
 	return m.Called(id, userID).Error(0)
 }
