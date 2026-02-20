@@ -155,6 +155,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
             value={techStackInput}
             onChange={(e) => setTechStackInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTech())}
+            maxLength={100}
             className={`${inputClass} flex-1`}
             placeholder={t('projects.techStackPlaceholder')}
           />

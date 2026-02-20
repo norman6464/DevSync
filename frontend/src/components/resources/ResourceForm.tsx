@@ -173,6 +173,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+            maxLength={50}
             className={`${inputClass} flex-1`}
             placeholder={t('resources.tagsPlaceholder')}
           />

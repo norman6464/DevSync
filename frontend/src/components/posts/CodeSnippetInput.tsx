@@ -50,6 +50,7 @@ export default function CodeSnippetInput({ value, onChange, onRemove, index }: C
         value={value.code}
         onChange={(e) => onChange({ ...value, code: e.target.value })}
         placeholder={t('post.codePlaceholder')}
+        maxLength={10000}
         className="w-full p-4 bg-transparent text-white resize-none focus:outline-none font-mono text-sm"
         style={{ minHeight: '120px' }}
       />

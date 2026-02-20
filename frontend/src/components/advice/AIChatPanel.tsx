@@ -126,6 +126,7 @@ export default function AIChatPanel({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={t('advice.chatPlaceholder')}
+              maxLength={2000}
               disabled={sending}
               className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
             />

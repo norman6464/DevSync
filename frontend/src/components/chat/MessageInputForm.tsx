@@ -24,6 +24,7 @@ export default function MessageInputForm({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
+        maxLength={1000}
         className={messageInputClass}
       />
       <button
