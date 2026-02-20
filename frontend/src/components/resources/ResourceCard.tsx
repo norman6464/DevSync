@@ -5,6 +5,7 @@ import { BookOpen, Video, FileText, GraduationCap, BookMarked, Mic, Wrench, Pin,
 import type { LearningResource, ResourceCategory, ResourceDifficulty } from '../../types/resource';
 import Avatar from '../common/Avatar';
 import { cardClass } from '../../constants/styles';
+import { sanitizeUrl } from '../../utils/url';
 
 interface ResourceCardProps {
   resource: LearningResource;
@@ -127,9 +128,9 @@ export default function ResourceCard({
 
         {/* Title & Description */}
         <h3 className="text-lg font-semibold text-white mt-3">
-          {resource.url ? (
+          {sanitizeUrl(resource.url) ? (
             <a
-              href={resource.url}
+              href={sanitizeUrl(resource.url)}
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-green-400 transition-colors"
@@ -216,9 +217,9 @@ export default function ResourceCard({
             </button>
 
             {/* External Link */}
-            {resource.url && (
+            {sanitizeUrl(resource.url) && (
               <a
-                href={resource.url}
+                href={sanitizeUrl(resource.url)!}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-white transition-colors"
