@@ -1392,6 +1392,8 @@
     "favoriteToggled": "Statut favori mis à jour",
     "lastUpdated": "Dernière mise à jour",
     "chars": "caractères",
+    "expand": "Voir plus",
+    "collapse": "Voir moins",
     "createdAt": "Créé le",
     "tagsPlaceholder": "Ex : React, TypeScript, Go",
     "allTags": "Tous les tags"

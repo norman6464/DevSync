@@ -1293,6 +1293,8 @@
     "favoriteToggled": "お気に入りを更新しました",
     "lastUpdated": "最終更新",
     "chars": "文字",
+    "expand": "もっと見る",
+    "collapse": "折りたたむ",
     "createdAt": "作成日時",
     "tagsPlaceholder": "例: React, TypeScript, Go",
     "allTags": "すべてのタグ"

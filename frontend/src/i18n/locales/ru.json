@@ -1392,6 +1392,8 @@
     "favoriteToggled": "Статус избранного обновлен",
     "lastUpdated": "Последнее обновление",
     "chars": "символов",
+    "expand": "Показать больше",
+    "collapse": "Свернуть",
     "createdAt": "Создано",
     "tagsPlaceholder": "Напр.: React, TypeScript, Go",
     "allTags": "Все теги"
