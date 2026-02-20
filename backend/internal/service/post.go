@@ -225,7 +225,7 @@ func (s *PostService) DeleteComment(id, userID uint) error {
 	}
 
 	if comment.UserID != userID {
-		return domain.NewError(domain.ErrCodeForbidden, "この操作を行う権限がありません", nil)
+		return ErrForbidden
 	}
 
 	return s.repo.DeleteComment(id)

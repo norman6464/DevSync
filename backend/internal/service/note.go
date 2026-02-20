@@ -1,7 +1,6 @@
 package service
 
 import (
-	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
@@ -51,7 +50,7 @@ func (s *NoteService) findAndCheckOwnership(id, userID uint) (*model.Note, error
 		return nil, err
 	}
 	if note.UserID != userID {
-		return nil, domain.NewError(domain.ErrCodeForbidden, "この操作を行う権限がありません", nil)
+		return nil, ErrForbidden
 	}
 	return note, nil
 }

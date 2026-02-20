@@ -36,7 +36,7 @@ func (s *NoteLinkService) findAndCheckSourceNoteOwnership(sourceNoteID, userID u
 		return domain.NewError(domain.ErrCodeNotFound, "ソースノートが見つかりません", err)
 	}
 	if sourceNote.UserID != userID {
-		return domain.NewError(domain.ErrCodeForbidden, "この操作を行う権限がありません", nil)
+		return ErrForbidden
 	}
 	return nil
 }
