@@ -554,3 +554,27 @@ func TestResourceGetByDifficulty_ServiceError(t *testing.T) {
 	w := doRequest(r, http.MethodGet, "/resources/difficulty/beginner", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
 }
+
+func TestResourceCreate_InvalidURL(t *testing.T) {
+	h, _ := setupLearningResourceHandler()
+	r := newRouter(1)
+	r.POST("/resources", h.Create)
+
+	w := doRequest(r, http.MethodPost, "/resources", map[string]interface{}{
+		"title":    "悪意あるリソース",
+		"url":      "javascript:alert('xss')",
+		"category": "article",
+	})
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestResourceUpdate_InvalidImageURL(t *testing.T) {
+	h, _ := setupLearningResourceHandler()
+	r := newRouter(1)
+	r.PUT("/resources/:id", h.Update)
+
+	w := doRequest(r, http.MethodPut, "/resources/1", map[string]interface{}{
+		"image_url": "data:text/html,<script>alert('xss')</script>",
+	})
+	assertStatus(t, w, http.StatusBadRequest)
+}
