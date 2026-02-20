@@ -33,9 +33,9 @@ func (s *ProjectService) GetByID(id uint) (*model.Project, error) {
 	return s.repo.FindByID(id)
 }
 
-// GetByUserID は指定ユーザーの全プロジェクトを取得する。
-func (s *ProjectService) GetByUserID(userID uint) ([]model.Project, error) {
-	return s.repo.FindByUserID(userID)
+// GetByUserID は指定ユーザーのプロジェクトをページネーション付きで取得する。
+func (s *ProjectService) GetByUserID(userID uint, limit, offset int) ([]model.Project, int64, error) {
+	return s.repo.FindByUserID(userID, limit, offset)
 }
 
 // GetFeaturedByUserID は指定ユーザーの注目プロジェクトのみを取得する。

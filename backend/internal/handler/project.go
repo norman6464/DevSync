@@ -17,7 +17,7 @@ func parseDate(dateStr string) (time.Time, error) {
 type ProjectServiceInterface interface {
 	Create(project *model.Project) error
 	GetByID(id uint) (*model.Project, error)
-	GetByUserID(userID uint) ([]model.Project, error)
+	GetByUserID(userID uint, limit, offset int) ([]model.Project, int64, error)
 	GetFeaturedByUserID(userID uint) ([]model.Project, error)
 	GetAll(limit, offset int) ([]model.Project, int64, error)
 	Update(id, userID uint, updates *model.Project) (*model.Project, error)
@@ -95,20 +95,27 @@ func (h *ProjectHandler) GetByID(c *gin.Context) {
 	respondOK(c, project)
 }
 
-// GetByUserID は指定ユーザーのプロジェクト一覧を取得する。
+// GetByUserID は指定ユーザーのプロジェクト一覧をページネーション付きで取得する。
 func (h *ProjectHandler) GetByUserID(c *gin.Context) {
 	userID, ok := parseID(c, "userId")
 	if !ok {
 		return
 	}
 
-	projects, err := h.service.GetByUserID(userID)
+	limit, offset := parseLimitOffset(c)
+
+	projects, total, err := h.service.GetByUserID(userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
 
-	respondOK(c, projects)
+	respondOK(c, dto.ProjectListResponse{
+		Projects: projects,
+		Total:    total,
+		Limit:    limit,
+		Offset:   offset,
+	})
 }
 
 // GetFeatured は指定ユーザーの注目プロジェクト一覧を取得する。

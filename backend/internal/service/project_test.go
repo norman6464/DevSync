@@ -239,22 +239,36 @@ func TestProjectGetByUserID_Success(t *testing.T) {
 		{Title: "Project 2", UserID: 1},
 	}
 
-	repo.On("FindByUserID", uint(1)).Return(expected, nil)
+	repo.On("FindByUserID", uint(1), 20, 0).Return(expected, int64(2), nil)
 
-	result, err := svc.GetByUserID(1)
+	result, total, err := svc.GetByUserID(1, 20, 0)
 	assert.NoError(t, err)
 	assert.Len(t, result, 2)
+	assert.Equal(t, int64(2), total)
 	repo.AssertExpectations(t)
 }
 
 func TestProjectGetByUserID_Empty(t *testing.T) {
 	svc, repo := newTestProjectService()
 
-	repo.On("FindByUserID", uint(1)).Return([]model.Project{}, nil)
+	repo.On("FindByUserID", uint(1), 20, 0).Return([]model.Project{}, int64(0), nil)
 
-	result, err := svc.GetByUserID(1)
+	result, total, err := svc.GetByUserID(1, 20, 0)
 	assert.NoError(t, err)
 	assert.Empty(t, result)
+	assert.Equal(t, int64(0), total)
+	repo.AssertExpectations(t)
+}
+
+func TestProjectGetByUserID_Page2(t *testing.T) {
+	svc, repo := newTestProjectService()
+
+	repo.On("FindByUserID", uint(1), 10, 10).Return([]model.Project{}, int64(15), nil)
+
+	result, total, err := svc.GetByUserID(1, 10, 10)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	assert.Equal(t, int64(15), total)
 	repo.AssertExpectations(t)
 }
 
