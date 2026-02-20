@@ -1,6 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { textareaClass, buttonSecondaryClass } from '../../constants/styles';
+import { useSubmitShortcut } from '../../hooks/useSubmitShortcut';
 
 interface AnswerFormProps {
   initialBody?: string;
@@ -22,16 +23,11 @@ export default function AnswerForm({ initialBody = '', onSubmit, onCancel, loadi
     }
   };
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      e.preventDefault();
-      if (body.trim() && !loading) {
-        onSubmit(body).then((success) => {
-          if (success && !isEdit) setBody('');
-        });
-      }
-    }
-  }, [body, loading, onSubmit, isEdit]);
+  const handleKeyDown = useSubmitShortcut(() => {
+    onSubmit(body).then((success) => {
+      if (success && !isEdit) setBody('');
+    });
+  }, !!body.trim() && !loading);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">

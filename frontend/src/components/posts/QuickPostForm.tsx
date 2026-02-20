@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Send, FileText, Check, Clock } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useAutoSave } from '../../hooks/useAutoSave';
+import { useSubmitShortcut } from '../../hooks/useSubmitShortcut';
 import Avatar from '../common/Avatar';
 
 interface QuickPostFormProps {
@@ -63,14 +64,7 @@ export default function QuickPostForm({ onSubmit }: QuickPostFormProps) {
     }
   };
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      e.preventDefault();
-      if (content.trim() && !isSubmitting) {
-        handleSubmit(false);
-      }
-    }
-  }, [content, isSubmitting]);
+  const handleKeyDown = useSubmitShortcut(() => handleSubmit(false), !!content.trim() && !isSubmitting);
 
   // 保存状態の表示テキスト
   const getSaveStatusText = () => {
