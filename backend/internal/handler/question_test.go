@@ -257,6 +257,44 @@ func TestQuestionVote_InvalidValue(t *testing.T) {
 	assertStatus(t, w, http.StatusBadRequest)
 }
 
+// ============================================================
+// GetByUserID テスト
+// ============================================================
+
+func TestQuestion_GetByUserID_Success(t *testing.T) {
+	h, repo := setupQuestionHandler()
+	r := newRouter(1)
+	r.GET("/users/:userId/questions", h.GetByUserID)
+
+	questions := []model.Question{{Title: "Go質問"}}
+	repo.On("FindByUserID", uint(5), 20, 0).Return(questions, int64(1), nil)
+
+	w := doRequest(r, http.MethodGet, "/users/5/questions", nil)
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
+}
+
+func TestQuestion_GetByUserID_Empty(t *testing.T) {
+	h, repo := setupQuestionHandler()
+	r := newRouter(1)
+	r.GET("/users/:userId/questions", h.GetByUserID)
+
+	repo.On("FindByUserID", uint(99), 20, 0).Return([]model.Question{}, int64(0), nil)
+
+	w := doRequest(r, http.MethodGet, "/users/99/questions", nil)
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
+}
+
+func TestQuestion_GetByUserID_InvalidID(t *testing.T) {
+	h, _ := setupQuestionHandler()
+	r := newRouter(1)
+	r.GET("/users/:userId/questions", h.GetByUserID)
+
+	w := doRequest(r, http.MethodGet, "/users/abc/questions", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
 func TestQuestionRemoveVote_Success(t *testing.T) {
 	h, repo := setupQuestionHandler()
 	r := newRouter(1)

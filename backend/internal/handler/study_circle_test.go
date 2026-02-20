@@ -6,6 +6,7 @@ import (
 
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -543,4 +544,43 @@ func TestStudyCircleReorderSteps_Success(t *testing.T) {
 		},
 	})
 	assertStatus(t, w, http.StatusOK)
+}
+
+// ============================================================
+// GetByStatus テスト
+// ============================================================
+
+func TestStudyCircle_GetByStatus_Success(t *testing.T) {
+	h, repo := setupStudyCircleHandler()
+	r := newRouter(1)
+	r.GET("/study-circles/status/:status", h.GetByStatus)
+
+	circles := []model.StudyCircle{{Name: "Go勉強会"}}
+	repo.On("GetByStatus", uint(1), "active").Return(circles, nil)
+
+	w := doRequest(r, http.MethodGet, "/study-circles/status/active", nil)
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
+}
+
+func TestStudyCircle_GetByStatus_NilResult(t *testing.T) {
+	h, repo := setupStudyCircleHandler()
+	r := newRouter(1)
+	r.GET("/study-circles/status/:status", h.GetByStatus)
+
+	repo.On("GetByStatus", uint(1), "completed").Return([]model.StudyCircle(nil), nil)
+
+	w := doRequest(r, http.MethodGet, "/study-circles/status/completed", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Equal(t, "[]", w.Body.String())
+	repo.AssertExpectations(t)
+}
+
+func TestStudyCircle_GetByStatus_InvalidStatus(t *testing.T) {
+	h, _ := setupStudyCircleHandler()
+	r := newRouter(1)
+	r.GET("/study-circles/status/:status", h.GetByStatus)
+
+	w := doRequest(r, http.MethodGet, "/study-circles/status/invalid", nil)
+	assertStatus(t, w, http.StatusBadRequest)
 }

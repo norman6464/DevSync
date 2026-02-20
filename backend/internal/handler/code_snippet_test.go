@@ -6,6 +6,7 @@ import (
 
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -233,5 +234,47 @@ func TestCodeSnippetDeleteComment_ServiceError(t *testing.T) {
 	w := doRequest(r, "DELETE", "/snippets/1/comments/1", nil)
 
 	assertStatus(t, w, http.StatusForbidden)
+	svc.AssertExpectations(t)
+}
+
+// ============================================================
+// GetByUserLanguage テスト
+// ============================================================
+
+func TestCodeSnippet_GetByUserLanguage_Success(t *testing.T) {
+	h, svc := setupCodeSnippetHandler()
+	r := newRouter(1)
+	r.GET("/snippets/language/:language", h.GetByUserLanguage)
+
+	snippets := []model.CodeSnippet{{Language: "Go", FileName: "main.go"}}
+	svc.On("GetByUserLanguage", uint(1), "Go").Return(snippets, nil)
+
+	w := doRequest(r, http.MethodGet, "/snippets/language/Go", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestCodeSnippet_GetByUserLanguage_NilResult(t *testing.T) {
+	h, svc := setupCodeSnippetHandler()
+	r := newRouter(1)
+	r.GET("/snippets/language/:language", h.GetByUserLanguage)
+
+	svc.On("GetByUserLanguage", uint(1), "Rust").Return([]model.CodeSnippet(nil), nil)
+
+	w := doRequest(r, http.MethodGet, "/snippets/language/Rust", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Equal(t, "[]", w.Body.String())
+	svc.AssertExpectations(t)
+}
+
+func TestCodeSnippet_GetByUserLanguage_ServiceError(t *testing.T) {
+	h, svc := setupCodeSnippetHandler()
+	r := newRouter(1)
+	r.GET("/snippets/language/:language", h.GetByUserLanguage)
+
+	svc.On("GetByUserLanguage", uint(1), "invalid").Return([]model.CodeSnippet(nil), service.ErrNotFound)
+
+	w := doRequest(r, http.MethodGet, "/snippets/language/invalid", nil)
+	assertStatus(t, w, http.StatusNotFound)
 	svc.AssertExpectations(t)
 }
