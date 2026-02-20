@@ -60,7 +60,7 @@ func TestProjectGetByID_Success(t *testing.T) {
 	h, svc := setupProjectHandler()
 	project := &model.Project{Title: "Test", UserID: 1}
 	project.ID = 1
-	svc.On("GetByID", uint(1)).Return(project, nil)
+	svc.On("GetByID", uint(1), uint(1)).Return(project, nil)
 
 	r := newRouter(1)
 	r.GET("/projects/:id", h.GetByID)
@@ -82,7 +82,7 @@ func TestProjectGetByID_InvalidID(t *testing.T) {
 
 func TestProjectGetByID_NotFound(t *testing.T) {
 	h, svc := setupProjectHandler()
-	svc.On("GetByID", uint(999)).Return(nil, service.ErrNotFound)
+	svc.On("GetByID", uint(999), uint(1)).Return(nil, service.ErrNotFound)
 
 	r := newRouter(1)
 	r.GET("/projects/:id", h.GetByID)

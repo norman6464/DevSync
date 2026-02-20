@@ -886,8 +886,8 @@ type MockProjectService struct{ mock.Mock }
 func (m *MockProjectService) Create(project *model.Project) error {
 	return m.Called(project).Error(0)
 }
-func (m *MockProjectService) GetByID(id uint) (*model.Project, error) {
-	args := m.Called(id)
+func (m *MockProjectService) GetByID(id, userID uint) (*model.Project, error) {
+	args := m.Called(id, userID)
 	if p := args.Get(0); p != nil {
 		return p.(*model.Project), args.Error(1)
 	}

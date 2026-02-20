@@ -16,7 +16,7 @@ func parseDate(dateStr string) (time.Time, error) {
 // ProjectServiceInterface はProjectHandlerが依存するサービスメソッドを定義する。
 type ProjectServiceInterface interface {
 	Create(project *model.Project) error
-	GetByID(id uint) (*model.Project, error)
+	GetByID(id, userID uint) (*model.Project, error)
 	GetByUserID(userID uint, limit, offset int) ([]model.Project, int64, error)
 	GetFeaturedByUserID(userID uint) ([]model.Project, error)
 	GetAll(limit, offset int) ([]model.Project, int64, error)
@@ -81,12 +81,13 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 
 // GetByID は指定IDのプロジェクトを取得する。
 func (h *ProjectHandler) GetByID(c *gin.Context) {
+	userID := c.GetUint("userID")
 	id, ok := parseID(c, "id")
 	if !ok {
 		return
 	}
 
-	project, err := h.service.GetByID(id)
+	project, err := h.service.GetByID(id, userID)
 	if err != nil {
 		respondError(c, err)
 		return
