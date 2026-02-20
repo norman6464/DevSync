@@ -40,6 +40,7 @@ export default function OnboardingProfileStep({
             value={name}
             onChange={handleNameChange}
             placeholder={t('onboarding.namePlaceholder')}
+            maxLength={200}
             className={inputClass}
           />
         </div>
