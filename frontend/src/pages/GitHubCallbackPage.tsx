@@ -11,7 +11,7 @@ function parseStatePurpose(state: string): string {
     const parts = state.split('.');
     if (parts.length < 2 || !parts[1]) return '';
     const decoded = JSON.parse(atob(parts[1]));
-    return decoded.purpose || '';
+    return typeof decoded.purpose === 'string' ? decoded.purpose : '';
   } catch {
     return '';
   }
