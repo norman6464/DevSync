@@ -11,6 +11,13 @@ import ConfirmDialog from '../components/common/ConfirmDialog';
 import { formatDistanceToNow } from '../utils/timeFormat';
 import { emptyStateClass } from '../constants/styles';
 
+const getDraftAgeClass = (updatedAt: string): string => {
+  const diffDays = Math.floor((Date.now() - new Date(updatedAt).getTime()) / 86400000);
+  if (diffDays >= 30) return 'text-orange-400';
+  if (diffDays >= 7) return 'text-yellow-500';
+  return 'text-gray-500';
+};
+
 export default function DraftsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -134,7 +141,7 @@ export default function DraftsPage() {
               </div>
 
               <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-800">
-                <span className="text-xs text-gray-500">
+                <span className={`text-xs ${getDraftAgeClass(draft.updated_at)}`}>
                   {t('post.lastEdited')}: {formatDistanceToNow(draft.updated_at)}
                 </span>
 
