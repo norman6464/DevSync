@@ -148,6 +148,7 @@ export default function GoalsPage() {
               maxLength={2000}
               className={`${inputClass} resize-none`}
             />
+            <p className="text-xs text-gray-500 text-right mt-1">{description.length}/2000</p>
           </div>
           <div>
             <label htmlFor="goal-category" className={labelClass}>
