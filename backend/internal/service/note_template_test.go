@@ -178,9 +178,28 @@ func TestNoteTemplateService_GetByID(t *testing.T) {
 
 	repo.On("FindByID", uint(1)).Return(template, nil)
 
-	result, err := svc.GetByID(1)
+	result, err := svc.GetByID(1, 1)
 	assert.NoError(t, err)
 	assert.Equal(t, template, result)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteTemplateService_GetByID_Forbidden(t *testing.T) {
+	svc, repo, _ := newTestNoteTemplateService()
+
+	template := &model.NoteTemplate{
+		ID:              1,
+		UserID:          1,
+		Name:            "テンプレート1",
+		ContentTemplate: "本文",
+	}
+
+	repo.On("FindByID", uint(1)).Return(template, nil)
+
+	result, err := svc.GetByID(1, 999)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, ErrForbidden, err)
 	repo.AssertExpectations(t)
 }
 

@@ -9,7 +9,7 @@ import (
 // NoteTemplateServiceInterface はNoteTemplateServiceのインターフェース。
 type NoteTemplateServiceInterface interface {
 	Create(template *model.NoteTemplate) error
-	GetByID(id uint) (*model.NoteTemplate, error)
+	GetByID(id, userID uint) (*model.NoteTemplate, error)
 	GetByUserID(userID uint) ([]model.NoteTemplate, error)
 	GetDefaultByUserID(userID uint) (*model.NoteTemplate, error)
 	Update(id, userID uint, name, description, defaultTitle, contentTemplate, defaultTags string, isDefault *bool) (*model.NoteTemplate, error)
@@ -53,14 +53,15 @@ func (h *NoteTemplateHandler) Create(c *gin.Context) {
 	respondCreated(c, template)
 }
 
-// GetByID は指定IDのテンプレートを取得する。
+// GetByID は指定IDのテンプレートを取得する。所有者のみ取得可能。
 func (h *NoteTemplateHandler) GetByID(c *gin.Context) {
+	userID := c.GetUint("userID")
 	id, ok := parseID(c, "id")
 	if !ok {
 		return
 	}
 
-	template, err := h.service.GetByID(id)
+	template, err := h.service.GetByID(id, userID)
 	if err != nil {
 		respondError(c, err)
 		return
