@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Lightbulb, Clock, TrendingUp, TrendingDown, Flame, LayoutGrid } from 'lucide-react';
 import type { AIInsight } from '../../types/analytics';
+import { panelClass } from '../../constants/styles';
 
 interface Props {
   insights: AIInsight[];
@@ -30,7 +31,7 @@ export default function AIInsightCard({ insights, loading }: Props) {
 
   if (loading) {
     return (
-      <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
+      <div className={panelClass}>
         <div className="h-5 bg-gray-800 rounded animate-pulse w-1/3 mb-4" />
         <div className="space-y-3">
           <div className="h-16 bg-gray-800 rounded animate-pulse" />
@@ -51,7 +52,7 @@ export default function AIInsightCard({ insights, loading }: Props) {
   };
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
+    <div className={panelClass}>
       <h3 className="flex items-center gap-2 text-sm font-medium text-white mb-4">
         <Lightbulb className="w-4 h-4 text-yellow-400" />
         {t('analytics.insightsTitle')}
