@@ -47,6 +47,8 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		}
 		if strings.HasPrefix(ctx.Request.URL.Path, "/uploads/") {
 			ctx.Header("Content-Security-Policy", "default-src 'none'; img-src 'self'; style-src 'none'; script-src 'none'")
+		} else {
+			ctx.Header("Content-Security-Policy", "default-src 'none'")
 		}
 		ctx.Next()
 	})
