@@ -917,3 +917,53 @@ func TestStudyCircleCreateCheckin_IsMemberError(t *testing.T) {
 	assert.Nil(t, result)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// GetByStatus テスト
+// ============================================================
+
+func TestStudyCircleGetByStatus_Success(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	circles := []model.StudyCircle{
+		{ID: 1, Name: "Go勉強会", Status: model.StudyCircleStatusActive},
+	}
+	repo.On("GetByStatus", uint(1), "active").Return(circles, nil)
+
+	result, err := svc.GetByStatus(1, "active")
+	assert.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, model.StudyCircleStatusActive, result[0].Status)
+	repo.AssertExpectations(t)
+}
+
+func TestStudyCircleGetByStatus_EmptyResult(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	repo.On("GetByStatus", uint(1), "archived").Return([]model.StudyCircle{}, nil)
+
+	result, err := svc.GetByStatus(1, "archived")
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestStudyCircleGetByStatus_InvalidStatus(t *testing.T) {
+	svc, _ := newTestStudyCircleService()
+
+	result, err := svc.GetByStatus(1, "invalid")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "無効なステータス")
+}
+
+func TestStudyCircleGetByStatus_RepoError(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	repo.On("GetByStatus", uint(1), "active").Return([]model.StudyCircle{}, errors.New("db error"))
+
+	result, err := svc.GetByStatus(1, "active")
+	assert.Error(t, err)
+	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}

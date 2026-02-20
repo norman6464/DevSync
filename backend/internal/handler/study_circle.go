@@ -26,6 +26,7 @@ type StudyCircleServiceInterface interface {
 	CreateCheckin(circleID, userID uint, content string) (*model.StudyCircleCheckin, error)
 	GetCheckins(circleID, userID uint) ([]model.StudyCircleCheckin, error)
 	GetStreakRanking(circleID, userID uint) ([]model.CircleMemberStreak, error)
+	GetByStatus(userID uint, status string) ([]model.StudyCircle, error)
 }
 
 // StudyCircleHandler はスタディサークル関連のHTTPリクエストを処理する。
@@ -347,4 +348,21 @@ func (h *StudyCircleHandler) GetStreakRanking(c *gin.Context) {
 		return
 	}
 	respondOK(c, ranking)
+}
+
+// GetByStatus はステータスでサークルをフィルタリングして取得する。
+func (h *StudyCircleHandler) GetByStatus(c *gin.Context) {
+	userID := c.GetUint("userID")
+	status := c.Param("status")
+
+	circles, err := h.service.GetByStatus(userID, status)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	if circles == nil {
+		circles = []model.StudyCircle{}
+	}
+
+	respondOK(c, circles)
 }
