@@ -191,6 +191,30 @@ func (s *LearningGoalService) GetDeadlineAlerts(userID uint) ([]model.GoalDeadli
 	return alerts, nil
 }
 
+// Duplicate は所有権を検証した後、学習目標を複製する。
+// 進捗は0%にリセットし、ステータスはactiveに戻す。タイトルに「(コピー)」を付与する。
+func (s *LearningGoalService) Duplicate(id, userID uint) (*model.LearningGoal, error) {
+	goal, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	newGoal := &model.LearningGoal{
+		UserID:      goal.UserID,
+		Title:       goal.Title + " (コピー)",
+		Description: goal.Description,
+		Category:    goal.Category,
+		TargetDate:  goal.TargetDate,
+		Progress:    0,
+		Status:      model.GoalStatusActive,
+	}
+
+	if err := s.repo.Create(newGoal); err != nil {
+		return nil, err
+	}
+	return newGoal, nil
+}
+
 // Delete は所有権を検証した後、学習目標を削除する。
 func (s *LearningGoalService) Delete(id, userID uint) error {
 	if _, err := s.findAndCheckOwnership(id, userID); err != nil {

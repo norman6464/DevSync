@@ -19,6 +19,7 @@ type LearningGoalServiceInterface interface {
 	Update(id, userID uint, updates *model.LearningGoal) (*model.LearningGoal, error)
 	Delete(id, userID uint) error
 	GetDeadlineAlerts(userID uint) ([]model.GoalDeadlineAlert, error)
+	Duplicate(id, userID uint) (*model.LearningGoal, error)
 }
 
 // LearningGoalHandler は学習目標関連のHTTPハンドラ。
@@ -231,6 +232,23 @@ func (h *LearningGoalHandler) GetByStatus(c *gin.Context) {
 	}
 
 	respondOK(c, ensureSlice(goals))
+}
+
+// Duplicate は学習目標を複製する。所有者のみ複製可能。
+func (h *LearningGoalHandler) Duplicate(c *gin.Context) {
+	userID := c.GetUint("userID")
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	goal, err := h.service.Duplicate(id, userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondCreated(c, goal)
 }
 
 // GetStats は指定されたユーザーの学習目標統計情報を取得する。
