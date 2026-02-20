@@ -107,6 +107,19 @@ func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (
 	return review, nil
 }
 
+// UpdateStatus は所有権を検証した後、書籍レビューの読書状態を更新する。
+func (s *BookReviewService) UpdateStatus(id, userID uint, status model.ReviewStatus) error {
+	if !model.ValidReviewStatuses[status] {
+		return domain.NewError(domain.ErrCodeBadRequest, "無効なステータスです", nil)
+	}
+	review, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return err
+	}
+	review.Status = status
+	return s.repo.Update(review)
+}
+
 // ArchiveReview は所有権を検証した後、書籍レビューをアーカイブする。
 func (s *BookReviewService) ArchiveReview(id, userID uint) error {
 	review, err := s.findAndCheckOwnership(id, userID)

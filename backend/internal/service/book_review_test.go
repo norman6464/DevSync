@@ -6,6 +6,7 @@ import (
 
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 // newTestBookReviewService はBookReviewServiceのテスト用インスタンスを生成するヘルパー。
@@ -485,5 +486,39 @@ func TestBookReviewUnarchive_Forbidden(t *testing.T) {
 	repo.On("FindByID", uint(1)).Return(existing, nil)
 
 	err := svc.UnarchiveReview(1, 999)
+	assert.ErrorIs(t, err, ErrForbidden)
+}
+
+func TestBookReviewUpdateStatus_Success(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	existing := &model.BookReview{UserID: 1, Title: "Go本"}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", mock.MatchedBy(func(r *model.BookReview) bool {
+		return r.ID == 1 && r.Status == model.ReviewStatusReading
+	})).Return(nil)
+
+	err := svc.UpdateStatus(1, 1, model.ReviewStatusReading)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestBookReviewUpdateStatus_InvalidStatus(t *testing.T) {
+	svc, _ := newTestBookReviewService()
+
+	err := svc.UpdateStatus(1, 1, model.ReviewStatus("invalid"))
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "無効なステータス")
+}
+
+func TestBookReviewUpdateStatus_Forbidden(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	existing := &model.BookReview{UserID: 99, Title: "他人のレビュー"}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	err := svc.UpdateStatus(1, 1, model.ReviewStatusCompleted)
 	assert.ErrorIs(t, err, ErrForbidden)
 }
