@@ -51,7 +51,7 @@ export default function AIAdviceWidget() {
                 key={advice.id}
                 className="flex items-start gap-2 p-2 rounded-lg hover:bg-gray-700/30 cursor-pointer transition-colors"
                 onClick={() => {
-                  if (advice.action_url) navigate(advice.action_url);
+                  if (advice.action_url?.startsWith('/')) navigate(advice.action_url);
                 }}
               >
                 <AdviceIcon type={advice.type} size={16} className="mt-0.5" />
