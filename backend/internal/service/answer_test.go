@@ -47,6 +47,32 @@ func TestAnswerCreate_QuestionNotFound(t *testing.T) {
 	questionRepo.AssertExpectations(t)
 }
 
+func TestAnswerCreate_WhitespaceOnlyBody(t *testing.T) {
+	svc, _, questionRepo := newTestAnswerService()
+
+	question := &model.Question{UserID: 1}
+	question.ID = 10
+	questionRepo.On("FindByID", uint(10)).Return(question, nil)
+
+	// 空白のみの回答 → エラーになるべき
+	answer := &model.Answer{QuestionID: 10, UserID: 2, Body: "   "}
+	err := svc.Create(answer)
+	assert.Error(t, err)
+}
+
+func TestAnswerCreate_EmptyBody(t *testing.T) {
+	svc, _, questionRepo := newTestAnswerService()
+
+	question := &model.Question{UserID: 1}
+	question.ID = 10
+	questionRepo.On("FindByID", uint(10)).Return(question, nil)
+
+	// 空の回答 → エラーになるべき
+	answer := &model.Answer{QuestionID: 10, UserID: 2, Body: ""}
+	err := svc.Create(answer)
+	assert.Error(t, err)
+}
+
 // ============================================================
 // 回答更新テスト
 // ============================================================

@@ -28,6 +28,9 @@ func (s *AnswerService) GetByQuestionID(questionID uint) ([]model.Answer, error)
 
 // Create は質問の存在を確認した後、新しい回答を作成する。
 func (s *AnswerService) Create(answer *model.Answer) error {
+	if strings.TrimSpace(answer.Body) == "" {
+		return domain.NewError(domain.ErrCodeBadRequest, "回答内容は必須です", nil)
+	}
 	if _, err := s.questionRepo.FindByID(answer.QuestionID); err != nil {
 		return ErrNotFound
 	}

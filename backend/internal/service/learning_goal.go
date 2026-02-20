@@ -22,6 +22,9 @@ func NewLearningGoalService(repo repository.LearningGoalRepositoryInterface) *Le
 
 // Create は新しい学習目標を作成する。
 func (s *LearningGoalService) Create(goal *model.LearningGoal) error {
+	if strings.TrimSpace(goal.Title) == "" {
+		return domain.NewError(domain.ErrCodeBadRequest, "タイトルは必須です", nil)
+	}
 	return s.repo.Create(goal)
 }
 
