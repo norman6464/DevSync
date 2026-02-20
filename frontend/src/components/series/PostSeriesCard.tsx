@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import type { PostSeries } from '../../types/post';
-import { cardPaddedClass, iconButtonClass } from '../../constants/styles';
+import { cardPaddedClass, iconButtonClass, deleteIconButtonClass } from '../../constants/styles';
 
 interface PostSeriesCardProps {
   series: PostSeries;
@@ -39,7 +39,7 @@ export default function PostSeriesCard({ series, onEdit, onDelete, isOwner }: Po
             </button>
             <button
               onClick={onDelete}
-              className="p-1.5 text-gray-400 hover:text-red-400 transition-colors"
+              className={deleteIconButtonClass}
               aria-label={t('common.delete')}
               title={t('common.delete')}
             >

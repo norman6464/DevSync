@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import type { BookReview, ReviewStatus } from '../../types/bookReview';
 import Avatar from '../common/Avatar';
 import StarRating from '../common/StarRating';
-import { cardClass, iconButtonClass } from '../../constants/styles';
+import { cardClass, iconButtonClass, deleteIconButtonClass } from '../../constants/styles';
 
 const statusColors: Record<ReviewStatus, string> = {
   not_started: 'bg-gray-600 text-gray-200',
@@ -72,7 +72,7 @@ export default function BookReviewCard({
                 </button>
                 <button
                   onClick={onDelete}
-                  className="p-1.5 text-gray-400 hover:text-red-400 transition-colors"
+                  className={deleteIconButtonClass}
                   aria-label={t('common.delete')}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">

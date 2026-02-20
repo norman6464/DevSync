@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import type { Answer } from '../../types/qa';
 import Avatar from '../common/Avatar';
-import { iconButtonClass } from '../../constants/styles';
+import { iconButtonClass, deleteIconButtonClass } from '../../constants/styles';
 
 interface AnswerCardProps {
   answer: Answer;
@@ -125,7 +125,7 @@ export default function AnswerCard({
                   </button>
                   <button
                     onClick={onDelete}
-                    className="p-1.5 text-gray-400 hover:text-red-400 transition-colors"
+                    className={deleteIconButtonClass}
                     title={t('common.delete')}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
