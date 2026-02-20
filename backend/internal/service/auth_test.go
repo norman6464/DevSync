@@ -517,6 +517,49 @@ func TestGitHubLogin_NoEmailFallback(t *testing.T) {
 	userRepo.AssertExpectations(t)
 }
 
+func TestGitHubLogin_CreateNewUser_CreateError(t *testing.T) {
+	svc, userRepo, _ := newTestAuthService()
+
+	userRepo.On("FindByGitHubID", int64(12345)).Return(nil, errors.New("not found"))
+	userRepo.On("FindByEmail", "new@example.com").Return(nil, errors.New("not found"))
+	userRepo.On("FindByUsername", "newghuser").Return(nil, errors.New("not found"))
+	userRepo.On("Create", mock.AnythingOfType("*model.User")).Return(errors.New("db error"))
+
+	ghUser := &GitHubUserInfo{
+		ID:    12345,
+		Login: "newghuser",
+		Email: "new@example.com",
+		Name:  "New ghuser",
+	}
+
+	resp, err := svc.GitHubLogin(ghUser, "access-token")
+	assert.Error(t, err)
+	assert.Nil(t, resp)
+}
+
+func TestGitHubLogin_LinkByEmail_WithAvatarURL(t *testing.T) {
+	svc, userRepo, _ := newTestAuthService()
+
+	userRepo.On("FindByGitHubID", int64(12345)).Return(nil, errors.New("not found"))
+	user := &model.User{Name: "existinguser", Email: "existing@example.com"}
+	user.ID = 2
+	userRepo.On("FindByEmail", "existing@example.com").Return(user, nil)
+	userRepo.On("Update", mock.AnythingOfType("*model.User")).Return(nil)
+
+	ghUser := &GitHubUserInfo{
+		ID:        12345,
+		Login:     "ghuser",
+		Email:     "existing@example.com",
+		Name:      "ghuser",
+		AvatarURL: "https://example.com/avatar.png",
+	}
+
+	resp, err := svc.GitHubLogin(ghUser, "access-token")
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.Equal(t, "https://example.com/avatar.png", resp.User.AvatarURL)
+}
+
 // ============================================================
 // OAuthステート検証テスト
 // ============================================================
