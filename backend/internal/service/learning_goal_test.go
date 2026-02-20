@@ -595,3 +595,55 @@ func TestLearningGoalGetByStatus_RepoError(t *testing.T) {
 	assert.Error(t, err)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// 空白バイパス脆弱性テスト
+// ============================================================
+
+func TestLearningGoalUpdate_WhitespaceTitle(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+	existing := &model.LearningGoal{Title: "Original Title", Description: "Desc", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.LearningGoal{Title: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, "Original Title", result.Title)
+}
+
+func TestLearningGoalUpdate_WhitespaceDescription(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+	existing := &model.LearningGoal{Title: "Title", Description: "Original Desc", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.LearningGoal{Description: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, "Original Desc", result.Description)
+}
+
+func TestLearningGoalUpdate_WhitespaceCategory(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+	existing := &model.LearningGoal{Title: "Title", Category: model.GoalCategoryLanguage, UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.LearningGoal{Category: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, model.GoalCategoryLanguage, result.Category)
+}
+
+func TestLearningGoalUpdate_WhitespaceStatus(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+	existing := &model.LearningGoal{Title: "Title", Status: model.GoalStatusActive, UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.LearningGoal{Status: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, model.GoalStatusActive, result.Status)
+}
