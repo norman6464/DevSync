@@ -1,12 +1,13 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Code, BookOpen, GraduationCap, Users, FileText, Calendar, List, Download, Clock, Star, ArrowDownWideNarrow, type LucideIcon } from 'lucide-react';
+import { Code, BookOpen, GraduationCap, Users, FileText, Calendar, List, Download, Star, ArrowDownWideNarrow, type LucideIcon } from 'lucide-react';
 import { useLearningLogForm } from '../hooks/useLearningLogForm';
 import { useWeeklyDuration, useStreak } from '../hooks';
 import { useAuthStore } from '../store/authStore';
 import { exportLogsCSV, type ExportPeriod } from '../api/learningLogs';
 import type { LogCategory } from '../types/learningLog';
 import LogCalendar from '../components/learning-logs/LogCalendar';
+import WeeklySummaryCard from '../components/learning-logs/WeeklySummaryCard';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { Modal } from '../components/common';
 import { inputClass, buttonSecondaryClass, labelClass } from '../constants/styles';
@@ -119,33 +120,11 @@ export default function LearningLogsPage() {
       </div>
 
       {/* Weekly Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <div className="bg-gray-900 border border-gray-800 rounded-md p-4 flex items-center gap-3">
-          <Clock className="w-8 h-8 text-blue-400" />
-          <div>
-            <p className="text-xs text-gray-400">{t('learningLogs.weeklyDuration')}</p>
-            <p className="text-lg font-bold text-white">
-              {weeklyDuration >= 60
-                ? t('learningLogs.hoursMinutes', { hours: Math.floor(weeklyDuration / 60), minutes: weeklyDuration % 60 })
-                : t('learningLogs.durationMinutes', { minutes: weeklyDuration })}
-            </p>
-          </div>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-md p-4 flex items-center gap-3">
-          <Calendar className="w-8 h-8 text-orange-400" />
-          <div>
-            <p className="text-xs text-gray-400">{t('learningLogs.currentStreak')}</p>
-            <p className="text-lg font-bold text-white">{streakInfo?.current_streak ?? 0}{t('learningLogs.days')}</p>
-          </div>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-md p-4 flex items-center gap-3 col-span-2 md:col-span-1">
-          <FileText className="w-8 h-8 text-green-400" />
-          <div>
-            <p className="text-xs text-gray-400">{t('learningLogs.logCount')}</p>
-            <p className="text-lg font-bold text-white">{filteredLogs.length}</p>
-          </div>
-        </div>
-      </div>
+      <WeeklySummaryCard
+        weeklyDuration={weeklyDuration}
+        streakInfo={streakInfo}
+        logCount={filteredLogs.length}
+      />
 
       {/* View Toggle */}
       <div className="flex items-center gap-2">
