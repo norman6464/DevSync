@@ -443,3 +443,54 @@ func TestLearningLogGetByCategory_RepoError(t *testing.T) {
 	assert.Empty(t, result)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// GetBySource テスト
+// ============================================================
+
+func TestLearningLogGetBySource_Success(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	logs := []model.LearningLog{
+		{Title: "ポモドーロ学習1", Source: model.LogSourcePomodoro, UserID: 1},
+		{Title: "ポモドーロ学習2", Source: model.LogSourcePomodoro, UserID: 1},
+	}
+	repo.On("GetBySource", uint(1), "pomodoro").Return(logs, nil)
+
+	result, err := svc.GetBySource(1, "pomodoro")
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, model.LogSourcePomodoro, result[0].Source)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogGetBySource_InvalidSource(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	result, err := svc.GetBySource(1, "invalid")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "無効なソースです")
+}
+
+func TestLearningLogGetBySource_Empty(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	repo.On("GetBySource", uint(1), "pomodoro").Return([]model.LearningLog{}, nil)
+
+	result, err := svc.GetBySource(1, "pomodoro")
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogGetBySource_RepoError(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	repo.On("GetBySource", uint(1), "manual").Return([]model.LearningLog{}, errors.New("db error"))
+
+	result, err := svc.GetBySource(1, "manual")
+	assert.Error(t, err)
+	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}
