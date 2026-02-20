@@ -176,6 +176,41 @@ func TestSearchPosts_DefaultLimit_Success(t *testing.T) {
 	repo.AssertCalled(t, "SearchWithFilter", "Go", []string(nil), "latest", (*time.Time)(nil), (*time.Time)(nil), 20, 0)
 }
 
+// TestSearchPosts_InvalidSortBy_Error は無効なソート順が拒否されることを確認。
+func TestSearchPosts_InvalidSortBy_Error(t *testing.T) {
+	svc, _ := newTestSearchService()
+
+	params := model.PostSearchParams{
+		Query:  "Go",
+		SortBy: model.SearchSortBy("malicious"),
+		Limit:  20,
+	}
+	result, err := svc.SearchPosts(params)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+// TestSearchPosts_ViewsSortBy_Success は閲覧数順ソートが正常に動作することを確認。
+func TestSearchPosts_ViewsSortBy_Success(t *testing.T) {
+	svc, repo := newTestSearchService()
+
+	expected := []model.Post{{Title: "閲覧数多い記事"}}
+	repo.On("SearchWithFilter", "記事", []string(nil), "views", (*time.Time)(nil), (*time.Time)(nil), 20, 0).
+		Return(expected, int64(1), nil)
+
+	params := model.PostSearchParams{
+		Query:  "記事",
+		SortBy: model.SearchSortByViews,
+		Limit:  20,
+	}
+	result, err := svc.SearchPosts(params)
+
+	assert.NoError(t, err)
+	assert.Equal(t, int64(1), result.Total)
+	repo.AssertExpectations(t)
+}
+
 // TestSearchPosts_RepositoryError はリポジトリエラーが適切に伝播することを確認。
 func TestSearchPosts_RepositoryError(t *testing.T) {
 	svc, repo := newTestSearchService()

@@ -11,6 +11,13 @@ const (
 	SearchSortByViews   SearchSortBy = "views"   // 閲覧数順
 )
 
+// ValidSearchSortBy は有効なソート順の集合。
+var ValidSearchSortBy = map[SearchSortBy]bool{
+	SearchSortByLatest:  true,
+	SearchSortByPopular: true,
+	SearchSortByViews:   true,
+}
+
 // PostSearchParams は投稿検索のパラメータ。
 type PostSearchParams struct {
 	Query    string
