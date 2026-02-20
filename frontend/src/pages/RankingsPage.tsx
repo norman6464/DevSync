@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react';
 import { useRankings } from '../hooks';
-import { sectionContainerClass, inputClass } from '../constants/styles';
+import { sectionContainerClass, inputClass, emptyStateClass } from '../constants/styles';
 import Avatar from '../components/common/Avatar';
 import { PageLoader } from '../components/common';
 
@@ -140,7 +140,7 @@ export default function RankingsPage() {
       {loading ? (
         <PageLoader />
       ) : rankings.length === 0 ? (
-        <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center text-gray-400 text-sm">
+        <div className={`${emptyStateClass} text-gray-400 text-sm`}>
           {t('rankings.noData')}
         </div>
       ) : (

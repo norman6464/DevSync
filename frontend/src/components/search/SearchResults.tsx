@@ -7,6 +7,7 @@ import { UserCardSkeleton, PostCardSkeleton } from '../common/Skeleton';
 import type { User } from '../../types/user';
 import type { Post } from '../../types/post';
 import type { StudyCircle } from '../../types/studyCircle';
+import { emptyStateClass } from '../../constants/styles';
 
 export function LoadingResults({ tab }: { tab: SearchTab }) {
   if (tab === 'users') {
@@ -29,7 +30,7 @@ export function LoadingResults({ tab }: { tab: SearchTab }) {
 
 export function SearchEmptyState({ message }: { message: string }) {
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center">
+    <div className={emptyStateClass}>
       <svg
         className="w-16 h-16 mx-auto mb-4 text-gray-700"
         fill="none"
@@ -51,7 +52,7 @@ export function SearchEmptyState({ message }: { message: string }) {
 function NoResults({ query }: { query: string }) {
   const { t } = useTranslation();
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center">
+    <div className={emptyStateClass}>
       <p className="text-gray-400 mb-1">{t('search.noResults')}</p>
       <p className="text-gray-500 text-sm">"{query}"</p>
     </div>

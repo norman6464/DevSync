@@ -5,6 +5,7 @@ import { useFollowList } from '../hooks';
 import Avatar from '../components/common/Avatar';
 import FollowButton from '../components/profile/FollowButton';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { emptyStateClass } from '../constants/styles';
 
 export default function FollowListPage() {
   const { username } = useParams<{ username: string }>();
@@ -63,7 +64,7 @@ export default function FollowListPage() {
       {loading ? (
         <div className="py-12"><LoadingSpinner /></div>
       ) : users.length === 0 ? (
-        <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center text-gray-500 text-sm">
+        <div className={`${emptyStateClass} text-gray-500 text-sm`}>
           {tab === 'followers' ? t('follow.noFollowers') : t('follow.noFollowing')}
         </div>
       ) : (

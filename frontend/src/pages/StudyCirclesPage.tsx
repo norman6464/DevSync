@@ -6,6 +6,7 @@ import { useStudyCircles } from '../hooks';
 import { useAuthStore } from '../store/authStore';
 import Avatar from '../components/common/Avatar';
 import { Modal } from '../components/common';
+import { emptyStateClass } from '../constants/styles';
 
 export default function StudyCirclesPage() {
   const { t } = useTranslation();
@@ -110,7 +111,7 @@ export default function StudyCirclesPage() {
           ))}
         </div>
       ) : circles.length === 0 ? (
-        <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center">
+        <div className={emptyStateClass}>
           <Users className="w-16 h-16 mx-auto mb-4 text-gray-700" />
           <p className="text-gray-400 mb-4">{t('studyCircle.noCircles')}</p>
           <button
