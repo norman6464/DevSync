@@ -5,6 +5,7 @@ import { Users, UserPlus, Check } from 'lucide-react';
 import { useRecommendedUsers } from '../../hooks';
 import { followUser } from '../../api/users';
 import Avatar from '../common/Avatar';
+import { panelClass } from '../../constants/styles';
 
 export default function RecommendedUsersWidget() {
   const { t } = useTranslation();
@@ -26,7 +27,7 @@ export default function RecommendedUsersWidget() {
 
   if (loading) {
     return (
-      <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
+      <div className={panelClass}>
         <div className="h-5 bg-gray-800 rounded animate-pulse w-1/2 mb-3" />
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
@@ -46,7 +47,7 @@ export default function RecommendedUsersWidget() {
   if (!users || users.length === 0) return null;
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
+    <div className={panelClass}>
       <div className="flex items-center justify-between mb-3">
         <h3 className="flex items-center gap-2 text-sm font-medium text-white">
           <Users aria-hidden="true" className="w-4 h-4 text-purple-400" />

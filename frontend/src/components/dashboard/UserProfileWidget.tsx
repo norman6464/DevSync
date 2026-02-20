@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import Avatar from '../common/Avatar';
+import { panelClass } from '../../constants/styles';
 
 export default function UserProfileWidget() {
   const { t } = useTranslation();
@@ -10,7 +11,7 @@ export default function UserProfileWidget() {
   if (!user) return null;
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
+    <div className={panelClass}>
       <div className="flex items-center gap-3 mb-3">
         <Avatar name={user.name} avatarUrl={user.avatar_url} size="md" />
         <div className="min-w-0">

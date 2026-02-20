@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Target, ChevronRight } from 'lucide-react';
 import type { LearningGoal } from '../../api/goals';
+import { panelClass } from '../../constants/styles';
 
 interface GoalsProgressWidgetProps {
   activeGoals: LearningGoal[];
@@ -14,7 +15,7 @@ export default function GoalsProgressWidget({ activeGoals, completedGoals, avgPr
   const { t } = useTranslation();
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
+    <div className={panelClass}>
       <div className="flex items-center justify-between mb-3">
         <h3 className="flex items-center gap-2 text-sm font-medium text-white">
           <Target className="w-4 h-4 text-blue-400" aria-hidden="true" />
