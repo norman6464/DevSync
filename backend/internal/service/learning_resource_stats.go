@@ -1,7 +1,6 @@
 package service
 
 import (
-	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
@@ -18,8 +17,8 @@ func NewLearningResourceStatsService(repo repository.LearningResourceStatsReposi
 
 // GetLearningResourceStats は指定ユーザーの学習リソース活動集計統計を取得する。
 func (s *LearningResourceStatsService) GetLearningResourceStats(userID uint) (*model.LearningResourceStats, error) {
-	if userID == 0 {
-		return nil, domain.NewError(domain.ErrCodeBadRequest, "userIDは必須です", nil)
+	if err := validateRequiredID(userID, "userID"); err != nil {
+		return nil, err
 	}
 	return s.repo.GetLearningResourceStats(userID)
 }

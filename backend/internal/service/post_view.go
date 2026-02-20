@@ -19,11 +19,11 @@ func NewPostViewService(repo repository.PostViewRepositoryInterface) *PostViewSe
 // RecordView はユーザーの投稿閲覧を記録する。
 // 既に閲覧済みの場合は何もしない（ユニーク閲覧のみカウント）。
 func (s *PostViewService) RecordView(userID, postID uint) error {
-	if userID == 0 {
-		return domain.NewError(domain.ErrCodeBadRequest, "userIDは必須です", nil)
+	if err := validateRequiredID(userID, "userID"); err != nil {
+		return err
 	}
-	if postID == 0 {
-		return domain.NewError(domain.ErrCodeBadRequest, "postIDは必須です", nil)
+	if err := validateRequiredID(postID, "postID"); err != nil {
+		return err
 	}
 	viewed, err := s.repo.HasViewed(userID, postID)
 	if err != nil {
@@ -40,19 +40,19 @@ func (s *PostViewService) RecordView(userID, postID uint) error {
 
 // GetViewCount は投稿のユニーク閲覧数を取得する。
 func (s *PostViewService) GetViewCount(postID uint) (int64, error) {
-	if postID == 0 {
-		return 0, domain.NewError(domain.ErrCodeBadRequest, "postIDは必須です", nil)
+	if err := validateRequiredID(postID, "postID"); err != nil {
+		return 0, err
 	}
 	return s.repo.GetViewCount(postID)
 }
 
 // HasViewed はユーザーが投稿を閲覧済みかどうかを判定する。
 func (s *PostViewService) HasViewed(userID, postID uint) (bool, error) {
-	if userID == 0 {
-		return false, domain.NewError(domain.ErrCodeBadRequest, "userIDは必須です", nil)
+	if err := validateRequiredID(userID, "userID"); err != nil {
+		return false, err
 	}
-	if postID == 0 {
-		return false, domain.NewError(domain.ErrCodeBadRequest, "postIDは必須です", nil)
+	if err := validateRequiredID(postID, "postID"); err != nil {
+		return false, err
 	}
 	return s.repo.HasViewed(userID, postID)
 }
