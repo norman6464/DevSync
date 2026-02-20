@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Code2 } from 'lucide-react';
 import type { Post } from '../../types/post';
 import Avatar from '../common/Avatar';
 import { format } from 'date-fns';
@@ -48,9 +49,17 @@ export default function PostCard({ post, isOwner = false, onEdit, onDelete, onUp
               </span>
             )}
           </div>
-          {post.estimated_read_time > 0 && (
-            <p className="text-xs text-gray-500 mt-0.5">{t('post.readTime', { minutes: post.estimated_read_time })}</p>
-          )}
+          <div className="flex items-center gap-2 mt-0.5">
+            {post.estimated_read_time > 0 && (
+              <span className="text-xs text-gray-500">{t('post.readTime', { minutes: post.estimated_read_time })}</span>
+            )}
+            {post.code_snippets && post.code_snippets.length > 0 && (
+              <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 bg-purple-500/15 text-purple-400 rounded">
+                <Code2 className="w-3 h-3" />
+                {post.code_snippets.length}
+              </span>
+            )}
+          </div>
         </Link>
 
         {isOwner && (
