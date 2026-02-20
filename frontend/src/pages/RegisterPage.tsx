@@ -118,6 +118,7 @@ export default function RegisterPage() {
               <input
                 id="register-email"
                 type="email"
+                autoComplete="email"
                 value={email}
                 onChange={handleEmailChange}
                 required
