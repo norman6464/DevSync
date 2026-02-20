@@ -21,7 +21,7 @@ func NewPostCollectionService(repo repository.PostCollectionRepositoryInterface)
 
 // Create は新しい投稿コレクションを作成する。
 func (s *PostCollectionService) Create(collection *model.PostCollection) (*model.PostCollection, error) {
-	if collection.Title == "" {
+	if strings.TrimSpace(collection.Title) == "" {
 		return nil, domain.NewError(domain.ErrCodeValidation, "タイトルは必須です", nil)
 	}
 	if err := s.repo.Create(collection); err != nil {
