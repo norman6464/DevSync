@@ -56,6 +56,21 @@ func (s *LearningGoalService) GetByCategory(userID uint, category string) ([]mod
 	return s.repo.GetByCategory(userID, category)
 }
 
+// validGoalStatuses は有効なGoalStatusの集合。
+var validGoalStatuses = map[string]bool{
+	string(model.GoalStatusActive):    true,
+	string(model.GoalStatusCompleted): true,
+	string(model.GoalStatusPaused):    true,
+}
+
+// GetByStatus は指定ユーザーの学習目標をステータスでフィルタリングして取得する。
+func (s *LearningGoalService) GetByStatus(userID uint, status string) ([]model.LearningGoal, error) {
+	if !validGoalStatuses[status] {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "無効なステータスです", nil)
+	}
+	return s.repo.GetByStatus(userID, status)
+}
+
 // GetStats は指定ユーザーの学習目標統計情報を取得する。
 func (s *LearningGoalService) GetStats(userID uint) (*model.LearningGoalStats, error) {
 	return s.repo.GetStats(userID)
