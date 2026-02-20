@@ -74,13 +74,13 @@ func (s *CodeSnippetService) Update(id, userID uint, language, fileName, code st
 		return nil, err
 	}
 
-	if language != "" {
+	if strings.TrimSpace(language) != "" {
 		snippet.Language = language
 	}
-	if fileName != "" {
+	if strings.TrimSpace(fileName) != "" {
 		snippet.FileName = fileName
 	}
-	if code != "" {
+	if strings.TrimSpace(code) != "" {
 		snippet.Code = code
 	}
 

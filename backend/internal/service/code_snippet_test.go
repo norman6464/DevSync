@@ -337,6 +337,45 @@ func TestSnippetUpdate_RepoError(t *testing.T) {
 	assert.Nil(t, result)
 }
 
+func TestSnippetUpdate_WhitespaceLanguage(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+	existing := &model.CodeSnippet{PostID: 5, UserID: 1, Language: "go", FileName: "main.go", Code: "package main"}
+	existing.ID = 10
+	snippetRepo.On("FindByID", uint(10)).Return(existing, nil)
+	snippetRepo.On("Update", existing).Return(nil)
+
+	// 空白のみのlanguageは更新されず、元の値が保持されるべき
+	result, err := svc.Update(10, 1, "   ", "", "")
+	assert.NoError(t, err)
+	assert.Equal(t, "go", result.Language) // 変更されない
+}
+
+func TestSnippetUpdate_WhitespaceFileName(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+	existing := &model.CodeSnippet{PostID: 5, UserID: 1, Language: "go", FileName: "main.go", Code: "package main"}
+	existing.ID = 10
+	snippetRepo.On("FindByID", uint(10)).Return(existing, nil)
+	snippetRepo.On("Update", existing).Return(nil)
+
+	// 空白のみのfileNameは更新されず、元の値が保持されるべき
+	result, err := svc.Update(10, 1, "", "   ", "")
+	assert.NoError(t, err)
+	assert.Equal(t, "main.go", result.FileName) // 変更されない
+}
+
+func TestSnippetUpdate_WhitespaceCode(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+	existing := &model.CodeSnippet{PostID: 5, UserID: 1, Language: "go", FileName: "main.go", Code: "package main"}
+	existing.ID = 10
+	snippetRepo.On("FindByID", uint(10)).Return(existing, nil)
+	snippetRepo.On("Update", existing).Return(nil)
+
+	// 空白のみのcodeは更新されず、元の値が保持されるべき
+	result, err := svc.Update(10, 1, "", "", "  \t  ")
+	assert.NoError(t, err)
+	assert.Equal(t, "package main", result.Code) // 変更されない
+}
+
 // ---------- ユーザー別言語フィルタリング ----------
 
 func TestCodeSnippetGetByUserLanguage_Success(t *testing.T) {
