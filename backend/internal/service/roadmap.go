@@ -45,9 +45,9 @@ func (s *RoadmapService) GetByID(id, userID uint) (*model.Roadmap, error) {
 	return roadmap, nil
 }
 
-// GetByUserID は指定ユーザーの全ロードマップを取得する。
-func (s *RoadmapService) GetByUserID(userID uint) ([]model.Roadmap, error) {
-	return s.repo.GetByUserID(userID)
+// GetByUserID は指定ユーザーのロードマップをページネーション付きで取得する。
+func (s *RoadmapService) GetByUserID(userID uint, limit, offset int) ([]model.Roadmap, int64, error) {
+	return s.repo.GetByUserID(userID, limit, offset)
 }
 
 // GetByStatus は指定ユーザーのロードマップをステータスでフィルタリングして取得する。

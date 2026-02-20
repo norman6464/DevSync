@@ -48,12 +48,13 @@ func (r *RoadmapRepository) FindByID(id uint) (*model.Roadmap, error) {
 }
 
 // GetByUserID は指定ユーザーの全ロードマップを取得する（ステップなし、新しい順）。
-func (r *RoadmapRepository) GetByUserID(userID uint) ([]model.Roadmap, error) {
+func (r *RoadmapRepository) GetByUserID(userID uint, limit, offset int) ([]model.Roadmap, int64, error) {
 	var roadmaps []model.Roadmap
-	err := r.db.Where("user_id = ?", userID).
-		Order("created_at DESC").
-		Find(&roadmaps).Error
-	return roadmaps, err
+	var total int64
+	query := r.db.Where("user_id = ?", userID)
+	query.Model(&model.Roadmap{}).Count(&total)
+	err := query.Order("created_at DESC").Limit(limit).Offset(offset).Find(&roadmaps).Error
+	return roadmaps, total, err
 }
 
 // GetByStatus は指定ユーザーのロードマップをステータスでフィルタリングして取得する（新しい順）。

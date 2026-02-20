@@ -43,7 +43,7 @@ func setupDefaultMocks(
 	logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
 	goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 	goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
-	roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 	githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 	logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 	resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{}, int64(0), nil)
@@ -56,7 +56,7 @@ func TestGenerateAdvice_StreakBroken(t *testing.T) {
 		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{CurrentStreak: 0, TotalDays: 10, LongestStreak: 5}, nil)
 		goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
@@ -81,7 +81,7 @@ func TestGenerateAdvice_StreakBroken(t *testing.T) {
 		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{CurrentStreak: 3, TotalDays: 10}, nil)
 		goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
@@ -102,9 +102,9 @@ func TestGenerateAdvice_StalledRoadmap(t *testing.T) {
 		goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
 		staleTime := time.Now().Add(-10 * 24 * time.Hour)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{
 			{Status: model.RoadmapStatusActive, StepCount: 5, CompletedStepCount: 2, UpdatedAt: staleTime},
-		}, nil)
+		}, int64(1), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
@@ -133,7 +133,7 @@ func TestGenerateAdvice_GoalOverdue(t *testing.T) {
 			{Status: model.GoalStatusActive, TargetDate: &pastDate, Title: "Go学習"},
 		}, int64(1), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{TotalGoals: 1, ActiveGoals: 1}, nil)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
@@ -161,7 +161,7 @@ func TestGenerateAdvice_ReactSuggestion(t *testing.T) {
 			{Title: "Go学習", Status: model.GoalStatusActive},
 		}, int64(1), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{TotalGoals: 1}, nil)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{
 			{Language: "TypeScript", Bytes: 50000},
 		}, nil)
@@ -189,7 +189,7 @@ func TestGenerateAdvice_ReactSuggestion(t *testing.T) {
 			{Title: "React学習", Status: model.GoalStatusActive},
 		}, int64(1), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{TotalGoals: 1}, nil)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{
 			{Language: "TypeScript", Bytes: 50000},
 		}, nil)
@@ -213,7 +213,7 @@ func TestGenerateAdvice_NoGoals(t *testing.T) {
 		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
 		goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{TotalGoals: 0}, nil)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{
 			{Language: "Go", Bytes: 20000},
 		}, nil)
@@ -243,7 +243,7 @@ func TestGenerateAdvice_NoRoadmap(t *testing.T) {
 			{Title: "Go学習", Status: model.GoalStatusActive},
 		}, int64(1), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{TotalGoals: 1}, nil)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
@@ -269,7 +269,7 @@ func TestGenerateAdvice_DifficultyUp(t *testing.T) {
 		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
 		goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{CompletedGoals: 5, AverageProgress: 80}, nil)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
@@ -295,7 +295,7 @@ func TestGenerateAdvice_Praise(t *testing.T) {
 		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
 		goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 		// 過去7日に毎日90分ずつ学習 → 合計630分 → 平均90分/日
 		now := time.Now()
@@ -328,7 +328,7 @@ func TestGenerateAdvice_ExploreResources(t *testing.T) {
 		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
 		goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}}, int64(2), nil)
@@ -352,7 +352,7 @@ func TestGenerateAdvice_ExploreResources(t *testing.T) {
 		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
 		goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
@@ -372,7 +372,7 @@ func TestGenerateAdvice_LowStudyTime(t *testing.T) {
 		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
 		goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 		// 過去7日に合計50分の学習（平均7分/日 → 15分未満）
 		now := time.Now()
@@ -405,7 +405,7 @@ func TestGenerateAdvice_LowStudyTime(t *testing.T) {
 		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
 		goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 		// 過去7日に合計210分（平均30分/日 → 15〜60の間）
 		now := time.Now()
@@ -440,7 +440,7 @@ func TestGenerateAdvice_TechSuggestionFromTopLanguage(t *testing.T) {
 			{Title: "Docker学習", Status: model.GoalStatusActive},
 		}, int64(1), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{TotalGoals: 1}, nil)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{
 			{Language: "Go", Bytes: 80000, RepoCount: 5},
 			{Language: "Python", Bytes: 30000, RepoCount: 2},
@@ -470,7 +470,7 @@ func TestGenerateAdvice_TechSuggestionFromTopLanguage(t *testing.T) {
 			{Title: "Go言語マスター", Status: model.GoalStatusActive},
 		}, int64(1), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{TotalGoals: 1}, nil)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{
 			{Language: "Go", Bytes: 80000, RepoCount: 5},
 		}, nil)
@@ -491,7 +491,7 @@ func TestGenerateAdvice_TechSuggestionFromTopLanguage(t *testing.T) {
 		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
 		goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{
 			{Language: "Go", Bytes: 5000, RepoCount: 1},
 		}, nil)
@@ -514,7 +514,7 @@ func TestGenerateAdvice_TechSuggestionTopLangNotFirst(t *testing.T) {
 		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
 		goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{
 			{Language: "Python", Bytes: 5000, RepoCount: 1},
 			{Language: "Go", Bytes: 80000, RepoCount: 5},
@@ -544,9 +544,9 @@ func TestGenerateAdvice_StalledRoadmapEdgeCases(t *testing.T) {
 		goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
 		staleTime := time.Now().Add(-10 * 24 * time.Hour)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{
 			{Status: model.RoadmapStatusCompleted, StepCount: 5, CompletedStepCount: 5, UpdatedAt: staleTime},
-		}, nil)
+		}, int64(1), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
@@ -566,9 +566,9 @@ func TestGenerateAdvice_StalledRoadmapEdgeCases(t *testing.T) {
 		goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
 		staleTime := time.Now().Add(-10 * 24 * time.Hour)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{
 			{Status: model.RoadmapStatusActive, StepCount: 5, CompletedStepCount: 5, UpdatedAt: staleTime},
-		}, nil)
+		}, int64(1), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{{}, {}, {}}, int64(3), nil)
@@ -590,7 +590,7 @@ func TestGenerateAdvice_PrioritySorting(t *testing.T) {
 		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{CurrentStreak: 0, TotalDays: 10, LongestStreak: 5}, nil)
 		goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{TotalGoals: 0}, nil)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{
 			{Language: "Go", Bytes: 20000},
 		}, nil)
@@ -669,7 +669,7 @@ func TestGenerateAdvice_ContextCollectionError_Roadmaps(t *testing.T) {
 		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
 		goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, assert.AnError)
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), assert.AnError)
 
 		advices := svc.GenerateAdvice(1)
 		assert.Empty(t, advices)
@@ -683,7 +683,7 @@ func TestGenerateAdvice_ContextCollectionError_LanguageStats(t *testing.T) {
 		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
 		goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, assert.AnError)
 
 		advices := svc.GenerateAdvice(1)
@@ -698,7 +698,7 @@ func TestGenerateAdvice_ContextCollectionError_Logs(t *testing.T) {
 		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
 		goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), assert.AnError)
 
@@ -714,7 +714,7 @@ func TestGenerateAdvice_ContextCollectionError_Resources(t *testing.T) {
 		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
 		goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{}, int64(0), assert.AnError)
@@ -731,7 +731,7 @@ func TestGenerateAdvice_ContextCollectionError_User(t *testing.T) {
 		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
 		goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
-		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 		logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 		resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{}, int64(0), nil)

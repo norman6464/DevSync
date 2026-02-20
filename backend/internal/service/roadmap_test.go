@@ -595,23 +595,36 @@ func TestRoadmapGetByUserID_Success(t *testing.T) {
 		{Title: "Roadmap 1", UserID: 1},
 		{Title: "Roadmap 2", UserID: 1},
 	}
-	repo.On("GetByUserID", uint(1)).Return(roadmaps, nil)
+	repo.On("GetByUserID", uint(1), 20, 0).Return(roadmaps, int64(2), nil)
 
-	result, err := svc.GetByUserID(1)
+	result, total, err := svc.GetByUserID(1, 20, 0)
 	assert.NoError(t, err)
 	assert.Len(t, result, 2)
+	assert.Equal(t, int64(2), total)
 	repo.AssertExpectations(t)
 }
 
 func TestRoadmapGetByUserID_Empty(t *testing.T) {
 	svc, repo := newTestRoadmapService()
 
-	repo.On("GetByUserID", uint(99)).Return([]model.Roadmap{}, nil)
+	repo.On("GetByUserID", uint(99), 20, 0).Return([]model.Roadmap{}, int64(0), nil)
 
-	result, err := svc.GetByUserID(99)
+	result, total, err := svc.GetByUserID(99, 20, 0)
 	assert.NoError(t, err)
 	assert.Empty(t, result)
+	assert.Equal(t, int64(0), total)
 	repo.AssertExpectations(t)
+}
+
+func TestRoadmapGetByUserID_Page2(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	repo.On("GetByUserID", uint(1), 10, 10).Return([]model.Roadmap{}, int64(15), nil)
+
+	result, total, err := svc.GetByUserID(1, 10, 10)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	assert.Equal(t, int64(15), total)
 }
 
 // ============================================================
