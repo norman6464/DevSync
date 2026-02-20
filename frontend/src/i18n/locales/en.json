@@ -958,6 +958,7 @@
     "categorySkill": "Skill",
     "categoryProject": "Project",
     "categoryOther": "Other",
+    "allCategories": "All Categories",
     "makePublic": "Make public (others can copy)",
     "public": "Public",
     "create": "Create",

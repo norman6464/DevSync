@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { type RoadmapCategory, type Roadmap } from '../api/roadmaps';
 import { useRoadmaps, useRoadmapTemplates } from './useRoadmaps';
@@ -19,6 +19,16 @@ export function useRoadmapForm() {
   const [isPublic, setIsPublic] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
   const [expandedTemplate, setExpandedTemplate] = useState<number | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<RoadmapCategory | ''>('');
+
+  const filteredActiveRoadmaps = useMemo(
+    () => categoryFilter ? activeRoadmaps.filter(r => r.category === categoryFilter) : activeRoadmaps,
+    [activeRoadmaps, categoryFilter]
+  );
+  const filteredCompletedRoadmaps = useMemo(
+    () => categoryFilter ? completedRoadmaps.filter(r => r.category === categoryFilter) : completedRoadmaps,
+    [completedRoadmaps, categoryFilter]
+  );
 
   const resetForm = useCallback(() => {
     setTitle('');
@@ -73,8 +83,8 @@ export function useRoadmapForm() {
   return {
     // データ
     roadmaps,
-    activeRoadmaps,
-    completedRoadmaps,
+    activeRoadmaps: filteredActiveRoadmaps,
+    completedRoadmaps: filteredCompletedRoadmaps,
     templates,
     loading,
     saving,
@@ -92,6 +102,9 @@ export function useRoadmapForm() {
     setCategory,
     isPublic,
     setIsPublic,
+    // フィルター
+    categoryFilter,
+    setCategoryFilter,
     // テンプレート状態
     showTemplates,
     expandedTemplate,

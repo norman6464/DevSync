@@ -4,7 +4,7 @@ import { type RoadmapCategory } from '../api/roadmaps';
 import { useRoadmapForm } from '../hooks';
 import EmptyState from '../components/common/EmptyState';
 import { Modal, PageHeader, PageLoader } from '../components/common';
-import { inputClass, buttonSecondaryClass, labelClass } from '../constants/styles';
+import { inputClass, selectClass, buttonSecondaryClass, labelClass } from '../constants/styles';
 import RoadmapTemplatesSection from '../components/roadmaps/RoadmapTemplatesSection';
 import RoadmapCard from '../components/roadmaps/RoadmapCard';
 
@@ -24,6 +24,7 @@ export default function RoadmapsPage() {
     showForm, setShowForm, editingRoadmap,
     title, setTitle, description, setDescription,
     category, setCategory, isPublic, setIsPublic,
+    categoryFilter, setCategoryFilter,
     showTemplates, expandedTemplate,
     resetForm, handleSubmit, handleEdit, handleUseTemplate,
     deleteRoadmap, toggleTemplates, toggleExpandedTemplate, navigate,
@@ -142,6 +143,24 @@ export default function RoadmapsPage() {
           </div>
         </form>
       </Modal>
+
+      {/* Category Filter */}
+      {roadmaps.length > 0 && (
+        <div className="mb-6">
+          <select
+            value={categoryFilter}
+            onChange={e => setCategoryFilter(e.target.value as RoadmapCategory | '')}
+            className={selectClass}
+          >
+            <option value="">{t('roadmaps.allCategories')}</option>
+            {CATEGORIES.map(cat => (
+              <option key={cat.value} value={cat.value}>
+                {cat.icon} {t(cat.label)}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Content */}
       {roadmaps.length === 0 ? (
