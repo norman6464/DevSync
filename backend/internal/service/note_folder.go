@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
@@ -59,6 +60,27 @@ func (s *NoteFolderService) findAndCheckOwnership(id, userID uint) (*model.NoteF
 	return folder, nil
 }
 
+// isDescendant は targetID が ancestorID の子孫かを再帰的にチェックする。
+func (s *NoteFolderService) isDescendant(ancestorID, targetID uint) (bool, error) {
+	children, err := s.repo.FindByParentID(ancestorID)
+	if err != nil {
+		return false, err
+	}
+	for _, child := range children {
+		if child.ID == targetID {
+			return true, nil
+		}
+		desc, err := s.isDescendant(child.ID, targetID)
+		if err != nil {
+			return false, err
+		}
+		if desc {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 // Update は所有権を検証した後、フォルダを更新する。
 func (s *NoteFolderService) Update(id, userID uint, name string, parentID *uint) (*model.NoteFolder, error) {
 	folder, err := s.findAndCheckOwnership(id, userID)
@@ -70,6 +92,18 @@ func (s *NoteFolderService) Update(id, userID uint, name string, parentID *uint)
 		folder.Name = name
 	}
 	if parentID != nil {
+		// 自己参照チェック
+		if *parentID == id {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, "フォルダを自分自身の子にすることはできません", nil)
+		}
+		// 循環参照チェック: parentIDが自分の子孫でないことを確認
+		isDesc, err := s.isDescendant(id, *parentID)
+		if err != nil {
+			return nil, err
+		}
+		if isDesc {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, "循環参照が発生するため、この親フォルダは設定できません", nil)
+		}
 		folder.ParentID = parentID
 	}
 
