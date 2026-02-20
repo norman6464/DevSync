@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
+import { modalOverlayClass, modalContentClass } from '../../constants/styles';
 
 interface ModalProps {
   isOpen: boolean;
@@ -29,14 +30,14 @@ export default function Modal({
   return (
     <div
       data-testid="modal-overlay"
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      className={modalOverlayClass}
       onClick={onClose}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? 'modal-title' : undefined}
-        className={`bg-gray-800 rounded-md p-6 w-full ${maxWidth} max-h-[90vh] overflow-y-auto`}
+        className={`${modalContentClass} ${maxWidth}`}
         onClick={(e) => e.stopPropagation()}
       >
         {title && (
