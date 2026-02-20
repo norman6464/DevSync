@@ -204,7 +204,10 @@
     "unbookmark": "Lesezeichen entfernen",
     "bookmarks": "Lesezeichen",
     "noBookmarks": "Keine markierten Beiträge",
-    "addReaction": "Reagieren"
+    "addReaction": "Reagieren",
+    "sortNewest": "Neueste",
+    "sortOldest": "Älteste",
+    "sortTitle": "Nach Titel"
   },
   "follow": {
     "noFollowers": "Noch keine Follower",

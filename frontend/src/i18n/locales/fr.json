@@ -204,7 +204,10 @@
     "unbookmark": "Retirer le signet",
     "bookmarks": "Signets",
     "noBookmarks": "Aucune publication enregistrée",
-    "addReaction": "Réagir"
+    "addReaction": "Réagir",
+    "sortNewest": "Plus récent",
+    "sortOldest": "Plus ancien",
+    "sortTitle": "Par titre"
   },
   "follow": {
     "noFollowers": "Pas encore d'abonnés",

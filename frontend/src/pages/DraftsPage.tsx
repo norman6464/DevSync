@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { FileEdit, Eye, Trash2, Send } from 'lucide-react';
+import { FileEdit, Eye, Trash2, Send, ArrowUpDown } from 'lucide-react';
 import { useAsyncData } from '../hooks/useAsyncData';
 import { useConfirm } from '../hooks';
 import { getDrafts, publishPost, deletePost } from '../api/posts';
@@ -17,12 +17,28 @@ export default function DraftsPage() {
 
   const { confirm, dialogProps } = useConfirm();
 
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'title'>('newest');
+
   const { data: drafts, loading } = useAsyncData(
     async () => {
       const { data } = await getDrafts();
       return data || [];
     },
     { initialData: [], deps: [refreshKey] }
+  );
+
+  const sortedDrafts = useMemo(() =>
+    [...drafts].sort((a, b) => {
+      switch (sortBy) {
+        case 'oldest':
+          return new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime();
+        case 'title':
+          return a.title.localeCompare(b.title);
+        default:
+          return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+      }
+    }),
+    [drafts, sortBy]
   );
 
   const handlePublish = useCallback(async (id: number) => {
@@ -61,9 +77,32 @@ export default function DraftsPage() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-        <FileEdit className="w-6 h-6 text-orange-500" />
-        <h1 className="text-2xl font-bold text-white">{t('post.drafts')}</h1>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <FileEdit className="w-6 h-6 text-orange-500" />
+          <h1 className="text-2xl font-bold text-white">{t('post.drafts')}</h1>
+          {drafts.length > 0 && (
+            <span className="text-sm text-gray-500">({drafts.length})</span>
+          )}
+        </div>
+        {drafts.length > 1 && (
+          <div className="flex items-center gap-2">
+            <ArrowUpDown className="w-4 h-4 text-gray-500" />
+            {(['newest', 'oldest', 'title'] as const).map((s) => (
+              <button
+                key={s}
+                onClick={() => setSortBy(s)}
+                className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+                  sortBy === s
+                    ? 'border-orange-500 bg-orange-500/10 text-orange-400'
+                    : 'border-gray-700 text-gray-400 hover:border-gray-600'
+                }`}
+              >
+                {t(`post.sort${s.charAt(0).toUpperCase() + s.slice(1)}`)}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {loading ? (
@@ -78,7 +117,7 @@ export default function DraftsPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {drafts.map((draft) => (
+          {sortedDrafts.map((draft) => (
             <div
               key={draft.id}
               className="bg-gray-900 border border-gray-800 rounded-md p-4 hover:border-gray-700 transition-colors"

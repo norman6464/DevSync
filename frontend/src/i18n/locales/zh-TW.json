@@ -204,7 +204,10 @@
     "unbookmark": "取消書籤",
     "bookmarks": "書籤列表",
     "noBookmarks": "沒有收藏的貼文",
-    "addReaction": "表情回應"
+    "addReaction": "表情回應",
+    "sortNewest": "最新",
+    "sortOldest": "最舊",
+    "sortTitle": "按標題"
   },
   "follow": {
     "noFollowers": "尚無追蹤者",
