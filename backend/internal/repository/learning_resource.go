@@ -84,7 +84,7 @@ func (r *LearningResourceRepository) Search(query string, limit, offset int) ([]
 	var resources []model.LearningResource
 	var total int64
 
-	searchQuery := "%" + query + "%"
+	searchQuery := EscapeLikePattern(query)
 	dbQuery := r.db.Model(&model.LearningResource{}).
 		Where("is_public = ?", true).
 		Where("title ILIKE ? OR description ILIKE ? OR tags ILIKE ?", searchQuery, searchQuery, searchQuery)

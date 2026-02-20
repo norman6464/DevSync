@@ -55,7 +55,8 @@ func (r *UserRepository) FindByUsername(username string) (*model.User, error) {
 // Search は名前またはメールアドレスでユーザーを検索する（最大50件）。
 func (r *UserRepository) Search(query string) ([]model.User, error) {
 	var users []model.User
-	result := r.db.Where("name ILIKE ? OR email ILIKE ?", "%"+query+"%", "%"+query+"%").Limit(50).Find(&users)
+	searchPattern := EscapeLikePattern(query)
+	result := r.db.Where("name ILIKE ? OR email ILIKE ?", searchPattern, searchPattern).Limit(50).Find(&users)
 	return users, result.Error
 }
 

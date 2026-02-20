@@ -65,7 +65,7 @@ func (r *NoteRepository) Search(userID uint, query string, limit, offset int) ([
 	var notes []model.Note
 	var total int64
 
-	searchPattern := "%" + query + "%"
+	searchPattern := EscapeLikePattern(query)
 	db := r.db.Model(&model.Note{}).Preload("Folder").
 		Where("user_id = ? AND is_archived = ? AND (title LIKE ? OR content LIKE ?)", userID, false, searchPattern, searchPattern).
 		Order("updated_at DESC")

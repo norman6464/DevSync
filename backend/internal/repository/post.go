@@ -154,7 +154,7 @@ func (r *PostRepository) Search(query string, limit, offset int) (interface{}, i
 	var posts []model.Post
 	var total int64
 
-	searchPattern := "%" + query + "%"
+	searchPattern := EscapeLikePattern(query)
 	db := r.db.Preload("User").Preload("CodeSnippets").
 		Where("(title LIKE ? OR content LIKE ?) AND is_draft = ?", searchPattern, searchPattern, false).
 		Order("created_at DESC")
@@ -265,7 +265,7 @@ func (r *PostRepository) SearchWithFilter(
 	var posts []model.Post
 	var total int64
 
-	searchPattern := "%" + query + "%"
+	searchPattern := EscapeLikePattern(query)
 	db := r.db.Preload("User").Preload("CodeSnippets").
 		Where("(title LIKE ? OR content LIKE ?) AND is_draft = ?", searchPattern, searchPattern, false)
 

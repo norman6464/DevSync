@@ -291,7 +291,7 @@ func (r *StudyCircleRepository) Search(query string, limit, offset int) (interfa
 	var circles []model.StudyCircle
 	var total int64
 
-	searchPattern := "%" + query + "%"
+	searchPattern := EscapeLikePattern(query)
 	db := r.db.Preload("Owner").Preload("Members").Preload("Members.User").
 		Where("name LIKE ? OR topic LIKE ? OR description LIKE ?", searchPattern, searchPattern, searchPattern).
 		Order("created_at DESC")
