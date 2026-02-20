@@ -769,6 +769,8 @@
     "startDate": "開始日期",
     "endDate": "結束日期",
     "present": "至今",
+    "durationCompleted": "{{days}}天",
+    "durationOngoing": "第{{days}}天",
     "markFeatured": "設為精選專案",
     "featured": "精選",
     "liveDemo": "線上演示",

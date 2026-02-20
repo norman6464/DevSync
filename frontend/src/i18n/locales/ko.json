@@ -769,6 +769,8 @@
     "startDate": "시작 날짜",
     "endDate": "종료 날짜",
     "present": "현재",
+    "durationCompleted": "{{days}}일간",
+    "durationOngoing": "{{days}}일째",
     "markFeatured": "이 프로젝트를 추천",
     "featured": "추천",
     "liveDemo": "라이브 데모",

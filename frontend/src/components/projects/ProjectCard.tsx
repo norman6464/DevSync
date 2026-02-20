@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Pencil, Trash2, CircleDot, CheckCircle2, ExternalLink } from 'lucide-react';
+import { Pencil, Trash2, CircleDot, CheckCircle2, ExternalLink, Calendar } from 'lucide-react';
 import type { Project } from '../../types/project';
 import { cardClass, iconButtonClass, deleteIconButtonClass, badgeBaseClass } from '../../constants/styles';
 import { parseJsonArray } from '../../utils/json';
@@ -17,6 +17,13 @@ export default function ProjectCard({ project, onEdit, onDelete, isOwner }: Proj
   const { t } = useTranslation();
 
   const techStack = parseJsonArray(project.tech_stack);
+
+  const durationDays = (() => {
+    if (!project.start_date) return null;
+    const start = new Date(project.start_date).getTime();
+    const end = project.end_date ? new Date(project.end_date).getTime() : Date.now();
+    return Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
+  })();
 
   return (
     <div className={cardClass}>
@@ -101,9 +108,19 @@ export default function ProjectCard({ project, onEdit, onDelete, isOwner }: Proj
         )}
 
         {(project.start_date || project.end_date) && (
-          <p className="text-xs text-gray-500 mt-2">
-            {formatDate(project.start_date)} - {project.end_date ? formatDate(project.end_date) : t('projects.present')}
-          </p>
+          <div className="flex items-center gap-2 mt-2">
+            <p className="text-xs text-gray-500">
+              {formatDate(project.start_date)} - {project.end_date ? formatDate(project.end_date) : t('projects.present')}
+            </p>
+            {durationDays && (
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-xs rounded bg-cyan-400/10 text-cyan-400">
+                <Calendar className="w-3 h-3" />
+                {project.end_date
+                  ? t('projects.durationCompleted', { days: durationDays })
+                  : t('projects.durationOngoing', { days: durationDays })}
+              </span>
+            )}
+          </div>
         )}
 
         <div className="flex gap-2 mt-4">
