@@ -769,6 +769,8 @@
     "startDate": "Дата начала",
     "endDate": "Дата окончания",
     "present": "По настоящее время",
+    "durationCompleted": "{{days}} дн.",
+    "durationOngoing": "День {{days}}",
     "markFeatured": "Выделить этот проект",
     "featured": "Избранное",
     "liveDemo": "Живая демо",

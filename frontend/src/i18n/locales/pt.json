@@ -769,6 +769,8 @@
     "startDate": "Data de Início",
     "endDate": "Data de Término",
     "present": "Presente",
+    "durationCompleted": "{{days}} dias",
+    "durationOngoing": "Dia {{days}}",
     "markFeatured": "Destacar este projeto",
     "featured": "Destaque",
     "liveDemo": "Demo ao Vivo",

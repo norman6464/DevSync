@@ -738,6 +738,8 @@
     "startDate": "開始日",
     "endDate": "終了日",
     "present": "現在",
+    "durationCompleted": "{{days}}日間",
+    "durationOngoing": "{{days}}日目",
     "markFeatured": "このプロジェクトを注目に設定",
     "featured": "注目",
     "liveDemo": "デモを見る",
