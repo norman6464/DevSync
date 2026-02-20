@@ -18,6 +18,7 @@ type NoteServiceInterface interface {
 	Search(userID uint, query string, page, limit int) ([]model.Note, int64, error)
 	CountByUserID(userID uint) (int64, error)
 	ToggleFavorite(id, userID uint) error
+	GetFavorites(userID uint, page, limit int) ([]model.Note, error)
 	Archive(id, userID uint) error
 	Unarchive(id, userID uint) error
 	GetArchived(userID uint, page, limit int) ([]model.Note, error)
@@ -232,6 +233,19 @@ func (h *NoteHandler) Unarchive(c *gin.Context) {
 	}
 
 	respondOK(c, domain.NewMessageResponse("ノートのアーカイブを解除しました"))
+}
+
+// GetFavorites は現在のユーザーのお気に入りノート一覧をページネーション付きで取得する。
+func (h *NoteHandler) GetFavorites(c *gin.Context) {
+	userID := c.GetUint("userID")
+	page, limit := parsePagination(c)
+
+	notes, err := h.service.GetFavorites(userID, page, limit)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, notes)
 }
 
 // GetArchived は現在のユーザーのアーカイブ済みノート一覧をページネーション付きで取得する。

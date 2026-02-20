@@ -392,6 +392,7 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 		notes.POST("", c.NoteHandler.Create)
 		notes.GET("", c.NoteHandler.GetByUserID)
 		notes.GET("/search", c.NoteHandler.Search)
+		notes.GET("/favorites", c.NoteHandler.GetFavorites)
 		notes.GET("/archived", c.NoteHandler.GetArchived)
 		notes.GET("/folder/:folderId", c.NoteHandler.GetByFolderID)
 		notes.GET("/:id", c.NoteHandler.GetByID)
