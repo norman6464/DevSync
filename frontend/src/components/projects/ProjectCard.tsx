@@ -3,6 +3,7 @@ import type { Project } from '../../types/project';
 import { cardClass, iconButtonClass, deleteIconButtonClass } from '../../constants/styles';
 import { parseJsonArray } from '../../utils/json';
 import { sanitizeUrl } from '../../utils/url';
+import { formatDate } from '../../utils/timeFormat';
 
 interface ProjectCardProps {
   project: Project;
@@ -15,11 +16,6 @@ export default function ProjectCard({ project, onEdit, onDelete, isOwner }: Proj
   const { t } = useTranslation();
 
   const techStack = parseJsonArray(project.tech_stack);
-
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return null;
-    return new Date(dateStr).toLocaleDateString();
-  };
 
   return (
     <div className={cardClass}>

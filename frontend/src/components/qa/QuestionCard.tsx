@@ -4,6 +4,7 @@ import type { Question } from '../../types/qa';
 import Avatar from '../common/Avatar';
 import { cardPaddedClass, iconButtonClass, deleteIconButtonClass } from '../../constants/styles';
 import { parseJsonArray } from '../../utils/json';
+import { formatDate } from '../../utils/timeFormat';
 
 interface QuestionCardProps {
   question: Question;
@@ -110,7 +111,7 @@ export default function QuestionCard({ question, isOwner = false, onEdit, onDele
               </Link>
             )}
             <span className="text-xs text-gray-500">
-              {new Date(question.created_at).toLocaleDateString()}
+              {formatDate(question.created_at)}
             </span>
           </div>
         </div>

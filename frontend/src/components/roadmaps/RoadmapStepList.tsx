@@ -4,6 +4,7 @@ import { type RoadmapStep } from '../../api/roadmaps';
 import EmptyState from '../common/EmptyState';
 import { sanitizeUrl } from '../../utils/url';
 import { deleteIconButtonClass } from '../../constants/styles';
+import { formatDate } from '../../utils/timeFormat';
 
 interface RoadmapStepListProps {
   steps: RoadmapStep[] | undefined;
@@ -74,7 +75,7 @@ export default function RoadmapStepList({
                   </div>
                   {step.is_completed && step.completed_at && (
                     <p className="text-xs text-green-400 mt-0.5">
-                      {t('roadmaps.completedOn', { date: new Date(step.completed_at).toLocaleDateString() })}
+                      {t('roadmaps.completedOn', { date: formatDate(step.completed_at) })}
                     </p>
                   )}
                   {step.description && (

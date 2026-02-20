@@ -8,6 +8,7 @@ import { PageLoader } from '../components/common';
 import PostCard from '../components/posts/PostCard';
 import { useAuthStore } from '../store/authStore';
 import { emptyStateClass } from '../constants/styles';
+import { formatDate } from '../utils/timeFormat';
 
 export default function PostSeriesDetailPage() {
   const { t } = useTranslation();
@@ -44,7 +45,7 @@ export default function PostSeriesDetailPage() {
           </Link>
         )}
         <p className="text-xs text-gray-500 mt-2">
-          {new Date(series.created_at).toLocaleDateString()}
+          {formatDate(series.created_at)}
         </p>
       </div>
 

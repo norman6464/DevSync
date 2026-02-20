@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Code, BookOpen, GraduationCap, Users, FileText, Star, type LucideIcon } from 'lucide-react';
 import type { LearningLog, LogCategory } from '../../types/learningLog';
+import { formatDate } from '../../utils/timeFormat';
 
 export const CATEGORIES: { value: LogCategory; label: string; Icon: LucideIcon }[] = [
   { value: 'coding', label: 'learningLogs.categoryCoding', Icon: Code },
@@ -49,7 +50,7 @@ export default function LogCard({ log, onEdit, onDelete, onToggleFavorite }: Log
             </div>
             <p className="text-sm text-gray-400 mt-1 whitespace-pre-wrap">{log.content}</p>
             <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-              <span>{new Date(log.created_at).toLocaleDateString()}</span>
+              <span>{formatDate(log.created_at)}</span>
               {log.duration > 0 && (
                 <span>
                   {log.duration >= 60
