@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -938,4 +939,46 @@ func TestChat_RefetchFallback(t *testing.T) {
 	assert.Equal(t, model.AIMessageRoleUser, conv.Messages[0].Role)
 	assert.Equal(t, model.AIMessageRoleAssistant, conv.Messages[1].Role)
 	assert.Equal(t, "回答です", conv.Messages[1].Content)
+}
+
+// ============================================================
+// GetUnreadAdvice テスト
+// ============================================================
+
+func TestAIAdviceGetUnreadAdvice_Success(t *testing.T) {
+	svc, mocks := newTestAIAdviceService(false)
+
+	advices := []model.AIAdvice{
+		{TitleKey: "advice.study_hint", IsRead: false, Priority: 1},
+		{TitleKey: "advice.resource_tip", IsRead: false, Priority: 3},
+	}
+	mocks.adviceRepo.On("FindUnreadByUserID", uint(1)).Return(advices, nil)
+
+	result, err := svc.GetUnreadAdvice(1)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.False(t, result[0].IsRead)
+	mocks.adviceRepo.AssertExpectations(t)
+}
+
+func TestAIAdviceGetUnreadAdvice_Empty(t *testing.T) {
+	svc, mocks := newTestAIAdviceService(false)
+
+	mocks.adviceRepo.On("FindUnreadByUserID", uint(1)).Return([]model.AIAdvice{}, nil)
+
+	result, err := svc.GetUnreadAdvice(1)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	mocks.adviceRepo.AssertExpectations(t)
+}
+
+func TestAIAdviceGetUnreadAdvice_RepoError(t *testing.T) {
+	svc, mocks := newTestAIAdviceService(false)
+
+	mocks.adviceRepo.On("FindUnreadByUserID", uint(1)).Return([]model.AIAdvice{}, fmt.Errorf("db error"))
+
+	result, err := svc.GetUnreadAdvice(1)
+	assert.Error(t, err)
+	assert.Empty(t, result)
+	mocks.adviceRepo.AssertExpectations(t)
 }

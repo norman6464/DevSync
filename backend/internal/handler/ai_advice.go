@@ -20,6 +20,7 @@ type AIAdviceServiceInterface interface {
 	DeleteConversation(id, userID uint) error
 	GetConversations(userID uint, limit, offset int) ([]model.AIConversation, error)
 	GetConversation(id, userID uint) (*model.AIConversation, error)
+	GetUnreadAdvice(userID uint) ([]model.AIAdvice, error)
 }
 
 // AIAdviceHandler はAIアドバイス関連のHTTPハンドラ。
@@ -152,4 +153,20 @@ func (h *AIAdviceHandler) GetConversation(c *gin.Context) {
 	}
 
 	respondOK(c, conv)
+}
+
+// GetUnreadAdvice は未読のアドバイスを取得する。
+func (h *AIAdviceHandler) GetUnreadAdvice(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	advices, err := h.service.GetUnreadAdvice(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	if advices == nil {
+		advices = []model.AIAdvice{}
+	}
+
+	respondOK(c, advices)
 }
