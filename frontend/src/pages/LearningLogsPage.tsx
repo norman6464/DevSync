@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Calendar, List, Download, Star, ArrowDownWideNarrow, Search } from 'lucide-react';
+import { Download, Search } from 'lucide-react';
 import { useLearningLogForm } from '../hooks/useLearningLogForm';
 import { useWeeklyDuration, useStreak } from '../hooks';
 import { useAuthStore } from '../store/authStore';
@@ -8,6 +8,7 @@ import { exportLogsCSV, type ExportPeriod } from '../api/learningLogs';
 import type { LogCategory } from '../types/learningLog';
 import LogCalendar from '../components/learning-logs/LogCalendar';
 import LogCard, { CATEGORIES } from '../components/learning-logs/LogCard';
+import LogFiltersBar from '../components/learning-logs/LogFiltersBar';
 import WeeklySummaryCard from '../components/learning-logs/WeeklySummaryCard';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { Modal } from '../components/common';
@@ -55,7 +56,6 @@ export default function LearningLogsPage() {
   const handleShowForm = useCallback(() => setShowForm(true), [setShowForm]);
   const handleViewList = useCallback(() => { setView('list'); clearFilterDate(); }, [setView, clearFilterDate]);
   const handleViewCalendar = useCallback(() => { setView('calendar'); clearFilterDate(); }, [setView, clearFilterDate]);
-  const handleFilterAll = useCallback(() => setFilterCategory('all'), [setFilterCategory]);
   const handleToggleFavoritesFilter = useCallback(() => setShowFavoritesOnly(prev => !prev), [setShowFavoritesOnly]);
   const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value), [setTitle]);
   const handleContentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => setContent(e.target.value), [setContent]);
@@ -121,108 +121,19 @@ export default function LearningLogsPage() {
         />
       </div>
 
-      {/* View Toggle */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={handleViewList}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-            view === 'list' ? 'bg-purple-500/20 text-purple-400' : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          <List className="w-4 h-4" />
-          {t('learningLogs.list')}
-        </button>
-        <button
-          onClick={handleViewCalendar}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-            view === 'calendar' ? 'bg-purple-500/20 text-purple-400' : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          <Calendar className="w-4 h-4" />
-          {t('learningLogs.calendar')}
-        </button>
-        <button
-          onClick={handleToggleFavoritesFilter}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-            showFavoritesOnly ? 'bg-yellow-500/20 text-yellow-400' : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          <Star className={`w-4 h-4 ${showFavoritesOnly ? 'fill-yellow-400' : ''}`} />
-          {t('learningLogs.favorites')}
-        </button>
-        {filterDate && (
-          <div className="flex items-center gap-2 ml-2">
-            <span className="text-sm text-purple-400">
-              {t('learningLogs.logsOnDate', { date: filterDate })}
-            </span>
-            <button
-              onClick={clearFilterDate}
-              className="text-xs text-gray-500 hover:text-white"
-            >
-              &times;
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Category Filter */}
-      <div className="flex flex-col gap-2">
-        <span className="text-sm text-gray-400">{t('learningLogs.category')}</span>
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={handleFilterAll}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              filterCategory === 'all'
-                ? 'bg-purple-500/20 text-purple-400'
-                : 'bg-gray-800/50 text-gray-400 hover:text-white'
-            }`}
-          >
-            {t('learningLogs.filterAll')}
-          </button>
-          {CATEGORIES.map(({ value, label, Icon }) => (
-            <button
-              key={value}
-              onClick={() => setFilterCategory(value)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                filterCategory === value
-                  ? 'bg-purple-500/20 text-purple-400'
-                  : 'bg-gray-800/50 text-gray-400 hover:text-white'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              {t(label)}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Sort */}
-      <div className="flex flex-col gap-2">
-        <span className="text-sm text-gray-400 flex items-center gap-1.5">
-          <ArrowDownWideNarrow className="w-4 h-4" />
-          {t('learningLogs.sort')}
-        </span>
-        <div className="flex flex-wrap gap-2">
-          {([
-            { value: 'latest', label: 'learningLogs.sortLatest' },
-            { value: 'oldest', label: 'learningLogs.sortOldest' },
-            { value: 'duration_desc', label: 'learningLogs.sortDurationDesc' },
-            { value: 'duration_asc', label: 'learningLogs.sortDurationAsc' },
-          ] as const).map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => setSortBy(opt.value)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                sortBy === opt.value
-                  ? 'bg-purple-500/20 text-purple-400'
-                  : 'bg-gray-800/50 text-gray-400 hover:text-white'
-              }`}
-            >
-              {t(opt.label)}
-            </button>
-          ))}
-        </div>
-      </div>
+      <LogFiltersBar
+        view={view}
+        filterCategory={filterCategory}
+        showFavoritesOnly={showFavoritesOnly}
+        sortBy={sortBy}
+        filterDate={filterDate}
+        onViewList={handleViewList}
+        onViewCalendar={handleViewCalendar}
+        onToggleFavorites={handleToggleFavoritesFilter}
+        onFilterCategory={setFilterCategory}
+        onSortBy={setSortBy}
+        onClearFilterDate={clearFilterDate}
+      />
 
       {/* Calendar View */}
       {view === 'calendar' && (
