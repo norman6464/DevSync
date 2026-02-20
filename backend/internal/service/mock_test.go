@@ -392,6 +392,11 @@ func (m *MockQuestionRepository) GetUserVote(userID, questionID uint) (int, erro
 	return args.Int(0), args.Error(1)
 }
 
+func (m *MockQuestionRepository) FindSolved(limit, offset int) ([]model.Question, int64, error) {
+	args := m.Called(limit, offset)
+	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
+}
+
 // ============================================================
 // MockAnswerRepository は repository.AnswerRepositoryInterface のテスト用モック実装。
 // ============================================================

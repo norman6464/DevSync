@@ -124,6 +124,11 @@ func (s *QuestionService) Vote(userID, questionID uint, value int) error {
 	return s.repo.Vote(userID, questionID, value)
 }
 
+// GetSolved は解決済みの質問一覧をページネーション付きで取得する。
+func (s *QuestionService) GetSolved(limit, offset int) ([]model.Question, int64, error) {
+	return s.repo.FindSolved(limit, offset)
+}
+
 // RemoveVote は質問への投票を取り消す。
 // 自分の質問への投票削除は禁止する（そもそも投票できないため）。
 func (s *QuestionService) RemoveVote(userID, questionID uint) error {

@@ -125,6 +125,7 @@ type QuestionRepositoryInterface interface {
 	Vote(userID, questionID uint, value int) error
 	RemoveVote(userID, questionID uint) error
 	GetUserVote(userID, questionID uint) (int, error)
+	FindSolved(limit, offset int) ([]model.Question, int64, error)
 }
 
 // AnswerRepositoryInterface はQ&A回答データ操作の契約を定義する。

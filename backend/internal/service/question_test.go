@@ -420,3 +420,48 @@ func TestQuestionUpdate_ValidationError(t *testing.T) {
 	assert.Nil(t, result)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// GetSolved テスト
+// ============================================================
+
+func TestQuestionGetSolved_Success(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	questions := []model.Question{
+		{Title: "Solved Q1", IsSolved: true},
+		{Title: "Solved Q2", IsSolved: true},
+	}
+	repo.On("FindSolved", 20, 0).Return(questions, int64(2), nil)
+
+	result, total, err := svc.GetSolved(20, 0)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, int64(2), total)
+	assert.True(t, result[0].IsSolved)
+	repo.AssertExpectations(t)
+}
+
+func TestQuestionGetSolved_Empty(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	repo.On("FindSolved", 20, 0).Return([]model.Question{}, int64(0), nil)
+
+	result, total, err := svc.GetSolved(20, 0)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	assert.Equal(t, int64(0), total)
+	repo.AssertExpectations(t)
+}
+
+func TestQuestionGetSolved_RepoError(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	repo.On("FindSolved", 20, 0).Return([]model.Question{}, int64(0), errors.New("db error"))
+
+	result, total, err := svc.GetSolved(20, 0)
+	assert.Error(t, err)
+	assert.Empty(t, result)
+	assert.Equal(t, int64(0), total)
+	repo.AssertExpectations(t)
+}

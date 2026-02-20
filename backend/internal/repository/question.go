@@ -147,6 +147,22 @@ func (r *QuestionRepository) RemoveVote(userID, questionID uint) error {
 		UpdateColumn("vote_count", gorm.Expr("vote_count - ?", oldValue)).Error
 }
 
+// FindSolved は解決済みの質問一覧をページネーション付きで取得する。
+func (r *QuestionRepository) FindSolved(limit, offset int) ([]model.Question, int64, error) {
+	var questions []model.Question
+	var total int64
+
+	query := r.db.Model(&model.Question{}).Where("is_solved = ?", true)
+	query.Count(&total)
+
+	err := query.Preload("User").
+		Order("created_at DESC").
+		Limit(limit).Offset(offset).
+		Find(&questions).Error
+
+	return questions, total, err
+}
+
 // GetUserVote は指定ユーザーの指定質問への投票値を取得する（未投票の場合は0を返す）。
 func (r *QuestionRepository) GetUserVote(userID, questionID uint) (int, error) {
 	var vote model.QuestionVote
