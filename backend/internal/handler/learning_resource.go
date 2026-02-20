@@ -1,9 +1,7 @@
 package handler
 
 import (
-
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
@@ -245,34 +243,12 @@ func (h *LearningResourceHandler) Unlike(c *gin.Context) {
 
 // SaveResource は学習リソースを保存する。
 func (h *LearningResourceHandler) SaveResource(c *gin.Context) {
-	userID := c.GetUint("userID")
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	if err := h.service.Save(userID, id); err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondOK(c, domain.NewMessageResponse("Resource saved"))
+	handleToggleAction(c, h.service.Save, "Resource saved")
 }
 
 // UnsaveResource は学習リソースの保存を取り消す。
 func (h *LearningResourceHandler) UnsaveResource(c *gin.Context) {
-	userID := c.GetUint("userID")
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	if err := h.service.Unsave(userID, id); err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondOK(c, domain.NewMessageResponse("Resource unsaved"))
+	handleToggleAction(c, h.service.Unsave, "Resource unsaved")
 }
 
 // GetByDifficulty は難易度別の公開学習リソースを取得する。
