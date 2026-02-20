@@ -156,6 +156,7 @@ type LearningLogRepositoryInterface interface {
 	GetByCategory(userID uint, category string) ([]model.LearningLog, error)
 	GetByPeriod(userID uint, days int) ([]model.LearningLog, error)
 	GetBySource(userID uint, source string) ([]model.LearningLog, error)
+	SumDurationByPeriod(userID uint, days int) (int, error)
 	GetStreakInfo(userID uint) (*model.StreakInfo, error)
 	GetCalendarData(userID uint) ([]model.CalendarEntry, error)
 }

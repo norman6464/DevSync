@@ -123,6 +123,11 @@ func (s *LearningLogService) Delete(id, userID uint) error {
 	return s.repo.Delete(id, userID)
 }
 
+// GetWeeklyDuration は指定ユーザーの過去7日間の学習時間合計（分）を返す。
+func (s *LearningLogService) GetWeeklyDuration(userID uint) (int, error) {
+	return s.repo.SumDurationByPeriod(userID, 7)
+}
+
 // GetStreakInfo は指定ユーザーの学習ストリーク情報を取得する。
 func (s *LearningLogService) GetStreakInfo(userID uint) (*model.StreakInfo, error) {
 	return s.repo.GetStreakInfo(userID)

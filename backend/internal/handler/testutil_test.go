@@ -1307,6 +1307,10 @@ func (m *MockLearningLogService) GetBySource(userID uint, source string) ([]mode
 	args := m.Called(userID, source)
 	return args.Get(0).([]model.LearningLog), args.Error(1)
 }
+func (m *MockLearningLogService) GetWeeklyDuration(userID uint) (int, error) {
+	args := m.Called(userID)
+	return args.Int(0), args.Error(1)
+}
 
 // setupLearningLogHandler はLearningLogHandlerテスト用のセットアップを行う。
 func setupLearningLogHandler() (*LearningLogHandler, *MockLearningLogService) {

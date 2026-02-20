@@ -553,3 +553,38 @@ func TestLearningLogGetBySource_RepoError(t *testing.T) {
 	assert.Empty(t, result)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// 週間学習時間合計テスト
+// ============================================================
+
+func TestLearningLogGetWeeklyDuration_Success(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	repo.On("SumDurationByPeriod", uint(1), 7).Return(480, nil)
+
+	duration, err := svc.GetWeeklyDuration(1)
+	assert.NoError(t, err)
+	assert.Equal(t, 480, duration)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogGetWeeklyDuration_ZeroLogs(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	repo.On("SumDurationByPeriod", uint(1), 7).Return(0, nil)
+
+	duration, err := svc.GetWeeklyDuration(1)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, duration)
+}
+
+func TestLearningLogGetWeeklyDuration_RepoError(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	repo.On("SumDurationByPeriod", uint(1), 7).Return(0, errors.New("db error"))
+
+	duration, err := svc.GetWeeklyDuration(1)
+	assert.Error(t, err)
+	assert.Equal(t, 0, duration)
+}
