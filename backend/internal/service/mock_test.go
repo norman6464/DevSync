@@ -687,6 +687,11 @@ func (m *MockBookReviewRepository) FindByRating(userID uint, minRating, maxRatin
 	return args.Get(0).([]model.BookReview), args.Error(1)
 }
 
+func (m *MockBookReviewRepository) Search(query string, limit, offset int) ([]model.BookReview, int64, error) {
+	args := m.Called(query, limit, offset)
+	return args.Get(0).([]model.BookReview), args.Get(1).(int64), args.Error(2)
+}
+
 // ============================================================
 // MockLearningResourceRepository は repository.LearningResourceRepositoryInterface のテスト用モック実装。
 // ============================================================

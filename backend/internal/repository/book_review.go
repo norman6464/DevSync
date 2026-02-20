@@ -64,6 +64,17 @@ func (r *BookReviewRepository) FindByRating(userID uint, minRating, maxRating in
 	return reviews, err
 }
 
+// Search は書籍レビューをタイトル・著者名・ISBNからキーワード検索する（新しい順）。
+func (r *BookReviewRepository) Search(query string, limit, offset int) ([]model.BookReview, int64, error) {
+	var reviews []model.BookReview
+	var total int64
+	like := "%" + query + "%"
+	q := r.db.Where("title ILIKE ? OR author ILIKE ? OR isbn ILIKE ?", like, like, like)
+	q.Model(&model.BookReview{}).Count(&total)
+	err := q.Preload("User").Order("created_at DESC").Limit(limit).Offset(offset).Find(&reviews).Error
+	return reviews, total, err
+}
+
 // Update は既存の書籍レビューを更新する。
 func (r *BookReviewRepository) Update(review *model.BookReview) error {
 	return r.db.Save(review).Error

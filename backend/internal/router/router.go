@@ -517,6 +517,7 @@ func registerCommunityRoutes(g *gin.RouterGroup, c *di.Container) {
 		bookReviews.PUT("/:id", c.BookReviewHandler.Update)
 		bookReviews.DELETE("/:id", c.BookReviewHandler.Delete)
 		bookReviews.GET("/user/:userId", c.BookReviewHandler.GetByUserID)
+		bookReviews.GET("/search", c.BookReviewHandler.Search)
 		bookReviews.GET("/rating", c.BookReviewHandler.GetByRating)
 		bookReviews.PUT("/:id/archive", c.BookReviewHandler.Archive)
 		bookReviews.PUT("/:id/unarchive", c.BookReviewHandler.Unarchive)

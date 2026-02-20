@@ -18,6 +18,7 @@ type BookReviewServiceInterface interface {
 	ArchiveReview(id, userID uint) error
 	UnarchiveReview(id, userID uint) error
 	UpdateStatus(id, userID uint, status model.ReviewStatus) error
+	Search(query string, limit, offset int) ([]model.BookReview, int64, error)
 }
 
 // BookReviewHandler は書籍レビュー関連のHTTPハンドラ。
@@ -231,6 +232,25 @@ func (h *BookReviewHandler) UpdateStatus(c *gin.Context) {
 	}
 
 	respondOK(c, gin.H{"message": "読書状態を更新しました"})
+}
+
+// Search は書籍レビューをキーワード検索する。
+func (h *BookReviewHandler) Search(c *gin.Context) {
+	query := c.Query("q")
+	limit, offset := parseLimitOffset(c)
+
+	reviews, total, err := h.service.Search(query, limit, offset)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, dto.BookReviewListResponse{
+		Reviews: reviews,
+		Total:   total,
+		Limit:   limit,
+		Offset:  offset,
+	})
 }
 
 // Delete は指定IDの書籍レビューを削除する。

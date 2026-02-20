@@ -473,3 +473,44 @@ func TestBookReviewUpdateStatus_InvalidID(t *testing.T) {
 	})
 	assertStatus(t, w, http.StatusBadRequest)
 }
+
+// ============================================================
+// Search テスト
+// ============================================================
+
+func TestBookReviewSearch_Success(t *testing.T) {
+	h, svc := setupBookReviewHandler()
+	r := newRouter(1)
+	r.GET("/book-reviews/search", h.Search)
+
+	svc.On("Search", "Go", 20, 0).Return([]model.BookReview{
+		{Title: "Go言語入門", Author: "テスト著者"},
+	}, int64(1), nil)
+
+	w := doRequest(r, http.MethodGet, "/book-reviews/search?q=Go", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestBookReviewSearch_EmptyQuery(t *testing.T) {
+	h, svc := setupBookReviewHandler()
+	r := newRouter(1)
+	r.GET("/book-reviews/search", h.Search)
+
+	svc.On("Search", "", 20, 0).Return([]model.BookReview(nil), int64(0), service.ErrBadRequest)
+
+	w := doRequest(r, http.MethodGet, "/book-reviews/search?q=", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestBookReviewSearch_ServiceError(t *testing.T) {
+	h, svc := setupBookReviewHandler()
+	r := newRouter(1)
+	r.GET("/book-reviews/search", h.Search)
+
+	svc.On("Search", "test", 20, 0).Return([]model.BookReview(nil), int64(0), errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/book-reviews/search?q=test", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
