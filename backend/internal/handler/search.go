@@ -16,7 +16,7 @@ type PostSearchService interface {
 // CircleSearchService はスタディサークル検索のサービスインターフェース。
 // Service 層を経由することでクリーンアーキテクチャを維持する。
 type CircleSearchService interface {
-	SearchCircles(query string, limit, offset int) (interface{}, int64, error)
+	SearchCircles(query string, limit, offset int) ([]model.StudyCircle, int64, error)
 }
 
 // SearchHandler is the handler for search operations

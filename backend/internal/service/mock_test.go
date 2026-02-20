@@ -1481,9 +1481,12 @@ func (m *MockStudyCircleRepository) GetStreakRanking(circleID uint) ([]model.Cir
 	return args.Get(0).([]model.CircleMemberStreak), args.Error(1)
 }
 
-func (m *MockStudyCircleRepository) Search(query string, limit, offset int) (interface{}, int64, error) {
+func (m *MockStudyCircleRepository) Search(query string, limit, offset int) ([]model.StudyCircle, int64, error) {
 	args := m.Called(query, limit, offset)
-	return args.Get(0), args.Get(1).(int64), args.Error(2)
+	if v := args.Get(0); v != nil {
+		return v.([]model.StudyCircle), args.Get(1).(int64), args.Error(2)
+	}
+	return nil, args.Get(1).(int64), args.Error(2)
 }
 
 func (m *MockStudyCircleRepository) GetByStatus(userID uint, status string) ([]model.StudyCircle, error) {

@@ -287,7 +287,7 @@ func calculateCheckinStreak(dates []string) int {
 }
 
 // Search はキーワードでスタディサークルを検索する（名前、トピック、説明に部分一致）。
-func (r *StudyCircleRepository) Search(query string, limit, offset int) (interface{}, int64, error) {
+func (r *StudyCircleRepository) Search(query string, limit, offset int) ([]model.StudyCircle, int64, error) {
 	var circles []model.StudyCircle
 	var total int64
 

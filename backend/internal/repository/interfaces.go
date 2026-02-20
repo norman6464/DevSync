@@ -393,7 +393,7 @@ type StudyCircleRepositoryInterface interface {
 	GetByStatus(userID uint, status string) ([]model.StudyCircle, error)
 
 	// 検索
-	Search(query string, limit, offset int) (interface{}, int64, error)
+	Search(query string, limit, offset int) ([]model.StudyCircle, int64, error)
 
 	// メンバー管理
 	AddMember(circleID, userID uint, role model.StudyCircleMemberRole) error

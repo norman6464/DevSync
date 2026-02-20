@@ -351,6 +351,6 @@ func (s *StudyCircleService) GetStreakRanking(circleID, userID uint) ([]model.Ci
 }
 
 // SearchCircles はキーワードでスタディサークルを検索する。
-func (s *StudyCircleService) SearchCircles(query string, limit, offset int) (interface{}, int64, error) {
+func (s *StudyCircleService) SearchCircles(query string, limit, offset int) ([]model.StudyCircle, int64, error) {
 	return s.repo.Search(query, limit, offset)
 }
