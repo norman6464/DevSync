@@ -30,9 +30,9 @@ func (s *NoteService) Create(note *model.Note) error {
 	return s.repo.Create(note)
 }
 
-// GetByID は指定IDのノートを取得する。
-func (s *NoteService) GetByID(id uint) (*model.Note, error) {
-	return s.repo.FindByID(id)
+// GetByID は指定IDのノートを所有権検証付きで取得する。
+func (s *NoteService) GetByID(id, userID uint) (*model.Note, error) {
+	return s.findAndCheckOwnership(id, userID)
 }
 
 // GetByUserID は指定ユーザーのノート一覧を取得する。

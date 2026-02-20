@@ -160,7 +160,7 @@ func TestNoteService_GetByID(t *testing.T) {
 
 	repo.On("FindByID", uint(1)).Return(note, nil)
 
-	result, err := svc.GetByID(1)
+	result, err := svc.GetByID(1, 1)
 	assert.NoError(t, err)
 	assert.Equal(t, note, result)
 	repo.AssertExpectations(t)
@@ -171,7 +171,25 @@ func TestNoteService_GetByID_NotFound(t *testing.T) {
 
 	repo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
 
-	result, err := svc.GetByID(999)
+	result, err := svc.GetByID(999, 1)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteService_GetByID_Forbidden(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	note := &model.Note{
+		ID:      1,
+		UserID:  1,
+		Title:   "他人のノート",
+		Content: "内容",
+	}
+
+	repo.On("FindByID", uint(1)).Return(note, nil)
+
+	result, err := svc.GetByID(1, 999) // 別ユーザーがアクセス
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	repo.AssertExpectations(t)

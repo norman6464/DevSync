@@ -11,7 +11,7 @@ import (
 // テスト時のモック化を容易にするため、インターフェースとして定義する。
 type NoteServiceInterface interface {
 	Create(note *model.Note) error
-	GetByID(id uint) (*model.Note, error)
+	GetByID(id, userID uint) (*model.Note, error)
 	GetByUserID(userID uint, page, limit int) ([]model.Note, error)
 	GetByFolderID(folderID uint) ([]model.Note, error)
 	Update(id, userID uint, title, content, tags string, folderID *uint) (*model.Note, error)
@@ -63,14 +63,15 @@ func (h *NoteHandler) Create(c *gin.Context) {
 	respondCreated(c, note)
 }
 
-// GetByID は指定IDのノートを取得する。
+// GetByID は指定IDのノートを所有権検証付きで取得する。
 func (h *NoteHandler) GetByID(c *gin.Context) {
+	userID := c.GetUint("userID")
 	id, ok := parseID(c, "id")
 	if !ok {
 		return
 	}
 
-	note, err := h.service.GetByID(id)
+	note, err := h.service.GetByID(id, userID)
 	if err != nil {
 		respondError(c, err)
 		return

@@ -18,8 +18,8 @@ func (m *MockNoteService) Create(note *model.Note) error {
 	return m.Called(note).Error(0)
 }
 
-func (m *MockNoteService) GetByID(id uint) (*model.Note, error) {
-	args := m.Called(id)
+func (m *MockNoteService) GetByID(id, userID uint) (*model.Note, error) {
+	args := m.Called(id, userID)
 	if note := args.Get(0); note != nil {
 		return note.(*model.Note), args.Error(1)
 	}
@@ -141,7 +141,7 @@ func TestNoteHandler_GetByID(t *testing.T) {
 		Content: "内容",
 	}
 
-	svc.On("GetByID", uint(1)).Return(note, nil)
+	svc.On("GetByID", uint(1), uint(1)).Return(note, nil)
 
 	w := doRequest(r, "GET", "/notes/1", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -511,7 +511,7 @@ func TestNoteHandler_GetByID_ServiceError(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/notes/:id", h.GetByID)
 
-	svc.On("GetByID", uint(1)).Return(nil, errors.New("error"))
+	svc.On("GetByID", uint(1), uint(1)).Return(nil, errors.New("error"))
 
 	w := doRequest(r, "GET", "/notes/1", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
