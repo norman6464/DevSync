@@ -227,6 +227,7 @@
     "writeComment": "コメントを書く...",
     "writeReply": "返信を書く...",
     "readTime": "{{minutes}}分で読める",
+    "newBadge": "NEW",
     "notFound": "投稿が見つかりません",
     "bookmark": "ブックマーク",
     "unbookmark": "ブックマーク解除",

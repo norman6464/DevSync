@@ -207,6 +207,7 @@
     "writeComment": "Écrire un commentaire...",
     "writeReply": "Écrire une réponse...",
     "readTime": "{{minutes}} min de lecture",
+    "newBadge": "NEW",
     "notFound": "Publication introuvable",
     "bookmark": "Signet",
     "unbookmark": "Retirer le signet",
