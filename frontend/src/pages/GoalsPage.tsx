@@ -1,13 +1,14 @@
 import { useTranslation } from 'react-i18next';
 import { Target, Search } from 'lucide-react';
-import { type GoalCategory } from '../api/goals';
 import { useGoalForm } from '../hooks';
-import { Modal, PageLoader } from '../components/common';
+import { PageLoader } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
 import ConfirmDialog from '../components/common/ConfirmDialog';
-import GoalCard, { CATEGORIES } from '../components/goals/GoalCard';
+import GoalCard from '../components/goals/GoalCard';
 import GoalFilters from '../components/goals/GoalFilters';
-import { inputClass, buttonSecondaryClass, labelClass } from '../constants/styles';
+import GoalStatsPanel from '../components/goals/GoalStatsPanel';
+import GoalFormModal from '../components/goals/GoalFormModal';
+import { inputClass, buttonSecondaryClass } from '../constants/styles';
 
 export default function GoalsPage() {
   const { t } = useTranslation();
@@ -47,28 +48,13 @@ export default function GoalsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
-          <p className="text-2xl font-bold">{goals.length}</p>
-          <p className="text-sm text-gray-400">{t('goals.totalGoals')}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
-          <p className="text-2xl font-bold text-blue-400">{activeGoals.length}</p>
-          <p className="text-sm text-gray-400">{t('goals.activeGoals')}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
-          <p className="text-2xl font-bold text-green-400">{completedGoals.length}</p>
-          <p className="text-sm text-gray-400">{t('goals.completedGoals')}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
-          <p className="text-2xl font-bold text-yellow-400">{pausedGoals.length}</p>
-          <p className="text-sm text-gray-400">{t('goals.pausedGoals')}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
-          <p className="text-2xl font-bold text-red-400">{overdueGoals.length}</p>
-          <p className="text-sm text-gray-400">{t('goals.overdueGoals')}</p>
-        </div>
-      </div>
+      <GoalStatsPanel
+        total={goals.length}
+        active={activeGoals.length}
+        completed={completedGoals.length}
+        paused={pausedGoals.length}
+        overdue={overdueGoals.length}
+      />
 
       {/* Search */}
       <div className="relative">
@@ -93,90 +79,21 @@ export default function GoalsPage() {
       />
 
       {/* Create/Edit Form Modal */}
-      <Modal
+      <GoalFormModal
         isOpen={showForm}
-        onClose={resetForm}
-        title={editingGoal ? t('goals.editGoal') : t('goals.addGoal')}
-        maxWidth="max-w-md"
-      >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="goal-title" className={labelClass}>
-              {t('goals.goalTitle')}
-            </label>
-            <input
-              id="goal-title"
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={t('goals.titlePlaceholder')}
-              maxLength={200}
-              className={inputClass}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="goal-description" className={labelClass}>
-              {t('goals.description')}
-            </label>
-            <textarea
-              id="goal-description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder={t('goals.descriptionPlaceholder')}
-              rows={3}
-              maxLength={2000}
-              className={`${inputClass} resize-none`}
-            />
-            <p className="text-xs text-gray-500 text-right mt-1">{description.length}/2000</p>
-          </div>
-          <div>
-            <label htmlFor="goal-category" className={labelClass}>
-              {t('goals.category')}
-            </label>
-            <select
-              id="goal-category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value as GoalCategory)}
-              className={inputClass}
-            >
-              {CATEGORIES.map((cat) => (
-                <option key={cat.value} value={cat.value}>
-                  {cat.icon} {t(cat.label)}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="goal-target-date" className={labelClass}>
-              {t('goals.targetDate')}
-            </label>
-            <input
-              id="goal-target-date"
-              type="date"
-              value={targetDate}
-              onChange={(e) => setTargetDate(e.target.value)}
-              className={inputClass}
-            />
-          </div>
-          <div className="flex gap-3 justify-end pt-2">
-            <button
-              type="button"
-              onClick={resetForm}
-              className={`${buttonSecondaryClass} text-sm font-medium`}
-            >
-              {t('common.cancel')}
-            </button>
-            <button
-              type="submit"
-              disabled={saving || !title.trim()}
-              className={`${buttonSecondaryClass} disabled:opacity-50 text-sm font-medium`}
-            >
-              {saving ? t('common.loading') : editingGoal ? t('common.save') : t('goals.create')}
-            </button>
-          </div>
-        </form>
-      </Modal>
+        isEditing={!!editingGoal}
+        saving={saving}
+        title={title}
+        setTitle={setTitle}
+        description={description}
+        setDescription={setDescription}
+        category={category}
+        setCategory={setCategory}
+        targetDate={targetDate}
+        setTargetDate={setTargetDate}
+        onSubmit={handleSubmit}
+        onCancel={resetForm}
+      />
 
       {/* Goals List */}
       {goals.length === 0 ? (
