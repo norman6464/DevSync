@@ -650,7 +650,9 @@
     "hoursMinutes": "{{hours}}ч {{minutes}}м",
     "currentStreak": "Текущая серия",
     "days": " дн.",
-    "logCount": "Всего записей"
+    "logCount": "Всего записей",
+    "favorites": "Избранное",
+    "toggleFavorite": "Переключить избранное"
   },
   "reports": {
     "title": "Отчёты об Активности",

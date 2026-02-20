@@ -7,7 +7,7 @@ export function useLearningLogForm() {
   const user = useAuthStore((s) => s.user);
   const {
     logs, loading, saving,
-    createLog, updateLog, deleteLog,
+    createLog, updateLog, deleteLog, toggleFavorite,
   } = useLearningLogs();
   const { calendarData, refetchCalendar } = useLearningLogCalendar(user?.id);
 
@@ -17,6 +17,7 @@ export function useLearningLogForm() {
   const [editingLog, setEditingLog] = useState<LearningLog | null>(null);
   const [filterDate, setFilterDate] = useState<string | null>(null);
   const [filterCategory, setFilterCategory] = useState<'all' | LogCategory>('all');
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   // フォーム状態
   const [title, setTitle] = useState('');
@@ -86,9 +87,10 @@ export function useLearningLogForm() {
     logs.filter((log) => {
       if (filterDate && log.created_at.split('T')[0] !== filterDate) return false;
       if (filterCategory !== 'all' && log.category !== filterCategory) return false;
+      if (showFavoritesOnly && !log.is_favorite) return false;
       return true;
     }),
-    [logs, filterDate, filterCategory]
+    [logs, filterDate, filterCategory, showFavoritesOnly]
   );
 
   return {
@@ -100,6 +102,7 @@ export function useLearningLogForm() {
     editingLog,
     filterDate, clearFilterDate,
     filterCategory, setFilterCategory,
+    showFavoritesOnly, setShowFavoritesOnly,
     // フォーム状態
     title, setTitle,
     content, setContent,
@@ -111,5 +114,6 @@ export function useLearningLogForm() {
     handleEdit,
     handleDelete,
     handleDateClick,
+    toggleFavorite,
   };
 }

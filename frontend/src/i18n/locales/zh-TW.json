@@ -650,7 +650,9 @@
     "hoursMinutes": "{{hours}}小時{{minutes}}分鐘",
     "currentStreak": "連續學習天數",
     "days": "天",
-    "logCount": "日誌數量"
+    "logCount": "日誌數量",
+    "favorites": "收藏",
+    "toggleFavorite": "切換收藏"
   },
   "reports": {
     "title": "活動報告",

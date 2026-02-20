@@ -10,6 +10,7 @@ export interface LearningLog {
   category: LogCategory;
   duration: number;
   source: LogSource;
+  is_favorite: boolean;
   created_at: string;
   updated_at: string;
 }

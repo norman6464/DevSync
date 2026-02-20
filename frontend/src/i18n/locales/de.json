@@ -650,7 +650,9 @@
     "hoursMinutes": "{{hours}}h {{minutes}}m",
     "currentStreak": "Aktuelle Serie",
     "days": " Tage",
-    "logCount": "Gesamteinträge"
+    "logCount": "Gesamteinträge",
+    "favorites": "Favoriten",
+    "toggleFavorite": "Favorit umschalten"
   },
   "reports": {
     "title": "Aktivitätsberichte",
