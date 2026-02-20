@@ -1,16 +1,11 @@
 package handler
 
 import (
-	"bytes"
-	"encoding/json"
+	"errors"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -110,42 +105,24 @@ func newTestNoteHandler() (*NoteHandler, *MockNoteService) {
 	return handler, mockService
 }
 
-// setupRouter はテスト用のGinルーターをセットアップする。
-func setupRouter() *gin.Engine {
-	gin.SetMode(gin.TestMode)
-	return gin.New()
-}
-
 // ============================================================
 // Create テスト
 // ============================================================
 
 func TestNoteHandler_Create(t *testing.T) {
-	handler, mockService := newTestNoteHandler()
-	router := setupRouter()
+	h, svc := newTestNoteHandler()
+	r := newRouter(1)
+	r.POST("/notes", h.Create)
 
-	router.POST("/notes", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.Create(c)
+	svc.On("Create", mock.AnythingOfType("*model.Note")).Return(nil)
+
+	w := doRequest(r, "POST", "/notes", map[string]interface{}{
+		"title":   "テストノート",
+		"content": "これはテスト内容です",
+		"tags":    "Go,TDD",
 	})
-
-	input := dto.CreateNoteRequest{
-		Title:    "テストノート",
-		Content:  "これはテスト内容です",
-		Tags:     "Go,TDD",
-		FolderID: nil,
-	}
-	body, _ := json.Marshal(input)
-
-	mockService.On("Create", mock.AnythingOfType("*model.Note")).Return(nil)
-
-	req, _ := http.NewRequest("POST", "/notes", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusCreated, w.Code)
-	mockService.AssertExpectations(t)
+	assertStatus(t, w, http.StatusCreated)
+	svc.AssertExpectations(t)
 }
 
 // ============================================================
@@ -153,10 +130,9 @@ func TestNoteHandler_Create(t *testing.T) {
 // ============================================================
 
 func TestNoteHandler_GetByID(t *testing.T) {
-	handler, mockService := newTestNoteHandler()
-	router := setupRouter()
-
-	router.GET("/notes/:id", handler.GetByID)
+	h, svc := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/:id", h.GetByID)
 
 	note := &model.Note{
 		ID:      1,
@@ -165,14 +141,11 @@ func TestNoteHandler_GetByID(t *testing.T) {
 		Content: "内容",
 	}
 
-	mockService.On("GetByID", uint(1)).Return(note, nil)
+	svc.On("GetByID", uint(1)).Return(note, nil)
 
-	req, _ := http.NewRequest("GET", "/notes/1", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "GET", "/notes/1", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
 }
 
 // ============================================================
@@ -180,28 +153,21 @@ func TestNoteHandler_GetByID(t *testing.T) {
 // ============================================================
 
 func TestNoteHandler_GetByUserID(t *testing.T) {
-	handler, mockService := newTestNoteHandler()
-	router := setupRouter()
-
-	router.GET("/notes", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.GetByUserID(c)
-	})
+	h, svc := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes", h.GetByUserID)
 
 	notes := []model.Note{
 		{ID: 1, UserID: 1, Title: "ノート1"},
 		{ID: 2, UserID: 1, Title: "ノート2"},
 	}
 
-	mockService.On("GetByUserID", uint(1), 1, 20).Return(notes, nil)
-	mockService.On("CountByUserID", uint(1)).Return(int64(2), nil)
+	svc.On("GetByUserID", uint(1), 1, 20).Return(notes, nil)
+	svc.On("CountByUserID", uint(1)).Return(int64(2), nil)
 
-	req, _ := http.NewRequest("GET", "/notes?page=1&limit=20", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "GET", "/notes?page=1&limit=20", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
 }
 
 // ============================================================
@@ -209,19 +175,9 @@ func TestNoteHandler_GetByUserID(t *testing.T) {
 // ============================================================
 
 func TestNoteHandler_Update(t *testing.T) {
-	handler, mockService := newTestNoteHandler()
-	router := setupRouter()
-
-	router.PUT("/notes/:id", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.Update(c)
-	})
-
-	input := dto.UpdateNoteRequest{
-		Title:   "更新後タイトル",
-		Content: "更新後内容",
-	}
-	body, _ := json.Marshal(input)
+	h, svc := newTestNoteHandler()
+	r := newRouter(1)
+	r.PUT("/notes/:id", h.Update)
 
 	updatedNote := &model.Note{
 		ID:      1,
@@ -230,15 +186,14 @@ func TestNoteHandler_Update(t *testing.T) {
 		Content: "更新後内容",
 	}
 
-	mockService.On("Update", uint(1), uint(1), "更新後タイトル", "更新後内容", "", (*uint)(nil)).Return(updatedNote, nil)
+	svc.On("Update", uint(1), uint(1), "更新後タイトル", "更新後内容", "", (*uint)(nil)).Return(updatedNote, nil)
 
-	req, _ := http.NewRequest("PUT", "/notes/1", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "PUT", "/notes/1", map[string]interface{}{
+		"title":   "更新後タイトル",
+		"content": "更新後内容",
+	})
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
 }
 
 // ============================================================
@@ -246,22 +201,15 @@ func TestNoteHandler_Update(t *testing.T) {
 // ============================================================
 
 func TestNoteHandler_Delete(t *testing.T) {
-	handler, mockService := newTestNoteHandler()
-	router := setupRouter()
+	h, svc := newTestNoteHandler()
+	r := newRouter(1)
+	r.DELETE("/notes/:id", h.Delete)
 
-	router.DELETE("/notes/:id", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.Delete(c)
-	})
+	svc.On("Delete", uint(1), uint(1)).Return(nil)
 
-	mockService.On("Delete", uint(1), uint(1)).Return(nil)
-
-	req, _ := http.NewRequest("DELETE", "/notes/1", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "DELETE", "/notes/1", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
 }
 
 // ============================================================
@@ -269,26 +217,19 @@ func TestNoteHandler_Delete(t *testing.T) {
 // ============================================================
 
 func TestNoteHandler_Search(t *testing.T) {
-	handler, mockService := newTestNoteHandler()
-	router := setupRouter()
-
-	router.GET("/notes/search", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.Search(c)
-	})
+	h, svc := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/search", h.Search)
 
 	notes := []model.Note{
 		{ID: 1, UserID: 1, Title: "Go学習", Content: "Goを学習中"},
 	}
 
-	mockService.On("Search", uint(1), "Go", 1, 20).Return(notes, int64(1), nil)
+	svc.On("Search", uint(1), "Go", 1, 20).Return(notes, int64(1), nil)
 
-	req, _ := http.NewRequest("GET", "/notes/search?q=Go&page=1&limit=20", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "GET", "/notes/search?q=Go&page=1&limit=20", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
 }
 
 // ============================================================
@@ -296,22 +237,15 @@ func TestNoteHandler_Search(t *testing.T) {
 // ============================================================
 
 func TestNoteHandler_ToggleFavorite(t *testing.T) {
-	handler, mockService := newTestNoteHandler()
-	router := setupRouter()
+	h, svc := newTestNoteHandler()
+	r := newRouter(1)
+	r.PUT("/notes/:id/favorite", h.ToggleFavorite)
 
-	router.PUT("/notes/:id/favorite", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.ToggleFavorite(c)
-	})
+	svc.On("ToggleFavorite", uint(1), uint(1)).Return(nil)
 
-	mockService.On("ToggleFavorite", uint(1), uint(1)).Return(nil)
-
-	req, _ := http.NewRequest("PUT", "/notes/1/favorite", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "PUT", "/notes/1/favorite", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
 }
 
 // ============================================================
@@ -320,53 +254,41 @@ func TestNoteHandler_ToggleFavorite(t *testing.T) {
 
 func TestNoteHandler_GetByFolderID(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		handler, mockService := newTestNoteHandler()
-		router := setupRouter()
-
-		router.GET("/folders/:folderId/notes", handler.GetByFolderID)
+		h, svc := newTestNoteHandler()
+		r := newRouter(1)
+		r.GET("/folders/:folderId/notes", h.GetByFolderID)
 
 		notes := []model.Note{
 			{ID: 1, UserID: 1, Title: "フォルダ内ノート1"},
 			{ID: 2, UserID: 1, Title: "フォルダ内ノート2"},
 		}
 
-		mockService.On("GetByFolderID", uint(5)).Return(notes, nil)
+		svc.On("GetByFolderID", uint(5)).Return(notes, nil)
 
-		req, _ := http.NewRequest("GET", "/folders/5/notes", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusOK, w.Code)
-		mockService.AssertExpectations(t)
+		w := doRequest(r, "GET", "/folders/5/notes", nil)
+		assertStatus(t, w, http.StatusOK)
+		svc.AssertExpectations(t)
 	})
 
 	t.Run("InvalidFolderID", func(t *testing.T) {
-		handler, _ := newTestNoteHandler()
-		router := setupRouter()
+		h, _ := newTestNoteHandler()
+		r := newRouter(1)
+		r.GET("/folders/:folderId/notes", h.GetByFolderID)
 
-		router.GET("/folders/:folderId/notes", handler.GetByFolderID)
-
-		req, _ := http.NewRequest("GET", "/folders/abc/notes", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusBadRequest, w.Code)
+		w := doRequest(r, "GET", "/folders/abc/notes", nil)
+		assertStatus(t, w, http.StatusBadRequest)
 	})
 
 	t.Run("ServiceError", func(t *testing.T) {
-		handler, mockService := newTestNoteHandler()
-		router := setupRouter()
+		h, svc := newTestNoteHandler()
+		r := newRouter(1)
+		r.GET("/folders/:folderId/notes", h.GetByFolderID)
 
-		router.GET("/folders/:folderId/notes", handler.GetByFolderID)
+		svc.On("GetByFolderID", uint(5)).Return([]model.Note{}, errors.New("error"))
 
-		mockService.On("GetByFolderID", uint(5)).Return([]model.Note{}, assert.AnError)
-
-		req, _ := http.NewRequest("GET", "/folders/5/notes", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		mockService.AssertExpectations(t)
+		w := doRequest(r, "GET", "/folders/5/notes", nil)
+		assertStatus(t, w, http.StatusInternalServerError)
+		svc.AssertExpectations(t)
 	})
 }
 
@@ -376,54 +298,36 @@ func TestNoteHandler_GetByFolderID(t *testing.T) {
 
 func TestNoteHandler_Archive(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		handler, mockService := newTestNoteHandler()
-		router := setupRouter()
+		h, svc := newTestNoteHandler()
+		r := newRouter(1)
+		r.PUT("/notes/:id/archive", h.Archive)
 
-		router.PUT("/notes/:id/archive", func(c *gin.Context) {
-			c.Set("userID", uint(1))
-			handler.Archive(c)
-		})
+		svc.On("Archive", uint(1), uint(1)).Return(nil)
 
-		mockService.On("Archive", uint(1), uint(1)).Return(nil)
-
-		req, _ := http.NewRequest("PUT", "/notes/1/archive", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusOK, w.Code)
-		mockService.AssertExpectations(t)
+		w := doRequest(r, "PUT", "/notes/1/archive", nil)
+		assertStatus(t, w, http.StatusOK)
+		svc.AssertExpectations(t)
 	})
 
 	t.Run("InvalidID", func(t *testing.T) {
-		handler, _ := newTestNoteHandler()
-		router := setupRouter()
+		h, _ := newTestNoteHandler()
+		r := newRouter(1)
+		r.PUT("/notes/:id/archive", h.Archive)
 
-		router.PUT("/notes/:id/archive", handler.Archive)
-
-		req, _ := http.NewRequest("PUT", "/notes/abc/archive", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusBadRequest, w.Code)
+		w := doRequest(r, "PUT", "/notes/abc/archive", nil)
+		assertStatus(t, w, http.StatusBadRequest)
 	})
 
 	t.Run("ServiceError", func(t *testing.T) {
-		handler, mockService := newTestNoteHandler()
-		router := setupRouter()
+		h, svc := newTestNoteHandler()
+		r := newRouter(1)
+		r.PUT("/notes/:id/archive", h.Archive)
 
-		router.PUT("/notes/:id/archive", func(c *gin.Context) {
-			c.Set("userID", uint(1))
-			handler.Archive(c)
-		})
+		svc.On("Archive", uint(1), uint(1)).Return(errors.New("error"))
 
-		mockService.On("Archive", uint(1), uint(1)).Return(assert.AnError)
-
-		req, _ := http.NewRequest("PUT", "/notes/1/archive", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		mockService.AssertExpectations(t)
+		w := doRequest(r, "PUT", "/notes/1/archive", nil)
+		assertStatus(t, w, http.StatusInternalServerError)
+		svc.AssertExpectations(t)
 	})
 }
 
@@ -433,54 +337,36 @@ func TestNoteHandler_Archive(t *testing.T) {
 
 func TestNoteHandler_Unarchive(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		handler, mockService := newTestNoteHandler()
-		router := setupRouter()
+		h, svc := newTestNoteHandler()
+		r := newRouter(1)
+		r.PUT("/notes/:id/unarchive", h.Unarchive)
 
-		router.PUT("/notes/:id/unarchive", func(c *gin.Context) {
-			c.Set("userID", uint(1))
-			handler.Unarchive(c)
-		})
+		svc.On("Unarchive", uint(1), uint(1)).Return(nil)
 
-		mockService.On("Unarchive", uint(1), uint(1)).Return(nil)
-
-		req, _ := http.NewRequest("PUT", "/notes/1/unarchive", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusOK, w.Code)
-		mockService.AssertExpectations(t)
+		w := doRequest(r, "PUT", "/notes/1/unarchive", nil)
+		assertStatus(t, w, http.StatusOK)
+		svc.AssertExpectations(t)
 	})
 
 	t.Run("InvalidID", func(t *testing.T) {
-		handler, _ := newTestNoteHandler()
-		router := setupRouter()
+		h, _ := newTestNoteHandler()
+		r := newRouter(1)
+		r.PUT("/notes/:id/unarchive", h.Unarchive)
 
-		router.PUT("/notes/:id/unarchive", handler.Unarchive)
-
-		req, _ := http.NewRequest("PUT", "/notes/abc/unarchive", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusBadRequest, w.Code)
+		w := doRequest(r, "PUT", "/notes/abc/unarchive", nil)
+		assertStatus(t, w, http.StatusBadRequest)
 	})
 
 	t.Run("ServiceError", func(t *testing.T) {
-		handler, mockService := newTestNoteHandler()
-		router := setupRouter()
+		h, svc := newTestNoteHandler()
+		r := newRouter(1)
+		r.PUT("/notes/:id/unarchive", h.Unarchive)
 
-		router.PUT("/notes/:id/unarchive", func(c *gin.Context) {
-			c.Set("userID", uint(1))
-			handler.Unarchive(c)
-		})
+		svc.On("Unarchive", uint(1), uint(1)).Return(errors.New("error"))
 
-		mockService.On("Unarchive", uint(1), uint(1)).Return(assert.AnError)
-
-		req, _ := http.NewRequest("PUT", "/notes/1/unarchive", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		mockService.AssertExpectations(t)
+		w := doRequest(r, "PUT", "/notes/1/unarchive", nil)
+		assertStatus(t, w, http.StatusInternalServerError)
+		svc.AssertExpectations(t)
 	})
 }
 
@@ -490,70 +376,49 @@ func TestNoteHandler_Unarchive(t *testing.T) {
 
 func TestNoteHandler_GetArchived(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		handler, mockService := newTestNoteHandler()
-		router := setupRouter()
-
-		router.GET("/notes/archived", func(c *gin.Context) {
-			c.Set("userID", uint(1))
-			handler.GetArchived(c)
-		})
+		h, svc := newTestNoteHandler()
+		r := newRouter(1)
+		r.GET("/notes/archived", h.GetArchived)
 
 		notes := []model.Note{
 			{ID: 3, UserID: 1, Title: "アーカイブノート1"},
 		}
 
-		mockService.On("GetArchived", uint(1), 1, 20).Return(notes, nil)
-		mockService.On("CountArchivedByUserID", uint(1)).Return(int64(1), nil)
+		svc.On("GetArchived", uint(1), 1, 20).Return(notes, nil)
+		svc.On("CountArchivedByUserID", uint(1)).Return(int64(1), nil)
 
-		req, _ := http.NewRequest("GET", "/notes/archived?page=1&limit=20", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusOK, w.Code)
-		mockService.AssertExpectations(t)
+		w := doRequest(r, "GET", "/notes/archived?page=1&limit=20", nil)
+		assertStatus(t, w, http.StatusOK)
+		svc.AssertExpectations(t)
 	})
 
 	t.Run("GetArchivedError", func(t *testing.T) {
-		handler, mockService := newTestNoteHandler()
-		router := setupRouter()
+		h, svc := newTestNoteHandler()
+		r := newRouter(1)
+		r.GET("/notes/archived", h.GetArchived)
 
-		router.GET("/notes/archived", func(c *gin.Context) {
-			c.Set("userID", uint(1))
-			handler.GetArchived(c)
-		})
+		svc.On("GetArchived", uint(1), 1, 20).Return([]model.Note{}, errors.New("error"))
 
-		mockService.On("GetArchived", uint(1), 1, 20).Return([]model.Note{}, assert.AnError)
-
-		req, _ := http.NewRequest("GET", "/notes/archived?page=1&limit=20", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		mockService.AssertExpectations(t)
+		w := doRequest(r, "GET", "/notes/archived?page=1&limit=20", nil)
+		assertStatus(t, w, http.StatusInternalServerError)
+		svc.AssertExpectations(t)
 	})
 
 	t.Run("CountError", func(t *testing.T) {
-		handler, mockService := newTestNoteHandler()
-		router := setupRouter()
-
-		router.GET("/notes/archived", func(c *gin.Context) {
-			c.Set("userID", uint(1))
-			handler.GetArchived(c)
-		})
+		h, svc := newTestNoteHandler()
+		r := newRouter(1)
+		r.GET("/notes/archived", h.GetArchived)
 
 		notes := []model.Note{
 			{ID: 3, UserID: 1, Title: "アーカイブノート1"},
 		}
 
-		mockService.On("GetArchived", uint(1), 1, 20).Return(notes, nil)
-		mockService.On("CountArchivedByUserID", uint(1)).Return(int64(0), assert.AnError)
+		svc.On("GetArchived", uint(1), 1, 20).Return(notes, nil)
+		svc.On("CountArchivedByUserID", uint(1)).Return(int64(0), errors.New("error"))
 
-		req, _ := http.NewRequest("GET", "/notes/archived?page=1&limit=20", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		mockService.AssertExpectations(t)
+		w := doRequest(r, "GET", "/notes/archived?page=1&limit=20", nil)
+		assertStatus(t, w, http.StatusInternalServerError)
+		svc.AssertExpectations(t)
 	})
 }
 
@@ -563,13 +428,9 @@ func TestNoteHandler_GetArchived(t *testing.T) {
 
 func TestNoteHandler_Duplicate(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		handler, mockService := newTestNoteHandler()
-		router := setupRouter()
-
-		router.POST("/notes/:id/duplicate", func(c *gin.Context) {
-			c.Set("userID", uint(1))
-			handler.Duplicate(c)
-		})
+		h, svc := newTestNoteHandler()
+		r := newRouter(1)
+		r.POST("/notes/:id/duplicate", h.Duplicate)
 
 		duplicate := &model.Note{
 			ID:      10,
@@ -578,49 +439,32 @@ func TestNoteHandler_Duplicate(t *testing.T) {
 			Content: "元の内容",
 		}
 
-		mockService.On("Duplicate", uint(1), uint(1)).Return(duplicate, nil)
+		svc.On("Duplicate", uint(1), uint(1)).Return(duplicate, nil)
 
-		req, _ := http.NewRequest("POST", "/notes/1/duplicate", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusCreated, w.Code)
-		mockService.AssertExpectations(t)
+		w := doRequest(r, "POST", "/notes/1/duplicate", nil)
+		assertStatus(t, w, http.StatusCreated)
+		svc.AssertExpectations(t)
 	})
 
 	t.Run("InvalidID", func(t *testing.T) {
-		handler, _ := newTestNoteHandler()
-		router := setupRouter()
+		h, _ := newTestNoteHandler()
+		r := newRouter(1)
+		r.POST("/notes/:id/duplicate", h.Duplicate)
 
-		router.POST("/notes/:id/duplicate", func(c *gin.Context) {
-			c.Set("userID", uint(1))
-			handler.Duplicate(c)
-		})
-
-		req, _ := http.NewRequest("POST", "/notes/abc/duplicate", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusBadRequest, w.Code)
+		w := doRequest(r, "POST", "/notes/abc/duplicate", nil)
+		assertStatus(t, w, http.StatusBadRequest)
 	})
 
 	t.Run("ServiceError", func(t *testing.T) {
-		handler, mockService := newTestNoteHandler()
-		router := setupRouter()
+		h, svc := newTestNoteHandler()
+		r := newRouter(1)
+		r.POST("/notes/:id/duplicate", h.Duplicate)
 
-		router.POST("/notes/:id/duplicate", func(c *gin.Context) {
-			c.Set("userID", uint(1))
-			handler.Duplicate(c)
-		})
+		svc.On("Duplicate", uint(1), uint(1)).Return(nil, errors.New("error"))
 
-		mockService.On("Duplicate", uint(1), uint(1)).Return(nil, assert.AnError)
-
-		req, _ := http.NewRequest("POST", "/notes/1/duplicate", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		mockService.AssertExpectations(t)
+		w := doRequest(r, "POST", "/notes/1/duplicate", nil)
+		assertStatus(t, w, http.StatusInternalServerError)
+		svc.AssertExpectations(t)
 	})
 }
 
@@ -629,43 +473,24 @@ func TestNoteHandler_Duplicate(t *testing.T) {
 // ============================================================
 
 func TestNoteHandler_Create_InvalidJSON(t *testing.T) {
-	handler, _ := newTestNoteHandler()
-	router := setupRouter()
+	h, _ := newTestNoteHandler()
+	r := newRouter(1)
+	r.POST("/notes", h.Create)
 
-	router.POST("/notes", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.Create(c)
-	})
-
-	req, _ := http.NewRequest("POST", "/notes", bytes.NewBufferString("invalid json"))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusBadRequest, w.Code)
+	w := doRequestRaw(r, "POST", "/notes", "invalid json")
+	assertStatus(t, w, http.StatusBadRequest)
 }
 
 func TestNoteHandler_Create_ServiceError(t *testing.T) {
-	handler, mockService := newTestNoteHandler()
-	router := setupRouter()
+	h, svc := newTestNoteHandler()
+	r := newRouter(1)
+	r.POST("/notes", h.Create)
 
-	router.POST("/notes", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.Create(c)
-	})
+	svc.On("Create", mock.AnythingOfType("*model.Note")).Return(errors.New("error"))
 
-	input := dto.CreateNoteRequest{Title: "テスト", Content: "内容"}
-	body, _ := json.Marshal(input)
-
-	mockService.On("Create", mock.AnythingOfType("*model.Note")).Return(assert.AnError)
-
-	req, _ := http.NewRequest("POST", "/notes", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusInternalServerError, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "POST", "/notes", map[string]interface{}{"title": "テスト", "content": "内容"})
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
 }
 
 // ============================================================
@@ -673,32 +498,24 @@ func TestNoteHandler_Create_ServiceError(t *testing.T) {
 // ============================================================
 
 func TestNoteHandler_GetByID_InvalidID(t *testing.T) {
-	handler, _ := newTestNoteHandler()
-	router := setupRouter()
+	h, _ := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/:id", h.GetByID)
 
-	router.GET("/notes/:id", handler.GetByID)
-
-	req, _ := http.NewRequest("GET", "/notes/abc", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusBadRequest, w.Code)
+	w := doRequest(r, "GET", "/notes/abc", nil)
+	assertStatus(t, w, http.StatusBadRequest)
 }
 
 func TestNoteHandler_GetByID_ServiceError(t *testing.T) {
-	handler, mockService := newTestNoteHandler()
-	router := setupRouter()
+	h, svc := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/:id", h.GetByID)
 
-	router.GET("/notes/:id", handler.GetByID)
+	svc.On("GetByID", uint(1)).Return(nil, errors.New("error"))
 
-	mockService.On("GetByID", uint(1)).Return(nil, assert.AnError)
-
-	req, _ := http.NewRequest("GET", "/notes/1", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusInternalServerError, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "GET", "/notes/1", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
 }
 
 // ============================================================
@@ -706,42 +523,28 @@ func TestNoteHandler_GetByID_ServiceError(t *testing.T) {
 // ============================================================
 
 func TestNoteHandler_GetByUserID_ServiceError(t *testing.T) {
-	handler, mockService := newTestNoteHandler()
-	router := setupRouter()
+	h, svc := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes", h.GetByUserID)
 
-	router.GET("/notes", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.GetByUserID(c)
-	})
+	svc.On("GetByUserID", uint(1), 1, 20).Return([]model.Note{}, errors.New("error"))
 
-	mockService.On("GetByUserID", uint(1), 1, 20).Return([]model.Note{}, assert.AnError)
-
-	req, _ := http.NewRequest("GET", "/notes?page=1&limit=20", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusInternalServerError, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "GET", "/notes?page=1&limit=20", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
 }
 
 func TestNoteHandler_GetByUserID_CountError(t *testing.T) {
-	handler, mockService := newTestNoteHandler()
-	router := setupRouter()
+	h, svc := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes", h.GetByUserID)
 
-	router.GET("/notes", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.GetByUserID(c)
-	})
+	svc.On("GetByUserID", uint(1), 1, 20).Return([]model.Note{}, nil)
+	svc.On("CountByUserID", uint(1)).Return(int64(0), errors.New("error"))
 
-	mockService.On("GetByUserID", uint(1), 1, 20).Return([]model.Note{}, nil)
-	mockService.On("CountByUserID", uint(1)).Return(int64(0), assert.AnError)
-
-	req, _ := http.NewRequest("GET", "/notes?page=1&limit=20", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusInternalServerError, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "GET", "/notes?page=1&limit=20", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
 }
 
 // ============================================================
@@ -749,60 +552,33 @@ func TestNoteHandler_GetByUserID_CountError(t *testing.T) {
 // ============================================================
 
 func TestNoteHandler_Update_InvalidID(t *testing.T) {
-	handler, _ := newTestNoteHandler()
-	router := setupRouter()
+	h, _ := newTestNoteHandler()
+	r := newRouter(1)
+	r.PUT("/notes/:id", h.Update)
 
-	router.PUT("/notes/:id", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.Update(c)
-	})
-
-	req, _ := http.NewRequest("PUT", "/notes/abc", bytes.NewBufferString(`{"title":"t"}`))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusBadRequest, w.Code)
+	w := doRequest(r, "PUT", "/notes/abc", map[string]interface{}{"title": "t"})
+	assertStatus(t, w, http.StatusBadRequest)
 }
 
 func TestNoteHandler_Update_InvalidJSON(t *testing.T) {
-	handler, _ := newTestNoteHandler()
-	router := setupRouter()
+	h, _ := newTestNoteHandler()
+	r := newRouter(1)
+	r.PUT("/notes/:id", h.Update)
 
-	router.PUT("/notes/:id", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.Update(c)
-	})
-
-	req, _ := http.NewRequest("PUT", "/notes/1", bytes.NewBufferString("invalid"))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusBadRequest, w.Code)
+	w := doRequestRaw(r, "PUT", "/notes/1", "invalid")
+	assertStatus(t, w, http.StatusBadRequest)
 }
 
 func TestNoteHandler_Update_ServiceError(t *testing.T) {
-	handler, mockService := newTestNoteHandler()
-	router := setupRouter()
+	h, svc := newTestNoteHandler()
+	r := newRouter(1)
+	r.PUT("/notes/:id", h.Update)
 
-	router.PUT("/notes/:id", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.Update(c)
-	})
+	svc.On("Update", uint(1), uint(1), "更新", "", "", (*uint)(nil)).Return(nil, errors.New("error"))
 
-	input := dto.UpdateNoteRequest{Title: "更新"}
-	body, _ := json.Marshal(input)
-
-	mockService.On("Update", uint(1), uint(1), "更新", "", "", (*uint)(nil)).Return(nil, assert.AnError)
-
-	req, _ := http.NewRequest("PUT", "/notes/1", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusInternalServerError, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "PUT", "/notes/1", map[string]interface{}{"title": "更新"})
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
 }
 
 // ============================================================
@@ -810,38 +586,24 @@ func TestNoteHandler_Update_ServiceError(t *testing.T) {
 // ============================================================
 
 func TestNoteHandler_Delete_InvalidID(t *testing.T) {
-	handler, _ := newTestNoteHandler()
-	router := setupRouter()
+	h, _ := newTestNoteHandler()
+	r := newRouter(1)
+	r.DELETE("/notes/:id", h.Delete)
 
-	router.DELETE("/notes/:id", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.Delete(c)
-	})
-
-	req, _ := http.NewRequest("DELETE", "/notes/abc", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusBadRequest, w.Code)
+	w := doRequest(r, "DELETE", "/notes/abc", nil)
+	assertStatus(t, w, http.StatusBadRequest)
 }
 
 func TestNoteHandler_Delete_ServiceError(t *testing.T) {
-	handler, mockService := newTestNoteHandler()
-	router := setupRouter()
+	h, svc := newTestNoteHandler()
+	r := newRouter(1)
+	r.DELETE("/notes/:id", h.Delete)
 
-	router.DELETE("/notes/:id", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.Delete(c)
-	})
+	svc.On("Delete", uint(1), uint(1)).Return(errors.New("error"))
 
-	mockService.On("Delete", uint(1), uint(1)).Return(assert.AnError)
-
-	req, _ := http.NewRequest("DELETE", "/notes/1", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusInternalServerError, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "DELETE", "/notes/1", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
 }
 
 // ============================================================
@@ -849,38 +611,24 @@ func TestNoteHandler_Delete_ServiceError(t *testing.T) {
 // ============================================================
 
 func TestNoteHandler_Search_MissingQuery(t *testing.T) {
-	handler, _ := newTestNoteHandler()
-	router := setupRouter()
+	h, _ := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/search", h.Search)
 
-	router.GET("/notes/search", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.Search(c)
-	})
-
-	req, _ := http.NewRequest("GET", "/notes/search", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusBadRequest, w.Code)
+	w := doRequest(r, "GET", "/notes/search", nil)
+	assertStatus(t, w, http.StatusBadRequest)
 }
 
 func TestNoteHandler_Search_ServiceError(t *testing.T) {
-	handler, mockService := newTestNoteHandler()
-	router := setupRouter()
+	h, svc := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/search", h.Search)
 
-	router.GET("/notes/search", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.Search(c)
-	})
+	svc.On("Search", uint(1), "Go", 1, 20).Return([]model.Note{}, int64(0), errors.New("error"))
 
-	mockService.On("Search", uint(1), "Go", 1, 20).Return([]model.Note{}, int64(0), assert.AnError)
-
-	req, _ := http.NewRequest("GET", "/notes/search?q=Go&page=1&limit=20", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusInternalServerError, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "GET", "/notes/search?q=Go&page=1&limit=20", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
 }
 
 // ============================================================
@@ -888,16 +636,12 @@ func TestNoteHandler_Search_ServiceError(t *testing.T) {
 // ============================================================
 
 func TestNoteHandler_ToggleFavorite_InvalidID(t *testing.T) {
-	handler, _ := newTestNoteHandler()
-	router := setupRouter()
+	h, _ := newTestNoteHandler()
+	r := newRouter(1)
+	r.PUT("/notes/:id/favorite", h.ToggleFavorite)
 
-	router.PUT("/notes/:id/favorite", handler.ToggleFavorite)
-
-	req, _ := http.NewRequest("PUT", "/notes/abc/favorite", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusBadRequest, w.Code)
+	w := doRequest(r, "PUT", "/notes/abc/favorite", nil)
+	assertStatus(t, w, http.StatusBadRequest)
 }
 
 // ============================================================
@@ -905,87 +649,59 @@ func TestNoteHandler_ToggleFavorite_InvalidID(t *testing.T) {
 // ============================================================
 
 func TestNoteHandler_GetFavorites_Success(t *testing.T) {
-	handler, mockService := newTestNoteHandler()
-	router := setupRouter()
-
-	router.GET("/notes/favorites", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.GetFavorites(c)
-	})
+	h, svc := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/favorites", h.GetFavorites)
 
 	notes := []model.Note{
 		{ID: 1, UserID: 1, Title: "お気に入りノート"},
 	}
 
-	mockService.On("GetFavorites", uint(1), 1, 20).Return(notes, nil)
-	mockService.On("CountFavoritesByUserID", uint(1)).Return(int64(1), nil)
+	svc.On("GetFavorites", uint(1), 1, 20).Return(notes, nil)
+	svc.On("CountFavoritesByUserID", uint(1)).Return(int64(1), nil)
 
-	req, _ := http.NewRequest("GET", "/notes/favorites?page=1&limit=20", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "GET", "/notes/favorites?page=1&limit=20", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
 }
 
 func TestNoteHandler_GetFavorites_ServiceError(t *testing.T) {
-	handler, mockService := newTestNoteHandler()
-	router := setupRouter()
+	h, svc := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/favorites", h.GetFavorites)
 
-	router.GET("/notes/favorites", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.GetFavorites(c)
-	})
+	svc.On("GetFavorites", uint(1), 1, 20).Return([]model.Note{}, errors.New("error"))
 
-	mockService.On("GetFavorites", uint(1), 1, 20).Return([]model.Note{}, assert.AnError)
-
-	req, _ := http.NewRequest("GET", "/notes/favorites?page=1&limit=20", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusInternalServerError, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "GET", "/notes/favorites?page=1&limit=20", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
 }
 
 func TestNoteHandler_GetFavorites_CountError(t *testing.T) {
-	handler, mockService := newTestNoteHandler()
-	router := setupRouter()
-
-	router.GET("/notes/favorites", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.GetFavorites(c)
-	})
+	h, svc := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/favorites", h.GetFavorites)
 
 	notes := []model.Note{
 		{ID: 1, UserID: 1, Title: "お気に入りノート"},
 	}
 
-	mockService.On("GetFavorites", uint(1), 1, 20).Return(notes, nil)
-	mockService.On("CountFavoritesByUserID", uint(1)).Return(int64(0), assert.AnError)
+	svc.On("GetFavorites", uint(1), 1, 20).Return(notes, nil)
+	svc.On("CountFavoritesByUserID", uint(1)).Return(int64(0), errors.New("error"))
 
-	req, _ := http.NewRequest("GET", "/notes/favorites?page=1&limit=20", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusInternalServerError, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "GET", "/notes/favorites?page=1&limit=20", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
 }
 
 func TestNoteHandler_ToggleFavorite_ServiceError(t *testing.T) {
-	handler, mockService := newTestNoteHandler()
-	router := setupRouter()
+	h, svc := newTestNoteHandler()
+	r := newRouter(1)
+	r.PUT("/notes/:id/favorite", h.ToggleFavorite)
 
-	router.PUT("/notes/:id/favorite", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.ToggleFavorite(c)
-	})
+	svc.On("ToggleFavorite", uint(1), uint(1)).Return(errors.New("error"))
 
-	mockService.On("ToggleFavorite", uint(1), uint(1)).Return(assert.AnError)
-
-	req, _ := http.NewRequest("PUT", "/notes/1/favorite", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusInternalServerError, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "PUT", "/notes/1/favorite", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
 }

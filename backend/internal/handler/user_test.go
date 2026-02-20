@@ -1,17 +1,12 @@
 package handler
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -65,55 +60,46 @@ func newTestUserHandler() (*UserHandler, *MockUserService) {
 
 func TestUserHandler_GetAll(t *testing.T) {
 	t.Run("検索クエリなしで全ユーザーを取得", func(t *testing.T) {
-		handler, mockService := newTestUserHandler()
-		router := setupRouter()
-		router.GET("/users", handler.GetAll)
+		h, svc := newTestUserHandler()
+		r := newRouter(1)
+		r.GET("/users", h.GetAll)
 
 		users := []model.User{
 			{ID: 1, Name: "テストユーザー1", Email: "user1@test.com"},
 			{ID: 2, Name: "テストユーザー2", Email: "user2@test.com"},
 		}
-		mockService.On("GetAll", "").Return(users, nil)
+		svc.On("GetAll", "").Return(users, nil)
 
-		req, _ := http.NewRequest("GET", "/users", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusOK, w.Code)
-		mockService.AssertExpectations(t)
+		w := doRequest(r, "GET", "/users", nil)
+		assertStatus(t, w, http.StatusOK)
+		svc.AssertExpectations(t)
 	})
 
 	t.Run("検索クエリ付きでユーザーを検索", func(t *testing.T) {
-		handler, mockService := newTestUserHandler()
-		router := setupRouter()
-		router.GET("/users", handler.GetAll)
+		h, svc := newTestUserHandler()
+		r := newRouter(1)
+		r.GET("/users", h.GetAll)
 
 		users := []model.User{
 			{ID: 1, Name: "テストユーザー1", Email: "user1@test.com"},
 		}
-		mockService.On("GetAll", "テスト").Return(users, nil)
+		svc.On("GetAll", "テスト").Return(users, nil)
 
-		req, _ := http.NewRequest("GET", "/users?q=テスト", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusOK, w.Code)
-		mockService.AssertExpectations(t)
+		w := doRequest(r, "GET", "/users?q=テスト", nil)
+		assertStatus(t, w, http.StatusOK)
+		svc.AssertExpectations(t)
 	})
 
 	t.Run("サービスエラー時に500を返す", func(t *testing.T) {
-		handler, mockService := newTestUserHandler()
-		router := setupRouter()
-		router.GET("/users", handler.GetAll)
+		h, svc := newTestUserHandler()
+		r := newRouter(1)
+		r.GET("/users", h.GetAll)
 
-		mockService.On("GetAll", "").Return([]model.User{}, errors.New("db error"))
+		svc.On("GetAll", "").Return([]model.User{}, errors.New("db error"))
 
-		req, _ := http.NewRequest("GET", "/users", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		mockService.AssertExpectations(t)
+		w := doRequest(r, "GET", "/users", nil)
+		assertStatus(t, w, http.StatusInternalServerError)
+		svc.AssertExpectations(t)
 	})
 }
 
@@ -123,46 +109,37 @@ func TestUserHandler_GetAll(t *testing.T) {
 
 func TestUserHandler_GetByID(t *testing.T) {
 	t.Run("正常にユーザーを取得", func(t *testing.T) {
-		handler, mockService := newTestUserHandler()
-		router := setupRouter()
-		router.GET("/users/:id", handler.GetByID)
+		h, svc := newTestUserHandler()
+		r := newRouter(1)
+		r.GET("/users/:id", h.GetByID)
 
 		user := &model.User{ID: 1, Name: "テストユーザー", Email: "test@test.com"}
-		mockService.On("GetByID", uint(1)).Return(user, nil)
+		svc.On("GetByID", uint(1)).Return(user, nil)
 
-		req, _ := http.NewRequest("GET", "/users/1", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusOK, w.Code)
-		mockService.AssertExpectations(t)
+		w := doRequest(r, "GET", "/users/1", nil)
+		assertStatus(t, w, http.StatusOK)
+		svc.AssertExpectations(t)
 	})
 
 	t.Run("ユーザーが見つからない場合404を返す", func(t *testing.T) {
-		handler, mockService := newTestUserHandler()
-		router := setupRouter()
-		router.GET("/users/:id", handler.GetByID)
+		h, svc := newTestUserHandler()
+		r := newRouter(1)
+		r.GET("/users/:id", h.GetByID)
 
-		mockService.On("GetByID", uint(999)).Return(nil, errors.New("not found"))
+		svc.On("GetByID", uint(999)).Return(nil, errors.New("not found"))
 
-		req, _ := http.NewRequest("GET", "/users/999", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusNotFound, w.Code)
-		mockService.AssertExpectations(t)
+		w := doRequest(r, "GET", "/users/999", nil)
+		assertStatus(t, w, http.StatusNotFound)
+		svc.AssertExpectations(t)
 	})
 
 	t.Run("無効なIDの場合400を返す", func(t *testing.T) {
-		handler, _ := newTestUserHandler()
-		router := setupRouter()
-		router.GET("/users/:id", handler.GetByID)
+		h, _ := newTestUserHandler()
+		r := newRouter(1)
+		r.GET("/users/:id", h.GetByID)
 
-		req, _ := http.NewRequest("GET", "/users/abc", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusBadRequest, w.Code)
+		w := doRequest(r, "GET", "/users/abc", nil)
+		assertStatus(t, w, http.StatusBadRequest)
 	})
 }
 
@@ -172,34 +149,28 @@ func TestUserHandler_GetByID(t *testing.T) {
 
 func TestUserHandler_GetByUsername(t *testing.T) {
 	t.Run("正常にユーザーを取得", func(t *testing.T) {
-		handler, mockService := newTestUserHandler()
-		router := setupRouter()
-		router.GET("/users/username/:username", handler.GetByUsername)
+		h, svc := newTestUserHandler()
+		r := newRouter(1)
+		r.GET("/users/username/:username", h.GetByUsername)
 
 		user := &model.User{ID: 1, Name: "テストユーザー", Username: "testuser"}
-		mockService.On("GetByUsername", "testuser").Return(user, nil)
+		svc.On("GetByUsername", "testuser").Return(user, nil)
 
-		req, _ := http.NewRequest("GET", "/users/username/testuser", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusOK, w.Code)
-		mockService.AssertExpectations(t)
+		w := doRequest(r, "GET", "/users/username/testuser", nil)
+		assertStatus(t, w, http.StatusOK)
+		svc.AssertExpectations(t)
 	})
 
 	t.Run("ユーザーが見つからない場合404を返す", func(t *testing.T) {
-		handler, mockService := newTestUserHandler()
-		router := setupRouter()
-		router.GET("/users/username/:username", handler.GetByUsername)
+		h, svc := newTestUserHandler()
+		r := newRouter(1)
+		r.GET("/users/username/:username", h.GetByUsername)
 
-		mockService.On("GetByUsername", "nonexistent").Return(nil, errors.New("not found"))
+		svc.On("GetByUsername", "nonexistent").Return(nil, errors.New("not found"))
 
-		req, _ := http.NewRequest("GET", "/users/username/nonexistent", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusNotFound, w.Code)
-		mockService.AssertExpectations(t)
+		w := doRequest(r, "GET", "/users/username/nonexistent", nil)
+		assertStatus(t, w, http.StatusNotFound)
+		svc.AssertExpectations(t)
 	})
 }
 
@@ -209,70 +180,40 @@ func TestUserHandler_GetByUsername(t *testing.T) {
 
 func TestUserHandler_Update(t *testing.T) {
 	t.Run("正常にプロフィールを更新", func(t *testing.T) {
-		handler, mockService := newTestUserHandler()
-		router := setupRouter()
-		router.PUT("/users/:id", func(c *gin.Context) {
-			c.Set("userID", uint(1))
-			handler.Update(c)
-		})
+		h, svc := newTestUserHandler()
+		r := newRouter(1)
+		r.PUT("/users/:id", h.Update)
 
 		existing := &model.User{ID: 1, Name: "旧名前", Email: "test@test.com"}
-		mockService.On("GetByID", uint(1)).Return(existing, nil)
-		mockService.On("Update", mock.AnythingOfType("*model.User")).Return(nil)
+		svc.On("GetByID", uint(1)).Return(existing, nil)
+		svc.On("Update", mock.AnythingOfType("*model.User")).Return(nil)
 
-		input := map[string]interface{}{
+		w := doRequest(r, "PUT", "/users/1", map[string]interface{}{
 			"name": "新名前",
 			"bio":  "新しい自己紹介",
-		}
-		body, _ := json.Marshal(input)
-
-		req, _ := http.NewRequest("PUT", "/users/1", bytes.NewBuffer(body))
-		req.Header.Set("Content-Type", "application/json")
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusOK, w.Code)
-		mockService.AssertExpectations(t)
+		})
+		assertStatus(t, w, http.StatusOK)
+		svc.AssertExpectations(t)
 	})
 
 	t.Run("他人のプロフィールは更新できない", func(t *testing.T) {
-		handler, _ := newTestUserHandler()
-		router := setupRouter()
-		router.PUT("/users/:id", func(c *gin.Context) {
-			c.Set("userID", uint(2))
-			handler.Update(c)
-		})
+		h, _ := newTestUserHandler()
+		r := newRouter(2)
+		r.PUT("/users/:id", h.Update)
 
-		input := map[string]interface{}{"name": "不正更新"}
-		body, _ := json.Marshal(input)
-
-		req, _ := http.NewRequest("PUT", "/users/1", bytes.NewBuffer(body))
-		req.Header.Set("Content-Type", "application/json")
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusForbidden, w.Code)
+		w := doRequest(r, "PUT", "/users/1", map[string]interface{}{"name": "不正更新"})
+		assertStatus(t, w, http.StatusForbidden)
 	})
 
 	t.Run("存在しないユーザーの更新で404", func(t *testing.T) {
-		handler, mockService := newTestUserHandler()
-		router := setupRouter()
-		router.PUT("/users/:id", func(c *gin.Context) {
-			c.Set("userID", uint(999))
-			handler.Update(c)
-		})
+		h, svc := newTestUserHandler()
+		r := newRouter(999)
+		r.PUT("/users/:id", h.Update)
 
-		mockService.On("GetByID", uint(999)).Return(nil, errors.New("not found"))
+		svc.On("GetByID", uint(999)).Return(nil, errors.New("not found"))
 
-		input := map[string]interface{}{"name": "テスト"}
-		body, _ := json.Marshal(input)
-
-		req, _ := http.NewRequest("PUT", "/users/999", bytes.NewBuffer(body))
-		req.Header.Set("Content-Type", "application/json")
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusNotFound, w.Code)
-		mockService.AssertExpectations(t)
+		w := doRequest(r, "PUT", "/users/999", map[string]interface{}{"name": "テスト"})
+		assertStatus(t, w, http.StatusNotFound)
+		svc.AssertExpectations(t)
 	})
 }
