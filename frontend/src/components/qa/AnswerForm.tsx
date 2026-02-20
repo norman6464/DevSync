@@ -29,6 +29,7 @@ export default function AnswerForm({ initialBody = '', onSubmit, onCancel, loadi
         onChange={(e) => setBody(e.target.value)}
         required
         rows={isEdit ? 4 : 6}
+        maxLength={5000}
         className={textareaClass}
         placeholder={t('qa.answerPlaceholder')}
       />
