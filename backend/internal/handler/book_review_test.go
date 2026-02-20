@@ -170,7 +170,7 @@ func TestBookReviewGetByUserID_Success(t *testing.T) {
 	reviews := []model.BookReview{
 		{Title: "Go言語入門", Rating: 5},
 	}
-	svc.On("GetByUserID", uint(1)).Return(reviews, nil)
+	svc.On("GetByUserID", uint(1), 20, 0).Return(reviews, int64(1), nil)
 
 	w := doRequest(r, http.MethodGet, "/users/1/book-reviews", nil)
 	assertStatus(t, w, http.StatusOK)

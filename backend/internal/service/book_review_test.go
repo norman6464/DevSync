@@ -86,11 +86,24 @@ func TestBookReviewGetByUserID_Success(t *testing.T) {
 		{Title: "本B", UserID: 1, Rating: 5},
 	}
 
-	repo.On("FindByUserID", uint(1)).Return(reviews, nil)
+	repo.On("FindByUserID", uint(1), 20, 0).Return(reviews, int64(2), nil)
 
-	result, err := svc.GetByUserID(1)
+	result, total, err := svc.GetByUserID(1, 20, 0)
 	assert.NoError(t, err)
 	assert.Len(t, result, 2)
+	assert.Equal(t, int64(2), total)
+	repo.AssertExpectations(t)
+}
+
+func TestBookReviewGetByUserID_Page2(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	repo.On("FindByUserID", uint(1), 10, 10).Return([]model.BookReview{}, int64(15), nil)
+
+	result, total, err := svc.GetByUserID(1, 10, 10)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	assert.Equal(t, int64(15), total)
 	repo.AssertExpectations(t)
 }
 
