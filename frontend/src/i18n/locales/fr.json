@@ -419,7 +419,8 @@
     "thisWeek": "Cette semaine",
     "thisMonth": "Ce mois",
     "selectLanguage": "Sélectionner le langage",
-    "noData": "Aucune donnée de classement"
+    "noData": "Aucune donnée de classement",
+    "searchPlaceholder": "Rechercher par nom ou identifiant..."
   },
   "badges": {
     "firstCommit": "Premier Commit",

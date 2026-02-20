@@ -419,7 +419,8 @@
     "thisWeek": "This Week",
     "thisMonth": "This Month",
     "selectLanguage": "Select Language",
-    "noData": "No ranking data yet"
+    "noData": "No ranking data yet",
+    "searchPlaceholder": "Search by name or username..."
   },
   "badges": {
     "firstCommit": "First Commit",

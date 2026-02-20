@@ -419,7 +419,8 @@
     "thisWeek": "이번 주",
     "thisMonth": "이번 달",
     "selectLanguage": "언어 선택",
-    "noData": "랭킹 데이터가 없습니다"
+    "noData": "랭킹 데이터가 없습니다",
+    "searchPlaceholder": "이름 또는 사용자명으로 검색..."
   },
   "badges": {
     "firstCommit": "첫 커밋",

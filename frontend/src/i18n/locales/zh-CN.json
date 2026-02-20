@@ -419,7 +419,8 @@
     "thisWeek": "本周",
     "thisMonth": "本月",
     "selectLanguage": "选择语言",
-    "noData": "暂无排名数据"
+    "noData": "暂无排名数据",
+    "searchPlaceholder": "按名称或用户名搜索..."
   },
   "badges": {
     "firstCommit": "初次提交",
