@@ -41,7 +41,7 @@ export default function TagInput({ tags, onChange, placeholder, maxLength = 50, 
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+          onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
           maxLength={maxLength}
           className={`${inputClass} flex-1`}
           placeholder={placeholder}

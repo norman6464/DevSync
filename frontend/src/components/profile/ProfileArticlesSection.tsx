@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { FileText } from 'lucide-react';
 import { type ZennArticle, type ZennStats } from '../../api/zenn';
 import { type QiitaArticle, type QiitaStats } from '../../api/qiita';
+import { sanitizeUrl } from '../../utils/url';
 
 interface ProfileArticlesSectionProps {
   zennUsername?: string;
@@ -68,7 +69,7 @@ export default function ProfileArticlesSection({
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {qiitaArticles.slice(0, 6).map((article) => (
-              <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer" className="bg-gray-900 border border-gray-800 rounded-md p-4 hover:border-gray-600 transition-colors group">
+              <a key={article.id} href={sanitizeUrl(article.url) || '#'} target="_blank" rel="noopener noreferrer" className="bg-gray-900 border border-gray-800 rounded-md p-4 hover:border-gray-600 transition-colors group">
                 <div className="flex items-start gap-3">
                   <FileText className="w-6 h-6 text-green-400 flex-shrink-0" aria-hidden="true" />
                   <div className="min-w-0 flex-1">
