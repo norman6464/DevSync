@@ -123,6 +123,11 @@ func (r *PostRepository) FindCommentByID(id uint) (*model.Comment, error) {
 	return &comment, nil
 }
 
+// UpdateComment はコメントを更新する。
+func (r *PostRepository) UpdateComment(comment *model.Comment) error {
+	return r.db.Save(comment).Error
+}
+
 // GetComments は指定投稿の全コメントをユーザー情報付きで取得する（古い順）。
 func (r *PostRepository) GetComments(postID uint) ([]model.Comment, error) {
 	var comments []model.Comment

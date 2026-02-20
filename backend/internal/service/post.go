@@ -242,6 +242,36 @@ func (s *PostService) DeleteComment(id, userID uint) error {
 	return s.repo.DeleteComment(id)
 }
 
+// HideComment は所有権を検証した後、コメントを非表示にする。
+func (s *PostService) HideComment(id, userID uint) error {
+	comment, err := s.repo.FindCommentByID(id)
+	if err != nil {
+		return err
+	}
+
+	if comment.UserID != userID {
+		return ErrForbidden
+	}
+
+	comment.IsHidden = true
+	return s.repo.UpdateComment(comment)
+}
+
+// UnhideComment は所有権を検証した後、コメントの非表示を解除する。
+func (s *PostService) UnhideComment(id, userID uint) error {
+	comment, err := s.repo.FindCommentByID(id)
+	if err != nil {
+		return err
+	}
+
+	if comment.UserID != userID {
+		return ErrForbidden
+	}
+
+	comment.IsHidden = false
+	return s.repo.UpdateComment(comment)
+}
+
 // Bookmark は投稿をブックマークする。
 // 自分の投稿へのブックマークは禁止する。
 func (s *PostService) Bookmark(userID, postID uint) error {

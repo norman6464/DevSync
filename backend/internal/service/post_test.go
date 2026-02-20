@@ -1227,6 +1227,81 @@ func TestPostDeleteComment_RepoError(t *testing.T) {
 	postRepo.AssertExpectations(t)
 }
 
+// ============================================================
+// コメント非表示テスト
+// ============================================================
+
+func TestPostHideComment_Success(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	comment := &model.Comment{PostID: 10, Content: "test"}
+	comment.ID = 5
+	comment.UserID = 1
+	postRepo.On("FindCommentByID", uint(5)).Return(comment, nil)
+	postRepo.On("UpdateComment", mock.MatchedBy(func(c *model.Comment) bool {
+		return c.ID == 5 && c.IsHidden
+	})).Return(nil)
+
+	err := svc.HideComment(5, 1)
+	assert.NoError(t, err)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostHideComment_Forbidden(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	comment := &model.Comment{PostID: 10, Content: "test"}
+	comment.ID = 5
+	comment.UserID = 1
+	postRepo.On("FindCommentByID", uint(5)).Return(comment, nil)
+
+	err := svc.HideComment(5, 999)
+	assert.Error(t, err)
+	var domainErr *domain.DomainError
+	assert.ErrorAs(t, err, &domainErr)
+	assert.Equal(t, domain.ErrCodeForbidden, domainErr.Code)
+}
+
+func TestPostHideComment_NotFound(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindCommentByID", uint(99)).Return(nil, errors.New("not found"))
+
+	err := svc.HideComment(99, 1)
+	assert.Error(t, err)
+}
+
+func TestPostUnhideComment_Success(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	comment := &model.Comment{PostID: 10, Content: "test", IsHidden: true}
+	comment.ID = 5
+	comment.UserID = 1
+	postRepo.On("FindCommentByID", uint(5)).Return(comment, nil)
+	postRepo.On("UpdateComment", mock.MatchedBy(func(c *model.Comment) bool {
+		return c.ID == 5 && !c.IsHidden
+	})).Return(nil)
+
+	err := svc.UnhideComment(5, 1)
+	assert.NoError(t, err)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostUnhideComment_Forbidden(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	comment := &model.Comment{PostID: 10, Content: "test", IsHidden: true}
+	comment.ID = 5
+	comment.UserID = 1
+	postRepo.On("FindCommentByID", uint(5)).Return(comment, nil)
+
+	err := svc.UnhideComment(5, 999)
+	assert.Error(t, err)
+	var domainErr *domain.DomainError
+	assert.ErrorAs(t, err, &domainErr)
+	assert.Equal(t, domain.ErrCodeForbidden, domainErr.Code)
+}
+
 func TestPostCreateComment_RepoError(t *testing.T) {
 	svc, postRepo, _ := newTestPostService()
 
