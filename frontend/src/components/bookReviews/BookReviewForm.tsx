@@ -125,6 +125,7 @@ export default function BookReviewForm({ review, onSubmit, onCancel, loading }: 
           value={reviewText}
           onChange={(e) => setReviewText(e.target.value)}
           rows={4}
+          maxLength={2000}
           className={textareaClass}
           placeholder={t('bookReviews.reviewPlaceholder')}
         />

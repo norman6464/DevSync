@@ -49,6 +49,7 @@ export default function OnboardingProfileStep({
             value={bio}
             onChange={handleBioChange}
             rows={3}
+            maxLength={500}
             placeholder={t('onboarding.bioPlaceholder')}
             className={`${inputClass} resize-none`}
           />

@@ -64,6 +64,7 @@ export default function QuestionForm({ question, onSubmit, onCancel, loading }: 
           onChange={(e) => setBody(e.target.value)}
           required
           rows={8}
+          maxLength={5000}
           className={textareaClass}
           placeholder={t('qa.questionBodyPlaceholder')}
         />

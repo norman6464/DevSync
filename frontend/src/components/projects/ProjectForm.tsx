@@ -138,6 +138,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
+          maxLength={2000}
           className={textareaClass}
           placeholder={t('projects.descriptionPlaceholder')}
         />

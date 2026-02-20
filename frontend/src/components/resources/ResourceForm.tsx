@@ -154,6 +154,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
+          maxLength={1000}
           className={textareaClass}
           placeholder={t('resources.descriptionPlaceholder')}
         />
