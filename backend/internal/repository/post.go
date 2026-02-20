@@ -46,13 +46,15 @@ func (r *PostRepository) CountAll() (int64, error) {
 	return count, err
 }
 
-// FindByUserID は指定ユーザーの全投稿を取得する（新しい順）。下書きは除外。
-func (r *PostRepository) FindByUserID(userID uint) ([]model.Post, error) {
+// FindByUserID は指定ユーザーの投稿をページネーション付きで取得する（新しい順）。下書きは除外。
+func (r *PostRepository) FindByUserID(userID uint, limit, offset int) ([]model.Post, int64, error) {
 	var posts []model.Post
-	err := r.db.Preload("User").Preload("CodeSnippets").
-		Where("user_id = ? AND is_draft = ?", userID, false).
-		Order("created_at DESC").Find(&posts).Error
-	return posts, err
+	var total int64
+	query := r.db.Where("user_id = ? AND is_draft = ?", userID, false)
+	query.Model(&model.Post{}).Count(&total)
+	err := query.Preload("User").Preload("CodeSnippets").
+		Order("created_at DESC").Limit(limit).Offset(offset).Find(&posts).Error
+	return posts, total, err
 }
 
 // Timeline はフォロー中ユーザーと自分の投稿をタイムライン形式で取得する。下書きは除外。

@@ -496,9 +496,9 @@ func TestPostGetUserPosts_Success(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/users/:id/posts", h.GetUserPosts)
 
-	postRepo.On("FindByUserID", uint(2)).Return([]model.Post{
+	postRepo.On("FindByUserID", uint(2), 20, 0).Return([]model.Post{
 		{Title: "User Post 1"}, {Title: "User Post 2"},
-	}, nil)
+	}, int64(2), nil)
 
 	w := doRequest(r, http.MethodGet, "/users/2/posts", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -518,7 +518,7 @@ func TestPostGetUserPosts_ServiceError(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/users/:id/posts", h.GetUserPosts)
 
-	postRepo.On("FindByUserID", uint(2)).Return([]model.Post(nil), service.ErrNotFound)
+	postRepo.On("FindByUserID", uint(2), 20, 0).Return([]model.Post(nil), int64(0), service.ErrNotFound)
 
 	w := doRequest(r, http.MethodGet, "/users/2/posts", nil)
 	assertStatus(t, w, http.StatusNotFound)

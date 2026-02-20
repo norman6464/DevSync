@@ -59,7 +59,7 @@ type PostRepositoryInterface interface {
 	FindByID(id uint) (*model.Post, error)
 	FindAll(page, limit int) ([]model.Post, error)
 	CountAll() (int64, error)
-	FindByUserID(userID uint) ([]model.Post, error)
+	FindByUserID(userID uint, limit, offset int) ([]model.Post, int64, error)
 	FindDraftsByUserID(userID uint) ([]model.Post, error)
 	Timeline(userID uint, page, limit int) ([]model.Post, error)
 	Update(post *model.Post) error

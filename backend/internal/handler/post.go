@@ -13,7 +13,7 @@ type PostServiceInterface interface {
 	GetByID(id uint) (*model.Post, error)
 	GetAll(page, limit int) ([]model.Post, error)
 	CountAll() (int64, error)
-	GetByUserID(userID uint) ([]model.Post, error)
+	GetByUserID(userID uint, limit, offset int) ([]model.Post, int64, error)
 	GetDrafts(userID uint) ([]model.Post, error)
 	Timeline(userID uint, page, limit int) ([]model.Post, error)
 	Update(id, userID uint, title, content, imageUrls string) (*model.Post, error)
@@ -188,18 +188,26 @@ func (h *PostHandler) Timeline(c *gin.Context) {
 	respondOK(c, posts)
 }
 
-// GetUserPosts は指定ユーザーの投稿一覧を返す。
+// GetUserPosts は指定ユーザーの投稿一覧をページネーション付きで返す。
 func (h *PostHandler) GetUserPosts(c *gin.Context) {
 	id, ok := parseID(c, "id")
 	if !ok {
 		return
 	}
-	posts, err := h.service.GetByUserID(id)
+	limit, offset := parseLimitOffset(c)
+
+	posts, total, err := h.service.GetByUserID(id, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, posts)
+
+	respondOK(c, dto.PostListResponse{
+		Posts:  ensureSlice(posts),
+		Total: total,
+		Limit: limit,
+		Offset: offset,
+	})
 }
 
 // Like は投稿にいいねする。

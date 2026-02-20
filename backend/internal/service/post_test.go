@@ -182,11 +182,12 @@ func TestPostGetByUserID_Success(t *testing.T) {
 	svc, postRepo, _ := newTestPostService()
 
 	posts := []model.Post{{Title: "My Post", UserID: 1}}
-	postRepo.On("FindByUserID", uint(1)).Return(posts, nil)
+	postRepo.On("FindByUserID", uint(1), 20, 0).Return(posts, int64(1), nil)
 
-	result, err := svc.GetByUserID(1)
+	result, total, err := svc.GetByUserID(1, 20, 0)
 	assert.NoError(t, err)
 	assert.Len(t, result, 1)
+	assert.Equal(t, int64(1), total)
 }
 
 func TestPostGetDrafts_Success(t *testing.T) {
@@ -1202,11 +1203,12 @@ func TestPostGetAll_RepoError(t *testing.T) {
 func TestPostGetByUserID_RepoError(t *testing.T) {
 	svc, postRepo, _ := newTestPostService()
 
-	postRepo.On("FindByUserID", uint(1)).Return([]model.Post{}, errors.New("db error"))
+	postRepo.On("FindByUserID", uint(1), 20, 0).Return([]model.Post{}, int64(0), errors.New("db error"))
 
-	result, err := svc.GetByUserID(1)
+	result, total, err := svc.GetByUserID(1, 20, 0)
 	assert.Error(t, err)
 	assert.Empty(t, result)
+	assert.Equal(t, int64(0), total)
 	postRepo.AssertExpectations(t)
 }
 
