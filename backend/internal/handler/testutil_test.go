@@ -1677,6 +1677,13 @@ func (m *MockNoteLinkService) GetBacklinks(targetNoteID uint) ([]model.NoteLink,
 func (m *MockNoteLinkService) DeleteLink(sourceNoteID, targetNoteID, userID uint) error {
 	return m.Called(sourceNoteID, targetNoteID, userID).Error(0)
 }
+func (m *MockNoteLinkService) GetLinkStats(noteID, userID uint) (*model.NoteLinkStats, error) {
+	args := m.Called(noteID, userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.NoteLinkStats), args.Error(1)
+}
 
 func setupNoteLinkHandler() (*NoteLinkHandler, *MockNoteLinkService) {
 	svc := new(MockNoteLinkService)

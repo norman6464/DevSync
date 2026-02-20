@@ -409,6 +409,7 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 		notes.POST("/:id/links", c.NoteLinkHandler.CreateLink)
 		notes.GET("/:id/links", c.NoteLinkHandler.GetLinks)
 		notes.GET("/:id/backlinks", c.NoteLinkHandler.GetBacklinks)
+		notes.GET("/:id/link-stats", c.NoteLinkHandler.GetLinkStats)
 		notes.DELETE("/:id/links/:targetId", c.NoteLinkHandler.DeleteLink)
 	}
 

@@ -56,3 +56,17 @@ func (r *NoteLinkRepository) Exists(sourceNoteID, targetNoteID uint) (bool, erro
 		Count(&count).Error
 	return count > 0, err
 }
+
+// CountBySourceNoteID は指定ノートからのリンク数を返す。
+func (r *NoteLinkRepository) CountBySourceNoteID(noteID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.NoteLink{}).Where("source_note_id = ?", noteID).Count(&count).Error
+	return count, err
+}
+
+// CountByTargetNoteID は指定ノートへのリンク数（バックリンク数）を返す。
+func (r *NoteLinkRepository) CountByTargetNoteID(noteID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.NoteLink{}).Where("target_note_id = ?", noteID).Count(&count).Error
+	return count, err
+}

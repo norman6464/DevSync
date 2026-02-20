@@ -13,6 +13,7 @@ type NoteLinkServiceInterface interface {
 	GetLinks(sourceNoteID uint) ([]model.NoteLink, error)
 	GetBacklinks(targetNoteID uint) ([]model.NoteLink, error)
 	DeleteLink(sourceNoteID, targetNoteID, userID uint) error
+	GetLinkStats(noteID, userID uint) (*model.NoteLinkStats, error)
 }
 
 // NoteLinkHandler はノート間リンク関連のHTTPハンドラ。
@@ -77,6 +78,24 @@ func (h *NoteLinkHandler) GetBacklinks(c *gin.Context) {
 	}
 
 	respondOK(c, ensureSlice(backlinks))
+}
+
+// GetLinkStats はノートのリンク統計を取得する。
+func (h *NoteLinkHandler) GetLinkStats(c *gin.Context) {
+	noteID, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	userID := c.GetUint("userID")
+
+	stats, err := h.service.GetLinkStats(noteID, userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, stats)
 }
 
 // DeleteLink はリンクを削除する。

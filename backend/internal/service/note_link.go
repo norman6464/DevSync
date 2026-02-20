@@ -13,6 +13,8 @@ type NoteLinkRepositoryInterface interface {
 	FindByTargetNoteID(targetNoteID uint) ([]model.NoteLink, error)
 	Delete(sourceNoteID, targetNoteID uint) error
 	Exists(sourceNoteID, targetNoteID uint) (bool, error)
+	CountBySourceNoteID(noteID uint) (int64, error)
+	CountByTargetNoteID(noteID uint) (int64, error)
 }
 
 // NoteLinkService はノート間リンクのビジネスロジック。
@@ -92,4 +94,32 @@ func (s *NoteLinkService) DeleteLink(sourceNoteID, targetNoteID, userID uint) er
 		return err
 	}
 	return s.repo.Delete(sourceNoteID, targetNoteID)
+}
+
+// GetLinkStats はノートのリンク統計（フォワードリンク数・バックリンク数）を返す。
+// ノートの所有者のみ取得可能。
+func (s *NoteLinkService) GetLinkStats(noteID, userID uint) (*model.NoteLinkStats, error) {
+	note, err := s.noteRepo.FindByID(noteID)
+	if err != nil {
+		return nil, ErrNotFound
+	}
+	if note.UserID != userID {
+		return nil, ErrForbidden
+	}
+
+	forwardCount, err := s.repo.CountBySourceNoteID(noteID)
+	if err != nil {
+		return nil, err
+	}
+
+	backlinkCount, err := s.repo.CountByTargetNoteID(noteID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.NoteLinkStats{
+		NoteID:           noteID,
+		ForwardLinkCount: forwardCount,
+		BacklinkCount:    backlinkCount,
+	}, nil
 }

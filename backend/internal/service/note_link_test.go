@@ -37,6 +37,16 @@ func (m *MockNoteLinkRepository) Exists(sourceNoteID, targetNoteID uint) (bool, 
 	return args.Bool(0), args.Error(1)
 }
 
+func (m *MockNoteLinkRepository) CountBySourceNoteID(noteID uint) (int64, error) {
+	args := m.Called(noteID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockNoteLinkRepository) CountByTargetNoteID(noteID uint) (int64, error) {
+	args := m.Called(noteID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 // newTestNoteLinkService はテスト用のNoteLinkServiceを生成する。
 func newTestNoteLinkService() (*NoteLinkService, *MockNoteLinkRepository, *MockNoteRepository) {
 	linkRepo := new(MockNoteLinkRepository)
@@ -279,4 +289,91 @@ func TestNoteLinkService_DeleteLink_Error(t *testing.T) {
 	assert.Error(t, err)
 	linkRepo.AssertExpectations(t)
 	noteRepo.AssertExpectations(t)
+}
+
+// ============================================================
+// GetLinkStats テスト
+// ============================================================
+
+func TestNoteLinkService_GetLinkStats_Success(t *testing.T) {
+	svc, linkRepo, noteRepo := newTestNoteLinkService()
+
+	note := &model.Note{ID: 1, UserID: 1, Title: "マイノート"}
+	noteRepo.On("FindByID", uint(1)).Return(note, nil)
+	linkRepo.On("CountBySourceNoteID", uint(1)).Return(int64(3), nil)
+	linkRepo.On("CountByTargetNoteID", uint(1)).Return(int64(5), nil)
+
+	stats, err := svc.GetLinkStats(1, 1)
+	assert.NoError(t, err)
+	assert.Equal(t, uint(1), stats.NoteID)
+	assert.Equal(t, int64(3), stats.ForwardLinkCount)
+	assert.Equal(t, int64(5), stats.BacklinkCount)
+	linkRepo.AssertExpectations(t)
+	noteRepo.AssertExpectations(t)
+}
+
+func TestNoteLinkService_GetLinkStats_ZeroLinks(t *testing.T) {
+	svc, linkRepo, noteRepo := newTestNoteLinkService()
+
+	note := &model.Note{ID: 1, UserID: 1, Title: "リンクなしノート"}
+	noteRepo.On("FindByID", uint(1)).Return(note, nil)
+	linkRepo.On("CountBySourceNoteID", uint(1)).Return(int64(0), nil)
+	linkRepo.On("CountByTargetNoteID", uint(1)).Return(int64(0), nil)
+
+	stats, err := svc.GetLinkStats(1, 1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(0), stats.ForwardLinkCount)
+	assert.Equal(t, int64(0), stats.BacklinkCount)
+	linkRepo.AssertExpectations(t)
+}
+
+func TestNoteLinkService_GetLinkStats_NoteNotFound(t *testing.T) {
+	svc, _, noteRepo := newTestNoteLinkService()
+
+	noteRepo.On("FindByID", uint(999)).Return((*model.Note)(nil), errors.New("not found"))
+
+	stats, err := svc.GetLinkStats(999, 1)
+	assert.Error(t, err)
+	assert.Nil(t, stats)
+	noteRepo.AssertExpectations(t)
+}
+
+func TestNoteLinkService_GetLinkStats_Forbidden(t *testing.T) {
+	svc, _, noteRepo := newTestNoteLinkService()
+
+	note := &model.Note{ID: 1, UserID: 99, Title: "他ユーザーのノート"}
+	noteRepo.On("FindByID", uint(1)).Return(note, nil)
+
+	stats, err := svc.GetLinkStats(1, 1)
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrForbidden)
+	assert.Nil(t, stats)
+	noteRepo.AssertExpectations(t)
+}
+
+func TestNoteLinkService_GetLinkStats_CountForwardError(t *testing.T) {
+	svc, linkRepo, noteRepo := newTestNoteLinkService()
+
+	note := &model.Note{ID: 1, UserID: 1, Title: "マイノート"}
+	noteRepo.On("FindByID", uint(1)).Return(note, nil)
+	linkRepo.On("CountBySourceNoteID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	stats, err := svc.GetLinkStats(1, 1)
+	assert.Error(t, err)
+	assert.Nil(t, stats)
+	linkRepo.AssertExpectations(t)
+}
+
+func TestNoteLinkService_GetLinkStats_CountBacklinkError(t *testing.T) {
+	svc, linkRepo, noteRepo := newTestNoteLinkService()
+
+	note := &model.Note{ID: 1, UserID: 1, Title: "マイノート"}
+	noteRepo.On("FindByID", uint(1)).Return(note, nil)
+	linkRepo.On("CountBySourceNoteID", uint(1)).Return(int64(3), nil)
+	linkRepo.On("CountByTargetNoteID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	stats, err := svc.GetLinkStats(1, 1)
+	assert.Error(t, err)
+	assert.Nil(t, stats)
+	linkRepo.AssertExpectations(t)
 }

@@ -12,3 +12,10 @@ type NoteLink struct {
 	TargetNote   *Note     `gorm:"foreignKey:TargetNoteID" json:"target_note,omitempty"`
 	CreatedAt    time.Time `json:"created_at"`
 }
+
+// NoteLinkStats はノートのリンク統計情報を表す。
+type NoteLinkStats struct {
+	NoteID           uint  `json:"note_id"`
+	ForwardLinkCount int64 `json:"forward_link_count"`
+	BacklinkCount    int64 `json:"backlink_count"`
+}
