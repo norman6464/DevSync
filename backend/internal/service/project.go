@@ -28,9 +28,9 @@ func (s *ProjectService) Create(project *model.Project) error {
 	return s.repo.Create(project)
 }
 
-// GetByID は指定IDのプロジェクトを取得する。
-func (s *ProjectService) GetByID(id uint) (*model.Project, error) {
-	return s.repo.FindByID(id)
+// GetByID は指定IDのプロジェクトを取得する。所有権を検証する。
+func (s *ProjectService) GetByID(id, userID uint) (*model.Project, error) {
+	return s.findAndCheckOwnership(id, userID)
 }
 
 // GetByUserID は指定ユーザーのプロジェクトをページネーション付きで取得する。

@@ -214,7 +214,7 @@ func TestProjectGetByID_Success(t *testing.T) {
 
 	repo.On("FindByID", uint(1)).Return(expected, nil)
 
-	result, err := svc.GetByID(1)
+	result, err := svc.GetByID(1, 1)
 	assert.NoError(t, err)
 	assert.Equal(t, "Test", result.Title)
 	repo.AssertExpectations(t)
@@ -225,8 +225,21 @@ func TestProjectGetByID_NotFound(t *testing.T) {
 
 	repo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
 
-	result, err := svc.GetByID(999)
+	result, err := svc.GetByID(999, 1)
 	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestProjectGetByID_Forbidden(t *testing.T) {
+	svc, repo := newTestProjectService()
+
+	project := &model.Project{Title: "Test", UserID: 1}
+	project.ID = 1
+	repo.On("FindByID", uint(1)).Return(project, nil)
+
+	result, err := svc.GetByID(1, 999)
+	assert.ErrorIs(t, err, ErrForbidden)
 	assert.Nil(t, result)
 	repo.AssertExpectations(t)
 }
