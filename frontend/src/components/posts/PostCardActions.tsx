@@ -2,9 +2,8 @@ import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { likePost, unlikePost, bookmarkPost, unbookmarkPost, getReactions, addReaction, removeReaction } from '../../api/posts';
-import type { ReactionCount } from '../../types/post';
-import { useEffect } from 'react';
+import { likePost, unlikePost, bookmarkPost, unbookmarkPost } from '../../api/posts';
+import { useReactions } from '../../hooks/useReactions';
 
 interface PostCardActionsProps {
   postId: number;
@@ -33,8 +32,7 @@ export default function PostCardActions({
   const [liked, setLiked] = useState(initialLiked);
   const [likeCount, setLikeCount] = useState(initialLikeCount);
   const [bookmarked, setBookmarked] = useState(initialBookmarked);
-  const [reactions, setReactions] = useState<ReactionCount[]>([]);
-  const [userReactions, setUserReactions] = useState<string[]>([]);
+  const { reactions, userReactions, toggleReaction } = useReactions(postId);
   const [showReactionPicker, setShowReactionPicker] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
 
@@ -49,37 +47,10 @@ export default function PostCardActions({
     }
   }, [postId, t]);
 
-  useEffect(() => {
-    getReactions(postId).then((res) => {
-      setReactions(res.data.reactions || []);
-      setUserReactions(res.data.user_reactions || []);
-    }).catch(() => {});
-  }, [postId]);
-
-  const handleReaction = async (emoji: string) => {
-    try {
-      if (userReactions.includes(emoji)) {
-        await removeReaction(postId, emoji);
-        setUserReactions((prev) => prev.filter((e) => e !== emoji));
-        setReactions((prev) =>
-          prev.map((r) => r.emoji === emoji ? { ...r, count: r.count - 1 } : r).filter((r) => r.count > 0)
-        );
-      } else {
-        await addReaction(postId, emoji);
-        setUserReactions((prev) => [...prev, emoji]);
-        setReactions((prev) => {
-          const existing = prev.find((r) => r.emoji === emoji);
-          if (existing) {
-            return prev.map((r) => r.emoji === emoji ? { ...r, count: r.count + 1 } : r);
-          }
-          return [...prev, { emoji, count: 1 }];
-        });
-      }
-      setShowReactionPicker(false);
-    } catch (e) {
-      console.warn('Failed to toggle reaction:', e);
-    }
-  };
+  const handleReaction = useCallback(async (emoji: string) => {
+    await toggleReaction(emoji);
+    setShowReactionPicker(false);
+  }, [toggleReaction]);
 
   const handleLike = async () => {
     try {
