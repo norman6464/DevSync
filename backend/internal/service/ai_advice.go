@@ -49,6 +49,11 @@ func (s *AIAdviceService) GetAdvice(userID uint, limit int) ([]model.AIAdvice, e
 	return s.adviceRepo.FindByUserID(userID, limit)
 }
 
+// GetUnreadAdvice は未読のアドバイスを優先度順で取得する。
+func (s *AIAdviceService) GetUnreadAdvice(userID uint) ([]model.AIAdvice, error) {
+	return s.adviceRepo.FindUnreadByUserID(userID)
+}
+
 // MarkAsRead はアドバイスを既読にする。
 func (s *AIAdviceService) MarkAsRead(id, userID uint) error {
 	return s.adviceRepo.MarkAsRead(id, userID)

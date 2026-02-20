@@ -532,6 +532,7 @@ func registerAnalyticsRoutes(g *gin.RouterGroup, c *di.Container) {
 	advice := g.Group("/advice")
 	{
 		advice.GET("", c.AIAdviceHandler.GetAdvice)
+		advice.GET("/unread", c.AIAdviceHandler.GetUnreadAdvice)
 		advice.PUT("/:id/read", c.AIAdviceHandler.MarkAsRead)
 		advice.POST("/chat", c.AIAdviceHandler.Chat)
 		advice.GET("/conversations", c.AIAdviceHandler.GetConversations)
