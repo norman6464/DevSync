@@ -125,22 +125,24 @@ func TestPostCollectionGetByUserID_Success(t *testing.T) {
 		{Title: "Go Tips", UserID: 1},
 		{Title: "React集", UserID: 1},
 	}
-	repo.On("FindByUserID", uint(1)).Return(collections, nil)
+	repo.On("FindByUserID", uint(1), 20, 0).Return(collections, int64(2), nil)
 
-	result, err := svc.GetByUserID(1)
+	result, total, err := svc.GetByUserID(1, 20, 0)
 	assert.NoError(t, err)
 	assert.Len(t, result, 2)
+	assert.Equal(t, int64(2), total)
 	repo.AssertExpectations(t)
 }
 
 func TestPostCollectionGetByUserID_Empty(t *testing.T) {
 	svc, repo := newTestPostCollectionService()
 
-	repo.On("FindByUserID", uint(999)).Return([]model.PostCollection{}, nil)
+	repo.On("FindByUserID", uint(999), 20, 0).Return([]model.PostCollection{}, int64(0), nil)
 
-	result, err := svc.GetByUserID(999)
+	result, total, err := svc.GetByUserID(999, 20, 0)
 	assert.NoError(t, err)
 	assert.Empty(t, result)
+	assert.Equal(t, int64(0), total)
 	repo.AssertExpectations(t)
 }
 

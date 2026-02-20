@@ -1646,9 +1646,9 @@ func (m *MockPostCollectionRepository) FindByID(id uint) (*model.PostCollection,
 	return args.Get(0).(*model.PostCollection), args.Error(1)
 }
 
-func (m *MockPostCollectionRepository) FindByUserID(userID uint) ([]model.PostCollection, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.PostCollection), args.Error(1)
+func (m *MockPostCollectionRepository) FindByUserID(userID uint, limit, offset int) ([]model.PostCollection, int64, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.PostCollection), args.Get(1).(int64), args.Error(2)
 }
 
 func (m *MockPostCollectionRepository) FindPublicByUserID(userID uint) ([]model.PostCollection, error) {

@@ -30,13 +30,14 @@ func (r *PostCollectionRepository) FindByID(id uint) (*model.PostCollection, err
 	return &collection, nil
 }
 
-// FindByUserID は指定ユーザーの全コレクションを取得する（新しい順）。
-func (r *PostCollectionRepository) FindByUserID(userID uint) ([]model.PostCollection, error) {
+// FindByUserID は指定ユーザーの全コレクションをページネーション付きで取得する（新しい順）。
+func (r *PostCollectionRepository) FindByUserID(userID uint, limit, offset int) ([]model.PostCollection, int64, error) {
 	var collections []model.PostCollection
-	err := r.db.Where("user_id = ?", userID).
-		Order("created_at DESC").
-		Find(&collections).Error
-	return collections, err
+	var total int64
+	query := r.db.Where("user_id = ?", userID)
+	query.Model(&model.PostCollection{}).Count(&total)
+	err := query.Order("created_at DESC").Limit(limit).Offset(offset).Find(&collections).Error
+	return collections, total, err
 }
 
 // FindPublicByUserID は指定ユーザーの公開コレクションを取得する（新しい順）。

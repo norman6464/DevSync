@@ -35,9 +35,9 @@ func (s *PostCollectionService) GetByID(id uint) (*model.PostCollection, error) 
 	return s.repo.FindByID(id)
 }
 
-// GetByUserID は指定ユーザーの全コレクションを取得する。
-func (s *PostCollectionService) GetByUserID(userID uint) ([]model.PostCollection, error) {
-	return s.repo.FindByUserID(userID)
+// GetByUserID は指定ユーザーの全コレクションをページネーション付きで取得する。
+func (s *PostCollectionService) GetByUserID(userID uint, limit, offset int) ([]model.PostCollection, int64, error) {
+	return s.repo.FindByUserID(userID, limit, offset)
 }
 
 // GetPublicByUserID は指定ユーザーの公開コレクションを取得する。

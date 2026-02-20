@@ -27,12 +27,12 @@ func (m *MockPostCollectionService) GetByID(id uint) (*model.PostCollection, err
 	}
 	return nil, args.Error(1)
 }
-func (m *MockPostCollectionService) GetByUserID(userID uint) ([]model.PostCollection, error) {
-	args := m.Called(userID)
+func (m *MockPostCollectionService) GetByUserID(userID uint, limit, offset int) ([]model.PostCollection, int64, error) {
+	args := m.Called(userID, limit, offset)
 	if v := args.Get(0); v != nil {
-		return v.([]model.PostCollection), args.Error(1)
+		return v.([]model.PostCollection), args.Get(1).(int64), args.Error(2)
 	}
-	return nil, args.Error(1)
+	return nil, args.Get(1).(int64), args.Error(2)
 }
 func (m *MockPostCollectionService) GetPublicByUserID(userID uint) ([]model.PostCollection, error) {
 	args := m.Called(userID)
@@ -162,7 +162,7 @@ func TestPostCollectionGetByID_ServiceError(t *testing.T) {
 func TestPostCollectionGetByUserID_OwnCollections(t *testing.T) {
 	h, svc := setupPostCollectionHandler()
 	collections := []model.PostCollection{{Title: "My Collection", UserID: 1}}
-	svc.On("GetByUserID", uint(1)).Return(collections, nil)
+	svc.On("GetByUserID", uint(1), 20, 0).Return(collections, int64(1), nil)
 
 	r := newRouter(1)
 	r.GET("/users/:userId/collections", h.GetByUserID)
@@ -197,7 +197,7 @@ func TestPostCollectionGetByUserID_InvalidID(t *testing.T) {
 
 func TestPostCollectionGetByUserID_ServiceError(t *testing.T) {
 	h, svc := setupPostCollectionHandler()
-	svc.On("GetByUserID", uint(1)).Return(nil, errors.New("db error"))
+	svc.On("GetByUserID", uint(1), 20, 0).Return(nil, int64(0), errors.New("db error"))
 
 	r := newRouter(1)
 	r.GET("/users/:userId/collections", h.GetByUserID)
