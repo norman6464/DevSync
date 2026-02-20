@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Target, Filter, Search } from 'lucide-react';
+import { Target, Filter, Search, ArrowUpDown } from 'lucide-react';
 import { type GoalCategory } from '../api/goals';
 import { useGoalForm } from '../hooks';
 import { Modal, PageLoader } from '../components/common';
@@ -14,7 +14,7 @@ export default function GoalsPage() {
     goals, loading, saving, activeGoals, completedGoals, pausedGoals,
     filteredGoals, filteredActiveGoals, filteredPausedGoals, filteredCompletedGoals,
     filterStatus, setFilterStatus, filterCategory, setFilterCategory,
-    searchQuery, setSearchQuery,
+    searchQuery, setSearchQuery, sortBy, setSortBy,
     showForm, setShowForm, editingGoal,
     title, setTitle, description, setDescription,
     category, setCategory, targetDate, setTargetDate,
@@ -116,6 +116,25 @@ export default function GoalsPage() {
               }`}
             >
               {c === 'all' ? t('common.all') : t(`goals.category${c.charAt(0).toUpperCase() + c.slice(1)}`)}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <span className="text-xs text-gray-500 self-center mr-1">
+            <ArrowUpDown className="w-3 h-3 inline mr-1" />
+            {t('goals.sort')}:
+          </span>
+          {(['newest', 'oldest', 'deadline', 'progress'] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setSortBy(s)}
+              className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+                sortBy === s
+                  ? 'border-green-500 bg-green-500/10 text-green-400'
+                  : 'border-gray-700 text-gray-400 hover:border-gray-600'
+              }`}
+            >
+              {t(`goals.sort${s.charAt(0).toUpperCase() + s.slice(1)}`)}
             </button>
           ))}
         </div>
