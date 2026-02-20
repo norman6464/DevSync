@@ -78,6 +78,9 @@ func (s *LearningLogService) Update(id, userID uint, updates *model.LearningLog)
 		log.Category = updates.Category
 	}
 	if updates.Duration != 0 {
+		if updates.Duration < 0 || updates.Duration > 1440 {
+			return nil, ErrBadRequest
+		}
 		log.Duration = updates.Duration
 	}
 
