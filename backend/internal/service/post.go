@@ -86,9 +86,9 @@ func (s *PostService) CountAll() (int64, error) {
 	return s.repo.CountAll()
 }
 
-// GetByUserID は指定ユーザーの全投稿を取得する。
-func (s *PostService) GetByUserID(userID uint) ([]model.Post, error) {
-	return s.repo.FindByUserID(userID)
+// GetByUserID は指定ユーザーの投稿をページネーション付きで取得する。
+func (s *PostService) GetByUserID(userID uint, limit, offset int) ([]model.Post, int64, error) {
+	return s.repo.FindByUserID(userID, limit, offset)
 }
 
 // GetDrafts は指定ユーザーの下書き投稿を取得する。

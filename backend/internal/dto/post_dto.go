@@ -45,6 +45,14 @@ type BookmarkedPostsResponse struct {
 	Total int64        `json:"total"`
 }
 
+// PostListResponse は投稿一覧レスポンス（ページネーション付き）。
+type PostListResponse struct {
+	Posts  []model.Post `json:"posts"`
+	Total  int64        `json:"total"`
+	Limit  int          `json:"limit"`
+	Offset int          `json:"offset"`
+}
+
 // ReactionRequest はリアクション追加/削除リクエスト。
 type ReactionRequest struct {
 	Emoji string `json:"emoji" binding:"required"`

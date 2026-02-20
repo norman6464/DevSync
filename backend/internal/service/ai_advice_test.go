@@ -73,9 +73,9 @@ func TestRuleEngine_StreakBroken(t *testing.T) {
 	}, nil)
 	deps.goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 	deps.goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
-	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
-	deps.logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+	deps.logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 	deps.resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{}, int64(0), nil)
 	deps.userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -99,7 +99,7 @@ func TestRuleEngine_RoadmapStalled(t *testing.T) {
 	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{CurrentStreak: 3, TotalDays: 10}, nil)
 	deps.goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 	deps.goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
-	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{
+	deps.roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{
 		{
 			ID: 1, Title: "Go学習", Status: model.RoadmapStatusActive,
 			StepCount: 5, CompletedStepCount: 2, Progress: 40,
@@ -108,9 +108,9 @@ func TestRuleEngine_RoadmapStalled(t *testing.T) {
 			},
 			UpdatedAt: stalledTime,
 		},
-	}, nil)
+	}, int64(1), nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
-	deps.logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+	deps.logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 	deps.resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{}, int64(0), nil)
 	deps.userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -136,9 +136,9 @@ func TestRuleEngine_GoalOverdue(t *testing.T) {
 		{Title: "React学習", Status: model.GoalStatusActive, TargetDate: &pastDate, Progress: 50},
 	}, int64(1), nil)
 	deps.goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{ActiveGoals: 1}, nil)
-	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
-	deps.logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+	deps.logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 	deps.resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{}, int64(0), nil)
 	deps.userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -163,12 +163,12 @@ func TestRuleEngine_TechGapReact(t *testing.T) {
 		{Title: "TypeScript基礎", Category: model.GoalCategoryLanguage, Status: model.GoalStatusActive},
 	}, int64(1), nil)
 	deps.goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{ActiveGoals: 1}, nil)
-	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{
 		{Language: "TypeScript", Bytes: 100000, RepoCount: 5},
 		{Language: "JavaScript", Bytes: 50000, RepoCount: 3},
 	}, nil)
-	deps.logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+	deps.logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 	deps.resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{}, int64(0), nil)
 	deps.userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -191,11 +191,11 @@ func TestRuleEngine_NoGoalsWithGitHub(t *testing.T) {
 	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{CurrentStreak: 3, TotalDays: 10}, nil)
 	deps.goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 	deps.goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{TotalGoals: 0}, nil)
-	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{
 		{Language: "Go", Bytes: 80000, RepoCount: 3},
 	}, nil)
-	deps.logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+	deps.logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 	deps.resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{}, int64(0), nil)
 	deps.userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -225,11 +225,11 @@ func TestRuleEngine_HighCompletionRate(t *testing.T) {
 	deps.goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{
 		CompletedGoals: 3, ActiveGoals: 1, AverageProgress: 80,
 	}, nil)
-	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{
+	deps.roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{
 		{ID: 1, Status: model.RoadmapStatusActive},
-	}, nil)
+	}, int64(1), nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
-	deps.logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+	deps.logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 	deps.resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{
 		{}, {}, {},
 	}, int64(3), nil)
@@ -256,9 +256,9 @@ func TestRuleEngine_ConsistentLearner(t *testing.T) {
 		{Status: model.GoalStatusActive, Progress: 50},
 	}, int64(1), nil)
 	deps.goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{ActiveGoals: 1}, nil)
-	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{
+	deps.roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{
 		{ID: 1, Status: model.RoadmapStatusActive},
-	}, nil)
+	}, int64(1), nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 
 	// 直近7日間に毎日90分の学習ログ
@@ -269,7 +269,7 @@ func TestRuleEngine_ConsistentLearner(t *testing.T) {
 			CreatedAt: time.Now().Add(-time.Duration(i) * 24 * time.Hour),
 		}
 	}
-	deps.logRepo.On("GetByUserID", uint(1)).Return(logs, nil)
+	deps.logRepo.On("GetByUserID", uint(1), 100, 0).Return(logs, int64(7), nil)
 	deps.resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{
 		{}, {}, {},
 	}, int64(3), nil)
@@ -296,9 +296,9 @@ func TestRuleEngine_NoRoadmap(t *testing.T) {
 		{Title: "Go学習", Status: model.GoalStatusActive},
 	}, int64(1), nil)
 	deps.goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{ActiveGoals: 1}, nil)
-	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
-	deps.logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+	deps.logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 	deps.resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{}, int64(0), nil)
 	deps.userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -326,9 +326,9 @@ func TestRuleEngine_PriorityOrdering(t *testing.T) {
 		{Title: "React", Status: model.GoalStatusActive, TargetDate: &pastDate, Progress: 30},
 	}, int64(1), nil)
 	deps.goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{ActiveGoals: 1}, nil)
-	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
-	deps.logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+	deps.logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 	deps.resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{}, int64(0), nil)
 	deps.userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -350,9 +350,9 @@ func TestRuleEngine_NewUserNoData(t *testing.T) {
 	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
 	deps.goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 	deps.goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
-	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
-	deps.logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+	deps.logRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningLog{}, int64(0), nil)
 	deps.resourceRepo.On("FindByUserID", uint(1), true, 100, 0).Return([]model.LearningResource{}, int64(0), nil)
 	deps.userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
 
@@ -379,7 +379,7 @@ func TestChat_Success(t *testing.T) {
 		{Title: "Go学習", Status: model.GoalStatusActive, Progress: 50},
 	}, int64(1), nil)
 	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{CurrentStreak: 5}, nil)
-	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{
 		{Language: "Go", Bytes: 50000},
 	}, nil)
@@ -643,7 +643,7 @@ func TestChat_ExistingConversation(t *testing.T) {
 	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(1), nil)
 	deps.goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
-	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 
 	// 既存会話を返す（所有者一致）
@@ -674,7 +674,7 @@ func TestChat_ForbiddenConversation(t *testing.T) {
 	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(1), nil)
 	deps.goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
-	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 
 	// 他人の会話
@@ -764,7 +764,7 @@ func TestChat_CreateConversationError(t *testing.T) {
 	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(0), nil)
 	deps.goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
-	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 	deps.convRepo.On("CreateConversation", mock.AnythingOfType("*model.AIConversation")).Return(ErrNotFound)
 
@@ -779,7 +779,7 @@ func TestChat_AddUserMessageError(t *testing.T) {
 	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(0), nil)
 	deps.goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
-	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 	deps.convRepo.On("CreateConversation", mock.AnythingOfType("*model.AIConversation")).Return(nil)
 	deps.convRepo.On("AddMessage", mock.AnythingOfType("*model.AIMessage")).Return(ErrNotFound).Once()
@@ -795,7 +795,7 @@ func TestChat_LLMCompleteError(t *testing.T) {
 	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(0), nil)
 	deps.goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
-	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 	deps.convRepo.On("CreateConversation", mock.AnythingOfType("*model.AIConversation")).Return(nil)
 	deps.convRepo.On("AddMessage", mock.AnythingOfType("*model.AIMessage")).Return(nil)
@@ -812,7 +812,7 @@ func TestChat_AddAssistantMessageError(t *testing.T) {
 	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(0), nil)
 	deps.goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
-	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 	deps.convRepo.On("CreateConversation", mock.AnythingOfType("*model.AIConversation")).Return(nil)
 	// ユーザーメッセージ成功、アシスタントメッセージ失敗
@@ -838,7 +838,7 @@ func TestChat_ExistingConversationWithMessages(t *testing.T) {
 	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(0), nil)
 	deps.goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
-	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 	// 既存会話にメッセージ履歴あり（systemメッセージはスキップされること）
 	deps.convRepo.On("FindConversationByID", uint(10)).Return(&model.AIConversation{
@@ -874,7 +874,7 @@ func TestChat_LongTitleTruncation(t *testing.T) {
 	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(0), nil)
 	deps.goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
-	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 	// 会話作成時にタイトルが50文字+...に切り詰められることを検証
 	deps.convRepo.On("CreateConversation", mock.MatchedBy(func(c *model.AIConversation) bool {
@@ -902,7 +902,7 @@ func TestChat_ExistingConversationNotFound(t *testing.T) {
 	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(0), nil)
 	deps.goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
-	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 	// 既存会話が見つからない
 	deps.convRepo.On("FindConversationByID", uint(999)).Return((*model.AIConversation)(nil), ErrNotFound)
@@ -918,7 +918,7 @@ func TestChat_RefetchFallback(t *testing.T) {
 	deps.convRepo.On("CountTodayMessages", uint(1)).Return(int64(0), nil)
 	deps.goalRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.LearningGoal{}, int64(0), nil)
 	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
-	deps.roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+	deps.roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
 	deps.convRepo.On("CreateConversation", mock.AnythingOfType("*model.AIConversation")).Return(nil)
 	deps.convRepo.On("AddMessage", mock.AnythingOfType("*model.AIMessage")).Return(nil)
