@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { BookOpen, Video, FileText, GraduationCap, BookMarked, Mic, Wrench, Pin, type LucideIcon } from 'lucide-react';
 import type { LearningResource, ResourceCategory, ResourceDifficulty } from '../../types/resource';
+import { parseJsonArray } from '../../utils/json';
 import Avatar from '../common/Avatar';
 import { cardClass } from '../../constants/styles';
 import { sanitizeUrl } from '../../utils/url';
@@ -57,7 +58,7 @@ export default function ResourceCard({
   const [likeCount, setLikeCount] = useState(resource.like_count);
   const [saveCount, setSaveCount] = useState(resource.save_count);
 
-  const tags = resource.tags ? JSON.parse(resource.tags) : [];
+  const tags = parseJsonArray(resource.tags);
 
   const handleLike = () => {
     if (liked) {

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { Project } from '../../types/project';
 import { cardClass } from '../../constants/styles';
+import { parseJsonArray } from '../../utils/json';
 import { sanitizeUrl } from '../../utils/url';
 
 interface ProjectCardProps {
@@ -13,7 +14,7 @@ interface ProjectCardProps {
 export default function ProjectCard({ project, onEdit, onDelete, isOwner }: ProjectCardProps) {
   const { t } = useTranslation();
 
-  const techStack = project.tech_stack ? JSON.parse(project.tech_stack) : [];
+  const techStack = parseJsonArray(project.tech_stack);
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return null;
