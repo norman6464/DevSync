@@ -117,9 +117,15 @@ func (s *StudyCircleService) Update(id, userID uint, name, topic, description *s
 	}
 
 	if name != nil {
+		if strings.TrimSpace(*name) == "" {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, "サークル名は空白のみでは入力できません", nil)
+		}
 		circle.Name = *name
 	}
 	if topic != nil {
+		if strings.TrimSpace(*topic) == "" {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, "トピックは空白のみでは入力できません", nil)
+		}
 		circle.Topic = *topic
 	}
 	if description != nil {
@@ -223,6 +229,9 @@ func (s *StudyCircleService) UpdateStep(circleID, userID, stepID uint, title, de
 	}
 
 	if title != nil {
+		if strings.TrimSpace(*title) == "" {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, "タイトルは空白のみでは入力できません", nil)
+		}
 		step.Title = *title
 	}
 	if description != nil {

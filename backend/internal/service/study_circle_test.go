@@ -924,6 +924,49 @@ func TestStudyCircleUpdateStep_CircleNotFound(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+// --- Update 空白バイパス ---
+
+func TestStudyCircleUpdate_WhitespaceName(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	circle := &model.StudyCircle{ID: 1, Name: "旧名", OwnerID: 1}
+	repo.On("FindByID", uint(1)).Return(circle, nil)
+
+	name := "   "
+	result, err := svc.Update(1, 1, &name, nil, nil)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "サークル名")
+}
+
+func TestStudyCircleUpdate_WhitespaceTopic(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	circle := &model.StudyCircle{ID: 1, Name: "旧名", Topic: "Go", OwnerID: 1}
+	repo.On("FindByID", uint(1)).Return(circle, nil)
+
+	topic := "  \t  "
+	result, err := svc.Update(1, 1, nil, &topic, nil)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "トピック")
+}
+
+func TestStudyCircleUpdateStep_WhitespaceTitle(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	circle := &model.StudyCircle{ID: 1, OwnerID: 1}
+	repo.On("FindByID", uint(1)).Return(circle, nil)
+	step := &model.StudyCircleStep{ID: 5, CircleID: 1, Title: "旧タイトル"}
+	repo.On("FindStepByID", uint(5)).Return(step, nil)
+
+	title := "   "
+	result, err := svc.UpdateStep(1, 1, 5, &title, nil)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "タイトル")
+}
+
 func TestStudyCircleCreateCheckin_IsMemberError(t *testing.T) {
 	svc, repo := newTestStudyCircleService()
 
