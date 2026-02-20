@@ -1354,6 +1354,7 @@
     "confirmDelete": "¿Está seguro de que desea eliminar esta nota?",
     "favoriteToggled": "Estado de favorito actualizado",
     "lastUpdated": "Última actualización",
+    "chars": "caracteres",
     "createdAt": "Creado el",
     "tagsPlaceholder": "Ej: React, TypeScript, Go"
   },

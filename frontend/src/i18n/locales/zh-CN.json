@@ -1354,6 +1354,7 @@
     "confirmDelete": "确定要删除这条笔记吗？",
     "favoriteToggled": "收藏状态已更新",
     "lastUpdated": "最后更新",
+    "chars": "字符",
     "createdAt": "创建时间",
     "tagsPlaceholder": "例如：React, TypeScript, Go"
   },

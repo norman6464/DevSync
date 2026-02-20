@@ -1354,6 +1354,7 @@
     "confirmDelete": "Möchten Sie diese Notiz wirklich löschen?",
     "favoriteToggled": "Favoritenstatus aktualisiert",
     "lastUpdated": "Zuletzt aktualisiert",
+    "chars": "Zeichen",
     "createdAt": "Erstellt am",
     "tagsPlaceholder": "z.B. React, TypeScript, Go"
   },

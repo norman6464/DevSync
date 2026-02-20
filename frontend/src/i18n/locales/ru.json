@@ -1354,6 +1354,7 @@
     "confirmDelete": "Вы уверены, что хотите удалить эту заметку?",
     "favoriteToggled": "Статус избранного обновлен",
     "lastUpdated": "Последнее обновление",
+    "chars": "символов",
     "createdAt": "Создано",
     "tagsPlaceholder": "Напр.: React, TypeScript, Go"
   },

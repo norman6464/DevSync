@@ -1354,6 +1354,7 @@
     "confirmDelete": "이 노트를 삭제하시겠습니까?",
     "favoriteToggled": "즐겨찾기 상태가 업데이트되었습니다",
     "lastUpdated": "마지막 업데이트",
+    "chars": "자",
     "createdAt": "생성일",
     "tagsPlaceholder": "예: React, TypeScript, Go"
   },

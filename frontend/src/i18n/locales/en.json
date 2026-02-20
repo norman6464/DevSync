@@ -1354,6 +1354,7 @@
     "confirmDelete": "Are you sure you want to delete this note?",
     "favoriteToggled": "Favorite status updated",
     "lastUpdated": "Last updated",
+    "chars": "chars",
     "createdAt": "Created at",
     "tagsPlaceholder": "e.g., React, TypeScript, Go"
   },
