@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { inputClass, buttonPrimaryClass } from '../../constants/styles';
 import { User } from '../../types/user';
+import IntegrationUsernameCard from './IntegrationUsernameCard';
 
 interface OnboardingIntegrationsStepProps {
   user: User;
@@ -86,109 +87,46 @@ export default function OnboardingIntegrationsStep({
         </div>
 
         {/* Zenn */}
-        <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center text-white font-bold text-xs">Z</div>
-            <div>
-              <h3 className="text-sm font-medium text-white">Zenn</h3>
-              <p className="text-xs text-gray-400">{t('onboarding.zennDescription')}</p>
-            </div>
-          </div>
-          {user.zenn_username ? (
-            <div className="flex items-center gap-2 text-green-400 text-sm">
-              <CheckCircle className="w-4 h-4" />
-              <span>{t('settings.connected')} - @{user.zenn_username}</span>
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={zennUsername}
-                onChange={handleZennChange}
-                placeholder={t('settings.zennUsername')}
-                maxLength={50}
-                className={`${inputClass} flex-1`}
-              />
-              <button
-                onClick={onConnectZenn}
-                disabled={connectingZenn || !zennUsername.trim()}
-                className={`${buttonPrimaryClass} text-sm disabled:opacity-50 whitespace-nowrap`}
-              >
-                {connectingZenn ? t('common.loading') : t('settings.connect')}
-              </button>
-            </div>
-          )}
-        </div>
+        <IntegrationUsernameCard
+          icon={<div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center text-white font-bold text-xs">Z</div>}
+          serviceName="Zenn"
+          description={t('onboarding.zennDescription')}
+          connectedUsername={user.zenn_username}
+          username={zennUsername}
+          onUsernameChange={handleZennChange}
+          placeholder={t('settings.zennUsername')}
+          connecting={connectingZenn}
+          onConnect={onConnectZenn}
+          buttonClassName={`${buttonPrimaryClass} text-sm`}
+        />
 
         {/* Qiita */}
-        <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-6 h-6 bg-green-500 rounded flex items-center justify-center text-white font-bold text-xs">Q</div>
-            <div>
-              <h3 className="text-sm font-medium text-white">Qiita</h3>
-              <p className="text-xs text-gray-400">{t('onboarding.qiitaDescription')}</p>
-            </div>
-          </div>
-          {user.qiita_username ? (
-            <div className="flex items-center gap-2 text-green-400 text-sm">
-              <CheckCircle className="w-4 h-4" />
-              <span>{t('settings.connected')} - @{user.qiita_username}</span>
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={qiitaUsername}
-                onChange={handleQiitaChange}
-                placeholder={t('settings.qiitaUsername')}
-                maxLength={50}
-                className={`${inputClass} flex-1`}
-              />
-              <button
-                onClick={onConnectQiita}
-                disabled={connectingQiita || !qiitaUsername.trim()}
-                className="px-4 py-2 bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors whitespace-nowrap"
-              >
-                {connectingQiita ? t('common.loading') : t('settings.connect')}
-              </button>
-            </div>
-          )}
-        </div>
+        <IntegrationUsernameCard
+          icon={<div className="w-6 h-6 bg-green-500 rounded flex items-center justify-center text-white font-bold text-xs">Q</div>}
+          serviceName="Qiita"
+          description={t('onboarding.qiitaDescription')}
+          connectedUsername={user.qiita_username}
+          username={qiitaUsername}
+          onUsernameChange={handleQiitaChange}
+          placeholder={t('settings.qiitaUsername')}
+          connecting={connectingQiita}
+          onConnect={onConnectQiita}
+          buttonClassName="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg font-medium text-sm transition-colors"
+        />
 
         {/* AtCoder */}
-        <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-6 h-6 bg-gray-700 rounded flex items-center justify-center text-white font-bold text-xs">A</div>
-            <div>
-              <h3 className="text-sm font-medium text-white">AtCoder</h3>
-              <p className="text-xs text-gray-400">{t('onboarding.atcoderDescription')}</p>
-            </div>
-          </div>
-          {user.atcoder_username ? (
-            <div className="flex items-center gap-2 text-green-400 text-sm">
-              <CheckCircle className="w-4 h-4" />
-              <span>{t('settings.connected')} - @{user.atcoder_username}</span>
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={atcoderUsername}
-                onChange={handleAtcoderChange}
-                placeholder={t('settings.atcoderUsername')}
-                maxLength={50}
-                className={`${inputClass} flex-1`}
-              />
-              <button
-                onClick={onConnectAtCoder}
-                disabled={connectingAtcoder || !atcoderUsername.trim()}
-                className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors whitespace-nowrap"
-              >
-                {connectingAtcoder ? t('common.loading') : t('settings.connect')}
-              </button>
-            </div>
-          )}
-        </div>
+        <IntegrationUsernameCard
+          icon={<div className="w-6 h-6 bg-gray-700 rounded flex items-center justify-center text-white font-bold text-xs">A</div>}
+          serviceName="AtCoder"
+          description={t('onboarding.atcoderDescription')}
+          connectedUsername={user.atcoder_username}
+          username={atcoderUsername}
+          onUsernameChange={handleAtcoderChange}
+          placeholder={t('settings.atcoderUsername')}
+          connecting={connectingAtcoder}
+          onConnect={onConnectAtCoder}
+          buttonClassName="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg font-medium text-sm transition-colors"
+        />
 
         {/* paiza */}
         <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
