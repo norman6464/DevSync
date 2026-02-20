@@ -249,7 +249,7 @@ type RoadmapRepositoryInterface interface {
 type ChatRoomRepositoryInterface interface {
 	Create(room *model.ChatRoom) error
 	FindByID(id uint) (*model.ChatRoom, error)
-	FindByUserID(userID uint) ([]model.ChatRoom, error)
+	FindByUserID(userID uint, limit, offset int) ([]model.ChatRoom, int64, error)
 	Update(room *model.ChatRoom) error
 	Delete(roomID uint) error
 	AddMember(roomID, userID uint) error

@@ -29,16 +29,19 @@ func (r *ChatRoomRepository) FindByID(id uint) (*model.ChatRoom, error) {
 	return &room, err
 }
 
-// FindByUserID は指定ユーザーが参加している全チャットルームを取得する。
+// FindByUserID は指定ユーザーが参加しているチャットルームをページネーション付きで取得する。
 // chat_room_membersテーブルをJOINし、更新日時の降順でソートされる。
-func (r *ChatRoomRepository) FindByUserID(userID uint) ([]model.ChatRoom, error) {
+func (r *ChatRoomRepository) FindByUserID(userID uint, limit, offset int) ([]model.ChatRoom, int64, error) {
 	var rooms []model.ChatRoom
-	err := r.db.Joins("JOIN chat_room_members ON chat_room_members.chat_room_id = chat_rooms.id").
-		Where("chat_room_members.user_id = ?", userID).
-		Preload("Owner").
+	var total int64
+	query := r.db.Joins("JOIN chat_room_members ON chat_room_members.chat_room_id = chat_rooms.id").
+		Where("chat_room_members.user_id = ?", userID)
+	query.Model(&model.ChatRoom{}).Count(&total)
+	err := query.Preload("Owner").
 		Order("chat_rooms.updated_at DESC").
+		Limit(limit).Offset(offset).
 		Find(&rooms).Error
-	return rooms, err
+	return rooms, total, err
 }
 
 // Update は既存のチャットルーム情報を更新する。
