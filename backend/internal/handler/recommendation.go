@@ -30,7 +30,7 @@ func (h *RecommendationHandler) GetRecommendedUsers(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, users)
+	respondOK(c, ensureSlice(users))
 }
 
 // GetTrendingPosts は直近7日間の人気投稿を返す。
@@ -40,7 +40,7 @@ func (h *RecommendationHandler) GetTrendingPosts(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, posts)
+	respondOK(c, ensureSlice(posts))
 }
 
 // GetTrendingResources は直近30日間の人気学習リソースを返す。
@@ -50,5 +50,5 @@ func (h *RecommendationHandler) GetTrendingResources(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, resources)
+	respondOK(c, ensureSlice(resources))
 }

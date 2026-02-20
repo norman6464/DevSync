@@ -70,7 +70,7 @@ func (h *StudyCircleHandler) GetMyCircles(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, circles)
+	respondOK(c, ensureSlice(circles))
 }
 
 // GetByID はサークル詳細を返す。
@@ -133,7 +133,7 @@ func (h *StudyCircleHandler) GetMembers(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, members)
+	respondOK(c, ensureSlice(members))
 }
 
 // AddMember はメンバーを追加する。
