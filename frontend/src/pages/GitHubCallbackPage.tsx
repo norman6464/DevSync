@@ -8,8 +8,9 @@ import toast from 'react-hot-toast';
 
 function parseStatePurpose(state: string): string {
   try {
-    const payload = state.split('.')[1];
-    const decoded = JSON.parse(atob(payload));
+    const parts = state.split('.');
+    if (parts.length < 2 || !parts[1]) return '';
+    const decoded = JSON.parse(atob(parts[1]));
     return decoded.purpose || '';
   } catch {
     return '';
