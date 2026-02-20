@@ -1,6 +1,8 @@
 package service
 
 import (
+	"strings"
+
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
@@ -99,6 +101,9 @@ func (s *CodeSnippetService) Delete(id, userID uint) error {
 // CreateComment はスニペットへのインラインコメントを作成する。
 // スニペットの存在を確認してからコメントを作成する。
 func (s *CodeSnippetService) CreateComment(comment *model.SnippetComment) error {
+	if strings.TrimSpace(comment.Content) == "" {
+		return domain.NewError(domain.ErrCodeBadRequest, "コメント内容は必須です", nil)
+	}
 	if _, err := s.repo.FindByID(comment.SnippetID); err != nil {
 		return err
 	}
