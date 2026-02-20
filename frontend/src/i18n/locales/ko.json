@@ -599,6 +599,7 @@
     "resume": "재개",
     "filter": "필터",
     "noFilterResults": "선택한 필터에 맞는 목표가 없습니다",
+    "searchPlaceholder": "제목이나 설명으로 검색...",
     "titlePlaceholder": "예: TypeScript 배우기",
     "descriptionPlaceholder": "목표를 설명하세요...",
     "categoryLanguage": "언어",

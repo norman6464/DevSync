@@ -599,6 +599,7 @@
     "resume": "Retomar",
     "filter": "Filtrar",
     "noFilterResults": "Nenhuma meta corresponde aos filtros selecionados",
+    "searchPlaceholder": "Pesquisar por título ou descrição...",
     "titlePlaceholder": "Ex. Aprender TypeScript",
     "descriptionPlaceholder": "Descreva sua meta...",
     "categoryLanguage": "Linguagem",

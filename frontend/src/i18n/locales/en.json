@@ -599,6 +599,7 @@
     "resume": "Resume",
     "filter": "Filter",
     "noFilterResults": "No goals match the selected filters",
+    "searchPlaceholder": "Search by title or description...",
     "titlePlaceholder": "e.g. Learn TypeScript",
     "descriptionPlaceholder": "Describe your goal...",
     "categoryLanguage": "Language",

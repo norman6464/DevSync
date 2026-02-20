@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Target, Filter } from 'lucide-react';
+import { Target, Filter, Search } from 'lucide-react';
 import { type GoalCategory } from '../api/goals';
 import { useGoalForm } from '../hooks';
 import { Modal, PageLoader } from '../components/common';
@@ -14,6 +14,7 @@ export default function GoalsPage() {
     goals, loading, saving, activeGoals, completedGoals, pausedGoals,
     filteredGoals, filteredActiveGoals, filteredPausedGoals, filteredCompletedGoals,
     filterStatus, setFilterStatus, filterCategory, setFilterCategory,
+    searchQuery, setSearchQuery,
     showForm, setShowForm, editingGoal,
     title, setTitle, description, setDescription,
     category, setCategory, targetDate, setTargetDate,
@@ -23,7 +24,7 @@ export default function GoalsPage() {
     dialogProps,
   } = useGoalForm();
 
-  const isFiltered = filterStatus !== 'all' || filterCategory !== 'all';
+  const isFiltered = filterStatus !== 'all' || filterCategory !== 'all' || searchQuery.trim() !== '';
 
   if (loading) return <PageLoader />;
 
@@ -57,6 +58,18 @@ export default function GoalsPage() {
           <p className="text-2xl font-bold text-yellow-400">{pausedGoals.length}</p>
           <p className="text-sm text-gray-400">{t('goals.pausedGoals')}</p>
         </div>
+      </div>
+
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder={t('goals.searchPlaceholder')}
+          className={`${inputClass} pl-9`}
+        />
       </div>
 
       {/* Filters */}
