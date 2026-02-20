@@ -472,7 +472,7 @@ type NoteFolderRepositoryInterface interface {
 type PostCollectionRepositoryInterface interface {
 	Create(collection *model.PostCollection) error
 	FindByID(id uint) (*model.PostCollection, error)
-	FindByUserID(userID uint) ([]model.PostCollection, error)
+	FindByUserID(userID uint, limit, offset int) ([]model.PostCollection, int64, error)
 	FindPublicByUserID(userID uint) ([]model.PostCollection, error)
 	Update(collection *model.PostCollection) error
 	Delete(id uint) error

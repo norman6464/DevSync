@@ -1,5 +1,15 @@
 package dto
 
+import "github.com/norman6464/devsync/backend/internal/model"
+
+// PostCollectionListResponse はコレクション一覧レスポンス（ページネーション付き）。
+type PostCollectionListResponse struct {
+	Collections []model.PostCollection `json:"collections"`
+	Total       int64                  `json:"total"`
+	Limit       int                    `json:"limit"`
+	Offset      int                    `json:"offset"`
+}
+
 // CreatePostCollectionRequest はコレクション作成のリクエストボディ。
 type CreatePostCollectionRequest struct {
 	Title       string `json:"title" binding:"required,max=200"`
