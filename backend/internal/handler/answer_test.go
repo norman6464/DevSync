@@ -266,3 +266,64 @@ func TestAnswerRemoveVote_Success(t *testing.T) {
 	assertStatus(t, w, http.StatusOK)
 	svc.AssertExpectations(t)
 }
+
+// ============================================================
+// GetByVoteRange テスト
+// ============================================================
+
+func TestAnswerGetByVoteRange_Success(t *testing.T) {
+	h, svc := setupAnswerHandler()
+	r := newRouter(1)
+	r.GET("/questions/:id/answers/vote-range", h.GetByVoteRange)
+
+	answers := []model.Answer{
+		{Body: "回答A"},
+	}
+	svc.On("GetByVoteRange", uint(1), 5, 10).Return(answers, nil)
+
+	w := doRequest(r, http.MethodGet, "/questions/1/answers/vote-range?min_vote=5&max_vote=10", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestAnswerGetByVoteRange_DefaultValues(t *testing.T) {
+	h, svc := setupAnswerHandler()
+	r := newRouter(1)
+	r.GET("/questions/:id/answers/vote-range", h.GetByVoteRange)
+
+	svc.On("GetByVoteRange", uint(1), 0, 100).Return([]model.Answer{}, nil)
+
+	w := doRequest(r, http.MethodGet, "/questions/1/answers/vote-range", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestAnswerGetByVoteRange_InvalidMinVote(t *testing.T) {
+	h, _ := setupAnswerHandler()
+	r := newRouter(1)
+	r.GET("/questions/:id/answers/vote-range", h.GetByVoteRange)
+
+	w := doRequest(r, http.MethodGet, "/questions/1/answers/vote-range?min_vote=abc", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestAnswerGetByVoteRange_InvalidID(t *testing.T) {
+	h, _ := setupAnswerHandler()
+	r := newRouter(1)
+	r.GET("/questions/:id/answers/vote-range", h.GetByVoteRange)
+
+	w := doRequest(r, http.MethodGet, "/questions/abc/answers/vote-range", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestAnswerGetByVoteRange_ServiceError(t *testing.T) {
+	h, svc := setupAnswerHandler()
+	r := newRouter(1)
+	r.GET("/questions/:id/answers/vote-range", h.GetByVoteRange)
+
+	svc.On("GetByVoteRange", uint(1), 0, 100).Return([]model.Answer(nil), errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/questions/1/answers/vote-range", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}

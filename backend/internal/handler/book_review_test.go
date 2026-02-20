@@ -264,3 +264,52 @@ func TestBookReviewDelete_NotFound(t *testing.T) {
 	assertStatus(t, w, http.StatusNotFound)
 	svc.AssertExpectations(t)
 }
+
+// ============================================================
+// GetByRating テスト
+// ============================================================
+
+func TestBookReviewGetByRating_Success(t *testing.T) {
+	h, svc := setupBookReviewHandler()
+	r := newRouter(1)
+	r.GET("/book-reviews/rating", h.GetByRating)
+
+	reviews := []model.BookReview{
+		{Title: "良書", Rating: 4},
+	}
+	svc.On("GetByRating", uint(1), 4, 5).Return(reviews, nil)
+
+	w := doRequest(r, http.MethodGet, "/book-reviews/rating?min_rating=4&max_rating=5", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestBookReviewGetByRating_InvalidMinRating(t *testing.T) {
+	h, _ := setupBookReviewHandler()
+	r := newRouter(1)
+	r.GET("/book-reviews/rating", h.GetByRating)
+
+	w := doRequest(r, http.MethodGet, "/book-reviews/rating?min_rating=abc&max_rating=5", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestBookReviewGetByRating_InvalidMaxRating(t *testing.T) {
+	h, _ := setupBookReviewHandler()
+	r := newRouter(1)
+	r.GET("/book-reviews/rating", h.GetByRating)
+
+	w := doRequest(r, http.MethodGet, "/book-reviews/rating?min_rating=1&max_rating=abc", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestBookReviewGetByRating_ServiceError(t *testing.T) {
+	h, svc := setupBookReviewHandler()
+	r := newRouter(1)
+	r.GET("/book-reviews/rating", h.GetByRating)
+
+	svc.On("GetByRating", uint(1), 1, 5).Return([]model.BookReview(nil), errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/book-reviews/rating?min_rating=1&max_rating=5", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
