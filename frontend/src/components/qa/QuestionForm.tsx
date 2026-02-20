@@ -68,6 +68,7 @@ export default function QuestionForm({ question, onSubmit, onCancel, loading }: 
           className={textareaClass}
           placeholder={t('qa.questionBodyPlaceholder')}
         />
+        <p className="text-xs text-gray-500 text-right mt-1">{body.length}/5000</p>
       </div>
 
       {/* Tags */}
