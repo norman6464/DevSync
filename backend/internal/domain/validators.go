@@ -3,6 +3,8 @@ package domain
 
 import (
 	"fmt"
+	"net"
+	"net/url"
 	"regexp"
 	"strings"
 	"unicode"
@@ -137,22 +139,52 @@ func ValidateContent(content string) error {
 }
 
 // ValidateURL はURLの形式をチェックする
-func ValidateURL(url string) error {
-	if url == "" {
+func ValidateURL(rawURL string) error {
+	if rawURL == "" {
 		return nil // 空の場合は許可（オプショナル）
 	}
 
-	url = strings.TrimSpace(url)
+	rawURL = strings.TrimSpace(rawURL)
 
-	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
-		return NewError(ErrCodeValidation, "URLはhttp://またはhttps://で始まる必要があります", nil)
-	}
-
-	if len(url) > 2048 {
+	if len(rawURL) > 2048 {
 		return NewError(ErrCodeValidation, "URLが長すぎます", nil)
 	}
 
+	parsed, err := url.Parse(rawURL)
+	if err != nil {
+		return NewError(ErrCodeValidation, "URLの形式が不正です", nil)
+	}
+
+	if parsed.Scheme != "http" && parsed.Scheme != "https" {
+		return NewError(ErrCodeValidation, "URLはhttp://またはhttps://で始まる必要があります", nil)
+	}
+
+	if parsed.Host == "" {
+		return NewError(ErrCodeValidation, "URLにホスト名が必要です", nil)
+	}
+
+	// SSRF対策: ローカルホスト・プライベートIPを拒否
+	hostname := parsed.Hostname()
+	if isBlockedHost(hostname) {
+		return NewError(ErrCodeValidation, "内部ネットワークのURLは許可されていません", nil)
+	}
+
 	return nil
+}
+
+// isBlockedHost はSSRF対策として内部ネットワークのホストを検出する
+func isBlockedHost(hostname string) bool {
+	lower := strings.ToLower(hostname)
+	if lower == "localhost" || lower == "0.0.0.0" {
+		return true
+	}
+
+	ip := net.ParseIP(hostname)
+	if ip == nil {
+		return false // ドメイン名の場合はDNS解決前なので許可
+	}
+
+	return ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast()
 }
 
 // ValidateTags はタグのバリデーションを行う
