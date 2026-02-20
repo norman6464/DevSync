@@ -2,8 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useNotifications } from '../../hooks';
-import type { Notification } from '../../types/notification';
 import Avatar from '../common/Avatar';
+import { getNotificationLink, getNotificationMessage } from './NotificationItem';
+import { formatDistanceToNow } from '../../utils/timeFormat';
 
 export default function NotificationDropdown() {
   const { t } = useTranslation();
@@ -31,60 +32,6 @@ export default function NotificationDropdown() {
     if (!isOpen) {
       await fetchNotifications();
     }
-  };
-
-  const getNotificationMessage = (notification: Notification) => {
-    switch (notification.type) {
-      case 'post':
-        return t('notifications.newPost', { name: notification.actor.name });
-      case 'message':
-        return t('notifications.newMessage', { name: notification.actor.name });
-      case 'like':
-        return t('notifications.newLike', { name: notification.actor.name });
-      case 'comment':
-        return t('notifications.newComment', { name: notification.actor.name });
-      case 'follow':
-        return t('notifications.newFollow', { name: notification.actor.name });
-      case 'answer':
-        return t('notifications.newAnswer', { name: notification.actor.name });
-      case 'badge':
-        return t('notifications.newBadge');
-      default:
-        return '';
-    }
-  };
-
-  const getNotificationLink = (notification: Notification) => {
-    switch (notification.type) {
-      case 'post':
-      case 'like':
-      case 'comment':
-        return notification.post_id ? `/posts/${notification.post_id}` : '/';
-      case 'follow':
-        return `/profile/${notification.actor.username}`;
-      case 'message':
-        return '/chat';
-      case 'answer':
-        return notification.question_id ? `/qa/${notification.question_id}` : '/';
-      case 'badge':
-        return `/profile/${notification.actor.username}`;
-      default:
-        return '/';
-    }
-  };
-
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return t('notifications.justNow');
-    if (diffMins < 60) return t('notifications.minutesAgo', { count: diffMins });
-    if (diffHours < 24) return t('notifications.hoursAgo', { count: diffHours });
-    return t('notifications.daysAgo', { count: diffDays });
   };
 
   return (
@@ -153,7 +100,7 @@ export default function NotificationDropdown() {
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-gray-100">
-                      {getNotificationMessage(notification)}
+                      {getNotificationMessage(notification, t)}
                     </p>
                     {(notification.type === 'post' || notification.type === 'like' || notification.type === 'comment') && notification.post && (
                       <p className="text-xs text-gray-400 truncate mt-0.5">
@@ -166,7 +113,7 @@ export default function NotificationDropdown() {
                       </p>
                     )}
                     <p className="text-xs text-gray-500 mt-1">
-                      {formatTime(notification.created_at)}
+                      {formatDistanceToNow(notification.created_at)}
                     </p>
                   </div>
                   {!notification.read && (
