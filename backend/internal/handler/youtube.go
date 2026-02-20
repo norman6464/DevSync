@@ -77,5 +77,5 @@ func (h *YouTubeHandler) Recommend(c *gin.Context) {
 
 // Status はYouTube API機能の利用可能状態を返す。
 func (h *YouTubeHandler) Status(c *gin.Context) {
-	respondOK(c, gin.H{"available": h.service.IsAvailable()})
+	respondOK(c, dto.AvailabilityResponse{Available: h.service.IsAvailable()})
 }
