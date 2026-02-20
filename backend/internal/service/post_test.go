@@ -1098,3 +1098,77 @@ func TestPostUpdate_ValidationError(t *testing.T) {
 	assert.Error(t, err)
 	postRepo.AssertExpectations(t)
 }
+
+// ============================================================
+// 投稿非公開化（Unpublish）追加テスト
+// ============================================================
+
+func TestPostUnpublish_UpdateError(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	published := &model.Post{Title: "Published", UserID: 1, IsDraft: false}
+	published.ID = 1
+
+	postRepo.On("FindByID", uint(1)).Return(published, nil)
+	postRepo.On("Update", published).Return(errors.New("db error"))
+
+	result, err := svc.Unpublish(1, 1)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "db error")
+	postRepo.AssertExpectations(t)
+}
+
+// ============================================================
+// 投稿取得系 エラーパステスト
+// ============================================================
+
+func TestPostGetAll_RepoError(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindAll", 1, 10).Return([]model.Post{}, errors.New("db error"))
+
+	result, err := svc.GetAll(1, 10)
+	assert.Error(t, err)
+	assert.Empty(t, result)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostGetByUserID_RepoError(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindByUserID", uint(1)).Return([]model.Post{}, errors.New("db error"))
+
+	result, err := svc.GetByUserID(1)
+	assert.Error(t, err)
+	assert.Empty(t, result)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostDeleteComment_RepoError(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	comment := &model.Comment{UserID: 1, PostID: 1, Content: "test"}
+	comment.ID = 10
+
+	postRepo.On("FindCommentByID", uint(10)).Return(comment, nil)
+	postRepo.On("DeleteComment", uint(10)).Return(errors.New("db error"))
+
+	err := svc.DeleteComment(10, 1)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "db error")
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostCreateComment_RepoError(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	comment := &model.Comment{UserID: 1, PostID: 1, Content: "コメント内容"}
+
+	postRepo.On("CreateComment", comment).Return(errors.New("db error"))
+
+	err := svc.CreateComment(comment)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "db error")
+	postRepo.AssertExpectations(t)
+}
