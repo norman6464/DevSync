@@ -9,7 +9,7 @@ type CreateBookReviewRequest struct {
 	ISBN     string `json:"isbn" binding:"max=20" validate:"max=20"`
 	Rating   int    `json:"rating" binding:"required,min=1,max=5" validate:"required,min=1,max=5"`
 	Review   string `json:"review"`
-	ImageURL string `json:"image_url"`
+	ImageURL string `json:"image_url" binding:"omitempty,http_url,max=2000"`
 }
 
 // UpdateBookReviewRequest は書籍レビュー更新のリクエストボディ。
@@ -19,7 +19,7 @@ type UpdateBookReviewRequest struct {
 	ISBN     string `json:"isbn" binding:"omitempty,max=20" validate:"omitempty,max=20"`
 	Rating   *int   `json:"rating" binding:"omitempty,min=1,max=5" validate:"omitempty,min=1,max=5"`
 	Review   string `json:"review" binding:"omitempty,max=5000"`
-	ImageURL string `json:"image_url"`
+	ImageURL string `json:"image_url" binding:"omitempty,http_url,max=2000"`
 }
 
 // UpdateBookReviewStatusRequest は書籍レビューの読書状態更新リクエスト。

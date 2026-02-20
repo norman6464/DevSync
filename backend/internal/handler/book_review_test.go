@@ -514,3 +514,31 @@ func TestBookReviewSearch_ServiceError(t *testing.T) {
 	assertStatus(t, w, http.StatusInternalServerError)
 	svc.AssertExpectations(t)
 }
+
+// ============================================================
+// ImageURL バリデーションテスト
+// ============================================================
+
+func TestBookReviewCreate_InvalidImageURL(t *testing.T) {
+	h, _ := setupBookReviewHandler()
+	r := newRouter(1)
+	r.POST("/book-reviews", h.Create)
+
+	w := doRequest(r, http.MethodPost, "/book-reviews", map[string]interface{}{
+		"title":     "テスト本",
+		"rating":    4,
+		"image_url": "javascript:alert('xss')",
+	})
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestBookReviewUpdate_InvalidImageURL(t *testing.T) {
+	h, _ := setupBookReviewHandler()
+	r := newRouter(1)
+	r.PUT("/book-reviews/:id", h.Update)
+
+	w := doRequest(r, http.MethodPut, "/book-reviews/1", map[string]interface{}{
+		"image_url": "data:text/html,<script>alert('xss')</script>",
+	})
+	assertStatus(t, w, http.StatusBadRequest)
+}
