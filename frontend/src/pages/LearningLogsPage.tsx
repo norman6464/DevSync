@@ -268,6 +268,7 @@ export default function LearningLogsPage() {
               className={`${inputClass} resize-none`}
               required
             />
+            <p className="text-xs text-gray-500 text-right mt-1">{content.length}/5000</p>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
