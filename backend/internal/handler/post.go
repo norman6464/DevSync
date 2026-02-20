@@ -382,32 +382,12 @@ func (h *PostHandler) Unpublish(c *gin.Context) {
 
 // Bookmark は投稿をブックマークする。
 func (h *PostHandler) Bookmark(c *gin.Context) {
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-	userID := c.GetUint("userID")
-
-	if err := h.service.Bookmark(userID, id); err != nil {
-		respondError(c, err)
-		return
-	}
-	respondOK(c, domain.NewMessageResponse("bookmarked"))
+	handleToggleAction(c, h.service.Bookmark, "bookmarked")
 }
 
 // Unbookmark は投稿のブックマークを解除する。
 func (h *PostHandler) Unbookmark(c *gin.Context) {
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-	userID := c.GetUint("userID")
-
-	if err := h.service.Unbookmark(userID, id); err != nil {
-		respondError(c, err)
-		return
-	}
-	respondOK(c, domain.NewMessageResponse("unbookmarked"))
+	handleToggleAction(c, h.service.Unbookmark, "unbookmarked")
 }
 
 // GetBookmarks は現在のユーザーのブックマーク済み投稿一覧を返す。
