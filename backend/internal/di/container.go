@@ -251,6 +251,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	postTagRepo := repository.NewPostTagRepository(db)
 	postTagService := service.NewPostTagService(postTagRepo, postRepo)
 	c.PostTagHandler = handler.NewPostTagHandler(postTagService)
+	c.PostHandler.SetTagService(postTagService)
 
 	postPinRepo := repository.NewPostPinRepository(db)
 	postPinService := service.NewPostPinService(postPinRepo, postRepo)

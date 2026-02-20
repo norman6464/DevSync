@@ -10,6 +10,7 @@ import (
 // PostTagServiceInterface はPostTagHandlerが依存するサービスインターフェース。
 type PostTagServiceInterface interface {
 	SetTags(postID, userID uint, tags []string) error
+	SetAutoTags(postID, userID uint, content string) error
 	GetByPostID(postID uint) ([]string, error)
 	FindPostsByTag(tag string, limit, offset int) ([]model.Post, int64, error)
 	GetPopularTags(limit int) ([]model.TagCount, error)
