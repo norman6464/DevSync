@@ -63,3 +63,6 @@ export const modalContentClass =
 
 export const linkSmallClass =
   'text-xs text-blue-400 hover:text-blue-300 transition-colors';
+
+export const badgeBaseClass =
+  'px-2 py-0.5 text-xs rounded-full';

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Monitor, Rocket, Target, FolderOpen, FileText, Copy, type LucideIcon } from 'lucide-react';
 import { type GoalCategory, type GoalStatus, type LearningGoal } from '../../api/goals';
 import { formatDate } from '../../utils/timeFormat';
+import { badgeBaseClass } from '../../constants/styles';
 
 export const CATEGORIES: { value: GoalCategory; label: string; icon: string; Icon: LucideIcon }[] = [
   { value: 'language', label: 'goals.categoryLanguage', icon: '💻', Icon: Monitor },
@@ -67,7 +68,7 @@ const GoalCard = memo(function GoalCard({
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-medium">{goal.title}</h3>
-              <span className={`px-2 py-0.5 text-xs rounded-full ${getStatusColor(goal.status)}`}>
+              <span className={`${badgeBaseClass} ${getStatusColor(goal.status)}`}>
                 {t(`goals.status${goal.status.charAt(0).toUpperCase() + goal.status.slice(1)}`)}
               </span>
             </div>

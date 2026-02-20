@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Monitor, Rocket, Target, FolderOpen, FileText, type LucideIcon } from 'lucide-react';
 import { type Roadmap, type RoadmapCategory } from '../../api/roadmaps';
+import { badgeBaseClass } from '../../constants/styles';
 
 const CATEGORIES: { value: RoadmapCategory; label: string; icon: string; Icon: LucideIcon }[] = [
   { value: 'language', label: 'roadmaps.categoryLanguage', icon: '💻', Icon: Monitor },
@@ -37,12 +38,12 @@ export default function RoadmapCard({ roadmap, onView, onEdit, onDelete }: Roadm
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-medium text-white">{roadmap.title}</h3>
               {roadmap.is_public && (
-                <span className="px-2 py-0.5 text-xs rounded-full bg-blue-500/10 text-blue-400">
+                <span className={`${badgeBaseClass} bg-blue-500/10 text-blue-400`}>
                   {t('roadmaps.public')}
                 </span>
               )}
               {roadmap.status === 'completed' && (
-                <span className="px-2 py-0.5 text-xs rounded-full bg-green-500/10 text-green-400">
+                <span className={`${badgeBaseClass} bg-green-500/10 text-green-400`}>
                   {t('roadmaps.completed')}
                 </span>
               )}
