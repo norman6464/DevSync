@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -423,6 +424,25 @@ func TestChat_LLMNotConfigured(t *testing.T) {
 	conv, err := svc.Chat(1, "質問", 0)
 	assert.ErrorIs(t, err, ErrLLMNotConfigured)
 	assert.Nil(t, conv)
+}
+
+func TestChat_EmptyMessage(t *testing.T) {
+	svc, _ := newTestAIAdviceService(true)
+
+	conv, err := svc.Chat(1, "   ", 0)
+	assert.Error(t, err)
+	assert.Nil(t, conv)
+	assert.Contains(t, err.Error(), "メッセージを入力してください")
+}
+
+func TestChat_MessageTooLong(t *testing.T) {
+	svc, _ := newTestAIAdviceService(true)
+
+	longMsg := strings.Repeat("あ", MaxChatMessageLength+1)
+	conv, err := svc.Chat(1, longMsg, 0)
+	assert.Error(t, err)
+	assert.Nil(t, conv)
+	assert.Contains(t, err.Error(), "メッセージは5000文字以内で入力してください")
 }
 
 func TestIsLLMAvailable(t *testing.T) {
