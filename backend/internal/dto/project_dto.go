@@ -7,9 +7,9 @@ type CreateProjectRequest struct {
 	Title        string `json:"title" binding:"required,max=200" validate:"required,max=200"`
 	Description  string `json:"description" binding:"omitempty,max=5000"`
 	TechStack    string `json:"tech_stack" binding:"omitempty,max=500"`
-	DemoURL      string `json:"demo_url" binding:"omitempty,max=2000"`
-	GithubURL    string `json:"github_url" binding:"omitempty,max=2000"`
-	ImageURL     string `json:"image_url" binding:"omitempty,max=2000"`
+	DemoURL      string `json:"demo_url" binding:"omitempty,http_url,max=2000"`
+	GithubURL    string `json:"github_url" binding:"omitempty,http_url,max=2000"`
+	ImageURL     string `json:"image_url" binding:"omitempty,http_url,max=2000"`
 	Role         string `json:"role" binding:"omitempty,max=200"`
 	StartDate    string `json:"start_date" binding:"omitempty,max=20"`
 	EndDate      string `json:"end_date" binding:"omitempty,max=20"`
@@ -22,9 +22,9 @@ type UpdateProjectRequest struct {
 	Title        string `json:"title" binding:"omitempty,max=200" validate:"omitempty,max=200"`
 	Description  string `json:"description" binding:"omitempty,max=5000"`
 	TechStack    string `json:"tech_stack" binding:"omitempty,max=500"`
-	DemoURL      string `json:"demo_url" binding:"omitempty,max=2000"`
-	GithubURL    string `json:"github_url" binding:"omitempty,max=2000"`
-	ImageURL     string `json:"image_url" binding:"omitempty,max=2000"`
+	DemoURL      string `json:"demo_url" binding:"omitempty,http_url,max=2000"`
+	GithubURL    string `json:"github_url" binding:"omitempty,http_url,max=2000"`
+	ImageURL     string `json:"image_url" binding:"omitempty,http_url,max=2000"`
 	Role         string `json:"role" binding:"omitempty,max=200"`
 	StartDate    string `json:"start_date" binding:"omitempty,max=20"`
 	EndDate      string `json:"end_date" binding:"omitempty,max=20"`
