@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"strconv"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
@@ -184,8 +182,7 @@ func (h *ChatRoomHandler) GetMessages(c *gin.Context) {
 		return
 	}
 
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "50"))
+	page, limit := parsePagination(c)
 
 	messages, err := h.service.GetMessages(roomID, userID, page, limit)
 	if err != nil {

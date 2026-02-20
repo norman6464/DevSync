@@ -297,7 +297,7 @@ func TestChatRoomGetMessages_Success(t *testing.T) {
 	r.GET("/rooms/:id/messages", h.GetMessages)
 
 	roomRepo.On("IsMember", uint(10), uint(1)).Return(true, nil)
-	msgRepo.On("FindByRoomID", uint(10), 1, 50).Return([]model.GroupMessage{
+	msgRepo.On("FindByRoomID", uint(10), 1, 20).Return([]model.GroupMessage{
 		{Content: "Hello"},
 	}, nil)
 

@@ -38,7 +38,7 @@ func TestMessage_GetConversations_ServiceError(t *testing.T) {
 
 func TestMessage_GetMessages_Success(t *testing.T) {
 	h, svc := setupMessageHandler()
-	svc.On("GetConversation", uint(1), uint(5), 1, 50).Return([]model.Message{
+	svc.On("GetConversation", uint(1), uint(5), 1, 20).Return([]model.Message{
 		{Content: "Hello"},
 	}, nil)
 
