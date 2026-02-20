@@ -936,6 +936,7 @@
     "postAnswer": "Publicar respuesta",
     "updateAnswer": "Actualizar respuesta",
     "answerPlaceholder": "Escribe tu respuesta...",
+    "submitShortcut": "Ctrl+Enter para enviar",
     "answersCount": "Respuestas ({{count}})",
     "questionNotFound": "Pregunta no encontrada",
     "backToList": "Volver a la lista",

@@ -890,6 +890,7 @@
     "postAnswer": "回答を投稿",
     "updateAnswer": "回答を更新",
     "answerPlaceholder": "回答を入力してください...",
+    "submitShortcut": "Ctrl+Enterで送信",
     "answersCount": "回答 ({{count}}件)",
     "questionNotFound": "質問が見つかりません",
     "backToList": "一覧に戻る",

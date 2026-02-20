@@ -936,6 +936,7 @@
     "postAnswer": "답변 등록",
     "updateAnswer": "답변 수정",
     "answerPlaceholder": "답변을 작성하세요...",
+    "submitShortcut": "Ctrl+Enter로 제출",
     "answersCount": "답변 ({{count}}개)",
     "questionNotFound": "질문을 찾을 수 없습니다",
     "backToList": "목록으로 돌아가기",

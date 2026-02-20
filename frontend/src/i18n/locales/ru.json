@@ -936,6 +936,7 @@
     "postAnswer": "Опубликовать ответ",
     "updateAnswer": "Обновить ответ",
     "answerPlaceholder": "Напишите ваш ответ...",
+    "submitShortcut": "Ctrl+Enter для отправки",
     "answersCount": "Ответы ({{count}})",
     "questionNotFound": "Вопрос не найден",
     "backToList": "Вернуться к списку",

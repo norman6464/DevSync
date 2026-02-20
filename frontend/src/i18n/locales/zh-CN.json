@@ -936,6 +936,7 @@
     "postAnswer": "发布回答",
     "updateAnswer": "更新回答",
     "answerPlaceholder": "写下你的回答...",
+    "submitShortcut": "按Ctrl+Enter提交",
     "answersCount": "回答 ({{count}})",
     "questionNotFound": "问题未找到",
     "backToList": "返回列表",
