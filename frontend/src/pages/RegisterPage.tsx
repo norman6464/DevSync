@@ -91,6 +91,7 @@ export default function RegisterPage() {
                 value={name}
                 onChange={handleNameChange}
                 required
+                maxLength={50}
                 className={inputClass}
               />
             </div>
