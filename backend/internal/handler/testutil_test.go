@@ -1318,6 +1318,16 @@ func (m *MockLearningLogService) GetWeeklyDuration(userID uint) (int, error) {
 	return args.Int(0), args.Error(1)
 }
 
+func (m *MockLearningLogService) FavoriteLog(id, userID uint) error {
+	args := m.Called(id, userID)
+	return args.Error(0)
+}
+
+func (m *MockLearningLogService) UnfavoriteLog(id, userID uint) error {
+	args := m.Called(id, userID)
+	return args.Error(0)
+}
+
 // setupLearningLogHandler はLearningLogHandlerテスト用のセットアップを行う。
 func setupLearningLogHandler() (*LearningLogHandler, *MockLearningLogService) {
 	svc := new(MockLearningLogService)

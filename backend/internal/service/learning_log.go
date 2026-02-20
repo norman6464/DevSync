@@ -115,6 +115,26 @@ func (s *LearningLogService) Update(id, userID uint, updates *model.LearningLog)
 	return log, nil
 }
 
+// FavoriteLog は所有権を検証した後、学習ログをお気に入りに設定する。
+func (s *LearningLogService) FavoriteLog(id, userID uint) error {
+	log, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return err
+	}
+	log.IsFavorite = true
+	return s.repo.Update(log)
+}
+
+// UnfavoriteLog は所有権を検証した後、学習ログのお気に入りを解除する。
+func (s *LearningLogService) UnfavoriteLog(id, userID uint) error {
+	log, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return err
+	}
+	log.IsFavorite = false
+	return s.repo.Update(log)
+}
+
 // Delete は所有権を検証した後、学習ログを削除する。
 func (s *LearningLogService) Delete(id, userID uint) error {
 	if _, err := s.findAndCheckOwnership(id, userID); err != nil {
