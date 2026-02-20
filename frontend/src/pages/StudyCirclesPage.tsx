@@ -118,9 +118,23 @@ export default function StudyCirclesPage() {
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-1 text-[10px] text-gray-500">
-                  <Users className="w-3 h-3" />
-                  {circle.members?.length || 0}/{circle.max_members}
+                <div className="flex items-center gap-2">
+                  <div className="w-16 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${
+                        (circle.members?.length || 0) >= circle.max_members
+                          ? 'bg-red-400'
+                          : (circle.members?.length || 0) >= circle.max_members * 0.8
+                          ? 'bg-yellow-400'
+                          : 'bg-purple-400'
+                      }`}
+                      style={{ width: `${Math.min(((circle.members?.length || 0) / circle.max_members) * 100, 100)}%` }}
+                    />
+                  </div>
+                  <div className="flex items-center gap-1 text-[10px] text-gray-500">
+                    <Users className="w-3 h-3" />
+                    {circle.members?.length || 0}/{circle.max_members}
+                  </div>
                 </div>
               </div>
               {circle.owner_id === user?.id && (
