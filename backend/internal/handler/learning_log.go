@@ -21,6 +21,7 @@ type LearningLogServiceInterface interface {
 	GetCalendarData(userID uint) ([]model.CalendarEntry, error)
 	ExportCSV(userID uint, days int) ([]byte, error)
 	GetByCategory(userID uint, category string) ([]model.LearningLog, error)
+	GetBySource(userID uint, source string) ([]model.LearningLog, error)
 }
 
 // LearningLogHandler は学習ログ関連のHTTPハンドラ。
@@ -202,6 +203,23 @@ func (h *LearningLogHandler) GetByCategory(c *gin.Context) {
 	category := c.Param("category")
 
 	logs, err := h.service.GetByCategory(userID, category)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	if logs == nil {
+		logs = []model.LearningLog{}
+	}
+
+	respondOK(c, logs)
+}
+
+// GetBySource はソース（manual/pomodoro）で学習ログをフィルタリングして取得する。
+func (h *LearningLogHandler) GetBySource(c *gin.Context) {
+	userID := c.GetUint("userID")
+	source := c.Param("source")
+
+	logs, err := h.service.GetBySource(userID, source)
 	if err != nil {
 		respondError(c, err)
 		return

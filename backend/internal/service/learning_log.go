@@ -57,6 +57,14 @@ func (s *LearningLogService) GetByCategory(userID uint, category string) ([]mode
 	return s.repo.GetByCategory(userID, category)
 }
 
+// GetBySource は指定ユーザーの学習ログをソース（manual/pomodoro）でフィルタリングして取得する。
+func (s *LearningLogService) GetBySource(userID uint, source string) ([]model.LearningLog, error) {
+	if !model.ValidSources[model.LogSource(source)] {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "無効なソースです", nil)
+	}
+	return s.repo.GetBySource(userID, source)
+}
+
 // findAndCheckOwnership は学習ログを取得し、指定ユーザーが所有者かを検証する。
 func (s *LearningLogService) findAndCheckOwnership(id, userID uint) (*model.LearningLog, error) {
 	log, err := s.repo.FindByID(id)
