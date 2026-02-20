@@ -522,3 +522,54 @@ func TestBookReviewUpdateStatus_Forbidden(t *testing.T) {
 	err := svc.UpdateStatus(1, 1, model.ReviewStatusCompleted)
 	assert.ErrorIs(t, err, ErrForbidden)
 }
+
+// ============================================================
+// 書籍レビュー検索テスト
+// ============================================================
+
+func TestBookReviewSearch_Success(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	expected := []model.BookReview{
+		{Title: "Go言語入門", Author: "テスト著者", Rating: 4, UserID: 1},
+	}
+	repo.On("Search", "Go", 20, 0).Return(expected, int64(1), nil)
+
+	result, total, err := svc.Search("Go", 20, 0)
+	assert.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, int64(1), total)
+	repo.AssertExpectations(t)
+}
+
+func TestBookReviewSearch_EmptyQuery(t *testing.T) {
+	svc, _ := newTestBookReviewService()
+
+	result, total, err := svc.Search("", 20, 0)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "検索キーワードは必須です")
+	assert.Nil(t, result)
+	assert.Equal(t, int64(0), total)
+}
+
+func TestBookReviewSearch_WhitespaceQuery(t *testing.T) {
+	svc, _ := newTestBookReviewService()
+
+	result, total, err := svc.Search("   ", 20, 0)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "検索キーワードは必須です")
+	assert.Nil(t, result)
+	assert.Equal(t, int64(0), total)
+}
+
+func TestBookReviewSearch_RepoError(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	repo.On("Search", "Go", 20, 0).Return([]model.BookReview(nil), int64(0), errors.New("db error"))
+
+	result, total, err := svc.Search("Go", 20, 0)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, int64(0), total)
+	repo.AssertExpectations(t)
+}

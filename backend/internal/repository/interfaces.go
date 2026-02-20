@@ -202,6 +202,7 @@ type BookReviewRepositoryInterface interface {
 	FindByUserID(userID uint, limit, offset int) ([]model.BookReview, int64, error)
 	FindAll(limit, offset int) ([]model.BookReview, int64, error)
 	FindByRating(userID uint, minRating, maxRating int) ([]model.BookReview, error)
+	Search(query string, limit, offset int) ([]model.BookReview, int64, error)
 	Update(review *model.BookReview) error
 	Delete(id uint) error
 }

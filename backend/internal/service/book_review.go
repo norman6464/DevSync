@@ -60,6 +60,14 @@ func (s *BookReviewService) GetByRating(userID uint, minRating, maxRating int) (
 	return s.repo.FindByRating(userID, minRating, maxRating)
 }
 
+// Search は書籍レビューをキーワード検索する。
+func (s *BookReviewService) Search(query string, limit, offset int) ([]model.BookReview, int64, error) {
+	if strings.TrimSpace(query) == "" {
+		return nil, 0, domain.NewError(domain.ErrCodeBadRequest, "検索キーワードは必須です", nil)
+	}
+	return s.repo.Search(strings.TrimSpace(query), limit, offset)
+}
+
 // findAndCheckOwnership は書籍レビューを取得し、指定ユーザーが所有者かを検証する。
 func (s *BookReviewService) findAndCheckOwnership(id, userID uint) (*model.BookReview, error) {
 	review, err := s.repo.FindByID(id)
