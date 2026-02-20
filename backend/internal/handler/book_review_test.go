@@ -177,6 +177,43 @@ func TestBookReviewGetByUserID_Success(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
+func TestBookReviewGetByUserID_ServiceError(t *testing.T) {
+	h, svc := setupBookReviewHandler()
+	r := newRouter(1)
+	r.GET("/users/:userId/book-reviews", h.GetByUserID)
+
+	svc.On("GetByUserID", uint(1), 20, 0).Return([]model.BookReview(nil), int64(0), errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/users/1/book-reviews", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+func TestBookReviewGetByUserID_InvalidID(t *testing.T) {
+	h, _ := setupBookReviewHandler()
+	r := newRouter(1)
+	r.GET("/users/:userId/book-reviews", h.GetByUserID)
+
+	w := doRequest(r, http.MethodGet, "/users/abc/book-reviews", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// ============================================================
+// GetAll テスト（追加分）
+// ============================================================
+
+func TestBookReviewGetAll_ServiceError(t *testing.T) {
+	h, svc := setupBookReviewHandler()
+	r := newRouter(1)
+	r.GET("/book-reviews", h.GetAll)
+
+	svc.On("GetAll", 20, 0).Return([]model.BookReview(nil), int64(0), errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/book-reviews", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
 // ============================================================
 // Update テスト
 // ============================================================
@@ -209,6 +246,26 @@ func TestBookReviewUpdate_Forbidden(t *testing.T) {
 	})
 	assertStatus(t, w, http.StatusForbidden)
 	svc.AssertExpectations(t)
+}
+
+func TestBookReviewUpdate_InvalidJSON(t *testing.T) {
+	h, _ := setupBookReviewHandler()
+	r := newRouter(1)
+	r.PUT("/book-reviews/:id", h.Update)
+
+	w := doRequestRaw(r, http.MethodPut, "/book-reviews/1", "not json")
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestBookReviewUpdate_InvalidID(t *testing.T) {
+	h, _ := setupBookReviewHandler()
+	r := newRouter(1)
+	r.PUT("/book-reviews/:id", h.Update)
+
+	w := doRequest(r, http.MethodPut, "/book-reviews/abc", map[string]interface{}{
+		"title": "テスト",
+	})
+	assertStatus(t, w, http.StatusBadRequest)
 }
 
 func TestBookReviewUpdate_NotFound(t *testing.T) {
