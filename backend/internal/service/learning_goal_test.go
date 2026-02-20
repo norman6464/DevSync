@@ -47,6 +47,24 @@ func TestLearningGoalCreate_Error(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestLearningGoalCreate_WhitespaceOnlyTitle(t *testing.T) {
+	svc, _ := newTestLearningGoalService()
+
+	// 空白のみのタイトル → エラーになるべき
+	goal := &model.LearningGoal{UserID: 1, Title: "   "}
+	err := svc.Create(goal)
+	assert.Error(t, err)
+}
+
+func TestLearningGoalCreate_EmptyTitle(t *testing.T) {
+	svc, _ := newTestLearningGoalService()
+
+	// 空のタイトル → エラーになるべき
+	goal := &model.LearningGoal{UserID: 1, Title: ""}
+	err := svc.Create(goal)
+	assert.Error(t, err)
+}
+
 // ============================================================
 // 学習目標取得テスト
 // ============================================================
