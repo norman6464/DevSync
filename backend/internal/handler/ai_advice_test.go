@@ -251,3 +251,65 @@ func TestAIAdviceGetUnreadAdvice_ServiceError(t *testing.T) {
 	assertStatus(t, w, http.StatusInternalServerError)
 	svc.AssertExpectations(t)
 }
+
+// ============================================================
+// カバレッジ向上テスト
+// ============================================================
+
+func TestAIAdvice_GetConversations_ServiceError(t *testing.T) {
+	h, svc := setupAIAdviceHandler()
+	r := newRouter(1)
+	r.GET("/conversations", h.GetConversations)
+
+	svc.On("GetConversations", uint(1), 20, 0).Return([]model.AIConversation(nil), errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/conversations", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+func TestAIAdvice_Chat_ServiceError(t *testing.T) {
+	h, svc := setupAIAdviceHandler()
+	r := newRouter(1)
+	r.POST("/advice/chat", h.Chat)
+
+	svc.On("Chat", uint(1), "hello", uint(0)).Return(nil, errors.New("llm error"))
+
+	w := doRequest(r, http.MethodPost, "/advice/chat", map[string]interface{}{
+		"message": "hello",
+	})
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+func TestAIAdvice_GetAdvice_RemainingError(t *testing.T) {
+	h, svc := setupAIAdviceHandler()
+	r := newRouter(1)
+	r.GET("/advice", h.GetAdvice)
+
+	svc.On("GenerateAdvice", uint(1)).Return([]model.AIAdvice{})
+	svc.On("IsLLMAvailable").Return(true)
+	svc.On("GetDailyChatRemaining", uint(1)).Return(0, errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/advice", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestAIAdvice_MarkAsRead_InvalidID(t *testing.T) {
+	h, _ := setupAIAdviceHandler()
+	r := newRouter(1)
+	r.PUT("/advice/:id/read", h.MarkAsRead)
+
+	w := doRequest(r, http.MethodPut, "/advice/abc/read", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestAIAdvice_GetConversation_InvalidID(t *testing.T) {
+	h, _ := setupAIAdviceHandler()
+	r := newRouter(1)
+	r.GET("/conversations/:id", h.GetConversation)
+
+	w := doRequest(r, http.MethodGet, "/conversations/abc", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
