@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { Project } from '../../types/project';
-import { cardClass } from '../../constants/styles';
+import { cardClass, iconButtonClass } from '../../constants/styles';
 import { parseJsonArray } from '../../utils/json';
 import { sanitizeUrl } from '../../utils/url';
 
@@ -54,7 +54,7 @@ export default function ProjectCard({ project, onEdit, onDelete, isOwner }: Proj
             <div className="flex gap-1">
               <button
                 onClick={onEdit}
-                className="p-1.5 text-gray-400 hover:text-white transition-colors"
+                className={iconButtonClass}
                 aria-label={t('common.edit')}
               >
                 <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">

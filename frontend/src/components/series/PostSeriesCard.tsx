@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import type { PostSeries } from '../../types/post';
-import { cardPaddedClass } from '../../constants/styles';
+import { cardPaddedClass, iconButtonClass } from '../../constants/styles';
 
 interface PostSeriesCardProps {
   series: PostSeries;
@@ -29,7 +29,7 @@ export default function PostSeriesCard({ series, onEdit, onDelete, isOwner }: Po
           <div className="flex gap-1">
             <button
               onClick={onEdit}
-              className="p-1.5 text-gray-400 hover:text-white transition-colors"
+              className={iconButtonClass}
               aria-label={t('common.edit')}
               title={t('common.edit')}
             >

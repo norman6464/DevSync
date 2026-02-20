@@ -43,6 +43,9 @@ export const labelClass =
 export const emptyStateClass =
   'bg-gray-900 border border-gray-800 rounded-md p-12 text-center';
 
+export const iconButtonClass =
+  'p-1.5 text-gray-400 hover:text-white transition-colors';
+
 export const modalOverlayClass =
   'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4';
 

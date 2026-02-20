@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import type { BookReview, ReviewStatus } from '../../types/bookReview';
 import Avatar from '../common/Avatar';
 import StarRating from '../common/StarRating';
-import { cardClass } from '../../constants/styles';
+import { cardClass, iconButtonClass } from '../../constants/styles';
 
 const statusColors: Record<ReviewStatus, string> = {
   not_started: 'bg-gray-600 text-gray-200',
@@ -63,7 +63,7 @@ export default function BookReviewCard({
               <div className="flex gap-1">
                 <button
                   onClick={onEdit}
-                  className="p-1.5 text-gray-400 hover:text-white transition-colors"
+                  className={iconButtonClass}
                   aria-label={t('common.edit')}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
