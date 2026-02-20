@@ -1,18 +1,12 @@
 package handler
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -72,29 +66,15 @@ func newTestNoteFolderHandler() (*NoteFolderHandler, *MockNoteFolderService) {
 // ============================================================
 
 func TestNoteFolderHandler_Create(t *testing.T) {
-	handler, mockService := newTestNoteFolderHandler()
-	router := setupRouter()
+	h, svc := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.POST("/folders", h.Create)
 
-	router.POST("/folders", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.Create(c)
-	})
+	svc.On("Create", mock.AnythingOfType("*model.NoteFolder")).Return(nil)
 
-	input := dto.CreateNoteFolderRequest{
-		Name:     "新規フォルダ",
-		ParentID: nil,
-	}
-	body, _ := json.Marshal(input)
-
-	mockService.On("Create", mock.AnythingOfType("*model.NoteFolder")).Return(nil)
-
-	req, _ := http.NewRequest("POST", "/folders", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusCreated, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "POST", "/folders", map[string]interface{}{"name": "新規フォルダ"})
+	assertStatus(t, w, http.StatusCreated)
+	svc.AssertExpectations(t)
 }
 
 // ============================================================
@@ -102,10 +82,9 @@ func TestNoteFolderHandler_Create(t *testing.T) {
 // ============================================================
 
 func TestNoteFolderHandler_GetByID(t *testing.T) {
-	handler, mockService := newTestNoteFolderHandler()
-	router := setupRouter()
-
-	router.GET("/folders/:id", handler.GetByID)
+	h, svc := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.GET("/folders/:id", h.GetByID)
 
 	folder := &model.NoteFolder{
 		ID:     1,
@@ -113,14 +92,11 @@ func TestNoteFolderHandler_GetByID(t *testing.T) {
 		Name:   "テストフォルダ",
 	}
 
-	mockService.On("GetByID", uint(1)).Return(folder, nil)
+	svc.On("GetByID", uint(1)).Return(folder, nil)
 
-	req, _ := http.NewRequest("GET", "/folders/1", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "GET", "/folders/1", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
 }
 
 // ============================================================
@@ -128,27 +104,20 @@ func TestNoteFolderHandler_GetByID(t *testing.T) {
 // ============================================================
 
 func TestNoteFolderHandler_GetByUserID(t *testing.T) {
-	handler, mockService := newTestNoteFolderHandler()
-	router := setupRouter()
-
-	router.GET("/folders", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.GetByUserID(c)
-	})
+	h, svc := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.GET("/folders", h.GetByUserID)
 
 	folders := []model.NoteFolder{
 		{ID: 1, UserID: 1, Name: "フォルダ1"},
 		{ID: 2, UserID: 1, Name: "フォルダ2"},
 	}
 
-	mockService.On("GetByUserID", uint(1), 20, 0).Return(folders, int64(2), nil)
+	svc.On("GetByUserID", uint(1), 20, 0).Return(folders, int64(2), nil)
 
-	req, _ := http.NewRequest("GET", "/folders", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "GET", "/folders", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
 }
 
 // ============================================================
@@ -156,10 +125,9 @@ func TestNoteFolderHandler_GetByUserID(t *testing.T) {
 // ============================================================
 
 func TestNoteFolderHandler_GetChildren(t *testing.T) {
-	handler, mockService := newTestNoteFolderHandler()
-	router := setupRouter()
-
-	router.GET("/folders/:id/children", handler.GetChildren)
+	h, svc := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.GET("/folders/:id/children", h.GetChildren)
 
 	parentID := uint(1)
 	children := []model.NoteFolder{
@@ -167,14 +135,11 @@ func TestNoteFolderHandler_GetChildren(t *testing.T) {
 		{ID: 3, UserID: 1, Name: "子フォルダ2", ParentID: &parentID},
 	}
 
-	mockService.On("GetChildren", uint(1)).Return(children, nil)
+	svc.On("GetChildren", uint(1)).Return(children, nil)
 
-	req, _ := http.NewRequest("GET", "/folders/1/children", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "GET", "/folders/1/children", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
 }
 
 // ============================================================
@@ -182,27 +147,20 @@ func TestNoteFolderHandler_GetChildren(t *testing.T) {
 // ============================================================
 
 func TestNoteFolderHandler_GetRootFolders(t *testing.T) {
-	handler, mockService := newTestNoteFolderHandler()
-	router := setupRouter()
-
-	router.GET("/folders/root", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.GetRootFolders(c)
-	})
+	h, svc := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.GET("/folders/root", h.GetRootFolders)
 
 	rootFolders := []model.NoteFolder{
 		{ID: 1, UserID: 1, Name: "ルートフォルダ1", ParentID: nil},
 		{ID: 2, UserID: 1, Name: "ルートフォルダ2", ParentID: nil},
 	}
 
-	mockService.On("GetRootFolders", uint(1)).Return(rootFolders, nil)
+	svc.On("GetRootFolders", uint(1)).Return(rootFolders, nil)
 
-	req, _ := http.NewRequest("GET", "/folders/root", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "GET", "/folders/root", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
 }
 
 // ============================================================
@@ -210,18 +168,9 @@ func TestNoteFolderHandler_GetRootFolders(t *testing.T) {
 // ============================================================
 
 func TestNoteFolderHandler_Update(t *testing.T) {
-	handler, mockService := newTestNoteFolderHandler()
-	router := setupRouter()
-
-	router.PUT("/folders/:id", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.Update(c)
-	})
-
-	input := dto.UpdateNoteFolderRequest{
-		Name: "更新後フォルダ名",
-	}
-	body, _ := json.Marshal(input)
+	h, svc := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.PUT("/folders/:id", h.Update)
 
 	updatedFolder := &model.NoteFolder{
 		ID:     1,
@@ -229,15 +178,11 @@ func TestNoteFolderHandler_Update(t *testing.T) {
 		Name:   "更新後フォルダ名",
 	}
 
-	mockService.On("Update", uint(1), uint(1), "更新後フォルダ名", (*uint)(nil)).Return(updatedFolder, nil)
+	svc.On("Update", uint(1), uint(1), "更新後フォルダ名", (*uint)(nil)).Return(updatedFolder, nil)
 
-	req, _ := http.NewRequest("PUT", "/folders/1", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "PUT", "/folders/1", map[string]interface{}{"name": "更新後フォルダ名"})
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
 }
 
 // ============================================================
@@ -245,22 +190,15 @@ func TestNoteFolderHandler_Update(t *testing.T) {
 // ============================================================
 
 func TestNoteFolderHandler_Delete(t *testing.T) {
-	handler, mockService := newTestNoteFolderHandler()
-	router := setupRouter()
+	h, svc := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.DELETE("/folders/:id", h.Delete)
 
-	router.DELETE("/folders/:id", func(c *gin.Context) {
-		c.Set("userID", uint(1))
-		handler.Delete(c)
-	})
+	svc.On("Delete", uint(1), uint(1)).Return(nil)
 
-	mockService.On("Delete", uint(1), uint(1)).Return(nil)
-
-	req, _ := http.NewRequest("DELETE", "/folders/1", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	mockService.AssertExpectations(t)
+	w := doRequest(r, "DELETE", "/folders/1", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
 }
 
 // ============================================================
