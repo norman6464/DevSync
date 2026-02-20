@@ -28,9 +28,9 @@ func (s *LearningGoalService) Create(goal *model.LearningGoal) error {
 	return s.repo.Create(goal)
 }
 
-// GetByID は指定IDの学習目標を取得する。
-func (s *LearningGoalService) GetByID(id uint) (*model.LearningGoal, error) {
-	return s.repo.FindByID(id)
+// GetByID は指定IDの学習目標を取得する。所有権を検証する。
+func (s *LearningGoalService) GetByID(id, userID uint) (*model.LearningGoal, error) {
+	return s.findAndCheckOwnership(id, userID)
 }
 
 // GetByUserID は指定ユーザーの学習目標をページネーション付きで取得する。

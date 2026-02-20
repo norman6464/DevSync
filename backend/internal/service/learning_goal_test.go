@@ -77,9 +77,23 @@ func TestLearningGoalGetByID_Success(t *testing.T) {
 	expected.ID = 1
 	repo.On("FindByID", uint(1)).Return(expected, nil)
 
-	result, err := svc.GetByID(1)
+	result, err := svc.GetByID(1, 1)
 	assert.NoError(t, err)
 	assert.Equal(t, "Go学習", result.Title)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningGoalGetByID_Forbidden(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	goal := &model.LearningGoal{Title: "Go学習", UserID: 1}
+	goal.ID = 1
+	repo.On("FindByID", uint(1)).Return(goal, nil)
+
+	result, err := svc.GetByID(1, 999)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, ErrForbidden, err)
 	repo.AssertExpectations(t)
 }
 
@@ -88,7 +102,7 @@ func TestLearningGoalGetByID_NotFound(t *testing.T) {
 
 	repo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
 
-	result, err := svc.GetByID(999)
+	result, err := svc.GetByID(999, 1)
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	repo.AssertExpectations(t)

@@ -11,7 +11,7 @@ import (
 // LearningGoalServiceInterface はLearningGoalServiceが実装すべきインターフェース。
 type LearningGoalServiceInterface interface {
 	Create(goal *model.LearningGoal) error
-	GetByID(id uint) (*model.LearningGoal, error)
+	GetByID(id, userID uint) (*model.LearningGoal, error)
 	GetByUserID(userID uint, limit, offset int) ([]model.LearningGoal, int64, error)
 	GetByCategory(userID uint, category string) ([]model.LearningGoal, error)
 	GetByStatus(userID uint, status string) ([]model.LearningGoal, error)
@@ -137,16 +137,17 @@ func (h *LearningGoalHandler) Delete(c *gin.Context) {
 	respondDeleted(c)
 }
 
-// GetByID は指定されたIDの学習目標を取得する。
+// GetByID は指定されたIDの学習目標を取得する。所有者のみ取得可能。
 func (h *LearningGoalHandler) GetByID(c *gin.Context) {
+	userID := c.GetUint("userID")
 	goalID, ok := parseID(c, "id")
 	if !ok {
 		return
 	}
 
-	goal, err := h.service.GetByID(goalID)
+	goal, err := h.service.GetByID(goalID, userID)
 	if err != nil {
-		respondNotFound(c, "goal not found")
+		respondError(c, err)
 		return
 	}
 
