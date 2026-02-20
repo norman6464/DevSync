@@ -135,11 +135,11 @@ func (s *WeeklyReportEmailService) SendAllWeeklyReports() error {
 		}
 
 		if err := s.SendWeeklyReport(&user, report); err != nil {
-			log.Printf("ウィークリーレポートメール送信失敗 (userID=%d, email=%s): %v", user.ID, user.Email, err)
+			log.Printf("ウィークリーレポートメール送信失敗 (userID=%d): %v", user.ID, err)
 			continue
 		}
 
-		log.Printf("ウィークリーレポートメール送信成功 (userID=%d, email=%s)", user.ID, user.Email)
+		log.Printf("ウィークリーレポートメール送信成功 (userID=%d)", user.ID)
 	}
 
 	return nil
