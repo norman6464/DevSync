@@ -486,7 +486,8 @@ type PostCollectionRepositoryInterface interface {
 type PostSeriesRepositoryInterface interface {
 	Create(series *model.PostSeries) error
 	FindByID(id uint) (*model.PostSeries, error)
-	FindByUserID(userID uint) ([]model.PostSeries, error)
+	FindByUserID(userID uint, offset, limit int) ([]model.PostSeries, error)
+	CountByUser(userID uint) (int64, error)
 	Update(series *model.PostSeries) error
 	Delete(id uint) error
 	AddPost(item *model.PostSeriesItem) error

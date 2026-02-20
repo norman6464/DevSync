@@ -1586,9 +1586,14 @@ func (m *MockPostSeriesRepository) FindByID(id uint) (*model.PostSeries, error) 
 	return args.Get(0).(*model.PostSeries), args.Error(1)
 }
 
-func (m *MockPostSeriesRepository) FindByUserID(userID uint) ([]model.PostSeries, error) {
-	args := m.Called(userID)
+func (m *MockPostSeriesRepository) FindByUserID(userID uint, offset, limit int) ([]model.PostSeries, error) {
+	args := m.Called(userID, offset, limit)
 	return args.Get(0).([]model.PostSeries), args.Error(1)
+}
+
+func (m *MockPostSeriesRepository) CountByUser(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
 }
 
 func (m *MockPostSeriesRepository) Update(series *model.PostSeries) error {

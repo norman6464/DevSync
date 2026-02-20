@@ -99,9 +99,9 @@ func TestPostSeriesGetByUserID_Success(t *testing.T) {
 		{Title: "React入門", UserID: 1},
 	}
 
-	repo.On("FindByUserID", uint(1)).Return(expected, nil)
+	repo.On("FindByUserID", uint(1), 0, 10).Return(expected, nil)
 
-	result, err := svc.GetByUserID(1)
+	result, err := svc.GetByUserID(1, 1, 10)
 	assert.NoError(t, err)
 	assert.Len(t, result, 2)
 	repo.AssertExpectations(t)
@@ -110,12 +110,59 @@ func TestPostSeriesGetByUserID_Success(t *testing.T) {
 func TestPostSeriesGetByUserID_Empty(t *testing.T) {
 	svc, repo := newTestPostSeriesService()
 
-	repo.On("FindByUserID", uint(1)).Return([]model.PostSeries{}, nil)
+	repo.On("FindByUserID", uint(1), 0, 10).Return([]model.PostSeries{}, nil)
 
-	result, err := svc.GetByUserID(1)
+	result, err := svc.GetByUserID(1, 1, 10)
 	assert.NoError(t, err)
 	assert.Empty(t, result)
 	repo.AssertExpectations(t)
+}
+
+func TestPostSeriesGetByUserID_Page2(t *testing.T) {
+	svc, repo := newTestPostSeriesService()
+
+	expected := []model.PostSeries{
+		{Title: "シリーズ11", UserID: 1},
+	}
+
+	repo.On("FindByUserID", uint(1), 10, 10).Return(expected, nil)
+
+	result, err := svc.GetByUserID(1, 2, 10)
+	assert.NoError(t, err)
+	assert.Len(t, result, 1)
+	repo.AssertExpectations(t)
+}
+
+func TestPostSeriesCountByUser_Success(t *testing.T) {
+	svc, repo := newTestPostSeriesService()
+
+	repo.On("CountByUser", uint(1)).Return(int64(5), nil)
+
+	count, err := svc.CountByUser(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(5), count)
+	repo.AssertExpectations(t)
+}
+
+func TestPostSeriesCountByUser_Zero(t *testing.T) {
+	svc, repo := newTestPostSeriesService()
+
+	repo.On("CountByUser", uint(1)).Return(int64(0), nil)
+
+	count, err := svc.CountByUser(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(0), count)
+	repo.AssertExpectations(t)
+}
+
+func TestPostSeriesCountByUser_RepoError(t *testing.T) {
+	svc, repo := newTestPostSeriesService()
+
+	repo.On("CountByUser", uint(1)).Return(int64(0), errors.New("db error"))
+
+	count, err := svc.CountByUser(1)
+	assert.Error(t, err)
+	assert.Equal(t, int64(0), count)
 }
 
 // ============================================================

@@ -32,9 +32,15 @@ func (s *PostSeriesService) GetByID(id uint) (*model.PostSeries, error) {
 	return s.repo.FindByID(id)
 }
 
-// GetByUserID は指定ユーザーの全シリーズを取得する。
-func (s *PostSeriesService) GetByUserID(userID uint) ([]model.PostSeries, error) {
-	return s.repo.FindByUserID(userID)
+// GetByUserID は指定ユーザーのシリーズをページネーション付きで取得する。
+func (s *PostSeriesService) GetByUserID(userID uint, page, limit int) ([]model.PostSeries, error) {
+	offset := (page - 1) * limit
+	return s.repo.FindByUserID(userID, offset, limit)
+}
+
+// CountByUser は指定ユーザーのシリーズ数をカウントする。
+func (s *PostSeriesService) CountByUser(userID uint) (int64, error) {
+	return s.repo.CountByUser(userID)
 }
 
 // findAndCheckOwnership はシリーズを取得し、指定ユーザーが所有者かを検証する。

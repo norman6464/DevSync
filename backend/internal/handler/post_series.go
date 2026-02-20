@@ -10,7 +10,8 @@ import (
 type PostSeriesServiceInterface interface {
 	Create(series *model.PostSeries) error
 	GetByID(id uint) (*model.PostSeries, error)
-	GetByUserID(userID uint) ([]model.PostSeries, error)
+	GetByUserID(userID uint, page, limit int) ([]model.PostSeries, error)
+	CountByUser(userID uint) (int64, error)
 	Update(id, userID uint, updates *model.PostSeries) (*model.PostSeries, error)
 	Delete(id, userID uint) error
 	AddPost(seriesID, postID uint, orderIndex int, userID uint) error
@@ -67,20 +68,28 @@ func (h *PostSeriesHandler) GetByID(c *gin.Context) {
 	respondOK(c, series)
 }
 
-// GetByUserID は指定ユーザーのシリーズ一覧を取得する。
+// GetByUserID は指定ユーザーのシリーズ一覧をページネーション付きで取得する。
 func (h *PostSeriesHandler) GetByUserID(c *gin.Context) {
 	userID, ok := parseID(c, "userId")
 	if !ok {
 		return
 	}
 
-	series, err := h.service.GetByUserID(userID)
+	page, limit := parsePagination(c)
+
+	series, err := h.service.GetByUserID(userID, page, limit)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
 
-	respondOK(c, series)
+	total, err := h.service.CountByUser(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondPaginated(c, series, total, page, limit)
 }
 
 // Update は指定IDのシリーズを更新する。
