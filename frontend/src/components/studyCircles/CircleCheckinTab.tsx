@@ -31,6 +31,7 @@ export default function CircleCheckinTab({ checkins, onCheckin }: CircleCheckinT
             value={checkinContent}
             onChange={(e) => setCheckinContent(e.target.value)}
             placeholder={t('studyCircle.checkin.placeholder')}
+            maxLength={200}
             className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
             onKeyDown={(e) => e.key === 'Enter' && handleCheckin()}
           />

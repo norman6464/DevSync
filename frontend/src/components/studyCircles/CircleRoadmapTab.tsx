@@ -148,12 +148,14 @@ export default function CircleRoadmapTab({
             value={stepForm.title}
             onChange={(e) => setStepForm({ ...stepForm, title: e.target.value })}
             placeholder={t('studyCircle.steps.title')}
+            maxLength={100}
             className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
           />
           <textarea
             value={stepForm.description}
             onChange={(e) => setStepForm({ ...stepForm, description: e.target.value })}
             placeholder={t('studyCircle.description')}
+            maxLength={500}
             className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500 h-16 resize-none"
           />
           <input
