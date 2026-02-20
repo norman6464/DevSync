@@ -8,6 +8,7 @@ import AnswerCard from '../components/qa/AnswerCard';
 import AnswerForm from '../components/qa/AnswerForm';
 import Avatar from '../components/common/Avatar';
 import { PageLoader } from '../components/common';
+import { parseJsonArray } from '../utils/json';
 
 export default function QADetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -24,9 +25,7 @@ export default function QADetailPage() {
 
   const [editingAnswer, setEditingAnswer] = useState<Answer | null>(null);
 
-  const tags: string[] = question?.tags ? (() => {
-    try { return JSON.parse(question.tags); } catch { return []; }
-  })() : [];
+  const tags = parseJsonArray(question?.tags);
 
   const isQuestionOwner = user?.id === question?.user_id;
 

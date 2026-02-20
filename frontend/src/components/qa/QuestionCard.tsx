@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import type { Question } from '../../types/qa';
 import Avatar from '../common/Avatar';
 import { cardPaddedClass } from '../../constants/styles';
+import { parseJsonArray } from '../../utils/json';
 
 interface QuestionCardProps {
   question: Question;
@@ -14,9 +15,7 @@ interface QuestionCardProps {
 export default function QuestionCard({ question, isOwner = false, onEdit, onDelete }: QuestionCardProps) {
   const { t } = useTranslation();
 
-  const tags: string[] = question.tags ? (() => {
-    try { return JSON.parse(question.tags); } catch { return []; }
-  })() : [];
+  const tags = parseJsonArray(question.tags);
 
   const statusBorderClass = question.is_solved
     ? 'border-l-4 border-l-green-500'

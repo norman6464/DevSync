@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LearningResource, CreateResourceRequest, ResourceCategory, ResourceDifficulty } from '../../types/resource';
 import { buttonSecondaryClass, inputClass, labelClass, textareaClass } from '../../constants/styles';
+import { parseJsonArray } from '../../utils/json';
 import { findInvalidUrlField } from '../../utils/url';
 import TagInput from '../common/TagInput';
 import toast from 'react-hot-toast';
@@ -23,16 +24,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
   const [url, setUrl] = useState(resource?.url || '');
   const [category, setCategory] = useState<ResourceCategory>(resource?.category || 'article');
   const [difficulty, setDifficulty] = useState<ResourceDifficulty | ''>(resource?.difficulty || '');
-  const [tags, setTags] = useState<string[]>(() => {
-    if (resource?.tags) {
-      try {
-        return JSON.parse(resource.tags);
-      } catch {
-        return [];
-      }
-    }
-    return [];
-  });
+  const [tags, setTags] = useState<string[]>(() => parseJsonArray(resource?.tags));
   const [imageUrl, setImageUrl] = useState(resource?.image_url || '');
   const [isPublic, setIsPublic] = useState(resource?.is_public ?? true);
 

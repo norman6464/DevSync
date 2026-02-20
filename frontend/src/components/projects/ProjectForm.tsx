@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { Project, CreateProjectRequest } from '../../types/project';
 import type { GitHubRepository } from '../../types/github';
 import { buttonSecondaryClass, inputClass, labelClass, textareaClass } from '../../constants/styles';
+import { parseJsonArray } from '../../utils/json';
 import { findInvalidUrlField } from '../../utils/url';
 import TagInput from '../common/TagInput';
 import toast from 'react-hot-toast';
@@ -20,14 +21,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
   const [title, setTitle] = useState(project?.title || '');
   const [description, setDescription] = useState(project?.description || '');
   const [techStack, setTechStack] = useState<string[]>(() => {
-    if (project?.tech_stack) {
-      try {
-        return JSON.parse(project.tech_stack);
-      } catch {
-        return [];
-      }
-    }
-    return [];
+    return parseJsonArray(project?.tech_stack);
   });
   const [demoUrl, setDemoUrl] = useState(project?.demo_url || '');
   const [githubUrl, setGithubUrl] = useState(project?.github_url || '');
