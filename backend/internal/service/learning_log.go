@@ -45,9 +45,9 @@ func (s *LearningLogService) GetByID(id uint) (*model.LearningLog, error) {
 	return s.repo.FindByID(id)
 }
 
-// GetByUserID は指定ユーザーの全学習ログを取得する。
-func (s *LearningLogService) GetByUserID(userID uint) ([]model.LearningLog, error) {
-	return s.repo.GetByUserID(userID)
+// GetByUserID は指定ユーザーの学習ログをページネーション付きで取得する。
+func (s *LearningLogService) GetByUserID(userID uint, limit, offset int) ([]model.LearningLog, int64, error) {
+	return s.repo.GetByUserID(userID, limit, offset)
 }
 
 // GetByCategory は指定ユーザーの学習ログをカテゴリでフィルタリングして取得する。

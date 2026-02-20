@@ -1260,9 +1260,9 @@ func (m *MockLearningLogService) GetByID(id uint) (*model.LearningLog, error) {
 	}
 	return nil, args.Error(1)
 }
-func (m *MockLearningLogService) GetByUserID(userID uint) ([]model.LearningLog, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.LearningLog), args.Error(1)
+func (m *MockLearningLogService) GetByUserID(userID uint, limit, offset int) ([]model.LearningLog, int64, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.LearningLog), args.Get(1).(int64), args.Error(2)
 }
 func (m *MockLearningLogService) Update(id, userID uint, updates *model.LearningLog) (*model.LearningLog, error) {
 	args := m.Called(id, userID, updates)

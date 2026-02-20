@@ -253,22 +253,36 @@ func TestLearningLogGetByUserID_Success(t *testing.T) {
 	svc, repo := newTestLearningLogService()
 
 	logs := []model.LearningLog{{Title: "Go Study"}, {Title: "React Study"}}
-	repo.On("GetByUserID", uint(1)).Return(logs, nil)
+	repo.On("GetByUserID", uint(1), 20, 0).Return(logs, int64(2), nil)
 
-	result, err := svc.GetByUserID(1)
+	result, total, err := svc.GetByUserID(1, 20, 0)
 	assert.NoError(t, err)
 	assert.Len(t, result, 2)
+	assert.Equal(t, int64(2), total)
 	repo.AssertExpectations(t)
 }
 
 func TestLearningLogGetByUserID_Empty(t *testing.T) {
 	svc, repo := newTestLearningLogService()
 
-	repo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+	repo.On("GetByUserID", uint(1), 20, 0).Return([]model.LearningLog{}, int64(0), nil)
 
-	result, err := svc.GetByUserID(1)
+	result, total, err := svc.GetByUserID(1, 20, 0)
 	assert.NoError(t, err)
 	assert.Empty(t, result)
+	assert.Equal(t, int64(0), total)
+}
+
+func TestLearningLogGetByUserID_Page2(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	repo.On("GetByUserID", uint(1), 10, 10).Return([]model.LearningLog{}, int64(15), nil)
+
+	result, total, err := svc.GetByUserID(1, 10, 10)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	assert.Equal(t, int64(15), total)
+	repo.AssertExpectations(t)
 }
 
 func TestLearningLogUpdate_RepoError(t *testing.T) {

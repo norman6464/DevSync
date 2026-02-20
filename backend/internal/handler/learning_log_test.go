@@ -79,7 +79,7 @@ func TestLearningLog_GetByID_ServiceError(t *testing.T) {
 func TestLearningLog_GetMyLogs_Success(t *testing.T) {
 	h, svc := setupLearningLogHandler()
 	logs := []model.LearningLog{{Title: "Log1"}, {Title: "Log2"}}
-	svc.On("GetByUserID", uint(1)).Return(logs, nil)
+	svc.On("GetByUserID", uint(1), 20, 0).Return(logs, int64(2), nil)
 
 	r := gin.New()
 	r.GET("/me/logs", authMiddleware(1), h.GetMyLogs)
@@ -95,7 +95,7 @@ func TestLearningLog_GetMyLogs_Success(t *testing.T) {
 func TestLearningLog_GetByUserID_Success(t *testing.T) {
 	h, svc := setupLearningLogHandler()
 	logs := []model.LearningLog{{Title: "Log1"}}
-	svc.On("GetByUserID", uint(5)).Return(logs, nil)
+	svc.On("GetByUserID", uint(5), 20, 0).Return(logs, int64(1), nil)
 
 	r := gin.New()
 	r.GET("/users/:userId/logs", h.GetByUserID)
