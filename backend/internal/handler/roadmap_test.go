@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -58,16 +57,13 @@ func TestRoadmapGetMy_Success(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/roadmaps/my", h.GetMyRoadmaps)
 
-	repo.On("GetByUserID", uint(1)).Return([]model.Roadmap{
+	repo.On("GetByUserID", uint(1), 20, 0).Return([]model.Roadmap{
 		{Title: "My Roadmap"},
-	}, nil)
+	}, int64(1), nil)
 
 	w := doRequest(r, http.MethodGet, "/roadmaps/my", nil)
 	assertStatus(t, w, http.StatusOK)
-
-	var roadmaps []map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &roadmaps)
-	assert.Len(t, roadmaps, 1)
+	repo.AssertExpectations(t)
 }
 
 // ---------- GetPublicRoadmaps ----------

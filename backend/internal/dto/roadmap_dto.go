@@ -46,4 +46,6 @@ type ReorderRoadmapStepsRequest struct {
 type RoadmapListResponse struct {
 	Roadmaps []model.Roadmap `json:"roadmaps"`
 	Total    int64           `json:"total"`
+	Limit    int             `json:"limit"`
+	Offset   int             `json:"offset"`
 }

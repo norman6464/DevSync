@@ -352,9 +352,9 @@ func (m *MockRoadmapRepository) FindByID(id uint) (*model.Roadmap, error) {
 	}
 	return nil, args.Error(1)
 }
-func (m *MockRoadmapRepository) GetByUserID(userID uint) ([]model.Roadmap, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.Roadmap), args.Error(1)
+func (m *MockRoadmapRepository) GetByUserID(userID uint, limit, offset int) ([]model.Roadmap, int64, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.Roadmap), args.Get(1).(int64), args.Error(2)
 }
 func (m *MockRoadmapRepository) GetPublicRoadmaps(limit, offset int) ([]model.Roadmap, int64, error) {
 	args := m.Called(limit, offset)
@@ -923,9 +923,9 @@ func (m *MockRoadmapService) GetByID(id, userID uint) (*model.Roadmap, error) {
 	}
 	return nil, args.Error(1)
 }
-func (m *MockRoadmapService) GetByUserID(userID uint) ([]model.Roadmap, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.Roadmap), args.Error(1)
+func (m *MockRoadmapService) GetByUserID(userID uint, limit, offset int) ([]model.Roadmap, int64, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.Roadmap), args.Get(1).(int64), args.Error(2)
 }
 func (m *MockRoadmapService) GetPublicRoadmaps(limit, offset int) ([]model.Roadmap, int64, error) {
 	args := m.Called(limit, offset)

@@ -42,7 +42,7 @@ func (s *AIAdviceService) collectContext(userID uint) (*userContext, error) {
 		return nil, err
 	}
 
-	ctx.roadmaps, err = s.roadmapRepo.GetByUserID(userID)
+	ctx.roadmaps, _, err = s.roadmapRepo.GetByUserID(userID, 100, 0)
 	if err != nil {
 		return nil, err
 	}
