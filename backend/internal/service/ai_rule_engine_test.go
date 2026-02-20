@@ -508,6 +508,35 @@ func TestGenerateAdvice_TechSuggestionFromTopLanguage(t *testing.T) {
 	})
 }
 
+func TestGenerateAdvice_TechSuggestionTopLangNotFirst(t *testing.T) {
+	t.Run("最初の要素が最大でない場合もトップ言語で技術提案を返す", func(t *testing.T) {
+		svc, logRepo, goalRepo, roadmapRepo, githubRepo, resourceRepo, userRepo := setupRuleEngineService()
+		logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
+		goalRepo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+		goalRepo.On("GetStats", uint(1)).Return(&model.LearningGoalStats{}, nil)
+		roadmapRepo.On("GetByUserID", uint(1)).Return([]model.Roadmap{}, nil)
+		githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{
+			{Language: "Python", Bytes: 5000, RepoCount: 1},
+			{Language: "Go", Bytes: 80000, RepoCount: 5},
+		}, nil)
+		logRepo.On("GetByUserID", uint(1)).Return([]model.LearningLog{}, nil)
+		resourceRepo.On("FindByUserID", uint(1), true).Return([]model.LearningResource{{}, {}, {}}, nil)
+		userRepo.On("FindByID", uint(1)).Return(&model.User{}, nil)
+
+		advices := svc.GenerateAdvice(1)
+
+		found := false
+		for _, a := range advices {
+			if a.TitleKey == "advice.suggestFromGithub" {
+				found = true
+				assert.Contains(t, a.Params, "Go")
+				break
+			}
+		}
+		assert.True(t, found, "2番目の要素が最大でも正しくトップ言語として技術提案を返すべき")
+	})
+}
+
 func TestGenerateAdvice_StalledRoadmapEdgeCases(t *testing.T) {
 	t.Run("完了済みロードマップは停滞アドバイスを返さない", func(t *testing.T) {
 		svc, logRepo, goalRepo, roadmapRepo, githubRepo, resourceRepo, userRepo := setupRuleEngineService()
