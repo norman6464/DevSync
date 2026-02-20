@@ -1344,7 +1344,11 @@
     },
     "namePlaceholder": "Группа изучения React",
     "topicPlaceholder": "Изучить основы React за 1 месяц",
-    "searchUsers": "Поиск пользователей..."
+    "searchUsers": "Поиск пользователей...",
+    "sort": {
+      "newest": "Новые",
+      "members": "По участникам"
+    }
   },
   "notes": {
     "title": "Учебные заметки",

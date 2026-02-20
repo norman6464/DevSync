@@ -1344,7 +1344,11 @@
     },
     "namePlaceholder": "React學習會",
     "topicPlaceholder": "一個月學會React入門",
-    "searchUsers": "搜尋使用者..."
+    "searchUsers": "搜尋使用者...",
+    "sort": {
+      "newest": "最新",
+      "members": "成員數"
+    }
   },
   "notes": {
     "title": "學習筆記",

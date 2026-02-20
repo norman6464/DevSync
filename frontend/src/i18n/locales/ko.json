@@ -1344,7 +1344,11 @@
     },
     "namePlaceholder": "React 스터디",
     "topicPlaceholder": "1개월 만에 React 입문",
-    "searchUsers": "사용자 검색..."
+    "searchUsers": "사용자 검색...",
+    "sort": {
+      "newest": "최신순",
+      "members": "멤버 수순"
+    }
   },
   "notes": {
     "title": "학습 노트",

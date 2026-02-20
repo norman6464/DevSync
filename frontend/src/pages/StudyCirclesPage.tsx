@@ -1,7 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Users, Plus, Crown } from 'lucide-react';
+import { Users, Plus, Crown, ArrowDownWideNarrow } from 'lucide-react';
 import { useStudyCircles } from '../hooks';
 import { useAuthStore } from '../store/authStore';
 import Avatar from '../components/common/Avatar';
@@ -13,6 +13,18 @@ export default function StudyCirclesPage() {
   const { circles, loading, saving, createCircle, deleteCircle } = useStudyCircles();
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ name: '', topic: '', description: '', max_members: 5 });
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'completed'>('all');
+  const [sortBy, setSortBy] = useState<'newest' | 'members'>('newest');
+
+  const filteredCircles = useMemo(() => {
+    let filtered = statusFilter === 'all'
+      ? circles
+      : circles.filter((c) => c.status === statusFilter);
+    return [...filtered].sort((a, b) => {
+      if (sortBy === 'members') return (b.members?.length || 0) - (a.members?.length || 0);
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [circles, statusFilter, sortBy]);
 
   const handleOpenModal = useCallback(() => setShowModal(true), []);
   const handleCloseModal = useCallback(() => setShowModal(false), []);
@@ -55,6 +67,37 @@ export default function StudyCirclesPage() {
         </button>
       </div>
 
+      {/* Filters & Sort */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex gap-2">
+          {(['all', 'active', 'completed'] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setStatusFilter(s)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                statusFilter === s ? 'bg-purple-500/20 text-purple-400' : 'bg-gray-800 text-gray-400 hover:text-white'
+              }`}
+            >
+              {s === 'all' ? t('common.all') : t(`studyCircle.${s}`)}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          <ArrowDownWideNarrow className="w-4 h-4 text-gray-400" />
+          {(['newest', 'members'] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setSortBy(s)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                sortBy === s ? 'bg-purple-500/20 text-purple-400' : 'bg-gray-800 text-gray-400 hover:text-white'
+              }`}
+            >
+              {t(`studyCircle.sort.${s}`)}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Circle List */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -80,7 +123,7 @@ export default function StudyCirclesPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {circles.map((circle) => (
+          {filteredCircles.map((circle) => (
             <Link
               key={circle.id}
               to={`/study-circles/${circle.id}`}
