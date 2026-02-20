@@ -760,6 +760,12 @@ func (m *MockBookReviewService) GetByRating(userID uint, minRating, maxRating in
 	args := m.Called(userID, minRating, maxRating)
 	return args.Get(0).([]model.BookReview), args.Error(1)
 }
+func (m *MockBookReviewService) ArchiveReview(id, userID uint) error {
+	return m.Called(id, userID).Error(0)
+}
+func (m *MockBookReviewService) UnarchiveReview(id, userID uint) error {
+	return m.Called(id, userID).Error(0)
+}
 
 // setupBookReviewHandler はBookReviewHandlerテスト用のセットアップを行う。
 func setupBookReviewHandler() (*BookReviewHandler, *MockBookReviewService) {

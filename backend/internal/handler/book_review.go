@@ -15,6 +15,8 @@ type BookReviewServiceInterface interface {
 	Update(id, userID uint, updates *model.BookReview) (*model.BookReview, error)
 	Delete(id, userID uint) error
 	GetByRating(userID uint, minRating, maxRating int) ([]model.BookReview, error)
+	ArchiveReview(id, userID uint) error
+	UnarchiveReview(id, userID uint) error
 }
 
 // BookReviewHandler は書籍レビュー関連のHTTPハンドラ。
@@ -175,6 +177,38 @@ func (h *BookReviewHandler) GetByRating(c *gin.Context) {
 	}
 
 	respondOK(c, ensureSlice(reviews))
+}
+
+// Archive は指定IDの書籍レビューをアーカイブする。
+func (h *BookReviewHandler) Archive(c *gin.Context) {
+	userID := c.GetUint("userID")
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	if err := h.service.ArchiveReview(id, userID); err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, gin.H{"message": "書籍レビューをアーカイブしました"})
+}
+
+// Unarchive は指定IDの書籍レビューのアーカイブを解除する。
+func (h *BookReviewHandler) Unarchive(c *gin.Context) {
+	userID := c.GetUint("userID")
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	if err := h.service.UnarchiveReview(id, userID); err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, gin.H{"message": "書籍レビューのアーカイブを解除しました"})
 }
 
 // Delete は指定IDの書籍レビューを削除する。

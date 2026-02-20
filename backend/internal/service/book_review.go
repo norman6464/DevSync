@@ -107,6 +107,26 @@ func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (
 	return review, nil
 }
 
+// ArchiveReview は所有権を検証した後、書籍レビューをアーカイブする。
+func (s *BookReviewService) ArchiveReview(id, userID uint) error {
+	review, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return err
+	}
+	review.IsArchived = true
+	return s.repo.Update(review)
+}
+
+// UnarchiveReview は所有権を検証した後、書籍レビューのアーカイブを解除する。
+func (s *BookReviewService) UnarchiveReview(id, userID uint) error {
+	review, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return err
+	}
+	review.IsArchived = false
+	return s.repo.Update(review)
+}
+
 // Delete は所有権を検証した後、書籍レビューを削除する。
 func (s *BookReviewService) Delete(id, userID uint) error {
 	if _, err := s.findAndCheckOwnership(id, userID); err != nil {

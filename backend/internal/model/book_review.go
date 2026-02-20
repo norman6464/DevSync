@@ -17,8 +17,9 @@ type BookReview struct {
 	ISBN      string         `json:"isbn" gorm:"size:20"`                     // ISBNコード
 	Rating    int            `json:"rating" gorm:"not null"`                  // 評価（1〜5の整数）
 	Review    string         `json:"review" gorm:"type:text"`                 // レビュー本文
-	ImageURL  string         `json:"image_url" gorm:"size:500"`               // 書籍カバー画像URL
-	CreatedAt time.Time      `json:"created_at"`
+	ImageURL   string         `json:"image_url" gorm:"size:500"`               // 書籍カバー画像URL
+	IsArchived bool           `json:"is_archived" gorm:"default:false"`        // アーカイブ済みフラグ
+	CreatedAt  time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"` // 論理削除用
 }
