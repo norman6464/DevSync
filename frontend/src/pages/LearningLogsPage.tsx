@@ -5,14 +5,13 @@ import { useLearningLogForm } from '../hooks/useLearningLogForm';
 import { useWeeklyDuration, useStreak } from '../hooks';
 import { useAuthStore } from '../store/authStore';
 import { exportLogsCSV, type ExportPeriod } from '../api/learningLogs';
-import type { LogCategory } from '../types/learningLog';
 import LogCalendar from '../components/learning-logs/LogCalendar';
-import LogCard, { CATEGORIES } from '../components/learning-logs/LogCard';
+import LogCard from '../components/learning-logs/LogCard';
 import LogFiltersBar from '../components/learning-logs/LogFiltersBar';
+import LogFormModal from '../components/learning-logs/LogFormModal';
 import WeeklySummaryCard from '../components/learning-logs/WeeklySummaryCard';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import { Modal } from '../components/common';
-import { inputClass, buttonSecondaryClass, labelClass } from '../constants/styles';
+import { inputClass, buttonSecondaryClass } from '../constants/styles';
 
 
 export default function LearningLogsPage() {
@@ -57,10 +56,6 @@ export default function LearningLogsPage() {
   const handleViewList = useCallback(() => { setView('list'); clearFilterDate(); }, [setView, clearFilterDate]);
   const handleViewCalendar = useCallback(() => { setView('calendar'); clearFilterDate(); }, [setView, clearFilterDate]);
   const handleToggleFavoritesFilter = useCallback(() => setShowFavoritesOnly(prev => !prev), [setShowFavoritesOnly]);
-  const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value), [setTitle]);
-  const handleContentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => setContent(e.target.value), [setContent]);
-  const handleCategoryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => setCategory(e.target.value as LogCategory), [setCategory]);
-  const handleDurationChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setDuration(e.target.value), [setDuration]);
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value), [setSearchQuery]);
 
   if (loading) return <div className="py-12"><LoadingSpinner /></div>;
@@ -142,96 +137,21 @@ export default function LearningLogsPage() {
         </div>
       )}
 
-      {/* Create/Edit Form Modal */}
-      <Modal
+      <LogFormModal
         isOpen={showForm}
+        editingLog={editingLog}
+        title={title}
+        setTitle={setTitle}
+        content={content}
+        setContent={setContent}
+        category={category}
+        setCategory={setCategory}
+        duration={duration}
+        setDuration={setDuration}
+        saving={saving}
+        onSubmit={handleSubmit}
         onClose={resetForm}
-        title={editingLog ? t('learningLogs.editLog') : t('learningLogs.addLog')}
-        maxWidth="max-w-md"
-      >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="log-title" className={labelClass}>
-              {t('learningLogs.logTitle')}
-            </label>
-            <input
-              id="log-title"
-              type="text"
-              value={title}
-              onChange={handleTitleChange}
-              placeholder={t('learningLogs.titlePlaceholder')}
-              maxLength={200}
-              className={inputClass}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="log-content" className={labelClass}>
-              {t('learningLogs.content')}
-            </label>
-            <textarea
-              id="log-content"
-              value={content}
-              onChange={handleContentChange}
-              placeholder={t('learningLogs.contentPlaceholder')}
-              rows={4}
-              maxLength={5000}
-              className={`${inputClass} resize-none`}
-              required
-            />
-            <p className="text-xs text-gray-500 text-right mt-1">{content.length}/5000</p>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="log-category" className={labelClass}>
-                {t('learningLogs.category')}
-              </label>
-              <select
-                id="log-category"
-                value={category}
-                onChange={handleCategoryChange}
-                className={inputClass}
-              >
-                {CATEGORIES.map((cat) => (
-                  <option key={cat.value} value={cat.value}>
-                    {t(cat.label)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="log-duration" className={labelClass}>
-                {t('learningLogs.duration')}
-              </label>
-              <input
-                id="log-duration"
-                type="number"
-                value={duration}
-                onChange={handleDurationChange}
-                placeholder={t('learningLogs.durationPlaceholder')}
-                min="0"
-                className={inputClass}
-              />
-            </div>
-          </div>
-          <div className="flex gap-3 justify-end pt-2">
-            <button
-              type="button"
-              onClick={resetForm}
-              className={`${buttonSecondaryClass} text-sm font-medium`}
-            >
-              {t('common.cancel')}
-            </button>
-            <button
-              type="submit"
-              disabled={saving || !title.trim() || !content.trim()}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
-            >
-              {saving ? t('common.loading') : editingLog ? t('common.save') : t('learningLogs.addLog')}
-            </button>
-          </div>
-        </form>
-      </Modal>
+      />
 
       {/* Logs List */}
       {view === 'list' && (
