@@ -20,6 +20,7 @@ type LearningLogServiceInterface interface {
 	GetStreakInfo(userID uint) (*model.StreakInfo, error)
 	GetCalendarData(userID uint) ([]model.CalendarEntry, error)
 	ExportCSV(userID uint, days int) ([]byte, error)
+	GetByCategory(userID uint, category string) ([]model.LearningLog, error)
 }
 
 // LearningLogHandler は学習ログ関連のHTTPハンドラ。
@@ -193,6 +194,23 @@ func (h *LearningLogHandler) GetCalendarData(c *gin.Context) {
 	}
 
 	respondOK(c, entries)
+}
+
+// GetByCategory はカテゴリで学習ログをフィルタリングして取得する。
+func (h *LearningLogHandler) GetByCategory(c *gin.Context) {
+	userID := c.GetUint("userID")
+	category := c.Param("category")
+
+	logs, err := h.service.GetByCategory(userID, category)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	if logs == nil {
+		logs = []model.LearningLog{}
+	}
+
+	respondOK(c, logs)
 }
 
 // ExportLogs は学習ログをCSV形式でダウンロードする。

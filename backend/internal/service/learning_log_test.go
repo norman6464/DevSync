@@ -393,3 +393,53 @@ func TestLearningLogExportCSV_RepoError(t *testing.T) {
 	assert.Error(t, err)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// GetByCategory テスト
+// ============================================================
+
+func TestLearningLogGetByCategory_Success(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	logs := []model.LearningLog{
+		{Title: "Go勉強", Category: model.LogCategoryCoding, UserID: 1},
+	}
+	repo.On("GetByCategory", uint(1), "coding").Return(logs, nil)
+
+	result, err := svc.GetByCategory(1, "coding")
+	assert.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, model.LogCategoryCoding, result[0].Category)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogGetByCategory_EmptyResult(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	repo.On("GetByCategory", uint(1), "meetup").Return([]model.LearningLog{}, nil)
+
+	result, err := svc.GetByCategory(1, "meetup")
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogGetByCategory_InvalidCategory(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	result, err := svc.GetByCategory(1, "invalid")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "無効なカテゴリ")
+}
+
+func TestLearningLogGetByCategory_RepoError(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	repo.On("GetByCategory", uint(1), "coding").Return([]model.LearningLog{}, errors.New("db error"))
+
+	result, err := svc.GetByCategory(1, "coding")
+	assert.Error(t, err)
+	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}
