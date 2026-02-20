@@ -22,6 +22,7 @@
     "and": "und",
     "menu": "Menü",
     "scrollToTop": "Nach oben",
+    "invalidUrl": "{{field}} ist keine gültige URL",
     "selectLanguage": "Sprache auswählen",
     "monthsShort": [
       "Jan",

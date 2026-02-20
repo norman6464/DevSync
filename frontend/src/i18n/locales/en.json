@@ -22,6 +22,7 @@
     "add": "Add",
     "menu": "Menu",
     "scrollToTop": "Back to top",
+    "invalidUrl": "{{field}} is not a valid URL",
     "selectLanguage": "Select language",
     "monthsShort": [
       "Jan",
