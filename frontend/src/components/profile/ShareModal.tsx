@@ -67,7 +67,7 @@ export default function ShareModal({
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `devsync-${user.github_username || user.name || 'profile'}.png`;
+      link.download = `devsync-${(user.github_username || user.name || 'profile').replace(/[^a-zA-Z0-9_-]/g, '_')}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

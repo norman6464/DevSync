@@ -45,7 +45,7 @@ export default function PortfolioModal({
   const html = useMemo(() => generatePortfolioHTML(data, theme), [data, theme]);
 
   const handleDownload = () => {
-    const filename = `${user.name.toLowerCase().replace(/\s+/g, '-')}-portfolio.html`;
+    const filename = `${user.name.toLowerCase().replace(/[^a-z0-9_-]/g, '-')}-portfolio.html`;
     downloadPortfolio(html, filename);
     toast.success(t('sharing.downloaded'));
   };
@@ -126,6 +126,7 @@ export default function PortfolioModal({
             <div className="bg-white rounded-lg overflow-hidden">
               <iframe
                 srcDoc={html}
+                sandbox="allow-same-origin"
                 className="w-full h-96 border-0"
                 title={t('portfolio.preview')}
               />
