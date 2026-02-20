@@ -20,6 +20,7 @@ export default function PostCard({ post, isOwner = false, onEdit, onDelete, onUp
   const { t } = useTranslation();
 
   const imageUrls = parseJsonArray(post.image_urls);
+  const isNew = Date.now() - new Date(post.created_at).getTime() < 24 * 60 * 60 * 1000;
 
   return (
     <div className={cardDarkClass}>
@@ -39,7 +40,14 @@ export default function PostCard({ post, isOwner = false, onEdit, onDelete, onUp
 
       <div className="flex items-start justify-between gap-2 mb-2">
         <Link to={`/posts/${post.id}`} className="flex-1 group">
-          <h3 className="text-base font-semibold group-hover:text-blue-400 transition-colors">{post.title}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-base font-semibold group-hover:text-blue-400 transition-colors">{post.title}</h3>
+            {isNew && (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded shrink-0">
+                {t('post.newBadge')}
+              </span>
+            )}
+          </div>
           {post.estimated_read_time > 0 && (
             <p className="text-xs text-gray-500 mt-0.5">{t('post.readTime', { minutes: post.estimated_read_time })}</p>
           )}

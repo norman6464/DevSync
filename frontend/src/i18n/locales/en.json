@@ -207,6 +207,7 @@
     "writeComment": "Write a comment...",
     "writeReply": "Write a reply...",
     "readTime": "{{minutes}} min read",
+    "newBadge": "NEW",
     "notFound": "Post not found",
     "bookmark": "Bookmark",
     "unbookmark": "Remove Bookmark",
