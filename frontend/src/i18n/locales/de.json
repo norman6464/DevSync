@@ -634,6 +634,7 @@
     "categorySkill": "Fähigkeit",
     "categoryProject": "Projekt",
     "categoryOther": "Sonstiges",
+    "completedAt": "Abgeschlossen am",
     "stats": {
       "total": "Gesamtziele",
       "activeCount": "Aktiv",

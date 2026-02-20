@@ -623,6 +623,7 @@
     "categorySkill": "スキル",
     "categoryProject": "プロジェクト",
     "categoryOther": "その他",
+    "completedAt": "完了日",
     "stats": {
       "total": "合計目標",
       "activeCount": "進行中",

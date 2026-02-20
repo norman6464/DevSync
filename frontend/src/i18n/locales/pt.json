@@ -634,6 +634,7 @@
     "categorySkill": "Habilidade",
     "categoryProject": "Projeto",
     "categoryOther": "Outro",
+    "completedAt": "Concluído em",
     "stats": {
       "total": "Total de Metas",
       "activeCount": "Ativas",

@@ -634,6 +634,7 @@
     "categorySkill": "스킬",
     "categoryProject": "프로젝트",
     "categoryOther": "기타",
+    "completedAt": "완료일",
     "stats": {
       "total": "총 목표",
       "activeCount": "진행 중",

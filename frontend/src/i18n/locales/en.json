@@ -634,6 +634,7 @@
     "categorySkill": "Skill",
     "categoryProject": "Project",
     "categoryOther": "Other",
+    "completedAt": "Completed",
     "stats": {
       "total": "Total Goals",
       "activeCount": "Active",
