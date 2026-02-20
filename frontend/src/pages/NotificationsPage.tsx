@@ -1,44 +1,12 @@
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
-import { Bell, CheckCheck, Trash2, Filter } from 'lucide-react';
+import { Bell, CheckCheck } from 'lucide-react';
 import { useNotifications } from '../hooks';
-import type { Notification, NotificationType } from '../types/notification';
-import Avatar from '../components/common/Avatar';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import NotificationFilters from '../components/notifications/NotificationFilters';
+import NotificationItem from '../components/notifications/NotificationItem';
 import EmptyState from '../components/common/EmptyState';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 import { buttonSecondaryClass } from '../constants/styles';
-import { formatDistanceToNow } from '../utils/timeFormat';
-
-const FILTER_TYPES: { key: NotificationType | ''; labelKey: string }[] = [
-  { key: '', labelKey: 'notifications.filterAll' },
-  { key: 'post', labelKey: 'notifications.filterPost' },
-  { key: 'like', labelKey: 'notifications.filterLike' },
-  { key: 'comment', labelKey: 'notifications.filterComment' },
-  { key: 'follow', labelKey: 'notifications.filterFollow' },
-  { key: 'message', labelKey: 'notifications.filterMessage' },
-  { key: 'answer', labelKey: 'notifications.filterAnswer' },
-  { key: 'badge', labelKey: 'notifications.filterBadge' },
-];
-
-function getNotificationLink(notification: Notification): string {
-  switch (notification.type) {
-    case 'post':
-    case 'like':
-    case 'comment':
-      return notification.post_id ? `/posts/${notification.post_id}` : '/';
-    case 'follow':
-      return `/profile/${notification.actor.username}`;
-    case 'message':
-      return '/chat';
-    case 'answer':
-      return notification.question_id ? `/qa/${notification.question_id}` : '/';
-    case 'badge':
-      return `/profile/${notification.actor.username}`;
-    default:
-      return '/';
-  }
-}
 
 export default function NotificationsPage() {
   const { t } = useTranslation();
@@ -50,31 +18,9 @@ export default function NotificationsPage() {
     markAsRead, markAllAsRead, deleteNotification,
   } = useNotifications();
 
-  // Filter notifications by read status
   const filteredNotifications = showUnreadOnly
     ? notifications.filter((n) => !n.read)
     : notifications;
-
-  const getNotificationMessage = useCallback((notification: Notification) => {
-    switch (notification.type) {
-      case 'post':
-        return t('notifications.newPost', { name: notification.actor.name });
-      case 'message':
-        return t('notifications.newMessage', { name: notification.actor.name });
-      case 'like':
-        return t('notifications.newLike', { name: notification.actor.name });
-      case 'comment':
-        return t('notifications.newComment', { name: notification.actor.name });
-      case 'follow':
-        return t('notifications.newFollow', { name: notification.actor.name });
-      case 'answer':
-        return t('notifications.newAnswer', { name: notification.actor.name });
-      case 'badge':
-        return t('notifications.newBadge');
-      default:
-        return '';
-    }
-  }, [t]);
 
   const handleToggleUnreadOnly = useCallback(() => setShowUnreadOnly((prev) => !prev), []);
   const handlePreviousPage = useCallback(() => setPage(page - 1), [page, setPage]);
@@ -100,41 +46,13 @@ export default function NotificationsPage() {
         )}
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex flex-col gap-4 mb-6">
-        <div className="flex flex-wrap gap-2" role="group" aria-label={t('notifications.filterGroup')}>
-          {FILTER_TYPES.map(({ key, labelKey }) => (
-            <button
-              key={key}
-              onClick={() => setFilterType(key)}
-              aria-pressed={filterType === key}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                filterType === key
-                  ? 'bg-gray-700 text-white'
-                  : 'bg-gray-800 text-gray-400 hover:text-white'
-              }`}
-            >
-              {t(labelKey)}
-            </button>
-          ))}
-        </div>
+      <NotificationFilters
+        filterType={filterType}
+        setFilterType={setFilterType}
+        showUnreadOnly={showUnreadOnly}
+        onToggleUnreadOnly={handleToggleUnreadOnly}
+      />
 
-        {/* Unread Only Toggle */}
-        <button
-          onClick={handleToggleUnreadOnly}
-          aria-pressed={showUnreadOnly}
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors self-start ${
-            showUnreadOnly
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-800 text-gray-400 hover:text-white'
-          }`}
-        >
-          <Filter className="w-4 h-4" aria-hidden="true" />
-          {t('notifications.showUnreadOnly')}
-        </button>
-      </div>
-
-      {/* Content */}
       {loading ? (
         <div className="flex justify-center items-center min-h-[400px]">
           <LoadingSpinner />
@@ -148,60 +66,15 @@ export default function NotificationsPage() {
         <>
           <ul className="space-y-2" role="list" aria-label={t('notifications.listLabel')}>
             {filteredNotifications.map((notification) => (
-              <li
+              <NotificationItem
                 key={notification.id}
-                className={`flex items-start gap-3 p-4 rounded-lg border transition-colors ${
-                  !notification.read
-                    ? 'bg-gray-800/50 border-gray-700'
-                    : 'bg-gray-900 border-gray-800'
-                }`}
-              >
-                <Link
-                  to={getNotificationLink(notification)}
-                  onClick={() => {
-                    if (!notification.read) markAsRead(notification.id);
-                  }}
-                  className="flex items-start gap-3 flex-1 min-w-0"
-                >
-                  <Avatar
-                    name={notification.actor.name}
-                    avatarUrl={notification.actor.avatar_url}
-                    size="sm"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-100">
-                      {getNotificationMessage(notification)}
-                    </p>
-                    {(notification.type === 'post' || notification.type === 'like' || notification.type === 'comment') && notification.post && (
-                      <p className="text-xs text-gray-400 truncate mt-0.5">
-                        {notification.post.title}
-                      </p>
-                    )}
-                    {notification.type === 'answer' && notification.question && (
-                      <p className="text-xs text-gray-400 truncate mt-0.5">
-                        {notification.question.title}
-                      </p>
-                    )}
-                    <p className="text-xs text-gray-500 mt-1">
-                      {formatDistanceToNow(notification.created_at)}
-                    </p>
-                  </div>
-                  {!notification.read && (
-                    <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 shrink-0" aria-hidden="true" />
-                  )}
-                </Link>
-                <button
-                  onClick={() => deleteNotification(notification.id)}
-                  className="p-1.5 text-gray-500 hover:text-red-400 transition-colors rounded-md shrink-0"
-                  aria-label={t('notifications.deleteNotification')}
-                >
-                  <Trash2 className="w-4 h-4" aria-hidden="true" />
-                </button>
-              </li>
+                notification={notification}
+                onMarkAsRead={markAsRead}
+                onDelete={deleteNotification}
+              />
             ))}
           </ul>
 
-          {/* Pagination */}
           {total > limit && (
             <div className="flex justify-center gap-2 mt-8">
               <button
