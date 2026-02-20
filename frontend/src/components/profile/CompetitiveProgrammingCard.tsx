@@ -25,7 +25,7 @@ export default function CompetitiveProgrammingCard({ atcoderRating, atcoderUsern
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {atcoderRating && (
-          <a href={`https://atcoder.jp/users/${atcoderUsername}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 bg-gray-800/50 rounded-lg border border-gray-700 hover:border-gray-600 transition-colors group">
+          <a href={`https://atcoder.jp/users/${encodeURIComponent(atcoderUsername || '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 bg-gray-800/50 rounded-lg border border-gray-700 hover:border-gray-600 transition-colors group">
             <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center text-white font-bold text-lg">A</div>
             <div>
               <div className="text-sm text-gray-400">AtCoder</div>

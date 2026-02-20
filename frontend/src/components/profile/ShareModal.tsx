@@ -33,7 +33,7 @@ export default function ShareModal({
 
   if (!isOpen) return null;
 
-  const profileUrl = `${window.location.origin}/profile/${user.username}`;
+  const profileUrl = `${window.location.origin}/profile/${encodeURIComponent(user.username)}`;
 
   const generateImage = async (): Promise<Blob | null> => {
     if (!cardRef.current) return null;
