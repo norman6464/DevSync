@@ -120,7 +120,7 @@ type QuestionRepositoryInterface interface {
 	FindByID(id uint) (*model.Question, error)
 	FindAll(limit, offset int, tag string, sort string) ([]model.Question, int64, error)
 	Search(q string, limit, offset int) ([]model.Question, int64, error)
-	FindByUserID(userID uint) ([]model.Question, error)
+	FindByUserID(userID uint, limit, offset int) ([]model.Question, int64, error)
 	Update(question *model.Question) error
 	Delete(id uint) error
 	Vote(userID, questionID uint, value int) error

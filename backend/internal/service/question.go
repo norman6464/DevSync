@@ -41,9 +41,9 @@ func (s *QuestionService) GetByID(id uint) (*model.Question, error) {
 	return s.repo.FindByID(id)
 }
 
-// GetByUserID は指定ユーザーの全質問を取得する。
-func (s *QuestionService) GetByUserID(userID uint) ([]model.Question, error) {
-	return s.repo.FindByUserID(userID)
+// GetByUserID は指定ユーザーの質問をページネーション付きで取得する。
+func (s *QuestionService) GetByUserID(userID uint, limit, offset int) ([]model.Question, int64, error) {
+	return s.repo.FindByUserID(userID, limit, offset)
 }
 
 // GetUserVote は指定ユーザーの質問への投票値を取得する。

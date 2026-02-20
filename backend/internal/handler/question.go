@@ -14,7 +14,7 @@ type QuestionServiceInterface interface {
 	GetAll(limit, offset int, tag, sort string) ([]model.Question, int64, error)
 	Search(q string, limit, offset int) ([]model.Question, int64, error)
 	GetByID(id uint) (*model.Question, error)
-	GetByUserID(userID uint) ([]model.Question, error)
+	GetByUserID(userID uint, limit, offset int) ([]model.Question, int64, error)
 	GetUserVote(userID, questionID uint) (int, error)
 	Update(id, userID uint, title, body, tags string) (*model.Question, error)
 	Delete(id, userID uint) error
@@ -124,20 +124,27 @@ func (h *QuestionHandler) GetByID(c *gin.Context) {
 	})
 }
 
-// GetByUserID は指定されたユーザーの質問一覧を取得する。
+// GetByUserID は指定されたユーザーの質問一覧をページネーション付きで取得する。
 func (h *QuestionHandler) GetByUserID(c *gin.Context) {
 	userID, ok := parseID(c, "userId")
 	if !ok {
 		return
 	}
 
-	questions, err := h.service.GetByUserID(userID)
+	limit, offset := parseLimitOffset(c)
+
+	questions, total, err := h.service.GetByUserID(userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
 
-	respondOK(c, questions)
+	respondOK(c, dto.QuestionListResponse{
+		Questions: questions,
+		Total:     total,
+		Limit:     limit,
+		Offset:    offset,
+	})
 }
 
 // Update は指定された質問を更新する。
