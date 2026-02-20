@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -28,16 +29,10 @@ func NewNoteFolderHandler(s NoteFolderServiceInterface) *NoteFolderHandler {
 	return &NoteFolderHandler{service: s}
 }
 
-// CreateNoteFolderInput はフォルダ作成のリクエストボディ。
-type CreateNoteFolderInput struct {
-	Name     string `json:"name" binding:"required"`
-	ParentID *uint  `json:"parent_id"`
-}
-
 // Create は新しいノートフォルダを作成する。
 func (h *NoteFolderHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
-	input := bindJSON[CreateNoteFolderInput](c)
+	input := bindJSON[dto.CreateNoteFolderRequest](c)
 	if input == nil {
 		return
 	}
@@ -114,12 +109,6 @@ func (h *NoteFolderHandler) GetRootFolders(c *gin.Context) {
 	respondOK(c, ensureSlice(folders))
 }
 
-// UpdateNoteFolderInput はフォルダ更新のリクエストボディ。
-type UpdateNoteFolderInput struct {
-	Name     string `json:"name"`
-	ParentID *uint  `json:"parent_id"`
-}
-
 // Update はフォルダを更新する。
 func (h *NoteFolderHandler) Update(c *gin.Context) {
 	id, ok := parseID(c, "id")
@@ -128,7 +117,7 @@ func (h *NoteFolderHandler) Update(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	input := bindJSON[UpdateNoteFolderInput](c)
+	input := bindJSON[dto.UpdateNoteFolderRequest](c)
 	if input == nil {
 		return
 	}

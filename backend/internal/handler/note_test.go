@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -128,7 +129,7 @@ func TestNoteHandler_Create(t *testing.T) {
 		handler.Create(c)
 	})
 
-	input := CreateNoteInput{
+	input := dto.CreateNoteRequest{
 		Title:    "テストノート",
 		Content:  "これはテスト内容です",
 		Tags:     "Go,TDD",
@@ -216,7 +217,7 @@ func TestNoteHandler_Update(t *testing.T) {
 		handler.Update(c)
 	})
 
-	input := UpdateNoteInput{
+	input := dto.UpdateNoteRequest{
 		Title:   "更新後タイトル",
 		Content: "更新後内容",
 	}
@@ -653,7 +654,7 @@ func TestNoteHandler_Create_ServiceError(t *testing.T) {
 		handler.Create(c)
 	})
 
-	input := CreateNoteInput{Title: "テスト", Content: "内容"}
+	input := dto.CreateNoteRequest{Title: "テスト", Content: "内容"}
 	body, _ := json.Marshal(input)
 
 	mockService.On("Create", mock.AnythingOfType("*model.Note")).Return(assert.AnError)
@@ -790,7 +791,7 @@ func TestNoteHandler_Update_ServiceError(t *testing.T) {
 		handler.Update(c)
 	})
 
-	input := UpdateNoteInput{Title: "更新"}
+	input := dto.UpdateNoteRequest{Title: "更新"}
 	body, _ := json.Marshal(input)
 
 	mockService.On("Update", uint(1), uint(1), "更新", "", "", (*uint)(nil)).Return(nil, assert.AnError)

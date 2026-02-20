@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -24,11 +25,6 @@ func NewNoteLinkHandler(s NoteLinkServiceInterface) *NoteLinkHandler {
 	return &NoteLinkHandler{service: s}
 }
 
-// CreateLinkInput はリンク作成のリクエストボディ。
-type CreateLinkInput struct {
-	TargetNoteID uint `json:"target_note_id" binding:"required"`
-}
-
 // CreateLink は新しいリンクを作成する。
 func (h *NoteLinkHandler) CreateLink(c *gin.Context) {
 	sourceNoteID, ok := parseID(c, "id")
@@ -38,7 +34,7 @@ func (h *NoteLinkHandler) CreateLink(c *gin.Context) {
 
 	userID := c.GetUint("userID")
 
-	input := bindJSON[CreateLinkInput](c)
+	input := bindJSON[dto.CreateNoteLinkRequest](c)
 	if input == nil {
 		return
 	}
