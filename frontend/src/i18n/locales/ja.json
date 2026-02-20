@@ -228,6 +228,7 @@
     "writeReply": "返信を書く...",
     "readTime": "{{minutes}}分で読める",
     "newBadge": "NEW",
+    "edited": "編集済み",
     "notFound": "投稿が見つかりません",
     "bookmark": "ブックマーク",
     "unbookmark": "ブックマーク解除",

@@ -208,6 +208,7 @@
     "writeReply": "寫回覆...",
     "readTime": "{{minutes}}分鐘閱讀",
     "newBadge": "NEW",
+    "edited": "已編輯",
     "notFound": "找不到貼文",
     "bookmark": "書籤",
     "unbookmark": "取消書籤",

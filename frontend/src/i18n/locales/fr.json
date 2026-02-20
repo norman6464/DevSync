@@ -208,6 +208,7 @@
     "writeReply": "Écrire une réponse...",
     "readTime": "{{minutes}} min de lecture",
     "newBadge": "NEW",
+    "edited": "modifié",
     "notFound": "Publication introuvable",
     "bookmark": "Signet",
     "unbookmark": "Retirer le signet",
