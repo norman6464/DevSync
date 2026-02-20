@@ -80,6 +80,17 @@ func (r *LearningLogRepository) GetByPeriod(userID uint, days int) ([]model.Lear
 	return logs, err
 }
 
+// SumDurationByPeriod は指定ユーザーの指定期間内の学習時間合計（分）を返す。
+func (r *LearningLogRepository) SumDurationByPeriod(userID uint, days int) (int, error) {
+	var total int
+	since := time.Now().AddDate(0, 0, -days)
+	err := r.db.Model(&model.LearningLog{}).
+		Where("user_id = ? AND created_at >= ?", userID, since).
+		Select("COALESCE(SUM(duration), 0)").
+		Scan(&total).Error
+	return total, err
+}
+
 // GetStreakInfo は学習ログから連続学習情報を算出する。
 // 現在の連続日数、最長連続日数、合計学習日数、最終ログ日を返す。
 func (r *LearningLogRepository) GetStreakInfo(userID uint) (*model.StreakInfo, error) {

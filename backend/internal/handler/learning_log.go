@@ -21,6 +21,7 @@ type LearningLogServiceInterface interface {
 	ExportCSV(userID uint, days int) ([]byte, error)
 	GetByCategory(userID uint, category string) ([]model.LearningLog, error)
 	GetBySource(userID uint, source string) ([]model.LearningLog, error)
+	GetWeeklyDuration(userID uint) (int, error)
 }
 
 // LearningLogHandler は学習ログ関連のHTTPハンドラ。
@@ -257,4 +258,20 @@ func (h *LearningLogHandler) ExportLogs(c *gin.Context) {
 
 	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
 	c.Data(200, "text/csv; charset=utf-8", csvBytes)
+}
+
+// GetWeeklyDuration は指定ユーザーの過去7日間の学習時間合計を返す。
+func (h *LearningLogHandler) GetWeeklyDuration(c *gin.Context) {
+	userID, ok := parseID(c, "userId")
+	if !ok {
+		return
+	}
+
+	duration, err := h.service.GetWeeklyDuration(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, gin.H{"duration": duration})
 }

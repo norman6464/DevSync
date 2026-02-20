@@ -518,6 +518,11 @@ func (m *MockLearningLogRepository) GetByPeriod(userID uint, days int) ([]model.
 	return args.Get(0).([]model.LearningLog), args.Error(1)
 }
 
+func (m *MockLearningLogRepository) SumDurationByPeriod(userID uint, days int) (int, error) {
+	args := m.Called(userID, days)
+	return args.Int(0), args.Error(1)
+}
+
 func (m *MockLearningLogRepository) GetStreakInfo(userID uint) (*model.StreakInfo, error) {
 	args := m.Called(userID)
 	if args.Get(0) == nil {

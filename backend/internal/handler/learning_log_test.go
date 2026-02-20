@@ -348,3 +348,41 @@ func TestLearningLog_ExportLogs_ServiceError(t *testing.T) {
 	assertStatus(t, w, http.StatusInternalServerError)
 	svc.AssertExpectations(t)
 }
+
+// ============================================================
+// GetWeeklyDuration テスト
+// ============================================================
+
+func TestLearningLog_GetWeeklyDuration_Success(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	r := newRouter(1)
+	r.GET("/learning-logs/weekly-duration/:userId", h.GetWeeklyDuration)
+
+	svc.On("GetWeeklyDuration", uint(1)).Return(120, nil)
+
+	w := doRequest(r, http.MethodGet, "/learning-logs/weekly-duration/1", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Contains(t, w.Body.String(), "120")
+	svc.AssertExpectations(t)
+}
+
+func TestLearningLog_GetWeeklyDuration_ServiceError(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	r := newRouter(1)
+	r.GET("/learning-logs/weekly-duration/:userId", h.GetWeeklyDuration)
+
+	svc.On("GetWeeklyDuration", uint(1)).Return(0, errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/learning-logs/weekly-duration/1", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+func TestLearningLog_GetWeeklyDuration_InvalidID(t *testing.T) {
+	h, _ := setupLearningLogHandler()
+	r := newRouter(1)
+	r.GET("/learning-logs/weekly-duration/:userId", h.GetWeeklyDuration)
+
+	w := doRequest(r, http.MethodGet, "/learning-logs/weekly-duration/abc", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
