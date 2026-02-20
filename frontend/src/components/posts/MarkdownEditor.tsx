@@ -5,8 +5,8 @@ import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Link2, Image } from 'lucide-react';
 import { uploadImage } from '../../api/posts';
+import MarkdownToolbar from './MarkdownToolbar';
 
 interface MarkdownEditorProps {
   value: string;
@@ -152,24 +152,6 @@ export default function MarkdownEditor({
     e.preventDefault();
   };
 
-  const toolbarButtons = [
-    { action: 'heading', icon: 'H', title: t('editor.heading') },
-    { action: 'bold', icon: 'B', title: t('editor.bold'), className: 'font-bold' },
-    { action: 'italic', icon: 'I', title: t('editor.italic'), className: 'italic' },
-    { action: 'strikethrough', icon: 'S', title: t('editor.strikethrough'), className: 'line-through' },
-    { action: 'divider' },
-    { action: 'link', icon: <Link2 className="w-3.5 h-3.5" />, title: t('editor.link') },
-    { action: 'image', icon: <Image className="w-3.5 h-3.5" />, title: t('editor.image') },
-    { action: 'divider' },
-    { action: 'code', icon: '<>', title: t('editor.inlineCode') },
-    { action: 'codeblock', icon: '{}', title: t('editor.codeBlock') },
-    { action: 'divider' },
-    { action: 'quote', icon: '"', title: t('editor.quote') },
-    { action: 'list', icon: '•', title: t('editor.bulletList') },
-    { action: 'orderedlist', icon: '1.', title: t('editor.numberedList') },
-    { action: 'task', icon: '☐', title: t('editor.taskList') },
-  ];
-
   return (
     <div className="border border-gray-700 rounded-lg overflow-hidden bg-gray-800">
       {/* Tabs */}
@@ -205,24 +187,7 @@ export default function MarkdownEditor({
 
         {/* Toolbar */}
         {activeTab === 'write' && (
-          <div className="flex items-center gap-0.5 ml-auto px-2" role="toolbar" aria-label={t('editor.toolbar')}>
-            {toolbarButtons.map((btn, i) =>
-              btn.action === 'divider' ? (
-                <div key={i} className="w-px h-4 bg-gray-600 mx-1" aria-hidden="true" />
-              ) : (
-                <button
-                  key={btn.action}
-                  type="button"
-                  onClick={() => handleToolbarAction(btn.action)}
-                  className={`p-1.5 text-xs text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors ${btn.className || ''}`}
-                  aria-label={btn.title}
-                  title={btn.title}
-                >
-                  {btn.icon}
-                </button>
-              )
-            )}
-          </div>
+          <MarkdownToolbar onAction={handleToolbarAction} />
         )}
       </div>
 
