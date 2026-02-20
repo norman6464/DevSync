@@ -855,6 +855,10 @@
       "votes": "投票数",
       "unanswered": "未回答"
     },
+    "filter": {
+      "solved": "解決済み",
+      "unsolved": "未解決"
+    },
     "createSuccess": "質問を作成しました",
     "updateSuccess": "質問を更新しました",
     "deleteSuccess": "質問を削除しました",

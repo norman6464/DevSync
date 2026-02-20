@@ -901,6 +901,10 @@
       "votes": "Stimmen",
       "unanswered": "Unbeantwortet"
     },
+    "filter": {
+      "solved": "Gelöst",
+      "unsolved": "Ungelöst"
+    },
     "createSuccess": "Frage erstellt",
     "updateSuccess": "Frage aktualisiert",
     "deleteSuccess": "Frage gelöscht",

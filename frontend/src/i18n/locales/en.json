@@ -901,6 +901,10 @@
       "votes": "Votes",
       "unanswered": "Unanswered"
     },
+    "filter": {
+      "solved": "Solved",
+      "unsolved": "Unsolved"
+    },
     "createSuccess": "Question created",
     "updateSuccess": "Question updated",
     "deleteSuccess": "Question deleted",

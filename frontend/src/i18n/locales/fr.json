@@ -901,6 +901,10 @@
       "votes": "Votes",
       "unanswered": "Sans réponse"
     },
+    "filter": {
+      "solved": "Résolues",
+      "unsolved": "Non résolues"
+    },
     "createSuccess": "Question créée",
     "updateSuccess": "Question mise à jour",
     "deleteSuccess": "Question supprimée",

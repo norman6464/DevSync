@@ -12,6 +12,7 @@ import {
 import { useAsyncData } from './useAsyncData';
 
 type SortType = 'newest' | 'votes' | 'unanswered';
+type SolvedFilter = 'all' | 'solved' | 'unsolved';
 
 export function useQuestions() {
   const { t } = useTranslation();
@@ -19,6 +20,7 @@ export function useQuestions() {
   const [searchQuery, setSearchQuery] = useState('');
   const [tagFilter, setTagFilter] = useState('');
   const [sort, setSort] = useState<SortType>('newest');
+  const [solvedFilter, setSolvedFilter] = useState<SolvedFilter>('all');
   const [page, setPage] = useState(0);
   const limit = 20;
 
@@ -36,7 +38,10 @@ export function useQuestions() {
   const total = data?.total ?? 0;
 
   const [localQuestions, setLocalQuestions] = useState<Question[] | null>(null);
-  const currentQuestions = localQuestions ?? questions;
+  const allQuestions = localQuestions ?? questions;
+  const currentQuestions = solvedFilter === 'all'
+    ? allQuestions
+    : allQuestions.filter(q => solvedFilter === 'solved' ? q.is_solved : !q.is_solved);
 
   const handleSearch = useCallback(() => {
     setPage(0);
@@ -91,6 +96,11 @@ export function useQuestions() {
     setLocalQuestions(null);
   }, []);
 
+  const changeSolvedFilter = useCallback((f: SolvedFilter) => {
+    setSolvedFilter(f);
+    setPage(0);
+  }, []);
+
   return {
     questions: currentQuestions,
     total,
@@ -102,6 +112,8 @@ export function useQuestions() {
     setTagFilter: (v: string) => { setTagFilter(v); setPage(0); setLocalQuestions(null); },
     sort,
     setSort: changeSort,
+    solvedFilter,
+    setSolvedFilter: changeSolvedFilter,
     page,
     setPage,
     limit,
