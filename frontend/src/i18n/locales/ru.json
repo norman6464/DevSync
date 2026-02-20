@@ -23,6 +23,7 @@
     "menu": "Меню",
     "scrollToTop": "Наверх",
     "invalidUrl": "{{field}} не является допустимым URL",
+    "all": "Все",
     "selectLanguage": "Выбрать язык",
     "monthsShort": [
       "Янв",
@@ -596,6 +597,8 @@
     "statusPaused": "Приостановлена",
     "pause": "Приостановить",
     "resume": "Возобновить",
+    "filter": "Фильтр",
+    "noFilterResults": "Нет целей, соответствующих выбранным фильтрам",
     "titlePlaceholder": "Напр. Изучить TypeScript",
     "descriptionPlaceholder": "Опишите свою цель...",
     "categoryLanguage": "Язык",

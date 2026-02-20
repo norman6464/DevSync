@@ -14,6 +14,8 @@ export function useGoalForm() {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<GoalCategory>('other');
   const [targetDate, setTargetDate] = useState('');
+  const [filterStatus, setFilterStatus] = useState<GoalStatus | 'all'>('all');
+  const [filterCategory, setFilterCategory] = useState<GoalCategory | 'all'>('all');
 
   const resetForm = () => {
     setTitle('');
@@ -73,8 +75,26 @@ export function useGoalForm() {
     await goalsData.duplicateGoal(id);
   };
 
+  const filteredGoals = goalsData.goals.filter(g => {
+    if (filterStatus !== 'all' && g.status !== filterStatus) return false;
+    if (filterCategory !== 'all' && g.category !== filterCategory) return false;
+    return true;
+  });
+
+  const filteredActiveGoals = filteredGoals.filter(g => g.status === 'active');
+  const filteredPausedGoals = filteredGoals.filter(g => g.status === 'paused');
+  const filteredCompletedGoals = filteredGoals.filter(g => g.status === 'completed');
+
   return {
     ...goalsData,
+    filteredGoals,
+    filteredActiveGoals,
+    filteredPausedGoals,
+    filteredCompletedGoals,
+    filterStatus,
+    setFilterStatus,
+    filterCategory,
+    setFilterCategory,
     showForm,
     setShowForm,
     editingGoal,

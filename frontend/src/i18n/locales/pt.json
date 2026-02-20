@@ -23,6 +23,7 @@
     "menu": "Menu",
     "scrollToTop": "Voltar ao topo",
     "invalidUrl": "{{field}} não é uma URL válida",
+    "all": "Todos",
     "selectLanguage": "Selecionar idioma",
     "monthsShort": [
       "Jan",
@@ -596,6 +597,8 @@
     "statusPaused": "Pausado",
     "pause": "Pausar",
     "resume": "Retomar",
+    "filter": "Filtrar",
+    "noFilterResults": "Nenhuma meta corresponde aos filtros selecionados",
     "titlePlaceholder": "Ex. Aprender TypeScript",
     "descriptionPlaceholder": "Descreva sua meta...",
     "categoryLanguage": "Linguagem",

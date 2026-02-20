@@ -23,6 +23,7 @@
     "menu": "메뉴",
     "scrollToTop": "맨 위로",
     "invalidUrl": "{{field}}은(는) 유효한 URL이 아닙니다",
+    "all": "전체",
     "selectLanguage": "언어 선택",
     "monthsShort": [
       "1월",
@@ -596,6 +597,8 @@
     "statusPaused": "일시 중지",
     "pause": "일시 중지",
     "resume": "재개",
+    "filter": "필터",
+    "noFilterResults": "선택한 필터에 맞는 목표가 없습니다",
     "titlePlaceholder": "예: TypeScript 배우기",
     "descriptionPlaceholder": "목표를 설명하세요...",
     "categoryLanguage": "언어",
