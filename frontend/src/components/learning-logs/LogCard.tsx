@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Code, BookOpen, GraduationCap, Users, FileText, Star, type LucideIcon } from 'lucide-react';
+import { Code, BookOpen, GraduationCap, Users, FileText, Star, Timer, type LucideIcon } from 'lucide-react';
 import type { LearningLog, LogCategory } from '../../types/learningLog';
 import { formatDate } from '../../utils/timeFormat';
 import { panelClass, badgeBaseClass } from '../../constants/styles';
@@ -48,6 +48,12 @@ export default function LogCard({ log, onEdit, onDelete, onToggleFavorite }: Log
               <span className={`${badgeBaseClass} ${getCategoryColor(log.category)}`}>
                 {t(catInfo.label)}
               </span>
+              {log.source === 'pomodoro' && (
+                <span className={`${badgeBaseClass} inline-flex items-center gap-0.5 text-red-400 bg-red-400/10`}>
+                  <Timer className="w-3 h-3" />
+                  {t('learningLogs.sourcePomodoro')}
+                </span>
+              )}
             </div>
             <p className="text-sm text-gray-400 mt-1 whitespace-pre-wrap">{log.content}</p>
             <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">

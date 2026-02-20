@@ -648,6 +648,7 @@
     "duration": "学習時間",
     "durationMinutes": "{{minutes}}分",
     "durationHoursMinutes": "{{hours}}時間{{minutes}}分",
+    "sourcePomodoro": "ポモドーロ",
     "durationPlaceholder": "分",
     "calendar": "カレンダー",
     "list": "リスト",
