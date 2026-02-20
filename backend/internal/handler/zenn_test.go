@@ -84,6 +84,68 @@ func TestZenn_GetArticles_Success(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
+func TestZenn_Disconnect_ServiceError(t *testing.T) {
+	h, svc := setupZennHandler()
+	svc.On("Disconnect", uint(1)).Return(errors.New("db error"))
+
+	r := newRouter(1)
+	r.DELETE("/zenn/disconnect", h.Disconnect)
+
+	w := doRequest(r, http.MethodDelete, "/zenn/disconnect", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+func TestZenn_Sync_ServiceError(t *testing.T) {
+	h, svc := setupZennHandler()
+	svc.On("Sync", uint(1)).Return(0, errors.New("sync error"))
+
+	r := newRouter(1)
+	r.POST("/zenn/sync", h.Sync)
+
+	w := doRequest(r, http.MethodPost, "/zenn/sync", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+func TestZenn_GetArticles_InvalidID(t *testing.T) {
+	h, _ := setupZennHandler()
+	r := newRouter(1)
+	r.GET("/zenn/:userId/articles", h.GetArticles)
+
+	w := doRequest(r, http.MethodGet, "/zenn/abc/articles", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestZenn_GetArticles_ServiceError(t *testing.T) {
+	h, svc := setupZennHandler()
+	svc.On("GetArticles", uint(5)).Return([]model.ZennArticle(nil), errors.New("db error"))
+
+	r := newRouter(1)
+	r.GET("/zenn/:userId/articles", h.GetArticles)
+
+	w := doRequest(r, http.MethodGet, "/zenn/5/articles", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+func TestZenn_GetStats_InvalidID(t *testing.T) {
+	h, _ := setupZennHandler()
+	r := newRouter(1)
+	r.GET("/zenn/:userId/stats", h.GetStats)
+
+	w := doRequest(r, http.MethodGet, "/zenn/abc/stats", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestZenn_GetStats_ServiceError(t *testing.T) {
+	h, svc := setupZennHandler()
+	svc.On("GetStats", uint(5)).Return(nil, errors.New("db error"))
+
+	r := newRouter(1)
+	r.GET("/zenn/:userId/stats", h.GetStats)
+
+	w := doRequest(r, http.MethodGet, "/zenn/5/stats", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
 func TestZenn_GetStats_Success(t *testing.T) {
 	h, svc := setupZennHandler()
 	svc.On("GetStats", uint(5)).Return(&model.ZennStats{

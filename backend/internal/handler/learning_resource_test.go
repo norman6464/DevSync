@@ -243,6 +243,61 @@ func TestResourceDelete_Forbidden(t *testing.T) {
 	assertStatus(t, w, http.StatusForbidden)
 }
 
+func TestResourceUpdate_InvalidID(t *testing.T) {
+	h, _ := setupLearningResourceHandler()
+	r := newRouter(1)
+	r.PUT("/resources/:id", h.Update)
+
+	w := doRequest(r, http.MethodPut, "/resources/abc", map[string]string{"title": "X"})
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestResourceUpdate_ServiceError(t *testing.T) {
+	h, repo := setupLearningResourceHandler()
+	r := newRouter(1)
+	r.PUT("/resources/:id", h.Update)
+
+	repo.On("FindByID", uint(10)).Return(nil, errors.New("db error"))
+
+	w := doRequest(r, http.MethodPut, "/resources/10", map[string]string{"title": "X"})
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+func TestResourceDelete_InvalidID(t *testing.T) {
+	h, _ := setupLearningResourceHandler()
+	r := newRouter(1)
+	r.DELETE("/resources/:id", h.Delete)
+
+	w := doRequest(r, http.MethodDelete, "/resources/abc", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestResourceGetPublic_ServiceError(t *testing.T) {
+	h, repo := setupLearningResourceHandler()
+	r := newRouter(1)
+	r.GET("/resources", h.GetPublic)
+
+	repo.On("FindPublic", 20, 0, "", "").Return(
+		[]model.LearningResource{}, int64(0), errors.New("db error"),
+	)
+
+	w := doRequest(r, http.MethodGet, "/resources", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+func TestResourceSearch_ServiceError(t *testing.T) {
+	h, repo := setupLearningResourceHandler()
+	r := newRouter(1)
+	r.GET("/resources/search", h.Search)
+
+	repo.On("Search", "go", 20, 0).Return(
+		[]model.LearningResource{}, int64(0), errors.New("db error"),
+	)
+
+	w := doRequest(r, http.MethodGet, "/resources/search?q=go", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
 // ---------- Like / Unlike ----------
 
 func TestResourceLike_Success(t *testing.T) {
@@ -257,6 +312,52 @@ func TestResourceLike_Success(t *testing.T) {
 
 	w := doRequest(r, http.MethodPost, "/resources/5/like", nil)
 	assertStatus(t, w, http.StatusOK)
+}
+
+func TestResourceLike_InvalidID(t *testing.T) {
+	h, _ := setupLearningResourceHandler()
+	r := newRouter(1)
+	r.POST("/resources/:id/like", h.Like)
+
+	w := doRequest(r, http.MethodPost, "/resources/abc/like", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestResourceLike_ServiceError(t *testing.T) {
+	h, repo := setupLearningResourceHandler()
+	r := newRouter(1)
+	r.POST("/resources/:id/like", h.Like)
+
+	otherResource := &model.LearningResource{UserID: 99}
+	otherResource.ID = 5
+	repo.On("FindByID", uint(5)).Return(otherResource, nil)
+	repo.On("Like", uint(1), uint(5)).Return(errors.New("already liked"))
+
+	w := doRequest(r, http.MethodPost, "/resources/5/like", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+func TestResourceUnlike_InvalidID(t *testing.T) {
+	h, _ := setupLearningResourceHandler()
+	r := newRouter(1)
+	r.DELETE("/resources/:id/like", h.Unlike)
+
+	w := doRequest(r, http.MethodDelete, "/resources/abc/like", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestResourceUnlike_ServiceError(t *testing.T) {
+	h, repo := setupLearningResourceHandler()
+	r := newRouter(1)
+	r.DELETE("/resources/:id/like", h.Unlike)
+
+	otherResource := &model.LearningResource{UserID: 99}
+	otherResource.ID = 5
+	repo.On("FindByID", uint(5)).Return(otherResource, nil)
+	repo.On("Unlike", uint(1), uint(5)).Return(errors.New("not liked"))
+
+	w := doRequest(r, http.MethodDelete, "/resources/5/like", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
 }
 
 func TestResourceUnlike_Success(t *testing.T) {
@@ -289,6 +390,52 @@ func TestResourceSave_Success(t *testing.T) {
 	assertStatus(t, w, http.StatusOK)
 }
 
+func TestResourceSave_InvalidID(t *testing.T) {
+	h, _ := setupLearningResourceHandler()
+	r := newRouter(1)
+	r.POST("/resources/:id/save", h.SaveResource)
+
+	w := doRequest(r, http.MethodPost, "/resources/abc/save", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestResourceSave_ServiceError(t *testing.T) {
+	h, repo := setupLearningResourceHandler()
+	r := newRouter(1)
+	r.POST("/resources/:id/save", h.SaveResource)
+
+	otherResource := &model.LearningResource{UserID: 99}
+	otherResource.ID = 5
+	repo.On("FindByID", uint(5)).Return(otherResource, nil)
+	repo.On("Save", uint(1), uint(5)).Return(errors.New("already saved"))
+
+	w := doRequest(r, http.MethodPost, "/resources/5/save", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+func TestResourceUnsave_InvalidID(t *testing.T) {
+	h, _ := setupLearningResourceHandler()
+	r := newRouter(1)
+	r.DELETE("/resources/:id/save", h.UnsaveResource)
+
+	w := doRequest(r, http.MethodDelete, "/resources/abc/save", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestResourceUnsave_ServiceError(t *testing.T) {
+	h, repo := setupLearningResourceHandler()
+	r := newRouter(1)
+	r.DELETE("/resources/:id/save", h.UnsaveResource)
+
+	otherResource := &model.LearningResource{UserID: 99}
+	otherResource.ID = 5
+	repo.On("FindByID", uint(5)).Return(otherResource, nil)
+	repo.On("Unsave", uint(1), uint(5)).Return(errors.New("not saved"))
+
+	w := doRequest(r, http.MethodDelete, "/resources/5/save", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
 func TestResourceUnsave_Success(t *testing.T) {
 	h, repo := setupLearningResourceHandler()
 	r := newRouter(1)
@@ -301,6 +448,19 @@ func TestResourceUnsave_Success(t *testing.T) {
 
 	w := doRequest(r, http.MethodDelete, "/resources/5/save", nil)
 	assertStatus(t, w, http.StatusOK)
+}
+
+func TestResourceGetSaved_ServiceError(t *testing.T) {
+	h, repo := setupLearningResourceHandler()
+	r := newRouter(1)
+	r.GET("/resources/saved", h.GetSaved)
+
+	repo.On("FindSavedByUserID", uint(1), 20, 0).Return(
+		[]model.LearningResource{}, int64(0), errors.New("db error"),
+	)
+
+	w := doRequest(r, http.MethodGet, "/resources/saved", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
 }
 
 // ---------- GetSaved ----------
