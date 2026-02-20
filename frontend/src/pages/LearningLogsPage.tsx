@@ -11,7 +11,7 @@ import LogFiltersBar from '../components/learning-logs/LogFiltersBar';
 import LogFormModal from '../components/learning-logs/LogFormModal';
 import WeeklySummaryCard from '../components/learning-logs/WeeklySummaryCard';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import { inputClass, buttonSecondaryClass } from '../constants/styles';
+import { inputClass, buttonSecondaryClass, emptyStateClass } from '../constants/styles';
 
 
 export default function LearningLogsPage() {
@@ -160,7 +160,7 @@ export default function LearningLogsPage() {
       {view === 'list' && (
         <>
           {filteredLogs.length === 0 ? (
-            <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center">
+            <div className={emptyStateClass}>
               <p className="text-gray-400 text-sm mb-4">
                 {filterDate ? t('learningLogs.noLogsOnDate') : t('learningLogs.noLogs')}
               </p>

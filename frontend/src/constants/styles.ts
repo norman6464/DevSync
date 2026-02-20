@@ -39,3 +39,6 @@ export const textareaClass =
 
 export const labelClass =
   'block text-sm font-medium text-gray-300 mb-1.5';
+
+export const emptyStateClass =
+  'bg-gray-900 border border-gray-800 rounded-md p-12 text-center';

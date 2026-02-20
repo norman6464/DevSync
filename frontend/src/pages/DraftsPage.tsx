@@ -9,6 +9,7 @@ import { getDrafts, publishPost, deletePost } from '../api/posts';
 import { PostCardSkeleton } from '../components/common/Skeleton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import { formatDistanceToNow } from '../utils/timeFormat';
+import { emptyStateClass } from '../constants/styles';
 
 export default function DraftsPage() {
   const { t } = useTranslation();
@@ -111,7 +112,7 @@ export default function DraftsPage() {
           <PostCardSkeleton />
         </div>
       ) : drafts.length === 0 ? (
-        <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center">
+        <div className={emptyStateClass}>
           <FileEdit className="w-16 h-16 mx-auto mb-4 text-gray-700" />
           <p className="text-gray-400">{t('post.noDrafts')}</p>
         </div>

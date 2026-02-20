@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Sparkles, Rocket, FolderOpen, Pin } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useProfile, usePostSeries, usePostCollections, useProfileCompleteness, usePinnedPosts } from '../hooks';
-import { sectionContainerClass } from '../constants/styles';
+import { sectionContainerClass, emptyStateClass } from '../constants/styles';
 import { PageLoader } from '../components/common';
 import ProfileHeader from '../components/profile/ProfileHeader';
 import ContributionCalendar from '../components/profile/ContributionCalendar';
@@ -190,7 +190,7 @@ export default function ProfilePage() {
       <div>
         <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-3">{t('profile.posts')}</h2>
         {posts.length === 0 ? (
-          <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center text-gray-400 text-sm">{t('profile.noPosts')}</div>
+          <div className={`${emptyStateClass} text-gray-400 text-sm`}>{t('profile.noPosts')}</div>
         ) : (
           <div className="space-y-3">{posts.map((post) => (
             <PostCard

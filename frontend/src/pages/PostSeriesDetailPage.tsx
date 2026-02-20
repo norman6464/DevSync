@@ -7,6 +7,7 @@ import type { PostSeries } from '../types/post';
 import { PageLoader } from '../components/common';
 import PostCard from '../components/posts/PostCard';
 import { useAuthStore } from '../store/authStore';
+import { emptyStateClass } from '../constants/styles';
 
 export default function PostSeriesDetailPage() {
   const { t } = useTranslation();
@@ -52,7 +53,7 @@ export default function PostSeriesDetailPage() {
           {t('series.posts')} ({items.length})
         </h2>
         {items.length === 0 ? (
-          <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center text-gray-400 text-sm">
+          <div className={`${emptyStateClass} text-gray-400 text-sm`}>
             {t('series.noPosts')}
           </div>
         ) : (
