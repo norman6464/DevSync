@@ -80,9 +80,10 @@ func TestNoteFolderRepository_FindByUserID(t *testing.T) {
 	}
 
 	// 取得テスト
-	results, err := repo.FindByUserID(1)
+	results, total, err := repo.FindByUserID(1, 20, 0)
 	assert.NoError(t, err)
 	assert.Len(t, results, 2)
+	assert.Equal(t, int64(2), total)
 }
 
 func TestNoteFolderRepository_FindByParentID(t *testing.T) {

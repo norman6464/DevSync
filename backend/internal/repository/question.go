@@ -40,7 +40,7 @@ func (r *QuestionRepository) FindAll(limit, offset int, tag string, sort string)
 	query := r.db.Model(&model.Question{})
 
 	if tag != "" {
-		query = query.Where("tags ILIKE ?", "%\""+tag+"\"%")
+		query = query.Where("tags ILIKE ?", "%\""+EscapeLikeChars(tag)+"\"%")
 	}
 
 	query.Count(&total)
@@ -67,7 +67,7 @@ func (r *QuestionRepository) Search(q string, limit, offset int) ([]model.Questi
 	var questions []model.Question
 	var total int64
 
-	searchQuery := "%" + q + "%"
+	searchQuery := EscapeLikePattern(q)
 	dbQuery := r.db.Model(&model.Question{}).
 		Where("title ILIKE ? OR body ILIKE ? OR tags ILIKE ?", searchQuery, searchQuery, searchQuery)
 
