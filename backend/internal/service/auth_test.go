@@ -311,6 +311,22 @@ func TestDeleteAccount_PasswordRequired(t *testing.T) {
 	userRepo.AssertExpectations(t)
 }
 
+func TestDeleteAccount_DeleteWithRelatedDataError(t *testing.T) {
+	svc, userRepo, _ := newTestAuthService()
+
+	hashed, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
+	user := &model.User{Name: "Test", Email: "test@example.com", Password: string(hashed)}
+	user.ID = 1
+
+	userRepo.On("FindByID", uint(1)).Return(user, nil)
+	userRepo.On("DeleteWithRelatedData", uint(1)).Return(errors.New("db error"))
+
+	err := svc.DeleteAccount(1, "password123")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "db error")
+	userRepo.AssertExpectations(t)
+}
+
 // ============================================================
 // ユーザー情報取得テスト
 // ============================================================
