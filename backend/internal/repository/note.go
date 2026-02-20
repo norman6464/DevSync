@@ -91,6 +91,18 @@ func (r *NoteRepository) ToggleFavorite(id uint) error {
 		Update("is_favorite", gorm.Expr("NOT is_favorite")).Error
 }
 
+// FindFavorites は指定ユーザーのお気に入りノート一覧をページネーション付きで取得する。
+func (r *NoteRepository) FindFavorites(userID uint, page, limit int) ([]model.Note, error) {
+	var notes []model.Note
+	offset := (page - 1) * limit
+	err := r.db.Preload("Folder").
+		Where("user_id = ? AND is_favorite = ?", userID, true).
+		Order("updated_at DESC").
+		Offset(offset).Limit(limit).
+		Find(&notes).Error
+	return notes, err
+}
+
 // Archive は指定IDのノートをアーカイブする。
 func (r *NoteRepository) Archive(id uint) error {
 	return r.db.Model(&model.Note{}).Where("id = ?", id).

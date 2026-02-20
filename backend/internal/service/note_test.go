@@ -77,6 +77,11 @@ func (m *MockNoteRepository) CountArchivedByUserID(userID uint) (int64, error) {
 	return args.Get(0).(int64), args.Error(1)
 }
 
+func (m *MockNoteRepository) FindFavorites(userID uint, page, limit int) ([]model.Note, error) {
+	args := m.Called(userID, page, limit)
+	return args.Get(0).([]model.Note), args.Error(1)
+}
+
 // newTestNoteService はテスト用のNoteServiceを生成する。
 func newTestNoteService() (*NoteService, *MockNoteRepository) {
 	repo := new(MockNoteRepository)
@@ -586,4 +591,46 @@ func TestNoteService_Duplicate_ValidationError(t *testing.T) {
 	result, err := svc.Duplicate(1, 1)
 	assert.Error(t, err)
 	assert.Nil(t, result)
+}
+
+// ============================================================
+// GetFavorites テスト
+// ============================================================
+
+func TestNoteService_GetFavorites_Success(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	favorites := []model.Note{
+		{Title: "お気に入りノート1", UserID: 1, IsFavorite: true},
+		{Title: "お気に入りノート2", UserID: 1, IsFavorite: true},
+	}
+	repo.On("FindFavorites", uint(1), 1, 10).Return(favorites, nil)
+
+	result, err := svc.GetFavorites(1, 1, 10)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.True(t, result[0].IsFavorite)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteService_GetFavorites_Empty(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	repo.On("FindFavorites", uint(1), 1, 10).Return([]model.Note{}, nil)
+
+	result, err := svc.GetFavorites(1, 1, 10)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteService_GetFavorites_RepoError(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	repo.On("FindFavorites", uint(1), 1, 10).Return([]model.Note{}, errors.New("db error"))
+
+	result, err := svc.GetFavorites(1, 1, 10)
+	assert.Error(t, err)
+	assert.Empty(t, result)
+	repo.AssertExpectations(t)
 }

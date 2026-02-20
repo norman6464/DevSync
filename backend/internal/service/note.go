@@ -129,6 +129,11 @@ func (s *NoteService) Unarchive(id, userID uint) error {
 	return s.repo.Unarchive(id)
 }
 
+// GetFavorites は指定ユーザーのお気に入りノート一覧をページネーション付きで取得する。
+func (s *NoteService) GetFavorites(userID uint, page, limit int) ([]model.Note, error) {
+	return s.repo.FindFavorites(userID, page, limit)
+}
+
 // GetArchived は指定ユーザーのアーカイブ済みノート一覧を取得する。
 func (s *NoteService) GetArchived(userID uint, page, limit int) ([]model.Note, error) {
 	return s.repo.FindArchived(userID, page, limit)
