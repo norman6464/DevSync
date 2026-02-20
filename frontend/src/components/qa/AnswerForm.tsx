@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { textareaClass, buttonSecondaryClass } from '../../constants/styles';
 
@@ -22,17 +22,30 @@ export default function AnswerForm({ initialBody = '', onSubmit, onCancel, loadi
     }
   };
 
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      if (body.trim() && !loading) {
+        onSubmit(body).then((success) => {
+          if (success && !isEdit) setBody('');
+        });
+      }
+    }
+  }, [body, loading, onSubmit, isEdit]);
+
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <textarea
         value={body}
         onChange={(e) => setBody(e.target.value)}
+        onKeyDown={handleKeyDown}
         required
         rows={isEdit ? 4 : 6}
         maxLength={5000}
         className={textareaClass}
         placeholder={t('qa.answerPlaceholder')}
       />
+      <p className="text-xs text-gray-500">{t('qa.submitShortcut')}</p>
       <div className="flex gap-3 justify-end">
         {onCancel && (
           <button

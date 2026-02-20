@@ -936,6 +936,7 @@
     "postAnswer": "Post Answer",
     "updateAnswer": "Update Answer",
     "answerPlaceholder": "Write your answer...",
+    "submitShortcut": "Press Ctrl+Enter to submit",
     "answersCount": "Answers ({{count}})",
     "questionNotFound": "Question not found",
     "backToList": "Back to list",
