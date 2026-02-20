@@ -245,14 +245,14 @@ func (m *MockFollowRepository) IsFollowing(followerID, followeeID uint) bool {
 	return args.Bool(0)
 }
 
-func (m *MockFollowRepository) GetFollowers(userID uint) ([]model.User, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.User), args.Error(1)
+func (m *MockFollowRepository) GetFollowers(userID uint, limit, offset int) ([]model.User, int64, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.User), args.Get(1).(int64), args.Error(2)
 }
 
-func (m *MockFollowRepository) GetFollowing(userID uint) ([]model.User, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.User), args.Error(1)
+func (m *MockFollowRepository) GetFollowing(userID uint, limit, offset int) ([]model.User, int64, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.User), args.Get(1).(int64), args.Error(2)
 }
 
 // ============================================================

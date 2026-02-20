@@ -87,8 +87,8 @@ type FollowRepositoryInterface interface {
 	Follow(followerID, followeeID uint) error
 	Unfollow(followerID, followeeID uint) error
 	IsFollowing(followerID, followeeID uint) bool
-	GetFollowers(userID uint) ([]model.User, error)
-	GetFollowing(userID uint) ([]model.User, error)
+	GetFollowers(userID uint, limit, offset int) ([]model.User, int64, error)
+	GetFollowing(userID uint, limit, offset int) ([]model.User, int64, error)
 }
 
 // NotificationRepositoryInterface は通知データ操作の契約を定義する。
