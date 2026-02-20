@@ -1,6 +1,8 @@
 package service
 
 import (
+	"strings"
+
 	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
@@ -70,25 +72,25 @@ func (s *ProjectService) Update(id, userID uint, updates *model.Project) (*model
 		return nil, err
 	}
 
-	if updates.Title != "" {
+	if strings.TrimSpace(updates.Title) != "" {
 		project.Title = updates.Title
 	}
-	if updates.Description != "" {
+	if strings.TrimSpace(updates.Description) != "" {
 		project.Description = updates.Description
 	}
-	if updates.TechStack != "" {
+	if strings.TrimSpace(updates.TechStack) != "" {
 		project.TechStack = updates.TechStack
 	}
-	if updates.DemoURL != "" {
+	if strings.TrimSpace(updates.DemoURL) != "" {
 		project.DemoURL = updates.DemoURL
 	}
-	if updates.GithubURL != "" {
+	if strings.TrimSpace(updates.GithubURL) != "" {
 		project.GithubURL = updates.GithubURL
 	}
-	if updates.ImageURL != "" {
+	if strings.TrimSpace(updates.ImageURL) != "" {
 		project.ImageURL = updates.ImageURL
 	}
-	if updates.Role != "" {
+	if strings.TrimSpace(updates.Role) != "" {
 		project.Role = updates.Role
 	}
 	if updates.StartDate != nil {
