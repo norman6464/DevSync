@@ -80,13 +80,13 @@ func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (
 	}
 
 	if strings.TrimSpace(updates.Title) != "" {
-		review.Title = updates.Title
+		review.Title = strings.TrimSpace(updates.Title)
 	}
 	if strings.TrimSpace(updates.Author) != "" {
-		review.Author = updates.Author
+		review.Author = strings.TrimSpace(updates.Author)
 	}
 	if strings.TrimSpace(updates.ISBN) != "" {
-		review.ISBN = updates.ISBN
+		review.ISBN = strings.TrimSpace(updates.ISBN)
 	}
 	if updates.Rating != 0 {
 		if err := validateRating(updates.Rating); err != nil {
@@ -95,10 +95,10 @@ func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (
 		review.Rating = updates.Rating
 	}
 	if strings.TrimSpace(updates.Review) != "" {
-		review.Review = updates.Review
+		review.Review = strings.TrimSpace(updates.Review)
 	}
 	if strings.TrimSpace(updates.ImageURL) != "" {
-		review.ImageURL = updates.ImageURL
+		review.ImageURL = strings.TrimSpace(updates.ImageURL)
 	}
 
 	if err := s.repo.Update(review); err != nil {

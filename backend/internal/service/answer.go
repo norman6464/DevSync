@@ -58,7 +58,7 @@ func (s *AnswerService) Update(answerID, userID uint, body string) (*model.Answe
 	if err != nil {
 		return nil, err
 	}
-	answer.Body = body
+	answer.Body = strings.TrimSpace(body)
 	if err := s.answerRepo.Update(answer); err != nil {
 		return nil, err
 	}

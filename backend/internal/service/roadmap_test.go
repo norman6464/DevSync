@@ -1233,3 +1233,18 @@ func TestRoadmapUpdateStep_WhitespaceResourceURL(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "https://example.com", result.ResourceURL)
 }
+
+func TestRoadmapUpdateStep_TrimsPaddedTitle(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 1
+	step := &model.RoadmapStep{RoadmapID: 1, Title: "Original"}
+	step.ID = 10
+	repo.On("FindByID", uint(1)).Return(roadmap, nil)
+	repo.On("FindStepByID", uint(10)).Return(step, nil)
+	repo.On("UpdateStep", step).Return(nil)
+
+	result, err := svc.UpdateStep(1, 10, 1, &model.RoadmapStep{Title: "  New Title  "})
+	assert.NoError(t, err)
+	assert.Equal(t, "New Title", result.Title)
+}
