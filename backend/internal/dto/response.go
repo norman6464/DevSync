@@ -26,3 +26,15 @@ type CountResponse struct {
 	Count int64 `json:"count"`
 }
 
+// LikeStatusResponse はいいね状態レスポンス
+type LikeStatusResponse struct {
+	Liked bool  `json:"liked"`
+	Count int64 `json:"count"`
+}
+
+// ViewCountResponse は閲覧数レスポンス
+type ViewCountResponse struct {
+	PostID    uint  `json:"post_id"`
+	ViewCount int64 `json:"view_count"`
+}
+

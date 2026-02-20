@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
+	"github.com/norman6464/devsync/backend/internal/dto"
 )
 
 // CommentLikeServiceInterface はCommentLikeHandlerが依存するサービスインターフェース。
@@ -65,8 +66,5 @@ func (h *CommentLikeHandler) GetStatus(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, gin.H{
-		"liked": liked,
-		"count": count,
-	})
+	respondOK(c, dto.LikeStatusResponse{Liked: liked, Count: count})
 }
