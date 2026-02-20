@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { TrendingUp, Heart, MessageCircle, Bookmark } from 'lucide-react';
 import { useTrendingPosts, useTrendingResources } from '../../hooks';
+import { panelClass } from '../../constants/styles';
 
 export default function TrendingWidget() {
   const { t } = useTranslation();
@@ -13,7 +14,7 @@ export default function TrendingWidget() {
   const loading = tab === 'posts' ? postsLoading : resourcesLoading;
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
+    <div className={panelClass}>
       <h3 className="flex items-center gap-2 text-sm font-medium text-white mb-3">
         <TrendingUp className="w-4 h-4 text-orange-400" />
         {t('recommendations.trending')}

@@ -28,6 +28,9 @@ export const cardPaddedClass =
 export const cardDarkClass =
   'bg-gray-900 border border-gray-800 rounded-md p-5 hover:border-gray-700 transition-colors';
 
+export const panelClass =
+  'bg-gray-900 border border-gray-800 rounded-md p-4';
+
 export const sectionContainerClass =
   'bg-gray-900 border border-gray-800 rounded-md overflow-hidden';
 

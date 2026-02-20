@@ -3,13 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { Users, ChevronRight } from 'lucide-react';
 import { useStudyCircles } from '../../hooks';
 import Avatar from '../common/Avatar';
+import { panelClass } from '../../constants/styles';
 
 export default function StudyCircleWidget() {
   const { t } = useTranslation();
   const { circles, loading } = useStudyCircles();
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
+    <div className={panelClass}>
       <div className="flex items-center justify-between mb-3">
         <h3 className="flex items-center gap-2 text-sm font-medium text-white">
           <Users className="w-4 h-4 text-purple-400" />

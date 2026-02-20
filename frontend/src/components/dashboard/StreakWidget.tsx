@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Flame, Trophy, Calendar } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useStreak } from '../../hooks';
+import { panelClass } from '../../constants/styles';
 
 export default function StreakWidget() {
   const { t } = useTranslation();
@@ -10,7 +11,7 @@ export default function StreakWidget() {
 
   if (loading) {
     return (
-      <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
+      <div className={panelClass}>
         <div className="h-5 bg-gray-800 rounded animate-pulse w-1/2 mb-3" />
         <div className="h-12 bg-gray-800 rounded animate-pulse mb-3" />
         <div className="grid grid-cols-2 gap-2">
@@ -26,7 +27,7 @@ export default function StreakWidget() {
   const totalDays = streakInfo?.total_days ?? 0;
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
+    <div className={panelClass}>
       <h3 className="flex items-center gap-2 text-sm font-medium text-white mb-3">
         <Flame className="w-4 h-4 text-gray-400" />
         {t('streak.title')}

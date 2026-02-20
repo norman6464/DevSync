@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Star } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useMyLevel } from '../../hooks';
+import { panelClass } from '../../constants/styles';
 
 function getLevelTitleKey(level: number): { key: string; params?: Record<string, unknown> } {
   if (level === 0) return { key: 'level.titleNewcomer' };
@@ -22,7 +23,7 @@ export default function LevelWidget() {
 
   if (loading) {
     return (
-      <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
+      <div className={panelClass}>
         <div className="h-5 bg-gray-800 rounded animate-pulse w-1/2 mb-3" />
         <div className="h-12 bg-gray-800 rounded animate-pulse mb-3" />
         <div className="h-3 bg-gray-800 rounded animate-pulse" />
@@ -38,7 +39,7 @@ export default function LevelWidget() {
   const xpToNext = nextLevelXP - totalXP;
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
+    <div className={panelClass}>
       <h3 className="flex items-center gap-2 text-sm font-medium text-white mb-3">
         <Star className="w-4 h-4 text-gray-400" />
         {t('level.title')}
