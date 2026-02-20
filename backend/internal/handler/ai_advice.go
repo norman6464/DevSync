@@ -2,7 +2,6 @@ package handler
 
 import (
 	"log"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
@@ -116,18 +115,7 @@ func (h *AIAdviceHandler) DeleteConversation(c *gin.Context) {
 func (h *AIAdviceHandler) GetConversations(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	limit := 20
-	offset := 0
-	if l := c.Query("limit"); l != "" {
-		if parsed, err := strconv.Atoi(l); err == nil && parsed > 0 {
-			limit = parsed
-		}
-	}
-	if o := c.Query("offset"); o != "" {
-		if parsed, err := strconv.Atoi(o); err == nil && parsed >= 0 {
-			offset = parsed
-		}
-	}
+	limit, offset := parseLimitOffset(c)
 
 	conversations, err := h.service.GetConversations(userID, limit, offset)
 	if err != nil {
