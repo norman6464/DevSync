@@ -1,6 +1,8 @@
 package service
 
 import (
+	"strings"
+
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
@@ -74,13 +76,13 @@ func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (
 		return nil, err
 	}
 
-	if updates.Title != "" {
+	if strings.TrimSpace(updates.Title) != "" {
 		review.Title = updates.Title
 	}
-	if updates.Author != "" {
+	if strings.TrimSpace(updates.Author) != "" {
 		review.Author = updates.Author
 	}
-	if updates.ISBN != "" {
+	if strings.TrimSpace(updates.ISBN) != "" {
 		review.ISBN = updates.ISBN
 	}
 	if updates.Rating != 0 {
@@ -89,10 +91,10 @@ func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (
 		}
 		review.Rating = updates.Rating
 	}
-	if updates.Review != "" {
+	if strings.TrimSpace(updates.Review) != "" {
 		review.Review = updates.Review
 	}
-	if updates.ImageURL != "" {
+	if strings.TrimSpace(updates.ImageURL) != "" {
 		review.ImageURL = updates.ImageURL
 	}
 
