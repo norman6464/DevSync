@@ -308,8 +308,18 @@ func registerIntegrationRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
+// registerLearningRoutes は学習関連のエンドポイントをまとめて登録する。
 func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
-	// 学習目標
+	registerGoalRoutes(g, c)
+	registerReportRoutes(g, c)
+	registerProjectRoutes(g, c)
+	registerResourceRoutes(g, c)
+	registerLearningLogRoutes(g, c)
+	registerNoteRoutes(g, c)
+	registerEmailPreferencesRoutes(g, c)
+}
+
+func registerGoalRoutes(g *gin.RouterGroup, c *di.Container) {
 	goals := g.Group("/goals")
 	{
 		goals.POST("", c.LearningGoalHandler.Create)
@@ -323,8 +333,9 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 		goals.GET("/category/:category", c.LearningGoalHandler.GetByCategory)
 		goals.GET("/status/:status", c.LearningGoalHandler.GetByStatus)
 	}
+}
 
-	// アクティビティレポート
+func registerReportRoutes(g *gin.RouterGroup, c *di.Container) {
 	reports := g.Group("/reports")
 	{
 		reports.GET("/weekly", c.ActivityReportHandler.GetMyWeeklyReport)
@@ -333,8 +344,9 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 		reports.GET("/monthly/:userId", c.ActivityReportHandler.GetMonthlyReport)
 		reports.GET("/comparison", c.ActivityReportHandler.GetComparison)
 	}
+}
 
-	// プロジェクト
+func registerProjectRoutes(g *gin.RouterGroup, c *di.Container) {
 	projects := g.Group("/projects")
 	{
 		projects.POST("", c.ProjectHandler.Create)
@@ -345,8 +357,9 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 		projects.GET("/user/:userId", c.ProjectHandler.GetByUserID)
 		projects.GET("/user/:userId/featured", c.ProjectHandler.GetFeatured)
 	}
+}
 
-	// 学習リソース
+func registerResourceRoutes(g *gin.RouterGroup, c *di.Container) {
 	resources := g.Group("/resources")
 	{
 		resources.POST("", c.LearningResourceHandler.Create)
@@ -363,8 +376,9 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 		resources.GET("/user/:userId", c.LearningResourceHandler.GetByUserID)
 		resources.GET("/difficulty/:difficulty", c.LearningResourceHandler.GetByDifficulty)
 	}
+}
 
-	// 学習ログ
+func registerLearningLogRoutes(g *gin.RouterGroup, c *di.Container) {
 	learningLogs := g.Group("/learning-logs")
 	{
 		learningLogs.POST("", c.LearningLogHandler.Create)
@@ -380,8 +394,9 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 		learningLogs.PUT("/:id", c.LearningLogHandler.Update)
 		learningLogs.DELETE("/:id", c.LearningLogHandler.Delete)
 	}
+}
 
-	// 学習ノート
+func registerNoteRoutes(g *gin.RouterGroup, c *di.Container) {
 	notes := g.Group("/notes")
 	{
 		notes.POST("", c.NoteHandler.Create)
@@ -404,7 +419,6 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 		notes.DELETE("/:id/links/:targetId", c.NoteLinkHandler.DeleteLink)
 	}
 
-	// ノートフォルダ
 	noteFolders := g.Group("/note-folders")
 	{
 		noteFolders.POST("", c.NoteFolderHandler.Create)
@@ -416,7 +430,6 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 		noteFolders.DELETE("/:id", c.NoteFolderHandler.Delete)
 	}
 
-	// ノートテンプレート
 	noteTemplates := g.Group("/note-templates")
 	{
 		noteTemplates.POST("", c.NoteTemplateHandler.Create)
@@ -427,8 +440,9 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 		noteTemplates.DELETE("/:id", c.NoteTemplateHandler.Delete)
 		noteTemplates.POST("/:id/use", c.NoteTemplateHandler.UseTemplate)
 	}
+}
 
-	// メール配信設定
+func registerEmailPreferencesRoutes(g *gin.RouterGroup, c *di.Container) {
 	g.GET("/email-preferences", c.EmailPreferencesHandler.GetPreferences)
 	g.PUT("/email-preferences", c.EmailPreferencesHandler.UpdatePreferences)
 }
