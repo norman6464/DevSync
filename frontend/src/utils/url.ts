@@ -20,3 +20,18 @@ export function sanitizeUrl(url: string | undefined): string | undefined {
   if (!url) return undefined;
   return isHttpUrl(url) ? url : undefined;
 }
+
+/**
+ * URLフィールド配列を検証し、不正なURLがあればエラーメッセージを返す。
+ * 全て有効ならnullを返す。
+ */
+export function findInvalidUrlField(
+  fields: { value: string; label: string }[],
+): string | null {
+  for (const field of fields) {
+    if (field.value && !isHttpUrl(field.value)) {
+      return field.label;
+    }
+  }
+  return null;
+}
