@@ -14,6 +14,8 @@ import StreakDisplay from '../components/profile/StreakDisplay';
 import LevelDisplay from '../components/profile/LevelDisplay';
 import PostCard from '../components/posts/PostCard';
 import PostSeriesCard from '../components/series/PostSeriesCard';
+import ProfileCompletenessCard from '../components/profile/ProfileCompletenessCard';
+import CompetitiveProgrammingCard from '../components/profile/CompetitiveProgrammingCard';
 import ShareModal from '../components/profile/ShareModal';
 import PortfolioModal from '../components/profile/PortfolioModal';
 import SpotifyNowPlaying from '../components/profile/SpotifyNowPlaying';
@@ -57,35 +59,8 @@ export default function ProfilePage() {
       />
 
       {/* Profile Completeness */}
-      {isOwnProfile && percentage < 100 && (
-        <div className="bg-gray-900 border border-gray-800 rounded-md p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold flex items-center gap-2">
-              <svg className="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-              </svg>
-              {t('profile.completeness')}
-            </h3>
-            <span className="text-sm font-bold text-yellow-400">{percentage}%</span>
-          </div>
-          <div className="h-2 bg-gray-800 rounded-full overflow-hidden mb-3" role="progressbar" aria-valuenow={percentage} aria-valuemin={0} aria-valuemax={100} aria-label={`${t('profile.completeness')}: ${percentage}%`}>
-            <div
-              className="h-full bg-gradient-to-r from-yellow-500 to-green-500 rounded-full transition-all duration-500"
-              style={{ width: `${percentage}%` }}
-            />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {missingFields.map((field) => (
-              <Link
-                key={field}
-                to="/settings"
-                className="px-2.5 py-1 bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white text-xs rounded-lg transition-colors"
-              >
-                + {t(`profile.missing.${field}`)}
-              </Link>
-            ))}
-          </div>
-        </div>
+      {isOwnProfile && (
+        <ProfileCompletenessCard percentage={percentage} missingFields={missingFields} />
       )}
 
       {/* Skills */}
@@ -107,43 +82,11 @@ export default function ProfilePage() {
       )}
 
       {/* AtCoder Rating & paiza Rank */}
-      {(atcoderRating || user.paiza_rank) && (
-        <div className="bg-gray-900 border border-gray-800 rounded-md p-6">
-          <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2">
-            <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M18.75 4.236c.982.143 1.954.317 2.916.52A6.003 6.003 0 0 1 16.27 9.728M18.75 4.236V4.5c0 2.108-.966 3.99-2.48 5.228m0 0a6.023 6.023 0 0 1-2.52.587 6.023 6.023 0 0 1-2.52-.587" /></svg>
-            {t('profile.competitiveProgramming')}
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {atcoderRating && (
-              <a href={`https://atcoder.jp/users/${user.atcoder_username}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 bg-gray-800/50 rounded-lg border border-gray-700 hover:border-gray-600 transition-colors group">
-                <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center text-white font-bold text-lg">A</div>
-                <div>
-                  <div className="text-sm text-gray-400">AtCoder</div>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-xl font-bold atcoder-${atcoderRating.color}`} style={{ color: atcoderRating.color === 'gray' ? '#808080' : atcoderRating.color === 'brown' ? '#804000' : atcoderRating.color === 'green' ? '#008000' : atcoderRating.color === 'cyan' ? '#00C0C0' : atcoderRating.color === 'blue' ? '#0000FF' : atcoderRating.color === 'yellow' ? '#C0C000' : atcoderRating.color === 'orange' ? '#FF8000' : atcoderRating.color === 'red' ? '#FF0000' : '#808080' }}>
-                      {atcoderRating.rating}
-                    </span>
-                    <span className="text-xs text-gray-500">({atcoderRating.rank})</span>
-                  </div>
-                </div>
-              </a>
-            )}
-            {user.paiza_rank && (
-              <div className="flex items-center gap-4 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-                <div className="w-12 h-12 bg-emerald-700 rounded-lg flex items-center justify-center text-white font-bold text-lg">P</div>
-                <div>
-                  <div className="text-sm text-gray-400">paiza</div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl font-bold text-white">
-                      {t('profile.paizaRankLabel', { rank: user.paiza_rank })}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <CompetitiveProgrammingCard
+        atcoderRating={atcoderRating}
+        atcoderUsername={user.atcoder_username}
+        paizaRank={user.paiza_rank}
+      />
 
       {/* Spotify Now Playing */}
       {user.spotify_connected && <SpotifyNowPlaying userId={user.id} />}
