@@ -194,6 +194,7 @@ export default function RoadmapDetailPage() {
               value={stepResourceURL}
               onChange={handleStepResourceURLChange}
               placeholder="https://..."
+              maxLength={2048}
               className={inputClass}
             />
           </div>
