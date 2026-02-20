@@ -23,7 +23,7 @@ export default function ProfileSection({ name, setName, bio, setBio, avatarUrl, 
       <div className="p-6 space-y-4">
         <div>
           <label htmlFor="profile-name" className={labelClass}>{t('settings.name')}</label>
-          <input id="profile-name" type="text" value={name} onChange={(e) => setName(e.target.value)} maxLength={50} className={inputClass} />
+          <input id="profile-name" type="text" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} maxLength={50} className={inputClass} />
         </div>
         <div>
           <label htmlFor="profile-bio" className={labelClass}>{t('settings.bio')}</label>
