@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/csv"
 	"fmt"
+	"strings"
 
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -92,13 +93,13 @@ func (s *LearningLogService) Update(id, userID uint, updates *model.LearningLog)
 		return nil, err
 	}
 
-	if updates.Title != "" {
+	if strings.TrimSpace(updates.Title) != "" {
 		log.Title = updates.Title
 	}
-	if updates.Content != "" {
+	if strings.TrimSpace(updates.Content) != "" {
 		log.Content = updates.Content
 	}
-	if updates.Category != "" {
+	if strings.TrimSpace(string(updates.Category)) != "" {
 		log.Category = updates.Category
 	}
 	if updates.Duration != 0 {

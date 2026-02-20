@@ -341,6 +341,51 @@ func TestLearningLogUpdate_DurationExceedsMax(t *testing.T) {
 	assert.Nil(t, result)
 }
 
+func TestLearningLogUpdate_WhitespaceTitle(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	existing := &model.LearningLog{Title: "Test", Content: "Content", UserID: 1, Duration: 30}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	// 空白のみのTitleは更新されず、元の値が保持されるべき
+	updates := &model.LearningLog{Title: "   "}
+	result, err := svc.Update(1, 1, updates)
+	assert.NoError(t, err)
+	assert.Equal(t, "Test", result.Title) // 変更されない
+}
+
+func TestLearningLogUpdate_WhitespaceContent(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	existing := &model.LearningLog{Title: "Test", Content: "Content", UserID: 1, Duration: 30}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	// 空白のみのContentは更新されず、元の値が保持されるべき
+	updates := &model.LearningLog{Content: "  \t  "}
+	result, err := svc.Update(1, 1, updates)
+	assert.NoError(t, err)
+	assert.Equal(t, "Content", result.Content) // 変更されない
+}
+
+func TestLearningLogUpdate_WhitespaceCategory(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	existing := &model.LearningLog{Title: "Test", Content: "Content", Category: "coding", UserID: 1, Duration: 30}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	// 空白のみのCategoryは更新されず、元の値が保持されるべき
+	updates := &model.LearningLog{Category: "   "}
+	result, err := svc.Update(1, 1, updates)
+	assert.NoError(t, err)
+	assert.Equal(t, model.LogCategory("coding"), result.Category) // 変更されない
+}
+
 // --- ExportCSV ---
 
 func TestLearningLogExportCSV_Success(t *testing.T) {
