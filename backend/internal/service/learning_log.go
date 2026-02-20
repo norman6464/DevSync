@@ -25,8 +25,8 @@ func NewLearningLogService(repo repository.LearningLogRepositoryInterface) *Lear
 // Duration、Category、Sourceのバリデーションを行う。
 func (s *LearningLogService) Create(log *model.LearningLog) error {
 	// Duration: 0以上1440以下（24時間）
-	if log.Duration < 0 || log.Duration > 1440 {
-		return ErrBadRequest
+	if err := validateDuration(log.Duration); err != nil {
+		return err
 	}
 	// Category: 空文字（デフォルト適用）または有効な値のみ許可
 	if log.Category != "" && !model.ValidCategories[log.Category] {
@@ -65,6 +65,14 @@ func (s *LearningLogService) GetBySource(userID uint, source string) ([]model.Le
 	return s.repo.GetBySource(userID, source)
 }
 
+// validateDuration は学習時間（分）が有効な範囲（0〜1440）かを検証する。
+func validateDuration(duration int) error {
+	if duration < 0 || duration > 1440 {
+		return ErrBadRequest
+	}
+	return nil
+}
+
 // findAndCheckOwnership は学習ログを取得し、指定ユーザーが所有者かを検証する。
 func (s *LearningLogService) findAndCheckOwnership(id, userID uint) (*model.LearningLog, error) {
 	log, err := s.repo.FindByID(id)
@@ -94,8 +102,8 @@ func (s *LearningLogService) Update(id, userID uint, updates *model.LearningLog)
 		log.Category = updates.Category
 	}
 	if updates.Duration != 0 {
-		if updates.Duration < 0 || updates.Duration > 1440 {
-			return nil, ErrBadRequest
+		if err := validateDuration(updates.Duration); err != nil {
+			return nil, err
 		}
 		log.Duration = updates.Duration
 	}
