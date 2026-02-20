@@ -61,14 +61,23 @@ func (s *ChatRoomService) GetByID(roomID, userID uint) (*model.ChatRoom, error) 
 	return s.roomRepo.FindByID(roomID)
 }
 
-// Update はオーナー権限を検証した後、チャットルーム情報を更新する。
-func (s *ChatRoomService) Update(roomID, userID uint, name, description string) (*model.ChatRoom, error) {
+// findAndCheckOwnership はチャットルームを取得し、指定ユーザーがオーナーかを検証する。
+func (s *ChatRoomService) findAndCheckOwnership(roomID, userID uint) (*model.ChatRoom, error) {
 	room, err := s.roomRepo.FindByID(roomID)
 	if err != nil {
 		return nil, err
 	}
 	if room.OwnerID != userID {
 		return nil, ErrForbidden
+	}
+	return room, nil
+}
+
+// Update はオーナー権限を検証した後、チャットルーム情報を更新する。
+func (s *ChatRoomService) Update(roomID, userID uint, name, description string) (*model.ChatRoom, error) {
+	room, err := s.findAndCheckOwnership(roomID, userID)
+	if err != nil {
+		return nil, err
 	}
 
 	if name != "" {
@@ -84,12 +93,8 @@ func (s *ChatRoomService) Update(roomID, userID uint, name, description string) 
 
 // Delete はオーナー権限を検証した後、チャットルームを削除する。
 func (s *ChatRoomService) Delete(roomID, userID uint) error {
-	room, err := s.roomRepo.FindByID(roomID)
-	if err != nil {
+	if _, err := s.findAndCheckOwnership(roomID, userID); err != nil {
 		return err
-	}
-	if room.OwnerID != userID {
-		return ErrForbidden
 	}
 	return s.roomRepo.Delete(roomID)
 }
