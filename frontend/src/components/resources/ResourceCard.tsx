@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { BookOpen, Video, FileText, GraduationCap, BookMarked, Mic, Wrench, Pin, Pencil, Trash2, type LucideIcon } from 'lucide-react';
+import { BookOpen, Video, FileText, GraduationCap, BookMarked, Mic, Wrench, Pin, Pencil, Trash2, ExternalLink, type LucideIcon } from 'lucide-react';
 import type { LearningResource, ResourceCategory, ResourceDifficulty } from '../../types/resource';
 import { parseJsonArray } from '../../utils/json';
 import Avatar from '../common/Avatar';
@@ -221,9 +221,7 @@ export default function ResourceCard({
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-white transition-colors"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                </svg>
+                <ExternalLink className="w-5 h-5" />
               </a>
             )}
           </div>

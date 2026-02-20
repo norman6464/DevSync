@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import type { PortfolioTheme } from '../../utils/portfolioGenerator';
 import { generatePortfolioHTML, downloadPortfolio } from '../../utils/portfolioGenerator';
+import { ExternalLink } from 'lucide-react';
 import { buttonSecondaryClass, modalOverlayClass } from '../../constants/styles';
 import type { User } from '../../types/user';
 import type { GitHubLanguageStat, GitHubRepository } from '../../types/github';
@@ -145,9 +146,7 @@ export default function PortfolioModal({
             onClick={handleOpenInNewTab}
             className={`${buttonSecondaryClass} flex items-center gap-2`}
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-            </svg>
+            <ExternalLink className="w-4 h-4" />
             {t('portfolio.openInNewTab')}
           </button>
           <button

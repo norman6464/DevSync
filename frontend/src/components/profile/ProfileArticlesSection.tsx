@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { FileText } from 'lucide-react';
+import { FileText, ExternalLink } from 'lucide-react';
 import { type ZennArticle, type ZennStats } from '../../api/zenn';
 import { type QiitaArticle, type QiitaStats } from '../../api/qiita';
 import { sanitizeUrl } from '../../utils/url';
@@ -34,7 +34,7 @@ export default function ProfileArticlesSection({
               {t('profile.zennArticles')}
               {zennStats && <span className="text-xs text-gray-500 font-normal ml-2">{zennStats.total_articles} {t('profile.articles')} · {zennStats.total_likes} {t('post.like')}s</span>}
             </h2>
-            <a href={`https://zenn.dev/${encodeURIComponent(zennUsername)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-500 hover:text-blue-400 transition-colors flex items-center gap-1">{t('profile.viewAllOnZenn')}<svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg></a>
+            <a href={`https://zenn.dev/${encodeURIComponent(zennUsername)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-500 hover:text-blue-400 transition-colors flex items-center gap-1">{t('profile.viewAllOnZenn')}<ExternalLink className="w-3 h-3" /></a>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {zennArticles.slice(0, 6).map((article) => (
@@ -65,7 +65,7 @@ export default function ProfileArticlesSection({
               {t('profile.qiitaArticles')}
               {qiitaStats && <span className="text-xs text-gray-500 font-normal ml-2">{qiitaStats.total_articles} {t('profile.articles')} · {qiitaStats.total_likes} {t('post.like')}s</span>}
             </h2>
-            <a href={`https://qiita.com/${encodeURIComponent(qiitaUsername)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-500 hover:text-green-400 transition-colors flex items-center gap-1">{t('profile.viewAllOnQiita')}<svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg></a>
+            <a href={`https://qiita.com/${encodeURIComponent(qiitaUsername)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-500 hover:text-green-400 transition-colors flex items-center gap-1">{t('profile.viewAllOnQiita')}<ExternalLink className="w-3 h-3" /></a>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {qiitaArticles.slice(0, 6).map((article) => (
