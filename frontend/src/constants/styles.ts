@@ -42,3 +42,9 @@ export const labelClass =
 
 export const emptyStateClass =
   'bg-gray-900 border border-gray-800 rounded-md p-12 text-center';
+
+export const modalOverlayClass =
+  'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4';
+
+export const modalContentClass =
+  'bg-gray-800 rounded-md p-6 w-full max-h-[90vh] overflow-y-auto';
