@@ -3,9 +3,16 @@ package service
 import (
 	"time"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
+
+// validRoadmapStatuses はロードマップの有効なステータス値を定義する。
+var validRoadmapStatuses = map[string]bool{
+	string(model.RoadmapStatusActive):    true,
+	string(model.RoadmapStatusCompleted): true,
+}
 
 
 // RoadmapService は学習ロードマップのビジネスロジックを提供する。
@@ -40,6 +47,14 @@ func (s *RoadmapService) GetByID(id, userID uint) (*model.Roadmap, error) {
 // GetByUserID は指定ユーザーの全ロードマップを取得する。
 func (s *RoadmapService) GetByUserID(userID uint) ([]model.Roadmap, error) {
 	return s.repo.GetByUserID(userID)
+}
+
+// GetByStatus は指定ユーザーのロードマップをステータスでフィルタリングして取得する。
+func (s *RoadmapService) GetByStatus(userID uint, status string) ([]model.Roadmap, error) {
+	if !validRoadmapStatuses[status] {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "無効なステータスです", nil)
+	}
+	return s.repo.GetByStatus(userID, status)
 }
 
 // GetPublicRoadmaps は公開ロードマップをページネーション付きで取得する。

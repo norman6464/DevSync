@@ -461,6 +461,7 @@ func registerCommunityRoutes(g *gin.RouterGroup, c *di.Container) {
 		roadmaps.POST("", c.RoadmapHandler.Create)
 		roadmaps.GET("", c.RoadmapHandler.GetMyRoadmaps)
 		roadmaps.GET("/public", c.RoadmapHandler.GetPublicRoadmaps)
+		roadmaps.GET("/status/:status", c.RoadmapHandler.GetByStatus)
 		roadmaps.GET("/templates", c.RoadmapHandler.GetTemplates)
 		roadmaps.POST("/templates/:id/use", c.RoadmapHandler.CreateFromTemplate)
 		roadmaps.GET("/:id", c.RoadmapHandler.GetByID)

@@ -12,6 +12,7 @@ type RoadmapServiceInterface interface {
 	Create(roadmap *model.Roadmap) error
 	GetByID(id, userID uint) (*model.Roadmap, error)
 	GetByUserID(userID uint) ([]model.Roadmap, error)
+	GetByStatus(userID uint, status string) ([]model.Roadmap, error)
 	GetPublicRoadmaps(limit, offset int) ([]model.Roadmap, int64, error)
 	Update(id, userID uint, updates *model.Roadmap) (*model.Roadmap, error)
 	UpdateVisibility(id, userID uint, isPublic bool) (*model.Roadmap, error)
@@ -79,6 +80,23 @@ func (h *RoadmapHandler) GetMyRoadmaps(c *gin.Context) {
 	if err != nil {
 		respondError(c, err)
 		return
+	}
+
+	respondOK(c, roadmaps)
+}
+
+// GetByStatus はステータス別にロードマップを取得する。
+func (h *RoadmapHandler) GetByStatus(c *gin.Context) {
+	userID := c.GetUint("userID")
+	status := c.Param("status")
+
+	roadmaps, err := h.service.GetByStatus(userID, status)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	if roadmaps == nil {
+		roadmaps = []model.Roadmap{}
 	}
 
 	respondOK(c, roadmaps)
