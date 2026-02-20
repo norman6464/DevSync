@@ -330,11 +330,12 @@ func TestNoteTemplateService_Update_ValidationContentTemplateError(t *testing.T)
 	existing := &model.NoteTemplate{ID: 1, UserID: 1, Name: "テンプレ"}
 
 	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
 
-	// 空白のみのcontentTemplate → TrimSpace後に空 → バリデーションエラー
+	// 空白のみのcontentTemplate → TrimSpace後に空 → フィールドスキップ（変更なし）
 	result, err := svc.Update(1, 1, "", "", "", "   ", "", nil)
-	assert.Error(t, err)
-	assert.Nil(t, result)
+	assert.NoError(t, err)
+	assert.Equal(t, "", result.ContentTemplate)
 }
 
 func TestNoteTemplateService_Update_ValidationDescriptionError(t *testing.T) {
@@ -538,4 +539,44 @@ func TestNoteTemplateService_Create_DefaultTitleValidationError(t *testing.T) {
 
 	err := svc.Create(template)
 	assert.Error(t, err)
+}
+
+// ============================================================
+// 空白バイパス脆弱性テスト
+// ============================================================
+
+func TestNoteTemplateUpdate_WhitespaceDescription(t *testing.T) {
+	svc, repo, _ := newTestNoteTemplateService()
+	existing := &model.NoteTemplate{Name: "Template", ContentTemplate: "Content", Description: "Original Desc", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, "", "   ", "", "", "", nil)
+	assert.NoError(t, err)
+	assert.Equal(t, "Original Desc", result.Description)
+}
+
+func TestNoteTemplateUpdate_WhitespaceDefaultTitle(t *testing.T) {
+	svc, repo, _ := newTestNoteTemplateService()
+	existing := &model.NoteTemplate{Name: "Template", ContentTemplate: "Content", DefaultTitle: "Original Title", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, "", "", "   ", "", "", nil)
+	assert.NoError(t, err)
+	assert.Equal(t, "Original Title", result.DefaultTitle)
+}
+
+func TestNoteTemplateUpdate_WhitespaceDefaultTags(t *testing.T) {
+	svc, repo, _ := newTestNoteTemplateService()
+	existing := &model.NoteTemplate{Name: "Template", ContentTemplate: "Content", DefaultTags: "go,rust", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, "", "", "", "", "   ", nil)
+	assert.NoError(t, err)
+	assert.Equal(t, "go,rust", result.DefaultTags)
 }
