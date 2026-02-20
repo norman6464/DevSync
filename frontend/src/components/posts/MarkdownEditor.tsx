@@ -238,6 +238,7 @@ export default function MarkdownEditor({
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               placeholder={placeholder || t('editor.placeholder')}
+              maxLength={10000}
               className="w-full p-4 bg-transparent text-white resize-none focus:outline-none font-mono text-sm"
               style={{ minHeight }}
             />
