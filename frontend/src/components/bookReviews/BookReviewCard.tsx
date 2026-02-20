@@ -4,6 +4,7 @@ import type { BookReview, ReviewStatus } from '../../types/bookReview';
 import Avatar from '../common/Avatar';
 import StarRating from '../common/StarRating';
 import { cardClass, iconButtonClass, deleteIconButtonClass } from '../../constants/styles';
+import { sanitizeUrl } from '../../utils/url';
 
 const statusColors: Record<ReviewStatus, string> = {
   not_started: 'bg-gray-600 text-gray-200',
@@ -38,10 +39,10 @@ export default function BookReviewCard({
     <div className={cardClass}>
       <div className="flex">
         {/* Book Cover */}
-        {review.image_url && (
+        {sanitizeUrl(review.image_url) && (
           <div className="w-24 min-h-32 bg-gray-700 flex-shrink-0">
             <img
-              src={review.image_url}
+              src={sanitizeUrl(review.image_url)!}
               alt={review.title}
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover"
