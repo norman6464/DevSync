@@ -97,7 +97,7 @@ func TestProjectGetByID_NotFound(t *testing.T) {
 func TestProjectGetByUserID_Success(t *testing.T) {
 	h, svc := setupProjectHandler()
 	projects := []model.Project{{Title: "P1"}, {Title: "P2"}}
-	svc.On("GetByUserID", uint(1)).Return(projects, nil)
+	svc.On("GetByUserID", uint(1), 20, 0).Return(projects, int64(2), nil)
 
 	r := newRouter(1)
 	r.GET("/users/:userId/projects", h.GetByUserID)
@@ -109,7 +109,7 @@ func TestProjectGetByUserID_Success(t *testing.T) {
 
 func TestProjectGetByUserID_Empty(t *testing.T) {
 	h, svc := setupProjectHandler()
-	svc.On("GetByUserID", uint(1)).Return([]model.Project{}, nil)
+	svc.On("GetByUserID", uint(1), 20, 0).Return([]model.Project{}, int64(0), nil)
 
 	r := newRouter(1)
 	r.GET("/users/:userId/projects", h.GetByUserID)

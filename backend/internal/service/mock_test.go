@@ -607,9 +607,9 @@ func (m *MockProjectRepository) FindByID(id uint) (*model.Project, error) {
 	return args.Get(0).(*model.Project), args.Error(1)
 }
 
-func (m *MockProjectRepository) FindByUserID(userID uint) ([]model.Project, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.Project), args.Error(1)
+func (m *MockProjectRepository) FindByUserID(userID uint, limit, offset int) ([]model.Project, int64, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.Project), args.Get(1).(int64), args.Error(2)
 }
 
 func (m *MockProjectRepository) FindFeaturedByUserID(userID uint) ([]model.Project, error) {

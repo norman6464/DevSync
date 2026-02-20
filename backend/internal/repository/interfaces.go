@@ -186,7 +186,7 @@ type RankingRepositoryInterface interface {
 type ProjectRepositoryInterface interface {
 	Create(project *model.Project) error
 	FindByID(id uint) (*model.Project, error)
-	FindByUserID(userID uint) ([]model.Project, error)
+	FindByUserID(userID uint, limit, offset int) ([]model.Project, int64, error)
 	FindFeaturedByUserID(userID uint) ([]model.Project, error)
 	Update(project *model.Project) error
 	Delete(id uint) error

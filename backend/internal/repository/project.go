@@ -32,13 +32,16 @@ func (r *ProjectRepository) FindByID(id uint) (*model.Project, error) {
 
 // FindByUserID は指定ユーザーの全プロジェクトをGitHubリポジトリ情報付きで取得する。
 // featured（注目）プロジェクトが先に、その後作成日降順でソートされる。
-func (r *ProjectRepository) FindByUserID(userID uint) ([]model.Project, error) {
+func (r *ProjectRepository) FindByUserID(userID uint, limit, offset int) ([]model.Project, int64, error) {
 	var projects []model.Project
-	err := r.db.Preload("GithubRepo").
-		Where("user_id = ?", userID).
+	var total int64
+	query := r.db.Where("user_id = ?", userID)
+	query.Model(&model.Project{}).Count(&total)
+	err := query.Preload("GithubRepo").
 		Order("featured DESC, created_at DESC").
+		Limit(limit).Offset(offset).
 		Find(&projects).Error
-	return projects, err
+	return projects, total, err
 }
 
 // FindFeaturedByUserID は指定ユーザーの注目プロジェクトのみを取得する。
