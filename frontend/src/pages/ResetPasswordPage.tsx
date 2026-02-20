@@ -112,7 +112,7 @@ export default function ResetPasswordPage() {
                   className={inputClass}
                   placeholder={t('auth.passwordPlaceholder')}
                   required
-                  minLength={6}
+                  minLength={8}
                 />
               </div>
 
@@ -128,7 +128,7 @@ export default function ResetPasswordPage() {
                   className={inputClass}
                   placeholder={t('auth.passwordPlaceholder')}
                   required
-                  minLength={6}
+                  minLength={8}
                 />
               </div>
 

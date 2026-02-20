@@ -135,7 +135,7 @@ export default function RegisterPage() {
                 value={password}
                 onChange={handlePasswordChange}
                 required
-                minLength={6}
+                minLength={8}
                 placeholder={t('auth.passwordPlaceholder')}
                 className={inputClass}
               />
