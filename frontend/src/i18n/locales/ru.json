@@ -965,6 +965,7 @@
     "totalRoadmaps": "Всего",
     "activeRoadmaps": "В процессе",
     "completedRoadmaps": "Завершено",
+    "completedOn": "Завершено {{date}}",
     "complete": "Завершить",
     "completed": "Завершено",
     "stepsCompleted": "Шагов завершено",

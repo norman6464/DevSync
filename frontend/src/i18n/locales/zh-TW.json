@@ -965,6 +965,7 @@
     "totalRoadmaps": "總計",
     "activeRoadmaps": "進行中",
     "completedRoadmaps": "已完成",
+    "completedOn": "{{date}} 完成",
     "complete": "完成",
     "completed": "已完成",
     "stepsCompleted": "步驟完成",

@@ -965,6 +965,7 @@
     "totalRoadmaps": "전체",
     "activeRoadmaps": "진행 중",
     "completedRoadmaps": "완료",
+    "completedOn": "{{date}}에 완료",
     "complete": "완료",
     "completed": "완료",
     "stepsCompleted": "단계 완료",

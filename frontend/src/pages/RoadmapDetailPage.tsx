@@ -263,6 +263,11 @@ export default function RoadmapDetailPage() {
                           {step.title}
                         </h3>
                       </div>
+                      {step.is_completed && step.completed_at && (
+                        <p className="text-xs text-green-400 mt-0.5">
+                          {t('roadmaps.completedOn', { date: new Date(step.completed_at).toLocaleDateString() })}
+                        </p>
+                      )}
                       {step.description && (
                         <p className="text-sm text-gray-400 mt-1">{step.description}</p>
                       )}

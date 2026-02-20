@@ -914,6 +914,7 @@
     "totalRoadmaps": "合計",
     "activeRoadmaps": "進行中",
     "completedRoadmaps": "完了",
+    "completedOn": "{{date}} に完了",
     "progress": "進捗",
     "complete": "完了",
     "completed": "完了",

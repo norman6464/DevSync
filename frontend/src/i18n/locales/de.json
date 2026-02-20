@@ -965,6 +965,7 @@
     "totalRoadmaps": "Gesamt",
     "activeRoadmaps": "In Bearbeitung",
     "completedRoadmaps": "Abgeschlossen",
+    "completedOn": "Abgeschlossen am {{date}}",
     "complete": "Abschließen",
     "completed": "Abgeschlossen",
     "stepsCompleted": "Schritte abgeschlossen",
