@@ -106,6 +106,24 @@ func TestAnswerUpdate_RepoError(t *testing.T) {
 	answerRepo.AssertExpectations(t)
 }
 
+func TestAnswerUpdate_EmptyBody(t *testing.T) {
+	svc, _, _ := newTestAnswerService()
+
+	result, err := svc.Update(1, 1, "")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "回答内容は必須です")
+}
+
+func TestAnswerUpdate_WhitespaceBody(t *testing.T) {
+	svc, _, _ := newTestAnswerService()
+
+	result, err := svc.Update(1, 1, "   ")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "回答内容は必須です")
+}
+
 // ============================================================
 // 回答削除テスト
 // ============================================================

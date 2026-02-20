@@ -1,6 +1,9 @@
 package service
 
 import (
+	"strings"
+
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
@@ -45,6 +48,9 @@ func (s *AnswerService) findAndCheckOwnership(answerID, userID uint) (*model.Ans
 
 // Update は所有権を検証した後、回答を更新する。
 func (s *AnswerService) Update(answerID, userID uint, body string) (*model.Answer, error) {
+	if strings.TrimSpace(body) == "" {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "回答内容は必須です", nil)
+	}
 	answer, err := s.findAndCheckOwnership(answerID, userID)
 	if err != nil {
 		return nil, err
