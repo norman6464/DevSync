@@ -70,6 +70,10 @@ func (m *MockPostRepository) FindAll(page, limit int) ([]model.Post, error) {
 	args := m.Called(page, limit)
 	return args.Get(0).([]model.Post), args.Error(1)
 }
+func (m *MockPostRepository) CountAll() (int64, error) {
+	args := m.Called()
+	return args.Get(0).(int64), args.Error(1)
+}
 func (m *MockPostRepository) FindByUserID(userID uint) ([]model.Post, error) {
 	args := m.Called(userID)
 	return args.Get(0).([]model.Post), args.Error(1)
