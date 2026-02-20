@@ -1,6 +1,7 @@
 package service
 
 import (
+	"strings"
 	"time"
 
 	"github.com/norman6464/devsync/backend/internal/domain"
@@ -96,13 +97,13 @@ func (s *LearningGoalService) Update(id, userID uint, updates *model.LearningGoa
 		return nil, err
 	}
 
-	if updates.Title != "" {
+	if strings.TrimSpace(updates.Title) != "" {
 		goal.Title = updates.Title
 	}
-	if updates.Description != "" {
+	if strings.TrimSpace(updates.Description) != "" {
 		goal.Description = updates.Description
 	}
-	if updates.Category != "" {
+	if strings.TrimSpace(string(updates.Category)) != "" {
 		goal.Category = updates.Category
 	}
 	if updates.TargetDate != nil {
@@ -122,7 +123,7 @@ func (s *LearningGoalService) Update(id, userID uint, updates *model.LearningGoa
 			goal.CompletedAt = &now
 		}
 	}
-	if updates.Status != "" {
+	if strings.TrimSpace(string(updates.Status)) != "" {
 		goal.Status = updates.Status
 		if goal.Status == model.GoalStatusCompleted && goal.CompletedAt == nil {
 			now := time.Now()
