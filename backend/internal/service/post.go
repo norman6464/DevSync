@@ -97,12 +97,9 @@ func (s *PostService) Timeline(userID uint, page, limit int) ([]model.Post, erro
 
 // Update は所有権を検証した後、投稿を更新する。
 func (s *PostService) Update(id, userID uint, title, content, imageUrls string) (*model.Post, error) {
-	post, err := s.repo.FindByID(id)
+	post, err := s.findAndCheckOwnership(id, userID)
 	if err != nil {
 		return nil, err
-	}
-	if post.UserID != userID {
-		return nil, ErrForbidden
 	}
 
 	// バリデーション
@@ -130,14 +127,22 @@ func (s *PostService) Update(id, userID uint, title, content, imageUrls string) 
 
 // Delete は所有権を検証した後、投稿を削除する。
 func (s *PostService) Delete(id, userID uint) error {
-	post, err := s.repo.FindByID(id)
-	if err != nil {
+	if _, err := s.findAndCheckOwnership(id, userID); err != nil {
 		return err
 	}
-	if post.UserID != userID {
-		return ErrForbidden
-	}
 	return s.repo.Delete(id)
+}
+
+// findAndCheckOwnership は投稿を取得し、指定ユーザーが所有者かを検証する。
+func (s *PostService) findAndCheckOwnership(id, userID uint) (*model.Post, error) {
+	post, err := s.repo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+	if post.UserID != userID {
+		return nil, ErrForbidden
+	}
+	return post, nil
 }
 
 // findAndPreventSelfAction は投稿を取得し、自己操作でないことを検証する。
@@ -287,12 +292,9 @@ func (s *PostService) GetUserReactions(userID, postID uint) ([]string, error) {
 
 // Publish は下書き投稿を公開し、フォロワーに通知する。
 func (s *PostService) Publish(id, userID uint) (*model.Post, error) {
-	post, err := s.repo.FindByID(id)
+	post, err := s.findAndCheckOwnership(id, userID)
 	if err != nil {
 		return nil, err
-	}
-	if post.UserID != userID {
-		return nil, ErrForbidden
 	}
 	if !post.IsDraft {
 		return nil, ErrBadRequest
