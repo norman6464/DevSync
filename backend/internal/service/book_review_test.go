@@ -425,3 +425,65 @@ func TestBookReviewUpdate_TrimsPaddedTitle(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "New Title", result.Title)
 }
+
+// ============================================================
+// 書籍レビュー アーカイブ / アーカイブ解除テスト
+// ============================================================
+
+func TestBookReviewArchive_Success(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	existing := &model.BookReview{UserID: 1, Title: "Go本"}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	err := svc.ArchiveReview(1, 1)
+	assert.NoError(t, err)
+	assert.True(t, existing.IsArchived)
+	repo.AssertExpectations(t)
+}
+
+func TestBookReviewArchive_Forbidden(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	existing := &model.BookReview{UserID: 1, Title: "Go本"}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	err := svc.ArchiveReview(1, 999)
+	assert.ErrorIs(t, err, ErrForbidden)
+}
+
+func TestBookReviewArchive_NotFound(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	err := svc.ArchiveReview(99, 1)
+	assert.Error(t, err)
+}
+
+func TestBookReviewUnarchive_Success(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	existing := &model.BookReview{UserID: 1, Title: "Go本", IsArchived: true}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	err := svc.UnarchiveReview(1, 1)
+	assert.NoError(t, err)
+	assert.False(t, existing.IsArchived)
+	repo.AssertExpectations(t)
+}
+
+func TestBookReviewUnarchive_Forbidden(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	existing := &model.BookReview{UserID: 1, Title: "Go本", IsArchived: true}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	err := svc.UnarchiveReview(1, 999)
+	assert.ErrorIs(t, err, ErrForbidden)
+}

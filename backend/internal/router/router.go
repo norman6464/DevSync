@@ -502,6 +502,8 @@ func registerCommunityRoutes(g *gin.RouterGroup, c *di.Container) {
 		bookReviews.DELETE("/:id", c.BookReviewHandler.Delete)
 		bookReviews.GET("/user/:userId", c.BookReviewHandler.GetByUserID)
 		bookReviews.GET("/rating", c.BookReviewHandler.GetByRating)
+		bookReviews.PUT("/:id/archive", c.BookReviewHandler.Archive)
+		bookReviews.PUT("/:id/unarchive", c.BookReviewHandler.Unarchive)
 	}
 
 	// バッジ

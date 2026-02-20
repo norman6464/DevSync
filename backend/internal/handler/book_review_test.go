@@ -370,3 +370,67 @@ func TestBookReviewGetByRating_ServiceError(t *testing.T) {
 	assertStatus(t, w, http.StatusInternalServerError)
 	svc.AssertExpectations(t)
 }
+
+// ============================================================
+// Archive テスト
+// ============================================================
+
+func TestBookReviewArchive_Success(t *testing.T) {
+	h, svc := setupBookReviewHandler()
+	r := newRouter(1)
+	r.PUT("/book-reviews/:id/archive", h.Archive)
+
+	svc.On("ArchiveReview", uint(1), uint(1)).Return(nil)
+
+	w := doRequest(r, http.MethodPut, "/book-reviews/1/archive", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Contains(t, w.Body.String(), "アーカイブしました")
+	svc.AssertExpectations(t)
+}
+
+func TestBookReviewArchive_Forbidden(t *testing.T) {
+	h, svc := setupBookReviewHandler()
+	r := newRouter(1)
+	r.PUT("/book-reviews/:id/archive", h.Archive)
+
+	svc.On("ArchiveReview", uint(5), uint(1)).Return(service.ErrForbidden)
+
+	w := doRequest(r, http.MethodPut, "/book-reviews/5/archive", nil)
+	assertStatus(t, w, http.StatusForbidden)
+	svc.AssertExpectations(t)
+}
+
+func TestBookReviewArchive_InvalidID(t *testing.T) {
+	h, _ := setupBookReviewHandler()
+	r := newRouter(1)
+	r.PUT("/book-reviews/:id/archive", h.Archive)
+
+	w := doRequest(r, http.MethodPut, "/book-reviews/abc/archive", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// ============================================================
+// Unarchive テスト
+// ============================================================
+
+func TestBookReviewUnarchive_Success(t *testing.T) {
+	h, svc := setupBookReviewHandler()
+	r := newRouter(1)
+	r.PUT("/book-reviews/:id/unarchive", h.Unarchive)
+
+	svc.On("UnarchiveReview", uint(1), uint(1)).Return(nil)
+
+	w := doRequest(r, http.MethodPut, "/book-reviews/1/unarchive", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Contains(t, w.Body.String(), "アーカイブを解除しました")
+	svc.AssertExpectations(t)
+}
+
+func TestBookReviewUnarchive_InvalidID(t *testing.T) {
+	h, _ := setupBookReviewHandler()
+	r := newRouter(1)
+	r.PUT("/book-reviews/:id/unarchive", h.Unarchive)
+
+	w := doRequest(r, http.MethodPut, "/book-reviews/abc/unarchive", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
