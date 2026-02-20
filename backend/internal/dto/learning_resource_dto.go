@@ -21,11 +21,11 @@ type ResourceListResponse struct {
 type CreateResourceRequest struct {
 	Title       string `json:"title" binding:"required,max=300"`
 	Description string `json:"description"`
-	URL         string `json:"url"`
+	URL         string `json:"url" binding:"omitempty,http_url,max=2000"`
 	Category    string `json:"category" binding:"required"`
 	Difficulty  string `json:"difficulty"`
 	Tags        string `json:"tags"`
-	ImageURL    string `json:"image_url"`
+	ImageURL    string `json:"image_url" binding:"omitempty,http_url,max=2000"`
 	IsPublic    *bool  `json:"is_public"`
 }
 
@@ -33,10 +33,10 @@ type CreateResourceRequest struct {
 type UpdateResourceRequest struct {
 	Title       string `json:"title" binding:"max=300"`
 	Description string `json:"description"`
-	URL         string `json:"url"`
+	URL         string `json:"url" binding:"omitempty,http_url,max=2000"`
 	Category    string `json:"category"`
 	Difficulty  string `json:"difficulty"`
 	Tags        string `json:"tags"`
-	ImageURL    string `json:"image_url"`
+	ImageURL    string `json:"image_url" binding:"omitempty,http_url,max=2000"`
 	IsPublic    *bool  `json:"is_public"`
 }
