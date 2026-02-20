@@ -98,6 +98,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={handlePasswordChange}
                 required
+                maxLength={128}
                 className={inputClass}
               />
             </div>

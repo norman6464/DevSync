@@ -25,7 +25,7 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    if (password.length < 6) {
+    if (password.length < 8) {
       setError(t('accountManagement.passwordTooShort'));
       return;
     }
@@ -113,6 +113,7 @@ export default function ResetPasswordPage() {
                   placeholder={t('auth.passwordPlaceholder')}
                   required
                   minLength={8}
+                  maxLength={128}
                 />
               </div>
 
@@ -129,6 +130,7 @@ export default function ResetPasswordPage() {
                   placeholder={t('auth.passwordPlaceholder')}
                   required
                   minLength={8}
+                  maxLength={128}
                 />
               </div>
 
