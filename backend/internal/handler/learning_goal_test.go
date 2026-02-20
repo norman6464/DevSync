@@ -561,3 +561,53 @@ func TestLearningGoalGetMyGoals_ServiceError(t *testing.T) {
 	w := doRequest(r, http.MethodGet, "/goals/me", nil)
 	assertStatus(t, w, http.StatusNotFound)
 }
+
+// ========== Duplicate ==========
+
+func TestLearningGoalDuplicate_Success(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.POST("/goals/:id/duplicate", h.Duplicate)
+
+	existing := &model.LearningGoal{Title: "Goマスター", Description: "Go習得", Category: model.GoalCategoryLanguage, UserID: 1}
+	existing.ID = 10
+	repo.On("FindByID", uint(10)).Return(existing, nil)
+	repo.On("Create", mock.AnythingOfType("*model.LearningGoal")).Return(nil)
+
+	w := doRequest(r, http.MethodPost, "/goals/10/duplicate", nil)
+	assertStatus(t, w, http.StatusCreated)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningGoalDuplicate_Forbidden(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.POST("/goals/:id/duplicate", h.Duplicate)
+
+	existing := &model.LearningGoal{Title: "他人の目標", UserID: 999}
+	existing.ID = 10
+	repo.On("FindByID", uint(10)).Return(existing, nil)
+
+	w := doRequest(r, http.MethodPost, "/goals/10/duplicate", nil)
+	assertStatus(t, w, http.StatusForbidden)
+}
+
+func TestLearningGoalDuplicate_NotFound(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.POST("/goals/:id/duplicate", h.Duplicate)
+
+	repo.On("FindByID", uint(99)).Return(nil, service.ErrNotFound)
+
+	w := doRequest(r, http.MethodPost, "/goals/99/duplicate", nil)
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+func TestLearningGoalDuplicate_InvalidID(t *testing.T) {
+	h, _ := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.POST("/goals/:id/duplicate", h.Duplicate)
+
+	w := doRequest(r, http.MethodPost, "/goals/abc/duplicate", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}

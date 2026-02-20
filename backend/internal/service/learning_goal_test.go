@@ -7,6 +7,7 @@ import (
 
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 // newTestLearningGoalService はLearningGoalServiceのテスト用インスタンスを生成するヘルパー。
@@ -664,4 +665,77 @@ func TestLearningGoalUpdate_WhitespaceStatus(t *testing.T) {
 	result, err := svc.Update(1, 1, &model.LearningGoal{Status: "   "})
 	assert.NoError(t, err)
 	assert.Equal(t, model.GoalStatusActive, result.Status)
+}
+
+// ============================================================
+// 学習目標 複製テスト
+// ============================================================
+
+func TestLearningGoalDuplicate_Success(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	existing := &model.LearningGoal{
+		UserID:      1,
+		Title:       "Goマスター",
+		Description: "Go言語を完全習得する",
+		Category:    model.GoalCategoryLanguage,
+		Progress:    80,
+		Status:      model.GoalStatusCompleted,
+	}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Create", mock.MatchedBy(func(g *model.LearningGoal) bool {
+		return g.Title == "Goマスター (コピー)" &&
+			g.Description == "Go言語を完全習得する" &&
+			g.Category == model.GoalCategoryLanguage &&
+			g.Progress == 0 &&
+			g.Status == model.GoalStatusActive &&
+			g.UserID == 1 &&
+			g.CompletedAt == nil
+	})).Return(nil)
+
+	result, err := svc.Duplicate(1, 1)
+	assert.NoError(t, err)
+	assert.Equal(t, "Goマスター (コピー)", result.Title)
+	assert.Equal(t, 0, result.Progress)
+	assert.Equal(t, model.GoalStatusActive, result.Status)
+	assert.Nil(t, result.CompletedAt)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningGoalDuplicate_Forbidden(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	existing := &model.LearningGoal{UserID: 99, Title: "他人の目標"}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	result, err := svc.Duplicate(1, 1)
+	assert.ErrorIs(t, err, ErrForbidden)
+	assert.Nil(t, result)
+}
+
+func TestLearningGoalDuplicate_NotFound(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	result, err := svc.Duplicate(99, 1)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestLearningGoalDuplicate_CreateError(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	existing := &model.LearningGoal{UserID: 1, Title: "目標"}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Create", mock.AnythingOfType("*model.LearningGoal")).Return(errors.New("db error"))
+
+	result, err := svc.Duplicate(1, 1)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
 }
