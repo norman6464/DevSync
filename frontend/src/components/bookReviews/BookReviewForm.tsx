@@ -129,6 +129,7 @@ export default function BookReviewForm({ review, onSubmit, onCancel, loading }: 
           className={textareaClass}
           placeholder={t('bookReviews.reviewPlaceholder')}
         />
+        <p className="text-xs text-gray-500 text-right mt-1">{reviewText.length}/2000</p>
       </div>
 
       {/* Image URL */}
