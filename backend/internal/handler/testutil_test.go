@@ -1781,3 +1781,22 @@ func setupYouTubeHandler() (*YouTubeHandler, *MockYouTubeService) {
 	h := NewYouTubeHandler(svc)
 	return h, svc
 }
+
+// ---------- UserDashboardHandler モック ----------
+
+// MockUserDashboardService は UserDashboardServiceInterface のモック実装。
+type MockUserDashboardService struct{ mock.Mock }
+
+func (m *MockUserDashboardService) GetStats(userID uint) (*model.UserDashboardStats, error) {
+	args := m.Called(userID)
+	if s := args.Get(0); s != nil {
+		return s.(*model.UserDashboardStats), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+func setupUserDashboardHandler() (*UserDashboardHandler, *MockUserDashboardService) {
+	svc := new(MockUserDashboardService)
+	h := NewUserDashboardHandler(svc)
+	return h, svc
+}
