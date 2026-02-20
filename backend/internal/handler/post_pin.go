@@ -68,7 +68,7 @@ func (h *PostPinHandler) GetByUserID(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, gin.H{"pins": pins})
+	respondOK(c, dto.PinsResponse{Pins: pins})
 }
 
 // Reorder はピン留めの表示順序を変更する。
