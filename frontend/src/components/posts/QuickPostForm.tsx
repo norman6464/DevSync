@@ -108,6 +108,7 @@ export default function QuickPostForm({ onSubmit }: QuickPostFormProps) {
             onChange={(e) => setContent(e.target.value)}
             onFocus={() => setIsFocused(true)}
             placeholder={t('post.createTitle')}
+            maxLength={5000}
             className={`w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none transition-all ${
               isFocused ? 'min-h-[120px]' : 'min-h-[60px]'
             }`}

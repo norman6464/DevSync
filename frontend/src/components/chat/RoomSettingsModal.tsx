@@ -131,6 +131,7 @@ export default function RoomSettingsModal({
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                maxLength={100}
                 className={inputClass}
               />
             </div>
@@ -142,6 +143,7 @@ export default function RoomSettingsModal({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={2}
+                maxLength={500}
                 className={textareaClass}
               />
             </div>
