@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next';
-import { Target, Filter, Search, ArrowUpDown } from 'lucide-react';
+import { Target, Search } from 'lucide-react';
 import { type GoalCategory } from '../api/goals';
 import { useGoalForm } from '../hooks';
 import { Modal, PageLoader } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import GoalCard, { CATEGORIES } from '../components/goals/GoalCard';
+import GoalFilters from '../components/goals/GoalFilters';
 import { inputClass, buttonSecondaryClass, labelClass } from '../constants/styles';
 
 export default function GoalsPage() {
@@ -82,63 +83,14 @@ export default function GoalsPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-gray-900 border border-gray-800 rounded-md p-4 space-y-3">
-        <div className="flex items-center gap-2 text-sm text-gray-400">
-          <Filter className="w-4 h-4" />
-          <span>{t('goals.filter')}</span>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <span className="text-xs text-gray-500 self-center mr-1">{t('goals.status')}:</span>
-          {(['all', 'active', 'paused', 'completed'] as const).map((s) => (
-            <button
-              key={s}
-              onClick={() => setFilterStatus(s)}
-              className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                filterStatus === s
-                  ? 'border-blue-500 bg-blue-500/10 text-blue-400'
-                  : 'border-gray-700 text-gray-400 hover:border-gray-600'
-              }`}
-            >
-              {s === 'all' ? t('common.all') : t(`goals.status${s.charAt(0).toUpperCase() + s.slice(1)}`)}
-            </button>
-          ))}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <span className="text-xs text-gray-500 self-center mr-1">{t('goals.category')}:</span>
-          {(['all', ...CATEGORIES.map(c => c.value)] as const).map((c) => (
-            <button
-              key={c}
-              onClick={() => setFilterCategory(c)}
-              className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                filterCategory === c
-                  ? 'border-purple-500 bg-purple-500/10 text-purple-400'
-                  : 'border-gray-700 text-gray-400 hover:border-gray-600'
-              }`}
-            >
-              {c === 'all' ? t('common.all') : t(`goals.category${c.charAt(0).toUpperCase() + c.slice(1)}`)}
-            </button>
-          ))}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <span className="text-xs text-gray-500 self-center mr-1">
-            <ArrowUpDown className="w-3 h-3 inline mr-1" />
-            {t('goals.sort')}:
-          </span>
-          {(['newest', 'oldest', 'deadline', 'progress'] as const).map((s) => (
-            <button
-              key={s}
-              onClick={() => setSortBy(s)}
-              className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                sortBy === s
-                  ? 'border-green-500 bg-green-500/10 text-green-400'
-                  : 'border-gray-700 text-gray-400 hover:border-gray-600'
-              }`}
-            >
-              {t(`goals.sort${s.charAt(0).toUpperCase() + s.slice(1)}`)}
-            </button>
-          ))}
-        </div>
-      </div>
+      <GoalFilters
+        filterStatus={filterStatus}
+        setFilterStatus={setFilterStatus}
+        filterCategory={filterCategory}
+        setFilterCategory={setFilterCategory}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+      />
 
       {/* Create/Edit Form Modal */}
       <Modal
