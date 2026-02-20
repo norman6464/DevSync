@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lightbulb, ChevronRight, MessageSquare } from 'lucide-react';
 import { useAdvice } from '../../hooks/useAdvice';
 import AdviceIcon from '../advice/AdviceIcon';
+import { parseJsonObject } from '../../utils/json';
 
 export default function AIAdviceWidget() {
   const { t } = useTranslation();
@@ -45,7 +46,7 @@ export default function AIAdviceWidget() {
       ) : (
         <div className="space-y-2">
           {topAdvices.map((advice) => {
-            const params = advice.params ? JSON.parse(advice.params) : {};
+            const params = parseJsonObject(advice.params);
             return (
               <div
                 key={advice.id}
