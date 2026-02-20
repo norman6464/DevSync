@@ -231,7 +231,7 @@ func TestLearningLogGetByID_Success(t *testing.T) {
 	log.ID = 1
 	repo.On("FindByID", uint(1)).Return(log, nil)
 
-	result, err := svc.GetByID(1)
+	result, err := svc.GetByID(1, 1)
 	assert.NoError(t, err)
 	assert.Equal(t, "Go Study", result.Title)
 	repo.AssertExpectations(t)
@@ -242,8 +242,21 @@ func TestLearningLogGetByID_NotFound(t *testing.T) {
 
 	repo.On("FindByID", uint(999)).Return((*model.LearningLog)(nil), errors.New("not found"))
 
-	_, err := svc.GetByID(999)
+	_, err := svc.GetByID(999, 1)
 	assert.Error(t, err)
+}
+
+func TestLearningLogGetByID_Forbidden(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	log := &model.LearningLog{Title: "Go Study", UserID: 1}
+	log.ID = 1
+	repo.On("FindByID", uint(1)).Return(log, nil)
+
+	result, err := svc.GetByID(1, 999)
+	assert.ErrorIs(t, err, ErrForbidden)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
 }
 
 // ============================================================

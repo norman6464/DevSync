@@ -49,30 +49,24 @@ func TestLearningLog_Create_ValidationError(t *testing.T) {
 func TestLearningLog_GetByID_Success(t *testing.T) {
 	h, svc := setupLearningLogHandler()
 	log := &model.LearningLog{Title: "Test", Content: "Content"}
-	svc.On("GetByID", uint(1)).Return(log, nil)
+	svc.On("GetByID", uint(1), uint(1)).Return(log, nil)
 
-	r := gin.New()
+	r := newRouter(1)
 	r.GET("/logs/:id", h.GetByID)
 
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/logs/1", nil)
-	r.ServeHTTP(w, req)
-
+	w := doRequest(r, http.MethodGet, "/logs/1", nil)
 	assertStatus(t, w, http.StatusOK)
 	svc.AssertExpectations(t)
 }
 
 func TestLearningLog_GetByID_ServiceError(t *testing.T) {
 	h, svc := setupLearningLogHandler()
-	svc.On("GetByID", uint(99)).Return(nil, errors.New("not found"))
+	svc.On("GetByID", uint(99), uint(1)).Return(nil, errors.New("not found"))
 
-	r := gin.New()
+	r := newRouter(1)
 	r.GET("/logs/:id", h.GetByID)
 
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/logs/99", nil)
-	r.ServeHTTP(w, req)
-
+	w := doRequest(r, http.MethodGet, "/logs/99", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
 	svc.AssertExpectations(t)
 }
