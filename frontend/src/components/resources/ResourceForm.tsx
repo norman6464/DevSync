@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LearningResource, CreateResourceRequest, ResourceCategory, ResourceDifficulty } from '../../types/resource';
 import { buttonSecondaryClass, inputClass, labelClass, textareaClass } from '../../constants/styles';
-import { isHttpUrl } from '../../utils/url';
+import { findInvalidUrlField } from '../../utils/url';
 import TagInput from '../common/TagInput';
 import toast from 'react-hot-toast';
 
@@ -38,15 +38,13 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const urlFields = [
+    const invalidField = findInvalidUrlField([
       { value: url, label: t('resources.url') },
       { value: imageUrl, label: t('resources.imageUrl') },
-    ];
-    for (const field of urlFields) {
-      if (field.value && !isHttpUrl(field.value)) {
-        toast.error(t('common.invalidUrl', { field: field.label }));
-        return;
-      }
+    ]);
+    if (invalidField) {
+      toast.error(t('common.invalidUrl', { field: invalidField }));
+      return;
     }
     await onSubmit({
       title,
