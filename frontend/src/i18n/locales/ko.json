@@ -832,6 +832,11 @@
       "intermediate": "중급",
       "advanced": "고급"
     },
+    "difficultyDesc": {
+      "beginner": "프로그래밍 초보자 또는 이 분야가 처음인 분을 위한 자료",
+      "intermediate": "기초 지식이 있고 이해를 심화하고 싶은 분을 위한 자료",
+      "advanced": "풍부한 경험이 있고 고급 주제에 도전하고 싶은 분을 위한 자료"
+    },
     "createSuccess": "리소스가 생성되었습니다",
     "updateSuccess": "리소스가 업데이트되었습니다",
     "deleteSuccess": "리소스가 삭제되었습니다",

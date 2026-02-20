@@ -832,6 +832,11 @@
       "intermediate": "中級",
       "advanced": "高級"
     },
+    "difficultyDesc": {
+      "beginner": "適合程式設計初學者或該領域新手",
+      "intermediate": "適合有基礎知識、希望深入理解的學習者",
+      "advanced": "適合有豐富經驗、挑戰高級主題的開發者"
+    },
     "createSuccess": "資源建立成功",
     "updateSuccess": "資源更新成功",
     "deleteSuccess": "資源刪除成功",
