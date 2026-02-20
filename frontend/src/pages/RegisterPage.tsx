@@ -100,6 +100,7 @@ export default function RegisterPage() {
               <input
                 id="register-name"
                 type="text"
+                autoComplete="name"
                 value={name}
                 onChange={handleNameChange}
                 required

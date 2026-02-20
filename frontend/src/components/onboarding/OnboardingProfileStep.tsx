@@ -37,6 +37,7 @@ export default function OnboardingProfileStep({
           <label className={labelClass}>{t('settings.name')}</label>
           <input
             type="text"
+            autoComplete="name"
             value={name}
             onChange={handleNameChange}
             placeholder={t('onboarding.namePlaceholder')}
