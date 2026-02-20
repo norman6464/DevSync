@@ -4,6 +4,7 @@ import type { Post } from '../../types/post';
 import Avatar from '../common/Avatar';
 import { format } from 'date-fns';
 import { cardDarkClass } from '../../constants/styles';
+import { parseJsonArray } from '../../utils/json';
 import PostCardContent from './PostCardContent';
 import PostCardActions from './PostCardActions';
 
@@ -18,14 +19,7 @@ interface PostCardProps {
 export default function PostCard({ post, isOwner = false, onEdit, onDelete, onUpdate }: PostCardProps) {
   const { t } = useTranslation();
 
-  let imageUrls: string[] = [];
-  try {
-    if (post.image_urls) {
-      imageUrls = JSON.parse(post.image_urls);
-    }
-  } catch {
-    // ignore parse error
-  }
+  const imageUrls = parseJsonArray(post.image_urls);
 
   return (
     <div className={cardDarkClass}>
