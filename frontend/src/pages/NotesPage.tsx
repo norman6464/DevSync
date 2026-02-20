@@ -172,9 +172,11 @@ export default function NotesPage() {
                       ))}
                     </div>
                   )}
-                  <p className="text-sm text-gray-500">
-                    {t('notes.lastUpdated')}: {formatDistanceToNow(note.updated_at)}
-                  </p>
+                  <div className="flex items-center gap-3 text-sm text-gray-500">
+                    <span>{t('notes.lastUpdated')}: {formatDistanceToNow(note.updated_at)}</span>
+                    <span className="text-gray-600">·</span>
+                    <span>{note.content.length.toLocaleString()} {t('notes.chars')}</span>
+                  </div>
                 </div>
                 <div className="flex gap-2 ml-4">
                   <button
