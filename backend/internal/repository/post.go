@@ -150,7 +150,7 @@ func (r *PostRepository) DeleteComment(id uint) error {
 }
 
 // Search はキーワードで投稿を検索する（タイトルまたは本文に部分一致）。下書きは除外。
-func (r *PostRepository) Search(query string, limit, offset int) (interface{}, int64, error) {
+func (r *PostRepository) Search(query string, limit, offset int) ([]model.Post, int64, error) {
 	var posts []model.Post
 	var total int64
 

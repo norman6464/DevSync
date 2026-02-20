@@ -826,9 +826,7 @@ func TestSearchCircles_Success(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, int64(2), total)
-	circles, ok := result.([]model.StudyCircle)
-	assert.True(t, ok)
-	assert.Len(t, circles, 2)
+	assert.Len(t, result, 2)
 	repo.AssertExpectations(t)
 }
 
@@ -841,9 +839,7 @@ func TestSearchCircles_EmptyResult(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, int64(0), total)
-	circles, ok := result.([]model.StudyCircle)
-	assert.True(t, ok)
-	assert.Len(t, circles, 0)
+	assert.Len(t, result, 0)
 }
 
 func TestSearchCircles_RepoError(t *testing.T) {
