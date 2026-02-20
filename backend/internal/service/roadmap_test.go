@@ -1039,3 +1039,53 @@ func TestRoadmapUpdateStepCompletion_FindByIDError(t *testing.T) {
 	assert.Nil(t, result)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// GetByStatus テスト
+// ============================================================
+
+func TestRoadmapGetByStatus_Success(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	roadmaps := []model.Roadmap{
+		{Title: "Active Roadmap", UserID: 1, Status: model.RoadmapStatusActive},
+	}
+	repo.On("GetByStatus", uint(1), "active").Return(roadmaps, nil)
+
+	result, err := svc.GetByStatus(1, "active")
+	assert.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, "Active Roadmap", result[0].Title)
+	repo.AssertExpectations(t)
+}
+
+func TestRoadmapGetByStatus_EmptyResult(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	repo.On("GetByStatus", uint(1), "completed").Return([]model.Roadmap{}, nil)
+
+	result, err := svc.GetByStatus(1, "completed")
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestRoadmapGetByStatus_InvalidStatus(t *testing.T) {
+	svc, _ := newTestRoadmapService()
+
+	result, err := svc.GetByStatus(1, "invalid")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "無効なステータス")
+}
+
+func TestRoadmapGetByStatus_RepoError(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	repo.On("GetByStatus", uint(1), "active").Return([]model.Roadmap{}, errors.New("db error"))
+
+	result, err := svc.GetByStatus(1, "active")
+	assert.Error(t, err)
+	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}

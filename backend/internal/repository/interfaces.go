@@ -225,6 +225,7 @@ type RoadmapRepositoryInterface interface {
 	Delete(id uint) error
 	FindByID(id uint) (*model.Roadmap, error)
 	GetByUserID(userID uint) ([]model.Roadmap, error)
+	GetByStatus(userID uint, status string) ([]model.Roadmap, error)
 	GetPublicRoadmaps(limit, offset int) ([]model.Roadmap, int64, error)
 	CopyRoadmap(originalID, newUserID uint) (*model.Roadmap, error)
 	GetStats(userID uint) (*model.RoadmapStats, error)

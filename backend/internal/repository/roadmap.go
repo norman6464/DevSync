@@ -56,6 +56,15 @@ func (r *RoadmapRepository) GetByUserID(userID uint) ([]model.Roadmap, error) {
 	return roadmaps, err
 }
 
+// GetByStatus は指定ユーザーのロードマップをステータスでフィルタリングして取得する（新しい順）。
+func (r *RoadmapRepository) GetByStatus(userID uint, status string) ([]model.Roadmap, error) {
+	var roadmaps []model.Roadmap
+	err := r.db.Where("user_id = ? AND status = ?", userID, status).
+		Order("created_at DESC").
+		Find(&roadmaps).Error
+	return roadmaps, err
+}
+
 // GetPublicRoadmaps は公開ロードマップをページネーション付きで取得する。
 func (r *RoadmapRepository) GetPublicRoadmaps(limit, offset int) ([]model.Roadmap, int64, error) {
 	var roadmaps []model.Roadmap
