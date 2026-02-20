@@ -42,6 +42,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		ctx.Header("X-Frame-Options", "DENY")
 		ctx.Header("X-XSS-Protection", "1; mode=block")
 		ctx.Header("Referrer-Policy", "strict-origin-when-cross-origin")
+		ctx.Header("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
 		if os.Getenv("ENVIRONMENT") == "production" {
 			ctx.Header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
 		}
