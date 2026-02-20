@@ -1267,7 +1267,8 @@
     "lastUpdated": "最終更新",
     "chars": "文字",
     "createdAt": "作成日時",
-    "tagsPlaceholder": "例: React, TypeScript, Go"
+    "tagsPlaceholder": "例: React, TypeScript, Go",
+    "allTags": "すべてのタグ"
   },
   "githubCallback": {
     "missingOAuthParams": "OAuthパラメータが不足しています",

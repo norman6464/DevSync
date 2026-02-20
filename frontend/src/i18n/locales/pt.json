@@ -1366,7 +1366,8 @@
     "lastUpdated": "Última atualização",
     "chars": "caracteres",
     "createdAt": "Criado em",
-    "tagsPlaceholder": "Ex: React, TypeScript, Go"
+    "tagsPlaceholder": "Ex: React, TypeScript, Go",
+    "allTags": "Todas as tags"
   },
   "githubCallback": {
     "missingOAuthParams": "Parâmetros OAuth ausentes",

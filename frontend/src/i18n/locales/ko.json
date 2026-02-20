@@ -1366,7 +1366,8 @@
     "lastUpdated": "마지막 업데이트",
     "chars": "자",
     "createdAt": "생성일",
-    "tagsPlaceholder": "예: React, TypeScript, Go"
+    "tagsPlaceholder": "예: React, TypeScript, Go",
+    "allTags": "모든 태그"
   },
   "githubCallback": {
     "missingOAuthParams": "OAuth 매개변수가 없습니다",
