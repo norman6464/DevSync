@@ -699,9 +699,9 @@ func (m *MockLearningResourceRepository) FindByID(id uint) (*model.LearningResou
 	return args.Get(0).(*model.LearningResource), args.Error(1)
 }
 
-func (m *MockLearningResourceRepository) FindByUserID(userID uint, includePrivate bool) ([]model.LearningResource, error) {
-	args := m.Called(userID, includePrivate)
-	return args.Get(0).([]model.LearningResource), args.Error(1)
+func (m *MockLearningResourceRepository) FindByUserID(userID uint, includePrivate bool, limit, offset int) ([]model.LearningResource, int64, error) {
+	args := m.Called(userID, includePrivate, limit, offset)
+	return args.Get(0).([]model.LearningResource), args.Get(1).(int64), args.Error(2)
 }
 
 func (m *MockLearningResourceRepository) FindPublic(limit, offset int, category string, difficulty string) ([]model.LearningResource, int64, error) {

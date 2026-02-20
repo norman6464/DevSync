@@ -57,7 +57,7 @@ func (s *AIAdviceService) collectContext(userID uint) (*userContext, error) {
 		return nil, err
 	}
 
-	ctx.resources, err = s.resourceRepo.FindByUserID(userID, true)
+	ctx.resources, _, err = s.resourceRepo.FindByUserID(userID, true, 100, 0)
 	if err != nil {
 		return nil, err
 	}
