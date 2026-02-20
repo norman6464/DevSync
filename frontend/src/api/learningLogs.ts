@@ -34,6 +34,12 @@ export const getLogsByCategory = (category: string) =>
 export const getLogsBySource = (source: string) =>
   client.get<LearningLog[]>(`/learning-logs/source/${source}`);
 
+export const favoriteLog = (id: number) =>
+  client.put<LearningLog>(`/learning-logs/${id}/favorite`);
+
+export const unfavoriteLog = (id: number) =>
+  client.put<LearningLog>(`/learning-logs/${id}/unfavorite`);
+
 export type ExportPeriod = '7' | '30' | '90' | 'all';
 
 export const exportLogsCSV = (period: ExportPeriod = '30') =>

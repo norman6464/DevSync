@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Code, BookOpen, GraduationCap, Users, FileText, Calendar, List, Download, Clock, type LucideIcon } from 'lucide-react';
+import { Code, BookOpen, GraduationCap, Users, FileText, Calendar, List, Download, Clock, Star, type LucideIcon } from 'lucide-react';
 import { useLearningLogForm } from '../hooks/useLearningLogForm';
 import { useWeeklyDuration, useStreak } from '../hooks';
 import { useAuthStore } from '../store/authStore';
@@ -45,11 +45,12 @@ export default function LearningLogsPage() {
     editingLog,
     filterDate, clearFilterDate,
     filterCategory, setFilterCategory,
+    showFavoritesOnly, setShowFavoritesOnly,
     title, setTitle,
     content, setContent,
     category, setCategory,
     duration, setDuration,
-    resetForm, handleSubmit, handleEdit, handleDelete, handleDateClick,
+    resetForm, handleSubmit, handleEdit, handleDelete, handleDateClick, toggleFavorite,
   } = useLearningLogForm();
 
   const handleExport = useCallback(async (period: ExportPeriod) => {
@@ -71,6 +72,7 @@ export default function LearningLogsPage() {
   const handleViewList = useCallback(() => { setView('list'); clearFilterDate(); }, [setView, clearFilterDate]);
   const handleViewCalendar = useCallback(() => { setView('calendar'); clearFilterDate(); }, [setView, clearFilterDate]);
   const handleFilterAll = useCallback(() => setFilterCategory('all'), [setFilterCategory]);
+  const handleToggleFavoritesFilter = useCallback(() => setShowFavoritesOnly(prev => !prev), [setShowFavoritesOnly]);
   const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value), [setTitle]);
   const handleContentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => setContent(e.target.value), [setContent]);
   const handleCategoryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => setCategory(e.target.value as LogCategory), [setCategory]);
@@ -163,6 +165,15 @@ export default function LearningLogsPage() {
         >
           <Calendar className="w-4 h-4" />
           {t('learningLogs.calendar')}
+        </button>
+        <button
+          onClick={handleToggleFavoritesFilter}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            showFavoritesOnly ? 'bg-yellow-500/20 text-yellow-400' : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          <Star className={`w-4 h-4 ${showFavoritesOnly ? 'fill-yellow-400' : ''}`} />
+          {t('learningLogs.favorites')}
         </button>
         {filterDate && (
           <div className="flex items-center gap-2 ml-2">
@@ -350,6 +361,13 @@ export default function LearningLogsPage() {
                       </div>
 
                       <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => toggleFavorite(log.id)}
+                          className={`p-2 transition-colors ${log.is_favorite ? 'text-yellow-400' : 'text-gray-400 hover:text-yellow-400'}`}
+                          title={t('learningLogs.toggleFavorite')}
+                        >
+                          <Star className={`w-4 h-4 ${log.is_favorite ? 'fill-yellow-400' : ''}`} />
+                        </button>
                         <button
                           onClick={() => handleEdit(log)}
                           className="p-2 text-gray-400 hover:text-blue-400 transition-colors"
