@@ -160,6 +160,9 @@ func (s *AuthService) GenerateLoginState() (string, error) {
 // ValidateLoginState はGitHubログイン用のstateトークンを検証する。
 func (s *AuthService) ValidateLoginState(state string) error {
 	token, err := jwt.Parse(state, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, domain.NewError(domain.ErrCodeUnauthorized, "unexpected signing method", nil)
+		}
 		return s.jwtSecret, nil
 	})
 	if err != nil {
@@ -268,6 +271,9 @@ func (s *AuthService) GenerateOAuthState(userID uint) (string, error) {
 // ValidateOAuthState はOAuth stateトークンを検証し、埋め込まれたユーザーIDを返す。
 func (s *AuthService) ValidateOAuthState(state string) (uint, error) {
 	token, err := jwt.Parse(state, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, domain.NewError(domain.ErrCodeUnauthorized, "unexpected signing method", nil)
+		}
 		return s.jwtSecret, nil
 	})
 	if err != nil {
