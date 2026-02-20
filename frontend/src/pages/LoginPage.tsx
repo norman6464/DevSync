@@ -94,6 +94,7 @@ export default function LoginPage() {
               <input
                 id="login-password"
                 type="password"
+                autoComplete="current-password"
                 value={password}
                 onChange={handlePasswordChange}
                 required
