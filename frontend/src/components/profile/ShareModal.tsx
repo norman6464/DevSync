@@ -90,12 +90,12 @@ export default function ShareModal({
   const handleShareTwitter = () => {
     const text = t('sharing.twitterText', { name: user.name || 'Developer' });
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(profileUrl)}`;
-    window.open(url, '_blank', 'width=600,height=400,noopener');
+    window.open(url, '_blank', 'width=600,height=400,noopener,noreferrer');
   };
 
   const handleShareLinkedIn = () => {
     const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(profileUrl)}`;
-    window.open(url, '_blank', 'width=600,height=400,noopener');
+    window.open(url, '_blank', 'width=600,height=400,noopener,noreferrer');
   };
 
   return (
