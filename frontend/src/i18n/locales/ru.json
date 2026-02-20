@@ -599,6 +599,7 @@
     "resume": "Возобновить",
     "filter": "Фильтр",
     "noFilterResults": "Нет целей, соответствующих выбранным фильтрам",
+    "searchPlaceholder": "Поиск по заголовку или описанию...",
     "titlePlaceholder": "Напр. Изучить TypeScript",
     "descriptionPlaceholder": "Опишите свою цель...",
     "categoryLanguage": "Язык",

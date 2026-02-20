@@ -599,6 +599,7 @@
     "resume": "Reanudar",
     "filter": "Filtrar",
     "noFilterResults": "No hay objetivos que coincidan con los filtros",
+    "searchPlaceholder": "Buscar por título o descripción...",
     "titlePlaceholder": "Ej. Aprender TypeScript",
     "descriptionPlaceholder": "Describe tu objetivo...",
     "categoryLanguage": "Lenguaje",

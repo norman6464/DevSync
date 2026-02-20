@@ -588,6 +588,7 @@
     "resume": "再開",
     "filter": "フィルター",
     "noFilterResults": "条件に一致する目標がありません",
+    "searchPlaceholder": "タイトルや説明で検索...",
     "titlePlaceholder": "例：TypeScriptを学ぶ",
     "descriptionPlaceholder": "目標を説明してください...",
     "categoryLanguage": "言語",

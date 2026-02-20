@@ -16,6 +16,7 @@ export function useGoalForm() {
   const [targetDate, setTargetDate] = useState('');
   const [filterStatus, setFilterStatus] = useState<GoalStatus | 'all'>('all');
   const [filterCategory, setFilterCategory] = useState<GoalCategory | 'all'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const resetForm = () => {
     setTitle('');
@@ -78,6 +79,8 @@ export function useGoalForm() {
   const filteredGoals = goalsData.goals.filter(g => {
     if (filterStatus !== 'all' && g.status !== filterStatus) return false;
     if (filterCategory !== 'all' && g.category !== filterCategory) return false;
+    const q = searchQuery.toLowerCase().trim();
+    if (q && !g.title.toLowerCase().includes(q) && !g.description.toLowerCase().includes(q)) return false;
     return true;
   });
 
@@ -95,6 +98,8 @@ export function useGoalForm() {
     setFilterStatus,
     filterCategory,
     setFilterCategory,
+    searchQuery,
+    setSearchQuery,
     showForm,
     setShowForm,
     editingGoal,

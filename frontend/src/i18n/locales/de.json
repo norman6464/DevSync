@@ -599,6 +599,7 @@
     "resume": "Fortsetzen",
     "filter": "Filter",
     "noFilterResults": "Keine Ziele entsprechen den ausgewählten Filtern",
+    "searchPlaceholder": "Nach Titel oder Beschreibung suchen...",
     "titlePlaceholder": "z.B. TypeScript lernen",
     "descriptionPlaceholder": "Beschreiben Sie Ihr Ziel...",
     "categoryLanguage": "Sprache",

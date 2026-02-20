@@ -599,6 +599,7 @@
     "resume": "恢复",
     "filter": "筛选",
     "noFilterResults": "没有符合筛选条件的目标",
+    "searchPlaceholder": "按标题或描述搜索...",
     "titlePlaceholder": "例如：学习 TypeScript",
     "descriptionPlaceholder": "描述你的目标...",
     "categoryLanguage": "语言",
