@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { TrendingUp } from 'lucide-react';
 import type { Question } from '../../types/qa';
 import Avatar from '../common/Avatar';
 import { cardPaddedClass, iconButtonClass, deleteIconButtonClass } from '../../constants/styles';
@@ -88,9 +89,15 @@ export default function QuestionCard({ question, isOwner = false, onEdit, onDele
 
           <p className="text-gray-400 text-sm mt-1 line-clamp-2">{question.body}</p>
 
-          {/* Tags */}
-          {tags.length > 0 && (
+          {/* Tags & Popular badge */}
+          {(tags.length > 0 || question.vote_count >= 5) && (
             <div className="flex flex-wrap gap-1.5 mt-2">
+              {question.vote_count >= 5 && (
+                <span className="inline-flex items-center gap-0.5 px-2 py-0.5 bg-yellow-400/10 text-yellow-400 text-xs rounded-md font-medium">
+                  <TrendingUp className="w-3 h-3" />
+                  {t('qa.popularBadge')}
+                </span>
+              )}
               {tags.map(tag => (
                 <span key={tag} className="px-2 py-0.5 bg-blue-600/20 text-blue-400 text-xs rounded-md">
                   {tag}
