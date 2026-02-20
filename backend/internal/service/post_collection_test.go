@@ -55,6 +55,20 @@ func TestPostCollectionCreate_EmptyTitle(t *testing.T) {
 	assert.Nil(t, result)
 }
 
+func TestPostCollectionCreate_WhitespaceTitle(t *testing.T) {
+	svc, _ := newTestPostCollectionService()
+
+	collection := &model.PostCollection{
+		UserID: 1,
+		Title:  "   \t\n  ",
+	}
+
+	result, err := svc.Create(collection)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "タイトルは必須です")
+}
+
 func TestPostCollectionCreate_RepoError(t *testing.T) {
 	svc, repo := newTestPostCollectionService()
 
