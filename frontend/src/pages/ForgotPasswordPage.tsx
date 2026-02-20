@@ -81,6 +81,7 @@ export default function ForgotPasswordPage() {
                   className={inputClass}
                   placeholder={t('auth.emailPlaceholder')}
                   required
+                  maxLength={255}
                 />
               </div>
 

@@ -85,6 +85,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={handleEmailChange}
                 required
+                maxLength={255}
                 className={inputClass}
               />
             </div>
