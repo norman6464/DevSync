@@ -99,6 +99,18 @@ func (s *QuestionService) Delete(id, userID uint) error {
 	return s.repo.Delete(id)
 }
 
+// findAndPreventSelfVote は質問を取得し、自分の質問への投票を防止する。
+func (s *QuestionService) findAndPreventSelfVote(userID, questionID uint) error {
+	question, err := s.repo.FindByID(questionID)
+	if err != nil {
+		return ErrNotFound
+	}
+	if question.UserID == userID {
+		return ErrForbidden
+	}
+	return nil
+}
+
 // Vote は質問に投票する。
 // 自分の質問への自己投票は禁止する。
 func (s *QuestionService) Vote(userID, questionID uint, value int) error {
@@ -106,12 +118,8 @@ func (s *QuestionService) Vote(userID, questionID uint, value int) error {
 	if err := v.ValidateVote(value); err != nil {
 		return err
 	}
-	question, err := s.repo.FindByID(questionID)
-	if err != nil {
-		return ErrNotFound
-	}
-	if question.UserID == userID {
-		return ErrForbidden
+	if err := s.findAndPreventSelfVote(userID, questionID); err != nil {
+		return err
 	}
 	return s.repo.Vote(userID, questionID, value)
 }
@@ -119,12 +127,8 @@ func (s *QuestionService) Vote(userID, questionID uint, value int) error {
 // RemoveVote は質問への投票を取り消す。
 // 自分の質問への投票削除は禁止する（そもそも投票できないため）。
 func (s *QuestionService) RemoveVote(userID, questionID uint) error {
-	question, err := s.repo.FindByID(questionID)
-	if err != nil {
-		return ErrNotFound
-	}
-	if question.UserID == userID {
-		return ErrForbidden
+	if err := s.findAndPreventSelfVote(userID, questionID); err != nil {
+		return err
 	}
 	return s.repo.RemoveVote(userID, questionID)
 }
