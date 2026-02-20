@@ -50,6 +50,16 @@ func (m *MockLearningGoalRepository) GetStats(userID uint) (*model.LearningGoalS
 	return nil, args.Error(1)
 }
 
+func (m *MockLearningGoalRepository) GetByCategory(userID uint, category string) ([]model.LearningGoal, error) {
+	args := m.Called(userID, category)
+	return args.Get(0).([]model.LearningGoal), args.Error(1)
+}
+
+func (m *MockLearningGoalRepository) GetByStatus(userID uint, status string) ([]model.LearningGoal, error) {
+	args := m.Called(userID, status)
+	return args.Get(0).([]model.LearningGoal), args.Error(1)
+}
+
 // setupLearningGoalHandler はテスト用のLearningGoalHandlerとモックを準備する。
 func setupLearningGoalHandler() (*LearningGoalHandler, *MockLearningGoalRepository) {
 	repo := new(MockLearningGoalRepository)

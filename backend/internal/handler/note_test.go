@@ -48,8 +48,8 @@ func (m *MockNoteService) Update(id, userID uint, title, content, tags string, f
 	return nil, args.Error(1)
 }
 
-func (m *MockNoteService) Delete(id uint) error {
-	return m.Called(id).Error(0)
+func (m *MockNoteService) Delete(id, userID uint) error {
+	return m.Called(id, userID).Error(0)
 }
 
 func (m *MockNoteService) Search(userID uint, query string, page, limit int) ([]model.Note, int64, error) {
@@ -62,16 +62,16 @@ func (m *MockNoteService) CountByUserID(userID uint) (int64, error) {
 	return args.Get(0).(int64), args.Error(1)
 }
 
-func (m *MockNoteService) ToggleFavorite(id uint) error {
-	return m.Called(id).Error(0)
+func (m *MockNoteService) ToggleFavorite(id, userID uint) error {
+	return m.Called(id, userID).Error(0)
 }
 
-func (m *MockNoteService) Archive(id uint) error {
-	return m.Called(id).Error(0)
+func (m *MockNoteService) Archive(id, userID uint) error {
+	return m.Called(id, userID).Error(0)
 }
 
-func (m *MockNoteService) Unarchive(id uint) error {
-	return m.Called(id).Error(0)
+func (m *MockNoteService) Unarchive(id, userID uint) error {
+	return m.Called(id, userID).Error(0)
 }
 
 func (m *MockNoteService) GetArchived(userID uint, page, limit int) ([]model.Note, error) {
@@ -238,9 +238,12 @@ func TestNoteHandler_Delete(t *testing.T) {
 	handler, mockService := newTestNoteHandler()
 	router := setupRouter()
 
-	router.DELETE("/notes/:id", handler.Delete)
+	router.DELETE("/notes/:id", func(c *gin.Context) {
+		c.Set("userID", uint(1))
+		handler.Delete(c)
+	})
 
-	mockService.On("Delete", uint(1)).Return(nil)
+	mockService.On("Delete", uint(1), uint(1)).Return(nil)
 
 	req, _ := http.NewRequest("DELETE", "/notes/1", nil)
 	w := httptest.NewRecorder()
@@ -285,9 +288,12 @@ func TestNoteHandler_ToggleFavorite(t *testing.T) {
 	handler, mockService := newTestNoteHandler()
 	router := setupRouter()
 
-	router.PUT("/notes/:id/favorite", handler.ToggleFavorite)
+	router.PUT("/notes/:id/favorite", func(c *gin.Context) {
+		c.Set("userID", uint(1))
+		handler.ToggleFavorite(c)
+	})
 
-	mockService.On("ToggleFavorite", uint(1)).Return(nil)
+	mockService.On("ToggleFavorite", uint(1), uint(1)).Return(nil)
 
 	req, _ := http.NewRequest("PUT", "/notes/1/favorite", nil)
 	w := httptest.NewRecorder()
@@ -362,9 +368,12 @@ func TestNoteHandler_Archive(t *testing.T) {
 		handler, mockService := newTestNoteHandler()
 		router := setupRouter()
 
-		router.PUT("/notes/:id/archive", handler.Archive)
+		router.PUT("/notes/:id/archive", func(c *gin.Context) {
+			c.Set("userID", uint(1))
+			handler.Archive(c)
+		})
 
-		mockService.On("Archive", uint(1)).Return(nil)
+		mockService.On("Archive", uint(1), uint(1)).Return(nil)
 
 		req, _ := http.NewRequest("PUT", "/notes/1/archive", nil)
 		w := httptest.NewRecorder()
@@ -391,9 +400,12 @@ func TestNoteHandler_Archive(t *testing.T) {
 		handler, mockService := newTestNoteHandler()
 		router := setupRouter()
 
-		router.PUT("/notes/:id/archive", handler.Archive)
+		router.PUT("/notes/:id/archive", func(c *gin.Context) {
+			c.Set("userID", uint(1))
+			handler.Archive(c)
+		})
 
-		mockService.On("Archive", uint(1)).Return(assert.AnError)
+		mockService.On("Archive", uint(1), uint(1)).Return(assert.AnError)
 
 		req, _ := http.NewRequest("PUT", "/notes/1/archive", nil)
 		w := httptest.NewRecorder()
@@ -413,9 +425,12 @@ func TestNoteHandler_Unarchive(t *testing.T) {
 		handler, mockService := newTestNoteHandler()
 		router := setupRouter()
 
-		router.PUT("/notes/:id/unarchive", handler.Unarchive)
+		router.PUT("/notes/:id/unarchive", func(c *gin.Context) {
+			c.Set("userID", uint(1))
+			handler.Unarchive(c)
+		})
 
-		mockService.On("Unarchive", uint(1)).Return(nil)
+		mockService.On("Unarchive", uint(1), uint(1)).Return(nil)
 
 		req, _ := http.NewRequest("PUT", "/notes/1/unarchive", nil)
 		w := httptest.NewRecorder()
@@ -442,9 +457,12 @@ func TestNoteHandler_Unarchive(t *testing.T) {
 		handler, mockService := newTestNoteHandler()
 		router := setupRouter()
 
-		router.PUT("/notes/:id/unarchive", handler.Unarchive)
+		router.PUT("/notes/:id/unarchive", func(c *gin.Context) {
+			c.Set("userID", uint(1))
+			handler.Unarchive(c)
+		})
 
-		mockService.On("Unarchive", uint(1)).Return(assert.AnError)
+		mockService.On("Unarchive", uint(1), uint(1)).Return(assert.AnError)
 
 		req, _ := http.NewRequest("PUT", "/notes/1/unarchive", nil)
 		w := httptest.NewRecorder()
