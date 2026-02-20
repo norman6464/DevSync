@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import SearchBar from '../components/search/SearchBar';
 import SearchTabs from '../components/search/SearchTabs';
 import type { SearchTab } from '../components/search/SearchTabs';
+import PostFilterPanel from '../components/search/PostFilterPanel';
+import UserSearchCard from '../components/search/UserSearchCard';
+import PostSearchCard from '../components/search/PostSearchCard';
+import CircleSearchCard from '../components/search/CircleSearchCard';
 import { useUserSearch, usePostSearch, useCircleSearch, useDebounce } from '../hooks';
 import { useAuthStore } from '../store/authStore';
-import Avatar from '../components/common/Avatar';
-import FollowButton from '../components/profile/FollowButton';
 import { UserCardSkeleton, PostCardSkeleton } from '../components/common/Skeleton';
 import type { User } from '../types/user';
 import type { Post } from '../types/post';
@@ -128,133 +129,6 @@ export default function NewSearchPage() {
   );
 }
 
-// フィルターパネル（投稿タブ用）
-function PostFilterPanel({
-  filters,
-  onFiltersChange,
-}: {
-  filters: PostSearchFilters;
-  onFiltersChange: (f: PostSearchFilters) => void;
-}) {
-  const { t } = useTranslation();
-  const [tagInput, setTagInput] = useState('');
-
-  const handleSortChange = (sortBy: PostSearchFilters['sortBy']) => {
-    onFiltersChange({ ...filters, sortBy });
-  };
-
-  const handleAddTag = () => {
-    const tag = tagInput.trim();
-    if (tag && !filters.tags?.includes(tag)) {
-      onFiltersChange({ ...filters, tags: [...(filters.tags || []), tag] });
-      setTagInput('');
-    }
-  };
-
-  const handleRemoveTag = (tag: string) => {
-    onFiltersChange({ ...filters, tags: filters.tags?.filter((t) => t !== tag) });
-  };
-
-  const handleDateFromChange = (value: string) => {
-    onFiltersChange({ ...filters, dateFrom: value || undefined });
-  };
-
-  const handleDateToChange = (value: string) => {
-    onFiltersChange({ ...filters, dateTo: value || undefined });
-  };
-
-  const sortOptions: { value: PostSearchFilters['sortBy']; label: string }[] = [
-    { value: 'latest', label: t('search.sortLatest') },
-    { value: 'popular', label: t('search.sortPopular') },
-    { value: 'views', label: t('search.sortViews') },
-  ];
-
-  return (
-    <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
-      {/* ソート順 */}
-      <div>
-        <label className="block text-xs font-medium text-gray-400 mb-2">{t('search.sortBy')}</label>
-        <div className="flex gap-2">
-          {sortOptions.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => handleSortChange(opt.value)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                filters.sortBy === opt.value
-                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50'
-                  : 'bg-gray-800 text-gray-400 border border-gray-700 hover:border-gray-600'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* タグフィルター */}
-      <div>
-        <label className="block text-xs font-medium text-gray-400 mb-2">{t('search.tagFilter')}</label>
-        <div className="flex gap-2 mb-2">
-          <input
-            type="text"
-            value={tagInput}
-            onChange={(e) => setTagInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
-            placeholder={t('search.tagPlaceholder')}
-            className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-blue-500"
-          />
-          <button
-            onClick={handleAddTag}
-            className="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-300 hover:border-gray-600 transition-colors"
-          >
-            {t('common.add')}
-          </button>
-        </div>
-        {filters.tags && filters.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {filters.tags.map((tag) => (
-              <span
-                key={tag}
-                className="inline-flex items-center gap-1 px-2 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-full text-xs"
-              >
-                #{tag}
-                <button
-                  onClick={() => handleRemoveTag(tag)}
-                  className="hover:text-blue-300 ml-0.5"
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* 日付範囲フィルター */}
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-xs font-medium text-gray-400 mb-1">{t('search.dateFrom')}</label>
-          <input
-            type="date"
-            value={filters.dateFrom || ''}
-            onChange={(e) => handleDateFromChange(e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-gray-100 focus:outline-none focus:border-blue-500"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-400 mb-1">{t('search.dateTo')}</label>
-          <input
-            type="date"
-            value={filters.dateTo || ''}
-            onChange={(e) => handleDateToChange(e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-gray-100 focus:outline-none focus:border-blue-500"
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function LoadingResults({ tab }: { tab: SearchTab }) {
   if (tab === 'users') {
     return (
@@ -310,39 +184,8 @@ function UserResults({ users, currentUserId, query }: { users: User[]; currentUs
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {users.map((user) => (
-        <UserCard key={user.id} user={user} currentUserId={currentUserId} t={t} />
+        <UserSearchCard key={user.id} user={user} currentUserId={currentUserId} />
       ))}
-    </div>
-  );
-}
-
-function UserCard({ user, currentUserId, t }: { user: User; currentUserId?: number; t: (key: string) => string }) {
-  return (
-    <div className="bg-gray-900 border border-gray-800 rounded-md p-5 hover:border-gray-700 transition-colors">
-      <div className="flex items-start gap-4">
-        <Link to={`/profile/${user.username}`}>
-          <Avatar name={user.name} avatarUrl={user.avatar_url} />
-        </Link>
-        <div className="flex-1 min-w-0">
-          <Link to={`/profile/${user.username}`} className="font-semibold text-sm hover:text-blue-400 transition-colors">
-            {user.name}
-          </Link>
-          {user.bio && <p className="text-xs text-gray-400 mt-1 line-clamp-2">{user.bio}</p>}
-        </div>
-      </div>
-      <div className="flex items-center gap-2 mt-4 pt-3 border-t border-gray-800/50">
-        <Link
-          to={`/profile/${user.username}`}
-          className="flex-1 px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-medium text-center transition-colors"
-        >
-          {t('search.viewProfile')}
-        </Link>
-        {currentUserId && currentUserId !== user.id && (
-          <div className="flex-shrink-0">
-            <FollowButton userId={user.id} />
-          </div>
-        )}
-      </div>
     </div>
   );
 }
@@ -367,36 +210,9 @@ function PostResults({ posts, total, query }: { posts: Post[]; total: number; qu
         </p>
       )}
       {posts.map((post) => (
-        <PostCard key={post.id} post={post} />
+        <PostSearchCard key={post.id} post={post} />
       ))}
     </div>
-  );
-}
-
-function PostCard({ post }: { post: Post }) {
-  const { t } = useTranslation();
-  return (
-    <Link
-      to={`/posts/${post.id}`}
-      className="block bg-gray-900 border border-gray-800 rounded-md p-5 hover:border-gray-700 transition-colors"
-    >
-      <div className="flex items-start gap-3">
-        <Avatar name={post.user?.name || 'User'} avatarUrl={post.user?.avatar_url} size="sm" />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-            <span className="font-medium text-gray-300">{post.user?.name}</span>
-            <span>•</span>
-            <span>{new Date(post.created_at).toLocaleDateString()}</span>
-          </div>
-          <h3 className="font-semibold text-white mb-1">{post.title}</h3>
-          <p className="text-sm text-gray-400 line-clamp-2">{post.content}</p>
-          <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
-            <span>{t('search.likesCount', { count: post.like_count || 0 })}</span>
-            <span>{t('search.commentsCount', { count: post.comment_count || 0 })}</span>
-          </div>
-        </div>
-      </div>
-    </Link>
   );
 }
 
@@ -415,33 +231,8 @@ function CircleResults({ circles, query }: { circles: StudyCircle[]; query: stri
   return (
     <div className="space-y-4">
       {circles.map((circle) => (
-        <CircleCard key={circle.id} circle={circle} />
+        <CircleSearchCard key={circle.id} circle={circle} />
       ))}
     </div>
-  );
-}
-
-function CircleCard({ circle }: { circle: StudyCircle }) {
-  const { t } = useTranslation();
-
-  return (
-    <Link
-      to={`/study-circles/${circle.id}`}
-      className="block bg-gray-900 border border-gray-800 rounded-md p-5 hover:border-gray-700 transition-colors"
-    >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
-          <h3 className="font-semibold text-white mb-1">{circle.name}</h3>
-          <p className="text-sm text-blue-400 mb-2">{circle.topic}</p>
-          {circle.description && <p className="text-sm text-gray-400 line-clamp-2">{circle.description}</p>}
-        </div>
-        <div className="text-right flex-shrink-0">
-          <div className="text-sm text-gray-400">
-            {circle.member_count || 0} / {circle.max_members || '∞'}
-          </div>
-          <div className="text-xs text-gray-500 mt-1">{t('studyCircles.members')}</div>
-        </div>
-      </div>
-    </Link>
   );
 }
