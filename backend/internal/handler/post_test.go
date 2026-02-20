@@ -408,3 +408,586 @@ func TestPostPublish_NotDraft(t *testing.T) {
 	w := doRequest(r, http.MethodPut, "/posts/5/publish", nil)
 	assertStatus(t, w, http.StatusBadRequest)
 }
+
+func TestPostPublish_InvalidID(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.PUT("/posts/:id/publish", h.Publish)
+
+	w := doRequest(r, http.MethodPut, "/posts/abc/publish", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostPublish_NotFound(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.PUT("/posts/:id/publish", h.Publish)
+
+	postRepo.On("FindByID", uint(999)).Return(nil, service.ErrNotFound)
+
+	w := doRequest(r, http.MethodPut, "/posts/999/publish", nil)
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+// ---------- Unpublish ----------
+
+func TestPostUnpublish_Success(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.PUT("/posts/:id/unpublish", h.Unpublish)
+
+	postRepo.On("FindByID", uint(5)).Return(&model.Post{
+		ID: 5, UserID: 1, Title: "Published", IsDraft: false,
+	}, nil)
+	postRepo.On("Update", mock.AnythingOfType("*model.Post")).Return(nil)
+
+	w := doRequest(r, http.MethodPut, "/posts/5/unpublish", nil)
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestPostUnpublish_InvalidID(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.PUT("/posts/:id/unpublish", h.Unpublish)
+
+	w := doRequest(r, http.MethodPut, "/posts/abc/unpublish", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostUnpublish_NotFound(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.PUT("/posts/:id/unpublish", h.Unpublish)
+
+	postRepo.On("FindByID", uint(999)).Return(nil, service.ErrNotFound)
+
+	w := doRequest(r, http.MethodPut, "/posts/999/unpublish", nil)
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+func TestPostUnpublish_Forbidden(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.PUT("/posts/:id/unpublish", h.Unpublish)
+
+	postRepo.On("FindByID", uint(5)).Return(&model.Post{
+		ID: 5, UserID: 999, Title: "Other's", IsDraft: false,
+	}, nil)
+
+	w := doRequest(r, http.MethodPut, "/posts/5/unpublish", nil)
+	assertStatus(t, w, http.StatusForbidden)
+}
+
+func TestPostUnpublish_AlreadyDraft(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.PUT("/posts/:id/unpublish", h.Unpublish)
+
+	postRepo.On("FindByID", uint(5)).Return(&model.Post{
+		ID: 5, UserID: 1, Title: "Draft", IsDraft: true,
+	}, nil)
+
+	w := doRequest(r, http.MethodPut, "/posts/5/unpublish", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// ---------- GetUserPosts ----------
+
+func TestPostGetUserPosts_Success(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.GET("/users/:id/posts", h.GetUserPosts)
+
+	postRepo.On("FindByUserID", uint(2)).Return([]model.Post{
+		{Title: "User Post 1"}, {Title: "User Post 2"},
+	}, nil)
+
+	w := doRequest(r, http.MethodGet, "/users/2/posts", nil)
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestPostGetUserPosts_InvalidID(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.GET("/users/:id/posts", h.GetUserPosts)
+
+	w := doRequest(r, http.MethodGet, "/users/abc/posts", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostGetUserPosts_ServiceError(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.GET("/users/:id/posts", h.GetUserPosts)
+
+	postRepo.On("FindByUserID", uint(2)).Return([]model.Post(nil), service.ErrNotFound)
+
+	w := doRequest(r, http.MethodGet, "/users/2/posts", nil)
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+// ---------- GetReplies ----------
+
+func TestPostGetReplies_Success(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.GET("/comments/:commentId/replies", h.GetReplies)
+
+	postRepo.On("GetReplies", uint(10)).Return([]model.Comment{
+		{Content: "Reply 1"}, {Content: "Reply 2"},
+	}, nil)
+
+	w := doRequest(r, http.MethodGet, "/comments/10/replies", nil)
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestPostGetReplies_InvalidID(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.GET("/comments/:commentId/replies", h.GetReplies)
+
+	w := doRequest(r, http.MethodGet, "/comments/abc/replies", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostGetReplies_ServiceError(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.GET("/comments/:commentId/replies", h.GetReplies)
+
+	postRepo.On("GetReplies", uint(10)).Return([]model.Comment(nil), service.ErrNotFound)
+
+	w := doRequest(r, http.MethodGet, "/comments/10/replies", nil)
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+// ---------- Bookmark ----------
+
+func TestPostBookmark_Success(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts/:id/bookmark", h.Bookmark)
+
+	otherPost := &model.Post{UserID: 99}
+	otherPost.ID = 5
+	postRepo.On("FindByID", uint(5)).Return(otherPost, nil)
+	postRepo.On("Bookmark", uint(1), uint(5)).Return(nil)
+
+	w := doRequest(r, http.MethodPost, "/posts/5/bookmark", nil)
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestPostBookmark_InvalidID(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts/:id/bookmark", h.Bookmark)
+
+	w := doRequest(r, http.MethodPost, "/posts/abc/bookmark", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostBookmark_ServiceError(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts/:id/bookmark", h.Bookmark)
+
+	postRepo.On("FindByID", uint(5)).Return(nil, service.ErrNotFound)
+
+	w := doRequest(r, http.MethodPost, "/posts/5/bookmark", nil)
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+// ---------- Unbookmark ----------
+
+func TestPostUnbookmark_Success(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.DELETE("/posts/:id/bookmark", h.Unbookmark)
+
+	otherPost := &model.Post{UserID: 99}
+	otherPost.ID = 5
+	postRepo.On("FindByID", uint(5)).Return(otherPost, nil)
+	postRepo.On("Unbookmark", uint(1), uint(5)).Return(nil)
+
+	w := doRequest(r, http.MethodDelete, "/posts/5/bookmark", nil)
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestPostUnbookmark_InvalidID(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.DELETE("/posts/:id/bookmark", h.Unbookmark)
+
+	w := doRequest(r, http.MethodDelete, "/posts/abc/bookmark", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostUnbookmark_ServiceError(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.DELETE("/posts/:id/bookmark", h.Unbookmark)
+
+	postRepo.On("FindByID", uint(5)).Return(nil, service.ErrNotFound)
+
+	w := doRequest(r, http.MethodDelete, "/posts/5/bookmark", nil)
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+// ---------- GetBookmarks ----------
+
+func TestPostGetBookmarks_Success(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.GET("/posts/bookmarks", h.GetBookmarks)
+
+	postRepo.On("FindBookmarkedByUserID", uint(1), 1, 20).Return([]model.Post{
+		{Title: "Bookmarked 1"},
+	}, int64(1), nil)
+
+	w := doRequest(r, http.MethodGet, "/posts/bookmarks", nil)
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestPostGetBookmarks_ServiceError(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.GET("/posts/bookmarks", h.GetBookmarks)
+
+	postRepo.On("FindBookmarkedByUserID", uint(1), 1, 20).Return([]model.Post(nil), int64(0), service.ErrNotFound)
+
+	w := doRequest(r, http.MethodGet, "/posts/bookmarks", nil)
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+// ---------- AddReaction ----------
+
+func TestPostAddReaction_Success(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts/:id/reactions", h.AddReaction)
+
+	otherPost := &model.Post{UserID: 99}
+	otherPost.ID = 5
+	postRepo.On("FindByID", uint(5)).Return(otherPost, nil)
+	postRepo.On("AddReaction", uint(1), uint(5), "👍").Return(nil)
+
+	w := doRequest(r, http.MethodPost, "/posts/5/reactions", map[string]string{"emoji": "👍"})
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestPostAddReaction_InvalidID(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts/:id/reactions", h.AddReaction)
+
+	w := doRequest(r, http.MethodPost, "/posts/abc/reactions", map[string]string{"emoji": "👍"})
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostAddReaction_InvalidJSON(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts/:id/reactions", h.AddReaction)
+
+	w := doRequestRaw(r, http.MethodPost, "/posts/5/reactions", "{invalid}")
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostAddReaction_ServiceError(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts/:id/reactions", h.AddReaction)
+
+	postRepo.On("FindByID", uint(5)).Return(nil, service.ErrNotFound)
+
+	w := doRequest(r, http.MethodPost, "/posts/5/reactions", map[string]string{"emoji": "👍"})
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+// ---------- RemoveReaction ----------
+
+func TestPostRemoveReaction_Success(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.DELETE("/posts/:id/reactions", h.RemoveReaction)
+
+	otherPost := &model.Post{UserID: 99}
+	otherPost.ID = 5
+	postRepo.On("FindByID", uint(5)).Return(otherPost, nil)
+	postRepo.On("RemoveReaction", uint(1), uint(5), "🔥").Return(nil)
+
+	w := doRequest(r, http.MethodDelete, "/posts/5/reactions", map[string]string{"emoji": "🔥"})
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestPostRemoveReaction_InvalidID(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.DELETE("/posts/:id/reactions", h.RemoveReaction)
+
+	w := doRequest(r, http.MethodDelete, "/posts/abc/reactions", map[string]string{"emoji": "🔥"})
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostRemoveReaction_InvalidJSON(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.DELETE("/posts/:id/reactions", h.RemoveReaction)
+
+	w := doRequestRaw(r, http.MethodDelete, "/posts/5/reactions", "{invalid}")
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostRemoveReaction_ServiceError(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.DELETE("/posts/:id/reactions", h.RemoveReaction)
+
+	postRepo.On("FindByID", uint(5)).Return(nil, service.ErrNotFound)
+
+	w := doRequest(r, http.MethodDelete, "/posts/5/reactions", map[string]string{"emoji": "🔥"})
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+// ---------- GetReactions ----------
+
+func TestPostGetReactions_Success(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.GET("/posts/:id/reactions", h.GetReactions)
+
+	postRepo.On("GetReactionsByPostID", uint(5)).Return([]model.ReactionCount{
+		{Emoji: "👍", Count: 3},
+	}, nil)
+	postRepo.On("GetUserReactions", uint(1), uint(5)).Return([]string{"👍"}, nil)
+
+	w := doRequest(r, http.MethodGet, "/posts/5/reactions", nil)
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestPostGetReactions_InvalidID(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.GET("/posts/:id/reactions", h.GetReactions)
+
+	w := doRequest(r, http.MethodGet, "/posts/abc/reactions", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostGetReactions_GetReactionsError(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.GET("/posts/:id/reactions", h.GetReactions)
+
+	postRepo.On("GetReactionsByPostID", uint(5)).Return([]model.ReactionCount(nil), service.ErrNotFound)
+
+	w := doRequest(r, http.MethodGet, "/posts/5/reactions", nil)
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+func TestPostGetReactions_GetUserReactionsError(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.GET("/posts/:id/reactions", h.GetReactions)
+
+	postRepo.On("GetReactionsByPostID", uint(5)).Return([]model.ReactionCount{}, nil)
+	postRepo.On("GetUserReactions", uint(1), uint(5)).Return([]string(nil), service.ErrNotFound)
+
+	w := doRequest(r, http.MethodGet, "/posts/5/reactions", nil)
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+// ---------- エラーパス追加テスト ----------
+
+func TestPostCreate_ServiceError(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts", h.Create)
+
+	postRepo.On("Create", mock.AnythingOfType("*model.Post")).Return(service.ErrBadRequest)
+
+	w := doRequest(r, http.MethodPost, "/posts", map[string]string{
+		"title": "Test", "content": "Content",
+	})
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostGetAll_ServiceError(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.GET("/posts", h.GetAll)
+
+	postRepo.On("FindAll", 1, 20).Return([]model.Post(nil), service.ErrNotFound)
+
+	w := doRequest(r, http.MethodGet, "/posts", nil)
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+func TestPostTimeline_ServiceError(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.GET("/posts/timeline", h.Timeline)
+
+	postRepo.On("Timeline", uint(1), 1, 20).Return([]model.Post(nil), service.ErrNotFound)
+
+	w := doRequest(r, http.MethodGet, "/posts/timeline", nil)
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+func TestPostLike_InvalidID(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts/:id/like", h.Like)
+
+	w := doRequest(r, http.MethodPost, "/posts/abc/like", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostLike_ServiceError(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts/:id/like", h.Like)
+
+	postRepo.On("FindByID", uint(5)).Return(nil, service.ErrNotFound)
+
+	w := doRequest(r, http.MethodPost, "/posts/5/like", nil)
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+func TestPostUnlike_InvalidID(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.DELETE("/posts/:id/like", h.Unlike)
+
+	w := doRequest(r, http.MethodDelete, "/posts/abc/like", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostUnlike_ServiceError(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.DELETE("/posts/:id/like", h.Unlike)
+
+	postRepo.On("FindByID", uint(5)).Return(nil, service.ErrNotFound)
+
+	w := doRequest(r, http.MethodDelete, "/posts/5/like", nil)
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+func TestPostGetComments_InvalidID(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.GET("/posts/:id/comments", h.GetComments)
+
+	w := doRequest(r, http.MethodGet, "/posts/abc/comments", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostGetComments_ServiceError(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.GET("/posts/:id/comments", h.GetComments)
+
+	postRepo.On("GetComments", uint(5)).Return([]model.Comment(nil), service.ErrNotFound)
+
+	w := doRequest(r, http.MethodGet, "/posts/5/comments", nil)
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+func TestPostCreateComment_InvalidID(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts/:id/comments", h.CreateComment)
+
+	w := doRequest(r, http.MethodPost, "/posts/abc/comments", map[string]string{"content": "test"})
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostCreateComment_ServiceError(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts/:id/comments", h.CreateComment)
+
+	postRepo.On("CreateComment", mock.AnythingOfType("*model.Comment")).Return(service.ErrBadRequest)
+
+	w := doRequest(r, http.MethodPost, "/posts/5/comments", map[string]string{"content": "test"})
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostDeleteComment_InvalidID(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.DELETE("/posts/:id/comments/:commentId", h.DeleteComment)
+
+	w := doRequest(r, http.MethodDelete, "/posts/5/comments/abc", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostDeleteComment_ServiceError(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.DELETE("/posts/:id/comments/:commentId", h.DeleteComment)
+
+	postRepo.On("FindCommentByID", uint(3)).Return(nil, service.ErrNotFound)
+
+	w := doRequest(r, http.MethodDelete, "/posts/5/comments/3", nil)
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+func TestPostGetDrafts_ServiceError(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.GET("/posts/drafts", h.GetDrafts)
+
+	postRepo.On("FindDraftsByUserID", uint(1)).Return([]model.Post(nil), service.ErrNotFound)
+
+	w := doRequest(r, http.MethodGet, "/posts/drafts", nil)
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+func TestPostUpdate_InvalidID(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.PUT("/posts/:id", h.Update)
+
+	w := doRequest(r, http.MethodPut, "/posts/abc", map[string]string{"title": "X"})
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostUpdate_InvalidJSON(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.PUT("/posts/:id", h.Update)
+
+	w := doRequestRaw(r, http.MethodPut, "/posts/10", "{invalid}")
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostDelete_InvalidID(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.DELETE("/posts/:id", h.Delete)
+
+	w := doRequest(r, http.MethodDelete, "/posts/abc", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostDelete_ServiceError(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.DELETE("/posts/:id", h.Delete)
+
+	postRepo.On("FindByID", uint(10)).Return(nil, service.ErrNotFound)
+
+	w := doRequest(r, http.MethodDelete, "/posts/10", nil)
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+func TestPostCreateComment_InvalidJSON(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts/:id/comments", h.CreateComment)
+
+	w := doRequestRaw(r, http.MethodPost, "/posts/5/comments", "{invalid}")
+	assertStatus(t, w, http.StatusBadRequest)
+}
