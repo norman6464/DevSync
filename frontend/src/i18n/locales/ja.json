@@ -907,6 +907,7 @@
     "categorySkill": "スキル",
     "categoryProject": "プロジェクト",
     "categoryOther": "その他",
+    "allCategories": "全カテゴリ",
     "makePublic": "公開する（他のユーザーがコピー可能）",
     "public": "公開",
     "create": "作成",
