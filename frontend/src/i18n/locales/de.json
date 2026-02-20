@@ -1392,6 +1392,8 @@
     "favoriteToggled": "Favoritenstatus aktualisiert",
     "lastUpdated": "Zuletzt aktualisiert",
     "chars": "Zeichen",
+    "expand": "Mehr anzeigen",
+    "collapse": "Weniger anzeigen",
     "createdAt": "Erstellt am",
     "tagsPlaceholder": "z.B. React, TypeScript, Go",
     "allTags": "Alle Tags"

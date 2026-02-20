@@ -1392,6 +1392,8 @@
     "favoriteToggled": "收藏狀態已更新",
     "lastUpdated": "最後更新",
     "chars": "字元",
+    "expand": "展開更多",
+    "collapse": "收起",
     "createdAt": "創建時間",
     "tagsPlaceholder": "例如：React, TypeScript, Go",
     "allTags": "所有標籤"

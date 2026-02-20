@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Star, Edit, Trash2 } from 'lucide-react';
 import type { Note } from '../../api/notes';
@@ -12,6 +13,8 @@ interface NoteCardProps {
 
 export default function NoteCard({ note, onToggleFavorite, onEdit, onDelete }: NoteCardProps) {
   const { t } = useTranslation();
+  const [expanded, setExpanded] = useState(false);
+  const isLong = note.content.length > 100;
 
   return (
     <div className="p-6 bg-gray-800 border border-gray-700 rounded-md hover:border-gray-600 transition-colors">
@@ -23,7 +26,16 @@ export default function NoteCard({ note, onToggleFavorite, onEdit, onDelete }: N
               <Star className="w-5 h-5 fill-yellow-500 text-yellow-500" />
             )}
           </div>
-          <p className="text-gray-400 mb-3 line-clamp-2">{note.content}</p>
+          <p className={`text-gray-400 mb-1 whitespace-pre-wrap ${!expanded ? 'line-clamp-2' : ''}`}>{note.content}</p>
+          {isLong && (
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="text-xs text-blue-400 hover:text-blue-300 transition-colors mb-2"
+            >
+              {expanded ? t('notes.collapse') : t('notes.expand')}
+            </button>
+          )}
+          {!isLong && <div className="mb-2" />}
           {note.tags && (
             <div className="flex flex-wrap gap-2 mb-3">
               {note.tags.split(',').map((tag, idx) => (
