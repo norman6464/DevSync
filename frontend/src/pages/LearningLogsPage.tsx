@@ -249,6 +249,7 @@ export default function LearningLogsPage() {
               value={title}
               onChange={handleTitleChange}
               placeholder={t('learningLogs.titlePlaceholder')}
+              maxLength={200}
               className={inputClass}
               required
             />
@@ -263,6 +264,7 @@ export default function LearningLogsPage() {
               onChange={handleContentChange}
               placeholder={t('learningLogs.contentPlaceholder')}
               rows={4}
+              maxLength={5000}
               className={`${inputClass} resize-none`}
               required
             />

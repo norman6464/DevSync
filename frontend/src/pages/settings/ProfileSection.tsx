@@ -23,15 +23,15 @@ export default function ProfileSection({ name, setName, bio, setBio, avatarUrl, 
       <div className="p-6 space-y-4">
         <div>
           <label htmlFor="profile-name" className={labelClass}>{t('settings.name')}</label>
-          <input id="profile-name" type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputClass} />
+          <input id="profile-name" type="text" value={name} onChange={(e) => setName(e.target.value)} maxLength={50} className={inputClass} />
         </div>
         <div>
           <label htmlFor="profile-bio" className={labelClass}>{t('settings.bio')}</label>
-          <textarea id="profile-bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder={t('settings.bioPlaceholder')} className={textareaClass} />
+          <textarea id="profile-bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} maxLength={500} placeholder={t('settings.bioPlaceholder')} className={textareaClass} />
         </div>
         <div>
           <label htmlFor="profile-avatar" className={labelClass}>{t('settings.avatar')}</label>
-          <input id="profile-avatar" type="text" value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} placeholder="https://..." className={inputClass} />
+          <input id="profile-avatar" type="text" value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} maxLength={2048} placeholder="https://..." className={inputClass} />
         </div>
       </div>
       <div className="px-6 py-4 border-t border-gray-800 flex justify-end">
