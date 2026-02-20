@@ -130,6 +130,7 @@ export default function GoalsPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={t('goals.titlePlaceholder')}
+              maxLength={200}
               className={inputClass}
               required
             />
@@ -144,6 +145,7 @@ export default function GoalsPage() {
               onChange={(e) => setDescription(e.target.value)}
               placeholder={t('goals.descriptionPlaceholder')}
               rows={3}
+              maxLength={2000}
               className={`${inputClass} resize-none`}
             />
           </div>

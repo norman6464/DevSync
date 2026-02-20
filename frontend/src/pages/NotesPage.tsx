@@ -86,6 +86,7 @@ export default function NotesPage() {
                 type="text"
                 value={title}
                 onChange={handleTitleChange}
+                maxLength={200}
                 className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
@@ -97,6 +98,7 @@ export default function NotesPage() {
                 value={content}
                 onChange={handleContentChange}
                 rows={8}
+                maxLength={10000}
                 className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
@@ -108,6 +110,7 @@ export default function NotesPage() {
                 type="text"
                 value={tags}
                 onChange={handleTagsChange}
+                maxLength={500}
                 placeholder={t('notes.tagsPlaceholder')}
                 className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />

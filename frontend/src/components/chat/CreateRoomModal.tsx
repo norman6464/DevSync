@@ -67,6 +67,7 @@ export default function CreateRoomModal({ followingUsers, onClose, onCreated }: 
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={t('chat.groupNamePlaceholder')}
+              maxLength={100}
               className={inputClass}
               required
             />
@@ -82,6 +83,7 @@ export default function CreateRoomModal({ followingUsers, onClose, onCreated }: 
               onChange={(e) => setDescription(e.target.value)}
               placeholder={t('chat.groupDescriptionPlaceholder')}
               rows={2}
+              maxLength={500}
               className={textareaClass}
             />
           </div>

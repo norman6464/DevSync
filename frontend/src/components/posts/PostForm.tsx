@@ -81,6 +81,7 @@ export default function PostForm({ post, onSubmit, onCancel, loading: externalLo
         onChange={(e) => setTitle(e.target.value)}
         onFocus={() => setExpanded(true)}
         placeholder={t('post.createTitle')}
+        maxLength={300}
         className={inputClass}
       />
       {expanded && (
