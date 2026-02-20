@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 
@@ -178,4 +179,26 @@ func TestNoteTemplateUseTemplate_NotFound(t *testing.T) {
 
 	assertStatus(t, w, http.StatusNotFound)
 	svc.AssertExpectations(t)
+}
+
+func TestNoteTemplateGetByUserID_ServiceError(t *testing.T) {
+	h, svc := setupNoteTemplateHandler()
+	svc.On("GetByUserID", uint(1)).Return([]model.NoteTemplate(nil), errors.New("db error"))
+
+	r := newRouter(1)
+	r.GET("/note-templates", h.GetByUserID)
+	w := doRequest(r, "GET", "/note-templates", nil)
+
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+func TestNoteTemplateGetDefault_ServiceError(t *testing.T) {
+	h, svc := setupNoteTemplateHandler()
+	svc.On("GetDefaultByUserID", uint(1)).Return(nil, errors.New("db error"))
+
+	r := newRouter(1)
+	r.GET("/note-templates/default", h.GetDefault)
+	w := doRequest(r, "GET", "/note-templates/default", nil)
+
+	assertStatus(t, w, http.StatusInternalServerError)
 }

@@ -3,12 +3,14 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -258,4 +260,121 @@ func TestNoteFolderHandler_Delete(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 	mockService.AssertExpectations(t)
+}
+
+// ============================================================
+// ServiceError / InvalidID テスト
+// ============================================================
+
+func TestNoteFolderHandler_Create_ServiceError(t *testing.T) {
+	h, svc := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.POST("/folders", h.Create)
+
+	svc.On("Create", mock.AnythingOfType("*model.NoteFolder")).Return(errors.New("db error"))
+
+	w := doRequest(r, "POST", "/folders", map[string]interface{}{"name": "テスト"})
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+func TestNoteFolderHandler_GetByID_InvalidID(t *testing.T) {
+	h, _ := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.GET("/folders/:id", h.GetByID)
+
+	w := doRequest(r, "GET", "/folders/abc", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestNoteFolderHandler_GetByID_ServiceError(t *testing.T) {
+	h, svc := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.GET("/folders/:id", h.GetByID)
+
+	svc.On("GetByID", uint(1)).Return(nil, service.ErrNotFound)
+
+	w := doRequest(r, "GET", "/folders/1", nil)
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+func TestNoteFolderHandler_GetByUserID_ServiceError(t *testing.T) {
+	h, svc := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.GET("/folders", h.GetByUserID)
+
+	svc.On("GetByUserID", uint(1)).Return([]model.NoteFolder(nil), errors.New("db error"))
+
+	w := doRequest(r, "GET", "/folders", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+func TestNoteFolderHandler_GetChildren_InvalidID(t *testing.T) {
+	h, _ := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.GET("/folders/:id/children", h.GetChildren)
+
+	w := doRequest(r, "GET", "/folders/abc/children", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestNoteFolderHandler_GetChildren_ServiceError(t *testing.T) {
+	h, svc := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.GET("/folders/:id/children", h.GetChildren)
+
+	svc.On("GetChildren", uint(1)).Return([]model.NoteFolder(nil), errors.New("db error"))
+
+	w := doRequest(r, "GET", "/folders/1/children", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+func TestNoteFolderHandler_GetRootFolders_ServiceError(t *testing.T) {
+	h, svc := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.GET("/folders/root", h.GetRootFolders)
+
+	svc.On("GetRootFolders", uint(1)).Return([]model.NoteFolder(nil), errors.New("db error"))
+
+	w := doRequest(r, "GET", "/folders/root", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+func TestNoteFolderHandler_Update_InvalidID(t *testing.T) {
+	h, _ := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.PUT("/folders/:id", h.Update)
+
+	w := doRequest(r, "PUT", "/folders/abc", map[string]interface{}{"name": "テスト"})
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestNoteFolderHandler_Update_ServiceError(t *testing.T) {
+	h, svc := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.PUT("/folders/:id", h.Update)
+
+	svc.On("Update", uint(1), uint(1), "変更", (*uint)(nil)).Return(nil, service.ErrForbidden)
+
+	w := doRequest(r, "PUT", "/folders/1", map[string]interface{}{"name": "変更"})
+	assertStatus(t, w, http.StatusForbidden)
+}
+
+func TestNoteFolderHandler_Delete_InvalidID(t *testing.T) {
+	h, _ := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.DELETE("/folders/:id", h.Delete)
+
+	w := doRequest(r, "DELETE", "/folders/abc", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestNoteFolderHandler_Delete_ServiceError(t *testing.T) {
+	h, svc := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.DELETE("/folders/:id", h.Delete)
+
+	svc.On("Delete", uint(1), uint(1)).Return(service.ErrForbidden)
+
+	w := doRequest(r, "DELETE", "/folders/1", nil)
+	assertStatus(t, w, http.StatusForbidden)
 }
