@@ -25,6 +25,7 @@ type PostServiceInterface interface {
 	GetReplies(parentID uint) ([]model.Comment, error)
 	DeleteComment(id, userID uint) error
 	Publish(id, userID uint) (*model.Post, error)
+	Unpublish(id, userID uint) (*model.Post, error)
 	Bookmark(userID, postID uint) error
 	Unbookmark(userID, postID uint) error
 	HasBookmarked(userID, postID uint) bool
@@ -310,6 +311,22 @@ func (h *PostHandler) Publish(c *gin.Context) {
 	userID := c.GetUint("userID")
 
 	post, err := h.service.Publish(id, userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, post)
+}
+
+// Unpublish は公開済みの投稿を下書きに戻す。所有者のみ操作可能。
+func (h *PostHandler) Unpublish(c *gin.Context) {
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+	userID := c.GetUint("userID")
+
+	post, err := h.service.Unpublish(id, userID)
 	if err != nil {
 		respondError(c, err)
 		return

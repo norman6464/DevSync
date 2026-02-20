@@ -310,3 +310,22 @@ func (s *PostService) Publish(id, userID uint) (*model.Post, error) {
 
 	return post, nil
 }
+
+// Unpublish は公開済みの投稿を下書きに戻す。
+// 既に下書きの場合はBadRequestエラーを返す。
+func (s *PostService) Unpublish(id, userID uint) (*model.Post, error) {
+	post, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return nil, err
+	}
+	if post.IsDraft {
+		return nil, ErrBadRequest
+	}
+
+	post.IsDraft = true
+	if err := s.repo.Update(post); err != nil {
+		return nil, err
+	}
+
+	return post, nil
+}
