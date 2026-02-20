@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, CircleDot, CheckCircle2 } from 'lucide-react';
 import type { Project } from '../../types/project';
 import { cardClass, iconButtonClass, deleteIconButtonClass, badgeBaseClass } from '../../constants/styles';
 import { parseJsonArray } from '../../utils/json';
@@ -39,6 +39,17 @@ export default function ProjectCard({ project, onEdit, onDelete, isOwner }: Proj
               {project.featured && (
                 <span className={`${badgeBaseClass} bg-yellow-500/20 text-yellow-400`}>
                   {t('projects.featured')}
+                </span>
+              )}
+              {project.end_date ? (
+                <span className={`${badgeBaseClass} inline-flex items-center gap-0.5 bg-blue-400/10 text-blue-400`}>
+                  <CheckCircle2 className="w-3 h-3" />
+                  {t('projects.statusCompleted')}
+                </span>
+              ) : (
+                <span className={`${badgeBaseClass} inline-flex items-center gap-0.5 bg-green-400/10 text-green-400`}>
+                  <CircleDot className="w-3 h-3" />
+                  {t('projects.statusInProgress')}
                 </span>
               )}
             </div>

@@ -779,7 +779,9 @@
     "createFailed": "Projekt konnte nicht erstellt werden",
     "updateFailed": "Projekt konnte nicht aktualisiert werden",
     "deleteFailed": "Projekt konnte nicht gelöscht werden",
-    "confirmDelete": "Bist du sicher, dass du dieses Projekt löschen möchtest?"
+    "confirmDelete": "Bist du sicher, dass du dieses Projekt löschen möchtest?",
+    "statusInProgress": "In Arbeit",
+    "statusCompleted": "Abgeschlossen"
   },
   "resources": {
     "pageTitle": "Lernressourcen",

@@ -779,7 +779,9 @@
     "createFailed": "Failed to create project",
     "updateFailed": "Failed to update project",
     "deleteFailed": "Failed to delete project",
-    "confirmDelete": "Are you sure you want to delete this project?"
+    "confirmDelete": "Are you sure you want to delete this project?",
+    "statusInProgress": "In Progress",
+    "statusCompleted": "Completed"
   },
   "resources": {
     "pageTitle": "Learning Resources",

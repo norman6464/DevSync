@@ -779,7 +779,9 @@
     "createFailed": "建立專案失敗",
     "updateFailed": "更新專案失敗",
     "deleteFailed": "刪除專案失敗",
-    "confirmDelete": "確定要刪除這個專案嗎？"
+    "confirmDelete": "確定要刪除這個專案嗎？",
+    "statusInProgress": "進行中",
+    "statusCompleted": "已完成"
   },
   "resources": {
     "pageTitle": "學習資源",

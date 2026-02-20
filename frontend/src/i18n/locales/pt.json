@@ -779,7 +779,9 @@
     "createFailed": "Falha ao criar projeto",
     "updateFailed": "Falha ao atualizar projeto",
     "deleteFailed": "Falha ao excluir projeto",
-    "confirmDelete": "Tem certeza de que deseja excluir este projeto?"
+    "confirmDelete": "Tem certeza de que deseja excluir este projeto?",
+    "statusInProgress": "Em andamento",
+    "statusCompleted": "Concluído"
   },
   "resources": {
     "pageTitle": "Recursos de Aprendizado",

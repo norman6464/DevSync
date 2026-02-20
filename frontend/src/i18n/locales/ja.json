@@ -748,7 +748,9 @@
     "createFailed": "プロジェクトの作成に失敗しました",
     "updateFailed": "プロジェクトの更新に失敗しました",
     "deleteFailed": "プロジェクトの削除に失敗しました",
-    "confirmDelete": "このプロジェクトを削除してもよろしいですか？"
+    "confirmDelete": "このプロジェクトを削除してもよろしいですか？",
+    "statusInProgress": "進行中",
+    "statusCompleted": "完了"
   },
   "resources": {
     "pageTitle": "学習教材",
