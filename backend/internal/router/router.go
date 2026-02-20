@@ -32,6 +32,9 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		AllowCredentials: true,
 	}))
 
+	// リクエストボディサイズ制限（1MB: JSON API用）
+	r.Use(middleware.BodyLimit(1 << 20))
+
 	// セキュリティヘッダー（全エンドポイント）
 	r.Use(func(ctx *gin.Context) {
 		ctx.Header("X-Content-Type-Options", "nosniff")
@@ -267,6 +270,7 @@ func registerMessageRoutes(g *gin.RouterGroup, c *di.Container) {
 
 func registerUploadRoutes(g *gin.RouterGroup, c *di.Container) {
 	upload := g.Group("/upload")
+	upload.Use(middleware.BodyLimit(10 << 20)) // 10MB: ファイルアップロード用
 	{
 		upload.POST("/image", c.UploadHandler.UploadImage)
 		upload.POST("/images", c.UploadHandler.UploadMultipleImages)
