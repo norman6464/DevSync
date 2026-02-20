@@ -613,6 +613,7 @@
     "completedGoals": "已完成",
     "pausedGoals": "已暫停",
     "overdueGoals": "已逾期",
+    "overdueWarning": "{{count}}個目標已超過截止日期",
     "sort": "排序",
     "sortNewest": "最新",
     "sortOldest": "最早",

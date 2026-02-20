@@ -602,6 +602,7 @@
     "completedGoals": "完了",
     "pausedGoals": "一時停止",
     "overdueGoals": "期限超過",
+    "overdueWarning": "{{count}}個の目標が期限を過ぎています",
     "sort": "並び替え",
     "sortNewest": "新しい順",
     "sortOldest": "古い順",
