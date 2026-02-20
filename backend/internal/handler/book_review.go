@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"strconv"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -161,14 +159,12 @@ func (h *BookReviewHandler) Update(c *gin.Context) {
 func (h *BookReviewHandler) GetByRating(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	minRating, err := strconv.Atoi(c.Query("min_rating"))
-	if err != nil {
-		respondBadRequest(c, "min_ratingは数値で指定してください")
+	minRating, ok := parseQueryInt(c, "min_rating", "")
+	if !ok {
 		return
 	}
-	maxRating, err := strconv.Atoi(c.Query("max_rating"))
-	if err != nil {
-		respondBadRequest(c, "max_ratingは数値で指定してください")
+	maxRating, ok := parseQueryInt(c, "max_rating", "")
+	if !ok {
 		return
 	}
 

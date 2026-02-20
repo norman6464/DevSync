@@ -69,6 +69,31 @@ func parseSearchQuery(c *gin.Context) (string, bool) {
 	return strings.TrimSpace(query), true
 }
 
+// parseQueryInt はクエリパラメータを整数としてパースする。
+// 未指定時はdefaultValueを使用する。パース失敗時は400レスポンスを返しfalseを返す。
+func parseQueryInt(c *gin.Context, param, defaultValue string) (int, bool) {
+	raw := c.DefaultQuery(param, defaultValue)
+	val, err := strconv.Atoi(raw)
+	if err != nil {
+		respondBadRequest(c, param+"は数値で指定してください")
+		return 0, false
+	}
+	return val, true
+}
+
+// parseQueryIntSilent はクエリパラメータを整数としてパースする。
+// 未指定時やパース失敗時はデフォルト値を返す。
+func parseQueryIntSilent(c *gin.Context, param string, defaultValue int) int {
+	raw := c.Query(param)
+	if raw == "" {
+		return defaultValue
+	}
+	if val, err := strconv.Atoi(raw); err == nil && val > 0 {
+		return val
+	}
+	return defaultValue
+}
+
 // bindJSON はリクエストボディをJSON構造体にバインドする。
 // バインド失敗時は400レスポンスを返しnilを返す。
 func bindJSON[T any](c *gin.Context) *T {

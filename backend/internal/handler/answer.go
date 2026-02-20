@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"strconv"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
@@ -173,17 +171,12 @@ func (h *AnswerHandler) GetByVoteRange(c *gin.Context) {
 		return
 	}
 
-	minVoteStr := c.DefaultQuery("min_vote", "0")
-	maxVoteStr := c.DefaultQuery("max_vote", "100")
-
-	minVote, err := strconv.Atoi(minVoteStr)
-	if err != nil {
-		respondError(c, domain.NewError(domain.ErrCodeBadRequest, "min_voteは数値で指定してください", nil))
+	minVote, ok := parseQueryInt(c, "min_vote", "0")
+	if !ok {
 		return
 	}
-	maxVote, err := strconv.Atoi(maxVoteStr)
-	if err != nil {
-		respondError(c, domain.NewError(domain.ErrCodeBadRequest, "max_voteは数値で指定してください", nil))
+	maxVote, ok := parseQueryInt(c, "max_vote", "100")
+	if !ok {
 		return
 	}
 
