@@ -479,6 +479,7 @@ type PostSeriesRepositoryInterface interface {
 	Delete(id uint) error
 	AddPost(item *model.PostSeriesItem) error
 	RemovePost(seriesID, postID uint) error
+	HasPost(seriesID, postID uint) (bool, error)
 	GetPostsBySeriesID(seriesID uint) ([]model.PostSeriesItem, error)
 }
 

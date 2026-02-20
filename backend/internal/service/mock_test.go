@@ -1566,6 +1566,11 @@ func (m *MockPostSeriesRepository) AddPost(item *model.PostSeriesItem) error {
 	return args.Error(0)
 }
 
+func (m *MockPostSeriesRepository) HasPost(seriesID, postID uint) (bool, error) {
+	args := m.Called(seriesID, postID)
+	return args.Bool(0), args.Error(1)
+}
+
 func (m *MockPostSeriesRepository) RemovePost(seriesID, postID uint) error {
 	args := m.Called(seriesID, postID)
 	return args.Error(0)

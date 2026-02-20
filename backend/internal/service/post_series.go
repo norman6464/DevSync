@@ -76,9 +76,18 @@ func (s *PostSeriesService) Delete(id, userID uint) error {
 }
 
 // AddPost は所有権を検証した後、シリーズに投稿を追加する。
+// 同じ投稿がすでに追加されている場合はエラーを返す。
 func (s *PostSeriesService) AddPost(seriesID, postID uint, orderIndex int, userID uint) error {
 	if _, err := s.findAndCheckOwnership(seriesID, userID); err != nil {
 		return err
+	}
+
+	exists, err := s.repo.HasPost(seriesID, postID)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return domain.NewError(domain.ErrCodeBadRequest, "すでに追加済みの投稿です", nil)
 	}
 
 	item := &model.PostSeriesItem{
