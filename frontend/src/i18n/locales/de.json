@@ -208,6 +208,7 @@
     "writeReply": "Antwort schreiben...",
     "readTime": "{{minutes}} Min. Lesezeit",
     "newBadge": "NEU",
+    "edited": "bearbeitet",
     "notFound": "Beitrag nicht gefunden",
     "bookmark": "Lesezeichen",
     "unbookmark": "Lesezeichen entfernen",

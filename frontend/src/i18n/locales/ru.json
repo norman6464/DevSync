@@ -208,6 +208,7 @@
     "writeReply": "Написать ответ...",
     "readTime": "{{minutes}} мин чтения",
     "newBadge": "НОВОЕ",
+    "edited": "отредактировано",
     "notFound": "Публикация не найдена",
     "bookmark": "Закладка",
     "unbookmark": "Удалить закладку",

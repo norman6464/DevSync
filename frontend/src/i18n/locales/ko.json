@@ -208,6 +208,7 @@
     "writeReply": "답글 작성...",
     "readTime": "{{minutes}}분 소요",
     "newBadge": "NEW",
+    "edited": "수정됨",
     "notFound": "게시물을 찾을 수 없습니다",
     "bookmark": "북마크",
     "unbookmark": "북마크 해제",

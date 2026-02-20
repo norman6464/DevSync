@@ -44,6 +44,11 @@ export default function CommentItem({
           </Link>
           <span className="text-xs text-gray-600">
             {format(new Date(comment.created_at), 'MMM d, yyyy · HH:mm')}
+            {comment.updated_at !== comment.created_at && (
+              <span className="ml-1 text-gray-600" title={format(new Date(comment.updated_at), 'MMM d, yyyy · HH:mm')}>
+                ({t('post.edited')})
+              </span>
+            )}
           </span>
         </div>
         <p className={`${isXs ? 'text-sm mt-0.5' : 'text-sm mt-1'} text-gray-300 leading-relaxed`}>
