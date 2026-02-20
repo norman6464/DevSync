@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { ExternalLink, Play } from 'lucide-react';
 import type { YouTubeVideo } from '../../types/youtube';
 import { cardClass } from '../../constants/styles';
+import { sanitizeUrl } from '../../utils/url';
 
 interface YouTubeVideoCardProps {
   video: YouTubeVideo;
@@ -16,7 +17,7 @@ export default function YouTubeVideoCard({ video }: YouTubeVideoCardProps) {
     <div className={cardClass}>
       <a href={videoURL} target="_blank" rel="noopener noreferrer" className="block relative group">
         <img
-          src={video.thumbnail_url}
+          src={sanitizeUrl(video.thumbnail_url) ?? ''}
           alt={video.title}
           referrerPolicy="no-referrer"
           className="w-full aspect-video object-cover"
