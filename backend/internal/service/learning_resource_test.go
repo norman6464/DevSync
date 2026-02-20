@@ -770,6 +770,94 @@ func TestLearningResourceGetByDifficulty_Empty(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+// ============================================================
+// Update 空白バイパステスト
+// ============================================================
+
+func TestLearningResourceUpdate_WhitespaceTitle(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+	existing := &model.LearningResource{Title: "Original", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.LearningResource{Title: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, "Original", result.Title)
+}
+
+func TestLearningResourceUpdate_WhitespaceDescription(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+	existing := &model.LearningResource{Description: "Original", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.LearningResource{Description: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, "Original", result.Description)
+}
+
+func TestLearningResourceUpdate_WhitespaceURL(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+	existing := &model.LearningResource{URL: "https://example.com", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.LearningResource{URL: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, "https://example.com", result.URL)
+}
+
+func TestLearningResourceUpdate_WhitespaceCategory(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+	existing := &model.LearningResource{Category: "article", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.LearningResource{Category: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, model.ResourceCategory("article"), result.Category)
+}
+
+func TestLearningResourceUpdate_WhitespaceDifficulty(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+	existing := &model.LearningResource{Difficulty: "beginner", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.LearningResource{Difficulty: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, model.ResourceDifficulty("beginner"), result.Difficulty)
+}
+
+func TestLearningResourceUpdate_WhitespaceTags(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+	existing := &model.LearningResource{Tags: "go,test", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.LearningResource{Tags: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, "go,test", result.Tags)
+}
+
+func TestLearningResourceUpdate_WhitespaceImageURL(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+	existing := &model.LearningResource{ImageURL: "https://img.example.com/1.png", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.LearningResource{ImageURL: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, "https://img.example.com/1.png", result.ImageURL)
+}
+
 func TestLearningResourceGetByDifficulty_RepoError(t *testing.T) {
 	svc, repo := newTestLearningResourceService()
 

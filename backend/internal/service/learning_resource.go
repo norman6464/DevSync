@@ -1,6 +1,8 @@
 package service
 
 import (
+	"strings"
+
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -104,8 +106,17 @@ func (s *LearningResourceService) Update(id, userID uint, updates *model.Learnin
 		return nil, err
 	}
 
+	// 空白のみの値を空文字列に正規化（空白バイパス防止）
+	updates.Title = strings.TrimSpace(updates.Title)
+	updates.Description = strings.TrimSpace(updates.Description)
+	updates.URL = strings.TrimSpace(updates.URL)
+	updates.Tags = strings.TrimSpace(updates.Tags)
+	updates.ImageURL = strings.TrimSpace(updates.ImageURL)
+	trimmedCategory := strings.TrimSpace(string(updates.Category))
+	trimmedDifficulty := strings.TrimSpace(string(updates.Difficulty))
+
 	v := validator.NewResourceValidator()
-	if err := v.ValidateUpdateResource(updates.Title, updates.Description, updates.URL, string(updates.Category), string(updates.Difficulty)); err != nil {
+	if err := v.ValidateUpdateResource(updates.Title, updates.Description, updates.URL, trimmedCategory, trimmedDifficulty); err != nil {
 		return nil, err
 	}
 
@@ -118,10 +129,12 @@ func (s *LearningResourceService) Update(id, userID uint, updates *model.Learnin
 	if updates.URL != "" {
 		resource.URL = updates.URL
 	}
-	if updates.Category != "" {
+	if trimmedCategory != "" {
+		updates.Category = model.ResourceCategory(trimmedCategory)
 		resource.Category = updates.Category
 	}
-	if updates.Difficulty != "" {
+	if trimmedDifficulty != "" {
+		updates.Difficulty = model.ResourceDifficulty(trimmedDifficulty)
 		resource.Difficulty = updates.Difficulty
 	}
 	if updates.Tags != "" {
