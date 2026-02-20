@@ -883,7 +883,13 @@
     "archiveFailed": "封存失敗",
     "unarchiveFailed": "取消封存失敗",
     "statusUpdated": "狀態已更新",
-    "statusUpdateFailed": "狀態更新失敗"
+    "statusUpdateFailed": "狀態更新失敗",
+    "sort": {
+      "newest": "最新",
+      "oldest": "最舊",
+      "ratingDesc": "評分最高",
+      "ratingAsc": "評分最低"
+    }
   },
   "qa": {
     "pageTitle": "技術問答",

@@ -883,7 +883,13 @@
     "archiveFailed": "Error al archivar",
     "unarchiveFailed": "Error al desarchivar",
     "statusUpdated": "Estado actualizado",
-    "statusUpdateFailed": "Error al actualizar el estado"
+    "statusUpdateFailed": "Error al actualizar el estado",
+    "sort": {
+      "newest": "Más reciente",
+      "oldest": "Más antiguo",
+      "ratingDesc": "Mayor puntuación",
+      "ratingAsc": "Menor puntuación"
+    }
   },
   "qa": {
     "pageTitle": "Q&A Técnico",

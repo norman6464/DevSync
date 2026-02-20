@@ -883,7 +883,13 @@
     "archiveFailed": "归档失败",
     "unarchiveFailed": "取消归档失败",
     "statusUpdated": "状态已更新",
-    "statusUpdateFailed": "状态更新失败"
+    "statusUpdateFailed": "状态更新失败",
+    "sort": {
+      "newest": "最新",
+      "oldest": "最旧",
+      "ratingDesc": "评分最高",
+      "ratingAsc": "评分最低"
+    }
   },
   "qa": {
     "pageTitle": "技术问答",

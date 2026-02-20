@@ -883,7 +883,13 @@
     "archiveFailed": "보관에 실패했습니다",
     "unarchiveFailed": "보관 해제에 실패했습니다",
     "statusUpdated": "상태가 업데이트되었습니다",
-    "statusUpdateFailed": "상태 업데이트에 실패했습니다"
+    "statusUpdateFailed": "상태 업데이트에 실패했습니다",
+    "sort": {
+      "newest": "최신순",
+      "oldest": "오래된순",
+      "ratingDesc": "평점 높은순",
+      "ratingAsc": "평점 낮은순"
+    }
   },
   "qa": {
     "pageTitle": "기술 Q&A",

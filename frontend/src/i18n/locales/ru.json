@@ -883,7 +883,13 @@
     "archiveFailed": "Не удалось архивировать",
     "unarchiveFailed": "Не удалось разархивировать",
     "statusUpdated": "Статус обновлён",
-    "statusUpdateFailed": "Не удалось обновить статус"
+    "statusUpdateFailed": "Не удалось обновить статус",
+    "sort": {
+      "newest": "Новые",
+      "oldest": "Старые",
+      "ratingDesc": "Высокий рейтинг",
+      "ratingAsc": "Низкий рейтинг"
+    }
   },
   "qa": {
     "pageTitle": "Технический Q&A",
