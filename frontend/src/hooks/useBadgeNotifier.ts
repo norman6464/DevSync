@@ -18,7 +18,14 @@ export function useBadgeNotifier(badges: BadgeResult[]) {
     const earnedIds = earnedBadges.map((b) => b.id);
 
     const stored = localStorage.getItem(STORAGE_KEY);
-    const previousIds: string[] = stored ? JSON.parse(stored) : [];
+    let previousIds: string[] = [];
+    if (stored) {
+      try {
+        previousIds = JSON.parse(stored);
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
 
     // Skip toasts on initial load when localStorage is empty
     if (initialLoadRef.current) {
