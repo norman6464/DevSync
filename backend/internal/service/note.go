@@ -143,6 +143,11 @@ func (s *NoteService) GetFavorites(userID uint, page, limit int) ([]model.Note, 
 	return s.repo.FindFavorites(userID, page, limit)
 }
 
+// CountFavoritesByUserID は指定ユーザーのお気に入りノート総数を取得する。
+func (s *NoteService) CountFavoritesByUserID(userID uint) (int64, error) {
+	return s.repo.CountFavoritesByUserID(userID)
+}
+
 // GetArchived は指定ユーザーのアーカイブ済みノート一覧を取得する。
 func (s *NoteService) GetArchived(userID uint, page, limit int) ([]model.Note, error) {
 	return s.repo.FindArchived(userID, page, limit)

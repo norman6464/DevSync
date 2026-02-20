@@ -19,6 +19,7 @@ type NoteServiceInterface interface {
 	CountByUserID(userID uint) (int64, error)
 	ToggleFavorite(id, userID uint) error
 	GetFavorites(userID uint, page, limit int) ([]model.Note, error)
+	CountFavoritesByUserID(userID uint) (int64, error)
 	Archive(id, userID uint) error
 	Unarchive(id, userID uint) error
 	GetArchived(userID uint, page, limit int) ([]model.Note, error)
@@ -245,7 +246,14 @@ func (h *NoteHandler) GetFavorites(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, notes)
+
+	total, err := h.service.CountFavoritesByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondPaginated(c, notes, total, page, limit)
 }
 
 // GetArchived は現在のユーザーのアーカイブ済みノート一覧をページネーション付きで取得する。
