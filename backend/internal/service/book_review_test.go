@@ -343,3 +343,43 @@ func TestBookReviewUpdate_InvalidRating(t *testing.T) {
 	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), "評価は1〜5")
 }
+
+// ============================================================
+// 空白バイパス脆弱性テスト
+// ============================================================
+
+func TestBookReviewUpdate_WhitespaceTitle(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+	existing := &model.BookReview{Title: "Original Title", Author: "Author", Rating: 4, Review: "Good", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.BookReview{Title: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, "Original Title", result.Title)
+}
+
+func TestBookReviewUpdate_WhitespaceAuthor(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+	existing := &model.BookReview{Title: "Title", Author: "Original Author", Rating: 4, Review: "Good", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.BookReview{Author: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, "Original Author", result.Author)
+}
+
+func TestBookReviewUpdate_WhitespaceReview(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+	existing := &model.BookReview{Title: "Title", Author: "Author", Rating: 4, Review: "Original Review", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.BookReview{Review: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, "Original Review", result.Review)
+}
