@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"testing"
 
@@ -128,6 +129,17 @@ func TestRecommendationGetTrendingResources_Success(t *testing.T) {
 	assert.Len(t, resources, 3)
 }
 
+func TestRecommendationGetTrendingPosts_ServiceError(t *testing.T) {
+	h, recRepo, _ := setupRecommendationHandlerRepo()
+	r := newRouter(1)
+	r.GET("/recommendations/posts", h.GetTrendingPosts)
+
+	recRepo.On("GetTrendingPosts", 10, 7).Return([]model.Post{}, errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/recommendations/posts", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
 func TestRecommendationGetTrendingResources_Empty(t *testing.T) {
 	h, recRepo, _ := setupRecommendationHandlerRepo()
 	r := newRouter(1)
@@ -141,4 +153,15 @@ func TestRecommendationGetTrendingResources_Empty(t *testing.T) {
 	var resources []map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &resources)
 	assert.Len(t, resources, 0)
+}
+
+func TestRecommendationGetTrendingResources_ServiceError(t *testing.T) {
+	h, recRepo, _ := setupRecommendationHandlerRepo()
+	r := newRouter(1)
+	r.GET("/recommendations/resources", h.GetTrendingResources)
+
+	recRepo.On("GetTrendingResources", 10, 30).Return([]model.LearningResource{}, errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/recommendations/resources", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
 }

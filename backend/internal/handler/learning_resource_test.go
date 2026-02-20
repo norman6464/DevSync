@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 
@@ -319,4 +320,77 @@ func TestResourceGetSaved_Success(t *testing.T) {
 
 	body := parseJSON(t, w)
 	assert.Equal(t, float64(1), body["total"])
+}
+
+// ---------- GetByUserID ----------
+
+func TestResourceGetByUserID_Success(t *testing.T) {
+	h, repo := setupLearningResourceHandler()
+	r := newRouter(1)
+	r.GET("/users/:userId/resources", h.GetByUserID)
+
+	repo.On("FindByUserID", uint(1), true, 20, 0).Return(
+		[]model.LearningResource{{Title: "My Resource"}},
+		int64(1), nil,
+	)
+
+	w := doRequest(r, http.MethodGet, "/users/1/resources", nil)
+	assertStatus(t, w, http.StatusOK)
+
+	body := parseJSON(t, w)
+	assert.Equal(t, float64(1), body["total"])
+}
+
+func TestResourceGetByUserID_InvalidID(t *testing.T) {
+	h, _ := setupLearningResourceHandler()
+	r := newRouter(1)
+	r.GET("/users/:userId/resources", h.GetByUserID)
+
+	w := doRequest(r, http.MethodGet, "/users/abc/resources", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestResourceGetByUserID_ServiceError(t *testing.T) {
+	h, repo := setupLearningResourceHandler()
+	r := newRouter(1)
+	r.GET("/users/:userId/resources", h.GetByUserID)
+
+	repo.On("FindByUserID", uint(1), true, 20, 0).Return(
+		[]model.LearningResource{}, int64(0), errors.New("db error"),
+	)
+
+	w := doRequest(r, http.MethodGet, "/users/1/resources", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+// ---------- GetByDifficulty ----------
+
+func TestResourceGetByDifficulty_Success(t *testing.T) {
+	h, repo := setupLearningResourceHandler()
+	r := newRouter(1)
+	r.GET("/resources/difficulty/:difficulty", h.GetByDifficulty)
+
+	repo.On("FindByDifficulty", "beginner", 20, 0).Return(
+		[]model.LearningResource{{Title: "Beginner Guide"}},
+		int64(1), nil,
+	)
+
+	w := doRequest(r, http.MethodGet, "/resources/difficulty/beginner", nil)
+	assertStatus(t, w, http.StatusOK)
+
+	body := parseJSON(t, w)
+	assert.Equal(t, float64(1), body["total"])
+}
+
+func TestResourceGetByDifficulty_ServiceError(t *testing.T) {
+	h, repo := setupLearningResourceHandler()
+	r := newRouter(1)
+	r.GET("/resources/difficulty/:difficulty", h.GetByDifficulty)
+
+	repo.On("FindByDifficulty", "beginner", 20, 0).Return(
+		[]model.LearningResource{}, int64(0), errors.New("db error"),
+	)
+
+	w := doRequest(r, http.MethodGet, "/resources/difficulty/beginner", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
 }
