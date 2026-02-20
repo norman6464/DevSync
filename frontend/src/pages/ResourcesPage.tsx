@@ -2,17 +2,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BookOpen } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import type { LearningResource, ResourceCategory, ResourceDifficulty } from '../types/resource';
+import type { LearningResource } from '../types/resource';
 import { useResources, useDebounce } from '../hooks';
 import ResourceCard from '../components/resources/ResourceCard';
 import ResourceForm from '../components/resources/ResourceForm';
+import ResourceFilters from '../components/resources/ResourceFilters';
 import { ResourceCardSkeleton } from '../components/common/Skeleton';
 import EmptyState from '../components/common/EmptyState';
-import { selectClass } from '../constants/styles';
-import { Pagination, SearchInput, PageHeader, Modal } from '../components/common';
-
-const categories: (ResourceCategory | '')[] = ['', 'book', 'video', 'article', 'course', 'tutorial', 'podcast', 'tool', 'other'];
-const difficulties: (ResourceDifficulty | '')[] = ['', 'beginner', 'intermediate', 'advanced'];
+import { Pagination, PageHeader, Modal } from '../components/common';
 
 export default function ResourcesPage() {
   const { t } = useTranslation();
@@ -96,41 +93,15 @@ export default function ResourcesPage() {
 
       {/* Filters (only for explore tab) */}
       {tab === 'explore' && (
-        <div className="flex flex-wrap gap-4 mb-6">
-          <div className="flex-1 min-w-[200px]">
-            <SearchInput
-              value={searchQuery}
-              onChange={setSearchQuery}
-              onSearch={handleSearch}
-              placeholder={t('resources.searchPlaceholder')}
-              showButton
-            />
-          </div>
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value as ResourceCategory | '')}
-            className={selectClass}
-          >
-            <option value="">{t('resources.allCategories')}</option>
-            {categories.slice(1).map(cat => (
-              <option key={cat} value={cat}>
-                {t(`resources.categories.${cat}`)}
-              </option>
-            ))}
-          </select>
-          <select
-            value={difficultyFilter}
-            onChange={(e) => setDifficultyFilter(e.target.value as ResourceDifficulty | '')}
-            className={selectClass}
-          >
-            <option value="">{t('resources.allDifficulties')}</option>
-            {difficulties.slice(1).map(diff => (
-              <option key={diff} value={diff}>
-                {t(`resources.difficulty.${diff}`)}
-              </option>
-            ))}
-          </select>
-        </div>
+        <ResourceFilters
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onSearch={handleSearch}
+          categoryFilter={categoryFilter}
+          onCategoryChange={setCategoryFilter}
+          difficultyFilter={difficultyFilter}
+          onDifficultyChange={setDifficultyFilter}
+        />
       )}
 
       {/* Form Modal */}
