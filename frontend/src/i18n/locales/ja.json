@@ -1245,7 +1245,11 @@
     },
     "namePlaceholder": "React学習会",
     "topicPlaceholder": "React入門を1ヶ月で",
-    "searchUsers": "ユーザーを検索..."
+    "searchUsers": "ユーザーを検索...",
+    "sort": {
+      "newest": "新しい順",
+      "members": "メンバー数順"
+    }
   },
   "notes": {
     "title": "学習ノート",

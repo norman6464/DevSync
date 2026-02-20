@@ -1344,7 +1344,11 @@
     },
     "namePlaceholder": "React-Lerngruppe",
     "topicPlaceholder": "React-Grundlagen in 1 Monat lernen",
-    "searchUsers": "Benutzer suchen..."
+    "searchUsers": "Benutzer suchen...",
+    "sort": {
+      "newest": "Neueste",
+      "members": "Meiste Mitglieder"
+    }
   },
   "notes": {
     "title": "Lernnotizen",

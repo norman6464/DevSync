@@ -1344,7 +1344,11 @@
     },
     "namePlaceholder": "React学习会",
     "topicPlaceholder": "一个月掌握React入门",
-    "searchUsers": "搜索用户..."
+    "searchUsers": "搜索用户...",
+    "sort": {
+      "newest": "最新",
+      "members": "成员数"
+    }
   },
   "notes": {
     "title": "学习笔记",

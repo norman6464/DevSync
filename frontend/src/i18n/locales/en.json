@@ -1344,7 +1344,11 @@
     },
     "namePlaceholder": "React Study Group",
     "topicPlaceholder": "Learn React basics in 1 month",
-    "searchUsers": "Search users..."
+    "searchUsers": "Search users...",
+    "sort": {
+      "newest": "Newest",
+      "members": "Most members"
+    }
   },
   "notes": {
     "title": "Learning Notes",

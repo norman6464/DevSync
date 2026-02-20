@@ -1344,7 +1344,11 @@
     },
     "namePlaceholder": "Grupo de estudio React",
     "topicPlaceholder": "Aprender React en 1 mes",
-    "searchUsers": "Buscar usuarios..."
+    "searchUsers": "Buscar usuarios...",
+    "sort": {
+      "newest": "Más recientes",
+      "members": "Más miembros"
+    }
   },
   "notes": {
     "title": "Notas de Aprendizaje",
