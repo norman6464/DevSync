@@ -1752,3 +1752,32 @@ func setupCommentLikeHandler() (*CommentLikeHandler, *MockCommentLikeService) {
 	h := NewCommentLikeHandler(svc)
 	return h, svc
 }
+
+// ---------- YouTubeHandler モック ----------
+
+// MockYouTubeService は YouTubeServiceInterface のモック実装。
+type MockYouTubeService struct{ mock.Mock }
+
+func (m *MockYouTubeService) Search(query, language string) ([]model.YouTubeVideo, bool, error) {
+	args := m.Called(query, language)
+	if v := args.Get(0); v != nil {
+		return v.([]model.YouTubeVideo), args.Bool(1), args.Error(2)
+	}
+	return nil, args.Bool(1), args.Error(2)
+}
+func (m *MockYouTubeService) GetRecommendations(userID uint) ([]model.YouTubeVideo, []string, error) {
+	args := m.Called(userID)
+	if v := args.Get(0); v != nil {
+		return v.([]model.YouTubeVideo), args.Get(1).([]string), args.Error(2)
+	}
+	return nil, nil, args.Error(2)
+}
+func (m *MockYouTubeService) IsAvailable() bool {
+	return m.Called().Bool(0)
+}
+
+func setupYouTubeHandler() (*YouTubeHandler, *MockYouTubeService) {
+	svc := new(MockYouTubeService)
+	h := NewYouTubeHandler(svc)
+	return h, svc
+}
