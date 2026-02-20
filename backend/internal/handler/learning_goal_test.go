@@ -403,3 +403,23 @@ func TestLearningGoalGetStats_Success(t *testing.T) {
 	w := doRequest(r, http.MethodGet, "/users/1/goals/stats", nil)
 	assertStatus(t, w, http.StatusOK)
 }
+
+func TestLearningGoalGetStats_ServiceError(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.GET("/users/:userId/goals/stats", h.GetStats)
+
+	repo.On("GetStats", uint(1)).Return(nil, errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/users/1/goals/stats", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningGoalGetStats_InvalidID(t *testing.T) {
+	h, _ := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.GET("/users/:userId/goals/stats", h.GetStats)
+	w := doRequest(r, http.MethodGet, "/users/abc/goals/stats", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}

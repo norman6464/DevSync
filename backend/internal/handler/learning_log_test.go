@@ -173,6 +173,26 @@ func TestLearningLog_GetStreakInfo_Success(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
+func TestLearningLog_GetStreakInfo_ServiceError(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	svc.On("GetStreakInfo", uint(1)).Return(nil, errors.New("db error"))
+
+	r := newRouter(1)
+	r.GET("/users/:userId/streak", h.GetStreakInfo)
+	w := doRequest(r, http.MethodGet, "/users/1/streak", nil)
+
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+func TestLearningLog_GetStreakInfo_InvalidID(t *testing.T) {
+	h, _ := setupLearningLogHandler()
+	r := newRouter(1)
+	r.GET("/users/:userId/streak", h.GetStreakInfo)
+	w := doRequest(r, http.MethodGet, "/users/abc/streak", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
 func TestLearningLog_GetCalendarData_Success(t *testing.T) {
 	h, svc := setupLearningLogHandler()
 	entries := []model.CalendarEntry{{Date: "2026-02-17", Count: 3}}
