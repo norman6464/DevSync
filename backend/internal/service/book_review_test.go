@@ -37,6 +37,23 @@ func TestBookReviewCreate_Success(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestBookReviewCreate_WhitespaceTitle(t *testing.T) {
+	svc, _ := newTestBookReviewService()
+
+	review := &model.BookReview{UserID: 1, Title: "   \t  ", Rating: 4}
+	err := svc.Create(review)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "タイトルは必須です")
+}
+
+func TestBookReviewCreate_EmptyTitle(t *testing.T) {
+	svc, _ := newTestBookReviewService()
+
+	review := &model.BookReview{UserID: 1, Title: "", Rating: 4}
+	err := svc.Create(review)
+	assert.Error(t, err)
+}
+
 func TestBookReviewCreate_RepoError(t *testing.T) {
 	svc, repo := newTestBookReviewService()
 

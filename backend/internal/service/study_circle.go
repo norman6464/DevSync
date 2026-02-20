@@ -1,6 +1,7 @@
 package service
 
 import (
+	"strings"
 	"time"
 
 	"github.com/norman6464/devsync/backend/internal/domain"
@@ -45,6 +46,9 @@ func (s *StudyCircleService) findAndCheckStepOwnership(circleID, stepID, userID 
 
 // Create はサークルを作成し、オーナーをメンバーとして自動追加する。
 func (s *StudyCircleService) Create(circle *model.StudyCircle, memberIDs []uint) error {
+	if strings.TrimSpace(circle.Name) == "" {
+		return domain.NewError(domain.ErrCodeBadRequest, "サークル名は必須です", nil)
+	}
 	if circle.MaxMembers < 3 || circle.MaxMembers > 10 {
 		circle.MaxMembers = 5
 	}

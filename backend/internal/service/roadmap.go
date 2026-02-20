@@ -29,6 +29,9 @@ func NewRoadmapService(repo repository.RoadmapRepositoryInterface) *RoadmapServi
 
 // Create は新しいロードマップを作成する。
 func (s *RoadmapService) Create(roadmap *model.Roadmap) error {
+	if strings.TrimSpace(roadmap.Title) == "" {
+		return domain.NewError(domain.ErrCodeBadRequest, "タイトルは必須です", nil)
+	}
 	return s.repo.Create(roadmap)
 }
 

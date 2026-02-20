@@ -31,6 +31,23 @@ func TestStudyCircleCreate_Success(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestStudyCircleCreate_WhitespaceName(t *testing.T) {
+	svc, _ := newTestStudyCircleService()
+
+	circle := &model.StudyCircle{Name: "   \t  ", Topic: "Go", OwnerID: 1, MaxMembers: 5}
+	err := svc.Create(circle, nil)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "サークル名は必須です")
+}
+
+func TestStudyCircleCreate_EmptyName(t *testing.T) {
+	svc, _ := newTestStudyCircleService()
+
+	circle := &model.StudyCircle{Name: "", Topic: "Go", OwnerID: 1, MaxMembers: 5}
+	err := svc.Create(circle, nil)
+	assert.Error(t, err)
+}
+
 func TestStudyCircleCreate_WithMembers(t *testing.T) {
 	svc, repo := newTestStudyCircleService()
 
