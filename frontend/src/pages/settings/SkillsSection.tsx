@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Sparkles } from 'lucide-react';
-import { buttonSecondaryClass, sectionContainerClass } from '../../constants/styles';
+import { buttonSecondaryClass, sectionContainerClass, chipButtonClass } from '../../constants/styles';
 import { LANGUAGES, FRAMEWORKS } from '../../constants/skills';
 
 interface Props {
@@ -41,7 +41,7 @@ export default function SkillsSection({
                 key={lang}
                 type="button"
                 onClick={() => toggleLanguage(lang)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+                className={`${chipButtonClass} ${
                   selectedLanguages.includes(lang)
                     ? 'bg-blue-600/20 text-blue-300 border-blue-500/50'
                     : 'bg-gray-800 text-gray-400 border-gray-700 hover:border-gray-500'
@@ -77,7 +77,7 @@ export default function SkillsSection({
                 key={fw}
                 type="button"
                 onClick={() => toggleFramework(fw)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+                className={`${chipButtonClass} ${
                   selectedFrameworks.includes(fw)
                     ? 'bg-purple-600/20 text-purple-300 border-purple-500/50'
                     : 'bg-gray-800 text-gray-400 border-gray-700 hover:border-gray-500'

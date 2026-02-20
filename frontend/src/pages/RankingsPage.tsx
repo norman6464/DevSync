@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react';
 import { useRankings } from '../hooks';
-import { sectionContainerClass, inputClass, emptyStateClass } from '../constants/styles';
+import { sectionContainerClass, inputClass, emptyStateClass, chipButtonClass } from '../constants/styles';
 import Avatar from '../components/common/Avatar';
 import { PageLoader } from '../components/common';
 
@@ -111,7 +111,7 @@ export default function RankingsPage() {
               <button
                 key={lang}
                 onClick={() => setLanguage(lang)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+                className={`${chipButtonClass} ${
                   language === lang
                     ? 'bg-purple-600 text-white border-purple-500 shadow-sm shadow-purple-500/20'
                     : 'bg-gray-800 text-gray-400 border-gray-700 hover:text-white hover:border-gray-500 hover:bg-gray-700'
