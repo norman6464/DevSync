@@ -901,6 +901,10 @@
       "votes": "Голоса",
       "unanswered": "Без ответа"
     },
+    "filter": {
+      "solved": "Решённые",
+      "unsolved": "Нерешённые"
+    },
     "createSuccess": "Вопрос создан",
     "updateSuccess": "Вопрос обновлён",
     "deleteSuccess": "Вопрос удалён",

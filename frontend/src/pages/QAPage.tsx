@@ -17,6 +17,7 @@ export default function QAPage() {
     questions, total, loading, saving,
     searchQuery, setSearchQuery,
     sort, setSort,
+    solvedFilter, setSolvedFilter,
     page, setPage, limit,
     handleSearch,
     createQuestion, updateQuestion, deleteQuestion,
@@ -87,6 +88,19 @@ export default function QAPage() {
               }`}
             >
               {t(`qa.sort.${s}`)}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          {(['all', 'solved', 'unsolved'] as const).map(f => (
+            <button
+              key={f}
+              onClick={() => setSolvedFilter(f)}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                solvedFilter === f ? 'bg-green-700/50 text-green-300' : 'bg-gray-800 text-gray-400 hover:text-white'
+              }`}
+            >
+              {f === 'all' ? t('common.all') : t(`qa.filter.${f}`)}
             </button>
           ))}
         </div>

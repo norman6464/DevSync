@@ -901,6 +901,10 @@
       "votes": "投票数",
       "unanswered": "未回答"
     },
+    "filter": {
+      "solved": "已解决",
+      "unsolved": "未解决"
+    },
     "createSuccess": "问题已创建",
     "updateSuccess": "问题已更新",
     "deleteSuccess": "问题已删除",

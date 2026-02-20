@@ -901,6 +901,10 @@
       "votes": "투표순",
       "unanswered": "미답변"
     },
+    "filter": {
+      "solved": "해결됨",
+      "unsolved": "미해결"
+    },
     "createSuccess": "질문이 작성되었습니다",
     "updateSuccess": "질문이 수정되었습니다",
     "deleteSuccess": "질문이 삭제되었습니다",
