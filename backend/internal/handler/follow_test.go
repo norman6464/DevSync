@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -128,4 +129,23 @@ func TestGetFollowing_Empty(t *testing.T) {
 	assertStatus(t, w, 200)
 	body := w.Body.String()
 	assert.Contains(t, body, "[]")
+}
+
+func TestGetFollowing_ServiceError(t *testing.T) {
+	h, svc := setupFollowHandler()
+	svc.On("GetFollowing", uint(2)).Return([]model.User(nil), errors.New("db error"))
+
+	r := newRouter(1)
+	r.GET("/users/:id/following", h.GetFollowing)
+	w := doRequest(r, "GET", "/users/2/following", nil)
+	assertStatus(t, w, 500)
+	svc.AssertExpectations(t)
+}
+
+func TestGetFollowing_InvalidID(t *testing.T) {
+	h, _ := setupFollowHandler()
+	r := newRouter(1)
+	r.GET("/users/:id/following", h.GetFollowing)
+	w := doRequest(r, "GET", "/users/abc/following", nil)
+	assertStatus(t, w, 400)
 }

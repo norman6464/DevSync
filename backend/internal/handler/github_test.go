@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 	"time"
@@ -134,6 +135,46 @@ func TestGitHubGetRepos_Success(t *testing.T) {
 
 	assertStatus(t, w, http.StatusOK)
 	ghSvc.AssertExpectations(t)
+}
+
+func TestGitHubGetLanguages_ServiceError(t *testing.T) {
+	h, ghSvc, _ := setupGitHubHandlerMock()
+	ghSvc.On("GetLanguages", uint(1)).Return([]model.GitHubLanguageStat(nil), errors.New("db error"))
+
+	r := newRouter(1)
+	r.GET("/github/:userId/languages", h.GetLanguages)
+	w := doRequest(r, "GET", "/github/1/languages", nil)
+
+	assertStatus(t, w, http.StatusInternalServerError)
+	ghSvc.AssertExpectations(t)
+}
+
+func TestGitHubGetLanguages_InvalidID(t *testing.T) {
+	h, _, _ := setupGitHubHandlerMock()
+	r := newRouter(1)
+	r.GET("/github/:userId/languages", h.GetLanguages)
+	w := doRequest(r, "GET", "/github/abc/languages", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestGitHubGetRepos_ServiceError(t *testing.T) {
+	h, ghSvc, _ := setupGitHubHandlerMock()
+	ghSvc.On("GetRepos", uint(1)).Return([]model.GitHubRepository(nil), errors.New("db error"))
+
+	r := newRouter(1)
+	r.GET("/github/:userId/repos", h.GetRepos)
+	w := doRequest(r, "GET", "/github/1/repos", nil)
+
+	assertStatus(t, w, http.StatusInternalServerError)
+	ghSvc.AssertExpectations(t)
+}
+
+func TestGitHubGetRepos_InvalidID(t *testing.T) {
+	h, _, _ := setupGitHubHandlerMock()
+	r := newRouter(1)
+	r.GET("/github/:userId/repos", h.GetRepos)
+	w := doRequest(r, "GET", "/github/abc/repos", nil)
+	assertStatus(t, w, http.StatusBadRequest)
 }
 
 func TestGitHubSync_Success(t *testing.T) {
