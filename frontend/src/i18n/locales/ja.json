@@ -583,6 +583,7 @@
     "activeGoals": "進行中",
     "completedGoals": "完了",
     "pausedGoals": "一時停止",
+    "overdueGoals": "期限超過",
     "statusActive": "進行中",
     "statusCompleted": "完了",
     "statusPaused": "一時停止",
