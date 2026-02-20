@@ -1,6 +1,7 @@
 package service
 
 import (
+	"strings"
 	"time"
 
 	"github.com/norman6464/devsync/backend/internal/domain"
@@ -102,16 +103,16 @@ func (s *RoadmapService) Update(id, userID uint, updates *model.Roadmap) (*model
 		return nil, err
 	}
 
-	if updates.Title != "" {
+	if strings.TrimSpace(updates.Title) != "" {
 		roadmap.Title = updates.Title
 	}
-	if updates.Description != "" {
+	if strings.TrimSpace(updates.Description) != "" {
 		roadmap.Description = updates.Description
 	}
-	if updates.Category != "" {
+	if strings.TrimSpace(string(updates.Category)) != "" {
 		roadmap.Category = updates.Category
 	}
-	if updates.Status != "" {
+	if strings.TrimSpace(string(updates.Status)) != "" {
 		roadmap.Status = updates.Status
 		if roadmap.Status == model.RoadmapStatusCompleted && roadmap.CompletedAt == nil {
 			now := time.Now()
@@ -178,13 +179,13 @@ func (s *RoadmapService) UpdateStep(roadmapID, stepID, userID uint, updates *mod
 		return nil, err
 	}
 
-	if updates.Title != "" {
+	if strings.TrimSpace(updates.Title) != "" {
 		step.Title = updates.Title
 	}
-	if updates.Description != "" {
+	if strings.TrimSpace(updates.Description) != "" {
 		step.Description = updates.Description
 	}
-	if updates.ResourceURL != "" {
+	if strings.TrimSpace(updates.ResourceURL) != "" {
 		step.ResourceURL = updates.ResourceURL
 	}
 
