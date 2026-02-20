@@ -40,11 +40,14 @@ func (r *LearningGoalRepository) FindByID(id uint) (*model.LearningGoal, error) 
 	return &goal, nil
 }
 
-// GetByUserID は指定ユーザーの全学習目標を取得する（新しい順）。
-func (r *LearningGoalRepository) GetByUserID(userID uint) ([]model.LearningGoal, error) {
+// GetByUserID は指定ユーザーの学習目標をページネーション付きで取得する（新しい順）。
+func (r *LearningGoalRepository) GetByUserID(userID uint, limit, offset int) ([]model.LearningGoal, int64, error) {
 	var goals []model.LearningGoal
-	err := r.db.Where("user_id = ?", userID).Order("created_at DESC").Find(&goals).Error
-	return goals, err
+	var total int64
+	query := r.db.Where("user_id = ?", userID)
+	query.Model(&model.LearningGoal{}).Count(&total)
+	err := query.Order("created_at DESC").Limit(limit).Offset(offset).Find(&goals).Error
+	return goals, total, err
 }
 
 // GetActiveByUserID は指定ユーザーの進行中の学習目標を取得する（新しい順）。
