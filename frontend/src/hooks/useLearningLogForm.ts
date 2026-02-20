@@ -18,6 +18,7 @@ export function useLearningLogForm() {
   const [filterDate, setFilterDate] = useState<string | null>(null);
   const [filterCategory, setFilterCategory] = useState<'all' | LogCategory>('all');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [sortBy, setSortBy] = useState<'latest' | 'oldest' | 'duration_desc' | 'duration_asc'>('latest');
 
   // フォーム状態
   const [title, setTitle] = useState('');
@@ -83,15 +84,26 @@ export function useLearningLogForm() {
     setFilterDate(null);
   }, []);
 
-  const filteredLogs = useMemo(() =>
-    logs.filter((log) => {
+  const filteredLogs = useMemo(() => {
+    const filtered = logs.filter((log) => {
       if (filterDate && log.created_at.split('T')[0] !== filterDate) return false;
       if (filterCategory !== 'all' && log.category !== filterCategory) return false;
       if (showFavoritesOnly && !log.is_favorite) return false;
       return true;
-    }),
-    [logs, filterDate, filterCategory, showFavoritesOnly]
-  );
+    });
+    return [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case 'oldest':
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        case 'duration_desc':
+          return (b.duration || 0) - (a.duration || 0);
+        case 'duration_asc':
+          return (a.duration || 0) - (b.duration || 0);
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
+  }, [logs, filterDate, filterCategory, showFavoritesOnly, sortBy]);
 
   return {
     // データ
@@ -103,6 +115,7 @@ export function useLearningLogForm() {
     filterDate, clearFilterDate,
     filterCategory, setFilterCategory,
     showFavoritesOnly, setShowFavoritesOnly,
+    sortBy, setSortBy,
     // フォーム状態
     title, setTitle,
     content, setContent,

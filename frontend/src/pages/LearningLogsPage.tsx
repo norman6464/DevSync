@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Code, BookOpen, GraduationCap, Users, FileText, Calendar, List, Download, Clock, Star, type LucideIcon } from 'lucide-react';
+import { Code, BookOpen, GraduationCap, Users, FileText, Calendar, List, Download, Clock, Star, ArrowDownWideNarrow, type LucideIcon } from 'lucide-react';
 import { useLearningLogForm } from '../hooks/useLearningLogForm';
 import { useWeeklyDuration, useStreak } from '../hooks';
 import { useAuthStore } from '../store/authStore';
@@ -46,6 +46,7 @@ export default function LearningLogsPage() {
     filterDate, clearFilterDate,
     filterCategory, setFilterCategory,
     showFavoritesOnly, setShowFavoritesOnly,
+    sortBy, setSortBy,
     title, setTitle,
     content, setContent,
     category, setCategory,
@@ -216,6 +217,34 @@ export default function LearningLogsPage() {
             >
               <Icon className="w-4 h-4" />
               {t(label)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Sort */}
+      <div className="flex flex-col gap-2">
+        <span className="text-sm text-gray-400 flex items-center gap-1.5">
+          <ArrowDownWideNarrow className="w-4 h-4" />
+          {t('learningLogs.sort')}
+        </span>
+        <div className="flex flex-wrap gap-2">
+          {([
+            { value: 'latest', label: 'learningLogs.sortLatest' },
+            { value: 'oldest', label: 'learningLogs.sortOldest' },
+            { value: 'duration_desc', label: 'learningLogs.sortDurationDesc' },
+            { value: 'duration_asc', label: 'learningLogs.sortDurationAsc' },
+          ] as const).map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setSortBy(opt.value)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                sortBy === opt.value
+                  ? 'bg-purple-500/20 text-purple-400'
+                  : 'bg-gray-800/50 text-gray-400 hover:text-white'
+              }`}
+            >
+              {t(opt.label)}
             </button>
           ))}
         </div>
