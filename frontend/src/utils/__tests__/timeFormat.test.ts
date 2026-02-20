@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { formatDistanceToNow } from '../timeFormat';
+import { formatDistanceToNow, formatDate } from '../timeFormat';
 
 describe('formatDistanceToNow', () => {
   const NOW = new Date('2026-02-19T12:00:00Z');
@@ -51,5 +51,31 @@ describe('formatDistanceToNow', () => {
   it('1日前の場合「1日前」を返す', () => {
     const result = formatDistanceToNow('2026-02-18T12:00:00Z');
     expect(result).toBe('1日前');
+  });
+});
+
+describe('formatDate', () => {
+  it('日付文字列をローカライズされた文字列に変換する', () => {
+    const result = formatDate('2026-01-15T00:00:00Z');
+    expect(result).toBeTruthy();
+    expect(typeof result).toBe('string');
+  });
+
+  it('nullの場合にnullを返す', () => {
+    expect(formatDate(null)).toBeNull();
+  });
+
+  it('undefinedの場合にnullを返す', () => {
+    expect(formatDate(undefined)).toBeNull();
+  });
+
+  it('空文字列の場合にnullを返す', () => {
+    expect(formatDate('')).toBeNull();
+  });
+
+  it('異なる日付フォーマットを処理できる', () => {
+    const result = formatDate('2026-06-30');
+    expect(result).toBeTruthy();
+    expect(typeof result).toBe('string');
   });
 });

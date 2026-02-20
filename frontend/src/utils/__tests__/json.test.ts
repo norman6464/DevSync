@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseJsonArray } from '../json';
+import { parseJsonArray, parseJsonObject } from '../json';
 
 describe('parseJsonArray', () => {
   it('正常なJSON配列文字列をパースする', () => {
@@ -41,5 +41,47 @@ describe('parseJsonArray', () => {
 
   it('日本語を含む配列をパースする', () => {
     expect(parseJsonArray('["タグ1","タグ2"]')).toEqual(['タグ1', 'タグ2']);
+  });
+});
+
+describe('parseJsonObject', () => {
+  it('正常なJSONオブジェクトをパースする', () => {
+    expect(parseJsonObject('{"key":"value"}')).toEqual({ key: 'value' });
+  });
+
+  it('ネストされたオブジェクトをパースする', () => {
+    expect(parseJsonObject('{"a":{"b":1}}')).toEqual({ a: { b: 1 } });
+  });
+
+  it('undefinedの場合に空オブジェクトを返す', () => {
+    expect(parseJsonObject(undefined)).toEqual({});
+  });
+
+  it('nullの場合に空オブジェクトを返す', () => {
+    expect(parseJsonObject(null)).toEqual({});
+  });
+
+  it('空文字列の場合に空オブジェクトを返す', () => {
+    expect(parseJsonObject('')).toEqual({});
+  });
+
+  it('不正なJSONの場合に空オブジェクトを返す', () => {
+    expect(parseJsonObject('invalid json')).toEqual({});
+  });
+
+  it('JSON配列の場合に空オブジェクトを返す', () => {
+    expect(parseJsonObject('[1,2,3]')).toEqual({});
+  });
+
+  it('JSON文字列リテラルの場合に空オブジェクトを返す', () => {
+    expect(parseJsonObject('"hello"')).toEqual({});
+  });
+
+  it('JSON nullの場合に空オブジェクトを返す', () => {
+    expect(parseJsonObject('null')).toEqual({});
+  });
+
+  it('数値のみの場合に空オブジェクトを返す', () => {
+    expect(parseJsonObject('42')).toEqual({});
   });
 });
