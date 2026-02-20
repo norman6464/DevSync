@@ -779,7 +779,9 @@
     "createFailed": "Échec de la création du projet",
     "updateFailed": "Échec de la mise à jour du projet",
     "deleteFailed": "Échec de la suppression du projet",
-    "confirmDelete": "Êtes-vous sûr de vouloir supprimer ce projet ?"
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer ce projet ?",
+    "statusInProgress": "En cours",
+    "statusCompleted": "Terminé"
   },
   "resources": {
     "pageTitle": "Ressources d'Apprentissage",

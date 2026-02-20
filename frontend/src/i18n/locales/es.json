@@ -779,7 +779,9 @@
     "createFailed": "Error al crear proyecto",
     "updateFailed": "Error al actualizar proyecto",
     "deleteFailed": "Error al eliminar proyecto",
-    "confirmDelete": "¿Estás seguro de que deseas eliminar este proyecto?"
+    "confirmDelete": "¿Estás seguro de que deseas eliminar este proyecto?",
+    "statusInProgress": "En curso",
+    "statusCompleted": "Completado"
   },
   "resources": {
     "pageTitle": "Recursos de Aprendizaje",

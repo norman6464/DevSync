@@ -779,7 +779,9 @@
     "createFailed": "Не удалось создать проект",
     "updateFailed": "Не удалось обновить проект",
     "deleteFailed": "Не удалось удалить проект",
-    "confirmDelete": "Вы уверены, что хотите удалить этот проект?"
+    "confirmDelete": "Вы уверены, что хотите удалить этот проект?",
+    "statusInProgress": "В процессе",
+    "statusCompleted": "Завершён"
   },
   "resources": {
     "pageTitle": "Учебные ресурсы",
