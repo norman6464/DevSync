@@ -370,6 +370,34 @@ func TestPostSeriesRemovePost_NotFound(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestPostSeriesCreate_WhitespaceTitle(t *testing.T) {
+	svc, _ := newTestPostSeriesService()
+
+	series := &model.PostSeries{
+		Title:  "   ",
+		UserID: 1,
+	}
+
+	err := svc.Create(series)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "タイトルは必須です")
+}
+
+func TestPostSeriesUpdate_WhitespaceTitle(t *testing.T) {
+	svc, repo := newTestPostSeriesService()
+
+	existing := &model.PostSeries{Title: "Old Title", UserID: 1}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	updates := &model.PostSeries{Title: "  \t  "}
+	result, err := svc.Update(1, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "空白のみ")
+}
+
 func TestPostSeriesUpdate_Description(t *testing.T) {
 	svc, repo := newTestPostSeriesService()
 
