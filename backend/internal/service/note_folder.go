@@ -1,6 +1,8 @@
 package service
 
 import (
+	"strings"
+
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -89,6 +91,9 @@ func (s *NoteFolderService) Update(id, userID uint, name string, parentID *uint)
 	}
 
 	if name != "" {
+		if strings.TrimSpace(name) == "" {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, "フォルダ名は空白のみにできません", nil)
+		}
 		folder.Name = name
 	}
 	if parentID != nil {
