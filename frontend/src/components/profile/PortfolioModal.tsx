@@ -63,6 +63,7 @@ export default function PortfolioModal({
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank', 'noopener,noreferrer');
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   if (!isOpen) return null;
@@ -130,7 +131,7 @@ export default function PortfolioModal({
             <div className="bg-white rounded-lg overflow-hidden">
               <iframe
                 srcDoc={html}
-                sandbox=""
+                sandbox="allow-same-origin"
                 className="w-full h-96 border-0"
                 title={t('portfolio.preview')}
               />
