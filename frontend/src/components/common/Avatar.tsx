@@ -1,3 +1,5 @@
+import { sanitizeUrl } from '../../utils/url';
+
 interface AvatarProps {
   name: string;
   avatarUrl?: string;
@@ -12,10 +14,11 @@ const sizeClasses = {
 };
 
 export default function Avatar({ name, avatarUrl, size = 'md' }: AvatarProps) {
-  if (avatarUrl) {
+  const safeUrl = sanitizeUrl(avatarUrl);
+  if (safeUrl) {
     return (
       <img
-        src={avatarUrl}
+        src={safeUrl}
         alt={name}
         className={`${sizeClasses[size]} rounded-full object-cover`}
       />
