@@ -49,6 +49,7 @@ export default function NoteFormPanel({
             className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             required
           />
+          <p className="text-xs text-gray-500 text-right mt-1">{title.length}/200</p>
         </div>
         <div>
           <label htmlFor="note-content" className="block text-sm font-medium mb-2">{t('notes.noteContent')}</label>

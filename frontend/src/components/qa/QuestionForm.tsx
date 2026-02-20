@@ -51,6 +51,7 @@ export default function QuestionForm({ question, onSubmit, onCancel, loading }: 
           className={inputClass}
           placeholder={t('qa.questionTitlePlaceholder')}
         />
+        <p className="text-xs text-gray-500 text-right mt-1">{title.length}/500</p>
       </div>
 
       {/* Body */}
