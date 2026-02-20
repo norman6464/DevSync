@@ -23,6 +23,7 @@
     "menu": "Menu",
     "scrollToTop": "Retour en haut",
     "invalidUrl": "{{field}} n'est pas une URL valide",
+    "all": "Tous",
     "selectLanguage": "Choisir la langue",
     "monthsShort": [
       "Jan",
@@ -596,6 +597,8 @@
     "statusPaused": "En pause",
     "pause": "Pause",
     "resume": "Reprendre",
+    "filter": "Filtrer",
+    "noFilterResults": "Aucun objectif ne correspond aux filtres sélectionnés",
     "titlePlaceholder": "Ex. Apprendre TypeScript",
     "descriptionPlaceholder": "Décrivez votre objectif...",
     "categoryLanguage": "Langage",

@@ -23,6 +23,7 @@
     "menu": "選單",
     "scrollToTop": "返回頂部",
     "invalidUrl": "{{field}}不是有效的URL",
+    "all": "全部",
     "selectLanguage": "選擇語言",
     "monthsShort": [
       "1月",
@@ -596,6 +597,8 @@
     "statusPaused": "已暫停",
     "pause": "暫停",
     "resume": "繼續",
+    "filter": "篩選",
+    "noFilterResults": "沒有符合篩選條件的目標",
     "titlePlaceholder": "例如：學習 TypeScript",
     "descriptionPlaceholder": "描述你的目標...",
     "categoryLanguage": "語言",

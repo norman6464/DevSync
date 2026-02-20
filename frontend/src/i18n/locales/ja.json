@@ -24,6 +24,7 @@
     "scrollToTop": "ページ上部に戻る",
     "dismiss": "閉じる",
     "invalidUrl": "{{field}}は有効なURLではありません",
+    "all": "すべて",
     "selectLanguage": "言語を選択",
     "monthsShort": [
       "1月",
@@ -585,6 +586,8 @@
     "statusPaused": "一時停止",
     "pause": "一時停止",
     "resume": "再開",
+    "filter": "フィルター",
+    "noFilterResults": "条件に一致する目標がありません",
     "titlePlaceholder": "例：TypeScriptを学ぶ",
     "descriptionPlaceholder": "目標を説明してください...",
     "categoryLanguage": "言語",

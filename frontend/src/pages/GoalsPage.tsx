@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Monitor, Rocket, Target, FolderOpen, FileText, Copy, type LucideIcon } from 'lucide-react';
+import { Monitor, Rocket, Target, FolderOpen, FileText, Copy, Filter, type LucideIcon } from 'lucide-react';
 import { type GoalCategory, type GoalStatus, type LearningGoal } from '../api/goals';
 import { useGoalForm } from '../hooks';
 import { Modal, PageLoader } from '../components/common';
@@ -46,6 +46,8 @@ export default function GoalsPage() {
   const { t } = useTranslation();
   const {
     goals, loading, saving, activeGoals, completedGoals, pausedGoals,
+    filteredGoals, filteredActiveGoals, filteredPausedGoals, filteredCompletedGoals,
+    filterStatus, setFilterStatus, filterCategory, setFilterCategory,
     showForm, setShowForm, editingGoal,
     title, setTitle, description, setDescription,
     category, setCategory, targetDate, setTargetDate,
@@ -54,6 +56,8 @@ export default function GoalsPage() {
     handleDuplicateGoal,
     dialogProps,
   } = useGoalForm();
+
+  const isFiltered = filterStatus !== 'all' || filterCategory !== 'all';
 
   if (loading) return <PageLoader />;
 
@@ -86,6 +90,46 @@ export default function GoalsPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
           <p className="text-2xl font-bold text-yellow-400">{pausedGoals.length}</p>
           <p className="text-sm text-gray-400">{t('goals.pausedGoals')}</p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-gray-900 border border-gray-800 rounded-md p-4 space-y-3">
+        <div className="flex items-center gap-2 text-sm text-gray-400">
+          <Filter className="w-4 h-4" />
+          <span>{t('goals.filter')}</span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <span className="text-xs text-gray-500 self-center mr-1">{t('goals.status')}:</span>
+          {(['all', 'active', 'paused', 'completed'] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setFilterStatus(s)}
+              className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+                filterStatus === s
+                  ? 'border-blue-500 bg-blue-500/10 text-blue-400'
+                  : 'border-gray-700 text-gray-400 hover:border-gray-600'
+              }`}
+            >
+              {s === 'all' ? t('common.all') : t(`goals.status${s.charAt(0).toUpperCase() + s.slice(1)}`)}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <span className="text-xs text-gray-500 self-center mr-1">{t('goals.category')}:</span>
+          {(['all', ...CATEGORIES.map(c => c.value)] as const).map((c) => (
+            <button
+              key={c}
+              onClick={() => setFilterCategory(c)}
+              className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+                filterCategory === c
+                  ? 'border-purple-500 bg-purple-500/10 text-purple-400'
+                  : 'border-gray-700 text-gray-400 hover:border-gray-600'
+              }`}
+            >
+              {c === 'all' ? t('common.all') : t(`goals.category${c.charAt(0).toUpperCase() + c.slice(1)}`)}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -182,15 +226,19 @@ export default function GoalsPage() {
             onAction={() => setShowForm(true)}
           />
         </div>
+      ) : isFiltered && filteredGoals.length === 0 ? (
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-8 text-center text-gray-400">
+          {t('goals.noFilterResults')}
+        </div>
       ) : (
         <div className="space-y-4">
-          {activeGoals.length > 0 && (
+          {filteredActiveGoals.length > 0 && (
             <div>
               <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-3">
                 {t('goals.activeGoals')}
               </h2>
               <div className="space-y-3">
-                {activeGoals.map((goal) => (
+                {filteredActiveGoals.map((goal) => (
                   <GoalCard
                     key={goal.id}
                     goal={goal}
@@ -208,13 +256,13 @@ export default function GoalsPage() {
             </div>
           )}
 
-          {pausedGoals.length > 0 && (
+          {filteredPausedGoals.length > 0 && (
             <div>
               <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-3">
                 {t('goals.pausedGoals')}
               </h2>
               <div className="space-y-3">
-                {pausedGoals.map((goal) => (
+                {filteredPausedGoals.map((goal) => (
                   <GoalCard
                     key={goal.id}
                     goal={goal}
@@ -232,13 +280,13 @@ export default function GoalsPage() {
             </div>
           )}
 
-          {completedGoals.length > 0 && (
+          {filteredCompletedGoals.length > 0 && (
             <div>
               <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-3">
                 {t('goals.completedGoals')}
               </h2>
               <div className="space-y-3">
-                {completedGoals.map((goal) => (
+                {filteredCompletedGoals.map((goal) => (
                   <GoalCard
                     key={goal.id}
                     goal={goal}
