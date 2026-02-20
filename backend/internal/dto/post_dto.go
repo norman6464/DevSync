@@ -39,12 +39,6 @@ type PostDetailResponse struct {
 	Bookmarked bool `json:"bookmarked"`
 }
 
-// BookmarkedPostsResponse はブックマーク済み投稿一覧レスポンス。
-type BookmarkedPostsResponse struct {
-	Posts []model.Post `json:"posts"`
-	Total int64        `json:"total"`
-}
-
 // PostListResponse は投稿一覧レスポンス（ページネーション付き）。
 type PostListResponse struct {
 	Posts  []model.Post `json:"posts"`

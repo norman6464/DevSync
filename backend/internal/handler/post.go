@@ -390,7 +390,12 @@ func (h *PostHandler) GetBookmarks(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, dto.BookmarkedPostsResponse{Posts: posts, Total: total})
+	respondOK(c, dto.PostListResponse{
+		Posts:  ensureSlice(posts),
+		Total:  total,
+		Limit:  limit,
+		Offset: (page - 1) * limit,
+	})
 }
 
 // AddReaction は投稿にリアクション（絵文字）を追加する。
