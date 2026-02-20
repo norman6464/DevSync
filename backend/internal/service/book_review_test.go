@@ -276,6 +276,60 @@ func TestBookReviewCreate_InvalidRatingTooHigh(t *testing.T) {
 	assert.Contains(t, err.Error(), "評価は1〜5")
 }
 
+// ============================================================
+// 評価範囲による取得テスト
+// ============================================================
+
+func TestBookReviewGetByRating_Success(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	expected := []model.BookReview{
+		{Title: "良書A", UserID: 1, Rating: 4},
+		{Title: "良書B", UserID: 1, Rating: 5},
+	}
+	repo.On("FindByRating", uint(1), 4, 5).Return(expected, nil)
+
+	result, err := svc.GetByRating(1, 4, 5)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	repo.AssertExpectations(t)
+}
+
+func TestBookReviewGetByRating_InvalidRange(t *testing.T) {
+	svc, _ := newTestBookReviewService()
+
+	// minRating > maxRating
+	result, err := svc.GetByRating(1, 5, 3)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "評価範囲が無効です")
+}
+
+func TestBookReviewGetByRating_OutOfRange(t *testing.T) {
+	svc, _ := newTestBookReviewService()
+
+	// minRating < 1
+	result, err := svc.GetByRating(1, 0, 5)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+
+	// maxRating > 5
+	result2, err2 := svc.GetByRating(1, 1, 6)
+	assert.Error(t, err2)
+	assert.Nil(t, result2)
+}
+
+func TestBookReviewGetByRating_RepoError(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	repo.On("FindByRating", uint(1), 1, 3).Return([]model.BookReview(nil), errors.New("db error"))
+
+	result, err := svc.GetByRating(1, 1, 3)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}
+
 func TestBookReviewUpdate_InvalidRating(t *testing.T) {
 	svc, repo := newTestBookReviewService()
 

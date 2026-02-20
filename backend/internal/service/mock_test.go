@@ -663,6 +663,11 @@ func (m *MockBookReviewRepository) Delete(id uint) error {
 	return args.Error(0)
 }
 
+func (m *MockBookReviewRepository) FindByRating(userID uint, minRating, maxRating int) ([]model.BookReview, error) {
+	args := m.Called(userID, minRating, maxRating)
+	return args.Get(0).([]model.BookReview), args.Error(1)
+}
+
 // ============================================================
 // MockLearningResourceRepository は repository.LearningResourceRepositoryInterface のテスト用モック実装。
 // ============================================================
