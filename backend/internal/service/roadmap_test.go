@@ -556,6 +556,19 @@ func TestSeedTemplates_CreateError(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestSeedTemplates_CreateStepError(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	repo.On("GetTemplates").Return([]model.Roadmap{}, nil)
+	repo.On("Create", mock.AnythingOfType("*model.Roadmap")).Return(nil)
+	repo.On("CreateStep", mock.AnythingOfType("*model.RoadmapStep")).Return(errors.New("create step error"))
+
+	err := svc.SeedTemplates(uint(1))
+	assert.Error(t, err)
+	assert.Equal(t, "create step error", err.Error())
+	repo.AssertExpectations(t)
+}
+
 // ============================================================
 // Create テスト
 // ============================================================
