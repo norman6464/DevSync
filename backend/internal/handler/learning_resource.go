@@ -39,35 +39,11 @@ func NewLearningResourceHandler(s LearningResourceServiceInterface) *LearningRes
 	return &LearningResourceHandler{service: s}
 }
 
-// CreateResourceRequest は学習リソース作成のリクエストボディ。
-type CreateResourceRequest struct {
-	Title       string `json:"title" binding:"required,max=300"`
-	Description string `json:"description"`
-	URL         string `json:"url"`
-	Category    string `json:"category" binding:"required"`
-	Difficulty  string `json:"difficulty"`
-	Tags        string `json:"tags"`
-	ImageURL    string `json:"image_url"`
-	IsPublic    *bool  `json:"is_public"`
-}
-
-// UpdateResourceRequest は学習リソース更新のリクエストボディ。
-type UpdateResourceRequest struct {
-	Title       string `json:"title" binding:"max=300"`
-	Description string `json:"description"`
-	URL         string `json:"url"`
-	Category    string `json:"category"`
-	Difficulty  string `json:"difficulty"`
-	Tags        string `json:"tags"`
-	ImageURL    string `json:"image_url"`
-	IsPublic    *bool  `json:"is_public"`
-}
-
 // Create は新しい学習リソースを作成する。
 func (h *LearningResourceHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	req := bindJSON[CreateResourceRequest](c)
+	req := bindJSON[dto.CreateResourceRequest](c)
 	if req == nil {
 		return
 	}
@@ -195,7 +171,7 @@ func (h *LearningResourceHandler) Update(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[UpdateResourceRequest](c)
+	req := bindJSON[dto.UpdateResourceRequest](c)
 	if req == nil {
 		return
 	}

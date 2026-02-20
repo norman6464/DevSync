@@ -46,16 +46,6 @@ func (h *AnswerHandler) GetByQuestionID(c *gin.Context) {
 	respondOK(c, ensureSlice(answers))
 }
 
-// CreateAnswerRequest は回答作成のリクエストボディ。
-type CreateAnswerRequest struct {
-	Body string `json:"body" binding:"required"`
-}
-
-// UpdateAnswerRequest は回答更新のリクエストボディ。
-type UpdateAnswerRequest struct {
-	Body string `json:"body" binding:"required"`
-}
-
 // Create は質問に対して新しい回答を作成する。
 func (h *AnswerHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -64,7 +54,7 @@ func (h *AnswerHandler) Create(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[CreateAnswerRequest](c)
+	req := bindJSON[dto.CreateAnswerRequest](c)
 	if req == nil {
 		return
 	}
@@ -91,7 +81,7 @@ func (h *AnswerHandler) Update(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[UpdateAnswerRequest](c)
+	req := bindJSON[dto.UpdateAnswerRequest](c)
 	if req == nil {
 		return
 	}

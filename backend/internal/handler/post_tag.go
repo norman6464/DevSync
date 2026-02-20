@@ -33,9 +33,7 @@ func (h *PostTagHandler) SetTags(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	req := bindJSON[struct {
-		Tags []string `json:"tags"`
-	}](c)
+	req := bindJSON[dto.SetTagsRequest](c)
 	if req == nil {
 		return
 	}

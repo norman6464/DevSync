@@ -16,3 +16,27 @@ type ResourceListResponse struct {
 	Limit     int                      `json:"limit"`
 	Offset    int                      `json:"offset"`
 }
+
+// CreateResourceRequest は学習リソース作成のリクエストボディ。
+type CreateResourceRequest struct {
+	Title       string `json:"title" binding:"required,max=300"`
+	Description string `json:"description"`
+	URL         string `json:"url"`
+	Category    string `json:"category" binding:"required"`
+	Difficulty  string `json:"difficulty"`
+	Tags        string `json:"tags"`
+	ImageURL    string `json:"image_url"`
+	IsPublic    *bool  `json:"is_public"`
+}
+
+// UpdateResourceRequest は学習リソース更新のリクエストボディ。
+type UpdateResourceRequest struct {
+	Title       string `json:"title" binding:"max=300"`
+	Description string `json:"description"`
+	URL         string `json:"url"`
+	Category    string `json:"category"`
+	Difficulty  string `json:"difficulty"`
+	Tags        string `json:"tags"`
+	ImageURL    string `json:"image_url"`
+	IsPublic    *bool  `json:"is_public"`
+}
