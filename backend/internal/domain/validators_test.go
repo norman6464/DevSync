@@ -153,9 +153,20 @@ func TestValidateURL(t *testing.T) {
 	}{
 		{"有効なURL（https）", "https://example.com", false},
 		{"有効なURL（http）", "http://example.com/path", false},
+		{"有効なURL（クエリ付き）", "https://example.com/search?q=test", false},
 		{"有効なURL（空・オプショナル）", "", false},
 		{"無効なURL（httpなし）", "example.com", true},
+		{"無効なURL（ftpスキーム）", "ftp://example.com", true},
+		{"無効なURL（javascriptスキーム）", "javascript:alert(1)", true},
+		{"無効なURL（ホスト名なし）", "https://", true},
 		{"無効なURL（長すぎる）", "https://" + strings.Repeat("a", 2050), true},
+		{"SSRF: localhost", "https://localhost/admin", true},
+		{"SSRF: 127.0.0.1", "http://127.0.0.1:8080", true},
+		{"SSRF: プライベートIP(10.x)", "http://10.0.0.1", true},
+		{"SSRF: プライベートIP(192.168.x)", "http://192.168.1.1", true},
+		{"SSRF: プライベートIP(172.16.x)", "http://172.16.0.1", true},
+		{"SSRF: 0.0.0.0", "http://0.0.0.0", true},
+		{"SSRF: IPv6ループバック", "http://[::1]/path", true},
 	}
 
 	for _, tt := range tests {
