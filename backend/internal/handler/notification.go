@@ -49,6 +49,8 @@ func (h *NotificationHandler) GetAll(c *gin.Context) {
 	respondOK(c, dto.NotificationListResponse{
 		Notifications: notifications,
 		Total:         total,
+		Page:          page,
+		Limit:         limit,
 	})
 }
 
