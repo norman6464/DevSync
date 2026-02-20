@@ -6,6 +6,7 @@ import {
   createGoal,
   updateGoal,
   deleteGoal,
+  duplicateGoal,
   type LearningGoal,
   type GoalCategory,
   type GoalStatus,
@@ -90,6 +91,18 @@ export function useGoals() {
     }
   }, [t, setGoals]);
 
+  const handleDuplicate = useCallback(async (id: number) => {
+    try {
+      const { data: newGoal } = await duplicateGoal(id);
+      setGoals(prev => [newGoal, ...prev]);
+      toast.success(t('goals.duplicated'));
+      return newGoal;
+    } catch {
+      toast.error(t('errors.somethingWrong'));
+      return null;
+    }
+  }, [t, setGoals]);
+
   const activeGoals = currentGoals.filter(g => g.status === 'active');
   const completedGoals = currentGoals.filter(g => g.status === 'completed');
   const pausedGoals = currentGoals.filter(g => g.status === 'paused');
@@ -104,6 +117,7 @@ export function useGoals() {
     createGoal: handleCreate,
     updateGoal: handleUpdate,
     deleteGoal: handleDelete,
+    duplicateGoal: handleDuplicate,
     refetch,
   };
 }

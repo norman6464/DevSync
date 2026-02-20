@@ -584,6 +584,8 @@
     "created": "Цель создана",
     "updated": "Цель обновлена",
     "deleted": "Цель удалена",
+    "duplicate": "Дублировать",
+    "duplicated": "Цель дублирована",
     "totalGoals": "Всего целей",
     "activeGoals": "Активные",
     "completedGoals": "Завершённые",
