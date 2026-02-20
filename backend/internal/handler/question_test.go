@@ -234,6 +234,9 @@ func TestQuestionVote_Success(t *testing.T) {
 	r := newRouter(1)
 	r.POST("/questions/:id/vote", h.Vote)
 
+	otherQuestion := &model.Question{UserID: 99}
+	otherQuestion.ID = 5
+	repo.On("FindByID", uint(5)).Return(otherQuestion, nil)
 	repo.On("Vote", uint(1), uint(5), 1).Return(nil)
 
 	w := doRequest(r, http.MethodPost, "/questions/5/vote", map[string]int{
@@ -259,6 +262,9 @@ func TestQuestionRemoveVote_Success(t *testing.T) {
 	r := newRouter(1)
 	r.DELETE("/questions/:id/vote", h.RemoveVote)
 
+	otherQuestion := &model.Question{UserID: 99}
+	otherQuestion.ID = 5
+	repo.On("FindByID", uint(5)).Return(otherQuestion, nil)
 	repo.On("RemoveVote", uint(1), uint(5)).Return(nil)
 
 	w := doRequest(r, http.MethodDelete, "/questions/5/vote", nil)

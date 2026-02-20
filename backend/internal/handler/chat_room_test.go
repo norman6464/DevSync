@@ -212,6 +212,7 @@ func TestChatRoomAddMember_Success(t *testing.T) {
 	r.POST("/rooms/:id/members", h.AddMember)
 
 	roomRepo.On("IsMember", uint(10), uint(1)).Return(true, nil)
+	roomRepo.On("IsMember", uint(10), uint(5)).Return(false, nil)
 	roomRepo.On("AddMember", uint(10), uint(5)).Return(nil)
 
 	w := doRequest(r, http.MethodPost, "/rooms/10/members", map[string]uint{

@@ -234,6 +234,9 @@ func TestPostLike_Success(t *testing.T) {
 	r := newRouter(1)
 	r.POST("/posts/:id/like", h.Like)
 
+	otherPost := &model.Post{UserID: 99}
+	otherPost.ID = 5
+	postRepo.On("FindByID", uint(5)).Return(otherPost, nil)
 	postRepo.On("Like", uint(1), uint(5)).Return(nil)
 
 	w := doRequest(r, http.MethodPost, "/posts/5/like", nil)
@@ -245,6 +248,9 @@ func TestPostUnlike_Success(t *testing.T) {
 	r := newRouter(1)
 	r.DELETE("/posts/:id/like", h.Unlike)
 
+	otherPost := &model.Post{UserID: 99}
+	otherPost.ID = 5
+	postRepo.On("FindByID", uint(5)).Return(otherPost, nil)
 	postRepo.On("Unlike", uint(1), uint(5)).Return(nil)
 
 	w := doRequest(r, http.MethodDelete, "/posts/5/like", nil)
@@ -311,7 +317,10 @@ func TestPostDeleteComment_Success(t *testing.T) {
 	r := newRouter(1)
 	r.DELETE("/posts/:id/comments/:commentId", h.DeleteComment)
 
-	postRepo.On("DeleteComment", uint(3), uint(1)).Return(nil)
+	comment := &model.Comment{UserID: 1}
+	comment.ID = 3
+	postRepo.On("FindCommentByID", uint(3)).Return(comment, nil)
+	postRepo.On("DeleteComment", uint(3)).Return(nil)
 
 	w := doRequest(r, http.MethodDelete, "/posts/5/comments/3", nil)
 	assertStatus(t, w, http.StatusOK)

@@ -107,8 +107,8 @@ func (m *MockPostRepository) GetComments(postID uint) ([]model.Comment, error) {
 	args := m.Called(postID)
 	return args.Get(0).([]model.Comment), args.Error(1)
 }
-func (m *MockPostRepository) DeleteComment(id, userID uint) error {
-	return m.Called(id, userID).Error(0)
+func (m *MockPostRepository) DeleteComment(id uint) error {
+	return m.Called(id).Error(0)
 }
 func (m *MockPostRepository) Bookmark(userID, postID uint) error {
 	return m.Called(userID, postID).Error(0)
@@ -218,6 +218,10 @@ func (m *MockCodeSnippetRepository) GetComments(snippetID uint) ([]model.Snippet
 func (m *MockCodeSnippetRepository) DeleteComment(id, userID uint) error {
 	return m.Called(id, userID).Error(0)
 }
+func (m *MockCodeSnippetRepository) FindByUserIDAndLanguage(userID uint, language string) ([]model.CodeSnippet, error) {
+	args := m.Called(userID, language)
+	return args.Get(0).([]model.CodeSnippet), args.Error(1)
+}
 
 // MockQuestionRepository は QuestionRepositoryInterface のモック実装。
 type MockQuestionRepository struct{ mock.Mock }
@@ -259,6 +263,10 @@ func (m *MockQuestionRepository) RemoveVote(userID, questionID uint) error {
 func (m *MockQuestionRepository) GetUserVote(userID, questionID uint) (int, error) {
 	args := m.Called(userID, questionID)
 	return args.Int(0), args.Error(1)
+}
+func (m *MockQuestionRepository) FindSolved(limit, offset int) ([]model.Question, int64, error) {
+	args := m.Called(limit, offset)
+	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
 }
 
 // MockLearningResourceRepository は LearningResourceRepositoryInterface のモック実装。
@@ -314,6 +322,10 @@ func (m *MockLearningResourceRepository) HasSaved(userID, resourceID uint) (bool
 }
 func (m *MockLearningResourceRepository) FindSavedByUserID(userID uint, limit, offset int) ([]model.LearningResource, int64, error) {
 	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.LearningResource), args.Get(1).(int64), args.Error(2)
+}
+func (m *MockLearningResourceRepository) FindByDifficulty(difficulty string, limit, offset int) ([]model.LearningResource, int64, error) {
+	args := m.Called(difficulty, limit, offset)
 	return args.Get(0).([]model.LearningResource), args.Get(1).(int64), args.Error(2)
 }
 
@@ -379,6 +391,10 @@ func (m *MockRoadmapRepository) ReorderSteps(roadmapID uint, stepOrders []model.
 }
 func (m *MockRoadmapRepository) GetTemplates() ([]model.Roadmap, error) {
 	args := m.Called()
+	return args.Get(0).([]model.Roadmap), args.Error(1)
+}
+func (m *MockRoadmapRepository) GetByStatus(userID uint, status string) ([]model.Roadmap, error) {
+	args := m.Called(userID, status)
 	return args.Get(0).([]model.Roadmap), args.Error(1)
 }
 
@@ -686,6 +702,10 @@ func (m *MockStudyCircleRepository) Search(query string, limit, offset int) (int
 	args := m.Called(query, limit, offset)
 	return args.Get(0), args.Get(1).(int64), args.Error(2)
 }
+func (m *MockStudyCircleRepository) GetByStatus(userID uint, status string) ([]model.StudyCircle, error) {
+	args := m.Called(userID, status)
+	return args.Get(0).([]model.StudyCircle), args.Error(1)
+}
 
 // setupStudyCircleHandler はStudyCircleHandlerテスト用のセットアップを行う。
 func setupStudyCircleHandler() (*StudyCircleHandler, *MockStudyCircleRepository) {
@@ -725,6 +745,10 @@ func (m *MockBookReviewService) Update(id, userID uint, updates *model.BookRevie
 }
 func (m *MockBookReviewService) Delete(id, userID uint) error {
 	return m.Called(id, userID).Error(0)
+}
+func (m *MockBookReviewService) GetByRating(userID uint, minRating, maxRating int) ([]model.BookReview, error) {
+	args := m.Called(userID, minRating, maxRating)
+	return args.Get(0).([]model.BookReview), args.Error(1)
 }
 
 // setupBookReviewHandler はBookReviewHandlerテスト用のセットアップを行う。
@@ -957,6 +981,10 @@ func (m *MockRoadmapService) DeleteStep(roadmapID, stepID, userID uint) error {
 func (m *MockRoadmapService) ReorderSteps(roadmapID, userID uint, orders []model.StepOrder) error {
 	return m.Called(roadmapID, userID, orders).Error(0)
 }
+func (m *MockRoadmapService) GetByStatus(userID uint, status string) ([]model.Roadmap, error) {
+	args := m.Called(userID, status)
+	return args.Get(0).([]model.Roadmap), args.Error(1)
+}
 
 // setupRoadmapHandlerMock はRoadmapHandlerテスト用のモックセットアップを行う。
 func setupRoadmapHandlerMock() (*RoadmapHandler, *MockRoadmapService) {
@@ -1105,6 +1133,10 @@ func (m *MockAIAdviceService) GetConversation(id, userID uint) (*model.AIConvers
 	}
 	return nil, args.Error(1)
 }
+func (m *MockAIAdviceService) GetUnreadAdvice(userID uint) ([]model.AIAdvice, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.AIAdvice), args.Error(1)
+}
 
 // setupAIAdviceHandler はAIAdviceHandlerテスト用のセットアップを行う。
 func setupAIAdviceHandler() (*AIAdviceHandler, *MockAIAdviceService) {
@@ -1252,6 +1284,14 @@ func (m *MockLearningLogService) ExportCSV(userID uint, days int) ([]byte, error
 		return nil, args.Error(1)
 	}
 	return args.Get(0).([]byte), args.Error(1)
+}
+func (m *MockLearningLogService) GetByCategory(userID uint, category string) ([]model.LearningLog, error) {
+	args := m.Called(userID, category)
+	return args.Get(0).([]model.LearningLog), args.Error(1)
+}
+func (m *MockLearningLogService) GetBySource(userID uint, source string) ([]model.LearningLog, error) {
+	args := m.Called(userID, source)
+	return args.Get(0).([]model.LearningLog), args.Error(1)
 }
 
 // setupLearningLogHandler はLearningLogHandlerテスト用のセットアップを行う。
@@ -1595,6 +1635,10 @@ func (m *MockCodeSnippetHandlerService) CreateComment(comment *model.SnippetComm
 func (m *MockCodeSnippetHandlerService) DeleteComment(id, userID uint) error {
 	return m.Called(id, userID).Error(0)
 }
+func (m *MockCodeSnippetHandlerService) GetByUserLanguage(userID uint, language string) ([]model.CodeSnippet, error) {
+	args := m.Called(userID, language)
+	return args.Get(0).([]model.CodeSnippet), args.Error(1)
+}
 
 // setupCodeSnippetHandler はCodeSnippetHandlerテスト用のセットアップを行う。
 func setupCodeSnippetHandler() (*CodeSnippetHandler, *MockCodeSnippetHandlerService) {
@@ -1608,8 +1652,8 @@ func setupCodeSnippetHandler() (*CodeSnippetHandler, *MockCodeSnippetHandlerServ
 // MockNoteLinkService は NoteLinkServiceInterface のモック実装。
 type MockNoteLinkService struct{ mock.Mock }
 
-func (m *MockNoteLinkService) CreateLink(sourceNoteID, targetNoteID uint) error {
-	return m.Called(sourceNoteID, targetNoteID).Error(0)
+func (m *MockNoteLinkService) CreateLink(sourceNoteID, targetNoteID, userID uint) error {
+	return m.Called(sourceNoteID, targetNoteID, userID).Error(0)
 }
 func (m *MockNoteLinkService) GetLinks(sourceNoteID uint) ([]model.NoteLink, error) {
 	args := m.Called(sourceNoteID)
@@ -1619,8 +1663,8 @@ func (m *MockNoteLinkService) GetBacklinks(targetNoteID uint) ([]model.NoteLink,
 	args := m.Called(targetNoteID)
 	return args.Get(0).([]model.NoteLink), args.Error(1)
 }
-func (m *MockNoteLinkService) DeleteLink(sourceNoteID, targetNoteID uint) error {
-	return m.Called(sourceNoteID, targetNoteID).Error(0)
+func (m *MockNoteLinkService) DeleteLink(sourceNoteID, targetNoteID, userID uint) error {
+	return m.Called(sourceNoteID, targetNoteID, userID).Error(0)
 }
 
 func setupNoteLinkHandler() (*NoteLinkHandler, *MockNoteLinkService) {

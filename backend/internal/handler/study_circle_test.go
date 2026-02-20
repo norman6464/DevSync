@@ -190,6 +190,7 @@ func TestStudyCircleAddMember_Success(t *testing.T) {
 	r.POST("/study-circles/:id/members", h.AddMember)
 
 	repo.On("IsMember", uint(10), uint(1)).Return(true, nil)
+	repo.On("IsMember", uint(10), uint(5)).Return(false, nil)
 	repo.On("FindByID", uint(10)).Return(&model.StudyCircle{MaxMembers: 5, OwnerID: 1}, nil)
 	repo.On("GetMemberCount", uint(10)).Return(3, nil)
 	repo.On("AddMember", uint(10), uint(5), model.StudyCircleRoleMember).Return(nil)
@@ -206,6 +207,7 @@ func TestStudyCircleAddMember_LimitReached(t *testing.T) {
 	r.POST("/study-circles/:id/members", h.AddMember)
 
 	repo.On("IsMember", uint(10), uint(1)).Return(true, nil)
+	repo.On("IsMember", uint(10), uint(5)).Return(false, nil)
 	repo.On("FindByID", uint(10)).Return(&model.StudyCircle{MaxMembers: 5, OwnerID: 1}, nil)
 	repo.On("GetMemberCount", uint(10)).Return(5, nil)
 

@@ -10,7 +10,7 @@ import (
 
 func TestNoteLinkCreateLink_Success(t *testing.T) {
 	h, svc := setupNoteLinkHandler()
-	svc.On("CreateLink", uint(1), uint(2)).Return(nil)
+	svc.On("CreateLink", uint(1), uint(2), uint(1)).Return(nil)
 
 	r := newRouter(1)
 	r.POST("/notes/:id/links", h.CreateLink)
@@ -22,7 +22,7 @@ func TestNoteLinkCreateLink_Success(t *testing.T) {
 
 func TestNoteLinkCreateLink_ServiceError(t *testing.T) {
 	h, svc := setupNoteLinkHandler()
-	svc.On("CreateLink", uint(1), uint(2)).Return(service.ErrConflict)
+	svc.On("CreateLink", uint(1), uint(2), uint(1)).Return(service.ErrConflict)
 
 	r := newRouter(1)
 	r.POST("/notes/:id/links", h.CreateLink)
@@ -94,7 +94,7 @@ func TestNoteLinkGetBacklinks_ServiceError(t *testing.T) {
 
 func TestNoteLinkDeleteLink_Success(t *testing.T) {
 	h, svc := setupNoteLinkHandler()
-	svc.On("DeleteLink", uint(1), uint(2)).Return(nil)
+	svc.On("DeleteLink", uint(1), uint(2), uint(1)).Return(nil)
 
 	r := newRouter(1)
 	r.DELETE("/notes/:id/links/:targetId", h.DeleteLink)
@@ -106,7 +106,7 @@ func TestNoteLinkDeleteLink_Success(t *testing.T) {
 
 func TestNoteLinkDeleteLink_ServiceError(t *testing.T) {
 	h, svc := setupNoteLinkHandler()
-	svc.On("DeleteLink", uint(1), uint(2)).Return(service.ErrNotFound)
+	svc.On("DeleteLink", uint(1), uint(2), uint(1)).Return(service.ErrNotFound)
 
 	r := newRouter(1)
 	r.DELETE("/notes/:id/links/:targetId", h.DeleteLink)

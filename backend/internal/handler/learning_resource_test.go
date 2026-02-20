@@ -249,6 +249,9 @@ func TestResourceLike_Success(t *testing.T) {
 	r := newRouter(1)
 	r.POST("/resources/:id/like", h.Like)
 
+	otherResource := &model.LearningResource{UserID: 99}
+	otherResource.ID = 5
+	repo.On("FindByID", uint(5)).Return(otherResource, nil)
 	repo.On("Like", uint(1), uint(5)).Return(nil)
 
 	w := doRequest(r, http.MethodPost, "/resources/5/like", nil)
@@ -260,6 +263,9 @@ func TestResourceUnlike_Success(t *testing.T) {
 	r := newRouter(1)
 	r.DELETE("/resources/:id/like", h.Unlike)
 
+	otherResource := &model.LearningResource{UserID: 99}
+	otherResource.ID = 5
+	repo.On("FindByID", uint(5)).Return(otherResource, nil)
 	repo.On("Unlike", uint(1), uint(5)).Return(nil)
 
 	w := doRequest(r, http.MethodDelete, "/resources/5/like", nil)
@@ -273,6 +279,9 @@ func TestResourceSave_Success(t *testing.T) {
 	r := newRouter(1)
 	r.POST("/resources/:id/save", h.SaveResource)
 
+	otherResource := &model.LearningResource{UserID: 99}
+	otherResource.ID = 5
+	repo.On("FindByID", uint(5)).Return(otherResource, nil)
 	repo.On("Save", uint(1), uint(5)).Return(nil)
 
 	w := doRequest(r, http.MethodPost, "/resources/5/save", nil)
@@ -284,6 +293,9 @@ func TestResourceUnsave_Success(t *testing.T) {
 	r := newRouter(1)
 	r.DELETE("/resources/:id/save", h.UnsaveResource)
 
+	otherResource := &model.LearningResource{UserID: 99}
+	otherResource.ID = 5
+	repo.On("FindByID", uint(5)).Return(otherResource, nil)
 	repo.On("Unsave", uint(1), uint(5)).Return(nil)
 
 	w := doRequest(r, http.MethodDelete, "/resources/5/save", nil)
