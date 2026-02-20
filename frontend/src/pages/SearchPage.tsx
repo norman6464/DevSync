@@ -4,15 +4,9 @@ import SearchBar from '../components/search/SearchBar';
 import SearchTabs from '../components/search/SearchTabs';
 import type { SearchTab } from '../components/search/SearchTabs';
 import PostFilterPanel from '../components/search/PostFilterPanel';
-import UserSearchCard from '../components/search/UserSearchCard';
-import PostSearchCard from '../components/search/PostSearchCard';
-import CircleSearchCard from '../components/search/CircleSearchCard';
+import { LoadingResults, SearchEmptyState, UserResults, PostResults, CircleResults } from '../components/search/SearchResults';
 import { useUserSearch, usePostSearch, useCircleSearch, useDebounce } from '../hooks';
 import { useAuthStore } from '../store/authStore';
-import { UserCardSkeleton, PostCardSkeleton } from '../components/common/Skeleton';
-import type { User } from '../types/user';
-import type { Post } from '../types/post';
-import type { StudyCircle } from '../types/studyCircle';
 import type { PostSearchFilters } from '../api/posts';
 
 export default function NewSearchPage() {
@@ -116,7 +110,7 @@ export default function NewSearchPage() {
         {isLoading ? (
           <LoadingResults tab={activeTab} />
         ) : !hasSearched ? (
-          <EmptyState message={t('search.emptyInitial')} />
+          <SearchEmptyState message={t('search.emptyInitial')} />
         ) : activeTab === 'users' ? (
           <UserResults users={userSearch.filteredUsers} currentUserId={currentUser?.id} query={globalQuery} />
         ) : activeTab === 'posts' ? (
@@ -125,114 +119,6 @@ export default function NewSearchPage() {
           <CircleResults circles={circleSearch.results} query={globalQuery} />
         )}
       </div>
-    </div>
-  );
-}
-
-function LoadingResults({ tab }: { tab: SearchTab }) {
-  if (tab === 'users') {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {[1, 2, 3, 4].map((i) => (
-          <UserCardSkeleton key={i} />
-        ))}
-      </div>
-    );
-  }
-  return (
-    <div className="space-y-4">
-      {[1, 2, 3].map((i) => (
-        <PostCardSkeleton key={i} />
-      ))}
-    </div>
-  );
-}
-
-function EmptyState({ message }: { message: string }) {
-  return (
-    <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center">
-      <svg
-        className="w-16 h-16 mx-auto mb-4 text-gray-700"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-        />
-      </svg>
-      <p className="text-gray-400">{message}</p>
-    </div>
-  );
-}
-
-function UserResults({ users, currentUserId, query }: { users: User[]; currentUserId?: number; query: string }) {
-  const { t } = useTranslation();
-
-  if (users.length === 0) {
-    return (
-      <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center">
-        <p className="text-gray-400 mb-1">{t('search.noResults')}</p>
-        <p className="text-gray-500 text-sm">"{query}"</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {users.map((user) => (
-        <UserSearchCard key={user.id} user={user} currentUserId={currentUserId} />
-      ))}
-    </div>
-  );
-}
-
-function PostResults({ posts, total, query }: { posts: Post[]; total: number; query: string }) {
-  const { t } = useTranslation();
-
-  if (posts.length === 0) {
-    return (
-      <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center">
-        <p className="text-gray-400 mb-1">{t('search.noResults')}</p>
-        <p className="text-gray-500 text-sm">"{query}"</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {total > posts.length && (
-        <p className="text-sm text-gray-400">
-          {t('search.totalResults', { count: total })}
-        </p>
-      )}
-      {posts.map((post) => (
-        <PostSearchCard key={post.id} post={post} />
-      ))}
-    </div>
-  );
-}
-
-function CircleResults({ circles, query }: { circles: StudyCircle[]; query: string }) {
-  const { t } = useTranslation();
-
-  if (circles.length === 0) {
-    return (
-      <div className="bg-gray-900 border border-gray-800 rounded-md p-12 text-center">
-        <p className="text-gray-400 mb-1">{t('search.noResults')}</p>
-        <p className="text-gray-500 text-sm">"{query}"</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {circles.map((circle) => (
-        <CircleSearchCard key={circle.id} circle={circle} />
-      ))}
     </div>
   );
 }
