@@ -72,20 +72,32 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
       const msg = data as Record<string, unknown>;
       if (msg.type === 'group_message') {
-        const wsMsg = msg as unknown as WSGroupMessage;
+        if (
+          typeof msg.sender_id !== 'number' ||
+          typeof msg.room_id !== 'number' ||
+          typeof msg.content !== 'string' ||
+          typeof msg.sender_name !== 'string'
+        ) {
+          return;
+        }
         const state = get();
-        if (state.activeRoomId === wsMsg.room_id) {
+        if (state.activeRoomId === msg.room_id) {
           const groupMsg: GroupMessage = {
             id: Date.now(),
-            chat_room_id: wsMsg.room_id,
-            sender_id: wsMsg.sender_id,
-            sender: { id: wsMsg.sender_id, name: wsMsg.sender_name } as GroupMessage['sender'],
-            content: wsMsg.content,
+            chat_room_id: msg.room_id,
+            sender_id: msg.sender_id,
+            sender: { id: msg.sender_id, name: msg.sender_name } as GroupMessage['sender'],
+            content: msg.content,
             created_at: new Date().toISOString(),
           };
           set((s) => ({ groupMessages: [...s.groupMessages, groupMsg] }));
         }
-      } else {
+      } else if (
+        typeof msg.id === 'number' &&
+        typeof msg.sender_id === 'number' &&
+        typeof msg.receiver_id === 'number' &&
+        typeof msg.content === 'string'
+      ) {
         const message = msg as unknown as Message;
         set((state) => ({
           activeMessages: [...state.activeMessages, message],
