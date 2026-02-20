@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
@@ -62,6 +63,21 @@ func (s *LearningResourceService) GetByUserID(targetUserID, currentUserID uint) 
 // GetPublic は公開学習リソースをページネーション・フィルタ付きで取得する。
 func (s *LearningResourceService) GetPublic(limit, offset int, category, difficulty string) ([]model.LearningResource, int64, error) {
 	return s.repo.FindPublic(limit, offset, category, difficulty)
+}
+
+// validDifficulties は有効な難易度の一覧。
+var validDifficulties = map[string]bool{
+	string(model.ResourceDifficultyBeginner):     true,
+	string(model.ResourceDifficultyIntermediate): true,
+	string(model.ResourceDifficultyAdvanced):     true,
+}
+
+// GetByDifficulty は公開学習リソースを難易度でフィルタリングして取得する。
+func (s *LearningResourceService) GetByDifficulty(difficulty string, limit, offset int) ([]model.LearningResource, int64, error) {
+	if !validDifficulties[difficulty] {
+		return nil, 0, domain.NewError(domain.ErrCodeBadRequest, "無効な難易度です", nil)
+	}
+	return s.repo.FindByDifficulty(difficulty, limit, offset)
 }
 
 // Search は学習リソースをキーワードで検索する。

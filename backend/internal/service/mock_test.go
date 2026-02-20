@@ -734,6 +734,11 @@ func (m *MockLearningResourceRepository) FindSavedByUserID(userID uint, limit, o
 	return args.Get(0).([]model.LearningResource), args.Get(1).(int64), args.Error(2)
 }
 
+func (m *MockLearningResourceRepository) FindByDifficulty(difficulty string, limit, offset int) ([]model.LearningResource, int64, error) {
+	args := m.Called(difficulty, limit, offset)
+	return args.Get(0).([]model.LearningResource), args.Get(1).(int64), args.Error(2)
+}
+
 // ============================================================
 // MockPasswordResetRepository は repository.PasswordResetRepositoryInterface のテスト用モック実装。
 // ============================================================

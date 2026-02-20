@@ -216,6 +216,7 @@ type LearningResourceRepositoryInterface interface {
 	Unsave(userID, resourceID uint) error
 	HasSaved(userID, resourceID uint) (bool, error)
 	FindSavedByUserID(userID uint, limit, offset int) ([]model.LearningResource, int64, error)
+	FindByDifficulty(difficulty string, limit, offset int) ([]model.LearningResource, int64, error)
 }
 
 // RoadmapRepositoryInterface は学習ロードマップデータ操作の契約を定義する。

@@ -713,3 +713,57 @@ func TestLearningResourceDelete_NotFound(t *testing.T) {
 	assert.Error(t, err)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// GetByDifficulty テスト
+// ============================================================
+
+func TestLearningResourceGetByDifficulty_Success(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+
+	resources := []model.LearningResource{
+		{Title: "Go入門", Difficulty: model.ResourceDifficultyBeginner},
+		{Title: "HTML基礎", Difficulty: model.ResourceDifficultyBeginner},
+	}
+	repo.On("FindByDifficulty", "beginner", 20, 0).Return(resources, int64(2), nil)
+
+	result, total, err := svc.GetByDifficulty("beginner", 20, 0)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, int64(2), total)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningResourceGetByDifficulty_InvalidDifficulty(t *testing.T) {
+	svc, _ := newTestLearningResourceService()
+
+	result, total, err := svc.GetByDifficulty("expert", 20, 0)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, int64(0), total)
+	assert.Contains(t, err.Error(), "無効な難易度です")
+}
+
+func TestLearningResourceGetByDifficulty_Empty(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+
+	repo.On("FindByDifficulty", "advanced", 20, 0).Return([]model.LearningResource{}, int64(0), nil)
+
+	result, total, err := svc.GetByDifficulty("advanced", 20, 0)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	assert.Equal(t, int64(0), total)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningResourceGetByDifficulty_RepoError(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+
+	repo.On("FindByDifficulty", "intermediate", 20, 0).Return([]model.LearningResource{}, int64(0), errors.New("db error"))
+
+	result, total, err := svc.GetByDifficulty("intermediate", 20, 0)
+	assert.Error(t, err)
+	assert.Empty(t, result)
+	assert.Equal(t, int64(0), total)
+	repo.AssertExpectations(t)
+}

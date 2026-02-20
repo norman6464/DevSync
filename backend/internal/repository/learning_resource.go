@@ -182,3 +182,19 @@ func (r *LearningResourceRepository) FindSavedByUserID(userID uint, limit, offse
 
 	return resources, total, err
 }
+
+// FindByDifficulty は公開リソースを難易度でフィルタリングして取得する。
+func (r *LearningResourceRepository) FindByDifficulty(difficulty string, limit, offset int) ([]model.LearningResource, int64, error) {
+	var resources []model.LearningResource
+	var total int64
+
+	query := r.db.Where("is_public = ? AND difficulty = ?", true, difficulty)
+	query.Model(&model.LearningResource{}).Count(&total)
+
+	err := query.Preload("User").
+		Order("created_at DESC").
+		Limit(limit).Offset(offset).
+		Find(&resources).Error
+
+	return resources, total, err
+}
