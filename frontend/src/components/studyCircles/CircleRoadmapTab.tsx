@@ -160,6 +160,7 @@ export default function CircleRoadmapTab({
             type="url"
             value={stepForm.resource_url}
             onChange={(e) => setStepForm({ ...stepForm, resource_url: e.target.value })}
+            maxLength={2048}
             placeholder={t('studyCircle.steps.resourceUrl')}
             className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
           />

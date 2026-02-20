@@ -100,6 +100,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
           type="url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
+          maxLength={2048}
           className={inputClass}
           placeholder="https://..."
         />
@@ -216,6 +217,7 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
           type="url"
           value={imageUrl}
           onChange={(e) => setImageUrl(e.target.value)}
+          maxLength={2048}
           className={inputClass}
           placeholder="https://..."
         />
