@@ -889,6 +889,10 @@
       "oldest": "Mais antigo",
       "ratingDesc": "Melhor avaliado",
       "ratingAsc": "Pior avaliado"
+    },
+    "ratingFilter": {
+      "all": "Todas as avaliações",
+      "minRating": "★{{stars}}+"
     }
   },
   "qa": {

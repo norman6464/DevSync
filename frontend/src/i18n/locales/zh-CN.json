@@ -889,6 +889,10 @@
       "oldest": "最旧",
       "ratingDesc": "评分最高",
       "ratingAsc": "评分最低"
+    },
+    "ratingFilter": {
+      "all": "全部评分",
+      "minRating": "★{{stars}}及以上"
     }
   },
   "qa": {
