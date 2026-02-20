@@ -584,6 +584,8 @@
     "created": "目标已创建",
     "updated": "目标已更新",
     "deleted": "目标已删除",
+    "duplicate": "复制",
+    "duplicated": "目标已复制",
     "totalGoals": "总目标",
     "activeGoals": "进行中",
     "completedGoals": "已完成",

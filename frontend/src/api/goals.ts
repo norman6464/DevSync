@@ -69,3 +69,6 @@ export const getGoalStats = (userId: number) =>
 
 export const getDeadlineAlerts = () =>
   client.get<GoalDeadlineAlert[]>('/goals/deadline-alerts');
+
+export const duplicateGoal = (id: number) =>
+  client.post<LearningGoal>(`/goals/${id}/duplicate`);

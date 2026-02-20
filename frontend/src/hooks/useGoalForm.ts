@@ -69,6 +69,10 @@ export function useGoalForm() {
     if (ok) goalsData.deleteGoal(id);
   };
 
+  const handleDuplicateGoal = async (id: number) => {
+    await goalsData.duplicateGoal(id);
+  };
+
   return {
     ...goalsData,
     showForm,
@@ -88,6 +92,7 @@ export function useGoalForm() {
     handleProgressChange,
     handleStatusChange,
     handleDeleteGoal,
+    handleDuplicateGoal,
     dialogProps,
   };
 }

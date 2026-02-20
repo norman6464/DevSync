@@ -584,6 +584,8 @@
     "created": "목표가 생성되었습니다",
     "updated": "목표가 업데이트되었습니다",
     "deleted": "목표가 삭제되었습니다",
+    "duplicate": "복제",
+    "duplicated": "목표가 복제되었습니다",
     "totalGoals": "총 목표",
     "activeGoals": "진행 중",
     "completedGoals": "완료",

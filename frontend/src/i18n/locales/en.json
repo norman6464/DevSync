@@ -584,6 +584,8 @@
     "created": "Goal created",
     "updated": "Goal updated",
     "deleted": "Goal deleted",
+    "duplicate": "Duplicate",
+    "duplicated": "Goal duplicated",
     "totalGoals": "Total Goals",
     "activeGoals": "Active",
     "completedGoals": "Completed",

@@ -584,6 +584,8 @@
     "created": "Objectif créé",
     "updated": "Objectif mis à jour",
     "deleted": "Objectif supprimé",
+    "duplicate": "Dupliquer",
+    "duplicated": "Objectif dupliqué",
     "totalGoals": "Total des objectifs",
     "activeGoals": "Actifs",
     "completedGoals": "Terminés",

@@ -584,6 +584,8 @@
     "created": "Meta criada",
     "updated": "Meta atualizada",
     "deleted": "Meta excluída",
+    "duplicate": "Duplicar",
+    "duplicated": "Meta duplicada",
     "totalGoals": "Total de Metas",
     "activeGoals": "Ativas",
     "completedGoals": "Concluídas",

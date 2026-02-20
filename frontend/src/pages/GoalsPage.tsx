@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Monitor, Rocket, Target, FolderOpen, FileText, type LucideIcon } from 'lucide-react';
+import { Monitor, Rocket, Target, FolderOpen, FileText, Copy, type LucideIcon } from 'lucide-react';
 import { type GoalCategory, type GoalStatus, type LearningGoal } from '../api/goals';
 import { useGoalForm } from '../hooks';
 import { Modal, PageLoader } from '../components/common';
@@ -51,6 +51,7 @@ export default function GoalsPage() {
     category, setCategory, targetDate, setTargetDate,
     resetForm, handleSubmit, handleEdit,
     handleProgressChange, handleStatusChange, handleDeleteGoal,
+    handleDuplicateGoal,
     dialogProps,
   } = useGoalForm();
 
@@ -195,6 +196,7 @@ export default function GoalsPage() {
                     goal={goal}
                     onEdit={handleEdit}
                     onDelete={handleDeleteGoal}
+                    onDuplicate={handleDuplicateGoal}
                     onProgressChange={handleProgressChange}
                     onStatusChange={handleStatusChange}
                     getCategoryInfo={getCategoryInfo}
@@ -218,6 +220,7 @@ export default function GoalsPage() {
                     goal={goal}
                     onEdit={handleEdit}
                     onDelete={handleDeleteGoal}
+                    onDuplicate={handleDuplicateGoal}
                     onProgressChange={handleProgressChange}
                     onStatusChange={handleStatusChange}
                     getCategoryInfo={getCategoryInfo}
@@ -241,6 +244,7 @@ export default function GoalsPage() {
                     goal={goal}
                     onEdit={handleEdit}
                     onDelete={handleDeleteGoal}
+                    onDuplicate={handleDuplicateGoal}
                     onProgressChange={handleProgressChange}
                     onStatusChange={handleStatusChange}
                     getCategoryInfo={getCategoryInfo}
@@ -263,6 +267,7 @@ interface GoalCardProps {
   goal: LearningGoal;
   onEdit: (goal: LearningGoal) => void;
   onDelete: (id: number) => void;
+  onDuplicate: (id: number) => void;
   onProgressChange: (goal: LearningGoal, progress: number) => void;
   onStatusChange: (goal: LearningGoal, status: GoalStatus) => void;
   getCategoryInfo: (cat: GoalCategory) => { value: GoalCategory; label: string; icon: string; Icon: LucideIcon };
@@ -274,6 +279,7 @@ const GoalCard = memo(function GoalCard({
   goal,
   onEdit,
   onDelete,
+  onDuplicate,
   onProgressChange,
   onStatusChange,
   getCategoryInfo,
@@ -377,6 +383,13 @@ const GoalCard = memo(function GoalCard({
               </svg>
             </button>
           )}
+          <button
+            onClick={() => onDuplicate(goal.id)}
+            className="p-2 text-gray-400 hover:text-purple-400 transition-colors"
+            aria-label={t('goals.duplicate')}
+          >
+            <Copy className="w-4 h-4" />
+          </button>
           <button
             onClick={() => onEdit(goal)}
             className="p-2 text-gray-400 hover:text-blue-400 transition-colors"

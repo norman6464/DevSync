@@ -566,6 +566,8 @@
     "created": "目標を作成しました",
     "updated": "目標を更新しました",
     "deleted": "目標を削除しました",
+    "duplicate": "複製",
+    "duplicated": "目標を複製しました",
     "createSuccess": "目標を作成しました",
     "updateSuccess": "目標を更新しました",
     "deleteSuccess": "目標を削除しました",

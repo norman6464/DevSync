@@ -584,6 +584,8 @@
     "created": "目標已建立",
     "updated": "目標已更新",
     "deleted": "目標已刪除",
+    "duplicate": "複製",
+    "duplicated": "目標已複製",
     "totalGoals": "總目標",
     "activeGoals": "進行中",
     "completedGoals": "已完成",
