@@ -8,6 +8,7 @@ import { type RoadmapStep } from '../api/roadmaps';
 import { PageLoader, Modal } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
 import { inputClass, buttonSecondaryClass, labelClass } from '../constants/styles';
+import { sanitizeUrl } from '../utils/url';
 
 export default function RoadmapDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -265,9 +266,9 @@ export default function RoadmapDetailPage() {
                       {step.description && (
                         <p className="text-sm text-gray-400 mt-1">{step.description}</p>
                       )}
-                      {step.resource_url && (
+                      {sanitizeUrl(step.resource_url) && (
                         <a
-                          href={step.resource_url}
+                          href={sanitizeUrl(step.resource_url)!}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-xs text-blue-400 hover:text-blue-300 mt-2 inline-flex items-center gap-1"
