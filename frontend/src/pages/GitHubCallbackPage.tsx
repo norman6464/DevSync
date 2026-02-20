@@ -59,7 +59,7 @@ export default function GitHubCallbackPage() {
           await loadUser();
           toast.success(t('githubCallback.connectSuccess'));
           const onboardingRedirect = sessionStorage.getItem('onboarding_redirect');
-          if (onboardingRedirect) {
+          if (onboardingRedirect === 'true') {
             sessionStorage.removeItem('onboarding_redirect');
             navigate('/onboarding');
           } else {
