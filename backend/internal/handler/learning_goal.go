@@ -12,7 +12,7 @@ import (
 type LearningGoalServiceInterface interface {
 	Create(goal *model.LearningGoal) error
 	GetByID(id uint) (*model.LearningGoal, error)
-	GetByUserID(userID uint) ([]model.LearningGoal, error)
+	GetByUserID(userID uint, limit, offset int) ([]model.LearningGoal, int64, error)
 	GetByCategory(userID uint, category string) ([]model.LearningGoal, error)
 	GetByStatus(userID uint, status string) ([]model.LearningGoal, error)
 	GetStats(userID uint) (*model.LearningGoalStats, error)
@@ -159,26 +159,38 @@ func (h *LearningGoalHandler) GetByUserID(c *gin.Context) {
 		return
 	}
 
-	goals, err := h.service.GetByUserID(userID)
+	limit, offset := parseLimitOffset(c)
+	goals, total, err := h.service.GetByUserID(userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
 
-	respondOK(c, goals)
+	respondOK(c, dto.GoalListResponse{
+		Goals:  goals,
+		Total:  total,
+		Limit:  limit,
+		Offset: offset,
+	})
 }
 
 // GetMyGoals は認証ユーザー自身の学習目標一覧を取得する。
 func (h *LearningGoalHandler) GetMyGoals(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	goals, err := h.service.GetByUserID(userID)
+	limit, offset := parseLimitOffset(c)
+	goals, total, err := h.service.GetByUserID(userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
 
-	respondOK(c, goals)
+	respondOK(c, dto.GoalListResponse{
+		Goals:  goals,
+		Total:  total,
+		Limit:  limit,
+		Offset: offset,
+	})
 }
 
 // GetDeadlineAlerts は認証ユーザーのデッドラインアラートを取得する。

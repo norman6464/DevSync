@@ -29,9 +29,9 @@ func (s *LearningGoalService) GetByID(id uint) (*model.LearningGoal, error) {
 	return s.repo.FindByID(id)
 }
 
-// GetByUserID は指定ユーザーの全学習目標を取得する。
-func (s *LearningGoalService) GetByUserID(userID uint) ([]model.LearningGoal, error) {
-	return s.repo.GetByUserID(userID)
+// GetByUserID は指定ユーザーの学習目標をページネーション付きで取得する。
+func (s *LearningGoalService) GetByUserID(userID uint, limit, offset int) ([]model.LearningGoal, int64, error) {
+	return s.repo.GetByUserID(userID, limit, offset)
 }
 
 // GetActiveByUserID は指定ユーザーのアクティブな学習目標のみを取得する。

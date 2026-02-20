@@ -32,7 +32,7 @@ func (s *AIAdviceService) collectContext(userID uint) (*userContext, error) {
 		return nil, err
 	}
 
-	ctx.goals, err = s.goalRepo.GetByUserID(userID)
+	ctx.goals, _, err = s.goalRepo.GetByUserID(userID, 100, 0)
 	if err != nil {
 		return nil, err
 	}

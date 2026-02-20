@@ -28,7 +28,7 @@ func (s *AIAdviceService) Chat(userID uint, message string, conversationID uint)
 	}
 
 	// ユーザーコンテキスト収集（プロンプト用）
-	goals, _ := s.goalRepo.GetByUserID(userID)
+	goals, _, _ := s.goalRepo.GetByUserID(userID, 100, 0)
 	streak, _ := s.logRepo.GetStreakInfo(userID)
 	roadmaps, _ := s.roadmapRepo.GetByUserID(userID)
 	langStats, _ := s.githubRepo.GetLanguageStats(userID)

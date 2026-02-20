@@ -82,22 +82,35 @@ func TestLearningGoalGetByUserID_Success(t *testing.T) {
 		{Title: "Goal 1", UserID: 1},
 		{Title: "Goal 2", UserID: 1},
 	}
-	repo.On("GetByUserID", uint(1)).Return(goals, nil)
+	repo.On("GetByUserID", uint(1), 20, 0).Return(goals, int64(2), nil)
 
-	result, err := svc.GetByUserID(1)
+	result, total, err := svc.GetByUserID(1, 20, 0)
 	assert.NoError(t, err)
 	assert.Len(t, result, 2)
+	assert.Equal(t, int64(2), total)
 	repo.AssertExpectations(t)
 }
 
 func TestLearningGoalGetByUserID_Error(t *testing.T) {
 	svc, repo := newTestLearningGoalService()
 
-	repo.On("GetByUserID", uint(1)).Return([]model.LearningGoal{}, errors.New("db error"))
+	repo.On("GetByUserID", uint(1), 20, 0).Return([]model.LearningGoal{}, int64(0), errors.New("db error"))
 
-	result, err := svc.GetByUserID(1)
+	result, _, err := svc.GetByUserID(1, 20, 0)
 	assert.Error(t, err)
 	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningGoalGetByUserID_Page2(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	repo.On("GetByUserID", uint(1), 10, 10).Return([]model.LearningGoal{}, int64(15), nil)
+
+	result, total, err := svc.GetByUserID(1, 10, 10)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	assert.Equal(t, int64(15), total)
 	repo.AssertExpectations(t)
 }
 

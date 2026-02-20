@@ -166,7 +166,7 @@ type LearningGoalRepositoryInterface interface {
 	Update(goal *model.LearningGoal) error
 	Delete(id uint) error
 	FindByID(id uint) (*model.LearningGoal, error)
-	GetByUserID(userID uint) ([]model.LearningGoal, error)
+	GetByUserID(userID uint, limit, offset int) ([]model.LearningGoal, int64, error)
 	GetActiveByUserID(userID uint) ([]model.LearningGoal, error)
 	GetByCategory(userID uint, category string) ([]model.LearningGoal, error)
 	GetByStatus(userID uint, status string) ([]model.LearningGoal, error)

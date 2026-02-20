@@ -1,5 +1,15 @@
 package dto
 
+import "github.com/norman6464/devsync/backend/internal/model"
+
+// GoalListResponse は学習目標一覧レスポンス。
+type GoalListResponse struct {
+	Goals  []model.LearningGoal `json:"goals"`
+	Total  int64                `json:"total"`
+	Limit  int                  `json:"limit"`
+	Offset int                  `json:"offset"`
+}
+
 // CreateGoalRequest は学習目標作成のリクエストボディ。
 type CreateGoalRequest struct {
 	Title       string `json:"title" binding:"required,max=200" validate:"required,max=200"`
