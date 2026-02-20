@@ -645,7 +645,12 @@
     "logsOnDate": "Registros del {{date}}",
     "exportCSV": "Exportar CSV",
     "exportDays": "Últimos {{days}} días",
-    "exportAll": "Todo el tiempo"
+    "exportAll": "Todo el tiempo",
+    "weeklyDuration": "Tiempo esta semana",
+    "hoursMinutes": "{{hours}}h {{minutes}}m",
+    "currentStreak": "Racha actual",
+    "days": " días",
+    "logCount": "Total de registros"
   },
   "reports": {
     "title": "Informes de Actividad",

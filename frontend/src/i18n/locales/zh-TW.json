@@ -645,7 +645,12 @@
     "logsOnDate": "{{date}}的日誌",
     "exportCSV": "匯出CSV",
     "exportDays": "最近{{days}}天",
-    "exportAll": "全部"
+    "exportAll": "全部",
+    "weeklyDuration": "本週學習時間",
+    "hoursMinutes": "{{hours}}小時{{minutes}}分鐘",
+    "currentStreak": "連續學習天數",
+    "days": "天",
+    "logCount": "日誌數量"
   },
   "reports": {
     "title": "活動報告",

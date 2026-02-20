@@ -25,6 +25,15 @@ export const getCalendarData = (userId: number) =>
 export const getStreakInfo = (userId: number) =>
   client.get<StreakInfo>(`/learning-logs/streak/${userId}`);
 
+export const getWeeklyDuration = (userId: number) =>
+  client.get<{ duration: number }>(`/learning-logs/weekly-duration/${userId}`);
+
+export const getLogsByCategory = (category: string) =>
+  client.get<LearningLog[]>(`/learning-logs/category/${category}`);
+
+export const getLogsBySource = (source: string) =>
+  client.get<LearningLog[]>(`/learning-logs/source/${source}`);
+
 export type ExportPeriod = '7' | '30' | '90' | 'all';
 
 export const exportLogsCSV = (period: ExportPeriod = '30') =>

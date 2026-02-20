@@ -645,7 +645,12 @@
     "logsOnDate": "{{date}}의 로그",
     "exportCSV": "CSV 내보내기",
     "exportDays": "최근 {{days}}일",
-    "exportAll": "전체 기간"
+    "exportAll": "전체 기간",
+    "weeklyDuration": "이번 주 학습 시간",
+    "hoursMinutes": "{{hours}}시간 {{minutes}}분",
+    "currentStreak": "연속 학습일",
+    "days": "일",
+    "logCount": "로그 수"
   },
   "reports": {
     "title": "활동 리포트",
