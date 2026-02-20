@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
 	"github.com/stretchr/testify/assert"
@@ -79,7 +80,7 @@ func TestNoteFolderHandler_Create(t *testing.T) {
 		handler.Create(c)
 	})
 
-	input := CreateNoteFolderInput{
+	input := dto.CreateNoteFolderRequest{
 		Name:     "新規フォルダ",
 		ParentID: nil,
 	}
@@ -217,7 +218,7 @@ func TestNoteFolderHandler_Update(t *testing.T) {
 		handler.Update(c)
 	})
 
-	input := UpdateNoteFolderInput{
+	input := dto.UpdateNoteFolderRequest{
 		Name: "更新後フォルダ名",
 	}
 	body, _ := json.Marshal(input)
