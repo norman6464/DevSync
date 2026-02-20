@@ -969,6 +969,7 @@
     "complete": "Complete",
     "completed": "Completed",
     "stepsCompleted": "Steps Completed",
+    "stepsProgress": "{{completed}} / {{total}} steps completed",
     "notFound": "Roadmap not found",
     "backToList": "Back to list",
     "addStep": "Add Step",

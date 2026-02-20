@@ -969,6 +969,7 @@
     "complete": "Завершить",
     "completed": "Завершено",
     "stepsCompleted": "Шагов завершено",
+    "stepsProgress": "{{completed}} / {{total}} шагов завершено",
     "notFound": "Дорожная карта не найдена",
     "backToList": "Вернуться к списку",
     "addStep": "Добавить шаг",

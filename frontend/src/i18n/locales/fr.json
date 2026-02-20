@@ -969,6 +969,7 @@
     "complete": "Terminé",
     "completed": "Terminé",
     "stepsCompleted": "Étapes terminées",
+    "stepsProgress": "{{completed}} / {{total}} étapes terminées",
     "notFound": "Feuille de route non trouvée",
     "backToList": "Retour à la liste",
     "addStep": "Ajouter une étape",
