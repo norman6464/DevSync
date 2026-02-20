@@ -63,6 +63,9 @@ func (s *PostSeriesService) Update(id, userID uint, updates *model.PostSeries) (
 		series.Title = updates.Title
 	}
 	if updates.Description != "" {
+		if strings.TrimSpace(updates.Description) == "" {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, "説明は空白のみでは入力できません", nil)
+		}
 		series.Description = updates.Description
 	}
 

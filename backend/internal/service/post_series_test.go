@@ -398,6 +398,21 @@ func TestPostSeriesUpdate_WhitespaceTitle(t *testing.T) {
 	assert.Contains(t, err.Error(), "空白のみ")
 }
 
+func TestPostSeriesUpdate_WhitespaceDescription(t *testing.T) {
+	svc, repo := newTestPostSeriesService()
+
+	existing := &model.PostSeries{Title: "Title", Description: "Old Desc", UserID: 1}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	updates := &model.PostSeries{Description: "  \t  "}
+	result, err := svc.Update(1, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "空白のみ")
+}
+
 func TestPostSeriesUpdate_Description(t *testing.T) {
 	svc, repo := newTestPostSeriesService()
 
