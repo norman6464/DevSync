@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { Plus } from 'lucide-react';
 import { inputClass } from '../../constants/styles';
 import { useConfirm } from '../../hooks';
+import { parseJsonArray } from '../../utils/json';
 import ConfirmDialog from '../common/ConfirmDialog';
 import MarkdownEditor from './MarkdownEditor';
 import CodeSnippetInput, { type SnippetInputData } from './CodeSnippetInput';
@@ -26,7 +27,7 @@ export default function PostForm({ post, onSubmit, onCancel, loading: externalLo
   const [title, setTitle] = useState(post?.title || '');
   const [content, setContent] = useState(post?.content || '');
   const [imageUrls, setImageUrls] = useState<string[]>(
-    post?.image_urls ? JSON.parse(post.image_urls) : []
+    parseJsonArray(post?.image_urls)
   );
   const [snippets, setSnippets] = useState<SnippetInputData[]>([]);
   const [loading, setLoading] = useState(false);
