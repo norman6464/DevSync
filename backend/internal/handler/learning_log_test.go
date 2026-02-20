@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -447,5 +448,59 @@ func TestLearningLog_GetWeeklyDuration_InvalidID(t *testing.T) {
 	r.GET("/learning-logs/weekly-duration/:userId", h.GetWeeklyDuration)
 
 	w := doRequest(r, http.MethodGet, "/learning-logs/weekly-duration/abc", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestLearningLog_Favorite_Success(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	r := newRouter(1)
+	r.PUT("/logs/:id/favorite", h.Favorite)
+
+	svc.On("FavoriteLog", uint(10), uint(1)).Return(nil)
+
+	w := doRequest(r, http.MethodPut, "/logs/10/favorite", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestLearningLog_Favorite_Forbidden(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	r := newRouter(1)
+	r.PUT("/logs/:id/favorite", h.Favorite)
+
+	svc.On("FavoriteLog", uint(10), uint(1)).Return(service.ErrForbidden)
+
+	w := doRequest(r, http.MethodPut, "/logs/10/favorite", nil)
+	assertStatus(t, w, http.StatusForbidden)
+	svc.AssertExpectations(t)
+}
+
+func TestLearningLog_Favorite_InvalidID(t *testing.T) {
+	h, _ := setupLearningLogHandler()
+	r := newRouter(1)
+	r.PUT("/logs/:id/favorite", h.Favorite)
+
+	w := doRequest(r, http.MethodPut, "/logs/abc/favorite", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestLearningLog_Unfavorite_Success(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	r := newRouter(1)
+	r.PUT("/logs/:id/unfavorite", h.Unfavorite)
+
+	svc.On("UnfavoriteLog", uint(10), uint(1)).Return(nil)
+
+	w := doRequest(r, http.MethodPut, "/logs/10/unfavorite", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestLearningLog_Unfavorite_InvalidID(t *testing.T) {
+	h, _ := setupLearningLogHandler()
+	r := newRouter(1)
+	r.PUT("/logs/:id/unfavorite", h.Unfavorite)
+
+	w := doRequest(r, http.MethodPut, "/logs/abc/unfavorite", nil)
 	assertStatus(t, w, http.StatusBadRequest)
 }

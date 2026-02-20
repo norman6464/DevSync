@@ -22,6 +22,8 @@ type LearningLogServiceInterface interface {
 	GetByCategory(userID uint, category string) ([]model.LearningLog, error)
 	GetBySource(userID uint, source string) ([]model.LearningLog, error)
 	GetWeeklyDuration(userID uint) (int, error)
+	FavoriteLog(id, userID uint) error
+	UnfavoriteLog(id, userID uint) error
 }
 
 // LearningLogHandler は学習ログ関連のHTTPハンドラ。
@@ -274,4 +276,36 @@ func (h *LearningLogHandler) GetWeeklyDuration(c *gin.Context) {
 	}
 
 	respondOK(c, gin.H{"duration": duration})
+}
+
+// Favorite は学習ログをお気に入りに設定する。
+func (h *LearningLogHandler) Favorite(c *gin.Context) {
+	userID := c.GetUint("userID")
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	if err := h.service.FavoriteLog(id, userID); err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, gin.H{"message": "学習ログをお気に入りに追加しました"})
+}
+
+// Unfavorite は学習ログのお気に入りを解除する。
+func (h *LearningLogHandler) Unfavorite(c *gin.Context) {
+	userID := c.GetUint("userID")
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	if err := h.service.UnfavoriteLog(id, userID); err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, gin.H{"message": "学習ログのお気に入りを解除しました"})
 }

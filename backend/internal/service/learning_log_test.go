@@ -8,6 +8,7 @@ import (
 
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 // newTestLearningLogService はLearningLogServiceのテスト用インスタンスを生成するヘルパー。
@@ -587,4 +588,65 @@ func TestLearningLogGetWeeklyDuration_RepoError(t *testing.T) {
 	duration, err := svc.GetWeeklyDuration(1)
 	assert.Error(t, err)
 	assert.Equal(t, 0, duration)
+}
+
+func TestLearningLogFavorite_Success(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	log := &model.LearningLog{UserID: 1}
+	log.ID = 10
+	repo.On("FindByID", uint(10)).Return(log, nil)
+	repo.On("Update", mock.MatchedBy(func(l *model.LearningLog) bool {
+		return l.ID == 10 && l.IsFavorite
+	})).Return(nil)
+
+	err := svc.FavoriteLog(10, 1)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogFavorite_Forbidden(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	log := &model.LearningLog{UserID: 99}
+	log.ID = 10
+	repo.On("FindByID", uint(10)).Return(log, nil)
+
+	err := svc.FavoriteLog(10, 1)
+	assert.ErrorIs(t, err, ErrForbidden)
+}
+
+func TestLearningLogFavorite_NotFound(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	repo.On("FindByID", uint(99)).Return(nil, ErrNotFound)
+
+	err := svc.FavoriteLog(99, 1)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestLearningLogUnfavorite_Success(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	log := &model.LearningLog{UserID: 1, IsFavorite: true}
+	log.ID = 10
+	repo.On("FindByID", uint(10)).Return(log, nil)
+	repo.On("Update", mock.MatchedBy(func(l *model.LearningLog) bool {
+		return l.ID == 10 && !l.IsFavorite
+	})).Return(nil)
+
+	err := svc.UnfavoriteLog(10, 1)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogUnfavorite_Forbidden(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	log := &model.LearningLog{UserID: 99}
+	log.ID = 10
+	repo.On("FindByID", uint(10)).Return(log, nil)
+
+	err := svc.UnfavoriteLog(10, 1)
+	assert.ErrorIs(t, err, ErrForbidden)
 }
