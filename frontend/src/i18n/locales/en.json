@@ -839,7 +839,22 @@
     "createFailed": "Failed to create review",
     "updateFailed": "Failed to update review",
     "deleteFailed": "Failed to delete review",
-    "confirmDelete": "Are you sure you want to delete this review?"
+    "confirmDelete": "Are you sure you want to delete this review?",
+    "status": {
+      "not_started": "Not Started",
+      "reading": "Reading",
+      "completed": "Completed"
+    },
+    "statusAll": "All",
+    "archivedLabel": "Archived",
+    "archive": "Archive",
+    "unarchive": "Unarchive",
+    "archived": "Review archived",
+    "unarchived": "Review unarchived",
+    "archiveFailed": "Failed to archive",
+    "unarchiveFailed": "Failed to unarchive",
+    "statusUpdated": "Status updated",
+    "statusUpdateFailed": "Failed to update status"
   },
   "qa": {
     "pageTitle": "Tech Q&A",

@@ -839,7 +839,22 @@
     "createFailed": "리뷰 생성에 실패했습니다",
     "updateFailed": "리뷰 업데이트에 실패했습니다",
     "deleteFailed": "리뷰 삭제에 실패했습니다",
-    "confirmDelete": "이 리뷰를 삭제하시겠습니까?"
+    "confirmDelete": "이 리뷰를 삭제하시겠습니까?",
+    "status": {
+      "not_started": "미읽음",
+      "reading": "읽는 중",
+      "completed": "완독"
+    },
+    "statusAll": "전체",
+    "archivedLabel": "보관됨",
+    "archive": "보관",
+    "unarchive": "보관 해제",
+    "archived": "보관되었습니다",
+    "unarchived": "보관이 해제되었습니다",
+    "archiveFailed": "보관에 실패했습니다",
+    "unarchiveFailed": "보관 해제에 실패했습니다",
+    "statusUpdated": "상태가 업데이트되었습니다",
+    "statusUpdateFailed": "상태 업데이트에 실패했습니다"
   },
   "qa": {
     "pageTitle": "기술 Q&A",

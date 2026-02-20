@@ -839,7 +839,22 @@
     "createFailed": "创建书评失败",
     "updateFailed": "更新书评失败",
     "deleteFailed": "删除书评失败",
-    "confirmDelete": "确定要删除这篇书评吗？"
+    "confirmDelete": "确定要删除这篇书评吗？",
+    "status": {
+      "not_started": "未开始",
+      "reading": "阅读中",
+      "completed": "已完成"
+    },
+    "statusAll": "全部",
+    "archivedLabel": "已归档",
+    "archive": "归档",
+    "unarchive": "取消归档",
+    "archived": "已归档",
+    "unarchived": "已取消归档",
+    "archiveFailed": "归档失败",
+    "unarchiveFailed": "取消归档失败",
+    "statusUpdated": "状态已更新",
+    "statusUpdateFailed": "状态更新失败"
   },
   "qa": {
     "pageTitle": "技术问答",
