@@ -158,13 +158,13 @@ export default function ProfilePage() {
           {user.skills_languages && (
             <div>
               <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2"><Sparkles className="w-4 h-4 text-yellow-400" aria-hidden="true" /> {t('profile.languages')}</h3>
-              <a href="https://skillicons.dev" target="_blank" rel="noopener noreferrer"><img src={`https://skillicons.dev/icons?i=${user.skills_languages}&theme=dark`} alt="Languages" className="h-12" /></a>
+              <a href="https://skillicons.dev" target="_blank" rel="noopener noreferrer"><img src={`https://skillicons.dev/icons?${new URLSearchParams({ i: user.skills_languages, theme: 'dark' })}`} alt="Languages" className="h-12" /></a>
             </div>
           )}
           {user.skills_frameworks && (
             <div>
               <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2"><Rocket className="w-4 h-4 text-blue-400" aria-hidden="true" /> {t('profile.frameworks')}</h3>
-              <a href="https://skillicons.dev" target="_blank" rel="noopener noreferrer"><img src={`https://skillicons.dev/icons?i=${user.skills_frameworks}&theme=dark`} alt="Frameworks" className="h-12" /></a>
+              <a href="https://skillicons.dev" target="_blank" rel="noopener noreferrer"><img src={`https://skillicons.dev/icons?${new URLSearchParams({ i: user.skills_frameworks, theme: 'dark' })}`} alt="Frameworks" className="h-12" /></a>
             </div>
           )}
         </div>
