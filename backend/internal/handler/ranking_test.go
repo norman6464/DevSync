@@ -77,6 +77,30 @@ func TestRankingLevel_Success(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
+func TestRankingLevel_ServiceError(t *testing.T) {
+	h, svc := setupRankingHandler()
+	svc.On("LevelRanking").Return([]model.RankingEntry{}, fmt.Errorf("internal error"))
+
+	r := newRouter(1)
+	r.GET("/rankings/levels", h.LevelRanking)
+	w := doRequest(r, "GET", "/rankings/levels", nil)
+
+	assertStatus(t, w, 500)
+	svc.AssertExpectations(t)
+}
+
+func TestRankingLanguage_ServiceError(t *testing.T) {
+	h, svc := setupRankingHandler()
+	svc.On("LanguageRanking", "Go", "weekly").Return([]model.RankingEntry{}, fmt.Errorf("db error"))
+
+	r := newRouter(1)
+	r.GET("/rankings/languages/:lang", h.LanguageRanking)
+	w := doRequest(r, "GET", "/rankings/languages/Go", nil)
+
+	assertStatus(t, w, 500)
+	svc.AssertExpectations(t)
+}
+
 // ---------- AvailableLanguages ----------
 
 func TestRankingAvailableLanguages_Success(t *testing.T) {

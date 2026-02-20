@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 
@@ -293,6 +294,38 @@ func TestQuestion_GetByUserID_InvalidID(t *testing.T) {
 
 	w := doRequest(r, http.MethodGet, "/users/abc/questions", nil)
 	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// ---------- GetSolved ----------
+
+func TestQuestionGetSolved_Success(t *testing.T) {
+	h, repo := setupQuestionHandler()
+	r := newRouter(1)
+	r.GET("/questions/solved", h.GetSolved)
+
+	repo.On("FindSolved", 20, 0).Return(
+		[]model.Question{{Title: "Solved Q"}},
+		int64(1), nil,
+	)
+
+	w := doRequest(r, http.MethodGet, "/questions/solved", nil)
+	assertStatus(t, w, http.StatusOK)
+
+	body := parseJSON(t, w)
+	assert.Equal(t, float64(1), body["total"])
+}
+
+func TestQuestionGetSolved_ServiceError(t *testing.T) {
+	h, repo := setupQuestionHandler()
+	r := newRouter(1)
+	r.GET("/questions/solved", h.GetSolved)
+
+	repo.On("FindSolved", 20, 0).Return(
+		[]model.Question{}, int64(0), errors.New("db error"),
+	)
+
+	w := doRequest(r, http.MethodGet, "/questions/solved", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
 }
 
 func TestQuestionRemoveVote_Success(t *testing.T) {
