@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { Project } from '../../types/project';
-import { cardClass, iconButtonClass } from '../../constants/styles';
+import { cardClass, iconButtonClass, deleteIconButtonClass } from '../../constants/styles';
 import { parseJsonArray } from '../../utils/json';
 import { sanitizeUrl } from '../../utils/url';
 
@@ -63,7 +63,7 @@ export default function ProjectCard({ project, onEdit, onDelete, isOwner }: Proj
               </button>
               <button
                 onClick={onDelete}
-                className="p-1.5 text-gray-400 hover:text-red-400 transition-colors"
+                className={deleteIconButtonClass}
                 aria-label={t('common.delete')}
               >
                 <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">

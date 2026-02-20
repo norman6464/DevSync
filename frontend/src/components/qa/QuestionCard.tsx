@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import type { Question } from '../../types/qa';
 import Avatar from '../common/Avatar';
-import { cardPaddedClass, iconButtonClass } from '../../constants/styles';
+import { cardPaddedClass, iconButtonClass, deleteIconButtonClass } from '../../constants/styles';
 import { parseJsonArray } from '../../utils/json';
 
 interface QuestionCardProps {
@@ -74,7 +74,7 @@ export default function QuestionCard({ question, isOwner = false, onEdit, onDele
                 </button>
                 <button
                   onClick={onDelete}
-                  className="p-1.5 text-gray-400 hover:text-red-400 transition-colors"
+                  className={deleteIconButtonClass}
                   title={t('common.delete')}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">

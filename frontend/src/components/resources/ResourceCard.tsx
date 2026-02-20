@@ -5,7 +5,7 @@ import { BookOpen, Video, FileText, GraduationCap, BookMarked, Mic, Wrench, Pin,
 import type { LearningResource, ResourceCategory, ResourceDifficulty } from '../../types/resource';
 import { parseJsonArray } from '../../utils/json';
 import Avatar from '../common/Avatar';
-import { cardClass, iconButtonClass } from '../../constants/styles';
+import { cardClass, iconButtonClass, deleteIconButtonClass } from '../../constants/styles';
 import { sanitizeUrl } from '../../utils/url';
 
 interface ResourceCardProps {
@@ -116,7 +116,7 @@ export default function ResourceCard({
               </button>
               <button
                 onClick={onDelete}
-                className="p-1.5 text-gray-400 hover:text-red-400 transition-colors"
+                className={deleteIconButtonClass}
                 title={t('common.delete')}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
