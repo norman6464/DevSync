@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 
@@ -249,6 +250,138 @@ func TestLearningGoalGetMyGoals_Success(t *testing.T) {
 
 	w := doRequest(r, http.MethodGet, "/goals/my", nil)
 	assertStatus(t, w, http.StatusOK)
+}
+
+// ========== GetByUserID ==========
+
+func TestLearningGoalGetByUserID_Success(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.GET("/users/:userId/goals", h.GetByUserID)
+
+	goals := []model.LearningGoal{{Title: "Goal 1"}, {Title: "Goal 2"}}
+	repo.On("GetByUserID", uint(5), 20, 0).Return(goals, int64(2), nil)
+
+	w := doRequest(r, http.MethodGet, "/users/5/goals", nil)
+	assertStatus(t, w, http.StatusOK)
+	body := parseJSON(t, w)
+	if body["total"] != float64(2) {
+		t.Errorf("expected total=2, got %v", body["total"])
+	}
+}
+
+func TestLearningGoalGetByUserID_InvalidID(t *testing.T) {
+	h, _ := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.GET("/users/:userId/goals", h.GetByUserID)
+
+	w := doRequest(r, http.MethodGet, "/users/abc/goals", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestLearningGoalGetByUserID_ServiceError(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.GET("/users/:userId/goals", h.GetByUserID)
+
+	repo.On("GetByUserID", uint(5), 20, 0).Return([]model.LearningGoal{}, int64(0), errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/users/5/goals", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+// ========== GetDeadlineAlerts ==========
+
+func TestLearningGoalGetDeadlineAlerts_Success(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.GET("/goals/deadline-alerts", h.GetDeadlineAlerts)
+
+	repo.On("GetActiveByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+
+	w := doRequest(r, http.MethodGet, "/goals/deadline-alerts", nil)
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestLearningGoalGetDeadlineAlerts_ServiceError(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.GET("/goals/deadline-alerts", h.GetDeadlineAlerts)
+
+	repo.On("GetActiveByUserID", uint(1)).Return([]model.LearningGoal{}, errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/goals/deadline-alerts", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+// ========== GetByCategory ==========
+
+func TestLearningGoalGetByCategory_Success(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.GET("/goals/category/:category", h.GetByCategory)
+
+	goals := []model.LearningGoal{{Title: "Go学習", Category: model.GoalCategoryLanguage}}
+	repo.On("GetByCategory", uint(1), "language").Return(goals, nil)
+
+	w := doRequest(r, http.MethodGet, "/goals/category/language", nil)
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestLearningGoalGetByCategory_NilResult(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.GET("/goals/category/:category", h.GetByCategory)
+
+	var nilGoals []model.LearningGoal
+	repo.On("GetByCategory", uint(1), "framework").Return(nilGoals, nil)
+
+	w := doRequest(r, http.MethodGet, "/goals/category/framework", nil)
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestLearningGoalGetByCategory_InvalidCategory(t *testing.T) {
+	h, _ := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.GET("/goals/category/:category", h.GetByCategory)
+
+	w := doRequest(r, http.MethodGet, "/goals/category/invalid", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// ========== GetByStatus ==========
+
+func TestLearningGoalGetByStatus_Success(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.GET("/goals/status/:status", h.GetByStatus)
+
+	goals := []model.LearningGoal{{Title: "完了目標", Status: model.GoalStatusCompleted}}
+	repo.On("GetByStatus", uint(1), "completed").Return(goals, nil)
+
+	w := doRequest(r, http.MethodGet, "/goals/status/completed", nil)
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestLearningGoalGetByStatus_NilResult(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.GET("/goals/status/:status", h.GetByStatus)
+
+	var nilGoals []model.LearningGoal
+	repo.On("GetByStatus", uint(1), "paused").Return(nilGoals, nil)
+
+	w := doRequest(r, http.MethodGet, "/goals/status/paused", nil)
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestLearningGoalGetByStatus_InvalidStatus(t *testing.T) {
+	h, _ := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.GET("/goals/status/:status", h.GetByStatus)
+
+	w := doRequest(r, http.MethodGet, "/goals/status/invalid", nil)
+	assertStatus(t, w, http.StatusBadRequest)
 }
 
 // ========== GetStats ==========
