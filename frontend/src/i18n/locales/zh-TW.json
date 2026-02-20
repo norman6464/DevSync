@@ -517,6 +517,7 @@
     "deleteNotification": "刪除通知",
     "filterGroup": "通知篩選",
     "listLabel": "通知列表",
+    "countSummary": "未讀 {{unread}}則 / 共{{total}}則",
     "deleted": "通知已刪除",
     "levelUp": "已達到等級 {{level}}！",
     "filterLevel": "升級"

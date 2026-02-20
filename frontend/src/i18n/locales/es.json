@@ -517,6 +517,7 @@
     "deleteNotification": "Eliminar notificación",
     "filterGroup": "Filtros de notificación",
     "listLabel": "Lista de notificaciones",
+    "countSummary": "{{unread}} no leídas / {{total}} en total",
     "deleted": "Notificación eliminada",
     "levelUp": "¡Has alcanzado el Nivel {{level}}!",
     "filterLevel": "Subida de Nivel"

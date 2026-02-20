@@ -510,6 +510,7 @@
     "deleteNotification": "通知を削除",
     "filterGroup": "通知フィルター",
     "listLabel": "通知一覧",
+    "countSummary": "未読 {{unread}}件 / 全{{total}}件",
     "deleted": "通知を削除しました",
     "levelUp": "レベル {{level}} に到達しました！",
     "filterLevel": "レベルアップ"

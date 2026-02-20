@@ -53,6 +53,12 @@ export default function NotificationsPage() {
         onToggleUnreadOnly={handleToggleUnreadOnly}
       />
 
+      {!loading && total > 0 && (
+        <p className="text-sm text-gray-400 mb-3">
+          {t('notifications.countSummary', { unread: unreadCount, total })}
+        </p>
+      )}
+
       {loading ? (
         <div className="flex justify-center items-center min-h-[400px]">
           <LoadingSpinner />
