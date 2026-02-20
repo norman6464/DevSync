@@ -659,6 +659,7 @@
     "categoryOther": "Other",
     "duration": "Study Time",
     "durationMinutes": "{{minutes}} min",
+    "durationHoursMinutes": "{{hours}}h {{minutes}}m",
     "durationPlaceholder": "minutes",
     "calendar": "Calendar",
     "list": "List",
