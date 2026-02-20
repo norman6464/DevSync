@@ -382,3 +382,46 @@ func TestProjectUpdateFeatured_UpdateError(t *testing.T) {
 	assert.Nil(t, result)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// 空白バイパステスト
+// ============================================================
+
+func TestProjectUpdate_WhitespaceTechStack(t *testing.T) {
+	svc, repo := newTestProjectService()
+	existing := &model.Project{Title: "Project", Description: "Desc", TechStack: "Go, React", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.Project{TechStack: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, "Go, React", result.TechStack)
+	repo.AssertExpectations(t)
+}
+
+func TestProjectUpdate_WhitespaceImageURL(t *testing.T) {
+	svc, repo := newTestProjectService()
+	existing := &model.Project{Title: "Project", Description: "Desc", ImageURL: "https://example.com/img.png", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.Project{ImageURL: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, "https://example.com/img.png", result.ImageURL)
+	repo.AssertExpectations(t)
+}
+
+func TestProjectUpdate_WhitespaceRole(t *testing.T) {
+	svc, repo := newTestProjectService()
+	existing := &model.Project{Title: "Project", Description: "Desc", Role: "Backend Engineer", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.Project{Role: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, "Backend Engineer", result.Role)
+	repo.AssertExpectations(t)
+}
