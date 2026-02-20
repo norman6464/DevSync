@@ -183,13 +183,13 @@ func (s *RoadmapService) UpdateStep(roadmapID, stepID, userID uint, updates *mod
 	}
 
 	if strings.TrimSpace(updates.Title) != "" {
-		step.Title = updates.Title
+		step.Title = strings.TrimSpace(updates.Title)
 	}
 	if strings.TrimSpace(updates.Description) != "" {
-		step.Description = updates.Description
+		step.Description = strings.TrimSpace(updates.Description)
 	}
 	if strings.TrimSpace(updates.ResourceURL) != "" {
-		step.ResourceURL = updates.ResourceURL
+		step.ResourceURL = strings.TrimSpace(updates.ResourceURL)
 	}
 
 	if err := s.repo.UpdateStep(step); err != nil {

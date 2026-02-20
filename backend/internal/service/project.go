@@ -73,25 +73,25 @@ func (s *ProjectService) Update(id, userID uint, updates *model.Project) (*model
 	}
 
 	if strings.TrimSpace(updates.Title) != "" {
-		project.Title = updates.Title
+		project.Title = strings.TrimSpace(updates.Title)
 	}
 	if strings.TrimSpace(updates.Description) != "" {
-		project.Description = updates.Description
+		project.Description = strings.TrimSpace(updates.Description)
 	}
 	if strings.TrimSpace(updates.TechStack) != "" {
-		project.TechStack = updates.TechStack
+		project.TechStack = strings.TrimSpace(updates.TechStack)
 	}
 	if strings.TrimSpace(updates.DemoURL) != "" {
-		project.DemoURL = updates.DemoURL
+		project.DemoURL = strings.TrimSpace(updates.DemoURL)
 	}
 	if strings.TrimSpace(updates.GithubURL) != "" {
-		project.GithubURL = updates.GithubURL
+		project.GithubURL = strings.TrimSpace(updates.GithubURL)
 	}
 	if strings.TrimSpace(updates.ImageURL) != "" {
-		project.ImageURL = updates.ImageURL
+		project.ImageURL = strings.TrimSpace(updates.ImageURL)
 	}
 	if strings.TrimSpace(updates.Role) != "" {
-		project.Role = updates.Role
+		project.Role = strings.TrimSpace(updates.Role)
 	}
 	if updates.StartDate != nil {
 		project.StartDate = updates.StartDate

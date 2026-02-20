@@ -413,3 +413,15 @@ func TestBookReviewUpdate_WhitespaceReview(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "Original Review", result.Review)
 }
+
+func TestBookReviewUpdate_TrimsPaddedTitle(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+	existing := &model.BookReview{Title: "Original", Author: "Author", Rating: 4, Review: "Review", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.BookReview{Title: "  New Title  "})
+	assert.NoError(t, err)
+	assert.Equal(t, "New Title", result.Title)
+}

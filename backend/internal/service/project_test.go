@@ -439,3 +439,15 @@ func TestProjectUpdate_WhitespaceRole(t *testing.T) {
 	assert.Equal(t, "Backend Engineer", result.Role)
 	repo.AssertExpectations(t)
 }
+
+func TestProjectUpdate_TrimsPaddedTitle(t *testing.T) {
+	svc, repo := newTestProjectService()
+	existing := &model.Project{Title: "Original", Description: "Desc", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.Project{Title: "  New Title  "})
+	assert.NoError(t, err)
+	assert.Equal(t, "New Title", result.Title)
+}

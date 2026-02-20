@@ -553,3 +553,15 @@ func TestAnswerGetByVoteRange_RepoError(t *testing.T) {
 	assert.Nil(t, result)
 	answerRepo.AssertExpectations(t)
 }
+
+func TestAnswerUpdate_TrimsPaddedBody(t *testing.T) {
+	svc, answerRepo, _ := newTestAnswerService()
+	existing := &model.Answer{UserID: 1, Body: "Original"}
+	existing.ID = 1
+	answerRepo.On("FindByID", uint(1)).Return(existing, nil)
+	answerRepo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, "  Updated Body  ")
+	assert.NoError(t, err)
+	assert.Equal(t, "Updated Body", result.Body)
+}
