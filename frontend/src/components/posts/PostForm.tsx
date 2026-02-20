@@ -34,6 +34,8 @@ export default function PostForm({ post, onSubmit, onCancel, loading: externalLo
   const [expanded, setExpanded] = useState(!!post);
   const { confirm, dialogProps } = useConfirm();
 
+  const estimatedReadMinutes = Math.max(1, Math.ceil(content.length / 500));
+
   const addSnippet = () => {
     setSnippets([...snippets, { language: '', file_name: '', code: '' }]);
   };
@@ -99,6 +101,11 @@ export default function PostForm({ post, onSubmit, onCancel, loading: externalLo
               minHeight="150px"
               onImagesChange={setImageUrls}
             />
+            {content.length > 0 && (
+              <p className="text-xs text-gray-500 text-right mt-1">
+                {t('post.readTime', { minutes: estimatedReadMinutes })}
+              </p>
+            )}
           </div>
 
           {/* Code Snippets Section */}
