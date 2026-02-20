@@ -39,23 +39,22 @@ func NewLearningLogHandler(s LearningLogServiceInterface) *LearningLogHandler {
 func (h *LearningLogHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	var req dto.CreateLearningLogRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		respondBadRequest(c, "title and content are required")
+	input := bindJSON[dto.CreateLearningLogRequest](c)
+	if input == nil {
 		return
 	}
 
 	log := &model.LearningLog{
 		UserID:   userID,
-		Title:    req.Title,
-		Content:  req.Content,
-		Category: model.LogCategory(req.Category),
-		Duration: req.Duration,
-		Source:   model.LogSource(req.Source),
+		Title:    input.Title,
+		Content:  input.Content,
+		Category: model.LogCategory(input.Category),
+		Duration: input.Duration,
+		Source:   model.LogSource(input.Source),
 	}
 
 	// カテゴリが未指定の場合はデフォルト値を設定
-	if req.Category == "" {
+	if input.Category == "" {
 		log.Category = model.LogCategoryOther
 	}
 
@@ -75,24 +74,23 @@ func (h *LearningLogHandler) Update(c *gin.Context) {
 		return
 	}
 
-	var req dto.UpdateLearningLogRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		respondBadRequest(c, "invalid request")
+	input := bindJSON[dto.UpdateLearningLogRequest](c)
+	if input == nil {
 		return
 	}
 
 	updates := &model.LearningLog{}
-	if req.Title != nil {
-		updates.Title = *req.Title
+	if input.Title != nil {
+		updates.Title = *input.Title
 	}
-	if req.Content != nil {
-		updates.Content = *req.Content
+	if input.Content != nil {
+		updates.Content = *input.Content
 	}
-	if req.Category != nil {
-		updates.Category = model.LogCategory(*req.Category)
+	if input.Category != nil {
+		updates.Category = model.LogCategory(*input.Category)
 	}
-	if req.Duration != nil {
-		updates.Duration = *req.Duration
+	if input.Duration != nil {
+		updates.Duration = *input.Duration
 	}
 
 	log, err := h.service.Update(logID, userID, updates)

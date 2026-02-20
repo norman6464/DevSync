@@ -43,9 +43,8 @@ func (h *EmailPreferencesHandler) GetPreferences(c *gin.Context) {
 func (h *EmailPreferencesHandler) UpdatePreferences(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	var req dto.UpdateEmailPreferencesRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		respondBadRequest(c, "invalid request")
+	input := bindJSON[dto.UpdateEmailPreferencesRequest](c)
+	if input == nil {
 		return
 	}
 
@@ -55,20 +54,20 @@ func (h *EmailPreferencesHandler) UpdatePreferences(c *gin.Context) {
 		return
 	}
 
-	if req.EmailWeeklyReport != nil {
-		user.EmailWeeklyReport = *req.EmailWeeklyReport
+	if input.EmailWeeklyReport != nil {
+		user.EmailWeeklyReport = *input.EmailWeeklyReport
 	}
-	if req.EmailLanguage != nil {
+	if input.EmailLanguage != nil {
 		// 言語バリデーション
 		validLangs := map[string]bool{
 			"ja": true, "en": true, "ko": true, "zh-CN": true, "zh-TW": true,
 			"es": true, "fr": true, "de": true, "pt": true, "ru": true,
 		}
-		if !validLangs[*req.EmailLanguage] {
+		if !validLangs[*input.EmailLanguage] {
 			respondBadRequest(c, "invalid email language")
 			return
 		}
-		user.EmailLanguage = *req.EmailLanguage
+		user.EmailLanguage = *input.EmailLanguage
 	}
 
 	if err := h.userService.Update(user); err != nil {

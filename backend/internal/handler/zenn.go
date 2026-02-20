@@ -31,14 +31,12 @@ func NewZennHandler(s ZennServiceInterface) *ZennHandler {
 func (h *ZennHandler) Connect(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	var req dto.ConnectUsernameRequest
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		respondBadRequest(c, "username is required")
+	input := bindJSON[dto.ConnectUsernameRequest](c)
+	if input == nil {
 		return
 	}
 
-	count, err := h.service.Connect(userID, req.Username)
+	count, err := h.service.Connect(userID, input.Username)
 	if err != nil {
 		respondError(c, err)
 		return
