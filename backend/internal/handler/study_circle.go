@@ -41,22 +41,21 @@ func NewStudyCircleHandler(svc StudyCircleServiceInterface) *StudyCircleHandler 
 
 // Create はサークルを作成する。
 func (h *StudyCircleHandler) Create(c *gin.Context) {
-	var req dto.CreateStudyCircleRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		respondBadRequest(c, err.Error())
+	input := bindJSON[dto.CreateStudyCircleRequest](c)
+	if input == nil {
 		return
 	}
 
 	userID := c.GetUint("userID")
 	circle := &model.StudyCircle{
-		Name:        req.Name,
-		Topic:       req.Topic,
-		Description: req.Description,
+		Name:        input.Name,
+		Topic:       input.Topic,
+		Description: input.Description,
 		OwnerID:     userID,
-		MaxMembers:  req.MaxMembers,
+		MaxMembers:  input.MaxMembers,
 	}
 
-	if err := h.service.Create(circle, req.MemberIDs); err != nil {
+	if err := h.service.Create(circle, input.MemberIDs); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -95,13 +94,12 @@ func (h *StudyCircleHandler) Update(c *gin.Context) {
 	if !ok {
 		return
 	}
-	var req dto.UpdateStudyCircleRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		respondBadRequest(c, err.Error())
+	input := bindJSON[dto.UpdateStudyCircleRequest](c)
+	if input == nil {
 		return
 	}
 	userID := c.GetUint("userID")
-	circle, err := h.service.Update(id, userID, req.Name, req.Topic, req.Description)
+	circle, err := h.service.Update(id, userID, input.Name, input.Topic, input.Description)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -144,13 +142,12 @@ func (h *StudyCircleHandler) AddMember(c *gin.Context) {
 	if !ok {
 		return
 	}
-	var req dto.AddStudyCircleMemberRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		respondBadRequest(c, err.Error())
+	input := bindJSON[dto.AddStudyCircleMemberRequest](c)
+	if input == nil {
 		return
 	}
 	userID := c.GetUint("userID")
-	if err := h.service.AddMember(id, userID, req.UserID); err != nil {
+	if err := h.service.AddMember(id, userID, input.UserID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -181,18 +178,17 @@ func (h *StudyCircleHandler) CreateStep(c *gin.Context) {
 	if !ok {
 		return
 	}
-	var req dto.CreateStudyCircleStepRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		respondBadRequest(c, err.Error())
+	input := bindJSON[dto.CreateStudyCircleStepRequest](c)
+	if input == nil {
 		return
 	}
 	userID := c.GetUint("userID")
 
 	step := &model.StudyCircleStep{
-		Title:       req.Title,
-		Description: req.Description,
-		ResourceURL: req.ResourceURL,
-		OrderIndex:  req.OrderIndex,
+		Title:       input.Title,
+		Description: input.Description,
+		ResourceURL: input.ResourceURL,
+		OrderIndex:  input.OrderIndex,
 	}
 	if err := h.service.CreateStep(id, userID, step); err != nil {
 		respondError(c, err)
@@ -211,13 +207,12 @@ func (h *StudyCircleHandler) UpdateStep(c *gin.Context) {
 	if !ok {
 		return
 	}
-	var req dto.UpdateStudyCircleStepRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		respondBadRequest(c, err.Error())
+	input := bindJSON[dto.UpdateStudyCircleStepRequest](c)
+	if input == nil {
 		return
 	}
 	userID := c.GetUint("userID")
-	step, err := h.service.UpdateStep(id, userID, stepID, req.Title, req.Description)
+	step, err := h.service.UpdateStep(id, userID, stepID, input.Title, input.Description)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -249,13 +244,12 @@ func (h *StudyCircleHandler) ReorderSteps(c *gin.Context) {
 	if !ok {
 		return
 	}
-	var req dto.ReorderStudyCircleStepsRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		respondBadRequest(c, err.Error())
+	input := bindJSON[dto.ReorderStudyCircleStepsRequest](c)
+	if input == nil {
 		return
 	}
 	userID := c.GetUint("userID")
-	if err := h.service.ReorderSteps(id, userID, req.Orders); err != nil {
+	if err := h.service.ReorderSteps(id, userID, input.Orders); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -272,13 +266,12 @@ func (h *StudyCircleHandler) UpdateProgress(c *gin.Context) {
 	if !ok {
 		return
 	}
-	var req dto.UpdateStudyCircleProgressRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		respondBadRequest(c, err.Error())
+	input := bindJSON[dto.UpdateStudyCircleProgressRequest](c)
+	if input == nil {
 		return
 	}
 	userID := c.GetUint("userID")
-	if err := h.service.UpdateProgress(id, userID, stepID, req.IsCompleted); err != nil {
+	if err := h.service.UpdateProgress(id, userID, stepID, input.IsCompleted); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -306,13 +299,12 @@ func (h *StudyCircleHandler) CreateCheckin(c *gin.Context) {
 	if !ok {
 		return
 	}
-	var req dto.CreateStudyCircleCheckinRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		respondBadRequest(c, err.Error())
+	input := bindJSON[dto.CreateStudyCircleCheckinRequest](c)
+	if input == nil {
 		return
 	}
 	userID := c.GetUint("userID")
-	checkin, err := h.service.CreateCheckin(id, userID, req.Content)
+	checkin, err := h.service.CreateCheckin(id, userID, input.Content)
 	if err != nil {
 		respondError(c, err)
 		return

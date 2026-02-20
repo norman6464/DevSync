@@ -44,23 +44,21 @@ func NewRoadmapHandler(s RoadmapServiceInterface) *RoadmapHandler {
 func (h *RoadmapHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	var req dto.CreateRoadmapRequest
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		respondBadRequest(c, "title is required")
+	input := bindJSON[dto.CreateRoadmapRequest](c)
+	if input == nil {
 		return
 	}
 
 	roadmap := &model.Roadmap{
 		UserID:      userID,
-		Title:       req.Title,
-		Description: req.Description,
-		Category:    model.RoadmapCategory(req.Category),
-		IsPublic:    req.IsPublic,
+		Title:       input.Title,
+		Description: input.Description,
+		Category:    model.RoadmapCategory(input.Category),
+		IsPublic:    input.IsPublic,
 		Status:      model.RoadmapStatusActive,
 	}
 
-	if req.Category == "" {
+	if input.Category == "" {
 		roadmap.Category = model.RoadmapCategoryOther
 	}
 
@@ -144,25 +142,23 @@ func (h *RoadmapHandler) Update(c *gin.Context) {
 		return
 	}
 
-	var req dto.UpdateRoadmapRequest
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		respondBadRequest(c, "invalid request")
+	input := bindJSON[dto.UpdateRoadmapRequest](c)
+	if input == nil {
 		return
 	}
 
 	updates := &model.Roadmap{}
-	if req.Title != nil {
-		updates.Title = *req.Title
+	if input.Title != nil {
+		updates.Title = *input.Title
 	}
-	if req.Description != nil {
-		updates.Description = *req.Description
+	if input.Description != nil {
+		updates.Description = *input.Description
 	}
-	if req.Category != nil {
-		updates.Category = model.RoadmapCategory(*req.Category)
+	if input.Category != nil {
+		updates.Category = model.RoadmapCategory(*input.Category)
 	}
-	if req.Status != nil {
-		updates.Status = model.RoadmapStatus(*req.Status)
+	if input.Status != nil {
+		updates.Status = model.RoadmapStatus(*input.Status)
 	}
 
 	roadmap, err := h.service.Update(roadmapID, userID, updates)
@@ -172,8 +168,8 @@ func (h *RoadmapHandler) Update(c *gin.Context) {
 	}
 
 	// IsPublicが指定されている場合は別途処理する
-	if req.IsPublic != nil {
-		roadmap, err = h.service.UpdateVisibility(roadmapID, userID, *req.IsPublic)
+	if input.IsPublic != nil {
+		roadmap, err = h.service.UpdateVisibility(roadmapID, userID, *input.IsPublic)
 		if err != nil {
 			respondError(c, err)
 			return
@@ -253,20 +249,18 @@ func (h *RoadmapHandler) CreateStep(c *gin.Context) {
 		return
 	}
 
-	var req dto.CreateRoadmapStepRequest
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		respondBadRequest(c, "title is required")
+	input := bindJSON[dto.CreateRoadmapStepRequest](c)
+	if input == nil {
 		return
 	}
 
 	step := &model.RoadmapStep{
-		Title:       req.Title,
-		Description: req.Description,
-		ResourceURL: req.ResourceURL,
+		Title:       input.Title,
+		Description: input.Description,
+		ResourceURL: input.ResourceURL,
 	}
-	if req.OrderIndex != nil {
-		step.OrderIndex = *req.OrderIndex
+	if input.OrderIndex != nil {
+		step.OrderIndex = *input.OrderIndex
 	}
 
 	if err := h.service.CreateStep(roadmapID, userID, step); err != nil {
@@ -289,36 +283,34 @@ func (h *RoadmapHandler) UpdateStep(c *gin.Context) {
 		return
 	}
 
-	var req dto.UpdateRoadmapStepRequest
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		respondBadRequest(c, "invalid request")
+	input := bindJSON[dto.UpdateRoadmapStepRequest](c)
+	if input == nil {
 		return
 	}
 
 	// 完了ステータスの変更を別途処理する
-	if req.IsCompleted != nil {
-		step, err := h.service.UpdateStepCompletion(roadmapID, stepID, userID, *req.IsCompleted)
+	if input.IsCompleted != nil {
+		step, err := h.service.UpdateStepCompletion(roadmapID, stepID, userID, *input.IsCompleted)
 		if err != nil {
 			respondError(c, err)
 			return
 		}
 		// 完了ステータスのみの更新の場合は早期リターンする
-		if req.Title == nil && req.Description == nil && req.ResourceURL == nil {
+		if input.Title == nil && input.Description == nil && input.ResourceURL == nil {
 			respondOK(c, step)
 			return
 		}
 	}
 
 	updates := &model.RoadmapStep{}
-	if req.Title != nil {
-		updates.Title = *req.Title
+	if input.Title != nil {
+		updates.Title = *input.Title
 	}
-	if req.Description != nil {
-		updates.Description = *req.Description
+	if input.Description != nil {
+		updates.Description = *input.Description
 	}
-	if req.ResourceURL != nil {
-		updates.ResourceURL = *req.ResourceURL
+	if input.ResourceURL != nil {
+		updates.ResourceURL = *input.ResourceURL
 	}
 
 	step, err := h.service.UpdateStep(roadmapID, stepID, userID, updates)
@@ -358,14 +350,12 @@ func (h *RoadmapHandler) ReorderSteps(c *gin.Context) {
 		return
 	}
 
-	var req dto.ReorderRoadmapStepsRequest
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		respondBadRequest(c, "invalid request")
+	input := bindJSON[dto.ReorderRoadmapStepsRequest](c)
+	if input == nil {
 		return
 	}
 
-	if err := h.service.ReorderSteps(roadmapID, userID, req.Orders); err != nil {
+	if err := h.service.ReorderSteps(roadmapID, userID, input.Orders); err != nil {
 		respondError(c, err)
 		return
 	}

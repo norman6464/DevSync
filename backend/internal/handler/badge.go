@@ -44,13 +44,12 @@ func (h *BadgeHandler) GetUserBadges(c *gin.Context) {
 func (h *BadgeHandler) NotifyBadgeEarned(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	var req dto.NotifyBadgeEarnedRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		respondBadRequest(c, "badge_id is required")
+	input := bindJSON[dto.NotifyBadgeEarnedRequest](c)
+	if input == nil {
 		return
 	}
 
-	if err := h.service.NotifyBadgeEarned(userID, req.BadgeID); err != nil {
+	if err := h.service.NotifyBadgeEarned(userID, input.BadgeID); err != nil {
 		respondError(c, err)
 		return
 	}
