@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
 import { Copy, Check, MessageSquarePlus } from 'lucide-react';
 import { useSnippetComments } from '../../hooks';
 import type { CodeSnippet } from '../../types/post';
@@ -24,11 +25,15 @@ export default function CodeSnippetViewer({ snippet, showComments = true }: Code
     showComments ? snippet.id : 0
   );
 
-  const handleCopy = useCallback(() => {
-    navigator.clipboard.writeText(snippet.code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }, [snippet.code]);
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(snippet.code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error(t('errors.somethingWrong'));
+    }
+  }, [snippet.code, t]);
 
   const handleAddComment = async () => {
     if (!commentText.trim() || commentLine === null) return;

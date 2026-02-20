@@ -51,8 +51,12 @@ export default function PortfolioModal({
   };
 
   const handleCopyHTML = async () => {
-    await navigator.clipboard.writeText(html);
-    toast.success(t('portfolio.copied'));
+    try {
+      await navigator.clipboard.writeText(html);
+      toast.success(t('portfolio.copied'));
+    } catch {
+      toast.error(t('errors.somethingWrong'));
+    }
   };
 
   const handleOpenInNewTab = () => {
