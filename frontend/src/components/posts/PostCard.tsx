@@ -75,6 +75,19 @@ export default function PostCard({ post, isOwner = false, onEdit, onDelete, onUp
         )}
       </div>
 
+      {post.tags && post.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-2">
+          {post.tags.slice(0, 3).map((tag) => (
+            <span key={tag} className="text-xs px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded">
+              #{tag}
+            </span>
+          ))}
+          {post.tags.length > 3 && (
+            <span className="text-xs text-gray-500">+{post.tags.length - 3}</span>
+          )}
+        </div>
+      )}
+
       <PostCardContent post={post} imageUrls={imageUrls} />
 
       <PostCardActions
