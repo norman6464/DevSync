@@ -81,13 +81,19 @@ func (r *QuestionRepository) Search(q string, limit, offset int) ([]model.Questi
 	return questions, total, err
 }
 
-// FindByUserID は指定ユーザーの全質問を取得する（新しい順）。
-func (r *QuestionRepository) FindByUserID(userID uint) ([]model.Question, error) {
+// FindByUserID は指定ユーザーの質問をページネーション付きで取得する（新しい順）。
+func (r *QuestionRepository) FindByUserID(userID uint, limit, offset int) ([]model.Question, int64, error) {
 	var questions []model.Question
-	err := r.db.Where("user_id = ?", userID).
-		Order("created_at DESC").
+	var total int64
+	q := r.db.Where("user_id = ?", userID)
+	if err := q.Model(&model.Question{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	err := q.Order("created_at DESC").
+		Limit(limit).
+		Offset(offset).
 		Find(&questions).Error
-	return questions, err
+	return questions, total, err
 }
 
 // Update は既存の質問を更新する。

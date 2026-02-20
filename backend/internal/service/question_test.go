@@ -333,12 +333,41 @@ func TestQuestionGetByUserID_Success(t *testing.T) {
 		{Title: "ユーザー1の質問", UserID: 1},
 	}
 
-	repo.On("FindByUserID", uint(1)).Return(questions, nil)
+	repo.On("FindByUserID", uint(1), 20, 0).Return(questions, int64(1), nil)
 
-	result, err := svc.GetByUserID(1)
+	result, total, err := svc.GetByUserID(1, 20, 0)
 	assert.NoError(t, err)
 	assert.Len(t, result, 1)
+	assert.Equal(t, int64(1), total)
 	assert.Equal(t, uint(1), result[0].UserID)
+	repo.AssertExpectations(t)
+}
+
+func TestQuestionGetByUserID_Empty(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	repo.On("FindByUserID", uint(1), 20, 0).Return([]model.Question{}, int64(0), nil)
+
+	result, total, err := svc.GetByUserID(1, 20, 0)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	assert.Equal(t, int64(0), total)
+	repo.AssertExpectations(t)
+}
+
+func TestQuestionGetByUserID_Page2(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	questions := []model.Question{
+		{Title: "質問21", UserID: 1},
+	}
+
+	repo.On("FindByUserID", uint(1), 20, 20).Return(questions, int64(21), nil)
+
+	result, total, err := svc.GetByUserID(1, 20, 20)
+	assert.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, int64(21), total)
 	repo.AssertExpectations(t)
 }
 
