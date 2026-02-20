@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
@@ -37,7 +38,7 @@ func (h *PostPinHandler) Pin(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, gin.H{"message": "ピン留めしました"})
+	respondOK(c, domain.NewMessageResponse("ピン留めしました"))
 }
 
 // Unpin は投稿のピン留めを解除する。
@@ -52,7 +53,7 @@ func (h *PostPinHandler) Unpin(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, gin.H{"message": "ピン留めを解除しました"})
+	respondOK(c, domain.NewMessageResponse("ピン留めを解除しました"))
 }
 
 // GetByUserID はユーザーのピン留め投稿を取得する。
@@ -83,5 +84,5 @@ func (h *PostPinHandler) Reorder(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, gin.H{"message": "順序を更新しました"})
+	respondOK(c, domain.NewMessageResponse("順序を更新しました"))
 }
