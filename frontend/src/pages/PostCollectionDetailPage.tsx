@@ -9,6 +9,7 @@ import PostCard from '../components/posts/PostCard';
 import { useAuthStore } from '../store/authStore';
 import { Globe, Lock } from 'lucide-react';
 import { emptyStateClass } from '../constants/styles';
+import { formatDate } from '../utils/timeFormat';
 
 export default function PostCollectionDetailPage() {
   const { t } = useTranslation();
@@ -52,7 +53,7 @@ export default function PostCollectionDetailPage() {
           </Link>
         )}
         <p className="text-xs text-gray-500 mt-2">
-          {new Date(collection.created_at).toLocaleDateString()}
+          {formatDate(collection.created_at)}
         </p>
       </div>
 

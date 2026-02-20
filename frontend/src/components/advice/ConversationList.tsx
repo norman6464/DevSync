@@ -3,6 +3,7 @@ import { MessageSquare, Clock, Trash2 } from 'lucide-react';
 import { useConfirm } from '../../hooks';
 import ConfirmDialog from '../common/ConfirmDialog';
 import type { AIConversation } from '../../api/advice';
+import { formatDate } from '../../utils/timeFormat';
 
 interface ConversationListProps {
   conversations: AIConversation[];
@@ -62,7 +63,7 @@ export default function ConversationList({
             <div className="flex items-center gap-1 mt-1">
               <Clock size={12} className="text-gray-500" />
               <span className="text-xs text-gray-500">
-                {new Date(conv.updated_at).toLocaleDateString()}
+                {formatDate(conv.updated_at)}
               </span>
               {conv.messages && (
                 <span className="text-xs text-gray-500 ml-2">

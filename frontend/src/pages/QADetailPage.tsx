@@ -9,6 +9,7 @@ import AnswerForm from '../components/qa/AnswerForm';
 import Avatar from '../components/common/Avatar';
 import { PageLoader } from '../components/common';
 import { parseJsonArray } from '../utils/json';
+import { formatDate } from '../utils/timeFormat';
 
 export default function QADetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -135,7 +136,7 @@ export default function QADetailPage() {
                   <div>
                     <span className="text-sm text-gray-300">{question.user.name}</span>
                     <span className="text-xs text-gray-500 ml-2">
-                      {new Date(question.created_at).toLocaleDateString()}
+                      {formatDate(question.created_at)}
                     </span>
                   </div>
                 </Link>

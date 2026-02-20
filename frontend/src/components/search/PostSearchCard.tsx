@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Post } from '../../types/post';
 import Avatar from '../common/Avatar';
+import { formatDate } from '../../utils/timeFormat';
 
 interface PostSearchCardProps {
   post: Post;
@@ -21,7 +22,7 @@ export default function PostSearchCard({ post }: PostSearchCardProps) {
           <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
             <span className="font-medium text-gray-300">{post.user?.name}</span>
             <span>•</span>
-            <span>{new Date(post.created_at).toLocaleDateString()}</span>
+            <span>{formatDate(post.created_at)}</span>
           </div>
           <h3 className="font-semibold text-white mb-1">{post.title}</h3>
           <p className="text-sm text-gray-400 line-clamp-2">{post.content}</p>

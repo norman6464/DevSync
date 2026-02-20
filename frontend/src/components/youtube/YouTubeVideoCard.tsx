@@ -3,6 +3,7 @@ import { ExternalLink, Play } from 'lucide-react';
 import type { YouTubeVideo } from '../../types/youtube';
 import { cardClass } from '../../constants/styles';
 import { sanitizeUrl } from '../../utils/url';
+import { formatDate } from '../../utils/timeFormat';
 
 interface YouTubeVideoCardProps {
   video: YouTubeVideo;
@@ -47,7 +48,7 @@ export default function YouTubeVideoCard({ video }: YouTubeVideoCardProps) {
 
         <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-700">
           <span className="text-xs text-gray-500">
-            {new Date(video.published_at).toLocaleDateString()}
+            {formatDate(video.published_at)}
           </span>
           <a href={videoURL} target="_blank" rel="noopener noreferrer"
              className="text-gray-400 hover:text-red-400 transition-colors"

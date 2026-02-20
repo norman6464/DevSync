@@ -1,5 +1,10 @@
 import i18n from '../i18n';
 
+export function formatDate(dateStr: string | null | undefined): string | null {
+  if (!dateStr) return null;
+  return new Date(dateStr).toLocaleDateString();
+}
+
 export function formatDistanceToNow(dateString: string): string {
   const t = i18n.t.bind(i18n);
   const date = new Date(dateString);

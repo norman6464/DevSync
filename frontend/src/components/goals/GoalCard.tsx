@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Monitor, Rocket, Target, FolderOpen, FileText, Copy, type LucideIcon } from 'lucide-react';
 import { type GoalCategory, type GoalStatus, type LearningGoal } from '../../api/goals';
+import { formatDate } from '../../utils/timeFormat';
 
 export const CATEGORIES: { value: GoalCategory; label: string; icon: string; Icon: LucideIcon }[] = [
   { value: 'language', label: 'goals.categoryLanguage', icon: '💻', Icon: Monitor },
@@ -77,7 +78,7 @@ const GoalCard = memo(function GoalCard({
               <span>{t(categoryInfo.label)}</span>
               {goal.target_date && (
                 <span>
-                  {t('goals.targetDateLabel')}: {new Date(goal.target_date).toLocaleDateString()}
+                  {t('goals.targetDateLabel')}: {formatDate(goal.target_date)}
                 </span>
               )}
               {(() => {

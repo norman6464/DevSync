@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import type { Answer } from '../../types/qa';
 import Avatar from '../common/Avatar';
 import { iconButtonClass, deleteIconButtonClass } from '../../constants/styles';
+import { formatDate } from '../../utils/timeFormat';
 
 interface AnswerCardProps {
   answer: Answer;
@@ -99,7 +100,7 @@ export default function AnswerCard({
                 </Link>
               )}
               <span className="text-xs text-gray-500">
-                {new Date(answer.created_at).toLocaleDateString()}
+                {formatDate(answer.created_at)}
               </span>
             </div>
 

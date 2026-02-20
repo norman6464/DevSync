@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import type { PostSeries } from '../../types/post';
 import { cardPaddedClass, iconButtonClass, deleteIconButtonClass } from '../../constants/styles';
+import { formatDate } from '../../utils/timeFormat';
 
 interface PostSeriesCardProps {
   series: PostSeries;
@@ -56,7 +57,7 @@ export default function PostSeriesCard({ series, onEdit, onDelete, isOwner }: Po
       )}
 
       <p className="text-xs text-gray-500 mt-3">
-        {new Date(series.created_at).toLocaleDateString()}
+        {formatDate(series.created_at)}
       </p>
     </div>
   );
