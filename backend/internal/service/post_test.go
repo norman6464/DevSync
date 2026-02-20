@@ -896,6 +896,16 @@ func TestPostRemoveReaction_PostNotFound(t *testing.T) {
 	postRepo.AssertNotCalled(t, "RemoveReaction")
 }
 
+func TestPostRemoveReaction_InvalidEmoji_Error(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	err := svc.RemoveReaction(1, 10, "malicious")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "許可されていない絵文字です")
+	postRepo.AssertNotCalled(t, "FindByID")
+	postRepo.AssertNotCalled(t, "RemoveReaction")
+}
+
 func TestPostGetReactionsByPostID_Success(t *testing.T) {
 	svc, postRepo, _ := newTestPostService()
 
