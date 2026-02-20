@@ -244,6 +244,54 @@ func TestReminderSettingsService_SendReminder_Error(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestReminderSettingsService_UpdateSettings_InvalidFrequency(t *testing.T) {
+	svc, repo := newTestReminderSettingsService()
+
+	existing := &model.ReminderSettings{
+		ID:     1,
+		UserID: 1,
+	}
+	repo.On("GetByUserID", uint(1)).Return(existing, nil)
+
+	updates := &model.ReminderSettings{Frequency: "hourly"}
+	result, err := svc.UpdateSettings(1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "頻度はdailyまたはweeklyのみ有効です")
+}
+
+func TestReminderSettingsService_UpdateSettings_InvalidNotificationTime(t *testing.T) {
+	svc, repo := newTestReminderSettingsService()
+
+	existing := &model.ReminderSettings{
+		ID:     1,
+		UserID: 1,
+	}
+	repo.On("GetByUserID", uint(1)).Return(existing, nil)
+
+	updates := &model.ReminderSettings{NotificationTime: "25:00"}
+	result, err := svc.UpdateSettings(1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "通知時間はHH:MM形式で指定してください")
+}
+
+func TestReminderSettingsService_UpdateSettings_InactiveDaysExceedsMax(t *testing.T) {
+	svc, repo := newTestReminderSettingsService()
+
+	existing := &model.ReminderSettings{
+		ID:     1,
+		UserID: 1,
+	}
+	repo.On("GetByUserID", uint(1)).Return(existing, nil)
+
+	updates := &model.ReminderSettings{InactiveDays: 31}
+	result, err := svc.UpdateSettings(1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "非活動日数は1〜30の範囲で指定してください")
+}
+
 func TestReminderSettingsService_UpdateSettings_WithNotificationTimeAndInactiveDays(t *testing.T) {
 	svc, repo := newTestReminderSettingsService()
 

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/stretchr/testify/mock"
 )
@@ -75,5 +76,21 @@ func TestReminderSettings_UpdateSettings_ServiceError(t *testing.T) {
 		"enabled": false,
 	})
 	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+func TestReminderSettings_UpdateSettings_ValidationError(t *testing.T) {
+	h, svc := setupReminderSettingsHandler()
+	svc.On("UpdateSettings", uint(1), mock.AnythingOfType("*model.ReminderSettings")).Return(
+		nil, domain.NewError(domain.ErrCodeBadRequest, "頻度はdailyまたはweeklyのみ有効です", nil),
+	)
+
+	r := newRouter(1)
+	r.PUT("/reminder-settings", h.UpdateSettings)
+
+	w := doRequest(r, http.MethodPut, "/reminder-settings", map[string]interface{}{
+		"frequency": "hourly",
+	})
+	assertStatus(t, w, http.StatusBadRequest)
 	svc.AssertExpectations(t)
 }

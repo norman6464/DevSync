@@ -1,11 +1,22 @@
 package service
 
 import (
+	"regexp"
 	"time"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
+
+// validFrequencies は有効なリマインダー頻度の集合。
+var validFrequencies = map[string]bool{
+	string(model.ReminderFrequencyDaily):  true,
+	string(model.ReminderFrequencyWeekly): true,
+}
+
+// timeFormatRegex はHH:MM形式の正規表現。
+var timeFormatRegex = regexp.MustCompile(`^([01]\d|2[0-3]):[0-5]\d$`)
 
 // ReminderSettingsService は学習リマインダー設定のビジネスロジックを提供する。
 type ReminderSettingsService struct {
@@ -30,14 +41,23 @@ func (s *ReminderSettingsService) UpdateSettings(userID uint, updates *model.Rem
 		return nil, err
 	}
 
-	// 更新内容を反映
+	// 更新内容を反映（バリデーション付き）
 	if updates.Frequency != "" {
+		if !validFrequencies[string(updates.Frequency)] {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, "頻度はdailyまたはweeklyのみ有効です", nil)
+		}
 		settings.Frequency = updates.Frequency
 	}
 	if updates.NotificationTime != "" {
+		if !timeFormatRegex.MatchString(updates.NotificationTime) {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, "通知時間はHH:MM形式で指定してください", nil)
+		}
 		settings.NotificationTime = updates.NotificationTime
 	}
 	if updates.InactiveDays > 0 {
+		if updates.InactiveDays > 30 {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, "非活動日数は1〜30の範囲で指定してください", nil)
+		}
 		settings.InactiveDays = updates.InactiveDays
 	}
 	settings.Enabled = updates.Enabled
