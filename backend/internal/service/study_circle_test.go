@@ -376,22 +376,24 @@ func TestStudyCircleGetMyCircles_Success(t *testing.T) {
 		{ID: 1, Name: "Go勉強会"},
 		{ID: 2, Name: "React勉強会"},
 	}
-	repo.On("FindByUserID", uint(1)).Return(circles, nil)
+	repo.On("FindByUserID", uint(1), 20, 0).Return(circles, int64(2), nil)
 
-	result, err := svc.GetMyCircles(1)
+	result, total, err := svc.GetMyCircles(1, 20, 0)
 	assert.NoError(t, err)
 	assert.Len(t, result, 2)
+	assert.Equal(t, int64(2), total)
 	repo.AssertExpectations(t)
 }
 
 func TestStudyCircleGetMyCircles_Empty(t *testing.T) {
 	svc, repo := newTestStudyCircleService()
 
-	repo.On("FindByUserID", uint(99)).Return([]model.StudyCircle{}, nil)
+	repo.On("FindByUserID", uint(99), 20, 0).Return([]model.StudyCircle{}, int64(0), nil)
 
-	result, err := svc.GetMyCircles(99)
+	result, total, err := svc.GetMyCircles(99, 20, 0)
 	assert.NoError(t, err)
 	assert.Empty(t, result)
+	assert.Equal(t, int64(0), total)
 	repo.AssertExpectations(t)
 }
 

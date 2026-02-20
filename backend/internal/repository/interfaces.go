@@ -385,7 +385,7 @@ type StudyCircleRepositoryInterface interface {
 	// サークルCRUD
 	Create(circle *model.StudyCircle) error
 	FindByID(id uint) (*model.StudyCircle, error)
-	FindByUserID(userID uint) ([]model.StudyCircle, error)
+	FindByUserID(userID uint, limit, offset int) ([]model.StudyCircle, int64, error)
 	Update(circle *model.StudyCircle) error
 	Delete(id uint) error
 

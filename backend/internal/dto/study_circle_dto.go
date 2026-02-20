@@ -2,6 +2,14 @@ package dto
 
 import "github.com/norman6464/devsync/backend/internal/model"
 
+// StudyCircleListResponse はスタディサークル一覧レスポンス（ページネーション付き）。
+type StudyCircleListResponse struct {
+	Circles []model.StudyCircle `json:"circles"`
+	Total   int64               `json:"total"`
+	Limit   int                 `json:"limit"`
+	Offset  int                 `json:"offset"`
+}
+
 // CreateStudyCircleRequest はスタディサークル作成リクエストのDTO。
 type CreateStudyCircleRequest struct {
 	Name        string `json:"name" binding:"required,max=200"`

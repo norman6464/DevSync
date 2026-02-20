@@ -10,7 +10,7 @@ import (
 // StudyCircleServiceInterface はStudyCircleHandlerが依存するサービスメソッドを定義する。
 type StudyCircleServiceInterface interface {
 	Create(circle *model.StudyCircle, memberIDs []uint) error
-	GetMyCircles(userID uint) ([]model.StudyCircle, error)
+	GetMyCircles(userID uint, limit, offset int) ([]model.StudyCircle, int64, error)
 	GetByID(id, userID uint) (*model.StudyCircle, error)
 	Update(id, userID uint, name, topic, description *string) (*model.StudyCircle, error)
 	Delete(id, userID uint) error
@@ -62,15 +62,21 @@ func (h *StudyCircleHandler) Create(c *gin.Context) {
 	respondCreated(c, circle)
 }
 
-// GetMyCircles は参加サークル一覧を返す。
+// GetMyCircles は参加サークル一覧をページネーション付きで返す。
 func (h *StudyCircleHandler) GetMyCircles(c *gin.Context) {
 	userID := c.GetUint("userID")
-	circles, err := h.service.GetMyCircles(userID)
+	limit, offset := parseLimitOffset(c)
+	circles, total, err := h.service.GetMyCircles(userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, ensureSlice(circles))
+	respondOK(c, dto.StudyCircleListResponse{
+		Circles: ensureSlice(circles),
+		Total:   total,
+		Limit:   limit,
+		Offset:  offset,
+	})
 }
 
 // GetByID はサークル詳細を返す。
