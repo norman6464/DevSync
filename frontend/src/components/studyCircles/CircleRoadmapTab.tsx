@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Plus, Trash2, Check, ExternalLink } from 'lucide-react';
 import type { StudyCircle, StudyCircleMemberProgress } from '../../types/studyCircle';
 import type { User } from '../../types/user';
+import { sanitizeUrl } from '../../utils/url';
 
 interface CircleRoadmapTabProps {
   circle: StudyCircle;
@@ -83,9 +84,9 @@ export default function CircleRoadmapTab({
                     {step.description && (
                       <p className="text-xs text-gray-500 mt-1">{step.description}</p>
                     )}
-                    {step.resource_url && (
+                    {sanitizeUrl(step.resource_url) && (
                       <a
-                        href={step.resource_url}
+                        href={sanitizeUrl(step.resource_url)!}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 mt-1"

@@ -1,6 +1,7 @@
 import { forwardRef } from 'react';
 import type { User } from '../../types/user';
 import type { GitHubLanguageStat } from '../../types/github';
+import { sanitizeUrl } from '../../utils/url';
 
 interface ShareableProfileCardProps {
   user: User;
@@ -49,7 +50,7 @@ const ShareableProfileCard = forwardRef<HTMLDivElement, ShareableProfileCardProp
           {/* Left side - Avatar and basic info */}
           <div className="flex flex-col items-center justify-center w-48">
             <img
-              src={user.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=7c3aed&color=fff&size=128`}
+              src={sanitizeUrl(user.avatar_url) || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=7c3aed&color=fff&size=128`}
               alt={user.name}
               className="w-24 h-24 rounded-full border-4 border-purple-500/50"
             />

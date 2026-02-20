@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { Project } from '../../types/project';
 import { cardClass } from '../../constants/styles';
+import { sanitizeUrl } from '../../utils/url';
 
 interface ProjectCardProps {
   project: Project;
@@ -100,9 +101,9 @@ export default function ProjectCard({ project, onEdit, onDelete, isOwner }: Proj
         )}
 
         <div className="flex gap-2 mt-4">
-          {project.demo_url && (
+          {sanitizeUrl(project.demo_url) && (
             <a
-              href={project.demo_url}
+              href={sanitizeUrl(project.demo_url)!}
               target="_blank"
               rel="noopener noreferrer"
               className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors"
@@ -113,9 +114,9 @@ export default function ProjectCard({ project, onEdit, onDelete, isOwner }: Proj
               {t('projects.liveDemo')}
             </a>
           )}
-          {project.github_url && (
+          {sanitizeUrl(project.github_url) && (
             <a
-              href={project.github_url}
+              href={sanitizeUrl(project.github_url)!}
               target="_blank"
               rel="noopener noreferrer"
               className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors"
