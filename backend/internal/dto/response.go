@@ -26,15 +26,3 @@ type CountResponse struct {
 	Count int64 `json:"count"`
 }
 
-// DataResponse は汎用データレスポンス
-type DataResponse[T any] struct {
-	Data T `json:"data"`
-}
-
-// ListResponse はリストデータレスポンス（ページネーション情報付き）
-type ListResponse[T any] struct {
-	Data  []T `json:"data"`
-	Total int `json:"total,omitempty"`
-	Page  int `json:"page,omitempty"`
-	Limit int `json:"limit,omitempty"`
-}
