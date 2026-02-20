@@ -664,6 +664,7 @@
     "duration": "Tempo de estudo",
     "durationMinutes": "{{minutes}} min",
     "durationHoursMinutes": "{{hours}}h {{minutes}}m",
+    "sourcePomodoro": "Pomodoro",
     "durationPlaceholder": "minutos",
     "calendar": "Calendário",
     "list": "Lista",
