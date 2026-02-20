@@ -1102,3 +1102,104 @@ func TestRoadmapGetByStatus_RepoError(t *testing.T) {
 	assert.Empty(t, result)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// 空白バイパス脆弱性テスト（Roadmap）
+// ============================================================
+
+func TestRoadmapUpdate_WhitespaceTitle(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+	existing := &model.Roadmap{Title: "Original Title", Description: "Desc", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.Roadmap{Title: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, "Original Title", result.Title)
+}
+
+func TestRoadmapUpdate_WhitespaceDescription(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+	existing := &model.Roadmap{Title: "Title", Description: "Original Desc", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.Roadmap{Description: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, "Original Desc", result.Description)
+}
+
+func TestRoadmapUpdate_WhitespaceCategory(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+	existing := &model.Roadmap{Title: "Title", Category: model.RoadmapCategoryLanguage, UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.Roadmap{Category: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, model.RoadmapCategoryLanguage, result.Category)
+}
+
+func TestRoadmapUpdate_WhitespaceStatus(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+	existing := &model.Roadmap{Title: "Title", Status: model.RoadmapStatusActive, UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.Roadmap{Status: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, model.RoadmapStatusActive, result.Status)
+}
+
+// ============================================================
+// 空白バイパス脆弱性テスト（RoadmapStep）
+// ============================================================
+
+func TestRoadmapUpdateStep_WhitespaceTitle(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 1
+	step := &model.RoadmapStep{RoadmapID: 1, Title: "Original Step"}
+	step.ID = 10
+	repo.On("FindByID", uint(1)).Return(roadmap, nil)
+	repo.On("FindStepByID", uint(10)).Return(step, nil)
+	repo.On("UpdateStep", step).Return(nil)
+
+	result, err := svc.UpdateStep(1, 10, 1, &model.RoadmapStep{Title: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, "Original Step", result.Title)
+}
+
+func TestRoadmapUpdateStep_WhitespaceDescription(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 1
+	step := &model.RoadmapStep{RoadmapID: 1, Description: "Original Desc"}
+	step.ID = 10
+	repo.On("FindByID", uint(1)).Return(roadmap, nil)
+	repo.On("FindStepByID", uint(10)).Return(step, nil)
+	repo.On("UpdateStep", step).Return(nil)
+
+	result, err := svc.UpdateStep(1, 10, 1, &model.RoadmapStep{Description: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, "Original Desc", result.Description)
+}
+
+func TestRoadmapUpdateStep_WhitespaceResourceURL(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 1
+	step := &model.RoadmapStep{RoadmapID: 1, ResourceURL: "https://example.com"}
+	step.ID = 10
+	repo.On("FindByID", uint(1)).Return(roadmap, nil)
+	repo.On("FindStepByID", uint(10)).Return(step, nil)
+	repo.On("UpdateStep", step).Return(nil)
+
+	result, err := svc.UpdateStep(1, 10, 1, &model.RoadmapStep{ResourceURL: "   "})
+	assert.NoError(t, err)
+	assert.Equal(t, "https://example.com", result.ResourceURL)
+}
