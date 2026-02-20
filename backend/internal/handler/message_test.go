@@ -99,3 +99,25 @@ func TestMessage_SendMessage_ServiceError(t *testing.T) {
 	assertStatus(t, w, http.StatusInternalServerError)
 	svc.AssertExpectations(t)
 }
+
+func TestMessage_GetMessages_InvalidID(t *testing.T) {
+	h, _ := setupMessageHandler()
+
+	r := newRouter(1)
+	r.GET("/messages/:userId", h.GetMessages)
+
+	w := doRequest(r, http.MethodGet, "/messages/abc", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestMessage_GetMessages_ServiceError(t *testing.T) {
+	h, svc := setupMessageHandler()
+	svc.On("GetConversation", uint(1), uint(5), 1, 20).Return([]model.Message(nil), errors.New("db error"))
+
+	r := newRouter(1)
+	r.GET("/messages/:userId", h.GetMessages)
+
+	w := doRequest(r, http.MethodGet, "/messages/5", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
