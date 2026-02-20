@@ -4,6 +4,7 @@ import type { Project, CreateProjectRequest } from '../../types/project';
 import type { GitHubRepository } from '../../types/github';
 import { buttonSecondaryClass, inputClass, labelClass, textareaClass } from '../../constants/styles';
 import { isHttpUrl } from '../../utils/url';
+import TagInput from '../common/TagInput';
 import toast from 'react-hot-toast';
 
 interface ProjectFormProps {
@@ -18,7 +19,6 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
   const { t } = useTranslation();
   const [title, setTitle] = useState(project?.title || '');
   const [description, setDescription] = useState(project?.description || '');
-  const [techStackInput, setTechStackInput] = useState('');
   const [techStack, setTechStack] = useState<string[]>(() => {
     if (project?.tech_stack) {
       try {
@@ -37,17 +37,6 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
   const [endDate, setEndDate] = useState(project?.end_date?.split('T')[0] || '');
   const [featured, setFeatured] = useState(project?.featured || false);
   const [githubRepoId, setGithubRepoId] = useState<number | undefined>(project?.github_repo_id || undefined);
-
-  const addTech = () => {
-    if (techStackInput.trim() && !techStack.includes(techStackInput.trim())) {
-      setTechStack([...techStack, techStackInput.trim()]);
-      setTechStackInput('');
-    }
-  };
-
-  const removeTech = (tech: string) => {
-    setTechStack(techStack.filter(t => t !== tech));
-  };
 
   const handleRepoSelect = (repoId: number) => {
     const repo = repos.find(r => r.id === repoId);
@@ -145,50 +134,13 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
       </div>
 
       {/* Tech Stack */}
-      <div>
-        <label className={labelClass}>
-          {t('projects.techStack')}
-        </label>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={techStackInput}
-            onChange={(e) => setTechStackInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTech())}
-            maxLength={100}
-            className={`${inputClass} flex-1`}
-            placeholder={t('projects.techStackPlaceholder')}
-          />
-          <button
-            type="button"
-            onClick={addTech}
-            className="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors"
-          >
-            {t('common.add')}
-          </button>
-        </div>
-        {techStack.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-2">
-            {techStack.map((tech, idx) => (
-              <span
-                key={idx}
-                className="inline-flex items-center gap-1 px-2 py-1 bg-gray-700 text-gray-300 text-sm rounded"
-              >
-                {tech}
-                <button
-                  type="button"
-                  onClick={() => removeTech(tech)}
-                  className="text-gray-400 hover:text-white"
-                >
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
+      <TagInput
+        tags={techStack}
+        onChange={setTechStack}
+        label={t('projects.techStack')}
+        placeholder={t('projects.techStackPlaceholder')}
+        maxLength={100}
+      />
 
       {/* URLs */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

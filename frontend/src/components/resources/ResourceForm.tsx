@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { LearningResource, CreateResourceRequest, ResourceCategory, ResourceDifficulty } from '../../types/resource';
 import { buttonSecondaryClass, inputClass, labelClass, textareaClass } from '../../constants/styles';
 import { isHttpUrl } from '../../utils/url';
+import TagInput from '../common/TagInput';
 import toast from 'react-hot-toast';
 
 interface ResourceFormProps {
@@ -22,7 +23,6 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
   const [url, setUrl] = useState(resource?.url || '');
   const [category, setCategory] = useState<ResourceCategory>(resource?.category || 'article');
   const [difficulty, setDifficulty] = useState<ResourceDifficulty | ''>(resource?.difficulty || '');
-  const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>(() => {
     if (resource?.tags) {
       try {
@@ -35,17 +35,6 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
   });
   const [imageUrl, setImageUrl] = useState(resource?.image_url || '');
   const [isPublic, setIsPublic] = useState(resource?.is_public ?? true);
-
-  const addTag = () => {
-    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
-      setTags([...tags, tagInput.trim()]);
-      setTagInput('');
-    }
-  };
-
-  const removeTag = (tag: string) => {
-    setTags(tags.filter(t => t !== tag));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -162,51 +151,15 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
       </div>
 
       {/* Tags */}
-      <div>
-        <label htmlFor="resource-tags" className={labelClass}>
-          {t('resources.tags')}
-        </label>
-        <div className="flex gap-2">
-          <input
-            id="resource-tags"
-            type="text"
-            value={tagInput}
-            onChange={(e) => setTagInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-            maxLength={50}
-            className={`${inputClass} flex-1`}
-            placeholder={t('resources.tagsPlaceholder')}
-          />
-          <button
-            type="button"
-            onClick={addTag}
-            className="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors"
-          >
-            {t('common.add')}
-          </button>
-        </div>
-        {tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-2">
-            {tags.map((tag, idx) => (
-              <span
-                key={idx}
-                className="inline-flex items-center gap-1 px-2 py-1 bg-gray-700 text-gray-300 text-sm rounded"
-              >
-                #{tag}
-                <button
-                  type="button"
-                  onClick={() => removeTag(tag)}
-                  className="text-gray-400 hover:text-white"
-                >
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
+      <TagInput
+        tags={tags}
+        onChange={setTags}
+        label={t('resources.tags')}
+        id="resource-tags"
+        placeholder={t('resources.tagsPlaceholder')}
+        maxLength={50}
+        prefix="#"
+      />
 
       {/* Image URL */}
       <div>
