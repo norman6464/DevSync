@@ -1099,6 +1099,38 @@ func TestPostUpdate_ValidationError(t *testing.T) {
 	postRepo.AssertExpectations(t)
 }
 
+func TestPostUpdate_WhitespaceOnlyTitle(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	existing := &model.Post{Title: "Old Title", Content: "Old Content", UserID: 1}
+	existing.ID = 1
+
+	postRepo.On("FindByID", uint(1)).Return(existing, nil)
+	postRepo.On("Update", existing).Return(nil)
+
+	// 空白のみのタイトル → 変更なし（エラーにならない）
+	result, err := svc.Update(1, 1, "   ", "", "")
+	assert.NoError(t, err)
+	assert.Equal(t, "Old Title", result.Title) // 元のタイトルが維持される
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostUpdate_WhitespaceOnlyContent(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	existing := &model.Post{Title: "Old Title", Content: "Old Content", UserID: 1}
+	existing.ID = 1
+
+	postRepo.On("FindByID", uint(1)).Return(existing, nil)
+	postRepo.On("Update", existing).Return(nil)
+
+	// 空白のみの本文 → 変更なし（エラーにならない）
+	result, err := svc.Update(1, 1, "", "   ", "")
+	assert.NoError(t, err)
+	assert.Equal(t, "Old Content", result.Content) // 元の本文が維持される
+	postRepo.AssertExpectations(t)
+}
+
 // ============================================================
 // 投稿非公開化（Unpublish）追加テスト
 // ============================================================
