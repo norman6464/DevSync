@@ -344,6 +344,7 @@
     "placeholder": "키워드를 입력...",
     "emptyInitial": "검색 키워드를 입력하세요",
     "noResults": "결과가 없습니다",
+    "resultsCount": "{{count}}건의 결과",
     "tabs": {
       "users": "사용자",
       "posts": "게시물",
