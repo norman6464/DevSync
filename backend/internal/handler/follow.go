@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -10,8 +11,8 @@ import (
 type FollowServiceInterface interface {
 	Follow(followerID, followeeID uint) error
 	Unfollow(followerID, followeeID uint) error
-	GetFollowers(userID uint) ([]model.User, error)
-	GetFollowing(userID uint) ([]model.User, error)
+	GetFollowers(userID uint, limit, offset int) ([]model.User, int64, error)
+	GetFollowing(userID uint, limit, offset int) ([]model.User, int64, error)
 }
 
 // FollowHandler はフォロー関連のHTTPハンドラ。
@@ -53,30 +54,42 @@ func (h *FollowHandler) Unfollow(c *gin.Context) {
 	respondOK(c, domain.NewMessageResponse("unfollowed"))
 }
 
-// GetFollowers は指定ユーザーのフォロワー一覧を返す。
+// GetFollowers は指定ユーザーのフォロワー一覧をページネーション付きで返す。
 func (h *FollowHandler) GetFollowers(c *gin.Context) {
 	id, ok := parseID(c, "id")
 	if !ok {
 		return
 	}
-	users, err := h.service.GetFollowers(id)
+	limit, offset := parseLimitOffset(c)
+	users, total, err := h.service.GetFollowers(id, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, ensureSlice(users))
+	respondOK(c, dto.FollowListResponse{
+		Users:  ensureSlice(users),
+		Total:  total,
+		Limit:  limit,
+		Offset: offset,
+	})
 }
 
-// GetFollowing は指定ユーザーのフォロー中一覧を返す。
+// GetFollowing は指定ユーザーのフォロー中一覧をページネーション付きで返す。
 func (h *FollowHandler) GetFollowing(c *gin.Context) {
 	id, ok := parseID(c, "id")
 	if !ok {
 		return
 	}
-	users, err := h.service.GetFollowing(id)
+	limit, offset := parseLimitOffset(c)
+	users, total, err := h.service.GetFollowing(id, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, ensureSlice(users))
+	respondOK(c, dto.FollowListResponse{
+		Users:  ensureSlice(users),
+		Total:  total,
+		Limit:  limit,
+		Offset: offset,
+	})
 }

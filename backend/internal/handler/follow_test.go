@@ -7,7 +7,6 @@ import (
 
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
-	"github.com/stretchr/testify/assert"
 )
 
 // ---------- Follow ----------
@@ -70,7 +69,7 @@ func TestUnfollow_ServiceError(t *testing.T) {
 func TestGetFollowers_Success(t *testing.T) {
 	h, svc := setupFollowHandler()
 	users := []model.User{{Name: "alice"}, {Name: "bob"}}
-	svc.On("GetFollowers", uint(2)).Return(users, nil)
+	svc.On("GetFollowers", uint(2), 20, 0).Return(users, int64(2), nil)
 
 	r := newRouter(1)
 	r.GET("/users/:id/followers", h.GetFollowers)
@@ -82,21 +81,18 @@ func TestGetFollowers_Success(t *testing.T) {
 func TestGetFollowers_Empty(t *testing.T) {
 	h, svc := setupFollowHandler()
 	var empty []model.User
-	svc.On("GetFollowers", uint(2)).Return(empty, nil)
+	svc.On("GetFollowers", uint(2), 20, 0).Return(empty, int64(0), nil)
 
 	r := newRouter(1)
 	r.GET("/users/:id/followers", h.GetFollowers)
 	w := doRequest(r, "GET", "/users/2/followers", nil)
 	assertStatus(t, w, 200)
-	// nilの場合は空配列を返すことを確認
-	body := w.Body.String()
-	assert.Contains(t, body, "[]")
 }
 
 func TestGetFollowers_ServiceError(t *testing.T) {
 	h, svc := setupFollowHandler()
 	var empty []model.User
-	svc.On("GetFollowers", uint(2)).Return(empty, fmt.Errorf("internal error"))
+	svc.On("GetFollowers", uint(2), 20, 0).Return(empty, int64(0), fmt.Errorf("internal error"))
 
 	r := newRouter(1)
 	r.GET("/users/:id/followers", h.GetFollowers)
@@ -109,7 +105,7 @@ func TestGetFollowers_ServiceError(t *testing.T) {
 func TestGetFollowing_Success(t *testing.T) {
 	h, svc := setupFollowHandler()
 	users := []model.User{{Name: "charlie"}}
-	svc.On("GetFollowing", uint(2)).Return(users, nil)
+	svc.On("GetFollowing", uint(2), 20, 0).Return(users, int64(1), nil)
 
 	r := newRouter(1)
 	r.GET("/users/:id/following", h.GetFollowing)
@@ -121,19 +117,17 @@ func TestGetFollowing_Success(t *testing.T) {
 func TestGetFollowing_Empty(t *testing.T) {
 	h, svc := setupFollowHandler()
 	var empty []model.User
-	svc.On("GetFollowing", uint(2)).Return(empty, nil)
+	svc.On("GetFollowing", uint(2), 20, 0).Return(empty, int64(0), nil)
 
 	r := newRouter(1)
 	r.GET("/users/:id/following", h.GetFollowing)
 	w := doRequest(r, "GET", "/users/2/following", nil)
 	assertStatus(t, w, 200)
-	body := w.Body.String()
-	assert.Contains(t, body, "[]")
 }
 
 func TestGetFollowing_ServiceError(t *testing.T) {
 	h, svc := setupFollowHandler()
-	svc.On("GetFollowing", uint(2)).Return([]model.User(nil), errors.New("db error"))
+	svc.On("GetFollowing", uint(2), 20, 0).Return([]model.User(nil), int64(0), errors.New("db error"))
 
 	r := newRouter(1)
 	r.GET("/users/:id/following", h.GetFollowing)

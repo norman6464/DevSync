@@ -33,16 +33,20 @@ func (r *FollowRepository) IsFollowing(followerID, followeeID uint) bool {
 	return count > 0
 }
 
-// GetFollowers は指定ユーザーのフォロワー一覧を取得する。
-func (r *FollowRepository) GetFollowers(userID uint) ([]model.User, error) {
+// GetFollowers は指定ユーザーのフォロワー一覧をページネーション付きで取得する。
+func (r *FollowRepository) GetFollowers(userID uint, limit, offset int) ([]model.User, int64, error) {
 	var users []model.User
-	err := r.db.Raw(`SELECT u.* FROM users u JOIN follows f ON f.follower_id = u.id WHERE f.followee_id = ?`, userID).Scan(&users).Error
-	return users, err
+	var total int64
+	r.db.Raw(`SELECT COUNT(*) FROM follows WHERE followee_id = ?`, userID).Scan(&total)
+	err := r.db.Raw(`SELECT u.* FROM users u JOIN follows f ON f.follower_id = u.id WHERE f.followee_id = ? ORDER BY f.created_at DESC LIMIT ? OFFSET ?`, userID, limit, offset).Scan(&users).Error
+	return users, total, err
 }
 
-// GetFollowing は指定ユーザーがフォロー中のユーザー一覧を取得する。
-func (r *FollowRepository) GetFollowing(userID uint) ([]model.User, error) {
+// GetFollowing は指定ユーザーがフォロー中のユーザー一覧をページネーション付きで取得する。
+func (r *FollowRepository) GetFollowing(userID uint, limit, offset int) ([]model.User, int64, error) {
 	var users []model.User
-	err := r.db.Raw(`SELECT u.* FROM users u JOIN follows f ON f.followee_id = u.id WHERE f.follower_id = ?`, userID).Scan(&users).Error
-	return users, err
+	var total int64
+	r.db.Raw(`SELECT COUNT(*) FROM follows WHERE follower_id = ?`, userID).Scan(&total)
+	err := r.db.Raw(`SELECT u.* FROM users u JOIN follows f ON f.followee_id = u.id WHERE f.follower_id = ? ORDER BY f.created_at DESC LIMIT ? OFFSET ?`, userID, limit, offset).Scan(&users).Error
+	return users, total, err
 }

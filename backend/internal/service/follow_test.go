@@ -102,11 +102,12 @@ func TestFollowService_GetFollowers_EmptyList(t *testing.T) {
 	repo := new(MockFollowRepository)
 	svc := NewFollowService(repo)
 
-	repo.On("GetFollowers", uint(1)).Return([]model.User{}, nil)
+	repo.On("GetFollowers", uint(1), 20, 0).Return([]model.User{}, int64(0), nil)
 
-	result, err := svc.GetFollowers(1)
+	result, total, err := svc.GetFollowers(1, 20, 0)
 	assert.NoError(t, err)
 	assert.Empty(t, result)
+	assert.Equal(t, int64(0), total)
 	repo.AssertExpectations(t)
 }
 
@@ -114,11 +115,12 @@ func TestFollowService_GetFollowing_EmptyList(t *testing.T) {
 	repo := new(MockFollowRepository)
 	svc := NewFollowService(repo)
 
-	repo.On("GetFollowing", uint(1)).Return([]model.User{}, nil)
+	repo.On("GetFollowing", uint(1), 20, 0).Return([]model.User{}, int64(0), nil)
 
-	result, err := svc.GetFollowing(1)
+	result, total, err := svc.GetFollowing(1, 20, 0)
 	assert.NoError(t, err)
 	assert.Empty(t, result)
+	assert.Equal(t, int64(0), total)
 	repo.AssertExpectations(t)
 }
 
@@ -131,11 +133,12 @@ func TestFollowService_GetFollowers(t *testing.T) {
 			{Name: "alice"},
 			{Name: "bob"},
 		}
-		repo.On("GetFollowers", uint(1)).Return(expected, nil)
+		repo.On("GetFollowers", uint(1), 20, 0).Return(expected, int64(2), nil)
 
-		result, err := svc.GetFollowers(1)
+		result, total, err := svc.GetFollowers(1, 20, 0)
 		assert.NoError(t, err)
 		assert.Equal(t, expected, result)
+		assert.Equal(t, int64(2), total)
 		repo.AssertExpectations(t)
 	})
 
@@ -143,11 +146,12 @@ func TestFollowService_GetFollowers(t *testing.T) {
 		repo := new(MockFollowRepository)
 		svc := NewFollowService(repo)
 
-		repo.On("GetFollowers", uint(1)).Return([]model.User(nil), errors.New("db error"))
+		repo.On("GetFollowers", uint(1), 20, 0).Return([]model.User(nil), int64(0), errors.New("db error"))
 
-		result, err := svc.GetFollowers(1)
+		result, total, err := svc.GetFollowers(1, 20, 0)
 		assert.Error(t, err)
 		assert.Nil(t, result)
+		assert.Equal(t, int64(0), total)
 		repo.AssertExpectations(t)
 	})
 }
@@ -160,11 +164,12 @@ func TestFollowService_GetFollowing(t *testing.T) {
 		expected := []model.User{
 			{Name: "charlie"},
 		}
-		repo.On("GetFollowing", uint(1)).Return(expected, nil)
+		repo.On("GetFollowing", uint(1), 20, 0).Return(expected, int64(1), nil)
 
-		result, err := svc.GetFollowing(1)
+		result, total, err := svc.GetFollowing(1, 20, 0)
 		assert.NoError(t, err)
 		assert.Equal(t, expected, result)
+		assert.Equal(t, int64(1), total)
 		repo.AssertExpectations(t)
 	})
 
@@ -172,11 +177,12 @@ func TestFollowService_GetFollowing(t *testing.T) {
 		repo := new(MockFollowRepository)
 		svc := NewFollowService(repo)
 
-		repo.On("GetFollowing", uint(1)).Return([]model.User(nil), errors.New("db error"))
+		repo.On("GetFollowing", uint(1), 20, 0).Return([]model.User(nil), int64(0), errors.New("db error"))
 
-		result, err := svc.GetFollowing(1)
+		result, total, err := svc.GetFollowing(1, 20, 0)
 		assert.Error(t, err)
 		assert.Nil(t, result)
+		assert.Equal(t, int64(0), total)
 		repo.AssertExpectations(t)
 	})
 }

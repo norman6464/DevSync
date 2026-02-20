@@ -36,12 +36,12 @@ func (s *FollowService) IsFollowing(followerID, followeeID uint) bool {
 	return s.repo.IsFollowing(followerID, followeeID)
 }
 
-// GetFollowers は指定ユーザーの全フォロワーを取得する。
-func (s *FollowService) GetFollowers(userID uint) ([]model.User, error) {
-	return s.repo.GetFollowers(userID)
+// GetFollowers は指定ユーザーのフォロワーをページネーション付きで取得する。
+func (s *FollowService) GetFollowers(userID uint, limit, offset int) ([]model.User, int64, error) {
+	return s.repo.GetFollowers(userID, limit, offset)
 }
 
-// GetFollowing は指定ユーザーがフォロー中の全ユーザーを取得する。
-func (s *FollowService) GetFollowing(userID uint) ([]model.User, error) {
-	return s.repo.GetFollowing(userID)
+// GetFollowing は指定ユーザーがフォロー中のユーザーをページネーション付きで取得する。
+func (s *FollowService) GetFollowing(userID uint, limit, offset int) ([]model.User, int64, error) {
+	return s.repo.GetFollowing(userID, limit, offset)
 }
