@@ -1365,6 +1365,8 @@
     "sortOldest": "Älteste",
     "sortUpdated": "Zuletzt aktualisiert",
     "sortFavorites": "Favoriten zuerst",
+    "viewList": "Listenansicht",
+    "viewGrid": "Rasteransicht",
     "created": "Notiz erfolgreich erstellt",
     "updated": "Notiz erfolgreich aktualisiert",
     "deleted": "Notiz erfolgreich gelöscht",

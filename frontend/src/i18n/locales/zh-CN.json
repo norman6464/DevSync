@@ -1365,6 +1365,8 @@
     "sortOldest": "最旧",
     "sortUpdated": "最近更新",
     "sortFavorites": "收藏优先",
+    "viewList": "列表视图",
+    "viewGrid": "网格视图",
     "created": "笔记创建成功",
     "updated": "笔记更新成功",
     "deleted": "笔记删除成功",

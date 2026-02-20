@@ -1365,6 +1365,8 @@
     "sortOldest": "Plus anciens",
     "sortUpdated": "Mise à jour récente",
     "sortFavorites": "Favoris en premier",
+    "viewList": "Vue liste",
+    "viewGrid": "Vue grille",
     "created": "Note créée avec succès",
     "updated": "Note mise à jour avec succès",
     "deleted": "Note supprimée avec succès",

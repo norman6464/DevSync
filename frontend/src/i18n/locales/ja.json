@@ -1266,6 +1266,8 @@
     "sortOldest": "古い順",
     "sortUpdated": "更新日順",
     "sortFavorites": "お気に入り優先",
+    "viewList": "リスト表示",
+    "viewGrid": "グリッド表示",
     "created": "ノートを作成しました",
     "updated": "ノートを更新しました",
     "deleted": "ノートを削除しました",

@@ -1365,6 +1365,8 @@
     "sortOldest": "Oldest",
     "sortUpdated": "Recently updated",
     "sortFavorites": "Favorites first",
+    "viewList": "List view",
+    "viewGrid": "Grid view",
     "created": "Note created successfully",
     "updated": "Note updated successfully",
     "deleted": "Note deleted successfully",

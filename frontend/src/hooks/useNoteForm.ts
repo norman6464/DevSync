@@ -10,6 +10,7 @@ export function useNoteForm() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'latest' | 'oldest' | 'updated' | 'favorites_first'>('latest');
   const [filterTag, setFilterTag] = useState('');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [tags, setTags] = useState('');
@@ -87,7 +88,7 @@ export function useNoteForm() {
     // Data
     notes, favoriteNotes, filteredNotes, loading, saving,
     // Form state
-    showForm, setShowForm, editingNote, searchQuery, setSearchQuery, sortBy, setSortBy, filterTag, setFilterTag, allTags,
+    showForm, setShowForm, editingNote, searchQuery, setSearchQuery, sortBy, setSortBy, filterTag, setFilterTag, allTags, viewMode, setViewMode,
     title, setTitle, content, setContent, tags, setTags,
     // Actions
     resetForm, handleSubmit, handleEdit, deleteNote, toggleFavorite,
