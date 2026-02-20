@@ -473,3 +473,57 @@ func TestAnswerVote_ValidDownvote(t *testing.T) {
 	assert.NoError(t, err)
 	answerRepo.AssertExpectations(t)
 }
+
+// ============================================================
+// 投票範囲による回答取得テスト
+// ============================================================
+
+func TestAnswerGetByVoteRange_Success(t *testing.T) {
+	svc, answerRepo, _ := newTestAnswerService()
+
+	expected := []model.Answer{
+		{Body: "高評価回答", QuestionID: 10, VoteCount: 5},
+		{Body: "中評価回答", QuestionID: 10, VoteCount: 3},
+	}
+	answerRepo.On("FindByVoteRange", uint(10), 3, 10).Return(expected, nil)
+
+	result, err := svc.GetByVoteRange(10, 3, 10)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	answerRepo.AssertExpectations(t)
+}
+
+func TestAnswerGetByVoteRange_InvalidRange(t *testing.T) {
+	svc, _, _ := newTestAnswerService()
+
+	// minVote > maxVote
+	result, err := svc.GetByVoteRange(10, 10, 3)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "投票範囲が無効です")
+}
+
+func TestAnswerGetByVoteRange_NegativeRange(t *testing.T) {
+	svc, answerRepo, _ := newTestAnswerService()
+
+	expected := []model.Answer{
+		{Body: "低評価回答", QuestionID: 10, VoteCount: -2},
+	}
+	answerRepo.On("FindByVoteRange", uint(10), -5, 0).Return(expected, nil)
+
+	result, err := svc.GetByVoteRange(10, -5, 0)
+	assert.NoError(t, err)
+	assert.Len(t, result, 1)
+	answerRepo.AssertExpectations(t)
+}
+
+func TestAnswerGetByVoteRange_RepoError(t *testing.T) {
+	svc, answerRepo, _ := newTestAnswerService()
+
+	answerRepo.On("FindByVoteRange", uint(10), 0, 5).Return([]model.Answer(nil), errors.New("db error"))
+
+	result, err := svc.GetByVoteRange(10, 0, 5)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	answerRepo.AssertExpectations(t)
+}

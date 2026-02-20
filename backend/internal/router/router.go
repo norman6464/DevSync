@@ -451,6 +451,7 @@ func registerCommunityRoutes(g *gin.RouterGroup, c *di.Container) {
 		questions.GET("/user/:userId", c.QuestionHandler.GetByUserID)
 
 		questions.GET("/:id/answers", c.AnswerHandler.GetByQuestionID)
+		questions.GET("/:id/answers/vote-range", c.AnswerHandler.GetByVoteRange)
 		questions.POST("/:id/answers", c.AnswerHandler.Create)
 		questions.PUT("/:id/answers/:answerId", c.AnswerHandler.Update)
 		questions.DELETE("/:id/answers/:answerId", c.AnswerHandler.Delete)

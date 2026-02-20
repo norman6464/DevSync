@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
@@ -16,6 +18,7 @@ type AnswerServiceInterface interface {
 	SetBestAnswer(questionID, answerID, userID uint) error
 	Vote(userID, answerID uint, value int) error
 	RemoveVote(userID, answerID uint) error
+	GetByVoteRange(questionID uint, minVote, maxVote int) ([]model.Answer, error)
 }
 
 // AnswerHandler は回答関連のHTTPハンドラ。
@@ -161,6 +164,36 @@ func (h *AnswerHandler) Vote(c *gin.Context) {
 	}
 
 	respondOK(c, domain.NewMessageResponse("Voted successfully"))
+}
+
+// GetByVoteRange は指定質問の回答を投票スコア範囲でフィルタリングして取得する。
+func (h *AnswerHandler) GetByVoteRange(c *gin.Context) {
+	questionID, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	minVoteStr := c.DefaultQuery("min_vote", "0")
+	maxVoteStr := c.DefaultQuery("max_vote", "100")
+
+	minVote, err := strconv.Atoi(minVoteStr)
+	if err != nil {
+		respondError(c, domain.NewError(domain.ErrCodeBadRequest, "min_voteは数値で指定してください", nil))
+		return
+	}
+	maxVote, err := strconv.Atoi(maxVoteStr)
+	if err != nil {
+		respondError(c, domain.NewError(domain.ErrCodeBadRequest, "max_voteは数値で指定してください", nil))
+		return
+	}
+
+	answers, err := h.service.GetByVoteRange(questionID, minVote, maxVote)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, answers)
 }
 
 // RemoveVote は回答への投票を取り消す。
