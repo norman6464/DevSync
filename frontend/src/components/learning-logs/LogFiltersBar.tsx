@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Calendar, List, Star, ArrowDownWideNarrow } from 'lucide-react';
+import { Calendar, List, Star, ArrowDownWideNarrow, Clock } from 'lucide-react';
 import type { LogCategory } from '../../types/learningLog';
 import { CATEGORIES } from './LogCard';
 
@@ -11,12 +11,14 @@ interface LogFiltersBarProps {
   showFavoritesOnly: boolean;
   sortBy: SortBy;
   filterDate: string | null;
+  filterDateRange: number | null;
   onViewList: () => void;
   onViewCalendar: () => void;
   onToggleFavorites: () => void;
   onFilterCategory: (cat: LogCategory | 'all') => void;
   onSortBy: (sort: SortBy) => void;
   onClearFilterDate: () => void;
+  onFilterDateRange: (days: number | null) => void;
 }
 
 const SORT_OPTIONS: { value: SortBy; label: string }[] = [
@@ -27,8 +29,8 @@ const SORT_OPTIONS: { value: SortBy; label: string }[] = [
 ];
 
 export default function LogFiltersBar({
-  view, filterCategory, showFavoritesOnly, sortBy, filterDate,
-  onViewList, onViewCalendar, onToggleFavorites, onFilterCategory, onSortBy, onClearFilterDate,
+  view, filterCategory, showFavoritesOnly, sortBy, filterDate, filterDateRange,
+  onViewList, onViewCalendar, onToggleFavorites, onFilterCategory, onSortBy, onClearFilterDate, onFilterDateRange,
 }: LogFiltersBarProps) {
   const { t } = useTranslation();
 
@@ -127,6 +129,39 @@ export default function LogFiltersBar({
               }`}
             >
               {t(opt.label)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Date Range Filter */}
+      <div className="flex flex-col gap-2">
+        <span className="text-sm text-gray-400 flex items-center gap-1.5">
+          <Clock className="w-4 h-4" />
+          {t('learningLogs.dateRange')}
+        </span>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => onFilterDateRange(null)}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              filterDateRange === null
+                ? 'bg-purple-500/20 text-purple-400'
+                : 'bg-gray-800/50 text-gray-400 hover:text-white'
+            }`}
+          >
+            {t('learningLogs.dateRangeAll')}
+          </button>
+          {[7, 30, 90].map((days) => (
+            <button
+              key={days}
+              onClick={() => onFilterDateRange(days)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                filterDateRange === days
+                  ? 'bg-purple-500/20 text-purple-400'
+                  : 'bg-gray-800/50 text-gray-400 hover:text-white'
+              }`}
+            >
+              {t('learningLogs.dateRangeDays', { days })}
             </button>
           ))}
         </div>

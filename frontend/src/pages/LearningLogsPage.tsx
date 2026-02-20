@@ -26,6 +26,7 @@ export default function LearningLogsPage() {
     showForm, setShowForm,
     editingLog,
     filterDate, clearFilterDate,
+    filterDateRange, setFilterDateRange,
     filterCategory, setFilterCategory,
     showFavoritesOnly, setShowFavoritesOnly,
     sortBy, setSortBy,
@@ -122,12 +123,14 @@ export default function LearningLogsPage() {
         showFavoritesOnly={showFavoritesOnly}
         sortBy={sortBy}
         filterDate={filterDate}
+        filterDateRange={filterDateRange}
         onViewList={handleViewList}
         onViewCalendar={handleViewCalendar}
         onToggleFavorites={handleToggleFavoritesFilter}
         onFilterCategory={setFilterCategory}
         onSortBy={setSortBy}
         onClearFilterDate={clearFilterDate}
+        onFilterDateRange={setFilterDateRange}
       />
 
       {/* Calendar View */}

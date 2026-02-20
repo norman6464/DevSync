@@ -20,6 +20,7 @@ export function useLearningLogForm() {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [sortBy, setSortBy] = useState<'latest' | 'oldest' | 'duration_desc' | 'duration_asc'>('latest');
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterDateRange, setFilterDateRange] = useState<number | null>(null);
 
   // フォーム状態
   const [title, setTitle] = useState('');
@@ -78,6 +79,7 @@ export function useLearningLogForm() {
 
   const handleDateClick = useCallback((date: string) => {
     setFilterDate(date);
+    setFilterDateRange(null);
     setView('list');
   }, []);
 
@@ -87,8 +89,14 @@ export function useLearningLogForm() {
 
   const filteredLogs = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
+    const now = new Date();
     const filtered = logs.filter((log) => {
       if (filterDate && log.created_at.split('T')[0] !== filterDate) return false;
+      if (filterDateRange) {
+        const logDate = new Date(log.created_at);
+        const cutoff = new Date(now.getTime() - filterDateRange * 24 * 60 * 60 * 1000);
+        if (logDate < cutoff) return false;
+      }
       if (filterCategory !== 'all' && log.category !== filterCategory) return false;
       if (showFavoritesOnly && !log.is_favorite) return false;
       if (q && !log.title.toLowerCase().includes(q) && !log.content.toLowerCase().includes(q)) return false;
@@ -106,7 +114,7 @@ export function useLearningLogForm() {
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       }
     });
-  }, [logs, filterDate, filterCategory, showFavoritesOnly, sortBy, searchQuery]);
+  }, [logs, filterDate, filterDateRange, filterCategory, showFavoritesOnly, sortBy, searchQuery]);
 
   return {
     // データ
@@ -116,6 +124,7 @@ export function useLearningLogForm() {
     showForm, setShowForm,
     editingLog,
     filterDate, clearFilterDate,
+    filterDateRange, setFilterDateRange,
     filterCategory, setFilterCategory,
     showFavoritesOnly, setShowFavoritesOnly,
     sortBy, setSortBy,
