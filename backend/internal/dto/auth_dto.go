@@ -12,20 +12,20 @@ type UserResponse struct {
 type RegisterRequest struct {
 	Name            string `json:"name" binding:"required" validate:"required"`
 	Username        string `json:"username" binding:"required" validate:"required"`
-	Email           string `json:"email" binding:"required,email" validate:"required,email"`
+	Email           string `json:"email" binding:"required,email,max=255" validate:"required,email,max=255"`
 	Password        string `json:"password" binding:"required,min=6" validate:"required,min=6"`
 	ConfirmPassword string `json:"confirm_password" binding:"required" validate:"required"`
 }
 
 // LoginRequest はログインリクエスト
 type LoginRequest struct {
-	Email    string `json:"email" binding:"required,email" validate:"required,email"`
+	Email    string `json:"email" binding:"required,email,max=255" validate:"required,email,max=255"`
 	Password string `json:"password" binding:"required" validate:"required"`
 }
 
 // PasswordResetRequest はパスワードリセットリクエスト
 type PasswordResetRequest struct {
-	Email string `json:"email" binding:"required,email" validate:"required,email"`
+	Email string `json:"email" binding:"required,email,max=255" validate:"required,email,max=255"`
 }
 
 // ResetPasswordRequest はトークンによるパスワードリセットリクエスト

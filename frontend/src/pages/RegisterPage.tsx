@@ -122,6 +122,7 @@ export default function RegisterPage() {
                 value={email}
                 onChange={handleEmailChange}
                 required
+                maxLength={255}
                 className={inputClass}
               />
             </div>
