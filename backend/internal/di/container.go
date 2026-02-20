@@ -28,8 +28,8 @@ type Container struct {
 	WebSocketHandler         *handler.WebSocketHandler
 	UploadHandler            *handler.UploadHandler
 	NotificationHandler      *handler.NotificationHandler
-	ZennHandler              *handler.ZennHandler
-	QiitaHandler             *handler.QiitaHandler
+	ZennHandler              *handler.ArticlePlatformHandler[model.ZennArticle, model.ZennStats]
+	QiitaHandler             *handler.ArticlePlatformHandler[model.QiitaArticle, model.QiitaStats]
 	LearningGoalHandler      *handler.LearningGoalHandler
 	ActivityReportHandler    *handler.ActivityReportHandler
 	ProjectHandler           *handler.ProjectHandler
@@ -216,8 +216,8 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	c.WebSocketHandler = handler.NewWebSocketHandler(hub, authService, parseOrigins(origins))
 	c.UploadHandler = handler.NewUploadHandler()
 	c.NotificationHandler = handler.NewNotificationHandler(notificationService)
-	c.ZennHandler = handler.NewZennHandler(zennService)
-	c.QiitaHandler = handler.NewQiitaHandler(qiitaService)
+	c.ZennHandler = handler.NewArticlePlatformHandler[model.ZennArticle, model.ZennStats](zennService, "Zenn")
+	c.QiitaHandler = handler.NewArticlePlatformHandler[model.QiitaArticle, model.QiitaStats](qiitaService, "Qiita")
 	c.LearningGoalHandler = handler.NewLearningGoalHandler(learningGoalService)
 	c.ActivityReportHandler = handler.NewActivityReportHandler(activityReportService)
 	c.ProjectHandler = handler.NewProjectHandler(projectService)

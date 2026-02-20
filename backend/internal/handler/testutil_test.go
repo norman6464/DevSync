@@ -1440,9 +1440,9 @@ func (m *MockQiitaService) GetStats(userID uint) (*model.QiitaStats, error) {
 }
 
 // setupQiitaHandler はQiitaHandlerテスト用のセットアップを行う。
-func setupQiitaHandler() (*QiitaHandler, *MockQiitaService) {
+func setupQiitaHandler() (*ArticlePlatformHandler[model.QiitaArticle, model.QiitaStats], *MockQiitaService) {
 	svc := new(MockQiitaService)
-	h := NewQiitaHandler(svc)
+	h := NewArticlePlatformHandler[model.QiitaArticle, model.QiitaStats](svc, "Qiita")
 	return h, svc
 }
 
@@ -1473,9 +1473,9 @@ func (m *MockZennService) GetStats(userID uint) (*model.ZennStats, error) {
 }
 
 // setupZennHandler はZennHandlerテスト用のセットアップを行う。
-func setupZennHandler() (*ZennHandler, *MockZennService) {
+func setupZennHandler() (*ArticlePlatformHandler[model.ZennArticle, model.ZennStats], *MockZennService) {
 	svc := new(MockZennService)
-	h := NewZennHandler(svc)
+	h := NewArticlePlatformHandler[model.ZennArticle, model.ZennStats](svc, "Zenn")
 	return h, svc
 }
 
