@@ -366,6 +366,7 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 		resources.POST("/:id/save", c.LearningResourceHandler.SaveResource)
 		resources.DELETE("/:id/save", c.LearningResourceHandler.UnsaveResource)
 		resources.GET("/user/:userId", c.LearningResourceHandler.GetByUserID)
+		resources.GET("/difficulty/:difficulty", c.LearningResourceHandler.GetByDifficulty)
 	}
 
 	// 学習ログ

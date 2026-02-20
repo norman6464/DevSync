@@ -25,6 +25,7 @@ type LearningResourceServiceInterface interface {
 	Save(userID, resourceID uint) error
 	Unsave(userID, resourceID uint) error
 	GetSavedByUserID(userID uint, limit, offset int) ([]model.LearningResource, int64, error)
+	GetByDifficulty(difficulty string, limit, offset int) ([]model.LearningResource, int64, error)
 }
 
 // LearningResourceHandler は学習リソース関連のHTTPハンドラ。
@@ -312,6 +313,25 @@ func (h *LearningResourceHandler) UnsaveResource(c *gin.Context) {
 	}
 
 	respondOK(c, domain.NewMessageResponse("Resource unsaved"))
+}
+
+// GetByDifficulty は難易度別の公開学習リソースを取得する。
+func (h *LearningResourceHandler) GetByDifficulty(c *gin.Context) {
+	difficulty := c.Param("difficulty")
+	limit, offset := parseLimitOffset(c)
+
+	resources, total, err := h.service.GetByDifficulty(difficulty, limit, offset)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, dto.ResourceListResponse{
+		Resources: resources,
+		Total:     total,
+		Limit:     limit,
+		Offset:    offset,
+	})
 }
 
 // GetSaved は認証ユーザーの保存済み学習リソース一覧を取得する。
