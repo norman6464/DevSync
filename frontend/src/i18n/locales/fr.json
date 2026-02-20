@@ -883,7 +883,13 @@
     "archiveFailed": "Échec de l'archivage",
     "unarchiveFailed": "Échec du désarchivage",
     "statusUpdated": "Statut mis à jour",
-    "statusUpdateFailed": "Échec de la mise à jour du statut"
+    "statusUpdateFailed": "Échec de la mise à jour du statut",
+    "sort": {
+      "newest": "Plus récent",
+      "oldest": "Plus ancien",
+      "ratingDesc": "Mieux noté",
+      "ratingAsc": "Moins bien noté"
+    }
   },
   "qa": {
     "pageTitle": "Q&A Technique",

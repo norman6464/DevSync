@@ -837,7 +837,13 @@
     "archiveFailed": "アーカイブに失敗しました",
     "unarchiveFailed": "アーカイブ解除に失敗しました",
     "statusUpdated": "ステータスを更新しました",
-    "statusUpdateFailed": "ステータスの更新に失敗しました"
+    "statusUpdateFailed": "ステータスの更新に失敗しました",
+    "sort": {
+      "newest": "新着順",
+      "oldest": "古い順",
+      "ratingDesc": "評価が高い順",
+      "ratingAsc": "評価が低い順"
+    }
   },
   "qa": {
     "pageTitle": "技術Q&A",

@@ -883,7 +883,13 @@
     "archiveFailed": "Failed to archive",
     "unarchiveFailed": "Failed to unarchive",
     "statusUpdated": "Status updated",
-    "statusUpdateFailed": "Failed to update status"
+    "statusUpdateFailed": "Failed to update status",
+    "sort": {
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "ratingDesc": "Highest Rated",
+      "ratingAsc": "Lowest Rated"
+    }
   },
   "qa": {
     "pageTitle": "Tech Q&A",

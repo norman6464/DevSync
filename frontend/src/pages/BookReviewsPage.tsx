@@ -15,6 +15,7 @@ export default function BookReviewsPage() {
   const {
     reviews, total, loading, saving, page, setPage, limit,
     statusFilter, setStatusFilter, showArchived, setShowArchived,
+    sortBy, setSortBy,
     createReview, updateReview, deleteReview,
     updateStatus, archiveReview, unarchiveReview,
   } = useBookReviews();
@@ -78,6 +79,21 @@ export default function BookReviewsPage() {
         >
           {t('bookReviews.archivedLabel')}
         </button>
+
+        <div className="flex-1" />
+        {(['newest', 'oldest', 'ratingDesc', 'ratingAsc'] as const).map(sort => (
+          <button
+            key={sort}
+            onClick={() => setSortBy(sort)}
+            className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+              sortBy === sort
+                ? 'bg-orange-600 text-white'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
+          >
+            {t(`bookReviews.sort.${sort}`)}
+          </button>
+        ))}
       </div>
 
       {/* Form Modal */}

@@ -883,7 +883,13 @@
     "archiveFailed": "Archivierung fehlgeschlagen",
     "unarchiveFailed": "Entarchivierung fehlgeschlagen",
     "statusUpdated": "Status aktualisiert",
-    "statusUpdateFailed": "Statusaktualisierung fehlgeschlagen"
+    "statusUpdateFailed": "Statusaktualisierung fehlgeschlagen",
+    "sort": {
+      "newest": "Neueste",
+      "oldest": "Älteste",
+      "ratingDesc": "Beste Bewertung",
+      "ratingAsc": "Schlechteste Bewertung"
+    }
   },
   "qa": {
     "pageTitle": "Tech Q&A",

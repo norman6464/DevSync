@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import type { BookReview, CreateBookReviewRequest, ReviewStatus } from '../types/bookReview';
@@ -14,6 +14,7 @@ export function useBookReviews() {
   const [page, setPage] = useState(0);
   const [statusFilter, setStatusFilter] = useState<ReviewStatus | 'all'>('all');
   const [showArchived, setShowArchived] = useState(false);
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'ratingDesc' | 'ratingAsc'>('newest');
   const limit = 20;
 
   const { data, loading, refetch } = useAsyncData(
@@ -34,6 +35,18 @@ export function useBookReviews() {
     if (statusFilter !== 'all' && r.status !== statusFilter) return false;
     return true;
   });
+
+  const sortedReviews = useMemo(
+    () => [...currentReviews].sort((a, b) => {
+      switch (sortBy) {
+        case 'oldest': return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        case 'ratingDesc': return b.rating - a.rating;
+        case 'ratingAsc': return a.rating - b.rating;
+        default: return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    }),
+    [currentReviews, sortBy]
+  );
 
   const handleCreate = useCallback(async (reqData: CreateBookReviewRequest) => {
     setSaving(true);
@@ -114,7 +127,7 @@ export function useBookReviews() {
   }, [t, reviews]);
 
   return {
-    reviews: currentReviews,
+    reviews: sortedReviews,
     total,
     loading,
     saving,
@@ -125,6 +138,8 @@ export function useBookReviews() {
     setStatusFilter,
     showArchived,
     setShowArchived,
+    sortBy,
+    setSortBy,
     createReview: handleCreate,
     updateReview: handleUpdate,
     deleteReview: handleDelete,
