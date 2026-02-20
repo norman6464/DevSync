@@ -31,6 +31,8 @@ interface ChatState {
   addGroupMessage: (message: GroupMessage) => void;
 }
 
+let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+
 export const useChatStore = create<ChatState>((set, get) => ({
   socket: null,
   conversations: [],
@@ -42,6 +44,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
   groupMessages: [],
 
   connect: () => {
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+    }
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     // Cookieは自動送信されるため、URLにトークンを含めない
     const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
@@ -49,7 +55,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
     ws.onopen = () => set({ connected: true });
     ws.onclose = () => {
       set({ connected: false, socket: null });
-      setTimeout(() => {
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
         const state = get();
         if (!state.connected) {
           state.connect();
@@ -90,6 +97,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   disconnect: () => {
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+    }
     const { socket } = get();
     if (socket) {
       socket.close();
