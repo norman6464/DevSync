@@ -159,6 +159,36 @@ func TestSnippetCommentCreate_Success(t *testing.T) {
 	snippetRepo.AssertCalled(t, "CreateComment", comment)
 }
 
+func TestSnippetCommentCreate_EmptyContent(t *testing.T) {
+	svc, _, _ := newTestCodeSnippetService()
+
+	comment := &model.SnippetComment{
+		SnippetID:  10,
+		UserID:     2,
+		LineNumber: 1,
+		Content:    "",
+	}
+
+	err := svc.CreateComment(comment)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "コメント内容は必須です")
+}
+
+func TestSnippetCommentCreate_WhitespaceContent(t *testing.T) {
+	svc, _, _ := newTestCodeSnippetService()
+
+	comment := &model.SnippetComment{
+		SnippetID:  10,
+		UserID:     2,
+		LineNumber: 1,
+		Content:    "   ",
+	}
+
+	err := svc.CreateComment(comment)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "コメント内容は必須です")
+}
+
 func TestSnippetCommentCreate_SnippetNotFound(t *testing.T) {
 	svc, snippetRepo, _ := newTestCodeSnippetService()
 
