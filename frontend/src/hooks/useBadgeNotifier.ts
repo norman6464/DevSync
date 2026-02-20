@@ -21,7 +21,10 @@ export function useBadgeNotifier(badges: BadgeResult[]) {
     let previousIds: string[] = [];
     if (stored) {
       try {
-        previousIds = JSON.parse(stored);
+        const parsed: unknown = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.every((v) => typeof v === 'string')) {
+          previousIds = parsed;
+        }
       } catch {
         localStorage.removeItem(STORAGE_KEY);
       }

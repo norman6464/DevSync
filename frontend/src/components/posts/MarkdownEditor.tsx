@@ -6,6 +6,7 @@ import rehypeSanitize from 'rehype-sanitize';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { uploadImage } from '../../api/posts';
+import { sanitizeUrl } from '../../utils/url';
 import MarkdownToolbar from './MarkdownToolbar';
 
 interface MarkdownEditorProps {
@@ -280,7 +281,7 @@ export default function MarkdownEditor({
             {uploadedImages.map((url, i) => (
               <div key={i} className="relative group">
                 <img
-                  src={url}
+                  src={sanitizeUrl(url) ?? ''}
                   alt={t('editor.uploadedImage', { number: i + 1 })}
                   className="w-16 h-16 object-cover rounded border border-gray-600"
                 />
