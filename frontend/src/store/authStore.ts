@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { User } from '../types/user';
 import * as authApi from '../api/auth';
+import { isHttpUrl } from '../utils/url';
 
 interface AuthState {
   user: User | null;
@@ -32,6 +33,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   loginWithGitHub: async () => {
     const { data } = await authApi.getGitHubLoginURL();
+    if (!isHttpUrl(data.url)) throw new Error('Invalid OAuth URL');
     window.location.href = data.url;
   },
 

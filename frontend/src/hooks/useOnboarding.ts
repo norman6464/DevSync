@@ -7,6 +7,7 @@ import { getGitHubConnectURL } from '../api/github';
 import { connectZenn } from '../api/zenn';
 import { connectQiita } from '../api/qiita';
 import { connectAtCoder } from '../api/atcoder';
+import { isHttpUrl } from '../utils/url';
 import toast from 'react-hot-toast';
 
 export function useOnboarding() {
@@ -82,8 +83,9 @@ export function useOnboarding() {
 
   const handleConnectGitHub = async () => {
     try {
-      localStorage.setItem('onboarding_redirect', 'true');
+      sessionStorage.setItem('onboarding_redirect', 'true');
       const { data } = await getGitHubConnectURL();
+      if (!isHttpUrl(data.url)) throw new Error('Invalid OAuth URL');
       window.location.href = data.url;
     } catch {
       toast.error(t('errors.somethingWrong'));
