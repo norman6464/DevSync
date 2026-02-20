@@ -1,6 +1,8 @@
 package service
 
 import (
+	"strings"
+
 	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
@@ -93,19 +95,19 @@ func (s *NoteTemplateService) Update(id, userID uint, name, description, default
 		return nil, err
 	}
 
-	if name != "" {
+	if strings.TrimSpace(name) != "" {
 		template.Name = name
 	}
-	if description != "" {
+	if strings.TrimSpace(description) != "" {
 		template.Description = description
 	}
-	if defaultTitle != "" {
+	if strings.TrimSpace(defaultTitle) != "" {
 		template.DefaultTitle = defaultTitle
 	}
-	if contentTemplate != "" {
+	if strings.TrimSpace(contentTemplate) != "" {
 		template.ContentTemplate = contentTemplate
 	}
-	if defaultTags != "" {
+	if strings.TrimSpace(defaultTags) != "" {
 		template.DefaultTags = defaultTags
 	}
 	if isDefault != nil {
