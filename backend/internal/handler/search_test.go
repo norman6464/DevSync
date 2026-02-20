@@ -182,3 +182,49 @@ func TestSearchCircles_EmptyQuery(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
+
+func TestSearchPosts_ServiceError(t *testing.T) {
+	mockSvc := new(MockPostSearchService)
+	mockSvc.On("SearchPosts", mock.MatchedBy(func(p model.PostSearchParams) bool {
+		return p.Query == "error"
+	})).Return(nil, assert.AnError)
+
+	h := NewSearchHandler(mockSvc, nil)
+	r := newRouter(1)
+	r.GET("/search/posts", h.SearchPosts)
+
+	w := doRequest(r, "GET", "/search/posts?q=error", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	mockSvc.AssertExpectations(t)
+}
+
+func TestSearchCircles_ServiceError(t *testing.T) {
+	mockCircleSvc := new(MockCircleSearchService)
+	mockCircleSvc.On("SearchCircles", "error", 20, 0).Return(nil, int64(0), assert.AnError)
+
+	h := NewSearchHandler(nil, mockCircleSvc)
+	r := newRouter(1)
+	r.GET("/search/circles", h.SearchCircles)
+
+	w := doRequest(r, "GET", "/search/circles?q=error", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	mockCircleSvc.AssertExpectations(t)
+}
+
+func TestSearchPosts_WithDateRange(t *testing.T) {
+	mockSvc := new(MockPostSearchService)
+	mockSvc.On("SearchPosts", mock.MatchedBy(func(p model.PostSearchParams) bool {
+		return p.Query == "Go" && p.DateFrom != nil && p.DateTo != nil
+	})).Return(
+		&model.PostSearchResult{Posts: []model.Post{}, Total: 0, Limit: 20},
+		nil,
+	)
+
+	h := NewSearchHandler(mockSvc, nil)
+	r := newRouter(1)
+	r.GET("/search/posts", h.SearchPosts)
+
+	w := doRequest(r, "GET", "/search/posts?q=Go&date_from=2024-01-01&date_to=2024-12-31", nil)
+	assertStatus(t, w, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+}
