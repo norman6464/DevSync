@@ -204,7 +204,10 @@
     "unbookmark": "Remove Bookmark",
     "bookmarks": "Bookmarks",
     "noBookmarks": "No bookmarked posts",
-    "addReaction": "React"
+    "addReaction": "React",
+    "sortNewest": "Newest",
+    "sortOldest": "Oldest",
+    "sortTitle": "By Title"
   },
   "follow": {
     "noFollowers": "No followers yet",

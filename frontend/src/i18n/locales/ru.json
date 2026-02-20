@@ -204,7 +204,10 @@
     "unbookmark": "Удалить закладку",
     "bookmarks": "Закладки",
     "noBookmarks": "Нет сохранённых публикаций",
-    "addReaction": "Реакция"
+    "addReaction": "Реакция",
+    "sortNewest": "Новые",
+    "sortOldest": "Старые",
+    "sortTitle": "По названию"
   },
   "follow": {
     "noFollowers": "Пока нет подписчиков",

@@ -204,7 +204,10 @@
     "unbookmark": "Quitar marcador",
     "bookmarks": "Marcadores",
     "noBookmarks": "No hay publicaciones marcadas",
-    "addReaction": "Reaccionar"
+    "addReaction": "Reaccionar",
+    "sortNewest": "Más reciente",
+    "sortOldest": "Más antiguo",
+    "sortTitle": "Por título"
   },
   "follow": {
     "noFollowers": "Aún no hay seguidores",

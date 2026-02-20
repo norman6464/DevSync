@@ -204,7 +204,10 @@
     "unbookmark": "북마크 해제",
     "bookmarks": "북마크 목록",
     "noBookmarks": "북마크한 게시물이 없습니다",
-    "addReaction": "리액션"
+    "addReaction": "리액션",
+    "sortNewest": "최신순",
+    "sortOldest": "오래된순",
+    "sortTitle": "제목순"
   },
   "follow": {
     "noFollowers": "아직 팔로워가 없습니다",

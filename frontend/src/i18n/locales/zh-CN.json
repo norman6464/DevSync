@@ -204,7 +204,10 @@
     "unbookmark": "取消书签",
     "bookmarks": "书签列表",
     "noBookmarks": "没有收藏的帖子",
-    "addReaction": "表情回应"
+    "addReaction": "表情回应",
+    "sortNewest": "最新",
+    "sortOldest": "最旧",
+    "sortTitle": "按标题"
   },
   "follow": {
     "noFollowers": "暂无粉丝",
