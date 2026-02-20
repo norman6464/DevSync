@@ -101,7 +101,7 @@ func (h *PostCollectionHandler) GetByUserID(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, collections)
+	respondOK(c, ensureSlice(collections))
 }
 
 // Update は指定IDのコレクションを更新する。
@@ -155,7 +155,7 @@ func (h *PostCollectionHandler) GetPosts(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, items)
+	respondOK(c, ensureSlice(items))
 }
 
 // AddPost はコレクションに投稿を追加する。

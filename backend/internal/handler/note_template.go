@@ -88,7 +88,7 @@ func (h *NoteTemplateHandler) GetByUserID(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, templates)
+	respondOK(c, ensureSlice(templates))
 }
 
 // GetDefault は現在のユーザーのデフォルトテンプレートを取得する。

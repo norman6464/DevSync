@@ -174,7 +174,7 @@ func (h *BookReviewHandler) GetByRating(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, reviews)
+	respondOK(c, ensureSlice(reviews))
 }
 
 // Delete は指定IDの書籍レビューを削除する。

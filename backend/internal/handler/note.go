@@ -119,7 +119,7 @@ func (h *NoteHandler) GetByFolderID(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, notes)
+	respondOK(c, ensureSlice(notes))
 }
 
 // UpdateNoteInput はノート更新のリクエストボディ。

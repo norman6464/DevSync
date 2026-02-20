@@ -32,7 +32,7 @@ func (h *MessageHandler) GetConversations(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, conversations)
+	respondOK(c, ensureSlice(conversations))
 }
 
 // GetMessages は指定ユーザーとの会話メッセージをページネーション付きで返す。
@@ -50,7 +50,7 @@ func (h *MessageHandler) GetMessages(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, messages)
+	respondOK(c, ensureSlice(messages))
 }
 
 // SendMessage は指定ユーザーにDMを送信する。

@@ -34,7 +34,7 @@ func (h *MentionHandler) GetMyMentions(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, mentions)
+	respondOK(c, ensureSlice(mentions))
 }
 
 // GetPostMentions は投稿に関連するメンション一覧を取得する。
@@ -49,5 +49,5 @@ func (h *MentionHandler) GetPostMentions(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, mentions)
+	respondOK(c, ensureSlice(mentions))
 }

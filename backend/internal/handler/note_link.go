@@ -64,7 +64,7 @@ func (h *NoteLinkHandler) GetLinks(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, links)
+	respondOK(c, ensureSlice(links))
 }
 
 // GetBacklinks は指定ノートへのリンク一覧（バックリンク）を取得する。
@@ -80,7 +80,7 @@ func (h *NoteLinkHandler) GetBacklinks(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, backlinks)
+	respondOK(c, ensureSlice(backlinks))
 }
 
 // DeleteLink はリンクを削除する。

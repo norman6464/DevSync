@@ -82,7 +82,7 @@ func (h *NoteFolderHandler) GetByUserID(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, folders)
+	respondOK(c, ensureSlice(folders))
 }
 
 // GetChildren は指定フォルダの子フォルダ一覧を取得する。
@@ -98,7 +98,7 @@ func (h *NoteFolderHandler) GetChildren(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, children)
+	respondOK(c, ensureSlice(children))
 }
 
 // GetRootFolders は現在のユーザーのルートフォルダ（親なし）一覧を取得する。
@@ -111,7 +111,7 @@ func (h *NoteFolderHandler) GetRootFolders(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, folders)
+	respondOK(c, ensureSlice(folders))
 }
 
 // UpdateNoteFolderInput はフォルダ更新のリクエストボディ。
