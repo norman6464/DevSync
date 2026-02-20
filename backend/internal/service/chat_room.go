@@ -46,6 +46,15 @@ func (s *ChatRoomService) Create(room *model.ChatRoom, memberIDs []uint) (*model
 	return created, nil
 }
 
+// checkMembership は指定ユーザーがチャットルームのメンバーかを検証する。
+func (s *ChatRoomService) checkMembership(roomID, userID uint) error {
+	isMember, err := s.roomRepo.IsMember(roomID, userID)
+	if err != nil || !isMember {
+		return ErrForbidden
+	}
+	return nil
+}
+
 // GetByUserID は指定ユーザーが参加している全チャットルームを取得する。
 func (s *ChatRoomService) GetByUserID(userID uint) ([]model.ChatRoom, error) {
 	return s.roomRepo.FindByUserID(userID)
@@ -53,11 +62,9 @@ func (s *ChatRoomService) GetByUserID(userID uint) ([]model.ChatRoom, error) {
 
 // GetByID はメンバーシップを検証した後、チャットルームを取得する。
 func (s *ChatRoomService) GetByID(roomID, userID uint) (*model.ChatRoom, error) {
-	isMember, err := s.roomRepo.IsMember(roomID, userID)
-	if err != nil || !isMember {
-		return nil, ErrForbidden
+	if err := s.checkMembership(roomID, userID); err != nil {
+		return nil, err
 	}
-
 	return s.roomRepo.FindByID(roomID)
 }
 
@@ -101,9 +108,8 @@ func (s *ChatRoomService) Delete(roomID, userID uint) error {
 
 // GetMembers はメンバーシップを検証した後、チャットルームの全メンバーを取得する。
 func (s *ChatRoomService) GetMembers(roomID, userID uint) ([]model.ChatRoomMember, error) {
-	isMember, err := s.roomRepo.IsMember(roomID, userID)
-	if err != nil || !isMember {
-		return nil, ErrForbidden
+	if err := s.checkMembership(roomID, userID); err != nil {
+		return nil, err
 	}
 	return s.roomRepo.GetMembers(roomID)
 }
@@ -143,9 +149,8 @@ func (s *ChatRoomService) RemoveMember(roomID, userID, targetUserID uint) error 
 
 // GetMessages はメンバーシップを検証した後、チャットルームのメッセージを取得する。
 func (s *ChatRoomService) GetMessages(roomID, userID uint, page, limit int) ([]model.GroupMessage, error) {
-	isMember, err := s.roomRepo.IsMember(roomID, userID)
-	if err != nil || !isMember {
-		return nil, ErrForbidden
+	if err := s.checkMembership(roomID, userID); err != nil {
+		return nil, err
 	}
 	return s.messageRepo.FindByRoomID(roomID, page, limit)
 }
@@ -153,9 +158,8 @@ func (s *ChatRoomService) GetMessages(roomID, userID uint, page, limit int) ([]m
 // SendMessage はメンバーシップを検証した後、メッセージを送信する。
 // WebSocket経由でルーム内の他メンバーにリアルタイム配信する。
 func (s *ChatRoomService) SendMessage(roomID, userID uint, content string) (*model.GroupMessage, error) {
-	isMember, err := s.roomRepo.IsMember(roomID, userID)
-	if err != nil || !isMember {
-		return nil, ErrForbidden
+	if err := s.checkMembership(roomID, userID); err != nil {
+		return nil, err
 	}
 
 	msg := &model.GroupMessage{
