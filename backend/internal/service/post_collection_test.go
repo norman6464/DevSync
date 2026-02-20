@@ -256,6 +256,7 @@ func TestPostCollectionAddPost_Success(t *testing.T) {
 	collection := &model.PostCollection{UserID: 1}
 	collection.ID = 10
 	repo.On("FindByID", uint(10)).Return(collection, nil)
+	repo.On("HasPost", uint(10), uint(5)).Return(false, nil)
 	repo.On("AddPost", mock.MatchedBy(func(item *model.PostCollectionItem) bool {
 		return item.CollectionID == 10 && item.PostID == 5
 	})).Return(nil)
@@ -284,6 +285,21 @@ func TestPostCollectionAddPost_NotFound(t *testing.T) {
 
 	err := svc.AddPost(999, 1, 5, "")
 	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestPostCollectionAddPost_Duplicate(t *testing.T) {
+	svc, repo := newTestPostCollectionService()
+
+	collection := &model.PostCollection{UserID: 1}
+	collection.ID = 10
+	repo.On("FindByID", uint(10)).Return(collection, nil)
+	repo.On("HasPost", uint(10), uint(5)).Return(true, nil)
+
+	err := svc.AddPost(10, 1, 5, "良い記事")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "すでに追加済み")
+	repo.AssertNotCalled(t, "AddPost")
 	repo.AssertExpectations(t)
 }
 

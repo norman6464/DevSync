@@ -66,6 +66,15 @@ func (r *PostCollectionRepository) AddPost(item *model.PostCollectionItem) error
 	return r.db.Create(item).Error
 }
 
+// HasPost は指定コレクションに指定投稿が存在するかを確認する。
+func (r *PostCollectionRepository) HasPost(collectionID, postID uint) (bool, error) {
+	var count int64
+	err := r.db.Model(&model.PostCollectionItem{}).
+		Where("collection_id = ? AND post_id = ?", collectionID, postID).
+		Count(&count).Error
+	return count > 0, err
+}
+
 // RemovePost はコレクションから投稿を削除する。
 func (r *PostCollectionRepository) RemovePost(collectionID, postID uint) error {
 	return r.db.Where("collection_id = ? AND post_id = ?", collectionID, postID).

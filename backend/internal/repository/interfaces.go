@@ -465,6 +465,7 @@ type PostCollectionRepositoryInterface interface {
 	Delete(id uint) error
 	AddPost(item *model.PostCollectionItem) error
 	RemovePost(collectionID, postID uint) error
+	HasPost(collectionID, postID uint) (bool, error)
 	GetPostsByCollectionID(collectionID uint) ([]model.PostCollectionItem, error)
 }
 

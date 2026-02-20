@@ -1616,6 +1616,11 @@ func (m *MockPostCollectionRepository) AddPost(item *model.PostCollectionItem) e
 	return args.Error(0)
 }
 
+func (m *MockPostCollectionRepository) HasPost(collectionID, postID uint) (bool, error) {
+	args := m.Called(collectionID, postID)
+	return args.Bool(0), args.Error(1)
+}
+
 func (m *MockPostCollectionRepository) RemovePost(collectionID, postID uint) error {
 	args := m.Called(collectionID, postID)
 	return args.Error(0)
