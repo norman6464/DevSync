@@ -8,6 +8,7 @@ export function useNoteForm() {
   const [showForm, setShowForm] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<'latest' | 'oldest' | 'updated' | 'favorites_first'>('latest');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [tags, setTags] = useState('');
@@ -41,21 +42,33 @@ export function useNoteForm() {
     setShowForm(true);
   }, []);
 
-  const filteredNotes = useMemo(() =>
-    searchQuery
+  const filteredNotes = useMemo(() => {
+    const filtered = searchQuery
       ? notes.filter(note =>
           note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           note.content.toLowerCase().includes(searchQuery.toLowerCase())
         )
-      : notes,
-    [notes, searchQuery]
-  );
+      : notes;
+    return [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case 'oldest':
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        case 'updated':
+          return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+        case 'favorites_first':
+          if (a.is_favorite !== b.is_favorite) return a.is_favorite ? -1 : 1;
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
+  }, [notes, searchQuery, sortBy]);
 
   return {
     // Data
     notes, favoriteNotes, filteredNotes, loading, saving,
     // Form state
-    showForm, setShowForm, editingNote, searchQuery, setSearchQuery,
+    showForm, setShowForm, editingNote, searchQuery, setSearchQuery, sortBy, setSortBy,
     title, setTitle, content, setContent, tags, setTags,
     // Actions
     resetForm, handleSubmit, handleEdit, deleteNote, toggleFavorite,

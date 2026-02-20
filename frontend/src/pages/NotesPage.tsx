@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BookOpen, Star, Plus, Edit, Trash2 } from 'lucide-react';
+import { BookOpen, Star, Plus, Edit, Trash2, ArrowDownWideNarrow } from 'lucide-react';
 import { useNoteForm } from '../hooks';
 import { PageLoader, SearchInput } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
@@ -10,7 +10,7 @@ export default function NotesPage() {
   const { t } = useTranslation();
   const {
     filteredNotes, loading, saving,
-    showForm, setShowForm, editingNote, searchQuery, setSearchQuery,
+    showForm, setShowForm, editingNote, searchQuery, setSearchQuery, sortBy, setSortBy,
     title, setTitle, content, setContent, tags, setTags,
     resetForm, handleSubmit, handleEdit, deleteNote, toggleFavorite,
   } = useNoteForm();
@@ -45,6 +45,31 @@ export default function NotesPage() {
           onChange={setSearchQuery}
           placeholder={t('notes.searchPlaceholder')}
         />
+      </div>
+
+      {/* Sort */}
+      <div className="flex items-center gap-3 mb-6">
+        <ArrowDownWideNarrow className="w-4 h-4 text-gray-400" />
+        <div className="flex flex-wrap gap-2">
+          {([
+            { value: 'latest', label: 'notes.sortLatest' },
+            { value: 'oldest', label: 'notes.sortOldest' },
+            { value: 'updated', label: 'notes.sortUpdated' },
+            { value: 'favorites_first', label: 'notes.sortFavorites' },
+          ] as const).map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setSortBy(opt.value)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                sortBy === opt.value
+                  ? 'bg-blue-500/20 text-blue-400'
+                  : 'bg-gray-800/50 text-gray-400 hover:text-white'
+              }`}
+            >
+              {t(opt.label)}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Create/Edit Form */}
