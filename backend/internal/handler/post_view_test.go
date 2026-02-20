@@ -52,7 +52,7 @@ func TestPostViewRecordView_Success(t *testing.T) {
 	w := doRequest(r, http.MethodPost, "/posts/5/views", nil)
 	assertStatus(t, w, http.StatusOK)
 	body := parseJSON(t, w)
-	assert.Equal(t, true, body["recorded"])
+	assert.Equal(t, "記録しました", body["message"])
 	svc.AssertExpectations(t)
 }
 
