@@ -228,46 +228,44 @@ func (s *PostService) GetReplies(parentID uint) ([]model.Comment, error) {
 	return s.repo.GetReplies(parentID)
 }
 
-// DeleteComment は所有権を検証した後、コメントを削除する。
-func (s *PostService) DeleteComment(id, userID uint) error {
+// findAndCheckCommentOwnership はコメントの所有権を検証する共通ヘルパー。
+func (s *PostService) findAndCheckCommentOwnership(id, userID uint) (*model.Comment, error) {
 	comment, err := s.repo.FindCommentByID(id)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if comment.UserID != userID {
-		return ErrForbidden
+		return nil, ErrForbidden
 	}
 
+	return comment, nil
+}
+
+// DeleteComment は所有権を検証した後、コメントを削除する。
+func (s *PostService) DeleteComment(id, userID uint) error {
+	if _, err := s.findAndCheckCommentOwnership(id, userID); err != nil {
+		return err
+	}
 	return s.repo.DeleteComment(id)
 }
 
 // HideComment は所有権を検証した後、コメントを非表示にする。
 func (s *PostService) HideComment(id, userID uint) error {
-	comment, err := s.repo.FindCommentByID(id)
+	comment, err := s.findAndCheckCommentOwnership(id, userID)
 	if err != nil {
 		return err
 	}
-
-	if comment.UserID != userID {
-		return ErrForbidden
-	}
-
 	comment.IsHidden = true
 	return s.repo.UpdateComment(comment)
 }
 
 // UnhideComment は所有権を検証した後、コメントの非表示を解除する。
 func (s *PostService) UnhideComment(id, userID uint) error {
-	comment, err := s.repo.FindCommentByID(id)
+	comment, err := s.findAndCheckCommentOwnership(id, userID)
 	if err != nil {
 		return err
 	}
-
-	if comment.UserID != userID {
-		return ErrForbidden
-	}
-
 	comment.IsHidden = false
 	return s.repo.UpdateComment(comment)
 }
