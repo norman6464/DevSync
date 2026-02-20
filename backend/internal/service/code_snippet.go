@@ -25,6 +25,13 @@ func NewCodeSnippetService(
 // Create は新しいコードスニペットを作成する。
 // 投稿の存在を確認してからスニペットを作成する。
 func (s *CodeSnippetService) Create(snippet *model.CodeSnippet) (*model.CodeSnippet, error) {
+	if strings.TrimSpace(snippet.Language) == "" {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "言語は空白のみでは入力できません", nil)
+	}
+	if strings.TrimSpace(snippet.Code) == "" {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "コードは空白のみでは入力できません", nil)
+	}
+
 	// 投稿の存在確認
 	if _, err := s.postRepo.FindByID(snippet.PostID); err != nil {
 		return nil, err

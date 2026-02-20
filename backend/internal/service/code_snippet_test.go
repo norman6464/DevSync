@@ -418,3 +418,27 @@ func TestCodeSnippetGetByUserLanguage_RepoError(t *testing.T) {
 	assert.Error(t, err)
 	snippetRepo.AssertExpectations(t)
 }
+
+func TestSnippetCreate_WhitespaceCode(t *testing.T) {
+	svc, _, postRepo := newTestCodeSnippetService()
+	post := &model.Post{Title: "Test", Content: "Content", UserID: 1}
+	post.ID = 5
+	postRepo.On("FindByID", uint(5)).Return(post, nil)
+
+	snippet := &model.CodeSnippet{PostID: 5, UserID: 1, Language: "go", Code: "   "}
+	_, err := svc.Create(snippet)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "コードは空白のみでは入力できません")
+}
+
+func TestSnippetCreate_WhitespaceLanguage(t *testing.T) {
+	svc, _, postRepo := newTestCodeSnippetService()
+	post := &model.Post{Title: "Test", Content: "Content", UserID: 1}
+	post.ID = 5
+	postRepo.On("FindByID", uint(5)).Return(post, nil)
+
+	snippet := &model.CodeSnippet{PostID: 5, UserID: 1, Language: "   ", Code: "package main"}
+	_, err := svc.Create(snippet)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "言語は空白のみでは入力できません")
+}
