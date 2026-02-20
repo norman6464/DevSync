@@ -59,8 +59,9 @@ func setAuthCookie(c *gin.Context, token string) {
 
 // clearAuthCookie は認証Cookieをクリアする（MaxAge=-1で即時削除）。
 func clearAuthCookie(c *gin.Context) {
+	secure := os.Getenv("ENVIRONMENT") == "production"
 	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie("token", "", -1, "/", "", false, true)
+	c.SetCookie("token", "", -1, "/", "", secure, true)
 }
 
 // Register はユーザー新規登録を処理する。
