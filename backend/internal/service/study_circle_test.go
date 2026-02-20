@@ -707,6 +707,16 @@ func TestStudyCircleAddMember_GetMemberCountError(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestStudyCircleAddMember_TargetIsMemberError(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	repo.On("IsMember", uint(1), uint(1)).Return(true, nil)
+	repo.On("IsMember", uint(1), uint(5)).Return(false, errors.New("db error"))
+	err := svc.AddMember(1, 1, 5)
+	assert.Error(t, err)
+	repo.AssertNotCalled(t, "FindByID")
+	repo.AssertExpectations(t)
+}
+
 func TestStudyCircleRemoveMember_NotFound(t *testing.T) {
 	svc, repo := newTestStudyCircleService()
 	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
