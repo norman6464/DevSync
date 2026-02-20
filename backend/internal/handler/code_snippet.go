@@ -188,9 +188,5 @@ func (h *CodeSnippetHandler) GetByUserLanguage(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	if snippets == nil {
-		snippets = []model.CodeSnippet{}
-	}
-
-	respondOK(c, snippets)
+	respondOK(c, ensureSlice(snippets))
 }

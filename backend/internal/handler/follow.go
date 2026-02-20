@@ -64,10 +64,7 @@ func (h *FollowHandler) GetFollowers(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	if users == nil {
-		users = []model.User{}
-	}
-	respondOK(c, users)
+	respondOK(c, ensureSlice(users))
 }
 
 // GetFollowing は指定ユーザーのフォロー中一覧を返す。
@@ -81,8 +78,5 @@ func (h *FollowHandler) GetFollowing(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	if users == nil {
-		users = []model.User{}
-	}
-	respondOK(c, users)
+	respondOK(c, ensureSlice(users))
 }
