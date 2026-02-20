@@ -232,32 +232,12 @@ func (h *PostHandler) GetUserPosts(c *gin.Context) {
 
 // Like は投稿にいいねする。
 func (h *PostHandler) Like(c *gin.Context) {
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-	userID := c.GetUint("userID")
-
-	if err := h.service.Like(userID, id); err != nil {
-		respondError(c, err)
-		return
-	}
-	respondOK(c, domain.NewMessageResponse("liked"))
+	handleToggleAction(c, h.service.Like, "liked")
 }
 
 // Unlike は投稿のいいねを取り消す。
 func (h *PostHandler) Unlike(c *gin.Context) {
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-	userID := c.GetUint("userID")
-
-	if err := h.service.Unlike(userID, id); err != nil {
-		respondError(c, err)
-		return
-	}
-	respondOK(c, domain.NewMessageResponse("unliked"))
+	handleToggleAction(c, h.service.Unlike, "unliked")
 }
 
 // GetComments は投稿のコメント一覧を返す。

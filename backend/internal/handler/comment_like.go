@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 )
 
@@ -25,32 +24,12 @@ func NewCommentLikeHandler(service CommentLikeServiceInterface) *CommentLikeHand
 
 // Like はコメントにいいねする。
 func (h *CommentLikeHandler) Like(c *gin.Context) {
-	commentID, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-	userID := c.GetUint("userID")
-
-	if err := h.service.Like(userID, commentID); err != nil {
-		respondError(c, err)
-		return
-	}
-	respondOK(c, domain.NewMessageResponse("いいねしました"))
+	handleToggleAction(c, h.service.Like, "いいねしました")
 }
 
 // Unlike はコメントのいいねを取り消す。
 func (h *CommentLikeHandler) Unlike(c *gin.Context) {
-	commentID, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-	userID := c.GetUint("userID")
-
-	if err := h.service.Unlike(userID, commentID); err != nil {
-		respondError(c, err)
-		return
-	}
-	respondOK(c, domain.NewMessageResponse("いいねを取り消しました"))
+	handleToggleAction(c, h.service.Unlike, "いいねを取り消しました")
 }
 
 // GetStatus はコメントのいいね状態（いいねしているか・いいね数）を返す。
