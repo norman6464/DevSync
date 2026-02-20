@@ -235,34 +235,12 @@ func (h *LearningResourceHandler) Delete(c *gin.Context) {
 
 // Like は学習リソースにいいねする。
 func (h *LearningResourceHandler) Like(c *gin.Context) {
-	userID := c.GetUint("userID")
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	if err := h.service.Like(userID, id); err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondOK(c, domain.NewMessageResponse("Resource liked"))
+	handleToggleAction(c, h.service.Like, "Resource liked")
 }
 
 // Unlike は学習リソースのいいねを取り消す。
 func (h *LearningResourceHandler) Unlike(c *gin.Context) {
-	userID := c.GetUint("userID")
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	if err := h.service.Unlike(userID, id); err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondOK(c, domain.NewMessageResponse("Resource unliked"))
+	handleToggleAction(c, h.service.Unlike, "Resource unliked")
 }
 
 // SaveResource は学習リソースを保存する。

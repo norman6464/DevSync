@@ -198,3 +198,19 @@ func respondPaginated(c *gin.Context, data interface{}, total int64, page, limit
 	response := domain.NewPaginatedResponse(data, total, page, limit)
 	c.JSON(http.StatusOK, response)
 }
+
+// handleToggleAction はLike/Unlikeなどのトグル操作を共通化するヘルパー。
+// parseID → サービス呼び出し → レスポンス返却のパターンを統一する。
+func handleToggleAction(c *gin.Context, action func(userID, id uint) error, message string) {
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+	userID := c.GetUint("userID")
+
+	if err := action(userID, id); err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, domain.NewMessageResponse(message))
+}
