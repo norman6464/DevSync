@@ -18,8 +18,14 @@ export default function QuestionCard({ question, isOwner = false, onEdit, onDele
     try { return JSON.parse(question.tags); } catch { return []; }
   })() : [];
 
+  const statusBorderClass = question.is_solved
+    ? 'border-l-4 border-l-green-500'
+    : question.answer_count > 0
+    ? 'border-l-4 border-l-yellow-500'
+    : '';
+
   return (
-    <div className={cardPaddedClass}>
+    <div className={`${cardPaddedClass} ${statusBorderClass}`}>
       <div className="flex gap-4">
         {/* Vote & Answer counts */}
         <div className="flex flex-col items-center gap-2 text-center min-w-[60px]">
