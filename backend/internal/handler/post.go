@@ -25,6 +25,8 @@ type PostServiceInterface interface {
 	GetComments(postID uint) ([]model.Comment, error)
 	GetReplies(parentID uint) ([]model.Comment, error)
 	DeleteComment(id, userID uint) error
+	HideComment(id, userID uint) error
+	UnhideComment(id, userID uint) error
 	Publish(id, userID uint) (*model.Post, error)
 	Unpublish(id, userID uint) (*model.Post, error)
 	Bookmark(userID, postID uint) error
@@ -322,6 +324,36 @@ func (h *PostHandler) DeleteComment(c *gin.Context) {
 		return
 	}
 	respondDeleted(c)
+}
+
+// HideComment はコメントを非表示にする。
+func (h *PostHandler) HideComment(c *gin.Context) {
+	commentID, ok := parseID(c, "commentId")
+	if !ok {
+		return
+	}
+	userID := c.GetUint("userID")
+
+	if err := h.service.HideComment(commentID, userID); err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, domain.NewMessageResponse("コメントを非表示にしました"))
+}
+
+// UnhideComment はコメントの非表示を解除する。
+func (h *PostHandler) UnhideComment(c *gin.Context) {
+	commentID, ok := parseID(c, "commentId")
+	if !ok {
+		return
+	}
+	userID := c.GetUint("userID")
+
+	if err := h.service.UnhideComment(commentID, userID); err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, domain.NewMessageResponse("コメントの非表示を解除しました"))
 }
 
 // GetDrafts は現在のユーザーの下書き投稿一覧を返す。

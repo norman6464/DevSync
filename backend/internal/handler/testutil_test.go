@@ -111,6 +111,9 @@ func (m *MockPostRepository) GetComments(postID uint) ([]model.Comment, error) {
 	args := m.Called(postID)
 	return args.Get(0).([]model.Comment), args.Error(1)
 }
+func (m *MockPostRepository) UpdateComment(comment *model.Comment) error {
+	return m.Called(comment).Error(0)
+}
 func (m *MockPostRepository) DeleteComment(id uint) error {
 	return m.Called(id).Error(0)
 }

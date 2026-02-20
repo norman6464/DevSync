@@ -152,6 +152,7 @@ type Comment struct {
 	ParentID  *uint      `json:"parent_id,omitempty" gorm:"index"`
 	Content   string     `json:"content" gorm:"type:text;not null"`
 	LikeCount int        `json:"like_count" gorm:"default:0"`
+	IsHidden  bool       `json:"is_hidden" gorm:"default:false"`
 	Replies   []Comment  `json:"replies,omitempty" gorm:"foreignKey:ParentID"`
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at"`

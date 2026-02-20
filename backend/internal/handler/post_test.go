@@ -1090,3 +1090,74 @@ func TestPostCreate_WithTagService(t *testing.T) {
 	assertStatus(t, w, http.StatusCreated)
 	tagSvc.AssertCalled(t, "SetAutoTags", uint(12), uint(1), "Hello #golang")
 }
+
+// ---------- HideComment / UnhideComment ----------
+
+func TestPostHideComment_Success(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts/:id/comments/:commentId/hide", h.HideComment)
+
+	comment := &model.Comment{PostID: 5, Content: "test"}
+	comment.ID = 10
+	comment.UserID = 1
+	postRepo.On("FindCommentByID", uint(10)).Return(comment, nil)
+	postRepo.On("UpdateComment", mock.AnythingOfType("*model.Comment")).Return(nil)
+
+	w := doRequest(r, http.MethodPost, "/posts/5/comments/10/hide", nil)
+
+	assertStatus(t, w, http.StatusOK)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostHideComment_Forbidden(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts/:id/comments/:commentId/hide", h.HideComment)
+
+	comment := &model.Comment{PostID: 5, Content: "test"}
+	comment.ID = 10
+	comment.UserID = 999 // 別ユーザー
+	postRepo.On("FindCommentByID", uint(10)).Return(comment, nil)
+
+	w := doRequest(r, http.MethodPost, "/posts/5/comments/10/hide", nil)
+
+	assertStatus(t, w, http.StatusForbidden)
+}
+
+func TestPostHideComment_InvalidID(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts/:id/comments/:commentId/hide", h.HideComment)
+
+	w := doRequest(r, http.MethodPost, "/posts/5/comments/abc/hide", nil)
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostUnhideComment_Success(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts/:id/comments/:commentId/unhide", h.UnhideComment)
+
+	comment := &model.Comment{PostID: 5, Content: "test", IsHidden: true}
+	comment.ID = 10
+	comment.UserID = 1
+	postRepo.On("FindCommentByID", uint(10)).Return(comment, nil)
+	postRepo.On("UpdateComment", mock.AnythingOfType("*model.Comment")).Return(nil)
+
+	w := doRequest(r, http.MethodPost, "/posts/5/comments/10/unhide", nil)
+
+	assertStatus(t, w, http.StatusOK)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostUnhideComment_InvalidID(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts/:id/comments/:commentId/unhide", h.UnhideComment)
+
+	w := doRequest(r, http.MethodPost, "/posts/5/comments/abc/unhide", nil)
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
