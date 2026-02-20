@@ -645,7 +645,12 @@
     "logsOnDate": "Записи за {{date}}",
     "exportCSV": "Экспорт CSV",
     "exportDays": "Последние {{days}} дней",
-    "exportAll": "Весь период"
+    "exportAll": "Весь период",
+    "weeklyDuration": "За эту неделю",
+    "hoursMinutes": "{{hours}}ч {{minutes}}м",
+    "currentStreak": "Текущая серия",
+    "days": " дн.",
+    "logCount": "Всего записей"
   },
   "reports": {
     "title": "Отчёты об Активности",

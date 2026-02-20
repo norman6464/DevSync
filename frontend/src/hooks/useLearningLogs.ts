@@ -8,6 +8,7 @@ import {
   deleteLog,
   getCalendarData,
   getStreakInfo,
+  getWeeklyDuration,
 } from '../api/learningLogs';
 import type { LearningLog, CalendarEntry, LogCategory, StreakInfo } from '../types/learningLog';
 import { useAsyncData } from './useAsyncData';
@@ -106,6 +107,19 @@ export function useStreak(userId: number | undefined) {
   );
 
   return { streakInfo, loading, refetchStreak: refetch };
+}
+
+export function useWeeklyDuration(userId: number | undefined) {
+  const { data: weeklyDuration, loading } = useAsyncData(
+    async () => {
+      if (!userId) return 0;
+      const { data } = await getWeeklyDuration(userId);
+      return data?.duration ?? 0;
+    },
+    { initialData: 0, deps: [userId] }
+  );
+
+  return { weeklyDuration, loading };
 }
 
 export function useLearningLogCalendar(userId: number | undefined) {

@@ -19,7 +19,7 @@ export { useRoadmaps, useRoadmapDetail, useRoadmapTemplates } from './useRoadmap
 export { useRoadmapForm } from './useRoadmapForm';
 export { useDashboard } from './useDashboard';
 export { useBadgeNotifier } from './useBadgeNotifier';
-export { useLearningLogs, useLearningLogCalendar, useStreak } from './useLearningLogs';
+export { useLearningLogs, useLearningLogCalendar, useStreak, useWeeklyDuration } from './useLearningLogs';
 export { useLearningLogForm } from './useLearningLogForm';
 export { useGoalForm } from './useGoalForm';
 export { useSnippetComments } from './useSnippetComments';

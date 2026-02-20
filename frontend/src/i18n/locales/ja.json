@@ -629,7 +629,12 @@
     "logsOnDate": "{{date}}のログ",
     "exportCSV": "CSVエクスポート",
     "exportDays": "過去{{days}}日",
-    "exportAll": "全期間"
+    "exportAll": "全期間",
+    "weeklyDuration": "今週の学習時間",
+    "hoursMinutes": "{{hours}}時間{{minutes}}分",
+    "currentStreak": "連続学習日数",
+    "days": "日",
+    "logCount": "ログ件数"
   },
   "reports": {
     "title": "アクティビティレポート",
