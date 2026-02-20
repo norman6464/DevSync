@@ -52,6 +52,7 @@ const ShareableProfileCard = forwardRef<HTMLDivElement, ShareableProfileCardProp
             <img
               src={sanitizeUrl(user.avatar_url) || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=7c3aed&color=fff&size=128`}
               alt={user.name}
+              referrerPolicy="no-referrer"
               className="w-24 h-24 rounded-full border-4 border-purple-500/50"
             />
             <h2 className="mt-3 text-xl font-bold text-white truncate max-w-full">

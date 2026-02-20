@@ -57,6 +57,7 @@ export default function OnboardingSkillsStep({
               <img
                 src={`https://skillicons.dev/icons?${new URLSearchParams({ i: selectedLanguages.join(','), theme: 'dark' })}`}
                 alt="Selected languages"
+                referrerPolicy="no-referrer"
                 className="h-12"
               />
             </div>
@@ -88,6 +89,7 @@ export default function OnboardingSkillsStep({
               <img
                 src={`https://skillicons.dev/icons?${new URLSearchParams({ i: selectedFrameworks.join(','), theme: 'dark' })}`}
                 alt="Selected frameworks"
+                referrerPolicy="no-referrer"
                 className="h-12"
               />
             </div>
