@@ -594,6 +594,7 @@
     "activeGoals": "Активные",
     "completedGoals": "Завершённые",
     "pausedGoals": "Приостановленные",
+    "overdueGoals": "Просроченные",
     "statusActive": "Активная",
     "statusCompleted": "Завершена",
     "statusPaused": "Приостановлена",

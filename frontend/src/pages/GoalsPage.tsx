@@ -24,6 +24,11 @@ export default function GoalsPage() {
     dialogProps,
   } = useGoalForm();
 
+  const overdueGoals = activeGoals.filter((g) => {
+    if (!g.target_date) return false;
+    return new Date(g.target_date).getTime() < Date.now();
+  });
+
   const isFiltered = filterStatus !== 'all' || filterCategory !== 'all' || searchQuery.trim() !== '';
 
   if (loading) return <PageLoader />;
@@ -41,7 +46,7 @@ export default function GoalsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
           <p className="text-2xl font-bold">{goals.length}</p>
           <p className="text-sm text-gray-400">{t('goals.totalGoals')}</p>
@@ -57,6 +62,10 @@ export default function GoalsPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
           <p className="text-2xl font-bold text-yellow-400">{pausedGoals.length}</p>
           <p className="text-sm text-gray-400">{t('goals.pausedGoals')}</p>
+        </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-md p-4">
+          <p className="text-2xl font-bold text-red-400">{overdueGoals.length}</p>
+          <p className="text-sm text-gray-400">{t('goals.overdueGoals')}</p>
         </div>
       </div>
 

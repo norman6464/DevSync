@@ -594,6 +594,7 @@
     "activeGoals": "진행 중",
     "completedGoals": "완료",
     "pausedGoals": "일시 중지",
+    "overdueGoals": "기한 초과",
     "statusActive": "진행 중",
     "statusCompleted": "완료",
     "statusPaused": "일시 중지",

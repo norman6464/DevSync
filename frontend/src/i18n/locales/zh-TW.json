@@ -594,6 +594,7 @@
     "activeGoals": "進行中",
     "completedGoals": "已完成",
     "pausedGoals": "已暫停",
+    "overdueGoals": "已逾期",
     "statusActive": "進行中",
     "statusCompleted": "已完成",
     "statusPaused": "已暫停",

@@ -594,6 +594,7 @@
     "activeGoals": "Ativas",
     "completedGoals": "Concluídas",
     "pausedGoals": "Pausadas",
+    "overdueGoals": "Atrasadas",
     "statusActive": "Ativo",
     "statusCompleted": "Concluído",
     "statusPaused": "Pausado",
