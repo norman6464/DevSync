@@ -659,6 +659,7 @@
     "categoryOther": "Другое",
     "duration": "Время обучения",
     "durationMinutes": "{{minutes}} мин",
+    "durationHoursMinutes": "{{hours}} ч {{minutes}} мин",
     "durationPlaceholder": "минуты",
     "calendar": "Календарь",
     "list": "Список",

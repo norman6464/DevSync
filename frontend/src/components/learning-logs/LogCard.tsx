@@ -51,7 +51,11 @@ export default function LogCard({ log, onEdit, onDelete, onToggleFavorite }: Log
             <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
               <span>{new Date(log.created_at).toLocaleDateString()}</span>
               {log.duration > 0 && (
-                <span>{t('learningLogs.durationMinutes', { minutes: log.duration })}</span>
+                <span>
+                  {log.duration >= 60
+                    ? t('learningLogs.durationHoursMinutes', { hours: Math.floor(log.duration / 60), minutes: log.duration % 60 })
+                    : t('learningLogs.durationMinutes', { minutes: log.duration })}
+                </span>
               )}
             </div>
           </div>

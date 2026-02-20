@@ -659,6 +659,7 @@
     "categoryOther": "Sonstiges",
     "duration": "Lernzeit",
     "durationMinutes": "{{minutes}} Min.",
+    "durationHoursMinutes": "{{hours}} Std. {{minutes}} Min.",
     "durationPlaceholder": "Minuten",
     "calendar": "Kalender",
     "list": "Liste",

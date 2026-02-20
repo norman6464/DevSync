@@ -659,6 +659,7 @@
     "categoryOther": "기타",
     "duration": "학습 시간",
     "durationMinutes": "{{minutes}}분",
+    "durationHoursMinutes": "{{hours}}시간 {{minutes}}분",
     "durationPlaceholder": "분",
     "calendar": "캘린더",
     "list": "목록",
