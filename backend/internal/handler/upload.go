@@ -14,6 +14,11 @@ import (
 	"github.com/norman6464/devsync/backend/internal/dto"
 )
 
+const (
+	uploadDirPerm  os.FileMode = 0750 // rwxr-x---
+	uploadFilePerm os.FileMode = 0640 // rw-r-----
+)
+
 // allowedMIMETypes はアップロードを許可するMIMEタイプの一覧。
 // ファイルのマジックバイト（先頭512バイト）から検出したMIMEタイプで検証する。
 var allowedMIMETypes = map[string]bool{
@@ -52,7 +57,7 @@ func NewUploadHandler() *UploadHandler {
 	}
 
 	// アップロードディレクトリが存在しない場合は作成する
-	if err := os.MkdirAll(uploadDir, 0755); err != nil {
+	if err := os.MkdirAll(uploadDir, uploadDirPerm); err != nil {
 		panic(fmt.Sprintf("Failed to create upload directory: %v", err))
 	}
 
@@ -112,7 +117,7 @@ func (h *UploadHandler) UploadImage(c *gin.Context) {
 	// 日付ベースのサブディレクトリを作成する
 	dateDir := time.Now().Format("2006/01")
 	fullDir := filepath.Join(h.uploadDir, dateDir)
-	if err := os.MkdirAll(fullDir, 0755); err != nil {
+	if err := os.MkdirAll(fullDir, uploadDirPerm); err != nil {
 		respondInternalError(c, "Failed to create directory")
 		return
 	}
@@ -121,6 +126,12 @@ func (h *UploadHandler) UploadImage(c *gin.Context) {
 	filePath := filepath.Join(fullDir, filename)
 	if err := c.SaveUploadedFile(file, filePath); err != nil {
 		respondInternalError(c, "Failed to save file")
+		return
+	}
+
+	// ファイルパーミッションを制限する
+	if err := os.Chmod(filePath, uploadFilePerm); err != nil {
+		respondInternalError(c, "Failed to set file permissions")
 		return
 	}
 
@@ -163,7 +174,7 @@ func (h *UploadHandler) UploadMultipleImages(c *gin.Context) {
 
 	dateDir := time.Now().Format("2006/01")
 	fullDir := filepath.Join(h.uploadDir, dateDir)
-	if err := os.MkdirAll(fullDir, 0755); err != nil {
+	if err := os.MkdirAll(fullDir, uploadDirPerm); err != nil {
 		respondInternalError(c, "Failed to create directory")
 		return
 	}
@@ -205,6 +216,12 @@ func (h *UploadHandler) UploadMultipleImages(c *gin.Context) {
 
 		if err := c.SaveUploadedFile(file, filePath); err != nil {
 			respondInternalError(c, "Failed to save file")
+			return
+		}
+
+		// ファイルパーミッションを制限する
+		if err := os.Chmod(filePath, uploadFilePerm); err != nil {
+			respondInternalError(c, "Failed to set file permissions")
 			return
 		}
 
