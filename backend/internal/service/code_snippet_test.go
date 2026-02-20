@@ -306,3 +306,46 @@ func TestSnippetUpdate_RepoError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, result)
 }
+
+// ---------- ユーザー別言語フィルタリング ----------
+
+func TestCodeSnippetGetByUserLanguage_Success(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+	expected := []model.CodeSnippet{
+		{PostID: 1, UserID: 1, Language: "go", Code: "package main"},
+		{PostID: 2, UserID: 1, Language: "go", Code: "func main()"},
+	}
+	snippetRepo.On("FindByUserIDAndLanguage", uint(1), "go").Return(expected, nil)
+
+	result, err := svc.GetByUserLanguage(1, "go")
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	snippetRepo.AssertExpectations(t)
+}
+
+func TestCodeSnippetGetByUserLanguage_EmptyResult(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+	snippetRepo.On("FindByUserIDAndLanguage", uint(1), "rust").Return([]model.CodeSnippet{}, nil)
+
+	result, err := svc.GetByUserLanguage(1, "rust")
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	snippetRepo.AssertExpectations(t)
+}
+
+func TestCodeSnippetGetByUserLanguage_EmptyLanguage(t *testing.T) {
+	svc, _, _ := newTestCodeSnippetService()
+
+	_, err := svc.GetByUserLanguage(1, "")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "言語の指定は必須です")
+}
+
+func TestCodeSnippetGetByUserLanguage_RepoError(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+	snippetRepo.On("FindByUserIDAndLanguage", uint(1), "go").Return([]model.CodeSnippet{}, gorm.ErrInvalidDB)
+
+	_, err := svc.GetByUserLanguage(1, "go")
+	assert.Error(t, err)
+	snippetRepo.AssertExpectations(t)
+}

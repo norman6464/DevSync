@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
@@ -41,6 +42,14 @@ func (s *CodeSnippetService) Create(snippet *model.CodeSnippet) (*model.CodeSnip
 // GetByPostID は指定投稿IDに紐づくスニペット一覧を返す。
 func (s *CodeSnippetService) GetByPostID(postID uint) ([]model.CodeSnippet, error) {
 	return s.repo.FindByPostID(postID)
+}
+
+// GetByUserLanguage は指定ユーザーのスニペットをプログラミング言語でフィルタリングして取得する。
+func (s *CodeSnippetService) GetByUserLanguage(userID uint, language string) ([]model.CodeSnippet, error) {
+	if language == "" {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "言語の指定は必須です", nil)
+	}
+	return s.repo.FindByUserIDAndLanguage(userID, language)
 }
 
 // findAndCheckOwnership はスニペットを取得し、指定ユーザーが所有者かを検証する。

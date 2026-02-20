@@ -10,6 +10,7 @@ import (
 type CodeSnippetHandlerServiceInterface interface {
 	Create(snippet *model.CodeSnippet) (*model.CodeSnippet, error)
 	GetByPostID(postID uint) ([]model.CodeSnippet, error)
+	GetByUserLanguage(userID uint, language string) ([]model.CodeSnippet, error)
 	Update(id, userID uint, language, fileName, code string) (*model.CodeSnippet, error)
 	Delete(id, userID uint) error
 	GetComments(snippetID uint) ([]model.SnippetComment, error)
@@ -175,4 +176,21 @@ func (h *CodeSnippetHandler) DeleteComment(c *gin.Context) {
 		return
 	}
 	respondDeleted(c)
+}
+
+// GetByUserLanguage は認証ユーザーのスニペットを言語でフィルタリングして取得する。
+func (h *CodeSnippetHandler) GetByUserLanguage(c *gin.Context) {
+	userID := c.GetUint("userID")
+	language := c.Param("language")
+
+	snippets, err := h.service.GetByUserLanguage(userID, language)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	if snippets == nil {
+		snippets = []model.CodeSnippet{}
+	}
+
+	respondOK(c, snippets)
 }
