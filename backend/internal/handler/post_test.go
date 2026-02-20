@@ -1001,3 +1001,92 @@ func TestPostCreateComment_InvalidJSON(t *testing.T) {
 	w := doRequestRaw(r, http.MethodPost, "/posts/5/comments", "{invalid}")
 	assertStatus(t, w, http.StatusBadRequest)
 }
+
+// ---------- Create with CodeSnippets ----------
+
+func TestPostCreate_WithCodeSnippets(t *testing.T) {
+	h, postRepo, notifRepo, snippetRepo := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts", h.Create)
+
+	createdPost := &model.Post{Title: "Snippet Post", Content: "Hello #go"}
+	createdPost.ID = 10
+	postRepo.On("Create", mock.AnythingOfType("*model.Post")).Return(nil).Run(func(args mock.Arguments) {
+		p := args.Get(0).(*model.Post)
+		p.ID = 10
+	})
+	notifRepo.On("GetFollowerIDs", uint(1)).Return([]uint{}, nil)
+	// CodeSnippetService.Create 内部で postRepo.FindByID, snippetRepo.Create, snippetRepo.FindByID を呼ぶ
+	postRepo.On("FindByID", mock.AnythingOfType("uint")).Return(createdPost, nil)
+	snippetRepo.On("Create", mock.AnythingOfType("*model.CodeSnippet")).Return(nil)
+	snippetRepo.On("FindByID", mock.AnythingOfType("uint")).Return(&model.CodeSnippet{
+		Language: "go", Code: "package main",
+	}, nil)
+
+	w := doRequest(r, http.MethodPost, "/posts", map[string]interface{}{
+		"title":   "Snippet Post",
+		"content": "Hello #go",
+		"code_snippets": []map[string]string{
+			{"language": "go", "file_name": "main.go", "code": "package main"},
+		},
+	})
+
+	assertStatus(t, w, http.StatusCreated)
+	snippetRepo.AssertCalled(t, "Create", mock.AnythingOfType("*model.CodeSnippet"))
+}
+
+func TestPostCreate_WithCodeSnippets_SkipsEmpty(t *testing.T) {
+	h, postRepo, notifRepo, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts", h.Create)
+
+	createdPost := &model.Post{Title: "Post", Content: "Content"}
+	createdPost.ID = 11
+	postRepo.On("Create", mock.AnythingOfType("*model.Post")).Return(nil).Run(func(args mock.Arguments) {
+		p := args.Get(0).(*model.Post)
+		p.ID = 11
+	})
+	notifRepo.On("GetFollowerIDs", uint(1)).Return([]uint{}, nil)
+	postRepo.On("FindByID", uint(11)).Return(createdPost, nil)
+
+	// language or code が空のスニペットはスキップされる
+	w := doRequest(r, http.MethodPost, "/posts", map[string]interface{}{
+		"title":   "Post",
+		"content": "Content",
+		"code_snippets": []map[string]string{
+			{"language": "", "code": "some code"},
+			{"language": "go", "code": ""},
+		},
+	})
+
+	assertStatus(t, w, http.StatusCreated)
+}
+
+// ---------- Create with TagService ----------
+
+func TestPostCreate_WithTagService(t *testing.T) {
+	h, postRepo, notifRepo, _ := setupPostHandler()
+
+	tagSvc := new(MockPostTagService)
+	h.SetTagService(tagSvc)
+
+	r := newRouter(1)
+	r.POST("/posts", h.Create)
+
+	createdPost := &model.Post{Title: "Tagged Post", Content: "Hello #golang"}
+	createdPost.ID = 12
+	postRepo.On("Create", mock.AnythingOfType("*model.Post")).Return(nil).Run(func(args mock.Arguments) {
+		p := args.Get(0).(*model.Post)
+		p.ID = 12
+	})
+	notifRepo.On("GetFollowerIDs", uint(1)).Return([]uint{}, nil)
+	postRepo.On("FindByID", uint(12)).Return(createdPost, nil)
+	tagSvc.On("SetAutoTags", uint(12), uint(1), "Hello #golang").Return(nil)
+
+	w := doRequest(r, http.MethodPost, "/posts", map[string]string{
+		"title": "Tagged Post", "content": "Hello #golang",
+	})
+
+	assertStatus(t, w, http.StatusCreated)
+	tagSvc.AssertCalled(t, "SetAutoTags", uint(12), uint(1), "Hello #golang")
+}

@@ -165,3 +165,53 @@ func TestNoteLinkDeleteLink_InvalidTargetID(t *testing.T) {
 
 	assertStatus(t, w, http.StatusBadRequest)
 }
+
+// ---------- GetLinkStats ----------
+
+func TestNoteLinkGetLinkStats_Success(t *testing.T) {
+	h, svc := setupNoteLinkHandler()
+	svc.On("GetLinkStats", uint(1), uint(1)).Return(&model.NoteLinkStats{
+		NoteID: 1, ForwardLinkCount: 3, BacklinkCount: 5,
+	}, nil)
+
+	r := newRouter(1)
+	r.GET("/notes/:id/link-stats", h.GetLinkStats)
+	w := doRequest(r, "GET", "/notes/1/link-stats", nil)
+
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestNoteLinkGetLinkStats_ServiceError(t *testing.T) {
+	h, svc := setupNoteLinkHandler()
+	svc.On("GetLinkStats", uint(1), uint(1)).Return((*model.NoteLinkStats)(nil), service.ErrNotFound)
+
+	r := newRouter(1)
+	r.GET("/notes/:id/link-stats", h.GetLinkStats)
+	w := doRequest(r, "GET", "/notes/1/link-stats", nil)
+
+	assertStatus(t, w, http.StatusNotFound)
+	svc.AssertExpectations(t)
+}
+
+func TestNoteLinkGetLinkStats_Forbidden(t *testing.T) {
+	h, svc := setupNoteLinkHandler()
+	svc.On("GetLinkStats", uint(1), uint(1)).Return((*model.NoteLinkStats)(nil), service.ErrForbidden)
+
+	r := newRouter(1)
+	r.GET("/notes/:id/link-stats", h.GetLinkStats)
+	w := doRequest(r, "GET", "/notes/1/link-stats", nil)
+
+	assertStatus(t, w, http.StatusForbidden)
+	svc.AssertExpectations(t)
+}
+
+func TestNoteLinkGetLinkStats_InvalidID(t *testing.T) {
+	h, _ := setupNoteLinkHandler()
+
+	r := newRouter(1)
+	r.GET("/notes/:id/link-stats", h.GetLinkStats)
+	w := doRequest(r, "GET", "/notes/abc/link-stats", nil)
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
