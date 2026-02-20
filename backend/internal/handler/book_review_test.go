@@ -434,3 +434,42 @@ func TestBookReviewUnarchive_InvalidID(t *testing.T) {
 	w := doRequest(r, http.MethodPut, "/book-reviews/abc/unarchive", nil)
 	assertStatus(t, w, http.StatusBadRequest)
 }
+
+func TestBookReviewUpdateStatus_Success(t *testing.T) {
+	h, svc := setupBookReviewHandler()
+	r := newRouter(1)
+	r.PUT("/book-reviews/:id/status", h.UpdateStatus)
+
+	svc.On("UpdateStatus", uint(5), uint(1), model.ReviewStatus("reading")).Return(nil)
+
+	w := doRequest(r, http.MethodPut, "/book-reviews/5/status", map[string]string{
+		"status": "reading",
+	})
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestBookReviewUpdateStatus_Forbidden(t *testing.T) {
+	h, svc := setupBookReviewHandler()
+	r := newRouter(1)
+	r.PUT("/book-reviews/:id/status", h.UpdateStatus)
+
+	svc.On("UpdateStatus", uint(5), uint(1), model.ReviewStatus("completed")).Return(service.ErrForbidden)
+
+	w := doRequest(r, http.MethodPut, "/book-reviews/5/status", map[string]string{
+		"status": "completed",
+	})
+	assertStatus(t, w, http.StatusForbidden)
+	svc.AssertExpectations(t)
+}
+
+func TestBookReviewUpdateStatus_InvalidID(t *testing.T) {
+	h, _ := setupBookReviewHandler()
+	r := newRouter(1)
+	r.PUT("/book-reviews/:id/status", h.UpdateStatus)
+
+	w := doRequest(r, http.MethodPut, "/book-reviews/abc/status", map[string]string{
+		"status": "reading",
+	})
+	assertStatus(t, w, http.StatusBadRequest)
+}

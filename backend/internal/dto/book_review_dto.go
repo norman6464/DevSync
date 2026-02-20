@@ -22,6 +22,11 @@ type UpdateBookReviewRequest struct {
 	ImageURL string `json:"image_url"`
 }
 
+// UpdateBookReviewStatusRequest は書籍レビューの読書状態更新リクエスト。
+type UpdateBookReviewStatusRequest struct {
+	Status string `json:"status" binding:"required"`
+}
+
 // BookReviewListResponse は書籍レビュー一覧レスポンス。
 type BookReviewListResponse struct {
 	Reviews []model.BookReview `json:"reviews"`

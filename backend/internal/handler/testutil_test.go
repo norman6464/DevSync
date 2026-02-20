@@ -767,6 +767,10 @@ func (m *MockBookReviewService) UnarchiveReview(id, userID uint) error {
 	return m.Called(id, userID).Error(0)
 }
 
+func (m *MockBookReviewService) UpdateStatus(id, userID uint, status model.ReviewStatus) error {
+	return m.Called(id, userID, status).Error(0)
+}
+
 // setupBookReviewHandler はBookReviewHandlerテスト用のセットアップを行う。
 func setupBookReviewHandler() (*BookReviewHandler, *MockBookReviewService) {
 	mockService := new(MockBookReviewService)

@@ -17,6 +17,7 @@ type BookReviewServiceInterface interface {
 	GetByRating(userID uint, minRating, maxRating int) ([]model.BookReview, error)
 	ArchiveReview(id, userID uint) error
 	UnarchiveReview(id, userID uint) error
+	UpdateStatus(id, userID uint, status model.ReviewStatus) error
 }
 
 // BookReviewHandler は書籍レビュー関連のHTTPハンドラ。
@@ -209,6 +210,27 @@ func (h *BookReviewHandler) Unarchive(c *gin.Context) {
 	}
 
 	respondOK(c, gin.H{"message": "書籍レビューのアーカイブを解除しました"})
+}
+
+// UpdateStatus は書籍レビューの読書状態を更新する。
+func (h *BookReviewHandler) UpdateStatus(c *gin.Context) {
+	userID := c.GetUint("userID")
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	req := bindJSON[dto.UpdateBookReviewStatusRequest](c)
+	if req == nil {
+		return
+	}
+
+	if err := h.service.UpdateStatus(id, userID, model.ReviewStatus(req.Status)); err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, gin.H{"message": "読書状態を更新しました"})
 }
 
 // Delete は指定IDの書籍レビューを削除する。
