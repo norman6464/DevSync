@@ -64,7 +64,7 @@ func (h *ChatRoomHandler) GetMyRooms(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, rooms)
+	respondOK(c, ensureSlice(rooms))
 }
 
 // GetByID は指定IDのチャットルーム詳細を取得する。
@@ -189,7 +189,7 @@ func (h *ChatRoomHandler) GetMessages(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, messages)
+	respondOK(c, ensureSlice(messages))
 }
 
 // SendMessage は指定チャットルームにメッセージを送信する。

@@ -43,7 +43,7 @@ func (h *AnswerHandler) GetByQuestionID(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, answers)
+	respondOK(c, ensureSlice(answers))
 }
 
 // CreateAnswerRequest は回答作成のリクエストボディ。
@@ -186,7 +186,7 @@ func (h *AnswerHandler) GetByVoteRange(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, answers)
+	respondOK(c, ensureSlice(answers))
 }
 
 // RemoveVote は回答への投票を取り消す。

@@ -32,7 +32,7 @@ func (h *RankingHandler) ContributionRanking(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, entries)
+	respondOK(c, ensureSlice(entries))
 }
 
 // LanguageRanking は指定言語のランキングを返す。
@@ -44,7 +44,7 @@ func (h *RankingHandler) LanguageRanking(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, entries)
+	respondOK(c, ensureSlice(entries))
 }
 
 // LevelRanking はXP合計に基づくレベルランキングを返す。
@@ -54,7 +54,7 @@ func (h *RankingHandler) LevelRanking(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, entries)
+	respondOK(c, ensureSlice(entries))
 }
 
 // AvailableLanguages はランキング対象の利用可能な言語一覧を返す。
@@ -64,5 +64,5 @@ func (h *RankingHandler) AvailableLanguages(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, languages)
+	respondOK(c, ensureSlice(languages))
 }
