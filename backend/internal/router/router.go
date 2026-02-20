@@ -54,8 +54,12 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 
 	api := r.Group("/api/v1")
 
+	// レート制限（認証エンドポイント: 10リクエスト/60秒）
+	authRateLimitStore := middleware.NewRateLimitStore()
+
 	// 認証ルート（公開）
 	auth := api.Group("/auth")
+	auth.Use(middleware.RateLimit(authRateLimitStore, 10, 60))
 	{
 		auth.POST("/register", c.AuthHandler.Register)
 		auth.POST("/login", c.AuthHandler.Login)
