@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
@@ -17,6 +18,9 @@ func NewBookReviewService(repo repository.BookReviewRepositoryInterface) *BookRe
 
 // Create は新しい書籍レビューを作成する。
 func (s *BookReviewService) Create(review *model.BookReview) error {
+	if review.Rating < 1 || review.Rating > 5 {
+		return domain.NewError(domain.ErrCodeBadRequest, "評価は1〜5の範囲で指定してください", nil)
+	}
 	return s.repo.Create(review)
 }
 
@@ -64,6 +68,9 @@ func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (
 		review.ISBN = updates.ISBN
 	}
 	if updates.Rating != 0 {
+		if updates.Rating < 1 || updates.Rating > 5 {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, "評価は1〜5の範囲で指定してください", nil)
+		}
 		review.Rating = updates.Rating
 	}
 	if updates.Review != "" {
