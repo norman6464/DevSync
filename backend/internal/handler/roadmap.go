@@ -93,11 +93,7 @@ func (h *RoadmapHandler) GetByStatus(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	if roadmaps == nil {
-		roadmaps = []model.Roadmap{}
-	}
-
-	respondOK(c, roadmaps)
+	respondOK(c, ensureSlice(roadmaps))
 }
 
 // GetPublicRoadmaps は公開ロードマップの一覧をページネーション付きで取得する。

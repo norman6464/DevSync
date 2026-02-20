@@ -352,9 +352,5 @@ func (h *StudyCircleHandler) GetByStatus(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	if circles == nil {
-		circles = []model.StudyCircle{}
-	}
-
-	respondOK(c, circles)
+	respondOK(c, ensureSlice(circles))
 }

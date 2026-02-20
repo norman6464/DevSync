@@ -39,12 +39,8 @@ func (h *YouTubeHandler) Search(c *gin.Context) {
 		return
 	}
 
-	if videos == nil {
-		videos = []model.YouTubeVideo{}
-	}
-
 	respondOK(c, dto.YouTubeSearchResponse{
-		Videos: videos,
+		Videos: ensureSlice(videos),
 		Query:  query,
 		Cached: cached,
 		Total:  len(videos),
@@ -61,12 +57,8 @@ func (h *YouTubeHandler) Recommend(c *gin.Context) {
 		return
 	}
 
-	if videos == nil {
-		videos = []model.YouTubeVideo{}
-	}
-	if skills == nil {
-		skills = []string{}
-	}
+	videos = ensureSlice(videos)
+	skills = ensureSlice(skills)
 
 	respondOK(c, dto.YouTubeRecommendResponse{
 		Videos:    videos,

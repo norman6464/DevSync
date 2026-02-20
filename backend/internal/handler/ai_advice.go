@@ -152,9 +152,5 @@ func (h *AIAdviceHandler) GetUnreadAdvice(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	if advices == nil {
-		advices = []model.AIAdvice{}
-	}
-
-	respondOK(c, advices)
+	respondOK(c, ensureSlice(advices))
 }

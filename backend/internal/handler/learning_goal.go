@@ -202,11 +202,7 @@ func (h *LearningGoalHandler) GetDeadlineAlerts(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	if alerts == nil {
-		alerts = []model.GoalDeadlineAlert{}
-	}
-
-	respondOK(c, alerts)
+	respondOK(c, ensureSlice(alerts))
 }
 
 // GetByCategory は認証ユーザーの学習目標をカテゴリでフィルタリングして取得する。
@@ -219,11 +215,8 @@ func (h *LearningGoalHandler) GetByCategory(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	if goals == nil {
-		goals = []model.LearningGoal{}
-	}
 
-	respondOK(c, goals)
+	respondOK(c, ensureSlice(goals))
 }
 
 // GetByStatus は認証ユーザーの学習目標をステータスでフィルタリングして取得する。
@@ -236,11 +229,8 @@ func (h *LearningGoalHandler) GetByStatus(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	if goals == nil {
-		goals = []model.LearningGoal{}
-	}
 
-	respondOK(c, goals)
+	respondOK(c, ensureSlice(goals))
 }
 
 // GetStats は指定されたユーザーの学習目標統計情報を取得する。

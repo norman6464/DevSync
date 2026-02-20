@@ -216,11 +216,8 @@ func (h *LearningLogHandler) GetByCategory(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	if logs == nil {
-		logs = []model.LearningLog{}
-	}
 
-	respondOK(c, logs)
+	respondOK(c, ensureSlice(logs))
 }
 
 // GetBySource はソース（manual/pomodoro）で学習ログをフィルタリングして取得する。
@@ -233,11 +230,8 @@ func (h *LearningLogHandler) GetBySource(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	if logs == nil {
-		logs = []model.LearningLog{}
-	}
 
-	respondOK(c, logs)
+	respondOK(c, ensureSlice(logs))
 }
 
 // ExportLogs は学習ログをCSV形式でダウンロードする。

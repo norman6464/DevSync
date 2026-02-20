@@ -112,6 +112,15 @@ func parseExportPeriod(c *gin.Context) (int, bool) {
 	return n, true
 }
 
+// ensureSlice はnilスライスを空スライスに変換する。
+// JSONレスポンスでnullの代わりに[]を返すために使用する。
+func ensureSlice[T any](s []T) []T {
+	if s == nil {
+		return []T{}
+	}
+	return s
+}
+
 // bindJSON はリクエストボディをJSON構造体にバインドする。
 // バインド失敗時は400レスポンスを返しnilを返す。
 func bindJSON[T any](c *gin.Context) *T {
