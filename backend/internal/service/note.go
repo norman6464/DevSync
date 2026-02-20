@@ -1,6 +1,9 @@
 package service
 
 import (
+	"strings"
+
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
@@ -63,9 +66,15 @@ func (s *NoteService) Update(id, userID uint, title, content, tags string, folde
 	}
 
 	if title != "" {
+		if strings.TrimSpace(title) == "" {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, "タイトルは空白のみにできません", nil)
+		}
 		note.Title = title
 	}
 	if content != "" {
+		if strings.TrimSpace(content) == "" {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, "本文は空白のみにできません", nil)
+		}
 		note.Content = content
 	}
 	if tags != "" {

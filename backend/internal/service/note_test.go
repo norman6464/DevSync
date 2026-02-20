@@ -634,3 +634,31 @@ func TestNoteService_GetFavorites_RepoError(t *testing.T) {
 	assert.Empty(t, result)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// Update 空白バイパス テスト
+// ============================================================
+
+func TestNoteService_Update_WhitespaceTitle(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	existing := &model.Note{ID: 1, UserID: 1, Title: "元のタイトル", Content: "元の内容"}
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	result, err := svc.Update(1, 1, "   \t\n  ", "", "", nil)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "タイトルは空白のみにできません")
+}
+
+func TestNoteService_Update_WhitespaceContent(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	existing := &model.Note{ID: 1, UserID: 1, Title: "タイトル", Content: "元の内容"}
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	result, err := svc.Update(1, 1, "", "   \t\n  ", "", nil)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "本文は空白のみにできません")
+}
