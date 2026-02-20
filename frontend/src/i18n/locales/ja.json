@@ -924,7 +924,8 @@
     "confirmDeleteAnswer": "この回答を削除してもよろしいですか？",
     "bestAnswerSet": "ベストアンサーを設定しました",
     "bestAnswerFailed": "ベストアンサーの設定に失敗しました",
-    "voteFailed": "投票に失敗しました"
+    "voteFailed": "投票に失敗しました",
+    "popularBadge": "人気"
   },
   "roadmaps": {
     "title": "学習ロードマップ",

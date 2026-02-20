@@ -970,7 +970,8 @@
     "confirmDeleteAnswer": "Are you sure you want to delete this answer?",
     "bestAnswerSet": "Best answer set",
     "bestAnswerFailed": "Failed to set best answer",
-    "voteFailed": "Failed to vote"
+    "voteFailed": "Failed to vote",
+    "popularBadge": "Popular"
   },
   "roadmaps": {
     "title": "Learning Roadmaps",

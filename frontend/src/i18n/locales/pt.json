@@ -970,7 +970,8 @@
     "confirmDeleteAnswer": "Tem certeza de que deseja excluir esta resposta?",
     "bestAnswerSet": "Melhor resposta definida",
     "bestAnswerFailed": "Falha ao definir melhor resposta",
-    "voteFailed": "Falha ao votar"
+    "voteFailed": "Falha ao votar",
+    "popularBadge": "Popular"
   },
   "roadmaps": {
     "title": "Roteiros de Aprendizado",

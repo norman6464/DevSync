@@ -970,7 +970,8 @@
     "confirmDeleteAnswer": "Voulez-vous vraiment supprimer cette réponse ?",
     "bestAnswerSet": "Meilleure réponse définie",
     "bestAnswerFailed": "Échec de la définition de la meilleure réponse",
-    "voteFailed": "Échec du vote"
+    "voteFailed": "Échec du vote",
+    "popularBadge": "Populaire"
   },
   "roadmaps": {
     "title": "Feuilles de Route d'Apprentissage",

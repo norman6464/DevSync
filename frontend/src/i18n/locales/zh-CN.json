@@ -970,7 +970,8 @@
     "confirmDeleteAnswer": "确定要删除此回答吗？",
     "bestAnswerSet": "已设置最佳答案",
     "bestAnswerFailed": "设置最佳答案失败",
-    "voteFailed": "投票失败"
+    "voteFailed": "投票失败",
+    "popularBadge": "热门"
   },
   "roadmaps": {
     "title": "学习路线图",

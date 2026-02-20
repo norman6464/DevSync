@@ -970,7 +970,8 @@
     "confirmDeleteAnswer": "Möchten Sie diese Antwort wirklich löschen?",
     "bestAnswerSet": "Beste Antwort festgelegt",
     "bestAnswerFailed": "Beste Antwort konnte nicht festgelegt werden",
-    "voteFailed": "Abstimmung fehlgeschlagen"
+    "voteFailed": "Abstimmung fehlgeschlagen",
+    "popularBadge": "Beliebt"
   },
   "roadmaps": {
     "title": "Lern-Roadmaps",
