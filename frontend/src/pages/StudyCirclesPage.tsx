@@ -206,6 +206,7 @@ export default function StudyCirclesPage() {
               value={form.name}
               onChange={handleNameChange}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
+              maxLength={100}
               placeholder={t('studyCircle.namePlaceholder')}
             />
           </div>
@@ -216,6 +217,7 @@ export default function StudyCirclesPage() {
               value={form.topic}
               onChange={handleTopicChange}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
+              maxLength={200}
               placeholder={t('studyCircle.topicPlaceholder')}
             />
           </div>
@@ -224,6 +226,7 @@ export default function StudyCirclesPage() {
             <textarea
               value={form.description}
               onChange={handleDescriptionChange}
+              maxLength={1000}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500 h-20 resize-none"
             />
           </div>

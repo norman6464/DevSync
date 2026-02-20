@@ -170,6 +170,7 @@ export default function RoadmapDetailPage() {
               value={stepTitle}
               onChange={handleStepTitleChange}
               placeholder={t('roadmaps.stepTitlePlaceholder')}
+              maxLength={200}
               className={inputClass}
               required
             />
@@ -182,6 +183,7 @@ export default function RoadmapDetailPage() {
               onChange={handleStepDescriptionChange}
               placeholder={t('roadmaps.stepDescriptionPlaceholder')}
               rows={3}
+              maxLength={2000}
               className={`${inputClass} resize-none`}
             />
           </div>

@@ -80,6 +80,7 @@ export default function QuestionForm({ question, onSubmit, onCancel, loading }: 
           type="text"
           value={tagsInput}
           onChange={(e) => setTagsInput(e.target.value)}
+          maxLength={500}
           className={inputClass}
           placeholder={t('qa.tagsPlaceholder')}
         />
