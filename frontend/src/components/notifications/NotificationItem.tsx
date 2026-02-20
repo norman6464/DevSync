@@ -5,7 +5,7 @@ import type { Notification } from '../../types/notification';
 import Avatar from '../common/Avatar';
 import { formatDistanceToNow } from '../../utils/timeFormat';
 
-function getNotificationLink(notification: Notification): string {
+export function getNotificationLink(notification: Notification): string {
   switch (notification.type) {
     case 'post':
     case 'like':
@@ -24,7 +24,7 @@ function getNotificationLink(notification: Notification): string {
   }
 }
 
-function getNotificationMessage(notification: Notification, t: (key: string, opts?: Record<string, string>) => string): string {
+export function getNotificationMessage(notification: Notification, t: (key: string, opts?: Record<string, string>) => string): string {
   switch (notification.type) {
     case 'post':
       return t('notifications.newPost', { name: notification.actor.name });
