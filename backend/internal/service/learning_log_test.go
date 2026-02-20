@@ -315,6 +315,32 @@ func TestLearningLogUpdate_AllFields(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestLearningLogUpdate_DurationNegative(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	existing := &model.LearningLog{Title: "Test", Content: "Content", UserID: 1, Duration: 30}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	updates := &model.LearningLog{Duration: -10}
+	result, err := svc.Update(1, 1, updates)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	assert.Nil(t, result)
+}
+
+func TestLearningLogUpdate_DurationExceedsMax(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	existing := &model.LearningLog{Title: "Test", Content: "Content", UserID: 1, Duration: 30}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	updates := &model.LearningLog{Duration: 1441}
+	result, err := svc.Update(1, 1, updates)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	assert.Nil(t, result)
+}
+
 // --- ExportCSV ---
 
 func TestLearningLogExportCSV_Success(t *testing.T) {
