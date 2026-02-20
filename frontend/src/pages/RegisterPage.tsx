@@ -18,7 +18,7 @@ export default function RegisterPage() {
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 6) {
+    if (password.length < 8) {
       toast.error(t('errors.somethingWrong'));
       return;
     }
@@ -136,6 +136,7 @@ export default function RegisterPage() {
                 onChange={handlePasswordChange}
                 required
                 minLength={8}
+                maxLength={128}
                 placeholder={t('auth.passwordPlaceholder')}
                 className={inputClass}
               />
