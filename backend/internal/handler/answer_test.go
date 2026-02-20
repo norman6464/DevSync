@@ -352,3 +352,75 @@ func TestAnswerGetByVoteRange_ServiceError(t *testing.T) {
 	assertStatus(t, w, http.StatusInternalServerError)
 	svc.AssertExpectations(t)
 }
+
+func TestAnswerGetByQuestionID_ServiceError(t *testing.T) {
+	h, svc := setupAnswerHandler()
+	r := newRouter(1)
+	r.GET("/questions/:id/answers", h.GetByQuestionID)
+
+	svc.On("GetByQuestionID", uint(1)).Return([]model.Answer(nil), errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/questions/1/answers", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+func TestAnswerVote_ServiceError(t *testing.T) {
+	h, svc := setupAnswerHandler()
+	r := newRouter(1)
+	r.POST("/answers/:answerId/vote", h.Vote)
+
+	svc.On("Vote", uint(1), uint(5), 1).Return(errors.New("db error"))
+
+	w := doRequest(r, http.MethodPost, "/answers/5/vote", map[string]int{"value": 1})
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+func TestAnswerVote_InvalidJSON(t *testing.T) {
+	h, _ := setupAnswerHandler()
+	r := newRouter(1)
+	r.POST("/answers/:answerId/vote", h.Vote)
+
+	w := doRequestRaw(r, http.MethodPost, "/answers/5/vote", "invalid json")
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestAnswerVote_InvalidID(t *testing.T) {
+	h, _ := setupAnswerHandler()
+	r := newRouter(1)
+	r.POST("/answers/:answerId/vote", h.Vote)
+
+	w := doRequest(r, http.MethodPost, "/answers/abc/vote", map[string]int{"value": 1})
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestAnswerSetBestAnswer_InvalidQuestionID(t *testing.T) {
+	h, _ := setupAnswerHandler()
+	r := newRouter(1)
+	r.PUT("/questions/:id/best-answer/:answerId", h.SetBestAnswer)
+
+	w := doRequest(r, http.MethodPut, "/questions/abc/best-answer/5", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestAnswerSetBestAnswer_InvalidAnswerID(t *testing.T) {
+	h, _ := setupAnswerHandler()
+	r := newRouter(1)
+	r.PUT("/questions/:id/best-answer/:answerId", h.SetBestAnswer)
+
+	w := doRequest(r, http.MethodPut, "/questions/1/best-answer/abc", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestAnswerSetBestAnswer_ServiceError(t *testing.T) {
+	h, svc := setupAnswerHandler()
+	r := newRouter(1)
+	r.PUT("/questions/:id/best-answer/:answerId", h.SetBestAnswer)
+
+	svc.On("SetBestAnswer", uint(1), uint(5), uint(1)).Return(errors.New("db error"))
+
+	w := doRequest(r, http.MethodPut, "/questions/1/best-answer/5", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
