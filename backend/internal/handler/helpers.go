@@ -94,6 +94,24 @@ func parseQueryIntSilent(c *gin.Context, param string, defaultValue int) int {
 	return defaultValue
 }
 
+// parseExportPeriod はエクスポート期間パラメータをパースする。
+// "all"の場合は0を返す。未指定時はデフォルト30日。不正な値は400を返しfalseを返す。
+func parseExportPeriod(c *gin.Context) (int, bool) {
+	p := c.Query("period")
+	if p == "" {
+		return 30, true
+	}
+	if p == "all" {
+		return 0, true
+	}
+	n, err := strconv.Atoi(p)
+	if err != nil || n < 0 {
+		respondBadRequest(c, "periodは7/30/90/allのいずれかを指定してください")
+		return 0, false
+	}
+	return n, true
+}
+
 // bindJSON はリクエストボディをJSON構造体にバインドする。
 // バインド失敗時は400レスポンスを返しnilを返す。
 func bindJSON[T any](c *gin.Context) *T {

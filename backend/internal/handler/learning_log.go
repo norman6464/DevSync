@@ -2,7 +2,6 @@ package handler
 
 import (
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -234,18 +233,9 @@ func (h *LearningLogHandler) GetBySource(c *gin.Context) {
 func (h *LearningLogHandler) ExportLogs(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	days := 30
-	if p := c.Query("period"); p != "" {
-		if p == "all" {
-			days = 0
-		} else {
-			n, err := strconv.Atoi(p)
-			if err != nil || n < 0 {
-				respondBadRequest(c, "periodは7/30/90/allのいずれかを指定してください")
-				return
-			}
-			days = n
-		}
+	days, ok := parseExportPeriod(c)
+	if !ok {
+		return
 	}
 
 	csvBytes, err := h.service.ExportCSV(userID, days)
