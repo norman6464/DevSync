@@ -232,11 +232,14 @@ export const generatePortfolioHTML = (data: PortfolioData, theme: PortfolioTheme
 };
 
 export const downloadPortfolio = (html: string, filename: string): void => {
+  const sanitized = filename
+    .replace(/[/\\:*?"<>|\0]/g, '')
+    .substring(0, 255) || 'portfolio.html';
   const blob = new Blob([html], { type: 'text/html' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = filename;
+  a.download = sanitized;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
