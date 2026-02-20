@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import AdviceIcon from './AdviceIcon';
 import type { AIAdvice } from '../../api/advice';
+import { parseJsonObject } from '../../utils/json';
 
 interface AdviceCardProps {
   advice: AIAdvice;
@@ -13,7 +14,7 @@ export default function AdviceCard({ advice, onMarkRead }: AdviceCardProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const params = advice.params ? JSON.parse(advice.params) : {};
+  const params = parseJsonObject(advice.params);
 
   const priorityBorder: Record<number, string> = {
     1: 'border-l-red-500',
