@@ -176,6 +176,7 @@
     "reply": "답글",
     "share": "공유",
     "markdownSupported": "**굵게**, *기울임*, `코드` 등 지원",
+    "submitShortcut": "Ctrl+Enter로 게시",
     "write": "작성",
     "preview": "미리보기",
     "nothingToPreview": "미리볼 내용이 없습니다",

@@ -176,6 +176,7 @@
     "reply": "回复",
     "share": "分享",
     "markdownSupported": "支持 **粗体**、*斜体*、`代码` 等",
+    "submitShortcut": "Ctrl+Enter发布",
     "write": "编辑",
     "preview": "预览",
     "nothingToPreview": "没有可预览的内容",

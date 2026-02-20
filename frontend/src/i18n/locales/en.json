@@ -176,6 +176,7 @@
     "reply": "Reply",
     "share": "Share",
     "markdownSupported": "Supports **bold**, *italic*, `code`, and more",
+    "submitShortcut": "Ctrl+Enter to post",
     "write": "Write",
     "preview": "Preview",
     "nothingToPreview": "Nothing to preview",
