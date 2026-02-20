@@ -131,6 +131,7 @@ export default function RegisterPage() {
               <input
                 id="register-password"
                 type="password"
+                autoComplete="new-password"
                 value={password}
                 onChange={handlePasswordChange}
                 required

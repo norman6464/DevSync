@@ -128,6 +128,7 @@ export default function AccountSection(props: Props) {
             <input
               id="account-delete-password"
               type="password"
+              autoComplete="current-password"
               value={props.deletePassword}
               onChange={(e) => props.setDeletePassword(e.target.value)}
               className={inputClass}
