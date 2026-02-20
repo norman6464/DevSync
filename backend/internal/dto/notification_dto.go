@@ -6,4 +6,6 @@ import "github.com/norman6464/devsync/backend/internal/model"
 type NotificationListResponse struct {
 	Notifications []model.Notification `json:"notifications"`
 	Total         int64                `json:"total"`
+	Page          int                  `json:"page"`
+	Limit         int                  `json:"limit"`
 }

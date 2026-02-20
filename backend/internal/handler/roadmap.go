@@ -115,6 +115,8 @@ func (h *RoadmapHandler) GetPublicRoadmaps(c *gin.Context) {
 	respondOK(c, dto.RoadmapListResponse{
 		Roadmaps: roadmaps,
 		Total:    total,
+		Limit:    limit,
+		Offset:   offset,
 	})
 }
 
