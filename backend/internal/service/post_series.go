@@ -1,6 +1,8 @@
 package service
 
 import (
+	"strings"
+
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
@@ -19,7 +21,7 @@ func NewPostSeriesService(repo repository.PostSeriesRepositoryInterface) *PostSe
 
 // Create は新しい投稿シリーズを作成する。
 func (s *PostSeriesService) Create(series *model.PostSeries) error {
-	if series.Title == "" {
+	if strings.TrimSpace(series.Title) == "" {
 		return domain.NewError(domain.ErrCodeValidation, "タイトルは必須です", nil)
 	}
 	return s.repo.Create(series)
@@ -55,6 +57,9 @@ func (s *PostSeriesService) Update(id, userID uint, updates *model.PostSeries) (
 	}
 
 	if updates.Title != "" {
+		if strings.TrimSpace(updates.Title) == "" {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, "タイトルは空白のみでは入力できません", nil)
+		}
 		series.Title = updates.Title
 	}
 	if updates.Description != "" {
