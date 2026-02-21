@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
@@ -40,6 +41,21 @@ func (s *UserService) FindByID(id uint) (*model.User, error) {
 
 // Update はユーザー情報を更新する。
 func (s *UserService) Update(user *model.User) error {
+	if err := domain.ValidateStringLength(user.Name, 1, 100, "名前"); err != nil {
+		return err
+	}
+	if len(user.Bio) > 500 {
+		return domain.NewError(domain.ErrCodeValidation, "自己紹介は500文字以下である必要があります", nil)
+	}
+	if len(user.SkillsLanguages) > 500 {
+		return domain.NewError(domain.ErrCodeValidation, "プログラミング言語スキルは500文字以下である必要があります", nil)
+	}
+	if len(user.SkillsFrameworks) > 500 {
+		return domain.NewError(domain.ErrCodeValidation, "フレームワークスキルは500文字以下である必要があります", nil)
+	}
+	if len(user.AvatarURL) > 2000 {
+		return domain.NewError(domain.ErrCodeValidation, "アバターURLは2000文字以下である必要があります", nil)
+	}
 	return s.repo.Update(user)
 }
 
