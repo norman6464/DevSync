@@ -681,6 +681,7 @@
     "hoursMinutes": "{{hours}}時間{{minutes}}分",
     "currentStreak": "連続学習日数",
     "days": "日",
+    "streakAchieved": "連続達成",
     "logCount": "ログ件数",
     "favorites": "お気に入り",
     "toggleFavorite": "お気に入り切替"

@@ -697,6 +697,7 @@
     "hoursMinutes": "{{hours}}小時{{minutes}}分鐘",
     "currentStreak": "連續學習天數",
     "days": "天",
+    "streakAchieved": "連續達成",
     "logCount": "日誌數量",
     "favorites": "收藏",
     "toggleFavorite": "切換收藏"

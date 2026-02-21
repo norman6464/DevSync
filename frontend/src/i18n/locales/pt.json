@@ -697,6 +697,7 @@
     "hoursMinutes": "{{hours}}h {{minutes}}m",
     "currentStreak": "Sequência atual",
     "days": " dias",
+    "streakAchieved": "Sequência!",
     "logCount": "Total de registros",
     "favorites": "Favoritos",
     "toggleFavorite": "Alternar favorito"

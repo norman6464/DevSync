@@ -697,6 +697,7 @@
     "hoursMinutes": "{{hours}}ч {{minutes}}м",
     "currentStreak": "Текущая серия",
     "days": " дн.",
+    "streakAchieved": "Серия!",
     "logCount": "Всего записей",
     "favorites": "Избранное",
     "toggleFavorite": "Переключить избранное"
