@@ -12,7 +12,7 @@ type GoalListResponse struct {
 
 // CreateGoalRequest は学習目標作成のリクエストボディ。
 type CreateGoalRequest struct {
-	Title       string `json:"title" binding:"required,max=200" validate:"required,max=200"`
+	Title       string `json:"title" binding:"required,min=1,max=200" validate:"required,min=1,max=200"`
 	Description string `json:"description" binding:"omitempty,max=2000"`
 	Category    string `json:"category" binding:"omitempty,max=100"`
 	TargetDate  string `json:"target_date" binding:"omitempty,max=20"`
