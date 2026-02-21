@@ -38,7 +38,7 @@ func TestStudyCircleCreate_WhitespaceName(t *testing.T) {
 	circle := &model.StudyCircle{Name: "   \t  ", Topic: "Go", OwnerID: 1, MaxMembers: 5}
 	err := svc.Create(circle, nil)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "サークル名は必須です")
+	assert.Contains(t, err.Error(), "サークル名を入力してください")
 }
 
 func TestStudyCircleCreate_EmptyName(t *testing.T) {
@@ -1044,4 +1044,78 @@ func TestStudyCircleGetByStatus_RepoError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Empty(t, result)
 	repo.AssertExpectations(t)
+}
+
+// --- Validation Length Tests ---
+
+func TestStudyCircleCreate_NameTooLong(t *testing.T) {
+	svc, _ := newTestStudyCircleService()
+
+	longName := strings.Repeat("あ", 101)
+	circle := &model.StudyCircle{Name: longName, Topic: "Go", OwnerID: 1, MaxMembers: 5}
+	err := svc.Create(circle, nil)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "サークル名は100文字以下である必要があります")
+}
+
+func TestStudyCircleUpdate_NameTooLong(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	repo.On("FindByID", uint(1)).Return(&model.StudyCircle{OwnerID: 1}, nil)
+
+	longName := strings.Repeat("あ", 101)
+	result, err := svc.Update(1, 1, &longName, nil, nil)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "サークル名は100文字以下である必要があります")
+}
+
+func TestStudyCircleUpdate_TopicTooLong(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	repo.On("FindByID", uint(1)).Return(&model.StudyCircle{OwnerID: 1}, nil)
+
+	longTopic := strings.Repeat("あ", 201)
+	result, err := svc.Update(1, 1, nil, &longTopic, nil)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "トピックは200文字以下である必要があります")
+}
+
+func TestStudyCircleUpdate_DescriptionTooLong(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	repo.On("FindByID", uint(1)).Return(&model.StudyCircle{OwnerID: 1}, nil)
+
+	longDesc := strings.Repeat("あ", 1001)
+	result, err := svc.Update(1, 1, nil, nil, &longDesc)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "説明は1000文字以下である必要があります")
+}
+
+func TestStudyCircleUpdateStep_TitleTooLong(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	repo.On("FindByID", uint(1)).Return(&model.StudyCircle{OwnerID: 1}, nil)
+	repo.On("FindStepByID", uint(10)).Return(&model.StudyCircleStep{CircleID: 1}, nil)
+
+	longTitle := strings.Repeat("あ", 201)
+	result, err := svc.UpdateStep(1, 1, 10, &longTitle, nil)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "タイトルは200文字以下である必要があります")
+}
+
+func TestStudyCircleUpdateStep_DescriptionTooLong(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	repo.On("FindByID", uint(1)).Return(&model.StudyCircle{OwnerID: 1}, nil)
+	repo.On("FindStepByID", uint(10)).Return(&model.StudyCircleStep{CircleID: 1}, nil)
+
+	longDesc := strings.Repeat("あ", 1001)
+	result, err := svc.UpdateStep(1, 1, 10, nil, &longDesc)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "説明は1000文字以下である必要があります")
 }
