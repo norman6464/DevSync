@@ -52,8 +52,17 @@ export const chipButtonClass =
 export const iconButtonClass =
   'p-1.5 text-gray-400 hover:text-white transition-colors';
 
+export const editIconButtonClass =
+  'p-2 text-gray-400 hover:text-blue-400 transition-colors';
+
 export const deleteIconButtonClass =
   'p-1.5 text-gray-400 hover:text-red-400 transition-colors';
+
+export const deleteIconButtonLargeClass =
+  'p-2 text-gray-400 hover:text-red-400 transition-colors';
+
+export const starIconButtonClass =
+  'p-2 text-gray-400 hover:text-yellow-400 transition-colors';
 
 export const modalOverlayClass =
   'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4';

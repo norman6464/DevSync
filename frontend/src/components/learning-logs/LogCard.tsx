@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Code, BookOpen, GraduationCap, Users, FileText, Star, Timer, Zap, Pencil, Trash2, type LucideIcon } from 'lucide-react';
 import type { LearningLog, LogCategory } from '../../types/learningLog';
 import { formatDate } from '../../utils/timeFormat';
-import { panelClass, badgeBaseClass } from '../../constants/styles';
+import { panelClass, badgeBaseClass, editIconButtonClass, deleteIconButtonLargeClass } from '../../constants/styles';
 
 export const CATEGORIES: { value: LogCategory; label: string; Icon: LucideIcon }[] = [
   { value: 'coding', label: 'learningLogs.categoryCoding', Icon: Code },
@@ -85,14 +85,14 @@ export default function LogCard({ log, onEdit, onDelete, onToggleFavorite }: Log
           </button>
           <button
             onClick={() => onEdit(log)}
-            className="p-2 text-gray-400 hover:text-blue-400 transition-colors"
+            className={editIconButtonClass}
             title={t('common.edit')}
           >
             <Pencil className="w-4 h-4" />
           </button>
           <button
             onClick={() => onDelete(log.id)}
-            className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+            className={deleteIconButtonLargeClass}
             title={t('common.delete')}
           >
             <Trash2 className="w-4 h-4" />
