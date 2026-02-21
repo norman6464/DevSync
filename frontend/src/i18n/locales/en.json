@@ -1315,6 +1315,7 @@
     "confirmDelete": "Delete this circle?",
     "memberAdded": "Member added",
     "memberRemoved": "Member removed",
+    "full": "Full",
     "noCircles": "No circles joined yet",
     "tabs": {
       "roadmap": "Roadmap",
