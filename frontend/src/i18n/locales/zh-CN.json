@@ -907,6 +907,8 @@
     },
     "statusAll": "全部",
     "archivedLabel": "已归档",
+    "recommended": "推荐",
+    "mustRead": "必读",
     "archive": "归档",
     "unarchive": "取消归档",
     "archived": "已归档",

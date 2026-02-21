@@ -907,6 +907,8 @@
     },
     "statusAll": "Все",
     "archivedLabel": "В архиве",
+    "recommended": "Рекомендовано",
+    "mustRead": "Обязательно к прочтению",
     "archive": "Архивировать",
     "unarchive": "Разархивировать",
     "archived": "Отзыв архивирован",

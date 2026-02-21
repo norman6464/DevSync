@@ -907,6 +907,8 @@
     },
     "statusAll": "Tous",
     "archivedLabel": "Archivé",
+    "recommended": "Recommandé",
+    "mustRead": "Incontournable",
     "archive": "Archiver",
     "unarchive": "Désarchiver",
     "archived": "Avis archivé",
