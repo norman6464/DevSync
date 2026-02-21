@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/domain"
@@ -792,6 +793,25 @@ func TestStudyCircleCreateCheckin_RepoError(t *testing.T) {
 	result, err := svc.CreateCheckin(1, 2, "test")
 	assert.Nil(t, result)
 	assert.Error(t, err)
+}
+
+func TestStudyCircleCreateCheckin_EmptyContent(t *testing.T) {
+	svc, _ := newTestStudyCircleService()
+
+	result, err := svc.CreateCheckin(1, 2, "   ")
+	assert.Nil(t, result)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "チェックイン内容を入力してください")
+}
+
+func TestStudyCircleCreateCheckin_ContentTooLong(t *testing.T) {
+	svc, _ := newTestStudyCircleService()
+
+	longContent := strings.Repeat("あ", 5001)
+	result, err := svc.CreateCheckin(1, 2, longContent)
+	assert.Nil(t, result)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "チェックイン内容は5000文字以下")
 }
 
 func TestStudyCircleCreateStep_NotFound(t *testing.T) {
