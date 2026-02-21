@@ -11,8 +11,8 @@ type CodeSnippetInput struct {
 
 // CreatePostRequest は投稿作成リクエスト。
 type CreatePostRequest struct {
-	Title        string             `json:"title" binding:"required,max=200"`
-	Content      string             `json:"content" binding:"required,max=50000"`
+	Title        string             `json:"title" binding:"required,min=1,max=200"`
+	Content      string             `json:"content" binding:"required,min=1,max=50000"`
 	ImageURLs    string             `json:"image_urls" binding:"omitempty,max=2000"`
 	IsDraft      bool               `json:"is_draft"`
 	CodeSnippets []CodeSnippetInput `json:"code_snippets" binding:"omitempty,max=20"`
