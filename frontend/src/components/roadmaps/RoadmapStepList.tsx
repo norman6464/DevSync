@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { List, Pencil, Trash2, ExternalLink } from 'lucide-react';
+import { List, Pencil, Trash2, ExternalLink, Check } from 'lucide-react';
 import { type RoadmapStep } from '../../api/roadmaps';
 import EmptyState from '../common/EmptyState';
 import { sanitizeUrl } from '../../utils/url';
@@ -57,9 +57,7 @@ export default function RoadmapStepList({
                 }`}
               >
                 {step.is_completed && (
-                  <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                  </svg>
+                  <Check className="w-3 h-3 text-white" strokeWidth={3} aria-hidden="true" />
                 )}
               </button>
             )}
