@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Star, Edit, Trash2, FileText, BookOpen } from 'lucide-react';
+import { Star, Edit, Trash2, FileText, BookOpen, Sparkles } from 'lucide-react';
 import type { Note } from '../../api/notes';
 import { formatDistanceToNow } from '../../utils/timeFormat';
 import { linkSmallClass } from '../../constants/styles';
@@ -16,6 +16,7 @@ export default function NoteCard({ note, onToggleFavorite, onEdit, onDelete }: N
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const isLong = note.content.length > 100;
+  const isNew = Date.now() - new Date(note.created_at).getTime() < 24 * 60 * 60 * 1000;
 
   return (
     <div className="p-6 bg-gray-800 border border-gray-700 rounded-md hover:border-gray-600 transition-colors">
@@ -25,6 +26,12 @@ export default function NoteCard({ note, onToggleFavorite, onEdit, onDelete }: N
             <h3 className="text-xl font-semibold">{note.title}</h3>
             {note.is_favorite && (
               <Star className="w-5 h-5 fill-yellow-500 text-yellow-500" />
+            )}
+            {isNew && (
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-xs rounded bg-emerald-400/10 text-emerald-400 font-medium">
+                <Sparkles className="w-3 h-3" />
+                {t('notes.new')}
+              </span>
             )}
           </div>
           <p className={`text-gray-400 mb-1 whitespace-pre-wrap ${!expanded ? 'line-clamp-2' : ''}`}>{note.content}</p>

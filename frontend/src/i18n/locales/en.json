@@ -1422,6 +1422,7 @@
     "deleted": "Note deleted successfully",
     "confirmDelete": "Are you sure you want to delete this note?",
     "favoriteToggled": "Favorite status updated",
+    "new": "NEW",
     "lastUpdated": "Last updated",
     "chars": "chars",
     "expand": "Show more",
