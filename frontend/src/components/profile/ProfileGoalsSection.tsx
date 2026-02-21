@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Monitor, Rocket, Target, FolderOpen, FileText, type LucideIcon } from 'lucide-react';
+import { Monitor, Rocket, Target, FolderOpen, FileText, CheckCircle, ChevronRight, type LucideIcon } from 'lucide-react';
 
 interface Goal {
   id: number;
@@ -34,12 +34,12 @@ export default function ProfileGoalsSection({ goals, goalStats, isOwnProfile }: 
     <div>
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide flex items-center gap-2">
-          <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <CheckCircle className="w-5 h-5 text-purple-400" aria-hidden="true" />
           {t('goals.title')}
           {goalStats && <span className="text-xs text-gray-500 font-normal ml-2">{goalStats.active_goals} {t('goals.active')} · {goalStats.completed_goals} {t('goals.completed')}</span>}
         </h2>
         {isOwnProfile && (
-          <Link to="/goals" className="text-xs text-gray-500 hover:text-purple-400 transition-colors flex items-center gap-1">{t('goals.manageGoals')}<svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg></Link>
+          <Link to="/goals" className="text-xs text-gray-500 hover:text-purple-400 transition-colors flex items-center gap-1">{t('goals.manageGoals')}<ChevronRight className="w-3 h-3" aria-hidden="true" /></Link>
         )}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
