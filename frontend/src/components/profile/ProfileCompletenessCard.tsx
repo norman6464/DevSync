@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { CheckCircle } from 'lucide-react';
 
 interface ProfileCompletenessCardProps {
   percentage: number;
@@ -15,9 +16,7 @@ export default function ProfileCompletenessCard({ percentage, missingFields }: P
     <div className="bg-gray-900 border border-gray-800 rounded-md p-5">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold flex items-center gap-2">
-          <svg className="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-          </svg>
+          <CheckCircle className="w-4 h-4 text-yellow-400" aria-hidden="true" />
           {t('profile.completeness')}
         </h3>
         <span className="text-sm font-bold text-yellow-400">{percentage}%</span>
