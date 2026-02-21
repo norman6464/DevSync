@@ -1063,6 +1063,8 @@
     "noAdvice": "現在のアドバイスはありません。学習を続けましょう！",
     "viewAll": "すべて見る",
     "markRead": "既読にする",
+    "priorityUrgent": "緊急",
+    "priorityHigh": "高",
     "askAI": "AIに相談する",
     "chatTitle": "AIアドバイザーに相談",
     "chatPlaceholder": "学習について質問してください...",

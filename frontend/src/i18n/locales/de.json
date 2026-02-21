@@ -1128,6 +1128,8 @@
     "noAdvice": "Derzeit keine Ratschläge. Lernen Sie weiter!",
     "viewAll": "Alle anzeigen",
     "markRead": "Als gelesen markieren",
+    "priorityUrgent": "Dringend",
+    "priorityHigh": "Hoch",
     "askAI": "KI fragen",
     "chatTitle": "Chat mit dem KI-Berater",
     "chatPlaceholder": "Fragen Sie zum Lernen...",
