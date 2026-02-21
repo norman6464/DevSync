@@ -364,6 +364,7 @@
     "viewProfile": "Ver perfil",
     "likesCount": "{{count}} me gusta",
     "commentsCount": "{{count}} comentarios",
+    "popular": "Popular",
     "filters": "Filtros",
     "sortBy": "Ordenar por",
     "sortLatest": "Más reciente",

@@ -364,6 +364,7 @@
     "viewProfile": "Посмотреть профиль",
     "likesCount": "{{count}} лайков",
     "commentsCount": "{{count}} комментариев",
+    "popular": "Популярное",
     "filters": "Фильтры",
     "sortBy": "Сортировать по",
     "sortLatest": "Новейшие",

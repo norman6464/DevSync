@@ -364,6 +364,7 @@
     "viewProfile": "查看資料",
     "likesCount": "{{count}} 個讚",
     "commentsCount": "{{count}} 則留言",
+    "popular": "熱門",
     "filters": "篩選",
     "sortBy": "排序",
     "sortLatest": "最新",

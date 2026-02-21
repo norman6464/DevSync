@@ -364,6 +364,7 @@
     "viewProfile": "프로필 보기",
     "likesCount": "좋아요 {{count}}개",
     "commentsCount": "댓글 {{count}}개",
+    "popular": "인기",
     "filters": "필터",
     "sortBy": "정렬 순서",
     "sortLatest": "최신순",
