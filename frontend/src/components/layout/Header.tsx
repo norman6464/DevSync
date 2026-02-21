@@ -15,6 +15,9 @@ import {
   LineChart,
   Users,
   Youtube,
+  Menu,
+  X,
+  LogOut,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import Avatar from '../common/Avatar';
@@ -103,13 +106,9 @@ export default function Header() {
           aria-expanded={mobileOpen}
         >
           {mobileOpen ? (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X className="w-6 h-6" aria-hidden="true" />
           ) : (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-            </svg>
+            <Menu className="w-6 h-6" aria-hidden="true" />
           )}
         </button>
 
@@ -186,9 +185,7 @@ export default function Header() {
             title={t('nav.signOut')}
             aria-label={t('nav.signOut')}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
-            </svg>
+            <LogOut className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
       </div>
