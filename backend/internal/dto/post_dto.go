@@ -20,8 +20,8 @@ type CreatePostRequest struct {
 
 // UpdatePostRequest は投稿更新リクエスト。
 type UpdatePostRequest struct {
-	Title     string `json:"title" binding:"omitempty,max=200"`
-	Content   string `json:"content" binding:"omitempty,max=50000"`
+	Title     string `json:"title" binding:"omitempty,min=1,max=200"`
+	Content   string `json:"content" binding:"omitempty,min=1,max=50000"`
 	ImageURLs string `json:"image_urls" binding:"omitempty,max=2000"`
 }
 
