@@ -7,6 +7,7 @@ import EmptyState from '../components/common/EmptyState';
 import NoteFormPanel from '../components/notes/NoteFormPanel';
 import NoteCard from '../components/notes/NoteCard';
 import { buttonPrimaryClass } from '../constants/styles';
+import { NOTES_SORT_OPTIONS } from '../constants/notes';
 
 export default function NotesPage() {
   const { t } = useTranslation();
@@ -55,12 +56,7 @@ export default function NotesPage() {
         <div className="flex items-center gap-3">
           <ArrowDownWideNarrow className="w-4 h-4 text-gray-400" />
           <div className="flex flex-wrap gap-2">
-            {([
-              { value: 'latest', label: 'notes.sortLatest' },
-              { value: 'oldest', label: 'notes.sortOldest' },
-              { value: 'updated', label: 'notes.sortUpdated' },
-              { value: 'favorites_first', label: 'notes.sortFavorites' },
-            ] as const).map((opt) => (
+            {NOTES_SORT_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
                 onClick={() => setSortBy(opt.value)}
