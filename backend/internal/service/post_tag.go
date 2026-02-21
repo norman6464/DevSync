@@ -38,6 +38,12 @@ func (s *PostTagService) SetTags(postID, userID uint, tags []string) error {
 		return domain.NewError(domain.ErrCodeBadRequest, "タグは最大10個までです", nil)
 	}
 
+	for _, tag := range normalized {
+		if len(tag) > 50 {
+			return domain.NewError(domain.ErrCodeValidation, "タグは50文字以下である必要があります", nil)
+		}
+	}
+
 	return s.tagRepo.SetTags(postID, normalized)
 }
 
