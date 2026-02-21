@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Monitor, Rocket, Target, FolderOpen, FileText, Copy, Pencil, Trash2, CheckCircle2, type LucideIcon } from 'lucide-react';
+import { Monitor, Rocket, Target, FolderOpen, FileText, Copy, Pencil, Trash2, CheckCircle2, Pause, Play, type LucideIcon } from 'lucide-react';
 import { type GoalCategory, type GoalStatus, type LearningGoal } from '../../api/goals';
 import { formatDate } from '../../utils/timeFormat';
 import { badgeBaseClass } from '../../constants/styles';
@@ -144,9 +144,7 @@ const GoalCard = memo(function GoalCard({
               className="p-2 text-gray-400 hover:text-yellow-400 transition-colors"
               aria-label={t('goals.pause')}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
-              </svg>
+              <Pause className="w-4 h-4" aria-hidden="true" />
             </button>
           )}
           {goal.status === 'paused' && (
@@ -155,9 +153,7 @@ const GoalCard = memo(function GoalCard({
               className="p-2 text-gray-400 hover:text-blue-400 transition-colors"
               aria-label={t('goals.resume')}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
-              </svg>
+              <Play className="w-4 h-4" aria-hidden="true" />
             </button>
           )}
           <button
