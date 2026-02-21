@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { BookOpen, Video, FileText, GraduationCap, BookMarked, Mic, Wrench, Pin, Pencil, Trash2, ExternalLink, type LucideIcon } from 'lucide-react';
+import { BookOpen, Video, FileText, GraduationCap, BookMarked, Mic, Wrench, Pin, Pencil, Trash2, ExternalLink, Flame, type LucideIcon } from 'lucide-react';
 import type { LearningResource, ResourceCategory, ResourceDifficulty } from '../../types/resource';
 import { parseJsonArray } from '../../utils/json';
 import Avatar from '../common/Avatar';
@@ -127,20 +127,28 @@ export default function ResourceCard({
         </div>
 
         {/* Title & Description */}
-        <h3 className="text-lg font-semibold text-white mt-3">
-          {sanitizeUrl(resource.url) ? (
-            <a
-              href={sanitizeUrl(resource.url)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-green-400 transition-colors"
-            >
-              {resource.title}
-            </a>
-          ) : (
-            resource.title
+        <div className="flex items-center gap-2 mt-3">
+          <h3 className="text-lg font-semibold text-white">
+            {sanitizeUrl(resource.url) ? (
+              <a
+                href={sanitizeUrl(resource.url)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-green-400 transition-colors"
+              >
+                {resource.title}
+              </a>
+            ) : (
+              resource.title
+            )}
+          </h3>
+          {resource.like_count >= 10 && (
+            <span className="inline-flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded bg-orange-400/10 text-orange-400 shrink-0">
+              <Flame className="w-3 h-3" />
+              {t('resources.popular')}
+            </span>
           )}
-        </h3>
+        </div>
 
         {resource.description && (
           <p className="text-gray-300 text-sm mt-2 line-clamp-2">{resource.description}</p>
