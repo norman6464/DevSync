@@ -365,6 +365,7 @@
     "likesCount": "{{count}} лайков",
     "commentsCount": "{{count}} комментариев",
     "popular": "Популярное",
+    "newUser": "Новый",
     "filters": "Фильтры",
     "sortBy": "Сортировать по",
     "sortLatest": "Новейшие",

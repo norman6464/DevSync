@@ -373,6 +373,7 @@
     "likesCount": "{{count}}件のいいね",
     "commentsCount": "{{count}}件のコメント",
     "popular": "人気",
+    "newUser": "新規",
     "filters": "フィルター",
     "sortBy": "ソート順",
     "sortLatest": "最新順",

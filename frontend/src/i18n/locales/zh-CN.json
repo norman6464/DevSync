@@ -365,6 +365,7 @@
     "likesCount": "{{count}} 个赞",
     "commentsCount": "{{count}} 条评论",
     "popular": "热门",
+    "newUser": "新用户",
     "filters": "筛选",
     "sortBy": "排序",
     "sortLatest": "最新",
