@@ -907,6 +907,8 @@
     },
     "statusAll": "전체",
     "archivedLabel": "보관됨",
+    "recommended": "추천",
+    "mustRead": "필독",
     "archive": "보관",
     "unarchive": "보관 해제",
     "archived": "보관되었습니다",

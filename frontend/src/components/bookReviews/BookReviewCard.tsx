@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, ThumbsUp, Flame } from 'lucide-react';
 import type { BookReview, ReviewStatus } from '../../types/bookReview';
 import Avatar from '../common/Avatar';
 import StarRating from '../common/StarRating';
@@ -84,6 +84,17 @@ export default function BookReviewCard({
           {/* Status & Rating */}
           <div className="mt-2 flex items-center gap-3">
             <StarRating rating={review.rating} />
+            {review.rating >= 5 ? (
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-xs rounded bg-red-400/10 text-red-400">
+                <Flame className="w-3 h-3" />
+                {t('bookReviews.mustRead')}
+              </span>
+            ) : review.rating >= 4 ? (
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-xs rounded bg-orange-400/10 text-orange-400">
+                <ThumbsUp className="w-3 h-3" />
+                {t('bookReviews.recommended')}
+              </span>
+            ) : null}
             {review.status && (
               <span className={`text-xs px-2 py-0.5 rounded-full ${statusColors[review.status]}`}>
                 {t(`bookReviews.status.${review.status}`)}

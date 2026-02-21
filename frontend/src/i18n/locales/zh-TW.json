@@ -907,6 +907,8 @@
     },
     "statusAll": "全部",
     "archivedLabel": "已封存",
+    "recommended": "推薦",
+    "mustRead": "必讀",
     "archive": "封存",
     "unarchive": "取消封存",
     "archived": "已封存",

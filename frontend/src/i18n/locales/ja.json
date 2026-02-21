@@ -861,6 +861,8 @@
     },
     "statusAll": "すべて",
     "archivedLabel": "アーカイブ済み",
+    "recommended": "おすすめ",
+    "mustRead": "必読",
     "archive": "アーカイブ",
     "unarchive": "アーカイブ解除",
     "archived": "アーカイブしました",

@@ -907,6 +907,8 @@
     },
     "statusAll": "Todos",
     "archivedLabel": "Arquivado",
+    "recommended": "Recomendado",
+    "mustRead": "Leitura obrigatória",
     "archive": "Arquivar",
     "unarchive": "Desarquivar",
     "archived": "Resenha arquivada",
