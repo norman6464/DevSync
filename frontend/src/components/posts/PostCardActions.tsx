@@ -5,6 +5,7 @@ import { Heart, MessageCircle, Smile, Eye, Link2, Bookmark } from 'lucide-react'
 import toast from 'react-hot-toast';
 import { likePost, unlikePost, bookmarkPost, unbookmarkPost } from '../../api/posts';
 import { useReactions } from '../../hooks/useReactions';
+import { AVAILABLE_REACTION_EMOJIS } from '../../constants/reactions';
 
 interface PostCardActionsProps {
   postId: number;
@@ -16,8 +17,6 @@ interface PostCardActionsProps {
   viewCount: number;
   onUpdate?: () => void;
 }
-
-const availableEmojis = ['👍', '🎉', '❤️', '🔥', '👀'];
 
 export default function PostCardActions({
   postId,
@@ -141,7 +140,7 @@ export default function PostCardActions({
           </button>
           {showReactionPicker && (
             <div className="absolute bottom-8 left-0 z-10 flex gap-1 p-1.5 bg-gray-800 border border-gray-700 rounded-lg shadow-lg" role="menu" aria-label={t('post.addReaction')}>
-              {availableEmojis.map((emoji) => (
+              {AVAILABLE_REACTION_EMOJIS.map((emoji) => (
                 <button
                   key={emoji}
                   onClick={() => handleReaction(emoji)}
