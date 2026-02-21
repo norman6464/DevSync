@@ -668,6 +668,7 @@
     "durationMinutes": "{{minutes}} min",
     "durationHoursMinutes": "{{hours}}h {{minutes}}m",
     "sourcePomodoro": "Pomodoro",
+    "deepFocus": "Enfoque profundo",
     "durationPlaceholder": "minutos",
     "calendar": "Calendario",
     "list": "Lista",

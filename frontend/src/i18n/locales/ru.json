@@ -668,6 +668,7 @@
     "durationMinutes": "{{minutes}} мин",
     "durationHoursMinutes": "{{hours}} ч {{minutes}} мин",
     "sourcePomodoro": "Помодоро",
+    "deepFocus": "Глубокий фокус",
     "durationPlaceholder": "минуты",
     "calendar": "Календарь",
     "list": "Список",

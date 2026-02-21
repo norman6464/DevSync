@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Code, BookOpen, GraduationCap, Users, FileText, Star, Timer, Pencil, Trash2, type LucideIcon } from 'lucide-react';
+import { Code, BookOpen, GraduationCap, Users, FileText, Star, Timer, Zap, Pencil, Trash2, type LucideIcon } from 'lucide-react';
 import type { LearningLog, LogCategory } from '../../types/learningLog';
 import { formatDate } from '../../utils/timeFormat';
 import { panelClass, badgeBaseClass } from '../../constants/styles';
@@ -63,6 +63,12 @@ export default function LogCard({ log, onEdit, onDelete, onToggleFavorite }: Log
                   {log.duration >= 60
                     ? t('learningLogs.durationHoursMinutes', { hours: Math.floor(log.duration / 60), minutes: log.duration % 60 })
                     : t('learningLogs.durationMinutes', { minutes: log.duration })}
+                </span>
+              )}
+              {log.duration >= 120 && (
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-xs rounded bg-purple-400/10 text-purple-400">
+                  <Zap className="w-3 h-3" />
+                  {t('learningLogs.deepFocus')}
                 </span>
               )}
             </div>

@@ -652,6 +652,7 @@
     "durationMinutes": "{{minutes}}分",
     "durationHoursMinutes": "{{hours}}時間{{minutes}}分",
     "sourcePomodoro": "ポモドーロ",
+    "deepFocus": "集中学習",
     "durationPlaceholder": "分",
     "calendar": "カレンダー",
     "list": "リスト",
