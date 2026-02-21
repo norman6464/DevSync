@@ -2,10 +2,12 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import html2canvas from 'html2canvas';
 import toast from 'react-hot-toast';
+import { X } from 'lucide-react';
 import ShareableProfileCard from './ShareableProfileCard';
 import ShareButtons from './ShareButtons';
 import type { User } from '../../types/user';
 import type { GitHubLanguageStat } from '../../types/github';
+import { modalOverlayClass, modalContentClass } from '../../constants/styles';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -100,19 +102,13 @@ export default function ShareModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* Modal */}
+    <div className={modalOverlayClass} onClick={onClose}>
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="share-modal-title"
-        className="relative bg-gray-900 border border-gray-800 rounded-md shadow-sm max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+        className={`${modalContentClass} max-w-3xl`}
+        onClick={e => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-800">
@@ -122,20 +118,7 @@ export default function ShareModal({
             aria-label={t('common.close')}
             className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 
