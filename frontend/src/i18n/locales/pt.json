@@ -234,6 +234,9 @@
     "editProfile": "Editar perfil",
     "posts": "Postagens",
     "completeness": "Completude do perfil",
+    "milestoneAlmost": "Quase lá!",
+    "milestoneHalf": "Metade feito!",
+    "milestoneStarted": "Bom progresso!",
     "missing": {
       "avatar": "Adicionar avatar",
       "bio": "Adicionar bio",

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Zap, TrendingUp, Trophy } from 'lucide-react';
 
 interface ProfileCompletenessCardProps {
   percentage: number;
@@ -27,6 +27,22 @@ export default function ProfileCompletenessCard({ percentage, missingFields }: P
           style={{ width: `${percentage}%` }}
         />
       </div>
+      {percentage >= 75 ? (
+        <div className="flex items-center gap-1.5 mb-3 text-xs">
+          <Trophy className="w-3.5 h-3.5 text-green-400" />
+          <span className="text-green-400 font-medium">{t('profile.milestoneAlmost')}</span>
+        </div>
+      ) : percentage >= 50 ? (
+        <div className="flex items-center gap-1.5 mb-3 text-xs">
+          <TrendingUp className="w-3.5 h-3.5 text-blue-400" />
+          <span className="text-blue-400 font-medium">{t('profile.milestoneHalf')}</span>
+        </div>
+      ) : percentage >= 25 ? (
+        <div className="flex items-center gap-1.5 mb-3 text-xs">
+          <Zap className="w-3.5 h-3.5 text-yellow-400" />
+          <span className="text-yellow-400 font-medium">{t('profile.milestoneStarted')}</span>
+        </div>
+      ) : null}
       <div className="flex flex-wrap gap-2">
         {missingFields.map((field) => (
           <Link

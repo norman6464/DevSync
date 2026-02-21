@@ -234,6 +234,9 @@
     "editProfile": "編輯資料",
     "posts": "貼文",
     "completeness": "資料完成度",
+    "milestoneAlmost": "快完成了！",
+    "milestoneHalf": "完成一半！",
+    "milestoneStarted": "進展順利！",
     "missing": {
       "avatar": "設定頭像",
       "bio": "新增簡介",

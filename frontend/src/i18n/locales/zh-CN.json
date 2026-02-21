@@ -234,6 +234,9 @@
     "editProfile": "编辑资料",
     "posts": "帖子",
     "completeness": "资料完成度",
+    "milestoneAlmost": "快完成了！",
+    "milestoneHalf": "完成一半！",
+    "milestoneStarted": "进展顺利！",
     "missing": {
       "avatar": "设置头像",
       "bio": "添加简介",
