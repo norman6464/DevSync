@@ -986,7 +986,8 @@
     "bestAnswerSet": "已設定最佳答案",
     "bestAnswerFailed": "設定最佳答案失敗",
     "voteFailed": "投票失敗",
-    "popularBadge": "熱門"
+    "popularBadge": "熱門",
+    "newQuestion": "最新"
   },
   "roadmaps": {
     "title": "學習路線圖",

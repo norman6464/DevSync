@@ -986,7 +986,8 @@
     "bestAnswerSet": "已设置最佳答案",
     "bestAnswerFailed": "设置最佳答案失败",
     "voteFailed": "投票失败",
-    "popularBadge": "热门"
+    "popularBadge": "热门",
+    "newQuestion": "最新"
   },
   "roadmaps": {
     "title": "学习路线图",

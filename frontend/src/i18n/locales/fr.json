@@ -986,7 +986,8 @@
     "bestAnswerSet": "Meilleure réponse définie",
     "bestAnswerFailed": "Échec de la définition de la meilleure réponse",
     "voteFailed": "Échec du vote",
-    "popularBadge": "Populaire"
+    "popularBadge": "Populaire",
+    "newQuestion": "Nouveau"
   },
   "roadmaps": {
     "title": "Feuilles de Route d'Apprentissage",

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { TrendingUp, Pencil, Trash2 } from 'lucide-react';
+import { TrendingUp, Clock, Pencil, Trash2 } from 'lucide-react';
 import type { Question } from '../../types/qa';
 import Avatar from '../common/Avatar';
 import { cardPaddedClass, iconButtonClass, deleteIconButtonClass } from '../../constants/styles';
@@ -18,6 +18,7 @@ export default function QuestionCard({ question, isOwner = false, onEdit, onDele
   const { t } = useTranslation();
 
   const tags = parseJsonArray(question.tags);
+  const isNew = Date.now() - new Date(question.created_at).getTime() < 24 * 60 * 60 * 1000;
 
   const statusBorderClass = question.is_solved
     ? 'border-l-4 border-l-green-500'
@@ -85,9 +86,15 @@ export default function QuestionCard({ question, isOwner = false, onEdit, onDele
 
           <p className="text-gray-400 text-sm mt-1 line-clamp-2">{question.body}</p>
 
-          {/* Tags & Popular badge */}
-          {(tags.length > 0 || question.vote_count >= 5) && (
+          {/* Tags & Badges */}
+          {(tags.length > 0 || question.vote_count >= 5 || isNew) && (
             <div className="flex flex-wrap gap-1.5 mt-2">
+              {isNew && (
+                <span className="inline-flex items-center gap-0.5 px-2 py-0.5 bg-cyan-400/10 text-cyan-400 text-xs rounded-md font-medium">
+                  <Clock className="w-3 h-3" />
+                  {t('qa.newQuestion')}
+                </span>
+              )}
               {question.vote_count >= 5 && (
                 <span className="inline-flex items-center gap-0.5 px-2 py-0.5 bg-yellow-400/10 text-yellow-400 text-xs rounded-md font-medium">
                   <TrendingUp className="w-3 h-3" />
