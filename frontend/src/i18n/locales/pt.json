@@ -237,6 +237,13 @@
     "milestoneAlmost": "Quase lá!",
     "milestoneHalf": "Metade feito!",
     "milestoneStarted": "Bom progresso!",
+    "highlights": {
+      "title": "Destaques",
+      "topPost": "Postagem Mais Popular",
+      "latestBadge": "Último Emblema",
+      "streak": "Sequência de Aprendizado",
+      "streakDays": "dias"
+    },
     "missing": {
       "avatar": "Adicionar avatar",
       "bio": "Adicionar bio",

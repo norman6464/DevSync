@@ -237,6 +237,13 @@
     "milestoneAlmost": "거의 다 왔어요!",
     "milestoneHalf": "절반 완성!",
     "milestoneStarted": "순조롭습니다!",
+    "highlights": {
+      "title": "하이라이트",
+      "topPost": "인기 게시물",
+      "latestBadge": "최신 뱃지",
+      "streak": "연속 학습 일수",
+      "streakDays": "일"
+    },
     "missing": {
       "avatar": "아바타 설정",
       "bio": "자기소개 추가",

@@ -237,6 +237,13 @@
     "milestoneAlmost": "快完成了！",
     "milestoneHalf": "完成一半！",
     "milestoneStarted": "進展順利！",
+    "highlights": {
+      "title": "亮點",
+      "topPost": "最受歡迎的貼文",
+      "latestBadge": "最新徽章",
+      "streak": "連續學習天數",
+      "streakDays": "天"
+    },
     "missing": {
       "avatar": "設定頭像",
       "bio": "新增簡介",

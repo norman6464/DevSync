@@ -254,6 +254,13 @@
     "milestoneAlmost": "もうすぐ完成！",
     "milestoneHalf": "半分完成！",
     "milestoneStarted": "順調です！",
+    "highlights": {
+      "title": "ハイライト",
+      "topPost": "人気の投稿",
+      "latestBadge": "最新のバッジ",
+      "streak": "連続学習日数",
+      "streakDays": "日間"
+    },
     "missing": {
       "avatar": "アバター画像を設定",
       "bio": "自己紹介を追加",
