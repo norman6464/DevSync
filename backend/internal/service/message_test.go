@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -176,6 +177,26 @@ func TestMessageSendMessage_CreateError(t *testing.T) {
 // ============================================================
 // 既読マークエラーテスト
 // ============================================================
+
+func TestMessageSendMessage_EmptyContent(t *testing.T) {
+	svc, msgRepo, _ := newTestMessageService()
+
+	msg := &model.Message{SenderID: 1, ReceiverID: 2, Content: "   "}
+	err := svc.SendMessage(msg)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "メッセージ内容を入力してください")
+	msgRepo.AssertNotCalled(t, "Create")
+}
+
+func TestMessageSendMessage_ContentTooLong(t *testing.T) {
+	svc, msgRepo, _ := newTestMessageService()
+
+	msg := &model.Message{SenderID: 1, ReceiverID: 2, Content: strings.Repeat("あ", 5001)}
+	err := svc.SendMessage(msg)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "メッセージ内容は5000文字以下")
+	msgRepo.AssertNotCalled(t, "Create")
+}
 
 func TestMessageMarkAsRead_RepoError(t *testing.T) {
 	svc, msgRepo, _ := newTestMessageService()
