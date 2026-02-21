@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -99,6 +100,42 @@ func TestUserHandler_GetAll(t *testing.T) {
 
 		w := doRequest(r, "GET", "/users", nil)
 		assertStatus(t, w, http.StatusInternalServerError)
+		svc.AssertExpectations(t)
+	})
+
+	t.Run("100文字超のクエリで400エラー", func(t *testing.T) {
+		h, _ := newTestUserHandler()
+		r := newRouter(1)
+		r.GET("/users", h.GetAll)
+
+		longQuery := strings.Repeat("あ", 101)
+		w := doRequest(r, "GET", "/users?q="+longQuery, nil)
+		assertStatus(t, w, http.StatusBadRequest)
+	})
+
+	t.Run("ちょうど100文字のクエリで成功", func(t *testing.T) {
+		h, svc := newTestUserHandler()
+		r := newRouter(1)
+		r.GET("/users", h.GetAll)
+
+		query100 := strings.Repeat("あ", 100)
+		svc.On("GetAll", query100).Return([]model.User{}, nil)
+
+		w := doRequest(r, "GET", "/users?q="+query100, nil)
+		assertStatus(t, w, http.StatusOK)
+		svc.AssertExpectations(t)
+	})
+
+	t.Run("前後の空白がTrimSpaceされる", func(t *testing.T) {
+		h, svc := newTestUserHandler()
+		r := newRouter(1)
+		r.GET("/users", h.GetAll)
+
+		svc.On("GetAll", "テスト").Return([]model.User{}, nil)
+
+		// 空白はURLエンコードする必要がある
+		w := doRequest(r, "GET", "/users?q=%20%20テスト%20%20", nil)
+		assertStatus(t, w, http.StatusOK)
 		svc.AssertExpectations(t)
 	})
 }

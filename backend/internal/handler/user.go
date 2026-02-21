@@ -27,9 +27,12 @@ func NewUserHandler(s UserServiceInterface) *UserHandler {
 	return &UserHandler{service: s}
 }
 
-// GetAll はユーザー一覧を返す。クエリパラメータqで検索可能。
+// GetAll はユーザー一覧を返す。クエリパラメータqで検索可能（最大100文字）。
 func (h *UserHandler) GetAll(c *gin.Context) {
-	q := c.Query("q")
+	q, ok := parseOptionalSearchQuery(c, maxUserSearchQueryLen)
+	if !ok {
+		return
+	}
 	users, err := h.service.GetAll(q)
 	if err != nil {
 		respondError(c, err)

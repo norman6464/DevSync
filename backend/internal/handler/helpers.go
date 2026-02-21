@@ -53,6 +53,9 @@ func parseLimitOffset(c *gin.Context) (limit, offset int) {
 // maxSearchQueryLen は検索クエリの最大文字数（ルーン数）。
 const maxSearchQueryLen = 500
 
+// maxUserSearchQueryLen はユーザー検索クエリの最大文字数（ルーン数）。
+const maxUserSearchQueryLen = 100
+
 // parseSearchQuery はクエリパラメータ "q" を取得・検証する共通ヘルパー。
 // 未指定・空文字列・500文字超の場合は400を返しfalseを返す。
 // 前後の空白はTrimSpaceで除去して返す。
@@ -64,6 +67,22 @@ func parseSearchQuery(c *gin.Context) (string, bool) {
 	}
 	if len([]rune(query)) > maxSearchQueryLen {
 		respondBadRequest(c, "検索クエリは500文字以下である必要があります")
+		return "", false
+	}
+	return strings.TrimSpace(query), true
+}
+
+// parseOptionalSearchQuery はクエリパラメータ "q" をオプションとして取得・検証する。
+// 未指定・空文字列の場合は空文字列を返す（エラーなし）。
+// maxLen文字超の場合は400を返しfalseを返す。
+// 前後の空白はTrimSpaceで除去して返す。
+func parseOptionalSearchQuery(c *gin.Context, maxLen int) (string, bool) {
+	query := c.Query("q")
+	if query == "" {
+		return "", true
+	}
+	if len([]rune(query)) > maxLen {
+		respondBadRequest(c, "検索クエリは"+strconv.Itoa(maxLen)+"文字以下である必要があります")
 		return "", false
 	}
 	return strings.TrimSpace(query), true
