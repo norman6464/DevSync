@@ -21,9 +21,13 @@ func NewPostCollectionService(repo repository.PostCollectionRepositoryInterface)
 
 // Create は新しい投稿コレクションを作成する。
 func (s *PostCollectionService) Create(collection *model.PostCollection) (*model.PostCollection, error) {
-	if strings.TrimSpace(collection.Title) == "" {
-		return nil, domain.NewError(domain.ErrCodeValidation, "タイトルは必須です", nil)
+	if err := domain.ValidateStringLength(collection.Title, 1, 200, "タイトル"); err != nil {
+		return nil, err
 	}
+	if len(strings.TrimSpace(collection.Description)) > 1000 {
+		return nil, domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
+	}
+	collection.Title = strings.TrimSpace(collection.Title)
 	if err := s.repo.Create(collection); err != nil {
 		return nil, err
 	}
@@ -59,8 +63,11 @@ func (s *PostCollectionService) findAndCheckOwnership(id, userID uint) (*model.P
 
 // Update は所有権を検証した後、コレクションを更新する。
 func (s *PostCollectionService) Update(id, userID uint, title, description string, isPublic bool) (*model.PostCollection, error) {
-	if strings.TrimSpace(title) == "" {
-		return nil, domain.NewError(domain.ErrCodeBadRequest, "タイトルは必須です", nil)
+	if err := domain.ValidateStringLength(title, 1, 200, "タイトル"); err != nil {
+		return nil, err
+	}
+	if len(strings.TrimSpace(description)) > 1000 {
+		return nil, domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
 	}
 	collection, err := s.findAndCheckOwnership(id, userID)
 	if err != nil {

@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -66,7 +67,7 @@ func TestPostCollectionCreate_WhitespaceTitle(t *testing.T) {
 	result, err := svc.Create(collection)
 	assert.Error(t, err)
 	assert.Nil(t, result)
-	assert.Contains(t, err.Error(), "タイトルは必須です")
+	assert.Contains(t, err.Error(), "タイトルを入力してください")
 }
 
 func TestPostCollectionCreate_RepoError(t *testing.T) {
@@ -229,7 +230,7 @@ func TestPostCollectionUpdate_EmptyTitle(t *testing.T) {
 	result, err := svc.Update(10, 1, "", "desc", false)
 	assert.Error(t, err)
 	assert.Nil(t, result)
-	assert.Contains(t, err.Error(), "タイトルは必須です")
+	assert.Contains(t, err.Error(), "タイトルを入力してください")
 }
 
 func TestPostCollectionUpdate_WhitespaceTitle(t *testing.T) {
@@ -238,7 +239,7 @@ func TestPostCollectionUpdate_WhitespaceTitle(t *testing.T) {
 	result, err := svc.Update(10, 1, "   ", "desc", false)
 	assert.Error(t, err)
 	assert.Nil(t, result)
-	assert.Contains(t, err.Error(), "タイトルは必須です")
+	assert.Contains(t, err.Error(), "タイトルを入力してください")
 }
 
 // ============================================================
@@ -418,4 +419,46 @@ func TestPostCollectionRemovePost_NotFound(t *testing.T) {
 	err := svc.RemovePost(99, 1, 5)
 	assert.Error(t, err)
 	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// タイトル・説明文字数バリデーションテスト
+// ============================================================
+
+func TestPostCollectionCreate_TitleTooLong(t *testing.T) {
+	svc, _ := newTestPostCollectionService()
+
+	collection := &model.PostCollection{Title: strings.Repeat("あ", 201), UserID: 1}
+	result, err := svc.Create(collection)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "タイトルは200文字以下")
+}
+
+func TestPostCollectionCreate_DescriptionTooLong(t *testing.T) {
+	svc, _ := newTestPostCollectionService()
+
+	collection := &model.PostCollection{Title: "テスト", Description: strings.Repeat("あ", 1001), UserID: 1}
+	result, err := svc.Create(collection)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "説明は1000文字以下")
+}
+
+func TestPostCollectionUpdate_TitleTooLong(t *testing.T) {
+	svc, _ := newTestPostCollectionService()
+
+	result, err := svc.Update(1, 1, strings.Repeat("あ", 201), "説明", true)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "タイトルは200文字以下")
+}
+
+func TestPostCollectionUpdate_DescriptionTooLong(t *testing.T) {
+	svc, _ := newTestPostCollectionService()
+
+	result, err := svc.Update(1, 1, "タイトル", strings.Repeat("あ", 1001), true)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "説明は1000文字以下")
 }
