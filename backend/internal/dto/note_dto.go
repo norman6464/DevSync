@@ -10,8 +10,8 @@ type CreateNoteRequest struct {
 
 // UpdateNoteRequest はノート更新リクエスト。
 type UpdateNoteRequest struct {
-	Title    string `json:"title"`
-	Content  string `json:"content"`
+	Title    string `json:"title" binding:"omitempty,min=1,max=200"`
+	Content  string `json:"content" binding:"omitempty,min=1,max=50000"`
 	Tags     string `json:"tags"`
 	FolderID *uint  `json:"folder_id"`
 }
