@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { X } from 'lucide-react';
 import { inputClass } from '../../constants/styles';
 
 interface TagInputProps {
@@ -67,9 +68,7 @@ export default function TagInput({ tags, onChange, placeholder, maxLength = 50, 
                 onClick={() => removeTag(tag)}
                 className="text-gray-400 hover:text-white"
               >
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                </svg>
+                <X className="w-3 h-3" aria-hidden="true" />
               </button>
             </span>
           ))}
