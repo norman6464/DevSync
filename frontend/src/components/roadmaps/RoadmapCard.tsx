@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Monitor, Rocket, Target, FolderOpen, FileText, Pencil, Trash2, type LucideIcon } from 'lucide-react';
 import { type Roadmap, type RoadmapCategory } from '../../api/roadmaps';
-import { badgeBaseClass } from '../../constants/styles';
+import { badgeBaseClass, editIconButtonClass, deleteIconButtonLargeClass } from '../../constants/styles';
 
 const CATEGORIES: { value: RoadmapCategory; label: string; icon: string; Icon: LucideIcon }[] = [
   { value: 'language', label: 'roadmaps.categoryLanguage', icon: '💻', Icon: Monitor },
@@ -76,13 +76,13 @@ export default function RoadmapCard({ roadmap, onView, onEdit, onDelete }: Roadm
         <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
           <button
             onClick={() => onEdit(roadmap)}
-            className="p-2 text-gray-400 hover:text-blue-400 transition-colors"
+            className={editIconButtonClass}
           >
             <Pencil className="w-4 h-4" />
           </button>
           <button
             onClick={() => onDelete(roadmap.id)}
-            className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+            className={deleteIconButtonLargeClass}
           >
             <Trash2 className="w-4 h-4" />
           </button>

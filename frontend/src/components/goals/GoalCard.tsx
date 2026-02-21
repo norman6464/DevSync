@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Monitor, Rocket, Target, FolderOpen, FileText, Copy, Pencil, Trash2, CheckCircle2, Pause, Play, type LucideIcon } from 'lucide-react';
 import { type GoalCategory, type GoalStatus, type LearningGoal } from '../../api/goals';
 import { formatDate } from '../../utils/timeFormat';
-import { badgeBaseClass } from '../../constants/styles';
+import { badgeBaseClass, editIconButtonClass, deleteIconButtonLargeClass, starIconButtonClass } from '../../constants/styles';
 
 export const CATEGORIES: { value: GoalCategory; label: string; icon: string; Icon: LucideIcon }[] = [
   { value: 'language', label: 'goals.categoryLanguage', icon: '💻', Icon: Monitor },
@@ -141,7 +141,7 @@ const GoalCard = memo(function GoalCard({
           {goal.status === 'active' && (
             <button
               onClick={() => onStatusChange(goal, 'paused')}
-              className="p-2 text-gray-400 hover:text-yellow-400 transition-colors"
+              className={starIconButtonClass}
               aria-label={t('goals.pause')}
             >
               <Pause className="w-4 h-4" aria-hidden="true" />
@@ -150,7 +150,7 @@ const GoalCard = memo(function GoalCard({
           {goal.status === 'paused' && (
             <button
               onClick={() => onStatusChange(goal, 'active')}
-              className="p-2 text-gray-400 hover:text-blue-400 transition-colors"
+              className={editIconButtonClass}
               aria-label={t('goals.resume')}
             >
               <Play className="w-4 h-4" aria-hidden="true" />
@@ -165,14 +165,14 @@ const GoalCard = memo(function GoalCard({
           </button>
           <button
             onClick={() => onEdit(goal)}
-            className="p-2 text-gray-400 hover:text-blue-400 transition-colors"
+            className={editIconButtonClass}
             aria-label={t('common.edit')}
           >
             <Pencil className="w-4 h-4" />
           </button>
           <button
             onClick={() => onDelete(goal.id)}
-            className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+            className={deleteIconButtonLargeClass}
             aria-label={t('common.delete')}
           >
             <Trash2 className="w-4 h-4" />
