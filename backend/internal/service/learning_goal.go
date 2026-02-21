@@ -22,9 +22,10 @@ func NewLearningGoalService(repo repository.LearningGoalRepositoryInterface) *Le
 
 // Create は新しい学習目標を作成する。
 func (s *LearningGoalService) Create(goal *model.LearningGoal) error {
-	if strings.TrimSpace(goal.Title) == "" {
-		return domain.NewError(domain.ErrCodeBadRequest, "タイトルは必須です", nil)
+	if err := domain.ValidateStringLength(goal.Title, 1, 200, "タイトル"); err != nil {
+		return err
 	}
+	goal.Title = strings.TrimSpace(goal.Title)
 	return s.repo.Create(goal)
 }
 
@@ -101,10 +102,16 @@ func (s *LearningGoalService) Update(id, userID uint, updates *model.LearningGoa
 	}
 
 	if strings.TrimSpace(updates.Title) != "" {
-		goal.Title = updates.Title
+		if len(strings.TrimSpace(updates.Title)) > 200 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "タイトルは200文字以下である必要があります", nil)
+		}
+		goal.Title = strings.TrimSpace(updates.Title)
 	}
 	if strings.TrimSpace(updates.Description) != "" {
-		goal.Description = updates.Description
+		if len(strings.TrimSpace(updates.Description)) > 1000 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
+		}
+		goal.Description = strings.TrimSpace(updates.Description)
 	}
 	if strings.TrimSpace(string(updates.Category)) != "" {
 		goal.Category = updates.Category

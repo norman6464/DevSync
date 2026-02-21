@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -679,6 +680,39 @@ func TestLearningGoalUpdate_WhitespaceStatus(t *testing.T) {
 	result, err := svc.Update(1, 1, &model.LearningGoal{Status: "   "})
 	assert.NoError(t, err)
 	assert.Equal(t, model.GoalStatusActive, result.Status)
+}
+
+func TestLearningGoalCreate_TitleTooLong(t *testing.T) {
+	svc, _ := newTestLearningGoalService()
+
+	goal := &model.LearningGoal{UserID: 1, Title: strings.Repeat("あ", 201)}
+	err := svc.Create(goal)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "タイトルは200文字以下")
+}
+
+func TestLearningGoalUpdate_TitleTooLong(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+	existing := &model.LearningGoal{Title: "Title", Status: model.GoalStatusActive, UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	result, err := svc.Update(1, 1, &model.LearningGoal{Title: strings.Repeat("あ", 201)})
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "タイトルは200文字以下")
+}
+
+func TestLearningGoalUpdate_DescriptionTooLong(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+	existing := &model.LearningGoal{Title: "Title", Status: model.GoalStatusActive, UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	result, err := svc.Update(1, 1, &model.LearningGoal{Description: strings.Repeat("あ", 1001)})
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "説明は1000文字以下")
 }
 
 // ============================================================
