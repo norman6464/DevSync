@@ -668,6 +668,7 @@
     "durationMinutes": "{{minutes}}分钟",
     "durationHoursMinutes": "{{hours}}小时{{minutes}}分钟",
     "sourcePomodoro": "番茄钟",
+    "deepFocus": "深度专注",
     "durationPlaceholder": "分钟",
     "calendar": "日历",
     "list": "列表",

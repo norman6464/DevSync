@@ -668,6 +668,7 @@
     "durationMinutes": "{{minutes}}분",
     "durationHoursMinutes": "{{hours}}시간 {{minutes}}분",
     "sourcePomodoro": "포모도로",
+    "deepFocus": "집중 학습",
     "durationPlaceholder": "분",
     "calendar": "캘린더",
     "list": "목록",
