@@ -237,6 +237,13 @@
     "milestoneAlmost": "Almost There!",
     "milestoneHalf": "Halfway Done!",
     "milestoneStarted": "Good Progress!",
+    "highlights": {
+      "title": "Highlights",
+      "topPost": "Most Popular Post",
+      "latestBadge": "Latest Badge",
+      "streak": "Learning Streak",
+      "streakDays": "days"
+    },
     "missing": {
       "avatar": "Add avatar",
       "bio": "Add bio",

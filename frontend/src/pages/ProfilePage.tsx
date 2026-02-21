@@ -15,6 +15,7 @@ import LevelDisplay from '../components/profile/LevelDisplay';
 import PostCard from '../components/posts/PostCard';
 import PostSeriesCard from '../components/series/PostSeriesCard';
 import ProfileCompletenessCard from '../components/profile/ProfileCompletenessCard';
+import ProfileHighlightCard from '../components/profile/ProfileHighlightCard';
 import CompetitiveProgrammingCard from '../components/profile/CompetitiveProgrammingCard';
 import ShareModal from '../components/profile/ShareModal';
 import PortfolioModal from '../components/profile/PortfolioModal';
@@ -62,6 +63,13 @@ export default function ProfilePage() {
       {isOwnProfile && (
         <ProfileCompletenessCard percentage={percentage} missingFields={missingFields} />
       )}
+
+      {/* Profile Highlights */}
+      <ProfileHighlightCard
+        posts={posts}
+        badges={badges}
+        streakDays={streakInfo?.current_streak || 0}
+      />
 
       {/* Skills */}
       {(user.skills_languages || user.skills_frameworks) && (

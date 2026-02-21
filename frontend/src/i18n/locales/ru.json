@@ -237,6 +237,13 @@
     "milestoneAlmost": "Почти готово!",
     "milestoneHalf": "Половина сделана!",
     "milestoneStarted": "Хороший прогресс!",
+    "highlights": {
+      "title": "Основные моменты",
+      "topPost": "Самый популярный пост",
+      "latestBadge": "Последний значок",
+      "streak": "Непрерывная учебная полоса",
+      "streakDays": "дней"
+    },
     "missing": {
       "avatar": "Добавить аватар",
       "bio": "Добавить описание",
