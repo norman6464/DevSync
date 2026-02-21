@@ -107,6 +107,7 @@
     "activities": "활동",
     "recommendations": "추천",
     "following": "팔로잉",
+    "joined": "가입일",
     "allPosts": "전체 게시물",
     "noPostsFollowing": "팔로우한 사용자의 게시물이 없습니다.",
     "noPostsAll": "아직 게시물이 없습니다. 첫 번째로 공유해보세요!",
@@ -229,6 +230,7 @@
   "profile": {
     "followers": "팔로워",
     "following": "팔로잉",
+    "joined": "가입일",
     "follow": "팔로우",
     "unfollow": "언팔로우",
     "editProfile": "프로필 편집",
@@ -396,6 +398,7 @@
     "recommendations": "추천",
     "recentChats": "최근 채팅",
     "following": "팔로잉",
+    "joined": "가입일",
     "startNewChat": "새 채팅 시작",
     "noConversations": "대화가 없습니다",
     "startConversation": "대화 시작하기",

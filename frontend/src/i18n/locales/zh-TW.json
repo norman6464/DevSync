@@ -107,6 +107,7 @@
     "activities": "活動",
     "recommendations": "推薦",
     "following": "追蹤中",
+    "joined": "加入時間",
     "allPosts": "所有貼文",
     "noPostsFollowing": "還沒有追蹤用戶的貼文。",
     "noPostsAll": "還沒有貼文，成為第一個分享的人吧！",
@@ -229,6 +230,7 @@
   "profile": {
     "followers": "追蹤者",
     "following": "追蹤中",
+    "joined": "加入時間",
     "follow": "追蹤",
     "unfollow": "取消追蹤",
     "editProfile": "編輯資料",
@@ -396,6 +398,7 @@
     "recommendations": "推薦",
     "recentChats": "最近聊天",
     "following": "追蹤中",
+    "joined": "加入時間",
     "startNewChat": "開始新聊天",
     "noConversations": "暫無對話",
     "startConversation": "開始對話",
