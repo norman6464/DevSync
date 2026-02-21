@@ -24,9 +24,10 @@ func NewChatRoomService(roomRepo repository.ChatRoomRepositoryInterface, message
 
 // Create は新しいチャットルームを作成し、オーナーと指定メンバーを追加する。
 func (s *ChatRoomService) Create(room *model.ChatRoom, memberIDs []uint) (*model.ChatRoom, error) {
-	if strings.TrimSpace(room.Name) == "" {
-		return nil, domain.NewError(domain.ErrCodeBadRequest, "チャットルーム名は空白のみでは入力できません", nil)
+	if err := domain.ValidateStringLength(room.Name, 1, 100, "チャットルーム名"); err != nil {
+		return nil, err
 	}
+	room.Name = strings.TrimSpace(room.Name)
 	if err := s.roomRepo.Create(room); err != nil {
 		return nil, err
 	}
@@ -96,12 +97,18 @@ func (s *ChatRoomService) Update(roomID, userID uint, name, description string) 
 		if strings.TrimSpace(name) == "" {
 			return nil, domain.NewError(domain.ErrCodeBadRequest, "チャットルーム名は空白のみでは入力できません", nil)
 		}
-		room.Name = name
+		if len(strings.TrimSpace(name)) > 100 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "チャットルーム名は100文字以下である必要があります", nil)
+		}
+		room.Name = strings.TrimSpace(name)
 	}
 	if description != "" && strings.TrimSpace(description) == "" {
 		return nil, domain.NewError(domain.ErrCodeBadRequest, "説明は空白のみでは入力できません", nil)
 	}
-	room.Description = description
+	if len(strings.TrimSpace(description)) > 500 {
+		return nil, domain.NewError(domain.ErrCodeValidation, "説明は500文字以下である必要があります", nil)
+	}
+	room.Description = strings.TrimSpace(description)
 
 	if err := s.roomRepo.Update(room); err != nil {
 		return nil, err
