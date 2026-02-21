@@ -169,6 +169,10 @@ func (s *ChatRoomService) GetMessages(roomID, userID uint, page, limit int) ([]m
 // SendMessage はメンバーシップを検証した後、メッセージを送信する。
 // WebSocket経由でルーム内の他メンバーにリアルタイム配信する。
 func (s *ChatRoomService) SendMessage(roomID, userID uint, content string) (*model.GroupMessage, error) {
+	if err := domain.ValidateStringLength(content, 1, 5000, "メッセージ内容"); err != nil {
+		return nil, err
+	}
+	content = strings.TrimSpace(content)
 	if err := s.checkMembership(roomID, userID); err != nil {
 		return nil, err
 	}

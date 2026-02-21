@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -486,6 +487,26 @@ func TestChatRoomSendMessage_CreateError(t *testing.T) {
 	assert.Nil(t, result)
 	roomRepo.AssertExpectations(t)
 	msgRepo.AssertExpectations(t)
+}
+
+func TestChatRoomSendMessage_EmptyContent(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	result, err := svc.SendMessage(10, 1, "   ")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "メッセージ内容を入力してください")
+	roomRepo.AssertNotCalled(t, "IsMember")
+}
+
+func TestChatRoomSendMessage_ContentTooLong(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	result, err := svc.SendMessage(10, 1, strings.Repeat("あ", 5001))
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "メッセージ内容は5000文字以下")
+	roomRepo.AssertNotCalled(t, "IsMember")
 }
 
 // ============================================================
