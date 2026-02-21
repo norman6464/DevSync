@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -44,7 +45,7 @@ func TestBookReviewCreate_WhitespaceTitle(t *testing.T) {
 	review := &model.BookReview{UserID: 1, Title: "   \t  ", Rating: 4}
 	err := svc.Create(review)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "タイトルは必須です")
+	assert.Contains(t, err.Error(), "タイトルを入力してください")
 }
 
 func TestBookReviewCreate_EmptyTitle(t *testing.T) {
@@ -572,4 +573,54 @@ func TestBookReviewSearch_RepoError(t *testing.T) {
 	assert.Nil(t, result)
 	assert.Equal(t, int64(0), total)
 	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// タイトル・レビュー本文の文字数バリデーションテスト
+// ============================================================
+
+func TestBookReviewCreate_TitleTooLong(t *testing.T) {
+	svc, _ := newTestBookReviewService()
+
+	review := &model.BookReview{Title: strings.Repeat("あ", 201), UserID: 1, Rating: 4}
+	err := svc.Create(review)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "タイトルは200文字以下")
+}
+
+func TestBookReviewCreate_ReviewTooLong(t *testing.T) {
+	svc, _ := newTestBookReviewService()
+
+	review := &model.BookReview{Title: "テスト本", UserID: 1, Rating: 4, Review: strings.Repeat("あ", 10001)}
+	err := svc.Create(review)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "レビュー本文は10000文字以下")
+}
+
+func TestBookReviewUpdate_TitleTooLong(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	existing := &model.BookReview{UserID: 1, Title: "Old", Rating: 3}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	updates := &model.BookReview{Title: strings.Repeat("あ", 201)}
+	result, err := svc.Update(1, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "タイトルは200文字以下")
+}
+
+func TestBookReviewUpdate_ReviewTooLong(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	existing := &model.BookReview{UserID: 1, Title: "Old", Rating: 3}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	updates := &model.BookReview{Review: strings.Repeat("あ", 10001)}
+	result, err := svc.Update(1, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "レビュー本文は10000文字以下")
 }

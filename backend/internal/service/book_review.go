@@ -28,12 +28,17 @@ func validateRating(rating int) error {
 
 // Create は新しい書籍レビューを作成する。
 func (s *BookReviewService) Create(review *model.BookReview) error {
-	if strings.TrimSpace(review.Title) == "" {
-		return domain.NewError(domain.ErrCodeBadRequest, "タイトルは必須です", nil)
+	if err := domain.ValidateStringLength(review.Title, 1, 200, "タイトル"); err != nil {
+		return err
 	}
 	if err := validateRating(review.Rating); err != nil {
 		return err
 	}
+	if len(strings.TrimSpace(review.Review)) > 10000 {
+		return domain.NewError(domain.ErrCodeValidation, "レビュー本文は10000文字以下である必要があります", nil)
+	}
+	review.Title = strings.TrimSpace(review.Title)
+	review.Review = strings.TrimSpace(review.Review)
 	return s.repo.Create(review)
 }
 
@@ -88,6 +93,9 @@ func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (
 	}
 
 	if strings.TrimSpace(updates.Title) != "" {
+		if len(strings.TrimSpace(updates.Title)) > 200 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "タイトルは200文字以下である必要があります", nil)
+		}
 		review.Title = strings.TrimSpace(updates.Title)
 	}
 	if strings.TrimSpace(updates.Author) != "" {
@@ -103,6 +111,9 @@ func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (
 		review.Rating = updates.Rating
 	}
 	if strings.TrimSpace(updates.Review) != "" {
+		if len(strings.TrimSpace(updates.Review)) > 10000 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "レビュー本文は10000文字以下である必要があります", nil)
+		}
 		review.Review = strings.TrimSpace(updates.Review)
 	}
 	if strings.TrimSpace(updates.ImageURL) != "" {
