@@ -27,7 +27,10 @@ export default function NotesPage() {
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <BookOpen className="w-8 h-8 text-blue-500" />
-          <h1 className="text-3xl font-bold">{t('notes.title')}</h1>
+          <div className="flex items-baseline gap-2">
+            <h1 className="text-3xl font-bold">{t('notes.title')}</h1>
+            <span className="text-lg text-gray-500">({filteredNotes.length})</span>
+          </div>
         </div>
         <button
           onClick={handleToggleForm}
