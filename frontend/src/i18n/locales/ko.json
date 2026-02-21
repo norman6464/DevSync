@@ -234,6 +234,9 @@
     "editProfile": "프로필 편집",
     "posts": "게시물",
     "completeness": "프로필 완성도",
+    "milestoneAlmost": "거의 다 왔어요!",
+    "milestoneHalf": "절반 완성!",
+    "milestoneStarted": "순조롭습니다!",
     "missing": {
       "avatar": "아바타 설정",
       "bio": "자기소개 추가",

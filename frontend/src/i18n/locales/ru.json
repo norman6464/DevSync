@@ -234,6 +234,9 @@
     "editProfile": "Редактировать профиль",
     "posts": "Посты",
     "completeness": "Заполненность профиля",
+    "milestoneAlmost": "Почти готово!",
+    "milestoneHalf": "Половина сделана!",
+    "milestoneStarted": "Хороший прогресс!",
     "missing": {
       "avatar": "Добавить аватар",
       "bio": "Добавить описание",
