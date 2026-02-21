@@ -29,9 +29,10 @@ func NewRoadmapService(repo repository.RoadmapRepositoryInterface) *RoadmapServi
 
 // Create は新しいロードマップを作成する。
 func (s *RoadmapService) Create(roadmap *model.Roadmap) error {
-	if strings.TrimSpace(roadmap.Title) == "" {
-		return domain.NewError(domain.ErrCodeBadRequest, "タイトルは必須です", nil)
+	if err := domain.ValidateStringLength(roadmap.Title, 1, 200, "タイトル"); err != nil {
+		return err
 	}
+	roadmap.Title = strings.TrimSpace(roadmap.Title)
 	return s.repo.Create(roadmap)
 }
 
@@ -107,10 +108,16 @@ func (s *RoadmapService) Update(id, userID uint, updates *model.Roadmap) (*model
 	}
 
 	if strings.TrimSpace(updates.Title) != "" {
-		roadmap.Title = updates.Title
+		if len(strings.TrimSpace(updates.Title)) > 200 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "タイトルは200文字以下である必要があります", nil)
+		}
+		roadmap.Title = strings.TrimSpace(updates.Title)
 	}
 	if strings.TrimSpace(updates.Description) != "" {
-		roadmap.Description = updates.Description
+		if len(strings.TrimSpace(updates.Description)) > 1000 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
+		}
+		roadmap.Description = strings.TrimSpace(updates.Description)
 	}
 	if strings.TrimSpace(string(updates.Category)) != "" {
 		roadmap.Category = updates.Category
@@ -183,12 +190,21 @@ func (s *RoadmapService) UpdateStep(roadmapID, stepID, userID uint, updates *mod
 	}
 
 	if strings.TrimSpace(updates.Title) != "" {
+		if len(strings.TrimSpace(updates.Title)) > 200 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "タイトルは200文字以下である必要があります", nil)
+		}
 		step.Title = strings.TrimSpace(updates.Title)
 	}
 	if strings.TrimSpace(updates.Description) != "" {
+		if len(strings.TrimSpace(updates.Description)) > 1000 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
+		}
 		step.Description = strings.TrimSpace(updates.Description)
 	}
 	if strings.TrimSpace(updates.ResourceURL) != "" {
+		if len(strings.TrimSpace(updates.ResourceURL)) > 500 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "リソースURLは500文字以下である必要があります", nil)
+		}
 		step.ResourceURL = strings.TrimSpace(updates.ResourceURL)
 	}
 
