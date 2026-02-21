@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -138,7 +139,7 @@ func TestAnswerUpdate_EmptyBody(t *testing.T) {
 	result, err := svc.Update(1, 1, "")
 	assert.Error(t, err)
 	assert.Nil(t, result)
-	assert.Contains(t, err.Error(), "回答内容は必須です")
+	assert.Contains(t, err.Error(), "回答内容を入力してください")
 }
 
 func TestAnswerUpdate_WhitespaceBody(t *testing.T) {
@@ -147,7 +148,7 @@ func TestAnswerUpdate_WhitespaceBody(t *testing.T) {
 	result, err := svc.Update(1, 1, "   ")
 	assert.Error(t, err)
 	assert.Nil(t, result)
-	assert.Contains(t, err.Error(), "回答内容は必須です")
+	assert.Contains(t, err.Error(), "回答内容を入力してください")
 }
 
 // ============================================================
@@ -552,6 +553,24 @@ func TestAnswerGetByVoteRange_RepoError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	answerRepo.AssertExpectations(t)
+}
+
+func TestAnswerCreate_BodyTooLong(t *testing.T) {
+	svc, _, _ := newTestAnswerService()
+
+	answer := &model.Answer{QuestionID: 10, UserID: 2, Body: strings.Repeat("あ", 10001)}
+	err := svc.Create(answer)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "回答内容は10000文字以下")
+}
+
+func TestAnswerUpdate_BodyTooLong(t *testing.T) {
+	svc, _, _ := newTestAnswerService()
+
+	result, err := svc.Update(1, 1, strings.Repeat("あ", 10001))
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "回答内容は10000文字以下")
 }
 
 func TestAnswerUpdate_TrimsPaddedBody(t *testing.T) {
