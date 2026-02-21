@@ -246,6 +246,7 @@
   "profile": {
     "followers": "フォロワー",
     "following": "フォロー中",
+    "joined": "登録日",
     "follow": "フォロー",
     "unfollow": "フォロー解除",
     "editProfile": "プロフィール編集",
