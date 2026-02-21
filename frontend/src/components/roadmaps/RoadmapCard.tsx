@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Monitor, Rocket, Target, FolderOpen, FileText, Pencil, Trash2, type LucideIcon } from 'lucide-react';
+import { Monitor, Rocket, Target, FolderOpen, FileText, Pencil, Trash2, Trophy, TrendingUp, Zap, PlayCircle, type LucideIcon } from 'lucide-react';
 import { type Roadmap, type RoadmapCategory } from '../../api/roadmaps';
 import { badgeBaseClass, editIconButtonClass, deleteIconButtonLargeClass } from '../../constants/styles';
 
@@ -59,7 +59,30 @@ export default function RoadmapCard({ roadmap, onView, onEdit, onDelete }: Roadm
             {/* Progress Bar */}
             <div className="mt-3">
               <div className="flex items-center justify-between text-xs mb-1">
-                <span className="text-gray-400">{t('roadmaps.progress')}</span>
+                <span className="text-gray-400 flex items-center gap-1.5">
+                  {t('roadmaps.progress')}
+                  {roadmap.status !== 'completed' && roadmap.progress >= 75 ? (
+                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-green-400/10 text-green-400 font-medium">
+                      <Trophy className="w-3 h-3" />
+                      {t('roadmaps.progressAlmost')}
+                    </span>
+                  ) : roadmap.status !== 'completed' && roadmap.progress >= 50 ? (
+                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-blue-400/10 text-blue-400 font-medium">
+                      <TrendingUp className="w-3 h-3" />
+                      {t('roadmaps.progressHalf')}
+                    </span>
+                  ) : roadmap.status !== 'completed' && roadmap.progress >= 25 ? (
+                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-yellow-400/10 text-yellow-400 font-medium">
+                      <Zap className="w-3 h-3" />
+                      {t('roadmaps.progressQuarter')}
+                    </span>
+                  ) : roadmap.status !== 'completed' && roadmap.progress > 0 ? (
+                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-gray-400/10 text-gray-400 font-medium">
+                      <PlayCircle className="w-3 h-3" />
+                      {t('roadmaps.progressStarted')}
+                    </span>
+                  ) : null}
+                </span>
                 <span className="text-gray-300">{roadmap.progress}%</span>
               </div>
               <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
