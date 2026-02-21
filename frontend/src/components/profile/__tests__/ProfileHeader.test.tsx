@@ -140,4 +140,19 @@ describe('ProfileHeader', () => {
     const followingLink = screen.getByText('5').closest('a');
     expect(followingLink).toHaveAttribute('href', '/profile/testuser/following');
   });
+
+  it('アカウント作成日が表示される', () => {
+    renderWithRouter(<ProfileHeader {...defaultProps} />);
+    expect(screen.getByText(/登録日/)).toBeInTheDocument();
+    expect(screen.getByText(/Jan 2026/)).toBeInTheDocument();
+  });
+
+  it('アカウント作成日にCalendarアイコンが表示される', () => {
+    const { container } = renderWithRouter(<ProfileHeader {...defaultProps} />);
+    const joinedSection = screen.getByText(/登録日/).parentElement;
+    expect(joinedSection).toBeInTheDocument();
+    // Calendarアイコン（svg）の存在確認
+    const svgs = container.querySelectorAll('svg');
+    expect(svgs.length).toBeGreaterThan(0);
+  });
 });
