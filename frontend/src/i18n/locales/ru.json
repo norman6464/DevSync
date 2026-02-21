@@ -986,7 +986,8 @@
     "bestAnswerSet": "Лучший ответ установлен",
     "bestAnswerFailed": "Не удалось установить лучший ответ",
     "voteFailed": "Не удалось проголосовать",
-    "popularBadge": "Популярное"
+    "popularBadge": "Популярное",
+    "newQuestion": "Новый"
   },
   "roadmaps": {
     "title": "Дорожные карты обучения",
