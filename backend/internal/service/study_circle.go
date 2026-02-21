@@ -298,6 +298,11 @@ func (s *StudyCircleService) GetProgress(circleID, userID uint) ([]model.StudyCi
 
 // CreateCheckin は日次チェックインを作成する。1日1回制限。
 func (s *StudyCircleService) CreateCheckin(circleID, userID uint, content string) (*model.StudyCircleCheckin, error) {
+	if err := domain.ValidateStringLength(content, 1, 5000, "チェックイン内容"); err != nil {
+		return nil, err
+	}
+	content = strings.TrimSpace(content)
+
 	isMember, err := s.repo.IsMember(circleID, userID)
 	if err != nil {
 		return nil, err
