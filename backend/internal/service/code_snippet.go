@@ -25,12 +25,14 @@ func NewCodeSnippetService(
 // Create は新しいコードスニペットを作成する。
 // 投稿の存在を確認してからスニペットを作成する。
 func (s *CodeSnippetService) Create(snippet *model.CodeSnippet) (*model.CodeSnippet, error) {
-	if strings.TrimSpace(snippet.Language) == "" {
-		return nil, domain.NewError(domain.ErrCodeBadRequest, "言語は空白のみでは入力できません", nil)
+	if err := domain.ValidateStringLength(snippet.Language, 1, 100, "言語"); err != nil {
+		return nil, err
 	}
-	if strings.TrimSpace(snippet.Code) == "" {
-		return nil, domain.NewError(domain.ErrCodeBadRequest, "コードは空白のみでは入力できません", nil)
+	if err := domain.ValidateStringLength(snippet.Code, 1, 50000, "コード"); err != nil {
+		return nil, err
 	}
+	snippet.Language = strings.TrimSpace(snippet.Language)
+	snippet.Code = strings.TrimSpace(snippet.Code)
 
 	// 投稿の存在確認
 	if _, err := s.postRepo.FindByID(snippet.PostID); err != nil {
@@ -82,13 +84,19 @@ func (s *CodeSnippetService) Update(id, userID uint, language, fileName, code st
 	}
 
 	if strings.TrimSpace(language) != "" {
-		snippet.Language = language
+		if len(strings.TrimSpace(language)) > 100 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "言語は100文字以下である必要があります", nil)
+		}
+		snippet.Language = strings.TrimSpace(language)
 	}
 	if strings.TrimSpace(fileName) != "" {
-		snippet.FileName = fileName
+		snippet.FileName = strings.TrimSpace(fileName)
 	}
 	if strings.TrimSpace(code) != "" {
-		snippet.Code = code
+		if len(strings.TrimSpace(code)) > 50000 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "コードは50000文字以下である必要があります", nil)
+		}
+		snippet.Code = strings.TrimSpace(code)
 	}
 
 	if err := s.repo.Update(snippet); err != nil {
@@ -108,9 +116,10 @@ func (s *CodeSnippetService) Delete(id, userID uint) error {
 // CreateComment はスニペットへのインラインコメントを作成する。
 // スニペットの存在を確認してからコメントを作成する。
 func (s *CodeSnippetService) CreateComment(comment *model.SnippetComment) error {
-	if strings.TrimSpace(comment.Content) == "" {
-		return domain.NewError(domain.ErrCodeBadRequest, "コメント内容は必須です", nil)
+	if err := domain.ValidateStringLength(comment.Content, 1, 2000, "コメント内容"); err != nil {
+		return err
 	}
+	comment.Content = strings.TrimSpace(comment.Content)
 	if _, err := s.repo.FindByID(comment.SnippetID); err != nil {
 		return err
 	}

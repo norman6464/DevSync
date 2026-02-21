@@ -1,6 +1,7 @@
 package service
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -171,7 +172,7 @@ func TestSnippetCommentCreate_EmptyContent(t *testing.T) {
 
 	err := svc.CreateComment(comment)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "コメント内容は必須です")
+	assert.Contains(t, err.Error(), "コメント内容を入力してください")
 }
 
 func TestSnippetCommentCreate_WhitespaceContent(t *testing.T) {
@@ -186,7 +187,7 @@ func TestSnippetCommentCreate_WhitespaceContent(t *testing.T) {
 
 	err := svc.CreateComment(comment)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "コメント内容は必須です")
+	assert.Contains(t, err.Error(), "コメント内容を入力してください")
 }
 
 func TestSnippetCommentCreate_SnippetNotFound(t *testing.T) {
@@ -428,7 +429,7 @@ func TestSnippetCreate_WhitespaceCode(t *testing.T) {
 	snippet := &model.CodeSnippet{PostID: 5, UserID: 1, Language: "go", Code: "   "}
 	_, err := svc.Create(snippet)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "コードは空白のみでは入力できません")
+	assert.Contains(t, err.Error(), "コードを入力してください")
 }
 
 func TestSnippetCreate_WhitespaceLanguage(t *testing.T) {
@@ -440,5 +441,60 @@ func TestSnippetCreate_WhitespaceLanguage(t *testing.T) {
 	snippet := &model.CodeSnippet{PostID: 5, UserID: 1, Language: "   ", Code: "package main"}
 	_, err := svc.Create(snippet)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "言語は空白のみでは入力できません")
+	assert.Contains(t, err.Error(), "言語を入力してください")
+}
+
+// ============================================================
+// 文字数バリデーションテスト
+// ============================================================
+
+func TestSnippetCreate_LanguageTooLong(t *testing.T) {
+	svc, _, _ := newTestCodeSnippetService()
+
+	snippet := &model.CodeSnippet{PostID: 5, UserID: 1, Language: strings.Repeat("a", 101), Code: "package main"}
+	_, err := svc.Create(snippet)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "言語は100文字以下")
+}
+
+func TestSnippetCreate_CodeTooLong(t *testing.T) {
+	svc, _, _ := newTestCodeSnippetService()
+
+	snippet := &model.CodeSnippet{PostID: 5, UserID: 1, Language: "go", Code: strings.Repeat("a", 50001)}
+	_, err := svc.Create(snippet)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "コードは50000文字以下")
+}
+
+func TestSnippetUpdate_LanguageTooLong(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+	existing := &model.CodeSnippet{PostID: 5, UserID: 1, Language: "go", Code: "package main"}
+	existing.ID = 10
+	snippetRepo.On("FindByID", uint(10)).Return(existing, nil)
+
+	result, err := svc.Update(10, 1, strings.Repeat("a", 101), "", "")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "言語は100文字以下")
+}
+
+func TestSnippetUpdate_CodeTooLong(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+	existing := &model.CodeSnippet{PostID: 5, UserID: 1, Language: "go", Code: "package main"}
+	existing.ID = 10
+	snippetRepo.On("FindByID", uint(10)).Return(existing, nil)
+
+	result, err := svc.Update(10, 1, "", "", strings.Repeat("a", 50001))
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "コードは50000文字以下")
+}
+
+func TestSnippetCreateComment_ContentTooLong(t *testing.T) {
+	svc, _, _ := newTestCodeSnippetService()
+
+	comment := &model.SnippetComment{SnippetID: 10, UserID: 1, Content: strings.Repeat("あ", 2001)}
+	err := svc.CreateComment(comment)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "コメント内容は2000文字以下")
 }
