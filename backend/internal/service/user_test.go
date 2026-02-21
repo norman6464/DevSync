@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -286,4 +287,53 @@ func TestGetProfileCompleteness_OnlyFrameworks(t *testing.T) {
 	assert.Contains(t, result.MissingFields, "avatar")
 	assert.Contains(t, result.MissingFields, "bio")
 	assert.Contains(t, result.MissingFields, "github")
+}
+
+// ============================================================
+// Update — バリデーションテスト
+// ============================================================
+
+func TestUserUpdate_NameTooLong(t *testing.T) {
+	svc, _ := newTestUserService()
+
+	user := &model.User{Name: strings.Repeat("あ", 101)}
+	err := svc.Update(user)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "名前は100文字以下である必要があります")
+}
+
+func TestUserUpdate_BioTooLong(t *testing.T) {
+	svc, _ := newTestUserService()
+
+	user := &model.User{Name: "Alice", Bio: strings.Repeat("a", 501)}
+	err := svc.Update(user)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "自己紹介は500文字以下である必要があります")
+}
+
+func TestUserUpdate_SkillsLanguagesTooLong(t *testing.T) {
+	svc, _ := newTestUserService()
+
+	user := &model.User{Name: "Alice", SkillsLanguages: strings.Repeat("a", 501)}
+	err := svc.Update(user)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "プログラミング言語スキルは500文字以下である必要があります")
+}
+
+func TestUserUpdate_SkillsFrameworksTooLong(t *testing.T) {
+	svc, _ := newTestUserService()
+
+	user := &model.User{Name: "Alice", SkillsFrameworks: strings.Repeat("a", 501)}
+	err := svc.Update(user)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "フレームワークスキルは500文字以下である必要があります")
+}
+
+func TestUserUpdate_AvatarURLTooLong(t *testing.T) {
+	svc, _ := newTestUserService()
+
+	user := &model.User{Name: "Alice", AvatarURL: strings.Repeat("a", 2001)}
+	err := svc.Update(user)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "アバターURLは2000文字以下である必要があります")
 }
