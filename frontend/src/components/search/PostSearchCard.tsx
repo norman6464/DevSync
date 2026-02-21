@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Flame } from 'lucide-react';
 import type { Post } from '../../types/post';
 import Avatar from '../common/Avatar';
 import { formatDate } from '../../utils/timeFormat';
@@ -24,7 +25,15 @@ export default function PostSearchCard({ post }: PostSearchCardProps) {
             <span>•</span>
             <span>{formatDate(post.created_at)}</span>
           </div>
-          <h3 className="font-semibold text-white mb-1">{post.title}</h3>
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="font-semibold text-white">{post.title}</h3>
+            {(post.like_count || 0) >= 10 && (
+              <span className="inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded bg-orange-400/10 text-orange-400">
+                <Flame className="w-3 h-3" />
+                {t('search.popular')}
+              </span>
+            )}
+          </div>
           <p className="text-sm text-gray-400 line-clamp-2">{post.content}</p>
           {post.tags && post.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-2">

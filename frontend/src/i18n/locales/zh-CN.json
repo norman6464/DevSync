@@ -364,6 +364,7 @@
     "viewProfile": "查看资料",
     "likesCount": "{{count}} 个赞",
     "commentsCount": "{{count}} 条评论",
+    "popular": "热门",
     "filters": "筛选",
     "sortBy": "排序",
     "sortLatest": "最新",
