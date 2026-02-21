@@ -39,4 +39,26 @@ describe('ProfileCompletenessCard', () => {
     const { container } = renderWithRouter(<ProfileCompletenessCard percentage={100} missingFields={[]} />);
     expect(container.firstChild).toBeNull();
   });
+
+  it('75%以上でTrophyマイルストーンバッジが表示される', () => {
+    renderWithRouter(<ProfileCompletenessCard percentage={75} missingFields={[]} />);
+    expect(screen.getByText('もうすぐ完成！')).toBeInTheDocument();
+  });
+
+  it('50-74%でTrendingUpマイルストーンバッジが表示される', () => {
+    renderWithRouter(<ProfileCompletenessCard percentage={50} missingFields={[]} />);
+    expect(screen.getByText('半分完成！')).toBeInTheDocument();
+  });
+
+  it('25-49%でZapマイルストーンバッジが表示される', () => {
+    renderWithRouter(<ProfileCompletenessCard percentage={25} missingFields={[]} />);
+    expect(screen.getByText('順調です！')).toBeInTheDocument();
+  });
+
+  it('25%未満ではマイルストーンバッジが表示されない', () => {
+    renderWithRouter(<ProfileCompletenessCard percentage={20} missingFields={[]} />);
+    expect(screen.queryByText('もうすぐ完成！')).not.toBeInTheDocument();
+    expect(screen.queryByText('半分完成！')).not.toBeInTheDocument();
+    expect(screen.queryByText('順調です！')).not.toBeInTheDocument();
+  });
 });
