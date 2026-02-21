@@ -1,4 +1,4 @@
-import { Clock, Calendar, FileText } from 'lucide-react';
+import { Clock, Calendar, FileText, Flame } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { StreakInfo } from '../../types/learningLog';
 import { panelClass } from '../../constants/styles';
@@ -33,7 +33,15 @@ export default function WeeklySummaryCard({
         <Calendar className="w-8 h-8 text-orange-400" />
         <div>
           <p className="text-xs text-gray-400">{t('learningLogs.currentStreak')}</p>
-          <p className="text-lg font-bold text-white">{streakInfo?.current_streak ?? 0}{t('learningLogs.days')}</p>
+          <p className="text-lg font-bold text-white">
+            {streakInfo?.current_streak ?? 0}{t('learningLogs.days')}
+            {(streakInfo?.current_streak ?? 0) >= 7 && (
+              <span className="inline-flex items-center gap-0.5 ml-2 px-1.5 py-0.5 text-xs rounded bg-orange-400/10 text-orange-400 font-medium align-middle">
+                <Flame className="w-3 h-3" />
+                {t('learningLogs.streakAchieved')}
+              </span>
+            )}
+          </p>
         </div>
       </div>
       <div className={`${panelClass} flex items-center gap-3 col-span-2 md:col-span-1`}>

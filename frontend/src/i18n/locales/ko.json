@@ -697,6 +697,7 @@
     "hoursMinutes": "{{hours}}시간 {{minutes}}분",
     "currentStreak": "연속 학습일",
     "days": "일",
+    "streakAchieved": "연속 달성",
     "logCount": "로그 수",
     "favorites": "즐겨찾기",
     "toggleFavorite": "즐겨찾기 전환"
