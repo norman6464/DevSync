@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { ExternalLink, Play } from 'lucide-react';
+import { ExternalLink, Play, Sparkles } from 'lucide-react';
 import type { YouTubeVideo } from '../../types/youtube';
 import { cardClass } from '../../constants/styles';
 import { sanitizeUrl } from '../../utils/url';
@@ -13,6 +13,7 @@ export default function YouTubeVideoCard({ video }: YouTubeVideoCardProps) {
   const { t } = useTranslation();
   const videoURL = `https://www.youtube.com/watch?v=${encodeURIComponent(video.video_id)}`;
   const channelURL = `https://www.youtube.com/channel/${encodeURIComponent(video.channel_id)}`;
+  const isNew = Date.now() - new Date(video.published_at).getTime() < 7 * 24 * 60 * 60 * 1000;
 
   return (
     <div className={cardClass}>
@@ -27,6 +28,12 @@ export default function YouTubeVideoCard({ video }: YouTubeVideoCardProps) {
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
           <Play className="w-12 h-12 text-white" fill="white" />
         </div>
+        {isNew && (
+          <span className="absolute top-2 left-2 inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-red-500/90 text-white text-xs rounded font-medium">
+            <Sparkles className="w-3 h-3" />
+            {t('youtube.newVideo')}
+          </span>
+        )}
       </a>
 
       <div className="p-4">
