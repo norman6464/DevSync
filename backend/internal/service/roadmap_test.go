@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -590,7 +591,7 @@ func TestRoadmapCreate_WhitespaceTitle(t *testing.T) {
 	roadmap := &model.Roadmap{Title: "   \t\n  ", UserID: 1}
 	err := svc.Create(roadmap)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "タイトルは必須です")
+	assert.Contains(t, err.Error(), "タイトルを入力してください")
 }
 
 func TestRoadmapCreate_EmptyTitle(t *testing.T) {
@@ -1247,4 +1248,93 @@ func TestRoadmapUpdateStep_TrimsPaddedTitle(t *testing.T) {
 	result, err := svc.UpdateStep(1, 10, 1, &model.RoadmapStep{Title: "  New Title  "})
 	assert.NoError(t, err)
 	assert.Equal(t, "New Title", result.Title)
+}
+
+// ============================================================
+// 文字列長バリデーションテスト
+// ============================================================
+
+func TestRoadmapCreate_TitleTooLong(t *testing.T) {
+	svc, _ := newTestRoadmapService()
+
+	roadmap := &model.Roadmap{Title: strings.Repeat("あ", 201), UserID: 1}
+	err := svc.Create(roadmap)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "200文字以下")
+}
+
+func TestRoadmapUpdate_TitleTooLong(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	existing := &model.Roadmap{Title: "Old", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	updates := &model.Roadmap{Title: strings.Repeat("あ", 201)}
+	result, err := svc.Update(1, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "200文字以下")
+}
+
+func TestRoadmapUpdate_DescriptionTooLong(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	existing := &model.Roadmap{Title: "Title", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	updates := &model.Roadmap{Description: strings.Repeat("あ", 1001)}
+	result, err := svc.Update(1, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "1000文字以下")
+}
+
+func TestRoadmapUpdateStep_TitleTooLong(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 1
+	step := &model.RoadmapStep{RoadmapID: 1, Title: "Old"}
+	step.ID = 10
+	repo.On("FindByID", uint(1)).Return(roadmap, nil)
+	repo.On("FindStepByID", uint(10)).Return(step, nil)
+
+	result, err := svc.UpdateStep(1, 10, 1, &model.RoadmapStep{Title: strings.Repeat("あ", 201)})
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "200文字以下")
+}
+
+func TestRoadmapUpdateStep_DescriptionTooLong(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 1
+	step := &model.RoadmapStep{RoadmapID: 1, Title: "Step"}
+	step.ID = 10
+	repo.On("FindByID", uint(1)).Return(roadmap, nil)
+	repo.On("FindStepByID", uint(10)).Return(step, nil)
+
+	result, err := svc.UpdateStep(1, 10, 1, &model.RoadmapStep{Description: strings.Repeat("あ", 1001)})
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "1000文字以下")
+}
+
+func TestRoadmapUpdateStep_ResourceURLTooLong(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 1
+	step := &model.RoadmapStep{RoadmapID: 1, Title: "Step"}
+	step.ID = 10
+	repo.On("FindByID", uint(1)).Return(roadmap, nil)
+	repo.On("FindStepByID", uint(10)).Return(step, nil)
+
+	result, err := svc.UpdateStep(1, 10, 1, &model.RoadmapStep{ResourceURL: strings.Repeat("a", 501)})
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "500文字以下")
 }
