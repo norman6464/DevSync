@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -417,6 +418,49 @@ func TestPostSeriesRemovePost_NotFound(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestPostSeriesCreate_TitleTooLong(t *testing.T) {
+	svc, _ := newTestPostSeriesService()
+
+	series := &model.PostSeries{
+		Title:  strings.Repeat("あ", 201),
+		UserID: 1,
+	}
+
+	err := svc.Create(series)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "200文字以下")
+}
+
+func TestPostSeriesUpdate_TitleTooLong(t *testing.T) {
+	svc, repo := newTestPostSeriesService()
+
+	existing := &model.PostSeries{Title: "Old Title", UserID: 1}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	updates := &model.PostSeries{Title: strings.Repeat("あ", 201)}
+	result, err := svc.Update(1, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "200文字以下")
+}
+
+func TestPostSeriesUpdate_DescriptionTooLong(t *testing.T) {
+	svc, repo := newTestPostSeriesService()
+
+	existing := &model.PostSeries{Title: "Title", Description: "Old Desc", UserID: 1}
+	existing.ID = 1
+
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	updates := &model.PostSeries{Description: strings.Repeat("あ", 1001)}
+	result, err := svc.Update(1, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "1000文字以下")
+}
+
 func TestPostSeriesCreate_WhitespaceTitle(t *testing.T) {
 	svc, _ := newTestPostSeriesService()
 
@@ -427,7 +471,7 @@ func TestPostSeriesCreate_WhitespaceTitle(t *testing.T) {
 
 	err := svc.Create(series)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "タイトルは必須です")
+	assert.Contains(t, err.Error(), "タイトルを入力してください")
 }
 
 func TestPostSeriesUpdate_WhitespaceTitle(t *testing.T) {

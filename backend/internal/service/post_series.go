@@ -21,9 +21,10 @@ func NewPostSeriesService(repo repository.PostSeriesRepositoryInterface) *PostSe
 
 // Create は新しい投稿シリーズを作成する。
 func (s *PostSeriesService) Create(series *model.PostSeries) error {
-	if strings.TrimSpace(series.Title) == "" {
-		return domain.NewError(domain.ErrCodeValidation, "タイトルは必須です", nil)
+	if err := domain.ValidateStringLength(series.Title, 1, 200, "タイトル"); err != nil {
+		return err
 	}
+	series.Title = strings.TrimSpace(series.Title)
 	return s.repo.Create(series)
 }
 
@@ -66,13 +67,19 @@ func (s *PostSeriesService) Update(id, userID uint, updates *model.PostSeries) (
 		if strings.TrimSpace(updates.Title) == "" {
 			return nil, domain.NewError(domain.ErrCodeBadRequest, "タイトルは空白のみでは入力できません", nil)
 		}
-		series.Title = updates.Title
+		if len(strings.TrimSpace(updates.Title)) > 200 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "タイトルは200文字以下である必要があります", nil)
+		}
+		series.Title = strings.TrimSpace(updates.Title)
 	}
 	if updates.Description != "" {
 		if strings.TrimSpace(updates.Description) == "" {
 			return nil, domain.NewError(domain.ErrCodeBadRequest, "説明は空白のみでは入力できません", nil)
 		}
-		series.Description = updates.Description
+		if len(strings.TrimSpace(updates.Description)) > 1000 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
+		}
+		series.Description = strings.TrimSpace(updates.Description)
 	}
 
 	if err := s.repo.Update(series); err != nil {
