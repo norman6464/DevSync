@@ -28,9 +28,10 @@ func (s *AnswerService) GetByQuestionID(questionID uint) ([]model.Answer, error)
 
 // Create は質問の存在を確認した後、新しい回答を作成する。
 func (s *AnswerService) Create(answer *model.Answer) error {
-	if strings.TrimSpace(answer.Body) == "" {
-		return domain.NewError(domain.ErrCodeBadRequest, "回答内容は必須です", nil)
+	if err := domain.ValidateStringLength(answer.Body, 1, 10000, "回答内容"); err != nil {
+		return err
 	}
+	answer.Body = strings.TrimSpace(answer.Body)
 	if _, err := s.questionRepo.FindByID(answer.QuestionID); err != nil {
 		return ErrNotFound
 	}
@@ -51,8 +52,8 @@ func (s *AnswerService) findAndCheckOwnership(answerID, userID uint) (*model.Ans
 
 // Update は所有権を検証した後、回答を更新する。
 func (s *AnswerService) Update(answerID, userID uint, body string) (*model.Answer, error) {
-	if strings.TrimSpace(body) == "" {
-		return nil, domain.NewError(domain.ErrCodeBadRequest, "回答内容は必須です", nil)
+	if err := domain.ValidateStringLength(body, 1, 10000, "回答内容"); err != nil {
+		return nil, err
 	}
 	answer, err := s.findAndCheckOwnership(answerID, userID)
 	if err != nil {
