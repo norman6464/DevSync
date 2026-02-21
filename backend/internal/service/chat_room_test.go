@@ -589,7 +589,42 @@ func TestChatRoomCreate_WhitespaceName(t *testing.T) {
 	room := &model.ChatRoom{Name: "   ", OwnerID: 1}
 	_, err := svc.Create(room, nil)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "空白のみ")
+	assert.Contains(t, err.Error(), "チャットルーム名を入力してください")
+}
+
+func TestChatRoomCreate_NameTooLong(t *testing.T) {
+	svc, _, _ := newTestChatRoomService()
+
+	room := &model.ChatRoom{Name: strings.Repeat("あ", 101), OwnerID: 1}
+	_, err := svc.Create(room, nil)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "チャットルーム名は100文字以下")
+}
+
+func TestChatRoomUpdate_NameTooLong(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	room := &model.ChatRoom{Name: "Room", OwnerID: 1}
+	room.ID = 10
+	roomRepo.On("FindByID", uint(10)).Return(room, nil)
+
+	result, err := svc.Update(10, 1, strings.Repeat("あ", 101), "")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "チャットルーム名は100文字以下")
+}
+
+func TestChatRoomUpdate_DescriptionTooLong(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	room := &model.ChatRoom{Name: "Room", OwnerID: 1}
+	room.ID = 10
+	roomRepo.On("FindByID", uint(10)).Return(room, nil)
+
+	result, err := svc.Update(10, 1, "", strings.Repeat("あ", 501))
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "説明は500文字以下")
 }
 
 func TestChatRoomUpdate_WhitespaceName(t *testing.T) {
