@@ -365,6 +365,7 @@
     "likesCount": "{{count}} me gusta",
     "commentsCount": "{{count}} comentarios",
     "popular": "Popular",
+    "newUser": "Nuevo",
     "filters": "Filtros",
     "sortBy": "Ordenar por",
     "sortLatest": "Más reciente",

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { UserPlus } from 'lucide-react';
 import type { User } from '../../types/user';
 import Avatar from '../common/Avatar';
 import FollowButton from '../profile/FollowButton';
@@ -13,6 +14,7 @@ interface UserSearchCardProps {
 export default function UserSearchCard({ user, currentUserId }: UserSearchCardProps) {
   const { t } = useTranslation();
   const skills = parseJsonArray(user.skills_languages);
+  const isNew = Date.now() - new Date(user.created_at).getTime() < 7 * 24 * 60 * 60 * 1000;
 
   return (
     <div className="bg-gray-900 border border-gray-800 rounded-md p-5 hover:border-gray-700 transition-colors">
@@ -21,9 +23,17 @@ export default function UserSearchCard({ user, currentUserId }: UserSearchCardPr
           <Avatar name={user.name} avatarUrl={user.avatar_url} />
         </Link>
         <div className="flex-1 min-w-0">
-          <Link to={`/profile/${user.username}`} className="font-semibold text-sm hover:text-blue-400 transition-colors">
-            {user.name}
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link to={`/profile/${user.username}`} className="font-semibold text-sm hover:text-blue-400 transition-colors">
+              {user.name}
+            </Link>
+            {isNew && (
+              <span className="inline-flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded bg-green-400/10 text-green-400">
+                <UserPlus className="w-3 h-3" />
+                {t('search.newUser')}
+              </span>
+            )}
+          </div>
           {user.bio && <p className="text-xs text-gray-400 mt-1 line-clamp-2">{user.bio}</p>}
           {skills.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
