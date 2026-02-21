@@ -1315,6 +1315,7 @@
     "confirmDelete": "Diesen Kreis löschen?",
     "memberAdded": "Mitglied hinzugefügt",
     "memberRemoved": "Mitglied entfernt",
+    "full": "Voll",
     "noCircles": "Noch keine Kreise beigetreten",
     "tabs": {
       "roadmap": "Roadmap",

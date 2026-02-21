@@ -1315,6 +1315,7 @@
     "confirmDelete": "Excluir este círculo?",
     "memberAdded": "Membro adicionado",
     "memberRemoved": "Membro removido",
+    "full": "Lotado",
     "noCircles": "Nenhum círculo ingressado",
     "tabs": {
       "roadmap": "Roteiro",

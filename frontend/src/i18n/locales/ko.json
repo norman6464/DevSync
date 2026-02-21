@@ -1315,6 +1315,7 @@
     "confirmDelete": "이 서클을 삭제하시겠습니까?",
     "memberAdded": "멤버를 추가했습니다",
     "memberRemoved": "멤버를 제외했습니다",
+    "full": "정원 마감",
     "noCircles": "참여 중인 서클이 없습니다",
     "tabs": {
       "roadmap": "로드맵",

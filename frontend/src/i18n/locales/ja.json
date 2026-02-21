@@ -1230,6 +1230,7 @@
     "confirmDelete": "このサークルを削除しますか？",
     "memberAdded": "メンバーを追加しました",
     "memberRemoved": "メンバーを除外しました",
+    "full": "満員",
     "noCircles": "参加中のサークルはありません",
     "tabs": {
       "roadmap": "ロードマップ",

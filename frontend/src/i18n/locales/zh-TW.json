@@ -1315,6 +1315,7 @@
     "confirmDelete": "確定要刪除這個學習圈嗎？",
     "memberAdded": "成員已新增",
     "memberRemoved": "成員已移除",
+    "full": "已滿員",
     "noCircles": "尚無加入的學習圈",
     "tabs": {
       "roadmap": "路線圖",
