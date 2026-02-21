@@ -1128,6 +1128,8 @@
     "noAdvice": "No hay consejos por ahora. ¡Sigue aprendiendo!",
     "viewAll": "Ver Todo",
     "markRead": "Marcar como leído",
+    "priorityUrgent": "Urgente",
+    "priorityHigh": "Alta",
     "askAI": "Consultar IA",
     "chatTitle": "Chat con el Asesor IA",
     "chatPlaceholder": "Pregunta sobre tu aprendizaje...",

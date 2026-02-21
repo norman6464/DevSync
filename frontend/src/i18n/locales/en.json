@@ -1128,6 +1128,8 @@
     "noAdvice": "No advice right now. Keep learning!",
     "viewAll": "View All",
     "markRead": "Mark as Read",
+    "priorityUrgent": "Urgent",
+    "priorityHigh": "High",
     "askAI": "Ask AI",
     "chatTitle": "Chat with AI Advisor",
     "chatPlaceholder": "Ask about your learning...",

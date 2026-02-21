@@ -1128,6 +1128,8 @@
     "noAdvice": "暂无建议。继续学习吧！",
     "viewAll": "查看全部",
     "markRead": "标为已读",
+    "priorityUrgent": "紧急",
+    "priorityHigh": "高",
     "askAI": "咨询AI",
     "chatTitle": "与AI顾问对话",
     "chatPlaceholder": "请输入您的学习问题...",

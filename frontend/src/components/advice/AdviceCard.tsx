@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Check } from 'lucide-react';
+import { Check, AlertTriangle, ArrowUp } from 'lucide-react';
 import AdviceIcon from './AdviceIcon';
 import type { AIAdvice } from '../../api/advice';
 import { parseJsonObject } from '../../utils/json';
@@ -34,9 +34,23 @@ export default function AdviceCard({ advice, onMarkRead }: AdviceCardProps) {
       <div className="flex items-start gap-3">
         <AdviceIcon type={advice.type} size={24} className="mt-0.5 flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <h4 className="text-white font-medium text-sm">
-            {t(advice.title_key, params)}
-          </h4>
+          <div className="flex items-center gap-2">
+            <h4 className="text-white font-medium text-sm">
+              {t(advice.title_key, params)}
+            </h4>
+            {advice.priority === 1 && (
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-xs rounded bg-red-400/10 text-red-400 font-medium shrink-0">
+                <AlertTriangle className="w-3 h-3" />
+                {t('advice.priorityUrgent')}
+              </span>
+            )}
+            {advice.priority === 2 && (
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-xs rounded bg-orange-400/10 text-orange-400 font-medium shrink-0">
+                <ArrowUp className="w-3 h-3" />
+                {t('advice.priorityHigh')}
+              </span>
+            )}
+          </div>
           <p className="text-gray-400 text-xs mt-1">
             {t(advice.message_key, params)}
           </p>
