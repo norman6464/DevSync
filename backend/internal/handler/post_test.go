@@ -293,6 +293,16 @@ func TestPostCreateComment_ValidationError(t *testing.T) {
 	assertStatus(t, w, http.StatusBadRequest)
 }
 
+func TestPostCreateComment_EmptyContent(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts/:id/comments", h.CreateComment)
+
+	// 空文字列は min=1 でエラー
+	w := doRequest(r, http.MethodPost, "/posts/5/comments", map[string]string{"content": ""})
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
 func TestPostCreateReply_Success(t *testing.T) {
 	h, postRepo, _, _ := setupPostHandler()
 	r := newRouter(1)

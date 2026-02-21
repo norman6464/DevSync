@@ -86,6 +86,17 @@ func TestMessage_SendMessage_ValidationError(t *testing.T) {
 	assertStatus(t, w, http.StatusBadRequest)
 }
 
+func TestMessage_SendMessage_EmptyContent(t *testing.T) {
+	h, _ := setupMessageHandler()
+
+	r := newRouter(1)
+	r.POST("/messages/:userId", h.SendMessage)
+
+	// 空文字列は min=1 でエラー
+	w := doRequest(r, http.MethodPost, "/messages/5", map[string]string{"content": ""})
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
 func TestMessage_SendMessage_ServiceError(t *testing.T) {
 	h, svc := setupMessageHandler()
 	svc.On("SendMessage", mock.AnythingOfType("*model.Message")).Return(errors.New("send failed"))
