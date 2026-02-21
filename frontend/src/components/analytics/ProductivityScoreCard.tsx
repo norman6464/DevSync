@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { Trophy, ThumbsUp, MinusCircle, TrendingDown } from 'lucide-react';
 import type { ProductivityScore } from '../../types/analytics';
 import { panelClass } from '../../constants/styles';
 
@@ -51,6 +52,27 @@ export default function ProductivityScoreCard({ score, loading }: Props) {
           {score.overall_score.toFixed(0)}
         </div>
         <p className="text-xs text-gray-500 mt-1">{t('analytics.overallScore')}</p>
+        {score.overall_score >= 80 ? (
+          <span className="inline-flex items-center gap-1 mt-2 px-2 py-0.5 text-xs rounded bg-green-400/10 text-green-400 font-medium">
+            <Trophy className="w-3 h-3" />
+            {t('analytics.rankExcellent')}
+          </span>
+        ) : score.overall_score >= 60 ? (
+          <span className="inline-flex items-center gap-1 mt-2 px-2 py-0.5 text-xs rounded bg-blue-400/10 text-blue-400 font-medium">
+            <ThumbsUp className="w-3 h-3" />
+            {t('analytics.rankGood')}
+          </span>
+        ) : score.overall_score >= 40 ? (
+          <span className="inline-flex items-center gap-1 mt-2 px-2 py-0.5 text-xs rounded bg-yellow-400/10 text-yellow-400 font-medium">
+            <MinusCircle className="w-3 h-3" />
+            {t('analytics.rankFair')}
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 mt-2 px-2 py-0.5 text-xs rounded bg-red-400/10 text-red-400 font-medium">
+            <TrendingDown className="w-3 h-3" />
+            {t('analytics.rankNeedsWork')}
+          </span>
+        )}
       </div>
 
       {/* 各指標 */}
