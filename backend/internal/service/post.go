@@ -4,6 +4,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/norman6464/devsync/backend/internal/constants"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -19,15 +20,6 @@ func EstimateReadTime(content string) int {
 		return 1
 	}
 	return minutes
-}
-
-// allowedEmojis はリアクションに使用可能な絵文字一覧。
-var allowedEmojis = map[string]bool{
-	"👍": true,
-	"🎉": true,
-	"❤️": true,
-	"🔥": true,
-	"👀": true,
 }
 
 // PostService は投稿に関するビジネスロジックを提供する。
@@ -301,7 +293,7 @@ func (s *PostService) GetBookmarks(userID uint, page, limit int) ([]model.Post, 
 // AddReaction は投稿にリアクション（絵文字）を追加する。
 // 許可された絵文字のみ使用可能。自分の投稿への自己リアクションは禁止する。
 func (s *PostService) AddReaction(userID, postID uint, emoji string) error {
-	if !allowedEmojis[emoji] {
+	if !constants.IsAllowedReactionEmoji(emoji) {
 		return domain.NewError(domain.ErrCodeBadRequest, "許可されていない絵文字です: "+emoji, nil)
 	}
 	if err := s.findAndPreventSelfAction(userID, postID); err != nil {
@@ -313,7 +305,7 @@ func (s *PostService) AddReaction(userID, postID uint, emoji string) error {
 // RemoveReaction は投稿のリアクションを削除する。
 // 自分の投稿へのリアクション削除は禁止する（そもそもリアクションできないため）。
 func (s *PostService) RemoveReaction(userID, postID uint, emoji string) error {
-	if !allowedEmojis[emoji] {
+	if !constants.IsAllowedReactionEmoji(emoji) {
 		return domain.NewError(domain.ErrCodeBadRequest, "許可されていない絵文字です: "+emoji, nil)
 	}
 	if err := s.findAndPreventSelfAction(userID, postID); err != nil {
