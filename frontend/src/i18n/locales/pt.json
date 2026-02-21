@@ -229,6 +229,7 @@
   "profile": {
     "followers": "seguidores",
     "following": "seguindo",
+    "joined": "Ingressou",
     "follow": "Seguir",
     "unfollow": "Deixar de seguir",
     "editProfile": "Editar perfil",

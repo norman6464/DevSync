@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Calendar } from 'lucide-react';
 import type { User } from '../../types/user';
 import Avatar from '../common/Avatar';
 import FollowButton from './FollowButton';
+import { format } from 'date-fns';
 
 interface ProfileHeaderProps {
   user: User;
@@ -73,13 +74,17 @@ export default function ProfileHeader({
               </a>
             ))}
           </div>
-          <div className="flex gap-4 mt-3 text-sm">
+          <div className="flex flex-wrap gap-4 mt-3 text-sm">
             <Link to={`/profile/${user.username}/followers`} className="text-gray-400 hover:text-blue-400 transition-colors">
               <strong className="text-white">{followerCount}</strong> {t('profile.followers')}
             </Link>
             <Link to={`/profile/${user.username}/following`} className="text-gray-400 hover:text-blue-400 transition-colors">
               <strong className="text-white">{followingCount}</strong> {t('profile.following')}
             </Link>
+            <span className="flex items-center gap-1.5 text-gray-400">
+              <Calendar className="w-4 h-4" />
+              {t('profile.joined')} {format(new Date(user.created_at), 'MMM yyyy')}
+            </span>
           </div>
         </div>
       </div>
