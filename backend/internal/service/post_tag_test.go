@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -284,4 +285,36 @@ func TestPostTagSetAutoTags_EmptyContent(t *testing.T) {
 	err := svc.SetAutoTags(10, 1, "")
 	assert.NoError(t, err)
 	tagRepo.AssertNotCalled(t, "SetTags")
+}
+
+// ============================================================
+// SetTags — タグ文字数上限バリデーション
+// ============================================================
+
+func TestPostTagSetTags_TagTooLong(t *testing.T) {
+	svc, _, postRepo := newTestPostTagService()
+
+	post := &model.Post{UserID: 1}
+	post.ID = 10
+	postRepo.On("FindByID", uint(10)).Return(post, nil)
+
+	longTag := strings.Repeat("a", 51)
+	err := svc.SetTags(10, 1, []string{longTag})
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "タグは50文字以下である必要があります")
+}
+
+func TestPostTagSetTags_TagExactly50Chars(t *testing.T) {
+	svc, tagRepo, postRepo := newTestPostTagService()
+
+	post := &model.Post{UserID: 1}
+	post.ID = 10
+	postRepo.On("FindByID", uint(10)).Return(post, nil)
+
+	tag50 := strings.Repeat("a", 50)
+	tagRepo.On("SetTags", uint(10), []string{tag50}).Return(nil)
+
+	err := svc.SetTags(10, 1, []string{tag50})
+	assert.NoError(t, err)
+	tagRepo.AssertExpectations(t)
 }
