@@ -10,6 +10,7 @@ import LogCard from '../components/learning-logs/LogCard';
 import LogFiltersBar from '../components/learning-logs/LogFiltersBar';
 import LogFormModal from '../components/learning-logs/LogFormModal';
 import WeeklySummaryCard from '../components/learning-logs/WeeklySummaryCard';
+import LearningStreakCard from '../components/learningLogs/LearningStreakCard';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { inputClass, buttonSecondaryClass, emptyStateClass } from '../constants/styles';
 
@@ -104,6 +105,9 @@ export default function LearningLogsPage() {
         streakInfo={streakInfo}
         logCount={filteredLogs.length}
       />
+
+      {/* Learning Streak Card */}
+      <LearningStreakCard />
 
       {/* Search */}
       <div className="relative">
