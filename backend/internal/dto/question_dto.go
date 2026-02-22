@@ -4,15 +4,15 @@ import "github.com/norman6464/devsync/backend/internal/model"
 
 // CreateQuestionRequest は質問作成のリクエストボディ。
 type CreateQuestionRequest struct {
-	Title string `json:"title" binding:"required,max=500" validate:"required,max=500"`
-	Body  string `json:"body" binding:"required,max=50000" validate:"required,max=50000"`
+	Title string `json:"title" binding:"required,min=1,max=500" validate:"required,min=1,max=500"`
+	Body  string `json:"body" binding:"required,min=1,max=50000" validate:"required,min=1,max=50000"`
 	Tags  string `json:"tags" binding:"omitempty,max=5000"`
 }
 
 // UpdateQuestionRequest は質問更新のリクエストボディ。
 type UpdateQuestionRequest struct {
-	Title string `json:"title" binding:"max=500" validate:"max=500"`
-	Body  string `json:"body" binding:"omitempty,max=50000"`
+	Title string `json:"title" binding:"omitempty,min=1,max=500" validate:"omitempty,min=1,max=500"`
+	Body  string `json:"body" binding:"omitempty,min=1,max=50000"`
 	Tags  string `json:"tags" binding:"omitempty,max=5000"`
 }
 
