@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import QuickStatsWidget from '../components/dashboard/QuickStatsWidget';
+import QuickActionsWidget from '../components/dashboard/QuickActionsWidget';
 import { useAuthStore } from '../store/authStore';
 import { usePosts, useDashboard, useBadgeNotifier, useConfirm } from '../hooks';
 import { getUserBadges } from '../api/badges';
@@ -199,6 +200,9 @@ export default function DashboardPage() {
             <StudyCircleWidget />
           </div>
         </div>
+
+        {/* Quick Actions */}
+        <QuickActionsWidget />
 
         {/* Recommendations Section */}
         <div>
