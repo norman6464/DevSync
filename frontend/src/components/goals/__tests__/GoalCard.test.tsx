@@ -118,4 +118,39 @@ describe('GoalCard', () => {
     render(<GoalCard {...defaultProps} goal={goalWithDate} />);
     expect(screen.getByText(/目標日/)).toBeInTheDocument();
   });
+
+  it('0-24%の進捗で赤色のプログレスバーが表示される', () => {
+    const lowProgressGoal = { ...baseGoal, progress: 20 };
+    const { container } = render(<GoalCard {...defaultProps} goal={lowProgressGoal} />);
+    const progressBar = container.querySelector('.bg-red-500');
+    expect(progressBar).toBeInTheDocument();
+  });
+
+  it('25-49%の進捗でオレンジ色のプログレスバーが表示される', () => {
+    const mediumLowProgressGoal = { ...baseGoal, progress: 30 };
+    const { container } = render(<GoalCard {...defaultProps} goal={mediumLowProgressGoal} />);
+    const progressBar = container.querySelector('.bg-orange-500');
+    expect(progressBar).toBeInTheDocument();
+  });
+
+  it('50-74%の進捗で黄色のプログレスバーが表示される', () => {
+    const mediumProgressGoal = { ...baseGoal, progress: 60 };
+    const { container } = render(<GoalCard {...defaultProps} goal={mediumProgressGoal} />);
+    const progressBar = container.querySelector('.bg-yellow-500');
+    expect(progressBar).toBeInTheDocument();
+  });
+
+  it('75-99%の進捗で青色のプログレスバーが表示される', () => {
+    const highProgressGoal = { ...baseGoal, progress: 80 };
+    const { container } = render(<GoalCard {...defaultProps} goal={highProgressGoal} />);
+    const progressBar = container.querySelector('.bg-blue-500');
+    expect(progressBar).toBeInTheDocument();
+  });
+
+  it('100%の進捗で緑色のプログレスバーが表示される', () => {
+    const completedGoal = { ...baseGoal, status: 'completed' as const, progress: 100 };
+    const { container } = render(<GoalCard {...defaultProps} goal={completedGoal} />);
+    const progressBar = container.querySelector('.bg-green-500');
+    expect(progressBar).toBeInTheDocument();
+  });
 });
