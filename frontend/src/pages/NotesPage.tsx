@@ -1,16 +1,19 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BookOpen, Plus, ArrowDownWideNarrow, Tag, List, LayoutGrid } from 'lucide-react';
+import { BookOpen, Plus, ArrowDownWideNarrow, Tag, List, LayoutGrid, Sparkles } from 'lucide-react';
 import { useNoteForm } from '../hooks';
 import { PageLoader, SearchInput } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
 import NoteFormPanel from '../components/notes/NoteFormPanel';
 import NoteCard from '../components/notes/NoteCard';
-import { buttonPrimaryClass } from '../constants/styles';
+import NoteTemplatesModal from '../components/notes/NoteTemplatesModal';
+import { buttonPrimaryClass, buttonSecondaryClass } from '../constants/styles';
 import { NOTES_SORT_OPTIONS } from '../constants/notes';
+import type { NoteTemplate } from '../constants/noteTemplates';
 
 export default function NotesPage() {
   const { t } = useTranslation();
+  const [showTemplates, setShowTemplates] = useState(false);
   const {
     filteredNotes, loading, saving,
     showForm, setShowForm, editingNote, searchQuery, setSearchQuery, sortBy, setSortBy,
@@ -20,6 +23,14 @@ export default function NotesPage() {
   } = useNoteForm();
 
   const handleToggleForm = useCallback(() => setShowForm((prev) => !prev), [setShowForm]);
+
+  const handleTemplateSelect = useCallback((template: NoteTemplate) => {
+    setTitle(template.title);
+    setContent(template.content);
+    setTags(template.tags);
+    setShowTemplates(false);
+    setShowForm(true);
+  }, [setTitle, setContent, setTags, setShowForm]);
 
   if (loading) return <PageLoader />;
 
@@ -33,13 +44,22 @@ export default function NotesPage() {
             <span className="text-lg text-gray-500">({filteredNotes.length})</span>
           </div>
         </div>
-        <button
-          onClick={handleToggleForm}
-          className={`${buttonPrimaryClass} flex items-center gap-2`}
-        >
-          <Plus className="w-5 h-5" />
-          {t('notes.createNote')}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowTemplates(true)}
+            className={`${buttonSecondaryClass} flex items-center gap-2`}
+          >
+            <Sparkles className="w-5 h-5" />
+            テンプレートから作成
+          </button>
+          <button
+            onClick={handleToggleForm}
+            className={`${buttonPrimaryClass} flex items-center gap-2`}
+          >
+            <Plus className="w-5 h-5" />
+            {t('notes.createNote')}
+          </button>
+        </div>
       </div>
 
       {/* Search Bar */}
@@ -120,6 +140,13 @@ export default function NotesPage() {
           </div>
         </div>
       )}
+
+      {/* Templates Modal */}
+      <NoteTemplatesModal
+        isOpen={showTemplates}
+        onSelect={handleTemplateSelect}
+        onClose={() => setShowTemplates(false)}
+      />
 
       {/* Create/Edit Form */}
       {showForm && (
