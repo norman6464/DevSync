@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Target, Search, AlertTriangle } from 'lucide-react';
+import { Target, Search, AlertTriangle, Sparkles } from 'lucide-react';
 import { useGoalForm } from '../hooks';
 import { PageLoader } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
@@ -8,10 +9,13 @@ import GoalCard from '../components/goals/GoalCard';
 import GoalFilters from '../components/goals/GoalFilters';
 import GoalStatsPanel from '../components/goals/GoalStatsPanel';
 import GoalFormModal from '../components/goals/GoalFormModal';
+import GoalTemplatesModal from '../components/goals/GoalTemplatesModal';
 import { inputClass, buttonSecondaryClass } from '../constants/styles';
+import type { GoalTemplate } from '../constants/goalTemplates';
 
 export default function GoalsPage() {
   const { t } = useTranslation();
+  const [showTemplates, setShowTemplates] = useState(false);
   const {
     goals, loading, saving, activeGoals, completedGoals, pausedGoals,
     filteredGoals, filteredActiveGoals, filteredPausedGoals, filteredCompletedGoals,
@@ -33,18 +37,39 @@ export default function GoalsPage() {
 
   const isFiltered = filterStatus !== 'all' || filterCategory !== 'all' || searchQuery.trim() !== '';
 
+  const handleTemplateSelect = (template: GoalTemplate) => {
+    setTitle(template.title);
+    setDescription(template.description);
+    setCategory(template.category);
+    // 推定日数から目標日を計算
+    const targetDateValue = new Date();
+    targetDateValue.setDate(targetDateValue.getDate() + template.estimatedDays);
+    setTargetDate(targetDateValue.toISOString().split('T')[0]);
+    setShowTemplates(false);
+    setShowForm(true);
+  };
+
   if (loading) return <PageLoader />;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('goals.title')}</h1>
-        <button
-          onClick={() => setShowForm(true)}
-          className={`${buttonSecondaryClass} font-medium text-sm`}
-        >
-          {t('goals.addGoal')}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowTemplates(true)}
+            className={`${buttonSecondaryClass} font-medium text-sm flex items-center gap-1.5`}
+          >
+            <Sparkles className="w-4 h-4" />
+            テンプレートから作成
+          </button>
+          <button
+            onClick={() => setShowForm(true)}
+            className={`${buttonSecondaryClass} font-medium text-sm`}
+          >
+            {t('goals.addGoal')}
+          </button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -86,6 +111,13 @@ export default function GoalsPage() {
         setFilterCategory={setFilterCategory}
         sortBy={sortBy}
         setSortBy={setSortBy}
+      />
+
+      {/* Templates Modal */}
+      <GoalTemplatesModal
+        isOpen={showTemplates}
+        onSelect={handleTemplateSelect}
+        onClose={() => setShowTemplates(false)}
       />
 
       {/* Create/Edit Form Modal */}
