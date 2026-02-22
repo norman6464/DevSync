@@ -1,95 +1,176 @@
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 import Pagination from '../Pagination';
 
 describe('Pagination', () => {
-  const defaultProps = {
-    currentPage: 0,
-    totalItems: 100,
-    itemsPerPage: 10,
-    onPageChange: vi.fn(),
-  };
+  const mockOnPageChange = vi.fn();
 
-  it('現在のページ番号と総ページ数を表示する', () => {
-    render(<Pagination {...defaultProps} />);
-    expect(screen.getByText('1 / 10')).toBeInTheDocument();
-  });
-
-  it('前へボタンと次へボタンを表示する', () => {
-    render(<Pagination {...defaultProps} />);
-    expect(screen.getByRole('button', { name: '前へ' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '次へ' })).toBeInTheDocument();
-  });
-
-  it('最初のページでは前へボタンが無効', () => {
-    render(<Pagination {...defaultProps} currentPage={0} />);
-    expect(screen.getByRole('button', { name: '前へ' })).toBeDisabled();
-  });
-
-  it('最後のページでは次へボタンが無効', () => {
-    render(<Pagination {...defaultProps} currentPage={9} />);
-    expect(screen.getByRole('button', { name: '次へ' })).toBeDisabled();
-  });
-
-  it('次へボタンクリックで次のページに遷移', async () => {
-    const onPageChange = vi.fn();
-    render(<Pagination {...defaultProps} currentPage={0} onPageChange={onPageChange} />);
-
-    await userEvent.click(screen.getByRole('button', { name: '次へ' }));
-    expect(onPageChange).toHaveBeenCalledWith(1);
-  });
-
-  it('前へボタンクリックで前のページに遷移', async () => {
-    const onPageChange = vi.fn();
-    render(<Pagination {...defaultProps} currentPage={5} onPageChange={onPageChange} />);
-
-    await userEvent.click(screen.getByRole('button', { name: '前へ' }));
-    expect(onPageChange).toHaveBeenCalledWith(4);
-  });
-
-  it('totalItemsがitemsPerPage以下の場合は表示しない', () => {
-    const { container } = render(
-      <Pagination {...defaultProps} totalItems={10} itemsPerPage={10} />
+  it('ページネーションが表示される', () => {
+    render(
+      <Pagination currentPage={1} totalPages={5} onPageChange={mockOnPageChange} />
     );
-    expect(container.firstChild).toBeNull();
+
+    expect(screen.getByText('1')).toBeInTheDocument();
   });
 
-  it('totalItemsが0の場合は表示しない', () => {
-    const { container } = render(
-      <Pagination {...defaultProps} totalItems={0} />
+  it('ページ番号がクリック可能', () => {
+    render(
+      <Pagination currentPage={1} totalPages={5} onPageChange={mockOnPageChange} />
     );
-    expect(container.firstChild).toBeNull();
+
+    const page2 = screen.getByText('2');
+    fireEvent.click(page2);
+
+    expect(mockOnPageChange).toHaveBeenCalledWith(2);
   });
 
-  it('端数がある場合の総ページ数を正しく計算する', () => {
-    render(<Pagination {...defaultProps} totalItems={25} itemsPerPage={10} />);
-    expect(screen.getByText('1 / 3')).toBeInTheDocument();
+  it('前へボタンが表示される', () => {
+    const { container } = render(
+      <Pagination currentPage={2} totalPages={5} onPageChange={mockOnPageChange} />
+    );
+
+    const prevButton = container.querySelector('[aria-label="前のページ"]');
+    expect(prevButton).toBeInTheDocument();
   });
 
-  it('中間ページで両方のボタンが有効', () => {
-    render(<Pagination {...defaultProps} currentPage={5} />);
-    expect(screen.getByRole('button', { name: '前へ' })).not.toBeDisabled();
-    expect(screen.getByRole('button', { name: '次へ' })).not.toBeDisabled();
+  it('次へボタンが表示される', () => {
+    const { container } = render(
+      <Pagination currentPage={2} totalPages={5} onPageChange={mockOnPageChange} />
+    );
+
+    const nextButton = container.querySelector('[aria-label="次のページ"]');
+    expect(nextButton).toBeInTheDocument();
   });
 
-  it('ページ番号リンクをクリックで直接遷移', async () => {
-    const onPageChange = vi.fn();
-    render(<Pagination {...defaultProps} currentPage={0} onPageChange={onPageChange} />);
+  it('前へボタンをクリックすると前のページに移動', () => {
+    const { container } = render(
+      <Pagination currentPage={3} totalPages={5} onPageChange={mockOnPageChange} />
+    );
 
-    // ページ番号ボタン「2」をクリック（0-indexedで1）
-    await userEvent.click(screen.getByRole('button', { name: '2' }));
-    expect(onPageChange).toHaveBeenCalledWith(1);
+    const prevButton = container.querySelector('[aria-label="前のページ"]');
+    fireEvent.click(prevButton!);
+
+    expect(mockOnPageChange).toHaveBeenCalledWith(2);
   });
 
-  it('現在のページ番号がアクティブスタイルで表示される', () => {
-    render(<Pagination {...defaultProps} currentPage={2} />);
-    const activeButton = screen.getByRole('button', { name: '3' });
-    expect(activeButton).toHaveClass('bg-gray-600');
+  it('次へボタンをクリックすると次のページに移動', () => {
+    const { container } = render(
+      <Pagination currentPage={2} totalPages={5} onPageChange={mockOnPageChange} />
+    );
+
+    const nextButton = container.querySelector('[aria-label="次のページ"]');
+    fireEvent.click(nextButton!);
+
+    expect(mockOnPageChange).toHaveBeenCalledWith(3);
   });
 
-  it('ページ数が多い場合に省略記号を表示する', () => {
-    render(<Pagination {...defaultProps} currentPage={5} totalItems={200} itemsPerPage={10} />);
-    expect(screen.getAllByText('…').length).toBeGreaterThanOrEqual(1);
+  it('最初のページでは前へボタンが無効化される', () => {
+    const { container } = render(
+      <Pagination currentPage={1} totalPages={5} onPageChange={mockOnPageChange} />
+    );
+
+    const prevButton = container.querySelector('[aria-label="前のページ"]');
+    expect(prevButton).toHaveAttribute('disabled');
+  });
+
+  it('最後のページでは次へボタンが無効化される', () => {
+    const { container } = render(
+      <Pagination currentPage={5} totalPages={5} onPageChange={mockOnPageChange} />
+    );
+
+    const nextButton = container.querySelector('[aria-label="次のページ"]');
+    expect(nextButton).toHaveAttribute('disabled');
+  });
+
+  it('現在のページがハイライト表示される', () => {
+    render(
+      <Pagination currentPage={3} totalPages={5} onPageChange={mockOnPageChange} />
+    );
+
+    const currentPage = screen.getByText('3');
+    expect(currentPage).toHaveClass('bg-blue-500');
+  });
+
+  it('省略記号が表示される（多くのページがある場合）', () => {
+    render(
+      <Pagination currentPage={5} totalPages={10} onPageChange={mockOnPageChange} />
+    );
+
+    expect(screen.getByText('...')).toBeInTheDocument();
+  });
+
+  it('ページが1つだけの場合は何も表示されない', () => {
+    const { container } = render(
+      <Pagination currentPage={1} totalPages={1} onPageChange={mockOnPageChange} />
+    );
+
+    const pagination = container.querySelector('nav');
+    expect(pagination).not.toBeInTheDocument();
+  });
+
+  it('現在のページ情報が表示される', () => {
+    render(
+      <Pagination currentPage={3} totalPages={10} onPageChange={mockOnPageChange} showInfo />
+    );
+
+    expect(screen.getByText(/3 \/ 10/)).toBeInTheDocument();
+  });
+
+  it('無効化されたボタンはクリックできない', () => {
+    const { container } = render(
+      <Pagination currentPage={1} totalPages={5} onPageChange={mockOnPageChange} />
+    );
+
+    const prevButton = container.querySelector('[aria-label="前のページ"]');
+    fireEvent.click(prevButton!);
+
+    // 無効化されているので呼ばれない
+    expect(mockOnPageChange).not.toHaveBeenCalled();
+  });
+
+  it('アクティブでないページボタンにホバーエフェクトがある', () => {
+    render(
+      <Pagination currentPage={1} totalPages={5} onPageChange={mockOnPageChange} />
+    );
+
+    const page2 = screen.getByText('2');
+    expect(page2).toHaveClass('hover:bg-gray-700');
+  });
+
+  it('ページ番号が正しい順序で表示される', () => {
+    render(
+      <Pagination currentPage={1} totalPages={3} onPageChange={mockOnPageChange} />
+    );
+
+    expect(screen.getByText('1')).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getByText('3')).toBeInTheDocument();
+  });
+
+  it('前へ・次へボタンにアイコンが表示される', () => {
+    const { container } = render(
+      <Pagination currentPage={2} totalPages={5} onPageChange={mockOnPageChange} />
+    );
+
+    const icons = container.querySelectorAll('svg');
+    expect(icons.length).toBeGreaterThanOrEqual(2); // ChevronLeft と ChevronRight
+  });
+
+  it('複数回クリックしても正しく動作する', () => {
+    const { container, rerender } = render(
+      <Pagination currentPage={1} totalPages={5} onPageChange={mockOnPageChange} />
+    );
+
+    const page2 = screen.getByText('2');
+    fireEvent.click(page2);
+    expect(mockOnPageChange).toHaveBeenCalledWith(2);
+
+    rerender(
+      <Pagination currentPage={2} totalPages={5} onPageChange={mockOnPageChange} />
+    );
+
+    const nextButton = container.querySelector('[aria-label="次のページ"]');
+    fireEvent.click(nextButton!);
+    expect(mockOnPageChange).toHaveBeenCalledWith(3);
   });
 });
