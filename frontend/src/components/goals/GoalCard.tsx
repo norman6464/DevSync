@@ -39,6 +39,14 @@ const getDeadlineInfo = (goal: LearningGoal): { status: 'overdue' | 'approaching
   return { status: '', daysLeft: days };
 };
 
+const getProgressBarColor = (progress: number, status: GoalStatus) => {
+  if (status === 'completed') return 'bg-green-500';
+  if (progress >= 75) return 'bg-blue-500';
+  if (progress >= 50) return 'bg-yellow-500';
+  if (progress >= 25) return 'bg-orange-500';
+  return 'bg-red-500';
+};
+
 interface GoalCardProps {
   goal: LearningGoal;
   onEdit: (goal: LearningGoal) => void;
@@ -116,9 +124,7 @@ const GoalCard = memo(function GoalCard({
               </div>
               <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
                 <div
-                  className={`h-full transition-all ${
-                    goal.status === 'completed' ? 'bg-green-500' : 'bg-blue-500'
-                  }`}
+                  className={`h-full transition-all ${getProgressBarColor(goal.progress, goal.status)}`}
                   style={{ width: `${goal.progress}%` }}
                 />
               </div>
