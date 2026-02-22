@@ -1,47 +1,81 @@
 import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
-import { Skeleton, PostCardSkeleton, UserCardSkeleton } from '../Skeleton';
+import Skeleton from '../Skeleton';
 
 describe('Skeleton', () => {
-  it('デフォルトでレンダリングされる', () => {
+  it('スケルトンが表示される', () => {
     const { container } = render(<Skeleton />);
-    const skeleton = container.firstChild;
-    expect(skeleton).toHaveClass('animate-pulse', 'bg-gray-800', 'rounded');
+
+    const skeleton = container.querySelector('.animate-pulse');
+    expect(skeleton).toBeInTheDocument();
   });
 
-  it('カスタムclassNameが適用される', () => {
-    const { container } = render(<Skeleton className="h-4 w-24" />);
-    const skeleton = container.firstChild;
-    expect(skeleton).toHaveClass('h-4', 'w-24');
-  });
-});
+  it('テキスト形状が表示される', () => {
+    const { container } = render(<Skeleton variant="text" />);
 
-describe('PostCardSkeleton', () => {
-  it('投稿カード用スケルトンがレンダリングされる', () => {
-    const { container } = render(<PostCardSkeleton />);
-    const card = container.querySelector('.bg-gray-900');
-    expect(card).toBeInTheDocument();
-    expect(card).toHaveClass('border', 'border-gray-800', 'rounded-md', 'p-5');
+    const skeleton = container.querySelector('.h-4');
+    expect(skeleton).toBeInTheDocument();
   });
 
-  it('複数のスケルトン要素が含まれる', () => {
-    const { container } = render(<PostCardSkeleton />);
+  it('サークル形状が表示される', () => {
+    const { container } = render(<Skeleton variant="circle" />);
+
+    const skeleton = container.querySelector('.rounded-full');
+    expect(skeleton).toBeInTheDocument();
+  });
+
+  it('レクタングル形状が表示される', () => {
+    const { container } = render(<Skeleton variant="rectangle" />);
+
+    const skeleton = container.querySelector('.rounded');
+    expect(skeleton).toBeInTheDocument();
+  });
+
+  it('背景色がある', () => {
+    const { container } = render(<Skeleton />);
+
+    const skeleton = container.querySelector('.bg-gray-800');
+    expect(skeleton).toBeInTheDocument();
+  });
+
+  it('幅が指定できる', () => {
+    const { container } = render(<Skeleton width="200px" />);
+
+    const skeleton = container.querySelector('.animate-pulse');
+    expect(skeleton).toHaveStyle({ width: '200px' });
+  });
+
+  it('高さが指定できる', () => {
+    const { container } = render(<Skeleton height="100px" />);
+
+    const skeleton = container.querySelector('.animate-pulse');
+    expect(skeleton).toHaveStyle({ height: '100px' });
+  });
+
+  it('カスタムクラス名が適用される', () => {
+    const { container } = render(<Skeleton className="custom-class" />);
+
+    const skeleton = container.querySelector('.custom-class');
+    expect(skeleton).toBeInTheDocument();
+  });
+
+  it('デフォルトはテキスト形状', () => {
+    const { container } = render(<Skeleton />);
+
+    const skeleton = container.querySelector('.h-4');
+    expect(skeleton).toBeInTheDocument();
+  });
+
+  it('複数のスケルトンが表示される', () => {
+    const { container } = render(
+      <>
+        <Skeleton />
+        <Skeleton />
+        <Skeleton />
+      </>
+    );
+
     const skeletons = container.querySelectorAll('.animate-pulse');
-    expect(skeletons.length).toBeGreaterThan(5);
-  });
-});
-
-describe('UserCardSkeleton', () => {
-  it('ユーザーカード用スケルトンがレンダリングされる', () => {
-    const { container } = render(<UserCardSkeleton />);
-    const card = container.querySelector('.bg-gray-900');
-    expect(card).toBeInTheDocument();
-    expect(card).toHaveClass('border', 'border-gray-800', 'rounded-md', 'p-4');
-  });
-
-  it('複数のスケルトン要素が含まれる', () => {
-    const { container } = render(<UserCardSkeleton />);
-    const skeletons = container.querySelectorAll('.animate-pulse');
-    expect(skeletons.length).toBeGreaterThan(4);
+    expect(skeletons.length).toBe(3);
   });
 });
