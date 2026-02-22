@@ -1,29 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { Code, BookOpen, GraduationCap, Users, FileText, Star, Timer, Zap, Pencil, Trash2, type LucideIcon } from 'lucide-react';
-import type { LearningLog, LogCategory } from '../../types/learningLog';
+import { Star, Timer, Zap, Pencil, Trash2 } from 'lucide-react';
+import type { LearningLog } from '../../types/learningLog';
 import { formatDate } from '../../utils/timeFormat';
 import { panelClass, badgeBaseClass, editIconButtonClass, deleteIconButtonLargeClass } from '../../constants/styles';
-
-export const CATEGORIES: { value: LogCategory; label: string; Icon: LucideIcon }[] = [
-  { value: 'coding', label: 'learningLogs.categoryCoding', Icon: Code },
-  { value: 'reading', label: 'learningLogs.categoryReading', Icon: BookOpen },
-  { value: 'course', label: 'learningLogs.categoryCourse', Icon: GraduationCap },
-  { value: 'meetup', label: 'learningLogs.categoryMeetup', Icon: Users },
-  { value: 'other', label: 'learningLogs.categoryOther', Icon: FileText },
-];
-
-export const getCategoryInfo = (cat: LogCategory) =>
-  CATEGORIES.find((c) => c.value === cat) || CATEGORIES[4];
-
-export const getCategoryColor = (cat: LogCategory) => {
-  switch (cat) {
-    case 'coding': return 'text-blue-400 bg-blue-400/10';
-    case 'reading': return 'text-green-400 bg-green-400/10';
-    case 'course': return 'text-purple-400 bg-purple-400/10';
-    case 'meetup': return 'text-orange-400 bg-orange-400/10';
-    default: return 'text-gray-400 bg-gray-400/10';
-  }
-};
+import { getCategoryInfo, getCategoryColor } from '../../constants/learningLogs';
 
 interface LogCardProps {
   log: LearningLog;
