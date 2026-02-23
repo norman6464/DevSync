@@ -1,79 +1,75 @@
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useState, KeyboardEvent } from 'react';
 import { X } from 'lucide-react';
-import { inputClass } from '../../constants/styles';
 
 interface TagInputProps {
-  tags: string[];
-  onChange: (tags: string[]) => void;
-  placeholder?: string;
-  maxLength?: number;
-  prefix?: string;
+  value: string[];
+  onChange: (value: string[]) => void;
   label?: string;
-  id?: string;
+  placeholder?: string;
+  maxTags?: number;
+  disabled?: boolean;
+  className?: string;
 }
 
-export default function TagInput({ tags, onChange, placeholder, maxLength = 50, prefix, label, id }: TagInputProps) {
-  const { t } = useTranslation();
+export default function TagInput({
+  value,
+  onChange,
+  label,
+  placeholder = 'タグを入力...',
+  maxTags,
+  disabled = false,
+  className = '',
+}: TagInputProps) {
   const [input, setInput] = useState('');
 
-  const addTag = () => {
-    const trimmed = input.trim();
-    if (trimmed && !tags.includes(trimmed)) {
-      onChange([...tags, trimmed]);
+  const isMaxReached = maxTags != null && value.length >= maxTags;
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const tag = input.trim();
+      if (!tag || value.includes(tag)) return;
+      onChange([...value, tag]);
       setInput('');
     }
   };
 
-  const removeTag = (tag: string) => {
-    onChange(tags.filter(t => t !== tag));
+  const removeTag = (index: number) => {
+    onChange(value.filter((_, i) => i !== index));
   };
 
   return (
-    <div>
-      {label && (
-        <label htmlFor={id} className="block text-sm font-medium text-gray-300 mb-1">
-          {label}
-        </label>
-      )}
-      <div className="flex gap-2">
+    <div className={`${className}`.trim()}>
+      {label && <label className="block text-sm text-gray-400 mb-1">{label}</label>}
+      <div className="flex flex-wrap gap-2 p-2 bg-gray-800 border border-gray-700 rounded-lg min-h-[42px]">
+        {value.map((tag, i) => (
+          <span
+            key={tag}
+            className="flex items-center gap-1 px-2 py-1 bg-gray-700 rounded text-sm text-gray-200"
+          >
+            {tag}
+            {!disabled && (
+              <button
+                type="button"
+                aria-label="削除"
+                onClick={() => removeTag(i)}
+                className="text-gray-400 hover:text-white"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </span>
+        ))}
         <input
-          id={id}
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-          maxLength={maxLength}
-          className={`${inputClass} flex-1`}
-          placeholder={placeholder}
+          onKeyDown={handleKeyDown}
+          placeholder={value.length === 0 ? placeholder : ''}
+          disabled={disabled || isMaxReached}
+          className="flex-1 min-w-[80px] bg-transparent text-sm text-gray-200 placeholder-gray-500 focus:outline-none disabled:opacity-50"
         />
-        <button
-          type="button"
-          onClick={addTag}
-          className="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors"
-        >
-          {t('common.add')}
-        </button>
       </div>
-      {tags.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-2">
-          {tags.map((tag, idx) => (
-            <span
-              key={idx}
-              className="inline-flex items-center gap-1 px-2 py-1 bg-gray-700 text-gray-300 text-sm rounded"
-            >
-              {prefix}{tag}
-              <button
-                type="button"
-                onClick={() => removeTag(tag)}
-                className="text-gray-400 hover:text-white"
-              >
-                <X className="w-3 h-3" aria-hidden="true" />
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
