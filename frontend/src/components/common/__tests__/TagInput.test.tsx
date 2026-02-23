@@ -1,73 +1,75 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import TagInput from '../TagInput';
 
-const defaultProps = {
-  tags: [] as string[],
-  onChange: vi.fn(),
-};
-
 describe('TagInput', () => {
-  it('入力フィールドと追加ボタンが表示される', () => {
-    render(<TagInput {...defaultProps} />);
-    expect(screen.getByRole('textbox')).toBeInTheDocument();
-    expect(screen.getByText('追加')).toBeInTheDocument();
-  });
-
-  it('追加ボタンクリックでonChangeが呼ばれる', () => {
-    const onChange = vi.fn();
-    render(<TagInput tags={[]} onChange={onChange} />);
-    const input = screen.getByRole('textbox');
-    fireEvent.change(input, { target: { value: 'React' } });
-    fireEvent.click(screen.getByText('追加'));
-    expect(onChange).toHaveBeenCalledWith(['React']);
-  });
-
   it('既存タグが表示される', () => {
-    render(<TagInput tags={['React', 'TypeScript']} onChange={vi.fn()} />);
+    render(<TagInput value={['React', 'TypeScript']} onChange={() => {}} />);
     expect(screen.getByText('React')).toBeInTheDocument();
     expect(screen.getByText('TypeScript')).toBeInTheDocument();
   });
 
-  it('prefix付きでタグが表示される', () => {
-    render(<TagInput tags={['frontend']} onChange={vi.fn()} prefix="#" />);
-    expect(screen.getByText('#frontend')).toBeInTheDocument();
+  it('入力フィールドが表示される', () => {
+    render(<TagInput value={[]} onChange={() => {}} />);
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
   });
 
-  it('タグ削除ボタンクリックでonChangeが呼ばれる', () => {
+  it('Enterキーでタグが追加される', async () => {
     const onChange = vi.fn();
-    render(<TagInput tags={['React', 'Go']} onChange={onChange} />);
-    const removeButtons = screen.getAllByRole('button').filter(
-      btn => btn.querySelector('svg.w-3')
-    );
-    fireEvent.click(removeButtons[0]);
-    expect(onChange).toHaveBeenCalledWith(['Go']);
+    const user = userEvent.setup();
+    render(<TagInput value={['React']} onChange={onChange} />);
+    await user.type(screen.getByRole('textbox'), 'Vue{Enter}');
+    expect(onChange).toHaveBeenCalledWith(['React', 'Vue']);
   });
 
-  it('空入力では追加されない', () => {
+  it('空入力でタグが追加されない', async () => {
     const onChange = vi.fn();
-    render(<TagInput tags={[]} onChange={onChange} />);
-    fireEvent.click(screen.getByText('追加'));
+    const user = userEvent.setup();
+    render(<TagInput value={['React']} onChange={onChange} />);
+    await user.type(screen.getByRole('textbox'), '{Enter}');
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  it('labelが表示される', () => {
-    render(<TagInput {...defaultProps} label="技術スタック" />);
-    expect(screen.getByText('技術スタック')).toBeInTheDocument();
+  it('重複タグが追加されない', async () => {
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    render(<TagInput value={['React']} onChange={onChange} />);
+    await user.type(screen.getByRole('textbox'), 'React{Enter}');
+    expect(onChange).not.toHaveBeenCalled();
   });
 
-  it('id属性が設定される', () => {
-    render(<TagInput {...defaultProps} id="test-tags" />);
-    expect(screen.getByRole('textbox')).toHaveAttribute('id', 'test-tags');
+  it('削除ボタンでタグが削除される', async () => {
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    render(<TagInput value={['React', 'Vue']} onChange={onChange} />);
+    const removeButtons = screen.getAllByLabelText('削除');
+    await user.click(removeButtons[0]);
+    expect(onChange).toHaveBeenCalledWith(['Vue']);
   });
 
-  it('placeholderが表示される', () => {
-    render(<TagInput {...defaultProps} placeholder="タグを入力" />);
-    expect(screen.getByPlaceholderText('タグを入力')).toBeInTheDocument();
+  it('最大タグ数に達すると入力が無効になる', () => {
+    render(<TagInput value={['React', 'Vue', 'Angular']} onChange={() => {}} maxTags={3} />);
+    expect(screen.getByRole('textbox')).toBeDisabled();
   });
 
-  it('maxLength属性が設定される', () => {
-    render(<TagInput {...defaultProps} maxLength={100} />);
-    expect(screen.getByRole('textbox')).toHaveAttribute('maxLength', '100');
+  it('プレースホルダーが表示される', () => {
+    render(<TagInput value={[]} onChange={() => {}} placeholder="タグを追加" />);
+    expect(screen.getByPlaceholderText('タグを追加')).toBeInTheDocument();
+  });
+
+  it('ラベルが表示される', () => {
+    render(<TagInput value={[]} onChange={() => {}} label="スキル" />);
+    expect(screen.getByText('スキル')).toBeInTheDocument();
+  });
+
+  it('無効状態で入力が無効になる', () => {
+    render(<TagInput value={[]} onChange={() => {}} disabled />);
+    expect(screen.getByRole('textbox')).toBeDisabled();
+  });
+
+  it('カスタムクラス名が適用される', () => {
+    const { container } = render(<TagInput value={[]} onChange={() => {}} className="custom-class" />);
+    expect(container.querySelector('.custom-class')).toBeInTheDocument();
   });
 });
