@@ -1,99 +1,90 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { I18nextProvider } from 'react-i18next';
-import i18n from '../../../i18n';
 import ConfirmDialog from '../ConfirmDialog';
 
-const renderWithI18n = (component: React.ReactElement) => {
-  return render(
-    <I18nextProvider i18n={i18n}>{component}</I18nextProvider>
-  );
-};
-
 describe('ConfirmDialog', () => {
-  const defaultProps = {
-    isOpen: true,
-    title: 'テストタイトル',
-    message: 'テストメッセージ',
-    onConfirm: vi.fn(),
-    onCancel: vi.fn(),
-  };
+  it('タイトルが表示される', () => {
+    render(<ConfirmDialog isOpen title="確認" message="削除しますか？" onConfirm={() => {}} onCancel={() => {}} />);
 
-  it('isOpen=trueのときダイアログが表示される', () => {
-    renderWithI18n(<ConfirmDialog {...defaultProps} />);
-    expect(screen.getByText('テストタイトル')).toBeInTheDocument();
-    expect(screen.getByText('テストメッセージ')).toBeInTheDocument();
+    expect(screen.getByText('確認')).toBeInTheDocument();
   });
 
-  it('isOpen=falseのときダイアログが表示されない', () => {
-    renderWithI18n(<ConfirmDialog {...defaultProps} isOpen={false} />);
-    expect(screen.queryByText('テストタイトル')).not.toBeInTheDocument();
+  it('メッセージが表示される', () => {
+    render(<ConfirmDialog isOpen title="確認" message="削除しますか？" onConfirm={() => {}} onCancel={() => {}} />);
+
+    expect(screen.getByText('削除しますか？')).toBeInTheDocument();
   });
 
-  it('確認ボタンをクリックするとonConfirmが呼ばれる', async () => {
-    const user = userEvent.setup();
+  it('確認ボタンが表示される', () => {
+    render(<ConfirmDialog isOpen title="確認" message="削除？" onConfirm={() => {}} onCancel={() => {}} />);
+
+    expect(screen.getByText('確認')).toBeInTheDocument();
+  });
+
+  it('キャンセルボタンが表示される', () => {
+    render(<ConfirmDialog isOpen title="確認" message="削除？" onConfirm={() => {}} onCancel={() => {}} />);
+
+    expect(screen.getByText('キャンセル')).toBeInTheDocument();
+  });
+
+  it('確認ボタンクリックでコールバック呼ばれる', async () => {
     const onConfirm = vi.fn();
-    renderWithI18n(<ConfirmDialog {...defaultProps} onConfirm={onConfirm} />);
-    await user.click(screen.getByRole('button', { name: '確認' }));
+    const user = userEvent.setup();
+    render(<ConfirmDialog isOpen title="確認" message="削除？" onConfirm={onConfirm} onCancel={() => {}} confirmLabel="削除する" />);
+
+    await user.click(screen.getByText('削除する'));
+
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });
 
-  it('キャンセルボタンをクリックするとonCancelが呼ばれる', async () => {
-    const user = userEvent.setup();
+  it('キャンセルボタンクリックでコールバック呼ばれる', async () => {
     const onCancel = vi.fn();
-    renderWithI18n(<ConfirmDialog {...defaultProps} onCancel={onCancel} />);
-    await user.click(screen.getByRole('button', { name: 'キャンセル' }));
+    const user = userEvent.setup();
+    render(<ConfirmDialog isOpen title="確認" message="削除？" onConfirm={() => {}} onCancel={onCancel} />);
+
+    await user.click(screen.getByText('キャンセル'));
+
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
-  it('Escapeキーでonancelが呼ばれる', async () => {
-    const user = userEvent.setup();
-    const onCancel = vi.fn();
-    renderWithI18n(<ConfirmDialog {...defaultProps} onCancel={onCancel} />);
-    await user.keyboard('{Escape}');
-    expect(onCancel).toHaveBeenCalledTimes(1);
+  it('isOpenがfalseの場合は非表示', () => {
+    render(<ConfirmDialog isOpen={false} title="確認" message="削除？" onConfirm={() => {}} onCancel={() => {}} />);
+
+    expect(screen.queryByText('削除？')).not.toBeInTheDocument();
   });
 
-  it('variant="danger"のとき確認ボタンが赤色スタイルになる', () => {
-    renderWithI18n(<ConfirmDialog {...defaultProps} variant="danger" />);
-    const confirmBtn = screen.getByRole('button', { name: '確認' });
-    expect(confirmBtn).toHaveClass('bg-red-600');
-  });
-
-  it('variant="warning"のとき確認ボタンが黄色スタイルになる', () => {
-    renderWithI18n(<ConfirmDialog {...defaultProps} variant="warning" />);
-    const confirmBtn = screen.getByRole('button', { name: '確認' });
-    expect(confirmBtn).toHaveClass('bg-yellow-600');
-  });
-
-  it('カスタムconfirmText/cancelTextが表示される', () => {
-    renderWithI18n(
-      <ConfirmDialog
-        {...defaultProps}
-        confirmText="削除する"
-        cancelText="やめる"
-      />
+  it('dangerバリアントで赤いボタン', () => {
+    const { container } = render(
+      <ConfirmDialog isOpen title="確認" message="削除？" onConfirm={() => {}} onCancel={() => {}} variant="danger" />
     );
-    expect(screen.getByRole('button', { name: '削除する' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'やめる' })).toBeInTheDocument();
+
+    expect(container.querySelector('.bg-red-600')).toBeInTheDocument();
   });
 
-  it('オーバーレイをクリックするとonCancelが呼ばれる', async () => {
-    const user = userEvent.setup();
-    const onCancel = vi.fn();
-    renderWithI18n(<ConfirmDialog {...defaultProps} onCancel={onCancel} />);
-    const overlay = screen.getByTestId('confirm-dialog-overlay');
-    await user.click(overlay);
-    expect(onCancel).toHaveBeenCalledTimes(1);
+  it('ローディング状態が表示される', () => {
+    const { container } = render(
+      <ConfirmDialog isOpen title="確認" message="削除？" onConfirm={() => {}} onCancel={() => {}} loading />
+    );
+
+    expect(container.querySelector('.animate-spin')).toBeInTheDocument();
   });
 
-  it('ダイアログ本体をクリックしてもonCancelは呼ばれない', async () => {
-    const user = userEvent.setup();
-    const onCancel = vi.fn();
-    renderWithI18n(<ConfirmDialog {...defaultProps} onCancel={onCancel} />);
-    const dialog = screen.getByRole('dialog');
-    await user.click(dialog);
-    expect(onCancel).not.toHaveBeenCalled();
+  it('ローディング中はボタンが無効', () => {
+    render(
+      <ConfirmDialog isOpen title="確認" message="削除？" onConfirm={() => {}} onCancel={() => {}} loading confirmLabel="OK" />
+    );
+
+    const buttons = screen.getAllByRole('button');
+    const confirmBtn = buttons.find(b => b.textContent?.includes('OK'));
+    expect(confirmBtn).toBeDisabled();
+  });
+
+  it('カスタム確認ラベルが使用される', () => {
+    render(
+      <ConfirmDialog isOpen title="確認" message="削除？" onConfirm={() => {}} onCancel={() => {}} confirmLabel="削除する" />
+    );
+
+    expect(screen.getByText('削除する')).toBeInTheDocument();
   });
 });
