@@ -3,65 +3,65 @@ import { render, screen } from '@testing-library/react';
 import Avatar from '../Avatar';
 
 describe('Avatar', () => {
-  it('avatarUrlなしの場合イニシャルを表示する', () => {
-    render(<Avatar name="Alice" />);
-    expect(screen.getByText('A')).toBeInTheDocument();
-  });
-
-  it('名前の先頭文字を大文字で表示する', () => {
-    render(<Avatar name="bob" />);
-    expect(screen.getByText('B')).toBeInTheDocument();
-  });
-
-  it('avatarUrlありの場合img要素を表示する', () => {
-    render(<Avatar name="Alice" avatarUrl="https://example.com/avatar.png" />);
+  it('画像が表示される', () => {
+    render(<Avatar src="/avatar.jpg" alt="ユーザー" />);
     const img = screen.getByRole('img');
-    expect(img).toHaveAttribute('src', 'https://example.com/avatar.png');
-    expect(img).toHaveAttribute('alt', 'Alice');
+    expect(img).toHaveAttribute('src', '/avatar.jpg');
+    expect(img).toHaveAttribute('alt', 'ユーザー');
   });
 
-  it('デフォルトサイズはmdクラス', () => {
-    render(<Avatar name="Alice" />);
-    const el = screen.getByText('A');
-    expect(el.className).toContain('w-10');
-    expect(el.className).toContain('h-10');
+  it('画像がない場合イニシャルが表示される', () => {
+    render(<Avatar name="田中太郎" />);
+    expect(screen.getByText('田')).toBeInTheDocument();
   });
 
-  it('size=smの場合smクラスが適用される', () => {
-    render(<Avatar name="Alice" size="sm" />);
-    const el = screen.getByText('A');
-    expect(el.className).toContain('w-8');
-    expect(el.className).toContain('h-8');
+  it('名前がない場合デフォルトアイコンが表示される', () => {
+    const { container } = render(<Avatar />);
+    expect(container.querySelector('.lucide-user')).toBeInTheDocument();
   });
 
-  it('size=lgの場合lgクラスが適用される', () => {
-    render(<Avatar name="Alice" size="lg" />);
-    const el = screen.getByText('A');
-    expect(el.className).toContain('w-16');
-    expect(el.className).toContain('h-16');
+  it('smサイズが適用される', () => {
+    const { container } = render(<Avatar name="T" size="sm" />);
+    expect(container.querySelector('.w-8')).toBeInTheDocument();
   });
 
-  it('isOnline未指定の場合インジケーターが表示されない', () => {
-    const { container } = render(<Avatar name="Alice" />);
-    expect(container.querySelector('[aria-hidden="true"]')).toBeNull();
+  it('mdサイズが適用される（デフォルト）', () => {
+    const { container } = render(<Avatar name="T" />);
+    expect(container.querySelector('.w-10')).toBeInTheDocument();
   });
 
-  it('isOnline=trueの場合緑色のインジケーターが表示される', () => {
-    const { container } = render(<Avatar name="Alice" isOnline={true} />);
-    const dot = container.querySelector('[aria-hidden="true"]');
-    expect(dot).not.toBeNull();
-    expect(dot!.className).toContain('bg-green-500');
+  it('lgサイズが適用される', () => {
+    const { container } = render(<Avatar name="T" size="lg" />);
+    expect(container.querySelector('.w-12')).toBeInTheDocument();
   });
 
-  it('isOnline=falseの場合グレーのインジケーターが表示される', () => {
-    const { container } = render(<Avatar name="Alice" isOnline={false} />);
-    const dot = container.querySelector('[aria-hidden="true"]');
-    expect(dot).not.toBeNull();
-    expect(dot!.className).toContain('bg-gray-500');
+  it('xlサイズが適用される', () => {
+    const { container } = render(<Avatar name="T" size="xl" />);
+    expect(container.querySelector('.w-16')).toBeInTheDocument();
   });
 
-  it('不正なavatarUrlの場合イニシャルにフォールバックする', () => {
-    render(<Avatar name="Alice" avatarUrl="javascript:alert(1)" />);
-    expect(screen.getByText('A')).toBeInTheDocument();
+  it('オンラインステータスが表示される', () => {
+    const { container } = render(<Avatar name="T" online />);
+    expect(container.querySelector('.bg-green-500')).toBeInTheDocument();
+  });
+
+  it('オフラインステータスが表示される', () => {
+    const { container } = render(<Avatar name="T" online={false} />);
+    expect(container.querySelector('.bg-gray-500')).toBeInTheDocument();
+  });
+
+  it('角丸がデフォルト', () => {
+    const { container } = render(<Avatar name="T" />);
+    expect(container.querySelector('.rounded-full')).toBeInTheDocument();
+  });
+
+  it('四角にできる', () => {
+    const { container } = render(<Avatar name="T" rounded={false} />);
+    expect(container.querySelector('.rounded-lg')).toBeInTheDocument();
+  });
+
+  it('カスタムクラス名が適用される', () => {
+    const { container } = render(<Avatar name="T" className="custom-class" />);
+    expect(container.querySelector('.custom-class')).toBeInTheDocument();
   });
 });
