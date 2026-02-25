@@ -1557,6 +1557,22 @@
     "newVideo": "最新",
     "unavailable": "YouTube视频功能当前不可用"
   },
+  "weeklyChallenge": {
+    "title": "每周挑战",
+    "completed": "已完成！",
+    "challenges": {
+      "weekly_duration_180": "本周总学习时长达到180分钟",
+      "weekly_duration_300": "本周总学习时长达到300分钟",
+      "weekly_duration_420": "本周总学习时长达到420分钟",
+      "weekly_streak_3": "本周连续学习3天",
+      "weekly_streak_5": "本周连续学习5天",
+      "weekly_streak_7": "本周每天都学习",
+      "weekly_categories_3": "本周在3个不同类别中学习",
+      "weekly_logs_5": "本周记录5条学习日志",
+      "weekly_logs_7": "本周记录7条学习日志",
+      "weekly_logs_10": "本周记录10条学习日志"
+    }
+  },
   "quickEntry": {
     "title": "快速学习记录",
     "selectCategory": "选择类别",

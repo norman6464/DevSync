@@ -1556,6 +1556,22 @@
     "newVideo": "Neu",
     "unavailable": "Die YouTube-Video-Funktion ist derzeit nicht verfügbar"
   },
+  "weeklyChallenge": {
+    "title": "Wöchentliche Herausforderung",
+    "completed": "Geschafft!",
+    "challenges": {
+      "weekly_duration_180": "Lerne diese Woche insgesamt 180 Minuten",
+      "weekly_duration_300": "Lerne diese Woche insgesamt 300 Minuten",
+      "weekly_duration_420": "Lerne diese Woche insgesamt 420 Minuten",
+      "weekly_streak_3": "Lerne diese Woche 3 Tage hintereinander",
+      "weekly_streak_5": "Lerne diese Woche 5 Tage hintereinander",
+      "weekly_streak_7": "Lerne diese Woche jeden Tag",
+      "weekly_categories_3": "Lerne diese Woche in 3 verschiedenen Kategorien",
+      "weekly_logs_5": "Erstelle diese Woche 5 Lerneinträge",
+      "weekly_logs_7": "Erstelle diese Woche 7 Lerneinträge",
+      "weekly_logs_10": "Erstelle diese Woche 10 Lerneinträge"
+    }
+  },
   "quickEntry": {
     "title": "Schnelle Lernaufzeichnung",
     "selectCategory": "Kategorie wählen",

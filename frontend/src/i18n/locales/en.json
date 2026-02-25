@@ -1557,6 +1557,22 @@
     "newVideo": "New",
     "unavailable": "YouTube video feature is currently unavailable"
   },
+  "weeklyChallenge": {
+    "title": "Weekly Challenge",
+    "completed": "Completed!",
+    "challenges": {
+      "weekly_duration_180": "Study for a total of 180 minutes this week",
+      "weekly_duration_300": "Study for a total of 300 minutes this week",
+      "weekly_duration_420": "Study for a total of 420 minutes this week",
+      "weekly_streak_3": "Study 3 days in a row this week",
+      "weekly_streak_5": "Study 5 days in a row this week",
+      "weekly_streak_7": "Study every day this week",
+      "weekly_categories_3": "Study in 3 different categories this week",
+      "weekly_logs_5": "Log 5 learning sessions this week",
+      "weekly_logs_7": "Log 7 learning sessions this week",
+      "weekly_logs_10": "Log 10 learning sessions this week"
+    }
+  },
   "quickEntry": {
     "title": "Quick Learning Log",
     "selectCategory": "Select category",

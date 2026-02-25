@@ -107,6 +107,7 @@ func main() {
 		&model.StreakFreeze{},
 		&model.BookmarkCollection{},
 		&model.BookmarkCollectionItem{},
+		&model.WeeklyChallenge{},
 	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}
