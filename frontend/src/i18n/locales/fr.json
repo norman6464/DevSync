@@ -1557,6 +1557,22 @@
     "newVideo": "Nouveau",
     "unavailable": "La fonctionnalité vidéos YouTube est actuellement indisponible"
   },
+  "weeklyChallenge": {
+    "title": "Défi de la semaine",
+    "completed": "Terminé !",
+    "challenges": {
+      "weekly_duration_180": "Étudiez 180 minutes au total cette semaine",
+      "weekly_duration_300": "Étudiez 300 minutes au total cette semaine",
+      "weekly_duration_420": "Étudiez 420 minutes au total cette semaine",
+      "weekly_streak_3": "Étudiez 3 jours consécutifs cette semaine",
+      "weekly_streak_5": "Étudiez 5 jours consécutifs cette semaine",
+      "weekly_streak_7": "Étudiez tous les jours cette semaine",
+      "weekly_categories_3": "Étudiez dans 3 catégories différentes cette semaine",
+      "weekly_logs_5": "Enregistrez 5 sessions d'étude cette semaine",
+      "weekly_logs_7": "Enregistrez 7 sessions d'étude cette semaine",
+      "weekly_logs_10": "Enregistrez 10 sessions d'étude cette semaine"
+    }
+  },
   "quickEntry": {
     "title": "Enregistrement rapide",
     "selectCategory": "Choisir une catégorie",

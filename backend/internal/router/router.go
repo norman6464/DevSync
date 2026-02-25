@@ -331,6 +331,7 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 	registerStreakFreezeRoutes(g, c)
 	registerNoteRoutes(g, c)
 	registerEmailPreferencesRoutes(g, c)
+	registerWeeklyChallengeRoutes(g, c)
 }
 
 func registerGoalRoutes(g *gin.RouterGroup, c *di.Container) {
@@ -700,6 +701,14 @@ func registerBookmarkCollectionRoutes(g *gin.RouterGroup, c *di.Container) {
 		collections.POST("/:id/posts/:postId", c.BookmarkCollectionHandler.AddPost)
 		collections.DELETE("/:id/posts/:postId", c.BookmarkCollectionHandler.RemovePost)
 		collections.GET("/:id/posts", c.BookmarkCollectionHandler.GetPosts)
+	}
+}
+
+func registerWeeklyChallengeRoutes(g *gin.RouterGroup, c *di.Container) {
+	challenges := g.Group("/weekly-challenges")
+	{
+		challenges.GET("/current", c.WeeklyChallengeHandler.GetCurrent)
+		challenges.PUT("/progress", c.WeeklyChallengeHandler.UpdateProgress)
 	}
 }
 

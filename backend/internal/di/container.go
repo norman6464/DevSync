@@ -82,6 +82,7 @@ type Container struct {
 	SpotifyHandler           *handler.SpotifyHandler
 	StreakFreezeHandler            *handler.StreakFreezeHandler
 	BookmarkCollectionHandler     *handler.BookmarkCollectionHandler
+	WeeklyChallengeHandler        *handler.WeeklyChallengeHandler
 
 	// ミドルウェア・コールバック用
 	AuthService      *service.AuthService
@@ -369,6 +370,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	bookmarkCollectionRepo := repository.NewBookmarkCollectionRepository(db)
 	bookmarkCollectionService := service.NewBookmarkCollectionService(bookmarkCollectionRepo)
 	c.BookmarkCollectionHandler = handler.NewBookmarkCollectionHandler(bookmarkCollectionService)
+
+	// ウィークリーチャレンジサービス
+	weeklyChallengeRepo := repository.NewWeeklyChallengeRepository(db)
+	weeklyChallengeService := service.NewWeeklyChallengeService(weeklyChallengeRepo)
+	c.WeeklyChallengeHandler = handler.NewWeeklyChallengeHandler(weeklyChallengeService)
 
 	// HubのGetRoomMembersコールバックを設定
 	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs

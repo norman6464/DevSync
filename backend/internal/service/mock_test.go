@@ -1080,6 +1080,31 @@ var _ repository.GroupMessageRepositoryInterface = (*MockGroupMessageRepository)
 var _ repository.CodeSnippetRepositoryInterface = (*MockCodeSnippetRepository)(nil)
 var _ repository.RecommendationRepositoryInterface = (*MockRecommendationRepository)(nil)
 var _ repository.AIAdviceRepositoryInterface = (*MockAIAdviceRepository)(nil)
+var _ repository.WeeklyChallengeRepositoryInterface = (*MockWeeklyChallengeRepository)(nil)
+
+// ============================================================
+// MockWeeklyChallengeRepository は repository.WeeklyChallengeRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockWeeklyChallengeRepository struct {
+	mock.Mock
+}
+
+func (m *MockWeeklyChallengeRepository) Create(challenge *model.WeeklyChallenge) error {
+	return m.Called(challenge).Error(0)
+}
+
+func (m *MockWeeklyChallengeRepository) FindByUserAndWeek(userID uint, year, week int) (*model.WeeklyChallenge, error) {
+	args := m.Called(userID, year, week)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.WeeklyChallenge), args.Error(1)
+}
+
+func (m *MockWeeklyChallengeRepository) Update(challenge *model.WeeklyChallenge) error {
+	return m.Called(challenge).Error(0)
+}
 
 // ============================================================
 // MockRecommendationRepository は repository.RecommendationRepositoryInterface のテスト用モック実装。

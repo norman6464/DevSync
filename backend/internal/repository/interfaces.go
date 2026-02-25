@@ -639,6 +639,13 @@ type BookmarkCollectionRepositoryInterface interface {
 	HasPost(collectionID, postID uint) (bool, error)
 }
 
+// WeeklyChallengeRepositoryInterface はウィークリーチャレンジデータ操作の契約を定義する。
+type WeeklyChallengeRepositoryInterface interface {
+	Create(challenge *model.WeeklyChallenge) error
+	FindByUserAndWeek(userID uint, year, week int) (*model.WeeklyChallenge, error)
+	Update(challenge *model.WeeklyChallenge) error
+}
+
 // StreakFreezeRepositoryInterface はストリークフリーズデータ操作の契約を定義する。
 type StreakFreezeRepositoryInterface interface {
 	Create(freeze *model.StreakFreeze) error

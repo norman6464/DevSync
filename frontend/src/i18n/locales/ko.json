@@ -1559,6 +1559,22 @@
     "newVideo": "신규",
     "unavailable": "YouTube 동영상 기능을 현재 사용할 수 없습니다"
   },
+  "weeklyChallenge": {
+    "title": "주간 챌린지",
+    "completed": "달성!",
+    "challenges": {
+      "weekly_duration_180": "이번 주 총 180분 학습하기",
+      "weekly_duration_300": "이번 주 총 300분 학습하기",
+      "weekly_duration_420": "이번 주 총 420분 학습하기",
+      "weekly_streak_3": "이번 주 3일 연속 학습하기",
+      "weekly_streak_5": "이번 주 5일 연속 학습하기",
+      "weekly_streak_7": "이번 주 매일 학습하기",
+      "weekly_categories_3": "이번 주 3가지 카테고리에서 학습하기",
+      "weekly_logs_5": "이번 주 학습 로그 5건 기록하기",
+      "weekly_logs_7": "이번 주 학습 로그 7건 기록하기",
+      "weekly_logs_10": "이번 주 학습 로그 10건 기록하기"
+    }
+  },
   "quickEntry": {
     "title": "빠른 학습 기록",
     "selectCategory": "카테고리 선택",

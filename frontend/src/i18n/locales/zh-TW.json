@@ -1559,6 +1559,22 @@
     "newVideo": "最新",
     "unavailable": "YouTube影片功能目前無法使用"
   },
+  "weeklyChallenge": {
+    "title": "每週挑戰",
+    "completed": "已完成！",
+    "challenges": {
+      "weekly_duration_180": "本週總學習時長達到180分鐘",
+      "weekly_duration_300": "本週總學習時長達到300分鐘",
+      "weekly_duration_420": "本週總學習時長達到420分鐘",
+      "weekly_streak_3": "本週連續學習3天",
+      "weekly_streak_5": "本週連續學習5天",
+      "weekly_streak_7": "本週每天都學習",
+      "weekly_categories_3": "本週在3個不同類別中學習",
+      "weekly_logs_5": "本週記錄5條學習日誌",
+      "weekly_logs_7": "本週記錄7條學習日誌",
+      "weekly_logs_10": "本週記錄10條學習日誌"
+    }
+  },
   "quickEntry": {
     "title": "快速學習記錄",
     "selectCategory": "選擇類別",

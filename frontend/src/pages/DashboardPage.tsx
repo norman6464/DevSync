@@ -28,6 +28,7 @@ import TrendingWidget from '../components/dashboard/TrendingWidget';
 import StudyCircleWidget from '../components/dashboard/StudyCircleWidget';
 import GoalsProgressWidget from '../components/dashboard/GoalsProgressWidget';
 import QuickEntryWidget from '../components/dashboard/QuickEntryWidget';
+import WeeklyChallengeWidget from '../components/dashboard/WeeklyChallengeWidget';
 
 export default function DashboardPage() {
   const { t } = useTranslation();
@@ -198,6 +199,7 @@ export default function DashboardPage() {
           <h2 className="section-heading">{t('dashboard.activities')}</h2>
           <div className="space-y-4">
             <DailyChallengeWidget />
+            <WeeklyChallengeWidget />
             <StudyCircleWidget />
           </div>
         </div>

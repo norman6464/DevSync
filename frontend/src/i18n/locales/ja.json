@@ -1458,6 +1458,22 @@
     "newVideo": "新着",
     "unavailable": "YouTube動画機能は現在利用できません"
   },
+  "weeklyChallenge": {
+    "title": "ウィークリーチャレンジ",
+    "completed": "達成！",
+    "challenges": {
+      "weekly_duration_180": "今週の合計学習時間を180分にしよう",
+      "weekly_duration_300": "今週の合計学習時間を300分にしよう",
+      "weekly_duration_420": "今週の合計学習時間を420分にしよう",
+      "weekly_streak_3": "今週3日連続で学習しよう",
+      "weekly_streak_5": "今週5日連続で学習しよう",
+      "weekly_streak_7": "今週毎日学習しよう",
+      "weekly_categories_3": "今週3つの異なるカテゴリで学習しよう",
+      "weekly_logs_5": "今週5件の学習ログを記録しよう",
+      "weekly_logs_7": "今週7件の学習ログを記録しよう",
+      "weekly_logs_10": "今週10件の学習ログを記録しよう"
+    }
+  },
   "quickEntry": {
     "title": "クイック学習記録",
     "selectCategory": "カテゴリを選択",
