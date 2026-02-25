@@ -3,6 +3,8 @@ import { type GoalCategory } from '../../api/goals';
 import { Modal } from '../common';
 import { CATEGORIES } from './GoalCard';
 import { inputClass, buttonSecondaryClass, labelClass } from '../../constants/styles';
+import { MAX_LENGTH } from '../../utils/formValidation';
+import { CharCount } from '../common';
 
 interface GoalFormModalProps {
   isOpen: boolean;
@@ -46,7 +48,7 @@ export default function GoalFormModal({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={t('goals.titlePlaceholder')}
-            maxLength={200}
+            maxLength={MAX_LENGTH.goalTitle}
             className={inputClass}
             required
           />
@@ -61,10 +63,10 @@ export default function GoalFormModal({
             onChange={(e) => setDescription(e.target.value)}
             placeholder={t('goals.descriptionPlaceholder')}
             rows={3}
-            maxLength={2000}
+            maxLength={MAX_LENGTH.goalDescription}
             className={`${inputClass} resize-none`}
           />
-          <p className="text-xs text-gray-500 text-right mt-1">{description.length}/2000</p>
+          <CharCount value={description} max={MAX_LENGTH.goalDescription} />
         </div>
         <div>
           <label htmlFor="goal-category" className={labelClass}>

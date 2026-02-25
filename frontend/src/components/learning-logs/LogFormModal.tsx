@@ -5,6 +5,8 @@ import type { LearningLog } from '../../types/learningLog';
 import { CATEGORIES } from './LogCard';
 import { Modal } from '../common';
 import { inputClass, buttonSecondaryClass, labelClass } from '../../constants/styles';
+import { MAX_LENGTH } from '../../utils/formValidation';
+import { CharCount } from '../common';
 
 interface LogFormModalProps {
   isOpen: boolean;
@@ -51,7 +53,7 @@ export default function LogFormModal({
             value={title}
             onChange={handleTitleChange}
             placeholder={t('learningLogs.titlePlaceholder')}
-            maxLength={200}
+            maxLength={MAX_LENGTH.logTitle}
             className={inputClass}
             required
           />
@@ -66,11 +68,11 @@ export default function LogFormModal({
             onChange={handleContentChange}
             placeholder={t('learningLogs.contentPlaceholder')}
             rows={4}
-            maxLength={5000}
+            maxLength={MAX_LENGTH.logContent}
             className={`${inputClass} resize-none`}
             required
           />
-          <p className="text-xs text-gray-500 text-right mt-1">{content.length}/5000</p>
+          <CharCount value={content} max={MAX_LENGTH.logContent} />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>

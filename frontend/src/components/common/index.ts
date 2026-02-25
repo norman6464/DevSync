@@ -7,3 +7,4 @@ export { default as Modal } from './Modal';
 export { default as Pagination } from './Pagination';
 export { default as SearchInput } from './SearchInput';
 export { default as PageHeader } from './PageHeader';
+export { default as CharCount } from './CharCount';

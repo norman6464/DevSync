@@ -5,6 +5,8 @@ import { Plus } from 'lucide-react';
 import { inputClass } from '../../constants/styles';
 import { useConfirm } from '../../hooks';
 import { parseJsonArray } from '../../utils/json';
+import { MAX_LENGTH } from '../../utils/formValidation';
+import { CharCount } from '../common';
 import ConfirmDialog from '../common/ConfirmDialog';
 import MarkdownEditor from './MarkdownEditor';
 import CodeSnippetInput, { type SnippetInputData } from './CodeSnippetInput';
@@ -87,10 +89,10 @@ export default function PostForm({ post, onSubmit, onCancel, loading: externalLo
         onChange={(e) => setTitle(e.target.value)}
         onFocus={() => setExpanded(true)}
         placeholder={t('post.createTitle')}
-        maxLength={300}
+        maxLength={MAX_LENGTH.postTitle}
         className={inputClass}
       />
-      <p className="text-xs text-gray-500 text-right mt-1">{title.length}/300</p>
+      <CharCount value={title} max={MAX_LENGTH.postTitle} />
       {expanded && (
         <>
           <div className="mt-3">

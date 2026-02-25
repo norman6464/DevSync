@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Question, CreateQuestionRequest } from '../../types/qa';
 import { buttonSecondaryClass, inputClass, labelClass, textareaClass } from '../../constants/styles';
+import { MAX_LENGTH } from '../../utils/formValidation';
+import { CharCount } from '../common';
 
 interface QuestionFormProps {
   question?: Question;
@@ -47,11 +49,11 @@ export default function QuestionForm({ question, onSubmit, onCancel, loading }: 
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
-          maxLength={500}
+          maxLength={MAX_LENGTH.questionTitle}
           className={inputClass}
           placeholder={t('qa.questionTitlePlaceholder')}
         />
-        <p className="text-xs text-gray-500 text-right mt-1">{title.length}/500</p>
+        <CharCount value={title} max={MAX_LENGTH.questionTitle} />
       </div>
 
       {/* Body */}
@@ -65,11 +67,11 @@ export default function QuestionForm({ question, onSubmit, onCancel, loading }: 
           onChange={(e) => setBody(e.target.value)}
           required
           rows={8}
-          maxLength={5000}
+          maxLength={MAX_LENGTH.questionBody}
           className={textareaClass}
           placeholder={t('qa.questionBodyPlaceholder')}
         />
-        <p className="text-xs text-gray-500 text-right mt-1">{body.length}/5000</p>
+        <CharCount value={body} max={MAX_LENGTH.questionBody} />
       </div>
 
       {/* Tags */}
