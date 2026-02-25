@@ -1558,5 +1558,18 @@
     "watchOnYoutube": "YouTube에서 시청",
     "newVideo": "신규",
     "unavailable": "YouTube 동영상 기능을 현재 사용할 수 없습니다"
+  },
+  "bookmarkCollections": {
+    "saveToCollection": "컬렉션에 저장",
+    "addedToCollection": "컬렉션에 추가되었습니다",
+    "removedFromCollection": "컬렉션에서 삭제되었습니다",
+    "alreadyInCollection": "이 게시물은 이미 컬렉션에 있습니다",
+    "createdAndAdded": "컬렉션이 생성되고 게시물이 추가되었습니다",
+    "createNew": "새 컬렉션 만들기",
+    "collectionName": "컬렉션 이름",
+    "noCollections": "컬렉션이 없습니다",
+    "removeFromCollection": "컬렉션에서 삭제",
+    "deleteCollection": "컬렉션 삭제",
+    "editCollection": "컬렉션 편집"
   }
 }

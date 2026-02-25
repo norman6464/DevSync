@@ -1,11 +1,12 @@
 import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Heart, MessageCircle, Smile, Eye, Link2, Bookmark } from 'lucide-react';
+import { Heart, MessageCircle, Smile, Eye, Link2, Bookmark, FolderPlus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { likePost, unlikePost, bookmarkPost, unbookmarkPost } from '../../api/posts';
 import { useReactions } from '../../hooks/useReactions';
 import { AVAILABLE_REACTION_EMOJIS } from '../../constants/reactions';
+import BookmarkCollectionPicker from './BookmarkCollectionPicker';
 
 interface PostCardActionsProps {
   postId: number;
@@ -35,6 +36,7 @@ export default function PostCardActions({
   const { reactions, userReactions, toggleReaction } = useReactions(postId);
   const [showReactionPicker, setShowReactionPicker] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [showCollectionPicker, setShowCollectionPicker] = useState(false);
 
   const handleCopyLink = useCallback(async () => {
     try {
@@ -182,6 +184,22 @@ export default function PostCardActions({
           <Bookmark className="w-4 h-4" fill={bookmarked ? 'currentColor' : 'none'} aria-hidden="true" />
           {bookmarkCount > 0 && <span>{bookmarkCount}</span>}
         </button>
+        <div className="relative">
+          <button
+            onClick={() => setShowCollectionPicker(!showCollectionPicker)}
+            aria-label={t('bookmarkCollections.saveToCollection')}
+            aria-expanded={showCollectionPicker}
+            className="text-gray-500 hover:text-blue-400 transition-colors"
+          >
+            <FolderPlus className="w-4 h-4" aria-hidden="true" />
+          </button>
+          {showCollectionPicker && (
+            <BookmarkCollectionPicker
+              postId={postId}
+              onClose={() => setShowCollectionPicker(false)}
+            />
+          )}
+        </div>
       </div>
     </>
   );

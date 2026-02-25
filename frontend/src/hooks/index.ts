@@ -55,3 +55,4 @@ export { useReactions } from './useReactions';
 export { useClickOutside } from './useClickOutside';
 export { useSubmitShortcut } from './useSubmitShortcut';
 export { useStreakFreeze } from './useStreakFreeze';
+export { useBookmarkCollections, useCollectionPosts as useBookmarkCollectionPosts } from './useBookmarkCollections';

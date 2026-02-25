@@ -1558,5 +1558,18 @@
     "watchOnYoutube": "在YouTube上觀看",
     "newVideo": "最新",
     "unavailable": "YouTube影片功能目前無法使用"
+  },
+  "bookmarkCollections": {
+    "saveToCollection": "儲存至收藏夾",
+    "addedToCollection": "已新增至收藏夾",
+    "removedFromCollection": "已從收藏夾移除",
+    "alreadyInCollection": "此貼文已在收藏夾中",
+    "createdAndAdded": "收藏夾已建立並新增了貼文",
+    "createNew": "建立新收藏夾",
+    "collectionName": "收藏夾名稱",
+    "noCollections": "尚無收藏夾",
+    "removeFromCollection": "從收藏夾移除",
+    "deleteCollection": "刪除收藏夾",
+    "editCollection": "編輯收藏夾"
   }
 }

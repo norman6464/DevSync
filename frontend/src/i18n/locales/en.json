@@ -1556,5 +1556,18 @@
     "watchOnYoutube": "Watch on YouTube",
     "newVideo": "New",
     "unavailable": "YouTube video feature is currently unavailable"
+  },
+  "bookmarkCollections": {
+    "saveToCollection": "Save to Collection",
+    "addedToCollection": "Added to collection",
+    "removedFromCollection": "Removed from collection",
+    "alreadyInCollection": "This post is already in the collection",
+    "createdAndAdded": "Collection created and post added",
+    "createNew": "Create new collection",
+    "collectionName": "Collection name",
+    "noCollections": "No collections yet",
+    "removeFromCollection": "Remove from collection",
+    "deleteCollection": "Delete collection",
+    "editCollection": "Edit collection"
   }
 }

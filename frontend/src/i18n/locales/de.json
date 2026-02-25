@@ -1555,5 +1555,18 @@
     "watchOnYoutube": "Auf YouTube ansehen",
     "newVideo": "Neu",
     "unavailable": "Die YouTube-Video-Funktion ist derzeit nicht verfügbar"
+  },
+  "bookmarkCollections": {
+    "saveToCollection": "In Sammlung speichern",
+    "addedToCollection": "Zur Sammlung hinzugefügt",
+    "removedFromCollection": "Aus Sammlung entfernt",
+    "alreadyInCollection": "Dieser Beitrag ist bereits in der Sammlung",
+    "createdAndAdded": "Sammlung erstellt und Beitrag hinzugefügt",
+    "createNew": "Neue Sammlung erstellen",
+    "collectionName": "Sammlungsname",
+    "noCollections": "Noch keine Sammlungen",
+    "removeFromCollection": "Aus Sammlung entfernen",
+    "deleteCollection": "Sammlung löschen",
+    "editCollection": "Sammlung bearbeiten"
   }
 }

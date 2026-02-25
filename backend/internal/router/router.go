@@ -104,6 +104,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerNotificationRoutes(protected, c)
 		registerIntegrationRoutes(protected, c)
 		registerLearningRoutes(protected, c)
+		registerBookmarkCollectionRoutes(protected, c)
 		registerCommunityRoutes(protected, c)
 		registerAnalyticsRoutes(protected, c)
 		registerRecommendationRoutes(protected, c)
@@ -682,6 +683,19 @@ func registerUserStatsRoutes(g *gin.RouterGroup, c *di.Container) {
 		users.GET("/:id/mention-stats", c.MentionStatsHandler.GetStats)
 		users.GET("/:id/reaction-stats", c.ReactionStatsHandler.GetStats)
 		users.GET("/:id/bookmark-stats", c.BookmarkStatsHandler.GetStats)
+	}
+}
+
+func registerBookmarkCollectionRoutes(g *gin.RouterGroup, c *di.Container) {
+	collections := g.Group("/bookmark-collections")
+	{
+		collections.POST("", c.BookmarkCollectionHandler.Create)
+		collections.GET("", c.BookmarkCollectionHandler.GetMyCollections)
+		collections.PUT("/:id", c.BookmarkCollectionHandler.Update)
+		collections.DELETE("/:id", c.BookmarkCollectionHandler.Delete)
+		collections.POST("/:id/posts/:postId", c.BookmarkCollectionHandler.AddPost)
+		collections.DELETE("/:id/posts/:postId", c.BookmarkCollectionHandler.RemovePost)
+		collections.GET("/:id/posts", c.BookmarkCollectionHandler.GetPosts)
 	}
 }
 

@@ -2237,3 +2237,61 @@ func (m *MockStreakFreezeRepository) HasFreezeOnDate(userID uint, date string) (
 	args := m.Called(userID, date)
 	return args.Bool(0), args.Error(1)
 }
+
+// ============================================================
+// MockBookmarkCollectionRepository は repository.BookmarkCollectionRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockBookmarkCollectionRepository struct {
+	mock.Mock
+}
+
+var _ repository.BookmarkCollectionRepositoryInterface = (*MockBookmarkCollectionRepository)(nil)
+
+func (m *MockBookmarkCollectionRepository) Create(collection *model.BookmarkCollection) error {
+	args := m.Called(collection)
+	return args.Error(0)
+}
+
+func (m *MockBookmarkCollectionRepository) FindByID(id uint) (*model.BookmarkCollection, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.BookmarkCollection), args.Error(1)
+}
+
+func (m *MockBookmarkCollectionRepository) FindByUserID(userID uint) ([]model.BookmarkCollection, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.BookmarkCollection), args.Error(1)
+}
+
+func (m *MockBookmarkCollectionRepository) Update(collection *model.BookmarkCollection) error {
+	args := m.Called(collection)
+	return args.Error(0)
+}
+
+func (m *MockBookmarkCollectionRepository) Delete(id uint) error {
+	args := m.Called(id)
+	return args.Error(0)
+}
+
+func (m *MockBookmarkCollectionRepository) AddPost(item *model.BookmarkCollectionItem) error {
+	args := m.Called(item)
+	return args.Error(0)
+}
+
+func (m *MockBookmarkCollectionRepository) RemovePost(collectionID, postID uint) error {
+	args := m.Called(collectionID, postID)
+	return args.Error(0)
+}
+
+func (m *MockBookmarkCollectionRepository) GetPosts(collectionID uint, limit, offset int) ([]model.Post, int64, error) {
+	args := m.Called(collectionID, limit, offset)
+	return args.Get(0).([]model.Post), args.Get(1).(int64), args.Error(2)
+}
+
+func (m *MockBookmarkCollectionRepository) HasPost(collectionID, postID uint) (bool, error) {
+	args := m.Called(collectionID, postID)
+	return args.Bool(0), args.Error(1)
+}
