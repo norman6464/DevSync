@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Flame, Trophy, Calendar, TrendingUp } from 'lucide-react';
+import { Flame, Trophy, Calendar, TrendingUp, Shield } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useAsyncData } from '../../hooks/useAsyncData';
 import { getStreakInfo, getCalendarData } from '../../api/learningLogs';
+import { useStreakFreeze } from '../../hooks/useStreakFreeze';
 import type { CalendarEntry } from '../../types/learningLog';
 
 export default function LearningStreakCard() {
@@ -27,6 +28,8 @@ export default function LearningStreakCard() {
     },
     { initialData: [] as CalendarEntry[], deps: [user?.id], enabled: !!user }
   );
+
+  const { freezeStatus, useFreeze } = useStreakFreeze();
 
   const loading = streakLoading || calendarLoading;
 
@@ -145,6 +148,42 @@ export default function LearningStreakCard() {
           <div className="text-xs text-gray-500">今月の学習日</div>
         </div>
       </div>
+
+      {/* Streak Freeze */}
+      {freezeStatus && (
+        <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4 text-cyan-400" />
+              <div>
+                <div className="text-sm font-medium text-white">{t('streak.freezeTitle')}</div>
+                <div className="text-xs text-gray-400">
+                  {t('streak.freezeCount', { used: freezeStatus.used_freezes, max: freezeStatus.max_freezes })}
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                if (confirm(t('streak.freezeConfirm'))) {
+                  useFreeze();
+                }
+              }}
+              disabled={!freezeStatus.can_use_today}
+              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                freezeStatus.can_use_today
+                  ? 'bg-cyan-600 hover:bg-cyan-500 text-white'
+                  : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              {freezeStatus.today_used
+                ? t('streak.freezeAlreadyUsed')
+                : freezeStatus.remaining === 0
+                ? t('streak.freezeUnavailable')
+                : t('streak.freezeButton')}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Calendar Grid */}
       <div>

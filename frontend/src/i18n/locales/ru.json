@@ -1108,7 +1108,17 @@
     "days": "дней",
     "daysConsecutive": "дней подряд",
     "noStreak": "Начните учиться сегодня!",
-    "keepItUp": "Так держать!"
+    "keepItUp": "Так держать!",
+    "freezeTitle": "Заморозка серии",
+    "freezeDescription": "Защитите серию в загруженные дни",
+    "freezeRemaining": "Осталось {{count}}",
+    "freezeUsed": "Заморозка серии использована",
+    "freezeError": "Не удалось использовать заморозку",
+    "freezeUnavailable": "Заморозки в этом месяце закончились",
+    "freezeAlreadyUsed": "Уже использовано сегодня",
+    "freezeConfirm": "Использовать заморозку серии сегодня?",
+    "freezeButton": "Использовать заморозку",
+    "freezeCount": "{{used}}/{{max}} использовано"
   },
   "dailyChallenge": {
     "title": "Ежедневный Вызов",

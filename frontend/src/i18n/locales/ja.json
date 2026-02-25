@@ -1054,7 +1054,17 @@
     "days": "日",
     "daysConsecutive": "日連続",
     "noStreak": "今日から学習を始めよう！",
-    "keepItUp": "この調子で頑張ろう！"
+    "keepItUp": "この調子で頑張ろう！",
+    "freezeTitle": "ストリークフリーズ",
+    "freezeDescription": "忙しい日にストリークを守ります",
+    "freezeRemaining": "残り{{count}}回",
+    "freezeUsed": "ストリークフリーズを使用しました",
+    "freezeError": "フリーズの使用に失敗しました",
+    "freezeUnavailable": "今月のフリーズは使い切りました",
+    "freezeAlreadyUsed": "今日は既に使用済みです",
+    "freezeConfirm": "今日のストリークフリーズを使用しますか？",
+    "freezeButton": "フリーズを使う",
+    "freezeCount": "{{used}}/{{max}}使用済み"
   },
   "dailyChallenge": {
     "title": "デイリーチャレンジ",

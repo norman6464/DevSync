@@ -1108,7 +1108,17 @@
     "days": "Tage",
     "daysConsecutive": "Tage am Stück",
     "noStreak": "Beginne heute mit dem Lernen!",
-    "keepItUp": "Weiter so!"
+    "keepItUp": "Weiter so!",
+    "freezeTitle": "Streak einfrieren",
+    "freezeDescription": "Schütze deinen Streak an stressigen Tagen",
+    "freezeRemaining": "{{count}} übrig",
+    "freezeUsed": "Streak-Freeze verwendet",
+    "freezeError": "Freeze konnte nicht verwendet werden",
+    "freezeUnavailable": "Keine Freezes mehr diesen Monat",
+    "freezeAlreadyUsed": "Heute bereits verwendet",
+    "freezeConfirm": "Streak-Freeze für heute verwenden?",
+    "freezeButton": "Freeze verwenden",
+    "freezeCount": "{{used}}/{{max}} verwendet"
   },
   "dailyChallenge": {
     "title": "Tägliche Herausforderung",

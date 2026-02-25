@@ -1109,7 +1109,17 @@
     "days": "días",
     "daysConsecutive": "días consecutivos",
     "noStreak": "¡Empieza a aprender hoy!",
-    "keepItUp": "¡Sigue así!"
+    "keepItUp": "¡Sigue así!",
+    "freezeTitle": "Congelación de racha",
+    "freezeDescription": "Protege tu racha en días ocupados",
+    "freezeRemaining": "{{count}} restantes",
+    "freezeUsed": "Congelación de racha usada",
+    "freezeError": "Error al usar la congelación",
+    "freezeUnavailable": "No quedan congelaciones este mes",
+    "freezeAlreadyUsed": "Ya se usó hoy",
+    "freezeConfirm": "¿Usar la congelación de racha de hoy?",
+    "freezeButton": "Usar congelación",
+    "freezeCount": "{{used}}/{{max}} usadas"
   },
   "dailyChallenge": {
     "title": "Desafío Diario",

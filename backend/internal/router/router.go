@@ -324,6 +324,7 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 	registerProjectRoutes(g, c)
 	registerResourceRoutes(g, c)
 	registerLearningLogRoutes(g, c)
+	registerStreakFreezeRoutes(g, c)
 	registerNoteRoutes(g, c)
 	registerEmailPreferencesRoutes(g, c)
 }
@@ -385,6 +386,14 @@ func registerResourceRoutes(g *gin.RouterGroup, c *di.Container) {
 		resources.DELETE("/:id/save", c.LearningResourceHandler.UnsaveResource)
 		resources.GET("/user/:userId", c.LearningResourceHandler.GetByUserID)
 		resources.GET("/difficulty/:difficulty", c.LearningResourceHandler.GetByDifficulty)
+	}
+}
+
+func registerStreakFreezeRoutes(g *gin.RouterGroup, c *di.Container) {
+	streakFreezes := g.Group("/streak-freezes")
+	{
+		streakFreezes.POST("", c.StreakFreezeHandler.UseFreeze)
+		streakFreezes.GET("/status", c.StreakFreezeHandler.GetStatus)
 	}
 }
 

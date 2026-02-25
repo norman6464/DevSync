@@ -1109,7 +1109,17 @@
     "days": "jours",
     "daysConsecutive": "jours consécutifs",
     "noStreak": "Commence à apprendre aujourd'hui !",
-    "keepItUp": "Continue comme ça !"
+    "keepItUp": "Continue comme ça !",
+    "freezeTitle": "Gel de série",
+    "freezeDescription": "Protégez votre série les jours chargés",
+    "freezeRemaining": "{{count}} restant(s)",
+    "freezeUsed": "Gel de série utilisé",
+    "freezeError": "Échec de l'utilisation du gel",
+    "freezeUnavailable": "Plus de gels disponibles ce mois-ci",
+    "freezeAlreadyUsed": "Déjà utilisé aujourd'hui",
+    "freezeConfirm": "Utiliser le gel de série aujourd'hui ?",
+    "freezeButton": "Utiliser le gel",
+    "freezeCount": "{{used}}/{{max}} utilisé(s)"
   },
   "dailyChallenge": {
     "title": "Défi Quotidien",

@@ -80,6 +80,7 @@ type Container struct {
 	BookmarkStatsHandler          *handler.BookmarkStatsHandler
 	YouTubeHandler                *handler.YouTubeHandler
 	SpotifyHandler           *handler.SpotifyHandler
+	StreakFreezeHandler       *handler.StreakFreezeHandler
 
 	// ミドルウェア・コールバック用
 	AuthService      *service.AuthService
@@ -357,6 +358,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	}
 	youtubeService := service.NewYouTubeService(youtubeVideoRepo, userRepo, youtubeClient)
 	c.YouTubeHandler = handler.NewYouTubeHandler(youtubeService)
+
+	// ストリークフリーズサービス
+	streakFreezeRepo := repository.NewStreakFreezeRepository(db)
+	streakFreezeService := service.NewStreakFreezeService(streakFreezeRepo)
+	c.StreakFreezeHandler = handler.NewStreakFreezeHandler(streakFreezeService)
 
 	// HubのGetRoomMembersコールバックを設定
 	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs
