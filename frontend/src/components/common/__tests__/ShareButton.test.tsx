@@ -2,6 +2,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import ShareButton from '../ShareButton';
 
+// useToastのモック
+vi.mock('../../../contexts/ToastContext', () => ({
+  useToast: () => ({
+    toast: {
+      success: vi.fn(),
+      error: vi.fn(),
+    },
+    showToast: vi.fn(),
+  }),
+}));
+
 // window.openのモック
 const mockWindowOpen = vi.fn();
 global.window.open = mockWindowOpen;
@@ -9,6 +20,7 @@ global.window.open = mockWindowOpen;
 describe('ShareButton', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    global.window.open = mockWindowOpen;
   });
 
   it('シェアボタンが表示される', () => {
@@ -51,7 +63,7 @@ describe('ShareButton', () => {
       expect.any(String)
     );
     expect(mockWindowOpen).toHaveBeenCalledWith(
-      expect.stringContaining('テストメッセージ'),
+      expect.stringContaining(encodeURIComponent('テストメッセージ')),
       '_blank',
       expect.any(String)
     );

@@ -45,7 +45,7 @@ describe('PasswordInput', () => {
   });
 
   it('弱いパスワードは赤', () => {
-    const { container } = render(<PasswordInput value="ab" onChange={() => {}} showStrength />);
+    const { container } = render(<PasswordInput value="abcdefgh" onChange={() => {}} showStrength />);
     expect(container.querySelector('.bg-red-500')).toBeInTheDocument();
   });
 

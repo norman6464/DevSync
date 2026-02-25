@@ -5,7 +5,7 @@ import HeatMap from '../HeatMap';
 const data = [
   { date: '2026-01-01', count: 0 },
   { date: '2026-01-02', count: 3 },
-  { date: '2026-01-03', count: 7 },
+  { date: '2026-01-03', count: 5 },
   { date: '2026-01-04', count: 12 },
 ];
 

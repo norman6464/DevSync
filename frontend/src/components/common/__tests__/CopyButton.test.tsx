@@ -1,15 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import CopyButton from '../CopyButton';
 
 describe('CopyButton', () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    Object.assign(navigator, {
-      clipboard: {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: {
         writeText: vi.fn().mockResolvedValue(undefined),
       },
+      writable: true,
+      configurable: true,
     });
   });
 
@@ -30,31 +31,36 @@ describe('CopyButton', () => {
   });
 
   it('クリックでクリップボードにコピーされる', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     render(<CopyButton text="コピーテキスト" />);
 
-    await user.click(screen.getByRole('button'));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button'));
+    });
 
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith('コピーテキスト');
   });
 
   it('コピー成功後にチェックアイコンが表示される', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const { container } = render(<CopyButton text="テスト" />);
 
-    await user.click(screen.getByRole('button'));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button'));
+    });
 
     expect(container.querySelector('.lucide-check')).toBeInTheDocument();
   });
 
   it('一定時間後に元のアイコンに戻る', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const { container } = render(<CopyButton text="テスト" />);
 
-    await user.click(screen.getByRole('button'));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button'));
+    });
     expect(container.querySelector('.lucide-check')).toBeInTheDocument();
 
-    vi.advanceTimersByTime(2000);
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
 
     expect(container.querySelector('.lucide-copy')).toBeInTheDocument();
   });
@@ -66,10 +72,11 @@ describe('CopyButton', () => {
   });
 
   it('コピー成功後にラベルが変わる', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     render(<CopyButton text="テスト" label="コピー" successLabel="コピー済み" />);
 
-    await user.click(screen.getByRole('button'));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button'));
+    });
 
     expect(screen.getByText('コピー済み')).toBeInTheDocument();
   });
@@ -82,10 +89,11 @@ describe('CopyButton', () => {
 
   it('onCopyコールバックが呼ばれる', async () => {
     const onCopy = vi.fn();
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     render(<CopyButton text="テスト" onCopy={onCopy} />);
 
-    await user.click(screen.getByRole('button'));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button'));
+    });
 
     expect(onCopy).toHaveBeenCalledTimes(1);
   });

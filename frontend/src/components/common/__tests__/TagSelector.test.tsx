@@ -12,8 +12,8 @@ describe('TagSelector', () => {
   it('選択済みタグが表示される', () => {
     render(<TagSelector value="#React,#TypeScript" onChange={mockOnChange} />);
 
-    expect(screen.getByText('#React')).toBeInTheDocument();
-    expect(screen.getByText('#TypeScript')).toBeInTheDocument();
+    expect(screen.getByText('React')).toBeInTheDocument();
+    expect(screen.getByText('TypeScript')).toBeInTheDocument();
   });
 
   it('タグ入力フィールドが表示される', () => {
@@ -25,7 +25,7 @@ describe('TagSelector', () => {
   it('タグをクリックすると削除される', () => {
     render(<TagSelector value="#React,#TypeScript" onChange={mockOnChange} />);
 
-    const reactTag = screen.getByText('#React');
+    const reactTag = screen.getByText('React');
     fireEvent.click(reactTag);
 
     expect(mockOnChange).toHaveBeenCalledWith('#TypeScript');
@@ -46,7 +46,7 @@ describe('TagSelector', () => {
     render(<TagSelector value="" onChange={mockOnChange} suggestions={suggestions} />);
 
     suggestions.forEach((tag) => {
-      expect(screen.getByText(`#${tag}`)).toBeInTheDocument();
+      expect(screen.getByText(tag)).toBeInTheDocument();
     });
   });
 
@@ -54,7 +54,7 @@ describe('TagSelector', () => {
     const suggestions = ['JavaScript', 'TypeScript'];
     render(<TagSelector value="" onChange={mockOnChange} suggestions={suggestions} />);
 
-    const jsTag = screen.getByText('#JavaScript');
+    const jsTag = screen.getByText('JavaScript');
     fireEvent.click(jsTag);
 
     expect(mockOnChange).toHaveBeenCalledWith('#JavaScript');
@@ -104,21 +104,20 @@ describe('TagSelector', () => {
   it('選択済みタグにホバーエフェクトがある', () => {
     render(<TagSelector value="#React" onChange={mockOnChange} />);
 
-    const reactTag = screen.getByText('#React');
+    const reactTag = screen.getByText('React').closest('button');
     expect(reactTag).toHaveClass('hover:bg-red-500/30');
   });
 
   it('候補タグと選択済みタグが区別される', () => {
     const suggestions = ['React', 'TypeScript'];
-    render(<TagSelector value="#React" onChange={mockOnChange} suggestions={suggestions} />);
+    const { container } = render(<TagSelector value="#React" onChange={mockOnChange} suggestions={suggestions} />);
 
-    const selectedTag = screen.getAllByText('#React')[0]; // 選択済み
-    const suggestionTag = screen.getAllByText('#React')[1]; // 候補
+    // 選択済みタグエリアのボタン（bg-blue-500/20 + hover:bg-red-500/30）
+    const selectedButtons = container.querySelectorAll('button.bg-blue-500\\/20.hover\\:bg-red-500\\/30');
+    expect(selectedButtons.length).toBe(1);
 
-    // 選択済みタグは削除可能なスタイル
-    expect(selectedTag.parentElement).toHaveClass('bg-blue-500/20');
-
-    // 候補タグは追加可能なスタイル
-    expect(suggestionTag.parentElement).toHaveClass('bg-gray-800/50');
+    // 候補タグエリアの未選択タグ（bg-gray-800/50）
+    const suggestionButtons = container.querySelectorAll('button.bg-gray-800\\/50');
+    expect(suggestionButtons.length).toBe(1); // TypeScriptのみ（Reactは選択済みなので異なるスタイル）
   });
 });

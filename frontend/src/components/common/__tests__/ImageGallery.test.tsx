@@ -19,21 +19,21 @@ describe('ImageGallery', () => {
 
   it('alt属性が正しく設定される', () => {
     render(<ImageGallery images={images} />);
-    expect(screen.getByAlt('画像1')).toBeInTheDocument();
-    expect(screen.getByAlt('画像2')).toBeInTheDocument();
+    expect(screen.getByAltText('画像1')).toBeInTheDocument();
+    expect(screen.getByAltText('画像2')).toBeInTheDocument();
   });
 
   it('画像クリックでライトボックスが表示される', async () => {
     const user = userEvent.setup();
     render(<ImageGallery images={images} />);
-    await user.click(screen.getByAlt('画像1'));
+    await user.click(screen.getByAltText('画像1'));
     expect(screen.getByTestId('lightbox')).toBeInTheDocument();
   });
 
   it('ライトボックスで閉じるボタンが動作する', async () => {
     const user = userEvent.setup();
     render(<ImageGallery images={images} />);
-    await user.click(screen.getByAlt('画像1'));
+    await user.click(screen.getByAltText('画像1'));
     await user.click(screen.getByLabelText('閉じる'));
     expect(screen.queryByTestId('lightbox')).not.toBeInTheDocument();
   });
@@ -41,7 +41,7 @@ describe('ImageGallery', () => {
   it('ライトボックスで次へナビゲーション', async () => {
     const user = userEvent.setup();
     render(<ImageGallery images={images} />);
-    await user.click(screen.getByAlt('画像1'));
+    await user.click(screen.getByAltText('画像1'));
     await user.click(screen.getByLabelText('次へ'));
     const lightboxImg = screen.getByTestId('lightbox').querySelector('img');
     expect(lightboxImg).toHaveAttribute('alt', '画像2');
@@ -50,7 +50,7 @@ describe('ImageGallery', () => {
   it('ライトボックスで前へナビゲーション', async () => {
     const user = userEvent.setup();
     render(<ImageGallery images={images} />);
-    await user.click(screen.getByAlt('画像2'));
+    await user.click(screen.getByAltText('画像2'));
     await user.click(screen.getByLabelText('前へ'));
     const lightboxImg = screen.getByTestId('lightbox').querySelector('img');
     expect(lightboxImg).toHaveAttribute('alt', '画像1');

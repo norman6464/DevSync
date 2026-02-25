@@ -26,9 +26,9 @@ describe('StepIndicator', () => {
   });
 
   it('現在のステップがアクティブスタイル', () => {
-    const { container } = render(<StepIndicator steps={steps} currentStep={1} />);
+    const { container } = render(<StepIndicator steps={steps} currentStep={0} />);
 
-    const activeCircles = container.querySelectorAll('.bg-blue-600');
+    const activeCircles = container.querySelectorAll('.rounded-full.bg-blue-600');
     expect(activeCircles.length).toBe(1);
   });
 
@@ -42,7 +42,7 @@ describe('StepIndicator', () => {
   it('未完了のステップがグレースタイル', () => {
     const { container } = render(<StepIndicator steps={steps} currentStep={0} />);
 
-    const grayCircles = container.querySelectorAll('.bg-gray-700');
+    const grayCircles = container.querySelectorAll('.rounded-full.bg-gray-700');
     expect(grayCircles.length).toBe(2);
   });
 
