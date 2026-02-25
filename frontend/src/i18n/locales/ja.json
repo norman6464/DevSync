@@ -1458,6 +1458,16 @@
     "newVideo": "新着",
     "unavailable": "YouTube動画機能は現在利用できません"
   },
+  "scheduledPublish": {
+    "schedule": "スケジュール公開",
+    "scheduled": "スケジュール済み",
+    "scheduledLabel": "公開予定",
+    "noScheduled": "スケジュール済みの投稿はありません",
+    "scheduleFailed": "スケジュール設定に失敗しました",
+    "cancelSchedule": "スケジュール解除",
+    "confirmCancel": "この投稿のスケジュール公開を解除しますか？",
+    "cancelled": "スケジュールを解除しました"
+  },
   "bookmarkCollections": {
     "saveToCollection": "コレクションに保存",
     "addedToCollection": "コレクションに追加しました",

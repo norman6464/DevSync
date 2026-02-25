@@ -1557,6 +1557,16 @@
     "newVideo": "New",
     "unavailable": "YouTube video feature is currently unavailable"
   },
+  "scheduledPublish": {
+    "schedule": "Schedule Publish",
+    "scheduled": "Scheduled",
+    "scheduledLabel": "Scheduled",
+    "noScheduled": "No scheduled posts",
+    "scheduleFailed": "Failed to schedule publication",
+    "cancelSchedule": "Cancel Schedule",
+    "confirmCancel": "Cancel the scheduled publication for this post?",
+    "cancelled": "Schedule cancelled"
+  },
   "bookmarkCollections": {
     "saveToCollection": "Save to Collection",
     "addedToCollection": "Added to collection",

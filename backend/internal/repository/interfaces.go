@@ -81,6 +81,7 @@ type PostRepositoryInterface interface {
 	RemoveReaction(userID, postID uint, emoji string) error
 	GetReactionsByPostID(postID uint) ([]model.ReactionCount, error)
 	GetUserReactions(userID, postID uint) ([]string, error)
+	FindScheduledByUserID(userID uint) ([]model.Post, error)
 }
 
 // FollowRepositoryInterface はフォロー関係データ操作の契約を定義する。

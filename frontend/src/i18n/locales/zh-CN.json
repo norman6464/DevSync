@@ -1557,6 +1557,16 @@
     "newVideo": "最新",
     "unavailable": "YouTube视频功能当前不可用"
   },
+  "scheduledPublish": {
+    "schedule": "定时发布",
+    "scheduled": "已定时",
+    "scheduledLabel": "已定时",
+    "noScheduled": "没有定时发布的帖子",
+    "scheduleFailed": "定时发布失败",
+    "cancelSchedule": "取消定时",
+    "confirmCancel": "确定要取消此帖子的定时发布吗？",
+    "cancelled": "定时发布已取消"
+  },
   "bookmarkCollections": {
     "saveToCollection": "保存到收藏夹",
     "addedToCollection": "已添加到收藏夹",

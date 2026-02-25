@@ -152,6 +152,10 @@ func (m *MockPostRepository) FindDraftsByUserID(userID uint) ([]model.Post, erro
 	args := m.Called(userID)
 	return args.Get(0).([]model.Post), args.Error(1)
 }
+func (m *MockPostRepository) FindScheduledByUserID(userID uint) ([]model.Post, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.Post), args.Error(1)
+}
 func (m *MockPostRepository) GetReplies(parentID uint) ([]model.Comment, error) {
 	args := m.Called(parentID)
 	return args.Get(0).([]model.Comment), args.Error(1)

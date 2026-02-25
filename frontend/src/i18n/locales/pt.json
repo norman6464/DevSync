@@ -1557,6 +1557,16 @@
     "newVideo": "Novo",
     "unavailable": "O recurso de vídeos do YouTube não está disponível no momento"
   },
+  "scheduledPublish": {
+    "schedule": "Agendar publicação",
+    "scheduled": "Agendado",
+    "scheduledLabel": "Agendado",
+    "noScheduled": "Nenhuma publicação agendada",
+    "scheduleFailed": "Falha ao agendar publicação",
+    "cancelSchedule": "Cancelar agendamento",
+    "confirmCancel": "Deseja cancelar o agendamento desta publicação?",
+    "cancelled": "Agendamento cancelado"
+  },
   "bookmarkCollections": {
     "saveToCollection": "Salvar na coleção",
     "addedToCollection": "Adicionado à coleção",

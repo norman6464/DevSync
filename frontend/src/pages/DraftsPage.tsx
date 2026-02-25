@@ -2,10 +2,10 @@ import { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { FileEdit, Eye, Trash2, Send, ArrowUpDown } from 'lucide-react';
+import { FileEdit, Eye, Trash2, Send, ArrowUpDown, Clock, X } from 'lucide-react';
 import { useAsyncData } from '../hooks/useAsyncData';
-import { useConfirm } from '../hooks';
-import { getDrafts, publishPost, deletePost } from '../api/posts';
+import { useConfirm, useScheduledPosts } from '../hooks';
+import { getDrafts, publishPost, deletePost, schedulePublish } from '../api/posts';
 import { PostCardSkeleton } from '../components/common/Skeleton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import { formatDistanceToNow } from '../utils/timeFormat';
@@ -24,8 +24,12 @@ export default function DraftsPage() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   const { confirm, dialogProps } = useConfirm();
+  const { posts: scheduledPosts, cancel: cancelScheduleAction } = useScheduledPosts();
 
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'title'>('newest');
+  const [tab, setTab] = useState<'drafts' | 'scheduled'>('drafts');
+  const [schedulingId, setSchedulingId] = useState<number | null>(null);
+  const [scheduleDate, setScheduleDate] = useState('');
 
   const { data: drafts, loading } = useAsyncData(
     async () => {
@@ -83,6 +87,36 @@ export default function DraftsPage() {
     }
   }, [confirm, t]);
 
+  const handleSchedule = useCallback(async (id: number) => {
+    if (!scheduleDate) return;
+    try {
+      await schedulePublish(id, new Date(scheduleDate).toISOString());
+      toast.success(t('scheduledPublish.scheduled'));
+      setSchedulingId(null);
+      setScheduleDate('');
+      setRefreshKey((k) => k + 1);
+    } catch {
+      toast.error(t('scheduledPublish.scheduleFailed'));
+    }
+  }, [scheduleDate, t]);
+
+  const handleCancelSchedule = useCallback(async (id: number) => {
+    const confirmed = await confirm({
+      title: t('scheduledPublish.cancelSchedule'),
+      message: t('scheduledPublish.confirmCancel'),
+      variant: 'info',
+      confirmText: t('scheduledPublish.cancelSchedule'),
+    });
+    if (!confirmed) return;
+    try {
+      await cancelScheduleAction(id);
+      toast.success(t('scheduledPublish.cancelled'));
+      setRefreshKey((k) => k + 1);
+    } catch {
+      toast.error(t('errors.somethingWrong'));
+    }
+  }, [confirm, cancelScheduleAction, t]);
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
@@ -113,7 +147,80 @@ export default function DraftsPage() {
         )}
       </div>
 
-      {loading ? (
+      <div className="flex gap-2 mb-4">
+        <button
+          onClick={() => setTab('drafts')}
+          className={`px-4 py-2 text-sm rounded-lg transition-colors ${
+            tab === 'drafts'
+              ? 'bg-orange-500/10 text-orange-400 border border-orange-500/50'
+              : 'text-gray-400 border border-gray-700 hover:border-gray-600'
+          }`}
+        >
+          <FileEdit className="w-4 h-4 inline mr-1.5" />
+          {t('post.drafts')} ({drafts.length})
+        </button>
+        <button
+          onClick={() => setTab('scheduled')}
+          className={`px-4 py-2 text-sm rounded-lg transition-colors ${
+            tab === 'scheduled'
+              ? 'bg-blue-500/10 text-blue-400 border border-blue-500/50'
+              : 'text-gray-400 border border-gray-700 hover:border-gray-600'
+          }`}
+        >
+          <Clock className="w-4 h-4 inline mr-1.5" />
+          {t('scheduledPublish.scheduled')} ({scheduledPosts.length})
+        </button>
+      </div>
+
+      {tab === 'scheduled' ? (
+        scheduledPosts.length === 0 ? (
+          <div className={emptyStateClass}>
+            <Clock className="w-16 h-16 mx-auto mb-4 text-gray-700" />
+            <p className="text-gray-400">{t('scheduledPublish.noScheduled')}</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {scheduledPosts.map((post) => (
+              <div
+                key={post.id}
+                className="bg-gray-900 border border-gray-800 rounded-md p-4 hover:border-gray-700 transition-colors"
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-semibold text-white truncate">{post.title}</h3>
+                    <p className="text-sm text-gray-400 line-clamp-2 mt-1">{post.content}</p>
+                  </div>
+                  <span className="ml-3 px-2 py-1 text-xs font-medium bg-blue-500/10 text-blue-400 rounded shrink-0">
+                    {t('scheduledPublish.scheduledLabel')}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-800">
+                  <span className="text-xs text-blue-400 flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5" />
+                    {post.scheduled_at && new Date(post.scheduled_at).toLocaleString()}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => navigate(`/posts/${post.id}`)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+                    >
+                      <Eye className="w-4 h-4" />
+                      {t('common.view')}
+                    </button>
+                    <button
+                      onClick={() => handleCancelSchedule(post.id)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                      {t('scheduledPublish.cancelSchedule')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      ) : loading ? (
         <div className="space-y-3">
           <PostCardSkeleton />
           <PostCardSkeleton />
@@ -162,6 +269,39 @@ export default function DraftsPage() {
                     <Send className="w-4 h-4" />
                     {t('post.publish')}
                   </button>
+                  {schedulingId === draft.id ? (
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="datetime-local"
+                        value={scheduleDate}
+                        onChange={(e) => setScheduleDate(e.target.value)}
+                        min={new Date().toISOString().slice(0, 16)}
+                        className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm text-gray-200"
+                      />
+                      <button
+                        onClick={() => handleSchedule(draft.id)}
+                        disabled={!scheduleDate}
+                        className="px-2 py-1 text-sm text-green-400 hover:text-green-300 disabled:text-gray-600"
+                      >
+                        {t('common.save')}
+                      </button>
+                      <button
+                        onClick={() => { setSchedulingId(null); setScheduleDate(''); }}
+                        className="text-gray-500 hover:text-gray-300"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setSchedulingId(draft.id)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 rounded-lg transition-colors"
+                      title={t('scheduledPublish.schedule')}
+                    >
+                      <Clock className="w-4 h-4" />
+                      {t('scheduledPublish.schedule')}
+                    </button>
+                  )}
                   <button
                     onClick={() => handleDelete(draft.id)}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"

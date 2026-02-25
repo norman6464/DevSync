@@ -1557,6 +1557,16 @@
     "newVideo": "Nuevo",
     "unavailable": "La función de videos de YouTube no está disponible actualmente"
   },
+  "scheduledPublish": {
+    "schedule": "Programar publicación",
+    "scheduled": "Programado",
+    "scheduledLabel": "Programado",
+    "noScheduled": "No hay publicaciones programadas",
+    "scheduleFailed": "Error al programar la publicación",
+    "cancelSchedule": "Cancelar programación",
+    "confirmCancel": "¿Desea cancelar la programación de esta publicación?",
+    "cancelled": "Programación cancelada"
+  },
   "bookmarkCollections": {
     "saveToCollection": "Guardar en colección",
     "addedToCollection": "Añadido a la colección",

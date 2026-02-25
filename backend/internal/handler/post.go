@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
@@ -37,6 +39,9 @@ type PostServiceInterface interface {
 	RemoveReaction(userID, postID uint, emoji string) error
 	GetReactionsByPostID(postID uint) ([]model.ReactionCount, error)
 	GetUserReactions(userID, postID uint) ([]string, error)
+	SchedulePublish(id, userID uint, scheduledAt time.Time) (*model.Post, error)
+	CancelSchedule(id, userID uint) (*model.Post, error)
+	GetScheduled(userID uint) ([]model.Post, error)
 }
 
 // CodeSnippetServiceInterface はCodeSnippetServiceが実装すべきインターフェース。
@@ -472,4 +477,64 @@ func (h *PostHandler) GetReactions(c *gin.Context) {
 		Reactions:     reactions,
 		UserReactions: userReactions,
 	})
+}
+
+// SchedulePublish は投稿のスケジュール公開日時を設定する。
+func (h *PostHandler) SchedulePublish(c *gin.Context) {
+	userID := c.GetUint("userID")
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	input := bindJSON[struct {
+		ScheduledAt string `json:"scheduled_at"`
+	}](c)
+	if input == nil {
+		return
+	}
+
+	scheduledAt, err := time.Parse(time.RFC3339, input.ScheduledAt)
+	if err != nil {
+		respondError(c, domain.NewError(domain.ErrCodeBadRequest, "日時のフォーマットが不正です（RFC3339形式で指定してください）", err))
+		return
+	}
+
+	post, err := h.service.SchedulePublish(id, userID, scheduledAt)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, post)
+}
+
+// CancelSchedule はスケジュールを解除して下書きに戻す。
+func (h *PostHandler) CancelSchedule(c *gin.Context) {
+	userID := c.GetUint("userID")
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	post, err := h.service.CancelSchedule(id, userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, post)
+}
+
+// GetScheduled はユーザーのスケジュール済み投稿一覧を返す。
+func (h *PostHandler) GetScheduled(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	posts, err := h.service.GetScheduled(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, ensureSlice(posts))
 }

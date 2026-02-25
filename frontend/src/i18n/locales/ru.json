@@ -1556,6 +1556,16 @@
     "newVideo": "Новое",
     "unavailable": "Функция видео YouTube в настоящее время недоступна"
   },
+  "scheduledPublish": {
+    "schedule": "Запланировать публикацию",
+    "scheduled": "Запланировано",
+    "scheduledLabel": "Запланировано",
+    "noScheduled": "Нет запланированных публикаций",
+    "scheduleFailed": "Ошибка планирования публикации",
+    "cancelSchedule": "Отменить планирование",
+    "confirmCancel": "Вы хотите отменить планирование этой публикации?",
+    "cancelled": "Планирование отменено"
+  },
   "bookmarkCollections": {
     "saveToCollection": "Сохранить в коллекцию",
     "addedToCollection": "Добавлено в коллекцию",
