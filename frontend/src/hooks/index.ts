@@ -54,3 +54,4 @@ export { useCommentLike } from './useCommentLike';
 export { useReactions } from './useReactions';
 export { useClickOutside } from './useClickOutside';
 export { useSubmitShortcut } from './useSubmitShortcut';
+export { useStreakFreeze } from './useStreakFreeze';

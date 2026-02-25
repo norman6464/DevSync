@@ -1111,7 +1111,17 @@
     "days": "天",
     "daysConsecutive": "天連續",
     "noStreak": "從今天開始學習吧！",
-    "keepItUp": "繼續加油！"
+    "keepItUp": "繼續加油！",
+    "freezeTitle": "連續凍結",
+    "freezeDescription": "在忙碌的日子保護你的連續記錄",
+    "freezeRemaining": "剩餘{{count}}次",
+    "freezeUsed": "已使用連續凍結",
+    "freezeError": "凍結使用失敗",
+    "freezeUnavailable": "本月凍結次數已用完",
+    "freezeAlreadyUsed": "今天已使用",
+    "freezeConfirm": "使用今天的連續凍結嗎？",
+    "freezeButton": "使用凍結",
+    "freezeCount": "已使用{{used}}/{{max}}"
   },
   "dailyChallenge": {
     "title": "每日挑戰",

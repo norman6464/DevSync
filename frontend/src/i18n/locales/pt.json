@@ -1109,7 +1109,17 @@
     "days": "dias",
     "daysConsecutive": "dias consecutivos",
     "noStreak": "Comece a aprender hoje!",
-    "keepItUp": "Continue assim!"
+    "keepItUp": "Continue assim!",
+    "freezeTitle": "Congelamento de sequência",
+    "freezeDescription": "Proteja sua sequência em dias ocupados",
+    "freezeRemaining": "{{count}} restante(s)",
+    "freezeUsed": "Congelamento de sequência usado",
+    "freezeError": "Falha ao usar congelamento",
+    "freezeUnavailable": "Sem congelamentos restantes este mês",
+    "freezeAlreadyUsed": "Já usado hoje",
+    "freezeConfirm": "Usar congelamento de sequência hoje?",
+    "freezeButton": "Usar congelamento",
+    "freezeCount": "{{used}}/{{max}} usado(s)"
   },
   "dailyChallenge": {
     "title": "Desafio Diário",

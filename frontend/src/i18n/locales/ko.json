@@ -1111,7 +1111,17 @@
     "days": "일",
     "daysConsecutive": "일 연속",
     "noStreak": "오늘부터 학습을 시작하세요!",
-    "keepItUp": "이 조자로 계속 가세요!"
+    "keepItUp": "이 조자로 계속 가세요!",
+    "freezeTitle": "스트릭 프리즈",
+    "freezeDescription": "바쁜 날에 스트릭을 보호합니다",
+    "freezeRemaining": "{{count}}회 남음",
+    "freezeUsed": "스트릭 프리즈를 사용했습니다",
+    "freezeError": "프리즈 사용에 실패했습니다",
+    "freezeUnavailable": "이번 달 프리즈를 모두 사용했습니다",
+    "freezeAlreadyUsed": "오늘은 이미 사용했습니다",
+    "freezeConfirm": "오늘의 스트릭 프리즈를 사용하시겠습니까?",
+    "freezeButton": "프리즈 사용",
+    "freezeCount": "{{used}}/{{max}} 사용됨"
   },
   "dailyChallenge": {
     "title": "오늘의 챌린지",
