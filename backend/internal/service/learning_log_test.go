@@ -663,3 +663,110 @@ func TestLearningLogUnfavorite_Forbidden(t *testing.T) {
 	err := svc.UnfavoriteLog(10, 1)
 	assert.ErrorIs(t, err, ErrForbidden)
 }
+
+// ============================================================
+// GetRecentCategories テスト
+// ============================================================
+
+func TestLearningLogGetRecentCategories_Success(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	categories := []string{"Go", "React", "TypeScript"}
+	repo.On("GetRecentCategories", uint(1), 5).Return(categories, nil)
+
+	result, err := svc.GetRecentCategories(1)
+	assert.NoError(t, err)
+	assert.Len(t, result, 3)
+	assert.Equal(t, "Go", result[0])
+}
+
+func TestLearningLogGetRecentCategories_Empty(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	repo.On("GetRecentCategories", uint(1), 5).Return([]string{}, nil)
+
+	result, err := svc.GetRecentCategories(1)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+}
+
+func TestLearningLogGetRecentCategories_Error(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	repo.On("GetRecentCategories", uint(1), 5).Return([]string{}, errors.New("db error"))
+
+	_, err := svc.GetRecentCategories(1)
+	assert.Error(t, err)
+}
+
+// ============================================================
+// ExportCSV 追加エッジケーステスト
+// ============================================================
+
+func TestLearningLogExportCSV_SpecificPeriod(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	now := time.Now()
+	logs := []model.LearningLog{
+		{
+			Title:    "Go基礎",
+			Category: "Go",
+			Duration: 60,
+			Content:  "変数・型・制御構文",
+		},
+	}
+	logs[0].CreatedAt = now
+
+	repo.On("GetByPeriod", uint(1), 7).Return(logs, nil)
+
+	data, err := svc.ExportCSV(1, 7)
+	assert.NoError(t, err)
+	assert.NotNil(t, data)
+
+	content := string(data)
+	assert.Contains(t, content, "Go基礎")
+	assert.Contains(t, content, "60")
+	assert.Contains(t, content, "変数・型・制御構文")
+}
+
+func TestLearningLogExportCSV_BOMPresent(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	repo.On("GetByPeriod", uint(1), 30).Return([]model.LearningLog{}, nil)
+
+	data, err := svc.ExportCSV(1, 30)
+	assert.NoError(t, err)
+
+	// BOM付きUTF-8を確認
+	assert.True(t, len(data) >= 3)
+	assert.Equal(t, byte(0xEF), data[0])
+	assert.Equal(t, byte(0xBB), data[1])
+	assert.Equal(t, byte(0xBF), data[2])
+}
+
+func TestLearningLogExportCSV_MultipleRows(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	now := time.Now()
+	logs := []model.LearningLog{
+		{Title: "ログ1", Category: "Go", Duration: 30, Content: "メモ1"},
+		{Title: "ログ2", Category: "React", Duration: 45, Content: "メモ2"},
+		{Title: "ログ3", Category: "Docker", Duration: 15, Content: "メモ3"},
+	}
+	for i := range logs {
+		logs[i].CreatedAt = now
+	}
+
+	repo.On("GetByPeriod", uint(1), 0).Return(logs, nil)
+
+	data, err := svc.ExportCSV(1, 0)
+	assert.NoError(t, err)
+
+	content := string(data)
+	assert.Contains(t, content, "ログ1")
+	assert.Contains(t, content, "ログ2")
+	assert.Contains(t, content, "ログ3")
+	assert.Contains(t, content, "Go")
+	assert.Contains(t, content, "React")
+	assert.Contains(t, content, "Docker")
+}
