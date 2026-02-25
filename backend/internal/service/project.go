@@ -50,14 +50,7 @@ func (s *ProjectService) GetAll(limit, offset int) ([]model.Project, int64, erro
 
 // findAndCheckOwnership はプロジェクトを取得し、指定ユーザーが所有者かを検証する。
 func (s *ProjectService) findAndCheckOwnership(id, userID uint) (*model.Project, error) {
-	project, err := s.repo.FindByID(id)
-	if err != nil {
-		return nil, err
-	}
-	if project.UserID != userID {
-		return nil, ErrForbidden
-	}
-	return project, nil
+	return checkOwnership(s.repo.FindByID, id, userID, func(p *model.Project) uint { return p.UserID })
 }
 
 // Update は所有権を検証した後、プロジェクトを更新する。

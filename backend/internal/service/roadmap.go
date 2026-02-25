@@ -74,14 +74,7 @@ func (s *RoadmapService) GetStats(userID uint) (*model.RoadmapStats, error) {
 
 // findAndCheckOwnership は指定IDのロードマップを取得し、所有権を検証する。
 func (s *RoadmapService) findAndCheckOwnership(id, userID uint) (*model.Roadmap, error) {
-	roadmap, err := s.repo.FindByID(id)
-	if err != nil {
-		return nil, err
-	}
-	if roadmap.UserID != userID {
-		return nil, ErrForbidden
-	}
-	return roadmap, nil
+	return checkOwnership(s.repo.FindByID, id, userID, func(r *model.Roadmap) uint { return r.UserID })
 }
 
 // findAndCheckStepOwnership はロードマップの所有権とステップの所属を検証する。

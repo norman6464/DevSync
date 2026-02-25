@@ -46,14 +46,7 @@ func (s *PostSeriesService) CountByUser(userID uint) (int64, error) {
 
 // findAndCheckOwnership はシリーズを取得し、指定ユーザーが所有者かを検証する。
 func (s *PostSeriesService) findAndCheckOwnership(id, userID uint) (*model.PostSeries, error) {
-	series, err := s.repo.FindByID(id)
-	if err != nil {
-		return nil, err
-	}
-	if series.UserID != userID {
-		return nil, ErrForbidden
-	}
-	return series, nil
+	return checkOwnership(s.repo.FindByID, id, userID, func(ps *model.PostSeries) uint { return ps.UserID })
 }
 
 // Update は所有権を検証した後、シリーズを更新する。

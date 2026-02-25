@@ -76,14 +76,7 @@ func (s *ChatRoomService) GetByID(roomID, userID uint) (*model.ChatRoom, error) 
 
 // findAndCheckOwnership はチャットルームを取得し、指定ユーザーがオーナーかを検証する。
 func (s *ChatRoomService) findAndCheckOwnership(roomID, userID uint) (*model.ChatRoom, error) {
-	room, err := s.roomRepo.FindByID(roomID)
-	if err != nil {
-		return nil, err
-	}
-	if room.OwnerID != userID {
-		return nil, ErrForbidden
-	}
-	return room, nil
+	return checkOwnership(s.roomRepo.FindByID, roomID, userID, func(r *model.ChatRoom) uint { return r.OwnerID })
 }
 
 // Update はオーナー権限を検証した後、チャットルーム情報を更新する。

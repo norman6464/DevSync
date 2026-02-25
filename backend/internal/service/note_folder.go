@@ -52,14 +52,7 @@ func (s *NoteFolderService) GetRootFolders(userID uint) ([]model.NoteFolder, err
 
 // findAndCheckOwnership はフォルダを取得し、指定ユーザーが所有者かを検証する。
 func (s *NoteFolderService) findAndCheckOwnership(id, userID uint) (*model.NoteFolder, error) {
-	folder, err := s.repo.FindByID(id)
-	if err != nil {
-		return nil, err
-	}
-	if folder.UserID != userID {
-		return nil, ErrForbidden
-	}
-	return folder, nil
+	return checkOwnership(s.repo.FindByID, id, userID, func(f *model.NoteFolder) uint { return f.UserID })
 }
 
 // isDescendant は targetID が ancestorID の子孫かを再帰的にチェックする。

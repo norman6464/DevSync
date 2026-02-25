@@ -76,14 +76,7 @@ func validateDuration(duration int) error {
 
 // findAndCheckOwnership は学習ログを取得し、指定ユーザーが所有者かを検証する。
 func (s *LearningLogService) findAndCheckOwnership(id, userID uint) (*model.LearningLog, error) {
-	log, err := s.repo.FindByID(id)
-	if err != nil {
-		return nil, err
-	}
-	if log.UserID != userID {
-		return nil, ErrForbidden
-	}
-	return log, nil
+	return checkOwnership(s.repo.FindByID, id, userID, func(l *model.LearningLog) uint { return l.UserID })
 }
 
 // Update は所有権を検証した後、学習ログを更新する。

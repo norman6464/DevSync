@@ -65,14 +65,7 @@ func (s *CodeSnippetService) GetByUserLanguage(userID uint, language string) ([]
 
 // findAndCheckOwnership はスニペットを取得し、指定ユーザーが所有者かを検証する。
 func (s *CodeSnippetService) findAndCheckOwnership(id, userID uint) (*model.CodeSnippet, error) {
-	snippet, err := s.repo.FindByID(id)
-	if err != nil {
-		return nil, err
-	}
-	if snippet.UserID != userID {
-		return nil, ErrForbidden
-	}
-	return snippet, nil
+	return checkOwnership(s.repo.FindByID, id, userID, func(cs *model.CodeSnippet) uint { return cs.UserID })
 }
 
 // Update はスニペットを更新する。所有者のみ更新可能。

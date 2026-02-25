@@ -75,14 +75,7 @@ func (s *BookReviewService) Search(query string, limit, offset int) ([]model.Boo
 
 // findAndCheckOwnership は書籍レビューを取得し、指定ユーザーが所有者かを検証する。
 func (s *BookReviewService) findAndCheckOwnership(id, userID uint) (*model.BookReview, error) {
-	review, err := s.repo.FindByID(id)
-	if err != nil {
-		return nil, err
-	}
-	if review.UserID != userID {
-		return nil, ErrForbidden
-	}
-	return review, nil
+	return checkOwnership(s.repo.FindByID, id, userID, func(r *model.BookReview) uint { return r.UserID })
 }
 
 // Update は所有権を検証した後、書籍レビューを更新する。

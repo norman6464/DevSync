@@ -78,14 +78,7 @@ func (s *NoteTemplateService) GetDefaultByUserID(userID uint) (*model.NoteTempla
 
 // findAndCheckOwnership はテンプレートを取得し、指定ユーザーが所有者かを検証する。
 func (s *NoteTemplateService) findAndCheckOwnership(id, userID uint) (*model.NoteTemplate, error) {
-	template, err := s.repo.FindByID(id)
-	if err != nil {
-		return nil, err
-	}
-	if template.UserID != userID {
-		return nil, ErrForbidden
-	}
-	return template, nil
+	return checkOwnership(s.repo.FindByID, id, userID, func(t *model.NoteTemplate) uint { return t.UserID })
 }
 
 // Update は所有権を検証した後、テンプレートを更新する。
