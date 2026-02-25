@@ -2,6 +2,7 @@ package service
 
 import (
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"github.com/norman6464/devsync/backend/internal/constants"
@@ -322,6 +323,48 @@ func (s *PostService) GetReactionsByPostID(postID uint) ([]model.ReactionCount, 
 // GetUserReactions は指定ユーザーが投稿に付けたリアクション絵文字一覧を取得する。
 func (s *PostService) GetUserReactions(userID, postID uint) ([]string, error) {
 	return s.repo.GetUserReactions(userID, postID)
+}
+
+// SchedulePublish は下書き投稿にスケジュール公開日時を設定する。
+func (s *PostService) SchedulePublish(id, userID uint, scheduledAt time.Time) (*model.Post, error) {
+	post, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return nil, err
+	}
+	if !post.IsDraft {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "公開済みの投稿はスケジュールできません", nil)
+	}
+	if scheduledAt.Before(time.Now()) {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "過去の日時は指定できません", nil)
+	}
+
+	post.ScheduledAt = &scheduledAt
+	if err := s.repo.Update(post); err != nil {
+		return nil, err
+	}
+	return post, nil
+}
+
+// CancelSchedule はスケジュール設定を解除し、投稿を通常の下書きに戻す。
+func (s *PostService) CancelSchedule(id, userID uint) (*model.Post, error) {
+	post, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return nil, err
+	}
+	if post.ScheduledAt == nil {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "この投稿はスケジュールされていません", nil)
+	}
+
+	post.ScheduledAt = nil
+	if err := s.repo.Update(post); err != nil {
+		return nil, err
+	}
+	return post, nil
+}
+
+// GetScheduled はユーザーのスケジュール済み投稿一覧を取得する。
+func (s *PostService) GetScheduled(userID uint) ([]model.Post, error) {
+	return s.repo.FindScheduledByUserID(userID)
 }
 
 // Publish は下書き投稿を公開し、フォロワーに通知する。

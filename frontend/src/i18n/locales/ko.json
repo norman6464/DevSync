@@ -1559,6 +1559,16 @@
     "newVideo": "신규",
     "unavailable": "YouTube 동영상 기능을 현재 사용할 수 없습니다"
   },
+  "scheduledPublish": {
+    "schedule": "예약 게시",
+    "scheduled": "예약됨",
+    "scheduledLabel": "예약됨",
+    "noScheduled": "예약된 게시물이 없습니다",
+    "scheduleFailed": "예약에 실패했습니다",
+    "cancelSchedule": "예약 취소",
+    "confirmCancel": "이 게시물의 예약을 취소하시겠습니까?",
+    "cancelled": "예약이 취소되었습니다"
+  },
   "bookmarkCollections": {
     "saveToCollection": "컬렉션에 저장",
     "addedToCollection": "컬렉션에 추가되었습니다",

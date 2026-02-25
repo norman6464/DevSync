@@ -105,6 +105,15 @@ export const getDrafts = () =>
 export const publishPost = (id: number) =>
   client.put<Post>(`/posts/${id}/publish`);
 
+export const schedulePublish = (id: number, scheduledAt: string) =>
+  client.put<Post>(`/posts/${id}/schedule`, { scheduled_at: scheduledAt });
+
+export const cancelSchedule = (id: number) =>
+  client.put<Post>(`/posts/${id}/cancel-schedule`);
+
+export const getScheduledPosts = () =>
+  client.get<Post[]>('/posts/scheduled');
+
 export const getReactions = (postId: number) =>
   client.get<ReactionResponse>(`/posts/${postId}/reactions`);
 

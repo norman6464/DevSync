@@ -1559,6 +1559,16 @@
     "newVideo": "最新",
     "unavailable": "YouTube影片功能目前無法使用"
   },
+  "scheduledPublish": {
+    "schedule": "排程發佈",
+    "scheduled": "已排程",
+    "scheduledLabel": "已排程",
+    "noScheduled": "沒有排程發佈的文章",
+    "scheduleFailed": "排程發佈失敗",
+    "cancelSchedule": "取消排程",
+    "confirmCancel": "確定要取消此文章的排程發佈嗎？",
+    "cancelled": "排程發佈已取消"
+  },
   "bookmarkCollections": {
     "saveToCollection": "儲存至收藏夾",
     "addedToCollection": "已新增至收藏夾",

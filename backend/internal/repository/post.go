@@ -258,6 +258,15 @@ func (r *PostRepository) FindDraftsByUserID(userID uint) ([]model.Post, error) {
 	return posts, err
 }
 
+// FindScheduledByUserID は指定ユーザーのスケジュール済み投稿を取得する（公開予定日時順）。
+func (r *PostRepository) FindScheduledByUserID(userID uint) ([]model.Post, error) {
+	var posts []model.Post
+	err := r.db.Preload("User").Preload("CodeSnippets").
+		Where("user_id = ? AND is_draft = ? AND scheduled_at IS NOT NULL", userID, true).
+		Order("scheduled_at ASC").Find(&posts).Error
+	return posts, err
+}
+
 // SearchWithFilter はタグ・日付範囲・ソート順による高度な投稿検索を実行する。
 // 下書きは検索対象外。タグはAND条件で絞り込む。
 func (r *PostRepository) SearchWithFilter(

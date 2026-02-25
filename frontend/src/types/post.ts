@@ -17,6 +17,7 @@ export interface Post {
   liked?: boolean;
   bookmarked?: boolean;
   tags?: string[];
+  scheduled_at?: string;
   created_at: string;
   updated_at: string;
 }
