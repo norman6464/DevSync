@@ -40,10 +40,10 @@ func (r *NoteRepository) FindByUserID(userID uint, page, limit int) ([]model.Not
 	return notes, err
 }
 
-// FindByFolderID は指定フォルダ内のノート一覧を取得する。
-func (r *NoteRepository) FindByFolderID(folderID uint) ([]model.Note, error) {
+// FindByFolderID は指定フォルダ内のノート一覧を所有権付きで取得する。
+func (r *NoteRepository) FindByFolderID(folderID, userID uint) ([]model.Note, error) {
 	var notes []model.Note
-	err := r.db.Where("folder_id = ?", folderID).
+	err := r.db.Where("folder_id = ? AND user_id = ?", folderID, userID).
 		Order("updated_at DESC").
 		Find(&notes).Error
 	return notes, err

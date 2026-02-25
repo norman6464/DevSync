@@ -31,8 +31,8 @@ func (m *MockNoteService) GetByUserID(userID uint, page, limit int) ([]model.Not
 	return args.Get(0).([]model.Note), args.Error(1)
 }
 
-func (m *MockNoteService) GetByFolderID(folderID uint) ([]model.Note, error) {
-	args := m.Called(folderID)
+func (m *MockNoteService) GetByFolderID(folderID, userID uint) ([]model.Note, error) {
+	args := m.Called(folderID, userID)
 	return args.Get(0).([]model.Note), args.Error(1)
 }
 
@@ -263,7 +263,7 @@ func TestNoteHandler_GetByFolderID(t *testing.T) {
 			{ID: 2, UserID: 1, Title: "フォルダ内ノート2"},
 		}
 
-		svc.On("GetByFolderID", uint(5)).Return(notes, nil)
+		svc.On("GetByFolderID", uint(5), uint(1)).Return(notes, nil)
 
 		w := doRequest(r, "GET", "/folders/5/notes", nil)
 		assertStatus(t, w, http.StatusOK)
@@ -284,7 +284,7 @@ func TestNoteHandler_GetByFolderID(t *testing.T) {
 		r := newRouter(1)
 		r.GET("/folders/:folderId/notes", h.GetByFolderID)
 
-		svc.On("GetByFolderID", uint(5)).Return([]model.Note{}, errors.New("error"))
+		svc.On("GetByFolderID", uint(5), uint(1)).Return([]model.Note{}, errors.New("error"))
 
 		w := doRequest(r, "GET", "/folders/5/notes", nil)
 		assertStatus(t, w, http.StatusInternalServerError)
