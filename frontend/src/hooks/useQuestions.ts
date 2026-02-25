@@ -10,6 +10,7 @@ import {
   deleteQuestion,
 } from '../api/qa';
 import { useAsyncData } from './useAsyncData';
+import { useLocalList } from './useCRUDList';
 
 type SortType = 'newest' | 'votes' | 'unanswered';
 type SolvedFilter = 'all' | 'solved' | 'unsolved';
@@ -37,8 +38,7 @@ export function useQuestions() {
   const questions = data?.questions ?? [];
   const total = data?.total ?? 0;
 
-  const [localQuestions, setLocalQuestions] = useState<Question[] | null>(null);
-  const allQuestions = localQuestions ?? questions;
+  const { items: allQuestions, setItems: setLocalQuestions, resetLocal } = useLocalList(questions);
   const currentQuestions = solvedFilter === 'all'
     ? allQuestions
     : allQuestions.filter(q => solvedFilter === 'solved' ? q.is_solved : !q.is_solved);
@@ -52,7 +52,7 @@ export function useQuestions() {
     setSaving(true);
     try {
       const newQuestion = await createQuestion(reqData);
-      setLocalQuestions(prev => [newQuestion, ...(prev ?? questions)]);
+      setLocalQuestions(prev => [newQuestion, ...prev]);
       toast.success(t('qa.createSuccess'));
       return newQuestion;
     } catch {
@@ -61,13 +61,13 @@ export function useQuestions() {
     } finally {
       setSaving(false);
     }
-  }, [t, questions]);
+  }, [t, setLocalQuestions]);
 
   const handleUpdate = useCallback(async (questionId: number, reqData: CreateQuestionRequest) => {
     setSaving(true);
     try {
       const updated = await updateQuestion(questionId, reqData);
-      setLocalQuestions(prev => (prev ?? questions).map(q => q.id === updated.id ? updated : q));
+      setLocalQuestions(prev => prev.map(q => q.id === updated.id ? updated : q));
       toast.success(t('qa.updateSuccess'));
       return updated;
     } catch {
@@ -76,25 +76,25 @@ export function useQuestions() {
     } finally {
       setSaving(false);
     }
-  }, [t, questions]);
+  }, [t, setLocalQuestions]);
 
   const handleDelete = useCallback(async (question: Question) => {
     try {
       await deleteQuestion(question.id);
-      setLocalQuestions(prev => (prev ?? questions).filter(q => q.id !== question.id));
+      setLocalQuestions(prev => prev.filter(q => q.id !== question.id));
       toast.success(t('qa.deleteSuccess'));
       return true;
     } catch {
       toast.error(t('qa.deleteFailed'));
       return false;
     }
-  }, [t, questions]);
+  }, [t, setLocalQuestions]);
 
   const changeSort = useCallback((newSort: SortType) => {
     setSort(newSort);
     setPage(0);
-    setLocalQuestions(null);
-  }, []);
+    resetLocal();
+  }, [resetLocal]);
 
   const changeSolvedFilter = useCallback((f: SolvedFilter) => {
     setSolvedFilter(f);
@@ -109,7 +109,7 @@ export function useQuestions() {
     searchQuery,
     setSearchQuery,
     tagFilter,
-    setTagFilter: (v: string) => { setTagFilter(v); setPage(0); setLocalQuestions(null); },
+    setTagFilter: (v: string) => { setTagFilter(v); setPage(0); resetLocal(); },
     sort,
     setSort: changeSort,
     solvedFilter,

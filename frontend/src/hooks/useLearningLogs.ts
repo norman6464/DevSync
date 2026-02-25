@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import {
@@ -14,28 +14,18 @@ import {
 } from '../api/learningLogs';
 import type { LearningLog, CalendarEntry, LogCategory, StreakInfo } from '../types/learningLog';
 import { useAsyncData } from './useAsyncData';
+import { useCRUDList } from './useCRUDList';
 
 export function useLearningLogs() {
   const { t } = useTranslation();
-  const [saving, setSaving] = useState(false);
+  const errMsg = t('errors.somethingWrong');
 
-  const { data: logs, loading, refetch } = useAsyncData(
-    async () => {
+  const { items: logs, loading, saving, setItems, addItem, updateItem, removeItem, refetch } = useCRUDList<LearningLog>({
+    fetcher: async () => {
       const { data } = await getMyLogs();
       return data || [];
     },
-    { initialData: [] as LearningLog[] }
-  );
-
-  const [localLogs, setLocalLogs] = useState<LearningLog[] | null>(null);
-  const currentLogs = localLogs ?? logs;
-
-  const setLogs = useCallback((updater: LearningLog[] | ((prev: LearningLog[]) => LearningLog[])) => {
-    setLocalLogs(prev => {
-      const current = prev ?? logs;
-      return typeof updater === 'function' ? updater(current) : updater;
-    });
-  }, [logs]);
+  });
 
   const handleCreate = useCallback(async (data: {
     title: string;
@@ -43,19 +33,11 @@ export function useLearningLogs() {
     category?: LogCategory;
     duration?: number;
   }) => {
-    setSaving(true);
-    try {
-      const { data: newLog } = await createLog(data);
-      setLogs(prev => [newLog, ...prev]);
-      toast.success(t('learningLogs.created'));
-      return newLog;
-    } catch {
-      toast.error(t('errors.somethingWrong'));
-      return null;
-    } finally {
-      setSaving(false);
-    }
-  }, [t, setLogs]);
+    return addItem(
+      async () => { const { data: l } = await createLog(data); return l; },
+      { successMsg: t('learningLogs.created'), errorMsg: errMsg },
+    );
+  }, [addItem, t, errMsg]);
 
   const handleUpdate = useCallback(async (logId: number, data: {
     title?: string;
@@ -63,45 +45,32 @@ export function useLearningLogs() {
     category?: LogCategory;
     duration?: number;
   }) => {
-    try {
-      const { data: updated } = await updateLog(logId, data);
-      setLogs(prev => prev.map(l => l.id === updated.id ? updated : l));
-      toast.success(t('learningLogs.updated'));
-      return updated;
-    } catch {
-      toast.error(t('errors.somethingWrong'));
-      return null;
-    }
-  }, [t, setLogs]);
+    return updateItem(
+      async () => { const { data: l } = await updateLog(logId, data); return l; },
+      { successMsg: t('learningLogs.updated'), errorMsg: errMsg },
+    );
+  }, [updateItem, t, errMsg]);
 
   const handleDelete = useCallback(async (id: number) => {
     if (!confirm(t('learningLogs.confirmDelete'))) return false;
-    try {
-      await deleteLog(id);
-      setLogs(prev => prev.filter(l => l.id !== id));
-      toast.success(t('learningLogs.deleted'));
-      return true;
-    } catch {
-      toast.error(t('errors.somethingWrong'));
-      return false;
-    }
-  }, [t, setLogs]);
+    return removeItem(id, () => deleteLog(id), { successMsg: t('learningLogs.deleted'), errorMsg: errMsg });
+  }, [removeItem, t, errMsg]);
 
   const handleToggleFavorite = useCallback(async (id: number) => {
-    const log = currentLogs.find(l => l.id === id);
+    const log = logs.find(l => l.id === id);
     if (!log) return;
     try {
       const { data: updated } = log.is_favorite
         ? await unfavoriteLog(id)
         : await favoriteLog(id);
-      setLogs(prev => prev.map(l => l.id === updated.id ? updated : l));
+      setItems(prev => prev.map(l => l.id === updated.id ? updated : l));
     } catch {
-      toast.error(t('errors.somethingWrong'));
+      toast.error(errMsg);
     }
-  }, [currentLogs, t, setLogs]);
+  }, [logs, errMsg, setItems]);
 
   return {
-    logs: currentLogs,
+    logs,
     loading,
     saving,
     createLog: handleCreate,
