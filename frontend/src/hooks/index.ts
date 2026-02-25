@@ -1,4 +1,5 @@
 export { useAsyncData } from './useAsyncData';
+export { useCRUDList, useLocalList } from './useCRUDList';
 export { useGoals } from './useGoals';
 export { usePosts } from './usePosts';
 export { usePostDetail } from './usePostDetail';

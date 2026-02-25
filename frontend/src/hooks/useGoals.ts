@@ -1,6 +1,5 @@
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
 import {
   getMyGoals,
   createGoal,
@@ -11,30 +10,19 @@ import {
   type GoalCategory,
   type GoalStatus,
 } from '../api/goals';
-import { useAsyncData } from './useAsyncData';
+import { useCRUDList } from './useCRUDList';
 
 export function useGoals() {
   const { t } = useTranslation();
-  const [saving, setSaving] = useState(false);
 
-  const { data: goals, loading, refetch } = useAsyncData(
-    async () => {
+  const { items: goals, loading, saving, addItem, updateItem, removeItem, refetch } = useCRUDList<LearningGoal>({
+    fetcher: async () => {
       const { data } = await getMyGoals();
       return data || [];
     },
-    { initialData: [] as LearningGoal[] }
-  );
+  });
 
-  const [localGoals, setLocalGoals] = useState<LearningGoal[] | null>(null);
-  const currentGoals = localGoals ?? goals;
-
-  // Sync localGoals when remote data changes
-  const setGoals = useCallback((updater: LearningGoal[] | ((prev: LearningGoal[]) => LearningGoal[])) => {
-    setLocalGoals(prev => {
-      const current = prev ?? goals;
-      return typeof updater === 'function' ? updater(current) : updater;
-    });
-  }, [goals]);
+  const errMsg = t('errors.somethingWrong');
 
   const handleCreate = useCallback(async (data: {
     title: string;
@@ -42,19 +30,11 @@ export function useGoals() {
     category: GoalCategory;
     target_date?: string;
   }) => {
-    setSaving(true);
-    try {
-      const { data: newGoal } = await createGoal(data);
-      setGoals(prev => [newGoal, ...prev]);
-      toast.success(t('goals.created'));
-      return newGoal;
-    } catch {
-      toast.error(t('errors.somethingWrong'));
-      return null;
-    } finally {
-      setSaving(false);
-    }
-  }, [t, setGoals]);
+    return addItem(
+      async () => { const { data: g } = await createGoal(data); return g; },
+      { successMsg: t('goals.created'), errorMsg: errMsg },
+    );
+  }, [addItem, t, errMsg]);
 
   const handleUpdate = useCallback(async (goalId: number, data: {
     title?: string;
@@ -64,51 +44,29 @@ export function useGoals() {
     progress?: number;
     status?: GoalStatus;
   }) => {
-    try {
-      const { data: updated } = await updateGoal(goalId, data);
-      setGoals(prev => prev.map(g => g.id === updated.id ? updated : g));
-      if (data.progress === 100) {
-        toast.success(t('goals.completed'));
-      } else {
-        toast.success(t('goals.updated'));
-      }
-      return updated;
-    } catch {
-      toast.error(t('errors.somethingWrong'));
-      return null;
-    }
-  }, [t, setGoals]);
+    return updateItem(
+      async () => { const { data: g } = await updateGoal(goalId, data); return g; },
+      { successMsg: data.progress === 100 ? t('goals.completed') : t('goals.updated'), errorMsg: errMsg },
+    );
+  }, [updateItem, t, errMsg]);
 
   const handleDelete = useCallback(async (id: number) => {
-    try {
-      await deleteGoal(id);
-      setGoals(prev => prev.filter(g => g.id !== id));
-      toast.success(t('goals.deleted'));
-      return true;
-    } catch {
-      toast.error(t('errors.somethingWrong'));
-      return false;
-    }
-  }, [t, setGoals]);
+    return removeItem(id, () => deleteGoal(id), { successMsg: t('goals.deleted'), errorMsg: errMsg });
+  }, [removeItem, t, errMsg]);
 
   const handleDuplicate = useCallback(async (id: number) => {
-    try {
-      const { data: newGoal } = await duplicateGoal(id);
-      setGoals(prev => [newGoal, ...prev]);
-      toast.success(t('goals.duplicated'));
-      return newGoal;
-    } catch {
-      toast.error(t('errors.somethingWrong'));
-      return null;
-    }
-  }, [t, setGoals]);
+    return addItem(
+      async () => { const { data: g } = await duplicateGoal(id); return g; },
+      { successMsg: t('goals.duplicated'), errorMsg: errMsg, trackSaving: false },
+    );
+  }, [addItem, t, errMsg]);
 
-  const activeGoals = currentGoals.filter(g => g.status === 'active');
-  const completedGoals = currentGoals.filter(g => g.status === 'completed');
-  const pausedGoals = currentGoals.filter(g => g.status === 'paused');
+  const activeGoals = goals.filter(g => g.status === 'active');
+  const completedGoals = goals.filter(g => g.status === 'completed');
+  const pausedGoals = goals.filter(g => g.status === 'paused');
 
   return {
-    goals: currentGoals,
+    goals,
     loading,
     saving,
     activeGoals,
