@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -1323,4 +1324,201 @@ func TestPostCreateComment_RepoError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "db error")
 	postRepo.AssertExpectations(t)
+}
+
+// ============================================================
+// SchedulePublish テスト
+// ============================================================
+
+func TestPostSchedulePublish_Success(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	draft := &model.Post{Title: "下書き", UserID: 1, IsDraft: true}
+	draft.ID = 1
+
+	postRepo.On("FindByID", uint(1)).Return(draft, nil)
+	postRepo.On("Update", draft).Return(nil)
+
+	futureTime := time.Now().Add(24 * time.Hour)
+	result, err := svc.SchedulePublish(1, 1, futureTime)
+	assert.NoError(t, err)
+	assert.NotNil(t, result.ScheduledAt)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostSchedulePublish_NotDraft(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	published := &model.Post{Title: "公開済み", UserID: 1, IsDraft: false}
+	published.ID = 1
+
+	postRepo.On("FindByID", uint(1)).Return(published, nil)
+
+	futureTime := time.Now().Add(24 * time.Hour)
+	_, err := svc.SchedulePublish(1, 1, futureTime)
+	assert.Error(t, err)
+	var domainErr *domain.DomainError
+	assert.ErrorAs(t, err, &domainErr)
+	assert.Equal(t, domain.ErrCodeBadRequest, domainErr.Code)
+}
+
+func TestPostSchedulePublish_PastTime(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	draft := &model.Post{Title: "下書き", UserID: 1, IsDraft: true}
+	draft.ID = 1
+
+	postRepo.On("FindByID", uint(1)).Return(draft, nil)
+
+	pastTime := time.Now().Add(-1 * time.Hour)
+	_, err := svc.SchedulePublish(1, 1, pastTime)
+	assert.Error(t, err)
+	var domainErr *domain.DomainError
+	assert.ErrorAs(t, err, &domainErr)
+	assert.Equal(t, domain.ErrCodeBadRequest, domainErr.Code)
+}
+
+func TestPostSchedulePublish_Forbidden(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	draft := &model.Post{Title: "他人の下書き", UserID: 2, IsDraft: true}
+	draft.ID = 1
+
+	postRepo.On("FindByID", uint(1)).Return(draft, nil)
+
+	futureTime := time.Now().Add(24 * time.Hour)
+	_, err := svc.SchedulePublish(1, 1, futureTime)
+	assert.Error(t, err)
+}
+
+func TestPostSchedulePublish_NotFound(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindByID", uint(99)).Return(nil, ErrNotFound)
+
+	futureTime := time.Now().Add(24 * time.Hour)
+	_, err := svc.SchedulePublish(99, 1, futureTime)
+	assert.Error(t, err)
+}
+
+func TestPostSchedulePublish_UpdateError(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	draft := &model.Post{Title: "下書き", UserID: 1, IsDraft: true}
+	draft.ID = 1
+
+	postRepo.On("FindByID", uint(1)).Return(draft, nil)
+	postRepo.On("Update", draft).Return(errors.New("db error"))
+
+	futureTime := time.Now().Add(24 * time.Hour)
+	_, err := svc.SchedulePublish(1, 1, futureTime)
+	assert.Error(t, err)
+}
+
+// ============================================================
+// CancelSchedule テスト
+// ============================================================
+
+func TestPostCancelSchedule_Success(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	scheduledTime := time.Now().Add(24 * time.Hour)
+	post := &model.Post{Title: "予約投稿", UserID: 1, IsDraft: true, ScheduledAt: &scheduledTime}
+	post.ID = 1
+
+	postRepo.On("FindByID", uint(1)).Return(post, nil)
+	postRepo.On("Update", post).Return(nil)
+
+	result, err := svc.CancelSchedule(1, 1)
+	assert.NoError(t, err)
+	assert.Nil(t, result.ScheduledAt)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostCancelSchedule_NotScheduled(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	post := &model.Post{Title: "通常の下書き", UserID: 1, IsDraft: true, ScheduledAt: nil}
+	post.ID = 1
+
+	postRepo.On("FindByID", uint(1)).Return(post, nil)
+
+	_, err := svc.CancelSchedule(1, 1)
+	assert.Error(t, err)
+	var domainErr *domain.DomainError
+	assert.ErrorAs(t, err, &domainErr)
+	assert.Equal(t, domain.ErrCodeBadRequest, domainErr.Code)
+}
+
+func TestPostCancelSchedule_Forbidden(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	scheduledTime := time.Now().Add(24 * time.Hour)
+	post := &model.Post{Title: "他人の予約投稿", UserID: 2, ScheduledAt: &scheduledTime}
+	post.ID = 1
+
+	postRepo.On("FindByID", uint(1)).Return(post, nil)
+
+	_, err := svc.CancelSchedule(1, 1)
+	assert.Error(t, err)
+}
+
+func TestPostCancelSchedule_NotFound(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindByID", uint(99)).Return(nil, ErrNotFound)
+
+	_, err := svc.CancelSchedule(99, 1)
+	assert.Error(t, err)
+}
+
+func TestPostCancelSchedule_UpdateError(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	scheduledTime := time.Now().Add(24 * time.Hour)
+	post := &model.Post{Title: "予約投稿", UserID: 1, IsDraft: true, ScheduledAt: &scheduledTime}
+	post.ID = 1
+
+	postRepo.On("FindByID", uint(1)).Return(post, nil)
+	postRepo.On("Update", post).Return(errors.New("db error"))
+
+	_, err := svc.CancelSchedule(1, 1)
+	assert.Error(t, err)
+}
+
+// ============================================================
+// GetScheduled テスト
+// ============================================================
+
+func TestPostGetScheduled_Success(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	scheduled := []model.Post{
+		{Title: "予約1"},
+		{Title: "予約2"},
+	}
+	postRepo.On("FindScheduledByUserID", uint(1)).Return(scheduled, nil)
+
+	result, err := svc.GetScheduled(1)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestPostGetScheduled_Empty(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindScheduledByUserID", uint(1)).Return([]model.Post{}, nil)
+
+	result, err := svc.GetScheduled(1)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+}
+
+func TestPostGetScheduled_RepoError(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindScheduledByUserID", uint(1)).Return([]model.Post{}, errors.New("db error"))
+
+	_, err := svc.GetScheduled(1)
+	assert.Error(t, err)
 }
