@@ -1556,6 +1556,25 @@
     "newVideo": "Новое",
     "unavailable": "Функция видео YouTube в настоящее время недоступна"
   },
+  "quickEntry": {
+    "title": "Быстрая запись обучения",
+    "selectCategory": "Выберите категорию",
+    "duration": "Продолжительность",
+    "minutes": "мин",
+    "notePlaceholder": "Заметка (необязательно)",
+    "defaultNote": "Записано через быструю запись",
+    "submit": "Записать",
+    "submitting": "Запись...",
+    "success": "Обучение записано",
+    "failed": "Ошибка записи",
+    "categories": {
+      "coding": "Программирование",
+      "reading": "Чтение",
+      "course": "Курс",
+      "meetup": "Встреча",
+      "other": "Другое"
+    }
+  },
   "scheduledPublish": {
     "schedule": "Запланировать публикацию",
     "scheduled": "Запланировано",

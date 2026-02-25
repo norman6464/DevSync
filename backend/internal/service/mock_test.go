@@ -540,6 +540,11 @@ func (m *MockLearningLogRepository) GetCalendarData(userID uint) ([]model.Calend
 	return args.Get(0).([]model.CalendarEntry), args.Error(1)
 }
 
+func (m *MockLearningLogRepository) GetRecentCategories(userID uint, limit int) ([]string, error) {
+	args := m.Called(userID, limit)
+	return args.Get(0).([]string), args.Error(1)
+}
+
 // ============================================================
 // MockLearningGoalRepository は repository.LearningGoalRepositoryInterface のテスト用モック実装。
 // ============================================================

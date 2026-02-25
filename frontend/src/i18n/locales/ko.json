@@ -1559,6 +1559,25 @@
     "newVideo": "신규",
     "unavailable": "YouTube 동영상 기능을 현재 사용할 수 없습니다"
   },
+  "quickEntry": {
+    "title": "빠른 학습 기록",
+    "selectCategory": "카테고리 선택",
+    "duration": "학습 시간",
+    "minutes": "분",
+    "notePlaceholder": "메모 (선택사항)",
+    "defaultNote": "빠른 기록으로 등록",
+    "submit": "기록하기",
+    "submitting": "기록 중...",
+    "success": "학습이 기록되었습니다",
+    "failed": "기록에 실패했습니다",
+    "categories": {
+      "coding": "코딩",
+      "reading": "독서",
+      "course": "강좌",
+      "meetup": "모임",
+      "other": "기타"
+    }
+  },
   "scheduledPublish": {
     "schedule": "예약 게시",
     "scheduled": "예약됨",

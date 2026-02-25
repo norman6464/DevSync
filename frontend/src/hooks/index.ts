@@ -57,3 +57,4 @@ export { useSubmitShortcut } from './useSubmitShortcut';
 export { useStreakFreeze } from './useStreakFreeze';
 export { useBookmarkCollections, useCollectionPosts as useBookmarkCollectionPosts } from './useBookmarkCollections';
 export { useScheduledPosts } from './useScheduledPosts';
+export { useQuickEntry } from './useQuickEntry';

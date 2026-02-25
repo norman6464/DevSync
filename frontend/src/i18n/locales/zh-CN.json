@@ -1557,6 +1557,25 @@
     "newVideo": "最新",
     "unavailable": "YouTube视频功能当前不可用"
   },
+  "quickEntry": {
+    "title": "快速学习记录",
+    "selectCategory": "选择类别",
+    "duration": "学习时长",
+    "minutes": "分钟",
+    "notePlaceholder": "备注（可选）",
+    "defaultNote": "通过快速记录添加",
+    "submit": "记录",
+    "submitting": "记录中...",
+    "success": "学习已记录",
+    "failed": "记录失败",
+    "categories": {
+      "coding": "编程",
+      "reading": "阅读",
+      "course": "课程",
+      "meetup": "聚会",
+      "other": "其他"
+    }
+  },
   "scheduledPublish": {
     "schedule": "定时发布",
     "scheduled": "已定时",

@@ -1340,6 +1340,11 @@ func (m *MockLearningLogService) UnfavoriteLog(id, userID uint) error {
 	return args.Error(0)
 }
 
+func (m *MockLearningLogService) GetRecentCategories(userID uint) ([]string, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]string), args.Error(1)
+}
+
 // setupLearningLogHandler はLearningLogHandlerテスト用のセットアップを行う。
 func setupLearningLogHandler() (*LearningLogHandler, *MockLearningLogService) {
 	svc := new(MockLearningLogService)

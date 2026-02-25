@@ -40,6 +40,9 @@ export const favoriteLog = (id: number) =>
 export const unfavoriteLog = (id: number) =>
   client.put<LearningLog>(`/learning-logs/${id}/unfavorite`);
 
+export const getRecentCategories = () =>
+  client.get<string[]>('/learning-logs/recent-categories');
+
 export type ExportPeriod = '7' | '30' | '90' | 'all';
 
 export const exportLogsCSV = (period: ExportPeriod = '30') =>

@@ -1556,6 +1556,25 @@
     "newVideo": "Neu",
     "unavailable": "Die YouTube-Video-Funktion ist derzeit nicht verfügbar"
   },
+  "quickEntry": {
+    "title": "Schnelle Lernaufzeichnung",
+    "selectCategory": "Kategorie wählen",
+    "duration": "Dauer",
+    "minutes": "Min",
+    "notePlaceholder": "Notiz (optional)",
+    "defaultNote": "Per Schnelleintrag erfasst",
+    "submit": "Aufzeichnen",
+    "submitting": "Wird aufgezeichnet...",
+    "success": "Lernen aufgezeichnet",
+    "failed": "Aufzeichnung fehlgeschlagen",
+    "categories": {
+      "coding": "Programmieren",
+      "reading": "Lesen",
+      "course": "Kurs",
+      "meetup": "Treffen",
+      "other": "Sonstiges"
+    }
+  },
   "scheduledPublish": {
     "schedule": "Veröffentlichung planen",
     "scheduled": "Geplant",

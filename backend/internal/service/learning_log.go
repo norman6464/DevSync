@@ -158,6 +158,11 @@ func (s *LearningLogService) GetCalendarData(userID uint) ([]model.CalendarEntry
 	return s.repo.GetCalendarData(userID)
 }
 
+// GetRecentCategories はユーザーの最近よく使うカテゴリを頻度順で返す。
+func (s *LearningLogService) GetRecentCategories(userID uint) ([]string, error) {
+	return s.repo.GetRecentCategories(userID, 5)
+}
+
 // ExportCSV は指定ユーザーの学習ログをCSV形式でエクスポートする。
 // days: 取得する過去の日数（0は全期間）。負の値はバリデーションエラー。
 func (s *LearningLogService) ExportCSV(userID uint, days int) ([]byte, error) {
