@@ -476,3 +476,298 @@ func TestRespondPaginated_Empty(t *testing.T) {
 	data := resp["data"].([]interface{})
 	assert.Len(t, data, 0)
 }
+
+// --- handleDelete ---
+
+func TestHandleDelete_Success(t *testing.T) {
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+
+	deleteFn := func(id, userID uint) error {
+		assert.Equal(t, uint(5), id)
+		assert.Equal(t, uint(1), userID)
+		return nil
+	}
+
+	r.DELETE("/items/:id", func(c *gin.Context) {
+		c.Set("userID", uint(1))
+		handleDelete(c, deleteFn)
+	})
+	req := httptest.NewRequest("DELETE", "/items/5", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.Equal(t, "deleted", resp["message"])
+}
+
+func TestHandleDelete_InvalidID(t *testing.T) {
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+
+	called := false
+	deleteFn := func(id, userID uint) error {
+		called = true
+		return nil
+	}
+
+	r.DELETE("/items/:id", func(c *gin.Context) {
+		c.Set("userID", uint(1))
+		handleDelete(c, deleteFn)
+	})
+	req := httptest.NewRequest("DELETE", "/items/abc", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.False(t, called)
+}
+
+func TestHandleDelete_NotFound(t *testing.T) {
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+
+	deleteFn := func(id, userID uint) error {
+		return domain.ErrNotFound
+	}
+
+	r.DELETE("/items/:id", func(c *gin.Context) {
+		c.Set("userID", uint(1))
+		handleDelete(c, deleteFn)
+	})
+	req := httptest.NewRequest("DELETE", "/items/99", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
+}
+
+func TestHandleDelete_Forbidden(t *testing.T) {
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+
+	deleteFn := func(id, userID uint) error {
+		return domain.ErrForbidden
+	}
+
+	r.DELETE("/items/:id", func(c *gin.Context) {
+		c.Set("userID", uint(1))
+		handleDelete(c, deleteFn)
+	})
+	req := httptest.NewRequest("DELETE", "/items/5", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusForbidden, w.Code)
+}
+
+// --- handleGetByID ---
+
+type testResource struct {
+	ID   uint   `json:"id"`
+	Name string `json:"name"`
+}
+
+func TestHandleGetByID_Success(t *testing.T) {
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+
+	getter := func(id, userID uint) (*testResource, error) {
+		assert.Equal(t, uint(42), id)
+		assert.Equal(t, uint(1), userID)
+		return &testResource{ID: 42, Name: "テストリソース"}, nil
+	}
+
+	r.GET("/items/:id", func(c *gin.Context) {
+		c.Set("userID", uint(1))
+		handleGetByID(c, getter)
+	})
+	req := httptest.NewRequest("GET", "/items/42", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp testResource
+	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.Equal(t, uint(42), resp.ID)
+	assert.Equal(t, "テストリソース", resp.Name)
+}
+
+func TestHandleGetByID_InvalidID(t *testing.T) {
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+
+	called := false
+	getter := func(id, userID uint) (*testResource, error) {
+		called = true
+		return nil, nil
+	}
+
+	r.GET("/items/:id", func(c *gin.Context) {
+		c.Set("userID", uint(1))
+		handleGetByID(c, getter)
+	})
+	req := httptest.NewRequest("GET", "/items/xyz", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.False(t, called)
+}
+
+func TestHandleGetByID_NotFound(t *testing.T) {
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+
+	getter := func(id, userID uint) (*testResource, error) {
+		return nil, domain.ErrNotFound
+	}
+
+	r.GET("/items/:id", func(c *gin.Context) {
+		c.Set("userID", uint(1))
+		handleGetByID(c, getter)
+	})
+	req := httptest.NewRequest("GET", "/items/99", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
+}
+
+func TestHandleGetByID_Forbidden(t *testing.T) {
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+
+	getter := func(id, userID uint) (*testResource, error) {
+		return nil, domain.ErrForbidden
+	}
+
+	r.GET("/items/:id", func(c *gin.Context) {
+		c.Set("userID", uint(1))
+		handleGetByID(c, getter)
+	})
+	req := httptest.NewRequest("GET", "/items/5", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusForbidden, w.Code)
+}
+
+// --- handleGetByIDPublic ---
+
+func TestHandleGetByIDPublic_Success(t *testing.T) {
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+
+	getter := func(id uint) (*testResource, error) {
+		assert.Equal(t, uint(10), id)
+		return &testResource{ID: 10, Name: "公開リソース"}, nil
+	}
+
+	r.GET("/items/:id", func(c *gin.Context) {
+		handleGetByIDPublic(c, getter)
+	})
+	req := httptest.NewRequest("GET", "/items/10", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp testResource
+	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.Equal(t, uint(10), resp.ID)
+	assert.Equal(t, "公開リソース", resp.Name)
+}
+
+func TestHandleGetByIDPublic_InvalidID(t *testing.T) {
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+
+	called := false
+	getter := func(id uint) (*testResource, error) {
+		called = true
+		return nil, nil
+	}
+
+	r.GET("/items/:id", func(c *gin.Context) {
+		handleGetByIDPublic(c, getter)
+	})
+	req := httptest.NewRequest("GET", "/items/bad", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.False(t, called)
+}
+
+func TestHandleGetByIDPublic_NotFound(t *testing.T) {
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+
+	getter := func(id uint) (*testResource, error) {
+		return nil, domain.ErrNotFound
+	}
+
+	r.GET("/items/:id", func(c *gin.Context) {
+		handleGetByIDPublic(c, getter)
+	})
+	req := httptest.NewRequest("GET", "/items/99", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
+}
+
+// --- handleToggleAction ---
+
+func TestHandleToggleAction_Success(t *testing.T) {
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+
+	action := func(userID, id uint) error {
+		assert.Equal(t, uint(1), userID)
+		assert.Equal(t, uint(5), id)
+		return nil
+	}
+
+	r.POST("/items/:id/like", func(c *gin.Context) {
+		c.Set("userID", uint(1))
+		handleToggleAction(c, action, "liked")
+	})
+	req := httptest.NewRequest("POST", "/items/5/like", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.Equal(t, "liked", resp["message"])
+}
+
+func TestHandleToggleAction_InvalidID(t *testing.T) {
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+
+	called := false
+	action := func(userID, id uint) error {
+		called = true
+		return nil
+	}
+
+	r.POST("/items/:id/like", func(c *gin.Context) {
+		c.Set("userID", uint(1))
+		handleToggleAction(c, action, "liked")
+	})
+	req := httptest.NewRequest("POST", "/items/abc/like", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.False(t, called)
+}
+
+func TestHandleToggleAction_ServiceError(t *testing.T) {
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+
+	action := func(userID, id uint) error {
+		return domain.ErrNotFound
+	}
+
+	r.POST("/items/:id/like", func(c *gin.Context) {
+		c.Set("userID", uint(1))
+		handleToggleAction(c, action, "liked")
+	})
+	req := httptest.NewRequest("POST", "/items/5/like", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
+}
