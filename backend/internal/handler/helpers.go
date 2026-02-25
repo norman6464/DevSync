@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -161,7 +162,8 @@ func respondError(c *gin.Context, err error) {
 		return
 	}
 
-	// DomainError でない場合は内部エラーとして扱う（内部エラーの詳細は隠蔽）
+	// DomainError でない場合は内部エラーとして扱う（詳細はログに記録し、クライアントには隠蔽）
+	log.Printf("[ERROR] %s %s: %v", c.Request.Method, c.Request.URL.Path, err)
 	response := domain.NewErrorResponse("内部エラーが発生しました", string(domain.ErrCodeInternal), nil)
 	c.JSON(http.StatusInternalServerError, response)
 }
