@@ -105,6 +105,8 @@ func main() {
 		&model.YouTubeSearchCache{},
 		&model.SpotifyRecentTrack{},
 		&model.StreakFreeze{},
+		&model.BookmarkCollection{},
+		&model.BookmarkCollectionItem{},
 	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}

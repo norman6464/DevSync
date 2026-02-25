@@ -1556,5 +1556,18 @@
     "watchOnYoutube": "Regarder sur YouTube",
     "newVideo": "Nouveau",
     "unavailable": "La fonctionnalité vidéos YouTube est actuellement indisponible"
+  },
+  "bookmarkCollections": {
+    "saveToCollection": "Enregistrer dans une collection",
+    "addedToCollection": "Ajouté à la collection",
+    "removedFromCollection": "Supprimé de la collection",
+    "alreadyInCollection": "Cette publication est déjà dans la collection",
+    "createdAndAdded": "Collection créée et publication ajoutée",
+    "createNew": "Créer une nouvelle collection",
+    "collectionName": "Nom de la collection",
+    "noCollections": "Aucune collection pour le moment",
+    "removeFromCollection": "Retirer de la collection",
+    "deleteCollection": "Supprimer la collection",
+    "editCollection": "Modifier la collection"
   }
 }

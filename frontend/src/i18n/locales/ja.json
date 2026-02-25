@@ -1457,5 +1457,18 @@
     "watchOnYoutube": "YouTubeで視聴",
     "newVideo": "新着",
     "unavailable": "YouTube動画機能は現在利用できません"
+  },
+  "bookmarkCollections": {
+    "saveToCollection": "コレクションに保存",
+    "addedToCollection": "コレクションに追加しました",
+    "removedFromCollection": "コレクションから削除しました",
+    "alreadyInCollection": "この投稿は既にコレクションに追加されています",
+    "createdAndAdded": "コレクションを作成し、投稿を追加しました",
+    "createNew": "新しいコレクションを作成",
+    "collectionName": "コレクション名",
+    "noCollections": "コレクションがありません",
+    "removeFromCollection": "コレクションから削除",
+    "deleteCollection": "コレクションを削除",
+    "editCollection": "コレクションを編集"
   }
 }

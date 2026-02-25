@@ -1556,5 +1556,18 @@
     "watchOnYoutube": "在YouTube上观看",
     "newVideo": "最新",
     "unavailable": "YouTube视频功能当前不可用"
+  },
+  "bookmarkCollections": {
+    "saveToCollection": "保存到收藏夹",
+    "addedToCollection": "已添加到收藏夹",
+    "removedFromCollection": "已从收藏夹移除",
+    "alreadyInCollection": "该帖子已在收藏夹中",
+    "createdAndAdded": "收藏夹已创建并添加了帖子",
+    "createNew": "创建新收藏夹",
+    "collectionName": "收藏夹名称",
+    "noCollections": "还没有收藏夹",
+    "removeFromCollection": "从收藏夹移除",
+    "deleteCollection": "删除收藏夹",
+    "editCollection": "编辑收藏夹"
   }
 }

@@ -1555,5 +1555,18 @@
     "watchOnYoutube": "Смотреть на YouTube",
     "newVideo": "Новое",
     "unavailable": "Функция видео YouTube в настоящее время недоступна"
+  },
+  "bookmarkCollections": {
+    "saveToCollection": "Сохранить в коллекцию",
+    "addedToCollection": "Добавлено в коллекцию",
+    "removedFromCollection": "Удалено из коллекции",
+    "alreadyInCollection": "Эта публикация уже в коллекции",
+    "createdAndAdded": "Коллекция создана и публикация добавлена",
+    "createNew": "Создать новую коллекцию",
+    "collectionName": "Название коллекции",
+    "noCollections": "Коллекций пока нет",
+    "removeFromCollection": "Удалить из коллекции",
+    "deleteCollection": "Удалить коллекцию",
+    "editCollection": "Редактировать коллекцию"
   }
 }

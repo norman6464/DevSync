@@ -624,6 +624,19 @@ type BookmarkStatsRepositoryInterface interface {
 	GetBookmarkStats(userID uint) (*model.BookmarkStats, error)
 }
 
+// BookmarkCollectionRepositoryInterface はブックマークコレクションデータ操作の契約を定義する。
+type BookmarkCollectionRepositoryInterface interface {
+	Create(collection *model.BookmarkCollection) error
+	FindByID(id uint) (*model.BookmarkCollection, error)
+	FindByUserID(userID uint) ([]model.BookmarkCollection, error)
+	Update(collection *model.BookmarkCollection) error
+	Delete(id uint) error
+	AddPost(item *model.BookmarkCollectionItem) error
+	RemovePost(collectionID, postID uint) error
+	GetPosts(collectionID uint, limit, offset int) ([]model.Post, int64, error)
+	HasPost(collectionID, postID uint) (bool, error)
+}
+
 // StreakFreezeRepositoryInterface はストリークフリーズデータ操作の契約を定義する。
 type StreakFreezeRepositoryInterface interface {
 	Create(freeze *model.StreakFreeze) error
