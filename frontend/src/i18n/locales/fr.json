@@ -1557,6 +1557,25 @@
     "newVideo": "Nouveau",
     "unavailable": "La fonctionnalité vidéos YouTube est actuellement indisponible"
   },
+  "quickEntry": {
+    "title": "Enregistrement rapide",
+    "selectCategory": "Choisir une catégorie",
+    "duration": "Durée",
+    "minutes": "min",
+    "notePlaceholder": "Note (facultatif)",
+    "defaultNote": "Enregistré via saisie rapide",
+    "submit": "Enregistrer",
+    "submitting": "Enregistrement...",
+    "success": "Apprentissage enregistré",
+    "failed": "Échec de l'enregistrement",
+    "categories": {
+      "coding": "Programmation",
+      "reading": "Lecture",
+      "course": "Cours",
+      "meetup": "Rencontre",
+      "other": "Autre"
+    }
+  },
   "scheduledPublish": {
     "schedule": "Programmer la publication",
     "scheduled": "Programmé",

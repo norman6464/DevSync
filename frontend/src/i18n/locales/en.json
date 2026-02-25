@@ -1557,6 +1557,25 @@
     "newVideo": "New",
     "unavailable": "YouTube video feature is currently unavailable"
   },
+  "quickEntry": {
+    "title": "Quick Learning Log",
+    "selectCategory": "Select category",
+    "duration": "Duration",
+    "minutes": "min",
+    "notePlaceholder": "Note (optional)",
+    "defaultNote": "Logged via quick entry",
+    "submit": "Log it",
+    "submitting": "Logging...",
+    "success": "Learning logged successfully",
+    "failed": "Failed to log learning",
+    "categories": {
+      "coding": "Coding",
+      "reading": "Reading",
+      "course": "Course",
+      "meetup": "Meetup",
+      "other": "Other"
+    }
+  },
   "scheduledPublish": {
     "schedule": "Schedule Publish",
     "scheduled": "Scheduled",

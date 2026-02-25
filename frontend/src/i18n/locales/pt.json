@@ -1557,6 +1557,25 @@
     "newVideo": "Novo",
     "unavailable": "O recurso de vídeos do YouTube não está disponível no momento"
   },
+  "quickEntry": {
+    "title": "Registro rápido de aprendizado",
+    "selectCategory": "Selecionar categoria",
+    "duration": "Duração",
+    "minutes": "min",
+    "notePlaceholder": "Nota (opcional)",
+    "defaultNote": "Registrado via entrada rápida",
+    "submit": "Registrar",
+    "submitting": "Registrando...",
+    "success": "Aprendizado registrado",
+    "failed": "Falha ao registrar",
+    "categories": {
+      "coding": "Programação",
+      "reading": "Leitura",
+      "course": "Curso",
+      "meetup": "Encontro",
+      "other": "Outro"
+    }
+  },
   "scheduledPublish": {
     "schedule": "Agendar publicação",
     "scheduled": "Agendado",

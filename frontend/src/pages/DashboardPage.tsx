@@ -27,6 +27,7 @@ import RecommendedUsersWidget from '../components/dashboard/RecommendedUsersWidg
 import TrendingWidget from '../components/dashboard/TrendingWidget';
 import StudyCircleWidget from '../components/dashboard/StudyCircleWidget';
 import GoalsProgressWidget from '../components/dashboard/GoalsProgressWidget';
+import QuickEntryWidget from '../components/dashboard/QuickEntryWidget';
 
 export default function DashboardPage() {
   const { t } = useTranslation();
@@ -200,6 +201,9 @@ export default function DashboardPage() {
             <StudyCircleWidget />
           </div>
         </div>
+
+        {/* Quick Entry */}
+        <QuickEntryWidget />
 
         {/* Quick Actions */}
         <QuickActionsWidget />

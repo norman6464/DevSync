@@ -1458,6 +1458,25 @@
     "newVideo": "新着",
     "unavailable": "YouTube動画機能は現在利用できません"
   },
+  "quickEntry": {
+    "title": "クイック学習記録",
+    "selectCategory": "カテゴリを選択",
+    "duration": "学習時間",
+    "minutes": "分",
+    "notePlaceholder": "メモ（任意）",
+    "defaultNote": "クイックエントリーで記録",
+    "submit": "記録する",
+    "submitting": "記録中...",
+    "success": "学習を記録しました",
+    "failed": "記録に失敗しました",
+    "categories": {
+      "coding": "コーディング",
+      "reading": "読書",
+      "course": "講座",
+      "meetup": "勉強会",
+      "other": "その他"
+    }
+  },
   "scheduledPublish": {
     "schedule": "スケジュール公開",
     "scheduled": "スケジュール済み",

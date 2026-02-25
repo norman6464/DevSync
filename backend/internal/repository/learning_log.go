@@ -164,6 +164,19 @@ func (r *LearningLogRepository) GetStreakInfo(userID uint) (*model.StreakInfo, e
 	return info, nil
 }
 
+// GetRecentCategories はユーザーの最近よく使うカテゴリを頻度順で返す。
+func (r *LearningLogRepository) GetRecentCategories(userID uint, limit int) ([]string, error) {
+	var categories []string
+	err := r.db.Model(&model.LearningLog{}).
+		Select("category").
+		Where("user_id = ?", userID).
+		Group("category").
+		Order("COUNT(*) DESC").
+		Limit(limit).
+		Pluck("category", &categories).Error
+	return categories, err
+}
+
 // GetCalendarData はカレンダー表示用の日別ログ件数を取得する。
 func (r *LearningLogRepository) GetCalendarData(userID uint) ([]model.CalendarEntry, error) {
 	var entries []model.CalendarEntry

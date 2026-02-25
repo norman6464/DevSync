@@ -1559,6 +1559,25 @@
     "newVideo": "最新",
     "unavailable": "YouTube影片功能目前無法使用"
   },
+  "quickEntry": {
+    "title": "快速學習記錄",
+    "selectCategory": "選擇類別",
+    "duration": "學習時長",
+    "minutes": "分鐘",
+    "notePlaceholder": "備註（選填）",
+    "defaultNote": "透過快速記錄新增",
+    "submit": "記錄",
+    "submitting": "記錄中...",
+    "success": "學習已記錄",
+    "failed": "記錄失敗",
+    "categories": {
+      "coding": "程式設計",
+      "reading": "閱讀",
+      "course": "課程",
+      "meetup": "聚會",
+      "other": "其他"
+    }
+  },
   "scheduledPublish": {
     "schedule": "排程發佈",
     "scheduled": "已排程",
