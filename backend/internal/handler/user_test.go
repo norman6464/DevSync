@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
 	"github.com/stretchr/testify/mock"
@@ -39,6 +40,10 @@ func (m *MockUserService) GetByUsername(username string) (*model.User, error) {
 
 func (m *MockUserService) Update(user *model.User) error {
 	return m.Called(user).Error(0)
+}
+
+func (m *MockUserService) UpdateByOwner(id, userID uint, user *model.User) error {
+	return m.Called(id, userID, user).Error(0)
 }
 
 func (m *MockUserService) GetProfileCompleteness(userID uint) (*service.ProfileCompleteness, error) {
@@ -223,7 +228,7 @@ func TestUserHandler_Update(t *testing.T) {
 
 		existing := &model.User{ID: 1, Name: "旧名前", Email: "test@test.com"}
 		svc.On("GetByID", uint(1)).Return(existing, nil)
-		svc.On("Update", mock.AnythingOfType("*model.User")).Return(nil)
+		svc.On("UpdateByOwner", uint(1), uint(1), mock.AnythingOfType("*model.User")).Return(nil)
 
 		w := doRequest(r, "PUT", "/users/1", map[string]interface{}{
 			"name": "新名前",
@@ -234,12 +239,17 @@ func TestUserHandler_Update(t *testing.T) {
 	})
 
 	t.Run("他人のプロフィールは更新できない", func(t *testing.T) {
-		h, _ := newTestUserHandler()
+		h, svc := newTestUserHandler()
 		r := newRouter(2)
 		r.PUT("/users/:id", h.Update)
 
+		existing := &model.User{ID: 1, Name: "旧名前"}
+		svc.On("GetByID", uint(1)).Return(existing, nil)
+		svc.On("UpdateByOwner", uint(1), uint(2), mock.AnythingOfType("*model.User")).Return(domain.ErrForbidden)
+
 		w := doRequest(r, "PUT", "/users/1", map[string]interface{}{"name": "不正更新"})
 		assertStatus(t, w, http.StatusForbidden)
+		svc.AssertExpectations(t)
 	})
 
 	t.Run("存在しないユーザーの更新で404", func(t *testing.T) {
@@ -282,7 +292,7 @@ func TestUserHandler_Update(t *testing.T) {
 
 		existing := &model.User{ID: 1, Name: "旧名前"}
 		svc.On("GetByID", uint(1)).Return(existing, nil)
-		svc.On("Update", mock.AnythingOfType("*model.User")).Return(errors.New("db error"))
+		svc.On("UpdateByOwner", uint(1), uint(1), mock.AnythingOfType("*model.User")).Return(errors.New("db error"))
 
 		w := doRequest(r, "PUT", "/users/1", map[string]interface{}{"name": "新名前"})
 		assertStatus(t, w, http.StatusInternalServerError)

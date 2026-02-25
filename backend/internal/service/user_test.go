@@ -290,6 +290,31 @@ func TestGetProfileCompleteness_OnlyFrameworks(t *testing.T) {
 }
 
 // ============================================================
+// UpdateByOwner テスト
+// ============================================================
+
+func TestUserUpdateByOwner_Success(t *testing.T) {
+	svc, repo := newTestUserService()
+
+	user := &model.User{Name: "Alice"}
+	repo.On("Update", user).Return(nil)
+
+	err := svc.UpdateByOwner(1, 1, user)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestUserUpdateByOwner_Forbidden(t *testing.T) {
+	svc, _ := newTestUserService()
+
+	user := &model.User{Name: "Alice"}
+
+	err := svc.UpdateByOwner(1, 2, user)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "権限がありません")
+}
+
+// ============================================================
 // Update — バリデーションテスト
 // ============================================================
 
