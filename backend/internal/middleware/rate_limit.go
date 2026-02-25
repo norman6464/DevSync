@@ -68,6 +68,15 @@ func (s *RateLimitStore) Cleanup(windowSeconds int) {
 	}
 }
 
+// StartCleanup は定期的に古いエントリを削除するgoroutineを起動する。
+func StartCleanup(store *RateLimitStore, windowSeconds int) {
+	ticker := time.NewTicker(10 * time.Minute)
+	defer ticker.Stop()
+	for range ticker.C {
+		store.Cleanup(windowSeconds)
+	}
+}
+
 // RateLimit はIPごとのレート制限ミドルウェアを返す。
 func RateLimit(store *RateLimitStore, maxRequests int, windowSeconds int) gin.HandlerFunc {
 	return func(c *gin.Context) {
