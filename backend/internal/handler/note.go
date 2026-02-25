@@ -65,19 +65,7 @@ func (h *NoteHandler) Create(c *gin.Context) {
 
 // GetByID は指定IDのノートを所有権検証付きで取得する。
 func (h *NoteHandler) GetByID(c *gin.Context) {
-	userID := c.GetUint("userID")
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	note, err := h.service.GetByID(id, userID)
-	if err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondOK(c, note)
+	handleGetByID(c, h.service.GetByID)
 }
 
 // GetByUserID は現在のユーザーのノート一覧をページネーション付きで取得する。
@@ -140,18 +128,7 @@ func (h *NoteHandler) Update(c *gin.Context) {
 
 // Delete はノートを削除する。
 func (h *NoteHandler) Delete(c *gin.Context) {
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-	userID := c.GetUint("userID")
-
-	if err := h.service.Delete(id, userID); err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondDeleted(c)
+	handleDelete(c, h.service.Delete)
 }
 
 // Search はキーワードでノートを検索する（ページネーション付き）。

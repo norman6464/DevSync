@@ -54,18 +54,7 @@ func (h *PostSeriesHandler) Create(c *gin.Context) {
 
 // GetByID は指定IDのシリーズを取得する。
 func (h *PostSeriesHandler) GetByID(c *gin.Context) {
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	series, err := h.service.GetByID(id)
-	if err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondOK(c, series)
+	handleGetByIDPublic(c, h.service.GetByID)
 }
 
 // GetByUserID は指定ユーザーのシリーズ一覧をページネーション付きで取得する。
@@ -121,18 +110,7 @@ func (h *PostSeriesHandler) Update(c *gin.Context) {
 
 // Delete は指定IDのシリーズを削除する。
 func (h *PostSeriesHandler) Delete(c *gin.Context) {
-	userID := c.GetUint("userID")
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	if err := h.service.Delete(id, userID); err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondDeleted(c)
+	handleDelete(c, h.service.Delete)
 }
 
 // GetPosts はシリーズ内の投稿一覧を取得する。

@@ -61,18 +61,7 @@ func (h *BookReviewHandler) Create(c *gin.Context) {
 
 // GetByID は指定IDの書籍レビューを取得する。
 func (h *BookReviewHandler) GetByID(c *gin.Context) {
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	review, err := h.service.GetByID(id)
-	if err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondOK(c, review)
+	handleGetByIDPublic(c, h.service.GetByID)
 }
 
 // GetByUserID は指定ユーザーの書籍レビュー一覧をページネーション付きで取得する。
@@ -255,16 +244,5 @@ func (h *BookReviewHandler) Search(c *gin.Context) {
 
 // Delete は指定IDの書籍レビューを削除する。
 func (h *BookReviewHandler) Delete(c *gin.Context) {
-	userID := c.GetUint("userID")
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	if err := h.service.Delete(id, userID); err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondDeleted(c)
+	handleDelete(c, h.service.Delete)
 }

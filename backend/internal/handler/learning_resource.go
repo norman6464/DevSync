@@ -217,18 +217,7 @@ func (h *LearningResourceHandler) Update(c *gin.Context) {
 
 // Delete は指定された学習リソースを削除する。
 func (h *LearningResourceHandler) Delete(c *gin.Context) {
-	userID := c.GetUint("userID")
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	if err := h.service.Delete(id, userID); err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondDeleted(c)
+	handleDelete(c, h.service.Delete)
 }
 
 // Like は学習リソースにいいねする。

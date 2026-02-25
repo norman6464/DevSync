@@ -171,18 +171,7 @@ func (h *QuestionHandler) Update(c *gin.Context) {
 
 // Delete は指定された質問を削除する。
 func (h *QuestionHandler) Delete(c *gin.Context) {
-	userID := c.GetUint("userID")
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	if err := h.service.Delete(id, userID); err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondDeleted(c)
+	handleDelete(c, h.service.Delete)
 }
 
 // Vote は質問に投票する。

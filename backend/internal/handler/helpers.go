@@ -218,6 +218,55 @@ func respondPaginated(c *gin.Context, data interface{}, total int64, page, limit
 	c.JSON(http.StatusOK, response)
 }
 
+// handleDelete はリソース削除の共通パターンを実装する。
+// parseID → GetUint("userID") → deleteFn → respondDeleted
+func handleDelete(c *gin.Context, deleteFn func(id, userID uint) error) {
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+	userID := c.GetUint("userID")
+
+	if err := deleteFn(id, userID); err != nil {
+		respondError(c, err)
+		return
+	}
+	respondDeleted(c)
+}
+
+// handleGetByID はID+userIDによるリソース取得の共通パターンを実装する。
+// parseID → GetUint("userID") → getter → respondOK
+func handleGetByID[T any](c *gin.Context, getter func(id, userID uint) (*T, error)) {
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+	userID := c.GetUint("userID")
+
+	result, err := getter(id, userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, result)
+}
+
+// handleGetByIDPublic は公開リソース取得の共通パターンを実装する。
+// parseID → getter → respondOK（userIDチェックなし）
+func handleGetByIDPublic[T any](c *gin.Context, getter func(id uint) (*T, error)) {
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	result, err := getter(id)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, result)
+}
+
 // handleToggleAction はLike/Unlikeなどのトグル操作を共通化するヘルパー。
 // parseID → サービス呼び出し → レスポンス返却のパターンを統一する。
 func handleToggleAction(c *gin.Context, action func(userID, id uint) error, message string) {

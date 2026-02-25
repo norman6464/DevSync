@@ -122,20 +122,7 @@ func (h *RoadmapHandler) GetPublicRoadmaps(c *gin.Context) {
 
 // GetByID は指定IDのロードマップをステップ付きで取得する。
 func (h *RoadmapHandler) GetByID(c *gin.Context) {
-	roadmapID, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	userID := c.GetUint("userID")
-
-	roadmap, err := h.service.GetByID(roadmapID, userID)
-	if err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondOK(c, roadmap)
+	handleGetByID(c, h.service.GetByID)
 }
 
 // Update は指定IDのロードマップを更新する。
@@ -185,18 +172,7 @@ func (h *RoadmapHandler) Update(c *gin.Context) {
 
 // Delete は指定IDのロードマップを削除する。
 func (h *RoadmapHandler) Delete(c *gin.Context) {
-	userID := c.GetUint("userID")
-	roadmapID, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	if err := h.service.Delete(roadmapID, userID); err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondDeleted(c)
+	handleDelete(c, h.service.Delete)
 }
 
 // CopyRoadmap は公開ロードマップをテンプレートとしてコピーする。

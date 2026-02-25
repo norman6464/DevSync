@@ -81,17 +81,7 @@ func (h *StudyCircleHandler) GetMyCircles(c *gin.Context) {
 
 // GetByID はサークル詳細を返す。
 func (h *StudyCircleHandler) GetByID(c *gin.Context) {
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-	userID := c.GetUint("userID")
-	circle, err := h.service.GetByID(id, userID)
-	if err != nil {
-		respondError(c, err)
-		return
-	}
-	respondOK(c, circle)
+	handleGetByID(c, h.service.GetByID)
 }
 
 // Update はサークル情報を更新する。
@@ -115,16 +105,7 @@ func (h *StudyCircleHandler) Update(c *gin.Context) {
 
 // Delete はサークルを削除する。
 func (h *StudyCircleHandler) Delete(c *gin.Context) {
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-	userID := c.GetUint("userID")
-	if err := h.service.Delete(id, userID); err != nil {
-		respondError(c, err)
-		return
-	}
-	respondDeleted(c)
+	handleDelete(c, h.service.Delete)
 }
 
 // GetMembers はメンバー一覧を返す。

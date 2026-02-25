@@ -75,18 +75,7 @@ func (h *ChatRoomHandler) GetMyRooms(c *gin.Context) {
 
 // GetByID は指定IDのチャットルーム詳細を取得する。
 func (h *ChatRoomHandler) GetByID(c *gin.Context) {
-	userID := c.GetUint("userID")
-	roomID, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	room, err := h.service.GetByID(roomID, userID)
-	if err != nil {
-		respondError(c, err)
-		return
-	}
-	respondOK(c, room)
+	handleGetByID(c, h.service.GetByID)
 }
 
 // Update は指定IDのチャットルーム情報を更新する。
@@ -112,17 +101,7 @@ func (h *ChatRoomHandler) Update(c *gin.Context) {
 
 // Delete は指定IDのチャットルームを削除する。
 func (h *ChatRoomHandler) Delete(c *gin.Context) {
-	userID := c.GetUint("userID")
-	roomID, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	if err := h.service.Delete(roomID, userID); err != nil {
-		respondError(c, err)
-		return
-	}
-	respondDeleted(c)
+	handleDelete(c, h.service.Delete)
 }
 
 // GetMembers は指定チャットルームのメンバー一覧を取得する。
