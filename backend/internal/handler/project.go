@@ -81,19 +81,7 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 
 // GetByID は指定IDのプロジェクトを取得する。
 func (h *ProjectHandler) GetByID(c *gin.Context) {
-	userID := c.GetUint("userID")
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	project, err := h.service.GetByID(id, userID)
-	if err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondOK(c, project)
+	handleGetByID(c, h.service.GetByID)
 }
 
 // GetByUserID は指定ユーザーのプロジェクト一覧をページネーション付きで取得する。
@@ -206,18 +194,7 @@ func (h *ProjectHandler) Update(c *gin.Context) {
 
 // Delete は指定IDのプロジェクトを削除する。
 func (h *ProjectHandler) Delete(c *gin.Context) {
-	userID := c.GetUint("userID")
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	if err := h.service.Delete(id, userID); err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondDeleted(c)
+	handleDelete(c, h.service.Delete)
 }
 
 // GetAll はプロジェクトの一覧をページネーション付きで取得する。

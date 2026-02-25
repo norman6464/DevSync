@@ -53,18 +53,7 @@ func (h *NoteFolderHandler) Create(c *gin.Context) {
 
 // GetByID は指定IDのフォルダを取得する。
 func (h *NoteFolderHandler) GetByID(c *gin.Context) {
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	folder, err := h.service.GetByID(id)
-	if err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondOK(c, folder)
+	handleGetByIDPublic(c, h.service.GetByID)
 }
 
 // GetByUserID は現在のユーザーのフォルダ一覧をページネーション付きで取得する。
@@ -139,16 +128,5 @@ func (h *NoteFolderHandler) Update(c *gin.Context) {
 
 // Delete はフォルダを削除する。
 func (h *NoteFolderHandler) Delete(c *gin.Context) {
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-	userID := c.GetUint("userID")
-
-	if err := h.service.Delete(id, userID); err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondDeleted(c)
+	handleDelete(c, h.service.Delete)
 }

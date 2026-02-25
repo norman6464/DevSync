@@ -107,35 +107,12 @@ func (h *LearningLogHandler) Update(c *gin.Context) {
 
 // Delete は指定された学習ログを削除する。
 func (h *LearningLogHandler) Delete(c *gin.Context) {
-	userID := c.GetUint("userID")
-	logID, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	if err := h.service.Delete(logID, userID); err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondDeleted(c)
+	handleDelete(c, h.service.Delete)
 }
 
 // GetByID は指定されたIDの学習ログを取得する。
 func (h *LearningLogHandler) GetByID(c *gin.Context) {
-	userID := c.GetUint("userID")
-	logID, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	log, err := h.service.GetByID(logID, userID)
-	if err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondOK(c, log)
+	handleGetByID(c, h.service.GetByID)
 }
 
 // GetMyLogs は認証ユーザー自身の学習ログ一覧を取得する。

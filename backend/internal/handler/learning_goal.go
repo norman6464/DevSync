@@ -123,35 +123,12 @@ func (h *LearningGoalHandler) Update(c *gin.Context) {
 
 // Delete は指定された学習目標を削除する。
 func (h *LearningGoalHandler) Delete(c *gin.Context) {
-	userID := c.GetUint("userID")
-	goalID, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	if err := h.service.Delete(goalID, userID); err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondDeleted(c)
+	handleDelete(c, h.service.Delete)
 }
 
 // GetByID は指定されたIDの学習目標を取得する。所有者のみ取得可能。
 func (h *LearningGoalHandler) GetByID(c *gin.Context) {
-	userID := c.GetUint("userID")
-	goalID, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	goal, err := h.service.GetByID(goalID, userID)
-	if err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondOK(c, goal)
+	handleGetByID(c, h.service.GetByID)
 }
 
 // GetByUserID は指定されたユーザーの学習目標一覧を取得する。

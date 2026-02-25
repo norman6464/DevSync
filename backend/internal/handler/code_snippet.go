@@ -109,17 +109,7 @@ func (h *CodeSnippetHandler) Update(c *gin.Context) {
 
 // Delete はスニペットを削除する。所有者のみ削除可能。
 func (h *CodeSnippetHandler) Delete(c *gin.Context) {
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-	userID := c.GetUint("userID")
-
-	if err := h.service.Delete(id, userID); err != nil {
-		respondError(c, err)
-		return
-	}
-	respondDeleted(c)
+	handleDelete(c, h.service.Delete)
 }
 
 // GetComments はスニペットのインラインコメント一覧を返す。
