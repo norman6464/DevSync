@@ -48,14 +48,7 @@ func (s *NoteService) GetByFolderID(folderID uint) ([]model.Note, error) {
 // findAndCheckOwnership は指定IDのノートを取得し、所有権を検証する共通ヘルパー。
 // 取得失敗または所有権不一致の場合はエラーを返す。
 func (s *NoteService) findAndCheckOwnership(id, userID uint) (*model.Note, error) {
-	note, err := s.repo.FindByID(id)
-	if err != nil {
-		return nil, err
-	}
-	if note.UserID != userID {
-		return nil, ErrForbidden
-	}
-	return note, nil
+	return checkOwnership(s.repo.FindByID, id, userID, func(n *model.Note) uint { return n.UserID })
 }
 
 // Update は所有権を検証した後、ノートを更新する。

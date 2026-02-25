@@ -40,14 +40,7 @@ func (s *AnswerService) Create(answer *model.Answer) error {
 
 // findAndCheckOwnership は回答を取得し、指定ユーザーが所有者かを検証する。
 func (s *AnswerService) findAndCheckOwnership(answerID, userID uint) (*model.Answer, error) {
-	answer, err := s.answerRepo.FindByID(answerID)
-	if err != nil {
-		return nil, err
-	}
-	if answer.UserID != userID {
-		return nil, ErrForbidden
-	}
-	return answer, nil
+	return checkOwnership(s.answerRepo.FindByID, answerID, userID, func(a *model.Answer) uint { return a.UserID })
 }
 
 // Update は所有権を検証した後、回答を更新する。

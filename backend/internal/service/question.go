@@ -55,14 +55,7 @@ func (s *QuestionService) GetUserVote(userID, questionID uint) (int, error) {
 
 // findAndCheckOwnership は質問を取得し、指定ユーザーが所有者かを検証する。
 func (s *QuestionService) findAndCheckOwnership(id, userID uint) (*model.Question, error) {
-	question, err := s.repo.FindByID(id)
-	if err != nil {
-		return nil, err
-	}
-	if question.UserID != userID {
-		return nil, ErrForbidden
-	}
-	return question, nil
+	return checkOwnership(s.repo.FindByID, id, userID, func(q *model.Question) uint { return q.UserID })
 }
 
 // Update は所有権を検証した後、質問を更新する。

@@ -139,14 +139,7 @@ func (s *PostService) Delete(id, userID uint) error {
 
 // findAndCheckOwnership は投稿を取得し、指定ユーザーが所有者かを検証する。
 func (s *PostService) findAndCheckOwnership(id, userID uint) (*model.Post, error) {
-	post, err := s.repo.FindByID(id)
-	if err != nil {
-		return nil, err
-	}
-	if post.UserID != userID {
-		return nil, ErrForbidden
-	}
-	return post, nil
+	return checkOwnership(s.repo.FindByID, id, userID, func(p *model.Post) uint { return p.UserID })
 }
 
 // findAndPreventSelfAction は投稿を取得し、自己操作でないことを検証する。

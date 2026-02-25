@@ -89,14 +89,7 @@ func (s *LearningResourceService) Search(query string, limit, offset int) ([]mod
 
 // findAndCheckOwnership はリソースを取得し、指定ユーザーが所有者かを検証する。
 func (s *LearningResourceService) findAndCheckOwnership(id, userID uint) (*model.LearningResource, error) {
-	resource, err := s.repo.FindByID(id)
-	if err != nil {
-		return nil, err
-	}
-	if resource.UserID != userID {
-		return nil, ErrForbidden
-	}
-	return resource, nil
+	return checkOwnership(s.repo.FindByID, id, userID, func(r *model.LearningResource) uint { return r.UserID })
 }
 
 // Update は所有権を検証した後、学習リソースを更新する。

@@ -51,14 +51,7 @@ func (s *PostCollectionService) GetPublicByUserID(userID uint) ([]model.PostColl
 
 // findAndCheckOwnership はコレクションを取得し、指定ユーザーが所有者かを検証する。
 func (s *PostCollectionService) findAndCheckOwnership(id, userID uint) (*model.PostCollection, error) {
-	collection, err := s.repo.FindByID(id)
-	if err != nil {
-		return nil, err
-	}
-	if collection.UserID != userID {
-		return nil, ErrForbidden
-	}
-	return collection, nil
+	return checkOwnership(s.repo.FindByID, id, userID, func(c *model.PostCollection) uint { return c.UserID })
 }
 
 // Update は所有権を検証した後、コレクションを更新する。

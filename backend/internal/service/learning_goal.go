@@ -83,14 +83,7 @@ func (s *LearningGoalService) GetStats(userID uint) (*model.LearningGoalStats, e
 
 // findAndCheckOwnership は学習目標を取得し、指定ユーザーが所有者かを検証する。
 func (s *LearningGoalService) findAndCheckOwnership(id, userID uint) (*model.LearningGoal, error) {
-	goal, err := s.repo.FindByID(id)
-	if err != nil {
-		return nil, err
-	}
-	if goal.UserID != userID {
-		return nil, ErrForbidden
-	}
-	return goal, nil
+	return checkOwnership(s.repo.FindByID, id, userID, func(g *model.LearningGoal) uint { return g.UserID })
 }
 
 // Update は所有権を検証した後、学習目標を更新する。

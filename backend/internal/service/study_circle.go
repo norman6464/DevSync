@@ -20,14 +20,14 @@ func NewStudyCircleService(repo repository.StudyCircleRepositoryInterface) *Stud
 }
 
 func (s *StudyCircleService) findAndCheckOwnership(id, userID uint) (*model.StudyCircle, error) {
-	circle, err := s.repo.FindByID(id)
-	if err != nil {
-		return nil, ErrNotFound
+	finder := func(id uint) (*model.StudyCircle, error) {
+		c, err := s.repo.FindByID(id)
+		if err != nil {
+			return nil, ErrNotFound
+		}
+		return c, nil
 	}
-	if circle.OwnerID != userID {
-		return nil, ErrForbidden
-	}
-	return circle, nil
+	return checkOwnership(finder, id, userID, func(c *model.StudyCircle) uint { return c.OwnerID })
 }
 
 func (s *StudyCircleService) findAndCheckStepOwnership(circleID, stepID, userID uint) (*model.StudyCircleStep, error) {
