@@ -33,8 +33,8 @@ describe('AvatarGroup', () => {
   it('画像のalt属性にユーザー名が設定される', () => {
     render(<AvatarGroup users={users.slice(0, 2)} />);
 
-    expect(screen.getByAlt('Alice')).toBeInTheDocument();
-    expect(screen.getByAlt('Bob')).toBeInTheDocument();
+    expect(screen.getByAltText('Alice')).toBeInTheDocument();
+    expect(screen.getByAltText('Bob')).toBeInTheDocument();
   });
 
   it('画像がない場合はイニシャルが表示される', () => {

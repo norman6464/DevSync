@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, act } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, act, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Stopwatch from '../Stopwatch';
 
@@ -21,48 +21,43 @@ describe('Stopwatch', () => {
     expect(screen.getByText('スタート')).toBeInTheDocument();
   });
 
-  it('スタート後にストップボタンが表示される', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+  it('スタート後にストップボタンが表示される', () => {
     render(<Stopwatch />);
-    await user.click(screen.getByText('スタート'));
+    fireEvent.click(screen.getByText('スタート'));
     expect(screen.getByText('ストップ')).toBeInTheDocument();
   });
 
-  it('スタート後に時間が進む', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+  it('スタート後に時間が進む', () => {
     render(<Stopwatch />);
-    await user.click(screen.getByText('スタート'));
+    fireEvent.click(screen.getByText('スタート'));
     act(() => { vi.advanceTimersByTime(1500); });
     expect(screen.queryByText('00:00.00')).not.toBeInTheDocument();
   });
 
-  it('ストップで時間が止まる', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+  it('ストップで時間が止まる', () => {
     render(<Stopwatch />);
-    await user.click(screen.getByText('スタート'));
+    fireEvent.click(screen.getByText('スタート'));
     act(() => { vi.advanceTimersByTime(1000); });
-    await user.click(screen.getByText('ストップ'));
+    fireEvent.click(screen.getByText('ストップ'));
     const timeText = screen.getByTestId('stopwatch-time').textContent;
     act(() => { vi.advanceTimersByTime(1000); });
     expect(screen.getByTestId('stopwatch-time').textContent).toBe(timeText);
   });
 
-  it('リセットで00:00.00に戻る', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+  it('リセットで00:00.00に戻る', () => {
     render(<Stopwatch />);
-    await user.click(screen.getByText('スタート'));
+    fireEvent.click(screen.getByText('スタート'));
     act(() => { vi.advanceTimersByTime(2000); });
-    await user.click(screen.getByText('ストップ'));
-    await user.click(screen.getByText('リセット'));
+    fireEvent.click(screen.getByText('ストップ'));
+    fireEvent.click(screen.getByText('リセット'));
     expect(screen.getByText('00:00.00')).toBeInTheDocument();
   });
 
-  it('ラップボタンでラップタイムが記録される', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+  it('ラップボタンでラップタイムが記録される', () => {
     render(<Stopwatch showLap />);
-    await user.click(screen.getByText('スタート'));
+    fireEvent.click(screen.getByText('スタート'));
     act(() => { vi.advanceTimersByTime(1000); });
-    await user.click(screen.getByText('ラップ'));
+    fireEvent.click(screen.getByText('ラップ'));
     expect(screen.getByTestId('lap-list')).toBeInTheDocument();
   });
 

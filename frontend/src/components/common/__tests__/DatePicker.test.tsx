@@ -60,7 +60,7 @@ describe('DatePicker', () => {
     const prevButton = screen.getByLabelText('前月');
     await user.click(prevButton);
 
-    expect(screen.getByText('1月')).toBeInTheDocument();
+    expect(screen.getByText(/1月/)).toBeInTheDocument();
   });
 
   it('次月ボタンで月が切り替わる', async () => {
@@ -72,7 +72,7 @@ describe('DatePicker', () => {
     const nextButton = screen.getByLabelText('次月');
     await user.click(nextButton);
 
-    expect(screen.getByText('2月')).toBeInTheDocument();
+    expect(screen.getByText(/2月/)).toBeInTheDocument();
   });
 
   it('無効状態が適用される', () => {

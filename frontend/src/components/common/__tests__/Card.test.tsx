@@ -80,8 +80,8 @@ describe('Card', () => {
 
     render(<Card onClick={handleClick}>クリック可能</Card>);
 
-    const card = screen.getByText('クリック可能').parentElement;
-    fireEvent.click(card!);
+    const card = screen.getByText('クリック可能');
+    fireEvent.click(card);
 
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
@@ -141,7 +141,7 @@ describe('Card', () => {
       </Card>
     );
 
-    const footer = screen.getByText('フッター').parentElement;
+    const footer = screen.getByText('フッター');
     expect(footer).toHaveClass('border-t');
   });
 

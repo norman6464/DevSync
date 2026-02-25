@@ -2,15 +2,28 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import InfiniteScroll from '../InfiniteScroll';
 
-const mockIntersectionObserver = vi.fn();
+const mockObserve = vi.fn();
+const mockUnobserve = vi.fn();
+const mockDisconnect = vi.fn();
+
+let mockIntersectionObserverCalls = 0;
 
 beforeEach(() => {
-  mockIntersectionObserver.mockReturnValue({
-    observe: vi.fn(),
-    unobserve: vi.fn(),
-    disconnect: vi.fn(),
-  });
-  window.IntersectionObserver = mockIntersectionObserver;
+  mockObserve.mockClear();
+  mockUnobserve.mockClear();
+  mockDisconnect.mockClear();
+  mockIntersectionObserverCalls = 0;
+
+  const MockIntersectionObserver = class {
+    constructor() {
+      mockIntersectionObserverCalls++;
+    }
+    observe = mockObserve;
+    unobserve = mockUnobserve;
+    disconnect = mockDisconnect;
+  };
+
+  window.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver;
 });
 
 describe('InfiniteScroll', () => {
@@ -71,7 +84,7 @@ describe('InfiniteScroll', () => {
       </InfiniteScroll>
     );
 
-    expect(mockIntersectionObserver).toHaveBeenCalled();
+    expect(mockIntersectionObserverCalls).toBeGreaterThan(0);
   });
 
   it('センチネル要素が存在する', () => {

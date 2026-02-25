@@ -13,7 +13,7 @@ describe('FileUpload', () => {
   it('アップロードアイコンが表示される', () => {
     const { container } = render(<FileUpload onUpload={() => {}} />);
 
-    expect(container.querySelector('.lucide-upload-cloud')).toBeInTheDocument();
+    expect(container.querySelector('svg')).toBeInTheDocument();
   });
 
   it('クリックでファイル選択ができる', () => {

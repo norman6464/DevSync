@@ -1,9 +1,13 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import Pagination from '../Pagination';
 
 describe('Pagination', () => {
   const mockOnPageChange = vi.fn();
+
+  beforeEach(() => {
+    mockOnPageChange.mockClear();
+  });
 
   it('ページネーションが表示される', () => {
     render(
@@ -96,7 +100,8 @@ describe('Pagination', () => {
       <Pagination currentPage={5} totalPages={10} onPageChange={mockOnPageChange} />
     );
 
-    expect(screen.getByText('...')).toBeInTheDocument();
+    const ellipses = screen.getAllByText('...');
+    expect(ellipses.length).toBeGreaterThanOrEqual(1);
   });
 
   it('ページが1つだけの場合は何も表示されない', () => {

@@ -5,21 +5,21 @@ import ConfirmDialog from '../ConfirmDialog';
 
 describe('ConfirmDialog', () => {
   it('タイトルが表示される', () => {
-    render(<ConfirmDialog isOpen title="確認" message="削除しますか？" onConfirm={() => {}} onCancel={() => {}} />);
+    render(<ConfirmDialog isOpen title="確認ダイアログ" message="削除しますか？" onConfirm={() => {}} onCancel={() => {}} />);
 
-    expect(screen.getByText('確認')).toBeInTheDocument();
+    expect(screen.getByText('確認ダイアログ')).toBeInTheDocument();
   });
 
   it('メッセージが表示される', () => {
-    render(<ConfirmDialog isOpen title="確認" message="削除しますか？" onConfirm={() => {}} onCancel={() => {}} />);
+    render(<ConfirmDialog isOpen title="確認ダイアログ" message="削除しますか？" onConfirm={() => {}} onCancel={() => {}} />);
 
     expect(screen.getByText('削除しますか？')).toBeInTheDocument();
   });
 
   it('確認ボタンが表示される', () => {
-    render(<ConfirmDialog isOpen title="確認" message="削除？" onConfirm={() => {}} onCancel={() => {}} />);
+    render(<ConfirmDialog isOpen title="削除の確認" message="削除？" onConfirm={() => {}} onCancel={() => {}} confirmLabel="実行" />);
 
-    expect(screen.getByText('確認')).toBeInTheDocument();
+    expect(screen.getByText('実行')).toBeInTheDocument();
   });
 
   it('キャンセルボタンが表示される', () => {
