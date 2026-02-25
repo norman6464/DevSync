@@ -63,10 +63,15 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 
 	api := r.Group("/api/v1")
 
-	// レート制限（認証エンドポイント: 10リクエスト/60秒）
+	// レート制限ストア
 	authRateLimitStore := middleware.NewRateLimitStore()
+	apiRateLimitStore := middleware.NewRateLimitStore()
 
-	// 認証ルート（公開）
+	// 定期クリーンアップ（メモリリーク対策）
+	go middleware.StartCleanup(authRateLimitStore, 60)
+	go middleware.StartCleanup(apiRateLimitStore, 60)
+
+	// 認証ルート（公開: 10リクエスト/60秒）
 	auth := api.Group("/auth")
 	auth.Use(middleware.RateLimit(authRateLimitStore, 10, 60))
 	{
@@ -80,9 +85,10 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 	api.GET("/github/callback", c.GitHubHandler.Callback)
 	api.GET("/spotify/callback", c.SpotifyHandler.Callback)
 
-	// 認証必須ルート
+	// 認証必須ルート（100リクエスト/60秒）
 	protected := api.Group("")
 	protected.Use(middleware.AuthRequired(c.AuthService))
+	protected.Use(middleware.RateLimit(apiRateLimitStore, 100, 60))
 	{
 		protected.GET("/auth/me", c.AuthHandler.Me)
 		protected.POST("/auth/logout", c.AuthHandler.Logout)
