@@ -255,3 +255,105 @@ func TestNotificationDelete_Success(t *testing.T) {
 	assert.NoError(t, err)
 	repo.AssertExpectations(t)
 }
+
+func TestNotificationDelete_Error(t *testing.T) {
+	svc, repo := newTestNotificationService()
+
+	repo.On("Delete", uint(5), uint(1)).Return(errors.New("db error"))
+
+	err := svc.Delete(5, 1)
+	assert.Error(t, err)
+}
+
+// ============================================================
+// 追加エッジケーステスト
+// ============================================================
+
+func TestNotifyFollowers_GetFollowerIDsError(t *testing.T) {
+	svc, repo := newTestNotificationService()
+
+	repo.On("GetFollowerIDs", uint(1)).Return([]uint{}, errors.New("db error"))
+
+	// エラー時はCreateBatchが呼ばれないことを確認
+	svc.NotifyFollowers(1, 10, model.NotificationTypePost)
+	repo.AssertNotCalled(t, "CreateBatch")
+}
+
+func TestCreateBatchWithWebSocket_Success(t *testing.T) {
+	repo := new(MockNotificationRepository)
+	hub := NewHub()
+	svc := NewNotificationServiceWithHub(repo, hub)
+
+	client2 := &Client{Hub: hub, UserID: 2, Send: make(chan []byte, 256)}
+	client3 := &Client{Hub: hub, UserID: 3, Send: make(chan []byte, 256)}
+	hub.clients[2] = client2
+	hub.clients[3] = client3
+
+	notifications := []*model.Notification{
+		{UserID: 2, Type: model.NotificationTypePost, ActorID: 1},
+		{UserID: 3, Type: model.NotificationTypePost, ActorID: 1},
+	}
+	repo.On("CreateBatch", notifications).Return(nil)
+
+	err := svc.CreateBatch(notifications)
+	assert.NoError(t, err)
+
+	// 両クライアントにWebSocketメッセージが送信されたことを確認
+	select {
+	case msg := <-client2.Send:
+		assert.Contains(t, string(msg), "notification")
+	default:
+		t.Fatal("client2にメッセージが送信されませんでした")
+	}
+	select {
+	case msg := <-client3.Send:
+		assert.Contains(t, string(msg), "notification")
+	default:
+		t.Fatal("client3にメッセージが送信されませんでした")
+	}
+}
+
+func TestNotificationMarkAsRead_Error(t *testing.T) {
+	svc, repo := newTestNotificationService()
+
+	repo.On("MarkAsRead", uint(5), uint(1)).Return(errors.New("db error"))
+
+	err := svc.MarkAsRead(5, 1)
+	assert.Error(t, err)
+}
+
+func TestNotificationMarkAllAsRead_Error(t *testing.T) {
+	svc, repo := newTestNotificationService()
+
+	repo.On("MarkAllAsRead", uint(1)).Return(errors.New("db error"))
+
+	err := svc.MarkAllAsRead(1)
+	assert.Error(t, err)
+}
+
+func TestNotificationCountUnread_Error(t *testing.T) {
+	svc, repo := newTestNotificationService()
+
+	repo.On("CountUnread", uint(1)).Return(int64(0), errors.New("db error"))
+
+	_, err := svc.CountUnread(1)
+	assert.Error(t, err)
+}
+
+func TestNotificationGetByUserID_Error(t *testing.T) {
+	svc, repo := newTestNotificationService()
+
+	repo.On("FindByUserID", uint(1), 1, 20, "").Return([]model.Notification{}, errors.New("db error"))
+
+	_, err := svc.GetByUserID(1, 1, 20, "")
+	assert.Error(t, err)
+}
+
+func TestNotificationCountByUserID_Error(t *testing.T) {
+	svc, repo := newTestNotificationService()
+
+	repo.On("CountByUserID", uint(1), "").Return(int64(0), errors.New("db error"))
+
+	_, err := svc.CountByUserID(1, "")
+	assert.Error(t, err)
+}
