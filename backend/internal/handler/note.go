@@ -13,7 +13,7 @@ type NoteServiceInterface interface {
 	Create(note *model.Note) error
 	GetByID(id, userID uint) (*model.Note, error)
 	GetByUserID(userID uint, page, limit int) ([]model.Note, error)
-	GetByFolderID(folderID uint) ([]model.Note, error)
+	GetByFolderID(folderID, userID uint) ([]model.Note, error)
 	Update(id, userID uint, title, content, tags string, folderID *uint) (*model.Note, error)
 	Delete(id, userID uint) error
 	Search(userID uint, query string, page, limit int) ([]model.Note, int64, error)
@@ -88,14 +88,15 @@ func (h *NoteHandler) GetByUserID(c *gin.Context) {
 	respondPaginated(c, notes, total, page, limit)
 }
 
-// GetByFolderID は指定フォルダ内のノート一覧を取得する。
+// GetByFolderID は指定フォルダ内のノート一覧を所有権検証付きで取得する。
 func (h *NoteHandler) GetByFolderID(c *gin.Context) {
 	folderID, ok := parseID(c, "folderId")
 	if !ok {
 		return
 	}
+	userID := c.GetUint("userID")
 
-	notes, err := h.service.GetByFolderID(folderID)
+	notes, err := h.service.GetByFolderID(folderID, userID)
 	if err != nil {
 		respondError(c, err)
 		return

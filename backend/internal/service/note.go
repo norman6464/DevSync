@@ -40,9 +40,9 @@ func (s *NoteService) GetByUserID(userID uint, page, limit int) ([]model.Note, e
 	return s.repo.FindByUserID(userID, page, limit)
 }
 
-// GetByFolderID は指定フォルダ内のノート一覧を取得する。
-func (s *NoteService) GetByFolderID(folderID uint) ([]model.Note, error) {
-	return s.repo.FindByFolderID(folderID)
+// GetByFolderID は指定フォルダ内のノート一覧を所有権検証付きで取得する。
+func (s *NoteService) GetByFolderID(folderID, userID uint) ([]model.Note, error) {
+	return s.repo.FindByFolderID(folderID, userID)
 }
 
 // findAndCheckOwnership は指定IDのノートを取得し、所有権を検証する共通ヘルパー。

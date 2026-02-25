@@ -32,8 +32,8 @@ func (m *MockNoteRepository) FindByUserID(userID uint, page, limit int) ([]model
 	return args.Get(0).([]model.Note), args.Error(1)
 }
 
-func (m *MockNoteRepository) FindByFolderID(folderID uint) ([]model.Note, error) {
-	args := m.Called(folderID)
+func (m *MockNoteRepository) FindByFolderID(folderID, userID uint) ([]model.Note, error) {
+	args := m.Called(folderID, userID)
 	return args.Get(0).([]model.Note), args.Error(1)
 }
 
@@ -333,9 +333,9 @@ func TestNoteService_GetByFolderID(t *testing.T) {
 		{ID: 2, UserID: 1, Title: "フォルダ内ノート2"},
 	}
 
-	repo.On("FindByFolderID", uint(5)).Return(notes, nil)
+	repo.On("FindByFolderID", uint(5), uint(1)).Return(notes, nil)
 
-	result, err := svc.GetByFolderID(5)
+	result, err := svc.GetByFolderID(5, 1)
 	assert.NoError(t, err)
 	assert.Len(t, result, 2)
 	repo.AssertExpectations(t)

@@ -448,7 +448,7 @@ type NoteRepositoryInterface interface {
 	Create(note *model.Note) error
 	FindByID(id uint) (*model.Note, error)
 	FindByUserID(userID uint, page, limit int) ([]model.Note, error)
-	FindByFolderID(folderID uint) ([]model.Note, error)
+	FindByFolderID(folderID, userID uint) ([]model.Note, error)
 	Update(note *model.Note) error
 	Delete(id uint) error
 	Search(userID uint, query string, limit, offset int) ([]model.Note, int64, error)
