@@ -39,6 +39,14 @@ func (s *UserService) FindByID(id uint) (*model.User, error) {
 	return s.repo.FindByID(id)
 }
 
+// UpdateByOwner は所有権を検証した後、ユーザー情報を更新する。
+func (s *UserService) UpdateByOwner(id, userID uint, user *model.User) error {
+	if id != userID {
+		return domain.ErrForbidden
+	}
+	return s.Update(user)
+}
+
 // Update はユーザー情報を更新する。
 func (s *UserService) Update(user *model.User) error {
 	if err := domain.ValidateStringLength(user.Name, 1, 100, "名前"); err != nil {

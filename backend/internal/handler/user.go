@@ -13,6 +13,7 @@ type UserServiceInterface interface {
 	GetByID(id uint) (*model.User, error)
 	GetByUsername(username string) (*model.User, error)
 	Update(user *model.User) error
+	UpdateByOwner(id, userID uint, user *model.User) error
 	GetProfileCompleteness(userID uint) (*service.ProfileCompleteness, error)
 }
 
@@ -73,18 +74,13 @@ func (h *UserHandler) GetByUsername(c *gin.Context) {
 }
 
 // Update はユーザープロフィールを更新する。
-// 本人のみ更新可能（userIDとパスパラメータのIDが一致する必要がある）。
+// 所有権チェックはService層で実施する。
 func (h *UserHandler) Update(c *gin.Context) {
 	id, ok := parseID(c, "id")
 	if !ok {
 		return
 	}
-
 	userID := c.GetUint("userID")
-	if userID != id {
-		respondForbidden(c, "cannot update other user's profile")
-		return
-	}
 
 	existing, err := h.service.GetByID(id)
 	if err != nil {
@@ -118,7 +114,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 		existing.OnboardingCompleted = *input.OnboardingCompleted
 	}
 
-	if err := h.service.Update(existing); err != nil {
+	if err := h.service.UpdateByOwner(id, userID, existing); err != nil {
 		respondError(c, err)
 		return
 	}
