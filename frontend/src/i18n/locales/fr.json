@@ -740,7 +740,9 @@
     "importCSVDesc": "Importez des fichiers CSV exportés pour enregistrer des journaux d apprentissage en lot",
     "importSuccess": "{{count}} journaux d apprentissage importés",
     "importError": "Échec de l importation du fichier CSV",
-    "selectCSVFile": "Sélectionner un fichier CSV"
+    "selectCSVFile": "Sélectionner un fichier CSV",
+    "favorites": "Favoris",
+    "noFavorites": "Aucun journal d'apprentissage favori"
   },
   "reports": {
     "title": "Rapports d'Activité",

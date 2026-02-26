@@ -202,6 +202,16 @@ func (r *LearningLogRepository) SumDurationByGoalID(goalID uint) (int, error) {
 	return total, err
 }
 
+// GetFavorites はお気に入り学習ログをページネーション付きで取得する（新しい順）。
+func (r *LearningLogRepository) GetFavorites(userID uint, limit, offset int) ([]model.LearningLog, int64, error) {
+	var logs []model.LearningLog
+	var total int64
+	query := r.db.Where("user_id = ? AND is_favorite = ?", userID, true)
+	query.Model(&model.LearningLog{}).Count(&total)
+	err := query.Order("created_at DESC").Limit(limit).Offset(offset).Find(&logs).Error
+	return logs, total, err
+}
+
 // GetCalendarData はカレンダー表示用の日別ログ件数を取得する。
 func (r *LearningLogRepository) GetCalendarData(userID uint) ([]model.CalendarEntry, error) {
 	var entries []model.CalendarEntry

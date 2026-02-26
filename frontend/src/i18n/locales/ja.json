@@ -724,7 +724,9 @@
     "importCSVDesc": "エクスポートしたCSVファイルをインポートして学習ログを一括登録します",
     "importSuccess": "{{count}}件の学習ログをインポートしました",
     "importError": "CSVファイルのインポートに失敗しました",
-    "selectCSVFile": "CSVファイルを選択"
+    "selectCSVFile": "CSVファイルを選択",
+    "favorites": "お気に入り",
+    "noFavorites": "お気に入りの学習ログはありません"
   },
   "reports": {
     "title": "アクティビティレポート",

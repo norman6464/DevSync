@@ -487,6 +487,7 @@ func registerLearningLogRoutes(g *gin.RouterGroup, c *di.Container) {
 		learningLogs.POST("/import", c.LearningLogHandler.ImportCSV)
 		learningLogs.GET("", c.LearningLogHandler.GetMyLogs)
 		learningLogs.GET("/export", c.LearningLogHandler.ExportLogs)
+		learningLogs.GET("/favorites", c.LearningLogHandler.GetFavorites)
 		learningLogs.GET("/recent-categories", c.LearningLogHandler.GetRecentCategories)
 		learningLogs.GET("/category/:category", c.LearningLogHandler.GetByCategory)
 		learningLogs.GET("/source/:source", c.LearningLogHandler.GetBySource)

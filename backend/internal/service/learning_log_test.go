@@ -1265,3 +1265,46 @@ func TestLearningLogImportCSV_DefaultCategory(t *testing.T) {
 	assert.Len(t, result, 1)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// お気に入り一覧テスト
+// ============================================================
+
+func TestLearningLogGetFavorites_Success(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	expected := []model.LearningLog{
+		{ID: 1, UserID: 1, Title: "お気に入り1", IsFavorite: true},
+		{ID: 2, UserID: 1, Title: "お気に入り2", IsFavorite: true},
+	}
+	repo.On("GetFavorites", uint(1), 20, 0).Return(expected, int64(2), nil)
+
+	logs, total, err := svc.GetFavorites(1, 20, 0)
+	assert.NoError(t, err)
+	assert.Len(t, logs, 2)
+	assert.Equal(t, int64(2), total)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogGetFavorites_Empty(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	repo.On("GetFavorites", uint(1), 20, 0).Return([]model.LearningLog{}, int64(0), nil)
+
+	logs, total, err := svc.GetFavorites(1, 20, 0)
+	assert.NoError(t, err)
+	assert.Empty(t, logs)
+	assert.Equal(t, int64(0), total)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogGetFavorites_RepoError(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	repo.On("GetFavorites", uint(1), 20, 0).Return([]model.LearningLog{}, int64(0), errors.New("db error"))
+
+	logs, _, err := svc.GetFavorites(1, 20, 0)
+	assert.Error(t, err)
+	assert.Empty(t, logs)
+	repo.AssertExpectations(t)
+}
