@@ -20,20 +20,14 @@ func NewPostTemplateService(repo repository.PostTemplateRepositoryInterface) *Po
 
 // Create は新しい投稿テンプレートを作成する。
 func (s *PostTemplateService) Create(tmpl *model.PostTemplate) error {
-	if strings.TrimSpace(tmpl.Name) == "" {
-		return domain.NewError(domain.ErrCodeBadRequest, "テンプレート名は必須です", nil)
+	if err := domain.ValidateStringLength(tmpl.Name, 1, 100, "テンプレート名"); err != nil {
+		return err
 	}
-	if len([]rune(tmpl.Name)) > 100 {
-		return domain.NewError(domain.ErrCodeValidation, "テンプレート名は100文字以下である必要があります", nil)
+	if err := domain.ValidateStringLength(tmpl.ContentTemplate, 1, 50000, "テンプレート内容"); err != nil {
+		return err
 	}
-	if strings.TrimSpace(tmpl.ContentTemplate) == "" {
-		return domain.NewError(domain.ErrCodeBadRequest, "テンプレート内容は必須です", nil)
-	}
-	if len([]rune(tmpl.ContentTemplate)) > 50000 {
-		return domain.NewError(domain.ErrCodeValidation, "テンプレート内容は50000文字以下である必要があります", nil)
-	}
-	if len([]rune(tmpl.TitleTemplate)) > 200 {
-		return domain.NewError(domain.ErrCodeValidation, "タイトルテンプレートは200文字以下である必要があります", nil)
+	if err := domain.ValidateStringLength(tmpl.TitleTemplate, 0, 200, "タイトルテンプレート"); err != nil {
+		return err
 	}
 	return s.repo.Create(tmpl)
 }
@@ -56,22 +50,22 @@ func (s *PostTemplateService) Update(id, userID uint, updates *model.PostTemplat
 	}
 
 	if strings.TrimSpace(updates.Name) != "" {
-		if len([]rune(updates.Name)) > 100 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "テンプレート名は100文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(updates.Name, 1, 100, "テンプレート名"); err != nil {
+			return nil, err
 		}
-		tmpl.Name = updates.Name
+		tmpl.Name = strings.TrimSpace(updates.Name)
 	}
 	if strings.TrimSpace(updates.TitleTemplate) != "" {
-		if len([]rune(updates.TitleTemplate)) > 200 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "タイトルテンプレートは200文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(updates.TitleTemplate, 1, 200, "タイトルテンプレート"); err != nil {
+			return nil, err
 		}
-		tmpl.TitleTemplate = updates.TitleTemplate
+		tmpl.TitleTemplate = strings.TrimSpace(updates.TitleTemplate)
 	}
 	if strings.TrimSpace(updates.ContentTemplate) != "" {
-		if len([]rune(updates.ContentTemplate)) > 50000 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "テンプレート内容は50000文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(updates.ContentTemplate, 1, 50000, "テンプレート内容"); err != nil {
+			return nil, err
 		}
-		tmpl.ContentTemplate = updates.ContentTemplate
+		tmpl.ContentTemplate = strings.TrimSpace(updates.ContentTemplate)
 	}
 
 	if err := s.repo.Update(tmpl); err != nil {

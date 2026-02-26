@@ -451,11 +451,11 @@ func (s *PostService) GetScheduled(userID uint) ([]model.Post, error) {
 // 作成途中の投稿を許容するため、タイトル・本文は空でも許可する（長さ上限のみ検証）。
 func (s *PostService) AutoSaveDraft(userID, draftID uint, title, content, imageURLs string) (*model.Post, error) {
 	// 長さ上限のみバリデーション
-	if len([]rune(title)) > 200 {
-		return nil, domain.NewError(domain.ErrCodeValidation, "タイトルは200文字以下である必要があります", nil)
+	if err := domain.ValidateStringLength(title, 0, 200, "タイトル"); err != nil {
+		return nil, err
 	}
-	if len([]rune(content)) > 50000 {
-		return nil, domain.NewError(domain.ErrCodeValidation, "本文は50000文字以下である必要があります", nil)
+	if err := domain.ValidateStringLength(content, 0, 50000, "本文"); err != nil {
+		return nil, err
 	}
 
 	// 新規作成

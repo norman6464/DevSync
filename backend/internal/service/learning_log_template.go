@@ -24,17 +24,14 @@ func NewLearningLogTemplateService(repo repository.LearningLogTemplateRepository
 
 // Create は新しいテンプレートを作成する。
 func (s *LearningLogTemplateService) Create(template *model.LearningLogTemplate) error {
-	if template.Name == "" {
-		return domain.NewError(domain.ErrCodeValidation, "テンプレート名は必須です", nil)
+	if err := domain.ValidateStringLength(template.Name, 1, 100, "テンプレート名"); err != nil {
+		return err
 	}
-	if len([]rune(template.Name)) > 100 {
-		return domain.NewError(domain.ErrCodeValidation, "テンプレート名は100文字以下である必要があります", nil)
+	if err := domain.ValidateStringLength(template.DefaultTitle, 0, 200, "デフォルトタイトル"); err != nil {
+		return err
 	}
-	if len([]rune(template.DefaultTitle)) > 200 {
-		return domain.NewError(domain.ErrCodeValidation, "デフォルトタイトルは200文字以下である必要があります", nil)
-	}
-	if len([]rune(template.DefaultContent)) > 50000 {
-		return domain.NewError(domain.ErrCodeValidation, "デフォルト本文は50000文字以下である必要があります", nil)
+	if err := domain.ValidateStringLength(template.DefaultContent, 0, 50000, "デフォルト本文"); err != nil {
+		return err
 	}
 	if template.DefaultCategory != "" && !model.ValidCategories[template.DefaultCategory] {
 		return domain.NewError(domain.ErrCodeValidation, "無効なカテゴリです", nil)
@@ -80,20 +77,20 @@ func (s *LearningLogTemplateService) Update(id, userID uint, name, defaultTitle,
 	}
 
 	if name != "" {
-		if len([]rune(name)) > 100 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "テンプレート名は100文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(name, 1, 100, "テンプレート名"); err != nil {
+			return nil, err
 		}
 		template.Name = name
 	}
 	if defaultTitle != "" {
-		if len([]rune(defaultTitle)) > 200 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "デフォルトタイトルは200文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(defaultTitle, 1, 200, "デフォルトタイトル"); err != nil {
+			return nil, err
 		}
 		template.DefaultTitle = defaultTitle
 	}
 	if defaultContent != "" {
-		if len([]rune(defaultContent)) > 50000 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "デフォルト本文は50000文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(defaultContent, 1, 50000, "デフォルト本文"); err != nil {
+			return nil, err
 		}
 		template.DefaultContent = defaultContent
 	}

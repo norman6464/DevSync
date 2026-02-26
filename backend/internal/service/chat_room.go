@@ -27,8 +27,8 @@ func (s *ChatRoomService) Create(room *model.ChatRoom, memberIDs []uint) (*model
 	if err := domain.ValidateStringLength(room.Name, 1, 100, "チャットルーム名"); err != nil {
 		return nil, err
 	}
-	if len([]rune(room.Description)) > 500 {
-		return nil, domain.NewError(domain.ErrCodeValidation, "説明は500文字以下である必要があります", nil)
+	if err := domain.ValidateStringLength(room.Description, 0, 500, "説明"); err != nil {
+		return nil, err
 	}
 	room.Name = strings.TrimSpace(room.Name)
 	if err := s.roomRepo.Create(room); err != nil {
