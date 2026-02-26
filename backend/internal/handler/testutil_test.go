@@ -1499,6 +1499,11 @@ func (m *MockLearningLogService) GetGoalProgress(goalID, userID uint) (*model.Go
 	return args.Get(0).(*model.GoalProgress), args.Error(1)
 }
 
+func (m *MockLearningLogService) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 // setupLearningLogHandler はLearningLogHandlerテスト用のセットアップを行う。
 func setupLearningLogHandler() (*LearningLogHandler, *MockLearningLogService) {
 	svc := new(MockLearningLogService)

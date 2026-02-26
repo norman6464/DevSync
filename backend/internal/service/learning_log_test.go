@@ -1478,3 +1478,28 @@ func TestCalculateGoalProgressPercentage(t *testing.T) {
 		})
 	}
 }
+
+// ============================================================
+// CountByUserID テスト
+// ============================================================
+
+func TestLearningLogCountByUserID_Success(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	repo.On("CountByUserID", uint(1)).Return(int64(42), nil)
+
+	count, err := svc.CountByUserID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(42), count)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogCountByUserID_Error(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	repo.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	_, err := svc.CountByUserID(1)
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
