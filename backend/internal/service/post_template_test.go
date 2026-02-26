@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -61,6 +62,49 @@ func TestPostTemplateCreate_EmptyContent(t *testing.T) {
 	err := svc.Create(tmpl)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "テンプレート内容")
+}
+
+func TestPostTemplateCreate_NameTooLong(t *testing.T) {
+	svc, _ := newTestPostTemplateService()
+
+	tmpl := &model.PostTemplate{
+		UserID:          1,
+		Name:            strings.Repeat("あ", 101),
+		ContentTemplate: "内容",
+	}
+
+	err := svc.Create(tmpl)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "100文字以下")
+}
+
+func TestPostTemplateCreate_ContentTooLong(t *testing.T) {
+	svc, _ := newTestPostTemplateService()
+
+	tmpl := &model.PostTemplate{
+		UserID:          1,
+		Name:            "テスト",
+		ContentTemplate: strings.Repeat("あ", 50001),
+	}
+
+	err := svc.Create(tmpl)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "50000文字以下")
+}
+
+func TestPostTemplateCreate_TitleTemplateTooLong(t *testing.T) {
+	svc, _ := newTestPostTemplateService()
+
+	tmpl := &model.PostTemplate{
+		UserID:          1,
+		Name:            "テスト",
+		ContentTemplate: "内容",
+		TitleTemplate:   strings.Repeat("あ", 201),
+	}
+
+	err := svc.Create(tmpl)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "200文字以下")
 }
 
 func TestPostTemplateCreate_RepoError(t *testing.T) {
@@ -226,6 +270,42 @@ func TestPostTemplateDelete_NotFound(t *testing.T) {
 
 	err := svc.Delete(999, 1)
 	assert.Error(t, err)
+}
+
+func TestPostTemplateUpdate_NameTooLong(t *testing.T) {
+	svc, repo := newTestPostTemplateService()
+
+	existing := &model.PostTemplate{UserID: 1, Name: "テスト", ContentTemplate: "内容"}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	_, err := svc.Update(1, 1, &model.PostTemplate{Name: strings.Repeat("あ", 101)})
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "100文字以下")
+}
+
+func TestPostTemplateUpdate_TitleTemplateTooLong(t *testing.T) {
+	svc, repo := newTestPostTemplateService()
+
+	existing := &model.PostTemplate{UserID: 1, Name: "テスト", ContentTemplate: "内容"}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	_, err := svc.Update(1, 1, &model.PostTemplate{TitleTemplate: strings.Repeat("あ", 201)})
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "200文字以下")
+}
+
+func TestPostTemplateUpdate_ContentTooLong(t *testing.T) {
+	svc, repo := newTestPostTemplateService()
+
+	existing := &model.PostTemplate{UserID: 1, Name: "テスト", ContentTemplate: "内容"}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	_, err := svc.Update(1, 1, &model.PostTemplate{ContentTemplate: strings.Repeat("あ", 50001)})
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "50000文字以下")
 }
 
 func TestPostTemplateUpdate_RepoError(t *testing.T) {
