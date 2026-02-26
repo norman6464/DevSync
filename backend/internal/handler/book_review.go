@@ -92,6 +92,26 @@ func (h *BookReviewHandler) GetByUserID(c *gin.Context) {
 	})
 }
 
+// GetMyReviews は認証ユーザー自身の書籍レビュー一覧を取得する。
+func (h *BookReviewHandler) GetMyReviews(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	limit, offset := parseLimitOffset(c)
+
+	reviews, total, err := h.service.GetByUserID(userID, limit, offset)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, dto.BookReviewListResponse{
+		Reviews: reviews,
+		Total:   total,
+		Limit:   limit,
+		Offset:  offset,
+	})
+}
+
 // GetAll は書籍レビューの一覧をページネーション付きで取得する。
 func (h *BookReviewHandler) GetAll(c *gin.Context) {
 	limit, offset := parseLimitOffset(c)

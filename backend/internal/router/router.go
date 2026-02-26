@@ -419,6 +419,7 @@ func registerProjectRoutes(g *gin.RouterGroup, c *di.Container) {
 	{
 		projects.POST("", c.ProjectHandler.Create)
 		projects.GET("", c.ProjectHandler.GetAll)
+		projects.GET("/my", c.ProjectHandler.GetMyProjects)
 		projects.GET("/:id", c.ProjectHandler.GetByID)
 		projects.PUT("/:id", c.ProjectHandler.Update)
 		projects.DELETE("/:id", c.ProjectHandler.Delete)
@@ -497,6 +498,9 @@ func registerLearningLogRoutes(g *gin.RouterGroup, c *di.Container) {
 		learningLogs.GET("/export", c.LearningLogHandler.ExportLogs)
 		learningLogs.GET("/favorites", c.LearningLogHandler.GetFavorites)
 		learningLogs.GET("/recent-categories", c.LearningLogHandler.GetRecentCategories)
+		learningLogs.GET("/my-streak", c.LearningLogHandler.GetMyStreakInfo)
+		learningLogs.GET("/my-calendar", c.LearningLogHandler.GetMyCalendarData)
+		learningLogs.GET("/my-weekly-duration", c.LearningLogHandler.GetMyWeeklyDuration)
 		learningLogs.GET("/category/:category", c.LearningLogHandler.GetByCategory)
 		learningLogs.GET("/source/:source", c.LearningLogHandler.GetBySource)
 		learningLogs.GET("/user/:userId", c.LearningLogHandler.GetByUserID)
@@ -637,6 +641,7 @@ func registerCommunityRoutes(g *gin.RouterGroup, c *di.Container) {
 	{
 		bookReviews.POST("", c.BookReviewHandler.Create)
 		bookReviews.GET("", c.BookReviewHandler.GetAll)
+		bookReviews.GET("/my", c.BookReviewHandler.GetMyReviews)
 		bookReviews.GET("/:id", c.BookReviewHandler.GetByID)
 		bookReviews.PUT("/:id", c.BookReviewHandler.Update)
 		bookReviews.DELETE("/:id", c.BookReviewHandler.Delete)

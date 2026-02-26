@@ -471,3 +471,42 @@ func (h *LearningLogHandler) GetGoalProgress(c *gin.Context) {
 
 	respondOK(c, progress)
 }
+
+// GetMyStreakInfo は認証ユーザー自身のストリーク情報を取得する。
+func (h *LearningLogHandler) GetMyStreakInfo(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	info, err := h.service.GetStreakInfo(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, info)
+}
+
+// GetMyCalendarData は認証ユーザー自身のカレンダーデータを取得する。
+func (h *LearningLogHandler) GetMyCalendarData(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	entries, err := h.service.GetCalendarData(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, ensureSlice(entries))
+}
+
+// GetMyWeeklyDuration は認証ユーザー自身の過去7日間の学習時間合計を返す。
+func (h *LearningLogHandler) GetMyWeeklyDuration(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	duration, err := h.service.GetWeeklyDuration(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, dto.WeeklyDurationResponse{Duration: duration})
+}

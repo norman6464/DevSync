@@ -97,6 +97,26 @@ func (h *ProjectHandler) GetByUserID(c *gin.Context) {
 	})
 }
 
+// GetMyProjects は認証ユーザー自身のプロジェクト一覧を取得する。
+func (h *ProjectHandler) GetMyProjects(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	limit, offset := parseLimitOffset(c)
+
+	projects, total, err := h.service.GetByUserID(userID, limit, offset)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, dto.ProjectListResponse{
+		Projects: projects,
+		Total:    total,
+		Limit:    limit,
+		Offset:   offset,
+	})
+}
+
 // GetFeatured は指定ユーザーの注目プロジェクト一覧を取得する。
 func (h *ProjectHandler) GetFeatured(c *gin.Context) {
 	userID, ok := parseID(c, "userId")
