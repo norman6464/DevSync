@@ -131,6 +131,9 @@ func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (
 		review.TotalPages = updates.TotalPages
 	}
 	if strings.TrimSpace(updates.ImageURL) != "" {
+		if err := domain.ValidateStringLength(updates.ImageURL, 1, 2000, "画像URL"); err != nil {
+			return nil, err
+		}
 		review.ImageURL = strings.TrimSpace(updates.ImageURL)
 	}
 

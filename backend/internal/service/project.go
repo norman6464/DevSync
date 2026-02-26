@@ -87,12 +87,21 @@ func (s *ProjectService) Update(id, userID uint, updates *model.Project) (*model
 		project.TechStack = strings.TrimSpace(updates.TechStack)
 	}
 	if strings.TrimSpace(updates.DemoURL) != "" {
+		if err := domain.ValidateStringLength(updates.DemoURL, 1, 2000, "デモURL"); err != nil {
+			return nil, err
+		}
 		project.DemoURL = strings.TrimSpace(updates.DemoURL)
 	}
 	if strings.TrimSpace(updates.GithubURL) != "" {
+		if err := domain.ValidateStringLength(updates.GithubURL, 1, 2000, "GitHub URL"); err != nil {
+			return nil, err
+		}
 		project.GithubURL = strings.TrimSpace(updates.GithubURL)
 	}
 	if strings.TrimSpace(updates.ImageURL) != "" {
+		if err := domain.ValidateStringLength(updates.ImageURL, 1, 2000, "画像URL"); err != nil {
+			return nil, err
+		}
 		project.ImageURL = strings.TrimSpace(updates.ImageURL)
 	}
 	if strings.TrimSpace(updates.Role) != "" {
