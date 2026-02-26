@@ -1476,7 +1476,10 @@
     "tagsPlaceholder": "Напр.: React, TypeScript, Go",
     "allTags": "Все теги",
     "volumeRegular": "Обычная",
-    "volumeDetailed": "Подробная"
+    "volumeDetailed": "Подробная",
+    "exportMarkdown": "Экспорт в Markdown",
+    "exportSuccess": "Заметка экспортирована",
+    "exportError": "Не удалось экспортировать"
   },
   "githubCallback": {
     "missingOAuthParams": "Отсутствуют параметры OAuth",

@@ -1477,7 +1477,10 @@
     "tagsPlaceholder": "Ex : React, TypeScript, Go",
     "allTags": "Tous les tags",
     "volumeRegular": "Standard",
-    "volumeDetailed": "Détaillé"
+    "volumeDetailed": "Détaillé",
+    "exportMarkdown": "Exporter en Markdown",
+    "exportSuccess": "Note exportée avec succès",
+    "exportError": "Échec de l exportation"
   },
   "githubCallback": {
     "missingOAuthParams": "Paramètres OAuth manquants",

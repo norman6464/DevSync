@@ -488,6 +488,7 @@ func registerNoteRoutes(g *gin.RouterGroup, c *di.Container) {
 		notes.PUT("/:id/archive", c.NoteHandler.Archive)
 		notes.PUT("/:id/unarchive", c.NoteHandler.Unarchive)
 		notes.POST("/:id/duplicate", c.NoteHandler.Duplicate)
+		notes.GET("/:id/export", c.NoteHandler.Export)
 		notes.POST("/:id/links", c.NoteLinkHandler.CreateLink)
 		notes.GET("/:id/links", c.NoteLinkHandler.GetLinks)
 		notes.GET("/:id/backlinks", c.NoteLinkHandler.GetBacklinks)

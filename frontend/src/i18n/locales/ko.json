@@ -1479,7 +1479,10 @@
     "tagsPlaceholder": "예: React, TypeScript, Go",
     "allTags": "모든 태그",
     "volumeRegular": "보통",
-    "volumeDetailed": "상세"
+    "volumeDetailed": "상세",
+    "exportMarkdown": "Markdown으로 내보내기",
+    "exportSuccess": "노트를 내보냈습니다",
+    "exportError": "내보내기에 실패했습니다"
   },
   "githubCallback": {
     "missingOAuthParams": "OAuth 매개변수가 없습니다",

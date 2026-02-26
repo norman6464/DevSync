@@ -1379,7 +1379,10 @@
     "tagsPlaceholder": "例: React, TypeScript, Go",
     "allTags": "すべてのタグ",
     "volumeRegular": "標準",
-    "volumeDetailed": "充実"
+    "volumeDetailed": "充実",
+    "exportMarkdown": "Markdownエクスポート",
+    "exportSuccess": "ノートをエクスポートしました",
+    "exportError": "エクスポートに失敗しました"
   },
   "githubCallback": {
     "missingOAuthParams": "OAuthパラメータが不足しています",
