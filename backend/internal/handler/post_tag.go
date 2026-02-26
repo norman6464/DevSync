@@ -68,6 +68,10 @@ func (h *PostTagHandler) FindPostsByTag(c *gin.Context) {
 		respondBadRequest(c, "tagパラメータが必要です")
 		return
 	}
+	if len([]rune(tag)) > maxTagQueryLen {
+		respondBadRequest(c, "タグは100文字以下である必要があります")
+		return
+	}
 
 	page, limit := parsePagination(c)
 	offset := (page - 1) * limit

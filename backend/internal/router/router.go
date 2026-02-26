@@ -3,6 +3,7 @@
 package router
 
 import (
+	"log"
 	"os"
 	"strings"
 
@@ -24,8 +25,28 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 
 	r := gin.Default()
 
-	// CORS設定
+	// 信頼するプロキシを設定（X-Forwarded-For偽装によるレート制限回避を防止）
+	trustedProxies := os.Getenv("TRUSTED_PROXIES")
+	if trustedProxies != "" {
+		proxies := strings.Split(trustedProxies, ",")
+		for i := range proxies {
+			proxies[i] = strings.TrimSpace(proxies[i])
+		}
+		if err := r.SetTrustedProxies(proxies); err != nil {
+			log.Fatalf("信頼するプロキシの設定に失敗: %v", err)
+		}
+	} else {
+		// プロキシ未設定の場合はローカルホストのみ信頼
+		_ = r.SetTrustedProxies([]string{"127.0.0.1", "::1"})
+	}
+
+	// CORS設定（AllowCredentials=true の場合、ワイルドカードオリジンを拒否）
 	origins := strings.Split(cfg.CORSOrigins, ",")
+	for _, origin := range origins {
+		if strings.TrimSpace(origin) == "*" {
+			log.Fatal("CORS: AllowCredentials=true の場合、ワイルドカード '*' オリジンは使用できません")
+		}
+	}
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     origins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -46,6 +67,8 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		if strings.HasPrefix(ctx.Request.URL.Path, "/uploads/") {
 			ctx.Header("Cache-Control", "public, max-age=86400")
 			ctx.Header("Content-Security-Policy", "default-src 'none'; img-src 'self'; style-src 'none'; script-src 'none'")
+			ctx.Header("Content-Disposition", "inline")
+			ctx.Header("X-Content-Type-Options", "nosniff")
 		} else {
 			ctx.Header("Cache-Control", "no-store")
 			ctx.Header("Content-Security-Policy", "default-src 'none'")

@@ -57,6 +57,12 @@ const maxSearchQueryLen = 500
 // maxUserSearchQueryLen はユーザー検索クエリの最大文字数（ルーン数）。
 const maxUserSearchQueryLen = 100
 
+// maxTagQueryLen はタグ検索クエリの最大文字数（ルーン数）。
+const maxTagQueryLen = 100
+
+// maxUsernameLen はユーザー名パラメータの最大文字数（ルーン数）。
+const maxUsernameLen = 50
+
 // parseSearchQuery はクエリパラメータ "q" を取得・検証する共通ヘルパー。
 // 未指定・空文字列・500文字超の場合は400を返しfalseを返す。
 // 前後の空白はTrimSpaceで除去して返す。
