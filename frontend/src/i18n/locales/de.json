@@ -1720,5 +1720,27 @@
     "noProgress": "Noch kein Fortschritt",
     "allStatuses": "Alle Status",
     "trackProgress": "Fortschritt Erfassen"
+  },
+  "milestones": {
+    "title": "Meilensteine",
+    "addMilestone": "Meilenstein Hinzufügen",
+    "editMilestone": "Meilenstein Bearbeiten",
+    "milestoneTitle": "Titel",
+    "milestoneTitlePlaceholder": "Meilensteintitel",
+    "description": "Beschreibung",
+    "descriptionPlaceholder": "Meilensteinbeschreibung...",
+    "dueDate": "Fälligkeitsdatum",
+    "status": "Status",
+    "notStarted": "Nicht Gestartet",
+    "inProgress": "In Bearbeitung",
+    "completed": "Abgeschlossen",
+    "noMilestones": "Noch keine Meilensteine",
+    "createSuccess": "Meilenstein erstellt",
+    "updateSuccess": "Meilenstein aktualisiert",
+    "deleteSuccess": "Meilenstein gelöscht",
+    "createFailed": "Meilenstein konnte nicht erstellt werden",
+    "updateFailed": "Meilenstein konnte nicht aktualisiert werden",
+    "deleteFailed": "Meilenstein konnte nicht gelöscht werden",
+    "confirmDelete": "Möchten Sie diesen Meilenstein wirklich löschen?"
   }
 }

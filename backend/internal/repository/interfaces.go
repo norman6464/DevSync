@@ -232,6 +232,15 @@ type LearningResourceRepositoryInterface interface {
 	FindByDifficulty(difficulty string, limit, offset int) ([]model.LearningResource, int64, error)
 }
 
+// ProjectMilestoneRepositoryInterface はプロジェクトマイルストーンデータ操作の契約を定義する。
+type ProjectMilestoneRepositoryInterface interface {
+	Create(milestone *model.ProjectMilestone) error
+	FindByID(id uint) (*model.ProjectMilestone, error)
+	FindByProjectID(projectID uint) ([]model.ProjectMilestone, error)
+	Update(milestone *model.ProjectMilestone) error
+	Delete(id uint) error
+}
+
 // ResourceProgressRepositoryInterface は学習リソース進捗データ操作の契約を定義する。
 type ResourceProgressRepositoryInterface interface {
 	Upsert(progress *model.ResourceProgress) error

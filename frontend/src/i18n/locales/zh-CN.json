@@ -1721,5 +1721,27 @@
     "noProgress": "暂无进度",
     "allStatuses": "所有状态",
     "trackProgress": "记录进度"
+  },
+  "milestones": {
+    "title": "里程碑",
+    "addMilestone": "添加里程碑",
+    "editMilestone": "编辑里程碑",
+    "milestoneTitle": "标题",
+    "milestoneTitlePlaceholder": "里程碑标题",
+    "description": "描述",
+    "descriptionPlaceholder": "里程碑描述...",
+    "dueDate": "截止日期",
+    "status": "状态",
+    "notStarted": "未开始",
+    "inProgress": "进行中",
+    "completed": "已完成",
+    "noMilestones": "暂无里程碑",
+    "createSuccess": "里程碑已创建",
+    "updateSuccess": "里程碑已更新",
+    "deleteSuccess": "里程碑已删除",
+    "createFailed": "创建里程碑失败",
+    "updateFailed": "更新里程碑失败",
+    "deleteFailed": "删除里程碑失败",
+    "confirmDelete": "确定要删除这个里程碑吗？"
   }
 }

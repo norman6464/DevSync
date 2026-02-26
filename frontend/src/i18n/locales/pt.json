@@ -1721,5 +1721,27 @@
     "noProgress": "Nenhum progresso ainda",
     "allStatuses": "Todos os status",
     "trackProgress": "Registrar Progresso"
+  },
+  "milestones": {
+    "title": "Marcos",
+    "addMilestone": "Adicionar Marco",
+    "editMilestone": "Editar Marco",
+    "milestoneTitle": "Título",
+    "milestoneTitlePlaceholder": "Título do marco",
+    "description": "Descrição",
+    "descriptionPlaceholder": "Descrição do marco...",
+    "dueDate": "Data Limite",
+    "status": "Status",
+    "notStarted": "Não Iniciado",
+    "inProgress": "Em Andamento",
+    "completed": "Concluído",
+    "noMilestones": "Nenhum marco ainda",
+    "createSuccess": "Marco criado",
+    "updateSuccess": "Marco atualizado",
+    "deleteSuccess": "Marco excluído",
+    "createFailed": "Falha ao criar o marco",
+    "updateFailed": "Falha ao atualizar o marco",
+    "deleteFailed": "Falha ao excluir o marco",
+    "confirmDelete": "Tem certeza de que deseja excluir este marco?"
   }
 }

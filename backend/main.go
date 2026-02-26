@@ -110,6 +110,7 @@ func main() {
 		&model.WeeklyChallenge{},
 		&model.NoteVersion{},
 		&model.ResourceProgress{},
+		&model.ProjectMilestone{},
 	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}
