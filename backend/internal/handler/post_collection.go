@@ -16,6 +16,7 @@ type PostCollectionServiceInterface interface {
 	AddPost(collectionID, userID, postID uint, note string) error
 	RemovePost(collectionID, userID, postID uint) error
 	GetPosts(collectionID uint) ([]model.PostCollectionItem, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // PostCollectionHandler は投稿コレクション関連のHTTPハンドラ。
@@ -205,4 +206,15 @@ func (h *PostCollectionHandler) RemovePost(c *gin.Context) {
 	}
 
 	respondDeleted(c)
+}
+
+// GetMyCount は認証ユーザーのコレクション総数を返す。
+func (h *PostCollectionHandler) GetMyCount(c *gin.Context) {
+	userID := c.GetUint("userID")
+	count, err := h.service.CountByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, gin.H{"count": count})
 }

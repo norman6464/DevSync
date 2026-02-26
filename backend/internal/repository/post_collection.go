@@ -91,3 +91,10 @@ func (r *PostCollectionRepository) GetPostsByCollectionID(collectionID uint) ([]
 		Find(&items).Error
 	return items, err
 }
+
+// CountByUserID は指定ユーザーのコレクション総数を返す。
+func (r *PostCollectionRepository) CountByUserID(userID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.PostCollection{}).Where("user_id = ?", userID).Count(&count).Error
+	return count, err
+}

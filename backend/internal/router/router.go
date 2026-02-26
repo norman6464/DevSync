@@ -242,6 +242,7 @@ func registerPostCollectionRoutes(g *gin.RouterGroup, c *di.Container) {
 	{
 		collections.POST("", c.PostCollectionHandler.Create)
 		collections.GET("/my", c.PostCollectionHandler.GetMyCollections)
+		collections.GET("/my/count", c.PostCollectionHandler.GetMyCount)
 		collections.GET("/:id", c.PostCollectionHandler.GetByID)
 		collections.PUT("/:id", c.PostCollectionHandler.Update)
 		collections.DELETE("/:id", c.PostCollectionHandler.Delete)

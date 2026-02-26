@@ -549,6 +549,7 @@ type PostCollectionRepositoryInterface interface {
 	RemovePost(collectionID, postID uint) error
 	HasPost(collectionID, postID uint) (bool, error)
 	GetPostsByCollectionID(collectionID uint) ([]model.PostCollectionItem, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // PostSeriesRepositoryInterface は投稿シリーズデータ操作の契約を定義する。

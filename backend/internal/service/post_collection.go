@@ -137,3 +137,8 @@ func (s *PostCollectionService) RemovePost(collectionID, userID, postID uint) er
 func (s *PostCollectionService) GetPosts(collectionID uint) ([]model.PostCollectionItem, error) {
 	return s.repo.GetPostsByCollectionID(collectionID)
 }
+
+// CountByUserID は指定ユーザーのコレクション総数を返す。
+func (s *PostCollectionService) CountByUserID(userID uint) (int64, error) {
+	return s.repo.CountByUserID(userID)
+}
