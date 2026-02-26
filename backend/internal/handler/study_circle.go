@@ -368,5 +368,5 @@ func (h *StudyCircleHandler) UpdateMemberRole(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "メンバー役割を更新しました"})
+	respondOK(c, domain.NewMessageResponse("メンバー役割を更新しました"))
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
@@ -305,7 +306,7 @@ func (h *LearningLogHandler) GetWeeklyDuration(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"duration": duration})
+	respondOK(c, dto.WeeklyDurationResponse{Duration: duration})
 }
 
 // GetMonthlySummary は指定ユーザーの月別学習サマリーを返す。
@@ -339,7 +340,7 @@ func (h *LearningLogHandler) Favorite(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "学習ログをお気に入りに追加しました"})
+	respondOK(c, domain.NewMessageResponse("学習ログをお気に入りに追加しました"))
 }
 
 // GetRecentCategories はユーザーの最近よく使うカテゴリを返す。
@@ -387,7 +388,7 @@ func (h *LearningLogHandler) Unfavorite(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "学習ログのお気に入りを解除しました"})
+	respondOK(c, domain.NewMessageResponse("学習ログのお気に入りを解除しました"))
 }
 
 // ImportCSV はCSVファイルから学習ログを一括インポートする。
@@ -425,9 +426,9 @@ func (h *LearningLogHandler) ImportCSV(c *gin.Context) {
 		return
 	}
 
-	respondCreated(c, gin.H{
-		"imported": len(logs),
-		"logs":     logs,
+	respondCreated(c, dto.ImportCSVResponse{
+		Imported: len(logs),
+		Logs:     logs,
 	})
 }
 

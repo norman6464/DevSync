@@ -67,6 +67,11 @@ type AutoSaveDraftResponse struct {
 	UpdatedAt string `json:"updated_at"`
 }
 
+// SchedulePublishRequest はスケジュール公開リクエスト。
+type SchedulePublishRequest struct {
+	ScheduledAt string `json:"scheduled_at" binding:"required"`
+}
+
 // ReactionRequest はリアクション追加/削除リクエスト。
 type ReactionRequest struct {
 	Emoji string `json:"emoji" binding:"required,max=10"`

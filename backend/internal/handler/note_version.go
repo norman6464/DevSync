@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -38,11 +39,11 @@ func (h *NoteVersionHandler) GetVersions(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{
-		"versions": ensureSlice(versions),
-		"total":    total,
-		"limit":    limit,
-		"offset":   offset,
+	respondOK(c, dto.NoteVersionListResponse{
+		Versions: ensureSlice(versions),
+		Total:    total,
+		Limit:    limit,
+		Offset:   offset,
 	})
 }
 

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -31,7 +32,7 @@ func (h *StreakFreezeHandler) UseFreeze(c *gin.Context) {
 		return
 	}
 
-	respondCreated(c, gin.H{"message": "ストリークフリーズを使用しました"})
+	respondCreated(c, domain.NewMessageResponse("ストリークフリーズを使用しました"))
 }
 
 // GetStatus は今月のフリーズ使用状況を返す。

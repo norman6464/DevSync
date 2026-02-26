@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"log"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
@@ -103,7 +101,6 @@ func (h *AIAdviceHandler) DeleteConversation(c *gin.Context) {
 	userID := c.GetUint("userID")
 
 	if err := h.service.DeleteConversation(id, userID); err != nil {
-		log.Printf("会話削除エラー: %v", err)
 		respondError(c, err)
 		return
 	}

@@ -25,6 +25,17 @@ type BatchCreateLearningLogRequest struct {
 	Logs []CreateLearningLogRequest `json:"logs" binding:"required,min=1,max=50,dive"`
 }
 
+// WeeklyDurationResponse は週間学習時間レスポンス。
+type WeeklyDurationResponse struct {
+	Duration int `json:"duration"`
+}
+
+// ImportCSVResponse はCSVインポートレスポンス。
+type ImportCSVResponse struct {
+	Imported int                 `json:"imported"`
+	Logs     []model.LearningLog `json:"logs"`
+}
+
 // UpdateLearningLogRequest は学習ログ更新リクエスト。
 type UpdateLearningLogRequest struct {
 	Title    *string `json:"title" binding:"omitempty,max=200"`
