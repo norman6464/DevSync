@@ -51,10 +51,11 @@ func (s *ProjectService) GetAll(limit, offset int) ([]model.Project, int64, erro
 
 // Search はプロジェクトをキーワード検索する。
 func (s *ProjectService) Search(query string, limit, offset int) ([]model.Project, int64, error) {
-	if strings.TrimSpace(query) == "" {
-		return nil, 0, domain.NewError(domain.ErrCodeBadRequest, "検索キーワードは必須です", nil)
+	q, err := validateSearchQuery(query)
+	if err != nil {
+		return nil, 0, err
 	}
-	return s.repo.Search(strings.TrimSpace(query), limit, offset)
+	return s.repo.Search(q, limit, offset)
 }
 
 // findAndCheckOwnership はプロジェクトを取得し、指定ユーザーが所有者かを検証する。
