@@ -628,6 +628,7 @@ func registerCommunityRoutes(g *gin.RouterGroup, c *di.Container) {
 		roadmaps.DELETE("/:id/steps/:stepId", c.RoadmapHandler.DeleteStep)
 		roadmaps.POST("/:id/steps/batch-complete", c.RoadmapHandler.BatchCompleteSteps)
 		roadmaps.PUT("/:id/steps/reorder", c.RoadmapHandler.ReorderSteps)
+		roadmaps.GET("/my/stats", c.RoadmapHandler.GetMyStats)
 	}
 
 	// チャットルーム
@@ -728,6 +729,7 @@ func registerStudyCircleRoutes(g *gin.RouterGroup, c *di.Container) {
 		circles.POST("/:id/checkins", c.StudyCircleHandler.CreateCheckin)
 		circles.GET("/:id/checkins", c.StudyCircleHandler.GetCheckins)
 		circles.GET("/:id/streak-ranking", c.StudyCircleHandler.GetStreakRanking)
+		circles.GET("/search", c.StudyCircleHandler.Search)
 	}
 }
 

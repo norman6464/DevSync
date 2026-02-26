@@ -26,6 +26,7 @@ type RoadmapServiceInterface interface {
 	BatchCompleteSteps(roadmapID, userID uint, stepIDs []uint) (*model.Roadmap, error)
 	DeleteStep(roadmapID, stepID, userID uint) error
 	ReorderSteps(roadmapID, userID uint, orders []model.StepOrder) error
+	GetStats(userID uint) (*model.RoadmapStats, error)
 }
 
 // RoadmapHandler はロードマップ関連のHTTPハンドラ。
@@ -364,4 +365,17 @@ func (h *RoadmapHandler) ReorderSteps(c *gin.Context) {
 	}
 
 	respondOK(c, domain.NewMessageResponse("steps reordered"))
+}
+
+// GetMyStats は認証ユーザーのロードマップ統計情報を取得する。
+func (h *RoadmapHandler) GetMyStats(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	stats, err := h.service.GetStats(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, stats)
 }
