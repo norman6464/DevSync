@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"testing"
 
@@ -592,4 +593,31 @@ func TestStudyCircle_GetByStatus_InvalidStatus(t *testing.T) {
 
 	w := doRequest(r, http.MethodGet, "/study-circles/status/invalid", nil)
 	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// ---------- GetMyCount ----------
+
+func TestStudyCircleGetMyCount_Success(t *testing.T) {
+	h, repo := setupStudyCircleHandler()
+	r := newRouter(1)
+	r.GET("/study-circles/my/count", h.GetMyCount)
+
+	repo.On("CountByUserID", uint(1)).Return(int64(4), nil)
+
+	w := doRequest(r, http.MethodGet, "/study-circles/my/count", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Contains(t, w.Body.String(), `"count":4`)
+	repo.AssertExpectations(t)
+}
+
+func TestStudyCircleGetMyCount_RepoError(t *testing.T) {
+	h, repo := setupStudyCircleHandler()
+	r := newRouter(1)
+	r.GET("/study-circles/my/count", h.GetMyCount)
+
+	repo.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/study-circles/my/count", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	repo.AssertExpectations(t)
 }

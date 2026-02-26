@@ -1177,3 +1177,27 @@ func TestStudyCircleUpdateMemberRole_TargetNotMember(t *testing.T) {
 	assert.ErrorIs(t, err, ErrNotFound)
 	repo.AssertExpectations(t)
 }
+
+// --- CountByUserID ---
+
+func TestStudyCircleCountByUserID_Success(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	repo.On("CountByUserID", uint(1)).Return(int64(4), nil)
+
+	count, err := svc.CountByUserID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(4), count)
+	repo.AssertExpectations(t)
+}
+
+func TestStudyCircleCountByUserID_Error(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+
+	repo.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	count, err := svc.CountByUserID(1)
+	assert.Error(t, err)
+	assert.Equal(t, int64(0), count)
+	repo.AssertExpectations(t)
+}
