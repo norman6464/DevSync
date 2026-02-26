@@ -1751,5 +1751,23 @@
     "forkedFrom": "Geforkt von",
     "forkCount": "Forks",
     "selectTargetPost": "Zielbeitrag auswählen"
+  },
+  "activityTimeline": {
+    "title": "Aktivitäts-Zeitleiste",
+    "empty": "Noch keine Aktivitäten",
+    "loadMore": "Mehr laden",
+    "postCreated": "Hat einen Beitrag erstellt",
+    "commentCreated": "Hat einen Kommentar gepostet",
+    "resourceShared": "Hat eine Ressource geteilt",
+    "goalCompleted": "Hat ein Ziel erreicht",
+    "projectCreated": "Hat ein Projekt erstellt",
+    "snippetCreated": "Hat ein Code-Snippet erstellt",
+    "filterAll": "Alle",
+    "filterPosts": "Beiträge",
+    "filterComments": "Kommentare",
+    "filterResources": "Ressourcen",
+    "filterGoals": "Ziele",
+    "filterProjects": "Projekte",
+    "filterSnippets": "Snippets"
   }
 }

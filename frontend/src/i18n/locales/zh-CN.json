@@ -1752,5 +1752,23 @@
     "forkedFrom": "派生自",
     "forkCount": "派生数",
     "selectTargetPost": "选择目标帖子"
+  },
+  "activityTimeline": {
+    "title": "活动时间线",
+    "empty": "暂无活动",
+    "loadMore": "加载更多",
+    "postCreated": "创建了帖子",
+    "commentCreated": "发表了评论",
+    "resourceShared": "分享了资源",
+    "goalCompleted": "完成了目标",
+    "projectCreated": "创建了项目",
+    "snippetCreated": "创建了代码片段",
+    "filterAll": "全部",
+    "filterPosts": "帖子",
+    "filterComments": "评论",
+    "filterResources": "资源",
+    "filterGoals": "目标",
+    "filterProjects": "项目",
+    "filterSnippets": "代码片段"
   }
 }

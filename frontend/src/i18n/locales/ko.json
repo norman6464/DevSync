@@ -1754,5 +1754,23 @@
     "forkedFrom": "포크 원본",
     "forkCount": "포크 수",
     "selectTargetPost": "대상 게시물 선택"
+  },
+  "activityTimeline": {
+    "title": "활동 타임라인",
+    "empty": "아직 활동이 없습니다",
+    "loadMore": "더 보기",
+    "postCreated": "게시물을 작성했습니다",
+    "commentCreated": "댓글을 작성했습니다",
+    "resourceShared": "리소스를 공유했습니다",
+    "goalCompleted": "목표를 달성했습니다",
+    "projectCreated": "프로젝트를 생성했습니다",
+    "snippetCreated": "스니펫을 생성했습니다",
+    "filterAll": "전체",
+    "filterPosts": "게시물",
+    "filterComments": "댓글",
+    "filterResources": "리소스",
+    "filterGoals": "목표",
+    "filterProjects": "프로젝트",
+    "filterSnippets": "스니펫"
   }
 }

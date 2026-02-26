@@ -1751,5 +1751,23 @@
     "forkedFrom": "Форк из",
     "forkCount": "Форков",
     "selectTargetPost": "Выберите целевую публикацию"
+  },
+  "activityTimeline": {
+    "title": "Хронология активности",
+    "empty": "Активностей пока нет",
+    "loadMore": "Загрузить ещё",
+    "postCreated": "Создал публикацию",
+    "commentCreated": "Оставил комментарий",
+    "resourceShared": "Поделился ресурсом",
+    "goalCompleted": "Достиг цели",
+    "projectCreated": "Создал проект",
+    "snippetCreated": "Создал сниппет",
+    "filterAll": "Все",
+    "filterPosts": "Публикации",
+    "filterComments": "Комментарии",
+    "filterResources": "Ресурсы",
+    "filterGoals": "Цели",
+    "filterProjects": "Проекты",
+    "filterSnippets": "Сниппеты"
   }
 }

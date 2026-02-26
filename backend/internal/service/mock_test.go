@@ -2499,3 +2499,22 @@ func (m *MockProjectMilestoneRepository) Update(milestone *model.ProjectMileston
 func (m *MockProjectMilestoneRepository) Delete(id uint) error {
 	return m.Called(id).Error(0)
 }
+
+// ============================================================
+// MockUserActivityRepository は repository.UserActivityRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockUserActivityRepository struct {
+	mock.Mock
+}
+
+var _ repository.UserActivityRepositoryInterface = (*MockUserActivityRepository)(nil)
+
+func (m *MockUserActivityRepository) Create(activity *model.UserActivity) error {
+	return m.Called(activity).Error(0)
+}
+
+func (m *MockUserActivityRepository) FindByUserID(userID uint, activityType string, limit, offset int) ([]model.UserActivity, int64, error) {
+	args := m.Called(userID, activityType, limit, offset)
+	return args.Get(0).([]model.UserActivity), args.Get(1).(int64), args.Error(2)
+}

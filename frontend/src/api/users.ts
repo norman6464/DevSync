@@ -36,3 +36,23 @@ export const getFollowing = (id: number) =>
 
 export const getProfileCompleteness = () =>
   client.get<{ percentage: number; missing_fields: string[] }>('/users/me/profile-completeness');
+
+export interface UserActivity {
+  id: number;
+  user_id: number;
+  activity_type: string;
+  target_type: string;
+  target_id: number;
+  metadata: string;
+  created_at: string;
+}
+
+export interface UserActivityListResponse {
+  activities: UserActivity[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export const getUserActivity = (userId: number, params?: { type?: string; limit?: number; offset?: number }) =>
+  client.get<UserActivityListResponse>(`/users/${userId}/activity`, { params });
