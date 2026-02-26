@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"os"
 
@@ -9,6 +10,9 @@ import (
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
 )
+
+// oauthCodeMaxLen はOAuth認可コード・stateパラメータの最大許容長。
+const oauthCodeMaxLen = 2048
 
 // AuthServiceInterface は認証サービスの抽象インターフェース。
 type AuthServiceInterface interface {
@@ -130,7 +134,7 @@ func (h *AuthHandler) GitHubLoginCallback(c *gin.Context) {
 	code := c.Query("code")
 	state := c.Query("state")
 
-	if code == "" || state == "" {
+	if code == "" || state == "" || len(code) > oauthCodeMaxLen || len(state) > oauthCodeMaxLen {
 		respondError(c, service.ErrBadRequest)
 		return
 	}
@@ -159,7 +163,11 @@ func (h *AuthHandler) GitHubLoginCallback(c *gin.Context) {
 	}
 
 	// バックグラウンドでGitHubデータを同期
-	go h.githubService.SyncUserData(resp.User.ID)
+	go func() {
+		if err := h.githubService.SyncUserData(resp.User.ID); err != nil {
+			log.Printf("GitHubデータ同期エラー (userID=%d): %v", resp.User.ID, err)
+		}
+	}()
 
 	setAuthCookie(c, resp.Token)
 	respondOK(c, dto.UserResponse{User: resp.User})
