@@ -884,7 +884,9 @@
     "likeFailed": "Fehler beim Liken",
     "unlikeFailed": "Fehler beim Entfernen des Likes",
     "saveFailed": "Fehler beim Speichern",
-    "unsaveFailed": "Fehler beim Entfernen der Speicherung"
+    "unsaveFailed": "Fehler beim Entfernen der Speicherung",
+    "noteFavorites": "Favorisierte Notizen",
+    "noteFavoritesEmpty": "Noch keine favorisierten Notizen"
   },
   "portfolio": {
     "generate": "Portfolio",

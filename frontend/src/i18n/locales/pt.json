@@ -885,7 +885,9 @@
     "likeFailed": "Falha ao curtir",
     "unlikeFailed": "Falha ao descurtir",
     "saveFailed": "Falha ao salvar",
-    "unsaveFailed": "Falha ao remover dos salvos"
+    "unsaveFailed": "Falha ao remover dos salvos",
+    "noteFavorites": "Notas favoritas",
+    "noteFavoritesEmpty": "Nenhuma nota favorita ainda"
   },
   "portfolio": {
     "generate": "Portfólio",

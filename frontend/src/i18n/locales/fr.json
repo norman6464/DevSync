@@ -885,7 +885,9 @@
     "likeFailed": "Échec de l'ajout du j'aime",
     "unlikeFailed": "Échec du retrait du j'aime",
     "saveFailed": "Échec de la sauvegarde",
-    "unsaveFailed": "Échec du retrait de la sauvegarde"
+    "unsaveFailed": "Échec du retrait de la sauvegarde",
+    "noteFavorites": "Notes favorites",
+    "noteFavoritesEmpty": "Aucune note favorite pour le moment"
   },
   "portfolio": {
     "generate": "Portfolio",

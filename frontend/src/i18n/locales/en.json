@@ -885,7 +885,9 @@
     "likeFailed": "Failed to like",
     "unlikeFailed": "Failed to unlike",
     "saveFailed": "Failed to save",
-    "unsaveFailed": "Failed to unsave"
+    "unsaveFailed": "Failed to unsave",
+    "noteFavorites": "Favorite Notes",
+    "noteFavoritesEmpty": "No favorite notes yet"
   },
   "portfolio": {
     "generate": "Portfolio",

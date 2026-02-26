@@ -886,7 +886,9 @@
     "likeFailed": "按讚失敗",
     "unlikeFailed": "取消按讚失敗",
     "saveFailed": "收藏失敗",
-    "unsaveFailed": "取消收藏失敗"
+    "unsaveFailed": "取消收藏失敗",
+    "noteFavorites": "收藏筆記",
+    "noteFavoritesEmpty": "還沒有收藏的筆記"
   },
   "portfolio": {
     "generate": "作品集",

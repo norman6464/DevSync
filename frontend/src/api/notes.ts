@@ -80,3 +80,6 @@ export const duplicateNote = (id: number) =>
 
 export const exportNoteMarkdown = (id: number) =>
   client.get<Blob>(`/notes/${id}/export`, { responseType: 'blob' });
+
+export const getFavoriteNotes = (page = 1, limit = 20) =>
+  client.get<NotePaginatedResponse>(`/notes/favorites?page=${page}&limit=${limit}`);

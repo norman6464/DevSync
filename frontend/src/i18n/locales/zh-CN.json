@@ -885,7 +885,9 @@
     "likeFailed": "点赞失败",
     "unlikeFailed": "取消点赞失败",
     "saveFailed": "收藏失败",
-    "unsaveFailed": "取消收藏失败"
+    "unsaveFailed": "取消收藏失败",
+    "noteFavorites": "收藏笔记",
+    "noteFavoritesEmpty": "还没有收藏的笔记"
   },
   "portfolio": {
     "generate": "作品集",

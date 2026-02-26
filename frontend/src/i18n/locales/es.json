@@ -885,7 +885,9 @@
     "likeFailed": "Error al dar me gusta",
     "unlikeFailed": "Error al quitar me gusta",
     "saveFailed": "Error al guardar",
-    "unsaveFailed": "Error al quitar guardado"
+    "unsaveFailed": "Error al quitar guardado",
+    "noteFavorites": "Notas favoritas",
+    "noteFavoritesEmpty": "Aún no hay notas favoritas"
   },
   "portfolio": {
     "generate": "Portafolio",
