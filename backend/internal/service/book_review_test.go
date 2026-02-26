@@ -743,3 +743,49 @@ func TestBookReviewUpdate_ReviewTooLong(t *testing.T) {
 	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), "レビュー本文は10000文字以下")
 }
+
+func TestBookReviewCreate_AuthorTooLong(t *testing.T) {
+	svc, _ := newTestBookReviewService()
+
+	review := &model.BookReview{Title: "テスト本", UserID: 1, Rating: 4, Author: strings.Repeat("あ", 201)}
+	err := svc.Create(review)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "著者名は200文字以下")
+}
+
+func TestBookReviewCreate_ISBNTooLong(t *testing.T) {
+	svc, _ := newTestBookReviewService()
+
+	review := &model.BookReview{Title: "テスト本", UserID: 1, Rating: 4, ISBN: strings.Repeat("0", 21)}
+	err := svc.Create(review)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "ISBNは20文字以下")
+}
+
+func TestBookReviewUpdate_AuthorTooLong(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	existing := &model.BookReview{UserID: 1, Title: "Old", Rating: 3}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	updates := &model.BookReview{Author: strings.Repeat("あ", 201)}
+	result, err := svc.Update(1, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "著者名は200文字以下")
+}
+
+func TestBookReviewUpdate_ISBNTooLong(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	existing := &model.BookReview{UserID: 1, Title: "Old", Rating: 3}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	updates := &model.BookReview{ISBN: strings.Repeat("0", 21)}
+	result, err := svc.Update(1, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "ISBNは20文字以下")
+}

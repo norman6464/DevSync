@@ -102,9 +102,11 @@ func TestValidateTitle(t *testing.T) {
 	}{
 		{"有効なタイトル", "My Title", false},
 		{"有効なタイトル（長い）", strings.Repeat("a", 200), false},
+		{"有効なタイトル（マルチバイト200文字）", strings.Repeat("あ", 200), false},
 		{"無効なタイトル（空）", "", true},
 		{"無効なタイトル（スペースのみ）", "   ", true},
 		{"無効なタイトル（長すぎる）", strings.Repeat("a", 201), true},
+		{"無効なタイトル（マルチバイト201文字）", strings.Repeat("あ", 201), true},
 	}
 
 	for _, tt := range tests {
@@ -128,9 +130,11 @@ func TestValidateContent(t *testing.T) {
 	}{
 		{"有効なコンテンツ", "Some content", false},
 		{"有効なコンテンツ（長い）", strings.Repeat("a", 10000), false},
+		{"有効なコンテンツ（マルチバイト10000文字）", strings.Repeat("あ", 10000), false},
 		{"無効なコンテンツ（空）", "", true},
 		{"無効なコンテンツ（スペースのみ）", "   ", true},
 		{"無効なコンテンツ（長すぎる）", strings.Repeat("a", 10001), true},
+		{"無効なコンテンツ（マルチバイト10001文字）", strings.Repeat("あ", 10001), true},
 	}
 
 	for _, tt := range tests {
@@ -261,6 +265,8 @@ func TestValidateTags(t *testing.T) {
 		{"無効なタグ（多すぎる）", []string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"}, true},
 		{"無効なタグ（空文字）", []string{"tag1", ""}, true},
 		{"無効なタグ（長すぎる）", []string{strings.Repeat("a", 31)}, true},
+		{"有効なタグ（マルチバイト30文字）", []string{strings.Repeat("あ", 30)}, false},
+		{"無効なタグ（マルチバイト31文字）", []string{strings.Repeat("あ", 31)}, true},
 	}
 
 	for _, tt := range tests {
@@ -320,8 +326,10 @@ func TestValidateStringLength(t *testing.T) {
 		{"有効な文字列", "test", 1, 10, "テスト", false},
 		{"最小長ちょうど", "a", 1, 10, "テスト", false},
 		{"最大長ちょうど", strings.Repeat("a", 10), 1, 10, "テスト", false},
+		{"マルチバイト最大長ちょうど", strings.Repeat("あ", 10), 1, 10, "テスト", false},
 		{"無効（短すぎる）", "", 1, 10, "テスト", true},
 		{"無効（長すぎる）", strings.Repeat("a", 11), 1, 10, "テスト", true},
+		{"無効（マルチバイト長すぎる）", strings.Repeat("あ", 11), 1, 10, "テスト", true},
 		{"最大長制限なし", strings.Repeat("a", 1000), 1, 0, "テスト", false},
 	}
 
