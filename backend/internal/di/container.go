@@ -93,6 +93,8 @@ type Container struct {
 	LearningLogTemplateHandler   *handler.LearningLogTemplateHandler
 	ResourceReviewHandler        *handler.ResourceReviewHandler
 	LearningDashboardHandler     *handler.LearningDashboardHandler
+	ReminderSettingsHandler      *handler.ReminderSettingsHandler
+	NotificationSettingsHandler  *handler.NotificationSettingsHandler
 
 	// ミドルウェア・コールバック用
 	AuthService      *service.AuthService
@@ -434,6 +436,16 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	// 学習ダッシュボード統合サマリーサービス
 	learningDashboardService := service.NewLearningDashboardService(learningLogRepo, learningGoalRepo, analyticsRepo)
 	c.LearningDashboardHandler = handler.NewLearningDashboardHandler(learningDashboardService)
+
+	// リマインダー設定サービス
+	reminderSettingsRepo := repository.NewReminderSettingsRepository(db)
+	reminderSettingsService := service.NewReminderSettingsService(reminderSettingsRepo)
+	c.ReminderSettingsHandler = handler.NewReminderSettingsHandler(reminderSettingsService)
+
+	// 通知設定サービス
+	notificationSettingsRepo := repository.NewNotificationSettingsRepository(db)
+	notificationSettingsService := service.NewNotificationSettingsService(notificationSettingsRepo)
+	c.NotificationSettingsHandler = handler.NewNotificationSettingsHandler(notificationSettingsService)
 
 	// HubのGetRoomMembersコールバックを設定
 	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs
