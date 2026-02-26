@@ -258,6 +258,64 @@ func TestCalculateProductivityScore_PerfectScore(t *testing.T) {
 	assert.Equal(t, 100.0, score.OverallScore)
 }
 
+func TestCalculateProductivityScore_OnlyPomodoroSessions(t *testing.T) {
+	stats := &model.ProductivityStats{
+		PomodoroSessions: 50,
+		ManualSessions:   0,
+	}
+
+	score := CalculateProductivityScore(stats)
+
+	assert.Equal(t, 100.0, score.PomodoroRate)
+	assert.Equal(t, 0.0, score.GoalRate)
+	assert.Equal(t, 0.0, score.StreakConsistency)
+	// 総合: 100*0.3 + 0*0.4 + 0*0.3 = 30.0
+	assert.Equal(t, 30.0, score.OverallScore)
+}
+
+func TestCalculateProductivityScore_OnlyManualSessions(t *testing.T) {
+	stats := &model.ProductivityStats{
+		PomodoroSessions: 0,
+		ManualSessions:   30,
+	}
+
+	score := CalculateProductivityScore(stats)
+
+	assert.Equal(t, 0.0, score.PomodoroRate)
+}
+
+func TestCalculateProductivityScore_SingleDayStreak(t *testing.T) {
+	stats := &model.ProductivityStats{
+		TotalLogDays:     1,
+		TotalDaysInRange: 30,
+	}
+
+	score := CalculateProductivityScore(stats)
+
+	// 1/30 * 100 = 3.33
+	assert.InDelta(t, 3.33, score.StreakConsistency, 0.01)
+}
+
+func TestCalculateProductivityScore_WeightingVerification(t *testing.T) {
+	// ポモドーロ率=50, 目標率=80, ストリーク率=60
+	stats := &model.ProductivityStats{
+		PomodoroSessions: 5,
+		ManualSessions:   5,
+		CompletedGoals:   4,
+		TotalGoals:       5,
+		TotalLogDays:     30,
+		TotalDaysInRange: 50,
+	}
+
+	score := CalculateProductivityScore(stats)
+
+	assert.Equal(t, 50.0, score.PomodoroRate)
+	assert.Equal(t, 80.0, score.GoalRate)
+	assert.Equal(t, 60.0, score.StreakConsistency)
+	// 重み検証: 50*0.3 + 80*0.4 + 60*0.3 = 15 + 32 + 18 = 65.0
+	assert.Equal(t, 65.0, score.OverallScore)
+}
+
 func TestGetProductivityScore_Success(t *testing.T) {
 	svc, repo := newTestAnalyticsService()
 
