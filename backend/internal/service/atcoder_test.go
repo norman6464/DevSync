@@ -8,7 +8,9 @@ import (
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/domain"
+	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 // roundTripFunc はテスト用のHTTPラウンドトリッパー。
@@ -296,4 +298,133 @@ func TestValidateUsername_RequestURL(t *testing.T) {
 	})
 
 	assert.True(t, svc.ValidateUsername("atcoderuser"))
+}
+
+// newTestAtCoderServiceWithRepo はuserRepoを含むテスト用AtCoderServiceを生成する。
+func newTestAtCoderServiceWithRepo(fn roundTripFunc, repo *MockUserRepository) *AtCoderService {
+	return &AtCoderService{
+		client:   &http.Client{Transport: fn},
+		userRepo: repo,
+	}
+}
+
+func TestConnectAtCoder_Success(t *testing.T) {
+	mockRepo := &MockUserRepository{}
+	user := &model.User{Username: "testuser"}
+
+	svc := newTestAtCoderServiceWithRepo(func(req *http.Request) (*http.Response, error) {
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       io.NopCloser(strings.NewReader("[]")),
+		}, nil
+	}, mockRepo)
+
+	mockRepo.On("FindByID", uint(1)).Return(user, nil)
+	mockRepo.On("Update", mock.MatchedBy(func(u *model.User) bool {
+		return u.AtCoderUsername == "atcoderuser"
+	})).Return(nil)
+
+	result, err := svc.ConnectAtCoder(1, "atcoderuser")
+	assert.NoError(t, err)
+	assert.Equal(t, "atcoderuser", result.AtCoderUsername)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestConnectAtCoder_InvalidUsername(t *testing.T) {
+	mockRepo := &MockUserRepository{}
+
+	svc := newTestAtCoderServiceWithRepo(func(req *http.Request) (*http.Response, error) {
+		return &http.Response{
+			StatusCode: http.StatusNotFound,
+			Body:       io.NopCloser(strings.NewReader("")),
+		}, nil
+	}, mockRepo)
+
+	result, err := svc.ConnectAtCoder(1, "invaliduser")
+	assert.Nil(t, result)
+	assert.Error(t, err)
+
+	var domainErr *domain.DomainError
+	assert.True(t, errors.As(err, &domainErr))
+	assert.Equal(t, domain.ErrCodeBadRequest, domainErr.Code)
+}
+
+func TestConnectAtCoder_UserNotFound(t *testing.T) {
+	mockRepo := &MockUserRepository{}
+
+	svc := newTestAtCoderServiceWithRepo(func(req *http.Request) (*http.Response, error) {
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       io.NopCloser(strings.NewReader("[]")),
+		}, nil
+	}, mockRepo)
+
+	mockRepo.On("FindByID", uint(1)).Return(nil, errors.New("not found"))
+
+	result, err := svc.ConnectAtCoder(1, "atcoderuser")
+	assert.Nil(t, result)
+	assert.Error(t, err)
+
+	var domainErr *domain.DomainError
+	assert.True(t, errors.As(err, &domainErr))
+	assert.Equal(t, domain.ErrCodeNotFound, domainErr.Code)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestConnectAtCoder_UpdateError(t *testing.T) {
+	mockRepo := &MockUserRepository{}
+	user := &model.User{Username: "testuser"}
+
+	svc := newTestAtCoderServiceWithRepo(func(req *http.Request) (*http.Response, error) {
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       io.NopCloser(strings.NewReader("[]")),
+		}, nil
+	}, mockRepo)
+
+	mockRepo.On("FindByID", uint(1)).Return(user, nil)
+	mockRepo.On("Update", mock.Anything).Return(errors.New("db error"))
+
+	result, err := svc.ConnectAtCoder(1, "atcoderuser")
+	assert.Nil(t, result)
+	assert.Error(t, err)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestDisconnectAtCoder_Success(t *testing.T) {
+	mockRepo := &MockUserRepository{}
+	user := &model.User{Username: "testuser", AtCoderUsername: "atcoderuser"}
+
+	svc := newTestAtCoderServiceWithRepo(func(req *http.Request) (*http.Response, error) {
+		return nil, errors.New("should not be called")
+	}, mockRepo)
+
+	mockRepo.On("FindByID", uint(1)).Return(user, nil)
+	mockRepo.On("Update", mock.MatchedBy(func(u *model.User) bool {
+		return u.AtCoderUsername == ""
+	})).Return(nil)
+
+	result, err := svc.DisconnectAtCoder(1)
+	assert.NoError(t, err)
+	assert.Equal(t, "", result.AtCoderUsername)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestDisconnectAtCoder_UserNotFound(t *testing.T) {
+	mockRepo := &MockUserRepository{}
+
+	svc := newTestAtCoderServiceWithRepo(func(req *http.Request) (*http.Response, error) {
+		return nil, errors.New("should not be called")
+	}, mockRepo)
+
+	mockRepo.On("FindByID", uint(1)).Return(nil, errors.New("not found"))
+
+	result, err := svc.DisconnectAtCoder(1)
+	assert.Nil(t, result)
+	assert.Error(t, err)
+
+	var domainErr *domain.DomainError
+	assert.True(t, errors.As(err, &domainErr))
+	assert.Equal(t, domain.ErrCodeNotFound, domainErr.Code)
+	mockRepo.AssertExpectations(t)
 }
