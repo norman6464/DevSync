@@ -205,6 +205,11 @@ func (s *ChatRoomService) SendMessage(roomID, userID uint, content string) (*mod
 	return msg, nil
 }
 
+// CountByUserID は指定ユーザーが参加しているチャットルーム総数を返す。
+func (s *ChatRoomService) CountByUserID(userID uint) (int64, error) {
+	return s.roomRepo.CountByUserID(userID)
+}
+
 // IsMember は指定ユーザーがチャットルームのメンバーかを判定する。
 func (s *ChatRoomService) IsMember(roomID, userID uint) (bool, error) {
 	return s.roomRepo.IsMember(roomID, userID)

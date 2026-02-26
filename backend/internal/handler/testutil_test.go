@@ -513,6 +513,10 @@ func (m *MockChatRoomRepository) IsMember(roomID, userID uint) (bool, error) {
 	args := m.Called(roomID, userID)
 	return args.Bool(0), args.Error(1)
 }
+func (m *MockChatRoomRepository) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
 
 // MockGroupMessageRepository は GroupMessageRepositoryInterface のモック実装。
 type MockGroupMessageRepository struct{ mock.Mock }
@@ -1389,6 +1393,10 @@ func (m *MockChatRoomService) SendMessage(roomID, userID uint, content string) (
 		return r.(*model.GroupMessage), args.Error(1)
 	}
 	return nil, args.Error(1)
+}
+func (m *MockChatRoomService) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
 }
 
 // setupChatRoomHandler はChatRoomHandlerテスト用のセットアップを行う。

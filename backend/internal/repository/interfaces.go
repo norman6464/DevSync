@@ -318,6 +318,7 @@ type ChatRoomRepositoryInterface interface {
 	RemoveMember(roomID, userID uint) error
 	GetMembers(roomID uint) ([]model.ChatRoomMember, error)
 	IsMember(roomID, userID uint) (bool, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // GroupMessageRepositoryInterface はグループメッセージデータ操作の契約を定義する。

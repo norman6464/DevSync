@@ -88,6 +88,13 @@ func (r *ChatRoomRepository) GetMembers(roomID uint) ([]model.ChatRoomMember, er
 	return members, err
 }
 
+// CountByUserID は指定ユーザーが参加しているチャットルーム総数を返す。
+func (r *ChatRoomRepository) CountByUserID(userID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.ChatRoomMember{}).Where("user_id = ?", userID).Count(&count).Error
+	return count, err
+}
+
 // IsMember は指定ユーザーがチャットルームのメンバーであるかを判定する。
 func (r *ChatRoomRepository) IsMember(roomID, userID uint) (bool, error) {
 	var count int64

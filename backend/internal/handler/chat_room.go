@@ -19,6 +19,7 @@ type ChatRoomServiceInterface interface {
 	RemoveMember(roomID, userID, targetUserID uint) error
 	GetMessages(roomID, userID uint, page, limit int) ([]model.GroupMessage, error)
 	SendMessage(roomID, userID uint, content string) (*model.GroupMessage, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // ChatRoomHandler はチャットルーム関連のHTTPハンドラ。
@@ -197,4 +198,15 @@ func (h *ChatRoomHandler) SendMessage(c *gin.Context) {
 	}
 
 	respondCreated(c, msg)
+}
+
+// GetMyCount は認証ユーザーが参加しているチャットルーム総数を返す。
+func (h *ChatRoomHandler) GetMyCount(c *gin.Context) {
+	userID := c.GetUint("userID")
+	count, err := h.service.CountByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, gin.H{"count": count})
 }
