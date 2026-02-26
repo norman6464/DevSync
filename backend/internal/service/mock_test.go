@@ -1086,6 +1086,40 @@ var _ repository.CodeSnippetRepositoryInterface = (*MockCodeSnippetRepository)(n
 var _ repository.RecommendationRepositoryInterface = (*MockRecommendationRepository)(nil)
 var _ repository.AIAdviceRepositoryInterface = (*MockAIAdviceRepository)(nil)
 var _ repository.WeeklyChallengeRepositoryInterface = (*MockWeeklyChallengeRepository)(nil)
+var _ repository.PostTemplateRepositoryInterface = (*MockPostTemplateRepository)(nil)
+
+// ============================================================
+// MockPostTemplateRepository は repository.PostTemplateRepositoryInterface のテスト用モック実装。
+// ============================================================
+
+type MockPostTemplateRepository struct {
+	mock.Mock
+}
+
+func (m *MockPostTemplateRepository) Create(template *model.PostTemplate) error {
+	return m.Called(template).Error(0)
+}
+
+func (m *MockPostTemplateRepository) FindByID(id uint) (*model.PostTemplate, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.PostTemplate), args.Error(1)
+}
+
+func (m *MockPostTemplateRepository) FindByUserID(userID uint, limit, offset int) ([]model.PostTemplate, int64, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.PostTemplate), args.Get(1).(int64), args.Error(2)
+}
+
+func (m *MockPostTemplateRepository) Update(template *model.PostTemplate) error {
+	return m.Called(template).Error(0)
+}
+
+func (m *MockPostTemplateRepository) Delete(id uint) error {
+	return m.Called(id).Error(0)
+}
 
 // ============================================================
 // MockWeeklyChallengeRepository は repository.WeeklyChallengeRepositoryInterface のテスト用モック実装。

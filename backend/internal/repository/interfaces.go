@@ -640,6 +640,15 @@ type BookmarkCollectionRepositoryInterface interface {
 	HasPost(collectionID, postID uint) (bool, error)
 }
 
+// PostTemplateRepositoryInterface は投稿テンプレートデータ操作の契約を定義する。
+type PostTemplateRepositoryInterface interface {
+	Create(template *model.PostTemplate) error
+	FindByID(id uint) (*model.PostTemplate, error)
+	FindByUserID(userID uint, limit, offset int) ([]model.PostTemplate, int64, error)
+	Update(template *model.PostTemplate) error
+	Delete(id uint) error
+}
+
 // WeeklyChallengeRepositoryInterface はウィークリーチャレンジデータ操作の契約を定義する。
 type WeeklyChallengeRepositoryInterface interface {
 	Create(challenge *model.WeeklyChallenge) error

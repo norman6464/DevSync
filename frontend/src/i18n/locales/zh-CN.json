@@ -955,7 +955,7 @@
     "pageTitle": "技术问答",
     "pageSubtitle": "分享技术问题和答案",
     "askQuestion": "提问",
-    "newQuestion": "新问题",
+    "newQuestion": "最新",
     "editQuestion": "编辑问题",
     "questionTitle": "标题",
     "questionTitlePlaceholder": "输入问题标题",
@@ -1008,8 +1008,7 @@
     "bestAnswerSet": "已设置最佳答案",
     "bestAnswerFailed": "设置最佳答案失败",
     "voteFailed": "投票失败",
-    "popularBadge": "热门",
-    "newQuestion": "最新"
+    "popularBadge": "热门"
   },
   "roadmaps": {
     "title": "学习路线图",
@@ -1621,5 +1620,20 @@
     "removeFromCollection": "从收藏夹移除",
     "deleteCollection": "删除收藏夹",
     "editCollection": "编辑收藏夹"
+  },
+  "postTemplate": {
+    "title": "帖子模板",
+    "create": "创建模板",
+    "edit": "编辑模板",
+    "delete": "删除模板",
+    "name": "模板名称",
+    "titleTemplate": "标题模板",
+    "contentTemplate": "内容模板",
+    "useTemplate": "使用模板",
+    "noTemplates": "暂无模板",
+    "createSuccess": "模板创建成功",
+    "updateSuccess": "模板更新成功",
+    "deleteSuccess": "模板删除成功",
+    "deleteConfirm": "确定删除此模板吗？"
   }
 }

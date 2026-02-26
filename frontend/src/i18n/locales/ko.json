@@ -957,7 +957,7 @@
     "pageTitle": "기술 Q&A",
     "pageSubtitle": "기술적인 질문과 답변을 공유하세요",
     "askQuestion": "질문하기",
-    "newQuestion": "새 질문",
+    "newQuestion": "신규",
     "editQuestion": "질문 수정",
     "questionTitle": "제목",
     "questionTitlePlaceholder": "질문 제목을 입력하세요",
@@ -1010,8 +1010,7 @@
     "bestAnswerSet": "채택 답변이 설정되었습니다",
     "bestAnswerFailed": "채택 답변 설정에 실패했습니다",
     "voteFailed": "투표에 실패했습니다",
-    "popularBadge": "인기",
-    "newQuestion": "신규"
+    "popularBadge": "인기"
   },
   "roadmaps": {
     "title": "학습 로드맵",
@@ -1623,5 +1622,20 @@
     "removeFromCollection": "컬렉션에서 삭제",
     "deleteCollection": "컬렉션 삭제",
     "editCollection": "컬렉션 편집"
+  },
+  "postTemplate": {
+    "title": "게시물 템플릿",
+    "create": "템플릿 생성",
+    "edit": "템플릿 편집",
+    "delete": "템플릿 삭제",
+    "name": "템플릿 이름",
+    "titleTemplate": "제목 템플릿",
+    "contentTemplate": "내용 템플릿",
+    "useTemplate": "템플릿 사용",
+    "noTemplates": "템플릿이 없습니다",
+    "createSuccess": "템플릿이 생성되었습니다",
+    "updateSuccess": "템플릿이 업데이트되었습니다",
+    "deleteSuccess": "템플릿이 삭제되었습니다",
+    "deleteConfirm": "이 템플릿을 삭제하시겠습니까?"
   }
 }

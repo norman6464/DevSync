@@ -957,7 +957,7 @@
     "pageTitle": "技術問答",
     "pageSubtitle": "分享技術問題和答案",
     "askQuestion": "提問",
-    "newQuestion": "新問題",
+    "newQuestion": "最新",
     "editQuestion": "編輯問題",
     "questionTitle": "標題",
     "questionTitlePlaceholder": "輸入問題標題",
@@ -1010,8 +1010,7 @@
     "bestAnswerSet": "已設定最佳答案",
     "bestAnswerFailed": "設定最佳答案失敗",
     "voteFailed": "投票失敗",
-    "popularBadge": "熱門",
-    "newQuestion": "最新"
+    "popularBadge": "熱門"
   },
   "roadmaps": {
     "title": "學習路線圖",
@@ -1623,5 +1622,20 @@
     "removeFromCollection": "從收藏夾移除",
     "deleteCollection": "刪除收藏夾",
     "editCollection": "編輯收藏夾"
+  },
+  "postTemplate": {
+    "title": "貼文模板",
+    "create": "建立模板",
+    "edit": "編輯模板",
+    "delete": "刪除模板",
+    "name": "模板名稱",
+    "titleTemplate": "標題模板",
+    "contentTemplate": "內容模板",
+    "useTemplate": "使用模板",
+    "noTemplates": "尚無模板",
+    "createSuccess": "模板建立成功",
+    "updateSuccess": "模板更新成功",
+    "deleteSuccess": "模板刪除成功",
+    "deleteConfirm": "確定刪除此模板嗎？"
   }
 }

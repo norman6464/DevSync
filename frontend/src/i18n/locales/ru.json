@@ -954,7 +954,7 @@
     "pageTitle": "Технический Q&A",
     "pageSubtitle": "Делитесь техническими вопросами и ответами",
     "askQuestion": "Задать вопрос",
-    "newQuestion": "Новый вопрос",
+    "newQuestion": "Новый",
     "editQuestion": "Редактировать вопрос",
     "questionTitle": "Заголовок",
     "questionTitlePlaceholder": "Введите заголовок вопроса",
@@ -1007,8 +1007,7 @@
     "bestAnswerSet": "Лучший ответ установлен",
     "bestAnswerFailed": "Не удалось установить лучший ответ",
     "voteFailed": "Не удалось проголосовать",
-    "popularBadge": "Популярное",
-    "newQuestion": "Новый"
+    "popularBadge": "Популярное"
   },
   "roadmaps": {
     "title": "Дорожные карты обучения",
@@ -1620,5 +1619,20 @@
     "removeFromCollection": "Удалить из коллекции",
     "deleteCollection": "Удалить коллекцию",
     "editCollection": "Редактировать коллекцию"
+  },
+  "postTemplate": {
+    "title": "Шаблоны публикаций",
+    "create": "Создать шаблон",
+    "edit": "Редактировать шаблон",
+    "delete": "Удалить шаблон",
+    "name": "Название шаблона",
+    "titleTemplate": "Шаблон заголовка",
+    "contentTemplate": "Шаблон содержимого",
+    "useTemplate": "Использовать шаблон",
+    "noTemplates": "Шаблонов пока нет",
+    "createSuccess": "Шаблон создан",
+    "updateSuccess": "Шаблон обновлён",
+    "deleteSuccess": "Шаблон удалён",
+    "deleteConfirm": "Удалить этот шаблон?"
   }
 }
