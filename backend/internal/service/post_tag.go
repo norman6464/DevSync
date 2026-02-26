@@ -23,12 +23,8 @@ func NewPostTagService(tagRepo repository.PostTagRepositoryInterface, postRepo r
 
 // SetTags は投稿のタグを設定する。所有権チェック・バリデーション付き。
 func (s *PostTagService) SetTags(postID, userID uint, tags []string) error {
-	post, err := s.postRepo.FindByID(postID)
-	if err != nil {
+	if _, err := checkOwnership(s.postRepo.FindByID, postID, userID, func(p *model.Post) uint { return p.UserID }); err != nil {
 		return err
-	}
-	if post.UserID != userID {
-		return ErrForbidden
 	}
 
 	// 正規化: 小文字変換・トリム・空文字除外・重複除外
@@ -39,8 +35,8 @@ func (s *PostTagService) SetTags(postID, userID uint, tags []string) error {
 	}
 
 	for _, tag := range normalized {
-		if len(tag) > 50 {
-			return domain.NewError(domain.ErrCodeValidation, "タグは50文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(tag, 1, 50, "タグ"); err != nil {
+			return err
 		}
 	}
 
