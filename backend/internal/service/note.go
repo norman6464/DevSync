@@ -152,6 +152,34 @@ func (s *NoteService) CountArchivedByUserID(userID uint) (int64, error) {
 	return s.repo.CountArchivedByUserID(userID)
 }
 
+// GetTags は指定ユーザーのノートで使用されているタグを重複なしで取得する。
+func (s *NoteService) GetTags(userID uint) ([]string, error) {
+	notes, err := s.repo.FindByUserID(userID, 1, 1000)
+	if err != nil {
+		return nil, err
+	}
+	return ExtractUniqueTags(notes), nil
+}
+
+// ExtractUniqueTags はノート一覧からユニークなタグを抽出する純粋関数。
+func ExtractUniqueTags(notes []model.Note) []string {
+	seen := make(map[string]bool)
+	var tags []string
+	for _, note := range notes {
+		if note.Tags == "" {
+			continue
+		}
+		for _, tag := range strings.Split(note.Tags, ",") {
+			tag = strings.TrimSpace(tag)
+			if tag != "" && !seen[tag] {
+				seen[tag] = true
+				tags = append(tags, tag)
+			}
+		}
+	}
+	return tags
+}
+
 // ExportMarkdown はノートをMarkdown形式でエクスポートする。
 // メタデータ（タグ、作成日、更新日）をヘッダーに含む。
 func (s *NoteService) ExportMarkdown(id, userID uint) ([]byte, string, error) {

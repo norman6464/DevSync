@@ -27,3 +27,14 @@ type UpdateGoalRequest struct {
 	Progress    *int    `json:"progress" binding:"omitempty,min=0,max=100"`
 	Status      *string `json:"status" binding:"omitempty,max=50"`
 }
+
+// BatchUpdateProgressRequest は目標進捗一括更新のリクエストボディ。
+type BatchUpdateProgressRequest struct {
+	Updates []GoalProgressUpdate `json:"updates" binding:"required,min=1,max=50"`
+}
+
+// GoalProgressUpdate は個別の目標進捗更新データ。
+type GoalProgressUpdate struct {
+	GoalID   uint `json:"goal_id" binding:"required"`
+	Progress int  `json:"progress" binding:"min=0,max=100"`
+}

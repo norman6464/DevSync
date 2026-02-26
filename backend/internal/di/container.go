@@ -92,6 +92,7 @@ type Container struct {
 	UserActivityHandler          *handler.UserActivityHandler
 	LearningLogTemplateHandler   *handler.LearningLogTemplateHandler
 	ResourceReviewHandler        *handler.ResourceReviewHandler
+	LearningDashboardHandler     *handler.LearningDashboardHandler
 
 	// ミドルウェア・コールバック用
 	AuthService      *service.AuthService
@@ -429,6 +430,10 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	resourceReviewRepo := repository.NewResourceReviewRepository(db)
 	resourceReviewService := service.NewResourceReviewService(resourceReviewRepo, learningResourceRepo)
 	c.ResourceReviewHandler = handler.NewResourceReviewHandler(resourceReviewService)
+
+	// 学習ダッシュボード統合サマリーサービス
+	learningDashboardService := service.NewLearningDashboardService(learningLogRepo, learningGoalRepo, analyticsRepo)
+	c.LearningDashboardHandler = handler.NewLearningDashboardHandler(learningDashboardService)
 
 	// HubのGetRoomMembersコールバックを設定
 	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs
