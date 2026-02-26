@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -166,6 +167,31 @@ func TestPostTagFindPostsByTag_MissingTag(t *testing.T) {
 
 	w := doRequest(r, http.MethodGet, "/posts/tags/search", nil)
 	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostTagFindPostsByTag_TagTooLong(t *testing.T) {
+	h, _ := setupPostTagHandler()
+
+	r := newRouter(1)
+	r.GET("/posts/tags/search", h.FindPostsByTag)
+
+	longTag := strings.Repeat("あ", 101)
+	w := doRequest(r, http.MethodGet, "/posts/tags/search?tag="+longTag, nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostTagFindPostsByTag_TagExact100Chars(t *testing.T) {
+	h, svc := setupPostTagHandler()
+
+	r := newRouter(1)
+	r.GET("/posts/tags/search", h.FindPostsByTag)
+
+	tag100 := strings.Repeat("あ", 100)
+	svc.On("FindPostsByTag", tag100, 20, 0).Return([]model.Post{}, int64(0), nil)
+
+	w := doRequest(r, http.MethodGet, "/posts/tags/search?tag="+tag100, nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
 }
 
 func TestPostTagFindPostsByTag_ServiceError(t *testing.T) {

@@ -63,6 +63,10 @@ func (h *UserHandler) GetByUsername(c *gin.Context) {
 		respondBadRequest(c, "username required")
 		return
 	}
+	if len([]rune(username)) > maxUsernameLen {
+		respondBadRequest(c, "ユーザー名は50文字以下である必要があります")
+		return
+	}
 
 	user, err := h.service.GetByUsername(username)
 	if err != nil {

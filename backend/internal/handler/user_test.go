@@ -214,6 +214,16 @@ func TestUserHandler_GetByUsername(t *testing.T) {
 		assertStatus(t, w, http.StatusNotFound)
 		svc.AssertExpectations(t)
 	})
+
+	t.Run("50文字超のユーザー名で400を返す", func(t *testing.T) {
+		h, _ := newTestUserHandler()
+		r := newRouter(1)
+		r.GET("/users/username/:username", h.GetByUsername)
+
+		longUsername := strings.Repeat("a", 51)
+		w := doRequest(r, "GET", "/users/username/"+longUsername, nil)
+		assertStatus(t, w, http.StatusBadRequest)
+	})
 }
 
 // ============================================================
