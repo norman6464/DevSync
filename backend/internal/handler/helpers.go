@@ -16,7 +16,7 @@ func parseID(c *gin.Context, param string) (uint, bool) {
 	raw := c.Param(param)
 	id, err := strconv.ParseUint(raw, 10, 64)
 	if err != nil {
-		respondBadRequest(c, "invalid "+param)
+		respondBadRequest(c, param+"が不正です")
 		return 0, false
 	}
 	return uint(id), true
@@ -69,7 +69,7 @@ const maxUsernameLen = 50
 func parseSearchQuery(c *gin.Context) (string, bool) {
 	query := c.Query("q")
 	if query == "" {
-		respondBadRequest(c, "query parameter 'q' is required")
+		respondBadRequest(c, "検索クエリパラメータ'q'は必須です")
 		return "", false
 	}
 	if len([]rune(query)) > maxSearchQueryLen {

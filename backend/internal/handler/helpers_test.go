@@ -52,7 +52,7 @@ func TestParseID_Invalid(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 	var resp map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &resp)
-	assert.Contains(t, resp["error"], "invalid id")
+	assert.Contains(t, resp["error"], "idが不正です")
 }
 
 func TestParseID_Zero(t *testing.T) {

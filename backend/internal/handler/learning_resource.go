@@ -222,22 +222,22 @@ func (h *LearningResourceHandler) Delete(c *gin.Context) {
 
 // Like は学習リソースにいいねする。
 func (h *LearningResourceHandler) Like(c *gin.Context) {
-	handleToggleAction(c, h.service.Like, "Resource liked")
+	handleToggleAction(c, h.service.Like, "リソースにいいねしました")
 }
 
 // Unlike は学習リソースのいいねを取り消す。
 func (h *LearningResourceHandler) Unlike(c *gin.Context) {
-	handleToggleAction(c, h.service.Unlike, "Resource unliked")
+	handleToggleAction(c, h.service.Unlike, "いいねを取り消しました")
 }
 
 // SaveResource は学習リソースを保存する。
 func (h *LearningResourceHandler) SaveResource(c *gin.Context) {
-	handleToggleAction(c, h.service.Save, "Resource saved")
+	handleToggleAction(c, h.service.Save, "リソースを保存しました")
 }
 
 // UnsaveResource は学習リソースの保存を取り消す。
 func (h *LearningResourceHandler) UnsaveResource(c *gin.Context) {
-	handleToggleAction(c, h.service.Unsave, "Resource unsaved")
+	handleToggleAction(c, h.service.Unsave, "保存を解除しました")
 }
 
 // GetByDifficulty は難易度別の公開学習リソースを取得する。

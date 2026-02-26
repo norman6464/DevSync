@@ -60,7 +60,7 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 func (h *UserHandler) GetByUsername(c *gin.Context) {
 	username := c.Param("username")
 	if username == "" {
-		respondBadRequest(c, "username required")
+		respondBadRequest(c, "ユーザー名は必須です")
 		return
 	}
 	if len([]rune(username)) > maxUsernameLen {

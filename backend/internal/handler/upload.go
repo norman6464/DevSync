@@ -69,13 +69,13 @@ func NewUploadHandler() (*UploadHandler, error) {
 func (h *UploadHandler) UploadImage(c *gin.Context) {
 	file, err := c.FormFile("image")
 	if err != nil {
-		respondBadRequest(c, "No image file provided")
+		respondBadRequest(c, "画像ファイルが必要です")
 		return
 	}
 
 	// ファイルサイズのバリデーション（最大5MB）
 	if file.Size > 5*1024*1024 {
-		respondBadRequest(c, "File size exceeds 5MB limit")
+		respondBadRequest(c, "ファイルサイズは5MB以下にしてください")
 		return
 	}
 
@@ -89,25 +89,25 @@ func (h *UploadHandler) UploadImage(c *gin.Context) {
 		".webp": true,
 	}
 	if !allowedExts[ext] {
-		respondBadRequest(c, "Invalid file type. Allowed: jpg, jpeg, png, gif, webp")
+		respondBadRequest(c, "無効なファイル形式です。許可: jpg, jpeg, png, gif, webp")
 		return
 	}
 
 	// マジックバイトによるMIMEタイプ検証（拡張子偽装防止）
 	src, err := file.Open()
 	if err != nil {
-		respondInternalError(c, "Failed to read file")
+		respondInternalError(c, "ファイルの読み込みに失敗しました")
 		return
 	}
 	defer src.Close()
 
 	mimeType, err := detectMIMEType(src)
 	if err != nil {
-		respondInternalError(c, "Failed to detect file type")
+		respondInternalError(c, "ファイルタイプの検出に失敗しました")
 		return
 	}
 	if !allowedMIMETypes[mimeType] {
-		respondBadRequest(c, fmt.Sprintf("Invalid file content type: %s. Only image files are allowed", mimeType))
+		respondBadRequest(c, fmt.Sprintf("無効なファイルコンテンツタイプ: %s。画像ファイルのみ許可されています", mimeType))
 		return
 	}
 
@@ -118,20 +118,20 @@ func (h *UploadHandler) UploadImage(c *gin.Context) {
 	dateDir := time.Now().Format("2006/01")
 	fullDir := filepath.Join(h.uploadDir, dateDir)
 	if err := os.MkdirAll(fullDir, uploadDirPerm); err != nil {
-		respondInternalError(c, "Failed to create directory")
+		respondInternalError(c, "ディレクトリの作成に失敗しました")
 		return
 	}
 
 	// ファイルを保存する
 	filePath := filepath.Join(fullDir, filename)
 	if err := c.SaveUploadedFile(file, filePath); err != nil {
-		respondInternalError(c, "Failed to save file")
+		respondInternalError(c, "ファイルの保存に失敗しました")
 		return
 	}
 
 	// ファイルパーミッションを制限する
 	if err := os.Chmod(filePath, uploadFilePerm); err != nil {
-		respondInternalError(c, "Failed to set file permissions")
+		respondInternalError(c, "ファイル権限の設定に失敗しました")
 		return
 	}
 
@@ -148,18 +148,18 @@ func (h *UploadHandler) UploadImage(c *gin.Context) {
 func (h *UploadHandler) UploadMultipleImages(c *gin.Context) {
 	form, err := c.MultipartForm()
 	if err != nil {
-		respondBadRequest(c, "Failed to parse form")
+		respondBadRequest(c, "フォームの解析に失敗しました")
 		return
 	}
 
 	files := form.File["images"]
 	if len(files) == 0 {
-		respondBadRequest(c, "No image files provided")
+		respondBadRequest(c, "画像ファイルが必要です")
 		return
 	}
 
 	if len(files) > 10 {
-		respondBadRequest(c, "Maximum 10 images allowed")
+		respondBadRequest(c, "画像は最大10枚までです")
 		return
 	}
 
@@ -175,38 +175,38 @@ func (h *UploadHandler) UploadMultipleImages(c *gin.Context) {
 	dateDir := time.Now().Format("2006/01")
 	fullDir := filepath.Join(h.uploadDir, dateDir)
 	if err := os.MkdirAll(fullDir, uploadDirPerm); err != nil {
-		respondInternalError(c, "Failed to create directory")
+		respondInternalError(c, "ディレクトリの作成に失敗しました")
 		return
 	}
 
 	for _, file := range files {
 		// ファイルサイズのバリデーション
 		if file.Size > 5*1024*1024 {
-			respondBadRequest(c, fmt.Sprintf("File %s exceeds 5MB limit", file.Filename))
+			respondBadRequest(c, fmt.Sprintf("ファイル %s は5MB以下にしてください", file.Filename))
 			return
 		}
 
 		// ファイル拡張子のバリデーション
 		ext := strings.ToLower(filepath.Ext(file.Filename))
 		if !allowedExts[ext] {
-			respondBadRequest(c, fmt.Sprintf("Invalid file type for %s", file.Filename))
+			respondBadRequest(c, fmt.Sprintf("ファイル %s の形式が無効です", file.Filename))
 			return
 		}
 
 		// マジックバイトによるMIMEタイプ検証（拡張子偽装防止）
 		src, err := file.Open()
 		if err != nil {
-			respondInternalError(c, "Failed to read file")
+			respondInternalError(c, "ファイルの読み込みに失敗しました")
 			return
 		}
 		mimeType, err := detectMIMEType(src)
 		src.Close()
 		if err != nil {
-			respondInternalError(c, "Failed to detect file type")
+			respondInternalError(c, "ファイルタイプの検出に失敗しました")
 			return
 		}
 		if !allowedMIMETypes[mimeType] {
-			respondBadRequest(c, fmt.Sprintf("Invalid content type for %s: %s", file.Filename, mimeType))
+			respondBadRequest(c, fmt.Sprintf("ファイル %s のコンテンツタイプが無効です: %s", file.Filename, mimeType))
 			return
 		}
 
@@ -215,13 +215,13 @@ func (h *UploadHandler) UploadMultipleImages(c *gin.Context) {
 		filePath := filepath.Join(fullDir, filename)
 
 		if err := c.SaveUploadedFile(file, filePath); err != nil {
-			respondInternalError(c, "Failed to save file")
+			respondInternalError(c, "ファイルの保存に失敗しました")
 			return
 		}
 
 		// ファイルパーミッションを制限する
 		if err := os.Chmod(filePath, uploadFilePerm); err != nil {
-			respondInternalError(c, "Failed to set file permissions")
+			respondInternalError(c, "ファイル権限の設定に失敗しました")
 			return
 		}
 

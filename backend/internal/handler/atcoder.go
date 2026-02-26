@@ -30,7 +30,7 @@ func NewAtCoderHandler(atcoderService AtCoderServiceInterface) *AtCoderHandler {
 func (h *AtCoderHandler) GetRating(c *gin.Context) {
 	username := c.Param("username")
 	if username == "" {
-		respondBadRequest(c, "username is required")
+		respondBadRequest(c, "ユーザー名は必須です")
 		return
 	}
 
