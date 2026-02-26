@@ -20,8 +20,14 @@ func NewBookmarkCollectionService(repo repository.BookmarkCollectionRepositoryIn
 
 // Create は新しいブックマークコレクションを作成する。
 func (s *BookmarkCollectionService) Create(collection *model.BookmarkCollection) error {
-	if strings.TrimSpace(collection.Name) == "" {
-		return domain.NewError(domain.ErrCodeBadRequest, "コレクション名は必須です", nil)
+	if err := domain.ValidateStringLength(collection.Name, 1, 100, "コレクション名"); err != nil {
+		return err
+	}
+	if err := domain.ValidateStringLength(collection.Description, 0, 500, "説明"); err != nil {
+		return err
+	}
+	if err := domain.ValidateStringLength(collection.Color, 0, 20, "カラー"); err != nil {
+		return err
 	}
 	return s.repo.Create(collection)
 }
@@ -39,12 +45,21 @@ func (s *BookmarkCollectionService) Update(id, userID uint, updates *model.Bookm
 	}
 
 	if strings.TrimSpace(updates.Name) != "" {
-		collection.Name = updates.Name
+		if err := domain.ValidateStringLength(updates.Name, 1, 100, "コレクション名"); err != nil {
+			return nil, err
+		}
+		collection.Name = strings.TrimSpace(updates.Name)
 	}
 	if updates.Description != "" {
+		if err := domain.ValidateStringLength(updates.Description, 1, 500, "説明"); err != nil {
+			return nil, err
+		}
 		collection.Description = updates.Description
 	}
 	if updates.Color != "" {
+		if err := domain.ValidateStringLength(updates.Color, 1, 20, "カラー"); err != nil {
+			return nil, err
+		}
 		collection.Color = updates.Color
 	}
 

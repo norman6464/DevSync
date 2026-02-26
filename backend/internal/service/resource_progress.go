@@ -43,6 +43,11 @@ func (s *ResourceProgressService) UpsertProgress(userID, resourceID uint, status
 		return nil, domain.NewError(domain.ErrCodeValidation, "進捗率は0〜100の範囲で指定してください", nil)
 	}
 
+	// メモの長さ制限
+	if err := domain.ValidateStringLength(note, 0, 1000, "メモ"); err != nil {
+		return nil, err
+	}
+
 	progress := &model.ResourceProgress{
 		UserID:            userID,
 		ResourceID:        resourceID,
