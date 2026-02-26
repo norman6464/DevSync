@@ -31,6 +31,7 @@ func (s *ChatRoomService) Create(room *model.ChatRoom, memberIDs []uint) (*model
 		return nil, err
 	}
 	room.Name = strings.TrimSpace(room.Name)
+	room.Description = strings.TrimSpace(room.Description)
 	if err := s.roomRepo.Create(room); err != nil {
 		return nil, err
 	}

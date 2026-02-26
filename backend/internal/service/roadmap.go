@@ -36,6 +36,7 @@ func (s *RoadmapService) Create(roadmap *model.Roadmap) error {
 		return err
 	}
 	roadmap.Title = strings.TrimSpace(roadmap.Title)
+	roadmap.Description = strings.TrimSpace(roadmap.Description)
 	return s.repo.Create(roadmap)
 }
 
