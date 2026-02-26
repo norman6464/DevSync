@@ -886,7 +886,9 @@
     "likeFailed": "좋아요에 실패했습니다",
     "unlikeFailed": "좋아요 취소에 실패했습니다",
     "saveFailed": "저장에 실패했습니다",
-    "unsaveFailed": "저장 취소에 실패했습니다"
+    "unsaveFailed": "저장 취소에 실패했습니다",
+    "noteFavorites": "즐겨찾기 노트",
+    "noteFavoritesEmpty": "즐겨찾기 노트가 아직 없습니다"
   },
   "portfolio": {
     "generate": "포트폴리오",

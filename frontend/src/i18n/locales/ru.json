@@ -884,7 +884,9 @@
     "likeFailed": "Не удалось поставить лайк",
     "unlikeFailed": "Не удалось убрать лайк",
     "saveFailed": "Не удалось сохранить",
-    "unsaveFailed": "Не удалось убрать из сохранённых"
+    "unsaveFailed": "Не удалось убрать из сохранённых",
+    "noteFavorites": "Избранные заметки",
+    "noteFavoritesEmpty": "Избранных заметок пока нет"
   },
   "portfolio": {
     "generate": "Портфолио",

@@ -849,7 +849,9 @@
     "likeFailed": "いいねに失敗しました",
     "unlikeFailed": "いいね解除に失敗しました",
     "saveFailed": "保存に失敗しました",
-    "unsaveFailed": "保存解除に失敗しました"
+    "unsaveFailed": "保存解除に失敗しました",
+    "noteFavorites": "お気に入りノート",
+    "noteFavoritesEmpty": "お気に入りノートはまだありません"
   },
   "portfolio": {
     "generate": "ポートフォリオ",
