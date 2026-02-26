@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
@@ -49,5 +50,5 @@ func (h *WidgetSettingsHandler) UpdateSettings(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "設定を更新しました"})
+	respondOK(c, domain.NewMessageResponse("設定を更新しました"))
 }

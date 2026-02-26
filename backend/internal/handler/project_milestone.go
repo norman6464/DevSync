@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
@@ -54,7 +55,7 @@ func (h *ProjectMilestoneHandler) Create(c *gin.Context) {
 		return
 	}
 
-	respondCreated(c, gin.H{"message": "マイルストーンを作成しました"})
+	respondCreated(c, domain.NewMessageResponse("マイルストーンを作成しました"))
 }
 
 // GetByProjectID はプロジェクトのマイルストーン一覧を取得する。
@@ -120,5 +121,5 @@ func (h *ProjectMilestoneHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "マイルストーンを削除しました"})
+	respondOK(c, domain.NewMessageResponse("マイルストーンを削除しました"))
 }

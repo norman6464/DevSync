@@ -2,6 +2,8 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -30,11 +32,7 @@ func NewBookmarkCollectionHandler(s BookmarkCollectionServiceInterface) *Bookmar
 func (h *BookmarkCollectionHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	input := bindJSON[struct {
-		Name        string `json:"name"`
-		Description string `json:"description"`
-		Color       string `json:"color"`
-	}](c)
+	input := bindJSON[dto.BookmarkCollectionRequest](c)
 	if input == nil {
 		return
 	}
@@ -75,11 +73,7 @@ func (h *BookmarkCollectionHandler) Update(c *gin.Context) {
 		return
 	}
 
-	input := bindJSON[struct {
-		Name        string `json:"name"`
-		Description string `json:"description"`
-		Color       string `json:"color"`
-	}](c)
+	input := bindJSON[dto.BookmarkCollectionRequest](c)
 	if input == nil {
 		return
 	}
@@ -130,7 +124,7 @@ func (h *BookmarkCollectionHandler) AddPost(c *gin.Context) {
 		return
 	}
 
-	respondCreated(c, gin.H{"message": "コレクションに追加しました"})
+	respondCreated(c, domain.NewMessageResponse("コレクションに追加しました"))
 }
 
 // RemovePost はコレクションからブックマークを削除する。
@@ -167,8 +161,8 @@ func (h *BookmarkCollectionHandler) GetPosts(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{
-		"posts": ensureSlice(posts),
-		"total": total,
+	respondOK(c, dto.BookmarkCollectionPostsResponse{
+		Posts: ensureSlice(posts),
+		Total: total,
 	})
 }

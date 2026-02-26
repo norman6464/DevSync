@@ -251,8 +251,8 @@ func (h *CodeSnippetHandler) GetFavorites(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{
-		"snippets": ensureSlice(snippets),
-		"total":    total,
+	respondOK(c, dto.CodeSnippetFavoritesResponse{
+		Snippets: ensureSlice(snippets),
+		Total:    total,
 	})
 }

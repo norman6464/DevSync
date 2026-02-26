@@ -1,5 +1,13 @@
 package dto
 
+import "github.com/norman6464/devsync/backend/internal/model"
+
+// CodeSnippetFavoritesResponse はお気に入りスニペット一覧レスポンス。
+type CodeSnippetFavoritesResponse struct {
+	Snippets []model.CodeSnippet `json:"snippets"`
+	Total    int64               `json:"total"`
+}
+
 // CreateCodeSnippetRequest はコードスニペット作成リクエスト。
 type CreateCodeSnippetRequest struct {
 	Language string `json:"language" binding:"required,max=100" validate:"required,max=100"`

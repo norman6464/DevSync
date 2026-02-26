@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
 
@@ -70,9 +71,9 @@ func (h *ResourceReviewHandler) GetByResourceID(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{
-		"reviews": ensureSlice(reviews),
-		"total":   total,
+	respondOK(c, dto.ResourceReviewListResponse{
+		Reviews: ensureSlice(reviews),
+		Total:   total,
 	})
 }
 

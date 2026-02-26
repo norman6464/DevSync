@@ -7,6 +7,9 @@ import (
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
+// defaultWeeklyTrendsWeeks は週間トレンド取得時のデフォルト週数。
+const defaultWeeklyTrendsWeeks = 12
+
 // LearningAnalyticsService は学習分析のビジネスロジックを提供する。
 // ヒートマップ、カテゴリ別集計、生産性スコア計算、AIインサイト生成を担当する。
 type LearningAnalyticsService struct {
@@ -52,7 +55,7 @@ func (s *LearningAnalyticsService) GetCategoryBreakdown(userID uint) ([]model.Ca
 // weeksが0以下の場合はデフォルトの12週に設定される。
 func (s *LearningAnalyticsService) GetWeeklyTrends(userID uint, weeks int) ([]model.WeeklyTrend, error) {
 	if weeks <= 0 {
-		weeks = 12
+		weeks = defaultWeeklyTrendsWeeks
 	}
 	return s.repo.GetWeeklyTrends(userID, weeks)
 }
@@ -106,7 +109,7 @@ func (s *LearningAnalyticsService) GetInsights(userID uint) ([]model.AIInsight, 
 		return nil, err
 	}
 
-	trends, err := s.repo.GetWeeklyTrends(userID, 12)
+	trends, err := s.repo.GetWeeklyTrends(userID, defaultWeeklyTrendsWeeks)
 	if err != nil {
 		return nil, err
 	}

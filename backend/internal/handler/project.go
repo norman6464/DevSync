@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
@@ -213,7 +214,7 @@ func (h *ProjectHandler) Archive(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "archived"})
+	respondOK(c, domain.NewMessageResponse("archived"))
 }
 
 // Unarchive はプロジェクトのアーカイブを解除する。
@@ -229,7 +230,7 @@ func (h *ProjectHandler) Unarchive(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "unarchived"})
+	respondOK(c, domain.NewMessageResponse("unarchived"))
 }
 
 // GetArchived はアーカイブ済みプロジェクト一覧を取得する。

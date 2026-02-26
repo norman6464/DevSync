@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
@@ -187,7 +188,7 @@ func (h *BookReviewHandler) Archive(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "書籍レビューをアーカイブしました"})
+	respondOK(c, domain.NewMessageResponse("書籍レビューをアーカイブしました"))
 }
 
 // Unarchive は指定IDの書籍レビューのアーカイブを解除する。
@@ -203,7 +204,7 @@ func (h *BookReviewHandler) Unarchive(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "書籍レビューのアーカイブを解除しました"})
+	respondOK(c, domain.NewMessageResponse("書籍レビューのアーカイブを解除しました"))
 }
 
 // UpdateStatus は書籍レビューの読書状態を更新する。
@@ -224,7 +225,7 @@ func (h *BookReviewHandler) UpdateStatus(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, gin.H{"message": "読書状態を更新しました"})
+	respondOK(c, domain.NewMessageResponse("読書状態を更新しました"))
 }
 
 // UpdateProgress は書籍レビューの読書進捗を更新する。

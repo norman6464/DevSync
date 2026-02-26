@@ -501,9 +501,7 @@ func (h *PostHandler) SchedulePublish(c *gin.Context) {
 		return
 	}
 
-	input := bindJSON[struct {
-		ScheduledAt string `json:"scheduled_at"`
-	}](c)
+	input := bindJSON[dto.SchedulePublishRequest](c)
 	if input == nil {
 		return
 	}
