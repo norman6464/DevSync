@@ -1697,5 +1697,12 @@
     "noVersions": "无版本历史",
     "createdAt": "保存时间",
     "current": "当前版本"
+  },
+  "autoSave": {
+    "saving": "保存中...",
+    "saved": "已保存",
+    "error": "自动保存失败",
+    "serverSave": "已保存到服务器",
+    "lastSaved": "最后保存: {time}"
   }
 }

@@ -245,11 +245,12 @@ func TestNewUploadHandler_DefaultDir(t *testing.T) {
 	tmpDir := t.TempDir()
 	os.Setenv("UPLOAD_DIR", tmpDir+"/test_uploads")
 
-	h := NewUploadHandler()
+	h, err := NewUploadHandler()
+	assert.NoError(t, err)
 	assert.NotNil(t, h)
 
 	// ディレクトリが作成されたことを確認
-	_, err := os.Stat(tmpDir + "/test_uploads")
+	_, err = os.Stat(tmpDir + "/test_uploads")
 	assert.NoError(t, err)
 }
 
@@ -262,7 +263,7 @@ func TestNewUploadHandler_DirPermissions(t *testing.T) {
 	tmpDir := t.TempDir()
 	os.Setenv("UPLOAD_DIR", tmpDir+"/secure_uploads")
 
-	NewUploadHandler()
+	_, _ = NewUploadHandler()
 
 	info, err := os.Stat(tmpDir + "/secure_uploads")
 	assert.NoError(t, err)

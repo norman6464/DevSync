@@ -102,6 +102,21 @@ export const searchPosts = (query: string, limit = 20, offset = 0, filters?: Pos
 export const getDrafts = () =>
   client.get<Post[]>('/posts/drafts');
 
+export interface AutoSaveDraftRequest {
+  id?: number;
+  title: string;
+  content: string;
+  image_urls?: string;
+}
+
+export interface AutoSaveDraftResponse {
+  id: number;
+  updated_at: string;
+}
+
+export const autoSaveDraft = (data: AutoSaveDraftRequest) =>
+  client.put<AutoSaveDraftResponse>('/posts/drafts/auto-save', data);
+
 export const publishPost = (id: number) =>
   client.put<Post>(`/posts/${id}/publish`);
 

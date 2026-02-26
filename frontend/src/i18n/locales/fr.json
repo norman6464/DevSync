@@ -1697,5 +1697,12 @@
     "noVersions": "Aucun historique de versions",
     "createdAt": "Enregistré le",
     "current": "Version actuelle"
+  },
+  "autoSave": {
+    "saving": "Enregistrement...",
+    "saved": "Enregistré",
+    "error": "Échec de l'enregistrement automatique",
+    "serverSave": "Enregistré sur le serveur",
+    "lastSaved": "Dernière sauvegarde: {time}"
   }
 }
