@@ -60,17 +60,17 @@ func (s *UserService) Update(user *model.User) error {
 	if err := domain.ValidateStringLength(user.Name, 1, 100, "名前"); err != nil {
 		return err
 	}
-	if len(user.Bio) > 500 {
-		return domain.NewError(domain.ErrCodeValidation, "自己紹介は500文字以下である必要があります", nil)
+	if err := domain.ValidateStringLength(user.Bio, 0, 500, "自己紹介"); err != nil {
+		return err
 	}
-	if len(user.SkillsLanguages) > 500 {
-		return domain.NewError(domain.ErrCodeValidation, "プログラミング言語スキルは500文字以下である必要があります", nil)
+	if err := domain.ValidateStringLength(user.SkillsLanguages, 0, 500, "プログラミング言語スキル"); err != nil {
+		return err
 	}
-	if len(user.SkillsFrameworks) > 500 {
-		return domain.NewError(domain.ErrCodeValidation, "フレームワークスキルは500文字以下である必要があります", nil)
+	if err := domain.ValidateStringLength(user.SkillsFrameworks, 0, 500, "フレームワークスキル"); err != nil {
+		return err
 	}
-	if len(user.AvatarURL) > 2000 {
-		return domain.NewError(domain.ErrCodeValidation, "アバターURLは2000文字以下である必要があります", nil)
+	if err := domain.ValidateStringLength(user.AvatarURL, 0, 2000, "アバターURL"); err != nil {
+		return err
 	}
 	return s.repo.Update(user)
 }
