@@ -1745,5 +1745,14 @@
     "updateFailed": "마일스톤 업데이트에 실패했습니다",
     "deleteFailed": "마일스톤 삭제에 실패했습니다",
     "confirmDelete": "이 마일스톤을 삭제하시겠습니까?"
+  },
+  "snippetFork": {
+    "fork": "포크",
+    "forkSnippet": "스니펫 포크",
+    "forkSuccess": "스니펫이 포크되었습니다",
+    "forkFailed": "스니펫 포크에 실패했습니다",
+    "forkedFrom": "포크 원본",
+    "forkCount": "포크 수",
+    "selectTargetPost": "대상 게시물 선택"
   }
 }

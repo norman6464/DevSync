@@ -1645,5 +1645,14 @@
     "updateFailed": "マイルストーンの更新に失敗しました",
     "deleteFailed": "マイルストーンの削除に失敗しました",
     "confirmDelete": "このマイルストーンを削除してもよろしいですか？"
+  },
+  "snippetFork": {
+    "fork": "フォーク",
+    "forkSnippet": "スニペットをフォーク",
+    "forkSuccess": "スニペットをフォークしました",
+    "forkFailed": "スニペットのフォークに失敗しました",
+    "forkedFrom": "フォーク元",
+    "forkCount": "フォーク数",
+    "selectTargetPost": "フォーク先の投稿を選択"
   }
 }

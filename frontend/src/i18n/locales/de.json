@@ -1742,5 +1742,14 @@
     "updateFailed": "Meilenstein konnte nicht aktualisiert werden",
     "deleteFailed": "Meilenstein konnte nicht gelöscht werden",
     "confirmDelete": "Möchten Sie diesen Meilenstein wirklich löschen?"
+  },
+  "snippetFork": {
+    "fork": "Forken",
+    "forkSnippet": "Snippet Forken",
+    "forkSuccess": "Snippet erfolgreich geforkt",
+    "forkFailed": "Snippet konnte nicht geforkt werden",
+    "forkedFrom": "Geforkt von",
+    "forkCount": "Forks",
+    "selectTargetPost": "Zielbeitrag auswählen"
   }
 }

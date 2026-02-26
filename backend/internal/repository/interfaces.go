@@ -302,6 +302,7 @@ type CodeSnippetRepositoryInterface interface {
 	CreateComment(comment *model.SnippetComment) error
 	GetComments(snippetID uint) ([]model.SnippetComment, error)
 	DeleteComment(id, userID uint) error
+	IncrementForkCount(id uint) error
 }
 
 // GitHubRepositoryInterface はGitHub連携データ操作の契約を定義する。

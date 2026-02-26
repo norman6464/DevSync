@@ -1742,5 +1742,14 @@
     "updateFailed": "Не удалось обновить веху",
     "deleteFailed": "Не удалось удалить веху",
     "confirmDelete": "Вы уверены, что хотите удалить эту веху?"
+  },
+  "snippetFork": {
+    "fork": "Форк",
+    "forkSnippet": "Форкнуть сниппет",
+    "forkSuccess": "Сниппет успешно форкнут",
+    "forkFailed": "Не удалось форкнуть сниппет",
+    "forkedFrom": "Форк из",
+    "forkCount": "Форков",
+    "selectTargetPost": "Выберите целевую публикацию"
   }
 }

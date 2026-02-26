@@ -1745,5 +1745,14 @@
     "updateFailed": "更新里程碑失敗",
     "deleteFailed": "刪除里程碑失敗",
     "confirmDelete": "確定要刪除這個里程碑嗎？"
+  },
+  "snippetFork": {
+    "fork": "派生",
+    "forkSnippet": "派生程式碼片段",
+    "forkSuccess": "程式碼片段已派生",
+    "forkFailed": "派生程式碼片段失敗",
+    "forkedFrom": "派生自",
+    "forkCount": "派生數",
+    "selectTargetPost": "選擇目標貼文"
   }
 }

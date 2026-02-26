@@ -498,3 +498,90 @@ func TestSnippetCreateComment_ContentTooLong(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "コメント内容は2000文字以下")
 }
+
+// ---------- フォーク ----------
+
+func TestSnippetFork_Success(t *testing.T) {
+	svc, snippetRepo, postRepo := newTestCodeSnippetService()
+
+	original := &model.CodeSnippet{
+		ID: 1, PostID: 5, UserID: 99, Language: "go", FileName: "main.go", Code: "package main",
+	}
+	snippetRepo.On("FindByID", uint(1)).Return(original, nil)
+
+	targetPost := &model.Post{UserID: 10}
+	targetPost.ID = 20
+	postRepo.On("FindByID", uint(20)).Return(targetPost, nil)
+
+	snippetRepo.On("Create", mock.MatchedBy(func(s *model.CodeSnippet) bool {
+		return s.UserID == 10 && s.PostID == 20 && s.Language == "go" && s.ForkedFromID != nil && *s.ForkedFromID == 1
+	})).Return(nil)
+	snippetRepo.On("IncrementForkCount", uint(1)).Return(nil)
+
+	forked, err := svc.Fork(10, 1, 20)
+	assert.NoError(t, err)
+	assert.Equal(t, uint(10), forked.UserID)
+	assert.Equal(t, uint(20), forked.PostID)
+	assert.Equal(t, "go", forked.Language)
+	assert.NotNil(t, forked.ForkedFromID)
+	assert.Equal(t, uint(1), *forked.ForkedFromID)
+}
+
+func TestSnippetFork_SnippetNotFound(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+
+	snippetRepo.On("FindByID", uint(999)).Return(nil, gorm.ErrRecordNotFound)
+
+	_, err := svc.Fork(10, 999, 20)
+	assert.Error(t, err)
+}
+
+func TestSnippetFork_PostNotFound(t *testing.T) {
+	svc, snippetRepo, postRepo := newTestCodeSnippetService()
+
+	snippetRepo.On("FindByID", uint(1)).Return(&model.CodeSnippet{
+		ID: 1, PostID: 5, UserID: 99, Language: "go", Code: "code",
+	}, nil)
+	postRepo.On("FindByID", uint(999)).Return(nil, gorm.ErrRecordNotFound)
+
+	_, err := svc.Fork(10, 1, 999)
+	assert.Error(t, err)
+}
+
+func TestSnippetFork_NotOwnPost(t *testing.T) {
+	svc, snippetRepo, postRepo := newTestCodeSnippetService()
+
+	snippetRepo.On("FindByID", uint(1)).Return(&model.CodeSnippet{
+		ID: 1, PostID: 5, UserID: 99, Language: "go", Code: "code",
+	}, nil)
+
+	// Post belongs to another user
+	targetPost := &model.Post{UserID: 88}
+	targetPost.ID = 20
+	postRepo.On("FindByID", uint(20)).Return(targetPost, nil)
+
+	_, err := svc.Fork(10, 1, 20)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "権限")
+}
+
+func TestSnippetFork_SelfFork(t *testing.T) {
+	svc, snippetRepo, postRepo := newTestCodeSnippetService()
+
+	// Original owned by same user
+	snippetRepo.On("FindByID", uint(1)).Return(&model.CodeSnippet{
+		ID: 1, PostID: 5, UserID: 10, Language: "go", Code: "code",
+	}, nil)
+
+	targetPost := &model.Post{UserID: 10}
+	targetPost.ID = 20
+	postRepo.On("FindByID", uint(20)).Return(targetPost, nil)
+
+	snippetRepo.On("Create", mock.Anything).Return(nil)
+	snippetRepo.On("IncrementForkCount", uint(1)).Return(nil)
+
+	// Self-fork should be allowed (forking your own snippet to another post)
+	forked, err := svc.Fork(10, 1, 20)
+	assert.NoError(t, err)
+	assert.NotNil(t, forked)
+}

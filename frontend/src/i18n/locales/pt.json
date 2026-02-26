@@ -1743,5 +1743,14 @@
     "updateFailed": "Falha ao atualizar o marco",
     "deleteFailed": "Falha ao excluir o marco",
     "confirmDelete": "Tem certeza de que deseja excluir este marco?"
+  },
+  "snippetFork": {
+    "fork": "Bifurcar",
+    "forkSnippet": "Bifurcar Trecho",
+    "forkSuccess": "Trecho bifurcado com sucesso",
+    "forkFailed": "Falha ao bifurcar o trecho",
+    "forkedFrom": "Bifurcado de",
+    "forkCount": "Bifurcações",
+    "selectTargetPost": "Selecionar publicação de destino"
   }
 }
