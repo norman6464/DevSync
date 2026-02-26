@@ -1747,5 +1747,14 @@
     "bookmarkRemoved": "ブックマークを解除しました",
     "bookmarkedQuestions": "ブックマークした質問",
     "noBookmarks": "ブックマークした質問はありません"
+  },
+  "snippetFavorite": {
+    "favorite": "お気に入り",
+    "unfavorite": "お気に入り解除",
+    "favorited": "お気に入り済み",
+    "favoriteAdded": "お気に入りに追加しました",
+    "favoriteRemoved": "お気に入りを解除しました",
+    "favoritedSnippets": "お気に入りスニペット",
+    "noFavorites": "お気に入りスニペットはありません"
   }
 }

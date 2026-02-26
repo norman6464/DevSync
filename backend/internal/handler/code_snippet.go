@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
@@ -17,6 +18,9 @@ type CodeSnippetHandlerServiceInterface interface {
 	CreateComment(comment *model.SnippetComment) error
 	DeleteComment(id, userID uint) error
 	Fork(userID, snippetID, targetPostID uint) (*model.CodeSnippet, error)
+	Favorite(userID, snippetID uint) error
+	Unfavorite(userID, snippetID uint) error
+	GetFavoritedByUserID(userID uint, limit, offset int) ([]model.CodeSnippet, int64, error)
 }
 
 // CodeSnippetHandler はコードスニペット関連のHTTPハンドラ。
@@ -202,4 +206,53 @@ func (h *CodeSnippetHandler) GetByUserLanguage(c *gin.Context) {
 		return
 	}
 	respondOK(c, ensureSlice(snippets))
+}
+
+// Favorite はスニペットをお気に入りに追加する。
+func (h *CodeSnippetHandler) Favorite(c *gin.Context) {
+	userID := c.GetUint("userID")
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	if err := h.service.Favorite(userID, id); err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, domain.NewMessageResponse("Favorited successfully"))
+}
+
+// Unfavorite はスニペットのお気に入りを解除する。
+func (h *CodeSnippetHandler) Unfavorite(c *gin.Context) {
+	userID := c.GetUint("userID")
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	if err := h.service.Unfavorite(userID, id); err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, domain.NewMessageResponse("Favorite removed successfully"))
+}
+
+// GetFavorites はお気に入りスニペット一覧を取得する。
+func (h *CodeSnippetHandler) GetFavorites(c *gin.Context) {
+	userID := c.GetUint("userID")
+	limit, offset := parseLimitOffset(c)
+
+	snippets, total, err := h.service.GetFavoritedByUserID(userID, limit, offset)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, gin.H{
+		"snippets": ensureSlice(snippets),
+		"total":    total,
+	})
 }

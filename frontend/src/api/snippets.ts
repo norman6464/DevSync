@@ -24,3 +24,13 @@ export const deleteSnippetComment = (snippetId: number, commentId: number) =>
 
 export const forkSnippet = (snippetId: number, targetPostId: number) =>
   client.post<CodeSnippet>(`/snippets/${snippetId}/fork`, { target_post_id: targetPostId });
+
+// Favorites
+export const favoriteSnippet = (id: number) =>
+  client.post(`/snippets/${id}/favorite`);
+
+export const unfavoriteSnippet = (id: number) =>
+  client.delete(`/snippets/${id}/favorite`);
+
+export const getFavoritedSnippets = (limit = 20, offset = 0) =>
+  client.get<{ snippets: CodeSnippet[]; total: number }>('/snippets/favorites', { params: { limit, offset } });

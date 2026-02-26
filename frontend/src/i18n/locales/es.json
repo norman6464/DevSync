@@ -1845,5 +1845,14 @@
     "bookmarkRemoved": "Marcador eliminado",
     "bookmarkedQuestions": "Preguntas marcadas",
     "noBookmarks": "No hay preguntas marcadas"
+  },
+  "snippetFavorite": {
+    "favorite": "Favorito",
+    "unfavorite": "Quitar favorito",
+    "favorited": "Favorito",
+    "favoriteAdded": "Añadido a favoritos",
+    "favoriteRemoved": "Eliminado de favoritos",
+    "favoritedSnippets": "Fragmentos favoritos",
+    "noFavorites": "No hay fragmentos favoritos"
   }
 }

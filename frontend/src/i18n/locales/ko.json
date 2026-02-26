@@ -1847,5 +1847,14 @@
     "bookmarkRemoved": "북마크가 해제되었습니다",
     "bookmarkedQuestions": "북마크한 질문",
     "noBookmarks": "북마크한 질문이 없습니다"
+  },
+  "snippetFavorite": {
+    "favorite": "즐겨찾기",
+    "unfavorite": "즐겨찾기 해제",
+    "favorited": "즐겨찾기됨",
+    "favoriteAdded": "즐겨찾기에 추가되었습니다",
+    "favoriteRemoved": "즐겨찾기가 해제되었습니다",
+    "favoritedSnippets": "즐겨찾기 스니펫",
+    "noFavorites": "즐겨찾기 스니펫이 없습니다"
   }
 }
