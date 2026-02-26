@@ -9,7 +9,7 @@ import (
 // EmailPreferencesServiceInterface はメール配信設定に必要なサービスの抽象インターフェース。
 type EmailPreferencesServiceInterface interface {
 	GetByID(id uint) (*model.User, error)
-	Update(user *model.User) error
+	UpdateEmailPreferences(userID uint, weeklyReport *bool, language *string) (*model.User, error)
 }
 
 // EmailPreferencesHandler はメール配信設定関連のHTTPハンドラ。
@@ -48,29 +48,8 @@ func (h *EmailPreferencesHandler) UpdatePreferences(c *gin.Context) {
 		return
 	}
 
-	user, err := h.userService.GetByID(userID)
+	user, err := h.userService.UpdateEmailPreferences(userID, input.EmailWeeklyReport, input.EmailLanguage)
 	if err != nil {
-		respondError(c, err)
-		return
-	}
-
-	if input.EmailWeeklyReport != nil {
-		user.EmailWeeklyReport = *input.EmailWeeklyReport
-	}
-	if input.EmailLanguage != nil {
-		// 言語バリデーション
-		validLangs := map[string]bool{
-			"ja": true, "en": true, "ko": true, "zh-CN": true, "zh-TW": true,
-			"es": true, "fr": true, "de": true, "pt": true, "ru": true,
-		}
-		if !validLangs[*input.EmailLanguage] {
-			respondBadRequest(c, "invalid email language")
-			return
-		}
-		user.EmailLanguage = *input.EmailLanguage
-	}
-
-	if err := h.userService.Update(user); err != nil {
 		respondError(c, err)
 		return
 	}

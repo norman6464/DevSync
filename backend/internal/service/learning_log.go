@@ -37,8 +37,10 @@ func (s *LearningLogService) Create(log *model.LearningLog) error {
 	if err := validateDuration(log.Duration); err != nil {
 		return err
 	}
-	// Category: 空文字（デフォルト適用）または有効な値のみ許可
-	if log.Category != "" && !model.ValidCategories[log.Category] {
+	// Category: 空文字の場合はデフォルト値を設定、それ以外は有効な値のみ許可
+	if log.Category == "" {
+		log.Category = model.LogCategoryOther
+	} else if !model.ValidCategories[log.Category] {
 		return domain.NewError(domain.ErrCodeBadRequest, "無効なカテゴリです", nil)
 	}
 	// Source: 空文字（デフォルト"manual"）または有効な値のみ許可
@@ -117,7 +119,9 @@ func (s *LearningLogService) BatchCreate(userID uint, logs []model.LearningLog) 
 		if err := validateDuration(logs[i].Duration); err != nil {
 			return nil, err
 		}
-		if logs[i].Category != "" && !model.ValidCategories[logs[i].Category] {
+		if logs[i].Category == "" {
+			logs[i].Category = model.LogCategoryOther
+		} else if !model.ValidCategories[logs[i].Category] {
 			return nil, domain.NewError(domain.ErrCodeBadRequest, "無効なカテゴリです", nil)
 		}
 		if logs[i].Source != "" && !model.ValidSources[logs[i].Source] {

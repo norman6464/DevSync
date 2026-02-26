@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/norman6464/devsync/backend/internal/domain"
+	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
 // AtCoderRatingEntry はAtCoderのレーティング履歴エントリを表す。
@@ -31,13 +33,15 @@ type AtCoderRatingInfo struct {
 
 // AtCoderService はAtCoderレーティング取得を提供するサービス。
 type AtCoderService struct {
-	client *http.Client
+	client   *http.Client
+	userRepo repository.UserRepositoryInterface
 }
 
 // NewAtCoderService は新しいAtCoderServiceインスタンスを生成する。
-func NewAtCoderService() *AtCoderService {
+func NewAtCoderService(userRepo repository.UserRepositoryInterface) *AtCoderService {
 	return &AtCoderService{
-		client: &http.Client{Timeout: 10 * time.Second},
+		client:   &http.Client{Timeout: 10 * time.Second},
+		userRepo: userRepo,
 	}
 }
 
@@ -131,4 +135,38 @@ func ratingToRank(rating int) string {
 	default:
 		return "灰"
 	}
+}
+
+// ConnectAtCoder はAtCoderユーザー名を検証し、ユーザープロフィールに保存する。
+func (s *AtCoderService) ConnectAtCoder(userID uint, username string) (*model.User, error) {
+	if !s.ValidateUsername(username) {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "invalid AtCoder username", nil)
+	}
+
+	user, err := s.userRepo.FindByID(userID)
+	if err != nil {
+		return nil, domain.NewError(domain.ErrCodeNotFound, "user not found", err)
+	}
+
+	user.AtCoderUsername = username
+	if err := s.userRepo.Update(user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+// DisconnectAtCoder はAtCoderユーザー名をクリアする。
+func (s *AtCoderService) DisconnectAtCoder(userID uint) (*model.User, error) {
+	user, err := s.userRepo.FindByID(userID)
+	if err != nil {
+		return nil, domain.NewError(domain.ErrCodeNotFound, "user not found", err)
+	}
+
+	user.AtCoderUsername = ""
+	if err := s.userRepo.Update(user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

@@ -62,11 +62,6 @@ func (h *LearningLogHandler) Create(c *gin.Context) {
 		GoalID:   input.GoalID,
 	}
 
-	// カテゴリが未指定の場合はデフォルト値を設定
-	if input.Category == "" {
-		log.Category = model.LogCategoryOther
-	}
-
 	if err := h.service.Create(log); err != nil {
 		respondError(c, err)
 		return
@@ -92,9 +87,6 @@ func (h *LearningLogHandler) BatchCreate(c *gin.Context) {
 			Category: model.LogCategory(l.Category),
 			Duration: l.Duration,
 			Source:   model.LogSource(l.Source),
-		}
-		if l.Category == "" {
-			logs[i].Category = model.LogCategoryOther
 		}
 	}
 

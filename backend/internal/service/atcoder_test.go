@@ -26,9 +26,11 @@ func newTestAtCoderService(fn roundTripFunc) *AtCoderService {
 }
 
 func TestNewAtCoderService(t *testing.T) {
-	svc := NewAtCoderService()
+	mockRepo := &MockUserRepository{}
+	svc := NewAtCoderService(mockRepo)
 	assert.NotNil(t, svc)
 	assert.NotNil(t, svc.client)
+	assert.NotNil(t, svc.userRepo)
 }
 
 func TestRatingToColor(t *testing.T) {
