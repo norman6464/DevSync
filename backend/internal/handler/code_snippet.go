@@ -211,9 +211,8 @@ func (h *CodeSnippetHandler) GetByUserLanguage(c *gin.Context) {
 
 // Search はコードスニペットをキーワード検索する。
 func (h *CodeSnippetHandler) Search(c *gin.Context) {
-	q := c.Query("q")
-	if q == "" {
-		respondBadRequest(c, "検索クエリは必須です")
+	q, ok := parseSearchQuery(c)
+	if !ok {
 		return
 	}
 

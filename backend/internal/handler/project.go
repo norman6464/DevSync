@@ -233,9 +233,8 @@ func (h *ProjectHandler) GetArchived(c *gin.Context) {
 
 // Search はプロジェクトをキーワード検索する。
 func (h *ProjectHandler) Search(c *gin.Context) {
-	q := c.Query("q")
-	if q == "" {
-		respondBadRequest(c, "検索クエリは必須です")
+	q, ok := parseSearchQuery(c)
+	if !ok {
 		return
 	}
 

@@ -250,7 +250,10 @@ func (h *BookReviewHandler) UpdateProgress(c *gin.Context) {
 
 // Search は書籍レビューをキーワード検索する。
 func (h *BookReviewHandler) Search(c *gin.Context) {
-	query := c.Query("q")
+	query, ok := parseSearchQuery(c)
+	if !ok {
+		return
+	}
 	limit, offset := parseLimitOffset(c)
 
 	reviews, total, err := h.service.Search(query, limit, offset)

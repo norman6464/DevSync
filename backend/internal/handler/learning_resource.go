@@ -163,7 +163,10 @@ func (h *LearningResourceHandler) GetPublic(c *gin.Context) {
 
 // Search はキーワードで学習リソースを検索する。
 func (h *LearningResourceHandler) Search(c *gin.Context) {
-	query := c.Query("q")
+	query, ok := parseSearchQuery(c)
+	if !ok {
+		return
+	}
 	limit, offset := parseLimitOffset(c)
 
 	resources, total, err := h.service.Search(query, limit, offset)
