@@ -1639,5 +1639,14 @@
     "updateSuccess": "Plantilla actualizada",
     "deleteSuccess": "Plantilla eliminada",
     "deleteConfirm": "¿Eliminar esta plantilla?"
+  },
+  "widgetSettings": {
+    "title": "Configuración de widgets",
+    "customize": "Personalizar widgets",
+    "show": "Mostrar",
+    "hide": "Ocultar",
+    "resetToDefault": "Restaurar predeterminados",
+    "saveSuccess": "Configuración de widgets guardada",
+    "resetSuccess": "Configuración de widgets restablecida"
   }
 }

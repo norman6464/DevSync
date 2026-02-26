@@ -1638,5 +1638,14 @@
     "updateSuccess": "Шаблон обновлён",
     "deleteSuccess": "Шаблон удалён",
     "deleteConfirm": "Удалить этот шаблон?"
+  },
+  "widgetSettings": {
+    "title": "Настройки виджетов",
+    "customize": "Настроить виджеты",
+    "show": "Показать",
+    "hide": "Скрыть",
+    "resetToDefault": "Сбросить по умолчанию",
+    "saveSuccess": "Настройки виджетов сохранены",
+    "resetSuccess": "Настройки виджетов сброшены"
   }
 }

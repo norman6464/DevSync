@@ -84,6 +84,7 @@ type Container struct {
 	BookmarkCollectionHandler     *handler.BookmarkCollectionHandler
 	WeeklyChallengeHandler        *handler.WeeklyChallengeHandler
 	PostTemplateHandler           *handler.PostTemplateHandler
+	WidgetSettingsHandler         *handler.WidgetSettingsHandler
 
 	// ミドルウェア・コールバック用
 	AuthService      *service.AuthService
@@ -381,6 +382,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	postTemplateRepo := repository.NewPostTemplateRepository(db)
 	postTemplateService := service.NewPostTemplateService(postTemplateRepo)
 	c.PostTemplateHandler = handler.NewPostTemplateHandler(postTemplateService)
+
+	// ウィジェット設定サービス
+	widgetSettingsRepo := repository.NewWidgetSettingsRepository(db)
+	widgetSettingsService := service.NewWidgetSettingsService(widgetSettingsRepo)
+	c.WidgetSettingsHandler = handler.NewWidgetSettingsHandler(widgetSettingsService)
 
 	// HubのGetRoomMembersコールバックを設定
 	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs

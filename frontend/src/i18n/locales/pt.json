@@ -1639,5 +1639,14 @@
     "updateSuccess": "Modelo atualizado",
     "deleteSuccess": "Modelo excluído",
     "deleteConfirm": "Excluir este modelo?"
+  },
+  "widgetSettings": {
+    "title": "Configurações de widgets",
+    "customize": "Personalizar widgets",
+    "show": "Mostrar",
+    "hide": "Ocultar",
+    "resetToDefault": "Restaurar padrão",
+    "saveSuccess": "Configurações de widgets salvas",
+    "resetSuccess": "Configurações de widgets redefinidas"
   }
 }

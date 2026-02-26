@@ -1638,5 +1638,14 @@
     "updateSuccess": "Vorlage aktualisiert",
     "deleteSuccess": "Vorlage gelöscht",
     "deleteConfirm": "Diese Vorlage löschen?"
+  },
+  "widgetSettings": {
+    "title": "Widget-Einstellungen",
+    "customize": "Widgets anpassen",
+    "show": "Anzeigen",
+    "hide": "Ausblenden",
+    "resetToDefault": "Auf Standard zurücksetzen",
+    "saveSuccess": "Widget-Einstellungen gespeichert",
+    "resetSuccess": "Widget-Einstellungen zurückgesetzt"
   }
 }
