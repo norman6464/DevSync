@@ -34,14 +34,14 @@ func (s *BookReviewService) Create(review *model.BookReview) error {
 	if err := validateRating(review.Rating); err != nil {
 		return err
 	}
-	if len([]rune(strings.TrimSpace(review.Author))) > 200 {
-		return domain.NewError(domain.ErrCodeValidation, "著者名は200文字以下である必要があります", nil)
+	if err := domain.ValidateStringLength(review.Author, 0, 200, "著者名"); err != nil {
+		return err
 	}
-	if len([]rune(strings.TrimSpace(review.ISBN))) > 20 {
-		return domain.NewError(domain.ErrCodeValidation, "ISBNは20文字以下である必要があります", nil)
+	if err := domain.ValidateStringLength(review.ISBN, 0, 20, "ISBN"); err != nil {
+		return err
 	}
-	if len([]rune(strings.TrimSpace(review.Review))) > 10000 {
-		return domain.NewError(domain.ErrCodeValidation, "レビュー本文は10000文字以下である必要があります", nil)
+	if err := domain.ValidateStringLength(review.Review, 0, 10000, "レビュー本文"); err != nil {
+		return err
 	}
 	if review.TotalPages < 0 || review.TotalPages > 99999 {
 		return domain.NewError(domain.ErrCodeValidation, "総ページ数は0〜99999の範囲で指定してください", nil)

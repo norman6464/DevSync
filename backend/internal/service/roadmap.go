@@ -32,8 +32,8 @@ func (s *RoadmapService) Create(roadmap *model.Roadmap) error {
 	if err := domain.ValidateStringLength(roadmap.Title, 1, 200, "タイトル"); err != nil {
 		return err
 	}
-	if len([]rune(roadmap.Description)) > 1000 {
-		return domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
+	if err := domain.ValidateStringLength(roadmap.Description, 0, 1000, "説明"); err != nil {
+		return err
 	}
 	roadmap.Title = strings.TrimSpace(roadmap.Title)
 	return s.repo.Create(roadmap)

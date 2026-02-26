@@ -24,8 +24,8 @@ func (s *PostCollectionService) Create(collection *model.PostCollection) (*model
 	if err := domain.ValidateStringLength(collection.Title, 1, 200, "タイトル"); err != nil {
 		return nil, err
 	}
-	if len([]rune(strings.TrimSpace(collection.Description))) > 1000 {
-		return nil, domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
+	if err := domain.ValidateStringLength(collection.Description, 0, 1000, "説明"); err != nil {
+		return nil, err
 	}
 	collection.Title = strings.TrimSpace(collection.Title)
 	if err := s.repo.Create(collection); err != nil {
@@ -101,8 +101,8 @@ func (s *PostCollectionService) Delete(id, userID uint) error {
 // AddPost は所有権を検証した後、コレクションに投稿を追加する。
 // 同じ投稿がすでに追加されている場合はエラーを返す。
 func (s *PostCollectionService) AddPost(collectionID, userID, postID uint, note string) error {
-	if len([]rune(strings.TrimSpace(note))) > 500 {
-		return domain.NewError(domain.ErrCodeValidation, "メモは500文字以下である必要があります", nil)
+	if err := domain.ValidateStringLength(note, 0, 500, "メモ"); err != nil {
+		return err
 	}
 
 	if _, err := s.findAndCheckOwnership(collectionID, userID); err != nil {
