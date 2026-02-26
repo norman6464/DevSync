@@ -182,6 +182,27 @@ func TestNoteVersionGetVersion_WrongNote(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestNoteVersionGetVersion_VersionNotFound(t *testing.T) {
+	svc, noteRepo, versionRepo := newTestNoteVersionService()
+
+	noteRepo.On("FindByID", uint(1)).Return(&model.Note{ID: 1, UserID: 10}, nil)
+	versionRepo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	_, err := svc.GetVersion(1, 999, 10)
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestNoteVersionGetVersion_NoteNotFound(t *testing.T) {
+	svc, noteRepo, _ := newTestNoteVersionService()
+
+	noteRepo.On("FindByID", uint(999)).Return(nil, ErrNotFound)
+
+	_, err := svc.GetVersion(999, 5, 10)
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
 // ============================================================
 // RestoreVersion テスト
 // ============================================================
@@ -214,6 +235,51 @@ func TestNoteVersionRestore_Success(t *testing.T) {
 func TestNoteVersionRestore_Forbidden(t *testing.T) {
 	svc, noteRepo, _ := newTestNoteVersionService()
 	noteRepo.On("FindByID", uint(1)).Return(&model.Note{ID: 1, UserID: 99}, nil)
+
+	_, err := svc.RestoreVersion(1, 5, 10)
+	assert.Error(t, err)
+}
+
+func TestNoteVersionRestore_VersionNotFound(t *testing.T) {
+	svc, noteRepo, versionRepo := newTestNoteVersionService()
+
+	noteRepo.On("FindByID", uint(1)).Return(&model.Note{ID: 1, UserID: 10}, nil)
+	versionRepo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	_, err := svc.RestoreVersion(1, 999, 10)
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestNoteVersionRestore_WrongNote(t *testing.T) {
+	svc, noteRepo, versionRepo := newTestNoteVersionService()
+
+	noteRepo.On("FindByID", uint(1)).Return(&model.Note{ID: 1, UserID: 10}, nil)
+	versionRepo.On("FindByID", uint(5)).Return(&model.NoteVersion{ID: 5, NoteID: 999}, nil)
+
+	_, err := svc.RestoreVersion(1, 5, 10)
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestNoteVersionRestore_GetLatestVersionError(t *testing.T) {
+	svc, noteRepo, versionRepo := newTestNoteVersionService()
+
+	noteRepo.On("FindByID", uint(1)).Return(&model.Note{ID: 1, UserID: 10, Title: "Current"}, nil)
+	versionRepo.On("FindByID", uint(5)).Return(&model.NoteVersion{ID: 5, NoteID: 1}, nil)
+	versionRepo.On("GetLatestVersionNumber", uint(1)).Return(0, errors.New("db error"))
+
+	_, err := svc.RestoreVersion(1, 5, 10)
+	assert.Error(t, err)
+}
+
+func TestNoteVersionRestore_CreateBackupError(t *testing.T) {
+	svc, noteRepo, versionRepo := newTestNoteVersionService()
+
+	noteRepo.On("FindByID", uint(1)).Return(&model.Note{ID: 1, UserID: 10, Title: "Current"}, nil)
+	versionRepo.On("FindByID", uint(5)).Return(&model.NoteVersion{ID: 5, NoteID: 1}, nil)
+	versionRepo.On("GetLatestVersionNumber", uint(1)).Return(3, nil)
+	versionRepo.On("Create", mock.Anything).Return(errors.New("create error"))
 
 	_, err := svc.RestoreVersion(1, 5, 10)
 	assert.Error(t, err)
