@@ -1,6 +1,8 @@
 package service
 
 import (
+	"strings"
+
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
@@ -70,7 +72,8 @@ func (s *ResourceReviewService) Update(id, userID uint, rating int, comment stri
 		}
 		review.Rating = rating
 	}
-	if comment != "" {
+	if strings.TrimSpace(comment) != "" {
+		comment = strings.TrimSpace(comment)
 		if err := domain.ValidateStringLength(comment, 1, 5000, "コメント"); err != nil {
 			return nil, err
 		}
