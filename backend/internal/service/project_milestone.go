@@ -44,15 +44,11 @@ func (s *ProjectMilestoneService) Create(userID, projectID uint, title, descript
 		return err
 	}
 
-	if title == "" {
-		return domain.NewError(domain.ErrCodeValidation, "タイトルは必須です", nil)
+	if err := domain.ValidateStringLength(title, 1, 200, "タイトル"); err != nil {
+		return err
 	}
-	if len([]rune(title)) > 200 {
-		return domain.NewError(domain.ErrCodeValidation, "タイトルは200文字以下である必要があります", nil)
-	}
-
-	if len([]rune(description)) > 1000 {
-		return domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
+	if err := domain.ValidateStringLength(description, 0, 1000, "説明"); err != nil {
+		return err
 	}
 
 	milestone := &model.ProjectMilestone{
@@ -83,14 +79,14 @@ func (s *ProjectMilestoneService) Update(userID, milestoneID uint, title, descri
 	}
 
 	if title != "" {
-		if len([]rune(title)) > 200 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "タイトルは200文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(title, 1, 200, "タイトル"); err != nil {
+			return nil, err
 		}
 		milestone.Title = title
 	}
 	if description != "" {
-		if len([]rune(description)) > 1000 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(description, 1, 1000, "説明"); err != nil {
+			return nil, err
 		}
 		milestone.Description = description
 	}

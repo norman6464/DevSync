@@ -123,7 +123,7 @@ func TestLogTemplateService_Create_EmptyName(t *testing.T) {
 
 	err := svc.Create(template)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "テンプレート名は必須です")
+	assert.Contains(t, err.Error(), "テンプレート名を入力してください")
 }
 
 func TestLogTemplateService_Create_NameTooLong(t *testing.T) {
