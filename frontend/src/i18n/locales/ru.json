@@ -717,7 +717,11 @@
     "batchCreateDescription": "Можно зарегистрировать несколько журналов обучения за один раз",
     "batchCreateSuccess": "Журналы обучения были созданы пакетно",
     "addEntry": "Добавить запись",
-    "removeEntry": "Удалить запись"
+    "removeEntry": "Удалить запись",
+    "exportJSON": "Экспорт в JSON",
+    "exportFormat": "Формат экспорта",
+    "formatCSV": "CSV",
+    "formatJSON": "JSON"
   },
   "reports": {
     "title": "Отчёты об Активности",

@@ -717,7 +717,11 @@
     "batchCreateDescription": "Mehrere Lernprotokolle auf einmal registrieren",
     "batchCreateSuccess": "Lernprotokolle wurden per Stapel erstellt",
     "addEntry": "Eintrag hinzufügen",
-    "removeEntry": "Eintrag entfernen"
+    "removeEntry": "Eintrag entfernen",
+    "exportJSON": "Als JSON exportieren",
+    "exportFormat": "Exportformat",
+    "formatCSV": "CSV",
+    "formatJSON": "JSON"
   },
   "reports": {
     "title": "Aktivitätsberichte",

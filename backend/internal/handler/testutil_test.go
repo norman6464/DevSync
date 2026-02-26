@@ -1324,6 +1324,13 @@ func (m *MockLearningLogService) ExportCSV(userID uint, days int) ([]byte, error
 	}
 	return args.Get(0).([]byte), args.Error(1)
 }
+func (m *MockLearningLogService) ExportJSON(userID uint, days int) ([]byte, error) {
+	args := m.Called(userID, days)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]byte), args.Error(1)
+}
 func (m *MockLearningLogService) GetByCategory(userID uint, category string) ([]model.LearningLog, error) {
 	args := m.Called(userID, category)
 	return args.Get(0).([]model.LearningLog), args.Error(1)

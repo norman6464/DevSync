@@ -3,6 +3,7 @@ package service
 import (
 	"bytes"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -228,4 +229,39 @@ func (s *LearningLogService) ExportCSV(userID uint, days int) ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+// jsonLogEntry はJSONエクスポート用の構造体。
+type jsonLogEntry struct {
+	Date     string `json:"date"`
+	Title    string `json:"title"`
+	Category string `json:"category"`
+	Duration int    `json:"duration"`
+	Content  string `json:"content"`
+}
+
+// ExportJSON は指定ユーザーの学習ログをJSON形式でエクスポートする。
+// days: 取得する過去の日数（0は全期間）。負の値はバリデーションエラー。
+func (s *LearningLogService) ExportJSON(userID uint, days int) ([]byte, error) {
+	if days < 0 {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "期間は0以上の値を指定してください", nil)
+	}
+
+	logs, err := s.repo.GetByPeriod(userID, days)
+	if err != nil {
+		return nil, err
+	}
+
+	entries := make([]jsonLogEntry, len(logs))
+	for i, log := range logs {
+		entries[i] = jsonLogEntry{
+			Date:     log.CreatedAt.Format("2006-01-02"),
+			Title:    log.Title,
+			Category: string(log.Category),
+			Duration: log.Duration,
+			Content:  log.Content,
+		}
+	}
+
+	return json.Marshal(entries)
 }

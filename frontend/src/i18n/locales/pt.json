@@ -718,7 +718,11 @@
     "batchCreateDescription": "Você pode registrar vários registros de aprendizado de uma vez",
     "batchCreateSuccess": "Os registros de aprendizado foram criados em lote",
     "addEntry": "Adicionar entrada",
-    "removeEntry": "Remover entrada"
+    "removeEntry": "Remover entrada",
+    "exportJSON": "Exportar como JSON",
+    "exportFormat": "Formato de exportação",
+    "formatCSV": "CSV",
+    "formatJSON": "JSON"
   },
   "reports": {
     "title": "Relatórios de Atividade",
