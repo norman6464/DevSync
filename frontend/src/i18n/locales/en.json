@@ -744,7 +744,9 @@
     "importError": "Failed to import CSV file",
     "selectCSVFile": "Select CSV file",
     "favorites": "Favorites",
-    "noFavorites": "No favorite learning logs"
+    "noFavorites": "No favorite learning logs",
+    "monthlySummary": "Monthly summary",
+    "noMonthlySummary": "No monthly data available"
   },
   "reports": {
     "title": "Activity Reports",

@@ -212,6 +212,24 @@ func (r *LearningLogRepository) GetFavorites(userID uint, limit, offset int) ([]
 	return logs, total, err
 }
 
+// GetMonthlySummary は直近N ヶ月の月別サマリー（合計時間・ログ件数）を取得する。
+func (r *LearningLogRepository) GetMonthlySummary(userID uint, months int) ([]model.MonthlySummary, error) {
+	startDate := time.Now().AddDate(0, -months, 0).Format("2006-01-02")
+
+	var summaries []model.MonthlySummary
+	err := r.db.Raw(`
+		SELECT
+			TO_CHAR(DATE_TRUNC('month', created_at), 'YYYY-MM-DD') AS month,
+			COALESCE(SUM(duration), 0) AS total_minutes,
+			COUNT(*) AS log_count
+		FROM learning_logs
+		WHERE user_id = ? AND created_at >= ?
+		GROUP BY month
+		ORDER BY month
+	`, userID, startDate).Scan(&summaries).Error
+	return summaries, err
+}
+
 // GetCalendarData はカレンダー表示用の日別ログ件数を取得する。
 func (r *LearningLogRepository) GetCalendarData(userID uint) ([]model.CalendarEntry, error) {
 	var entries []model.CalendarEntry

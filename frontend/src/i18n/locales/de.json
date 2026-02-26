@@ -743,7 +743,9 @@
     "importError": "CSV-Datei konnte nicht importiert werden",
     "selectCSVFile": "CSV-Datei auswählen",
     "favorites": "Favoriten",
-    "noFavorites": "Keine Lieblings-Lernprotokolle"
+    "noFavorites": "Keine Lieblings-Lernprotokolle",
+    "monthlySummary": "Monatszusammenfassung",
+    "noMonthlySummary": "Keine Monatsdaten vorhanden"
   },
   "reports": {
     "title": "Aktivitätsberichte",

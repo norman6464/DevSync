@@ -31,6 +31,9 @@ export const getStreakInfo = (userId: number) =>
 export const getWeeklyDuration = (userId: number) =>
   client.get<{ duration: number }>(`/learning-logs/weekly-duration/${userId}`);
 
+export const getMonthlySummary = (userId: number, months = 12) =>
+  client.get<{ month: string; total_minutes: number; log_count: number }[]>(`/learning-logs/monthly-summary/${userId}?months=${months}`);
+
 export const getLogsByCategory = (category: string) =>
   client.get<LearningLog[]>(`/learning-logs/category/${category}`);
 

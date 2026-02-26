@@ -601,6 +601,11 @@ func (m *MockLearningLogRepository) GetFavorites(userID uint, limit, offset int)
 	return args.Get(0).([]model.LearningLog), args.Get(1).(int64), args.Error(2)
 }
 
+func (m *MockLearningLogRepository) GetMonthlySummary(userID uint, months int) ([]model.MonthlySummary, error) {
+	args := m.Called(userID, months)
+	return args.Get(0).([]model.MonthlySummary), args.Error(1)
+}
+
 // ============================================================
 // MockLearningGoalRepository は repository.LearningGoalRepositoryInterface のテスト用モック実装。
 // ============================================================

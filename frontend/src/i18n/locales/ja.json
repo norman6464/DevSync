@@ -728,7 +728,9 @@
     "importError": "CSVファイルのインポートに失敗しました",
     "selectCSVFile": "CSVファイルを選択",
     "favorites": "お気に入り",
-    "noFavorites": "お気に入りの学習ログはありません"
+    "noFavorites": "お気に入りの学習ログはありません",
+    "monthlySummary": "月別サマリー",
+    "noMonthlySummary": "月別データがありません"
   },
   "reports": {
     "title": "アクティビティレポート",

@@ -496,6 +496,7 @@ func registerLearningLogRoutes(g *gin.RouterGroup, c *di.Container) {
 		learningLogs.GET("/calendar/:userId", c.LearningLogHandler.GetCalendarData)
 		learningLogs.GET("/streak/:userId", c.LearningLogHandler.GetStreakInfo)
 		learningLogs.GET("/weekly-duration/:userId", c.LearningLogHandler.GetWeeklyDuration)
+		learningLogs.GET("/monthly-summary/:userId", c.LearningLogHandler.GetMonthlySummary)
 		learningLogs.GET("/:id", c.LearningLogHandler.GetByID)
 		learningLogs.PUT("/:id", c.LearningLogHandler.Update)
 		learningLogs.PUT("/:id/favorite", c.LearningLogHandler.Favorite)
