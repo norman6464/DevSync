@@ -33,6 +33,13 @@ func NewLearningLogService(repo repository.LearningLogRepositoryInterface, goalR
 // Duration、Category、Sourceのバリデーションを行う。
 // GoalIDが指定されている場合、ゴールの進捗を自動更新する。
 func (s *LearningLogService) Create(log *model.LearningLog) error {
+	// Title/Content バリデーション
+	if err := domain.ValidateStringLength(log.Title, 1, 200, "タイトル"); err != nil {
+		return err
+	}
+	if err := domain.ValidateStringLength(log.Content, 0, 10000, "内容"); err != nil {
+		return err
+	}
 	// Duration: 0以上1440以下（24時間）
 	if err := validateDuration(log.Duration); err != nil {
 		return err
@@ -219,10 +226,16 @@ func (s *LearningLogService) Update(id, userID uint, updates *model.LearningLog)
 	}
 
 	if strings.TrimSpace(updates.Title) != "" {
-		log.Title = updates.Title
+		if err := domain.ValidateStringLength(updates.Title, 1, 200, "タイトル"); err != nil {
+			return nil, err
+		}
+		log.Title = strings.TrimSpace(updates.Title)
 	}
 	if strings.TrimSpace(updates.Content) != "" {
-		log.Content = updates.Content
+		if err := domain.ValidateStringLength(updates.Content, 1, 10000, "内容"); err != nil {
+			return nil, err
+		}
+		log.Content = strings.TrimSpace(updates.Content)
 	}
 	if strings.TrimSpace(string(updates.Category)) != "" {
 		log.Category = updates.Category
