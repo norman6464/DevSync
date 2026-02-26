@@ -12,8 +12,7 @@ type UserServiceInterface interface {
 	GetAll(query string) ([]model.User, error)
 	GetByID(id uint) (*model.User, error)
 	GetByUsername(username string) (*model.User, error)
-	Update(user *model.User) error
-	UpdateByOwner(id, userID uint, user *model.User) error
+	UpdateProfile(id, userID uint, input *service.UpdateProfileInput) (*model.User, error)
 	GetProfileCompleteness(userID uint) (*service.ProfileCompleteness, error)
 }
 
@@ -74,7 +73,7 @@ func (h *UserHandler) GetByUsername(c *gin.Context) {
 }
 
 // Update はユーザープロフィールを更新する。
-// 所有権チェックはService層で実施する。
+// 所有権チェック・フィールドマッピング・バリデーションはService層で実施する。
 func (h *UserHandler) Update(c *gin.Context) {
 	id, ok := parseID(c, "id")
 	if !ok {
@@ -82,43 +81,28 @@ func (h *UserHandler) Update(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	existing, err := h.service.GetByID(id)
-	if err != nil {
-		respondNotFound(c, "user not found")
-		return
-	}
-
 	input := bindJSON[dto.UpdateUserRequest](c)
 	if input == nil {
 		return
 	}
 
-	if input.Name != "" {
-		existing.Name = input.Name
-	}
-	existing.Bio = input.Bio
-	existing.AvatarURL = input.AvatarURL
-	if input.SkillsLanguages != nil {
-		existing.SkillsLanguages = *input.SkillsLanguages
-	}
-	if input.SkillsFrameworks != nil {
-		existing.SkillsFrameworks = *input.SkillsFrameworks
-	}
-	if input.AtCoderUsername != nil {
-		existing.AtCoderUsername = *input.AtCoderUsername
-	}
-	if input.PaizaRank != nil {
-		existing.PaizaRank = *input.PaizaRank
-	}
-	if input.OnboardingCompleted != nil {
-		existing.OnboardingCompleted = *input.OnboardingCompleted
+	profileInput := &service.UpdateProfileInput{
+		Name:                input.Name,
+		Bio:                 input.Bio,
+		AvatarURL:           input.AvatarURL,
+		SkillsLanguages:     input.SkillsLanguages,
+		SkillsFrameworks:    input.SkillsFrameworks,
+		AtCoderUsername:     input.AtCoderUsername,
+		PaizaRank:           input.PaizaRank,
+		OnboardingCompleted: input.OnboardingCompleted,
 	}
 
-	if err := h.service.UpdateByOwner(id, userID, existing); err != nil {
+	user, err := h.service.UpdateProfile(id, userID, profileInput)
+	if err != nil {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, existing)
+	respondOK(c, user)
 }
 
 // GetProfileCompleteness は認証ユーザーのプロフィール完成度を返す。

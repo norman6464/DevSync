@@ -38,12 +38,12 @@ func (m *MockUserService) GetByUsername(username string) (*model.User, error) {
 	return nil, args.Error(1)
 }
 
-func (m *MockUserService) Update(user *model.User) error {
-	return m.Called(user).Error(0)
-}
-
-func (m *MockUserService) UpdateByOwner(id, userID uint, user *model.User) error {
-	return m.Called(id, userID, user).Error(0)
+func (m *MockUserService) UpdateProfile(id, userID uint, input *service.UpdateProfileInput) (*model.User, error) {
+	args := m.Called(id, userID, input)
+	if user := args.Get(0); user != nil {
+		return user.(*model.User), args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 func (m *MockUserService) GetProfileCompleteness(userID uint) (*service.ProfileCompleteness, error) {
@@ -226,9 +226,8 @@ func TestUserHandler_Update(t *testing.T) {
 		r := newRouter(1)
 		r.PUT("/users/:id", h.Update)
 
-		existing := &model.User{ID: 1, Name: "旧名前", Email: "test@test.com"}
-		svc.On("GetByID", uint(1)).Return(existing, nil)
-		svc.On("UpdateByOwner", uint(1), uint(1), mock.AnythingOfType("*model.User")).Return(nil)
+		updated := &model.User{ID: 1, Name: "新名前", Bio: "新しい自己紹介", Email: "test@test.com"}
+		svc.On("UpdateProfile", uint(1), uint(1), mock.AnythingOfType("*service.UpdateProfileInput")).Return(updated, nil)
 
 		w := doRequest(r, "PUT", "/users/1", map[string]interface{}{
 			"name": "新名前",
@@ -243,9 +242,7 @@ func TestUserHandler_Update(t *testing.T) {
 		r := newRouter(2)
 		r.PUT("/users/:id", h.Update)
 
-		existing := &model.User{ID: 1, Name: "旧名前"}
-		svc.On("GetByID", uint(1)).Return(existing, nil)
-		svc.On("UpdateByOwner", uint(1), uint(2), mock.AnythingOfType("*model.User")).Return(domain.ErrForbidden)
+		svc.On("UpdateProfile", uint(1), uint(2), mock.AnythingOfType("*service.UpdateProfileInput")).Return(nil, domain.ErrForbidden)
 
 		w := doRequest(r, "PUT", "/users/1", map[string]interface{}{"name": "不正更新"})
 		assertStatus(t, w, http.StatusForbidden)
@@ -257,7 +254,7 @@ func TestUserHandler_Update(t *testing.T) {
 		r := newRouter(999)
 		r.PUT("/users/:id", h.Update)
 
-		svc.On("GetByID", uint(999)).Return(nil, errors.New("not found"))
+		svc.On("UpdateProfile", uint(999), uint(999), mock.AnythingOfType("*service.UpdateProfileInput")).Return(nil, domain.ErrNotFound)
 
 		w := doRequest(r, "PUT", "/users/999", map[string]interface{}{"name": "テスト"})
 		assertStatus(t, w, http.StatusNotFound)
@@ -274,12 +271,9 @@ func TestUserHandler_Update(t *testing.T) {
 	})
 
 	t.Run("不正なJSONで400を返す", func(t *testing.T) {
-		h, svc := newTestUserHandler()
+		h, _ := newTestUserHandler()
 		r := newRouter(1)
 		r.PUT("/users/:id", h.Update)
-
-		existing := &model.User{ID: 1, Name: "旧名前"}
-		svc.On("GetByID", uint(1)).Return(existing, nil)
 
 		w := doRequestRaw(r, "PUT", "/users/1", "invalid json")
 		assertStatus(t, w, http.StatusBadRequest)
@@ -290,9 +284,7 @@ func TestUserHandler_Update(t *testing.T) {
 		r := newRouter(1)
 		r.PUT("/users/:id", h.Update)
 
-		existing := &model.User{ID: 1, Name: "旧名前"}
-		svc.On("GetByID", uint(1)).Return(existing, nil)
-		svc.On("UpdateByOwner", uint(1), uint(1), mock.AnythingOfType("*model.User")).Return(errors.New("db error"))
+		svc.On("UpdateProfile", uint(1), uint(1), mock.AnythingOfType("*service.UpdateProfileInput")).Return(nil, errors.New("db error"))
 
 		w := doRequest(r, "PUT", "/users/1", map[string]interface{}{"name": "新名前"})
 		assertStatus(t, w, http.StatusInternalServerError)
