@@ -1119,3 +1119,61 @@ func TestStudyCircleUpdateStep_DescriptionTooLong(t *testing.T) {
 	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), "説明は1000文字以下である必要があります")
 }
+
+// ============================================================
+// UpdateMemberRole テスト
+// ============================================================
+
+func TestStudyCircleUpdateMemberRole_Success(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	circle := &model.StudyCircle{ID: 1, OwnerID: 1}
+	repo.On("FindByID", uint(1)).Return(circle, nil)
+	repo.On("IsMember", uint(1), uint(2)).Return(true, nil)
+	repo.On("UpdateMemberRole", uint(1), uint(2), model.StudyCircleRoleOwner).Return(nil)
+
+	err := svc.UpdateMemberRole(1, 1, 2, "owner")
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestStudyCircleUpdateMemberRole_InvalidRole(t *testing.T) {
+	svc, _ := newTestStudyCircleService()
+
+	err := svc.UpdateMemberRole(1, 1, 2, "admin")
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrBadRequest)
+}
+
+func TestStudyCircleUpdateMemberRole_NotOwner(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	circle := &model.StudyCircle{ID: 1, OwnerID: 999}
+	repo.On("FindByID", uint(1)).Return(circle, nil)
+
+	err := svc.UpdateMemberRole(1, 1, 2, "member")
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrForbidden)
+	repo.AssertExpectations(t)
+}
+
+func TestStudyCircleUpdateMemberRole_SelfChange(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	circle := &model.StudyCircle{ID: 1, OwnerID: 1}
+	repo.On("FindByID", uint(1)).Return(circle, nil)
+
+	err := svc.UpdateMemberRole(1, 1, 1, "member")
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	repo.AssertExpectations(t)
+}
+
+func TestStudyCircleUpdateMemberRole_TargetNotMember(t *testing.T) {
+	svc, repo := newTestStudyCircleService()
+	circle := &model.StudyCircle{ID: 1, OwnerID: 1}
+	repo.On("FindByID", uint(1)).Return(circle, nil)
+	repo.On("IsMember", uint(1), uint(2)).Return(false, nil)
+
+	err := svc.UpdateMemberRole(1, 1, 2, "member")
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrNotFound)
+	repo.AssertExpectations(t)
+}

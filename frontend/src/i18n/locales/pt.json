@@ -887,7 +887,11 @@
     "saveFailed": "Falha ao salvar",
     "unsaveFailed": "Falha ao remover dos salvos",
     "noteFavorites": "Notas favoritas",
-    "noteFavoritesEmpty": "Nenhuma nota favorita ainda"
+    "noteFavoritesEmpty": "Nenhuma nota favorita ainda",
+    "updateMemberRole": "Atualizar função do membro",
+    "roleOwner": "Proprietário",
+    "roleMember": "Membro",
+    "memberRoleUpdated": "Função do membro atualizada"
   },
   "portfolio": {
     "generate": "Portfólio",

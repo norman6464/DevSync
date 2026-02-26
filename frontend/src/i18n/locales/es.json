@@ -887,7 +887,11 @@
     "saveFailed": "Error al guardar",
     "unsaveFailed": "Error al quitar guardado",
     "noteFavorites": "Notas favoritas",
-    "noteFavoritesEmpty": "Aún no hay notas favoritas"
+    "noteFavoritesEmpty": "Aún no hay notas favoritas",
+    "updateMemberRole": "Actualizar rol de miembro",
+    "roleOwner": "Propietario",
+    "roleMember": "Miembro",
+    "memberRoleUpdated": "Rol de miembro actualizado"
   },
   "portfolio": {
     "generate": "Portafolio",

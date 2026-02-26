@@ -887,7 +887,11 @@
     "saveFailed": "Échec de la sauvegarde",
     "unsaveFailed": "Échec du retrait de la sauvegarde",
     "noteFavorites": "Notes favorites",
-    "noteFavoritesEmpty": "Aucune note favorite pour le moment"
+    "noteFavoritesEmpty": "Aucune note favorite pour le moment",
+    "updateMemberRole": "Modifier le rôle du membre",
+    "roleOwner": "Propriétaire",
+    "roleMember": "Membre",
+    "memberRoleUpdated": "Rôle du membre mis à jour"
   },
   "portfolio": {
     "generate": "Portfolio",

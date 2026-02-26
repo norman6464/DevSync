@@ -768,6 +768,11 @@ func (m *MockStudyCircleRepository) GetByStatus(userID uint, status string) ([]m
 	return args.Get(0).([]model.StudyCircle), args.Error(1)
 }
 
+func (m *MockStudyCircleRepository) UpdateMemberRole(circleID, userID uint, role model.StudyCircleMemberRole) error {
+	args := m.Called(circleID, userID, role)
+	return args.Error(0)
+}
+
 // setupStudyCircleHandler はStudyCircleHandlerテスト用のセットアップを行う。
 func setupStudyCircleHandler() (*StudyCircleHandler, *MockStudyCircleRepository) {
 	repo := new(MockStudyCircleRepository)

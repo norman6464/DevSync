@@ -887,7 +887,11 @@
     "saveFailed": "Failed to save",
     "unsaveFailed": "Failed to unsave",
     "noteFavorites": "Favorite Notes",
-    "noteFavoritesEmpty": "No favorite notes yet"
+    "noteFavoritesEmpty": "No favorite notes yet",
+    "updateMemberRole": "Update Member Role",
+    "roleOwner": "Owner",
+    "roleMember": "Member",
+    "memberRoleUpdated": "Member role updated"
   },
   "portfolio": {
     "generate": "Portfolio",

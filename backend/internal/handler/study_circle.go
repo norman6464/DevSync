@@ -27,6 +27,7 @@ type StudyCircleServiceInterface interface {
 	GetCheckins(circleID, userID uint) ([]model.StudyCircleCheckin, error)
 	GetStreakRanking(circleID, userID uint) ([]model.CircleMemberStreak, error)
 	GetByStatus(userID uint, status string) ([]model.StudyCircle, error)
+	UpdateMemberRole(circleID, userID, targetUserID uint, role string) error
 }
 
 // StudyCircleHandler はスタディサークル関連のHTTPリクエストを処理する。
@@ -340,4 +341,32 @@ func (h *StudyCircleHandler) GetByStatus(c *gin.Context) {
 		return
 	}
 	respondOK(c, ensureSlice(circles))
+}
+
+// UpdateMemberRole はメンバーの役割を更新する。オーナーのみ操作可能。
+func (h *StudyCircleHandler) UpdateMemberRole(c *gin.Context) {
+	userID := c.GetUint("userID")
+	circleID, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+	targetUserID, ok := parseID(c, "userId")
+	if !ok {
+		return
+	}
+
+	var req struct {
+		Role string `json:"role" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		respondError(c, domain.NewError(domain.ErrCodeBadRequest, "役割の指定が必要です", err))
+		return
+	}
+
+	if err := h.service.UpdateMemberRole(circleID, userID, targetUserID, req.Role); err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, gin.H{"message": "メンバー役割を更新しました"})
 }

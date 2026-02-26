@@ -203,6 +203,34 @@ func (s *StudyCircleService) AddMember(circleID, userID, targetUserID uint) erro
 	return s.repo.AddMember(circleID, targetUserID, model.StudyCircleRoleMember)
 }
 
+// validMemberRoles は有効なメンバー役割のマップ。
+var validMemberRoles = map[string]bool{
+	string(model.StudyCircleRoleOwner):  true,
+	string(model.StudyCircleRoleMember): true,
+}
+
+// UpdateMemberRole はメンバーの役割を更新する。オーナーのみ操作可能。
+// オーナー自身の役割は変更不可。
+func (s *StudyCircleService) UpdateMemberRole(circleID, userID, targetUserID uint, role string) error {
+	if !validMemberRoles[role] {
+		return domain.NewError(domain.ErrCodeBadRequest, "無効な役割です", nil)
+	}
+	if _, err := s.findAndCheckOwnership(circleID, userID); err != nil {
+		return err
+	}
+	if userID == targetUserID {
+		return domain.NewError(domain.ErrCodeBadRequest, "オーナー自身の役割は変更できません", nil)
+	}
+	isMember, err := s.repo.IsMember(circleID, targetUserID)
+	if err != nil {
+		return err
+	}
+	if !isMember {
+		return domain.NewError(domain.ErrCodeNotFound, "指定されたユーザーはメンバーではありません", nil)
+	}
+	return s.repo.UpdateMemberRole(circleID, targetUserID, model.StudyCircleMemberRole(role))
+}
+
 // RemoveMember はメンバーを除外する。オーナーは誰でも除外可、メンバーは自分のみ退出可。
 func (s *StudyCircleService) RemoveMember(circleID, userID, targetUserID uint) error {
 	circle, err := s.repo.FindByID(circleID)
