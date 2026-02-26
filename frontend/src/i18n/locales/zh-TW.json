@@ -1847,5 +1847,14 @@
     "bookmarkRemoved": "已取消收藏",
     "bookmarkedQuestions": "收藏的問題",
     "noBookmarks": "沒有收藏的問題"
+  },
+  "snippetFavorite": {
+    "favorite": "收藏",
+    "unfavorite": "取消收藏",
+    "favorited": "已收藏",
+    "favoriteAdded": "已新增至收藏",
+    "favoriteRemoved": "已取消收藏",
+    "favoritedSnippets": "收藏的程式碼片段",
+    "noFavorites": "沒有收藏的程式碼片段"
   }
 }

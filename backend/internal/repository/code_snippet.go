@@ -91,3 +91,46 @@ func (r *CodeSnippetRepository) IncrementForkCount(id uint) error {
 	return r.db.Model(&model.CodeSnippet{}).Where("id = ?", id).
 		UpdateColumn("fork_count", gorm.Expr("fork_count + 1")).Error
 }
+
+// Favorite はスニペットをお気に入りに追加する。
+func (r *CodeSnippetRepository) Favorite(userID, snippetID uint) error {
+	fav := &model.CodeSnippetFavorite{
+		UserID:    userID,
+		SnippetID: snippetID,
+	}
+	return r.db.Create(fav).Error
+}
+
+// Unfavorite はスニペットのお気に入りを解除する。
+func (r *CodeSnippetRepository) Unfavorite(userID, snippetID uint) error {
+	return r.db.Where("user_id = ? AND snippet_id = ?", userID, snippetID).
+		Delete(&model.CodeSnippetFavorite{}).Error
+}
+
+// HasFavorited は指定ユーザーが指定スニペットをお気に入りしているかを返す。
+func (r *CodeSnippetRepository) HasFavorited(userID, snippetID uint) (bool, error) {
+	var count int64
+	err := r.db.Model(&model.CodeSnippetFavorite{}).
+		Where("user_id = ? AND snippet_id = ?", userID, snippetID).
+		Count(&count).Error
+	return count > 0, err
+}
+
+// FindFavoritedByUserID は指定ユーザーのお気に入りスニペットをページネーション付きで取得する。
+func (r *CodeSnippetRepository) FindFavoritedByUserID(userID uint, limit, offset int) ([]model.CodeSnippet, int64, error) {
+	var snippets []model.CodeSnippet
+	var total int64
+
+	subQuery := r.db.Model(&model.CodeSnippetFavorite{}).
+		Select("snippet_id").
+		Where("user_id = ?", userID)
+
+	query := r.db.Model(&model.CodeSnippet{}).Where("id IN (?)", subQuery)
+	query.Count(&total)
+
+	err := query.Order("created_at DESC").
+		Limit(limit).Offset(offset).
+		Find(&snippets).Error
+
+	return snippets, total, err
+}

@@ -1845,5 +1845,14 @@
     "bookmarkRemoved": "Signet retiré",
     "bookmarkedQuestions": "Questions en signet",
     "noBookmarks": "Aucune question en signet"
+  },
+  "snippetFavorite": {
+    "favorite": "Favori",
+    "unfavorite": "Retirer des favoris",
+    "favorited": "En favoris",
+    "favoriteAdded": "Ajouté aux favoris",
+    "favoriteRemoved": "Retiré des favoris",
+    "favoritedSnippets": "Extraits favoris",
+    "noFavorites": "Aucun extrait favori"
   }
 }

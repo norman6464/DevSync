@@ -1844,5 +1844,14 @@
     "bookmarkRemoved": "Удалено из закладок",
     "bookmarkedQuestions": "Вопросы в закладках",
     "noBookmarks": "Нет вопросов в закладках"
+  },
+  "snippetFavorite": {
+    "favorite": "Избранное",
+    "unfavorite": "Удалить из избранного",
+    "favorited": "В избранном",
+    "favoriteAdded": "Добавлено в избранное",
+    "favoriteRemoved": "Удалено из избранного",
+    "favoritedSnippets": "Избранные сниппеты",
+    "noFavorites": "Нет избранных сниппетов"
   }
 }

@@ -617,3 +617,98 @@ func TestSnippetFork_CreateError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "フォークに失敗")
 }
+
+// ---------- お気に入りテスト ----------
+
+func TestSnippetFavorite_Success(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+
+	snippet := &model.CodeSnippet{UserID: 2}
+	snippet.ID = 10
+
+	snippetRepo.On("FindByID", uint(10)).Return(snippet, nil)
+	snippetRepo.On("HasFavorited", uint(1), uint(10)).Return(false, nil)
+	snippetRepo.On("Favorite", uint(1), uint(10)).Return(nil)
+
+	err := svc.Favorite(1, 10)
+	assert.NoError(t, err)
+	snippetRepo.AssertExpectations(t)
+}
+
+func TestSnippetFavorite_AlreadyFavorited(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+
+	snippet := &model.CodeSnippet{UserID: 2}
+	snippet.ID = 10
+
+	snippetRepo.On("FindByID", uint(10)).Return(snippet, nil)
+	snippetRepo.On("HasFavorited", uint(1), uint(10)).Return(true, nil)
+
+	err := svc.Favorite(1, 10)
+	assert.ErrorIs(t, err, ErrConflict)
+	snippetRepo.AssertNotCalled(t, "Favorite")
+}
+
+func TestSnippetFavorite_SnippetNotFound(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+
+	snippetRepo.On("FindByID", uint(99)).Return(nil, gorm.ErrRecordNotFound)
+
+	err := svc.Favorite(1, 99)
+	assert.ErrorIs(t, err, ErrNotFound)
+	snippetRepo.AssertNotCalled(t, "Favorite")
+}
+
+func TestSnippetFavorite_OwnSnippet(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+
+	// 自分のスニペットもお気に入り可能
+	snippet := &model.CodeSnippet{UserID: 1}
+	snippet.ID = 10
+
+	snippetRepo.On("FindByID", uint(10)).Return(snippet, nil)
+	snippetRepo.On("HasFavorited", uint(1), uint(10)).Return(false, nil)
+	snippetRepo.On("Favorite", uint(1), uint(10)).Return(nil)
+
+	err := svc.Favorite(1, 10)
+	assert.NoError(t, err)
+	snippetRepo.AssertExpectations(t)
+}
+
+func TestSnippetUnfavorite_Success(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+
+	snippetRepo.On("Unfavorite", uint(1), uint(10)).Return(nil)
+
+	err := svc.Unfavorite(1, 10)
+	assert.NoError(t, err)
+	snippetRepo.AssertExpectations(t)
+}
+
+func TestSnippetGetFavoritedByUserID_Success(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+
+	snippets := []model.CodeSnippet{
+		{Language: "Go", Code: "package main"},
+		{Language: "Python", Code: "print('hello')"},
+	}
+	snippetRepo.On("FindFavoritedByUserID", uint(1), 20, 0).Return(snippets, int64(2), nil)
+
+	result, total, err := svc.GetFavoritedByUserID(1, 20, 0)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, int64(2), total)
+	snippetRepo.AssertExpectations(t)
+}
+
+func TestSnippetGetFavoritedByUserID_Empty(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+
+	snippetRepo.On("FindFavoritedByUserID", uint(1), 20, 0).Return([]model.CodeSnippet{}, int64(0), nil)
+
+	result, total, err := svc.GetFavoritedByUserID(1, 20, 0)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	assert.Equal(t, int64(0), total)
+	snippetRepo.AssertExpectations(t)
+}

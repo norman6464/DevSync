@@ -1130,6 +1130,26 @@ func (m *MockCodeSnippetRepository) IncrementForkCount(id uint) error {
 	return m.Called(id).Error(0)
 }
 
+func (m *MockCodeSnippetRepository) Favorite(userID, snippetID uint) error {
+	args := m.Called(userID, snippetID)
+	return args.Error(0)
+}
+
+func (m *MockCodeSnippetRepository) Unfavorite(userID, snippetID uint) error {
+	args := m.Called(userID, snippetID)
+	return args.Error(0)
+}
+
+func (m *MockCodeSnippetRepository) HasFavorited(userID, snippetID uint) (bool, error) {
+	args := m.Called(userID, snippetID)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockCodeSnippetRepository) FindFavoritedByUserID(userID uint, limit, offset int) ([]model.CodeSnippet, int64, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.CodeSnippet), args.Get(1).(int64), args.Error(2)
+}
+
 // ============================================================
 // インターフェース適合チェック（コンパイル時検証）
 // ============================================================

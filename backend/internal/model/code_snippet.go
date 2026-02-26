@@ -19,6 +19,15 @@ type CodeSnippet struct {
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 
+// CodeSnippetFavorite はコードスニペットのお気に入りを記録する。
+// ユーザーとスニペットの組み合わせでユニークインデックスを持つ。
+type CodeSnippetFavorite struct {
+	ID        uint      `json:"id" gorm:"primaryKey"`
+	UserID    uint      `json:"user_id" gorm:"not null;uniqueIndex:idx_snippet_favorite"`
+	SnippetID uint      `json:"snippet_id" gorm:"not null;uniqueIndex:idx_snippet_favorite"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 // SnippetComment はコードスニペットの特定行へのインラインコメントを表す。
 // GitHub PRレビュー風の行単位フィードバックを提供する。
 type SnippetComment struct {

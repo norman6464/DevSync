@@ -166,3 +166,29 @@ func (s *CodeSnippetService) Fork(userID, snippetID, targetPostID uint) (*model.
 
 	return forked, nil
 }
+
+// Favorite はスニペットをお気に入りに追加する。
+// 既にお気に入り済みの場合はErrConflictを返す。
+func (s *CodeSnippetService) Favorite(userID, snippetID uint) error {
+	if _, err := s.repo.FindByID(snippetID); err != nil {
+		return ErrNotFound
+	}
+	has, err := s.repo.HasFavorited(userID, snippetID)
+	if err != nil {
+		return err
+	}
+	if has {
+		return ErrConflict
+	}
+	return s.repo.Favorite(userID, snippetID)
+}
+
+// Unfavorite はスニペットのお気に入りを解除する。
+func (s *CodeSnippetService) Unfavorite(userID, snippetID uint) error {
+	return s.repo.Unfavorite(userID, snippetID)
+}
+
+// GetFavoritedByUserID はお気に入りスニペット一覧を取得する。
+func (s *CodeSnippetService) GetFavoritedByUserID(userID uint, limit, offset int) ([]model.CodeSnippet, int64, error) {
+	return s.repo.FindFavoritedByUserID(userID, limit, offset)
+}

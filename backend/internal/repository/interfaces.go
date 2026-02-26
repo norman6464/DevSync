@@ -320,6 +320,10 @@ type CodeSnippetRepositoryInterface interface {
 	GetComments(snippetID uint) ([]model.SnippetComment, error)
 	DeleteComment(id, userID uint) error
 	IncrementForkCount(id uint) error
+	Favorite(userID, snippetID uint) error
+	Unfavorite(userID, snippetID uint) error
+	HasFavorited(userID, snippetID uint) (bool, error)
+	FindFavoritedByUserID(userID uint, limit, offset int) ([]model.CodeSnippet, int64, error)
 }
 
 // GitHubRepositoryInterface はGitHub連携データ操作の契約を定義する。
