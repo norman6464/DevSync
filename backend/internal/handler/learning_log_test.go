@@ -730,3 +730,31 @@ func TestLearningLog_ImportCSV_ServiceError(t *testing.T) {
 	assertStatus(t, w, http.StatusInternalServerError)
 	svc.AssertExpectations(t)
 }
+
+// ============================================================
+// GetMyCount テスト
+// ============================================================
+
+func TestLearningLogHandler_GetMyCount_Success(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	r := newRouter(1)
+	r.GET("/learning-logs/my/count", h.GetMyCount)
+
+	svc.On("CountByUserID", uint(1)).Return(int64(15), nil)
+
+	w := doRequest(r, "GET", "/learning-logs/my/count", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestLearningLogHandler_GetMyCount_ServiceError(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	r := newRouter(1)
+	r.GET("/learning-logs/my/count", h.GetMyCount)
+
+	svc.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	w := doRequest(r, "GET", "/learning-logs/my/count", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}

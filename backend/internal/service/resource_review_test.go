@@ -238,3 +238,40 @@ func TestResourceReviewDelete_NotFound(t *testing.T) {
 	err := svc.Delete(99, 1)
 	assert.ErrorIs(t, err, ErrNotFound)
 }
+
+// ============================================================
+// コメント長バリデーションテスト
+// ============================================================
+
+func TestResourceReviewCreate_CommentTooLong(t *testing.T) {
+	svc, _, resourceRepo := newTestResourceReviewService()
+
+	resource := &model.LearningResource{UserID: 2}
+	resource.ID = 10
+	resourceRepo.On("FindByID", uint(10)).Return(resource, nil)
+
+	longComment := string(make([]rune, 5001))
+	review := &model.ResourceReview{
+		UserID:     1,
+		ResourceID: 10,
+		Rating:     4,
+		Comment:    longComment,
+	}
+
+	err := svc.Create(review)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "コメント")
+}
+
+func TestResourceReviewUpdate_CommentTooLong(t *testing.T) {
+	svc, reviewRepo, _ := newTestResourceReviewService()
+
+	existing := &model.ResourceReview{UserID: 1, Rating: 3}
+	existing.ID = 1
+	reviewRepo.On("FindByID", uint(1)).Return(existing, nil)
+
+	longComment := string(make([]rune, 5001))
+	_, err := svc.Update(1, 1, 0, longComment)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "コメント")
+}
