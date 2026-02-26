@@ -57,6 +57,20 @@ type GoalProgress struct {
 	Percentage   int  `json:"percentage"`     // 進捗率（0-100）
 }
 
+// GoalForecast は目標達成予測情報を表す。
+type GoalForecast struct {
+	GoalID             uint    `json:"goal_id"`
+	Title              string  `json:"title"`
+	CurrentProgress    int     `json:"current_progress"`       // 現在の進捗率
+	TargetHours        int     `json:"target_hours"`           // 目標時間（時間）
+	ActualMinutes      int     `json:"actual_minutes"`         // 実績時間（分）
+	DailyAverageMinutes int   `json:"daily_average_minutes"`  // 日平均学習時間（分）
+	EstimatedDaysLeft  int     `json:"estimated_days_left"`    // 予測残日数（-1=予測不能）
+	DaysUntilDeadline  int     `json:"days_until_deadline"`    // デッドラインまでの残日数（-1=未設定）
+	OnTrack            bool    `json:"on_track"`               // 予定通りかどうか
+	Difficulty         string  `json:"difficulty"`             // 達成難易度: easy/medium/hard/unknown
+}
+
 // LearningGoalStats はユーザーの学習目標統計情報を表す。
 type LearningGoalStats struct {
 	TotalGoals      int `json:"total_goals"`

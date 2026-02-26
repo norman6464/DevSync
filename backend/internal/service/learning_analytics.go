@@ -60,6 +60,40 @@ func (s *LearningAnalyticsService) GetWeeklyTrends(userID uint, weeks int) ([]mo
 	return s.repo.GetWeeklyTrends(userID, weeks)
 }
 
+// GetDayOfWeekSummary は指定ユーザーの曜日別学習サマリーを取得する。
+// ヒートマップデータを曜日ごとに集計して返す。
+func (s *LearningAnalyticsService) GetDayOfWeekSummary(userID uint) ([]model.DayOfWeekSummary, error) {
+	heatmap, err := s.repo.GetHeatmapData(userID)
+	if err != nil {
+		return nil, err
+	}
+	return AggregateDayOfWeek(heatmap), nil
+}
+
+// AggregateDayOfWeek はヒートマップデータを曜日別に集計する純粋関数。
+func AggregateDayOfWeek(heatmap []model.HeatmapEntry) []model.DayOfWeekSummary {
+	dayMap := make(map[int]*model.DayOfWeekSummary)
+	for i := 0; i < 7; i++ {
+		dayMap[i] = &model.DayOfWeekSummary{DayOfWeek: i}
+	}
+
+	for _, entry := range heatmap {
+		if summary, ok := dayMap[entry.DayOfWeek]; ok {
+			summary.TotalMinutes += entry.TotalMinutes
+			summary.LogCount++
+		}
+	}
+
+	result := make([]model.DayOfWeekSummary, 7)
+	for i := 0; i < 7; i++ {
+		result[i] = *dayMap[i]
+		if result[i].LogCount > 0 {
+			result[i].AverageMinutes = result[i].TotalMinutes / result[i].LogCount
+		}
+	}
+	return result
+}
+
 // GetProductivityScore は指定ユーザーの生産性スコアを計算して返す。
 func (s *LearningAnalyticsService) GetProductivityScore(userID uint) (*model.ProductivityScore, error) {
 	stats, err := s.repo.GetProductivityStats(userID)

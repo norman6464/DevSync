@@ -1279,6 +1279,10 @@ func (m *MockLearningAnalyticsService) GetInsights(userID uint) ([]model.AIInsig
 	args := m.Called(userID)
 	return args.Get(0).([]model.AIInsight), args.Error(1)
 }
+func (m *MockLearningAnalyticsService) GetDayOfWeekSummary(userID uint) ([]model.DayOfWeekSummary, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.DayOfWeekSummary), args.Error(1)
+}
 
 // setupLearningAnalyticsHandler はLearningAnalyticsHandlerテスト用のセットアップを行う。
 func setupLearningAnalyticsHandler() (*LearningAnalyticsHandler, *MockLearningAnalyticsService) {

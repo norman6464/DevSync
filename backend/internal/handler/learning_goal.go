@@ -23,6 +23,12 @@ type LearningGoalServiceInterface interface {
 	ToggleShare(id, userID uint) (*model.LearningGoal, error)
 	GetPublicGoals(limit, offset int) ([]model.LearningGoal, int64, error)
 	GetPublicByUserID(userID uint, limit, offset int) ([]model.LearningGoal, int64, error)
+	GetActiveByUserID(userID uint) ([]model.LearningGoal, error)
+	GetForecast(userID uint) ([]model.GoalForecast, error)
+	BatchUpdateProgress(userID uint, updates []struct {
+		GoalID   uint
+		Progress int
+	}) ([]model.LearningGoal, error)
 }
 
 // LearningGoalHandler は学習目標関連のHTTPハンドラ。
@@ -298,4 +304,44 @@ func (h *LearningGoalHandler) GetPublicByUserID(c *gin.Context) {
 		Limit:  limit,
 		Offset: offset,
 	})
+}
+
+// BatchUpdateProgress は複数の学習目標の進捗を一括更新する。
+func (h *LearningGoalHandler) BatchUpdateProgress(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	req := bindJSON[dto.BatchUpdateProgressRequest](c)
+	if req == nil {
+		return
+	}
+
+	updates := make([]struct {
+		GoalID   uint
+		Progress int
+	}, len(req.Updates))
+	for i, u := range req.Updates {
+		updates[i].GoalID = u.GoalID
+		updates[i].Progress = u.Progress
+	}
+
+	results, err := h.service.BatchUpdateProgress(userID, updates)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, ensureSlice(results))
+}
+
+// GetForecast は認証ユーザーのアクティブ目標の達成予測一覧を返す。
+func (h *LearningGoalHandler) GetForecast(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	forecasts, err := h.service.GetForecast(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, ensureSlice(forecasts))
 }

@@ -12,6 +12,7 @@ type LearningAnalyticsServiceInterface interface {
 	GetWeeklyTrends(userID uint, weeks int) ([]model.WeeklyTrend, error)
 	GetProductivityScore(userID uint) (*model.ProductivityScore, error)
 	GetInsights(userID uint) ([]model.AIInsight, error)
+	GetDayOfWeekSummary(userID uint) ([]model.DayOfWeekSummary, error)
 }
 
 // LearningAnalyticsHandler は学習分析関連のHTTPハンドラ。
@@ -83,6 +84,22 @@ func (h *LearningAnalyticsHandler) GetWeeklyTrends(c *gin.Context) {
 	weeks := parseQueryIntSilent(c, "weeks", 12)
 
 	data, err := h.service.GetWeeklyTrends(userID, weeks)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, data)
+}
+
+// GetDayOfWeekSummary は指定ユーザーの曜日別学習サマリーを返す。
+func (h *LearningAnalyticsHandler) GetDayOfWeekSummary(c *gin.Context) {
+	userID, ok := parseID(c, "userId")
+	if !ok {
+		return
+	}
+
+	data, err := h.service.GetDayOfWeekSummary(userID)
 	if err != nil {
 		respondError(c, err)
 		return

@@ -43,6 +43,14 @@ type ProductivityScore struct {
 	OverallScore      float64 `json:"overall_score"`       // 総合スコア（0-100）
 }
 
+// DayOfWeekSummary は曜日別の学習サマリーを表す。
+type DayOfWeekSummary struct {
+	DayOfWeek      int `json:"day_of_week"`       // 0=日曜 〜 6=土曜
+	TotalMinutes   int `json:"total_minutes"`      // 合計学習時間（分）
+	AverageMinutes int `json:"average_minutes"`    // 平均学習時間（分）
+	LogCount       int `json:"log_count"`          // ログ件数
+}
+
 // AIInsight はAIが生成した学習インサイトを表す。
 // フロントエンド側でi18nキー analytics.insight_{Type} を使ってメッセージを生成する。
 type AIInsight struct {

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"math"
 	"strings"
 	"time"
 
@@ -249,4 +250,88 @@ func (s *LearningGoalService) Delete(id, userID uint) error {
 		return err
 	}
 	return s.repo.Delete(id)
+}
+
+// BatchUpdateProgress は複数の学習目標の進捗を一括更新する。
+func (s *LearningGoalService) BatchUpdateProgress(userID uint, updates []struct {
+	GoalID   uint
+	Progress int
+}) ([]model.LearningGoal, error) {
+	var results []model.LearningGoal
+	for _, u := range updates {
+		progressUpdate := &model.LearningGoal{Progress: u.Progress}
+		goal, err := s.Update(u.GoalID, userID, progressUpdate)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, *goal)
+	}
+	return results, nil
+}
+
+// GetForecast はユーザーのアクティブ目標に対する達成予測一覧を返す。
+func (s *LearningGoalService) GetForecast(userID uint) ([]model.GoalForecast, error) {
+	goals, err := s.repo.GetActiveByUserID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now()
+	var forecasts []model.GoalForecast
+	for _, goal := range goals {
+		forecast := CalculateGoalForecast(&goal, 0, 0, now)
+		forecasts = append(forecasts, *forecast)
+	}
+	return forecasts, nil
+}
+
+// CalculateGoalForecast は目標達成予測を算出する純粋関数。
+// dailyAverageMinutes は過去14日間の日平均学習時間（分）。
+func CalculateGoalForecast(goal *model.LearningGoal, actualMinutes, dailyAverageMinutes int, now time.Time) *model.GoalForecast {
+	forecast := &model.GoalForecast{
+		GoalID:              goal.ID,
+		Title:               goal.Title,
+		CurrentProgress:     goal.Progress,
+		TargetHours:         goal.TargetHours,
+		ActualMinutes:       actualMinutes,
+		DailyAverageMinutes: dailyAverageMinutes,
+		EstimatedDaysLeft:   -1,
+		DaysUntilDeadline:   -1,
+		Difficulty:          "unknown",
+	}
+
+	if goal.TargetDate != nil {
+		forecast.DaysUntilDeadline = int(math.Ceil(goal.TargetDate.Sub(now).Hours() / 24))
+		if forecast.DaysUntilDeadline < 0 {
+			forecast.DaysUntilDeadline = 0
+		}
+	}
+
+	// 目標時間が設定されている場合、残り時間から予測日数を算出
+	if goal.TargetHours > 0 && dailyAverageMinutes > 0 {
+		remainingMinutes := goal.TargetHours*60 - actualMinutes
+		if remainingMinutes <= 0 {
+			forecast.EstimatedDaysLeft = 0
+			forecast.OnTrack = true
+			forecast.Difficulty = "easy"
+		} else {
+			forecast.EstimatedDaysLeft = int(math.Ceil(float64(remainingMinutes) / float64(dailyAverageMinutes)))
+			if forecast.DaysUntilDeadline >= 0 {
+				forecast.OnTrack = forecast.EstimatedDaysLeft <= forecast.DaysUntilDeadline
+				ratio := float64(forecast.EstimatedDaysLeft) / float64(max(forecast.DaysUntilDeadline, 1))
+				switch {
+				case ratio <= 0.5:
+					forecast.Difficulty = "easy"
+				case ratio <= 1.0:
+					forecast.Difficulty = "medium"
+				default:
+					forecast.Difficulty = "hard"
+				}
+			}
+		}
+	} else if goal.TargetHours > 0 && dailyAverageMinutes == 0 {
+		forecast.Difficulty = "hard"
+	}
+
+	return forecast
 }

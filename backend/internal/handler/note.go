@@ -29,6 +29,7 @@ type NoteServiceInterface interface {
 	CountArchivedByUserID(userID uint) (int64, error)
 	Duplicate(id uint, userID uint) (*model.Note, error)
 	ExportMarkdown(id, userID uint) ([]byte, string, error)
+	GetTags(userID uint) ([]string, error)
 }
 
 // NoteHandler は学習ノート関連のHTTPハンドラ。
@@ -258,6 +259,19 @@ func (h *NoteHandler) Duplicate(c *gin.Context) {
 	}
 
 	respondCreated(c, duplicate)
+}
+
+// GetTags は認証ユーザーのノートで使用されているタグ一覧を返す。
+func (h *NoteHandler) GetTags(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	tags, err := h.service.GetTags(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, ensureSlice(tags))
 }
 
 // Export はノートをMarkdownファイルとしてエクスポートする。

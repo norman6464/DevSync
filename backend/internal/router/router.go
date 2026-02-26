@@ -394,6 +394,8 @@ func registerGoalRoutes(g *gin.RouterGroup, c *di.Container) {
 		goals.GET("/public/user/:userId", c.LearningGoalHandler.GetPublicByUserID)
 		goals.GET("/:id/linked-logs", c.LearningLogHandler.GetLinkedLogs)
 		goals.GET("/:id/progress", c.LearningLogHandler.GetGoalProgress)
+		goals.PUT("/batch-progress", c.LearningGoalHandler.BatchUpdateProgress)
+		goals.GET("/forecast", c.LearningGoalHandler.GetForecast)
 	}
 }
 
@@ -522,6 +524,7 @@ func registerNoteRoutes(g *gin.RouterGroup, c *di.Container) {
 		notes.PUT("/:id/archive", c.NoteHandler.Archive)
 		notes.PUT("/:id/unarchive", c.NoteHandler.Unarchive)
 		notes.POST("/:id/duplicate", c.NoteHandler.Duplicate)
+		notes.GET("/tags", c.NoteHandler.GetTags)
 		notes.GET("/:id/export", c.NoteHandler.Export)
 		notes.POST("/:id/links", c.NoteLinkHandler.CreateLink)
 		notes.GET("/:id/links", c.NoteLinkHandler.GetLinks)
@@ -667,6 +670,8 @@ func registerAnalyticsRoutes(g *gin.RouterGroup, c *di.Container) {
 		analytics.GET("/productivity/:userId", c.LearningAnalyticsHandler.GetProductivityScore)
 		analytics.GET("/trends/:userId", c.LearningAnalyticsHandler.GetWeeklyTrends)
 		analytics.GET("/insights", c.LearningAnalyticsHandler.GetInsights)
+		analytics.GET("/day-of-week/:userId", c.LearningAnalyticsHandler.GetDayOfWeekSummary)
+		analytics.GET("/dashboard-summary", c.LearningDashboardHandler.GetSummary)
 	}
 
 	// AIアドバイス

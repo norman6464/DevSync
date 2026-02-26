@@ -107,6 +107,11 @@ func (m *MockNoteService) ExportMarkdown(id, userID uint) ([]byte, string, error
 	return nil, "", args.Error(2)
 }
 
+func (m *MockNoteService) GetTags(userID uint) ([]string, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]string), args.Error(1)
+}
+
 // newTestNoteHandler はテスト用のNoteHandlerを生成する。
 func newTestNoteHandler() (*NoteHandler, *MockNoteService) {
 	mockService := new(MockNoteService)
