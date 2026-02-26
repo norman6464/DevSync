@@ -78,26 +78,23 @@ func (s *LearningLogTemplateService) Update(id, userID uint, name, defaultTitle,
 		return nil, err
 	}
 
-	if strings.TrimSpace(name) != "" {
-		name = strings.TrimSpace(name)
-		if err := domain.ValidateStringLength(name, 1, 100, "テンプレート名"); err != nil {
+	if n := strings.TrimSpace(name); n != "" {
+		if err := domain.ValidateStringLength(n, 1, 100, "テンプレート名"); err != nil {
 			return nil, err
 		}
-		template.Name = name
+		template.Name = n
 	}
-	if strings.TrimSpace(defaultTitle) != "" {
-		defaultTitle = strings.TrimSpace(defaultTitle)
-		if err := domain.ValidateStringLength(defaultTitle, 1, 200, "デフォルトタイトル"); err != nil {
+	if dt := strings.TrimSpace(defaultTitle); dt != "" {
+		if err := domain.ValidateStringLength(dt, 1, 200, "デフォルトタイトル"); err != nil {
 			return nil, err
 		}
-		template.DefaultTitle = defaultTitle
+		template.DefaultTitle = dt
 	}
-	if strings.TrimSpace(defaultContent) != "" {
-		defaultContent = strings.TrimSpace(defaultContent)
-		if err := domain.ValidateStringLength(defaultContent, 1, 50000, "デフォルト本文"); err != nil {
+	if dc := strings.TrimSpace(defaultContent); dc != "" {
+		if err := domain.ValidateStringLength(dc, 1, 50000, "デフォルト本文"); err != nil {
 			return nil, err
 		}
-		template.DefaultContent = defaultContent
+		template.DefaultContent = dc
 	}
 	if defaultCategory != "" {
 		if !model.ValidCategories[defaultCategory] {
