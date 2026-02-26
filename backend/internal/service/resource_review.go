@@ -29,13 +29,13 @@ func (s *ResourceReviewService) Create(review *model.ResourceReview) error {
 	}
 
 	// 評価値バリデーション（1-5）
-	if review.Rating < 1 || review.Rating > 5 {
-		return domain.NewError(domain.ErrCodeValidation, "評価は1〜5の範囲で指定してください", nil)
+	if err := validateRating(review.Rating); err != nil {
+		return err
 	}
 
 	// コメントバリデーション
-	if len(review.Comment) > 5000 {
-		return domain.NewError(domain.ErrCodeValidation, "コメントは5000文字以下で入力してください", nil)
+	if err := domain.ValidateStringLength(review.Comment, 0, 5000, "コメント"); err != nil {
+		return err
 	}
 
 	// 重複チェック
@@ -52,25 +52,27 @@ func (s *ResourceReviewService) GetByResourceID(resourceID uint, limit, offset i
 	return s.repo.FindByResourceID(resourceID, limit, offset)
 }
 
+// findAndCheckOwnership はレビューを取得し、指定ユーザーが所有者かを検証する。
+func (s *ResourceReviewService) findAndCheckOwnership(id, userID uint) (*model.ResourceReview, error) {
+	return checkOwnership(s.repo.FindByID, id, userID, func(r *model.ResourceReview) uint { return r.UserID })
+}
+
 // Update はレビューを更新する。所有者のみ更新可能。
 func (s *ResourceReviewService) Update(id, userID uint, rating int, comment string) (*model.ResourceReview, error) {
-	review, err := s.repo.FindByID(id)
+	review, err := s.findAndCheckOwnership(id, userID)
 	if err != nil {
-		return nil, ErrNotFound
-	}
-	if review.UserID != userID {
-		return nil, ErrForbidden
+		return nil, err
 	}
 
 	if rating != 0 {
-		if rating < 1 || rating > 5 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "評価は1〜5の範囲で指定してください", nil)
+		if err := validateRating(rating); err != nil {
+			return nil, err
 		}
 		review.Rating = rating
 	}
 	if comment != "" {
-		if len(comment) > 5000 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "コメントは5000文字以下で入力してください", nil)
+		if err := domain.ValidateStringLength(comment, 1, 5000, "コメント"); err != nil {
+			return nil, err
 		}
 		review.Comment = comment
 	}
@@ -83,12 +85,8 @@ func (s *ResourceReviewService) Update(id, userID uint, rating int, comment stri
 
 // Delete はレビューを削除する。所有者のみ削除可能。
 func (s *ResourceReviewService) Delete(id, userID uint) error {
-	review, err := s.repo.FindByID(id)
-	if err != nil {
-		return ErrNotFound
-	}
-	if review.UserID != userID {
-		return ErrForbidden
+	if _, err := s.findAndCheckOwnership(id, userID); err != nil {
+		return err
 	}
 	return s.repo.Delete(id)
 }

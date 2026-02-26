@@ -181,7 +181,7 @@ func TestResourceReviewUpdate_Forbidden(t *testing.T) {
 func TestResourceReviewUpdate_NotFound(t *testing.T) {
 	svc, reviewRepo, _ := newTestResourceReviewService()
 
-	reviewRepo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+	reviewRepo.On("FindByID", uint(99)).Return(nil, ErrNotFound)
 
 	_, err := svc.Update(99, 1, 5, "")
 	assert.ErrorIs(t, err, ErrNotFound)
@@ -233,7 +233,7 @@ func TestResourceReviewDelete_Forbidden(t *testing.T) {
 func TestResourceReviewDelete_NotFound(t *testing.T) {
 	svc, reviewRepo, _ := newTestResourceReviewService()
 
-	reviewRepo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+	reviewRepo.On("FindByID", uint(99)).Return(nil, ErrNotFound)
 
 	err := svc.Delete(99, 1)
 	assert.ErrorIs(t, err, ErrNotFound)
