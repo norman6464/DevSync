@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"testing"
 
@@ -1320,4 +1321,34 @@ func TestPostGetReactionsBatch_ServiceError(t *testing.T) {
 		"post_ids": []uint{1},
 	})
 	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// ============================================================
+// GetMyPosts テスト
+// ============================================================
+
+func TestPostGetMyPosts_Success(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.GET("/posts/my", h.GetMyPosts)
+
+	postRepo.On("FindByUserID", uint(1), 20, 0).Return([]model.Post{
+		{Title: "My Post 1"}, {Title: "My Post 2"},
+	}, int64(2), nil)
+
+	w := doRequest(r, http.MethodGet, "/posts/my", nil)
+	assertStatus(t, w, http.StatusOK)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostGetMyPosts_ServiceError(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.GET("/posts/my", h.GetMyPosts)
+
+	postRepo.On("FindByUserID", uint(1), 20, 0).Return([]model.Post(nil), int64(0), errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/posts/my", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	postRepo.AssertExpectations(t)
 }
