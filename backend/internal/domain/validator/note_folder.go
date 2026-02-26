@@ -22,7 +22,7 @@ func (v *NoteFolderValidator) ValidateName(name string) error {
 		return domain.NewError(domain.ErrCodeValidation, "フォルダ名を入力してください", nil)
 	}
 
-	if len(name) > 100 {
+	if len([]rune(name)) > 100 {
 		return domain.NewError(domain.ErrCodeValidation, "フォルダ名は100文字以下である必要があります", nil)
 	}
 
@@ -44,7 +44,7 @@ func (v *NoteFolderValidator) ValidateUpdate(name string) error {
 		return nil
 	}
 
-	if len(name) > 100 {
+	if len([]rune(name)) > 100 {
 		return domain.NewError(domain.ErrCodeValidation, "フォルダ名は100文字以下である必要があります", nil)
 	}
 

@@ -547,8 +547,8 @@ func TestNoteTemplateService_Delete_NotFound(t *testing.T) {
 func TestNoteTemplateService_Create_DefaultTitleValidationError(t *testing.T) {
 	svc, _, _ := newTestNoteTemplateService()
 
-	// 101文字のデフォルトタイトル → バリデーションエラー
-	longTitle := strings.Repeat("あ", 101)
+	// 201文字のデフォルトタイトル → バリデーションエラー
+	longTitle := strings.Repeat("あ", 201)
 	template := &model.NoteTemplate{
 		UserID:          1,
 		Name:            "テンプレート",

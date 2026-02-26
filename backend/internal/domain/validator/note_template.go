@@ -46,7 +46,7 @@ func (v *NoteTemplateValidator) ValidateName(name string) error {
 	if name == "" {
 		return domain.NewError(domain.ErrCodeValidation, "テンプレート名を入力してください", nil)
 	}
-	if len(name) > 100 {
+	if len([]rune(name)) > 100 {
 		return domain.NewError(domain.ErrCodeValidation, "テンプレート名は100文字以下である必要があります", nil)
 	}
 	return nil
@@ -66,7 +66,7 @@ func (v *NoteTemplateValidator) ValidateContentTemplate(content string) error {
 
 // ValidateDescription は説明のバリデーション。
 func (v *NoteTemplateValidator) ValidateDescription(description string) error {
-	if len(description) > 500 {
+	if len([]rune(description)) > 500 {
 		return domain.NewError(domain.ErrCodeValidation, "説明は500文字以下である必要があります", nil)
 	}
 	return nil
@@ -74,7 +74,7 @@ func (v *NoteTemplateValidator) ValidateDescription(description string) error {
 
 // ValidateDefaultTitle はデフォルトタイトルのバリデーション。
 func (v *NoteTemplateValidator) ValidateDefaultTitle(title string) error {
-	if len(title) > 200 {
+	if len([]rune(title)) > 200 {
 		return domain.NewError(domain.ErrCodeValidation, "デフォルトタイトルは200文字以下である必要があります", nil)
 	}
 	return nil
