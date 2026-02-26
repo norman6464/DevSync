@@ -221,16 +221,7 @@ func (s *PostService) GetReplies(parentID uint) ([]model.Comment, error) {
 
 // findAndCheckCommentOwnership はコメントの所有権を検証する共通ヘルパー。
 func (s *PostService) findAndCheckCommentOwnership(id, userID uint) (*model.Comment, error) {
-	comment, err := s.repo.FindCommentByID(id)
-	if err != nil {
-		return nil, err
-	}
-
-	if comment.UserID != userID {
-		return nil, ErrForbidden
-	}
-
-	return comment, nil
+	return checkOwnership(s.repo.FindCommentByID, id, userID, func(c *model.Comment) uint { return c.UserID })
 }
 
 // EditComment は所有権を検証した後、コメント内容を更新する。
