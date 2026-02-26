@@ -50,7 +50,7 @@ type UploadHandler struct {
 
 // NewUploadHandler は新しいUploadHandlerインスタンスを生成する。
 // アップロードディレクトリが存在しない場合は自動で作成する。
-func NewUploadHandler() *UploadHandler {
+func NewUploadHandler() (*UploadHandler, error) {
 	uploadDir := os.Getenv("UPLOAD_DIR")
 	if uploadDir == "" {
 		uploadDir = "./uploads"
@@ -58,10 +58,10 @@ func NewUploadHandler() *UploadHandler {
 
 	// アップロードディレクトリが存在しない場合は作成する
 	if err := os.MkdirAll(uploadDir, uploadDirPerm); err != nil {
-		panic(fmt.Sprintf("Failed to create upload directory: %v", err))
+		return nil, fmt.Errorf("failed to create upload directory: %w", err)
 	}
 
-	return &UploadHandler{uploadDir: uploadDir}
+	return &UploadHandler{uploadDir: uploadDir}, nil
 }
 
 // UploadImage は単一の画像ファイルをアップロードする。
