@@ -1447,3 +1447,34 @@ func TestLearningLogGetMonthlySummary_RepoError(t *testing.T) {
 	assert.Nil(t, result)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// CalculateGoalProgressPercentage 純粋関数テスト
+// ============================================================
+
+func TestCalculateGoalProgressPercentage(t *testing.T) {
+	tests := []struct {
+		name         string
+		totalMinutes int
+		targetHours  int
+		expected     int
+	}{
+		{"100%達成", 300, 5, 100},
+		{"50%進捗", 150, 5, 50},
+		{"目標超過は100キャップ", 400, 5, 100},
+		{"目標時間0は0%", 0, 0, 0},
+		{"目標時間マイナスは0%", 100, -1, 0},
+		{"実績0は0%", 0, 10, 0},
+		{"微量の進捗（整数切り捨て）", 1, 100, 0},
+		{"1分/1時間=1%", 1, 1, 1},
+		{"59分/1時間=98%", 59, 1, 98},
+		{"60分/1時間=100%", 60, 1, 100},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := CalculateGoalProgressPercentage(tt.totalMinutes, tt.targetHours)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
