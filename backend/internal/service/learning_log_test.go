@@ -1091,5 +1091,26 @@ func TestLearningLogGetLinkedLogs_Forbidden(t *testing.T) {
 
 	_, _, err := svc.GetLinkedLogs(uint(10), uint(1), 20, 0)
 	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrForbidden)
 	goalRepo.AssertExpectations(t)
+}
+
+func TestLearningLogGetLinkedLogs_GoalNotFound(t *testing.T) {
+	svc, _, goalRepo := newTestLearningLogServiceWithGoalRepo()
+
+	goalRepo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	_, _, err := svc.GetLinkedLogs(uint(999), uint(1), 20, 0)
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrNotFound)
+	goalRepo.AssertExpectations(t)
+}
+
+func TestLearningLogGetLinkedLogs_NoGoalRepo(t *testing.T) {
+	repo := new(MockLearningLogRepository)
+	svc := NewLearningLogService(repo, nil)
+
+	_, _, err := svc.GetLinkedLogs(uint(10), uint(1), 20, 0)
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrBadRequest)
 }
