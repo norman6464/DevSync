@@ -132,3 +132,41 @@ func TestMessage_GetMessages_ServiceError(t *testing.T) {
 	assertStatus(t, w, http.StatusInternalServerError)
 	svc.AssertExpectations(t)
 }
+
+// ============================================================
+// MarkAsRead テスト
+// ============================================================
+
+func TestMessage_MarkAsRead_Success(t *testing.T) {
+	h, svc := setupMessageHandler()
+	svc.On("MarkAsRead", uint(5), uint(1)).Return(nil)
+
+	r := newRouter(1)
+	r.PUT("/messages/:userId/read", h.MarkAsRead)
+
+	w := doRequest(r, http.MethodPut, "/messages/5/read", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestMessage_MarkAsRead_InvalidID(t *testing.T) {
+	h, _ := setupMessageHandler()
+
+	r := newRouter(1)
+	r.PUT("/messages/:userId/read", h.MarkAsRead)
+
+	w := doRequest(r, http.MethodPut, "/messages/abc/read", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestMessage_MarkAsRead_ServiceError(t *testing.T) {
+	h, svc := setupMessageHandler()
+	svc.On("MarkAsRead", uint(5), uint(1)).Return(errors.New("db error"))
+
+	r := newRouter(1)
+	r.PUT("/messages/:userId/read", h.MarkAsRead)
+
+	w := doRequest(r, http.MethodPut, "/messages/5/read", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}

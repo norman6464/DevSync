@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 
@@ -640,4 +641,33 @@ func TestRoadmapReorderSteps_InvalidID(t *testing.T) {
 		"orders": []map[string]interface{}{{"step_id": 1, "order_index": 0}},
 	})
 	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// ============================================================
+// GetMyStats テスト
+// ============================================================
+
+func TestRoadmapGetMyStats_Success(t *testing.T) {
+	h, svc := setupRoadmapHandlerMock()
+	r := newRouter(1)
+	r.GET("/roadmaps/my/stats", h.GetMyStats)
+
+	stats := &model.RoadmapStats{TotalRoadmaps: 3, ActiveRoadmaps: 2, CompletedRoadmaps: 1, TotalSteps: 10, CompletedSteps: 5}
+	svc.On("GetStats", uint(1)).Return(stats, nil)
+
+	w := doRequest(r, http.MethodGet, "/roadmaps/my/stats", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestRoadmapGetMyStats_ServiceError(t *testing.T) {
+	h, svc := setupRoadmapHandlerMock()
+	r := newRouter(1)
+	r.GET("/roadmaps/my/stats", h.GetMyStats)
+
+	svc.On("GetStats", uint(1)).Return(nil, errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/roadmaps/my/stats", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
 }
