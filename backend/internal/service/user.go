@@ -1,6 +1,8 @@
 package service
 
 import (
+	"strings"
+
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
@@ -99,11 +101,11 @@ func (s *UserService) UpdateProfile(id, userID uint, input *UpdateProfileInput) 
 		return nil, domain.NewError(domain.ErrCodeNotFound, "ユーザーが見つかりません", err)
 	}
 
-	if input.Name != "" {
-		existing.Name = input.Name
+	if name := strings.TrimSpace(input.Name); name != "" {
+		existing.Name = name
 	}
-	existing.Bio = input.Bio
-	existing.AvatarURL = input.AvatarURL
+	existing.Bio = strings.TrimSpace(input.Bio)
+	existing.AvatarURL = strings.TrimSpace(input.AvatarURL)
 	if input.SkillsLanguages != nil {
 		existing.SkillsLanguages = *input.SkillsLanguages
 	}
