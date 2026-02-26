@@ -61,7 +61,7 @@ export default function GoalsPage() {
             className={`${buttonSecondaryClass} font-medium text-sm flex items-center gap-1.5`}
           >
             <Sparkles className="w-4 h-4" />
-            テンプレートから作成
+            {t('common.createFromTemplate')}
           </button>
           <button
             onClick={() => setShowForm(true)}

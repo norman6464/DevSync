@@ -52,7 +52,8 @@
     ],
     "contributionsInLastYear": "{{count}} contribuições no último ano",
     "dateContributions": "{{date}}: {{count}} contribuições",
-    "dateLogs": "{{date}}: {{count}} registros"
+    "dateLogs": "{{date}}: {{count}} registros",
+    "createFromTemplate": "Criar a partir de modelo"
   },
   "nav": {
     "dashboard": "Painel",
@@ -818,6 +819,18 @@
     "updateFailed": "Falha ao atualizar projeto",
     "deleteFailed": "Falha ao excluir projeto",
     "confirmDelete": "Tem certeza de que deseja excluir este projeto?",
+    "searchPlaceholder": "Pesquisar projetos...",
+    "sortNewest": "Mais recente",
+    "sortOldest": "Mais antigo",
+    "sortTitle": "Título",
+    "noSearchResults": "Nenhum projeto encontrado",
+    "archivedTab": "Arquivados",
+    "archive": "Arquivar",
+    "unarchive": "Desarquivar",
+    "archiveSuccess": "Projeto arquivado",
+    "unarchiveSuccess": "Projeto desarquivado",
+    "archiveFailed": "Falha ao arquivar",
+    "unarchiveFailed": "Falha ao desarquivar",
     "statusInProgress": "Em andamento",
     "statusCompleted": "Concluído"
   },
@@ -1494,7 +1507,8 @@
     "volumeDetailed": "Detalhado",
     "exportMarkdown": "Exportar como Markdown",
     "exportSuccess": "Nota exportada com sucesso",
-    "exportError": "Falha ao exportar nota"
+    "exportError": "Falha ao exportar nota",
+    "favoritesOnly": "Apenas favoritos"
   },
   "githubCallback": {
     "missingOAuthParams": "Parâmetros OAuth ausentes",

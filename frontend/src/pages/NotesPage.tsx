@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BookOpen, Plus, ArrowDownWideNarrow, Tag, List, LayoutGrid, Sparkles } from 'lucide-react';
+import { BookOpen, Plus, ArrowDownWideNarrow, Tag, List, LayoutGrid, Sparkles, Star } from 'lucide-react';
 import { useNoteForm } from '../hooks';
 import { PageLoader, SearchInput } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
@@ -17,7 +17,7 @@ export default function NotesPage() {
   const {
     filteredNotes, loading, saving,
     showForm, setShowForm, editingNote, searchQuery, setSearchQuery, sortBy, setSortBy,
-    filterTag, setFilterTag, allTags, viewMode, setViewMode,
+    filterTag, setFilterTag, showFavoritesOnly, setShowFavoritesOnly, allTags, viewMode, setViewMode,
     title, setTitle, content, setContent, tags, setTags,
     resetForm, handleSubmit, handleEdit, deleteNote, toggleFavorite,
   } = useNoteForm();
@@ -50,7 +50,7 @@ export default function NotesPage() {
             className={`${buttonSecondaryClass} flex items-center gap-2`}
           >
             <Sparkles className="w-5 h-5" />
-            テンプレートから作成
+            {t('common.createFromTemplate')}
           </button>
           <button
             onClick={handleToggleForm}
@@ -71,9 +71,18 @@ export default function NotesPage() {
         />
       </div>
 
-      {/* Sort & View Toggle */}
+      {/* Favorites Filter & Sort & View Toggle */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowFavoritesOnly(prev => !prev)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              showFavoritesOnly ? 'bg-yellow-500/20 text-yellow-400' : 'bg-gray-800/50 text-gray-400 hover:text-white'
+            }`}
+          >
+            <Star className={`w-4 h-4 ${showFavoritesOnly ? 'fill-yellow-400' : ''}`} />
+            {t('notes.favoritesOnly')}
+          </button>
           <ArrowDownWideNarrow className="w-4 h-4 text-gray-400" />
           <div className="flex flex-wrap gap-2">
             {NOTES_SORT_OPTIONS.map((opt) => (

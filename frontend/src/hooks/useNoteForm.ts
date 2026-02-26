@@ -10,6 +10,7 @@ export function useNoteForm() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'latest' | 'oldest' | 'updated' | 'favorites_first'>('latest');
   const [filterTag, setFilterTag] = useState('');
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -64,6 +65,9 @@ export function useNoteForm() {
           note.content.toLowerCase().includes(searchQuery.toLowerCase())
         )
       : notes;
+    if (showFavoritesOnly) {
+      filtered = filtered.filter(note => note.is_favorite);
+    }
     if (filterTag) {
       filtered = filtered.filter(note =>
         note.tags?.split(',').some(t => t.trim() === filterTag)
@@ -82,13 +86,13 @@ export function useNoteForm() {
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       }
     });
-  }, [notes, searchQuery, sortBy, filterTag]);
+  }, [notes, searchQuery, sortBy, filterTag, showFavoritesOnly]);
 
   return {
     // Data
     notes, favoriteNotes, filteredNotes, loading, saving,
     // Form state
-    showForm, setShowForm, editingNote, searchQuery, setSearchQuery, sortBy, setSortBy, filterTag, setFilterTag, allTags, viewMode, setViewMode,
+    showForm, setShowForm, editingNote, searchQuery, setSearchQuery, sortBy, setSortBy, filterTag, setFilterTag, showFavoritesOnly, setShowFavoritesOnly, allTags, viewMode, setViewMode,
     title, setTitle, content, setContent, tags, setTags,
     // Actions
     resetForm, handleSubmit, handleEdit, deleteNote, toggleFavorite,

@@ -53,7 +53,8 @@
     ],
     "contributionsInLastYear": "過去1年間に{{count}}コントリビューション",
     "dateContributions": "{{date}}: {{count}}コントリビューション",
-    "dateLogs": "{{date}}: {{count}}件のログ"
+    "dateLogs": "{{date}}: {{count}}件のログ",
+    "createFromTemplate": "テンプレートから作成"
   },
   "nav": {
     "dashboard": "ダッシュボード",
@@ -787,6 +788,18 @@
     "updateFailed": "プロジェクトの更新に失敗しました",
     "deleteFailed": "プロジェクトの削除に失敗しました",
     "confirmDelete": "このプロジェクトを削除してもよろしいですか？",
+    "searchPlaceholder": "プロジェクトを検索...",
+    "sortNewest": "新しい順",
+    "sortOldest": "古い順",
+    "sortTitle": "タイトル順",
+    "noSearchResults": "検索結果がありません",
+    "archivedTab": "アーカイブ済み",
+    "archive": "アーカイブ",
+    "unarchive": "アーカイブ解除",
+    "archiveSuccess": "プロジェクトをアーカイブしました",
+    "unarchiveSuccess": "プロジェクトのアーカイブを解除しました",
+    "archiveFailed": "アーカイブに失敗しました",
+    "unarchiveFailed": "アーカイブ解除に失敗しました",
     "statusInProgress": "進行中",
     "statusCompleted": "完了"
   },
@@ -1396,7 +1409,8 @@
     "volumeDetailed": "充実",
     "exportMarkdown": "Markdownエクスポート",
     "exportSuccess": "ノートをエクスポートしました",
-    "exportError": "エクスポートに失敗しました"
+    "exportError": "エクスポートに失敗しました",
+    "favoritesOnly": "お気に入りのみ"
   },
   "githubCallback": {
     "missingOAuthParams": "OAuthパラメータが不足しています",

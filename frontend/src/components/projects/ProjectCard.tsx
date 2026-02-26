@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Pencil, Trash2, CircleDot, CheckCircle2, ExternalLink, Calendar, Github } from 'lucide-react';
+import { Pencil, Trash2, CircleDot, CheckCircle2, ExternalLink, Calendar, Github, Archive, ArchiveRestore } from 'lucide-react';
 import type { Project } from '../../types/project';
 import { cardClass, iconButtonClass, deleteIconButtonClass, badgeBaseClass } from '../../constants/styles';
 import { parseJsonArray } from '../../utils/json';
@@ -10,10 +10,12 @@ interface ProjectCardProps {
   project: Project;
   onEdit?: () => void;
   onDelete?: () => void;
+  onArchive?: () => void;
+  onUnarchive?: () => void;
   isOwner?: boolean;
 }
 
-export default function ProjectCard({ project, onEdit, onDelete, isOwner }: ProjectCardProps) {
+export default function ProjectCard({ project, onEdit, onDelete, onArchive, onUnarchive, isOwner }: ProjectCardProps) {
   const { t } = useTranslation();
 
   const techStack = parseJsonArray(project.tech_stack);
@@ -67,13 +69,34 @@ export default function ProjectCard({ project, onEdit, onDelete, isOwner }: Proj
 
           {isOwner && (
             <div className="flex gap-1">
-              <button
-                onClick={onEdit}
-                className={iconButtonClass}
-                aria-label={t('common.edit')}
-              >
-                <Pencil className="w-4 h-4" />
-              </button>
+              {project.is_archived ? (
+                <button
+                  onClick={onUnarchive}
+                  className={iconButtonClass}
+                  aria-label={t('projects.unarchive')}
+                  title={t('projects.unarchive')}
+                >
+                  <ArchiveRestore className="w-4 h-4" />
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={onArchive}
+                    className={iconButtonClass}
+                    aria-label={t('projects.archive')}
+                    title={t('projects.archive')}
+                  >
+                    <Archive className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={onEdit}
+                    className={iconButtonClass}
+                    aria-label={t('common.edit')}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                </>
+              )}
               <button
                 onClick={onDelete}
                 className={deleteIconButtonClass}

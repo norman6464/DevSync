@@ -52,7 +52,8 @@
     ],
     "contributionsInLastYear": "過去一年 {{count}} 次貢獻",
     "dateContributions": "{{date}}: {{count}} 次貢獻",
-    "dateLogs": "{{date}}: {{count}} 條日誌"
+    "dateLogs": "{{date}}: {{count}} 條日誌",
+    "createFromTemplate": "從範本建立"
   },
   "nav": {
     "dashboard": "儀表板",
@@ -819,6 +820,18 @@
     "updateFailed": "更新專案失敗",
     "deleteFailed": "刪除專案失敗",
     "confirmDelete": "確定要刪除這個專案嗎？",
+    "searchPlaceholder": "搜尋專案...",
+    "sortNewest": "最新",
+    "sortOldest": "最早",
+    "sortTitle": "標題",
+    "noSearchResults": "未找到專案",
+    "archivedTab": "已封存",
+    "archive": "封存",
+    "unarchive": "取消封存",
+    "archiveSuccess": "專案已封存",
+    "unarchiveSuccess": "專案已取消封存",
+    "archiveFailed": "封存失敗",
+    "unarchiveFailed": "取消封存失敗",
     "statusInProgress": "進行中",
     "statusCompleted": "已完成"
   },
@@ -1495,7 +1508,8 @@
     "volumeDetailed": "詳細",
     "exportMarkdown": "匯出為Markdown",
     "exportSuccess": "筆記匯出成功",
-    "exportError": "匯出失敗"
+    "exportError": "匯出失敗",
+    "favoritesOnly": "僅收藏"
   },
   "githubCallback": {
     "missingOAuthParams": "缺少OAuth參數",
