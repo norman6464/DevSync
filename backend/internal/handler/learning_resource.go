@@ -122,6 +122,25 @@ func (h *LearningResourceHandler) GetByUserID(c *gin.Context) {
 	})
 }
 
+// GetMyResources は認証ユーザーの学習リソース一覧を取得する。
+func (h *LearningResourceHandler) GetMyResources(c *gin.Context) {
+	userID := c.GetUint("userID")
+	limit, offset := parseLimitOffset(c)
+
+	resources, total, err := h.service.GetByUserID(userID, userID, limit, offset)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, dto.ResourceListResponse{
+		Resources: resources,
+		Total:     total,
+		Limit:     limit,
+		Offset:    offset,
+	})
+}
+
 // GetPublic は公開学習リソース一覧をページネーション・フィルター付きで取得する。
 func (h *LearningResourceHandler) GetPublic(c *gin.Context) {
 	limit, offset := parseLimitOffset(c)

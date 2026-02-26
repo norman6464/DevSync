@@ -81,6 +81,39 @@ func (h *PostSeriesHandler) GetByUserID(c *gin.Context) {
 	respondPaginated(c, series, total, page, limit)
 }
 
+// GetMySeries は認証ユーザーの投稿シリーズ一覧を取得する。
+func (h *PostSeriesHandler) GetMySeries(c *gin.Context) {
+	userID := c.GetUint("userID")
+	page, limit := parsePagination(c)
+
+	series, err := h.service.GetByUserID(userID, page, limit)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	total, err := h.service.CountByUser(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondPaginated(c, series, total, page, limit)
+}
+
+// GetMySeriesCount は認証ユーザーの投稿シリーズ数を取得する。
+func (h *PostSeriesHandler) GetMySeriesCount(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	count, err := h.service.CountByUser(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, gin.H{"count": count})
+}
+
 // Update は指定IDのシリーズを更新する。
 func (h *PostSeriesHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")

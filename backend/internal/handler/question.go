@@ -151,6 +151,25 @@ func (h *QuestionHandler) GetByUserID(c *gin.Context) {
 	})
 }
 
+// GetMyQuestions は認証ユーザーの質問一覧を取得する。
+func (h *QuestionHandler) GetMyQuestions(c *gin.Context) {
+	userID := c.GetUint("userID")
+	limit, offset := parseLimitOffset(c)
+
+	questions, total, err := h.service.GetByUserID(userID, limit, offset)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, dto.QuestionListResponse{
+		Questions: questions,
+		Total:     total,
+		Limit:     limit,
+		Offset:    offset,
+	})
+}
+
 // Update は指定された質問を更新する。
 func (h *QuestionHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
