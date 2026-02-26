@@ -1,12 +1,15 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -97,4 +100,70 @@ func TestWeeklyChallenge_UpdateProgress_Success(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 	svc.AssertExpectations(t)
+}
+
+// ============================================================
+// ウィークリーチャレンジ: エラーパステスト
+// ============================================================
+
+func TestWeeklyChallenge_GetCurrent_ServiceError(t *testing.T) {
+	h, svc := setupWeeklyChallengeHandler()
+
+	svc.On("GetCurrentChallenge", uint(1)).Return(nil, errors.New("db error"))
+
+	r := gin.New()
+	r.GET("/weekly-challenges/current", authMiddleware(1), h.GetCurrent)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/weekly-challenges/current", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestWeeklyChallenge_GetCurrent_NotFound(t *testing.T) {
+	h, svc := setupWeeklyChallengeHandler()
+
+	svc.On("GetCurrentChallenge", uint(1)).Return(nil, domain.ErrNotFound)
+
+	r := gin.New()
+	r.GET("/weekly-challenges/current", authMiddleware(1), h.GetCurrent)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/weekly-challenges/current", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
+}
+
+func TestWeeklyChallenge_UpdateProgress_ServiceError(t *testing.T) {
+	h, svc := setupWeeklyChallengeHandler()
+
+	svc.On("UpdateProgress", uint(1), 100).Return(nil, errors.New("db error"))
+
+	r := gin.New()
+	r.PUT("/weekly-challenges/progress", authMiddleware(1), h.UpdateProgress)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PUT", "/weekly-challenges/progress", jsonBody(map[string]interface{}{
+		"value": 100,
+	}))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestWeeklyChallenge_UpdateProgress_InvalidJSON(t *testing.T) {
+	h, _ := setupWeeklyChallengeHandler()
+
+	r := gin.New()
+	r.PUT("/weekly-challenges/progress", authMiddleware(1), h.UpdateProgress)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PUT", "/weekly-challenges/progress", strings.NewReader("invalid json"))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }

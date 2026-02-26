@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -100,4 +101,52 @@ func TestStreakFreeze_GetStatus_Success(t *testing.T) {
 	if result["remaining"].(float64) != 1 {
 		t.Errorf("expected remaining=1, got %v", result["remaining"])
 	}
+}
+
+func TestStreakFreeze_GetStatus_ServiceError(t *testing.T) {
+	mockSvc := new(MockStreakFreezeService)
+	h := NewStreakFreezeHandler(mockSvc)
+
+	mockSvc.On("GetFreezeStatus", uint(1)).Return(nil, errors.New("db error"))
+
+	r := gin.New()
+	r.GET("/streak-freezes/status", authMiddleware(1), h.GetStatus)
+
+	req, _ := http.NewRequest("GET", "/streak-freezes/status", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+func TestStreakFreeze_UseFreeze_ServiceInternalError(t *testing.T) {
+	mockSvc := new(MockStreakFreezeService)
+	h := NewStreakFreezeHandler(mockSvc)
+
+	mockSvc.On("UseFreeze", uint(1)).Return(errors.New("db error"))
+
+	r := gin.New()
+	r.POST("/streak-freezes", authMiddleware(1), h.UseFreeze)
+
+	req, _ := http.NewRequest("POST", "/streak-freezes", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+func TestStreakFreeze_UseFreeze_MonthlyLimitReached(t *testing.T) {
+	mockSvc := new(MockStreakFreezeService)
+	h := NewStreakFreezeHandler(mockSvc)
+
+	mockSvc.On("UseFreeze", uint(1)).Return(domain.ErrBadRequest)
+
+	r := gin.New()
+	r.POST("/streak-freezes", authMiddleware(1), h.UseFreeze)
+
+	req, _ := http.NewRequest("POST", "/streak-freezes", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assertStatus(t, w, http.StatusBadRequest)
 }
