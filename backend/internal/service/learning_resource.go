@@ -134,6 +134,9 @@ func (s *LearningResourceService) Update(id, userID uint, updates *model.Learnin
 		resource.Tags = updates.Tags
 	}
 	if updates.ImageURL != "" {
+		if err := domain.ValidateStringLength(updates.ImageURL, 1, 2000, "画像URL"); err != nil {
+			return nil, err
+		}
 		resource.ImageURL = updates.ImageURL
 	}
 
