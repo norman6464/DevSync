@@ -760,3 +760,31 @@ func TestNoteHandler_Export_ServiceError(t *testing.T) {
 	assertStatus(t, w, http.StatusInternalServerError)
 	svc.AssertExpectations(t)
 }
+
+// ============================================================
+// GetMyCount テスト
+// ============================================================
+
+func TestNoteHandler_GetMyCount_Success(t *testing.T) {
+	h, svc := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/my/count", h.GetMyCount)
+
+	svc.On("CountByUserID", uint(1)).Return(int64(42), nil)
+
+	w := doRequest(r, "GET", "/notes/my/count", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestNoteHandler_GetMyCount_ServiceError(t *testing.T) {
+	h, svc := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/my/count", h.GetMyCount)
+
+	svc.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	w := doRequest(r, "GET", "/notes/my/count", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
