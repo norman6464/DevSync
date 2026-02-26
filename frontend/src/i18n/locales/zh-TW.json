@@ -107,7 +107,12 @@
     "viewsReceived": "瀏覽量",
     "followerCount": "追蹤者",
     "followingCount": "追蹤中",
-    "noStats": "暫無統計資訊"
+    "noStats": "暫無統計資訊",
+    "goalProgressTitle": "學習目標進度",
+    "goalProgressTargetHours": "目標時間",
+    "goalProgressActualTime": "實際時間",
+    "goalProgressPercentage": "完成率",
+    "goalProgressNoTarget": "未設定目標時間"
   },
   "series": {
     "title": "貼文系列",

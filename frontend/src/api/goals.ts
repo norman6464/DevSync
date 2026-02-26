@@ -32,6 +32,13 @@ export interface GoalDeadlineAlert {
   days_left: number;
 }
 
+export interface GoalProgress {
+  goal_id: number;
+  target_hours: number;
+  actual_minutes: number;
+  percentage: number;
+}
+
 export interface CreateGoalRequest {
   title: string;
   description?: string;
@@ -86,3 +93,6 @@ export const getPublicGoals = (limit = 20, offset = 0) =>
 
 export const getPublicGoalsByUser = (userId: number, limit = 20, offset = 0) =>
   client.get<LearningGoal[]>(`/goals/public/user/${userId}`, { params: { limit, offset } });
+
+export const getGoalProgress = (goalId: number) =>
+  client.get<GoalProgress>(`/goals/${goalId}/progress`);

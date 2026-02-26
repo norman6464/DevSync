@@ -107,7 +107,12 @@
     "viewsReceived": "Просмотры",
     "followerCount": "Подписчики",
     "followingCount": "Подписки",
-    "noStats": "Статистика недоступна"
+    "noStats": "Статистика недоступна",
+    "goalProgressTitle": "Прогресс цели",
+    "goalProgressTargetHours": "Целевые часы",
+    "goalProgressActualTime": "Фактическое время",
+    "goalProgressPercentage": "Процент выполнения",
+    "goalProgressNoTarget": "Целевые часы не установлены"
   },
   "series": {
     "title": "Серии публикаций",

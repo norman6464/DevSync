@@ -107,7 +107,12 @@
     "viewsReceived": "조회수",
     "followerCount": "팔로워",
     "followingCount": "팔로잉",
-    "noStats": "통계 정보가 없습니다"
+    "noStats": "통계 정보가 없습니다",
+    "goalProgressTitle": "학습 목표 진행률",
+    "goalProgressTargetHours": "목표 시간",
+    "goalProgressActualTime": "실적 시간",
+    "goalProgressPercentage": "달성률",
+    "goalProgressNoTarget": "목표 시간이 설정되지 않았습니다"
   },
   "series": {
     "title": "게시물 시리즈",

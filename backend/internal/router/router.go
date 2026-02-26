@@ -393,6 +393,7 @@ func registerGoalRoutes(g *gin.RouterGroup, c *di.Container) {
 		goals.GET("/public", c.LearningGoalHandler.GetPublicGoals)
 		goals.GET("/public/user/:userId", c.LearningGoalHandler.GetPublicByUserID)
 		goals.GET("/:id/linked-logs", c.LearningLogHandler.GetLinkedLogs)
+		goals.GET("/:id/progress", c.LearningLogHandler.GetGoalProgress)
 	}
 }
 

@@ -102,6 +102,40 @@ func (s *LearningLogService) GetLinkedLogs(goalID, userID uint, limit, offset in
 	return s.repo.GetByGoalID(goalID, limit, offset)
 }
 
+// GetGoalProgress は指定ゴールの実績時間 vs 目標時間の進捗情報を返す。所有権を検証する。
+func (s *LearningLogService) GetGoalProgress(goalID, userID uint) (*model.GoalProgress, error) {
+	if s.goalRepo == nil {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "ゴール連携が有効ではありません", nil)
+	}
+	goal, err := s.goalRepo.FindByID(goalID)
+	if err != nil {
+		return nil, domain.NewError(domain.ErrCodeNotFound, "指定されたゴールが見つかりません", err)
+	}
+	if goal.UserID != userID {
+		return nil, domain.NewError(domain.ErrCodeForbidden, "他のユーザーのゴール進捗は参照できません", nil)
+	}
+
+	actualMinutes, err := s.repo.SumDurationByGoalID(goalID)
+	if err != nil {
+		return nil, err
+	}
+
+	percentage := 0
+	if goal.TargetHours > 0 {
+		percentage = actualMinutes * 100 / (goal.TargetHours * 60)
+		if percentage > 100 {
+			percentage = 100
+		}
+	}
+
+	return &model.GoalProgress{
+		GoalID:        goalID,
+		TargetHours:   goal.TargetHours,
+		ActualMinutes: actualMinutes,
+		Percentage:    percentage,
+	}, nil
+}
+
 // BatchCreate は複数の学習ログを一括作成する。
 // 各ログのバリデーションを行い、全てパスした場合のみ一括保存する。
 // 最大50件まで。

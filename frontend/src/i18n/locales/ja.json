@@ -108,7 +108,12 @@
     "viewsReceived": "閲覧数",
     "followerCount": "フォロワー数",
     "followingCount": "フォロー中",
-    "noStats": "統計情報がありません"
+    "noStats": "統計情報がありません",
+    "goalProgressTitle": "学習ゴール進捗",
+    "goalProgressTargetHours": "目標時間",
+    "goalProgressActualTime": "実績時間",
+    "goalProgressPercentage": "達成率",
+    "goalProgressNoTarget": "目標時間が未設定です"
   },
   "series": {
     "title": "投稿シリーズ",
