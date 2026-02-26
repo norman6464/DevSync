@@ -56,8 +56,8 @@ func (h *SpotifyHandler) Callback(c *gin.Context) {
 	code := c.Query("code")
 	state := c.Query("state")
 
-	if code == "" || state == "" {
-		respondBadRequest(c, "missing code or state")
+	if code == "" || state == "" || len(code) > oauthCodeMaxLen || len(state) > oauthCodeMaxLen {
+		respondBadRequest(c, "missing or invalid code/state")
 		return
 	}
 
