@@ -60,8 +60,8 @@ func (s *AIAdviceService) Chat(userID uint, message string, conversationID uint)
 	} else {
 		// 新規会話作成
 		title := message
-		if len(title) > 50 {
-			title = title[:50] + "..."
+		if runes := []rune(title); len(runes) > 50 {
+			title = string(runes[:50]) + "..."
 		}
 		conv = &model.AIConversation{
 			UserID: userID,
