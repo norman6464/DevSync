@@ -95,23 +95,23 @@ func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (
 		return nil, err
 	}
 
-	if strings.TrimSpace(updates.Title) != "" {
-		if err := domain.ValidateStringLength(updates.Title, 1, 200, "タイトル"); err != nil {
+	if title := strings.TrimSpace(updates.Title); title != "" {
+		if err := domain.ValidateStringLength(title, 1, 200, "タイトル"); err != nil {
 			return nil, err
 		}
-		review.Title = strings.TrimSpace(updates.Title)
+		review.Title = title
 	}
-	if strings.TrimSpace(updates.Author) != "" {
-		if err := domain.ValidateStringLength(updates.Author, 1, 200, "著者名"); err != nil {
+	if author := strings.TrimSpace(updates.Author); author != "" {
+		if err := domain.ValidateStringLength(author, 1, 200, "著者名"); err != nil {
 			return nil, err
 		}
-		review.Author = strings.TrimSpace(updates.Author)
+		review.Author = author
 	}
-	if strings.TrimSpace(updates.ISBN) != "" {
-		if err := domain.ValidateStringLength(updates.ISBN, 1, 20, "ISBN"); err != nil {
+	if isbn := strings.TrimSpace(updates.ISBN); isbn != "" {
+		if err := domain.ValidateStringLength(isbn, 1, 20, "ISBN"); err != nil {
 			return nil, err
 		}
-		review.ISBN = strings.TrimSpace(updates.ISBN)
+		review.ISBN = isbn
 	}
 	if updates.Rating != 0 {
 		if err := validateRating(updates.Rating); err != nil {
@@ -119,11 +119,11 @@ func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (
 		}
 		review.Rating = updates.Rating
 	}
-	if strings.TrimSpace(updates.Review) != "" {
-		if err := domain.ValidateStringLength(updates.Review, 1, 10000, "レビュー本文"); err != nil {
+	if reviewText := strings.TrimSpace(updates.Review); reviewText != "" {
+		if err := domain.ValidateStringLength(reviewText, 1, 10000, "レビュー本文"); err != nil {
 			return nil, err
 		}
-		review.Review = strings.TrimSpace(updates.Review)
+		review.Review = reviewText
 	}
 	if updates.TotalPages != 0 {
 		if updates.TotalPages < 0 || updates.TotalPages > 99999 {
@@ -131,11 +131,11 @@ func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (
 		}
 		review.TotalPages = updates.TotalPages
 	}
-	if strings.TrimSpace(updates.ImageURL) != "" {
-		if err := domain.ValidateStringLength(updates.ImageURL, 1, 2000, "画像URL"); err != nil {
+	if imageURL := strings.TrimSpace(updates.ImageURL); imageURL != "" {
+		if err := domain.ValidateStringLength(imageURL, 1, 2000, "画像URL"); err != nil {
 			return nil, err
 		}
-		review.ImageURL = strings.TrimSpace(updates.ImageURL)
+		review.ImageURL = imageURL
 	}
 
 	if err := s.repo.Update(review); err != nil {
