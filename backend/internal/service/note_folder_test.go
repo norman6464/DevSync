@@ -441,3 +441,20 @@ func TestNoteFolderService_Update_WhitespaceName(t *testing.T) {
 	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), "フォルダ名は空白のみにできません")
 }
+
+func TestNoteFolderService_Update_TrimSpaceName(t *testing.T) {
+	mockRepo := new(MockNoteFolderRepository)
+	svc := NewNoteFolderService(mockRepo)
+
+	existing := &model.NoteFolder{ID: 1, UserID: 1, Name: "元の名前"}
+	mockRepo.On("FindByID", uint(1)).Return(existing, nil)
+	mockRepo.On("Update", mock.MatchedBy(func(f *model.NoteFolder) bool {
+		return f.Name == "新しい名前"
+	})).Return(nil)
+
+	// 前後に空白がある名前 → TrimSpaceされて保存されるべき
+	result, err := svc.Update(1, 1, "  新しい名前  ", nil)
+	assert.NoError(t, err)
+	assert.Equal(t, "新しい名前", result.Name)
+	mockRepo.AssertExpectations(t)
+}

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 
@@ -421,4 +422,32 @@ func TestCodeSnippetFork_NotFound(t *testing.T) {
 	})
 
 	assertStatus(t, w, http.StatusNotFound)
+}
+
+// ============================================================
+// GetMyCount テスト
+// ============================================================
+
+func TestCodeSnippetHandler_GetMyCount_Success(t *testing.T) {
+	h, svc := setupCodeSnippetHandler()
+	r := newRouter(1)
+	r.GET("/snippets/my/count", h.GetMyCount)
+
+	svc.On("CountByUserID", uint(1)).Return(int64(7), nil)
+
+	w := doRequest(r, "GET", "/snippets/my/count", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestCodeSnippetHandler_GetMyCount_ServiceError(t *testing.T) {
+	h, svc := setupCodeSnippetHandler()
+	r := newRouter(1)
+	r.GET("/snippets/my/count", h.GetMyCount)
+
+	svc.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	w := doRequest(r, "GET", "/snippets/my/count", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
 }
