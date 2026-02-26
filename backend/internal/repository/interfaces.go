@@ -250,6 +250,7 @@ type LearningResourceRepositoryInterface interface {
 	HasSaved(userID, resourceID uint) (bool, error)
 	FindSavedByUserID(userID uint, limit, offset int) ([]model.LearningResource, int64, error)
 	FindByDifficulty(difficulty string, limit, offset int) ([]model.LearningResource, int64, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // ResourceReviewRepositoryInterface は学習リソースレビューデータ操作の契約を定義する。

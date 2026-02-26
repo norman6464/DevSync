@@ -453,6 +453,7 @@ func registerResourceRoutes(g *gin.RouterGroup, c *di.Container) {
 		resources.POST("", c.LearningResourceHandler.Create)
 		resources.GET("", c.LearningResourceHandler.GetPublic)
 		resources.GET("/my", c.LearningResourceHandler.GetMyResources)
+		resources.GET("/my/count", c.LearningResourceHandler.GetMyCount)
 		resources.GET("/search", c.LearningResourceHandler.Search)
 		resources.GET("/saved", c.LearningResourceHandler.GetSaved)
 		resources.GET("/:id", c.LearningResourceHandler.GetByID)
