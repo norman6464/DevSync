@@ -49,6 +49,14 @@ type GoalDeadlineAlert struct {
 	DaysLeft int          `json:"days_left"` // 残り日数（超過時は負数）
 }
 
+// GoalProgress は学習ゴールの実績時間 vs 目標時間の進捗情報を表す。
+type GoalProgress struct {
+	GoalID       uint `json:"goal_id"`
+	TargetHours  int  `json:"target_hours"`  // 目標時間（時間単位）
+	ActualMinutes int `json:"actual_minutes"` // 実績時間（分単位）
+	Percentage   int  `json:"percentage"`     // 進捗率（0-100）
+}
+
 // LearningGoalStats はユーザーの学習目標統計情報を表す。
 type LearningGoalStats struct {
 	TotalGoals      int `json:"total_goals"`

@@ -221,7 +221,7 @@ func (h *CodeSnippetHandler) Favorite(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, domain.NewMessageResponse("Favorited successfully"))
+	respondOK(c, domain.NewMessageResponse("お気に入りに追加しました"))
 }
 
 // Unfavorite はスニペットのお気に入りを解除する。
@@ -237,7 +237,7 @@ func (h *CodeSnippetHandler) Unfavorite(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, domain.NewMessageResponse("Favorite removed successfully"))
+	respondOK(c, domain.NewMessageResponse("お気に入りを解除しました"))
 }
 
 // GetFavorites はお気に入りスニペット一覧を取得する。

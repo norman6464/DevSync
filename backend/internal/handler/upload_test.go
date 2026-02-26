@@ -71,7 +71,7 @@ func TestUploadImage_NoFile(t *testing.T) {
 	h.UploadImage(c)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
-	assert.Contains(t, w.Body.String(), "No image file provided")
+	assert.Contains(t, w.Body.String(), "画像ファイルが必要です")
 }
 
 func TestUploadImage_InvalidExtension(t *testing.T) {
@@ -91,7 +91,7 @@ func TestUploadImage_InvalidExtension(t *testing.T) {
 	h.UploadImage(c)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
-	assert.Contains(t, w.Body.String(), "Invalid file type")
+	assert.Contains(t, w.Body.String(), "無効なファイル形式です")
 }
 
 func TestUploadImage_InvalidMIMEType(t *testing.T) {
@@ -112,7 +112,7 @@ func TestUploadImage_InvalidMIMEType(t *testing.T) {
 	h.UploadImage(c)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
-	assert.Contains(t, w.Body.String(), "Invalid file content type")
+	assert.Contains(t, w.Body.String(), "無効なファイルコンテンツタイプ")
 }
 
 // ---------- UploadMultipleImages テスト ----------
@@ -175,7 +175,7 @@ func TestUploadMultipleImages_TooManyFiles(t *testing.T) {
 	h.UploadMultipleImages(c)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
-	assert.Contains(t, w.Body.String(), "Maximum 10 images allowed")
+	assert.Contains(t, w.Body.String(), "画像は最大10枚までです")
 }
 
 func TestUploadMultipleImages_InvalidExtension(t *testing.T) {
@@ -197,7 +197,7 @@ func TestUploadMultipleImages_InvalidExtension(t *testing.T) {
 	h.UploadMultipleImages(c)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
-	assert.Contains(t, w.Body.String(), "Invalid file type")
+	assert.Contains(t, w.Body.String(), "の形式が無効です")
 }
 
 func TestUploadMultipleImages_InvalidMIMEType(t *testing.T) {
@@ -217,7 +217,7 @@ func TestUploadMultipleImages_InvalidMIMEType(t *testing.T) {
 	h.UploadMultipleImages(c)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
-	assert.Contains(t, w.Body.String(), "Invalid content type")
+	assert.Contains(t, w.Body.String(), "のコンテンツタイプが無効です")
 }
 
 // ---------- detectMIMEType テスト ----------

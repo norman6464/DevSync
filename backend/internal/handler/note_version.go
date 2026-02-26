@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
@@ -40,7 +38,7 @@ func (h *NoteVersionHandler) GetVersions(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	respondOK(c, gin.H{
 		"versions": ensureSlice(versions),
 		"total":    total,
 		"limit":    limit,
@@ -66,7 +64,7 @@ func (h *NoteVersionHandler) GetVersion(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, version)
+	respondOK(c, version)
 }
 
 // RestoreVersion はバージョンの内容でノートを復元する。
@@ -87,5 +85,5 @@ func (h *NoteVersionHandler) RestoreVersion(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, note)
+	respondOK(c, note)
 }

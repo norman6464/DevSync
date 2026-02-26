@@ -203,7 +203,7 @@ func (h *AuthHandler) RequestPasswordReset(c *gin.Context) {
 	// 本番ではここでメール送信を行う
 	// token変数はメール送信時に使用する（レスポンスには含めない）
 	_ = token
-	respondOK(c, dto.MessageResponse{Message: "If the email exists, a reset link has been sent"})
+	respondOK(c, dto.MessageResponse{Message: "メールアドレスが登録されている場合、リセットリンクを送信しました"})
 }
 
 // ResetPassword はトークンを使ってパスワードをリセットする。
@@ -218,13 +218,13 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.MessageResponse{Message: "Password has been reset successfully"})
+	respondOK(c, dto.MessageResponse{Message: "パスワードをリセットしました"})
 }
 
 // Logout はユーザーのログアウトを処理し、認証Cookieをクリアする。
 func (h *AuthHandler) Logout(c *gin.Context) {
 	clearAuthCookie(c)
-	respondOK(c, dto.MessageResponse{Message: "logged out successfully"})
+	respondOK(c, dto.MessageResponse{Message: "ログアウトしました"})
 }
 
 // DeleteAccount はユーザーアカウントを完全に削除する。
@@ -242,5 +242,5 @@ func (h *AuthHandler) DeleteAccount(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.MessageResponse{Message: "Account deleted successfully"})
+	respondOK(c, dto.MessageResponse{Message: "アカウントを削除しました"})
 }

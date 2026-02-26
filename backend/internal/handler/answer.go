@@ -130,7 +130,7 @@ func (h *AnswerHandler) SetBestAnswer(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, domain.NewMessageResponse("Best answer set successfully"))
+	respondOK(c, domain.NewMessageResponse("ベストアンサーを設定しました"))
 }
 
 // Vote は回答に投票する。
@@ -151,7 +151,7 @@ func (h *AnswerHandler) Vote(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, domain.NewMessageResponse("Voted successfully"))
+	respondOK(c, domain.NewMessageResponse("投票しました"))
 }
 
 // GetByVoteRange は指定質問の回答を投票スコア範囲でフィルタリングして取得する。
@@ -192,5 +192,5 @@ func (h *AnswerHandler) RemoveVote(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, domain.NewMessageResponse("Vote removed successfully"))
+	respondOK(c, domain.NewMessageResponse("投票を取り消しました"))
 }

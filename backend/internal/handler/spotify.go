@@ -57,13 +57,13 @@ func (h *SpotifyHandler) Callback(c *gin.Context) {
 	state := c.Query("state")
 
 	if code == "" || state == "" || len(code) > oauthCodeMaxLen || len(state) > oauthCodeMaxLen {
-		respondBadRequest(c, "missing or invalid code/state")
+		respondBadRequest(c, "codeまたはstateが不正です")
 		return
 	}
 
 	userID, err := h.authService.ValidateOAuthState(state)
 	if err != nil {
-		respondBadRequest(c, "invalid state")
+		respondBadRequest(c, "stateが無効です")
 		return
 	}
 
@@ -72,7 +72,7 @@ func (h *SpotifyHandler) Callback(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, domain.NewMessageResponse("spotify connected"))
+	respondOK(c, domain.NewMessageResponse("Spotify連携が完了しました"))
 }
 
 // GetCurrentlyPlaying は指定ユーザーの現在再生中の曲を返す。
@@ -114,5 +114,5 @@ func (h *SpotifyHandler) Disconnect(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, domain.NewMessageResponse("spotify disconnected"))
+	respondOK(c, domain.NewMessageResponse("Spotify連携を解除しました"))
 }

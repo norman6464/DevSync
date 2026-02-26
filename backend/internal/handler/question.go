@@ -86,7 +86,7 @@ func (h *QuestionHandler) GetAll(c *gin.Context) {
 func (h *QuestionHandler) Search(c *gin.Context) {
 	q := c.Query("q")
 	if q == "" {
-		respondBadRequest(c, "search query is required")
+		respondBadRequest(c, "検索クエリは必須です")
 		return
 	}
 
@@ -196,7 +196,7 @@ func (h *QuestionHandler) Vote(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, domain.NewMessageResponse("Voted successfully"))
+	respondOK(c, domain.NewMessageResponse("投票しました"))
 }
 
 // GetSolved は解決済みの質問一覧を取得する。
@@ -248,7 +248,7 @@ func (h *QuestionHandler) RemoveVote(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, domain.NewMessageResponse("Vote removed successfully"))
+	respondOK(c, domain.NewMessageResponse("投票を取り消しました"))
 }
 
 // Bookmark は質問をブックマークする。
@@ -264,7 +264,7 @@ func (h *QuestionHandler) Bookmark(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, domain.NewMessageResponse("Bookmarked successfully"))
+	respondOK(c, domain.NewMessageResponse("ブックマークしました"))
 }
 
 // Unbookmark は質問のブックマークを解除する。
@@ -280,7 +280,7 @@ func (h *QuestionHandler) Unbookmark(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, domain.NewMessageResponse("Bookmark removed successfully"))
+	respondOK(c, domain.NewMessageResponse("ブックマークを解除しました"))
 }
 
 // GetBookmarks はブックマーク済み質問一覧を取得する。
