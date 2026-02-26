@@ -1480,6 +1480,36 @@ func TestCalculateGoalProgressPercentage(t *testing.T) {
 }
 
 // ============================================================
+// Create Title/Content バリデーションテスト
+// ============================================================
+
+func TestLearningLogCreate_EmptyTitle(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	log := &model.LearningLog{Title: "", UserID: 1, Duration: 60}
+	err := svc.Create(log)
+	assert.Error(t, err)
+}
+
+func TestLearningLogCreate_TitleExceeds200Runes(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	longTitle := strings.Repeat("あ", 201)
+	log := &model.LearningLog{Title: longTitle, UserID: 1, Duration: 60}
+	err := svc.Create(log)
+	assert.Error(t, err)
+}
+
+func TestLearningLogCreate_ContentExceeds10000Runes(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	longContent := strings.Repeat("あ", 10001)
+	log := &model.LearningLog{Title: "テスト", Content: longContent, UserID: 1, Duration: 60}
+	err := svc.Create(log)
+	assert.Error(t, err)
+}
+
+// ============================================================
 // CountByUserID テスト
 // ============================================================
 

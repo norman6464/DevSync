@@ -896,9 +896,10 @@ func TestChat_LongTitleTruncation(t *testing.T) {
 	deps.logRepo.On("GetStreakInfo", uint(1)).Return(&model.StreakInfo{}, nil)
 	deps.roadmapRepo.On("GetByUserID", uint(1), 100, 0).Return([]model.Roadmap{}, int64(0), nil)
 	deps.githubRepo.On("GetLanguageStats", uint(1)).Return([]model.GitHubLanguageStat{}, nil)
-	// 会話作成時にタイトルが50文字+...に切り詰められることを検証
+	// 会話作成時にタイトルが50ルーン+...に切り詰められることを検証
 	deps.convRepo.On("CreateConversation", mock.MatchedBy(func(c *model.AIConversation) bool {
-		return len(c.Title) == 53 && c.Title[50:] == "..."
+		runes := []rune(c.Title)
+		return len(runes) == 53 && string(runes[50:]) == "..."
 	})).Return(nil)
 	deps.convRepo.On("AddMessage", mock.AnythingOfType("*model.AIMessage")).Return(nil)
 	deps.llmClient.On("Complete", mock.Anything).Return(&ChatResponse{
