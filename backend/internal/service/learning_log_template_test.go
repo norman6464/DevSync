@@ -139,6 +139,34 @@ func TestLogTemplateService_Create_NameTooLong(t *testing.T) {
 	assert.Contains(t, err.Error(), "100文字以下")
 }
 
+func TestLogTemplateService_Create_DefaultTitleTooLong(t *testing.T) {
+	svc, _, _ := newTestLogTemplateService()
+
+	template := &model.LearningLogTemplate{
+		UserID:       1,
+		Name:         "テスト",
+		DefaultTitle: strings.Repeat("あ", 201),
+	}
+
+	err := svc.Create(template)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "デフォルトタイトルは200文字以下")
+}
+
+func TestLogTemplateService_Create_DefaultContentTooLong(t *testing.T) {
+	svc, _, _ := newTestLogTemplateService()
+
+	template := &model.LearningLogTemplate{
+		UserID:         1,
+		Name:           "テスト",
+		DefaultContent: strings.Repeat("あ", 50001),
+	}
+
+	err := svc.Create(template)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "デフォルト本文は50000文字以下")
+}
+
 func TestLogTemplateService_Create_InvalidCategory(t *testing.T) {
 	svc, _, _ := newTestLogTemplateService()
 
@@ -267,6 +295,30 @@ func TestLogTemplateService_Update_NameTooLong(t *testing.T) {
 	_, err := svc.Update(1, 1, strings.Repeat("あ", 101), "", "", "", nil, nil)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "100文字以下")
+}
+
+func TestLogTemplateService_Update_DefaultTitleTooLong(t *testing.T) {
+	svc, repo, _ := newTestLogTemplateService()
+
+	existing := &model.LearningLogTemplate{UserID: 1, Name: "テスト"}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	_, err := svc.Update(1, 1, "", strings.Repeat("あ", 201), "", "", nil, nil)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "デフォルトタイトルは200文字以下")
+}
+
+func TestLogTemplateService_Update_DefaultContentTooLong(t *testing.T) {
+	svc, repo, _ := newTestLogTemplateService()
+
+	existing := &model.LearningLogTemplate{UserID: 1, Name: "テスト"}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	_, err := svc.Update(1, 1, "", "", strings.Repeat("あ", 50001), "", nil, nil)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "デフォルト本文は50000文字以下")
 }
 
 func TestLogTemplateService_Update_InvalidCategory(t *testing.T) {
