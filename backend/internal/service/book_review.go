@@ -43,6 +43,9 @@ func (s *BookReviewService) Create(review *model.BookReview) error {
 	if len([]rune(strings.TrimSpace(review.Review))) > 10000 {
 		return domain.NewError(domain.ErrCodeValidation, "レビュー本文は10000文字以下である必要があります", nil)
 	}
+	if review.TotalPages < 0 || review.TotalPages > 99999 {
+		return domain.NewError(domain.ErrCodeValidation, "総ページ数は0〜99999の範囲で指定してください", nil)
+	}
 	review.Title = strings.TrimSpace(review.Title)
 	review.Review = strings.TrimSpace(review.Review)
 	return s.repo.Create(review)
