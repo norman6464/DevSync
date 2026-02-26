@@ -1489,6 +1489,9 @@ func (m *MockMessageService) GetConversation(userID, otherUserID uint, page, lim
 func (m *MockMessageService) SendMessage(msg *model.Message) error {
 	return m.Called(msg).Error(0)
 }
+func (m *MockMessageService) MarkAsRead(senderID, receiverID uint) error {
+	return m.Called(senderID, receiverID).Error(0)
+}
 
 // setupMessageHandler はMessageHandlerテスト用のセットアップを行う。
 func setupMessageHandler() (*MessageHandler, *MockMessageService) {

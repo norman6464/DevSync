@@ -11,6 +11,7 @@ type MessageServiceInterface interface {
 	GetConversations(userID uint) ([]model.ConversationSummary, error)
 	GetConversation(userID, otherUserID uint, page, limit int) ([]model.Message, error)
 	SendMessage(msg *model.Message) error
+	MarkAsRead(senderID, receiverID uint) error
 }
 
 // MessageHandler はDM（ダイレクトメッセージ）関連のHTTPハンドラ。
@@ -51,6 +52,21 @@ func (h *MessageHandler) GetMessages(c *gin.Context) {
 		return
 	}
 	respondOK(c, ensureSlice(messages))
+}
+
+// MarkAsRead は指定ユーザーからのメッセージを既読にマークする。
+func (h *MessageHandler) MarkAsRead(c *gin.Context) {
+	userID := c.GetUint("userID")
+	senderID, ok := parseID(c, "userId")
+	if !ok {
+		return
+	}
+
+	if err := h.service.MarkAsRead(senderID, userID); err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, gin.H{"message": "既読にしました"})
 }
 
 // SendMessage は指定ユーザーにDMを送信する。
