@@ -671,3 +671,30 @@ func TestRoadmapGetMyStats_ServiceError(t *testing.T) {
 	assertStatus(t, w, http.StatusInternalServerError)
 	svc.AssertExpectations(t)
 }
+
+// ---------- GetMyCount ----------
+
+func TestRoadmapGetMyCount_Success(t *testing.T) {
+	h, svc := setupRoadmapHandlerMock()
+	r := newRouter(1)
+	r.GET("/roadmaps/my/count", h.GetMyCount)
+
+	svc.On("CountByUserID", uint(1)).Return(int64(5), nil)
+
+	w := doRequest(r, http.MethodGet, "/roadmaps/my/count", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Contains(t, w.Body.String(), `"count":5`)
+	svc.AssertExpectations(t)
+}
+
+func TestRoadmapGetMyCount_ServiceError(t *testing.T) {
+	h, svc := setupRoadmapHandlerMock()
+	r := newRouter(1)
+	r.GET("/roadmaps/my/count", h.GetMyCount)
+
+	svc.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/roadmaps/my/count", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
