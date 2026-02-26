@@ -84,6 +84,7 @@ type PostRepositoryInterface interface {
 	GetReactionsBatch(postIDs []uint) (map[uint][]model.ReactionCount, error)
 	GetUserReactionsBatch(userID uint, postIDs []uint) (map[uint][]string, error)
 	FindScheduledByUserID(userID uint) ([]model.Post, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // FollowRepositoryInterface はフォロー関係データ操作の契約を定義する。
