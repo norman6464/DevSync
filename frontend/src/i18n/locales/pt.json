@@ -1836,5 +1836,14 @@
     "unarchiveSuccess": "Projeto desarquivado com sucesso",
     "noArchived": "Nenhum projeto arquivado",
     "confirmArchive": "Tem certeza de que deseja arquivar este projeto?"
+  },
+  "questionBookmark": {
+    "bookmark": "Favoritar",
+    "unbookmark": "Remover favorito",
+    "bookmarked": "Favoritado",
+    "bookmarkAdded": "Adicionado aos favoritos",
+    "bookmarkRemoved": "Removido dos favoritos",
+    "bookmarkedQuestions": "Perguntas favoritadas",
+    "noBookmarks": "Nenhuma pergunta favoritada"
   }
 }

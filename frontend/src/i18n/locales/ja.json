@@ -1738,5 +1738,14 @@
     "unarchiveSuccess": "アーカイブを解除しました",
     "noArchived": "アーカイブ済みプロジェクトはありません",
     "confirmArchive": "このプロジェクトをアーカイブしますか？"
+  },
+  "questionBookmark": {
+    "bookmark": "ブックマーク",
+    "unbookmark": "ブックマーク解除",
+    "bookmarked": "ブックマーク済み",
+    "bookmarkAdded": "ブックマークに追加しました",
+    "bookmarkRemoved": "ブックマークを解除しました",
+    "bookmarkedQuestions": "ブックマークした質問",
+    "noBookmarks": "ブックマークした質問はありません"
   }
 }

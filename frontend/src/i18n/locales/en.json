@@ -1836,5 +1836,14 @@
     "unarchiveSuccess": "Project unarchived successfully",
     "noArchived": "No archived projects",
     "confirmArchive": "Are you sure you want to archive this project?"
+  },
+  "questionBookmark": {
+    "bookmark": "Bookmark",
+    "unbookmark": "Remove Bookmark",
+    "bookmarked": "Bookmarked",
+    "bookmarkAdded": "Bookmark added",
+    "bookmarkRemoved": "Bookmark removed",
+    "bookmarkedQuestions": "Bookmarked Questions",
+    "noBookmarks": "No bookmarked questions"
   }
 }

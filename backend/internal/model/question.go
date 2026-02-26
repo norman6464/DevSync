@@ -23,6 +23,16 @@ type Question struct {
 	DeletedAt   gorm.DeletedAt `json:"-" gorm:"index"` // 論理削除用
 }
 
+// QuestionBookmark は質問のブックマークを記録する。
+// ユーザーと質問の組み合わせでユニークインデックスを持つ。
+type QuestionBookmark struct {
+	ID         uint      `json:"id" gorm:"primaryKey"`
+	UserID     uint      `json:"user_id" gorm:"not null;uniqueIndex:idx_question_bookmark"`
+	QuestionID uint      `json:"question_id" gorm:"not null;uniqueIndex:idx_question_bookmark"`
+	Question   Question  `json:"question,omitempty" gorm:"foreignKey:QuestionID"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
 // QuestionVote は質問への投票（賛成/反対）を記録する。
 // Value は +1（賛成）または -1（反対）の値を取る。
 // ユーザーと質問の組み合わせでユニークインデックスを持つ。

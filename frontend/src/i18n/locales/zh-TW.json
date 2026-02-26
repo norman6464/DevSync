@@ -1838,5 +1838,14 @@
     "unarchiveSuccess": "已取消封存",
     "noArchived": "沒有已封存的專案",
     "confirmArchive": "確定要封存此專案嗎？"
+  },
+  "questionBookmark": {
+    "bookmark": "收藏",
+    "unbookmark": "取消收藏",
+    "bookmarked": "已收藏",
+    "bookmarkAdded": "已新增至收藏",
+    "bookmarkRemoved": "已取消收藏",
+    "bookmarkedQuestions": "收藏的問題",
+    "noBookmarks": "沒有收藏的問題"
   }
 }

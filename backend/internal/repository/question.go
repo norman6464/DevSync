@@ -178,3 +178,47 @@ func (r *QuestionRepository) GetUserVote(userID, questionID uint) (int, error) {
 	}
 	return vote.Value, nil
 }
+
+// Bookmark は質問をブックマークする。
+func (r *QuestionRepository) Bookmark(userID, questionID uint) error {
+	bookmark := &model.QuestionBookmark{
+		UserID:     userID,
+		QuestionID: questionID,
+	}
+	return r.db.Create(bookmark).Error
+}
+
+// Unbookmark は質問のブックマークを解除する。
+func (r *QuestionRepository) Unbookmark(userID, questionID uint) error {
+	return r.db.Where("user_id = ? AND question_id = ?", userID, questionID).
+		Delete(&model.QuestionBookmark{}).Error
+}
+
+// HasBookmarked は指定ユーザーが指定質問をブックマークしているかを返す。
+func (r *QuestionRepository) HasBookmarked(userID, questionID uint) (bool, error) {
+	var count int64
+	err := r.db.Model(&model.QuestionBookmark{}).
+		Where("user_id = ? AND question_id = ?", userID, questionID).
+		Count(&count).Error
+	return count > 0, err
+}
+
+// FindBookmarkedByUserID は指定ユーザーのブックマーク済み質問をページネーション付きで取得する。
+func (r *QuestionRepository) FindBookmarkedByUserID(userID uint, limit, offset int) ([]model.Question, int64, error) {
+	var questions []model.Question
+	var total int64
+
+	subQuery := r.db.Model(&model.QuestionBookmark{}).
+		Select("question_id").
+		Where("user_id = ?", userID)
+
+	query := r.db.Model(&model.Question{}).Where("id IN (?)", subQuery)
+	query.Count(&total)
+
+	err := query.Preload("User").
+		Order("created_at DESC").
+		Limit(limit).Offset(offset).
+		Find(&questions).Error
+
+	return questions, total, err
+}

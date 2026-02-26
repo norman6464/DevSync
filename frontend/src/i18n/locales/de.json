@@ -1835,5 +1835,14 @@
     "unarchiveSuccess": "Archivierung erfolgreich aufgehoben",
     "noArchived": "Keine archivierten Projekte",
     "confirmArchive": "Möchten Sie dieses Projekt wirklich archivieren?"
+  },
+  "questionBookmark": {
+    "bookmark": "Lesezeichen",
+    "unbookmark": "Lesezeichen entfernen",
+    "bookmarked": "Mit Lesezeichen",
+    "bookmarkAdded": "Lesezeichen hinzugefügt",
+    "bookmarkRemoved": "Lesezeichen entfernt",
+    "bookmarkedQuestions": "Gemerkte Fragen",
+    "noBookmarks": "Keine gemerkten Fragen"
   }
 }

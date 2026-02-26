@@ -1836,5 +1836,14 @@
     "unarchiveSuccess": "Projet désarchivé avec succès",
     "noArchived": "Aucun projet archivé",
     "confirmArchive": "Voulez-vous vraiment archiver ce projet ?"
+  },
+  "questionBookmark": {
+    "bookmark": "Signet",
+    "unbookmark": "Retirer le signet",
+    "bookmarked": "Ajouté aux signets",
+    "bookmarkAdded": "Signet ajouté",
+    "bookmarkRemoved": "Signet retiré",
+    "bookmarkedQuestions": "Questions en signet",
+    "noBookmarks": "Aucune question en signet"
   }
 }

@@ -137,3 +137,29 @@ func (s *QuestionService) RemoveVote(userID, questionID uint) error {
 	}
 	return s.repo.RemoveVote(userID, questionID)
 }
+
+// Bookmark は質問をブックマークする。
+// 既にブックマーク済みの場合はErrConflictを返す。
+func (s *QuestionService) Bookmark(userID, questionID uint) error {
+	if _, err := s.repo.FindByID(questionID); err != nil {
+		return ErrNotFound
+	}
+	has, err := s.repo.HasBookmarked(userID, questionID)
+	if err != nil {
+		return err
+	}
+	if has {
+		return ErrConflict
+	}
+	return s.repo.Bookmark(userID, questionID)
+}
+
+// Unbookmark は質問のブックマークを解除する。
+func (s *QuestionService) Unbookmark(userID, questionID uint) error {
+	return s.repo.Unbookmark(userID, questionID)
+}
+
+// GetBookmarkedByUserID はブックマーク済み質問一覧を取得する。
+func (s *QuestionService) GetBookmarkedByUserID(userID uint, limit, offset int) ([]model.Question, int64, error) {
+	return s.repo.FindBookmarkedByUserID(userID, limit, offset)
+}

@@ -561,6 +561,9 @@ func registerCommunityRoutes(g *gin.RouterGroup, c *di.Container) {
 		questions.DELETE("/:id", c.QuestionHandler.Delete)
 		questions.POST("/:id/vote", c.QuestionHandler.Vote)
 		questions.DELETE("/:id/vote", c.QuestionHandler.RemoveVote)
+		questions.POST("/:id/bookmark", c.QuestionHandler.Bookmark)
+		questions.DELETE("/:id/bookmark", c.QuestionHandler.Unbookmark)
+		questions.GET("/bookmarks", c.QuestionHandler.GetBookmarks)
 		questions.GET("/user/:userId", c.QuestionHandler.GetByUserID)
 
 		questions.GET("/:id/answers", c.AnswerHandler.GetByQuestionID)

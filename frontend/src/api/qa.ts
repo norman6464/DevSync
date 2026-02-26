@@ -78,3 +78,19 @@ export const voteAnswer = async (questionId: number, answerId: number, data: Vot
 export const removeAnswerVote = async (questionId: number, answerId: number): Promise<void> => {
   await client.delete(`/questions/${questionId}/answers/${answerId}/vote`);
 };
+
+// Bookmarks
+export const bookmarkQuestion = async (id: number): Promise<void> => {
+  await client.post(`/questions/${id}/bookmark`);
+};
+
+export const unbookmarkQuestion = async (id: number): Promise<void> => {
+  await client.delete(`/questions/${id}/bookmark`);
+};
+
+export const getBookmarkedQuestions = async (
+  limit = 20, offset = 0
+): Promise<{ questions: Question[]; total: number }> => {
+  const res = await client.get('/questions/bookmarks', { params: { limit, offset } });
+  return res.data;
+};
