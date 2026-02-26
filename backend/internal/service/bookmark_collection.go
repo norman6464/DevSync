@@ -29,6 +29,9 @@ func (s *BookmarkCollectionService) Create(collection *model.BookmarkCollection)
 	if err := domain.ValidateStringLength(collection.Color, 0, 20, "カラー"); err != nil {
 		return err
 	}
+	collection.Name = strings.TrimSpace(collection.Name)
+	collection.Description = strings.TrimSpace(collection.Description)
+	collection.Color = strings.TrimSpace(collection.Color)
 	return s.repo.Create(collection)
 }
 
