@@ -61,6 +61,16 @@ func (m *MockLearningGoalRepository) GetByStatus(userID uint, status string) ([]
 	return args.Get(0).([]model.LearningGoal), args.Error(1)
 }
 
+func (m *MockLearningGoalRepository) GetPublicByUserID(userID uint, limit, offset int) ([]model.LearningGoal, int64, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.LearningGoal), args.Get(1).(int64), args.Error(2)
+}
+
+func (m *MockLearningGoalRepository) GetPublicGoals(limit, offset int) ([]model.LearningGoal, int64, error) {
+	args := m.Called(limit, offset)
+	return args.Get(0).([]model.LearningGoal), args.Get(1).(int64), args.Error(2)
+}
+
 // setupLearningGoalHandler はテスト用のLearningGoalHandlerとモックを準備する。
 func setupLearningGoalHandler() (*LearningGoalHandler, *MockLearningGoalRepository) {
 	repo := new(MockLearningGoalRepository)
@@ -626,4 +636,87 @@ func TestLearningGoalDuplicate_InvalidID(t *testing.T) {
 
 	w := doRequest(r, http.MethodPost, "/goals/abc/duplicate", nil)
 	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// ========== ToggleShare ==========
+
+func TestLearningGoalToggleShare_Success(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.PUT("/goals/:id/share", h.ToggleShare)
+
+	goal := &model.LearningGoal{Title: "目標", IsPublic: false, UserID: 1}
+	goal.ID = 10
+	repo.On("FindByID", uint(10)).Return(goal, nil)
+	repo.On("Update", mock.AnythingOfType("*model.LearningGoal")).Return(nil)
+
+	w := doRequest(r, http.MethodPut, "/goals/10/share", nil)
+	assertStatus(t, w, http.StatusOK)
+}
+
+func TestLearningGoalToggleShare_Forbidden(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.PUT("/goals/:id/share", h.ToggleShare)
+
+	goal := &model.LearningGoal{Title: "目標", UserID: 999}
+	goal.ID = 10
+	repo.On("FindByID", uint(10)).Return(goal, nil)
+
+	w := doRequest(r, http.MethodPut, "/goals/10/share", nil)
+	assertStatus(t, w, http.StatusForbidden)
+}
+
+func TestLearningGoalToggleShare_NotFound(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.PUT("/goals/:id/share", h.ToggleShare)
+
+	repo.On("FindByID", uint(99)).Return(nil, service.ErrNotFound)
+
+	w := doRequest(r, http.MethodPut, "/goals/99/share", nil)
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+// ========== GetPublicGoals ==========
+
+func TestLearningGoalGetPublicGoals_Success(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.GET("/goals/public", h.GetPublicGoals)
+
+	goals := []model.LearningGoal{{Title: "公開目標1"}, {Title: "公開目標2"}}
+	repo.On("GetPublicGoals", 20, 0).Return(goals, int64(2), nil)
+
+	w := doRequest(r, http.MethodGet, "/goals/public", nil)
+	assertStatus(t, w, http.StatusOK)
+	body := parseJSON(t, w)
+	if body["total"] != float64(2) {
+		t.Errorf("expected total=2, got %v", body["total"])
+	}
+}
+
+func TestLearningGoalGetPublicGoals_ServiceError(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.GET("/goals/public", h.GetPublicGoals)
+
+	repo.On("GetPublicGoals", 20, 0).Return([]model.LearningGoal{}, int64(0), errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/goals/public", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+// ========== GetPublicByUserID ==========
+
+func TestLearningGoalGetPublicByUserID_Success(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.GET("/goals/public/user/:userId", h.GetPublicByUserID)
+
+	goals := []model.LearningGoal{{Title: "公開目標"}}
+	repo.On("GetPublicByUserID", uint(5), 20, 0).Return(goals, int64(1), nil)
+
+	w := doRequest(r, http.MethodGet, "/goals/public/user/5", nil)
+	assertStatus(t, w, http.StatusOK)
 }

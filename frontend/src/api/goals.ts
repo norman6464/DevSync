@@ -13,6 +13,7 @@ export interface LearningGoal {
   progress: number;
   target_hours: number;
   status: GoalStatus;
+  is_public: boolean;
   created_at: string;
   updated_at: string;
   completed_at: string | null;
@@ -76,3 +77,12 @@ export const duplicateGoal = (id: number) =>
 
 export const getLinkedLogs = (goalId: number, limit = 20, offset = 0) =>
   client.get(`/goals/${goalId}/linked-logs`, { params: { limit, offset } });
+
+export const toggleGoalShare = (id: number) =>
+  client.put<LearningGoal>(`/goals/${id}/share`);
+
+export const getPublicGoals = (limit = 20, offset = 0) =>
+  client.get<LearningGoal[]>('/goals/public', { params: { limit, offset } });
+
+export const getPublicGoalsByUser = (userId: number, limit = 20, offset = 0) =>
+  client.get<LearningGoal[]>(`/goals/public/user/${userId}`, { params: { limit, offset } });

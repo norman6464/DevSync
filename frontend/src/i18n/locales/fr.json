@@ -655,7 +655,18 @@
       "activeCount": "Actifs",
       "completedCount": "Terminés",
       "avgProgress": "Progression moyenne"
-    }
+    },
+    "toggleShare": "Basculer public/privé",
+    "shareSuccess": "Paramètres de partage mis à jour",
+    "shareFailed": "Échec de la mise à jour des paramètres de partage",
+    "publicGoals": "Objectifs publics",
+    "noPublicGoals": "Aucun objectif public",
+    "makePublic": "Rendre public",
+    "makePrivate": "Rendre privé",
+    "isPublic": "Public",
+    "isPrivate": "Privé",
+    "publicGoalsList": "Objectifs de la communauté",
+    "loadPublicGoalsFailed": "Échec du chargement des objectifs publics"
   },
   "learningLogs": {
     "title": "Journal d'apprentissage",

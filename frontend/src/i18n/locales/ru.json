@@ -654,7 +654,18 @@
       "activeCount": "Активных",
       "completedCount": "Завершённых",
       "avgProgress": "Средний прогресс"
-    }
+    },
+    "toggleShare": "Переключить публичный/приватный",
+    "shareSuccess": "Настройки общего доступа обновлены",
+    "shareFailed": "Не удалось обновить настройки общего доступа",
+    "publicGoals": "Публичные цели",
+    "noPublicGoals": "Нет публичных целей",
+    "makePublic": "Сделать публичным",
+    "makePrivate": "Сделать приватным",
+    "isPublic": "Публичная",
+    "isPrivate": "Приватная",
+    "publicGoalsList": "Цели сообщества",
+    "loadPublicGoalsFailed": "Не удалось загрузить публичные цели"
   },
   "learningLogs": {
     "title": "Журнал обучения",

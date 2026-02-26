@@ -654,7 +654,18 @@
       "activeCount": "Aktiv",
       "completedCount": "Abgeschlossen",
       "avgProgress": "Durchschn. Fortschritt"
-    }
+    },
+    "toggleShare": "Öffentlich/Privat umschalten",
+    "shareSuccess": "Freigabeeinstellungen aktualisiert",
+    "shareFailed": "Fehler beim Aktualisieren der Freigabeeinstellungen",
+    "publicGoals": "Öffentliche Ziele",
+    "noPublicGoals": "Keine öffentlichen Ziele",
+    "makePublic": "Öffentlich machen",
+    "makePrivate": "Privat machen",
+    "isPublic": "Öffentlich",
+    "isPrivate": "Privat",
+    "publicGoalsList": "Community-Ziele",
+    "loadPublicGoalsFailed": "Fehler beim Laden der öffentlichen Ziele"
   },
   "learningLogs": {
     "title": "Lernprotokoll",

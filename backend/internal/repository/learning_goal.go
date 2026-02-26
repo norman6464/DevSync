@@ -71,6 +71,26 @@ func (r *LearningGoalRepository) GetByStatus(userID uint, status string) ([]mode
 	return goals, err
 }
 
+// GetPublicByUserID は指定ユーザーの公開済み学習目標をページネーション付きで取得する（新しい順）。
+func (r *LearningGoalRepository) GetPublicByUserID(userID uint, limit, offset int) ([]model.LearningGoal, int64, error) {
+	var goals []model.LearningGoal
+	var total int64
+	query := r.db.Where("user_id = ? AND is_public = ?", userID, true)
+	query.Model(&model.LearningGoal{}).Count(&total)
+	err := query.Order("created_at DESC").Limit(limit).Offset(offset).Find(&goals).Error
+	return goals, total, err
+}
+
+// GetPublicGoals は全ユーザーの公開済み学習目標をページネーション付きで取得する（新しい順）。
+func (r *LearningGoalRepository) GetPublicGoals(limit, offset int) ([]model.LearningGoal, int64, error) {
+	var goals []model.LearningGoal
+	var total int64
+	query := r.db.Where("is_public = ?", true)
+	query.Model(&model.LearningGoal{}).Count(&total)
+	err := query.Order("created_at DESC").Limit(limit).Offset(offset).Find(&goals).Error
+	return goals, total, err
+}
+
 // GetStats は指定ユーザーの学習目標統計情報を算出する。
 // 目標総数、アクティブ数、完了数、平均進捗率を返す。
 func (r *LearningGoalRepository) GetStats(userID uint) (*model.LearningGoalStats, error) {

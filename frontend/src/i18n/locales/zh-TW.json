@@ -657,7 +657,18 @@
       "activeCount": "進行中",
       "completedCount": "已完成",
       "avgProgress": "平均進度"
-    }
+    },
+    "toggleShare": "切換公開/私密",
+    "shareSuccess": "共享設定已更新",
+    "shareFailed": "共享設定更新失敗",
+    "publicGoals": "公開目標",
+    "noPublicGoals": "沒有公開目標",
+    "makePublic": "設為公開",
+    "makePrivate": "設為私密",
+    "isPublic": "公開",
+    "isPrivate": "私密",
+    "publicGoalsList": "社群目標",
+    "loadPublicGoalsFailed": "載入公開目標失敗"
   },
   "learningLogs": {
     "title": "學習日誌",
