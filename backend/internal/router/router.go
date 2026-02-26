@@ -314,6 +314,7 @@ func registerMessageRoutes(g *gin.RouterGroup, c *di.Container) {
 		messages.GET("", c.MessageHandler.GetConversations)
 		messages.GET("/:userId", c.MessageHandler.GetMessages)
 		messages.POST("/:userId", c.MessageHandler.SendMessage)
+		messages.PUT("/:userId/read", c.MessageHandler.MarkAsRead)
 	}
 }
 
