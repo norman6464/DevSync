@@ -6,25 +6,14 @@ import (
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
-// NoteLinkRepositoryInterface はNoteLinkRepositoryのインターフェース。
-type NoteLinkRepositoryInterface interface {
-	Create(link *model.NoteLink) error
-	FindBySourceNoteID(sourceNoteID uint) ([]model.NoteLink, error)
-	FindByTargetNoteID(targetNoteID uint) ([]model.NoteLink, error)
-	Delete(sourceNoteID, targetNoteID uint) error
-	Exists(sourceNoteID, targetNoteID uint) (bool, error)
-	CountBySourceNoteID(noteID uint) (int64, error)
-	CountByTargetNoteID(noteID uint) (int64, error)
-}
-
 // NoteLinkService はノート間リンクのビジネスロジック。
 type NoteLinkService struct {
-	repo     NoteLinkRepositoryInterface
+	repo     repository.NoteLinkRepositoryInterface
 	noteRepo repository.NoteRepositoryInterface
 }
 
 // NewNoteLinkService は新しいNoteLinkServiceインスタンスを生成する。
-func NewNoteLinkService(repo NoteLinkRepositoryInterface, noteRepo repository.NoteRepositoryInterface) *NoteLinkService {
+func NewNoteLinkService(repo repository.NoteLinkRepositoryInterface, noteRepo repository.NoteRepositoryInterface) *NoteLinkService {
 	return &NoteLinkService{
 		repo:     repo,
 		noteRepo: noteRepo,
