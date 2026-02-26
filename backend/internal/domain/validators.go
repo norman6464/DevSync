@@ -172,18 +172,49 @@ func ValidateURL(rawURL string) error {
 	return nil
 }
 
-// isBlockedHost はSSRF対策として内部ネットワークのホストを検出する
+// cloudMetadataHosts はクラウドメタデータサービスのホスト名一覧。
+var cloudMetadataHosts = map[string]bool{
+	"metadata.google.internal":        true,
+	"metadata.google.internal.":       true,
+	"instance-data":                   true,
+	"169.254.169.254":                 true,
+	"fd00:ec2::254":                   true,
+}
+
+// isBlockedHost はSSRF対策として内部ネットワークのホストを検出する。
+// IPアドレスの直接指定に加え、DNS解決後のIPもチェックする。
 func isBlockedHost(hostname string) bool {
 	lower := strings.ToLower(hostname)
-	if lower == "localhost" || lower == "0.0.0.0" {
+	if lower == "localhost" || lower == "0.0.0.0" || lower == "[::1]" {
 		return true
 	}
 
-	ip := net.ParseIP(hostname)
-	if ip == nil {
-		return false // ドメイン名の場合はDNS解決前なので許可
+	// クラウドメタデータサービスのホスト名をブロック
+	if cloudMetadataHosts[lower] {
+		return true
 	}
 
+	// 直接IPアドレスが指定された場合
+	ip := net.ParseIP(hostname)
+	if ip != nil {
+		return isBlockedIP(ip)
+	}
+
+	// ドメイン名の場合はDNS解決してIPをチェック
+	ips, err := net.LookupIP(hostname)
+	if err != nil {
+		return false
+	}
+	for _, resolvedIP := range ips {
+		if isBlockedIP(resolvedIP) {
+			return true
+		}
+	}
+	return false
+}
+
+// isBlockedIP は指定IPが内部ネットワークに属するかチェックする。
+func isBlockedIP(ip net.IP) bool {
 	return ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsUnspecified()
 }
 
