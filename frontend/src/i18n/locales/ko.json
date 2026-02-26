@@ -946,6 +946,13 @@
     "unarchiveFailed": "보관 해제에 실패했습니다",
     "statusUpdated": "상태가 업데이트되었습니다",
     "statusUpdateFailed": "상태 업데이트에 실패했습니다",
+    "totalPages": "총 페이지 수",
+    "currentPage": "현재 페이지",
+    "progress": "독서 진행률",
+    "progressPercent": "{{percent}}% 완료",
+    "progressUpdate": "진행률 업데이트",
+    "progressUpdated": "독서 진행률이 업데이트되었습니다",
+    "progressUpdateFailed": "독서 진행률 업데이트에 실패했습니다",
     "sort": {
       "newest": "최신순",
       "oldest": "오래된순",

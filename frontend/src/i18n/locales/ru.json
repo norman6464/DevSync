@@ -943,6 +943,13 @@
     "unarchiveFailed": "Не удалось разархивировать",
     "statusUpdated": "Статус обновлён",
     "statusUpdateFailed": "Не удалось обновить статус",
+    "totalPages": "Всего страниц",
+    "currentPage": "Текущая страница",
+    "progress": "Прогресс чтения",
+    "progressPercent": "{{percent}}% завершено",
+    "progressUpdate": "Обновить прогресс",
+    "progressUpdated": "Прогресс чтения обновлён",
+    "progressUpdateFailed": "Не удалось обновить прогресс чтения",
     "sort": {
       "newest": "Новые",
       "oldest": "Старые",

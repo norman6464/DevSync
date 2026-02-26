@@ -152,6 +152,42 @@ func (s *BookReviewService) UnarchiveReview(id, userID uint) error {
 	return s.repo.Update(review)
 }
 
+// UpdateProgress は所有権を検証した後、読書進捗を更新する。
+// 総ページ数に到達した場合は自動的にステータスを「読了」に変更する。
+// 未読状態で進捗が1以上になった場合は自動的に「読中」に変更する。
+func (s *BookReviewService) UpdateProgress(id, userID uint, currentPage int) (*model.BookReview, error) {
+	if currentPage < 0 {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "ページ数は0以上で指定してください", nil)
+	}
+
+	review, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if review.TotalPages == 0 {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "総ページ数が設定されていません", nil)
+	}
+
+	if currentPage > review.TotalPages {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "総ページ数を超えることはできません", nil)
+	}
+
+	review.CurrentPage = currentPage
+
+	// ステータス自動更新
+	if currentPage >= review.TotalPages {
+		review.Status = model.ReviewStatusCompleted
+	} else if currentPage > 0 && review.Status == model.ReviewStatusNotStarted {
+		review.Status = model.ReviewStatusReading
+	}
+
+	if err := s.repo.Update(review); err != nil {
+		return nil, err
+	}
+	return review, nil
+}
+
 // Delete は所有権を検証した後、書籍レビューを削除する。
 func (s *BookReviewService) Delete(id, userID uint) error {
 	if _, err := s.findAndCheckOwnership(id, userID); err != nil {

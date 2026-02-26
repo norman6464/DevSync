@@ -18,6 +18,7 @@ type BookReviewServiceInterface interface {
 	ArchiveReview(id, userID uint) error
 	UnarchiveReview(id, userID uint) error
 	UpdateStatus(id, userID uint, status model.ReviewStatus) error
+	UpdateProgress(id, userID uint, currentPage int) (*model.BookReview, error)
 	Search(query string, limit, offset int) ([]model.BookReview, int64, error)
 }
 
@@ -49,6 +50,9 @@ func (h *BookReviewHandler) Create(c *gin.Context) {
 		Rating:   req.Rating,
 		Review:   req.Review,
 		ImageURL: req.ImageURL,
+	}
+	if req.TotalPages != nil {
+		review.TotalPages = *req.TotalPages
 	}
 
 	if err := h.service.Create(review); err != nil {
@@ -221,6 +225,28 @@ func (h *BookReviewHandler) UpdateStatus(c *gin.Context) {
 	}
 
 	respondOK(c, gin.H{"message": "読書状態を更新しました"})
+}
+
+// UpdateProgress は書籍レビューの読書進捗を更新する。
+func (h *BookReviewHandler) UpdateProgress(c *gin.Context) {
+	userID := c.GetUint("userID")
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	req := bindJSON[dto.UpdateReadingProgressRequest](c)
+	if req == nil {
+		return
+	}
+
+	review, err := h.service.UpdateProgress(id, userID, req.CurrentPage)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, review)
 }
 
 // Search は書籍レビューをキーワード検索する。

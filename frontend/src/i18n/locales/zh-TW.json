@@ -946,6 +946,13 @@
     "unarchiveFailed": "取消封存失敗",
     "statusUpdated": "狀態已更新",
     "statusUpdateFailed": "狀態更新失敗",
+    "totalPages": "總頁數",
+    "currentPage": "目前頁碼",
+    "progress": "閱讀進度",
+    "progressPercent": "{{percent}}% 完成",
+    "progressUpdate": "更新進度",
+    "progressUpdated": "閱讀進度已更新",
+    "progressUpdateFailed": "閱讀進度更新失敗",
     "sort": {
       "newest": "最新",
       "oldest": "最舊",

@@ -944,6 +944,13 @@
     "unarchiveFailed": "Failed to unarchive",
     "statusUpdated": "Status updated",
     "statusUpdateFailed": "Failed to update status",
+    "totalPages": "Total Pages",
+    "currentPage": "Current Page",
+    "progress": "Reading Progress",
+    "progressPercent": "{{percent}}% Complete",
+    "progressUpdate": "Update Progress",
+    "progressUpdated": "Reading progress updated",
+    "progressUpdateFailed": "Failed to update reading progress",
     "sort": {
       "newest": "Newest",
       "oldest": "Oldest",

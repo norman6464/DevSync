@@ -898,6 +898,13 @@
     "unarchiveFailed": "アーカイブ解除に失敗しました",
     "statusUpdated": "ステータスを更新しました",
     "statusUpdateFailed": "ステータスの更新に失敗しました",
+    "totalPages": "総ページ数",
+    "currentPage": "現在のページ",
+    "progress": "読書進捗",
+    "progressPercent": "{{percent}}% 完了",
+    "progressUpdate": "進捗を更新",
+    "progressUpdated": "読書進捗を更新しました",
+    "progressUpdateFailed": "読書進捗の更新に失敗しました",
     "sort": {
       "newest": "新着順",
       "oldest": "古い順",

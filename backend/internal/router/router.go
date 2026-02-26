@@ -556,6 +556,7 @@ func registerCommunityRoutes(g *gin.RouterGroup, c *di.Container) {
 		bookReviews.PUT("/:id/archive", c.BookReviewHandler.Archive)
 		bookReviews.PUT("/:id/unarchive", c.BookReviewHandler.Unarchive)
 		bookReviews.PUT("/:id/status", c.BookReviewHandler.UpdateStatus)
+		bookReviews.PUT("/:id/progress", c.BookReviewHandler.UpdateProgress)
 	}
 
 	// バッジ

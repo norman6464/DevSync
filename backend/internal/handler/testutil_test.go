@@ -774,6 +774,13 @@ func (m *MockBookReviewService) UnarchiveReview(id, userID uint) error {
 func (m *MockBookReviewService) UpdateStatus(id, userID uint, status model.ReviewStatus) error {
 	return m.Called(id, userID, status).Error(0)
 }
+func (m *MockBookReviewService) UpdateProgress(id, userID uint, currentPage int) (*model.BookReview, error) {
+	args := m.Called(id, userID, currentPage)
+	if r := args.Get(0); r != nil {
+		return r.(*model.BookReview), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
 func (m *MockBookReviewService) Search(query string, limit, offset int) ([]model.BookReview, int64, error) {
 	args := m.Called(query, limit, offset)
 	return args.Get(0).([]model.BookReview), args.Get(1).(int64), args.Error(2)

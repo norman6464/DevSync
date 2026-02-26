@@ -33,6 +33,8 @@ type BookReview struct {
 	ISBN      string         `json:"isbn" gorm:"size:20"`                     // ISBNコード
 	Rating    int            `json:"rating" gorm:"not null"`                  // 評価（1〜5の整数）
 	Review    string         `json:"review" gorm:"type:text"`                 // レビュー本文
+	TotalPages  int            `json:"total_pages" gorm:"default:0"`              // 総ページ数
+	CurrentPage int            `json:"current_page" gorm:"default:0"`             // 現在の読書ページ
 	ImageURL   string         `json:"image_url" gorm:"size:500"`               // 書籍カバー画像URL
 	Status     ReviewStatus   `json:"status" gorm:"default:'not_started'"`     // 読書状態
 	IsArchived bool           `json:"is_archived" gorm:"default:false"`        // アーカイブ済みフラグ
