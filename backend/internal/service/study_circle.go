@@ -139,7 +139,7 @@ func (s *StudyCircleService) Update(id, userID uint, name, topic, description *s
 		if err := domain.ValidateStringLength(*description, 0, 1000, "説明"); err != nil {
 			return nil, err
 		}
-		circle.Description = *description
+		circle.Description = strings.TrimSpace(*description)
 	}
 
 	if err := s.repo.Update(circle); err != nil {
