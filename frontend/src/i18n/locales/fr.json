@@ -173,6 +173,8 @@
     "comments": "Commentaires",
     "noComments": "Pas encore de commentaires",
     "addComment": "Ajouter un commentaire...",
+    "editComment": "Modifier le commentaire",
+    "editCommentSuccess": "Commentaire mis à jour",
     "reply": "Répondre",
     "share": "Partager",
     "markdownSupported": "Supporte **gras**, *italique*, `code`, et plus",

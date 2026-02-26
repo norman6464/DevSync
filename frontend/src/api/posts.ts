@@ -69,6 +69,9 @@ export const createComment = (postId: number, content: string, parentId?: number
 export const getReplies = (postId: number, commentId: number) =>
   client.get<Comment[]>(`/posts/${postId}/comments/${commentId}/replies`);
 
+export const editComment = (postId: number, commentId: number, content: string) =>
+  client.put<Comment>(`/posts/${postId}/comments/${commentId}`, { content });
+
 export const deleteComment = (id: number) =>
   client.delete(`/comments/${id}`);
 

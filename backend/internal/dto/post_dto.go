@@ -32,6 +32,11 @@ type CreateCommentRequest struct {
 	ParentID *uint  `json:"parent_id,omitempty"`
 }
 
+// UpdateCommentRequest はコメント編集リクエスト。
+type UpdateCommentRequest struct {
+	Content string `json:"content" binding:"required,min=1,max=5000"`
+}
+
 // PostDetailResponse は投稿詳細レスポンス（いいね済み・ブックマーク済みフラグ付き）。
 type PostDetailResponse struct {
 	model.Post

@@ -173,6 +173,8 @@
     "comments": "Comentarios",
     "noComments": "Aún no hay comentarios",
     "addComment": "Añadir comentario...",
+    "editComment": "Editar comentario",
+    "editCommentSuccess": "Comentario actualizado",
     "reply": "Responder",
     "share": "Compartir",
     "markdownSupported": "Soporta **negrita**, *cursiva*, `código`, y más",

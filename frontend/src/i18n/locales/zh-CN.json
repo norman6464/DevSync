@@ -173,6 +173,8 @@
     "comments": "评论",
     "noComments": "暂无评论",
     "addComment": "添加评论...",
+    "editComment": "编辑评论",
+    "editCommentSuccess": "评论已更新",
     "reply": "回复",
     "share": "分享",
     "markdownSupported": "支持 **粗体**、*斜体*、`代码` 等",
