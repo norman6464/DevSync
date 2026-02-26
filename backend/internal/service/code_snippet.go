@@ -31,6 +31,9 @@ func (s *CodeSnippetService) Create(snippet *model.CodeSnippet) (*model.CodeSnip
 	if err := domain.ValidateStringLength(snippet.Code, 1, 50000, "コード"); err != nil {
 		return nil, err
 	}
+	if len([]rune(snippet.FileName)) > 200 {
+		return nil, domain.NewError(domain.ErrCodeValidation, "ファイル名は200文字以下である必要があります", nil)
+	}
 	snippet.Language = strings.TrimSpace(snippet.Language)
 	snippet.Code = strings.TrimSpace(snippet.Code)
 
@@ -83,6 +86,9 @@ func (s *CodeSnippetService) Update(id, userID uint, language, fileName, code st
 		snippet.Language = strings.TrimSpace(language)
 	}
 	if strings.TrimSpace(fileName) != "" {
+		if len([]rune(strings.TrimSpace(fileName))) > 200 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "ファイル名は200文字以下である必要があります", nil)
+		}
 		snippet.FileName = strings.TrimSpace(fileName)
 	}
 	if strings.TrimSpace(code) != "" {

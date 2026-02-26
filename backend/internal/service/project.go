@@ -3,6 +3,7 @@ package service
 import (
 	"strings"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
@@ -72,6 +73,9 @@ func (s *ProjectService) Update(id, userID uint, updates *model.Project) (*model
 		project.Description = strings.TrimSpace(updates.Description)
 	}
 	if strings.TrimSpace(updates.TechStack) != "" {
+		if len([]rune(strings.TrimSpace(updates.TechStack))) > 500 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "技術スタックは500文字以下である必要があります", nil)
+		}
 		project.TechStack = strings.TrimSpace(updates.TechStack)
 	}
 	if strings.TrimSpace(updates.DemoURL) != "" {
@@ -84,6 +88,9 @@ func (s *ProjectService) Update(id, userID uint, updates *model.Project) (*model
 		project.ImageURL = strings.TrimSpace(updates.ImageURL)
 	}
 	if strings.TrimSpace(updates.Role) != "" {
+		if len([]rune(strings.TrimSpace(updates.Role))) > 100 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "役割は100文字以下である必要があります", nil)
+		}
 		project.Role = strings.TrimSpace(updates.Role)
 	}
 	if updates.StartDate != nil {
