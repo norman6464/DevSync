@@ -653,6 +653,7 @@ func registerCommunityRoutes(g *gin.RouterGroup, c *di.Container) {
 		chatRooms.DELETE("/:id/members/:userId", c.ChatRoomHandler.RemoveMember)
 		chatRooms.GET("/:id/messages", c.ChatRoomHandler.GetMessages)
 		chatRooms.POST("/:id/messages", c.ChatRoomHandler.SendMessage)
+		chatRooms.GET("/my/count", c.ChatRoomHandler.GetMyCount)
 	}
 
 	// 書籍レビュー
