@@ -225,7 +225,10 @@ func TestPostCollectionUpdate_RepoError(t *testing.T) {
 }
 
 func TestPostCollectionUpdate_EmptyTitle(t *testing.T) {
-	svc, _ := newTestPostCollectionService()
+	svc, repo := newTestPostCollectionService()
+	collection := &model.PostCollection{Title: "Old", UserID: 1}
+	collection.ID = 10
+	repo.On("FindByID", uint(10)).Return(collection, nil)
 
 	result, err := svc.Update(10, 1, "", "desc", false)
 	assert.Error(t, err)
@@ -234,7 +237,10 @@ func TestPostCollectionUpdate_EmptyTitle(t *testing.T) {
 }
 
 func TestPostCollectionUpdate_WhitespaceTitle(t *testing.T) {
-	svc, _ := newTestPostCollectionService()
+	svc, repo := newTestPostCollectionService()
+	collection := &model.PostCollection{Title: "Old", UserID: 1}
+	collection.ID = 10
+	repo.On("FindByID", uint(10)).Return(collection, nil)
 
 	result, err := svc.Update(10, 1, "   ", "desc", false)
 	assert.Error(t, err)
@@ -446,7 +452,10 @@ func TestPostCollectionCreate_DescriptionTooLong(t *testing.T) {
 }
 
 func TestPostCollectionUpdate_TitleTooLong(t *testing.T) {
-	svc, _ := newTestPostCollectionService()
+	svc, repo := newTestPostCollectionService()
+	collection := &model.PostCollection{Title: "Old", UserID: 1}
+	collection.ID = 1
+	repo.On("FindByID", uint(1)).Return(collection, nil)
 
 	result, err := svc.Update(1, 1, strings.Repeat("あ", 201), "説明", true)
 	assert.Error(t, err)
@@ -455,7 +464,10 @@ func TestPostCollectionUpdate_TitleTooLong(t *testing.T) {
 }
 
 func TestPostCollectionUpdate_DescriptionTooLong(t *testing.T) {
-	svc, _ := newTestPostCollectionService()
+	svc, repo := newTestPostCollectionService()
+	collection := &model.PostCollection{Title: "Old", UserID: 1}
+	collection.ID = 1
+	repo.On("FindByID", uint(1)).Return(collection, nil)
 
 	result, err := svc.Update(1, 1, "タイトル", strings.Repeat("あ", 1001), true)
 	assert.Error(t, err)
