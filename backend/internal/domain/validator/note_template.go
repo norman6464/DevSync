@@ -1,8 +1,6 @@
 package validator
 
 import (
-	"strings"
-
 	"github.com/norman6464/devsync/backend/internal/domain"
 )
 
@@ -42,40 +40,20 @@ func (v *NoteTemplateValidator) ValidateUpdateTemplate(name, contentTemplate str
 
 // ValidateName はテンプレート名のバリデーション。
 func (v *NoteTemplateValidator) ValidateName(name string) error {
-	name = strings.TrimSpace(name)
-	if name == "" {
-		return domain.NewError(domain.ErrCodeValidation, "テンプレート名を入力してください", nil)
-	}
-	if len([]rune(name)) > 100 {
-		return domain.NewError(domain.ErrCodeValidation, "テンプレート名は100文字以下である必要があります", nil)
-	}
-	return nil
+	return domain.ValidateStringLength(name, 1, 100, "テンプレート名")
 }
 
 // ValidateContentTemplate は本文テンプレートのバリデーション。
 func (v *NoteTemplateValidator) ValidateContentTemplate(content string) error {
-	content = strings.TrimSpace(content)
-	if content == "" {
-		return domain.NewError(domain.ErrCodeValidation, "本文テンプレートを入力してください", nil)
-	}
-	if len([]rune(content)) > 50000 {
-		return domain.NewError(domain.ErrCodeValidation, "本文テンプレートは50000文字以下である必要があります", nil)
-	}
-	return nil
+	return domain.ValidateStringLength(content, 1, 50000, "本文テンプレート")
 }
 
 // ValidateDescription は説明のバリデーション。
 func (v *NoteTemplateValidator) ValidateDescription(description string) error {
-	if len([]rune(description)) > 500 {
-		return domain.NewError(domain.ErrCodeValidation, "説明は500文字以下である必要があります", nil)
-	}
-	return nil
+	return domain.ValidateStringLength(description, 0, 500, "説明")
 }
 
 // ValidateDefaultTitle はデフォルトタイトルのバリデーション。
 func (v *NoteTemplateValidator) ValidateDefaultTitle(title string) error {
-	if len([]rune(title)) > 200 {
-		return domain.NewError(domain.ErrCodeValidation, "デフォルトタイトルは200文字以下である必要があります", nil)
-	}
-	return nil
+	return domain.ValidateStringLength(title, 0, 200, "デフォルトタイトル")
 }

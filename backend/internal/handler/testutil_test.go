@@ -266,6 +266,10 @@ func (m *MockCodeSnippetRepository) Search(query string, limit, offset int) ([]m
 	args := m.Called(query, limit, offset)
 	return args.Get(0).([]model.CodeSnippet), args.Get(1).(int64), args.Error(2)
 }
+func (m *MockCodeSnippetRepository) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
 
 // MockQuestionRepository は QuestionRepositoryInterface のモック実装。
 type MockQuestionRepository struct{ mock.Mock }
@@ -1868,6 +1872,10 @@ func (m *MockCodeSnippetHandlerService) GetFavoritedByUserID(userID uint, limit,
 func (m *MockCodeSnippetHandlerService) Search(query string, limit, offset int) ([]model.CodeSnippet, int64, error) {
 	args := m.Called(query, limit, offset)
 	return args.Get(0).([]model.CodeSnippet), args.Get(1).(int64), args.Error(2)
+}
+func (m *MockCodeSnippetHandlerService) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
 }
 
 // setupCodeSnippetHandler はCodeSnippetHandlerテスト用のセットアップを行う。
