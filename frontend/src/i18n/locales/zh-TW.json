@@ -1689,5 +1689,15 @@
     "video": "影片學習",
     "exercise": "練習",
     "other": "其他"
+  },
+  "noteVersion": {
+    "title": "版本歷史",
+    "version": "版本",
+    "restore": "還原",
+    "restoreConfirm": "還原此版本？目前的內容將儲存為一個版本。",
+    "restoreSuccess": "版本已還原",
+    "noVersions": "無版本歷史",
+    "createdAt": "儲存時間",
+    "current": "目前版本"
   }
 }

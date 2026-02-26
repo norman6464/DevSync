@@ -86,6 +86,7 @@ type Container struct {
 	PostTemplateHandler           *handler.PostTemplateHandler
 	WidgetSettingsHandler         *handler.WidgetSettingsHandler
 	WeeklyGoalHandler            *handler.WeeklyGoalHandler
+	NoteVersionHandler           *handler.NoteVersionHandler
 
 	// ミドルウェア・コールバック用
 	AuthService      *service.AuthService
@@ -245,6 +246,9 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	searchService := service.NewSearchService(postRepo)
 	c.SearchHandler = handler.NewSearchHandler(searchService, studyCircleService)
 	c.NoteHandler = handler.NewNoteHandler(noteService)
+	noteVersionRepo := repository.NewNoteVersionRepository(db)
+	noteVersionService := service.NewNoteVersionService(noteRepo, noteVersionRepo)
+	c.NoteVersionHandler = handler.NewNoteVersionHandler(noteVersionService)
 	c.NoteFolderHandler = handler.NewNoteFolderHandler(noteFolderService)
 	c.NoteTemplateHandler = handler.NewNoteTemplateHandler(noteTemplateService)
 	c.NoteLinkHandler = handler.NewNoteLinkHandler(noteLinkService)

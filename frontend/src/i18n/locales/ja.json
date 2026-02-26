@@ -1589,5 +1589,15 @@
     "video": "動画学習",
     "exercise": "演習",
     "other": "その他"
+  },
+  "noteVersion": {
+    "title": "バージョン履歴",
+    "version": "バージョン",
+    "restore": "復元",
+    "restoreConfirm": "このバージョンに復元しますか？現在の内容はバージョンとして保存されます。",
+    "restoreSuccess": "バージョンを復元しました",
+    "noVersions": "バージョン履歴がありません",
+    "createdAt": "保存日時",
+    "current": "現在のバージョン"
   }
 }

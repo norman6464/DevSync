@@ -1686,5 +1686,15 @@
     "video": "Video-Lernen",
     "exercise": "Übung",
     "other": "Sonstiges"
+  },
+  "noteVersion": {
+    "title": "Versionsgeschichte",
+    "version": "Version",
+    "restore": "Wiederherstellen",
+    "restoreConfirm": "Diese Version wiederherstellen? Der aktuelle Inhalt wird als Version gespeichert.",
+    "restoreSuccess": "Version erfolgreich wiederhergestellt",
+    "noVersions": "Keine Versionsgeschichte",
+    "createdAt": "Gespeichert am",
+    "current": "Aktuelle Version"
   }
 }

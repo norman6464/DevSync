@@ -1687,5 +1687,15 @@
     "video": "视频学习",
     "exercise": "练习",
     "other": "其他"
+  },
+  "noteVersion": {
+    "title": "版本历史",
+    "version": "版本",
+    "restore": "恢复",
+    "restoreConfirm": "恢复此版本？当前内容将保存为一个版本。",
+    "restoreSuccess": "版本已恢复",
+    "noVersions": "无版本历史",
+    "createdAt": "保存时间",
+    "current": "当前版本"
   }
 }

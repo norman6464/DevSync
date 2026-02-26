@@ -1689,5 +1689,15 @@
     "video": "영상 학습",
     "exercise": "연습",
     "other": "기타"
+  },
+  "noteVersion": {
+    "title": "버전 기록",
+    "version": "버전",
+    "restore": "복원",
+    "restoreConfirm": "이 버전으로 복원하시겠습니까? 현재 내용은 버전으로 저장됩니다.",
+    "restoreSuccess": "버전이 복원되었습니다",
+    "noVersions": "버전 기록이 없습니다",
+    "createdAt": "저장 일시",
+    "current": "현재 버전"
   }
 }

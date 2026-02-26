@@ -675,6 +675,14 @@ type WeeklyGoalRepositoryInterface interface {
 	SumDurationByUserCategoryThisWeek(userID uint, category string) (int, error)
 }
 
+// NoteVersionRepositoryInterface はノートバージョン履歴データ操作の契約を定義する。
+type NoteVersionRepositoryInterface interface {
+	Create(version *model.NoteVersion) error
+	FindByNoteID(noteID uint, limit, offset int) ([]model.NoteVersion, int64, error)
+	FindByID(id uint) (*model.NoteVersion, error)
+	GetLatestVersionNumber(noteID uint) (int, error)
+}
+
 // WidgetSettingsRepositoryInterface はダッシュボードウィジェット設定の操作契約を定義する。
 type WidgetSettingsRepositoryInterface interface {
 	FindByUserID(userID uint) (*model.WidgetSettings, error)
