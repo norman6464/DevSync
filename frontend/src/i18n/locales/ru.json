@@ -1668,12 +1668,29 @@
   },
   "widgetSettings": {
     "title": "Настройки виджетов",
-    "customize": "Настроить виджеты",
+    "customize": "Настроить",
+    "saveSuccess": "Настройки виджетов сохранены",
+    "saveFailed": "Не удалось сохранить настройки виджетов",
     "show": "Показать",
     "hide": "Скрыть",
-    "resetToDefault": "Сбросить по умолчанию",
-    "saveSuccess": "Настройки виджетов сохранены",
-    "resetSuccess": "Настройки виджетов сброшены"
+    "moveUp": "Переместить вверх",
+    "moveDown": "Переместить вниз",
+    "widgets": {
+      "userProfile": "Профиль пользователя",
+      "level": "Уровень",
+      "streak": "Серия",
+      "dailyChallenge": "Ежедневный вызов",
+      "weeklyChallenge": "Еженедельный вызов",
+      "studyCircle": "Учебный кружок",
+      "quickEntry": "Быстрая запись",
+      "quickActions": "Быстрые действия",
+      "recommendedUsers": "Рекомендуемые пользователи",
+      "trending": "Тренды",
+      "aiAdvice": "Совет ИИ",
+      "goalsProgress": "Прогресс целей",
+      "recentNotifications": "Последние уведомления",
+      "quickStats": "Быстрая статистика"
+    }
   },
   "reactionSummary": {
     "title": "Сводка реакций",

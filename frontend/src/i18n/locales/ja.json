@@ -1571,12 +1571,29 @@
   },
   "widgetSettings": {
     "title": "ウィジェット設定",
-    "customize": "ウィジェットをカスタマイズ",
+    "customize": "カスタマイズ",
+    "saveSuccess": "ウィジェット設定を保存しました",
+    "saveFailed": "ウィジェット設定の保存に失敗しました",
     "show": "表示",
     "hide": "非表示",
-    "resetToDefault": "デフォルトに戻す",
-    "saveSuccess": "ウィジェット設定を保存しました",
-    "resetSuccess": "ウィジェット設定をリセットしました"
+    "moveUp": "上に移動",
+    "moveDown": "下に移動",
+    "widgets": {
+      "userProfile": "ユーザープロフィール",
+      "level": "レベル",
+      "streak": "ストリーク",
+      "dailyChallenge": "デイリーチャレンジ",
+      "weeklyChallenge": "ウィークリーチャレンジ",
+      "studyCircle": "スタディサークル",
+      "quickEntry": "クイックエントリー",
+      "quickActions": "クイックアクション",
+      "recommendedUsers": "おすすめユーザー",
+      "trending": "トレンド",
+      "aiAdvice": "AIアドバイス",
+      "goalsProgress": "目標進捗",
+      "recentNotifications": "最近の通知",
+      "quickStats": "クイック統計"
+    }
   },
   "reactionSummary": {
     "title": "リアクションサマリー",

@@ -1668,12 +1668,29 @@
   },
   "widgetSettings": {
     "title": "Widget-Einstellungen",
-    "customize": "Widgets anpassen",
+    "customize": "Anpassen",
+    "saveSuccess": "Widget-Einstellungen gespeichert",
+    "saveFailed": "Fehler beim Speichern der Widget-Einstellungen",
     "show": "Anzeigen",
     "hide": "Ausblenden",
-    "resetToDefault": "Auf Standard zurücksetzen",
-    "saveSuccess": "Widget-Einstellungen gespeichert",
-    "resetSuccess": "Widget-Einstellungen zurückgesetzt"
+    "moveUp": "Nach oben",
+    "moveDown": "Nach unten",
+    "widgets": {
+      "userProfile": "Benutzerprofil",
+      "level": "Level",
+      "streak": "Serie",
+      "dailyChallenge": "Tägliche Herausforderung",
+      "weeklyChallenge": "Wöchentliche Herausforderung",
+      "studyCircle": "Lernkreis",
+      "quickEntry": "Schnelleintrag",
+      "quickActions": "Schnellaktionen",
+      "recommendedUsers": "Empfohlene Benutzer",
+      "trending": "Trends",
+      "aiAdvice": "KI-Ratschlag",
+      "goalsProgress": "Zielfortschritt",
+      "recentNotifications": "Letzte Benachrichtigungen",
+      "quickStats": "Schnellstatistiken"
+    }
   },
   "reactionSummary": {
     "title": "Reaktionszusammenfassung",

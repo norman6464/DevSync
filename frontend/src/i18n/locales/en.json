@@ -1669,12 +1669,29 @@
   },
   "widgetSettings": {
     "title": "Widget Settings",
-    "customize": "Customize Widgets",
+    "customize": "Customize",
+    "saveSuccess": "Widget settings saved",
+    "saveFailed": "Failed to save widget settings",
     "show": "Show",
     "hide": "Hide",
-    "resetToDefault": "Reset to Default",
-    "saveSuccess": "Widget settings saved",
-    "resetSuccess": "Widget settings reset"
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "widgets": {
+      "userProfile": "User Profile",
+      "level": "Level",
+      "streak": "Streak",
+      "dailyChallenge": "Daily Challenge",
+      "weeklyChallenge": "Weekly Challenge",
+      "studyCircle": "Study Circle",
+      "quickEntry": "Quick Entry",
+      "quickActions": "Quick Actions",
+      "recommendedUsers": "Recommended Users",
+      "trending": "Trending",
+      "aiAdvice": "AI Advice",
+      "goalsProgress": "Goals Progress",
+      "recentNotifications": "Recent Notifications",
+      "quickStats": "Quick Stats"
+    }
   },
   "reactionSummary": {
     "title": "Reaction Summary",

@@ -1671,12 +1671,29 @@
   },
   "widgetSettings": {
     "title": "위젯 설정",
-    "customize": "위젯 커스터마이즈",
+    "customize": "커스터마이즈",
+    "saveSuccess": "위젯 설정이 저장되었습니다",
+    "saveFailed": "위젯 설정 저장에 실패했습니다",
     "show": "표시",
     "hide": "숨기기",
-    "resetToDefault": "기본값으로 복원",
-    "saveSuccess": "위젯 설정이 저장되었습니다",
-    "resetSuccess": "위젯 설정이 초기화되었습니다"
+    "moveUp": "위로 이동",
+    "moveDown": "아래로 이동",
+    "widgets": {
+      "userProfile": "사용자 프로필",
+      "level": "레벨",
+      "streak": "스트릭",
+      "dailyChallenge": "일일 챌린지",
+      "weeklyChallenge": "주간 챌린지",
+      "studyCircle": "스터디 서클",
+      "quickEntry": "빠른 입력",
+      "quickActions": "빠른 작업",
+      "recommendedUsers": "추천 사용자",
+      "trending": "트렌딩",
+      "aiAdvice": "AI 조언",
+      "goalsProgress": "목표 진행",
+      "recentNotifications": "최근 알림",
+      "quickStats": "빠른 통계"
+    }
   },
   "reactionSummary": {
     "title": "리액션 요약",
