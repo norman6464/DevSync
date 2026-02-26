@@ -79,6 +79,17 @@ func (r *ProjectRepository) FindAll(limit, offset int) ([]model.Project, int64, 
 	return projects, total, err
 }
 
+// Search はプロジェクトをタイトル・説明・技術スタックからキーワード検索する。
+func (r *ProjectRepository) Search(query string, limit, offset int) ([]model.Project, int64, error) {
+	var projects []model.Project
+	var total int64
+	like := EscapeLikePattern(query)
+	q := r.db.Where("title ILIKE ? OR description ILIKE ? OR tech_stack ILIKE ?", like, like, like)
+	q.Model(&model.Project{}).Count(&total)
+	err := q.Preload("User").Preload("GithubRepo").Order("created_at DESC").Limit(limit).Offset(offset).Find(&projects).Error
+	return projects, total, err
+}
+
 // Archive は指定IDのプロジェクトをアーカイブする。
 func (r *ProjectRepository) Archive(id uint) error {
 	return r.db.Model(&model.Project{}).Where("id = ?", id).Update("is_archived", true).Error
