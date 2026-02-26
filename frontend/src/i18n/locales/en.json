@@ -718,7 +718,11 @@
     "batchCreateDescription": "Register multiple learning logs at once",
     "batchCreateSuccess": "Learning logs have been batch created",
     "addEntry": "Add Entry",
-    "removeEntry": "Remove Entry"
+    "removeEntry": "Remove Entry",
+    "exportJSON": "Export as JSON",
+    "exportFormat": "Export format",
+    "formatCSV": "CSV",
+    "formatJSON": "JSON"
   },
   "reports": {
     "title": "Activity Reports",

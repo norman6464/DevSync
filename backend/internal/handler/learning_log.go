@@ -20,6 +20,7 @@ type LearningLogServiceInterface interface {
 	GetStreakInfo(userID uint) (*model.StreakInfo, error)
 	GetCalendarData(userID uint) ([]model.CalendarEntry, error)
 	ExportCSV(userID uint, days int) ([]byte, error)
+	ExportJSON(userID uint, days int) ([]byte, error)
 	GetByCategory(userID uint, category string) ([]model.LearningLog, error)
 	GetBySource(userID uint, source string) ([]model.LearningLog, error)
 	GetWeeklyDuration(userID uint) (int, error)
@@ -249,8 +250,8 @@ func (h *LearningLogHandler) GetBySource(c *gin.Context) {
 	respondOK(c, ensureSlice(logs))
 }
 
-// ExportLogs は学習ログをCSV形式でダウンロードする。
-// クエリパラメータ: period=7|30|90|all（デフォルト30日）
+// ExportLogs は学習ログをCSVまたはJSON形式でダウンロードする。
+// クエリパラメータ: period=7|30|90|all（デフォルト30日）、format=csv|json（デフォルトcsv）
 func (h *LearningLogHandler) ExportLogs(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -259,19 +260,37 @@ func (h *LearningLogHandler) ExportLogs(c *gin.Context) {
 		return
 	}
 
-	csvBytes, err := h.service.ExportCSV(userID, days)
-	if err != nil {
-		respondError(c, err)
-		return
-	}
+	format := c.DefaultQuery("format", "csv")
+	timestamp := time.Now().Format("20060102")
 
-	filename := fmt.Sprintf("learning-logs-%ddays-%s.csv", days, time.Now().Format("20060102"))
-	if days == 0 {
-		filename = fmt.Sprintf("learning-logs-all-%s.csv", time.Now().Format("20060102"))
+	switch format {
+	case "json":
+		jsonBytes, err := h.service.ExportJSON(userID, days)
+		if err != nil {
+			respondError(c, err)
+			return
+		}
+		filename := fmt.Sprintf("learning-logs-%ddays-%s.json", days, timestamp)
+		if days == 0 {
+			filename = fmt.Sprintf("learning-logs-all-%s.json", timestamp)
+		}
+		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+		c.Data(200, "application/json; charset=utf-8", jsonBytes)
+	case "csv":
+		csvBytes, err := h.service.ExportCSV(userID, days)
+		if err != nil {
+			respondError(c, err)
+			return
+		}
+		filename := fmt.Sprintf("learning-logs-%ddays-%s.csv", days, timestamp)
+		if days == 0 {
+			filename = fmt.Sprintf("learning-logs-all-%s.csv", timestamp)
+		}
+		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+		c.Data(200, "text/csv; charset=utf-8", csvBytes)
+	default:
+		respondBadRequest(c, "formatはcsv/jsonのいずれかを指定してください")
 	}
-
-	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
-	c.Data(200, "text/csv; charset=utf-8", csvBytes)
 }
 
 // GetWeeklyDuration は指定ユーザーの過去7日間の学習時間合計を返す。

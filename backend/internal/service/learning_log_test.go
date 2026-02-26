@@ -891,3 +891,80 @@ func TestLearningLogExportCSV_MultipleRows(t *testing.T) {
 	assert.Contains(t, content, "React")
 	assert.Contains(t, content, "Docker")
 }
+
+// ============================================================
+// ExportJSON テスト
+// ============================================================
+
+func TestLearningLogExportJSON_Success(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	now := time.Date(2026, 2, 19, 10, 30, 0, 0, time.UTC)
+	logs := []model.LearningLog{
+		{Title: "Go基礎", Content: "変数を学んだ", Category: model.LogCategoryCoding, Duration: 60, CreatedAt: now},
+		{Title: "設計復習", Content: "DDD読んだ", Category: model.LogCategoryReading, Duration: 30, CreatedAt: now},
+	}
+	repo.On("GetByPeriod", uint(1), 30).Return(logs, nil)
+
+	data, err := svc.ExportJSON(1, 30)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, data)
+
+	content := string(data)
+	assert.Contains(t, content, "Go基礎")
+	assert.Contains(t, content, "設計復習")
+	assert.Contains(t, content, "coding")
+	assert.Contains(t, content, "reading")
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogExportJSON_EmptyLogs(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+	repo.On("GetByPeriod", uint(1), 0).Return([]model.LearningLog{}, nil)
+
+	data, err := svc.ExportJSON(1, 0)
+	assert.NoError(t, err)
+	// 空配列 "[]" が返される
+	assert.Equal(t, "[]", string(data))
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogExportJSON_NegativeDays(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	_, err := svc.ExportJSON(1, -1)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "期間は0以上の値")
+}
+
+func TestLearningLogExportJSON_RepoError(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+	repo.On("GetByPeriod", uint(1), 7).Return([]model.LearningLog{}, errors.New("db error"))
+
+	_, err := svc.ExportJSON(1, 7)
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogExportJSON_ValidJSON(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	now := time.Date(2026, 2, 20, 0, 0, 0, 0, time.UTC)
+	logs := []model.LearningLog{
+		{Title: "テスト", Content: "内容", Category: model.LogCategoryCoding, Duration: 45, CreatedAt: now},
+	}
+	repo.On("GetByPeriod", uint(1), 30).Return(logs, nil)
+
+	data, err := svc.ExportJSON(1, 30)
+	assert.NoError(t, err)
+
+	// 有効なJSONであることを確認
+	content := string(data)
+	assert.True(t, strings.HasPrefix(content, "["))
+	assert.True(t, strings.HasSuffix(content, "]"))
+	assert.Contains(t, content, `"title"`)
+	assert.Contains(t, content, `"date"`)
+	assert.Contains(t, content, `"category"`)
+	assert.Contains(t, content, `"duration"`)
+	repo.AssertExpectations(t)
+}

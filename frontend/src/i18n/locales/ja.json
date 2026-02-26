@@ -702,7 +702,11 @@
     "batchCreateDescription": "複数の学習ログをまとめて登録できます",
     "batchCreateSuccess": "学習ログを一括登録しました",
     "addEntry": "エントリーを追加",
-    "removeEntry": "エントリーを削除"
+    "removeEntry": "エントリーを削除",
+    "exportJSON": "JSON形式でエクスポート",
+    "exportFormat": "エクスポート形式",
+    "formatCSV": "CSV",
+    "formatJSON": "JSON"
   },
   "reports": {
     "title": "アクティビティレポート",

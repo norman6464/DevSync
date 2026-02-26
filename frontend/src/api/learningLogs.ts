@@ -47,6 +47,13 @@ export const getRecentCategories = () =>
   client.get<string[]>('/learning-logs/recent-categories');
 
 export type ExportPeriod = '7' | '30' | '90' | 'all';
+export type ExportFormat = 'csv' | 'json';
 
 export const exportLogsCSV = (period: ExportPeriod = '30') =>
   client.get<Blob>(`/learning-logs/export?period=${period}`, { responseType: 'blob' });
+
+export const exportLogsJSON = (period: ExportPeriod = '30') =>
+  client.get<Blob>(`/learning-logs/export?format=json&period=${period}`, { responseType: 'blob' });
+
+export const exportLogs = (period: ExportPeriod = '30', format: ExportFormat = 'csv') =>
+  client.get<Blob>(`/learning-logs/export?format=${format}&period=${period}`, { responseType: 'blob' });

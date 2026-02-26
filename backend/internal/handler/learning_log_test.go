@@ -408,6 +408,62 @@ func TestLearningLog_ExportLogs_ServiceError(t *testing.T) {
 }
 
 // ============================================================
+// ExportLogs JSON形式テスト
+// ============================================================
+
+func TestLearningLog_ExportLogs_JSONSuccess(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	r := newRouter(1)
+	r.GET("/learning-logs/export", h.ExportLogs)
+
+	jsonData := []byte(`[{"date":"2026-02-19","title":"Go基礎","category":"coding","duration":60,"content":"変数を学んだ"}]`)
+	svc.On("ExportJSON", uint(1), 30).Return(jsonData, nil)
+
+	w := doRequest(r, http.MethodGet, "/learning-logs/export?format=json", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Contains(t, w.Header().Get("Content-Disposition"), "attachment")
+	assert.Contains(t, w.Header().Get("Content-Disposition"), ".json")
+	assert.Contains(t, w.Header().Get("Content-Type"), "application/json")
+	svc.AssertExpectations(t)
+}
+
+func TestLearningLog_ExportLogs_JSONAllPeriod(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	r := newRouter(1)
+	r.GET("/learning-logs/export", h.ExportLogs)
+
+	jsonData := []byte(`[]`)
+	svc.On("ExportJSON", uint(1), 0).Return(jsonData, nil)
+
+	w := doRequest(r, http.MethodGet, "/learning-logs/export?format=json&period=all", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Contains(t, w.Header().Get("Content-Disposition"), "learning-logs-all-")
+	assert.Contains(t, w.Header().Get("Content-Disposition"), ".json")
+	svc.AssertExpectations(t)
+}
+
+func TestLearningLog_ExportLogs_JSONServiceError(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	r := newRouter(1)
+	r.GET("/learning-logs/export", h.ExportLogs)
+
+	svc.On("ExportJSON", uint(1), 30).Return(nil, errors.New("export error"))
+
+	w := doRequest(r, http.MethodGet, "/learning-logs/export?format=json", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+func TestLearningLog_ExportLogs_InvalidFormat(t *testing.T) {
+	h, _ := setupLearningLogHandler()
+	r := newRouter(1)
+	r.GET("/learning-logs/export", h.ExportLogs)
+
+	w := doRequest(r, http.MethodGet, "/learning-logs/export?format=xml", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// ============================================================
 // GetWeeklyDuration テスト
 // ============================================================
 

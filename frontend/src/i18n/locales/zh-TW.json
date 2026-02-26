@@ -720,7 +720,11 @@
     "batchCreateDescription": "可以一次登記多筆學習日誌",
     "batchCreateSuccess": "學習日誌已批量建立",
     "addEntry": "新增項目",
-    "removeEntry": "刪除項目"
+    "removeEntry": "刪除項目",
+    "exportJSON": "匯出為JSON",
+    "exportFormat": "匯出格式",
+    "formatCSV": "CSV",
+    "formatJSON": "JSON"
   },
   "reports": {
     "title": "活動報告",
