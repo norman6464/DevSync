@@ -227,3 +227,8 @@ func (s *LearningResourceService) Unsave(userID, resourceID uint) error {
 func (s *LearningResourceService) GetSavedByUserID(userID uint, limit, offset int) ([]model.LearningResource, int64, error) {
 	return s.repo.FindSavedByUserID(userID, limit, offset)
 }
+
+// CountByUserID は指定ユーザーの学習リソース総数を返す。
+func (s *LearningResourceService) CountByUserID(userID uint) (int64, error) {
+	return s.repo.CountByUserID(userID)
+}

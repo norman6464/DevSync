@@ -24,6 +24,7 @@ type LearningResourceServiceInterface interface {
 	Unsave(userID, resourceID uint) error
 	GetSavedByUserID(userID uint, limit, offset int) ([]model.LearningResource, int64, error)
 	GetByDifficulty(difficulty string, limit, offset int) ([]model.LearningResource, int64, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // LearningResourceHandler は学習リソース関連のHTTPハンドラ。
@@ -298,4 +299,15 @@ func (h *LearningResourceHandler) GetSaved(c *gin.Context) {
 		Limit:     limit,
 		Offset:    offset,
 	})
+}
+
+// GetMyCount は認証ユーザーの学習リソース総数を返す。
+func (h *LearningResourceHandler) GetMyCount(c *gin.Context) {
+	userID := c.GetUint("userID")
+	count, err := h.service.CountByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, gin.H{"count": count})
 }

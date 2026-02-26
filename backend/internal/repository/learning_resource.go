@@ -200,3 +200,9 @@ func (r *LearningResourceRepository) FindByDifficulty(difficulty string, limit, 
 
 	return resources, total, err
 }
+
+func (r *LearningResourceRepository) CountByUserID(userID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.LearningResource{}).Where("user_id = ?", userID).Count(&count).Error
+	return count, err
+}
