@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"testing"
 
@@ -361,6 +362,33 @@ func TestChatRoomSendMessage_NotMember(t *testing.T) {
 		"content": "Hello",
 	})
 	assertStatus(t, w, http.StatusForbidden)
+}
+
+// ---------- GetMyCount ----------
+
+func TestChatRoomGetMyCount_Success(t *testing.T) {
+	h, svc := setupChatRoomHandler()
+	r := newRouter(1)
+	r.GET("/chat-rooms/my/count", h.GetMyCount)
+
+	svc.On("CountByUserID", uint(1)).Return(int64(3), nil)
+
+	w := doRequest(r, http.MethodGet, "/chat-rooms/my/count", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Contains(t, w.Body.String(), `"count":3`)
+	svc.AssertExpectations(t)
+}
+
+func TestChatRoomGetMyCount_ServiceError(t *testing.T) {
+	h, svc := setupChatRoomHandler()
+	r := newRouter(1)
+	r.GET("/chat-rooms/my/count", h.GetMyCount)
+
+	svc.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/chat-rooms/my/count", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
 }
 
 func TestChatRoomSendMessage_ValidationError(t *testing.T) {

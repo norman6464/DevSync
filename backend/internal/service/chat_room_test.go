@@ -649,6 +649,32 @@ func TestChatRoomUpdate_WhitespaceName(t *testing.T) {
 	assert.Contains(t, err.Error(), "チャットルーム名を入力してください")
 }
 
+// ============================================================
+// CountByUserID テスト
+// ============================================================
+
+func TestChatRoomCountByUserID_Success(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	roomRepo.On("CountByUserID", uint(1)).Return(int64(3), nil)
+
+	count, err := svc.CountByUserID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(3), count)
+	roomRepo.AssertExpectations(t)
+}
+
+func TestChatRoomCountByUserID_Error(t *testing.T) {
+	svc, roomRepo, _ := newTestChatRoomService()
+
+	roomRepo.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	count, err := svc.CountByUserID(1)
+	assert.Error(t, err)
+	assert.Equal(t, int64(0), count)
+	roomRepo.AssertExpectations(t)
+}
+
 func TestChatRoomUpdate_WhitespaceDescription(t *testing.T) {
 	svc, roomRepo, _ := newTestChatRoomService()
 
