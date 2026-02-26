@@ -54,8 +54,8 @@ func (s *ProjectMilestoneService) Create(userID, projectID uint, title, descript
 
 	milestone := &model.ProjectMilestone{
 		ProjectID:   projectID,
-		Title:       title,
-		Description: description,
+		Title:       strings.TrimSpace(title),
+		Description: strings.TrimSpace(description),
 		DueDate:     dueDate,
 		Status:      model.MilestoneNotStarted,
 	}
