@@ -50,17 +50,17 @@ func (s *BookmarkCollectionService) Update(id, userID uint, updates *model.Bookm
 		}
 		collection.Name = strings.TrimSpace(updates.Name)
 	}
-	if updates.Description != "" {
+	if strings.TrimSpace(updates.Description) != "" {
 		if err := domain.ValidateStringLength(updates.Description, 1, 500, "説明"); err != nil {
 			return nil, err
 		}
-		collection.Description = updates.Description
+		collection.Description = strings.TrimSpace(updates.Description)
 	}
-	if updates.Color != "" {
+	if strings.TrimSpace(updates.Color) != "" {
 		if err := domain.ValidateStringLength(updates.Color, 1, 20, "カラー"); err != nil {
 			return nil, err
 		}
-		collection.Color = updates.Color
+		collection.Color = strings.TrimSpace(updates.Color)
 	}
 
 	if err := s.repo.Update(collection); err != nil {
