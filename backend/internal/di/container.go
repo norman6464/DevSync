@@ -221,7 +221,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	c.RankingHandler = handler.NewRankingHandler(rankingService)
 	c.MessageHandler = handler.NewMessageHandler(messageService)
 	c.WebSocketHandler = handler.NewWebSocketHandler(hub, authService, parseOrigins(origins))
-	c.UploadHandler = handler.NewUploadHandler()
+	uploadHandler, err := handler.NewUploadHandler()
+	if err != nil {
+		log.Fatalf("アップロードハンドラの初期化に失敗: %v", err)
+	}
+	c.UploadHandler = uploadHandler
 	c.NotificationHandler = handler.NewNotificationHandler(notificationService)
 	c.ZennHandler = handler.NewArticlePlatformHandler[model.ZennArticle, model.ZennStats](zennService, "Zenn")
 	c.QiitaHandler = handler.NewArticlePlatformHandler[model.QiitaArticle, model.QiitaStats](qiitaService, "Qiita")

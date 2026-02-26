@@ -167,6 +167,7 @@ func TestValidateURL(t *testing.T) {
 		{"SSRF: プライベートIP(172.16.x)", "http://172.16.0.1", true},
 		{"SSRF: 0.0.0.0", "http://0.0.0.0", true},
 		{"SSRF: IPv6ループバック", "http://[::1]/path", true},
+		{"SSRF: IPv6 unspecified", "http://[::]/path", true},
 	}
 
 	for _, tt := range tests {

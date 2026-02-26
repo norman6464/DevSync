@@ -184,7 +184,7 @@ func isBlockedHost(hostname string) bool {
 		return false // ドメイン名の場合はDNS解決前なので許可
 	}
 
-	return ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast()
+	return ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsUnspecified()
 }
 
 // ValidateTags はタグのバリデーションを行う
