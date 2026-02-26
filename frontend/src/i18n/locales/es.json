@@ -1808,5 +1808,24 @@
     "filterGoals": "Objetivos",
     "filterProjects": "Proyectos",
     "filterSnippets": "Fragmentos"
+  },
+  "logTemplate": {
+    "title": "Plantillas de registro de aprendizaje",
+    "create": "Crear plantilla",
+    "edit": "Editar plantilla",
+    "delete": "Eliminar plantilla",
+    "name": "Nombre de la plantilla",
+    "defaultTitle": "Título predeterminado",
+    "defaultContent": "Contenido predeterminado",
+    "defaultCategory": "Categoría predeterminada",
+    "defaultDuration": "Duración predeterminada (minutos)",
+    "isDefault": "Establecer como predeterminada",
+    "useTemplate": "Usar esta plantilla",
+    "createSuccess": "Plantilla creada correctamente",
+    "updateSuccess": "Plantilla actualizada correctamente",
+    "deleteSuccess": "Plantilla eliminada correctamente",
+    "useSuccess": "Registro de aprendizaje creado a partir de la plantilla",
+    "noTemplates": "No hay plantillas disponibles",
+    "confirmDelete": "¿Estás seguro de que quieres eliminar esta plantilla?"
   }
 }

@@ -1808,5 +1808,24 @@
     "filterGoals": "Objetivos",
     "filterProjects": "Projetos",
     "filterSnippets": "Trechos"
+  },
+  "logTemplate": {
+    "title": "Modelos de registro de aprendizado",
+    "create": "Criar modelo",
+    "edit": "Editar modelo",
+    "delete": "Excluir modelo",
+    "name": "Nome do modelo",
+    "defaultTitle": "Título padrão",
+    "defaultContent": "Conteúdo padrão",
+    "defaultCategory": "Categoria padrão",
+    "defaultDuration": "Duração padrão (minutos)",
+    "isDefault": "Definir como padrão",
+    "useTemplate": "Usar este modelo",
+    "createSuccess": "Modelo criado com sucesso",
+    "updateSuccess": "Modelo atualizado com sucesso",
+    "deleteSuccess": "Modelo excluído com sucesso",
+    "useSuccess": "Registro de aprendizado criado a partir do modelo",
+    "noTemplates": "Nenhum modelo disponível",
+    "confirmDelete": "Tem certeza de que deseja excluir este modelo?"
   }
 }

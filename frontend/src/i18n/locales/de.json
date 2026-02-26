@@ -1807,5 +1807,24 @@
     "filterGoals": "Ziele",
     "filterProjects": "Projekte",
     "filterSnippets": "Snippets"
+  },
+  "logTemplate": {
+    "title": "Lernprotokoll-Vorlagen",
+    "create": "Vorlage erstellen",
+    "edit": "Vorlage bearbeiten",
+    "delete": "Vorlage löschen",
+    "name": "Vorlagenname",
+    "defaultTitle": "Standardtitel",
+    "defaultContent": "Standardinhalt",
+    "defaultCategory": "Standardkategorie",
+    "defaultDuration": "Standarddauer (Minuten)",
+    "isDefault": "Als Standard festlegen",
+    "useTemplate": "Diese Vorlage verwenden",
+    "createSuccess": "Vorlage erfolgreich erstellt",
+    "updateSuccess": "Vorlage erfolgreich aktualisiert",
+    "deleteSuccess": "Vorlage erfolgreich gelöscht",
+    "useSuccess": "Lernprotokoll aus Vorlage erstellt",
+    "noTemplates": "Keine Vorlagen vorhanden",
+    "confirmDelete": "Möchten Sie diese Vorlage wirklich löschen?"
   }
 }

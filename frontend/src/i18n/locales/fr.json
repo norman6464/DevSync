@@ -1808,5 +1808,24 @@
     "filterGoals": "Objectifs",
     "filterProjects": "Projets",
     "filterSnippets": "Extraits"
+  },
+  "logTemplate": {
+    "title": "Modèles de journal d'apprentissage",
+    "create": "Créer un modèle",
+    "edit": "Modifier le modèle",
+    "delete": "Supprimer le modèle",
+    "name": "Nom du modèle",
+    "defaultTitle": "Titre par défaut",
+    "defaultContent": "Contenu par défaut",
+    "defaultCategory": "Catégorie par défaut",
+    "defaultDuration": "Durée par défaut (minutes)",
+    "isDefault": "Définir par défaut",
+    "useTemplate": "Utiliser ce modèle",
+    "createSuccess": "Modèle créé avec succès",
+    "updateSuccess": "Modèle mis à jour avec succès",
+    "deleteSuccess": "Modèle supprimé avec succès",
+    "useSuccess": "Journal d'apprentissage créé à partir du modèle",
+    "noTemplates": "Aucun modèle disponible",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer ce modèle ?"
   }
 }
