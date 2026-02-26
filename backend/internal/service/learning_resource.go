@@ -26,6 +26,9 @@ func (s *LearningResourceService) Create(resource *model.LearningResource) error
 	if err := v.ValidateCreateResource(resource.Title, resource.Description, resource.URL, string(resource.Category), string(resource.Difficulty)); err != nil {
 		return err
 	}
+	if err := domain.ValidateStringLength(resource.Tags, 0, 1000, "タグ"); err != nil {
+		return err
+	}
 	return s.repo.Create(resource)
 }
 
@@ -131,6 +134,9 @@ func (s *LearningResourceService) Update(id, userID uint, updates *model.Learnin
 		resource.Difficulty = updates.Difficulty
 	}
 	if updates.Tags != "" {
+		if err := domain.ValidateStringLength(updates.Tags, 1, 1000, "タグ"); err != nil {
+			return nil, err
+		}
 		resource.Tags = updates.Tags
 	}
 	if updates.ImageURL != "" {
