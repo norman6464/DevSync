@@ -713,6 +713,13 @@
     "favorites": "Favoritos",
     "toggleFavorite": "Alternar favorito"
   },
+  "learningLog": {
+    "batchCreate": "Creación por lotes",
+    "batchCreateDescription": "Puedes registrar varios registros de aprendizaje a la vez",
+    "batchCreateSuccess": "Los registros de aprendizaje se han creado por lotes",
+    "addEntry": "Agregar entrada",
+    "removeEntry": "Eliminar entrada"
+  },
   "reports": {
     "title": "Informes de Actividad",
     "timeline": "Línea de tiempo",

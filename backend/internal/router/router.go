@@ -412,6 +412,7 @@ func registerLearningLogRoutes(g *gin.RouterGroup, c *di.Container) {
 	learningLogs := g.Group("/learning-logs")
 	{
 		learningLogs.POST("", c.LearningLogHandler.Create)
+		learningLogs.POST("/batch", c.LearningLogHandler.BatchCreate)
 		learningLogs.GET("", c.LearningLogHandler.GetMyLogs)
 		learningLogs.GET("/export", c.LearningLogHandler.ExportLogs)
 		learningLogs.GET("/recent-categories", c.LearningLogHandler.GetRecentCategories)

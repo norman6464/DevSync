@@ -715,6 +715,13 @@
     "favorites": "收藏",
     "toggleFavorite": "切換收藏"
   },
+  "learningLog": {
+    "batchCreate": "批量建立",
+    "batchCreateDescription": "可以一次登記多筆學習日誌",
+    "batchCreateSuccess": "學習日誌已批量建立",
+    "addEntry": "新增項目",
+    "removeEntry": "刪除項目"
+  },
   "reports": {
     "title": "活動報告",
     "timeline": "時間線",

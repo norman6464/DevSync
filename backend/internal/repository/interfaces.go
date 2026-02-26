@@ -150,6 +150,7 @@ type AnswerRepositoryInterface interface {
 // ストリーク計算やカレンダーデータ取得も含む。
 type LearningLogRepositoryInterface interface {
 	Create(log *model.LearningLog) error
+	CreateBatch(logs []model.LearningLog) error
 	Update(log *model.LearningLog) error
 	Delete(id, userID uint) error
 	FindByID(id uint) (*model.LearningLog, error)

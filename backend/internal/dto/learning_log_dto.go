@@ -19,6 +19,11 @@ type LearningLogListResponse struct {
 	Offset int                 `json:"offset"`
 }
 
+// BatchCreateLearningLogRequest は学習ログ一括作成リクエスト。
+type BatchCreateLearningLogRequest struct {
+	Logs []CreateLearningLogRequest `json:"logs" binding:"required,min=1,max=50,dive"`
+}
+
 // UpdateLearningLogRequest は学習ログ更新リクエスト。
 type UpdateLearningLogRequest struct {
 	Title    *string `json:"title" binding:"omitempty,max=200"`

@@ -1,8 +1,11 @@
 import client from './client';
-import type { LearningLog, CalendarEntry, CreateLogRequest, UpdateLogRequest, StreakInfo } from '../types/learningLog';
+import type { LearningLog, CalendarEntry, CreateLogRequest, BatchCreateLogRequest, UpdateLogRequest, StreakInfo } from '../types/learningLog';
 
 export const createLog = (data: CreateLogRequest) =>
   client.post<LearningLog>('/learning-logs', data);
+
+export const batchCreateLogs = (data: BatchCreateLogRequest) =>
+  client.post<LearningLog[]>('/learning-logs/batch', data);
 
 export const updateLog = (id: number, data: UpdateLogRequest) =>
   client.put<LearningLog>(`/learning-logs/${id}`, data);

@@ -484,6 +484,11 @@ func (m *MockLearningLogRepository) Create(log *model.LearningLog) error {
 	return args.Error(0)
 }
 
+func (m *MockLearningLogRepository) CreateBatch(logs []model.LearningLog) error {
+	args := m.Called(logs)
+	return args.Error(0)
+}
+
 func (m *MockLearningLogRepository) Update(log *model.LearningLog) error {
 	args := m.Called(log)
 	return args.Error(0)

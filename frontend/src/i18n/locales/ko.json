@@ -715,6 +715,13 @@
     "favorites": "즐겨찾기",
     "toggleFavorite": "즐겨찾기 전환"
   },
+  "learningLog": {
+    "batchCreate": "일괄 등록",
+    "batchCreateDescription": "여러 학습 로그를 한 번에 등록할 수 있습니다",
+    "batchCreateSuccess": "학습 로그가 일괄 등록되었습니다",
+    "addEntry": "항목 추가",
+    "removeEntry": "항목 삭제"
+  },
   "reports": {
     "title": "활동 리포트",
     "timeline": "타임라인",

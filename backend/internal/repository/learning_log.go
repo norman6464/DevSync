@@ -23,6 +23,11 @@ func (r *LearningLogRepository) Create(log *model.LearningLog) error {
 	return r.db.Create(log).Error
 }
 
+// CreateBatch は複数の学習ログをトランザクション内で一括作成する。
+func (r *LearningLogRepository) CreateBatch(logs []model.LearningLog) error {
+	return r.db.Create(&logs).Error
+}
+
 // Update は既存の学習ログを更新する。
 func (r *LearningLogRepository) Update(log *model.LearningLog) error {
 	return r.db.Save(log).Error

@@ -697,6 +697,13 @@
     "favorites": "お気に入り",
     "toggleFavorite": "お気に入り切替"
   },
+  "learningLog": {
+    "batchCreate": "一括登録",
+    "batchCreateDescription": "複数の学習ログをまとめて登録できます",
+    "batchCreateSuccess": "学習ログを一括登録しました",
+    "addEntry": "エントリーを追加",
+    "removeEntry": "エントリーを削除"
+  },
   "reports": {
     "title": "アクティビティレポート",
     "weekly": "週間",

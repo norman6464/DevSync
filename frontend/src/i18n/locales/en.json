@@ -713,6 +713,13 @@
     "favorites": "Favorites",
     "toggleFavorite": "Toggle Favorite"
   },
+  "learningLog": {
+    "batchCreate": "Batch Create",
+    "batchCreateDescription": "Register multiple learning logs at once",
+    "batchCreateSuccess": "Learning logs have been batch created",
+    "addEntry": "Add Entry",
+    "removeEntry": "Remove Entry"
+  },
   "reports": {
     "title": "Activity Reports",
     "timeline": "Timeline",
