@@ -1703,5 +1703,22 @@
     "error": "Automatisches Speichern fehlgeschlagen",
     "serverSave": "Auf Server gespeichert",
     "lastSaved": "Zuletzt gespeichert: {time}"
+  },
+  "resourceProgress": {
+    "title": "Lernfortschritt",
+    "status": "Status",
+    "notStarted": "Nicht Gestartet",
+    "inProgress": "In Bearbeitung",
+    "completed": "Abgeschlossen",
+    "completionPercent": "Fortschritt",
+    "note": "Notiz",
+    "notePlaceholder": "Lernnotizen eingeben...",
+    "startedAt": "Startdatum",
+    "completedAt": "Abschlussdatum",
+    "updateSuccess": "Fortschritt aktualisiert",
+    "updateFailed": "Fortschritt konnte nicht aktualisiert werden",
+    "noProgress": "Noch kein Fortschritt",
+    "allStatuses": "Alle Status",
+    "trackProgress": "Fortschritt Erfassen"
   }
 }

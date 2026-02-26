@@ -1706,5 +1706,22 @@
     "error": "自動儲存失敗",
     "serverSave": "已儲存至伺服器",
     "lastSaved": "最後儲存: {time}"
+  },
+  "resourceProgress": {
+    "title": "學習進度",
+    "status": "狀態",
+    "notStarted": "未開始",
+    "inProgress": "學習中",
+    "completed": "已完成",
+    "completionPercent": "完成率",
+    "note": "筆記",
+    "notePlaceholder": "輸入學習筆記...",
+    "startedAt": "開始日期",
+    "completedAt": "完成日期",
+    "updateSuccess": "進度已更新",
+    "updateFailed": "更新進度失敗",
+    "noProgress": "暫無進度",
+    "allStatuses": "所有狀態",
+    "trackProgress": "記錄進度"
   }
 }

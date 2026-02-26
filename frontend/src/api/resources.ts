@@ -71,3 +71,45 @@ export const saveResource = async (id: number): Promise<void> => {
 export const unsaveResource = async (id: number): Promise<void> => {
   await client.delete(`/resources/${id}/save`);
 };
+
+// --- リソース進捗 ---
+
+export interface UpsertResourceProgressRequest {
+  resource_id: number;
+  status: 'not_started' | 'in_progress' | 'completed';
+  completion_percent: number;
+  note?: string;
+}
+
+export interface ResourceProgress {
+  id: number;
+  user_id: number;
+  resource_id: number;
+  resource?: LearningResource;
+  status: 'not_started' | 'in_progress' | 'completed';
+  completion_percent: number;
+  note: string;
+  started_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export const upsertResourceProgress = async (data: UpsertResourceProgressRequest): Promise<ResourceProgress> => {
+  const res = await client.put('/resources/progress', data);
+  return res.data.progress;
+};
+
+export const getMyResourceProgress = async (
+  status?: string,
+  limit = 20,
+  offset = 0
+): Promise<{ progresses: ResourceProgress[]; total: number }> => {
+  const res = await client.get('/resources/progress', { params: { status, limit, offset } });
+  return res.data;
+};
+
+export const getResourceProgress = async (resourceId: number): Promise<ResourceProgress> => {
+  const res = await client.get(`/resources/${resourceId}/progress`);
+  return res.data.progress;
+};

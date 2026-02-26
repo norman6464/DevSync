@@ -1606,5 +1606,22 @@
     "error": "自動保存に失敗しました",
     "serverSave": "サーバーに保存済み",
     "lastSaved": "最終保存: {time}"
+  },
+  "resourceProgress": {
+    "title": "学習進捗",
+    "status": "ステータス",
+    "notStarted": "未開始",
+    "inProgress": "学習中",
+    "completed": "完了",
+    "completionPercent": "進捗率",
+    "note": "メモ",
+    "notePlaceholder": "学習メモを入力...",
+    "startedAt": "開始日",
+    "completedAt": "完了日",
+    "updateSuccess": "進捗を更新しました",
+    "updateFailed": "進捗の更新に失敗しました",
+    "noProgress": "まだ進捗がありません",
+    "allStatuses": "全ステータス",
+    "trackProgress": "進捗を記録"
   }
 }

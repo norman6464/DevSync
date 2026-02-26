@@ -402,6 +402,11 @@ func registerResourceRoutes(g *gin.RouterGroup, c *di.Container) {
 		resources.DELETE("/:id/save", c.LearningResourceHandler.UnsaveResource)
 		resources.GET("/user/:userId", c.LearningResourceHandler.GetByUserID)
 		resources.GET("/difficulty/:difficulty", c.LearningResourceHandler.GetByDifficulty)
+
+		// リソース進捗
+		resources.PUT("/progress", c.ResourceProgressHandler.Upsert)
+		resources.GET("/progress", c.ResourceProgressHandler.GetMyProgress)
+		resources.GET("/:resourceId/progress", c.ResourceProgressHandler.GetByResource)
 	}
 }
 

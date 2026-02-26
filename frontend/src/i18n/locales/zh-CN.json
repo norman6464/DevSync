@@ -1704,5 +1704,22 @@
     "error": "自动保存失败",
     "serverSave": "已保存到服务器",
     "lastSaved": "最后保存: {time}"
+  },
+  "resourceProgress": {
+    "title": "学习进度",
+    "status": "状态",
+    "notStarted": "未开始",
+    "inProgress": "学习中",
+    "completed": "已完成",
+    "completionPercent": "完成率",
+    "note": "笔记",
+    "notePlaceholder": "输入学习笔记...",
+    "startedAt": "开始日期",
+    "completedAt": "完成日期",
+    "updateSuccess": "进度已更新",
+    "updateFailed": "更新进度失败",
+    "noProgress": "暂无进度",
+    "allStatuses": "所有状态",
+    "trackProgress": "记录进度"
   }
 }

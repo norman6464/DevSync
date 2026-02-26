@@ -1704,5 +1704,22 @@
     "error": "Falha ao salvar automaticamente",
     "serverSave": "Salvo no servidor",
     "lastSaved": "Último salvamento: {time}"
+  },
+  "resourceProgress": {
+    "title": "Progresso de Aprendizado",
+    "status": "Status",
+    "notStarted": "Não Iniciado",
+    "inProgress": "Em Andamento",
+    "completed": "Concluído",
+    "completionPercent": "Porcentagem",
+    "note": "Nota",
+    "notePlaceholder": "Digite suas notas de aprendizado...",
+    "startedAt": "Data de início",
+    "completedAt": "Data de conclusão",
+    "updateSuccess": "Progresso atualizado",
+    "updateFailed": "Falha ao atualizar o progresso",
+    "noProgress": "Nenhum progresso ainda",
+    "allStatuses": "Todos os status",
+    "trackProgress": "Registrar Progresso"
   }
 }

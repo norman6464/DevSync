@@ -232,6 +232,13 @@ type LearningResourceRepositoryInterface interface {
 	FindByDifficulty(difficulty string, limit, offset int) ([]model.LearningResource, int64, error)
 }
 
+// ResourceProgressRepositoryInterface は学習リソース進捗データ操作の契約を定義する。
+type ResourceProgressRepositoryInterface interface {
+	Upsert(progress *model.ResourceProgress) error
+	FindByUserAndResource(userID, resourceID uint) (*model.ResourceProgress, error)
+	FindByUserID(userID uint, status string, limit, offset int) ([]model.ResourceProgress, int64, error)
+}
+
 // RoadmapRepositoryInterface は学習ロードマップデータ操作の契約を定義する。
 // ステップのCRUD操作やコピー機能も含む。
 type RoadmapRepositoryInterface interface {

@@ -109,6 +109,7 @@ func main() {
 		&model.BookmarkCollectionItem{},
 		&model.WeeklyChallenge{},
 		&model.NoteVersion{},
+		&model.ResourceProgress{},
 	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}

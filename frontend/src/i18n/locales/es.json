@@ -1704,5 +1704,22 @@
     "error": "Error al guardar automáticamente",
     "serverSave": "Guardado en el servidor",
     "lastSaved": "Último guardado: {time}"
+  },
+  "resourceProgress": {
+    "title": "Progreso de Aprendizaje",
+    "status": "Estado",
+    "notStarted": "No Iniciado",
+    "inProgress": "En Progreso",
+    "completed": "Completado",
+    "completionPercent": "Porcentaje",
+    "note": "Nota",
+    "notePlaceholder": "Escribe tus notas de aprendizaje...",
+    "startedAt": "Fecha de inicio",
+    "completedAt": "Fecha de finalización",
+    "updateSuccess": "Progreso actualizado",
+    "updateFailed": "Error al actualizar el progreso",
+    "noProgress": "Aún no hay progreso",
+    "allStatuses": "Todos los estados",
+    "trackProgress": "Registrar Progreso"
   }
 }
