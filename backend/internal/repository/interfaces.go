@@ -175,6 +175,7 @@ type LearningLogRepositoryInterface interface {
 	SumDurationByGoalID(goalID uint) (int, error)
 	GetFavorites(userID uint, limit, offset int) ([]model.LearningLog, int64, error)
 	GetMonthlySummary(userID uint, months int) ([]model.MonthlySummary, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // LearningGoalRepositoryInterface は学習目標データ操作の契約を定義する。

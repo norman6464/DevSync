@@ -615,6 +615,11 @@ func (m *MockLearningLogRepository) GetMonthlySummary(userID uint, months int) (
 	return args.Get(0).([]model.MonthlySummary), args.Error(1)
 }
 
+func (m *MockLearningLogRepository) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 // ============================================================
 // MockLearningGoalRepository は repository.LearningGoalRepositoryInterface のテスト用モック実装。
 // ============================================================

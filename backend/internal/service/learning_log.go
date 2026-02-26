@@ -475,3 +475,8 @@ func (s *LearningLogService) ImportCSV(userID uint, data []byte) ([]model.Learni
 
 	return logs, nil
 }
+
+// CountByUserID は指定ユーザーの学習ログ総数を返す。
+func (s *LearningLogService) CountByUserID(userID uint) (int64, error) {
+	return s.repo.CountByUserID(userID)
+}
