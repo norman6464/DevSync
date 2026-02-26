@@ -51,6 +51,15 @@ func (e *DomainError) Unwrap() error {
 	return e.Err
 }
 
+// Is は errors.Is で同じエラーコードの DomainError を一致させるために使用する。
+func (e *DomainError) Is(target error) bool {
+	t, ok := target.(*DomainError)
+	if !ok {
+		return false
+	}
+	return e.Code == t.Code
+}
+
 // HTTPStatus returns the appropriate HTTP status code for the error.
 func (e *DomainError) HTTPStatus() int {
 	switch e.Code {

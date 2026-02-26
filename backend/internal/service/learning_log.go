@@ -37,11 +37,11 @@ func (s *LearningLogService) Create(log *model.LearningLog) error {
 	}
 	// Category: 空文字（デフォルト適用）または有効な値のみ許可
 	if log.Category != "" && !model.ValidCategories[log.Category] {
-		return ErrBadRequest
+		return domain.NewError(domain.ErrCodeBadRequest, "無効なカテゴリです", nil)
 	}
 	// Source: 空文字（デフォルト"manual"）または有効な値のみ許可
 	if log.Source != "" && !model.ValidSources[log.Source] {
-		return ErrBadRequest
+		return domain.NewError(domain.ErrCodeBadRequest, "無効なソースです", nil)
 	}
 
 	// ゴール紐付けバリデーション
@@ -58,7 +58,7 @@ func (s *LearningLogService) Create(log *model.LearningLog) error {
 	}
 
 	if err := s.repo.Create(log); err != nil {
-		return err
+		return domain.NewError(domain.ErrCodeInternal, "学習ログの作成に失敗しました", err)
 	}
 
 	// ゴール進捗自動更新（TargetHoursが設定されている場合のみ）
@@ -116,15 +116,15 @@ func (s *LearningLogService) BatchCreate(userID uint, logs []model.LearningLog) 
 			return nil, err
 		}
 		if logs[i].Category != "" && !model.ValidCategories[logs[i].Category] {
-			return nil, ErrBadRequest
+			return nil, domain.NewError(domain.ErrCodeBadRequest, "無効なカテゴリです", nil)
 		}
 		if logs[i].Source != "" && !model.ValidSources[logs[i].Source] {
-			return nil, ErrBadRequest
+			return nil, domain.NewError(domain.ErrCodeBadRequest, "無効なソースです", nil)
 		}
 	}
 
 	if err := s.repo.CreateBatch(logs); err != nil {
-		return nil, err
+		return nil, domain.NewError(domain.ErrCodeInternal, "学習ログの一括作成に失敗しました", err)
 	}
 
 	return logs, nil
@@ -159,7 +159,7 @@ func (s *LearningLogService) GetBySource(userID uint, source string) ([]model.Le
 // validateDuration は学習時間（分）が有効な範囲（0〜1440）かを検証する。
 func validateDuration(duration int) error {
 	if duration < 0 || duration > 1440 {
-		return ErrBadRequest
+		return domain.NewError(domain.ErrCodeBadRequest, "学習時間は0〜1440分の範囲で指定してください", nil)
 	}
 	return nil
 }

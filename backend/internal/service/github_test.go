@@ -106,7 +106,7 @@ func TestGitHubService_DisconnectGitHub_UpdateError(t *testing.T) {
 
 	err := svc.DisconnectGitHub(1)
 	assert.Error(t, err)
-	assert.Equal(t, "db error", err.Error())
+	assert.Contains(t, err.Error(), "db error")
 	userRepo.AssertExpectations(t)
 }
 

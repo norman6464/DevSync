@@ -76,7 +76,7 @@ func (s *AuthService) Register(input RegisterInput) (*AuthResponse, error) {
 
 	hashed, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, err
+		return nil, domain.NewError(domain.ErrCodeInternal, "パスワードのハッシュ化に失敗しました", err)
 	}
 
 	user := &model.User{
@@ -87,12 +87,12 @@ func (s *AuthService) Register(input RegisterInput) (*AuthResponse, error) {
 	}
 
 	if err := s.userRepo.Create(user); err != nil {
-		return nil, err
+		return nil, domain.NewError(domain.ErrCodeInternal, "ユーザーの作成に失敗しました", err)
 	}
 
 	token, err := s.generateToken(user.ID)
 	if err != nil {
-		return nil, err
+		return nil, domain.NewError(domain.ErrCodeInternal, "トークンの生成に失敗しました", err)
 	}
 
 	return &AuthResponse{Token: token, User: *user}, nil
@@ -116,7 +116,7 @@ func (s *AuthService) Login(input LoginInput) (*AuthResponse, error) {
 
 	token, err := s.generateToken(user.ID)
 	if err != nil {
-		return nil, err
+		return nil, domain.NewError(domain.ErrCodeInternal, "トークンの生成に失敗しました", err)
 	}
 
 	return &AuthResponse{Token: token, User: *user}, nil
@@ -131,7 +131,7 @@ func (s *AuthService) ValidateToken(tokenString string) (uint, error) {
 		return s.jwtSecret, nil
 	})
 	if err != nil {
-		return 0, err
+		return 0, domain.NewError(domain.ErrCodeUnauthorized, "無効なトークンです", err)
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
@@ -166,7 +166,7 @@ func (s *AuthService) ValidateLoginState(state string) error {
 		return s.jwtSecret, nil
 	})
 	if err != nil {
-		return err
+		return domain.NewError(domain.ErrCodeUnauthorized, "無効なログインステートです", err)
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
@@ -196,7 +196,7 @@ func (s *AuthService) GitHubLogin(ghUser *GitHubUserInfo, accessToken string) (*
 
 		token, err := s.generateToken(user.ID)
 		if err != nil {
-			return nil, err
+			return nil, domain.NewError(domain.ErrCodeInternal, "トークンの生成に失敗しました", err)
 		}
 		return &AuthResponse{Token: token, User: *user}, nil
 	}
@@ -216,7 +216,7 @@ func (s *AuthService) GitHubLogin(ghUser *GitHubUserInfo, accessToken string) (*
 
 			token, err := s.generateToken(user.ID)
 			if err != nil {
-				return nil, err
+				return nil, domain.NewError(domain.ErrCodeInternal, "トークンの生成に失敗しました", err)
 			}
 			return &AuthResponse{Token: token, User: *user}, nil
 		}
@@ -247,12 +247,12 @@ func (s *AuthService) GitHubLogin(ghUser *GitHubUserInfo, accessToken string) (*
 	}
 
 	if err := s.userRepo.Create(newUser); err != nil {
-		return nil, err
+		return nil, domain.NewError(domain.ErrCodeInternal, "ユーザーの作成に失敗しました", err)
 	}
 
 	token, err := s.generateToken(newUser.ID)
 	if err != nil {
-		return nil, err
+		return nil, domain.NewError(domain.ErrCodeInternal, "トークンの生成に失敗しました", err)
 	}
 	return &AuthResponse{Token: token, User: *newUser}, nil
 }
@@ -277,7 +277,7 @@ func (s *AuthService) ValidateOAuthState(state string) (uint, error) {
 		return s.jwtSecret, nil
 	})
 	if err != nil {
-		return 0, err
+		return 0, domain.NewError(domain.ErrCodeUnauthorized, "無効なOAuthステートです", err)
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
@@ -308,20 +308,23 @@ func (s *AuthService) GetMe(userID uint) (*model.User, error) {
 func (s *AuthService) DeleteAccount(userID uint, password string) error {
 	user, err := s.userRepo.FindByID(userID)
 	if err != nil {
-		return ErrNotFound
+		return domain.NewError(domain.ErrCodeNotFound, "ユーザーが見つかりません", err)
 	}
 
 	// パスワードが設定されている場合（GitHub専用アカウントでない場合）は検証
 	if user.Password != "" {
 		if password == "" {
-			return ErrBadRequest
+			return domain.NewError(domain.ErrCodeBadRequest, "パスワードの入力が必要です", nil)
 		}
 		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-			return ErrForbidden
+			return domain.NewError(domain.ErrCodeForbidden, "パスワードが正しくありません", nil)
 		}
 	}
 
-	return s.userRepo.DeleteWithRelatedData(userID)
+	if err := s.userRepo.DeleteWithRelatedData(userID); err != nil {
+		return domain.NewError(domain.ErrCodeInternal, "アカウント削除に失敗しました", err)
+	}
+	return nil
 }
 
 // RequestPasswordReset はパスワードリセットトークンを生成する。
@@ -339,7 +342,7 @@ func (s *AuthService) RequestPasswordReset(email string) (string, error) {
 	// セキュアなランダムトークンを生成
 	tokenBytes := make([]byte, 32)
 	if _, err := rand.Read(tokenBytes); err != nil {
-		return "", err
+		return "", domain.NewError(domain.ErrCodeInternal, "トークンの生成に失敗しました", err)
 	}
 	token := hex.EncodeToString(tokenBytes)
 
@@ -350,7 +353,7 @@ func (s *AuthService) RequestPasswordReset(email string) (string, error) {
 		ExpiresAt: time.Now().Add(1 * time.Hour),
 	}
 	if err := s.passwordResetRepo.Create(resetToken); err != nil {
-		return "", err
+		return "", domain.NewError(domain.ErrCodeInternal, "リセットトークンの保存に失敗しました", err)
 	}
 
 	return token, nil
@@ -360,11 +363,11 @@ func (s *AuthService) RequestPasswordReset(email string) (string, error) {
 func (s *AuthService) ResetPassword(token string, newPassword string) error {
 	resetToken, err := s.passwordResetRepo.FindByToken(token)
 	if err != nil {
-		return ErrBadRequest
+		return domain.NewError(domain.ErrCodeBadRequest, "無効なリセットトークンです", err)
 	}
 
 	if !resetToken.IsValid() {
-		return ErrBadRequest
+		return domain.NewError(domain.ErrCodeBadRequest, "リセットトークンが期限切れです", nil)
 	}
 
 	if err := domain.ValidatePassword(newPassword); err != nil {
@@ -373,11 +376,11 @@ func (s *AuthService) ResetPassword(token string, newPassword string) error {
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 	if err != nil {
-		return err
+		return domain.NewError(domain.ErrCodeInternal, "パスワードのハッシュ化に失敗しました", err)
 	}
 
 	if err := s.userRepo.UpdatePassword(resetToken.UserID, string(hashedPassword)); err != nil {
-		return err
+		return domain.NewError(domain.ErrCodeInternal, "パスワードの更新に失敗しました", err)
 	}
 
 	s.passwordResetRepo.MarkAsUsed(resetToken.ID)

@@ -57,7 +57,7 @@ func (s *GitHubService) ExchangeCode(code string) (string, error) {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return "", err
+		return "", domain.NewError(domain.ErrCodeServiceUnavailable, "GitHub APIへの接続に失敗しました", err)
 	}
 	defer resp.Body.Close()
 
@@ -66,7 +66,7 @@ func (s *GitHubService) ExchangeCode(code string) (string, error) {
 		Error       string `json:"error"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return "", err
+		return "", domain.NewError(domain.ErrCodeServiceUnavailable, "GitHub APIレスポンスの解析に失敗しました", err)
 	}
 	if result.Error != "" {
 		return "", domain.NewError(domain.ErrCodeServiceUnavailable, fmt.Sprintf("GitHub OAuthエラー: %s", result.Error), nil)
@@ -92,13 +92,13 @@ func (s *GitHubService) GetGitHubUser(token string) (*GitHubUserInfo, error) {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, domain.NewError(domain.ErrCodeServiceUnavailable, "GitHubユーザー情報の取得に失敗しました", err)
 	}
 	defer resp.Body.Close()
 
 	var user GitHubUserInfo
 	if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {
-		return nil, err
+		return nil, domain.NewError(domain.ErrCodeServiceUnavailable, "GitHubユーザー情報の解析に失敗しました", err)
 	}
 
 	// メールアドレスが非公開の場合、/user/emails APIからプライマリメールを取得
@@ -184,7 +184,7 @@ func (s *GitHubService) syncContributions(user *model.User) error {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return err
+		return domain.NewError(domain.ErrCodeServiceUnavailable, "GitHub GraphQL APIへの接続に失敗しました", err)
 	}
 	defer resp.Body.Close()
 
@@ -206,7 +206,7 @@ func (s *GitHubService) syncContributions(user *model.User) error {
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return err
+		return domain.NewError(domain.ErrCodeServiceUnavailable, "GitHub GraphQLレスポンスの解析に失敗しました", err)
 	}
 
 	var contributions []model.GitHubContribution
@@ -247,7 +247,7 @@ func (s *GitHubService) syncReposAndLanguages(user *model.User) error {
 
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			return err
+			return domain.NewError(domain.ErrCodeServiceUnavailable, "GitHubリポジトリ一覧の取得に失敗しました", err)
 		}
 
 		data, _ := io.ReadAll(resp.Body)
@@ -264,7 +264,7 @@ func (s *GitHubService) syncReposAndLanguages(user *model.User) error {
 			Private     bool   `json:"private"`
 		}
 		if err := json.Unmarshal(data, &repos); err != nil {
-			return err
+			return domain.NewError(domain.ErrCodeServiceUnavailable, "GitHubリポジトリ一覧の解析に失敗しました", err)
 		}
 		if len(repos) == 0 {
 			break
@@ -308,7 +308,7 @@ func (s *GitHubService) syncReposAndLanguages(user *model.User) error {
 	}
 
 	if err := s.githubRepo.UpsertRepos(modelRepos); err != nil {
-		return err
+		return domain.NewError(domain.ErrCodeDatabase, "リポジトリデータの保存に失敗しました", err)
 	}
 
 	// 上位20リポジトリの言語バイト数を取得（レート制限対策）
@@ -350,7 +350,10 @@ func (s *GitHubService) syncReposAndLanguages(user *model.User) error {
 		langStats = append(langStats, *stat)
 	}
 
-	return s.githubRepo.UpsertLanguageStats(langStats)
+	if err := s.githubRepo.UpsertLanguageStats(langStats); err != nil {
+		return domain.NewError(domain.ErrCodeDatabase, "言語統計の保存に失敗しました", err)
+	}
+	return nil
 }
 
 // ConnectGitHub はOAuthコールバック後にユーザーのGitHubアカウントを連携する。
@@ -368,7 +371,7 @@ func (s *GitHubService) ConnectGitHub(userID uint, code, state string) error {
 
 	user, err := s.userRepo.FindByID(userID)
 	if err != nil {
-		return ErrNotFound
+		return domain.NewError(domain.ErrCodeNotFound, "ユーザーが見つかりません", err)
 	}
 
 	user.GitHubToken = accessToken
@@ -380,7 +383,7 @@ func (s *GitHubService) ConnectGitHub(userID uint, code, state string) error {
 	}
 
 	if err := s.userRepo.Update(user); err != nil {
-		return err
+		return domain.NewError(domain.ErrCodeInternal, "ユーザー情報の更新に失敗しました", err)
 	}
 
 	go s.SyncData(user)
@@ -391,7 +394,7 @@ func (s *GitHubService) ConnectGitHub(userID uint, code, state string) error {
 func (s *GitHubService) DisconnectGitHub(userID uint) error {
 	user, err := s.userRepo.FindByID(userID)
 	if err != nil {
-		return ErrNotFound
+		return domain.NewError(domain.ErrCodeNotFound, "ユーザーが見つかりません", err)
 	}
 
 	user.GitHubToken = ""
@@ -399,7 +402,7 @@ func (s *GitHubService) DisconnectGitHub(userID uint) error {
 	user.GitHubConnected = false
 
 	if err := s.userRepo.Update(user); err != nil {
-		return err
+		return domain.NewError(domain.ErrCodeInternal, "ユーザー情報の更新に失敗しました", err)
 	}
 
 	s.githubRepo.DeleteUserData(userID)
@@ -410,7 +413,7 @@ func (s *GitHubService) DisconnectGitHub(userID uint) error {
 func (s *GitHubService) SyncUserData(userID uint) error {
 	user, err := s.userRepo.FindByID(userID)
 	if err != nil {
-		return ErrNotFound
+		return domain.NewError(domain.ErrCodeNotFound, "ユーザーが見つかりません", err)
 	}
 	return s.SyncData(user)
 }
