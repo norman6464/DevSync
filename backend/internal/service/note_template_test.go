@@ -52,6 +52,11 @@ func (m *MockNoteTemplateRepository) ClearDefaultFlag(userID uint) error {
 	return m.Called(userID).Error(0)
 }
 
+func (m *MockNoteTemplateRepository) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 // MockNoteCreator はNoteCreatorInterfaceのモック実装。
 type MockNoteCreator struct {
 	mock.Mock

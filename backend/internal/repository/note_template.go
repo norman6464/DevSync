@@ -64,3 +64,10 @@ func (r *NoteTemplateRepository) ClearDefaultFlag(userID uint) error {
 		Where("user_id = ?", userID).
 		Update("is_default", false).Error
 }
+
+// CountByUserID は指定ユーザーのノートテンプレート総数を返す。
+func (r *NoteTemplateRepository) CountByUserID(userID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.NoteTemplate{}).Where("user_id = ?", userID).Count(&count).Error
+	return count, err
+}

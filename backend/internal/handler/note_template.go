@@ -15,6 +15,7 @@ type NoteTemplateServiceInterface interface {
 	Update(id, userID uint, name, description, defaultTitle, contentTemplate, defaultTags string, isDefault *bool) (*model.NoteTemplate, error)
 	Delete(id, userID uint) error
 	UseTemplate(id, userID uint) (*model.Note, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // NoteTemplateHandler はノートテンプレート関連のHTTPハンドラ。
@@ -149,4 +150,15 @@ func (h *NoteTemplateHandler) UseTemplate(c *gin.Context) {
 	}
 
 	respondCreated(c, note)
+}
+
+// GetMyCount は認証ユーザーのノートテンプレート総数を返す。
+func (h *NoteTemplateHandler) GetMyCount(c *gin.Context) {
+	userID := c.GetUint("userID")
+	count, err := h.service.CountByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, gin.H{"count": count})
 }
