@@ -1540,5 +1540,14 @@
     "updateSuccess": "テンプレートを更新しました",
     "deleteSuccess": "テンプレートを削除しました",
     "deleteConfirm": "このテンプレートを削除しますか？"
+  },
+  "widgetSettings": {
+    "title": "ウィジェット設定",
+    "customize": "ウィジェットをカスタマイズ",
+    "show": "表示",
+    "hide": "非表示",
+    "resetToDefault": "デフォルトに戻す",
+    "saveSuccess": "ウィジェット設定を保存しました",
+    "resetSuccess": "ウィジェット設定をリセットしました"
   }
 }

@@ -120,6 +120,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerSpotifyRoutes(protected, c)
 		registerCommentLikeRoutes(protected, c)
 		registerPostTemplateRoutes(protected, c)
+		registerWidgetSettingsRoutes(protected, c)
 		registerUserStatsRoutes(protected, c)
 		registerStudyCircleStatsRoutes(protected, c)
 	}
@@ -728,6 +729,14 @@ func registerPostTemplateRoutes(g *gin.RouterGroup, c *di.Container) {
 		templates.GET("/:id", c.PostTemplateHandler.GetByID)
 		templates.PUT("/:id", c.PostTemplateHandler.Update)
 		templates.DELETE("/:id", c.PostTemplateHandler.Delete)
+	}
+}
+
+func registerWidgetSettingsRoutes(g *gin.RouterGroup, c *di.Container) {
+	widgets := g.Group("/widget-settings")
+	{
+		widgets.GET("", c.WidgetSettingsHandler.GetSettings)
+		widgets.PUT("", c.WidgetSettingsHandler.UpdateSettings)
 	}
 }
 

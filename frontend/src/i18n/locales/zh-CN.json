@@ -1639,5 +1639,14 @@
     "updateSuccess": "模板更新成功",
     "deleteSuccess": "模板删除成功",
     "deleteConfirm": "确定删除此模板吗？"
+  },
+  "widgetSettings": {
+    "title": "小部件设置",
+    "customize": "自定义小部件",
+    "show": "显示",
+    "hide": "隐藏",
+    "resetToDefault": "恢复默认",
+    "saveSuccess": "小部件设置已保存",
+    "resetSuccess": "小部件设置已重置"
   }
 }

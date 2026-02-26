@@ -1639,5 +1639,14 @@
     "updateSuccess": "Modèle mis à jour",
     "deleteSuccess": "Modèle supprimé",
     "deleteConfirm": "Supprimer ce modèle ?"
+  },
+  "widgetSettings": {
+    "title": "Paramètres des widgets",
+    "customize": "Personnaliser les widgets",
+    "show": "Afficher",
+    "hide": "Masquer",
+    "resetToDefault": "Réinitialiser par défaut",
+    "saveSuccess": "Paramètres des widgets enregistrés",
+    "resetSuccess": "Paramètres des widgets réinitialisés"
   }
 }

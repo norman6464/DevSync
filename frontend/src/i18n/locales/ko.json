@@ -1641,5 +1641,14 @@
     "updateSuccess": "템플릿이 업데이트되었습니다",
     "deleteSuccess": "템플릿이 삭제되었습니다",
     "deleteConfirm": "이 템플릿을 삭제하시겠습니까?"
+  },
+  "widgetSettings": {
+    "title": "위젯 설정",
+    "customize": "위젯 커스터마이즈",
+    "show": "표시",
+    "hide": "숨기기",
+    "resetToDefault": "기본값으로 복원",
+    "saveSuccess": "위젯 설정이 저장되었습니다",
+    "resetSuccess": "위젯 설정이 초기화되었습니다"
   }
 }

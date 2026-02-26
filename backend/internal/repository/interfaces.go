@@ -663,3 +663,9 @@ type StreakFreezeRepositoryInterface interface {
 	GetFreezeDates(userID uint) ([]string, error)
 	HasFreezeOnDate(userID uint, date string) (bool, error)
 }
+
+// WidgetSettingsRepositoryInterface はダッシュボードウィジェット設定の操作契約を定義する。
+type WidgetSettingsRepositoryInterface interface {
+	FindByUserID(userID uint) (*model.WidgetSettings, error)
+	Upsert(settings *model.WidgetSettings) error
+}

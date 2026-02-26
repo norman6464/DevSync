@@ -1639,5 +1639,14 @@
     "updateSuccess": "Template updated",
     "deleteSuccess": "Template deleted",
     "deleteConfirm": "Delete this template?"
+  },
+  "widgetSettings": {
+    "title": "Widget Settings",
+    "customize": "Customize Widgets",
+    "show": "Show",
+    "hide": "Hide",
+    "resetToDefault": "Reset to Default",
+    "saveSuccess": "Widget settings saved",
+    "resetSuccess": "Widget settings reset"
   }
 }
