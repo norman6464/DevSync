@@ -1756,5 +1756,21 @@
     "favoriteRemoved": "お気に入りを解除しました",
     "favoritedSnippets": "お気に入りスニペット",
     "noFavorites": "お気に入りスニペットはありません"
+  },
+  "resourceReview": {
+    "title": "レビュー",
+    "addReview": "レビューを書く",
+    "editReview": "レビューを編集",
+    "deleteReview": "レビューを削除",
+    "deleteConfirm": "このレビューを削除してもよろしいですか？",
+    "rating": "評価",
+    "comment": "コメント",
+    "commentPlaceholder": "レビューコメントを入力...",
+    "submitSuccess": "レビューを投稿しました",
+    "updateSuccess": "レビューを更新しました",
+    "deleteSuccess": "レビューを削除しました",
+    "noReviews": "まだレビューはありません",
+    "reviewCount": "{{count}}件のレビュー",
+    "averageRating": "平均評価"
   }
 }

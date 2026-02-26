@@ -1853,5 +1853,21 @@
     "favoriteRemoved": "Удалено из избранного",
     "favoritedSnippets": "Избранные сниппеты",
     "noFavorites": "Нет избранных сниппетов"
+  },
+  "resourceReview": {
+    "title": "Отзывы",
+    "addReview": "Написать отзыв",
+    "editReview": "Редактировать отзыв",
+    "deleteReview": "Удалить отзыв",
+    "deleteConfirm": "Вы уверены, что хотите удалить этот отзыв?",
+    "rating": "Оценка",
+    "comment": "Комментарий",
+    "commentPlaceholder": "Напишите ваш отзыв...",
+    "submitSuccess": "Отзыв отправлен",
+    "updateSuccess": "Отзыв обновлён",
+    "deleteSuccess": "Отзыв удалён",
+    "noReviews": "Отзывов пока нет",
+    "reviewCount": "{{count}} отзывов",
+    "averageRating": "Средняя оценка"
   }
 }

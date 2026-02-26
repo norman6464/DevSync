@@ -1854,5 +1854,21 @@
     "favoriteRemoved": "Eliminado de favoritos",
     "favoritedSnippets": "Fragmentos favoritos",
     "noFavorites": "No hay fragmentos favoritos"
+  },
+  "resourceReview": {
+    "title": "Reseñas",
+    "addReview": "Escribir una reseña",
+    "editReview": "Editar reseña",
+    "deleteReview": "Eliminar reseña",
+    "deleteConfirm": "¿Estás seguro de que deseas eliminar esta reseña?",
+    "rating": "Valoración",
+    "comment": "Comentario",
+    "commentPlaceholder": "Escribe tu reseña...",
+    "submitSuccess": "Reseña enviada",
+    "updateSuccess": "Reseña actualizada",
+    "deleteSuccess": "Reseña eliminada",
+    "noReviews": "Aún no hay reseñas",
+    "reviewCount": "{{count}} reseñas",
+    "averageRating": "Valoración media"
   }
 }

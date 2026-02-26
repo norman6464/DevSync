@@ -67,3 +67,16 @@ type ResourceSave struct {
 	ResourceID uint      `json:"resource_id" gorm:"not null;uniqueIndex:idx_resource_save"`
 	CreatedAt  time.Time `json:"created_at"`
 }
+
+// ResourceReview は学習リソースへのレビュー（評価＋コメント）を記録する。
+// ユーザーとリソースの組み合わせでユニーク（1リソースにつき1レビュー）。
+type ResourceReview struct {
+	ID         uint      `json:"id" gorm:"primaryKey"`
+	UserID     uint      `json:"user_id" gorm:"not null;uniqueIndex:idx_resource_review"`
+	User       User      `json:"user,omitempty" gorm:"foreignKey:UserID"`
+	ResourceID uint      `json:"resource_id" gorm:"not null;uniqueIndex:idx_resource_review;index"`
+	Rating     int       `json:"rating" gorm:"not null"`       // 1-5の評価
+	Comment    string    `json:"comment" gorm:"type:text"`     // レビューコメント
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+}
