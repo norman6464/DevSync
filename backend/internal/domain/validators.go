@@ -112,11 +112,11 @@ func ValidateUsername(username string) error {
 func ValidateTitle(title string) error {
 	title = strings.TrimSpace(title)
 
-	if len(title) < MinTitleLength {
+	if len([]rune(title)) < MinTitleLength {
 		return NewError(ErrCodeValidation, "タイトルを入力してください", nil)
 	}
 
-	if len(title) > MaxTitleLength {
+	if len([]rune(title)) > MaxTitleLength {
 		return NewError(ErrCodeValidation, fmt.Sprintf("タイトルは%d文字以下である必要があります", MaxTitleLength), nil)
 	}
 
@@ -127,11 +127,11 @@ func ValidateTitle(title string) error {
 func ValidateContent(content string) error {
 	content = strings.TrimSpace(content)
 
-	if len(content) < MinContentLength {
+	if len([]rune(content)) < MinContentLength {
 		return NewError(ErrCodeValidation, "内容を入力してください", nil)
 	}
 
-	if len(content) > MaxContentLength {
+	if len([]rune(content)) > MaxContentLength {
 		return NewError(ErrCodeValidation, fmt.Sprintf("内容は%d文字以下である必要があります", MaxContentLength), nil)
 	}
 
@@ -226,10 +226,10 @@ func ValidateTags(tags []string) error {
 
 	for _, tag := range tags {
 		tag = strings.TrimSpace(tag)
-		if len(tag) == 0 {
+		if len([]rune(tag)) == 0 {
 			return NewError(ErrCodeValidation, "空のタグは設定できません", nil)
 		}
-		if len(tag) > 30 {
+		if len([]rune(tag)) > 30 {
 			return NewError(ErrCodeValidation, "タグは30文字以下である必要があります", nil)
 		}
 	}
@@ -261,7 +261,7 @@ func ValidatePagination(limit, offset int) (int, int, error) {
 // ValidateStringLength は文字列の長さをバリデーションする汎用関数
 func ValidateStringLength(s string, min, max int, fieldName string) error {
 	s = strings.TrimSpace(s)
-	length := len(s)
+	length := len([]rune(s))
 
 	if length < min {
 		if min == 1 {
