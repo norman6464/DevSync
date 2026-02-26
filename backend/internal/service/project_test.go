@@ -562,3 +562,48 @@ func TestProjectGetArchivedByUserID_Success(t *testing.T) {
 	assert.Equal(t, int64(1), total)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// 検索テスト
+// ============================================================
+
+func TestProjectSearch_Success(t *testing.T) {
+	svc, repo := newTestProjectService()
+
+	expected := []model.Project{
+		{Title: "React App", TechStack: "React, TypeScript"},
+	}
+	repo.On("Search", "React", 20, 0).Return(expected, int64(1), nil)
+
+	result, total, err := svc.Search("React", 20, 0)
+	assert.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, int64(1), total)
+	repo.AssertExpectations(t)
+}
+
+func TestProjectSearch_EmptyQuery(t *testing.T) {
+	svc, _ := newTestProjectService()
+
+	_, _, err := svc.Search("", 20, 0)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "検索キーワードは必須です")
+}
+
+func TestProjectSearch_WhitespaceQuery(t *testing.T) {
+	svc, _ := newTestProjectService()
+
+	_, _, err := svc.Search("   ", 20, 0)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "検索キーワードは必須です")
+}
+
+func TestProjectSearch_RepoError(t *testing.T) {
+	svc, repo := newTestProjectService()
+
+	repo.On("Search", "test", 20, 0).Return([]model.Project{}, int64(0), assert.AnError)
+
+	_, _, err := svc.Search("test", 20, 0)
+	assert.Error(t, err)
+	repo.AssertExpectations(t)
+}
