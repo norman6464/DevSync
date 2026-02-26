@@ -470,3 +470,32 @@ func TestPostCollectionGetByID_ResponseBody(t *testing.T) {
 	assert.Equal(t, "Test Collection", body["title"])
 	svc.AssertExpectations(t)
 }
+
+// ============================================================
+// GetMyCount テスト
+// ============================================================
+
+func TestPostCollectionGetMyCount_Success(t *testing.T) {
+	h, svc := setupPostCollectionHandler()
+	svc.On("CountByUserID", uint(1)).Return(int64(5), nil)
+
+	r := newRouter(1)
+	r.GET("/collections/my/count", h.GetMyCount)
+
+	w := doRequest(r, http.MethodGet, "/collections/my/count", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Contains(t, w.Body.String(), `"count":5`)
+	svc.AssertExpectations(t)
+}
+
+func TestPostCollectionGetMyCount_ServiceError(t *testing.T) {
+	h, svc := setupPostCollectionHandler()
+	svc.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	r := newRouter(1)
+	r.GET("/collections/my/count", h.GetMyCount)
+
+	w := doRequest(r, http.MethodGet, "/collections/my/count", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
