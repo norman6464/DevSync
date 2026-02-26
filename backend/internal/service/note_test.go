@@ -789,3 +789,63 @@ func TestNoteService_ExportMarkdown_Forbidden(t *testing.T) {
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, ErrForbidden)
 }
+
+// ============================================================
+// ExtractUniqueTags テスト
+// ============================================================
+
+func TestExtractUniqueTags_Empty(t *testing.T) {
+	result := ExtractUniqueTags([]model.Note{})
+	assert.Nil(t, result)
+}
+
+func TestExtractUniqueTags_NoTags(t *testing.T) {
+	notes := []model.Note{
+		{Tags: ""},
+		{Tags: ""},
+	}
+	result := ExtractUniqueTags(notes)
+	assert.Nil(t, result)
+}
+
+func TestExtractUniqueTags_SingleTag(t *testing.T) {
+	notes := []model.Note{
+		{Tags: "Go"},
+	}
+	result := ExtractUniqueTags(notes)
+	assert.Equal(t, []string{"Go"}, result)
+}
+
+func TestExtractUniqueTags_MultipleTags(t *testing.T) {
+	notes := []model.Note{
+		{Tags: "Go,React,TypeScript"},
+	}
+	result := ExtractUniqueTags(notes)
+	assert.Equal(t, []string{"Go", "React", "TypeScript"}, result)
+}
+
+func TestExtractUniqueTags_Deduplication(t *testing.T) {
+	notes := []model.Note{
+		{Tags: "Go,React"},
+		{Tags: "React,TypeScript"},
+		{Tags: "Go"},
+	}
+	result := ExtractUniqueTags(notes)
+	assert.Equal(t, []string{"Go", "React", "TypeScript"}, result)
+}
+
+func TestExtractUniqueTags_WhitespaceHandling(t *testing.T) {
+	notes := []model.Note{
+		{Tags: " Go , React , TypeScript "},
+	}
+	result := ExtractUniqueTags(notes)
+	assert.Equal(t, []string{"Go", "React", "TypeScript"}, result)
+}
+
+func TestExtractUniqueTags_EmptyTagsSkipped(t *testing.T) {
+	notes := []model.Note{
+		{Tags: "Go,,React,, ,TypeScript"},
+	}
+	result := ExtractUniqueTags(notes)
+	assert.Equal(t, []string{"Go", "React", "TypeScript"}, result)
+}
