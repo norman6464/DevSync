@@ -138,3 +138,15 @@ export interface SnippetComment {
   created_at: string;
   updated_at: string;
 }
+
+export interface TopReactedPost {
+  id: number;
+  title: string;
+  reaction_count: number;
+}
+
+export interface ReactionSummary {
+  emoji_counts: ReactionCount[];
+  top_posts: TopReactedPost[];
+  total_reactions: number;
+}

@@ -905,7 +905,7 @@
     "title": "書評",
     "timeline": "時間線",
     "profile": "個人資料",
-    "progress": "進度",
+    "progress": "閱讀進度",
     "activities": "活動",
     "recommendations": "推薦",
     "subtitle": "分享你對技術書籍的看法",
@@ -948,7 +948,6 @@
     "statusUpdateFailed": "狀態更新失敗",
     "totalPages": "總頁數",
     "currentPage": "目前頁碼",
-    "progress": "閱讀進度",
     "progressPercent": "{{percent}}% 完成",
     "progressUpdate": "更新進度",
     "progressUpdated": "閱讀進度已更新",
@@ -1657,5 +1656,13 @@
     "resetToDefault": "恢復預設",
     "saveSuccess": "小工具設定已儲存",
     "resetSuccess": "小工具設定已重設"
+  },
+  "reactionSummary": {
+    "title": "反應摘要",
+    "totalReactions": "反應總數",
+    "emojiBreakdown": "表情分類統計",
+    "topPosts": "反應最多的貼文",
+    "noReactions": "還沒有反應",
+    "loadFailed": "載入反應摘要失敗"
   }
 }

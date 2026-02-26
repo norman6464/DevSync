@@ -2266,6 +2266,16 @@ func (m *MockReactionStatsRepository) GetReactionStats(userID uint) (*model.Reac
 	return args.Get(0).(*model.ReactionStats), args.Error(1)
 }
 
+func (m *MockReactionStatsRepository) GetEmojiBreakdown(userID uint) ([]model.ReactionCount, error) {
+	args := m.Called(userID)
+	return args.Get(0).([]model.ReactionCount), args.Error(1)
+}
+
+func (m *MockReactionStatsRepository) GetTopReactedPosts(userID uint, limit int) ([]model.TopReactedPost, error) {
+	args := m.Called(userID, limit)
+	return args.Get(0).([]model.TopReactedPost), args.Error(1)
+}
+
 // MockBookmarkStatsRepository は repository.BookmarkStatsRepositoryInterface のテスト用モック実装。
 // ============================================================
 

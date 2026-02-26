@@ -905,7 +905,7 @@
     "title": "도서 리뷰",
     "timeline": "타임라인",
     "profile": "프로필",
-    "progress": "진행 상황",
+    "progress": "독서 진행률",
     "activities": "활동",
     "recommendations": "추천",
     "subtitle": "기술 서적에 대한 생각을 공유하세요",
@@ -948,7 +948,6 @@
     "statusUpdateFailed": "상태 업데이트에 실패했습니다",
     "totalPages": "총 페이지 수",
     "currentPage": "현재 페이지",
-    "progress": "독서 진행률",
     "progressPercent": "{{percent}}% 완료",
     "progressUpdate": "진행률 업데이트",
     "progressUpdated": "독서 진행률이 업데이트되었습니다",
@@ -1657,5 +1656,13 @@
     "resetToDefault": "기본값으로 복원",
     "saveSuccess": "위젯 설정이 저장되었습니다",
     "resetSuccess": "위젯 설정이 초기화되었습니다"
+  },
+  "reactionSummary": {
+    "title": "리액션 요약",
+    "totalReactions": "총 리액션",
+    "emojiBreakdown": "이모지별 집계",
+    "topPosts": "리액션 상위 게시물",
+    "noReactions": "아직 리액션이 없습니다",
+    "loadFailed": "리액션 요약을 불러오지 못했습니다"
   }
 }

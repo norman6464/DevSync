@@ -697,6 +697,7 @@ func registerUserStatsRoutes(g *gin.RouterGroup, c *di.Container) {
 		users.GET("/:id/message-stats", c.MessageStatsHandler.GetStats)
 		users.GET("/:id/mention-stats", c.MentionStatsHandler.GetStats)
 		users.GET("/:id/reaction-stats", c.ReactionStatsHandler.GetStats)
+		users.GET("/:id/reaction-summary", c.ReactionStatsHandler.GetSummary)
 		users.GET("/:id/bookmark-stats", c.BookmarkStatsHandler.GetStats)
 	}
 }

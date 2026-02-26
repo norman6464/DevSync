@@ -903,7 +903,7 @@
     "title": "Critiques de Livres",
     "timeline": "Fil d'actualité",
     "profile": "Profil",
-    "progress": "Progrès",
+    "progress": "Progression de lecture",
     "activities": "Activités",
     "recommendations": "Recommandations",
     "subtitle": "Partagez vos avis sur les livres techniques",
@@ -946,7 +946,6 @@
     "statusUpdateFailed": "Échec de la mise à jour du statut",
     "totalPages": "Nombre total de pages",
     "currentPage": "Page actuelle",
-    "progress": "Progression de lecture",
     "progressPercent": "{{percent}}% terminé",
     "progressUpdate": "Mettre à jour la progression",
     "progressUpdated": "Progression de lecture mise à jour",
@@ -1655,5 +1654,13 @@
     "resetToDefault": "Réinitialiser par défaut",
     "saveSuccess": "Paramètres des widgets enregistrés",
     "resetSuccess": "Paramètres des widgets réinitialisés"
+  },
+  "reactionSummary": {
+    "title": "Résumé des réactions",
+    "totalReactions": "Total des réactions",
+    "emojiBreakdown": "Répartition par emoji",
+    "topPosts": "Publications les plus réagies",
+    "noReactions": "Aucune réaction pour le moment",
+    "loadFailed": "Échec du chargement du résumé des réactions"
   }
 }

@@ -903,7 +903,7 @@
     "title": "书评",
     "timeline": "时间线",
     "profile": "个人资料",
-    "progress": "进度",
+    "progress": "阅读进度",
     "activities": "活动",
     "recommendations": "推荐",
     "subtitle": "分享你对技术书籍的看法",
@@ -946,7 +946,6 @@
     "statusUpdateFailed": "状态更新失败",
     "totalPages": "总页数",
     "currentPage": "当前页码",
-    "progress": "阅读进度",
     "progressPercent": "{{percent}}% 完成",
     "progressUpdate": "更新进度",
     "progressUpdated": "阅读进度已更新",
@@ -1655,5 +1654,13 @@
     "resetToDefault": "恢复默认",
     "saveSuccess": "小部件设置已保存",
     "resetSuccess": "小部件设置已重置"
+  },
+  "reactionSummary": {
+    "title": "反应摘要",
+    "totalReactions": "反应总数",
+    "emojiBreakdown": "表情分类统计",
+    "topPosts": "反应最多的帖子",
+    "noReactions": "还没有反应",
+    "loadFailed": "加载反应摘要失败"
   }
 }

@@ -8,6 +8,7 @@ import (
 // ReactionStatsServiceInterface はReactionStatsHandlerが依存するサービスメソッドを定義する。
 type ReactionStatsServiceInterface interface {
 	GetReactionStats(userID uint) (*model.ReactionStats, error)
+	GetReactionSummary(userID uint) (*model.ReactionSummary, error)
 }
 
 // ReactionStatsHandler はユーザーリアクション統計関連のHTTPハンドラ。
@@ -34,4 +35,20 @@ func (h *ReactionStatsHandler) GetStats(c *gin.Context) {
 	}
 
 	respondOK(c, stats)
+}
+
+// GetSummary は指定ユーザーのリアクションサマリー（絵文字別集計＋トップ投稿）を返す。
+func (h *ReactionStatsHandler) GetSummary(c *gin.Context) {
+	userID, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	summary, err := h.service.GetReactionSummary(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, summary)
 }

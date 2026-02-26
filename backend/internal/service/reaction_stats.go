@@ -22,3 +22,31 @@ func (s *ReactionStatsService) GetReactionStats(userID uint) (*model.ReactionSta
 	}
 	return s.repo.GetReactionStats(userID)
 }
+
+// GetReactionSummary は指定ユーザーのリアクションサマリー（絵文字別集計＋トップ投稿）を取得する。
+func (s *ReactionStatsService) GetReactionSummary(userID uint) (*model.ReactionSummary, error) {
+	if err := validateRequiredID(userID, "userID"); err != nil {
+		return nil, err
+	}
+
+	emojiCounts, err := s.repo.GetEmojiBreakdown(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	topPosts, err := s.repo.GetTopReactedPosts(userID, 5)
+	if err != nil {
+		return nil, err
+	}
+
+	total := 0
+	for _, ec := range emojiCounts {
+		total += ec.Count
+	}
+
+	return &model.ReactionSummary{
+		EmojiCounts:    emojiCounts,
+		TopPosts:       topPosts,
+		TotalReactions: total,
+	}, nil
+}
