@@ -277,6 +277,53 @@ func ValidateStringLength(s string, min, max int, fieldName string) error {
 	return nil
 }
 
+// External username validation constants
+const (
+	MinExternalUsernameLength = 1
+	MaxExternalUsernameLength = 50
+)
+
+// externalUsernameRegex は外部サービスのユーザー名の形式をチェックする正規表現。
+// 英数字・アンダースコア・ハイフン・ドットのみ許可（URLパスやクエリに安全に埋め込める文字のみ）。
+var externalUsernameRegex = regexp.MustCompile(`^[a-zA-Z0-9_\-\.]+$`)
+
+// ValidateExternalUsername は外部サービス（Zenn/Qiita/AtCoder等）のユーザー名をバリデーションする。
+// URLインジェクション防止のため、安全な文字のみ許可する。
+func ValidateExternalUsername(username string) error {
+	username = strings.TrimSpace(username)
+
+	if len(username) < MinExternalUsernameLength {
+		return NewError(ErrCodeValidation, "ユーザー名を入力してください", nil)
+	}
+
+	if len(username) > MaxExternalUsernameLength {
+		return NewError(ErrCodeValidation, fmt.Sprintf("ユーザー名は%d文字以下である必要があります", MaxExternalUsernameLength), nil)
+	}
+
+	if !externalUsernameRegex.MatchString(username) {
+		return NewError(ErrCodeValidation, "ユーザー名は英数字、アンダースコア、ハイフン、ドットのみ使用できます", nil)
+	}
+
+	return nil
+}
+
+// validLanguageCodes はYouTube検索で許可するISO 639-1言語コード。
+var validLanguageCodes = map[string]bool{
+	"ja": true, "en": true, "ko": true, "zh": true,
+	"es": true, "fr": true, "de": true, "pt": true,
+	"ru": true, "it": true, "ar": true, "hi": true,
+	"th": true, "vi": true, "id": true, "tr": true,
+	"pl": true, "nl": true, "sv": true, "da": true,
+}
+
+// ValidateLanguageCode は言語コードがホワイトリストに含まれるかを検証する。
+func ValidateLanguageCode(lang string) error {
+	if !validLanguageCodes[lang] {
+		return NewError(ErrCodeValidation, "サポートされていない言語コードです", nil)
+	}
+	return nil
+}
+
 // ValidateEnum は値が許可されたリストに含まれるかチェックする
 func ValidateEnum(value string, allowedValues []string, fieldName string) error {
 	if value == "" {

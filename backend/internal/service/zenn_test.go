@@ -269,6 +269,42 @@ func TestZennFetchArticles_PaginationURL(t *testing.T) {
 	assert.Equal(t, 2, callCount)
 }
 
+func TestZennFetchArticles_InvalidUsername(t *testing.T) {
+	svc := newTestZennService(func(req *http.Request) (*http.Response, error) {
+		t.Fatal("HTTPリクエストが送信されるべきではない")
+		return nil, nil
+	})
+
+	tests := []struct {
+		name     string
+		username string
+	}{
+		{"スラッシュ含む", "user/path"},
+		{"アンパサンド含む", "user&param=1"},
+		{"スペース含む", "user name"},
+		{"空文字", ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			articles, err := svc.FetchArticles(tt.username)
+			assert.Nil(t, articles)
+			assert.Error(t, err)
+		})
+	}
+}
+
+func TestZennValidateUsername_InvalidFormat(t *testing.T) {
+	svc := newTestZennService(func(req *http.Request) (*http.Response, error) {
+		t.Fatal("HTTPリクエストが送信されるべきではない")
+		return nil, nil
+	})
+
+	valid, err := svc.ValidateUsername("user/injection")
+	assert.Error(t, err)
+	assert.False(t, valid)
+}
+
 func TestZennValidateUsername_RequestURL(t *testing.T) {
 	svc := newTestZennService(func(req *http.Request) (*http.Response, error) {
 		assert.Equal(t, "zenn.dev", req.URL.Host)

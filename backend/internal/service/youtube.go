@@ -46,6 +46,9 @@ func (s *YouTubeService) Search(query, language string) ([]model.YouTubeVideo, b
 	if language == "" {
 		language = "ja"
 	}
+	if err := domain.ValidateLanguageCode(language); err != nil {
+		return nil, false, err
+	}
 
 	// 1. DBキャッシュを検索
 	cache, err := s.repo.FindCachedSearch(normalizedQuery, language)

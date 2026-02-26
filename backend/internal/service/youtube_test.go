@@ -133,6 +133,29 @@ func TestYouTubeSearch_APIError(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestYouTubeSearch_InvalidLanguage(t *testing.T) {
+	mockClient := new(MockYouTubeClient)
+	svc, _, _ := newTestYouTubeService(mockClient)
+
+	tests := []struct {
+		name string
+		lang string
+	}{
+		{"不正な言語コード", "xx"},
+		{"インジェクション試行", "ja&key=val"},
+		{"長い文字列", "japanese"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, _, err := svc.Search("Go tutorial", tt.lang)
+			assert.Error(t, err)
+			assert.Contains(t, err.Error(), "サポートされていない言語コード")
+			mockClient.AssertNotCalled(t, "SearchVideos")
+		})
+	}
+}
+
 // ============================================================
 // GetRecommendations テスト
 // ============================================================
