@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/stretchr/testify/assert"
 )
@@ -62,7 +63,7 @@ func TestAIAdvice_MarkAsRead_Success(t *testing.T) {
 
 func TestAIAdvice_MarkAsRead_NotFound(t *testing.T) {
 	h, svc := setupAIAdviceHandler()
-	svc.On("MarkAsRead", uint(99), uint(1)).Return(errors.New("not found"))
+	svc.On("MarkAsRead", uint(99), uint(1)).Return(domain.NewError(domain.ErrCodeNotFound, "not found", nil))
 
 	r := gin.New()
 	r.PUT("/advice/:id/read", authMiddleware(1), h.MarkAsRead)

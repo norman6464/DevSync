@@ -26,12 +26,20 @@ func (s *UserService) GetAll(query string) ([]model.User, error) {
 
 // GetByID は指定IDのユーザーを取得する。
 func (s *UserService) GetByID(id uint) (*model.User, error) {
-	return s.repo.FindByID(id)
+	user, err := s.repo.FindByID(id)
+	if err != nil {
+		return nil, domain.NewError(domain.ErrCodeNotFound, "ユーザーが見つかりません", err)
+	}
+	return user, nil
 }
 
 // GetByUsername は指定ユーザー名のユーザーを取得する。
 func (s *UserService) GetByUsername(username string) (*model.User, error) {
-	return s.repo.FindByUsername(username)
+	user, err := s.repo.FindByUsername(username)
+	if err != nil {
+		return nil, domain.NewError(domain.ErrCodeNotFound, "ユーザーが見つかりません", err)
+	}
+	return user, nil
 }
 
 // FindByID は指定IDのユーザーを取得する（リポジトリ互換エイリアス）。

@@ -50,7 +50,7 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 
 	user, err := h.service.GetByID(id)
 	if err != nil {
-		respondNotFound(c, "user not found")
+		respondError(c, err)
 		return
 	}
 	respondOK(c, user)
@@ -66,7 +66,7 @@ func (h *UserHandler) GetByUsername(c *gin.Context) {
 
 	user, err := h.service.GetByUsername(username)
 	if err != nil {
-		respondNotFound(c, "user not found")
+		respondError(c, err)
 		return
 	}
 	respondOK(c, user)

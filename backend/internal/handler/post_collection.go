@@ -12,6 +12,7 @@ type PostCollectionServiceInterface interface {
 	GetByID(id uint) (*model.PostCollection, error)
 	GetByUserID(userID uint, limit, offset int) ([]model.PostCollection, int64, error)
 	GetPublicByUserID(userID uint) ([]model.PostCollection, error)
+	GetCollectionsForViewer(viewerID, targetUserID uint, limit, offset int) ([]model.PostCollection, int64, error)
 	Update(id, userID uint, title, description string, isPublic bool) (*model.PostCollection, error)
 	Delete(id, userID uint) error
 	AddPost(collectionID, userID, postID uint, note string) error
@@ -71,37 +72,27 @@ func (h *PostCollectionHandler) GetByID(c *gin.Context) {
 }
 
 // GetByUserID は指定ユーザーのコレクション一覧を取得する。
-// 自分のコレクションはページネーション付きで全件、他人のコレクションは公開のみ返す。
+// 表示権限の判定（自分=全件/他人=公開のみ）はService層に委譲する。
 func (h *PostCollectionHandler) GetByUserID(c *gin.Context) {
 	currentUserID := c.GetUint("userID")
 	targetUserID, ok := parseID(c, "userId")
 	if !ok {
 		return
 	}
+	limit, offset := parseLimitOffset(c)
 
-	if currentUserID == targetUserID {
-		limit, offset := parseLimitOffset(c)
-		collections, total, err := h.service.GetByUserID(targetUserID, limit, offset)
-		if err != nil {
-			respondError(c, err)
-			return
-		}
-		respondOK(c, dto.PostCollectionListResponse{
-			Collections: ensureSlice(collections),
-			Total:       total,
-			Limit:       limit,
-			Offset:      offset,
-		})
-		return
-	}
-
-	collections, err := h.service.GetPublicByUserID(targetUserID)
+	collections, total, err := h.service.GetCollectionsForViewer(currentUserID, targetUserID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
 
-	respondOK(c, ensureSlice(collections))
+	respondOK(c, dto.PostCollectionListResponse{
+		Collections: ensureSlice(collections),
+		Total:       total,
+		Limit:       limit,
+		Offset:      offset,
+	})
 }
 
 // Update は指定IDのコレクションを更新する。

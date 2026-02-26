@@ -168,7 +168,7 @@ func TestUserHandler_GetByID(t *testing.T) {
 		r := newRouter(1)
 		r.GET("/users/:id", h.GetByID)
 
-		svc.On("GetByID", uint(999)).Return(nil, errors.New("not found"))
+		svc.On("GetByID", uint(999)).Return(nil, domain.NewError(domain.ErrCodeNotFound, "not found", nil))
 
 		w := doRequest(r, "GET", "/users/999", nil)
 		assertStatus(t, w, http.StatusNotFound)
@@ -208,7 +208,7 @@ func TestUserHandler_GetByUsername(t *testing.T) {
 		r := newRouter(1)
 		r.GET("/users/username/:username", h.GetByUsername)
 
-		svc.On("GetByUsername", "nonexistent").Return(nil, errors.New("not found"))
+		svc.On("GetByUsername", "nonexistent").Return(nil, domain.NewError(domain.ErrCodeNotFound, "not found", nil))
 
 		w := doRequest(r, "GET", "/users/username/nonexistent", nil)
 		assertStatus(t, w, http.StatusNotFound)
