@@ -144,6 +144,8 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerCommentLikeRoutes(protected, c)
 		registerPostTemplateRoutes(protected, c)
 		registerWidgetSettingsRoutes(protected, c)
+		registerReminderSettingsRoutes(protected, c)
+		registerNotificationSettingsRoutes(protected, c)
 		registerUserStatsRoutes(protected, c)
 		registerStudyCircleStatsRoutes(protected, c)
 	}
@@ -394,6 +396,8 @@ func registerGoalRoutes(g *gin.RouterGroup, c *di.Container) {
 		goals.GET("/public/user/:userId", c.LearningGoalHandler.GetPublicByUserID)
 		goals.GET("/:id/linked-logs", c.LearningLogHandler.GetLinkedLogs)
 		goals.GET("/:id/progress", c.LearningLogHandler.GetGoalProgress)
+		goals.GET("/my-stats", c.LearningGoalHandler.GetMyStats)
+		goals.GET("/active", c.LearningGoalHandler.GetActiveGoals)
 		goals.PUT("/batch-progress", c.LearningGoalHandler.BatchUpdateProgress)
 		goals.GET("/forecast", c.LearningGoalHandler.GetForecast)
 	}
@@ -837,6 +841,22 @@ func registerWidgetSettingsRoutes(g *gin.RouterGroup, c *di.Container) {
 	{
 		widgets.GET("", c.WidgetSettingsHandler.GetSettings)
 		widgets.PUT("", c.WidgetSettingsHandler.UpdateSettings)
+	}
+}
+
+func registerReminderSettingsRoutes(g *gin.RouterGroup, c *di.Container) {
+	reminders := g.Group("/reminder-settings")
+	{
+		reminders.GET("", c.ReminderSettingsHandler.GetSettings)
+		reminders.PUT("", c.ReminderSettingsHandler.UpdateSettings)
+	}
+}
+
+func registerNotificationSettingsRoutes(g *gin.RouterGroup, c *di.Container) {
+	notifSettings := g.Group("/notification-settings")
+	{
+		notifSettings.GET("", c.NotificationSettingsHandler.GetSettings)
+		notifSettings.PUT("", c.NotificationSettingsHandler.UpdateSettings)
 	}
 }
 

@@ -325,6 +325,32 @@ func (h *LearningGoalHandler) BatchUpdateProgress(c *gin.Context) {
 	respondOK(c, ensureSlice(results))
 }
 
+// GetMyStats は認証ユーザー自身の学習目標統計情報を取得する。
+func (h *LearningGoalHandler) GetMyStats(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	stats, err := h.service.GetStats(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, stats)
+}
+
+// GetActiveGoals は認証ユーザーのアクティブな学習目標のみを取得する。
+func (h *LearningGoalHandler) GetActiveGoals(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	goals, err := h.service.GetActiveByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, ensureSlice(goals))
+}
+
 // GetForecast は認証ユーザーのアクティブ目標の達成予測一覧を返す。
 func (h *LearningGoalHandler) GetForecast(c *gin.Context) {
 	userID := c.GetUint("userID")
