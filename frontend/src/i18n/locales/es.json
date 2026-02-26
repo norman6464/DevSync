@@ -1687,5 +1687,15 @@
     "video": "Aprendizaje en video",
     "exercise": "Ejercicio",
     "other": "Otro"
+  },
+  "noteVersion": {
+    "title": "Historial de versiones",
+    "version": "Versión",
+    "restore": "Restaurar",
+    "restoreConfirm": "¿Restaurar esta versión? El contenido actual se guardará como una versión.",
+    "restoreSuccess": "Versión restaurada exitosamente",
+    "noVersions": "Sin historial de versiones",
+    "createdAt": "Guardado en",
+    "current": "Versión actual"
   }
 }

@@ -455,6 +455,9 @@ func registerNoteRoutes(g *gin.RouterGroup, c *di.Container) {
 		notes.GET("/:id/backlinks", c.NoteLinkHandler.GetBacklinks)
 		notes.GET("/:id/link-stats", c.NoteLinkHandler.GetLinkStats)
 		notes.DELETE("/:id/links/:targetId", c.NoteLinkHandler.DeleteLink)
+		notes.GET("/:id/versions", c.NoteVersionHandler.GetVersions)
+		notes.GET("/:id/versions/:versionId", c.NoteVersionHandler.GetVersion)
+		notes.POST("/:id/versions/:versionId/restore", c.NoteVersionHandler.RestoreVersion)
 	}
 
 	noteFolders := g.Group("/note-folders")

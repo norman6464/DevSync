@@ -1687,5 +1687,15 @@
     "video": "Video Learning",
     "exercise": "Exercise",
     "other": "Other"
+  },
+  "noteVersion": {
+    "title": "Version History",
+    "version": "Version",
+    "restore": "Restore",
+    "restoreConfirm": "Restore this version? Current content will be saved as a version.",
+    "restoreSuccess": "Version restored successfully",
+    "noVersions": "No version history",
+    "createdAt": "Saved at",
+    "current": "Current version"
   }
 }
