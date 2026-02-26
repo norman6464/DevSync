@@ -791,6 +791,39 @@ func TestBookReviewUpdate_ISBNTooLong(t *testing.T) {
 }
 
 // ============================================================
+// TotalPages バリデーションテスト
+// ============================================================
+
+func TestBookReviewCreate_TotalPagesNegative(t *testing.T) {
+	svc, _ := newTestBookReviewService()
+
+	review := &model.BookReview{Title: "テスト本", UserID: 1, Rating: 4, TotalPages: -1}
+	err := svc.Create(review)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "総ページ数は0〜99999")
+}
+
+func TestBookReviewCreate_TotalPagesTooLarge(t *testing.T) {
+	svc, _ := newTestBookReviewService()
+
+	review := &model.BookReview{Title: "テスト本", UserID: 1, Rating: 4, TotalPages: 100000}
+	err := svc.Create(review)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "総ページ数は0〜99999")
+}
+
+func TestBookReviewCreate_TotalPagesAtMaxLimit(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	review := &model.BookReview{Title: "テスト本", UserID: 1, Rating: 4, TotalPages: 99999}
+	repo.On("Create", review).Return(nil)
+
+	err := svc.Create(review)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+// ============================================================
 // CountByUserID テスト
 // ============================================================
 

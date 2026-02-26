@@ -509,3 +509,31 @@ func TestGetCollectionsForViewer_OtherUserRepoError(t *testing.T) {
 	assert.Equal(t, int64(0), total)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// AddPost メモバリデーションテスト
+// ============================================================
+
+func TestPostCollectionAddPost_NoteTooLong(t *testing.T) {
+	svc, _ := newTestPostCollectionService()
+
+	longNote := strings.Repeat("あ", 501)
+	err := svc.AddPost(1, 1, 1, longNote)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "メモは500文字以下")
+}
+
+func TestPostCollectionAddPost_NoteAtLimit(t *testing.T) {
+	svc, repo := newTestPostCollectionService()
+
+	collection := &model.PostCollection{UserID: 1}
+	collection.ID = 1
+	repo.On("FindByID", uint(1)).Return(collection, nil)
+	repo.On("HasPost", uint(1), uint(10)).Return(false, nil)
+	repo.On("AddPost", mock.AnythingOfType("*model.PostCollectionItem")).Return(nil)
+
+	note := strings.Repeat("あ", 500)
+	err := svc.AddPost(1, 1, 10, note)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
