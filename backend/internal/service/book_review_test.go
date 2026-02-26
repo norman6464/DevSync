@@ -576,6 +576,125 @@ func TestBookReviewSearch_RepoError(t *testing.T) {
 }
 
 // ============================================================
+// 読書進捗更新テスト
+// ============================================================
+
+func TestBookReviewUpdateProgress_Success(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	existing := &model.BookReview{UserID: 1, Title: "Go本", TotalPages: 300, CurrentPage: 50, Status: model.ReviewStatusReading}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", mock.MatchedBy(func(r *model.BookReview) bool {
+		return r.ID == 1 && r.CurrentPage == 150 && r.Status == model.ReviewStatusReading
+	})).Return(nil)
+
+	result, err := svc.UpdateProgress(1, 1, 150)
+	assert.NoError(t, err)
+	assert.Equal(t, 150, result.CurrentPage)
+	assert.Equal(t, model.ReviewStatusReading, result.Status)
+	repo.AssertExpectations(t)
+}
+
+func TestBookReviewUpdateProgress_AutoComplete(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	existing := &model.BookReview{UserID: 1, Title: "Go本", TotalPages: 300, CurrentPage: 200, Status: model.ReviewStatusReading}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", mock.MatchedBy(func(r *model.BookReview) bool {
+		return r.ID == 1 && r.CurrentPage == 300 && r.Status == model.ReviewStatusCompleted
+	})).Return(nil)
+
+	result, err := svc.UpdateProgress(1, 1, 300)
+	assert.NoError(t, err)
+	assert.Equal(t, 300, result.CurrentPage)
+	assert.Equal(t, model.ReviewStatusCompleted, result.Status)
+	repo.AssertExpectations(t)
+}
+
+func TestBookReviewUpdateProgress_ExceedsTotalPages(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	existing := &model.BookReview{UserID: 1, Title: "Go本", TotalPages: 300, CurrentPage: 200}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	_, err := svc.UpdateProgress(1, 1, 350)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "総ページ数を超えることはできません")
+}
+
+func TestBookReviewUpdateProgress_NegativePage(t *testing.T) {
+	svc, _ := newTestBookReviewService()
+
+	_, err := svc.UpdateProgress(1, 1, -1)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "ページ数は0以上")
+}
+
+func TestBookReviewUpdateProgress_NoTotalPages(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	existing := &model.BookReview{UserID: 1, Title: "Go本", TotalPages: 0, CurrentPage: 0, Status: model.ReviewStatusNotStarted}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	_, err := svc.UpdateProgress(1, 1, 50)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "総ページ数が設定されていません")
+}
+
+func TestBookReviewUpdateProgress_Forbidden(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	existing := &model.BookReview{UserID: 99, Title: "他人の本"}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	_, err := svc.UpdateProgress(1, 1, 50)
+	assert.ErrorIs(t, err, ErrForbidden)
+}
+
+func TestBookReviewUpdateProgress_NotFound(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	_, err := svc.UpdateProgress(99, 1, 50)
+	assert.Error(t, err)
+}
+
+func TestBookReviewUpdateProgress_AutoStartReading(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	existing := &model.BookReview{UserID: 1, Title: "Go本", TotalPages: 300, CurrentPage: 0, Status: model.ReviewStatusNotStarted}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", mock.MatchedBy(func(r *model.BookReview) bool {
+		return r.ID == 1 && r.CurrentPage == 50 && r.Status == model.ReviewStatusReading
+	})).Return(nil)
+
+	result, err := svc.UpdateProgress(1, 1, 50)
+	assert.NoError(t, err)
+	assert.Equal(t, 50, result.CurrentPage)
+	assert.Equal(t, model.ReviewStatusReading, result.Status)
+	repo.AssertExpectations(t)
+}
+
+func TestBookReviewUpdateProgress_RepoError(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	existing := &model.BookReview{UserID: 1, Title: "Go本", TotalPages: 300, CurrentPage: 0, Status: model.ReviewStatusReading}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", mock.AnythingOfType("*model.BookReview")).Return(errors.New("db error"))
+
+	_, err := svc.UpdateProgress(1, 1, 100)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "db error")
+}
+
+// ============================================================
 // タイトル・レビュー本文の文字数バリデーションテスト
 // ============================================================
 

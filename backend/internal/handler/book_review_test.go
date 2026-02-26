@@ -516,6 +516,78 @@ func TestBookReviewSearch_ServiceError(t *testing.T) {
 }
 
 // ============================================================
+// UpdateProgress テスト
+// ============================================================
+
+func TestBookReviewUpdateProgress_Success(t *testing.T) {
+	h, svc := setupBookReviewHandler()
+	r := newRouter(1)
+	r.PUT("/book-reviews/:id/progress", h.UpdateProgress)
+
+	review := &model.BookReview{Title: "Go本", TotalPages: 300, CurrentPage: 150, Status: model.ReviewStatusReading}
+	review.ID = 1
+	svc.On("UpdateProgress", uint(1), uint(1), 150).Return(review, nil)
+
+	w := doRequest(r, http.MethodPut, "/book-reviews/1/progress", map[string]interface{}{
+		"current_page": 150,
+	})
+	assertStatus(t, w, http.StatusOK)
+
+	body := parseJSON(t, w)
+	assert.Equal(t, float64(150), body["current_page"])
+	assert.Equal(t, float64(300), body["total_pages"])
+	svc.AssertExpectations(t)
+}
+
+func TestBookReviewUpdateProgress_InvalidJSON(t *testing.T) {
+	h, _ := setupBookReviewHandler()
+	r := newRouter(1)
+	r.PUT("/book-reviews/:id/progress", h.UpdateProgress)
+
+	w := doRequestRaw(r, http.MethodPut, "/book-reviews/1/progress", "not json")
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestBookReviewUpdateProgress_InvalidID(t *testing.T) {
+	h, _ := setupBookReviewHandler()
+	r := newRouter(1)
+	r.PUT("/book-reviews/:id/progress", h.UpdateProgress)
+
+	w := doRequest(r, http.MethodPut, "/book-reviews/abc/progress", map[string]interface{}{
+		"current_page": 50,
+	})
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestBookReviewUpdateProgress_Forbidden(t *testing.T) {
+	h, svc := setupBookReviewHandler()
+	r := newRouter(1)
+	r.PUT("/book-reviews/:id/progress", h.UpdateProgress)
+
+	svc.On("UpdateProgress", uint(5), uint(1), 50).Return(nil, service.ErrForbidden)
+
+	w := doRequest(r, http.MethodPut, "/book-reviews/5/progress", map[string]interface{}{
+		"current_page": 50,
+	})
+	assertStatus(t, w, http.StatusForbidden)
+	svc.AssertExpectations(t)
+}
+
+func TestBookReviewUpdateProgress_ServiceError(t *testing.T) {
+	h, svc := setupBookReviewHandler()
+	r := newRouter(1)
+	r.PUT("/book-reviews/:id/progress", h.UpdateProgress)
+
+	svc.On("UpdateProgress", uint(1), uint(1), 50).Return(nil, errors.New("db error"))
+
+	w := doRequest(r, http.MethodPut, "/book-reviews/1/progress", map[string]interface{}{
+		"current_page": 50,
+	})
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+// ============================================================
 // ImageURL バリデーションテスト
 // ============================================================
 

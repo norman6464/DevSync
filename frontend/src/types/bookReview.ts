@@ -11,6 +11,8 @@ export interface BookReview {
   isbn: string;
   rating: number; // 1-5
   review: string;
+  total_pages: number;
+  current_page: number;
   image_url: string;
   status: ReviewStatus;
   is_archived: boolean;
@@ -25,6 +27,7 @@ export interface CreateBookReviewRequest {
   rating: number;
   review?: string;
   image_url?: string;
+  total_pages?: number;
 }
 
 export interface UpdateBookReviewRequest extends Partial<CreateBookReviewRequest> {}

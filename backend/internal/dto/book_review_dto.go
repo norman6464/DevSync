@@ -4,12 +4,13 @@ import "github.com/norman6464/devsync/backend/internal/model"
 
 // CreateBookReviewRequest は書籍レビュー作成のリクエストボディ。
 type CreateBookReviewRequest struct {
-	Title    string `json:"title" binding:"required,min=1,max=300" validate:"required,min=1,max=300"`
-	Author   string `json:"author" binding:"max=200" validate:"max=200"`
-	ISBN     string `json:"isbn" binding:"max=20" validate:"max=20"`
-	Rating   int    `json:"rating" binding:"required,min=1,max=5" validate:"required,min=1,max=5"`
-	Review   string `json:"review" binding:"omitempty,max=5000"`
-	ImageURL string `json:"image_url" binding:"omitempty,http_url,max=2000"`
+	Title      string `json:"title" binding:"required,min=1,max=300" validate:"required,min=1,max=300"`
+	Author     string `json:"author" binding:"max=200" validate:"max=200"`
+	ISBN       string `json:"isbn" binding:"max=20" validate:"max=20"`
+	Rating     int    `json:"rating" binding:"required,min=1,max=5" validate:"required,min=1,max=5"`
+	Review     string `json:"review" binding:"omitempty,max=5000"`
+	ImageURL   string `json:"image_url" binding:"omitempty,http_url,max=2000"`
+	TotalPages *int   `json:"total_pages" binding:"omitempty,min=0"`
 }
 
 // UpdateBookReviewRequest は書籍レビュー更新のリクエストボディ。
@@ -20,6 +21,11 @@ type UpdateBookReviewRequest struct {
 	Rating   *int   `json:"rating" binding:"omitempty,min=1,max=5" validate:"omitempty,min=1,max=5"`
 	Review   string `json:"review" binding:"omitempty,min=1,max=5000"`
 	ImageURL string `json:"image_url" binding:"omitempty,http_url,max=2000"`
+}
+
+// UpdateReadingProgressRequest は読書進捗更新リクエスト。
+type UpdateReadingProgressRequest struct {
+	CurrentPage int `json:"current_page" binding:"required,min=0"`
 }
 
 // UpdateBookReviewStatusRequest は書籍レビューの読書状態更新リクエスト。

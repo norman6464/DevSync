@@ -944,6 +944,13 @@
     "unarchiveFailed": "Falha ao desarquivar",
     "statusUpdated": "Status atualizado",
     "statusUpdateFailed": "Falha ao atualizar status",
+    "totalPages": "Total de páginas",
+    "currentPage": "Página atual",
+    "progress": "Progresso de leitura",
+    "progressPercent": "{{percent}}% concluído",
+    "progressUpdate": "Atualizar progresso",
+    "progressUpdated": "Progresso de leitura atualizado",
+    "progressUpdateFailed": "Falha ao atualizar progresso de leitura",
     "sort": {
       "newest": "Mais recente",
       "oldest": "Mais antigo",

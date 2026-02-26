@@ -944,6 +944,13 @@
     "unarchiveFailed": "取消归档失败",
     "statusUpdated": "状态已更新",
     "statusUpdateFailed": "状态更新失败",
+    "totalPages": "总页数",
+    "currentPage": "当前页码",
+    "progress": "阅读进度",
+    "progressPercent": "{{percent}}% 完成",
+    "progressUpdate": "更新进度",
+    "progressUpdated": "阅读进度已更新",
+    "progressUpdateFailed": "阅读进度更新失败",
     "sort": {
       "newest": "最新",
       "oldest": "最旧",

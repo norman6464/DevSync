@@ -54,3 +54,8 @@ export const updateBookReviewStatus = async (id: number, status: ReviewStatus): 
   const res = await client.put(`/book-reviews/${id}/status`, { status });
   return res.data;
 };
+
+export const updateReadingProgress = async (id: number, currentPage: number): Promise<BookReview> => {
+  const res = await client.put(`/book-reviews/${id}/progress`, { current_page: currentPage });
+  return res.data;
+};

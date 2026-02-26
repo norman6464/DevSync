@@ -943,6 +943,13 @@
     "unarchiveFailed": "Entarchivierung fehlgeschlagen",
     "statusUpdated": "Status aktualisiert",
     "statusUpdateFailed": "Statusaktualisierung fehlgeschlagen",
+    "totalPages": "Gesamtseitenzahl",
+    "currentPage": "Aktuelle Seite",
+    "progress": "Lesefortschritt",
+    "progressPercent": "{{percent}}% abgeschlossen",
+    "progressUpdate": "Fortschritt aktualisieren",
+    "progressUpdated": "Lesefortschritt aktualisiert",
+    "progressUpdateFailed": "Lesefortschritt konnte nicht aktualisiert werden",
     "sort": {
       "newest": "Neueste",
       "oldest": "Älteste",
