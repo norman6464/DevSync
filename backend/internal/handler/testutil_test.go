@@ -244,6 +244,20 @@ func (m *MockCodeSnippetRepository) FindByUserIDAndLanguage(userID uint, languag
 func (m *MockCodeSnippetRepository) IncrementForkCount(id uint) error {
 	return m.Called(id).Error(0)
 }
+func (m *MockCodeSnippetRepository) Favorite(userID, snippetID uint) error {
+	return m.Called(userID, snippetID).Error(0)
+}
+func (m *MockCodeSnippetRepository) Unfavorite(userID, snippetID uint) error {
+	return m.Called(userID, snippetID).Error(0)
+}
+func (m *MockCodeSnippetRepository) HasFavorited(userID, snippetID uint) (bool, error) {
+	args := m.Called(userID, snippetID)
+	return args.Bool(0), args.Error(1)
+}
+func (m *MockCodeSnippetRepository) FindFavoritedByUserID(userID uint, limit, offset int) ([]model.CodeSnippet, int64, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.CodeSnippet), args.Get(1).(int64), args.Error(2)
+}
 
 // MockQuestionRepository は QuestionRepositoryInterface のモック実装。
 type MockQuestionRepository struct{ mock.Mock }
@@ -287,6 +301,24 @@ func (m *MockQuestionRepository) GetUserVote(userID, questionID uint) (int, erro
 	return args.Int(0), args.Error(1)
 }
 func (m *MockQuestionRepository) FindSolved(limit, offset int) ([]model.Question, int64, error) {
+	args := m.Called(limit, offset)
+	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
+}
+func (m *MockQuestionRepository) Bookmark(userID, questionID uint) error {
+	return m.Called(userID, questionID).Error(0)
+}
+func (m *MockQuestionRepository) Unbookmark(userID, questionID uint) error {
+	return m.Called(userID, questionID).Error(0)
+}
+func (m *MockQuestionRepository) HasBookmarked(userID, questionID uint) (bool, error) {
+	args := m.Called(userID, questionID)
+	return args.Bool(0), args.Error(1)
+}
+func (m *MockQuestionRepository) FindBookmarkedByUserID(userID uint, limit, offset int) ([]model.Question, int64, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
+}
+func (m *MockQuestionRepository) FindUnanswered(limit, offset int) ([]model.Question, int64, error) {
 	args := m.Called(limit, offset)
 	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
 }
@@ -565,8 +597,12 @@ func (m *MockEmailPreferencesService) GetByID(id uint) (*model.User, error) {
 	}
 	return nil, args.Error(1)
 }
-func (m *MockEmailPreferencesService) Update(user *model.User) error {
-	return m.Called(user).Error(0)
+func (m *MockEmailPreferencesService) UpdateEmailPreferences(userID uint, weeklyReport *bool, language *string) (*model.User, error) {
+	args := m.Called(userID, weeklyReport, language)
+	if u := args.Get(0); u != nil {
+		return u.(*model.User), args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 // setupEmailPreferencesHandler はEmailPreferencesHandlerテスト用のセットアップを行う。
@@ -944,6 +980,16 @@ func (m *MockProjectService) UpdateFeatured(id, userID uint, featured bool) (*mo
 func (m *MockProjectService) Delete(id, userID uint) error {
 	return m.Called(id, userID).Error(0)
 }
+func (m *MockProjectService) Archive(id, userID uint) error {
+	return m.Called(id, userID).Error(0)
+}
+func (m *MockProjectService) Unarchive(id, userID uint) error {
+	return m.Called(id, userID).Error(0)
+}
+func (m *MockProjectService) GetArchivedByUserID(userID uint, limit, offset int) ([]model.Project, int64, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.Project), args.Get(1).(int64), args.Error(2)
+}
 
 // setupProjectHandler はProjectHandlerテスト用のセットアップを行う。
 func setupProjectHandler() (*ProjectHandler, *MockProjectService) {
@@ -1034,6 +1080,13 @@ func (m *MockRoadmapService) ReorderSteps(roadmapID, userID uint, orders []model
 func (m *MockRoadmapService) GetByStatus(userID uint, status string) ([]model.Roadmap, error) {
 	args := m.Called(userID, status)
 	return args.Get(0).([]model.Roadmap), args.Error(1)
+}
+func (m *MockRoadmapService) BatchCompleteSteps(roadmapID, userID uint, stepIDs []uint) (*model.Roadmap, error) {
+	args := m.Called(roadmapID, userID, stepIDs)
+	if r := args.Get(0); r != nil {
+		return r.(*model.Roadmap), args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 // setupRoadmapHandlerMock はRoadmapHandlerテスト用のモックセットアップを行う。
@@ -1393,6 +1446,10 @@ func (m *MockLearningLogService) GetFavorites(userID uint, limit, offset int) ([
 	args := m.Called(userID, limit, offset)
 	return args.Get(0).([]model.LearningLog), args.Get(1).(int64), args.Error(2)
 }
+func (m *MockLearningLogService) GetMonthlySummary(userID uint, months int) ([]model.MonthlySummary, error) {
+	args := m.Called(userID, months)
+	return args.Get(0).([]model.MonthlySummary), args.Error(1)
+}
 
 // setupLearningLogHandler はLearningLogHandlerテスト用のセットアップを行う。
 func setupLearningLogHandler() (*LearningLogHandler, *MockLearningLogService) {
@@ -1547,30 +1604,26 @@ func (m *MockAtCoderService) GetRating(username string) (*service.AtCoderRatingI
 	}
 	return nil, args.Error(1)
 }
-func (m *MockAtCoderService) ValidateUsername(username string) bool {
-	return m.Called(username).Bool(0)
-}
-
-// MockAtCoderUserService は AtCoderUserServiceInterface のモック実装。
-type MockAtCoderUserService struct{ mock.Mock }
-
-func (m *MockAtCoderUserService) GetByID(id uint) (*model.User, error) {
-	args := m.Called(id)
+func (m *MockAtCoderService) ConnectAtCoder(userID uint, username string) (*model.User, error) {
+	args := m.Called(userID, username)
 	if u := args.Get(0); u != nil {
 		return u.(*model.User), args.Error(1)
 	}
 	return nil, args.Error(1)
 }
-func (m *MockAtCoderUserService) Update(user *model.User) error {
-	return m.Called(user).Error(0)
+func (m *MockAtCoderService) DisconnectAtCoder(userID uint) (*model.User, error) {
+	args := m.Called(userID)
+	if u := args.Get(0); u != nil {
+		return u.(*model.User), args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 // setupAtCoderHandler はAtCoderHandlerテスト用のセットアップを行う。
-func setupAtCoderHandler() (*AtCoderHandler, *MockAtCoderService, *MockAtCoderUserService) {
+func setupAtCoderHandler() (*AtCoderHandler, *MockAtCoderService) {
 	atcoderSvc := new(MockAtCoderService)
-	userSvc := new(MockAtCoderUserService)
-	h := NewAtCoderHandler(atcoderSvc, userSvc)
-	return h, atcoderSvc, userSvc
+	h := NewAtCoderHandler(atcoderSvc)
+	return h, atcoderSvc
 }
 
 // MockAuthService は AuthServiceInterface のモック実装。
@@ -1745,6 +1798,16 @@ func (m *MockCodeSnippetHandlerService) Fork(userID, snippetID, targetPostID uin
 		return s.(*model.CodeSnippet), args.Error(1)
 	}
 	return nil, args.Error(1)
+}
+func (m *MockCodeSnippetHandlerService) Favorite(userID, snippetID uint) error {
+	return m.Called(userID, snippetID).Error(0)
+}
+func (m *MockCodeSnippetHandlerService) Unfavorite(userID, snippetID uint) error {
+	return m.Called(userID, snippetID).Error(0)
+}
+func (m *MockCodeSnippetHandlerService) GetFavoritedByUserID(userID uint, limit, offset int) ([]model.CodeSnippet, int64, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.CodeSnippet), args.Get(1).(int64), args.Error(2)
 }
 
 // setupCodeSnippetHandler はCodeSnippetHandlerテスト用のセットアップを行う。

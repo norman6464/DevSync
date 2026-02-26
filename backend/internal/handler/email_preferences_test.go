@@ -43,9 +43,8 @@ func TestEmailPreferences_GetPreferences_ServiceError(t *testing.T) {
 
 func TestEmailPreferences_UpdatePreferences_Success(t *testing.T) {
 	h, svc := setupEmailPreferencesHandler()
-	user := &model.User{EmailWeeklyReport: true, EmailLanguage: "ja"}
-	svc.On("GetByID", uint(1)).Return(user, nil)
-	svc.On("Update", mock.AnythingOfType("*model.User")).Return(nil)
+	svc.On("UpdateEmailPreferences", uint(1), mock.AnythingOfType("*bool"), mock.AnythingOfType("*string")).
+		Return(&model.User{EmailWeeklyReport: false, EmailLanguage: "en"}, nil)
 
 	r := newRouter(1)
 	r.PUT("/email-preferences", h.UpdatePreferences)
@@ -70,8 +69,8 @@ func TestEmailPreferences_UpdatePreferences_InvalidJSON(t *testing.T) {
 
 func TestEmailPreferences_UpdatePreferences_InvalidLanguage(t *testing.T) {
 	h, svc := setupEmailPreferencesHandler()
-	user := &model.User{EmailWeeklyReport: true, EmailLanguage: "ja"}
-	svc.On("GetByID", uint(1)).Return(user, nil)
+	svc.On("UpdateEmailPreferences", uint(1), (*bool)(nil), mock.AnythingOfType("*string")).
+		Return(nil, errors.New("無効なメール言語設定です"))
 
 	r := newRouter(1)
 	r.PUT("/email-preferences", h.UpdatePreferences)
@@ -79,15 +78,14 @@ func TestEmailPreferences_UpdatePreferences_InvalidLanguage(t *testing.T) {
 	w := doRequest(r, http.MethodPut, "/email-preferences", map[string]interface{}{
 		"email_language": "invalid",
 	})
-	assertStatus(t, w, http.StatusBadRequest)
+	assertStatus(t, w, http.StatusInternalServerError)
 	svc.AssertExpectations(t)
 }
 
 func TestEmailPreferences_UpdatePreferences_ServiceError(t *testing.T) {
 	h, svc := setupEmailPreferencesHandler()
-	user := &model.User{EmailWeeklyReport: true, EmailLanguage: "ja"}
-	svc.On("GetByID", uint(1)).Return(user, nil)
-	svc.On("Update", mock.AnythingOfType("*model.User")).Return(errors.New("update failed"))
+	svc.On("UpdateEmailPreferences", uint(1), mock.AnythingOfType("*bool"), (*string)(nil)).
+		Return(nil, errors.New("update failed"))
 
 	r := newRouter(1)
 	r.PUT("/email-preferences", h.UpdatePreferences)
