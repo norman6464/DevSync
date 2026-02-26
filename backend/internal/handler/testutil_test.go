@@ -258,6 +258,10 @@ func (m *MockCodeSnippetRepository) FindFavoritedByUserID(userID uint, limit, of
 	args := m.Called(userID, limit, offset)
 	return args.Get(0).([]model.CodeSnippet), args.Get(1).(int64), args.Error(2)
 }
+func (m *MockCodeSnippetRepository) Search(query string, limit, offset int) ([]model.CodeSnippet, int64, error) {
+	args := m.Called(query, limit, offset)
+	return args.Get(0).([]model.CodeSnippet), args.Get(1).(int64), args.Error(2)
+}
 
 // MockQuestionRepository は QuestionRepositoryInterface のモック実装。
 type MockQuestionRepository struct{ mock.Mock }
@@ -321,6 +325,10 @@ func (m *MockQuestionRepository) FindBookmarkedByUserID(userID uint, limit, offs
 func (m *MockQuestionRepository) FindUnanswered(limit, offset int) ([]model.Question, int64, error) {
 	args := m.Called(limit, offset)
 	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
+}
+func (m *MockQuestionRepository) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
 }
 
 // MockLearningResourceRepository は LearningResourceRepositoryInterface のモック実装。
@@ -837,6 +845,10 @@ func (m *MockBookReviewService) Search(query string, limit, offset int) ([]model
 	args := m.Called(query, limit, offset)
 	return args.Get(0).([]model.BookReview), args.Get(1).(int64), args.Error(2)
 }
+func (m *MockBookReviewService) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
 
 // setupBookReviewHandler はBookReviewHandlerテスト用のセットアップを行う。
 func setupBookReviewHandler() (*BookReviewHandler, *MockBookReviewService) {
@@ -995,6 +1007,14 @@ func (m *MockProjectService) GetArchivedByUserID(userID uint, limit, offset int)
 	args := m.Called(userID, limit, offset)
 	return args.Get(0).([]model.Project), args.Get(1).(int64), args.Error(2)
 }
+func (m *MockProjectService) Search(query string, limit, offset int) ([]model.Project, int64, error) {
+	args := m.Called(query, limit, offset)
+	return args.Get(0).([]model.Project), args.Get(1).(int64), args.Error(2)
+}
+func (m *MockProjectService) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
 
 // setupProjectHandler はProjectHandlerテスト用のセットアップを行う。
 func setupProjectHandler() (*ProjectHandler, *MockProjectService) {
@@ -1090,6 +1110,13 @@ func (m *MockRoadmapService) BatchCompleteSteps(roadmapID, userID uint, stepIDs 
 	args := m.Called(roadmapID, userID, stepIDs)
 	if r := args.Get(0); r != nil {
 		return r.(*model.Roadmap), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockRoadmapService) GetStats(userID uint) (*model.RoadmapStats, error) {
+	args := m.Called(userID)
+	if s := args.Get(0); s != nil {
+		return s.(*model.RoadmapStats), args.Error(1)
 	}
 	return nil, args.Error(1)
 }
@@ -1827,6 +1854,10 @@ func (m *MockCodeSnippetHandlerService) Unfavorite(userID, snippetID uint) error
 }
 func (m *MockCodeSnippetHandlerService) GetFavoritedByUserID(userID uint, limit, offset int) ([]model.CodeSnippet, int64, error) {
 	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.CodeSnippet), args.Get(1).(int64), args.Error(2)
+}
+func (m *MockCodeSnippetHandlerService) Search(query string, limit, offset int) ([]model.CodeSnippet, int64, error) {
+	args := m.Called(query, limit, offset)
 	return args.Get(0).([]model.CodeSnippet), args.Get(1).(int64), args.Error(2)
 }
 
