@@ -28,6 +28,7 @@ func (s *PostSeriesService) Create(series *model.PostSeries) error {
 		return err
 	}
 	series.Title = strings.TrimSpace(series.Title)
+	series.Description = strings.TrimSpace(series.Description)
 	return s.repo.Create(series)
 }
 
