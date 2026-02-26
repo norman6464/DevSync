@@ -1662,5 +1662,15 @@
     "topPosts": "Publicações mais reagidas",
     "noReactions": "Ainda não há reações",
     "loadFailed": "Falha ao carregar resumo de reações"
+  },
+  "goalLinking": {
+    "goalLinking": "Vinculação de metas",
+    "linkedGoal": "Meta vinculada",
+    "selectGoal": "Selecionar meta",
+    "noGoalLinked": "Sem meta vinculada",
+    "linkedLogs": "Registros de aprendizado vinculados",
+    "targetHours": "Horas alvo",
+    "autoProgressUpdate": "O progresso da meta é atualizado automaticamente ao registrar aprendizado",
+    "goalCompleted": "A meta foi concluída automaticamente"
   }
 }

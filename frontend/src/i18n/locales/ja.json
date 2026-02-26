@@ -1564,5 +1564,15 @@
     "topPosts": "リアクション上位の投稿",
     "noReactions": "まだリアクションがありません",
     "loadFailed": "リアクションサマリーの読み込みに失敗しました"
+  },
+  "goalLinking": {
+    "goalLinking": "ゴール連携",
+    "linkedGoal": "紐付けゴール",
+    "selectGoal": "ゴールを選択",
+    "noGoalLinked": "ゴール未紐付け",
+    "linkedLogs": "紐付け学習ログ",
+    "targetHours": "目標学習時間",
+    "autoProgressUpdate": "学習ログ記録時にゴール進捗を自動更新します",
+    "goalCompleted": "ゴールが自動的に完了しました"
   }
 }

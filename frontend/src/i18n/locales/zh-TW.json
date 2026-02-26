@@ -1664,5 +1664,15 @@
     "topPosts": "反應最多的貼文",
     "noReactions": "還沒有反應",
     "loadFailed": "載入反應摘要失敗"
+  },
+  "goalLinking": {
+    "goalLinking": "目標關聯",
+    "linkedGoal": "關聯目標",
+    "selectGoal": "選擇目標",
+    "noGoalLinked": "未關聯目標",
+    "linkedLogs": "關聯學習日誌",
+    "targetHours": "目標學習時長",
+    "autoProgressUpdate": "記錄學習日誌時自動更新目標進度",
+    "goalCompleted": "目標已自動完成"
   }
 }

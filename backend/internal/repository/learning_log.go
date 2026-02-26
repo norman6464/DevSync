@@ -182,6 +182,26 @@ func (r *LearningLogRepository) GetRecentCategories(userID uint, limit int) ([]s
 	return categories, err
 }
 
+// GetByGoalID は指定ゴールに紐付いた学習ログをページネーション付きで取得する。
+func (r *LearningLogRepository) GetByGoalID(goalID uint, limit, offset int) ([]model.LearningLog, int64, error) {
+	var logs []model.LearningLog
+	var total int64
+	query := r.db.Where("goal_id = ?", goalID)
+	query.Model(&model.LearningLog{}).Count(&total)
+	err := query.Order("created_at DESC").Limit(limit).Offset(offset).Find(&logs).Error
+	return logs, total, err
+}
+
+// SumDurationByGoalID は指定ゴールに紐付いた学習ログの合計学習時間（分）を返す。
+func (r *LearningLogRepository) SumDurationByGoalID(goalID uint) (int, error) {
+	var total int
+	err := r.db.Model(&model.LearningLog{}).
+		Where("goal_id = ?", goalID).
+		Select("COALESCE(SUM(duration), 0)").
+		Scan(&total).Error
+	return total, err
+}
+
 // GetCalendarData はカレンダー表示用の日別ログ件数を取得する。
 func (r *LearningLogRepository) GetCalendarData(userID uint) ([]model.CalendarEntry, error) {
 	var entries []model.CalendarEntry

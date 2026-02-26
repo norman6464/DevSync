@@ -1664,5 +1664,15 @@
     "topPosts": "리액션 상위 게시물",
     "noReactions": "아직 리액션이 없습니다",
     "loadFailed": "리액션 요약을 불러오지 못했습니다"
+  },
+  "goalLinking": {
+    "goalLinking": "목표 연동",
+    "linkedGoal": "연동된 목표",
+    "selectGoal": "목표 선택",
+    "noGoalLinked": "연동된 목표 없음",
+    "linkedLogs": "연동된 학습 로그",
+    "targetHours": "목표 학습 시간",
+    "autoProgressUpdate": "학습 로그 기록 시 목표 진행률이 자동 업데이트됩니다",
+    "goalCompleted": "목표가 자동으로 완료되었습니다"
   }
 }

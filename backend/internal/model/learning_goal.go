@@ -34,6 +34,7 @@ type LearningGoal struct {
 	Category    GoalCategory `json:"category" gorm:"default:'other'"`
 	TargetDate  *time.Time   `json:"target_date"`                       // 目標達成予定日
 	Progress    int          `json:"progress" gorm:"default:0"`         // 0〜100の達成率
+	TargetHours int          `json:"target_hours" gorm:"default:0"`     // 目標学習時間（時間単位、0=未設定）
 	Status      GoalStatus   `json:"status" gorm:"default:'active'"`
 	CreatedAt   time.Time    `json:"created_at"`
 	UpdatedAt   time.Time    `json:"updated_at"`

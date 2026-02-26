@@ -1662,5 +1662,15 @@
     "topPosts": "Top Reacted Posts",
     "noReactions": "No reactions yet",
     "loadFailed": "Failed to load reaction summary"
+  },
+  "goalLinking": {
+    "goalLinking": "Goal Linking",
+    "linkedGoal": "Linked Goal",
+    "selectGoal": "Select a Goal",
+    "noGoalLinked": "No goal linked",
+    "linkedLogs": "Linked Learning Logs",
+    "targetHours": "Target Hours",
+    "autoProgressUpdate": "Goal progress is automatically updated when you log learning",
+    "goalCompleted": "Goal was automatically completed"
   }
 }

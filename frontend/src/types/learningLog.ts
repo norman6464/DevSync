@@ -9,6 +9,7 @@ export interface LearningLog {
   content: string;
   category: LogCategory;
   duration: number;
+  goal_id?: number;
   source: LogSource;
   is_favorite: boolean;
   created_at: string;
@@ -26,6 +27,7 @@ export interface CreateLogRequest {
   category?: LogCategory;
   duration?: number;
   source?: LogSource;
+  goal_id?: number;
 }
 
 export interface BatchCreateLogRequest {

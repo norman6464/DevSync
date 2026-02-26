@@ -356,6 +356,7 @@ func registerGoalRoutes(g *gin.RouterGroup, c *di.Container) {
 		goals.GET("/category/:category", c.LearningGoalHandler.GetByCategory)
 		goals.GET("/status/:status", c.LearningGoalHandler.GetByStatus)
 		goals.POST("/:id/duplicate", c.LearningGoalHandler.Duplicate)
+		goals.GET("/:id/linked-logs", c.LearningLogHandler.GetLinkedLogs)
 	}
 }
 

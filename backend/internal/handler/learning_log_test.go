@@ -628,3 +628,36 @@ func TestLearningLog_BatchCreate_MissingTitle(t *testing.T) {
 	})
 	assertStatus(t, w, http.StatusBadRequest)
 }
+
+// ============================================================
+// GetLinkedLogs ハンドラーテスト
+// ============================================================
+
+func TestLearningLogGetLinkedLogs_Handler_Success(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	logs := []model.LearningLog{{ID: 1, Title: "テスト"}}
+	svc.On("GetLinkedLogs", uint(5), uint(1), 20, 0).Return(logs, int64(1), nil)
+	r := newRouter(1)
+	r.GET("/goals/:id/linked-logs", h.GetLinkedLogs)
+	w := doRequest(r, http.MethodGet, "/goals/5/linked-logs", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestLearningLogGetLinkedLogs_Handler_InvalidID(t *testing.T) {
+	h, _ := setupLearningLogHandler()
+	r := newRouter(1)
+	r.GET("/goals/:id/linked-logs", h.GetLinkedLogs)
+	w := doRequest(r, http.MethodGet, "/goals/abc/linked-logs", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestLearningLogGetLinkedLogs_Handler_ServiceError(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	svc.On("GetLinkedLogs", uint(5), uint(1), 20, 0).Return([]model.LearningLog(nil), int64(0), errors.New("forbidden"))
+	r := newRouter(1)
+	r.GET("/goals/:id/linked-logs", h.GetLinkedLogs)
+	w := doRequest(r, http.MethodGet, "/goals/5/linked-logs", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}

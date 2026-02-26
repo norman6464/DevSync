@@ -9,6 +9,7 @@ type CreateLearningLogRequest struct {
 	Category string `json:"category" binding:"omitempty,max=100"`
 	Duration int    `json:"duration" binding:"omitempty,min=0,max=1440"`
 	Source   string `json:"source" binding:"omitempty,max=500"`
+	GoalID   *uint  `json:"goal_id" binding:"omitempty"`
 }
 
 // LearningLogListResponse は学習ログ一覧レスポンス（ページネーション付き）。

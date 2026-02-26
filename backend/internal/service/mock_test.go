@@ -550,6 +550,16 @@ func (m *MockLearningLogRepository) GetRecentCategories(userID uint, limit int) 
 	return args.Get(0).([]string), args.Error(1)
 }
 
+func (m *MockLearningLogRepository) GetByGoalID(goalID uint, limit, offset int) ([]model.LearningLog, int64, error) {
+	args := m.Called(goalID, limit, offset)
+	return args.Get(0).([]model.LearningLog), args.Get(1).(int64), args.Error(2)
+}
+
+func (m *MockLearningLogRepository) SumDurationByGoalID(goalID uint) (int, error) {
+	args := m.Called(goalID)
+	return args.Int(0), args.Error(1)
+}
+
 // ============================================================
 // MockLearningGoalRepository は repository.LearningGoalRepositoryInterface のテスト用モック実装。
 // ============================================================

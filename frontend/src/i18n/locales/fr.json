@@ -1662,5 +1662,15 @@
     "topPosts": "Publications les plus réagies",
     "noReactions": "Aucune réaction pour le moment",
     "loadFailed": "Échec du chargement du résumé des réactions"
+  },
+  "goalLinking": {
+    "goalLinking": "Liaison d'objectifs",
+    "linkedGoal": "Objectif lié",
+    "selectGoal": "Sélectionner un objectif",
+    "noGoalLinked": "Aucun objectif lié",
+    "linkedLogs": "Journaux d'apprentissage liés",
+    "targetHours": "Heures cibles",
+    "autoProgressUpdate": "La progression de l'objectif est mise à jour automatiquement lors de l'enregistrement",
+    "goalCompleted": "L'objectif a été automatiquement complété"
   }
 }

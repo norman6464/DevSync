@@ -1366,6 +1366,11 @@ func (m *MockLearningLogService) GetRecentCategories(userID uint) ([]string, err
 	return args.Get(0).([]string), args.Error(1)
 }
 
+func (m *MockLearningLogService) GetLinkedLogs(goalID, userID uint, limit, offset int) ([]model.LearningLog, int64, error) {
+	args := m.Called(goalID, userID, limit, offset)
+	return args.Get(0).([]model.LearningLog), args.Get(1).(int64), args.Error(2)
+}
+
 // setupLearningLogHandler はLearningLogHandlerテスト用のセットアップを行う。
 func setupLearningLogHandler() (*LearningLogHandler, *MockLearningLogService) {
 	svc := new(MockLearningLogService)
