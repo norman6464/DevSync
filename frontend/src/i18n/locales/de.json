@@ -173,6 +173,8 @@
     "comments": "Kommentare",
     "noComments": "Noch keine Kommentare",
     "addComment": "Kommentar hinzufügen...",
+    "editComment": "Kommentar bearbeiten",
+    "editCommentSuccess": "Kommentar aktualisiert",
     "reply": "Antworten",
     "share": "Teilen",
     "markdownSupported": "Unterstützt **fett**, *kursiv*, `code`, und mehr",

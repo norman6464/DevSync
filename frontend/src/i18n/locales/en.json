@@ -173,6 +173,8 @@
     "comments": "Comments",
     "noComments": "No comments yet",
     "addComment": "Add a comment...",
+    "editComment": "Edit comment",
+    "editCommentSuccess": "Comment updated",
     "reply": "Reply",
     "share": "Share",
     "markdownSupported": "Supports **bold**, *italic*, `code`, and more",

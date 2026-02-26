@@ -26,6 +26,7 @@ type PostServiceInterface interface {
 	CreateComment(comment *model.Comment) error
 	GetComments(postID uint) ([]model.Comment, error)
 	GetReplies(parentID uint) ([]model.Comment, error)
+	EditComment(id, userID uint, content string) (*model.Comment, error)
 	DeleteComment(id, userID uint) error
 	HideComment(id, userID uint) error
 	UnhideComment(id, userID uint) error
@@ -286,6 +287,27 @@ func (h *PostHandler) GetReplies(c *gin.Context) {
 		return
 	}
 	respondOK(c, ensureSlice(replies))
+}
+
+// EditComment はコメントを編集する。所有者のみ編集可能。
+func (h *PostHandler) EditComment(c *gin.Context) {
+	commentID, ok := parseID(c, "commentId")
+	if !ok {
+		return
+	}
+	userID := c.GetUint("userID")
+
+	input := bindJSON[dto.UpdateCommentRequest](c)
+	if input == nil {
+		return
+	}
+
+	comment, err := h.service.EditComment(commentID, userID, input.Content)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, comment)
 }
 
 // DeleteComment はコメントを削除する。所有者のみ削除可能。

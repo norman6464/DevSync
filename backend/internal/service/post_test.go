@@ -408,6 +408,71 @@ func TestPostDeleteComment_NotFound(t *testing.T) {
 }
 
 // ============================================================
+// コメント編集テスト
+// ============================================================
+
+func TestPostEditComment_Success(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	comment := &model.Comment{PostID: 10, Content: "old content"}
+	comment.ID = 5
+	comment.UserID = 1
+	postRepo.On("FindCommentByID", uint(5)).Return(comment, nil)
+	postRepo.On("UpdateComment", mock.MatchedBy(func(c *model.Comment) bool {
+		return c.ID == 5 && c.Content == "new content"
+	})).Return(nil)
+
+	result, err := svc.EditComment(5, 1, "new content")
+	assert.NoError(t, err)
+	assert.Equal(t, "new content", result.Content)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostEditComment_Forbidden(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	comment := &model.Comment{PostID: 10, Content: "old"}
+	comment.ID = 5
+	comment.UserID = 1
+	postRepo.On("FindCommentByID", uint(5)).Return(comment, nil)
+
+	result, err := svc.EditComment(5, 999, "new content")
+	assert.Nil(t, result)
+	assert.Error(t, err)
+	var domainErr *domain.DomainError
+	assert.ErrorAs(t, err, &domainErr)
+	assert.Equal(t, domain.ErrCodeForbidden, domainErr.Code)
+}
+
+func TestPostEditComment_NotFound(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindCommentByID", uint(99)).Return(nil, errors.New("not found"))
+
+	result, err := svc.EditComment(99, 1, "new content")
+	assert.Nil(t, result)
+	assert.Error(t, err)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostEditComment_EmptyContent(t *testing.T) {
+	svc, _, _ := newTestPostService()
+
+	result, err := svc.EditComment(5, 1, "")
+	assert.Nil(t, result)
+	assert.Error(t, err)
+}
+
+func TestPostEditComment_TooLongContent(t *testing.T) {
+	svc, _, _ := newTestPostService()
+
+	longContent := strings.Repeat("a", 5001)
+	result, err := svc.EditComment(5, 1, longContent)
+	assert.Nil(t, result)
+	assert.Error(t, err)
+}
+
+// ============================================================
 // スレッドコメント（返信）テスト
 // ============================================================
 
