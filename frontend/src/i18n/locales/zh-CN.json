@@ -722,7 +722,12 @@
     "exportJSON": "导出为JSON",
     "exportFormat": "导出格式",
     "formatCSV": "CSV",
-    "formatJSON": "JSON"
+    "formatJSON": "JSON",
+    "importCSV": "导入CSV",
+    "importCSVDesc": "导入导出的CSV文件以批量注册学习日志",
+    "importSuccess": "成功导入{{count}}条学习日志",
+    "importError": "CSV文件导入失败",
+    "selectCSVFile": "选择CSV文件"
   },
   "reports": {
     "title": "活动报告",

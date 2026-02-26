@@ -57,3 +57,16 @@ export const exportLogsJSON = (period: ExportPeriod = '30') =>
 
 export const exportLogs = (period: ExportPeriod = '30', format: ExportFormat = 'csv') =>
   client.get<Blob>(`/learning-logs/export?format=${format}&period=${period}`, { responseType: 'blob' });
+
+export interface ImportCSVResponse {
+  imported: number;
+  logs: LearningLog[];
+}
+
+export const importLogsCSV = (file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return client.post<ImportCSVResponse>('/learning-logs/import', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};

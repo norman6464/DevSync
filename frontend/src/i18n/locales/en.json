@@ -722,7 +722,12 @@
     "exportJSON": "Export as JSON",
     "exportFormat": "Export format",
     "formatCSV": "CSV",
-    "formatJSON": "JSON"
+    "formatJSON": "JSON",
+    "importCSV": "Import CSV",
+    "importCSVDesc": "Import exported CSV files to batch register learning logs",
+    "importSuccess": "Successfully imported {{count}} learning logs",
+    "importError": "Failed to import CSV file",
+    "selectCSVFile": "Select CSV file"
   },
   "reports": {
     "title": "Activity Reports",

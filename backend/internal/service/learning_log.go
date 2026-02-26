@@ -5,6 +5,8 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"io"
+	"strconv"
 	"strings"
 	"time"
 
@@ -321,4 +323,102 @@ func (s *LearningLogService) ExportJSON(userID uint, days int) ([]byte, error) {
 	}
 
 	return json.Marshal(entries)
+}
+
+// ImportCSV はCSVデータから学習ログを一括インポートする。
+// エクスポート形式（BOM付きUTF-8、ヘッダー: 日付,カテゴリ,タイトル,学習時間(分),メモ）に対応する。
+// 最大50件まで。各行のバリデーションを行い、全てパスした場合のみ保存する。
+func (s *LearningLogService) ImportCSV(userID uint, data []byte) ([]model.LearningLog, error) {
+	// BOMを除去
+	data = bytes.TrimPrefix(data, []byte("\xef\xbb\xbf"))
+
+	reader := csv.NewReader(io.NopCloser(bytes.NewReader(data)))
+	reader.TrimLeadingSpace = true
+
+	// ヘッダー行を読み飛ばす
+	header, err := reader.Read()
+	if err != nil {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "CSVファイルの読み取りに失敗しました", err)
+	}
+	if len(header) < 5 {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "CSVのカラム数が不足しています（5列必要）", nil)
+	}
+
+	var logs []model.LearningLog
+	lineNum := 1
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, fmt.Sprintf("CSV %d行目の読み取りに失敗しました", lineNum+1), err)
+		}
+		lineNum++
+
+		if len(record) < 5 {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, fmt.Sprintf("CSV %d行目のカラム数が不足しています", lineNum), nil)
+		}
+
+		// 日付パース
+		dateStr := strings.TrimSpace(record[0])
+		parsedDate, err := time.Parse("2006-01-02", dateStr)
+		if err != nil {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, fmt.Sprintf("CSV %d行目の日付形式が不正です: %s", lineNum, dateStr), err)
+		}
+
+		// カテゴリ
+		category := model.LogCategory(strings.TrimSpace(record[1]))
+		if category != "" && !model.ValidCategories[category] {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, fmt.Sprintf("CSV %d行目の無効なカテゴリです: %s", lineNum, category), nil)
+		}
+		if category == "" {
+			category = model.LogCategoryOther
+		}
+
+		// タイトル
+		title := strings.TrimSpace(record[2])
+		if title == "" {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, fmt.Sprintf("CSV %d行目のタイトルが空です", lineNum), nil)
+		}
+
+		// 学習時間
+		durationStr := strings.TrimSpace(record[3])
+		duration, err := strconv.Atoi(durationStr)
+		if err != nil {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, fmt.Sprintf("CSV %d行目の学習時間が不正です: %s", lineNum, durationStr), err)
+		}
+		if err := validateDuration(duration); err != nil {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, fmt.Sprintf("CSV %d行目: 学習時間は0〜1440分の範囲で指定してください", lineNum), nil)
+		}
+
+		// メモ
+		content := strings.TrimSpace(record[4])
+		if content == "" {
+			content = title // メモが空の場合はタイトルをデフォルトに
+		}
+
+		logs = append(logs, model.LearningLog{
+			UserID:    userID,
+			Title:     title,
+			Content:   content,
+			Category:  category,
+			Duration:  duration,
+			Source:    model.LogSourceManual,
+			CreatedAt: parsedDate,
+		})
+	}
+
+	if len(logs) == 0 {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "インポートするデータがありません", nil)
+	}
+	if len(logs) > 50 {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "一度にインポートできるのは50件までです", nil)
+	}
+
+	if err := s.repo.CreateBatch(logs); err != nil {
+		return nil, domain.NewError(domain.ErrCodeInternal, "学習ログのインポートに失敗しました", err)
+	}
+
+	return logs, nil
 }

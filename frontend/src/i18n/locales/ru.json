@@ -721,7 +721,12 @@
     "exportJSON": "Экспорт в JSON",
     "exportFormat": "Формат экспорта",
     "formatCSV": "CSV",
-    "formatJSON": "JSON"
+    "formatJSON": "JSON",
+    "importCSV": "Импорт CSV",
+    "importCSVDesc": "Импортируйте экспортированные CSV-файлы для массовой регистрации журналов обучения",
+    "importSuccess": "Импортировано {{count}} записей обучения",
+    "importError": "Не удалось импортировать CSV-файл",
+    "selectCSVFile": "Выберите CSV-файл"
   },
   "reports": {
     "title": "Отчёты об Активности",

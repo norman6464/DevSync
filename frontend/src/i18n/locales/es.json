@@ -722,7 +722,12 @@
     "exportJSON": "Exportar como JSON",
     "exportFormat": "Formato de exportación",
     "formatCSV": "CSV",
-    "formatJSON": "JSON"
+    "formatJSON": "JSON",
+    "importCSV": "Importar CSV",
+    "importCSVDesc": "Importa archivos CSV exportados para registrar registros de aprendizaje en lote",
+    "importSuccess": "Se importaron {{count}} registros de aprendizaje",
+    "importError": "Error al importar el archivo CSV",
+    "selectCSVFile": "Seleccionar archivo CSV"
   },
   "reports": {
     "title": "Informes de Actividad",

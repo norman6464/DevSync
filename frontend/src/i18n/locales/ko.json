@@ -724,7 +724,12 @@
     "exportJSON": "JSON으로 내보내기",
     "exportFormat": "내보내기 형식",
     "formatCSV": "CSV",
-    "formatJSON": "JSON"
+    "formatJSON": "JSON",
+    "importCSV": "CSV 가져오기",
+    "importCSVDesc": "내보낸 CSV 파일을 가져와 학습 로그를 일괄 등록합니다",
+    "importSuccess": "{{count}}개의 학습 로그를 가져왔습니다",
+    "importError": "CSV 파일 가져오기에 실패했습니다",
+    "selectCSVFile": "CSV 파일 선택"
   },
   "reports": {
     "title": "활동 리포트",
