@@ -90,18 +90,20 @@ func (s *ChatRoomService) Update(roomID, userID uint, name, description string) 
 		if strings.TrimSpace(name) == "" {
 			return nil, domain.NewError(domain.ErrCodeBadRequest, "チャットルーム名は空白のみでは入力できません", nil)
 		}
-		if len(strings.TrimSpace(name)) > 100 {
+		if len([]rune(strings.TrimSpace(name))) > 100 {
 			return nil, domain.NewError(domain.ErrCodeValidation, "チャットルーム名は100文字以下である必要があります", nil)
 		}
 		room.Name = strings.TrimSpace(name)
 	}
-	if description != "" && strings.TrimSpace(description) == "" {
-		return nil, domain.NewError(domain.ErrCodeBadRequest, "説明は空白のみでは入力できません", nil)
+	if description != "" {
+		if strings.TrimSpace(description) == "" {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, "説明は空白のみでは入力できません", nil)
+		}
+		if len([]rune(strings.TrimSpace(description))) > 500 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "説明は500文字以下である必要があります", nil)
+		}
+		room.Description = strings.TrimSpace(description)
 	}
-	if len(strings.TrimSpace(description)) > 500 {
-		return nil, domain.NewError(domain.ErrCodeValidation, "説明は500文字以下である必要があります", nil)
-	}
-	room.Description = strings.TrimSpace(description)
 
 	if err := s.roomRepo.Update(room); err != nil {
 		return nil, err

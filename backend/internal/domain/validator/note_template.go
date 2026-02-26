@@ -58,6 +58,9 @@ func (v *NoteTemplateValidator) ValidateContentTemplate(content string) error {
 	if content == "" {
 		return domain.NewError(domain.ErrCodeValidation, "本文テンプレートを入力してください", nil)
 	}
+	if len([]rune(content)) > 50000 {
+		return domain.NewError(domain.ErrCodeValidation, "本文テンプレートは50000文字以下である必要があります", nil)
+	}
 	return nil
 }
 

@@ -30,6 +30,12 @@ func (s *LearningLogTemplateService) Create(template *model.LearningLogTemplate)
 	if len([]rune(template.Name)) > 100 {
 		return domain.NewError(domain.ErrCodeValidation, "テンプレート名は100文字以下である必要があります", nil)
 	}
+	if len([]rune(template.DefaultTitle)) > 200 {
+		return domain.NewError(domain.ErrCodeValidation, "デフォルトタイトルは200文字以下である必要があります", nil)
+	}
+	if len([]rune(template.DefaultContent)) > 50000 {
+		return domain.NewError(domain.ErrCodeValidation, "デフォルト本文は50000文字以下である必要があります", nil)
+	}
 	if template.DefaultCategory != "" && !model.ValidCategories[template.DefaultCategory] {
 		return domain.NewError(domain.ErrCodeValidation, "無効なカテゴリです", nil)
 	}
@@ -80,9 +86,15 @@ func (s *LearningLogTemplateService) Update(id, userID uint, name, defaultTitle,
 		template.Name = name
 	}
 	if defaultTitle != "" {
+		if len([]rune(defaultTitle)) > 200 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "デフォルトタイトルは200文字以下である必要があります", nil)
+		}
 		template.DefaultTitle = defaultTitle
 	}
 	if defaultContent != "" {
+		if len([]rune(defaultContent)) > 50000 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "デフォルト本文は50000文字以下である必要があります", nil)
+		}
 		template.DefaultContent = defaultContent
 	}
 	if defaultCategory != "" {
