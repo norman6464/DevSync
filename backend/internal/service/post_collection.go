@@ -101,6 +101,10 @@ func (s *PostCollectionService) Delete(id, userID uint) error {
 // AddPost は所有権を検証した後、コレクションに投稿を追加する。
 // 同じ投稿がすでに追加されている場合はエラーを返す。
 func (s *PostCollectionService) AddPost(collectionID, userID, postID uint, note string) error {
+	if len([]rune(strings.TrimSpace(note))) > 500 {
+		return domain.NewError(domain.ErrCodeValidation, "メモは500文字以下である必要があります", nil)
+	}
+
 	if _, err := s.findAndCheckOwnership(collectionID, userID); err != nil {
 		return err
 	}
