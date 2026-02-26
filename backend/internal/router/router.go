@@ -637,6 +637,7 @@ func registerCommunityRoutes(g *gin.RouterGroup, c *di.Container) {
 		roadmaps.POST("/:id/steps/batch-complete", c.RoadmapHandler.BatchCompleteSteps)
 		roadmaps.PUT("/:id/steps/reorder", c.RoadmapHandler.ReorderSteps)
 		roadmaps.GET("/my/stats", c.RoadmapHandler.GetMyStats)
+		roadmaps.GET("/my/count", c.RoadmapHandler.GetMyCount)
 	}
 
 	// チャットルーム

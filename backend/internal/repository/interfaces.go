@@ -303,6 +303,7 @@ type RoadmapRepositoryInterface interface {
 	FindStepByID(stepID uint) (*model.RoadmapStep, error)
 	ReorderSteps(roadmapID uint, stepOrders []model.StepOrder) error
 	GetTemplates() ([]model.Roadmap, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // ChatRoomRepositoryInterface はチャットルームデータ操作の契約を定義する。

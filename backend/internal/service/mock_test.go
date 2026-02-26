@@ -1080,6 +1080,11 @@ func (m *MockRoadmapRepository) GetTemplates() ([]model.Roadmap, error) {
 	return args.Get(0).([]model.Roadmap), args.Error(1)
 }
 
+func (m *MockRoadmapRepository) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 // ============================================================
 // MockChatRoomRepository は repository.ChatRoomRepositoryInterface のテスト用モック実装。
 // ============================================================

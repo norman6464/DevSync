@@ -471,6 +471,10 @@ func (m *MockRoadmapRepository) GetByStatus(userID uint, status string) ([]model
 	args := m.Called(userID, status)
 	return args.Get(0).([]model.Roadmap), args.Error(1)
 }
+func (m *MockRoadmapRepository) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
 
 // MockChatRoomRepository は ChatRoomRepositoryInterface のモック実装。
 type MockChatRoomRepository struct{ mock.Mock }
@@ -1131,6 +1135,10 @@ func (m *MockRoadmapService) GetStats(userID uint) (*model.RoadmapStats, error) 
 		return s.(*model.RoadmapStats), args.Error(1)
 	}
 	return nil, args.Error(1)
+}
+func (m *MockRoadmapService) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
 }
 
 // setupRoadmapHandlerMock はRoadmapHandlerテスト用のモックセットアップを行う。

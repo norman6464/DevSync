@@ -27,6 +27,7 @@ type RoadmapServiceInterface interface {
 	DeleteStep(roadmapID, stepID, userID uint) error
 	ReorderSteps(roadmapID, userID uint, orders []model.StepOrder) error
 	GetStats(userID uint) (*model.RoadmapStats, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // RoadmapHandler はロードマップ関連のHTTPハンドラ。
@@ -365,6 +366,17 @@ func (h *RoadmapHandler) ReorderSteps(c *gin.Context) {
 	}
 
 	respondOK(c, domain.NewMessageResponse("steps reordered"))
+}
+
+// GetMyCount は認証ユーザーのロードマップ総数を返す。
+func (h *RoadmapHandler) GetMyCount(c *gin.Context) {
+	userID := c.GetUint("userID")
+	count, err := h.service.CountByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, gin.H{"count": count})
 }
 
 // GetMyStats は認証ユーザーのロードマップ統計情報を取得する。
