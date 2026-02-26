@@ -1672,5 +1672,20 @@
     "targetHours": "目标学习时长",
     "autoProgressUpdate": "记录学习日志时自动更新目标进度",
     "goalCompleted": "目标已自动完成"
+  },
+  "weeklyGoal": {
+    "title": "每周分类目标",
+    "setGoal": "设置目标",
+    "category": "分类",
+    "targetMinutes": "目标时间（分钟）",
+    "actualMinutes": "实际时间（分钟）",
+    "progress": "进度",
+    "noGoals": "未设置每周目标",
+    "setSuccess": "每周目标已设置",
+    "coding": "编程",
+    "reading": "阅读",
+    "video": "视频学习",
+    "exercise": "练习",
+    "other": "其他"
   }
 }

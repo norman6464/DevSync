@@ -668,6 +668,13 @@ type StreakFreezeRepositoryInterface interface {
 	HasFreezeOnDate(userID uint, date string) (bool, error)
 }
 
+// WeeklyGoalRepositoryInterface はカテゴリ別週間学習目標の操作契約を定義する。
+type WeeklyGoalRepositoryInterface interface {
+	Upsert(goal *model.WeeklyGoal) error
+	GetByUserID(userID uint) ([]model.WeeklyGoal, error)
+	SumDurationByUserCategoryThisWeek(userID uint, category string) (int, error)
+}
+
 // WidgetSettingsRepositoryInterface はダッシュボードウィジェット設定の操作契約を定義する。
 type WidgetSettingsRepositoryInterface interface {
 	FindByUserID(userID uint) (*model.WidgetSettings, error)

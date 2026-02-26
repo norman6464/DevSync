@@ -1672,5 +1672,20 @@
     "targetHours": "Target Hours",
     "autoProgressUpdate": "Goal progress is automatically updated when you log learning",
     "goalCompleted": "Goal was automatically completed"
+  },
+  "weeklyGoal": {
+    "title": "Weekly Category Goals",
+    "setGoal": "Set Goal",
+    "category": "Category",
+    "targetMinutes": "Target Minutes",
+    "actualMinutes": "Actual Minutes",
+    "progress": "Progress",
+    "noGoals": "No weekly goals set",
+    "setSuccess": "Weekly goal has been set",
+    "coding": "Coding",
+    "reading": "Reading",
+    "video": "Video Learning",
+    "exercise": "Exercise",
+    "other": "Other"
   }
 }

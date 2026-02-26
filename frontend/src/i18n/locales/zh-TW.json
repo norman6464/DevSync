@@ -1674,5 +1674,20 @@
     "targetHours": "目標學習時長",
     "autoProgressUpdate": "記錄學習日誌時自動更新目標進度",
     "goalCompleted": "目標已自動完成"
+  },
+  "weeklyGoal": {
+    "title": "每週分類目標",
+    "setGoal": "設定目標",
+    "category": "分類",
+    "targetMinutes": "目標時間（分鐘）",
+    "actualMinutes": "實際時間（分鐘）",
+    "progress": "進度",
+    "noGoals": "未設定每週目標",
+    "setSuccess": "每週目標已設定",
+    "coding": "程式設計",
+    "reading": "閱讀",
+    "video": "影片學習",
+    "exercise": "練習",
+    "other": "其他"
   }
 }
