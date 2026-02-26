@@ -68,7 +68,7 @@ func (r *BookReviewRepository) FindByRating(userID uint, minRating, maxRating in
 func (r *BookReviewRepository) Search(query string, limit, offset int) ([]model.BookReview, int64, error) {
 	var reviews []model.BookReview
 	var total int64
-	like := "%" + query + "%"
+	like := EscapeLikePattern(query)
 	q := r.db.Where("title ILIKE ? OR author ILIKE ? OR isbn ILIKE ?", like, like, like)
 	q.Model(&model.BookReview{}).Count(&total)
 	err := q.Preload("User").Order("created_at DESC").Limit(limit).Offset(offset).Find(&reviews).Error
