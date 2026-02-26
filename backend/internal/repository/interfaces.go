@@ -491,6 +491,9 @@ type StudyCircleRepositoryInterface interface {
 
 	// ストリークランキング
 	GetStreakRanking(circleID uint) ([]model.CircleMemberStreak, error)
+
+	// カウント
+	CountByUserID(userID uint) (int64, error)
 }
 
 // NotificationSettingsRepositoryInterface は通知設定データ操作の契約を定義する。

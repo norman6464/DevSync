@@ -29,6 +29,7 @@ type StudyCircleServiceInterface interface {
 	GetByStatus(userID uint, status string) ([]model.StudyCircle, error)
 	UpdateMemberRole(circleID, userID, targetUserID uint, role string) error
 	SearchCircles(query string, limit, offset int) ([]model.StudyCircle, int64, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // StudyCircleHandler はスタディサークル関連のHTTPリクエストを処理する。
@@ -392,4 +393,15 @@ func (h *StudyCircleHandler) Search(c *gin.Context) {
 		Limit:   limit,
 		Offset:  offset,
 	})
+}
+
+// GetMyCount は認証ユーザーが参加しているスタディサークル総数を返す。
+func (h *StudyCircleHandler) GetMyCount(c *gin.Context) {
+	userID := c.GetUint("userID")
+	count, err := h.service.CountByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, gin.H{"count": count})
 }

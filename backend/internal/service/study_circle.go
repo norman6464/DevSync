@@ -400,3 +400,8 @@ func (s *StudyCircleService) GetStreakRanking(circleID, userID uint) ([]model.Ci
 func (s *StudyCircleService) SearchCircles(query string, limit, offset int) ([]model.StudyCircle, int64, error) {
 	return s.repo.Search(query, limit, offset)
 }
+
+// CountByUserID は指定ユーザーが参加しているスタディサークル総数を返す。
+func (s *StudyCircleService) CountByUserID(userID uint) (int64, error) {
+	return s.repo.CountByUserID(userID)
+}
