@@ -70,14 +70,15 @@ func (s *PostCollectionService) findAndCheckOwnership(id, userID uint) (*model.P
 
 // Update は所有権を検証した後、コレクションを更新する。
 func (s *PostCollectionService) Update(id, userID uint, title, description string, isPublic bool) (*model.PostCollection, error) {
+	collection, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := domain.ValidateStringLength(title, 1, 200, "タイトル"); err != nil {
 		return nil, err
 	}
 	if err := domain.ValidateStringLength(description, 0, 1000, "説明"); err != nil {
-		return nil, err
-	}
-	collection, err := s.findAndCheckOwnership(id, userID)
-	if err != nil {
 		return nil, err
 	}
 
