@@ -78,3 +78,26 @@ func (r *ProjectRepository) FindAll(limit, offset int) ([]model.Project, int64, 
 
 	return projects, total, err
 }
+
+// Archive は指定IDのプロジェクトをアーカイブする。
+func (r *ProjectRepository) Archive(id uint) error {
+	return r.db.Model(&model.Project{}).Where("id = ?", id).Update("is_archived", true).Error
+}
+
+// Unarchive は指定IDのプロジェクトのアーカイブを解除する。
+func (r *ProjectRepository) Unarchive(id uint) error {
+	return r.db.Model(&model.Project{}).Where("id = ?", id).Update("is_archived", false).Error
+}
+
+// FindArchivedByUserID は指定ユーザーのアーカイブ済みプロジェクトを取得する。
+func (r *ProjectRepository) FindArchivedByUserID(userID uint, limit, offset int) ([]model.Project, int64, error) {
+	var projects []model.Project
+	var total int64
+	query := r.db.Where("user_id = ? AND is_archived = ?", userID, true)
+	query.Model(&model.Project{}).Count(&total)
+	err := query.Preload("GithubRepo").
+		Order("updated_at DESC").
+		Limit(limit).Offset(offset).
+		Find(&projects).Error
+	return projects, total, err
+}

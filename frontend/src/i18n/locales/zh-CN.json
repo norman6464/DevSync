@@ -1827,5 +1827,14 @@
     "useSuccess": "已从模板创建学习日志",
     "noTemplates": "暂无模板",
     "confirmDelete": "确定要删除此模板吗？"
+  },
+  "projectArchive": {
+    "archive": "归档",
+    "unarchive": "取消归档",
+    "archived": "已归档",
+    "archiveSuccess": "项目已归档",
+    "unarchiveSuccess": "已取消归档",
+    "noArchived": "没有已归档的项目",
+    "confirmArchive": "确定要归档此项目吗？"
   }
 }

@@ -117,6 +117,35 @@ func (s *ProjectService) UpdateFeatured(id, userID uint, featured bool) (*model.
 	return project, nil
 }
 
+// Archive は所有権を検証した後、プロジェクトをアーカイブする。
+func (s *ProjectService) Archive(id, userID uint) error {
+	project, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return err
+	}
+	if project.IsArchived {
+		return ErrBadRequest
+	}
+	return s.repo.Archive(id)
+}
+
+// Unarchive は所有権を検証した後、プロジェクトのアーカイブを解除する。
+func (s *ProjectService) Unarchive(id, userID uint) error {
+	project, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return err
+	}
+	if !project.IsArchived {
+		return ErrBadRequest
+	}
+	return s.repo.Unarchive(id)
+}
+
+// GetArchivedByUserID は指定ユーザーのアーカイブ済みプロジェクトを取得する。
+func (s *ProjectService) GetArchivedByUserID(userID uint, limit, offset int) ([]model.Project, int64, error) {
+	return s.repo.FindArchivedByUserID(userID, limit, offset)
+}
+
 // Delete は所有権を検証した後、プロジェクトを削除する。
 func (s *ProjectService) Delete(id, userID uint) error {
 	if _, err := s.findAndCheckOwnership(id, userID); err != nil {

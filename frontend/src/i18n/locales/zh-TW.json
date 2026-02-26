@@ -1829,5 +1829,14 @@
     "useSuccess": "已從範本建立學習日誌",
     "noTemplates": "目前沒有範本",
     "confirmDelete": "確定要刪除此範本嗎？"
+  },
+  "projectArchive": {
+    "archive": "封存",
+    "unarchive": "取消封存",
+    "archived": "已封存",
+    "archiveSuccess": "專案已封存",
+    "unarchiveSuccess": "已取消封存",
+    "noArchived": "沒有已封存的專案",
+    "confirmArchive": "確定要封存此專案嗎？"
   }
 }

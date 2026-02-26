@@ -15,6 +15,7 @@ export interface Project {
   start_date: string | null;
   end_date: string | null;
   featured: boolean;
+  is_archived: boolean;
   github_repo_id: number | null;
   github_repo?: GitHubRepository;
   created_at: string;

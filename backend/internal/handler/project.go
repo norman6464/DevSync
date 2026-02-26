@@ -23,6 +23,9 @@ type ProjectServiceInterface interface {
 	Update(id, userID uint, updates *model.Project) (*model.Project, error)
 	UpdateFeatured(id, userID uint, featured bool) (*model.Project, error)
 	Delete(id, userID uint) error
+	Archive(id, userID uint) error
+	Unarchive(id, userID uint) error
+	GetArchivedByUserID(userID uint, limit, offset int) ([]model.Project, int64, error)
 }
 
 // ProjectHandler はプロジェクト関連のHTTPハンドラ。
@@ -195,6 +198,57 @@ func (h *ProjectHandler) Update(c *gin.Context) {
 // Delete は指定IDのプロジェクトを削除する。
 func (h *ProjectHandler) Delete(c *gin.Context) {
 	handleDelete(c, h.service.Delete)
+}
+
+// Archive はプロジェクトをアーカイブする。
+func (h *ProjectHandler) Archive(c *gin.Context) {
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+	userID := c.GetUint("userID")
+
+	if err := h.service.Archive(id, userID); err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, gin.H{"message": "archived"})
+}
+
+// Unarchive はプロジェクトのアーカイブを解除する。
+func (h *ProjectHandler) Unarchive(c *gin.Context) {
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+	userID := c.GetUint("userID")
+
+	if err := h.service.Unarchive(id, userID); err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, gin.H{"message": "unarchived"})
+}
+
+// GetArchived はアーカイブ済みプロジェクト一覧を取得する。
+func (h *ProjectHandler) GetArchived(c *gin.Context) {
+	userID := c.GetUint("userID")
+	limit, offset := parseLimitOffset(c)
+
+	projects, total, err := h.service.GetArchivedByUserID(userID, limit, offset)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, dto.ProjectListResponse{
+		Projects: projects,
+		Total:    total,
+		Limit:    limit,
+		Offset:   offset,
+	})
 }
 
 // GetAll はプロジェクトの一覧をページネーション付きで取得する。

@@ -35,6 +35,21 @@ export const deleteProject = async (id: number): Promise<void> => {
   await client.delete(`/projects/${id}`);
 };
 
+// --- アーカイブ ---
+
+export const archiveProject = async (id: number): Promise<void> => {
+  await client.put(`/projects/${id}/archive`);
+};
+
+export const unarchiveProject = async (id: number): Promise<void> => {
+  await client.put(`/projects/${id}/unarchive`);
+};
+
+export const getArchivedProjects = async (limit = 20, offset = 0): Promise<{ projects: Project[]; total: number }> => {
+  const res = await client.get('/projects/archived', { params: { limit, offset } });
+  return res.data;
+};
+
 // --- マイルストーン ---
 
 export interface ProjectMilestone {

@@ -464,3 +464,101 @@ func TestProjectUpdate_TrimsPaddedTitle(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "New Title", result.Title)
 }
+
+// ============================================================
+// アーカイブテスト
+// ============================================================
+
+func TestProjectArchive_Success(t *testing.T) {
+	svc, repo := newTestProjectService()
+
+	existing := &model.Project{UserID: 1, IsArchived: false}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Archive", uint(1)).Return(nil)
+
+	err := svc.Archive(1, 1)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestProjectArchive_AlreadyArchived(t *testing.T) {
+	svc, repo := newTestProjectService()
+
+	existing := &model.Project{UserID: 1, IsArchived: true}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	err := svc.Archive(1, 1)
+	assert.ErrorIs(t, err, ErrBadRequest)
+}
+
+func TestProjectArchive_Forbidden(t *testing.T) {
+	svc, repo := newTestProjectService()
+
+	existing := &model.Project{UserID: 2, IsArchived: false}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	err := svc.Archive(1, 1)
+	assert.ErrorIs(t, err, ErrForbidden)
+}
+
+func TestProjectArchive_NotFound(t *testing.T) {
+	svc, repo := newTestProjectService()
+
+	repo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	err := svc.Archive(999, 1)
+	assert.Error(t, err)
+}
+
+func TestProjectUnarchive_Success(t *testing.T) {
+	svc, repo := newTestProjectService()
+
+	existing := &model.Project{UserID: 1, IsArchived: true}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Unarchive", uint(1)).Return(nil)
+
+	err := svc.Unarchive(1, 1)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestProjectUnarchive_NotArchived(t *testing.T) {
+	svc, repo := newTestProjectService()
+
+	existing := &model.Project{UserID: 1, IsArchived: false}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	err := svc.Unarchive(1, 1)
+	assert.ErrorIs(t, err, ErrBadRequest)
+}
+
+func TestProjectUnarchive_Forbidden(t *testing.T) {
+	svc, repo := newTestProjectService()
+
+	existing := &model.Project{UserID: 2, IsArchived: true}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	err := svc.Unarchive(1, 1)
+	assert.ErrorIs(t, err, ErrForbidden)
+}
+
+func TestProjectGetArchivedByUserID_Success(t *testing.T) {
+	svc, repo := newTestProjectService()
+
+	expected := []model.Project{
+		{Title: "Archived 1", UserID: 1, IsArchived: true},
+	}
+	repo.On("FindArchivedByUserID", uint(1), 20, 0).Return(expected, int64(1), nil)
+
+	result, total, err := svc.GetArchivedByUserID(1, 20, 0)
+	assert.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, int64(1), total)
+	repo.AssertExpectations(t)
+}
