@@ -24,7 +24,7 @@ func (s *PostCollectionService) Create(collection *model.PostCollection) (*model
 	if err := domain.ValidateStringLength(collection.Title, 1, 200, "タイトル"); err != nil {
 		return nil, err
 	}
-	if len(strings.TrimSpace(collection.Description)) > 1000 {
+	if len([]rune(strings.TrimSpace(collection.Description))) > 1000 {
 		return nil, domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
 	}
 	collection.Title = strings.TrimSpace(collection.Title)
@@ -72,7 +72,7 @@ func (s *PostCollectionService) Update(id, userID uint, title, description strin
 	if err := domain.ValidateStringLength(title, 1, 200, "タイトル"); err != nil {
 		return nil, err
 	}
-	if len(strings.TrimSpace(description)) > 1000 {
+	if len([]rune(strings.TrimSpace(description))) > 1000 {
 		return nil, domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
 	}
 	collection, err := s.findAndCheckOwnership(id, userID)

@@ -88,7 +88,7 @@ func (s *CodeSnippetService) Update(id, userID uint, language, fileName, code st
 	}
 
 	if strings.TrimSpace(language) != "" {
-		if len(strings.TrimSpace(language)) > 100 {
+		if len([]rune(strings.TrimSpace(language))) > 100 {
 			return nil, domain.NewError(domain.ErrCodeValidation, "言語は100文字以下である必要があります", nil)
 		}
 		snippet.Language = strings.TrimSpace(language)
@@ -100,7 +100,7 @@ func (s *CodeSnippetService) Update(id, userID uint, language, fileName, code st
 		snippet.FileName = strings.TrimSpace(fileName)
 	}
 	if strings.TrimSpace(code) != "" {
-		if len(strings.TrimSpace(code)) > 50000 {
+		if len([]rune(strings.TrimSpace(code))) > 50000 {
 			return nil, domain.NewError(domain.ErrCodeValidation, "コードは50000文字以下である必要があります", nil)
 		}
 		snippet.Code = strings.TrimSpace(code)
