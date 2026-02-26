@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"net"
 	"strings"
 	"testing"
 
@@ -168,6 +169,11 @@ func TestValidateURL(t *testing.T) {
 		{"SSRF: 0.0.0.0", "http://0.0.0.0", true},
 		{"SSRF: IPv6ループバック", "http://[::1]/path", true},
 		{"SSRF: IPv6 unspecified", "http://[::]/path", true},
+		{"SSRF: AWSメタデータIP", "http://169.254.169.254/latest/meta-data/", true},
+		{"SSRF: GCPメタデータ", "http://metadata.google.internal/computeMetadata/v1/", true},
+		{"SSRF: GCPメタデータ（末尾ドット）", "http://metadata.google.internal./computeMetadata/v1/", true},
+		{"SSRF: EC2 IPv6メタデータ", "http://[fd00:ec2::254]/latest/meta-data/", true},
+		{"SSRF: instance-data", "http://instance-data/latest/meta-data/", true},
 	}
 
 	for _, tt := range tests {
@@ -179,6 +185,67 @@ func TestValidateURL(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 			}
+		})
+	}
+}
+
+func TestIsBlockedHost(t *testing.T) {
+	tests := []struct {
+		name    string
+		host    string
+		blocked bool
+	}{
+		{"localhost", "localhost", true},
+		{"0.0.0.0", "0.0.0.0", true},
+		{"[::1]", "[::1]", true},
+		{"127.0.0.1", "127.0.0.1", true},
+		{"プライベートIP(10.x)", "10.0.0.1", true},
+		{"プライベートIP(192.168.x)", "192.168.1.1", true},
+		{"プライベートIP(172.16.x)", "172.16.0.1", true},
+		{"リンクローカル", "169.254.169.254", true},
+		{"AWSメタデータIP", "169.254.169.254", true},
+		{"GCPメタデータホスト", "metadata.google.internal", true},
+		{"GCPメタデータホスト（末尾ドット）", "metadata.google.internal.", true},
+		{"EC2 IPv6メタデータ", "fd00:ec2::254", true},
+		{"instance-data", "instance-data", true},
+		{"大文字小文字混在（LOCALHOST）", "LOCALHOST", true},
+		{"大文字小文字混在（Metadata）", "Metadata.Google.Internal", true},
+		{"外部ホスト", "example.com", false},
+		{"外部IP", "8.8.8.8", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := isBlockedHost(tt.host)
+			assert.Equal(t, tt.blocked, result)
+		})
+	}
+}
+
+func TestIsBlockedIP(t *testing.T) {
+	tests := []struct {
+		name    string
+		ip      string
+		blocked bool
+	}{
+		{"ループバック(127.0.0.1)", "127.0.0.1", true},
+		{"ループバック(::1)", "::1", true},
+		{"プライベート(10.x)", "10.0.0.1", true},
+		{"プライベート(192.168.x)", "192.168.1.1", true},
+		{"プライベート(172.16.x)", "172.16.0.1", true},
+		{"リンクローカルユニキャスト", "169.254.1.1", true},
+		{"未指定(0.0.0.0)", "0.0.0.0", true},
+		{"未指定(::)", "::", true},
+		{"外部IP(8.8.8.8)", "8.8.8.8", false},
+		{"外部IP(1.1.1.1)", "1.1.1.1", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ip := net.ParseIP(tt.ip)
+			assert.NotNil(t, ip, "IPのパースに失敗: %s", tt.ip)
+			result := isBlockedIP(ip)
+			assert.Equal(t, tt.blocked, result)
 		})
 	}
 }
