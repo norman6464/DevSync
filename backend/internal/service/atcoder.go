@@ -47,6 +47,10 @@ func NewAtCoderService(userRepo repository.UserRepositoryInterface) *AtCoderServ
 
 // GetRating は指定ユーザーのAtCoderレーティング情報を取得する。
 func (s *AtCoderService) GetRating(username string) (*AtCoderRatingInfo, error) {
+	if err := domain.ValidateExternalUsername(username); err != nil {
+		return nil, err
+	}
+
 	url := fmt.Sprintf("https://atcoder.jp/users/%s/history/json", username)
 	resp, err := s.client.Get(url)
 	if err != nil {
@@ -84,6 +88,10 @@ func (s *AtCoderService) GetRating(username string) (*AtCoderRatingInfo, error) 
 
 // ValidateUsername はAtCoderユーザー名が有効かどうか検証する。
 func (s *AtCoderService) ValidateUsername(username string) bool {
+	if err := domain.ValidateExternalUsername(username); err != nil {
+		return false
+	}
+
 	url := fmt.Sprintf("https://atcoder.jp/users/%s/history/json", username)
 	resp, err := s.client.Get(url)
 	if err != nil {

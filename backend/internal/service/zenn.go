@@ -48,6 +48,10 @@ type ZennAPIArticle struct {
 
 // FetchArticles はZenn APIから指定ユーザーの全記事を取得する（ページネーション対応）。
 func (s *ZennService) FetchArticles(username string) ([]model.ZennArticle, error) {
+	if err := domain.ValidateExternalUsername(username); err != nil {
+		return nil, err
+	}
+
 	var allArticles []model.ZennArticle
 	page := 1
 
@@ -94,6 +98,10 @@ func (s *ZennService) FetchArticles(username string) ([]model.ZennArticle, error
 
 // ValidateUsername はZennユーザー名が存在するかを検証する。
 func (s *ZennService) ValidateUsername(username string) (bool, error) {
+	if err := domain.ValidateExternalUsername(username); err != nil {
+		return false, err
+	}
+
 	url := fmt.Sprintf("https://zenn.dev/api/articles?username=%s&page=1", username)
 
 	resp, err := s.httpClient.Get(url)

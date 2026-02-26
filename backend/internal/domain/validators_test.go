@@ -338,6 +338,75 @@ func TestValidateStringLength(t *testing.T) {
 	}
 }
 
+func TestValidateExternalUsername(t *testing.T) {
+	tests := []struct {
+		name     string
+		username string
+		wantErr  bool
+	}{
+		{"有効（英数字）", "testuser123", false},
+		{"有効（ハイフン）", "test-user", false},
+		{"有効（アンダースコア）", "test_user", false},
+		{"有効（ドット）", "test.user", false},
+		{"有効（1文字）", "a", false},
+		{"有効（最大長）", strings.Repeat("a", 50), false},
+		{"無効（空）", "", true},
+		{"無効（スペースのみ）", "   ", true},
+		{"無効（長すぎる）", strings.Repeat("a", 51), true},
+		{"無効（スラッシュ）", "user/path", true},
+		{"無効（アンパサンド）", "user&param=1", true},
+		{"無効（イコール）", "user=value", true},
+		{"無効（クエスチョン）", "user?q=1", true},
+		{"無効（スペース）", "user name", true},
+		{"無効（日本語）", "ユーザー", true},
+		{"無効（パーセントエンコード）", "user%2F", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateExternalUsername(tt.username)
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.True(t, IsDomainError(err))
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestValidateLanguageCode(t *testing.T) {
+	tests := []struct {
+		name    string
+		lang    string
+		wantErr bool
+	}{
+		{"有効（日本語）", "ja", false},
+		{"有効（英語）", "en", false},
+		{"有効（韓国語）", "ko", false},
+		{"有効（中国語）", "zh", false},
+		{"有効（スペイン語）", "es", false},
+		{"有効（フランス語）", "fr", false},
+		{"無効（空文字）", "", true},
+		{"無効（不正なコード）", "xx", true},
+		{"無効（長い文字列）", "japanese", true},
+		{"無効（インジェクション試行）", "ja&key=val", true},
+		{"無効（SQLインジェクション試行）", "ja' OR '1'='1", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateLanguageCode(tt.lang)
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.True(t, IsDomainError(err))
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
 func TestValidateEnum(t *testing.T) {
 	allowedValues := []string{"option1", "option2", "option3"}
 

@@ -49,6 +49,10 @@ type QiitaAPITag struct {
 // FetchArticles は指定ユーザーのQiita記事を全件取得する。
 // ページネーションにより100件ずつ取得し、全ページを結合して返す。
 func (s *QiitaService) FetchArticles(username string) ([]model.QiitaArticle, error) {
+	if err := domain.ValidateExternalUsername(username); err != nil {
+		return nil, err
+	}
+
 	var allArticles []model.QiitaArticle
 	page := 1
 	perPage := 100
@@ -105,6 +109,10 @@ func (s *QiitaService) FetchArticles(username string) ([]model.QiitaArticle, err
 
 // ValidateUsername はQiitaユーザー名が存在するかを検証する。
 func (s *QiitaService) ValidateUsername(username string) (bool, error) {
+	if err := domain.ValidateExternalUsername(username); err != nil {
+		return false, err
+	}
+
 	url := fmt.Sprintf("https://qiita.com/api/v2/users/%s", username)
 
 	resp, err := s.httpClient.Get(url)
