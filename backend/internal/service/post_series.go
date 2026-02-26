@@ -60,20 +60,14 @@ func (s *PostSeriesService) Update(id, userID uint, updates *model.PostSeries) (
 	}
 
 	if updates.Title != "" {
-		if strings.TrimSpace(updates.Title) == "" {
-			return nil, domain.NewError(domain.ErrCodeBadRequest, "タイトルは空白のみでは入力できません", nil)
-		}
-		if len([]rune(strings.TrimSpace(updates.Title))) > 200 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "タイトルは200文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(updates.Title, 1, 200, "タイトル"); err != nil {
+			return nil, err
 		}
 		series.Title = strings.TrimSpace(updates.Title)
 	}
 	if updates.Description != "" {
-		if strings.TrimSpace(updates.Description) == "" {
-			return nil, domain.NewError(domain.ErrCodeBadRequest, "説明は空白のみでは入力できません", nil)
-		}
-		if len([]rune(strings.TrimSpace(updates.Description))) > 1000 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(updates.Description, 1, 1000, "説明"); err != nil {
+			return nil, err
 		}
 		series.Description = strings.TrimSpace(updates.Description)
 	}

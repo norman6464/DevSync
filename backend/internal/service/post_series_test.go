@@ -486,7 +486,7 @@ func TestPostSeriesUpdate_WhitespaceTitle(t *testing.T) {
 	result, err := svc.Update(1, 1, updates)
 	assert.Error(t, err)
 	assert.Nil(t, result)
-	assert.Contains(t, err.Error(), "空白のみ")
+	assert.Contains(t, err.Error(), "タイトルを入力してください")
 }
 
 func TestPostSeriesUpdate_WhitespaceDescription(t *testing.T) {
@@ -501,7 +501,7 @@ func TestPostSeriesUpdate_WhitespaceDescription(t *testing.T) {
 	result, err := svc.Update(1, 1, updates)
 	assert.Error(t, err)
 	assert.Nil(t, result)
-	assert.Contains(t, err.Error(), "空白のみ")
+	assert.Contains(t, err.Error(), "説明を入力してください")
 }
 
 func TestPostSeriesUpdate_Description(t *testing.T) {

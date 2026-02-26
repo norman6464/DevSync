@@ -81,8 +81,8 @@ func (s *ProjectService) Update(id, userID uint, updates *model.Project) (*model
 		project.Description = strings.TrimSpace(updates.Description)
 	}
 	if strings.TrimSpace(updates.TechStack) != "" {
-		if len([]rune(strings.TrimSpace(updates.TechStack))) > 500 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "技術スタックは500文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(updates.TechStack, 1, 500, "技術スタック"); err != nil {
+			return nil, err
 		}
 		project.TechStack = strings.TrimSpace(updates.TechStack)
 	}
@@ -96,8 +96,8 @@ func (s *ProjectService) Update(id, userID uint, updates *model.Project) (*model
 		project.ImageURL = strings.TrimSpace(updates.ImageURL)
 	}
 	if strings.TrimSpace(updates.Role) != "" {
-		if len([]rune(strings.TrimSpace(updates.Role))) > 100 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "役割は100文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(updates.Role, 1, 100, "役割"); err != nil {
+			return nil, err
 		}
 		project.Role = strings.TrimSpace(updates.Role)
 	}

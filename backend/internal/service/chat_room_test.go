@@ -637,7 +637,7 @@ func TestChatRoomUpdate_WhitespaceName(t *testing.T) {
 	result, err := svc.Update(10, 1, "   ", "Valid description")
 	assert.Error(t, err)
 	assert.Nil(t, result)
-	assert.Contains(t, err.Error(), "空白のみ")
+	assert.Contains(t, err.Error(), "チャットルーム名を入力してください")
 }
 
 func TestChatRoomUpdate_WhitespaceDescription(t *testing.T) {
@@ -650,5 +650,5 @@ func TestChatRoomUpdate_WhitespaceDescription(t *testing.T) {
 	result, err := svc.Update(10, 1, "New Name", "   \t  ")
 	assert.Error(t, err)
 	assert.Nil(t, result)
-	assert.Contains(t, err.Error(), "空白のみ")
+	assert.Contains(t, err.Error(), "説明を入力してください")
 }

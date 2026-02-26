@@ -88,20 +88,20 @@ func (s *CodeSnippetService) Update(id, userID uint, language, fileName, code st
 	}
 
 	if strings.TrimSpace(language) != "" {
-		if len([]rune(strings.TrimSpace(language))) > 100 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "言語は100文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(language, 1, 100, "言語"); err != nil {
+			return nil, err
 		}
 		snippet.Language = strings.TrimSpace(language)
 	}
 	if strings.TrimSpace(fileName) != "" {
-		if len([]rune(strings.TrimSpace(fileName))) > 200 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "ファイル名は200文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(fileName, 1, 200, "ファイル名"); err != nil {
+			return nil, err
 		}
 		snippet.FileName = strings.TrimSpace(fileName)
 	}
 	if strings.TrimSpace(code) != "" {
-		if len([]rune(strings.TrimSpace(code))) > 50000 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "コードは50000文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(code, 1, 50000, "コード"); err != nil {
+			return nil, err
 		}
 		snippet.Code = strings.TrimSpace(code)
 	}
