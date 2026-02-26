@@ -207,3 +207,8 @@ func (s *CodeSnippetService) Unfavorite(userID, snippetID uint) error {
 func (s *CodeSnippetService) GetFavoritedByUserID(userID uint, limit, offset int) ([]model.CodeSnippet, int64, error) {
 	return s.repo.FindFavoritedByUserID(userID, limit, offset)
 }
+
+// CountByUserID は指定ユーザーのコードスニペット総数を返す。
+func (s *CodeSnippetService) CountByUserID(userID uint) (int64, error) {
+	return s.repo.CountByUserID(userID)
+}

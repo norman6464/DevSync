@@ -284,6 +284,7 @@ func registerPostViewRoutes(g *gin.RouterGroup, c *di.Container) {
 func registerSnippetRoutes(g *gin.RouterGroup, c *di.Container) {
 	snippets := g.Group("/snippets")
 	{
+		snippets.GET("/my/count", c.CodeSnippetHandler.GetMyCount)
 		snippets.GET("/search", c.CodeSnippetHandler.Search)
 		snippets.GET("/:id", c.CodeSnippetHandler.GetByID)
 		snippets.PUT("/:id", c.CodeSnippetHandler.Update)

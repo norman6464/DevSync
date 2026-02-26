@@ -22,6 +22,7 @@ type CodeSnippetHandlerServiceInterface interface {
 	Favorite(userID, snippetID uint) error
 	Unfavorite(userID, snippetID uint) error
 	GetFavoritedByUserID(userID uint, limit, offset int) ([]model.CodeSnippet, int64, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // CodeSnippetHandler はコードスニペット関連のHTTPハンドラ。
@@ -279,4 +280,15 @@ func (h *CodeSnippetHandler) GetFavorites(c *gin.Context) {
 		Snippets: ensureSlice(snippets),
 		Total:    total,
 	})
+}
+
+// GetMyCount は認証ユーザーのコードスニペット総数を返す。
+func (h *CodeSnippetHandler) GetMyCount(c *gin.Context) {
+	userID := c.GetUint("userID")
+	count, err := h.service.CountByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, gin.H{"count": count})
 }
