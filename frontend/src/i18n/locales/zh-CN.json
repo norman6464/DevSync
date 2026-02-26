@@ -219,7 +219,9 @@
     "addReaction": "表情回应",
     "sortNewest": "最新",
     "sortOldest": "最旧",
-    "sortTitle": "按标题"
+    "sortTitle": "按标题",
+    "loadReactionsBatch": "批量加载反应",
+    "loadReactionsBatchError": "批量加载反应失败"
   },
   "follow": {
     "noFollowers": "暂无粉丝",

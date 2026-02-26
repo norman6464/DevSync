@@ -249,6 +249,53 @@ func (r *PostRepository) GetUserReactions(userID, postID uint) ([]string, error)
 	return emojis, err
 }
 
+// GetReactionsBatch は複数投稿のリアクション集計を一括取得する。
+func (r *PostRepository) GetReactionsBatch(postIDs []uint) (map[uint][]model.ReactionCount, error) {
+	type result struct {
+		PostID uint   `gorm:"column:post_id"`
+		Emoji  string `gorm:"column:emoji"`
+		Count  int    `gorm:"column:count"`
+	}
+	var results []result
+	err := r.db.Model(&model.Reaction{}).
+		Select("post_id, emoji, COUNT(*) as count").
+		Where("post_id IN ?", postIDs).
+		Group("post_id, emoji").
+		Order("post_id, count DESC").
+		Find(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	m := make(map[uint][]model.ReactionCount)
+	for _, res := range results {
+		m[res.PostID] = append(m[res.PostID], model.ReactionCount{Emoji: res.Emoji, Count: res.Count})
+	}
+	return m, nil
+}
+
+// GetUserReactionsBatch は複数投稿に対するユーザーのリアクションを一括取得する。
+func (r *PostRepository) GetUserReactionsBatch(userID uint, postIDs []uint) (map[uint][]string, error) {
+	type result struct {
+		PostID uint   `gorm:"column:post_id"`
+		Emoji  string `gorm:"column:emoji"`
+	}
+	var results []result
+	err := r.db.Model(&model.Reaction{}).
+		Select("post_id, emoji").
+		Where("user_id = ? AND post_id IN ?", userID, postIDs).
+		Find(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	m := make(map[uint][]string)
+	for _, res := range results {
+		m[res.PostID] = append(m[res.PostID], res.Emoji)
+	}
+	return m, nil
+}
+
 // FindDraftsByUserID は指定ユーザーの下書き一覧を取得する（新しい順）。
 func (r *PostRepository) FindDraftsByUserID(userID uint) ([]model.Post, error) {
 	var posts []model.Post

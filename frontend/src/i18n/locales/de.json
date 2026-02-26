@@ -219,7 +219,9 @@
     "addReaction": "Reagieren",
     "sortNewest": "Neueste",
     "sortOldest": "Älteste",
-    "sortTitle": "Nach Titel"
+    "sortTitle": "Nach Titel",
+    "loadReactionsBatch": "Reaktionen stapelweise laden",
+    "loadReactionsBatchError": "Fehler beim stapelweisen Laden der Reaktionen"
   },
   "follow": {
     "noFollowers": "Noch keine Follower",

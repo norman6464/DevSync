@@ -1647,3 +1647,79 @@ func TestPostAutoSaveDraft_CreateRepoError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, result)
 }
+
+// ============================================================
+// リアクション一括取得テスト
+// ============================================================
+
+func TestPostGetReactionsBatch_Success(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postIDs := []uint{1, 2, 3}
+
+	postRepo.On("GetReactionsBatch", postIDs).Return(map[uint][]model.ReactionCount{
+		1: {{Emoji: "👍", Count: 5}, {Emoji: "🎉", Count: 2}},
+		2: {{Emoji: "❤️", Count: 1}},
+	}, nil)
+	postRepo.On("GetUserReactionsBatch", uint(10), postIDs).Return(map[uint][]string{
+		1: {"👍"},
+	}, nil)
+
+	reactions, userReactions, err := svc.GetReactionsBatch(10, postIDs)
+	assert.NoError(t, err)
+	assert.Len(t, reactions[1], 2)
+	assert.Len(t, reactions[2], 1)
+	assert.Nil(t, reactions[3])
+	assert.Equal(t, []string{"👍"}, userReactions[1])
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostGetReactionsBatch_EmptyPostIDs(t *testing.T) {
+	svc, _, _ := newTestPostService()
+
+	reactions, userReactions, err := svc.GetReactionsBatch(1, []uint{})
+	assert.NoError(t, err)
+	assert.Empty(t, reactions)
+	assert.Empty(t, userReactions)
+}
+
+func TestPostGetReactionsBatch_TooManyPostIDs(t *testing.T) {
+	svc, _, _ := newTestPostService()
+
+	postIDs := make([]uint, 51)
+	for i := range postIDs {
+		postIDs[i] = uint(i + 1)
+	}
+
+	_, _, err := svc.GetReactionsBatch(1, postIDs)
+	assert.Error(t, err)
+
+	var domainErr *domain.DomainError
+	assert.True(t, errors.As(err, &domainErr))
+	assert.Equal(t, domain.ErrCodeBadRequest, domainErr.Code)
+}
+
+func TestPostGetReactionsBatch_RepoError(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postIDs := []uint{1, 2}
+	postRepo.On("GetReactionsBatch", postIDs).Return(
+		map[uint][]model.ReactionCount(nil), errors.New("db error"),
+	)
+
+	_, _, err := svc.GetReactionsBatch(1, postIDs)
+	assert.Error(t, err)
+}
+
+func TestPostGetReactionsBatch_UserReactionsRepoError(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postIDs := []uint{1}
+	postRepo.On("GetReactionsBatch", postIDs).Return(map[uint][]model.ReactionCount{}, nil)
+	postRepo.On("GetUserReactionsBatch", uint(1), postIDs).Return(
+		map[uint][]string(nil), errors.New("db error"),
+	)
+
+	_, _, err := svc.GetReactionsBatch(1, postIDs)
+	assert.Error(t, err)
+}

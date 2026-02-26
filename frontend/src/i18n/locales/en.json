@@ -219,7 +219,9 @@
     "addReaction": "React",
     "sortNewest": "Newest",
     "sortOldest": "Oldest",
-    "sortTitle": "By Title"
+    "sortTitle": "By Title",
+    "loadReactionsBatch": "Load reactions in batch",
+    "loadReactionsBatchError": "Failed to load reactions in batch"
   },
   "follow": {
     "noFollowers": "No followers yet",

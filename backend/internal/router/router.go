@@ -207,6 +207,7 @@ func registerPostRoutes(g *gin.RouterGroup, c *di.Container) {
 		posts.DELETE("/:id/comments/:commentId", c.PostHandler.DeleteComment)
 		posts.POST("/:id/comments/:commentId/hide", c.PostHandler.HideComment)
 		posts.POST("/:id/comments/:commentId/unhide", c.PostHandler.UnhideComment)
+		posts.POST("/reactions/batch", c.PostHandler.GetReactionsBatch)
 		posts.GET("/:id/reactions", c.PostHandler.GetReactions)
 		posts.POST("/:id/reactions", c.PostHandler.AddReaction)
 		posts.DELETE("/:id/reactions", c.PostHandler.RemoveReaction)

@@ -1269,3 +1269,55 @@ func TestPostAutoSaveDraft_ServiceError(t *testing.T) {
 	})
 	assertStatus(t, w, http.StatusNotFound)
 }
+
+// ---------- GetReactionsBatch ----------
+
+func TestPostGetReactionsBatch_Success(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts/reactions/batch", h.GetReactionsBatch)
+
+	postIDs := []uint{1, 2}
+	postRepo.On("GetReactionsBatch", postIDs).Return(map[uint][]model.ReactionCount{
+		1: {{Emoji: "👍", Count: 3}},
+	}, nil)
+	postRepo.On("GetUserReactionsBatch", uint(1), postIDs).Return(map[uint][]string{
+		1: {"👍"},
+	}, nil)
+
+	w := doRequest(r, http.MethodPost, "/posts/reactions/batch", map[string]interface{}{
+		"post_ids": []uint{1, 2},
+	})
+	assertStatus(t, w, http.StatusOK)
+
+	body := parseJSON(t, w)
+	reactions, ok := body["reactions"].(map[string]interface{})
+	assert.True(t, ok)
+	assert.Contains(t, reactions, "1")
+	assert.Contains(t, reactions, "2")
+}
+
+func TestPostGetReactionsBatch_InvalidJSON(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts/reactions/batch", h.GetReactionsBatch)
+
+	w := doRequestRaw(r, http.MethodPost, "/posts/reactions/batch", "{invalid}")
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostGetReactionsBatch_ServiceError(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts/reactions/batch", h.GetReactionsBatch)
+
+	postIDs := []uint{1}
+	postRepo.On("GetReactionsBatch", postIDs).Return(
+		map[uint][]model.ReactionCount(nil), service.ErrBadRequest,
+	)
+
+	w := doRequest(r, http.MethodPost, "/posts/reactions/batch", map[string]interface{}{
+		"post_ids": []uint{1},
+	})
+	assertStatus(t, w, http.StatusBadRequest)
+}

@@ -72,3 +72,13 @@ type ReactionResponse struct {
 	Reactions     []model.ReactionCount `json:"reactions"`
 	UserReactions []string              `json:"user_reactions"`
 }
+
+// BatchReactionRequest はリアクション一括取得リクエスト。
+type BatchReactionRequest struct {
+	PostIDs []uint `json:"post_ids" binding:"required"`
+}
+
+// BatchReactionResponse はリアクション一括取得レスポンス。
+type BatchReactionResponse struct {
+	Reactions map[uint]ReactionResponse `json:"reactions"`
+}
