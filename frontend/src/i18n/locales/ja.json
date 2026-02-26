@@ -236,7 +236,9 @@
     "linkCopied": "リンクをコピーしました",
     "bookmarks": "ブックマーク一覧",
     "noBookmarks": "ブックマークした投稿はありません",
-    "addReaction": "リアクション"
+    "addReaction": "リアクション",
+    "loadReactionsBatch": "リアクションを一括読み込み",
+    "loadReactionsBatchError": "リアクションの一括読み込みに失敗しました"
   },
   "follow": {
     "noFollowers": "まだフォロワーはいません",

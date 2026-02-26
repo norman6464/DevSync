@@ -144,6 +144,14 @@ func (m *MockPostRepository) GetUserReactions(userID, postID uint) ([]string, er
 	args := m.Called(userID, postID)
 	return args.Get(0).([]string), args.Error(1)
 }
+func (m *MockPostRepository) GetReactionsBatch(postIDs []uint) (map[uint][]model.ReactionCount, error) {
+	args := m.Called(postIDs)
+	return args.Get(0).(map[uint][]model.ReactionCount), args.Error(1)
+}
+func (m *MockPostRepository) GetUserReactionsBatch(userID uint, postIDs []uint) (map[uint][]string, error) {
+	args := m.Called(userID, postIDs)
+	return args.Get(0).(map[uint][]string), args.Error(1)
+}
 func (m *MockPostRepository) Search(query string, limit, offset int) (interface{}, int64, error) {
 	args := m.Called(query, limit, offset)
 	return args.Get(0), args.Get(1).(int64), args.Error(2)

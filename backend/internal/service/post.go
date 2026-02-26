@@ -318,6 +318,29 @@ func (s *PostService) GetUserReactions(userID, postID uint) ([]string, error) {
 	return s.repo.GetUserReactions(userID, postID)
 }
 
+// GetReactionsBatch は複数投稿のリアクション情報を一括取得する。
+// 最大50件まで。
+func (s *PostService) GetReactionsBatch(userID uint, postIDs []uint) (map[uint][]model.ReactionCount, map[uint][]string, error) {
+	if len(postIDs) == 0 {
+		return map[uint][]model.ReactionCount{}, map[uint][]string{}, nil
+	}
+	if len(postIDs) > 50 {
+		return nil, nil, domain.NewError(domain.ErrCodeBadRequest, "一度に取得できる投稿は50件までです", nil)
+	}
+
+	reactions, err := s.repo.GetReactionsBatch(postIDs)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	userReactions, err := s.repo.GetUserReactionsBatch(userID, postIDs)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return reactions, userReactions, nil
+}
+
 // SchedulePublish は下書き投稿にスケジュール公開日時を設定する。
 func (s *PostService) SchedulePublish(id, userID uint, scheduledAt time.Time) (*model.Post, error) {
 	post, err := s.findAndCheckOwnership(id, userID)

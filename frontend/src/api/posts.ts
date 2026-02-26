@@ -132,6 +132,9 @@ export const getScheduledPosts = () =>
 export const getReactions = (postId: number) =>
   client.get<ReactionResponse>(`/posts/${postId}/reactions`);
 
+export const getReactionsBatch = (postIds: number[]) =>
+  client.post<{ reactions: Record<number, ReactionResponse> }>('/posts/reactions/batch', { post_ids: postIds });
+
 export const addReaction = (postId: number, emoji: string) =>
   client.post(`/posts/${postId}/reactions`, { emoji });
 

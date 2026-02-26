@@ -220,7 +220,9 @@
     "addReaction": "리액션",
     "sortNewest": "최신순",
     "sortOldest": "오래된순",
-    "sortTitle": "제목순"
+    "sortTitle": "제목순",
+    "loadReactionsBatch": "리액션 일괄 로드",
+    "loadReactionsBatchError": "리액션 일괄 로드에 실패했습니다"
   },
   "follow": {
     "noFollowers": "아직 팔로워가 없습니다",

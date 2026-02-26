@@ -81,6 +81,8 @@ type PostRepositoryInterface interface {
 	RemoveReaction(userID, postID uint, emoji string) error
 	GetReactionsByPostID(postID uint) ([]model.ReactionCount, error)
 	GetUserReactions(userID, postID uint) ([]string, error)
+	GetReactionsBatch(postIDs []uint) (map[uint][]model.ReactionCount, error)
+	GetUserReactionsBatch(userID uint, postIDs []uint) (map[uint][]string, error)
 	FindScheduledByUserID(userID uint) ([]model.Post, error)
 }
 

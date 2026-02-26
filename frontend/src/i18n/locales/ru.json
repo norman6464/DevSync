@@ -219,7 +219,9 @@
     "addReaction": "Реакция",
     "sortNewest": "Новые",
     "sortOldest": "Старые",
-    "sortTitle": "По названию"
+    "sortTitle": "По названию",
+    "loadReactionsBatch": "Загрузить реакции пакетом",
+    "loadReactionsBatchError": "Не удалось загрузить реакции пакетом"
   },
   "follow": {
     "noFollowers": "Пока нет подписчиков",

@@ -39,6 +39,7 @@ type PostServiceInterface interface {
 	RemoveReaction(userID, postID uint, emoji string) error
 	GetReactionsByPostID(postID uint) ([]model.ReactionCount, error)
 	GetUserReactions(userID, postID uint) ([]string, error)
+	GetReactionsBatch(userID uint, postIDs []uint) (map[uint][]model.ReactionCount, map[uint][]string, error)
 	SchedulePublish(id, userID uint, scheduledAt time.Time) (*model.Post, error)
 	CancelSchedule(id, userID uint) (*model.Post, error)
 	GetScheduled(userID uint) ([]model.Post, error)
@@ -549,4 +550,38 @@ func (h *PostHandler) AutoSaveDraft(c *gin.Context) {
 		ID:        result.ID,
 		UpdatedAt: result.UpdatedAt.Format(time.RFC3339),
 	})
+}
+
+// GetReactionsBatch は複数投稿のリアクション情報を一括取得する。
+func (h *PostHandler) GetReactionsBatch(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	input := bindJSON[dto.BatchReactionRequest](c)
+	if input == nil {
+		return
+	}
+
+	reactions, userReactions, err := h.service.GetReactionsBatch(userID, input.PostIDs)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	result := make(map[uint]dto.ReactionResponse)
+	for _, id := range input.PostIDs {
+		r := reactions[id]
+		ur := userReactions[id]
+		if r == nil {
+			r = []model.ReactionCount{}
+		}
+		if ur == nil {
+			ur = []string{}
+		}
+		result[id] = dto.ReactionResponse{
+			Reactions:     r,
+			UserReactions: ur,
+		}
+	}
+
+	respondOK(c, dto.BatchReactionResponse{Reactions: result})
 }

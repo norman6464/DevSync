@@ -225,6 +225,17 @@ func (m *MockPostRepository) GetUserReactions(userID, postID uint) ([]string, er
 	args := m.Called(userID, postID)
 	return args.Get(0).([]string), args.Error(1)
 }
+
+func (m *MockPostRepository) GetReactionsBatch(postIDs []uint) (map[uint][]model.ReactionCount, error) {
+	args := m.Called(postIDs)
+	return args.Get(0).(map[uint][]model.ReactionCount), args.Error(1)
+}
+
+func (m *MockPostRepository) GetUserReactionsBatch(userID uint, postIDs []uint) (map[uint][]string, error) {
+	args := m.Called(userID, postIDs)
+	return args.Get(0).(map[uint][]string), args.Error(1)
+}
+
 func (m *MockPostRepository) FindScheduledByUserID(userID uint) ([]model.Post, error) {
 	args := m.Called(userID)
 	return args.Get(0).([]model.Post), args.Error(1)

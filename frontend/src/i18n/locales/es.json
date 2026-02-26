@@ -219,7 +219,9 @@
     "addReaction": "Reaccionar",
     "sortNewest": "Más reciente",
     "sortOldest": "Más antiguo",
-    "sortTitle": "Por título"
+    "sortTitle": "Por título",
+    "loadReactionsBatch": "Cargar reacciones en lote",
+    "loadReactionsBatchError": "Error al cargar reacciones en lote"
   },
   "follow": {
     "noFollowers": "Aún no hay seguidores",
