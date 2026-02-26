@@ -299,6 +299,23 @@ func parseDateTimeRFC3339(dateStr string) (time.Time, bool) {
 	return t, true
 }
 
+// handleAction はリソースに対する操作の共通パターンを実装する。
+// parseID → GetUint("userID") → action(id, userID) → respondOK(message)
+// Archive/Unarchiveなど、IDとuserIDを受け取るシンプルな操作に使用する。
+func handleAction(c *gin.Context, action func(id, userID uint) error, message string) {
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+	userID := c.GetUint("userID")
+
+	if err := action(id, userID); err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, domain.NewMessageResponse(message))
+}
+
 // handleToggleAction はLike/Unlikeなどのトグル操作を共通化するヘルパー。
 // parseID → サービス呼び出し → レスポンス返却のパターンを統一する。
 func handleToggleAction(c *gin.Context, action func(userID, id uint) error, message string) {
