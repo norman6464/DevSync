@@ -441,6 +441,11 @@ func (m *MockQuestionRepository) FindBookmarkedByUserID(userID uint, limit, offs
 	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
 }
 
+func (m *MockQuestionRepository) FindUnanswered(limit, offset int) ([]model.Question, int64, error) {
+	args := m.Called(limit, offset)
+	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
+}
+
 // ============================================================
 // MockAnswerRepository は repository.AnswerRepositoryInterface のテスト用モック実装。
 // ============================================================

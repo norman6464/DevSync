@@ -566,6 +566,7 @@ func registerCommunityRoutes(g *gin.RouterGroup, c *di.Container) {
 		questions.GET("", c.QuestionHandler.GetAll)
 		questions.GET("/search", c.QuestionHandler.Search)
 		questions.GET("/solved", c.QuestionHandler.GetSolved)
+		questions.GET("/unanswered", c.QuestionHandler.GetUnanswered)
 		questions.GET("/:id", c.QuestionHandler.GetByID)
 		questions.PUT("/:id", c.QuestionHandler.Update)
 		questions.DELETE("/:id", c.QuestionHandler.Delete)

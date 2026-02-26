@@ -1038,7 +1038,9 @@
     "bestAnswerSet": "Best answer set",
     "bestAnswerFailed": "Failed to set best answer",
     "voteFailed": "Failed to vote",
-    "popularBadge": "Popular"
+    "popularBadge": "Popular",
+    "unanswered": "Unanswered",
+    "noUnanswered": "No unanswered questions"
   },
   "roadmaps": {
     "title": "Learning Roadmaps",

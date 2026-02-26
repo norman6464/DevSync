@@ -94,3 +94,10 @@ export const getBookmarkedQuestions = async (
   const res = await client.get('/questions/bookmarks', { params: { limit, offset } });
   return res.data;
 };
+
+export const getUnansweredQuestions = async (
+  limit = 20, offset = 0
+): Promise<{ questions: Question[]; total: number }> => {
+  const res = await client.get('/questions/unanswered', { params: { limit, offset } });
+  return res.data;
+};
