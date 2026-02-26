@@ -531,6 +531,7 @@ func registerNoteRoutes(g *gin.RouterGroup, c *di.Container) {
 	{
 		notes.POST("", c.NoteHandler.Create)
 		notes.GET("", c.NoteHandler.GetByUserID)
+		notes.GET("/my/count", c.NoteHandler.GetMyCount)
 		notes.GET("/search", c.NoteHandler.Search)
 		notes.GET("/favorites", c.NoteHandler.GetFavorites)
 		notes.GET("/archived", c.NoteHandler.GetArchived)

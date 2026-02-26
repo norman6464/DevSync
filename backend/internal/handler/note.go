@@ -92,6 +92,19 @@ func (h *NoteHandler) GetByUserID(c *gin.Context) {
 	respondPaginated(c, notes, total, page, limit)
 }
 
+// GetMyCount は認証ユーザー自身のノート総数を返す。
+func (h *NoteHandler) GetMyCount(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	count, err := h.service.CountByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, gin.H{"count": count})
+}
+
 // GetByFolderID は指定フォルダ内のノート一覧を所有権検証付きで取得する。
 func (h *NoteHandler) GetByFolderID(c *gin.Context) {
 	folderID, ok := parseID(c, "folderId")
