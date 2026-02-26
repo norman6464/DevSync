@@ -28,6 +28,7 @@ type StudyCircleServiceInterface interface {
 	GetStreakRanking(circleID, userID uint) ([]model.CircleMemberStreak, error)
 	GetByStatus(userID uint, status string) ([]model.StudyCircle, error)
 	UpdateMemberRole(circleID, userID, targetUserID uint, role string) error
+	SearchCircles(query string, limit, offset int) ([]model.StudyCircle, int64, error)
 }
 
 // StudyCircleHandler はスタディサークル関連のHTTPリクエストを処理する。
@@ -369,4 +370,26 @@ func (h *StudyCircleHandler) UpdateMemberRole(c *gin.Context) {
 	}
 
 	respondOK(c, domain.NewMessageResponse("メンバー役割を更新しました"))
+}
+
+// Search はスタディサークルをキーワード検索する。
+func (h *StudyCircleHandler) Search(c *gin.Context) {
+	query, ok := parseSearchQuery(c)
+	if !ok {
+		return
+	}
+	limit, offset := parseLimitOffset(c)
+
+	circles, total, err := h.service.SearchCircles(query, limit, offset)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, dto.StudyCircleListResponse{
+		Circles: circles,
+		Total:   total,
+		Limit:   limit,
+		Offset:  offset,
+	})
 }
