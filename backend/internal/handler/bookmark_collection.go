@@ -16,6 +16,7 @@ type BookmarkCollectionServiceInterface interface {
 	AddPost(collectionID, postID, userID uint) error
 	RemovePost(collectionID, postID, userID uint) error
 	GetPosts(collectionID uint, limit, offset int) ([]model.Post, int64, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // BookmarkCollectionHandler はブックマークコレクション関連のHTTPハンドラ。
@@ -165,4 +166,15 @@ func (h *BookmarkCollectionHandler) GetPosts(c *gin.Context) {
 		Posts: ensureSlice(posts),
 		Total: total,
 	})
+}
+
+// GetMyCount は認証ユーザーのコレクション総数を返す。
+func (h *BookmarkCollectionHandler) GetMyCount(c *gin.Context) {
+	userID := c.GetUint("userID")
+	count, err := h.service.CountByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, gin.H{"count": count})
 }

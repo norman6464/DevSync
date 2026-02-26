@@ -114,3 +114,8 @@ func (s *BookmarkCollectionService) GetPosts(collectionID uint, limit, offset in
 func (s *BookmarkCollectionService) findAndCheckOwnership(id, userID uint) (*model.BookmarkCollection, error) {
 	return checkOwnership(s.repo.FindByID, id, userID, func(c *model.BookmarkCollection) uint { return c.UserID })
 }
+
+// CountByUserID は指定ユーザーのコレクション総数を返す。
+func (s *BookmarkCollectionService) CountByUserID(userID uint) (int64, error) {
+	return s.repo.CountByUserID(userID)
+}

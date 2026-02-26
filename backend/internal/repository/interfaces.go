@@ -704,6 +704,7 @@ type BookmarkCollectionRepositoryInterface interface {
 	RemovePost(collectionID, postID uint) error
 	GetPosts(collectionID uint, limit, offset int) ([]model.Post, int64, error)
 	HasPost(collectionID, postID uint) (bool, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // PostTemplateRepositoryInterface は投稿テンプレートデータ操作の契約を定義する。

@@ -825,6 +825,7 @@ func registerBookmarkCollectionRoutes(g *gin.RouterGroup, c *di.Container) {
 	{
 		collections.POST("", c.BookmarkCollectionHandler.Create)
 		collections.GET("", c.BookmarkCollectionHandler.GetMyCollections)
+		collections.GET("/my/count", c.BookmarkCollectionHandler.GetMyCount)
 		collections.PUT("/:id", c.BookmarkCollectionHandler.Update)
 		collections.DELETE("/:id", c.BookmarkCollectionHandler.Delete)
 		collections.POST("/:id/posts/:postId", c.BookmarkCollectionHandler.AddPost)

@@ -97,3 +97,10 @@ func (r *BookmarkCollectionRepository) HasPost(collectionID, postID uint) (bool,
 		Count(&count).Error
 	return count > 0, err
 }
+
+// CountByUserID は指定ユーザーのコレクション総数を返す。
+func (r *BookmarkCollectionRepository) CountByUserID(userID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.BookmarkCollection{}).Where("user_id = ?", userID).Count(&count).Error
+	return count, err
+}
