@@ -713,6 +713,13 @@
     "favorites": "收藏",
     "toggleFavorite": "切换收藏"
   },
+  "learningLog": {
+    "batchCreate": "批量创建",
+    "batchCreateDescription": "可以一次性登记多条学习日志",
+    "batchCreateSuccess": "学习日志已批量创建",
+    "addEntry": "添加条目",
+    "removeEntry": "删除条目"
+  },
   "reports": {
     "title": "活动报告",
     "timeline": "时间线",

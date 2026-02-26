@@ -713,6 +713,13 @@
     "favorites": "Favoris",
     "toggleFavorite": "Basculer le favori"
   },
+  "learningLog": {
+    "batchCreate": "Création par lot",
+    "batchCreateDescription": "Vous pouvez enregistrer plusieurs journaux d'apprentissage en une seule fois",
+    "batchCreateSuccess": "Les journaux d'apprentissage ont été créés par lot",
+    "addEntry": "Ajouter une entrée",
+    "removeEntry": "Supprimer l'entrée"
+  },
   "reports": {
     "title": "Rapports d'Activité",
     "timeline": "Fil d'actualité",

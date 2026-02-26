@@ -498,3 +498,77 @@ func TestLearningLog_Unfavorite_InvalidID(t *testing.T) {
 	w := doRequest(r, http.MethodPut, "/logs/abc/unfavorite", nil)
 	assertStatus(t, w, http.StatusBadRequest)
 }
+
+// ============================================================
+// BatchCreate テスト
+// ============================================================
+
+func TestLearningLog_BatchCreate_Success(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	r := newRouter(1)
+	r.POST("/logs/batch", h.BatchCreate)
+
+	resultLogs := []model.LearningLog{
+		{Title: "Go基礎", Content: "変数を学んだ", UserID: 1, Duration: 60},
+		{Title: "React入門", Content: "コンポーネント作成", UserID: 1, Duration: 45},
+	}
+	svc.On("BatchCreate", uint(1), mock.AnythingOfType("[]model.LearningLog")).Return(resultLogs, nil)
+
+	w := doRequest(r, http.MethodPost, "/logs/batch", map[string]interface{}{
+		"logs": []map[string]interface{}{
+			{"title": "Go基礎", "content": "変数を学んだ", "duration": 60},
+			{"title": "React入門", "content": "コンポーネント作成", "duration": 45},
+		},
+	})
+	assertStatus(t, w, http.StatusCreated)
+	svc.AssertExpectations(t)
+}
+
+func TestLearningLog_BatchCreate_EmptyLogs(t *testing.T) {
+	h, _ := setupLearningLogHandler()
+	r := newRouter(1)
+	r.POST("/logs/batch", h.BatchCreate)
+
+	w := doRequest(r, http.MethodPost, "/logs/batch", map[string]interface{}{
+		"logs": []map[string]interface{}{},
+	})
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestLearningLog_BatchCreate_InvalidJSON(t *testing.T) {
+	h, _ := setupLearningLogHandler()
+	r := newRouter(1)
+	r.POST("/logs/batch", h.BatchCreate)
+
+	w := doRequestRaw(r, http.MethodPost, "/logs/batch", "not json")
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestLearningLog_BatchCreate_ServiceError(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+	r := newRouter(1)
+	r.POST("/logs/batch", h.BatchCreate)
+
+	svc.On("BatchCreate", uint(1), mock.AnythingOfType("[]model.LearningLog")).Return(nil, errors.New("validation error"))
+
+	w := doRequest(r, http.MethodPost, "/logs/batch", map[string]interface{}{
+		"logs": []map[string]interface{}{
+			{"title": "テスト", "content": "内容", "duration": 30},
+		},
+	})
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+func TestLearningLog_BatchCreate_MissingTitle(t *testing.T) {
+	h, _ := setupLearningLogHandler()
+	r := newRouter(1)
+	r.POST("/logs/batch", h.BatchCreate)
+
+	w := doRequest(r, http.MethodPost, "/logs/batch", map[string]interface{}{
+		"logs": []map[string]interface{}{
+			{"content": "内容のみ"},
+		},
+	})
+	assertStatus(t, w, http.StatusBadRequest)
+}

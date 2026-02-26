@@ -744,6 +744,127 @@ func TestLearningLogExportCSV_BOMPresent(t *testing.T) {
 	assert.Equal(t, byte(0xBF), data[2])
 }
 
+// ============================================================
+// バッチ作成テスト
+// ============================================================
+
+func TestLearningLogBatchCreate_Success(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	logs := []model.LearningLog{
+		{Title: "Go基礎", Content: "変数を学んだ", UserID: 1, Duration: 60, Category: model.LogCategoryCoding},
+		{Title: "React入門", Content: "コンポーネント作成", UserID: 1, Duration: 45, Category: model.LogCategoryCourse},
+	}
+
+	repo.On("CreateBatch", mock.MatchedBy(func(l []model.LearningLog) bool {
+		return len(l) == 2 && l[0].Title == "Go基礎" && l[1].Title == "React入門"
+	})).Return(nil)
+
+	results, err := svc.BatchCreate(1, logs)
+	assert.NoError(t, err)
+	assert.Len(t, results, 2)
+	assert.Equal(t, uint(1), results[0].UserID)
+	assert.Equal(t, uint(1), results[1].UserID)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogBatchCreate_EmptyList(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	results, err := svc.BatchCreate(1, []model.LearningLog{})
+	assert.Error(t, err)
+	assert.Nil(t, results)
+	assert.Contains(t, err.Error(), "1件以上")
+}
+
+func TestLearningLogBatchCreate_ExceedsMaxCount(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	logs := make([]model.LearningLog, 51)
+	for i := range logs {
+		logs[i] = model.LearningLog{Title: "テスト", Content: "内容", Duration: 10}
+	}
+
+	results, err := svc.BatchCreate(1, logs)
+	assert.Error(t, err)
+	assert.Nil(t, results)
+	assert.Contains(t, err.Error(), "50件以下")
+}
+
+func TestLearningLogBatchCreate_InvalidDuration(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	logs := []model.LearningLog{
+		{Title: "正常", Content: "OK", Duration: 60},
+		{Title: "異常", Content: "NG", Duration: -10},
+	}
+
+	results, err := svc.BatchCreate(1, logs)
+	assert.Error(t, err)
+	assert.Nil(t, results)
+}
+
+func TestLearningLogBatchCreate_InvalidCategory(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	logs := []model.LearningLog{
+		{Title: "正常", Content: "OK", Category: model.LogCategoryCoding},
+		{Title: "異常", Content: "NG", Category: model.LogCategory("invalid")},
+	}
+
+	results, err := svc.BatchCreate(1, logs)
+	assert.Error(t, err)
+	assert.Nil(t, results)
+}
+
+func TestLearningLogBatchCreate_InvalidSource(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	logs := []model.LearningLog{
+		{Title: "正常", Content: "OK", Source: model.LogSourceManual},
+		{Title: "異常", Content: "NG", Source: model.LogSource("unknown")},
+	}
+
+	results, err := svc.BatchCreate(1, logs)
+	assert.Error(t, err)
+	assert.Nil(t, results)
+}
+
+func TestLearningLogBatchCreate_RepoError(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	logs := []model.LearningLog{
+		{Title: "テスト", Content: "内容", Duration: 30},
+	}
+
+	repo.On("CreateBatch", mock.AnythingOfType("[]model.LearningLog")).Return(errors.New("db error"))
+
+	results, err := svc.BatchCreate(1, logs)
+	assert.Error(t, err)
+	assert.Nil(t, results)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogBatchCreate_SetsUserID(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	// UserIDが異なる値でも、全て引数のuserIDに上書きされるべき
+	logs := []model.LearningLog{
+		{Title: "テスト1", Content: "内容1", UserID: 999, Duration: 30},
+		{Title: "テスト2", Content: "内容2", UserID: 0, Duration: 45},
+	}
+
+	repo.On("CreateBatch", mock.MatchedBy(func(l []model.LearningLog) bool {
+		return l[0].UserID == 1 && l[1].UserID == 1
+	})).Return(nil)
+
+	results, err := svc.BatchCreate(1, logs)
+	assert.NoError(t, err)
+	assert.Equal(t, uint(1), results[0].UserID)
+	assert.Equal(t, uint(1), results[1].UserID)
+	repo.AssertExpectations(t)
+}
+
 func TestLearningLogExportCSV_MultipleRows(t *testing.T) {
 	svc, repo := newTestLearningLogService()
 

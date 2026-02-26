@@ -40,6 +40,38 @@ func (s *LearningLogService) Create(log *model.LearningLog) error {
 	return s.repo.Create(log)
 }
 
+// BatchCreate は複数の学習ログを一括作成する。
+// 各ログのバリデーションを行い、全てパスした場合のみ一括保存する。
+// 最大50件まで。
+func (s *LearningLogService) BatchCreate(userID uint, logs []model.LearningLog) ([]model.LearningLog, error) {
+	if len(logs) == 0 {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "学習ログは1件以上指定してください", nil)
+	}
+	if len(logs) > 50 {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "学習ログは50件以下で指定してください", nil)
+	}
+
+	for i := range logs {
+		logs[i].UserID = userID
+
+		if err := validateDuration(logs[i].Duration); err != nil {
+			return nil, err
+		}
+		if logs[i].Category != "" && !model.ValidCategories[logs[i].Category] {
+			return nil, ErrBadRequest
+		}
+		if logs[i].Source != "" && !model.ValidSources[logs[i].Source] {
+			return nil, ErrBadRequest
+		}
+	}
+
+	if err := s.repo.CreateBatch(logs); err != nil {
+		return nil, err
+	}
+
+	return logs, nil
+}
+
 // GetByID は指定IDの学習ログを取得する。所有権を検証する。
 func (s *LearningLogService) GetByID(id, userID uint) (*model.LearningLog, error) {
 	return s.findAndCheckOwnership(id, userID)

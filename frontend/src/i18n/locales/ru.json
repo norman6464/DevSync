@@ -712,6 +712,13 @@
     "favorites": "Избранное",
     "toggleFavorite": "Переключить избранное"
   },
+  "learningLog": {
+    "batchCreate": "Пакетное создание",
+    "batchCreateDescription": "Можно зарегистрировать несколько журналов обучения за один раз",
+    "batchCreateSuccess": "Журналы обучения были созданы пакетно",
+    "addEntry": "Добавить запись",
+    "removeEntry": "Удалить запись"
+  },
   "reports": {
     "title": "Отчёты об Активности",
     "timeline": "Лента",

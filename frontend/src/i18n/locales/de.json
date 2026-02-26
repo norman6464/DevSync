@@ -712,6 +712,13 @@
     "favorites": "Favoriten",
     "toggleFavorite": "Favorit umschalten"
   },
+  "learningLog": {
+    "batchCreate": "Stapelerstellung",
+    "batchCreateDescription": "Mehrere Lernprotokolle auf einmal registrieren",
+    "batchCreateSuccess": "Lernprotokolle wurden per Stapel erstellt",
+    "addEntry": "Eintrag hinzufügen",
+    "removeEntry": "Eintrag entfernen"
+  },
   "reports": {
     "title": "Aktivitätsberichte",
     "timeline": "Zeitleiste",

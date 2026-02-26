@@ -28,6 +28,10 @@ export interface CreateLogRequest {
   source?: LogSource;
 }
 
+export interface BatchCreateLogRequest {
+  logs: CreateLogRequest[];
+}
+
 export interface UpdateLogRequest {
   title?: string;
   content?: string;

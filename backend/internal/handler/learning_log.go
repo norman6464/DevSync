@@ -12,6 +12,7 @@ import (
 // LearningLogServiceInterface はLearningLogHandlerが依存するサービスのインターフェース。
 type LearningLogServiceInterface interface {
 	Create(log *model.LearningLog) error
+	BatchCreate(userID uint, logs []model.LearningLog) ([]model.LearningLog, error)
 	GetByID(id, userID uint) (*model.LearningLog, error)
 	GetByUserID(userID uint, limit, offset int) ([]model.LearningLog, int64, error)
 	Update(id, userID uint, updates *model.LearningLog) (*model.LearningLog, error)
@@ -67,6 +68,38 @@ func (h *LearningLogHandler) Create(c *gin.Context) {
 	}
 
 	respondCreated(c, log)
+}
+
+// BatchCreate は複数の学習ログを一括作成する。
+func (h *LearningLogHandler) BatchCreate(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	input := bindJSON[dto.BatchCreateLearningLogRequest](c)
+	if input == nil {
+		return
+	}
+
+	logs := make([]model.LearningLog, len(input.Logs))
+	for i, l := range input.Logs {
+		logs[i] = model.LearningLog{
+			Title:    l.Title,
+			Content:  l.Content,
+			Category: model.LogCategory(l.Category),
+			Duration: l.Duration,
+			Source:   model.LogSource(l.Source),
+		}
+		if l.Category == "" {
+			logs[i].Category = model.LogCategoryOther
+		}
+	}
+
+	results, err := h.service.BatchCreate(userID, logs)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondCreated(c, results)
 }
 
 // Update は指定された学習ログを更新する。
