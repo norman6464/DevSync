@@ -1810,5 +1810,24 @@
     "filterGoals": "目標",
     "filterProjects": "專案",
     "filterSnippets": "程式碼片段"
+  },
+  "logTemplate": {
+    "title": "學習日誌範本",
+    "create": "建立範本",
+    "edit": "編輯範本",
+    "delete": "刪除範本",
+    "name": "範本名稱",
+    "defaultTitle": "預設標題",
+    "defaultContent": "預設內容",
+    "defaultCategory": "預設分類",
+    "defaultDuration": "預設時長（分鐘）",
+    "isDefault": "設為預設",
+    "useTemplate": "使用此範本",
+    "createSuccess": "範本建立成功",
+    "updateSuccess": "範本更新成功",
+    "deleteSuccess": "範本刪除成功",
+    "useSuccess": "已從範本建立學習日誌",
+    "noTemplates": "目前沒有範本",
+    "confirmDelete": "確定要刪除此範本嗎？"
   }
 }

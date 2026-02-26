@@ -363,6 +363,7 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 	registerProjectRoutes(g, c)
 	registerResourceRoutes(g, c)
 	registerLearningLogRoutes(g, c)
+	registerLearningLogTemplateRoutes(g, c)
 	registerStreakFreezeRoutes(g, c)
 	registerNoteRoutes(g, c)
 	registerEmailPreferencesRoutes(g, c)
@@ -450,6 +451,19 @@ func registerStreakFreezeRoutes(g *gin.RouterGroup, c *di.Container) {
 	{
 		streakFreezes.POST("", c.StreakFreezeHandler.UseFreeze)
 		streakFreezes.GET("/status", c.StreakFreezeHandler.GetStatus)
+	}
+}
+
+func registerLearningLogTemplateRoutes(g *gin.RouterGroup, c *di.Container) {
+	logTemplates := g.Group("/learning-log-templates")
+	{
+		logTemplates.POST("", c.LearningLogTemplateHandler.Create)
+		logTemplates.GET("", c.LearningLogTemplateHandler.GetByUserID)
+		logTemplates.GET("/default", c.LearningLogTemplateHandler.GetDefault)
+		logTemplates.GET("/:id", c.LearningLogTemplateHandler.GetByID)
+		logTemplates.PUT("/:id", c.LearningLogTemplateHandler.Update)
+		logTemplates.DELETE("/:id", c.LearningLogTemplateHandler.Delete)
+		logTemplates.POST("/:id/use", c.LearningLogTemplateHandler.UseTemplate)
 	}
 }
 

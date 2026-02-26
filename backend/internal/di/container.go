@@ -90,6 +90,7 @@ type Container struct {
 	ResourceProgressHandler      *handler.ResourceProgressHandler
 	ProjectMilestoneHandler      *handler.ProjectMilestoneHandler
 	UserActivityHandler          *handler.UserActivityHandler
+	LearningLogTemplateHandler   *handler.LearningLogTemplateHandler
 
 	// ミドルウェア・コールバック用
 	AuthService      *service.AuthService
@@ -135,6 +136,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	noteRepo := repository.NewNoteRepository(db)
 	noteFolderRepo := repository.NewNoteFolderRepository(db)
 	noteTemplateRepo := repository.NewNoteTemplateRepository(db)
+	learningLogTemplateRepo := repository.NewLearningLogTemplateRepository(db)
 	noteLinkRepo := repository.NewNoteLinkRepository(db)
 	postSeriesRepo := repository.NewPostSeriesRepository(db)
 
@@ -175,6 +177,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	noteService := service.NewNoteService(noteRepo)
 	noteFolderService := service.NewNoteFolderService(noteFolderRepo)
 	noteTemplateService := service.NewNoteTemplateService(noteTemplateRepo, noteService)
+	learningLogTemplateService := service.NewLearningLogTemplateService(learningLogTemplateRepo, learningLogService)
 	noteLinkService := service.NewNoteLinkService(noteLinkRepo, noteRepo)
 	postSeriesService := service.NewPostSeriesService(postSeriesRepo)
 
@@ -258,6 +261,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	c.NoteVersionHandler = handler.NewNoteVersionHandler(noteVersionService)
 	c.NoteFolderHandler = handler.NewNoteFolderHandler(noteFolderService)
 	c.NoteTemplateHandler = handler.NewNoteTemplateHandler(noteTemplateService)
+	c.LearningLogTemplateHandler = handler.NewLearningLogTemplateHandler(learningLogTemplateService)
 	c.NoteLinkHandler = handler.NewNoteLinkHandler(noteLinkService)
 	c.PostSeriesHandler = handler.NewPostSeriesHandler(postSeriesService)
 

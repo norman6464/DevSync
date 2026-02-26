@@ -1810,5 +1810,24 @@
     "filterGoals": "목표",
     "filterProjects": "프로젝트",
     "filterSnippets": "스니펫"
+  },
+  "logTemplate": {
+    "title": "학습 로그 템플릿",
+    "create": "템플릿 생성",
+    "edit": "템플릿 편집",
+    "delete": "템플릿 삭제",
+    "name": "템플릿 이름",
+    "defaultTitle": "기본 제목",
+    "defaultContent": "기본 내용",
+    "defaultCategory": "기본 카테고리",
+    "defaultDuration": "기본 시간(분)",
+    "isDefault": "기본값으로 설정",
+    "useTemplate": "이 템플릿 사용",
+    "createSuccess": "템플릿이 생성되었습니다",
+    "updateSuccess": "템플릿이 업데이트되었습니다",
+    "deleteSuccess": "템플릿이 삭제되었습니다",
+    "useSuccess": "템플릿에서 학습 로그를 생성했습니다",
+    "noTemplates": "템플릿이 없습니다",
+    "confirmDelete": "이 템플릿을 삭제하시겠습니까?"
   }
 }

@@ -1710,5 +1710,24 @@
     "filterGoals": "目標",
     "filterProjects": "プロジェクト",
     "filterSnippets": "スニペット"
+  },
+  "logTemplate": {
+    "title": "学習ログテンプレート",
+    "create": "テンプレート作成",
+    "edit": "テンプレート編集",
+    "delete": "テンプレート削除",
+    "name": "テンプレート名",
+    "defaultTitle": "デフォルトタイトル",
+    "defaultContent": "デフォルト内容",
+    "defaultCategory": "デフォルトカテゴリ",
+    "defaultDuration": "デフォルト時間（分）",
+    "isDefault": "デフォルトに設定",
+    "useTemplate": "このテンプレートを使用",
+    "createSuccess": "テンプレートを作成しました",
+    "updateSuccess": "テンプレートを更新しました",
+    "deleteSuccess": "テンプレートを削除しました",
+    "useSuccess": "テンプレートから学習ログを作成しました",
+    "noTemplates": "テンプレートがありません",
+    "confirmDelete": "このテンプレートを削除しますか？"
   }
 }
