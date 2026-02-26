@@ -47,6 +47,21 @@ type PostListResponse struct {
 	Offset int          `json:"offset"`
 }
 
+// AutoSaveDraftRequest は下書き自動保存リクエスト。
+// IDが0の場合は新規作成、0以外の場合は既存下書きの更新。
+type AutoSaveDraftRequest struct {
+	ID        uint   `json:"id"`
+	Title     string `json:"title" binding:"omitempty,max=200"`
+	Content   string `json:"content" binding:"omitempty,max=50000"`
+	ImageURLs string `json:"image_urls" binding:"omitempty,max=2000"`
+}
+
+// AutoSaveDraftResponse は下書き自動保存レスポンス。
+type AutoSaveDraftResponse struct {
+	ID        uint   `json:"id"`
+	UpdatedAt string `json:"updated_at"`
+}
+
 // ReactionRequest はリアクション追加/削除リクエスト。
 type ReactionRequest struct {
 	Emoji string `json:"emoji" binding:"required"`

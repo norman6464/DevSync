@@ -1697,5 +1697,12 @@
     "noVersions": "No version history",
     "createdAt": "Saved at",
     "current": "Current version"
+  },
+  "autoSave": {
+    "saving": "Saving...",
+    "saved": "Saved",
+    "error": "Auto-save failed",
+    "serverSave": "Saved to server",
+    "lastSaved": "Last saved: {time}"
   }
 }

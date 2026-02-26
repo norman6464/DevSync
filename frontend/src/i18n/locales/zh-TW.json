@@ -1699,5 +1699,12 @@
     "noVersions": "無版本歷史",
     "createdAt": "儲存時間",
     "current": "目前版本"
+  },
+  "autoSave": {
+    "saving": "儲存中...",
+    "saved": "已儲存",
+    "error": "自動儲存失敗",
+    "serverSave": "已儲存至伺服器",
+    "lastSaved": "最後儲存: {time}"
   }
 }

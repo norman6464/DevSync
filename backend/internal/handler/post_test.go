@@ -1171,3 +1171,101 @@ func TestPostUnhideComment_InvalidID(t *testing.T) {
 
 	assertStatus(t, w, http.StatusBadRequest)
 }
+
+// ---------- AutoSaveDraft ----------
+
+func TestPostAutoSaveDraft_CreateNew(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.PUT("/posts/drafts/auto-save", h.AutoSaveDraft)
+
+	postRepo.On("Create", mock.MatchedBy(func(p *model.Post) bool {
+		return p.UserID == 1 && p.Title == "下書き" && p.IsDraft
+	})).Run(func(args mock.Arguments) {
+		p := args.Get(0).(*model.Post)
+		p.ID = 100
+	}).Return(nil)
+
+	w := doRequest(r, http.MethodPut, "/posts/drafts/auto-save", map[string]interface{}{
+		"title": "下書き", "content": "本文",
+	})
+	assertStatus(t, w, http.StatusOK)
+
+	result := parseJSON(t, w)
+	assert.Equal(t, float64(100), result["id"])
+	assert.NotEmpty(t, result["updated_at"])
+}
+
+func TestPostAutoSaveDraft_UpdateExisting(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.PUT("/posts/drafts/auto-save", h.AutoSaveDraft)
+
+	existing := &model.Post{Title: "旧", Content: "旧本文", UserID: 1, IsDraft: true}
+	existing.ID = 5
+
+	postRepo.On("FindByID", uint(5)).Return(existing, nil)
+	postRepo.On("Update", existing).Return(nil)
+
+	w := doRequest(r, http.MethodPut, "/posts/drafts/auto-save", map[string]interface{}{
+		"id": 5, "title": "新", "content": "新本文",
+	})
+	assertStatus(t, w, http.StatusOK)
+
+	result := parseJSON(t, w)
+	assert.Equal(t, float64(5), result["id"])
+}
+
+func TestPostAutoSaveDraft_Forbidden(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.PUT("/posts/drafts/auto-save", h.AutoSaveDraft)
+
+	existing := &model.Post{Title: "他人の下書き", UserID: 999, IsDraft: true}
+	existing.ID = 5
+
+	postRepo.On("FindByID", uint(5)).Return(existing, nil)
+
+	w := doRequest(r, http.MethodPut, "/posts/drafts/auto-save", map[string]interface{}{
+		"id": 5, "title": "ハック",
+	})
+	assertStatus(t, w, http.StatusForbidden)
+}
+
+func TestPostAutoSaveDraft_NotDraft(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.PUT("/posts/drafts/auto-save", h.AutoSaveDraft)
+
+	published := &model.Post{Title: "公開済み", UserID: 1, IsDraft: false}
+	published.ID = 5
+
+	postRepo.On("FindByID", uint(5)).Return(published, nil)
+
+	w := doRequest(r, http.MethodPut, "/posts/drafts/auto-save", map[string]interface{}{
+		"id": 5, "title": "更新",
+	})
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostAutoSaveDraft_InvalidJSON(t *testing.T) {
+	h, _, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.PUT("/posts/drafts/auto-save", h.AutoSaveDraft)
+
+	w := doRequestRaw(r, http.MethodPut, "/posts/drafts/auto-save", "{invalid}")
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestPostAutoSaveDraft_ServiceError(t *testing.T) {
+	h, postRepo, _, _ := setupPostHandler()
+	r := newRouter(1)
+	r.PUT("/posts/drafts/auto-save", h.AutoSaveDraft)
+
+	postRepo.On("Create", mock.AnythingOfType("*model.Post")).Return(service.ErrNotFound)
+
+	w := doRequest(r, http.MethodPut, "/posts/drafts/auto-save", map[string]interface{}{
+		"title": "下書き", "content": "本文",
+	})
+	assertStatus(t, w, http.StatusNotFound)
+}

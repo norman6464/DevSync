@@ -360,6 +360,56 @@ func (s *PostService) GetScheduled(userID uint) ([]model.Post, error) {
 	return s.repo.FindScheduledByUserID(userID)
 }
 
+// AutoSaveDraft は下書きをサーバーサイドで自動保存する。
+// draftIDが0の場合は新規下書きを作成し、0以外の場合は既存下書きを更新する。
+// 作成途中の投稿を許容するため、タイトル・本文は空でも許可する（長さ上限のみ検証）。
+func (s *PostService) AutoSaveDraft(userID, draftID uint, title, content, imageURLs string) (*model.Post, error) {
+	// 長さ上限のみバリデーション
+	if len([]rune(title)) > 200 {
+		return nil, domain.NewError(domain.ErrCodeValidation, "タイトルは200文字以下である必要があります", nil)
+	}
+	if len([]rune(content)) > 50000 {
+		return nil, domain.NewError(domain.ErrCodeValidation, "本文は50000文字以下である必要があります", nil)
+	}
+
+	// 新規作成
+	if draftID == 0 {
+		post := &model.Post{
+			UserID:            userID,
+			Title:             title,
+			Content:           content,
+			ImageURLs:         imageURLs,
+			IsDraft:           true,
+			EstimatedReadTime: EstimateReadTime(content),
+		}
+		if err := s.repo.Create(post); err != nil {
+			return nil, err
+		}
+		return post, nil
+	}
+
+	// 既存下書きの更新
+	post, err := s.findAndCheckOwnership(draftID, userID)
+	if err != nil {
+		return nil, err
+	}
+	if !post.IsDraft {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "公開済みの投稿は自動保存できません", nil)
+	}
+
+	post.Title = title
+	post.Content = content
+	if imageURLs != "" {
+		post.ImageURLs = imageURLs
+	}
+	post.EstimatedReadTime = EstimateReadTime(content)
+
+	if err := s.repo.Update(post); err != nil {
+		return nil, err
+	}
+	return post, nil
+}
+
 // Publish は下書き投稿を公開し、フォロワーに通知する。
 func (s *PostService) Publish(id, userID uint) (*model.Post, error) {
 	post, err := s.findAndCheckOwnership(id, userID)

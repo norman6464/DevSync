@@ -42,6 +42,7 @@ type PostServiceInterface interface {
 	SchedulePublish(id, userID uint, scheduledAt time.Time) (*model.Post, error)
 	CancelSchedule(id, userID uint) (*model.Post, error)
 	GetScheduled(userID uint) ([]model.Post, error)
+	AutoSaveDraft(userID, draftID uint, title, content, imageURLs string) (*model.Post, error)
 }
 
 // CodeSnippetServiceInterface はCodeSnippetServiceが実装すべきインターフェース。
@@ -527,4 +528,25 @@ func (h *PostHandler) GetScheduled(c *gin.Context) {
 	}
 
 	respondOK(c, ensureSlice(posts))
+}
+
+// AutoSaveDraft は下書きをサーバーサイドで自動保存する。
+func (h *PostHandler) AutoSaveDraft(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	req := bindJSON[dto.AutoSaveDraftRequest](c)
+	if req == nil {
+		return
+	}
+
+	result, err := h.service.AutoSaveDraft(userID, req.ID, req.Title, req.Content, req.ImageURLs)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, dto.AutoSaveDraftResponse{
+		ID:        result.ID,
+		UpdatedAt: result.UpdatedAt.Format(time.RFC3339),
+	})
 }

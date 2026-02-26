@@ -1522,3 +1522,128 @@ func TestPostGetScheduled_RepoError(t *testing.T) {
 	_, err := svc.GetScheduled(1)
 	assert.Error(t, err)
 }
+
+// ============================================================
+// 下書き自動保存（AutoSaveDraft）テスト
+// ============================================================
+
+func TestPostAutoSaveDraft_CreateNew(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("Create", mock.MatchedBy(func(p *model.Post) bool {
+		return p.UserID == 1 && p.Title == "タイトル" && p.Content == "本文" && p.IsDraft
+	})).Run(func(args mock.Arguments) {
+		p := args.Get(0).(*model.Post)
+		p.ID = 100
+	}).Return(nil)
+
+	result, err := svc.AutoSaveDraft(1, 0, "タイトル", "本文", "")
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, uint(100), result.ID)
+	assert.True(t, result.IsDraft)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostAutoSaveDraft_UpdateExisting(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	existing := &model.Post{Title: "旧タイトル", Content: "旧本文", UserID: 1, IsDraft: true}
+	existing.ID = 5
+
+	postRepo.On("FindByID", uint(5)).Return(existing, nil)
+	postRepo.On("Update", existing).Return(nil)
+
+	result, err := svc.AutoSaveDraft(1, 5, "新タイトル", "新本文", "")
+	assert.NoError(t, err)
+	assert.Equal(t, "新タイトル", result.Title)
+	assert.Equal(t, "新本文", result.Content)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostAutoSaveDraft_AllowEmptyTitle(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("Create", mock.MatchedBy(func(p *model.Post) bool {
+		return p.Title == "" && p.Content == "書き始め" && p.IsDraft
+	})).Run(func(args mock.Arguments) {
+		p := args.Get(0).(*model.Post)
+		p.ID = 101
+	}).Return(nil)
+
+	result, err := svc.AutoSaveDraft(1, 0, "", "書き始め", "")
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostAutoSaveDraft_AllowEmptyContent(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("Create", mock.MatchedBy(func(p *model.Post) bool {
+		return p.Title == "タイトルのみ" && p.Content == "" && p.IsDraft
+	})).Run(func(args mock.Arguments) {
+		p := args.Get(0).(*model.Post)
+		p.ID = 102
+	}).Return(nil)
+
+	result, err := svc.AutoSaveDraft(1, 0, "タイトルのみ", "", "")
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostAutoSaveDraft_Forbidden(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	existing := &model.Post{Title: "他人の下書き", UserID: 2, IsDraft: true}
+	existing.ID = 5
+
+	postRepo.On("FindByID", uint(5)).Return(existing, nil)
+
+	result, err := svc.AutoSaveDraft(1, 5, "ハック", "", "")
+	assert.ErrorIs(t, err, ErrForbidden)
+	assert.Nil(t, result)
+}
+
+func TestPostAutoSaveDraft_NotDraft(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	published := &model.Post{Title: "公開済み", UserID: 1, IsDraft: false}
+	published.ID = 5
+
+	postRepo.On("FindByID", uint(5)).Return(published, nil)
+
+	result, err := svc.AutoSaveDraft(1, 5, "更新", "", "")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestPostAutoSaveDraft_TitleTooLong(t *testing.T) {
+	svc, _, _ := newTestPostService()
+
+	longTitle := strings.Repeat("あ", 201)
+	result, err := svc.AutoSaveDraft(1, 0, longTitle, "", "")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestPostAutoSaveDraft_NotFound(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	result, err := svc.AutoSaveDraft(1, 99, "タイトル", "本文", "")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestPostAutoSaveDraft_CreateRepoError(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("Create", mock.Anything).Return(errors.New("db error"))
+
+	result, err := svc.AutoSaveDraft(1, 0, "タイトル", "本文", "")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
