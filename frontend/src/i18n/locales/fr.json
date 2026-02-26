@@ -1704,5 +1704,22 @@
     "error": "Échec de l'enregistrement automatique",
     "serverSave": "Enregistré sur le serveur",
     "lastSaved": "Dernière sauvegarde: {time}"
+  },
+  "resourceProgress": {
+    "title": "Progression d'Apprentissage",
+    "status": "Statut",
+    "notStarted": "Non Commencé",
+    "inProgress": "En Cours",
+    "completed": "Terminé",
+    "completionPercent": "Pourcentage",
+    "note": "Note",
+    "notePlaceholder": "Entrez vos notes d'apprentissage...",
+    "startedAt": "Date de début",
+    "completedAt": "Date de fin",
+    "updateSuccess": "Progression mise à jour",
+    "updateFailed": "Échec de la mise à jour de la progression",
+    "noProgress": "Pas encore de progression",
+    "allStatuses": "Tous les statuts",
+    "trackProgress": "Suivre la Progression"
   }
 }

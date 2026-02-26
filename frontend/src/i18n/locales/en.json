@@ -1704,5 +1704,22 @@
     "error": "Auto-save failed",
     "serverSave": "Saved to server",
     "lastSaved": "Last saved: {time}"
+  },
+  "resourceProgress": {
+    "title": "Learning Progress",
+    "status": "Status",
+    "notStarted": "Not Started",
+    "inProgress": "In Progress",
+    "completed": "Completed",
+    "completionPercent": "Completion",
+    "note": "Note",
+    "notePlaceholder": "Enter your learning notes...",
+    "startedAt": "Started",
+    "completedAt": "Completed",
+    "updateSuccess": "Progress updated",
+    "updateFailed": "Failed to update progress",
+    "noProgress": "No progress yet",
+    "allStatuses": "All Statuses",
+    "trackProgress": "Track Progress"
   }
 }

@@ -1703,5 +1703,22 @@
     "error": "Ошибка автосохранения",
     "serverSave": "Сохранено на сервере",
     "lastSaved": "Последнее сохранение: {time}"
+  },
+  "resourceProgress": {
+    "title": "Прогресс Обучения",
+    "status": "Статус",
+    "notStarted": "Не Начато",
+    "inProgress": "В Процессе",
+    "completed": "Завершено",
+    "completionPercent": "Процент",
+    "note": "Заметка",
+    "notePlaceholder": "Введите заметки об обучении...",
+    "startedAt": "Дата начала",
+    "completedAt": "Дата завершения",
+    "updateSuccess": "Прогресс обновлён",
+    "updateFailed": "Не удалось обновить прогресс",
+    "noProgress": "Прогресс пока отсутствует",
+    "allStatuses": "Все статусы",
+    "trackProgress": "Записать Прогресс"
   }
 }

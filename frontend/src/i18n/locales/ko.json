@@ -1706,5 +1706,22 @@
     "error": "자동 저장 실패",
     "serverSave": "서버에 저장됨",
     "lastSaved": "마지막 저장: {time}"
+  },
+  "resourceProgress": {
+    "title": "학습 진행률",
+    "status": "상태",
+    "notStarted": "미시작",
+    "inProgress": "진행 중",
+    "completed": "완료",
+    "completionPercent": "완료율",
+    "note": "메모",
+    "notePlaceholder": "학습 메모를 입력하세요...",
+    "startedAt": "시작일",
+    "completedAt": "완료일",
+    "updateSuccess": "진행률이 업데이트되었습니다",
+    "updateFailed": "진행률 업데이트에 실패했습니다",
+    "noProgress": "아직 진행률이 없습니다",
+    "allStatuses": "모든 상태",
+    "trackProgress": "진행률 기록"
   }
 }
