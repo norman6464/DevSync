@@ -2604,6 +2604,11 @@ func (m *MockBookmarkCollectionRepository) HasPost(collectionID, postID uint) (b
 	return args.Bool(0), args.Error(1)
 }
 
+func (m *MockBookmarkCollectionRepository) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 // ============================================================
 // MockWidgetSettingsRepository は repository.WidgetSettingsRepositoryInterface のテスト用モック実装。
 // ============================================================
