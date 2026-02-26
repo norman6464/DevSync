@@ -1116,6 +1116,90 @@ func TestLearningLogGetLinkedLogs_NoGoalRepo(t *testing.T) {
 }
 
 // ============================================================
+// GetGoalProgress テスト
+// ============================================================
+
+func TestLearningLogGetGoalProgress_Success(t *testing.T) {
+	svc, repo, goalRepo := newTestLearningLogServiceWithGoalRepo()
+
+	goal := &model.LearningGoal{ID: 10, UserID: 1, TargetHours: 10}
+	goalRepo.On("FindByID", uint(10)).Return(goal, nil)
+	// 120分 = 2時間 / 10時間 = 20%
+	repo.On("SumDurationByGoalID", uint(10)).Return(120, nil)
+
+	progress, err := svc.GetGoalProgress(uint(10), uint(1))
+	assert.NoError(t, err)
+	assert.Equal(t, uint(10), progress.GoalID)
+	assert.Equal(t, 10, progress.TargetHours)
+	assert.Equal(t, 120, progress.ActualMinutes)
+	assert.Equal(t, 20, progress.Percentage)
+	repo.AssertExpectations(t)
+	goalRepo.AssertExpectations(t)
+}
+
+func TestLearningLogGetGoalProgress_ZeroTargetHours(t *testing.T) {
+	svc, repo, goalRepo := newTestLearningLogServiceWithGoalRepo()
+
+	goal := &model.LearningGoal{ID: 10, UserID: 1, TargetHours: 0}
+	goalRepo.On("FindByID", uint(10)).Return(goal, nil)
+	repo.On("SumDurationByGoalID", uint(10)).Return(60, nil)
+
+	progress, err := svc.GetGoalProgress(uint(10), uint(1))
+	assert.NoError(t, err)
+	assert.Equal(t, 0, progress.Percentage)
+	assert.Equal(t, 60, progress.ActualMinutes)
+	repo.AssertExpectations(t)
+	goalRepo.AssertExpectations(t)
+}
+
+func TestLearningLogGetGoalProgress_Over100Percent(t *testing.T) {
+	svc, repo, goalRepo := newTestLearningLogServiceWithGoalRepo()
+
+	goal := &model.LearningGoal{ID: 10, UserID: 1, TargetHours: 1}
+	goalRepo.On("FindByID", uint(10)).Return(goal, nil)
+	// 120分 = 2時間 / 1時間 = 200% → キャップ100%
+	repo.On("SumDurationByGoalID", uint(10)).Return(120, nil)
+
+	progress, err := svc.GetGoalProgress(uint(10), uint(1))
+	assert.NoError(t, err)
+	assert.Equal(t, 100, progress.Percentage)
+	repo.AssertExpectations(t)
+	goalRepo.AssertExpectations(t)
+}
+
+func TestLearningLogGetGoalProgress_Forbidden(t *testing.T) {
+	svc, _, goalRepo := newTestLearningLogServiceWithGoalRepo()
+
+	goal := &model.LearningGoal{ID: 10, UserID: 999}
+	goalRepo.On("FindByID", uint(10)).Return(goal, nil)
+
+	_, err := svc.GetGoalProgress(uint(10), uint(1))
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrForbidden)
+	goalRepo.AssertExpectations(t)
+}
+
+func TestLearningLogGetGoalProgress_NotFound(t *testing.T) {
+	svc, _, goalRepo := newTestLearningLogServiceWithGoalRepo()
+
+	goalRepo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	_, err := svc.GetGoalProgress(uint(999), uint(1))
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrNotFound)
+	goalRepo.AssertExpectations(t)
+}
+
+func TestLearningLogGetGoalProgress_NoGoalRepo(t *testing.T) {
+	repo := new(MockLearningLogRepository)
+	svc := NewLearningLogService(repo, nil)
+
+	_, err := svc.GetGoalProgress(uint(10), uint(1))
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrBadRequest)
+}
+
+// ============================================================
 // ImportCSV テスト
 // ============================================================
 

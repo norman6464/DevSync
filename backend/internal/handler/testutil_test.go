@@ -1451,6 +1451,14 @@ func (m *MockLearningLogService) GetMonthlySummary(userID uint, months int) ([]m
 	return args.Get(0).([]model.MonthlySummary), args.Error(1)
 }
 
+func (m *MockLearningLogService) GetGoalProgress(goalID, userID uint) (*model.GoalProgress, error) {
+	args := m.Called(goalID, userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.GoalProgress), args.Error(1)
+}
+
 // setupLearningLogHandler はLearningLogHandlerテスト用のセットアップを行う。
 func setupLearningLogHandler() (*LearningLogHandler, *MockLearningLogService) {
 	svc := new(MockLearningLogService)

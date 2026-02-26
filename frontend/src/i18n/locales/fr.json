@@ -107,7 +107,12 @@
     "viewsReceived": "Vues",
     "followerCount": "Abonnés",
     "followingCount": "Abonnements",
-    "noStats": "Aucune statistique disponible"
+    "noStats": "Aucune statistique disponible",
+    "goalProgressTitle": "Progression de l'objectif",
+    "goalProgressTargetHours": "Heures cibles",
+    "goalProgressActualTime": "Temps réel",
+    "goalProgressPercentage": "Taux de réalisation",
+    "goalProgressNoTarget": "Heures cibles non définies"
   },
   "series": {
     "title": "Séries de publications",

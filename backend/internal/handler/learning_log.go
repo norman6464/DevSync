@@ -30,6 +30,7 @@ type LearningLogServiceInterface interface {
 	UnfavoriteLog(id, userID uint) error
 	GetRecentCategories(userID uint) ([]string, error)
 	GetLinkedLogs(goalID, userID uint, limit, offset int) ([]model.LearningLog, int64, error)
+	GetGoalProgress(goalID, userID uint) (*model.GoalProgress, error)
 	GetFavorites(userID uint, limit, offset int) ([]model.LearningLog, int64, error)
 	GetMonthlySummary(userID uint, months int) ([]model.MonthlySummary, error)
 }
@@ -451,4 +452,21 @@ func (h *LearningLogHandler) GetLinkedLogs(c *gin.Context) {
 		Limit:  limit,
 		Offset: offset,
 	})
+}
+
+// GetGoalProgress は指定ゴールの実績時間 vs 目標時間の進捗情報を返す。
+func (h *LearningLogHandler) GetGoalProgress(c *gin.Context) {
+	userID := c.GetUint("userID")
+	goalID, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	progress, err := h.service.GetGoalProgress(goalID, userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, progress)
 }

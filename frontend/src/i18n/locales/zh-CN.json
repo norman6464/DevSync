@@ -107,7 +107,12 @@
     "viewsReceived": "浏览量",
     "followerCount": "粉丝数",
     "followingCount": "关注中",
-    "noStats": "暂无统计信息"
+    "noStats": "暂无统计信息",
+    "goalProgressTitle": "学习目标进度",
+    "goalProgressTargetHours": "目标时间",
+    "goalProgressActualTime": "实际时间",
+    "goalProgressPercentage": "完成率",
+    "goalProgressNoTarget": "未设置目标时间"
   },
   "series": {
     "title": "帖子系列",

@@ -107,7 +107,12 @@
     "viewsReceived": "Views",
     "followerCount": "Followers",
     "followingCount": "Following",
-    "noStats": "No stats available"
+    "noStats": "No stats available",
+    "goalProgressTitle": "Goal Progress",
+    "goalProgressTargetHours": "Target Hours",
+    "goalProgressActualTime": "Actual Time",
+    "goalProgressPercentage": "Completion Rate",
+    "goalProgressNoTarget": "Target hours not set"
   },
   "series": {
     "title": "Post Series",
