@@ -69,7 +69,7 @@ func (h *AIAdviceHandler) MarkAsRead(c *gin.Context) {
 	userID := c.GetUint("userID")
 
 	if err := h.service.MarkAsRead(id, userID); err != nil {
-		respondNotFound(c, "advice not found")
+		respondError(c, err)
 		return
 	}
 

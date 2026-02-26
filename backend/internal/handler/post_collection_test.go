@@ -57,6 +57,10 @@ func (m *MockPostCollectionService) AddPost(collectionID, userID, postID uint, n
 func (m *MockPostCollectionService) RemovePost(collectionID, userID, postID uint) error {
 	return m.Called(collectionID, userID, postID).Error(0)
 }
+func (m *MockPostCollectionService) GetCollectionsForViewer(viewerID, targetUserID uint, limit, offset int) ([]model.PostCollection, int64, error) {
+	args := m.Called(viewerID, targetUserID, limit, offset)
+	return args.Get(0).([]model.PostCollection), args.Get(1).(int64), args.Error(2)
+}
 func (m *MockPostCollectionService) GetPosts(collectionID uint) ([]model.PostCollectionItem, error) {
 	args := m.Called(collectionID)
 	if v := args.Get(0); v != nil {
@@ -162,7 +166,7 @@ func TestPostCollectionGetByID_ServiceError(t *testing.T) {
 func TestPostCollectionGetByUserID_OwnCollections(t *testing.T) {
 	h, svc := setupPostCollectionHandler()
 	collections := []model.PostCollection{{Title: "My Collection", UserID: 1}}
-	svc.On("GetByUserID", uint(1), 20, 0).Return(collections, int64(1), nil)
+	svc.On("GetCollectionsForViewer", uint(1), uint(1), 20, 0).Return(collections, int64(1), nil)
 
 	r := newRouter(1)
 	r.GET("/users/:userId/collections", h.GetByUserID)
@@ -175,7 +179,7 @@ func TestPostCollectionGetByUserID_OwnCollections(t *testing.T) {
 func TestPostCollectionGetByUserID_OtherUserPublicOnly(t *testing.T) {
 	h, svc := setupPostCollectionHandler()
 	collections := []model.PostCollection{{Title: "Public Collection", UserID: 2, IsPublic: true}}
-	svc.On("GetPublicByUserID", uint(2)).Return(collections, nil)
+	svc.On("GetCollectionsForViewer", uint(1), uint(2), 20, 0).Return(collections, int64(1), nil)
 
 	r := newRouter(1)
 	r.GET("/users/:userId/collections", h.GetByUserID)
@@ -197,7 +201,7 @@ func TestPostCollectionGetByUserID_InvalidID(t *testing.T) {
 
 func TestPostCollectionGetByUserID_ServiceError(t *testing.T) {
 	h, svc := setupPostCollectionHandler()
-	svc.On("GetByUserID", uint(1), 20, 0).Return(nil, int64(0), errors.New("db error"))
+	svc.On("GetCollectionsForViewer", uint(1), uint(1), 20, 0).Return([]model.PostCollection(nil), int64(0), errors.New("db error"))
 
 	r := newRouter(1)
 	r.GET("/users/:userId/collections", h.GetByUserID)

@@ -49,6 +49,19 @@ func (s *PostCollectionService) GetPublicByUserID(userID uint) ([]model.PostColl
 	return s.repo.FindPublicByUserID(userID)
 }
 
+// GetCollectionsForViewer は閲覧者の立場に応じたコレクション一覧を返す。
+// 自分のコレクションは全件（ページネーション付き）、他人のコレクションは公開のみ返す。
+func (s *PostCollectionService) GetCollectionsForViewer(viewerID, targetUserID uint, limit, offset int) ([]model.PostCollection, int64, error) {
+	if viewerID == targetUserID {
+		return s.repo.FindByUserID(targetUserID, limit, offset)
+	}
+	collections, err := s.repo.FindPublicByUserID(targetUserID)
+	if err != nil {
+		return nil, 0, err
+	}
+	return collections, int64(len(collections)), nil
+}
+
 // findAndCheckOwnership はコレクションを取得し、指定ユーザーが所有者かを検証する。
 func (s *PostCollectionService) findAndCheckOwnership(id, userID uint) (*model.PostCollection, error) {
 	return checkOwnership(s.repo.FindByID, id, userID, func(c *model.PostCollection) uint { return c.UserID })

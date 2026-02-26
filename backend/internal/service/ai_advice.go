@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
@@ -56,7 +57,10 @@ func (s *AIAdviceService) GetUnreadAdvice(userID uint) ([]model.AIAdvice, error)
 
 // MarkAsRead はアドバイスを既読にする。
 func (s *AIAdviceService) MarkAsRead(id, userID uint) error {
-	return s.adviceRepo.MarkAsRead(id, userID)
+	if err := s.adviceRepo.MarkAsRead(id, userID); err != nil {
+		return domain.NewError(domain.ErrCodeNotFound, "アドバイスが見つかりません", err)
+	}
+	return nil
 }
 
 // IsLLMAvailable はLLMクライアントが設定されているかどうかを返す。
