@@ -739,7 +739,9 @@
     "importCSVDesc": "Importieren Sie exportierte CSV-Dateien, um Lernprotokolle im Stapel zu registrieren",
     "importSuccess": "{{count}} Lernprotokolle importiert",
     "importError": "CSV-Datei konnte nicht importiert werden",
-    "selectCSVFile": "CSV-Datei auswählen"
+    "selectCSVFile": "CSV-Datei auswählen",
+    "favorites": "Favoriten",
+    "noFavorites": "Keine Lieblings-Lernprotokolle"
   },
   "reports": {
     "title": "Aktivitätsberichte",

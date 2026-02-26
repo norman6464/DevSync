@@ -252,6 +252,11 @@ func (s *LearningLogService) GetRecentCategories(userID uint) ([]string, error) 
 	return s.repo.GetRecentCategories(userID, 5)
 }
 
+// GetFavorites はユーザーのお気に入り学習ログ一覧を取得する。
+func (s *LearningLogService) GetFavorites(userID uint, limit, offset int) ([]model.LearningLog, int64, error) {
+	return s.repo.GetFavorites(userID, limit, offset)
+}
+
 // ExportCSV は指定ユーザーの学習ログをCSV形式でエクスポートする。
 // days: 取得する過去の日数（0は全期間）。負の値はバリデーションエラー。
 func (s *LearningLogService) ExportCSV(userID uint, days int) ([]byte, error) {

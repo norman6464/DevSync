@@ -740,7 +740,9 @@
     "importCSVDesc": "Importe arquivos CSV exportados para registrar logs de aprendizado em lote",
     "importSuccess": "{{count}} logs de aprendizado importados",
     "importError": "Falha ao importar arquivo CSV",
-    "selectCSVFile": "Selecionar arquivo CSV"
+    "selectCSVFile": "Selecionar arquivo CSV",
+    "favorites": "Favoritos",
+    "noFavorites": "Nenhum registro de aprendizado favorito"
   },
   "reports": {
     "title": "Relatórios de Atividade",

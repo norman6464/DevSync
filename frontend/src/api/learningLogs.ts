@@ -46,6 +46,9 @@ export const unfavoriteLog = (id: number) =>
 export const getRecentCategories = () =>
   client.get<string[]>('/learning-logs/recent-categories');
 
+export const getFavoriteLogs = (limit = 20, offset = 0) =>
+  client.get<{ logs: LearningLog[]; total: number; limit: number; offset: number }>(`/learning-logs/favorites?limit=${limit}&offset=${offset}`);
+
 export type ExportPeriod = '7' | '30' | '90' | 'all';
 export type ExportFormat = 'csv' | 'json';
 

@@ -740,7 +740,9 @@
     "importCSVDesc": "Import exported CSV files to batch register learning logs",
     "importSuccess": "Successfully imported {{count}} learning logs",
     "importError": "Failed to import CSV file",
-    "selectCSVFile": "Select CSV file"
+    "selectCSVFile": "Select CSV file",
+    "favorites": "Favorites",
+    "noFavorites": "No favorite learning logs"
   },
   "reports": {
     "title": "Activity Reports",

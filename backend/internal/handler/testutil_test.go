@@ -1389,6 +1389,11 @@ func (m *MockLearningLogService) GetLinkedLogs(goalID, userID uint, limit, offse
 	return args.Get(0).([]model.LearningLog), args.Get(1).(int64), args.Error(2)
 }
 
+func (m *MockLearningLogService) GetFavorites(userID uint, limit, offset int) ([]model.LearningLog, int64, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.LearningLog), args.Get(1).(int64), args.Error(2)
+}
+
 // setupLearningLogHandler はLearningLogHandlerテスト用のセットアップを行う。
 func setupLearningLogHandler() (*LearningLogHandler, *MockLearningLogService) {
 	svc := new(MockLearningLogService)

@@ -742,7 +742,9 @@
     "importCSVDesc": "내보낸 CSV 파일을 가져와 학습 로그를 일괄 등록합니다",
     "importSuccess": "{{count}}개의 학습 로그를 가져왔습니다",
     "importError": "CSV 파일 가져오기에 실패했습니다",
-    "selectCSVFile": "CSV 파일 선택"
+    "selectCSVFile": "CSV 파일 선택",
+    "favorites": "즐겨찾기",
+    "noFavorites": "즐겨찾기 학습 로그가 없습니다"
   },
   "reports": {
     "title": "활동 리포트",
