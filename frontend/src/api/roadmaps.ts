@@ -129,3 +129,6 @@ export const getTemplates = () =>
 
 export const createFromTemplate = (templateId: number) =>
   client.post<Roadmap>(`/roadmaps/templates/${templateId}/use`);
+
+export const getRoadmapsByStatus = (status: RoadmapStatus) =>
+  client.get<Roadmap[]>(`/roadmaps/status/${status}`);

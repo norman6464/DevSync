@@ -152,3 +152,12 @@ export const unlikeComment = (commentId: number) =>
 
 export const getCommentLikeStatus = (commentId: number) =>
   client.get<{ liked: boolean; like_count: number }>(`/comments/${commentId}/likes`);
+
+export const unpublishPost = (id: number) =>
+  client.put<Post>(`/posts/${id}/unpublish`);
+
+export const hideComment = (postId: number, commentId: number) =>
+  client.post(`/posts/${postId}/comments/${commentId}/hide`);
+
+export const unhideComment = (postId: number, commentId: number) =>
+  client.post(`/posts/${postId}/comments/${commentId}/unhide`);

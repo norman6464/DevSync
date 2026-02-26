@@ -72,3 +72,6 @@ export const getStreakRanking = (circleId: number) =>
 // 検索
 export const searchCircles = (query: string, limit = 20, offset = 0) =>
   client.get<StudyCircle[]>('/search/circles', { params: { q: query, limit, offset } });
+
+export const getCirclesByStatus = (status: string) =>
+  client.get<StudyCircle[]>(`/study-circles/status/${status}`);

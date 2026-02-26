@@ -101,3 +101,19 @@ export const getUnansweredQuestions = async (
   const res = await client.get('/questions/unanswered', { params: { limit, offset } });
   return res.data;
 };
+
+export const getSolvedQuestions = async (
+  limit = 20, offset = 0
+): Promise<{ questions: Question[]; total: number }> => {
+  const res = await client.get('/questions/solved', { params: { limit, offset } });
+  return res.data;
+};
+
+export const getAnswersByVoteRange = async (
+  questionId: number, minVotes: number, maxVotes: number
+): Promise<Answer[]> => {
+  const res = await client.get(`/questions/${questionId}/answers/vote-range`, {
+    params: { min_votes: minVotes, max_votes: maxVotes },
+  });
+  return res.data;
+};
