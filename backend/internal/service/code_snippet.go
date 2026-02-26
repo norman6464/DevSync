@@ -36,11 +36,11 @@ func (s *CodeSnippetService) Create(snippet *model.CodeSnippet) (*model.CodeSnip
 
 	// 投稿の存在確認
 	if _, err := s.postRepo.FindByID(snippet.PostID); err != nil {
-		return nil, err
+		return nil, domain.NewError(domain.ErrCodeNotFound, "投稿が見つかりません", err)
 	}
 
 	if err := s.repo.Create(snippet); err != nil {
-		return nil, err
+		return nil, domain.NewError(domain.ErrCodeInternal, "スニペットの作成に失敗しました", err)
 	}
 
 	created, err := s.repo.FindByID(snippet.ID)
@@ -93,7 +93,7 @@ func (s *CodeSnippetService) Update(id, userID uint, language, fileName, code st
 	}
 
 	if err := s.repo.Update(snippet); err != nil {
-		return nil, err
+		return nil, domain.NewError(domain.ErrCodeInternal, "スニペットの更新に失敗しました", err)
 	}
 	return snippet, nil
 }
@@ -103,7 +103,10 @@ func (s *CodeSnippetService) Delete(id, userID uint) error {
 	if _, err := s.findAndCheckOwnership(id, userID); err != nil {
 		return err
 	}
-	return s.repo.Delete(id)
+	if err := s.repo.Delete(id); err != nil {
+		return domain.NewError(domain.ErrCodeInternal, "スニペットの削除に失敗しました", err)
+	}
+	return nil
 }
 
 // CreateComment はスニペットへのインラインコメントを作成する。
@@ -114,7 +117,7 @@ func (s *CodeSnippetService) CreateComment(comment *model.SnippetComment) error 
 	}
 	comment.Content = strings.TrimSpace(comment.Content)
 	if _, err := s.repo.FindByID(comment.SnippetID); err != nil {
-		return err
+		return domain.NewError(domain.ErrCodeNotFound, "スニペットが見つかりません", err)
 	}
 	return s.repo.CreateComment(comment)
 }
@@ -155,7 +158,7 @@ func (s *CodeSnippetService) Fork(userID, snippetID, targetPostID uint) (*model.
 	}
 
 	if err := s.repo.Create(forked); err != nil {
-		return nil, err
+		return nil, domain.NewError(domain.ErrCodeInternal, "スニペットのフォークに失敗しました", err)
 	}
 
 	// フォーク元のカウンターをインクリメント

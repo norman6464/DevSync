@@ -72,7 +72,7 @@ func (s *AIAdviceService) IsLLMAvailable() bool {
 func (s *AIAdviceService) GetDailyChatRemaining(userID uint) (int, error) {
 	count, err := s.convRepo.CountTodayMessages(userID)
 	if err != nil {
-		return 0, err
+		return 0, domain.NewError(domain.ErrCodeDatabase, "チャット回数の取得に失敗しました", err)
 	}
 	remaining := DailyChatLimit - int(count)
 	if remaining < 0 {
@@ -85,10 +85,10 @@ func (s *AIAdviceService) GetDailyChatRemaining(userID uint) (int, error) {
 func (s *AIAdviceService) findAndCheckConversationOwnership(id, userID uint) (*model.AIConversation, error) {
 	conv, err := s.convRepo.FindConversationByID(id)
 	if err != nil {
-		return nil, ErrNotFound
+		return nil, domain.NewError(domain.ErrCodeNotFound, "会話が見つかりません", err)
 	}
 	if conv.UserID != userID {
-		return nil, ErrForbidden
+		return nil, domain.NewError(domain.ErrCodeForbidden, "この会話にアクセスする権限がありません", nil)
 	}
 	return conv, nil
 }
