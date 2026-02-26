@@ -2,7 +2,6 @@ package service
 
 import (
 	"encoding/json"
-	"strings"
 
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -39,8 +38,8 @@ func (s *WidgetSettingsService) GetSettings(userID uint) (*model.WidgetSettings,
 // UpdateSettings はウィジェット設定を更新する。
 // 設定はJSON配列形式である必要がある。
 func (s *WidgetSettingsService) UpdateSettings(userID uint, settings string) error {
-	if strings.TrimSpace(settings) == "" {
-		return domain.NewError(domain.ErrCodeBadRequest, "設定は必須です", nil)
+	if err := domain.ValidateStringLength(settings, 1, 10000, "設定"); err != nil {
+		return err
 	}
 
 	if !json.Valid([]byte(settings)) {
