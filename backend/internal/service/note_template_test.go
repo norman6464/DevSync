@@ -593,6 +593,30 @@ func TestNoteTemplateUpdate_WhitespaceDefaultTitle(t *testing.T) {
 	assert.Equal(t, "Original Title", result.DefaultTitle)
 }
 
+// --- CountByUserID ---
+
+func TestNoteTemplateCountByUserID_Success(t *testing.T) {
+	svc, repo, _ := newTestNoteTemplateService()
+
+	repo.On("CountByUserID", uint(1)).Return(int64(5), nil)
+
+	count, err := svc.CountByUserID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(5), count)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteTemplateCountByUserID_Error(t *testing.T) {
+	svc, repo, _ := newTestNoteTemplateService()
+
+	repo.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	count, err := svc.CountByUserID(1)
+	assert.Error(t, err)
+	assert.Equal(t, int64(0), count)
+	repo.AssertExpectations(t)
+}
+
 func TestNoteTemplateUpdate_WhitespaceDefaultTags(t *testing.T) {
 	svc, repo, _ := newTestNoteTemplateService()
 	existing := &model.NoteTemplate{Name: "Template", ContentTemplate: "Content", DefaultTags: "go,rust", UserID: 1}

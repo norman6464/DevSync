@@ -7,6 +7,7 @@ import (
 
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -253,6 +254,33 @@ func TestNoteTemplateDelete_InvalidID(t *testing.T) {
 	w := doRequest(r, "DELETE", "/note-templates/abc", nil)
 
 	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// ---------- GetMyCount ----------
+
+func TestNoteTemplateGetMyCount_Success(t *testing.T) {
+	h, svc := setupNoteTemplateHandler()
+	r := newRouter(1)
+	r.GET("/note-templates/my/count", h.GetMyCount)
+
+	svc.On("CountByUserID", uint(1)).Return(int64(5), nil)
+
+	w := doRequest(r, http.MethodGet, "/note-templates/my/count", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Contains(t, w.Body.String(), `"count":5`)
+	svc.AssertExpectations(t)
+}
+
+func TestNoteTemplateGetMyCount_ServiceError(t *testing.T) {
+	h, svc := setupNoteTemplateHandler()
+	r := newRouter(1)
+	r.GET("/note-templates/my/count", h.GetMyCount)
+
+	svc.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/note-templates/my/count", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
 }
 
 func TestNoteTemplateUseTemplate_InvalidID(t *testing.T) {
