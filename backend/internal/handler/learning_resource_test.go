@@ -578,3 +578,32 @@ func TestResourceUpdate_InvalidImageURL(t *testing.T) {
 	})
 	assertStatus(t, w, http.StatusBadRequest)
 }
+
+// ============================================================
+// GetMyCount（自分のリソース総数取得）
+// ============================================================
+
+func TestResourceGetMyCount_Success(t *testing.T) {
+	h, repo := setupLearningResourceHandler()
+	r := newRouter(1)
+	r.GET("/resources/my/count", h.GetMyCount)
+
+	repo.On("CountByUserID", uint(1)).Return(int64(7), nil)
+
+	w := doRequest(r, http.MethodGet, "/resources/my/count", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Contains(t, w.Body.String(), `"count":7`)
+	repo.AssertExpectations(t)
+}
+
+func TestResourceGetMyCount_ServiceError(t *testing.T) {
+	h, repo := setupLearningResourceHandler()
+	r := newRouter(1)
+	r.GET("/resources/my/count", h.GetMyCount)
+
+	repo.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/resources/my/count", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	repo.AssertExpectations(t)
+}

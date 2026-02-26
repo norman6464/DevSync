@@ -318,3 +318,33 @@ func TestPostTagSetTags_TagExactly50Chars(t *testing.T) {
 	assert.NoError(t, err)
 	tagRepo.AssertExpectations(t)
 }
+
+func TestPostTagSetTags_UnicodeTagWithin50Runes(t *testing.T) {
+	svc, tagRepo, postRepo := newTestPostTagService()
+
+	post := &model.Post{UserID: 1}
+	post.ID = 10
+	postRepo.On("FindByID", uint(10)).Return(post, nil)
+
+	// 50文字の日本語タグ（150バイトだがルーン数は50なので許容される）
+	unicodeTag := strings.Repeat("あ", 50)
+	tagRepo.On("SetTags", uint(10), []string{unicodeTag}).Return(nil)
+
+	err := svc.SetTags(10, 1, []string{unicodeTag})
+	assert.NoError(t, err)
+	tagRepo.AssertExpectations(t)
+}
+
+func TestPostTagSetTags_UnicodeTagExceeds50Runes(t *testing.T) {
+	svc, _, postRepo := newTestPostTagService()
+
+	post := &model.Post{UserID: 1}
+	post.ID = 10
+	postRepo.On("FindByID", uint(10)).Return(post, nil)
+
+	// 51文字の日本語タグ（ルーン数が50を超えるのでエラー）
+	unicodeTag := strings.Repeat("あ", 51)
+	err := svc.SetTags(10, 1, []string{unicodeTag})
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "タグは50文字以下である必要があります")
+}
