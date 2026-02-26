@@ -1418,3 +1418,29 @@ func TestRoadmapUpdateStep_ResourceURLTooLong(t *testing.T) {
 	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), "500文字以下")
 }
+
+// ============================================================
+// CountByUserID テスト
+// ============================================================
+
+func TestRoadmapCountByUserID_Success(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	repo.On("CountByUserID", uint(1)).Return(int64(5), nil)
+
+	count, err := svc.CountByUserID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(5), count)
+	repo.AssertExpectations(t)
+}
+
+func TestRoadmapCountByUserID_Error(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	repo.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	count, err := svc.CountByUserID(1)
+	assert.Error(t, err)
+	assert.Equal(t, int64(0), count)
+	repo.AssertExpectations(t)
+}
