@@ -13,7 +13,7 @@ type RegisterRequest struct {
 	Name            string `json:"name" binding:"required,max=50" validate:"required,max=50"`
 	Username        string `json:"username" binding:"required,max=30" validate:"required,max=30"`
 	Email           string `json:"email" binding:"required,email,max=255" validate:"required,email,max=255"`
-	Password        string `json:"password" binding:"required,min=6" validate:"required,min=6"`
+	Password        string `json:"password" binding:"required,min=8" validate:"required,min=8"`
 	ConfirmPassword string `json:"confirm_password" binding:"required" validate:"required"`
 }
 
@@ -31,7 +31,7 @@ type PasswordResetRequest struct {
 // ResetPasswordRequest はトークンによるパスワードリセットリクエスト
 type ResetPasswordRequest struct {
 	Token       string `json:"token" binding:"required" validate:"required"`
-	NewPassword string `json:"new_password" binding:"required,min=6" validate:"required,min=6"`
+	NewPassword string `json:"new_password" binding:"required,min=8" validate:"required,min=8"`
 }
 
 // DeleteAccountRequest はアカウント削除リクエスト

@@ -32,7 +32,7 @@ func (r *RecommendationRepository) GetRecommendedUsers(userID uint, skills []str
 	var args []interface{}
 	for _, skill := range skills {
 		conditions = append(conditions, "skills_languages LIKE ? OR skills_frameworks LIKE ?")
-		pattern := "%" + skill + "%"
+		pattern := "%" + EscapeLikeChars(skill) + "%"
 		args = append(args, pattern, pattern)
 	}
 
