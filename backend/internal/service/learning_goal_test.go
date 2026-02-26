@@ -844,6 +844,18 @@ func TestLearningGoalToggleShare_NotFound(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestLearningGoalToggleShare_UpdateError(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	goal := &model.LearningGoal{UserID: 1, Title: "テスト目標", IsPublic: false}
+	goal.ID = 1
+	repo.On("FindByID", uint(1)).Return(goal, nil)
+	repo.On("Update", mock.Anything).Return(errors.New("db error"))
+
+	_, err := svc.ToggleShare(1, 1)
+	assert.Error(t, err)
+}
+
 func TestLearningGoalGetPublicGoals_Success(t *testing.T) {
 	svc, repo := newTestLearningGoalService()
 

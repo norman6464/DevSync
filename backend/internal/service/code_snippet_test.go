@@ -585,3 +585,35 @@ func TestSnippetFork_SelfFork(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, forked)
 }
+
+func TestSnippetDelete_RepoError(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+
+	existing := &model.CodeSnippet{PostID: 5, UserID: 1, Language: "go", Code: "package main"}
+	existing.ID = 10
+	snippetRepo.On("FindByID", uint(10)).Return(existing, nil)
+	snippetRepo.On("Delete", uint(10)).Return(assert.AnError)
+
+	err := svc.Delete(10, 1)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "削除に失敗")
+}
+
+func TestSnippetFork_CreateError(t *testing.T) {
+	svc, snippetRepo, postRepo := newTestCodeSnippetService()
+
+	original := &model.CodeSnippet{
+		ID: 1, PostID: 5, UserID: 99, Language: "go", FileName: "main.go", Code: "package main",
+	}
+	snippetRepo.On("FindByID", uint(1)).Return(original, nil)
+
+	targetPost := &model.Post{UserID: 10}
+	targetPost.ID = 20
+	postRepo.On("FindByID", uint(20)).Return(targetPost, nil)
+
+	snippetRepo.On("Create", mock.Anything).Return(assert.AnError)
+
+	_, err := svc.Fork(10, 1, 20)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "フォークに失敗")
+}

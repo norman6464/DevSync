@@ -454,3 +454,45 @@ func TestUserUpdate_AvatarURLTooLong(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "アバターURLは2000文字以下である必要があります")
 }
+
+func TestUserUpdateProfile_UpdateRepoError(t *testing.T) {
+	svc, repo := newTestUserService()
+
+	existing := &model.User{ID: 1, Name: "Alice"}
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", mock.AnythingOfType("*model.User")).Return(errors.New("db error"))
+
+	input := &UpdateProfileInput{Name: "Bob"}
+	_, err := svc.UpdateProfile(1, 1, input)
+	assert.Error(t, err)
+}
+
+func TestUserUpdateProfile_AllOptionalFields(t *testing.T) {
+	svc, repo := newTestUserService()
+
+	existing := &model.User{ID: 1, Name: "Alice"}
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", mock.AnythingOfType("*model.User")).Return(nil)
+
+	skills := "Go,Rust"
+	frameworks := "Gin,Actix"
+	atcoder := "alice123"
+	paiza := "S"
+	onboarding := true
+	input := &UpdateProfileInput{
+		Name:                "Alice",
+		SkillsLanguages:     &skills,
+		SkillsFrameworks:    &frameworks,
+		AtCoderUsername:     &atcoder,
+		PaizaRank:           &paiza,
+		OnboardingCompleted: &onboarding,
+	}
+
+	result, err := svc.UpdateProfile(1, 1, input)
+	assert.NoError(t, err)
+	assert.Equal(t, "Go,Rust", result.SkillsLanguages)
+	assert.Equal(t, "Gin,Actix", result.SkillsFrameworks)
+	assert.Equal(t, "alice123", result.AtCoderUsername)
+	assert.Equal(t, "S", result.PaizaRank)
+	assert.True(t, result.OnboardingCompleted)
+}

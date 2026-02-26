@@ -196,3 +196,45 @@ func TestProjectMilestoneService_Create_WithDueDate(t *testing.T) {
 	err := svc.Create(10, 1, "v1.0", "", &dueDate)
 	assert.NoError(t, err)
 }
+
+func TestProjectMilestoneService_Update_TitleTooLong(t *testing.T) {
+	svc, milestoneRepo, projectRepo := newTestProjectMilestoneService()
+
+	milestone := &model.ProjectMilestone{ID: 1, ProjectID: 5, Title: "既存"}
+	milestoneRepo.On("FindByID", uint(1)).Return(milestone, nil)
+	projectRepo.On("FindByID", uint(5)).Return(&model.Project{ID: 5, UserID: 10}, nil)
+
+	longTitle := string(make([]rune, 201))
+	_, err := svc.Update(10, 1, longTitle, "", nil, "")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "200文字")
+}
+
+func TestProjectMilestoneService_Update_StatusResetCompletedAt(t *testing.T) {
+	svc, milestoneRepo, projectRepo := newTestProjectMilestoneService()
+
+	now := time.Now()
+	milestone := &model.ProjectMilestone{ID: 1, ProjectID: 5, Title: "既存", Status: model.MilestoneCompleted, CompletedAt: &now}
+	milestoneRepo.On("FindByID", uint(1)).Return(milestone, nil)
+	projectRepo.On("FindByID", uint(5)).Return(&model.Project{ID: 5, UserID: 10}, nil)
+	milestoneRepo.On("Update", mock.MatchedBy(func(m *model.ProjectMilestone) bool {
+		return m.Status == model.MilestoneInProgress && m.CompletedAt == nil
+	})).Return(nil)
+
+	result, err := svc.Update(10, 1, "", "", nil, "in_progress")
+	assert.NoError(t, err)
+	assert.Nil(t, result.CompletedAt)
+	assert.Equal(t, model.MilestoneInProgress, result.Status)
+}
+
+func TestProjectMilestoneService_Update_RepoError(t *testing.T) {
+	svc, milestoneRepo, projectRepo := newTestProjectMilestoneService()
+
+	milestone := &model.ProjectMilestone{ID: 1, ProjectID: 5, Title: "既存"}
+	milestoneRepo.On("FindByID", uint(1)).Return(milestone, nil)
+	projectRepo.On("FindByID", uint(5)).Return(&model.Project{ID: 5, UserID: 10}, nil)
+	milestoneRepo.On("Update", mock.Anything).Return(errors.New("db error"))
+
+	_, err := svc.Update(10, 1, "新しいタイトル", "", nil, "")
+	assert.Error(t, err)
+}
