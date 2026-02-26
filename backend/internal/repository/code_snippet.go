@@ -145,3 +145,9 @@ func (r *CodeSnippetRepository) FindFavoritedByUserID(userID uint, limit, offset
 
 	return snippets, total, err
 }
+
+func (r *CodeSnippetRepository) CountByUserID(userID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.CodeSnippet{}).Where("user_id = ?", userID).Count(&count).Error
+	return count, err
+}

@@ -344,6 +344,7 @@ type CodeSnippetRepositoryInterface interface {
 	Unfavorite(userID, snippetID uint) error
 	HasFavorited(userID, snippetID uint) (bool, error)
 	FindFavoritedByUserID(userID uint, limit, offset int) ([]model.CodeSnippet, int64, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // GitHubRepositoryInterface はGitHub連携データ操作の契約を定義する。
