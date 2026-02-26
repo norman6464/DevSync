@@ -89,6 +89,7 @@ type Container struct {
 	NoteVersionHandler           *handler.NoteVersionHandler
 	ResourceProgressHandler      *handler.ResourceProgressHandler
 	ProjectMilestoneHandler      *handler.ProjectMilestoneHandler
+	UserActivityHandler          *handler.UserActivityHandler
 
 	// ミドルウェア・コールバック用
 	AuthService      *service.AuthService
@@ -413,6 +414,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	projectMilestoneRepo := repository.NewProjectMilestoneRepository(db)
 	projectMilestoneService := service.NewProjectMilestoneService(projectMilestoneRepo, projectRepo)
 	c.ProjectMilestoneHandler = handler.NewProjectMilestoneHandler(projectMilestoneService)
+
+	// ユーザーアクティビティサービス
+	userActivityRepo := repository.NewUserActivityRepository(db)
+	userActivityService := service.NewUserActivityService(userActivityRepo)
+	c.UserActivityHandler = handler.NewUserActivityHandler(userActivityService)
 
 	// HubのGetRoomMembersコールバックを設定
 	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs

@@ -141,6 +141,7 @@ func registerUserRoutes(g *gin.RouterGroup, c *di.Container) {
 		users.DELETE("/:id/follow", c.FollowHandler.Unfollow)
 		users.GET("/:id/posts", c.PostHandler.GetUserPosts)
 		users.GET("/me/profile-completeness", c.UserHandler.GetProfileCompleteness)
+		users.GET("/:userId/activity", c.UserActivityHandler.GetTimeline)
 	}
 }
 

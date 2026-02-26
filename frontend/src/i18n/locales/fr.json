@@ -1752,5 +1752,23 @@
     "forkedFrom": "Dupliqué depuis",
     "forkCount": "Duplications",
     "selectTargetPost": "Sélectionner la publication cible"
+  },
+  "activityTimeline": {
+    "title": "Chronologie d'activité",
+    "empty": "Aucune activité pour le moment",
+    "loadMore": "Charger plus",
+    "postCreated": "A créé une publication",
+    "commentCreated": "A posté un commentaire",
+    "resourceShared": "A partagé une ressource",
+    "goalCompleted": "A atteint un objectif",
+    "projectCreated": "A créé un projet",
+    "snippetCreated": "A créé un extrait de code",
+    "filterAll": "Tous",
+    "filterPosts": "Publications",
+    "filterComments": "Commentaires",
+    "filterResources": "Ressources",
+    "filterGoals": "Objectifs",
+    "filterProjects": "Projets",
+    "filterSnippets": "Extraits"
   }
 }

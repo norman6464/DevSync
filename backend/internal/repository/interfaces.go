@@ -248,6 +248,12 @@ type ResourceProgressRepositoryInterface interface {
 	FindByUserID(userID uint, status string, limit, offset int) ([]model.ResourceProgress, int64, error)
 }
 
+// UserActivityRepositoryInterface はユーザーアクティビティデータ操作の契約を定義する。
+type UserActivityRepositoryInterface interface {
+	Create(activity *model.UserActivity) error
+	FindByUserID(userID uint, activityType string, limit, offset int) ([]model.UserActivity, int64, error)
+}
+
 // RoadmapRepositoryInterface は学習ロードマップデータ操作の契約を定義する。
 // ステップのCRUD操作やコピー機能も含む。
 type RoadmapRepositoryInterface interface {

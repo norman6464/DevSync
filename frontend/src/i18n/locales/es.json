@@ -1752,5 +1752,23 @@
     "forkedFrom": "Bifurcado de",
     "forkCount": "Bifurcaciones",
     "selectTargetPost": "Seleccionar publicación destino"
+  },
+  "activityTimeline": {
+    "title": "Cronología de actividad",
+    "empty": "Aún no hay actividad",
+    "loadMore": "Cargar más",
+    "postCreated": "Creó una publicación",
+    "commentCreated": "Publicó un comentario",
+    "resourceShared": "Compartió un recurso",
+    "goalCompleted": "Completó un objetivo",
+    "projectCreated": "Creó un proyecto",
+    "snippetCreated": "Creó un fragmento de código",
+    "filterAll": "Todos",
+    "filterPosts": "Publicaciones",
+    "filterComments": "Comentarios",
+    "filterResources": "Recursos",
+    "filterGoals": "Objetivos",
+    "filterProjects": "Proyectos",
+    "filterSnippets": "Fragmentos"
   }
 }

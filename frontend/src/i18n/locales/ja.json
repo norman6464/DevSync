@@ -1654,5 +1654,23 @@
     "forkedFrom": "フォーク元",
     "forkCount": "フォーク数",
     "selectTargetPost": "フォーク先の投稿を選択"
+  },
+  "activityTimeline": {
+    "title": "アクティビティタイムライン",
+    "empty": "アクティビティがありません",
+    "loadMore": "もっと見る",
+    "postCreated": "投稿を作成しました",
+    "commentCreated": "コメントを投稿しました",
+    "resourceShared": "リソースを共有しました",
+    "goalCompleted": "目標を達成しました",
+    "projectCreated": "プロジェクトを作成しました",
+    "snippetCreated": "スニペットを作成しました",
+    "filterAll": "すべて",
+    "filterPosts": "投稿",
+    "filterComments": "コメント",
+    "filterResources": "リソース",
+    "filterGoals": "目標",
+    "filterProjects": "プロジェクト",
+    "filterSnippets": "スニペット"
   }
 }

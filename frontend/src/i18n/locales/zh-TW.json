@@ -1754,5 +1754,23 @@
     "forkedFrom": "派生自",
     "forkCount": "派生數",
     "selectTargetPost": "選擇目標貼文"
+  },
+  "activityTimeline": {
+    "title": "活動時間線",
+    "empty": "暫無活動",
+    "loadMore": "載入更多",
+    "postCreated": "建立了貼文",
+    "commentCreated": "發表了留言",
+    "resourceShared": "分享了資源",
+    "goalCompleted": "完成了目標",
+    "projectCreated": "建立了專案",
+    "snippetCreated": "建立了程式碼片段",
+    "filterAll": "全部",
+    "filterPosts": "貼文",
+    "filterComments": "留言",
+    "filterResources": "資源",
+    "filterGoals": "目標",
+    "filterProjects": "專案",
+    "filterSnippets": "程式碼片段"
   }
 }
