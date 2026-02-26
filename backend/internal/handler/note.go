@@ -174,34 +174,12 @@ func (h *NoteHandler) ToggleFavorite(c *gin.Context) {
 
 // Archive はノートをアーカイブする。
 func (h *NoteHandler) Archive(c *gin.Context) {
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-	userID := c.GetUint("userID")
-
-	if err := h.service.Archive(id, userID); err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondOK(c, domain.NewMessageResponse("ノートをアーカイブしました"))
+	handleAction(c, h.service.Archive, "ノートをアーカイブしました")
 }
 
 // Unarchive はノートのアーカイブを解除する。
 func (h *NoteHandler) Unarchive(c *gin.Context) {
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-	userID := c.GetUint("userID")
-
-	if err := h.service.Unarchive(id, userID); err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondOK(c, domain.NewMessageResponse("ノートのアーカイブを解除しました"))
+	handleAction(c, h.service.Unarchive, "ノートのアーカイブを解除しました")
 }
 
 // GetFavorites は現在のユーザーのお気に入りノート一覧をページネーション付きで取得する。

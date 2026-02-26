@@ -177,34 +177,12 @@ func (h *BookReviewHandler) GetByRating(c *gin.Context) {
 
 // Archive は指定IDの書籍レビューをアーカイブする。
 func (h *BookReviewHandler) Archive(c *gin.Context) {
-	userID := c.GetUint("userID")
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	if err := h.service.ArchiveReview(id, userID); err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondOK(c, domain.NewMessageResponse("書籍レビューをアーカイブしました"))
+	handleAction(c, h.service.ArchiveReview, "書籍レビューをアーカイブしました")
 }
 
 // Unarchive は指定IDの書籍レビューのアーカイブを解除する。
 func (h *BookReviewHandler) Unarchive(c *gin.Context) {
-	userID := c.GetUint("userID")
-	id, ok := parseID(c, "id")
-	if !ok {
-		return
-	}
-
-	if err := h.service.UnarchiveReview(id, userID); err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondOK(c, domain.NewMessageResponse("書籍レビューのアーカイブを解除しました"))
+	handleAction(c, h.service.UnarchiveReview, "書籍レビューのアーカイブを解除しました")
 }
 
 // UpdateStatus は書籍レビューの読書状態を更新する。

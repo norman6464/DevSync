@@ -71,12 +71,8 @@ func (s *LearningLogService) Create(log *model.LearningLog) error {
 		if err != nil {
 			return nil // ログ作成は成功、進捗更新失敗はサイレント
 		}
-		progress := totalMinutes * 100 / (goal.TargetHours * 60)
-		if progress > 100 {
-			progress = 100
-		}
-		goal.Progress = progress
-		if progress >= 100 && goal.Status == model.GoalStatusActive {
+		goal.Progress = CalculateGoalProgressPercentage(totalMinutes, goal.TargetHours)
+		if goal.Progress >= 100 && goal.Status == model.GoalStatusActive {
 			goal.Status = model.GoalStatusCompleted
 			now := time.Now()
 			goal.CompletedAt = &now
@@ -120,19 +116,11 @@ func (s *LearningLogService) GetGoalProgress(goalID, userID uint) (*model.GoalPr
 		return nil, err
 	}
 
-	percentage := 0
-	if goal.TargetHours > 0 {
-		percentage = actualMinutes * 100 / (goal.TargetHours * 60)
-		if percentage > 100 {
-			percentage = 100
-		}
-	}
-
 	return &model.GoalProgress{
 		GoalID:        goalID,
 		TargetHours:   goal.TargetHours,
 		ActualMinutes: actualMinutes,
-		Percentage:    percentage,
+		Percentage:    CalculateGoalProgressPercentage(actualMinutes, goal.TargetHours),
 	}, nil
 }
 
@@ -194,6 +182,20 @@ func (s *LearningLogService) GetBySource(userID uint, source string) ([]model.Le
 		return nil, domain.NewError(domain.ErrCodeBadRequest, "無効なソースです", nil)
 	}
 	return s.repo.GetBySource(userID, source)
+}
+
+// CalculateGoalProgressPercentage はゴールの進捗率（0〜100）を算出する純粋関数。
+// totalMinutes: 実績の学習時間（分）、targetHours: 目標時間（時間）。
+// targetHoursが0以下の場合は0を返す。
+func CalculateGoalProgressPercentage(totalMinutes, targetHours int) int {
+	if targetHours <= 0 {
+		return 0
+	}
+	progress := totalMinutes * 100 / (targetHours * 60)
+	if progress > 100 {
+		progress = 100
+	}
+	return progress
 }
 
 // validateDuration は学習時間（分）が有効な範囲（0〜1440）かを検証する。
