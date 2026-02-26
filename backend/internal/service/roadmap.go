@@ -103,17 +103,17 @@ func (s *RoadmapService) Update(id, userID uint, updates *model.Roadmap) (*model
 		return nil, err
 	}
 
-	if strings.TrimSpace(updates.Title) != "" {
-		if err := domain.ValidateStringLength(updates.Title, 1, 200, "タイトル"); err != nil {
+	if title := strings.TrimSpace(updates.Title); title != "" {
+		if err := domain.ValidateStringLength(title, 1, 200, "タイトル"); err != nil {
 			return nil, err
 		}
-		roadmap.Title = strings.TrimSpace(updates.Title)
+		roadmap.Title = title
 	}
-	if strings.TrimSpace(updates.Description) != "" {
-		if err := domain.ValidateStringLength(updates.Description, 1, 1000, "説明"); err != nil {
+	if desc := strings.TrimSpace(updates.Description); desc != "" {
+		if err := domain.ValidateStringLength(desc, 1, 1000, "説明"); err != nil {
 			return nil, err
 		}
-		roadmap.Description = strings.TrimSpace(updates.Description)
+		roadmap.Description = desc
 	}
 	if strings.TrimSpace(string(updates.Category)) != "" {
 		roadmap.Category = updates.Category
@@ -185,23 +185,23 @@ func (s *RoadmapService) UpdateStep(roadmapID, stepID, userID uint, updates *mod
 		return nil, err
 	}
 
-	if strings.TrimSpace(updates.Title) != "" {
-		if err := domain.ValidateStringLength(updates.Title, 1, 200, "タイトル"); err != nil {
+	if title := strings.TrimSpace(updates.Title); title != "" {
+		if err := domain.ValidateStringLength(title, 1, 200, "タイトル"); err != nil {
 			return nil, err
 		}
-		step.Title = strings.TrimSpace(updates.Title)
+		step.Title = title
 	}
-	if strings.TrimSpace(updates.Description) != "" {
-		if err := domain.ValidateStringLength(updates.Description, 1, 1000, "説明"); err != nil {
+	if desc := strings.TrimSpace(updates.Description); desc != "" {
+		if err := domain.ValidateStringLength(desc, 1, 1000, "説明"); err != nil {
 			return nil, err
 		}
-		step.Description = strings.TrimSpace(updates.Description)
+		step.Description = desc
 	}
-	if strings.TrimSpace(updates.ResourceURL) != "" {
-		if err := domain.ValidateStringLength(updates.ResourceURL, 1, 500, "リソースURL"); err != nil {
+	if url := strings.TrimSpace(updates.ResourceURL); url != "" {
+		if err := domain.ValidateStringLength(url, 1, 500, "リソースURL"); err != nil {
 			return nil, err
 		}
-		step.ResourceURL = strings.TrimSpace(updates.ResourceURL)
+		step.ResourceURL = url
 	}
 
 	if err := s.repo.UpdateStep(step); err != nil {

@@ -88,23 +88,23 @@ func (s *CodeSnippetService) Update(id, userID uint, language, fileName, code st
 		return nil, err
 	}
 
-	if strings.TrimSpace(language) != "" {
-		if err := domain.ValidateStringLength(language, 1, 100, "言語"); err != nil {
+	if lang := strings.TrimSpace(language); lang != "" {
+		if err := domain.ValidateStringLength(lang, 1, 100, "言語"); err != nil {
 			return nil, err
 		}
-		snippet.Language = strings.TrimSpace(language)
+		snippet.Language = lang
 	}
-	if strings.TrimSpace(fileName) != "" {
-		if err := domain.ValidateStringLength(fileName, 1, 200, "ファイル名"); err != nil {
+	if fn := strings.TrimSpace(fileName); fn != "" {
+		if err := domain.ValidateStringLength(fn, 1, 200, "ファイル名"); err != nil {
 			return nil, err
 		}
-		snippet.FileName = strings.TrimSpace(fileName)
+		snippet.FileName = fn
 	}
-	if strings.TrimSpace(code) != "" {
-		if err := domain.ValidateStringLength(code, 1, 50000, "コード"); err != nil {
+	if c := strings.TrimSpace(code); c != "" {
+		if err := domain.ValidateStringLength(c, 1, 50000, "コード"); err != nil {
 			return nil, err
 		}
-		snippet.Code = strings.TrimSpace(code)
+		snippet.Code = c
 	}
 
 	if err := s.repo.Update(snippet); err != nil {
