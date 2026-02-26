@@ -68,6 +68,10 @@ func (m *MockPostCollectionService) GetPosts(collectionID uint) ([]model.PostCol
 	}
 	return nil, args.Error(1)
 }
+func (m *MockPostCollectionService) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
 
 func setupPostCollectionHandler() (*PostCollectionHandler, *MockPostCollectionService) {
 	svc := new(MockPostCollectionService)

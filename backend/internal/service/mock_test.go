@@ -1996,6 +1996,11 @@ func (m *MockPostCollectionRepository) GetPostsByCollectionID(collectionID uint)
 	return args.Get(0).([]model.PostCollectionItem), args.Error(1)
 }
 
+func (m *MockPostCollectionRepository) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 // ============================================================
 // MockPostPinRepository は repository.PostPinRepositoryInterface のテスト用モック実装。
 // ============================================================
