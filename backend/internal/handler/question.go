@@ -84,9 +84,8 @@ func (h *QuestionHandler) GetAll(c *gin.Context) {
 
 // Search はキーワードで質問を検索する。
 func (h *QuestionHandler) Search(c *gin.Context) {
-	q := c.Query("q")
-	if q == "" {
-		respondBadRequest(c, "検索クエリは必須です")
+	q, ok := parseSearchQuery(c)
+	if !ok {
 		return
 	}
 
