@@ -37,10 +37,10 @@ func (s *BookReviewService) Create(review *model.BookReview) error {
 	if len([]rune(strings.TrimSpace(review.Author))) > 200 {
 		return domain.NewError(domain.ErrCodeValidation, "著者名は200文字以下である必要があります", nil)
 	}
-	if len(strings.TrimSpace(review.ISBN)) > 20 {
+	if len([]rune(strings.TrimSpace(review.ISBN))) > 20 {
 		return domain.NewError(domain.ErrCodeValidation, "ISBNは20文字以下である必要があります", nil)
 	}
-	if len(strings.TrimSpace(review.Review)) > 10000 {
+	if len([]rune(strings.TrimSpace(review.Review))) > 10000 {
 		return domain.NewError(domain.ErrCodeValidation, "レビュー本文は10000文字以下である必要があります", nil)
 	}
 	review.Title = strings.TrimSpace(review.Title)
@@ -92,7 +92,7 @@ func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (
 	}
 
 	if strings.TrimSpace(updates.Title) != "" {
-		if len(strings.TrimSpace(updates.Title)) > 200 {
+		if len([]rune(strings.TrimSpace(updates.Title))) > 200 {
 			return nil, domain.NewError(domain.ErrCodeValidation, "タイトルは200文字以下である必要があります", nil)
 		}
 		review.Title = strings.TrimSpace(updates.Title)
@@ -104,7 +104,7 @@ func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (
 		review.Author = strings.TrimSpace(updates.Author)
 	}
 	if strings.TrimSpace(updates.ISBN) != "" {
-		if len(strings.TrimSpace(updates.ISBN)) > 20 {
+		if len([]rune(strings.TrimSpace(updates.ISBN))) > 20 {
 			return nil, domain.NewError(domain.ErrCodeValidation, "ISBNは20文字以下である必要があります", nil)
 		}
 		review.ISBN = strings.TrimSpace(updates.ISBN)
@@ -116,7 +116,7 @@ func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (
 		review.Rating = updates.Rating
 	}
 	if strings.TrimSpace(updates.Review) != "" {
-		if len(strings.TrimSpace(updates.Review)) > 10000 {
+		if len([]rune(strings.TrimSpace(updates.Review))) > 10000 {
 			return nil, domain.NewError(domain.ErrCodeValidation, "レビュー本文は10000文字以下である必要があります", nil)
 		}
 		review.Review = strings.TrimSpace(updates.Review)

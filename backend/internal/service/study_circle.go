@@ -121,7 +121,7 @@ func (s *StudyCircleService) Update(id, userID uint, name, topic, description *s
 		if strings.TrimSpace(*name) == "" {
 			return nil, domain.NewError(domain.ErrCodeBadRequest, "サークル名は空白のみでは入力できません", nil)
 		}
-		if len(strings.TrimSpace(*name)) > 100 {
+		if len([]rune(strings.TrimSpace(*name))) > 100 {
 			return nil, domain.NewError(domain.ErrCodeValidation, "サークル名は100文字以下である必要があります", nil)
 		}
 		circle.Name = strings.TrimSpace(*name)
@@ -130,13 +130,13 @@ func (s *StudyCircleService) Update(id, userID uint, name, topic, description *s
 		if strings.TrimSpace(*topic) == "" {
 			return nil, domain.NewError(domain.ErrCodeBadRequest, "トピックは空白のみでは入力できません", nil)
 		}
-		if len(strings.TrimSpace(*topic)) > 200 {
+		if len([]rune(strings.TrimSpace(*topic))) > 200 {
 			return nil, domain.NewError(domain.ErrCodeValidation, "トピックは200文字以下である必要があります", nil)
 		}
 		circle.Topic = strings.TrimSpace(*topic)
 	}
 	if description != nil {
-		if len(strings.TrimSpace(*description)) > 1000 {
+		if len([]rune(strings.TrimSpace(*description))) > 1000 {
 			return nil, domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
 		}
 		circle.Description = *description
@@ -270,13 +270,13 @@ func (s *StudyCircleService) UpdateStep(circleID, userID, stepID uint, title, de
 		if strings.TrimSpace(*title) == "" {
 			return nil, domain.NewError(domain.ErrCodeBadRequest, "タイトルは空白のみでは入力できません", nil)
 		}
-		if len(strings.TrimSpace(*title)) > 200 {
+		if len([]rune(strings.TrimSpace(*title))) > 200 {
 			return nil, domain.NewError(domain.ErrCodeValidation, "タイトルは200文字以下である必要があります", nil)
 		}
 		step.Title = strings.TrimSpace(*title)
 	}
 	if description != nil {
-		if len(strings.TrimSpace(*description)) > 1000 {
+		if len([]rune(strings.TrimSpace(*description))) > 1000 {
 			return nil, domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
 		}
 		step.Description = *description

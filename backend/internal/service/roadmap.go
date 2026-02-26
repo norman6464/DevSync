@@ -104,13 +104,13 @@ func (s *RoadmapService) Update(id, userID uint, updates *model.Roadmap) (*model
 	}
 
 	if strings.TrimSpace(updates.Title) != "" {
-		if len(strings.TrimSpace(updates.Title)) > 200 {
+		if len([]rune(strings.TrimSpace(updates.Title))) > 200 {
 			return nil, domain.NewError(domain.ErrCodeValidation, "タイトルは200文字以下である必要があります", nil)
 		}
 		roadmap.Title = strings.TrimSpace(updates.Title)
 	}
 	if strings.TrimSpace(updates.Description) != "" {
-		if len(strings.TrimSpace(updates.Description)) > 1000 {
+		if len([]rune(strings.TrimSpace(updates.Description))) > 1000 {
 			return nil, domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
 		}
 		roadmap.Description = strings.TrimSpace(updates.Description)
@@ -186,19 +186,19 @@ func (s *RoadmapService) UpdateStep(roadmapID, stepID, userID uint, updates *mod
 	}
 
 	if strings.TrimSpace(updates.Title) != "" {
-		if len(strings.TrimSpace(updates.Title)) > 200 {
+		if len([]rune(strings.TrimSpace(updates.Title))) > 200 {
 			return nil, domain.NewError(domain.ErrCodeValidation, "タイトルは200文字以下である必要があります", nil)
 		}
 		step.Title = strings.TrimSpace(updates.Title)
 	}
 	if strings.TrimSpace(updates.Description) != "" {
-		if len(strings.TrimSpace(updates.Description)) > 1000 {
+		if len([]rune(strings.TrimSpace(updates.Description))) > 1000 {
 			return nil, domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
 		}
 		step.Description = strings.TrimSpace(updates.Description)
 	}
 	if strings.TrimSpace(updates.ResourceURL) != "" {
-		if len(strings.TrimSpace(updates.ResourceURL)) > 500 {
+		if len([]rune(strings.TrimSpace(updates.ResourceURL))) > 500 {
 			return nil, domain.NewError(domain.ErrCodeValidation, "リソースURLは500文字以下である必要があります", nil)
 		}
 		step.ResourceURL = strings.TrimSpace(updates.ResourceURL)
