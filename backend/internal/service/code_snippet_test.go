@@ -490,6 +490,18 @@ func TestSnippetUpdate_CodeTooLong(t *testing.T) {
 	assert.Contains(t, err.Error(), "コードは50000文字以下")
 }
 
+func TestSnippetUpdate_FileNameTooLong(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+	existing := &model.CodeSnippet{PostID: 5, UserID: 1, Language: "go", FileName: "main.go", Code: "package main"}
+	existing.ID = 10
+	snippetRepo.On("FindByID", uint(10)).Return(existing, nil)
+
+	result, err := svc.Update(10, 1, "", strings.Repeat("a", 201), "")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "ファイル名は200文字以下")
+}
+
 func TestSnippetCreateComment_ContentTooLong(t *testing.T) {
 	svc, _, _ := newTestCodeSnippetService()
 
