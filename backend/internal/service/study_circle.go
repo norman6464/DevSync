@@ -49,6 +49,12 @@ func (s *StudyCircleService) Create(circle *model.StudyCircle, memberIDs []uint)
 	if err := domain.ValidateStringLength(circle.Name, 1, 100, "サークル名"); err != nil {
 		return err
 	}
+	if err := domain.ValidateStringLength(circle.Topic, 0, 200, "トピック"); err != nil {
+		return err
+	}
+	if err := domain.ValidateStringLength(circle.Description, 0, 1000, "説明"); err != nil {
+		return err
+	}
 	circle.Name = strings.TrimSpace(circle.Name)
 	if circle.MaxMembers < 3 || circle.MaxMembers > 10 {
 		circle.MaxMembers = 5
