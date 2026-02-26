@@ -229,6 +229,34 @@ func (s *RoadmapService) UpdateStepCompletion(roadmapID, stepID, userID uint, is
 	return step, nil
 }
 
+// BatchCompleteSteps はロードマップの所有権を検証した後、複数ステップを一括で完了にする。
+func (s *RoadmapService) BatchCompleteSteps(roadmapID, userID uint, stepIDs []uint) (*model.Roadmap, error) {
+	if _, err := s.findAndCheckOwnership(roadmapID, userID); err != nil {
+		return nil, err
+	}
+
+	now := time.Now()
+	for _, stepID := range stepIDs {
+		step, err := s.repo.FindStepByID(stepID)
+		if err != nil {
+			return nil, err
+		}
+		if step.RoadmapID != roadmapID {
+			return nil, ErrBadRequest
+		}
+		if step.IsCompleted {
+			continue
+		}
+		step.IsCompleted = true
+		step.CompletedAt = &now
+		if err := s.repo.UpdateStep(step); err != nil {
+			return nil, err
+		}
+	}
+
+	return s.repo.FindByID(roadmapID)
+}
+
 // DeleteStep はロードマップの所有権とステップの所属を検証した後、ステップを削除する。
 func (s *RoadmapService) DeleteStep(roadmapID, stepID, userID uint) error {
 	if _, err := s.findAndCheckStepOwnership(roadmapID, stepID, userID); err != nil {

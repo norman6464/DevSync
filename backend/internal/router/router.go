@@ -604,6 +604,7 @@ func registerCommunityRoutes(g *gin.RouterGroup, c *di.Container) {
 		roadmaps.POST("/:id/steps", c.RoadmapHandler.CreateStep)
 		roadmaps.PUT("/:id/steps/:stepId", c.RoadmapHandler.UpdateStep)
 		roadmaps.DELETE("/:id/steps/:stepId", c.RoadmapHandler.DeleteStep)
+		roadmaps.POST("/:id/steps/batch-complete", c.RoadmapHandler.BatchCompleteSteps)
 		roadmaps.PUT("/:id/steps/reorder", c.RoadmapHandler.ReorderSteps)
 	}
 

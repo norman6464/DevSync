@@ -1106,6 +1106,8 @@
     "noSteps": "還沒有步驟",
     "addFirstStep": "新增第一個步驟",
     "stepsReordered": "步驟順序已變更",
+    "batchComplete": "批次完成",
+    "batchCompleteSuccess": "已批次完成步驟",
     "templates": "推薦範本",
     "templatesDescription": "使用推薦的路線圖開始學習",
     "templatesAvailable": "個範本",

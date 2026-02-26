@@ -1104,6 +1104,8 @@
     "noSteps": "No steps yet",
     "addFirstStep": "Add your first step",
     "stepsReordered": "Steps reordered",
+    "batchComplete": "Complete all",
+    "batchCompleteSuccess": "Steps completed successfully",
     "templates": "Recommended Templates",
     "templatesDescription": "Start your learning with a recommended roadmap",
     "templatesAvailable": "templates",

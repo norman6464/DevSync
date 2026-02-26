@@ -117,6 +117,9 @@ export const updateStep = (roadmapId: number, stepId: number, data: UpdateStepRe
 export const deleteStep = (roadmapId: number, stepId: number) =>
   client.delete(`/roadmaps/${roadmapId}/steps/${stepId}`);
 
+export const batchCompleteSteps = (roadmapId: number, stepIds: number[]) =>
+  client.post<Roadmap>(`/roadmaps/${roadmapId}/steps/batch-complete`, { step_ids: stepIds });
+
 export const reorderSteps = (roadmapId: number, data: ReorderStepsRequest) =>
   client.put(`/roadmaps/${roadmapId}/steps/reorder`, data);
 
