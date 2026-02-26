@@ -6,6 +6,7 @@ import (
 
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 // newTestPostTemplateService はPostTemplateServiceのテスト用インスタンスを生成するヘルパー。
@@ -225,4 +226,32 @@ func TestPostTemplateDelete_NotFound(t *testing.T) {
 
 	err := svc.Delete(999, 1)
 	assert.Error(t, err)
+}
+
+func TestPostTemplateUpdate_RepoError(t *testing.T) {
+	svc, repo := newTestPostTemplateService()
+
+	existing := &model.PostTemplate{UserID: 1, Name: "テスト", ContentTemplate: "内容"}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", mock.Anything).Return(errors.New("db error"))
+
+	_, err := svc.Update(1, 1, &model.PostTemplate{Name: "更新名"})
+	assert.Error(t, err)
+}
+
+func TestPostTemplateUpdate_PartialFields(t *testing.T) {
+	svc, repo := newTestPostTemplateService()
+
+	existing := &model.PostTemplate{UserID: 1, Name: "元の名前", TitleTemplate: "元のタイトル", ContentTemplate: "元の内容"}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", mock.MatchedBy(func(t *model.PostTemplate) bool {
+		return t.Name == "新しい名前" && t.TitleTemplate == "元のタイトル" && t.ContentTemplate == "元の内容"
+	})).Return(nil)
+
+	result, err := svc.Update(1, 1, &model.PostTemplate{Name: "新しい名前"})
+	assert.NoError(t, err)
+	assert.Equal(t, "新しい名前", result.Name)
+	assert.Equal(t, "元のタイトル", result.TitleTemplate)
 }

@@ -1723,3 +1723,39 @@ func TestPostGetReactionsBatch_UserReactionsRepoError(t *testing.T) {
 	_, _, err := svc.GetReactionsBatch(1, postIDs)
 	assert.Error(t, err)
 }
+
+func TestPostAutoSaveDraft_ContentTooLong(t *testing.T) {
+	svc, _, _ := newTestPostService()
+
+	longContent := strings.Repeat("あ", 50001)
+	_, err := svc.AutoSaveDraft(1, 0, "title", longContent, "")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "50000文字")
+}
+
+func TestPostAutoSaveDraft_UpdateRepoError(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	existing := &model.Post{UserID: 1, Title: "下書き", IsDraft: true}
+	existing.ID = 5
+	postRepo.On("FindByID", uint(5)).Return(existing, nil)
+	postRepo.On("Update", mock.Anything).Return(errors.New("db error"))
+
+	_, err := svc.AutoSaveDraft(1, 5, "更新タイトル", "更新内容", "")
+	assert.Error(t, err)
+}
+
+func TestPostAutoSaveDraft_UpdateWithImageURLs(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	existing := &model.Post{UserID: 1, Title: "下書き", IsDraft: true}
+	existing.ID = 5
+	postRepo.On("FindByID", uint(5)).Return(existing, nil)
+	postRepo.On("Update", mock.MatchedBy(func(p *model.Post) bool {
+		return p.ImageURLs == "https://example.com/img.png"
+	})).Return(nil)
+
+	result, err := svc.AutoSaveDraft(1, 5, "title", "content", "https://example.com/img.png")
+	assert.NoError(t, err)
+	assert.Equal(t, "https://example.com/img.png", result.ImageURLs)
+}
