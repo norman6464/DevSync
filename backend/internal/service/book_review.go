@@ -124,6 +124,12 @@ func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (
 		}
 		review.Review = strings.TrimSpace(updates.Review)
 	}
+	if updates.TotalPages != 0 {
+		if updates.TotalPages < 0 || updates.TotalPages > 99999 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "総ページ数は0〜99999の範囲で指定してください", nil)
+		}
+		review.TotalPages = updates.TotalPages
+	}
 	if strings.TrimSpace(updates.ImageURL) != "" {
 		review.ImageURL = strings.TrimSpace(updates.ImageURL)
 	}

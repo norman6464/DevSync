@@ -823,6 +823,49 @@ func TestBookReviewCreate_TotalPagesAtMaxLimit(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
+func TestBookReviewUpdate_TotalPagesNegative(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	existing := &model.BookReview{UserID: 1, Title: "テスト本", Rating: 4, TotalPages: 300}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	updates := &model.BookReview{TotalPages: -1}
+	result, err := svc.Update(1, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "総ページ数は0〜99999")
+}
+
+func TestBookReviewUpdate_TotalPagesTooLarge(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	existing := &model.BookReview{UserID: 1, Title: "テスト本", Rating: 4, TotalPages: 300}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	updates := &model.BookReview{TotalPages: 100000}
+	result, err := svc.Update(1, 1, updates)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "総ページ数は0〜99999")
+}
+
+func TestBookReviewUpdate_TotalPagesValid(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	existing := &model.BookReview{UserID: 1, Title: "テスト本", Rating: 4, TotalPages: 300}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", existing).Return(nil)
+
+	updates := &model.BookReview{TotalPages: 500}
+	result, err := svc.Update(1, 1, updates)
+	assert.NoError(t, err)
+	assert.Equal(t, 500, result.TotalPages)
+	repo.AssertExpectations(t)
+}
+
 // ============================================================
 // CountByUserID テスト
 // ============================================================
