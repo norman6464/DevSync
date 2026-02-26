@@ -746,7 +746,9 @@
     "importError": "CSV 파일 가져오기에 실패했습니다",
     "selectCSVFile": "CSV 파일 선택",
     "favorites": "즐겨찾기",
-    "noFavorites": "즐겨찾기 학습 로그가 없습니다"
+    "noFavorites": "즐겨찾기 학습 로그가 없습니다",
+    "monthlySummary": "월별 요약",
+    "noMonthlySummary": "월별 데이터가 없습니다"
   },
   "reports": {
     "title": "활동 리포트",

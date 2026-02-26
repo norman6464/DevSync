@@ -744,7 +744,9 @@
     "importError": "Error al importar el archivo CSV",
     "selectCSVFile": "Seleccionar archivo CSV",
     "favorites": "Favoritos",
-    "noFavorites": "No hay registros de aprendizaje favoritos"
+    "noFavorites": "No hay registros de aprendizaje favoritos",
+    "monthlySummary": "Resumen mensual",
+    "noMonthlySummary": "Sin datos mensuales"
   },
   "reports": {
     "title": "Informes de Actividad",

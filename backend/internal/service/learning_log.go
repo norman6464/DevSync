@@ -257,6 +257,14 @@ func (s *LearningLogService) GetFavorites(userID uint, limit, offset int) ([]mod
 	return s.repo.GetFavorites(userID, limit, offset)
 }
 
+// GetMonthlySummary はユーザーの月別学習サマリー（直近Nヶ月）を取得する。
+func (s *LearningLogService) GetMonthlySummary(userID uint, months int) ([]model.MonthlySummary, error) {
+	if months < 1 || months > 24 {
+		return nil, domain.NewError(domain.ErrCodeBadRequest, "monthsは1〜24の範囲で指定してください", nil)
+	}
+	return s.repo.GetMonthlySummary(userID, months)
+}
+
 // ExportCSV は指定ユーザーの学習ログをCSV形式でエクスポートする。
 // days: 取得する過去の日数（0は全期間）。負の値はバリデーションエラー。
 func (s *LearningLogService) ExportCSV(userID uint, days int) ([]byte, error) {

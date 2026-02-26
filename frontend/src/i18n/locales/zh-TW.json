@@ -746,7 +746,9 @@
     "importError": "CSV檔案匯入失敗",
     "selectCSVFile": "選擇CSV檔案",
     "favorites": "收藏",
-    "noFavorites": "沒有收藏的學習日誌"
+    "noFavorites": "沒有收藏的學習日誌",
+    "monthlySummary": "月度摘要",
+    "noMonthlySummary": "沒有月度資料"
   },
   "reports": {
     "title": "活動報告",

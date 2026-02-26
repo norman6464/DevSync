@@ -744,7 +744,9 @@
     "importError": "Échec de l importation du fichier CSV",
     "selectCSVFile": "Sélectionner un fichier CSV",
     "favorites": "Favoris",
-    "noFavorites": "Aucun journal d'apprentissage favori"
+    "noFavorites": "Aucun journal d'apprentissage favori",
+    "monthlySummary": "Résumé mensuel",
+    "noMonthlySummary": "Aucune donnée mensuelle"
   },
   "reports": {
     "title": "Rapports d'Activité",

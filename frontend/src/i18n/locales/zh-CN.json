@@ -744,7 +744,9 @@
     "importError": "CSV文件导入失败",
     "selectCSVFile": "选择CSV文件",
     "favorites": "收藏",
-    "noFavorites": "没有收藏的学习日志"
+    "noFavorites": "没有收藏的学习日志",
+    "monthlySummary": "月度摘要",
+    "noMonthlySummary": "没有月度数据"
   },
   "reports": {
     "title": "活动报告",

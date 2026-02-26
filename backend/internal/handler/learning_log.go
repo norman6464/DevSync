@@ -31,6 +31,7 @@ type LearningLogServiceInterface interface {
 	GetRecentCategories(userID uint) ([]string, error)
 	GetLinkedLogs(goalID, userID uint, limit, offset int) ([]model.LearningLog, int64, error)
 	GetFavorites(userID uint, limit, offset int) ([]model.LearningLog, int64, error)
+	GetMonthlySummary(userID uint, months int) ([]model.MonthlySummary, error)
 }
 
 // LearningLogHandler は学習ログ関連のHTTPハンドラ。
@@ -304,6 +305,24 @@ func (h *LearningLogHandler) GetWeeklyDuration(c *gin.Context) {
 	}
 
 	respondOK(c, gin.H{"duration": duration})
+}
+
+// GetMonthlySummary は指定ユーザーの月別学習サマリーを返す。
+func (h *LearningLogHandler) GetMonthlySummary(c *gin.Context) {
+	userID, ok := parseID(c, "userId")
+	if !ok {
+		return
+	}
+
+	months := parseQueryIntSilent(c, "months", 12)
+
+	summaries, err := h.service.GetMonthlySummary(userID, months)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, ensureSlice(summaries))
 }
 
 // Favorite は学習ログをお気に入りに設定する。

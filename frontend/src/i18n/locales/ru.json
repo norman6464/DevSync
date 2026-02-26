@@ -743,7 +743,9 @@
     "importError": "Не удалось импортировать CSV-файл",
     "selectCSVFile": "Выберите CSV-файл",
     "favorites": "Избранное",
-    "noFavorites": "Нет избранных записей обучения"
+    "noFavorites": "Нет избранных записей обучения",
+    "monthlySummary": "Ежемесячная сводка",
+    "noMonthlySummary": "Нет месячных данных"
   },
   "reports": {
     "title": "Отчёты об Активности",

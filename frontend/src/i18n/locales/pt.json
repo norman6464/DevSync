@@ -744,7 +744,9 @@
     "importError": "Falha ao importar arquivo CSV",
     "selectCSVFile": "Selecionar arquivo CSV",
     "favorites": "Favoritos",
-    "noFavorites": "Nenhum registro de aprendizado favorito"
+    "noFavorites": "Nenhum registro de aprendizado favorito",
+    "monthlySummary": "Resumo mensal",
+    "noMonthlySummary": "Sem dados mensais"
   },
   "reports": {
     "title": "Relatórios de Atividade",

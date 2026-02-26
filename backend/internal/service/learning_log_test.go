@@ -1308,3 +1308,58 @@ func TestLearningLogGetFavorites_RepoError(t *testing.T) {
 	assert.Empty(t, logs)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// 月別サマリーテスト
+// ============================================================
+
+func TestLearningLogGetMonthlySummary_Success(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	expected := []model.MonthlySummary{
+		{Month: "2026-01-01", TotalMinutes: 300, LogCount: 10},
+		{Month: "2026-02-01", TotalMinutes: 450, LogCount: 15},
+	}
+	repo.On("GetMonthlySummary", uint(1), 12).Return(expected, nil)
+
+	result, err := svc.GetMonthlySummary(1, 12)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, "2026-01-01", result[0].Month)
+	assert.Equal(t, 300, result[0].TotalMinutes)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogGetMonthlySummary_Empty(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	repo.On("GetMonthlySummary", uint(1), 6).Return([]model.MonthlySummary{}, nil)
+
+	result, err := svc.GetMonthlySummary(1, 6)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogGetMonthlySummary_InvalidMonths(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	result, err := svc.GetMonthlySummary(1, 0)
+	assert.Nil(t, result)
+	assert.Error(t, err)
+
+	result, err = svc.GetMonthlySummary(1, 25)
+	assert.Nil(t, result)
+	assert.Error(t, err)
+}
+
+func TestLearningLogGetMonthlySummary_RepoError(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	repo.On("GetMonthlySummary", uint(1), 12).Return([]model.MonthlySummary(nil), errors.New("db error"))
+
+	result, err := svc.GetMonthlySummary(1, 12)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	repo.AssertExpectations(t)
+}

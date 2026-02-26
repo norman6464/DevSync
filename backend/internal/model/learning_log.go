@@ -53,6 +53,13 @@ type LearningLog struct {
 	UpdatedAt  time.Time `json:"updated_at"`
 }
 
+// MonthlySummary は月別学習サマリーを表す。
+type MonthlySummary struct {
+	Month        string `json:"month"`         // "YYYY-MM-01" 形式
+	TotalMinutes int    `json:"total_minutes"` // その月の合計学習時間（分）
+	LogCount     int    `json:"log_count"`     // その月のログ件数
+}
+
 // CalendarEntry はカレンダービュー用の日別ログ件数を表す。
 type CalendarEntry struct {
 	Date  string `json:"date"`  // "YYYY-MM-DD" 形式
