@@ -88,12 +88,8 @@ func (s *NoteLinkService) DeleteLink(sourceNoteID, targetNoteID, userID uint) er
 // GetLinkStats はノートのリンク統計（フォワードリンク数・バックリンク数）を返す。
 // ノートの所有者のみ取得可能。
 func (s *NoteLinkService) GetLinkStats(noteID, userID uint) (*model.NoteLinkStats, error) {
-	note, err := s.noteRepo.FindByID(noteID)
-	if err != nil {
-		return nil, ErrNotFound
-	}
-	if note.UserID != userID {
-		return nil, ErrForbidden
+	if _, err := checkOwnership(s.noteRepo.FindByID, noteID, userID, func(n *model.Note) uint { return n.UserID }); err != nil {
+		return nil, err
 	}
 
 	forwardCount, err := s.repo.CountBySourceNoteID(noteID)
