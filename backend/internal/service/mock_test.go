@@ -1811,6 +1811,11 @@ func (m *MockStudyCircleRepository) UpdateMemberRole(circleID, userID uint, role
 	return args.Error(0)
 }
 
+func (m *MockStudyCircleRepository) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 // インターフェース適合チェック
 var _ EmailSenderInterface = (*MockEmailSender)(nil)
 var _ repository.ActivityReportRepositoryInterface = (*MockActivityReportRepository)(nil)

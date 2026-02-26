@@ -310,3 +310,10 @@ func (r *StudyCircleRepository) Search(query string, limit, offset int) ([]model
 	err := db.Offset(offset).Limit(limit).Find(&circles).Error
 	return circles, total, err
 }
+
+// CountByUserID は指定ユーザーが参加しているスタディサークル総数を返す。
+func (r *StudyCircleRepository) CountByUserID(userID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.StudyCircleMember{}).Where("user_id = ?", userID).Count(&count).Error
+	return count, err
+}
