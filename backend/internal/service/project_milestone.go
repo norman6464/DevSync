@@ -51,6 +51,10 @@ func (s *ProjectMilestoneService) Create(userID, projectID uint, title, descript
 		return domain.NewError(domain.ErrCodeValidation, "タイトルは200文字以下である必要があります", nil)
 	}
 
+	if len([]rune(description)) > 1000 {
+		return domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
+	}
+
 	milestone := &model.ProjectMilestone{
 		ProjectID:   projectID,
 		Title:       title,
@@ -85,6 +89,9 @@ func (s *ProjectMilestoneService) Update(userID, milestoneID uint, title, descri
 		milestone.Title = title
 	}
 	if description != "" {
+		if len([]rune(description)) > 1000 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
+		}
 		milestone.Description = description
 	}
 	if dueDate != nil {
