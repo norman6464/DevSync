@@ -67,6 +67,58 @@ func (s *UserService) Update(user *model.User) error {
 	return s.repo.Update(user)
 }
 
+// UpdateProfileInput はプロフィール更新の入力パラメータ。
+// Handler層のDTOからService層への橋渡しとして使用する。
+type UpdateProfileInput struct {
+	Name                string
+	Bio                 string
+	AvatarURL           string
+	SkillsLanguages     *string
+	SkillsFrameworks    *string
+	AtCoderUsername     *string
+	PaizaRank           *string
+	OnboardingCompleted *bool
+}
+
+// UpdateProfile は所有権チェック・フィールドマッピング・バリデーション・保存を一括処理する。
+func (s *UserService) UpdateProfile(id, userID uint, input *UpdateProfileInput) (*model.User, error) {
+	if id != userID {
+		return nil, domain.ErrForbidden
+	}
+
+	existing, err := s.repo.FindByID(id)
+	if err != nil {
+		return nil, domain.NewError(domain.ErrCodeNotFound, "ユーザーが見つかりません", err)
+	}
+
+	if input.Name != "" {
+		existing.Name = input.Name
+	}
+	existing.Bio = input.Bio
+	existing.AvatarURL = input.AvatarURL
+	if input.SkillsLanguages != nil {
+		existing.SkillsLanguages = *input.SkillsLanguages
+	}
+	if input.SkillsFrameworks != nil {
+		existing.SkillsFrameworks = *input.SkillsFrameworks
+	}
+	if input.AtCoderUsername != nil {
+		existing.AtCoderUsername = *input.AtCoderUsername
+	}
+	if input.PaizaRank != nil {
+		existing.PaizaRank = *input.PaizaRank
+	}
+	if input.OnboardingCompleted != nil {
+		existing.OnboardingCompleted = *input.OnboardingCompleted
+	}
+
+	if err := s.Update(existing); err != nil {
+		return nil, err
+	}
+
+	return existing, nil
+}
+
 // ProfileCompleteness はプロフィール完成度の計算結果を表す。
 type ProfileCompleteness struct {
 	Percentage    int      `json:"percentage"`

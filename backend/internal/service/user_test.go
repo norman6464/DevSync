@@ -7,6 +7,7 @@ import (
 
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 // newTestUserService はUserServiceのテスト用インスタンスを生成するヘルパー。
@@ -312,6 +313,97 @@ func TestUserUpdateByOwner_Forbidden(t *testing.T) {
 	err := svc.UpdateByOwner(1, 2, user)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "権限がありません")
+}
+
+// ============================================================
+// UpdateProfile テスト
+// ============================================================
+
+func TestUserUpdateProfile_Success(t *testing.T) {
+	svc, repo := newTestUserService()
+
+	existing := &model.User{ID: 1, Name: "旧名前", Bio: "旧Bio"}
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", mock.AnythingOfType("*model.User")).Return(nil)
+
+	langs := "Go,TypeScript"
+	input := &UpdateProfileInput{
+		Name:            "新名前",
+		Bio:             "新しいBio",
+		AvatarURL:       "https://example.com/avatar.png",
+		SkillsLanguages: &langs,
+	}
+
+	result, err := svc.UpdateProfile(1, 1, input)
+	assert.NoError(t, err)
+	assert.Equal(t, "新名前", result.Name)
+	assert.Equal(t, "新しいBio", result.Bio)
+	assert.Equal(t, "https://example.com/avatar.png", result.AvatarURL)
+	assert.Equal(t, "Go,TypeScript", result.SkillsLanguages)
+	repo.AssertExpectations(t)
+}
+
+func TestUserUpdateProfile_Forbidden(t *testing.T) {
+	svc, _ := newTestUserService()
+
+	input := &UpdateProfileInput{Name: "不正更新"}
+	_, err := svc.UpdateProfile(1, 2, input)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "権限がありません")
+}
+
+func TestUserUpdateProfile_UserNotFound(t *testing.T) {
+	svc, repo := newTestUserService()
+
+	repo.On("FindByID", uint(999)).Return((*model.User)(nil), errors.New("not found"))
+
+	input := &UpdateProfileInput{Name: "テスト"}
+	_, err := svc.UpdateProfile(999, 999, input)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "ユーザーが見つかりません")
+}
+
+func TestUserUpdateProfile_EmptyNameKeepsExisting(t *testing.T) {
+	svc, repo := newTestUserService()
+
+	existing := &model.User{ID: 1, Name: "元の名前"}
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", mock.AnythingOfType("*model.User")).Return(nil)
+
+	input := &UpdateProfileInput{Name: "", Bio: "新Bio"}
+
+	result, err := svc.UpdateProfile(1, 1, input)
+	assert.NoError(t, err)
+	assert.Equal(t, "元の名前", result.Name)
+	assert.Equal(t, "新Bio", result.Bio)
+}
+
+func TestUserUpdateProfile_OptionalFieldsNilSkipped(t *testing.T) {
+	svc, repo := newTestUserService()
+
+	existing := &model.User{ID: 1, Name: "Alice", SkillsLanguages: "Go", AtCoderUsername: "alice"}
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+	repo.On("Update", mock.AnythingOfType("*model.User")).Return(nil)
+
+	input := &UpdateProfileInput{Name: "Alice"}
+
+	result, err := svc.UpdateProfile(1, 1, input)
+	assert.NoError(t, err)
+	assert.Equal(t, "Go", result.SkillsLanguages)
+	assert.Equal(t, "alice", result.AtCoderUsername)
+}
+
+func TestUserUpdateProfile_ValidationError(t *testing.T) {
+	svc, repo := newTestUserService()
+
+	existing := &model.User{ID: 1, Name: "Alice"}
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	input := &UpdateProfileInput{Name: strings.Repeat("あ", 101)}
+
+	_, err := svc.UpdateProfile(1, 1, input)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "名前は100文字以下である必要があります")
 }
 
 // ============================================================
