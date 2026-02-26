@@ -1,6 +1,7 @@
 package service
 
 import (
+	"strings"
 	"time"
 
 	"github.com/norman6464/devsync/backend/internal/domain"
@@ -78,13 +79,15 @@ func (s *ProjectMilestoneService) Update(userID, milestoneID uint, title, descri
 		return nil, err
 	}
 
-	if title != "" {
+	if strings.TrimSpace(title) != "" {
+		title = strings.TrimSpace(title)
 		if err := domain.ValidateStringLength(title, 1, 200, "タイトル"); err != nil {
 			return nil, err
 		}
 		milestone.Title = title
 	}
-	if description != "" {
+	if strings.TrimSpace(description) != "" {
+		description = strings.TrimSpace(description)
 		if err := domain.ValidateStringLength(description, 1, 1000, "説明"); err != nil {
 			return nil, err
 		}

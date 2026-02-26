@@ -1,6 +1,8 @@
 package service
 
 import (
+	"strings"
+
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
@@ -76,19 +78,22 @@ func (s *LearningLogTemplateService) Update(id, userID uint, name, defaultTitle,
 		return nil, err
 	}
 
-	if name != "" {
+	if strings.TrimSpace(name) != "" {
+		name = strings.TrimSpace(name)
 		if err := domain.ValidateStringLength(name, 1, 100, "テンプレート名"); err != nil {
 			return nil, err
 		}
 		template.Name = name
 	}
-	if defaultTitle != "" {
+	if strings.TrimSpace(defaultTitle) != "" {
+		defaultTitle = strings.TrimSpace(defaultTitle)
 		if err := domain.ValidateStringLength(defaultTitle, 1, 200, "デフォルトタイトル"); err != nil {
 			return nil, err
 		}
 		template.DefaultTitle = defaultTitle
 	}
-	if defaultContent != "" {
+	if strings.TrimSpace(defaultContent) != "" {
+		defaultContent = strings.TrimSpace(defaultContent)
 		if err := domain.ValidateStringLength(defaultContent, 1, 50000, "デフォルト本文"); err != nil {
 			return nil, err
 		}
