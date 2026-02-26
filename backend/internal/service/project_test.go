@@ -607,3 +607,29 @@ func TestProjectSearch_RepoError(t *testing.T) {
 	assert.Error(t, err)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// CountByUserID テスト
+// ============================================================
+
+func TestProjectCountByUserID_Success(t *testing.T) {
+	svc, repo := newTestProjectService()
+
+	repo.On("CountByUserID", uint(1)).Return(int64(5), nil)
+
+	count, err := svc.CountByUserID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(5), count)
+	repo.AssertExpectations(t)
+}
+
+func TestProjectCountByUserID_Error(t *testing.T) {
+	svc, repo := newTestProjectService()
+
+	repo.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	count, err := svc.CountByUserID(1)
+	assert.Error(t, err)
+	assert.Equal(t, int64(0), count)
+	repo.AssertExpectations(t)
+}
