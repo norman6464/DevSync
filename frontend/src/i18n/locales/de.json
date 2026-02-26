@@ -1853,5 +1853,21 @@
     "favoriteRemoved": "Aus Favoriten entfernt",
     "favoritedSnippets": "Favorisierte Snippets",
     "noFavorites": "Keine favorisierten Snippets"
+  },
+  "resourceReview": {
+    "title": "Bewertungen",
+    "addReview": "Bewertung schreiben",
+    "editReview": "Bewertung bearbeiten",
+    "deleteReview": "Bewertung löschen",
+    "deleteConfirm": "Möchten Sie diese Bewertung wirklich löschen?",
+    "rating": "Bewertung",
+    "comment": "Kommentar",
+    "commentPlaceholder": "Schreiben Sie Ihre Bewertung...",
+    "submitSuccess": "Bewertung eingereicht",
+    "updateSuccess": "Bewertung aktualisiert",
+    "deleteSuccess": "Bewertung gelöscht",
+    "noReviews": "Noch keine Bewertungen",
+    "reviewCount": "{{count}} Bewertungen",
+    "averageRating": "Durchschnittsbewertung"
   }
 }

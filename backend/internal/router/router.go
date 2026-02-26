@@ -449,6 +449,12 @@ func registerResourceRoutes(g *gin.RouterGroup, c *di.Container) {
 		resources.PUT("/progress", c.ResourceProgressHandler.Upsert)
 		resources.GET("/progress", c.ResourceProgressHandler.GetMyProgress)
 		resources.GET("/:resourceId/progress", c.ResourceProgressHandler.GetByResource)
+
+		// リソースレビュー
+		resources.POST("/:id/reviews", c.ResourceReviewHandler.Create)
+		resources.GET("/:id/reviews", c.ResourceReviewHandler.GetByResourceID)
+		resources.PUT("/reviews/:reviewId", c.ResourceReviewHandler.Update)
+		resources.DELETE("/reviews/:reviewId", c.ResourceReviewHandler.Delete)
 	}
 }
 

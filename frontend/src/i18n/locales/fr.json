@@ -1854,5 +1854,21 @@
     "favoriteRemoved": "Retiré des favoris",
     "favoritedSnippets": "Extraits favoris",
     "noFavorites": "Aucun extrait favori"
+  },
+  "resourceReview": {
+    "title": "Avis",
+    "addReview": "Écrire un avis",
+    "editReview": "Modifier l'avis",
+    "deleteReview": "Supprimer l'avis",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cet avis ?",
+    "rating": "Note",
+    "comment": "Commentaire",
+    "commentPlaceholder": "Rédigez votre avis...",
+    "submitSuccess": "Avis soumis",
+    "updateSuccess": "Avis mis à jour",
+    "deleteSuccess": "Avis supprimé",
+    "noReviews": "Aucun avis pour le moment",
+    "reviewCount": "{{count}} avis",
+    "averageRating": "Note moyenne"
   }
 }

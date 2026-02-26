@@ -1854,5 +1854,21 @@
     "favoriteRemoved": "已取消收藏",
     "favoritedSnippets": "收藏的代码片段",
     "noFavorites": "没有收藏的代码片段"
+  },
+  "resourceReview": {
+    "title": "评价",
+    "addReview": "写评价",
+    "editReview": "编辑评价",
+    "deleteReview": "删除评价",
+    "deleteConfirm": "确定要删除此评价吗？",
+    "rating": "评分",
+    "comment": "评论",
+    "commentPlaceholder": "写下你的评价...",
+    "submitSuccess": "评价已提交",
+    "updateSuccess": "评价已更新",
+    "deleteSuccess": "评价已删除",
+    "noReviews": "暂无评价",
+    "reviewCount": "{{count}}条评价",
+    "averageRating": "平均评分"
   }
 }

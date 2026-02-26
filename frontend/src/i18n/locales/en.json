@@ -1854,5 +1854,21 @@
     "favoriteRemoved": "Removed from favorites",
     "favoritedSnippets": "Favorite Snippets",
     "noFavorites": "No favorite snippets"
+  },
+  "resourceReview": {
+    "title": "Reviews",
+    "addReview": "Write a Review",
+    "editReview": "Edit Review",
+    "deleteReview": "Delete Review",
+    "deleteConfirm": "Are you sure you want to delete this review?",
+    "rating": "Rating",
+    "comment": "Comment",
+    "commentPlaceholder": "Write your review...",
+    "submitSuccess": "Review submitted",
+    "updateSuccess": "Review updated",
+    "deleteSuccess": "Review deleted",
+    "noReviews": "No reviews yet",
+    "reviewCount": "{{count}} reviews",
+    "averageRating": "Average Rating"
   }
 }

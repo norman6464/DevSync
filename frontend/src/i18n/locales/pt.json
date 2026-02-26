@@ -1854,5 +1854,21 @@
     "favoriteRemoved": "Removido dos favoritos",
     "favoritedSnippets": "Snippets favoritos",
     "noFavorites": "Nenhum snippet favorito"
+  },
+  "resourceReview": {
+    "title": "Avaliações",
+    "addReview": "Escrever avaliação",
+    "editReview": "Editar avaliação",
+    "deleteReview": "Excluir avaliação",
+    "deleteConfirm": "Tem certeza de que deseja excluir esta avaliação?",
+    "rating": "Nota",
+    "comment": "Comentário",
+    "commentPlaceholder": "Escreva sua avaliação...",
+    "submitSuccess": "Avaliação enviada",
+    "updateSuccess": "Avaliação atualizada",
+    "deleteSuccess": "Avaliação excluída",
+    "noReviews": "Nenhuma avaliação ainda",
+    "reviewCount": "{{count}} avaliações",
+    "averageRating": "Nota média"
   }
 }

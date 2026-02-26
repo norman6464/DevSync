@@ -1856,5 +1856,21 @@
     "favoriteRemoved": "已取消收藏",
     "favoritedSnippets": "收藏的程式碼片段",
     "noFavorites": "沒有收藏的程式碼片段"
+  },
+  "resourceReview": {
+    "title": "評價",
+    "addReview": "撰寫評價",
+    "editReview": "編輯評價",
+    "deleteReview": "刪除評價",
+    "deleteConfirm": "確定要刪除此評價嗎？",
+    "rating": "評分",
+    "comment": "評論",
+    "commentPlaceholder": "寫下你的評價...",
+    "submitSuccess": "評價已提交",
+    "updateSuccess": "評價已更新",
+    "deleteSuccess": "評價已刪除",
+    "noReviews": "尚無評價",
+    "reviewCount": "{{count}}則評價",
+    "averageRating": "平均評分"
   }
 }

@@ -113,3 +113,49 @@ export const getResourceProgress = async (resourceId: number): Promise<ResourceP
   const res = await client.get(`/resources/${resourceId}/progress`);
   return res.data.progress;
 };
+
+// --- リソースレビュー ---
+
+export interface ResourceReview {
+  id: number;
+  user_id: number;
+  user?: { id: number; name: string; username: string; avatar_url: string };
+  resource_id: number;
+  rating: number;
+  comment: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateResourceReviewRequest {
+  rating: number;
+  comment?: string;
+}
+
+export interface UpdateResourceReviewRequest {
+  rating?: number;
+  comment?: string;
+}
+
+export const createResourceReview = async (resourceId: number, data: CreateResourceReviewRequest): Promise<ResourceReview> => {
+  const res = await client.post(`/resources/${resourceId}/reviews`, data);
+  return res.data;
+};
+
+export const getResourceReviews = async (
+  resourceId: number,
+  limit = 20,
+  offset = 0
+): Promise<{ reviews: ResourceReview[]; total: number }> => {
+  const res = await client.get(`/resources/${resourceId}/reviews`, { params: { limit, offset } });
+  return res.data;
+};
+
+export const updateResourceReview = async (reviewId: number, data: UpdateResourceReviewRequest): Promise<ResourceReview> => {
+  const res = await client.put(`/resources/reviews/${reviewId}`, data);
+  return res.data;
+};
+
+export const deleteResourceReview = async (reviewId: number): Promise<void> => {
+  await client.delete(`/resources/reviews/${reviewId}`);
+};
