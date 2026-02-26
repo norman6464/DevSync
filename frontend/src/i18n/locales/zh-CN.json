@@ -52,7 +52,8 @@
     ],
     "contributionsInLastYear": "过去一年 {{count}} 次贡献",
     "dateContributions": "{{date}}: {{count}} 次贡献",
-    "dateLogs": "{{date}}: {{count}} 条日志"
+    "dateLogs": "{{date}}: {{count}} 条日志",
+    "createFromTemplate": "从模板创建"
   },
   "nav": {
     "dashboard": "仪表板",
@@ -818,6 +819,18 @@
     "updateFailed": "更新项目失败",
     "deleteFailed": "删除项目失败",
     "confirmDelete": "确定要删除这个项目吗？",
+    "searchPlaceholder": "搜索项目...",
+    "sortNewest": "最新",
+    "sortOldest": "最早",
+    "sortTitle": "标题",
+    "noSearchResults": "未找到项目",
+    "archivedTab": "已归档",
+    "archive": "归档",
+    "unarchive": "取消归档",
+    "archiveSuccess": "项目已归档",
+    "unarchiveSuccess": "项目已取消归档",
+    "archiveFailed": "归档失败",
+    "unarchiveFailed": "取消归档失败",
     "statusInProgress": "进行中",
     "statusCompleted": "已完成"
   },
@@ -1494,7 +1507,8 @@
     "volumeDetailed": "详细",
     "exportMarkdown": "导出为Markdown",
     "exportSuccess": "笔记导出成功",
-    "exportError": "导出失败"
+    "exportError": "导出失败",
+    "favoritesOnly": "仅收藏"
   },
   "githubCallback": {
     "missingOAuthParams": "缺少OAuth参数",

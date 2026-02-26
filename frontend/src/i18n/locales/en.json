@@ -52,7 +52,8 @@
     ],
     "contributionsInLastYear": "{{count}} contributions in the last year",
     "dateContributions": "{{date}}: {{count}} contributions",
-    "dateLogs": "{{date}}: {{count}} logs"
+    "dateLogs": "{{date}}: {{count}} logs",
+    "createFromTemplate": "Create from Template"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -818,6 +819,18 @@
     "updateFailed": "Failed to update project",
     "deleteFailed": "Failed to delete project",
     "confirmDelete": "Are you sure you want to delete this project?",
+    "searchPlaceholder": "Search projects...",
+    "sortNewest": "Newest",
+    "sortOldest": "Oldest",
+    "sortTitle": "Title",
+    "noSearchResults": "No projects found",
+    "archivedTab": "Archived",
+    "archive": "Archive",
+    "unarchive": "Unarchive",
+    "archiveSuccess": "Project archived",
+    "unarchiveSuccess": "Project unarchived",
+    "archiveFailed": "Failed to archive",
+    "unarchiveFailed": "Failed to unarchive",
     "statusInProgress": "In Progress",
     "statusCompleted": "Completed"
   },
@@ -1494,7 +1507,8 @@
     "volumeDetailed": "Detailed",
     "exportMarkdown": "Export as Markdown",
     "exportSuccess": "Note exported successfully",
-    "exportError": "Failed to export note"
+    "exportError": "Failed to export note",
+    "favoritesOnly": "Favorites only"
   },
   "githubCallback": {
     "missingOAuthParams": "Missing OAuth parameters",

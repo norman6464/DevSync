@@ -52,7 +52,8 @@
     ],
     "contributionsInLastYear": "지난 1년간 {{count}}개의 기여",
     "dateContributions": "{{date}}: {{count}}개의 기여",
-    "dateLogs": "{{date}}: {{count}}개의 로그"
+    "dateLogs": "{{date}}: {{count}}개의 로그",
+    "createFromTemplate": "템플릿에서 생성"
   },
   "nav": {
     "dashboard": "대시보드",
@@ -819,6 +820,18 @@
     "updateFailed": "프로젝트 업데이트에 실패했습니다",
     "deleteFailed": "프로젝트 삭제에 실패했습니다",
     "confirmDelete": "이 프로젝트를 삭제하시겠습니까?",
+    "searchPlaceholder": "프로젝트 검색...",
+    "sortNewest": "최신순",
+    "sortOldest": "오래된순",
+    "sortTitle": "제목순",
+    "noSearchResults": "검색 결과가 없습니다",
+    "archivedTab": "보관됨",
+    "archive": "보관",
+    "unarchive": "보관 해제",
+    "archiveSuccess": "프로젝트를 보관했습니다",
+    "unarchiveSuccess": "프로젝트 보관을 해제했습니다",
+    "archiveFailed": "보관에 실패했습니다",
+    "unarchiveFailed": "보관 해제에 실패했습니다",
     "statusInProgress": "진행 중",
     "statusCompleted": "완료"
   },
@@ -1495,7 +1508,8 @@
     "volumeDetailed": "상세",
     "exportMarkdown": "Markdown으로 내보내기",
     "exportSuccess": "노트를 내보냈습니다",
-    "exportError": "내보내기에 실패했습니다"
+    "exportError": "내보내기에 실패했습니다",
+    "favoritesOnly": "즐겨찾기만"
   },
   "githubCallback": {
     "missingOAuthParams": "OAuth 매개변수가 없습니다",

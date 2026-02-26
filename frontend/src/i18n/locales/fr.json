@@ -52,7 +52,8 @@
     ],
     "contributionsInLastYear": "{{count}} contributions au cours de l'année écoulée",
     "dateContributions": "{{date}} : {{count}} contributions",
-    "dateLogs": "{{date}} : {{count}} entrées"
+    "dateLogs": "{{date}} : {{count}} entrées",
+    "createFromTemplate": "Créer depuis un modèle"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -818,6 +819,18 @@
     "updateFailed": "Échec de la mise à jour du projet",
     "deleteFailed": "Échec de la suppression du projet",
     "confirmDelete": "Êtes-vous sûr de vouloir supprimer ce projet ?",
+    "searchPlaceholder": "Rechercher des projets...",
+    "sortNewest": "Plus récent",
+    "sortOldest": "Plus ancien",
+    "sortTitle": "Titre",
+    "noSearchResults": "Aucun projet trouvé",
+    "archivedTab": "Archivés",
+    "archive": "Archiver",
+    "unarchive": "Désarchiver",
+    "archiveSuccess": "Projet archivé",
+    "unarchiveSuccess": "Projet désarchivé",
+    "archiveFailed": "Échec de l'archivage",
+    "unarchiveFailed": "Échec du désarchivage",
     "statusInProgress": "En cours",
     "statusCompleted": "Terminé"
   },
@@ -1494,7 +1507,8 @@
     "volumeDetailed": "Détaillé",
     "exportMarkdown": "Exporter en Markdown",
     "exportSuccess": "Note exportée avec succès",
-    "exportError": "Échec de l exportation"
+    "exportError": "Échec de l exportation",
+    "favoritesOnly": "Favoris uniquement"
   },
   "githubCallback": {
     "missingOAuthParams": "Paramètres OAuth manquants",

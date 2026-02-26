@@ -52,7 +52,8 @@
     ],
     "contributionsInLastYear": "{{count}} вкладов за последний год",
     "dateContributions": "{{date}}: {{count}} вкладов",
-    "dateLogs": "{{date}}: {{count}} записей"
+    "dateLogs": "{{date}}: {{count}} записей",
+    "createFromTemplate": "Создать из шаблона"
   },
   "nav": {
     "dashboard": "Панель",
@@ -817,6 +818,18 @@
     "updateFailed": "Не удалось обновить проект",
     "deleteFailed": "Не удалось удалить проект",
     "confirmDelete": "Вы уверены, что хотите удалить этот проект?",
+    "searchPlaceholder": "Поиск проектов...",
+    "sortNewest": "Новые",
+    "sortOldest": "Старые",
+    "sortTitle": "По названию",
+    "noSearchResults": "Проекты не найдены",
+    "archivedTab": "В архиве",
+    "archive": "В архив",
+    "unarchive": "Из архива",
+    "archiveSuccess": "Проект архивирован",
+    "unarchiveSuccess": "Проект разархивирован",
+    "archiveFailed": "Ошибка архивации",
+    "unarchiveFailed": "Ошибка разархивации",
     "statusInProgress": "В процессе",
     "statusCompleted": "Завершён"
   },
@@ -1493,7 +1506,8 @@
     "volumeDetailed": "Подробная",
     "exportMarkdown": "Экспорт в Markdown",
     "exportSuccess": "Заметка экспортирована",
-    "exportError": "Не удалось экспортировать"
+    "exportError": "Не удалось экспортировать",
+    "favoritesOnly": "Только избранные"
   },
   "githubCallback": {
     "missingOAuthParams": "Отсутствуют параметры OAuth",
