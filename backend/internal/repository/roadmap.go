@@ -276,6 +276,13 @@ func (r *RoadmapRepository) ReorderSteps(roadmapID uint, stepOrders []model.Step
 	})
 }
 
+// CountByUserID は指定ユーザーのロードマップ総数を返す。
+func (r *RoadmapRepository) CountByUserID(userID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.Roadmap{}).Where("user_id = ?", userID).Count(&count).Error
+	return count, err
+}
+
 // GetTemplates はテンプレートとしてマークされた全ロードマップをステップ付きで取得する。
 func (r *RoadmapRepository) GetTemplates() ([]model.Roadmap, error) {
 	var templates []model.Roadmap

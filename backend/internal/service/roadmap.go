@@ -443,6 +443,11 @@ func (s *RoadmapService) SeedTemplates(userID uint) error {
 	return nil
 }
 
+// CountByUserID は指定ユーザーのロードマップ総数を返す。
+func (s *RoadmapService) CountByUserID(userID uint) (int64, error) {
+	return s.repo.CountByUserID(userID)
+}
+
 // ReorderSteps は所有権を検証した後、ステップの表示順序を一括更新する。
 func (s *RoadmapService) ReorderSteps(roadmapID, userID uint, orders []model.StepOrder) error {
 	if _, err := s.findAndCheckOwnership(roadmapID, userID); err != nil {
