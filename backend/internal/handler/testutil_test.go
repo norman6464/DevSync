@@ -1294,6 +1294,13 @@ func (m *MockLearningLogService) BatchCreate(userID uint, logs []model.LearningL
 	}
 	return nil, args.Error(1)
 }
+func (m *MockLearningLogService) ImportCSV(userID uint, data []byte) ([]model.LearningLog, error) {
+	args := m.Called(userID, data)
+	if l := args.Get(0); l != nil {
+		return l.([]model.LearningLog), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
 func (m *MockLearningLogService) GetByID(id, userID uint) (*model.LearningLog, error) {
 	args := m.Called(id, userID)
 	if l := args.Get(0); l != nil {

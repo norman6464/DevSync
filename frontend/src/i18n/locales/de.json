@@ -721,7 +721,12 @@
     "exportJSON": "Als JSON exportieren",
     "exportFormat": "Exportformat",
     "formatCSV": "CSV",
-    "formatJSON": "JSON"
+    "formatJSON": "JSON",
+    "importCSV": "CSV importieren",
+    "importCSVDesc": "Importieren Sie exportierte CSV-Dateien, um Lernprotokolle im Stapel zu registrieren",
+    "importSuccess": "{{count}} Lernprotokolle importiert",
+    "importError": "CSV-Datei konnte nicht importiert werden",
+    "selectCSVFile": "CSV-Datei auswählen"
   },
   "reports": {
     "title": "Aktivitätsberichte",

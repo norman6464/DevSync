@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"bytes"
 	"errors"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -658,6 +660,73 @@ func TestLearningLogGetLinkedLogs_Handler_ServiceError(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/goals/:id/linked-logs", h.GetLinkedLogs)
 	w := doRequest(r, http.MethodGet, "/goals/5/linked-logs", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+// ============================================================
+// ImportCSV テスト
+// ============================================================
+
+func createCSVMultipartRequest(csvContent string) (*http.Request, error) {
+	var buf bytes.Buffer
+	writer := multipart.NewWriter(&buf)
+	part, err := writer.CreateFormFile("file", "import.csv")
+	if err != nil {
+		return nil, err
+	}
+	part.Write([]byte(csvContent))
+	writer.Close()
+
+	req, err := http.NewRequest("POST", "/logs/import", &buf)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	return req, nil
+}
+
+func TestLearningLog_ImportCSV_Success(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+
+	logs := []model.LearningLog{{Title: "Go学習", Duration: 60}}
+	svc.On("ImportCSV", uint(1), mock.AnythingOfType("[]uint8")).Return(logs, nil)
+
+	r := newRouter(1)
+	r.POST("/logs/import", h.ImportCSV)
+
+	req, _ := createCSVMultipartRequest("日付,カテゴリ,タイトル,学習時間(分),メモ\n2025-01-15,coding,Go学習,60,テスト\n")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assertStatus(t, w, http.StatusCreated)
+	body := parseJSON(t, w)
+	assert.Equal(t, float64(1), body["imported"])
+	svc.AssertExpectations(t)
+}
+
+func TestLearningLog_ImportCSV_NoFile(t *testing.T) {
+	h, _ := setupLearningLogHandler()
+
+	r := newRouter(1)
+	r.POST("/logs/import", h.ImportCSV)
+
+	w := doRequest(r, http.MethodPost, "/logs/import", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestLearningLog_ImportCSV_ServiceError(t *testing.T) {
+	h, svc := setupLearningLogHandler()
+
+	svc.On("ImportCSV", uint(1), mock.AnythingOfType("[]uint8")).Return(nil, errors.New("parse error"))
+
+	r := newRouter(1)
+	r.POST("/logs/import", h.ImportCSV)
+
+	req, _ := createCSVMultipartRequest("日付,カテゴリ,タイトル,学習時間(分),メモ\ninvalid\n")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
 	assertStatus(t, w, http.StatusInternalServerError)
 	svc.AssertExpectations(t)
 }

@@ -1114,3 +1114,154 @@ func TestLearningLogGetLinkedLogs_NoGoalRepo(t *testing.T) {
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, ErrBadRequest)
 }
+
+// ============================================================
+// ImportCSV テスト
+// ============================================================
+
+func TestLearningLogImportCSV_Success(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	csv := "\xef\xbb\xbf日付,カテゴリ,タイトル,学習時間(分),メモ\n2025-01-15,coding,Go学習,60,インターフェースを学んだ\n2025-01-16,reading,書籍読了,30,Clean Architecture\n"
+
+	repo.On("CreateBatch", mock.MatchedBy(func(logs []model.LearningLog) bool {
+		return len(logs) == 2 &&
+			logs[0].Title == "Go学習" &&
+			logs[0].Duration == 60 &&
+			logs[0].Category == model.LogCategoryCoding &&
+			logs[1].Title == "書籍読了" &&
+			logs[1].Duration == 30
+	})).Return(nil)
+
+	result, err := svc.ImportCSV(1, []byte(csv))
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningLogImportCSV_NoBOM(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	csv := "日付,カテゴリ,タイトル,学習時間(分),メモ\n2025-01-15,coding,Go学習,60,テスト\n"
+
+	repo.On("CreateBatch", mock.Anything).Return(nil)
+
+	result, err := svc.ImportCSV(1, []byte(csv))
+	assert.NoError(t, err)
+	assert.Len(t, result, 1)
+}
+
+func TestLearningLogImportCSV_EmptyData(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	csv := "日付,カテゴリ,タイトル,学習時間(分),メモ\n"
+
+	_, err := svc.ImportCSV(1, []byte(csv))
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrBadRequest)
+}
+
+func TestLearningLogImportCSV_InvalidDate(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	csv := "日付,カテゴリ,タイトル,学習時間(分),メモ\nnot-a-date,coding,Test,60,Memo\n"
+
+	_, err := svc.ImportCSV(1, []byte(csv))
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	assert.Contains(t, err.Error(), "日付形式")
+}
+
+func TestLearningLogImportCSV_InvalidCategory(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	csv := "日付,カテゴリ,タイトル,学習時間(分),メモ\n2025-01-15,invalid_cat,Test,60,Memo\n"
+
+	_, err := svc.ImportCSV(1, []byte(csv))
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	assert.Contains(t, err.Error(), "カテゴリ")
+}
+
+func TestLearningLogImportCSV_InvalidDuration(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	csv := "日付,カテゴリ,タイトル,学習時間(分),メモ\n2025-01-15,coding,Test,abc,Memo\n"
+
+	_, err := svc.ImportCSV(1, []byte(csv))
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	assert.Contains(t, err.Error(), "学習時間")
+}
+
+func TestLearningLogImportCSV_DurationOutOfRange(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	csv := "日付,カテゴリ,タイトル,学習時間(分),メモ\n2025-01-15,coding,Test,1500,Memo\n"
+
+	_, err := svc.ImportCSV(1, []byte(csv))
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrBadRequest)
+}
+
+func TestLearningLogImportCSV_EmptyTitle(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	csv := "日付,カテゴリ,タイトル,学習時間(分),メモ\n2025-01-15,coding,,60,Memo\n"
+
+	_, err := svc.ImportCSV(1, []byte(csv))
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	assert.Contains(t, err.Error(), "タイトル")
+}
+
+func TestLearningLogImportCSV_TooManyRows(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	var b strings.Builder
+	b.WriteString("日付,カテゴリ,タイトル,学習時間(分),メモ\n")
+	for i := 0; i < 51; i++ {
+		b.WriteString("2025-01-15,coding,Test,60,Memo\n")
+	}
+
+	_, err := svc.ImportCSV(1, []byte(b.String()))
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrBadRequest)
+	assert.Contains(t, err.Error(), "50件")
+}
+
+func TestLearningLogImportCSV_RepoError(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	csv := "日付,カテゴリ,タイトル,学習時間(分),メモ\n2025-01-15,coding,Test,60,Memo\n"
+
+	repo.On("CreateBatch", mock.Anything).Return(errors.New("db error"))
+
+	_, err := svc.ImportCSV(1, []byte(csv))
+	assert.Error(t, err)
+}
+
+func TestLearningLogImportCSV_InsufficientColumns(t *testing.T) {
+	svc, _ := newTestLearningLogService()
+
+	csv := "日付,カテゴリ,タイトル\n2025-01-15,coding,Test\n"
+
+	_, err := svc.ImportCSV(1, []byte(csv))
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrBadRequest)
+}
+
+func TestLearningLogImportCSV_DefaultCategory(t *testing.T) {
+	svc, repo := newTestLearningLogService()
+
+	csv := "日付,カテゴリ,タイトル,学習時間(分),メモ\n2025-01-15,,Go学習,60,テスト\n"
+
+	repo.On("CreateBatch", mock.MatchedBy(func(logs []model.LearningLog) bool {
+		return len(logs) == 1 && logs[0].Category == model.LogCategoryOther
+	})).Return(nil)
+
+	result, err := svc.ImportCSV(1, []byte(csv))
+	assert.NoError(t, err)
+	assert.Len(t, result, 1)
+	repo.AssertExpectations(t)
+}

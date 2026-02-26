@@ -724,7 +724,12 @@
     "exportJSON": "匯出為JSON",
     "exportFormat": "匯出格式",
     "formatCSV": "CSV",
-    "formatJSON": "JSON"
+    "formatJSON": "JSON",
+    "importCSV": "匯入CSV",
+    "importCSVDesc": "匯入匯出的CSV檔案以批次註冊學習日誌",
+    "importSuccess": "成功匯入{{count}}筆學習日誌",
+    "importError": "CSV檔案匯入失敗",
+    "selectCSVFile": "選擇CSV檔案"
   },
   "reports": {
     "title": "活動報告",

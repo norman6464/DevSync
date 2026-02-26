@@ -706,7 +706,12 @@
     "exportJSON": "JSON形式でエクスポート",
     "exportFormat": "エクスポート形式",
     "formatCSV": "CSV",
-    "formatJSON": "JSON"
+    "formatJSON": "JSON",
+    "importCSV": "CSVインポート",
+    "importCSVDesc": "エクスポートしたCSVファイルをインポートして学習ログを一括登録します",
+    "importSuccess": "{{count}}件の学習ログをインポートしました",
+    "importError": "CSVファイルのインポートに失敗しました",
+    "selectCSVFile": "CSVファイルを選択"
   },
   "reports": {
     "title": "アクティビティレポート",

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"io"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -13,6 +14,7 @@ import (
 type LearningLogServiceInterface interface {
 	Create(log *model.LearningLog) error
 	BatchCreate(userID uint, logs []model.LearningLog) ([]model.LearningLog, error)
+	ImportCSV(userID uint, data []byte) ([]model.LearningLog, error)
 	GetByID(id, userID uint) (*model.LearningLog, error)
 	GetByUserID(userID uint, limit, offset int) ([]model.LearningLog, int64, error)
 	Update(id, userID uint, updates *model.LearningLog) (*model.LearningLog, error)
@@ -354,6 +356,47 @@ func (h *LearningLogHandler) Unfavorite(c *gin.Context) {
 	}
 
 	respondOK(c, gin.H{"message": "学習ログのお気に入りを解除しました"})
+}
+
+// ImportCSV はCSVファイルから学習ログを一括インポートする。
+func (h *LearningLogHandler) ImportCSV(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		respondBadRequest(c, "CSVファイルが必要です")
+		return
+	}
+
+	// ファイルサイズ制限（1MB）
+	if file.Size > 1*1024*1024 {
+		respondBadRequest(c, "ファイルサイズは1MB以下にしてください")
+		return
+	}
+
+	src, err := file.Open()
+	if err != nil {
+		respondInternalError(c, "ファイルの読み取りに失敗しました")
+		return
+	}
+	defer src.Close()
+
+	data, err := io.ReadAll(src)
+	if err != nil {
+		respondInternalError(c, "ファイルの読み取りに失敗しました")
+		return
+	}
+
+	logs, err := h.service.ImportCSV(userID, data)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondCreated(c, gin.H{
+		"imported": len(logs),
+		"logs":     logs,
+	})
 }
 
 // GetLinkedLogs は指定ゴールに紐付いた学習ログ一覧を取得する。
