@@ -392,7 +392,7 @@ func TestResetPassword_Success(t *testing.T) {
 	}
 	resetToken.ID = 1
 
-	passwordResetRepo.On("FindByToken", "valid-token").Return(resetToken, nil)
+	passwordResetRepo.On("FindByToken", hashToken("valid-token")).Return(resetToken, nil)
 	userRepo.On("UpdatePassword", uint(1), mock.AnythingOfType("string")).Return(nil)
 	passwordResetRepo.On("MarkAsUsed", uint(1)).Return(nil)
 
@@ -405,7 +405,7 @@ func TestResetPassword_Success(t *testing.T) {
 func TestResetPassword_InvalidToken(t *testing.T) {
 	svc, _, passwordResetRepo := newTestAuthService()
 
-	passwordResetRepo.On("FindByToken", "invalid-token").Return(nil, errors.New("not found"))
+	passwordResetRepo.On("FindByToken", hashToken("invalid-token")).Return(nil, errors.New("not found"))
 
 	err := svc.ResetPassword("invalid-token", "newpassword123")
 	assert.ErrorIs(t, err, ErrBadRequest)
@@ -423,7 +423,7 @@ func TestResetPassword_ExpiredToken(t *testing.T) {
 	}
 	resetToken.ID = 1
 
-	passwordResetRepo.On("FindByToken", "expired-token").Return(resetToken, nil)
+	passwordResetRepo.On("FindByToken", hashToken("expired-token")).Return(resetToken, nil)
 
 	err := svc.ResetPassword("expired-token", "newpassword123")
 	assert.ErrorIs(t, err, ErrBadRequest)
@@ -779,7 +779,7 @@ func TestResetPassword_WeakPassword(t *testing.T) {
 	}
 	validToken.ID = 1
 
-	passwordResetRepo.On("FindByToken", "valid-token-for-weak-pw").Return(validToken, nil)
+	passwordResetRepo.On("FindByToken", hashToken("valid-token-for-weak-pw")).Return(validToken, nil)
 
 	// 弱いパスワード（短すぎる）
 	err := svc.ResetPassword("valid-token-for-weak-pw", "weak")
@@ -861,7 +861,7 @@ func TestResetPassword_UpdatePasswordError(t *testing.T) {
 	}
 	validToken.ID = 1
 
-	passwordResetRepo.On("FindByToken", "valid-token-update-err").Return(validToken, nil)
+	passwordResetRepo.On("FindByToken", hashToken("valid-token-update-err")).Return(validToken, nil)
 	userRepo.On("UpdatePassword", uint(1), mock.AnythingOfType("string")).Return(errors.New("db error"))
 
 	err := svc.ResetPassword("valid-token-update-err", "ValidPassword123!")

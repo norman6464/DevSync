@@ -2,6 +2,7 @@ package service
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"time"
@@ -12,6 +13,13 @@ import (
 	"github.com/norman6464/devsync/backend/internal/repository"
 	"golang.org/x/crypto/bcrypt"
 )
+
+// hashToken はトークンをSHA-256でハッシュ化する。
+// DB保存前にハッシュ化し、検証時も同じハッシュを使って比較する。
+func hashToken(token string) string {
+	h := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(h[:])
+}
 
 // AuthService は認証・認可に関するビジネスロジックを提供する。
 // JWT生成・検証、パスワードハッシュ化、GitHub OAuthログインを担当する。
@@ -347,9 +355,10 @@ func (s *AuthService) RequestPasswordReset(email string) (string, error) {
 	token := hex.EncodeToString(tokenBytes)
 
 	// リセットトークンを作成（有効期限1時間）
+	// トークンはSHA-256ハッシュ化してDB保存（平文はメール送信のみ）
 	resetToken := &model.PasswordResetToken{
 		UserID:    user.ID,
-		Token:     token,
+		Token:     hashToken(token),
 		ExpiresAt: time.Now().Add(1 * time.Hour),
 	}
 	if err := s.passwordResetRepo.Create(resetToken); err != nil {
@@ -361,7 +370,7 @@ func (s *AuthService) RequestPasswordReset(email string) (string, error) {
 
 // ResetPassword は有効なリセットトークンを使ってパスワードを再設定する。
 func (s *AuthService) ResetPassword(token string, newPassword string) error {
-	resetToken, err := s.passwordResetRepo.FindByToken(token)
+	resetToken, err := s.passwordResetRepo.FindByToken(hashToken(token))
 	if err != nil {
 		return domain.NewError(domain.ErrCodeBadRequest, "無効なリセットトークンです", err)
 	}
