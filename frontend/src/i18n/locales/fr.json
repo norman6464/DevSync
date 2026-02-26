@@ -1827,5 +1827,14 @@
     "useSuccess": "Journal d'apprentissage créé à partir du modèle",
     "noTemplates": "Aucun modèle disponible",
     "confirmDelete": "Êtes-vous sûr de vouloir supprimer ce modèle ?"
+  },
+  "projectArchive": {
+    "archive": "Archiver",
+    "unarchive": "Désarchiver",
+    "archived": "Archivé",
+    "archiveSuccess": "Projet archivé avec succès",
+    "unarchiveSuccess": "Projet désarchivé avec succès",
+    "noArchived": "Aucun projet archivé",
+    "confirmArchive": "Voulez-vous vraiment archiver ce projet ?"
   }
 }

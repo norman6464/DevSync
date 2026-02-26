@@ -1827,5 +1827,14 @@
     "useSuccess": "Registro de aprendizaje creado a partir de la plantilla",
     "noTemplates": "No hay plantillas disponibles",
     "confirmDelete": "¿Estás seguro de que quieres eliminar esta plantilla?"
+  },
+  "projectArchive": {
+    "archive": "Archivar",
+    "unarchive": "Desarchivar",
+    "archived": "Archivado",
+    "archiveSuccess": "Proyecto archivado correctamente",
+    "unarchiveSuccess": "Proyecto desarchivado correctamente",
+    "noArchived": "No hay proyectos archivados",
+    "confirmArchive": "¿Estás seguro de que quieres archivar este proyecto?"
   }
 }

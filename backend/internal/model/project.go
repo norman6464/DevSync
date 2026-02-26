@@ -22,6 +22,7 @@ type Project struct {
 	StartDate    *time.Time        `json:"start_date"`                             // プロジェクト開始日
 	EndDate      *time.Time        `json:"end_date"`                               // 終了日（進行中はnil）
 	Featured     bool              `json:"featured" gorm:"default:false"`          // 注目表示フラグ
+	IsArchived   bool              `json:"is_archived" gorm:"default:false"`       // アーカイブフラグ
 	GithubRepoID *uint             `json:"github_repo_id"`                         // GitHubRepository との紐付けID
 	GithubRepo   *GitHubRepository `json:"github_repo,omitempty" gorm:"foreignKey:GithubRepoID"`
 	CreatedAt    time.Time         `json:"created_at"`

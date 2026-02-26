@@ -1826,5 +1826,14 @@
     "useSuccess": "Lernprotokoll aus Vorlage erstellt",
     "noTemplates": "Keine Vorlagen vorhanden",
     "confirmDelete": "Möchten Sie diese Vorlage wirklich löschen?"
+  },
+  "projectArchive": {
+    "archive": "Archivieren",
+    "unarchive": "Archivierung aufheben",
+    "archived": "Archiviert",
+    "archiveSuccess": "Projekt erfolgreich archiviert",
+    "unarchiveSuccess": "Archivierung erfolgreich aufgehoben",
+    "noArchived": "Keine archivierten Projekte",
+    "confirmArchive": "Möchten Sie dieses Projekt wirklich archivieren?"
   }
 }

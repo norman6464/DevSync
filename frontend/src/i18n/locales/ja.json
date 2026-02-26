@@ -1729,5 +1729,14 @@
     "useSuccess": "テンプレートから学習ログを作成しました",
     "noTemplates": "テンプレートがありません",
     "confirmDelete": "このテンプレートを削除しますか？"
+  },
+  "projectArchive": {
+    "archive": "アーカイブ",
+    "unarchive": "アーカイブ解除",
+    "archived": "アーカイブ済み",
+    "archiveSuccess": "プロジェクトをアーカイブしました",
+    "unarchiveSuccess": "アーカイブを解除しました",
+    "noArchived": "アーカイブ済みプロジェクトはありません",
+    "confirmArchive": "このプロジェクトをアーカイブしますか？"
   }
 }

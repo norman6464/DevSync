@@ -413,6 +413,9 @@ func registerProjectRoutes(g *gin.RouterGroup, c *di.Container) {
 		projects.DELETE("/:id", c.ProjectHandler.Delete)
 		projects.GET("/user/:userId", c.ProjectHandler.GetByUserID)
 		projects.GET("/user/:userId/featured", c.ProjectHandler.GetFeatured)
+		projects.PUT("/:id/archive", c.ProjectHandler.Archive)
+		projects.PUT("/:id/unarchive", c.ProjectHandler.Unarchive)
+		projects.GET("/archived", c.ProjectHandler.GetArchived)
 
 		// マイルストーン
 		projects.POST("/:projectId/milestones", c.ProjectMilestoneHandler.Create)

@@ -202,6 +202,9 @@ type ProjectRepositoryInterface interface {
 	Update(project *model.Project) error
 	Delete(id uint) error
 	FindAll(limit, offset int) ([]model.Project, int64, error)
+	Archive(id uint) error
+	Unarchive(id uint) error
+	FindArchivedByUserID(userID uint, limit, offset int) ([]model.Project, int64, error)
 }
 
 // BookReviewRepositoryInterface は書籍レビューデータ操作の契約を定義する。

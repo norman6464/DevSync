@@ -1827,5 +1827,14 @@
     "useSuccess": "Registro de aprendizado criado a partir do modelo",
     "noTemplates": "Nenhum modelo disponível",
     "confirmDelete": "Tem certeza de que deseja excluir este modelo?"
+  },
+  "projectArchive": {
+    "archive": "Arquivar",
+    "unarchive": "Desarquivar",
+    "archived": "Arquivado",
+    "archiveSuccess": "Projeto arquivado com sucesso",
+    "unarchiveSuccess": "Projeto desarquivado com sucesso",
+    "noArchived": "Nenhum projeto arquivado",
+    "confirmArchive": "Tem certeza de que deseja arquivar este projeto?"
   }
 }

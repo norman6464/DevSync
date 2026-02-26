@@ -1829,5 +1829,14 @@
     "useSuccess": "템플릿에서 학습 로그를 생성했습니다",
     "noTemplates": "템플릿이 없습니다",
     "confirmDelete": "이 템플릿을 삭제하시겠습니까?"
+  },
+  "projectArchive": {
+    "archive": "아카이브",
+    "unarchive": "아카이브 해제",
+    "archived": "아카이브됨",
+    "archiveSuccess": "프로젝트를 아카이브했습니다",
+    "unarchiveSuccess": "아카이브를 해제했습니다",
+    "noArchived": "아카이브된 프로젝트가 없습니다",
+    "confirmArchive": "이 프로젝트를 아카이브하시겠습니까?"
   }
 }
