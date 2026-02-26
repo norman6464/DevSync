@@ -150,7 +150,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	followService := service.NewFollowService(followRepo)
 	questionService := service.NewQuestionService(questionRepo)
 	answerService := service.NewAnswerService(answerRepo, questionRepo)
-	learningLogService := service.NewLearningLogService(learningLogRepo)
+	learningLogService := service.NewLearningLogService(learningLogRepo, learningGoalRepo)
 	learningGoalService := service.NewLearningGoalService(learningGoalRepo)
 	messageService := service.NewMessageService(messageRepo, notificationService)
 	rankingService := service.NewRankingService(rankingRepo)

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -14,17 +15,21 @@ import (
 
 // LearningLogService は学習ログのビジネスロジックを提供する。
 // 学習記録のCRUD操作と、ストリーク・カレンダーデータの取得を担当する。
+// goalRepoが設定されている場合、ログ作成時にゴール進捗を自動更新する。
 type LearningLogService struct {
-	repo repository.LearningLogRepositoryInterface
+	repo     repository.LearningLogRepositoryInterface
+	goalRepo repository.LearningGoalRepositoryInterface
 }
 
 // NewLearningLogService は新しいLearningLogServiceインスタンスを生成する。
-func NewLearningLogService(repo repository.LearningLogRepositoryInterface) *LearningLogService {
-	return &LearningLogService{repo: repo}
+// goalRepoはnil可（ゴール連携なし）。
+func NewLearningLogService(repo repository.LearningLogRepositoryInterface, goalRepo repository.LearningGoalRepositoryInterface) *LearningLogService {
+	return &LearningLogService{repo: repo, goalRepo: goalRepo}
 }
 
 // Create は新しい学習ログを作成する。
 // Duration、Category、Sourceのバリデーションを行う。
+// GoalIDが指定されている場合、ゴールの進捗を自動更新する。
 func (s *LearningLogService) Create(log *model.LearningLog) error {
 	// Duration: 0以上1440以下（24時間）
 	if err := validateDuration(log.Duration); err != nil {
@@ -38,7 +43,59 @@ func (s *LearningLogService) Create(log *model.LearningLog) error {
 	if log.Source != "" && !model.ValidSources[log.Source] {
 		return ErrBadRequest
 	}
-	return s.repo.Create(log)
+
+	// ゴール紐付けバリデーション
+	var goal *model.LearningGoal
+	if log.GoalID != nil && s.goalRepo != nil {
+		var err error
+		goal, err = s.goalRepo.FindByID(*log.GoalID)
+		if err != nil {
+			return domain.NewError(domain.ErrCodeNotFound, "指定されたゴールが見つかりません", err)
+		}
+		if goal.UserID != log.UserID {
+			return domain.NewError(domain.ErrCodeForbidden, "他のユーザーのゴールには紐付けできません", nil)
+		}
+	}
+
+	if err := s.repo.Create(log); err != nil {
+		return err
+	}
+
+	// ゴール進捗自動更新（TargetHoursが設定されている場合のみ）
+	if goal != nil && goal.TargetHours > 0 {
+		totalMinutes, err := s.repo.SumDurationByGoalID(*log.GoalID)
+		if err != nil {
+			return nil // ログ作成は成功、進捗更新失敗はサイレント
+		}
+		progress := totalMinutes * 100 / (goal.TargetHours * 60)
+		if progress > 100 {
+			progress = 100
+		}
+		goal.Progress = progress
+		if progress >= 100 && goal.Status == model.GoalStatusActive {
+			goal.Status = model.GoalStatusCompleted
+			now := time.Now()
+			goal.CompletedAt = &now
+		}
+		_ = s.goalRepo.Update(goal)
+	}
+
+	return nil
+}
+
+// GetLinkedLogs は指定ゴールに紐付いた学習ログを取得する。所有権を検証する。
+func (s *LearningLogService) GetLinkedLogs(goalID, userID uint, limit, offset int) ([]model.LearningLog, int64, error) {
+	if s.goalRepo == nil {
+		return nil, 0, domain.NewError(domain.ErrCodeBadRequest, "ゴール連携が有効ではありません", nil)
+	}
+	goal, err := s.goalRepo.FindByID(goalID)
+	if err != nil {
+		return nil, 0, domain.NewError(domain.ErrCodeNotFound, "指定されたゴールが見つかりません", err)
+	}
+	if goal.UserID != userID {
+		return nil, 0, domain.NewError(domain.ErrCodeForbidden, "他のユーザーのゴールのログは参照できません", nil)
+	}
+	return s.repo.GetByGoalID(goalID, limit, offset)
 }
 
 // BatchCreate は複数の学習ログを一括作成する。

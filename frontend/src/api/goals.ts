@@ -11,6 +11,7 @@ export interface LearningGoal {
   category: GoalCategory;
   target_date: string | null;
   progress: number;
+  target_hours: number;
   status: GoalStatus;
   created_at: string;
   updated_at: string;
@@ -72,3 +73,6 @@ export const getDeadlineAlerts = () =>
 
 export const duplicateGoal = (id: number) =>
   client.post<LearningGoal>(`/goals/${id}/duplicate`);
+
+export const getLinkedLogs = (goalId: number, limit = 20, offset = 0) =>
+  client.get(`/goals/${goalId}/linked-logs`, { params: { limit, offset } });

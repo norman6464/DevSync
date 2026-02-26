@@ -14,8 +14,16 @@ import (
 // newTestLearningLogService はLearningLogServiceのテスト用インスタンスを生成するヘルパー。
 func newTestLearningLogService() (*LearningLogService, *MockLearningLogRepository) {
 	repo := new(MockLearningLogRepository)
-	svc := NewLearningLogService(repo)
+	svc := NewLearningLogService(repo, nil)
 	return svc, repo
+}
+
+// newTestLearningLogServiceWithGoalRepo はゴールリポ付きのテスト用インスタンスを生成するヘルパー。
+func newTestLearningLogServiceWithGoalRepo() (*LearningLogService, *MockLearningLogRepository, *MockLearningGoalRepository) {
+	repo := new(MockLearningLogRepository)
+	goalRepo := new(MockLearningGoalRepository)
+	svc := NewLearningLogService(repo, goalRepo)
+	return svc, repo, goalRepo
 }
 
 // ============================================================
@@ -967,4 +975,121 @@ func TestLearningLogExportJSON_ValidJSON(t *testing.T) {
 	assert.Contains(t, content, `"category"`)
 	assert.Contains(t, content, `"duration"`)
 	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// ゴール連携テスト
+// ============================================================
+
+func TestLearningLogCreate_WithGoalID_AutoUpdateProgress(t *testing.T) {
+	svc, repo, goalRepo := newTestLearningLogServiceWithGoalRepo()
+
+	goalID := uint(10)
+	log := &model.LearningLog{Title: "Go勉強", UserID: 1, Duration: 60, GoalID: &goalID}
+
+	goal := &model.LearningGoal{ID: 10, UserID: 1, TargetHours: 10, Status: model.GoalStatusActive, Progress: 0}
+	goalRepo.On("FindByID", uint(10)).Return(goal, nil)
+	repo.On("Create", log).Return(nil)
+	// 合計120分 = 2時間 / 10時間 = 20%
+	repo.On("SumDurationByGoalID", uint(10)).Return(120, nil)
+	goalRepo.On("Update", mock.MatchedBy(func(g *model.LearningGoal) bool {
+		return g.ID == 10 && g.Progress == 20
+	})).Return(nil)
+
+	err := svc.Create(log)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+	goalRepo.AssertExpectations(t)
+}
+
+func TestLearningLogCreate_WithGoalID_AutoComplete(t *testing.T) {
+	svc, repo, goalRepo := newTestLearningLogServiceWithGoalRepo()
+
+	goalID := uint(10)
+	log := &model.LearningLog{Title: "Go勉強", UserID: 1, Duration: 60, GoalID: &goalID}
+
+	goal := &model.LearningGoal{ID: 10, UserID: 1, TargetHours: 1, Status: model.GoalStatusActive, Progress: 0}
+	goalRepo.On("FindByID", uint(10)).Return(goal, nil)
+	repo.On("Create", log).Return(nil)
+	// 合計60分 = 1時間 / 1時間 = 100% → 自動完了
+	repo.On("SumDurationByGoalID", uint(10)).Return(60, nil)
+	goalRepo.On("Update", mock.MatchedBy(func(g *model.LearningGoal) bool {
+		return g.ID == 10 && g.Progress == 100 && g.Status == model.GoalStatusCompleted && g.CompletedAt != nil
+	})).Return(nil)
+
+	err := svc.Create(log)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+	goalRepo.AssertExpectations(t)
+}
+
+func TestLearningLogCreate_WithGoalID_GoalNotFound(t *testing.T) {
+	svc, _, goalRepo := newTestLearningLogServiceWithGoalRepo()
+
+	goalID := uint(999)
+	log := &model.LearningLog{Title: "Go勉強", UserID: 1, Duration: 60, GoalID: &goalID}
+
+	goalRepo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	err := svc.Create(log)
+	assert.Error(t, err)
+	goalRepo.AssertExpectations(t)
+}
+
+func TestLearningLogCreate_WithGoalID_GoalOwnerMismatch(t *testing.T) {
+	svc, _, goalRepo := newTestLearningLogServiceWithGoalRepo()
+
+	goalID := uint(10)
+	log := &model.LearningLog{Title: "Go勉強", UserID: 1, Duration: 60, GoalID: &goalID}
+
+	goal := &model.LearningGoal{ID: 10, UserID: 999, TargetHours: 10} // 別ユーザーのゴール
+	goalRepo.On("FindByID", uint(10)).Return(goal, nil)
+
+	err := svc.Create(log)
+	assert.Error(t, err)
+	goalRepo.AssertExpectations(t)
+}
+
+func TestLearningLogCreate_WithGoalID_NoTargetHours(t *testing.T) {
+	svc, repo, goalRepo := newTestLearningLogServiceWithGoalRepo()
+
+	goalID := uint(10)
+	log := &model.LearningLog{Title: "Go勉強", UserID: 1, Duration: 60, GoalID: &goalID}
+
+	goal := &model.LearningGoal{ID: 10, UserID: 1, TargetHours: 0, Status: model.GoalStatusActive}
+	goalRepo.On("FindByID", uint(10)).Return(goal, nil)
+	repo.On("Create", log).Return(nil)
+	// TargetHours=0 の場合は進捗更新をスキップ
+
+	err := svc.Create(log)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+	goalRepo.AssertExpectations(t)
+}
+
+func TestLearningLogGetLinkedLogs_Success(t *testing.T) {
+	svc, repo, goalRepo := newTestLearningLogServiceWithGoalRepo()
+
+	goal := &model.LearningGoal{ID: 10, UserID: 1}
+	goalRepo.On("FindByID", uint(10)).Return(goal, nil)
+	logs := []model.LearningLog{{ID: 1, Title: "テスト"}}
+	repo.On("GetByGoalID", uint(10), 20, 0).Return(logs, int64(1), nil)
+
+	result, total, err := svc.GetLinkedLogs(uint(10), uint(1), 20, 0)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(1), total)
+	assert.Len(t, result, 1)
+	repo.AssertExpectations(t)
+	goalRepo.AssertExpectations(t)
+}
+
+func TestLearningLogGetLinkedLogs_Forbidden(t *testing.T) {
+	svc, _, goalRepo := newTestLearningLogServiceWithGoalRepo()
+
+	goal := &model.LearningGoal{ID: 10, UserID: 999}
+	goalRepo.On("FindByID", uint(10)).Return(goal, nil)
+
+	_, _, err := svc.GetLinkedLogs(uint(10), uint(1), 20, 0)
+	assert.Error(t, err)
+	goalRepo.AssertExpectations(t)
 }

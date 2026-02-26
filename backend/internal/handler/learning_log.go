@@ -27,6 +27,7 @@ type LearningLogServiceInterface interface {
 	FavoriteLog(id, userID uint) error
 	UnfavoriteLog(id, userID uint) error
 	GetRecentCategories(userID uint) ([]string, error)
+	GetLinkedLogs(goalID, userID uint, limit, offset int) ([]model.LearningLog, int64, error)
 }
 
 // LearningLogHandler は学習ログ関連のHTTPハンドラ。
@@ -56,6 +57,7 @@ func (h *LearningLogHandler) Create(c *gin.Context) {
 		Category: model.LogCategory(input.Category),
 		Duration: input.Duration,
 		Source:   model.LogSource(input.Source),
+		GoalID:   input.GoalID,
 	}
 
 	// カテゴリが未指定の場合はデフォルト値を設定
@@ -352,4 +354,27 @@ func (h *LearningLogHandler) Unfavorite(c *gin.Context) {
 	}
 
 	respondOK(c, gin.H{"message": "学習ログのお気に入りを解除しました"})
+}
+
+// GetLinkedLogs は指定ゴールに紐付いた学習ログ一覧を取得する。
+func (h *LearningLogHandler) GetLinkedLogs(c *gin.Context) {
+	userID := c.GetUint("userID")
+	goalID, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	limit, offset := parseLimitOffset(c)
+	logs, total, err := h.service.GetLinkedLogs(goalID, userID, limit, offset)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, dto.LearningLogListResponse{
+		Logs:   logs,
+		Total:  total,
+		Limit:  limit,
+		Offset: offset,
+	})
 }

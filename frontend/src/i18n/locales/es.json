@@ -1662,5 +1662,15 @@
     "topPosts": "Publicaciones más reaccionadas",
     "noReactions": "Aún no hay reacciones",
     "loadFailed": "Error al cargar el resumen de reacciones"
+  },
+  "goalLinking": {
+    "goalLinking": "Vinculación de objetivos",
+    "linkedGoal": "Objetivo vinculado",
+    "selectGoal": "Seleccionar objetivo",
+    "noGoalLinked": "Sin objetivo vinculado",
+    "linkedLogs": "Registros de aprendizaje vinculados",
+    "targetHours": "Horas objetivo",
+    "autoProgressUpdate": "El progreso del objetivo se actualiza automáticamente al registrar aprendizaje",
+    "goalCompleted": "El objetivo se completó automáticamente"
   }
 }

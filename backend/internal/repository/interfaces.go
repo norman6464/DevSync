@@ -162,6 +162,8 @@ type LearningLogRepositoryInterface interface {
 	GetStreakInfo(userID uint) (*model.StreakInfo, error)
 	GetCalendarData(userID uint) ([]model.CalendarEntry, error)
 	GetRecentCategories(userID uint, limit int) ([]string, error)
+	GetByGoalID(goalID uint, limit, offset int) ([]model.LearningLog, int64, error)
+	SumDurationByGoalID(goalID uint) (int, error)
 }
 
 // LearningGoalRepositoryInterface は学習目標データ操作の契約を定義する。

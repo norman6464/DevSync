@@ -1661,5 +1661,15 @@
     "topPosts": "Meistbeachtete Beiträge",
     "noReactions": "Noch keine Reaktionen",
     "loadFailed": "Laden der Reaktionszusammenfassung fehlgeschlagen"
+  },
+  "goalLinking": {
+    "goalLinking": "Zielverknüpfung",
+    "linkedGoal": "Verknüpftes Ziel",
+    "selectGoal": "Ziel auswählen",
+    "noGoalLinked": "Kein Ziel verknüpft",
+    "linkedLogs": "Verknüpfte Lernprotokolle",
+    "targetHours": "Zielstunden",
+    "autoProgressUpdate": "Der Zielfortschritt wird beim Protokollieren automatisch aktualisiert",
+    "goalCompleted": "Ziel wurde automatisch abgeschlossen"
   }
 }

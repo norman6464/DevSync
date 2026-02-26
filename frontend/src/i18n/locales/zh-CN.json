@@ -1662,5 +1662,15 @@
     "topPosts": "反应最多的帖子",
     "noReactions": "还没有反应",
     "loadFailed": "加载反应摘要失败"
+  },
+  "goalLinking": {
+    "goalLinking": "目标关联",
+    "linkedGoal": "关联目标",
+    "selectGoal": "选择目标",
+    "noGoalLinked": "未关联目标",
+    "linkedLogs": "关联学习日志",
+    "targetHours": "目标学习时长",
+    "autoProgressUpdate": "记录学习日志时自动更新目标进度",
+    "goalCompleted": "目标已自动完成"
   }
 }
