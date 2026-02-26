@@ -87,7 +87,7 @@ func (s *NoteFolderService) Update(id, userID uint, name string, parentID *uint)
 		if strings.TrimSpace(name) == "" {
 			return nil, domain.NewError(domain.ErrCodeBadRequest, "フォルダ名は空白のみにできません", nil)
 		}
-		folder.Name = name
+		folder.Name = strings.TrimSpace(name)
 	}
 	if parentID != nil {
 		// 自己参照チェック
