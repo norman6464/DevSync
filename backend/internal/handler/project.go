@@ -123,7 +123,7 @@ func (h *ProjectHandler) GetFeatured(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, projects)
+	respondOK(c, ensureSlice(projects))
 }
 
 // Update は指定IDのプロジェクトを更新する。

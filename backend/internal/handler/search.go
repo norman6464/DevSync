@@ -103,5 +103,5 @@ func (h *SearchHandler) SearchCircles(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, results)
+	respondOK(c, ensureSlice(results))
 }

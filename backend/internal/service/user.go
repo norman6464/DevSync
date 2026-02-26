@@ -146,7 +146,7 @@ func (s *UserService) UpdateEmailPreferences(userID uint, weeklyReport *bool, la
 	}
 	if language != nil {
 		if !validEmailLanguages[*language] {
-			return nil, domain.NewError(domain.ErrCodeBadRequest, "invalid email language", nil)
+			return nil, domain.NewError(domain.ErrCodeBadRequest, "無効なメール言語設定です", nil)
 		}
 		user.EmailLanguage = *language
 	}

@@ -89,7 +89,7 @@ func (h *ArticlePlatformHandler[A, S]) GetArticles(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, articles)
+	respondOK(c, ensureSlice(articles))
 }
 
 // GetStats は指定ユーザーの統計情報を返す。
