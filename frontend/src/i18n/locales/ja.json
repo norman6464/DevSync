@@ -909,7 +909,7 @@
     "pageTitle": "技術Q&A",
     "pageSubtitle": "技術的な質問と回答を共有しましょう",
     "askQuestion": "質問する",
-    "newQuestion": "新しい質問",
+    "newQuestion": "新着",
     "editQuestion": "質問を編集",
     "questionTitle": "タイトル",
     "questionTitlePlaceholder": "質問のタイトルを入力",
@@ -962,8 +962,7 @@
     "bestAnswerSet": "ベストアンサーを設定しました",
     "bestAnswerFailed": "ベストアンサーの設定に失敗しました",
     "voteFailed": "投票に失敗しました",
-    "popularBadge": "人気",
-    "newQuestion": "新着"
+    "popularBadge": "人気"
   },
   "roadmaps": {
     "title": "学習ロードマップ",
@@ -1522,5 +1521,20 @@
     "removeFromCollection": "コレクションから削除",
     "deleteCollection": "コレクションを削除",
     "editCollection": "コレクションを編集"
+  },
+  "postTemplate": {
+    "title": "投稿テンプレート",
+    "create": "テンプレート作成",
+    "edit": "テンプレート編集",
+    "delete": "テンプレート削除",
+    "name": "テンプレート名",
+    "titleTemplate": "タイトルテンプレート",
+    "contentTemplate": "内容テンプレート",
+    "useTemplate": "テンプレートを使用",
+    "noTemplates": "テンプレートがありません",
+    "createSuccess": "テンプレートを作成しました",
+    "updateSuccess": "テンプレートを更新しました",
+    "deleteSuccess": "テンプレートを削除しました",
+    "deleteConfirm": "このテンプレートを削除しますか？"
   }
 }

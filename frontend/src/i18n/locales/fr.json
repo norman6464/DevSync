@@ -955,7 +955,7 @@
     "pageTitle": "Q&A Technique",
     "pageSubtitle": "Partagez des questions et réponses techniques",
     "askQuestion": "Poser une question",
-    "newQuestion": "Nouvelle question",
+    "newQuestion": "Nouveau",
     "editQuestion": "Modifier la question",
     "questionTitle": "Titre",
     "questionTitlePlaceholder": "Entrez le titre de votre question",
@@ -1008,8 +1008,7 @@
     "bestAnswerSet": "Meilleure réponse définie",
     "bestAnswerFailed": "Échec de la définition de la meilleure réponse",
     "voteFailed": "Échec du vote",
-    "popularBadge": "Populaire",
-    "newQuestion": "Nouveau"
+    "popularBadge": "Populaire"
   },
   "roadmaps": {
     "title": "Feuilles de Route d'Apprentissage",
@@ -1621,5 +1620,20 @@
     "removeFromCollection": "Retirer de la collection",
     "deleteCollection": "Supprimer la collection",
     "editCollection": "Modifier la collection"
+  },
+  "postTemplate": {
+    "title": "Modèles de publication",
+    "create": "Créer un modèle",
+    "edit": "Modifier le modèle",
+    "delete": "Supprimer le modèle",
+    "name": "Nom du modèle",
+    "titleTemplate": "Modèle de titre",
+    "contentTemplate": "Modèle de contenu",
+    "useTemplate": "Utiliser le modèle",
+    "noTemplates": "Aucun modèle",
+    "createSuccess": "Modèle créé",
+    "updateSuccess": "Modèle mis à jour",
+    "deleteSuccess": "Modèle supprimé",
+    "deleteConfirm": "Supprimer ce modèle ?"
   }
 }

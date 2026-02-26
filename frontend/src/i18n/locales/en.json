@@ -955,7 +955,7 @@
     "pageTitle": "Tech Q&A",
     "pageSubtitle": "Share technical questions and answers",
     "askQuestion": "Ask Question",
-    "newQuestion": "New Question",
+    "newQuestion": "New",
     "editQuestion": "Edit Question",
     "questionTitle": "Title",
     "questionTitlePlaceholder": "Enter your question title",
@@ -1008,8 +1008,7 @@
     "bestAnswerSet": "Best answer set",
     "bestAnswerFailed": "Failed to set best answer",
     "voteFailed": "Failed to vote",
-    "popularBadge": "Popular",
-    "newQuestion": "New"
+    "popularBadge": "Popular"
   },
   "roadmaps": {
     "title": "Learning Roadmaps",
@@ -1621,5 +1620,20 @@
     "removeFromCollection": "Remove from collection",
     "deleteCollection": "Delete collection",
     "editCollection": "Edit collection"
+  },
+  "postTemplate": {
+    "title": "Post Templates",
+    "create": "Create Template",
+    "edit": "Edit Template",
+    "delete": "Delete Template",
+    "name": "Template Name",
+    "titleTemplate": "Title Template",
+    "contentTemplate": "Content Template",
+    "useTemplate": "Use Template",
+    "noTemplates": "No templates yet",
+    "createSuccess": "Template created",
+    "updateSuccess": "Template updated",
+    "deleteSuccess": "Template deleted",
+    "deleteConfirm": "Delete this template?"
   }
 }

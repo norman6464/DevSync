@@ -119,6 +119,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 		registerYouTubeRoutes(protected, c)
 		registerSpotifyRoutes(protected, c)
 		registerCommentLikeRoutes(protected, c)
+		registerPostTemplateRoutes(protected, c)
 		registerUserStatsRoutes(protected, c)
 		registerStudyCircleStatsRoutes(protected, c)
 	}
@@ -716,6 +717,17 @@ func registerWeeklyChallengeRoutes(g *gin.RouterGroup, c *di.Container) {
 	{
 		challenges.GET("/current", c.WeeklyChallengeHandler.GetCurrent)
 		challenges.PUT("/progress", c.WeeklyChallengeHandler.UpdateProgress)
+	}
+}
+
+func registerPostTemplateRoutes(g *gin.RouterGroup, c *di.Container) {
+	templates := g.Group("/post-templates")
+	{
+		templates.POST("", c.PostTemplateHandler.Create)
+		templates.GET("", c.PostTemplateHandler.GetMyTemplates)
+		templates.GET("/:id", c.PostTemplateHandler.GetByID)
+		templates.PUT("/:id", c.PostTemplateHandler.Update)
+		templates.DELETE("/:id", c.PostTemplateHandler.Delete)
 	}
 }
 

@@ -83,6 +83,7 @@ type Container struct {
 	StreakFreezeHandler            *handler.StreakFreezeHandler
 	BookmarkCollectionHandler     *handler.BookmarkCollectionHandler
 	WeeklyChallengeHandler        *handler.WeeklyChallengeHandler
+	PostTemplateHandler           *handler.PostTemplateHandler
 
 	// ミドルウェア・コールバック用
 	AuthService      *service.AuthService
@@ -375,6 +376,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	weeklyChallengeRepo := repository.NewWeeklyChallengeRepository(db)
 	weeklyChallengeService := service.NewWeeklyChallengeService(weeklyChallengeRepo)
 	c.WeeklyChallengeHandler = handler.NewWeeklyChallengeHandler(weeklyChallengeService)
+
+	// 投稿テンプレートサービス
+	postTemplateRepo := repository.NewPostTemplateRepository(db)
+	postTemplateService := service.NewPostTemplateService(postTemplateRepo)
+	c.PostTemplateHandler = handler.NewPostTemplateHandler(postTemplateService)
 
 	// HubのGetRoomMembersコールバックを設定
 	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs

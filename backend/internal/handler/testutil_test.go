@@ -1857,3 +1857,40 @@ func setupUserDashboardHandler() (*UserDashboardHandler, *MockUserDashboardServi
 	h := NewUserDashboardHandler(svc)
 	return h, svc
 }
+
+// ---------- PostTemplateHandler モック ----------
+
+// MockPostTemplateService は PostTemplateServiceInterface のモック実装。
+type MockPostTemplateService struct{ mock.Mock }
+
+func (m *MockPostTemplateService) Create(tmpl *model.PostTemplate) error {
+	return m.Called(tmpl).Error(0)
+}
+func (m *MockPostTemplateService) GetByID(id, userID uint) (*model.PostTemplate, error) {
+	args := m.Called(id, userID)
+	if t := args.Get(0); t != nil {
+		return t.(*model.PostTemplate), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockPostTemplateService) GetByUserID(userID uint, limit, offset int) ([]model.PostTemplate, int64, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.PostTemplate), args.Get(1).(int64), args.Error(2)
+}
+func (m *MockPostTemplateService) Update(id, userID uint, updates *model.PostTemplate) (*model.PostTemplate, error) {
+	args := m.Called(id, userID, updates)
+	if t := args.Get(0); t != nil {
+		return t.(*model.PostTemplate), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *MockPostTemplateService) Delete(id, userID uint) error {
+	return m.Called(id, userID).Error(0)
+}
+
+// setupPostTemplateHandler はPostTemplateHandlerテスト用のセットアップを行う。
+func setupPostTemplateHandler() (*PostTemplateHandler, *MockPostTemplateService) {
+	svc := new(MockPostTemplateService)
+	h := NewPostTemplateHandler(svc)
+	return h, svc
+}

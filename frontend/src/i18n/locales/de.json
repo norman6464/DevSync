@@ -954,7 +954,7 @@
     "pageTitle": "Tech Q&A",
     "pageSubtitle": "Teilen Sie technische Fragen und Antworten",
     "askQuestion": "Frage stellen",
-    "newQuestion": "Neue Frage",
+    "newQuestion": "Neu",
     "editQuestion": "Frage bearbeiten",
     "questionTitle": "Titel",
     "questionTitlePlaceholder": "Fragetitel eingeben",
@@ -1007,8 +1007,7 @@
     "bestAnswerSet": "Beste Antwort festgelegt",
     "bestAnswerFailed": "Beste Antwort konnte nicht festgelegt werden",
     "voteFailed": "Abstimmung fehlgeschlagen",
-    "popularBadge": "Beliebt",
-    "newQuestion": "Neu"
+    "popularBadge": "Beliebt"
   },
   "roadmaps": {
     "title": "Lern-Roadmaps",
@@ -1620,5 +1619,20 @@
     "removeFromCollection": "Aus Sammlung entfernen",
     "deleteCollection": "Sammlung löschen",
     "editCollection": "Sammlung bearbeiten"
+  },
+  "postTemplate": {
+    "title": "Beitragsvorlagen",
+    "create": "Vorlage erstellen",
+    "edit": "Vorlage bearbeiten",
+    "delete": "Vorlage löschen",
+    "name": "Vorlagenname",
+    "titleTemplate": "Titelvorlage",
+    "contentTemplate": "Inhaltsvorlage",
+    "useTemplate": "Vorlage verwenden",
+    "noTemplates": "Keine Vorlagen vorhanden",
+    "createSuccess": "Vorlage erstellt",
+    "updateSuccess": "Vorlage aktualisiert",
+    "deleteSuccess": "Vorlage gelöscht",
+    "deleteConfirm": "Diese Vorlage löschen?"
   }
 }
