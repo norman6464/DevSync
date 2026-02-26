@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"strings"
 	"testing"
 
@@ -764,6 +765,31 @@ func TestSnippetSearch_RepoError(t *testing.T) {
 	snippetRepo.On("Search", "test", 20, 0).Return([]model.CodeSnippet{}, int64(0), assert.AnError)
 
 	_, _, err := svc.Search("test", 20, 0)
+	assert.Error(t, err)
+	snippetRepo.AssertExpectations(t)
+}
+
+// ============================================================
+// CountByUserID テスト
+// ============================================================
+
+func TestSnippetCountByUserID_Success(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+
+	snippetRepo.On("CountByUserID", uint(1)).Return(int64(7), nil)
+
+	count, err := svc.CountByUserID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(7), count)
+	snippetRepo.AssertExpectations(t)
+}
+
+func TestSnippetCountByUserID_Error(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+
+	snippetRepo.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	_, err := svc.CountByUserID(1)
 	assert.Error(t, err)
 	snippetRepo.AssertExpectations(t)
 }
