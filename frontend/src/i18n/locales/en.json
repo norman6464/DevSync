@@ -1743,5 +1743,14 @@
     "updateFailed": "Failed to update milestone",
     "deleteFailed": "Failed to delete milestone",
     "confirmDelete": "Are you sure you want to delete this milestone?"
+  },
+  "snippetFork": {
+    "fork": "Fork",
+    "forkSnippet": "Fork Snippet",
+    "forkSuccess": "Snippet forked successfully",
+    "forkFailed": "Failed to fork snippet",
+    "forkedFrom": "Forked from",
+    "forkCount": "Forks",
+    "selectTargetPost": "Select target post"
   }
 }

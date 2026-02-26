@@ -1743,5 +1743,14 @@
     "updateFailed": "Error al actualizar el hito",
     "deleteFailed": "Error al eliminar el hito",
     "confirmDelete": "¿Estás seguro de que quieres eliminar este hito?"
+  },
+  "snippetFork": {
+    "fork": "Bifurcar",
+    "forkSnippet": "Bifurcar Fragmento",
+    "forkSuccess": "Fragmento bifurcado exitosamente",
+    "forkFailed": "Error al bifurcar el fragmento",
+    "forkedFrom": "Bifurcado de",
+    "forkCount": "Bifurcaciones",
+    "selectTargetPost": "Seleccionar publicación destino"
   }
 }

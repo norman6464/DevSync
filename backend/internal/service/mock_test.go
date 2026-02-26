@@ -1072,6 +1072,10 @@ func (m *MockCodeSnippetRepository) DeleteComment(id, userID uint) error {
 	return args.Error(0)
 }
 
+func (m *MockCodeSnippetRepository) IncrementForkCount(id uint) error {
+	return m.Called(id).Error(0)
+}
+
 // ============================================================
 // インターフェース適合チェック（コンパイル時検証）
 // ============================================================

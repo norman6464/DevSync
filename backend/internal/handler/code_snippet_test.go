@@ -362,3 +362,63 @@ func TestCodeSnippetDeleteComment_InvalidID(t *testing.T) {
 
 	assertStatus(t, w, http.StatusBadRequest)
 }
+
+// ---------- Fork ----------
+
+func TestCodeSnippetFork_Success(t *testing.T) {
+	h, svc := setupCodeSnippetHandler()
+
+	forkedID := uint(10)
+	svc.On("Fork", uint(1), uint(10), uint(20)).Return(&model.CodeSnippet{
+		ID: 99, PostID: 20, UserID: 1, Language: "go", Code: "package main", ForkedFromID: &forkedID,
+	}, nil)
+
+	r := newRouter(1)
+	r.POST("/snippets/:id/fork", h.Fork)
+	w := doRequest(r, "POST", "/snippets/10/fork", map[string]interface{}{
+		"target_post_id": 20,
+	})
+
+	assertStatus(t, w, http.StatusCreated)
+	data := parseJSON(t, w)
+	assert.Equal(t, float64(99), data["id"])
+	assert.Equal(t, float64(10), data["forked_from_id"])
+}
+
+func TestCodeSnippetFork_InvalidJSON(t *testing.T) {
+	h, _ := setupCodeSnippetHandler()
+
+	r := newRouter(1)
+	r.POST("/snippets/:id/fork", h.Fork)
+	w := doRequestRaw(r, "POST", "/snippets/10/fork", "{invalid}")
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestCodeSnippetFork_Forbidden(t *testing.T) {
+	h, svc := setupCodeSnippetHandler()
+
+	svc.On("Fork", uint(1), uint(10), uint(20)).Return(nil, service.ErrForbidden)
+
+	r := newRouter(1)
+	r.POST("/snippets/:id/fork", h.Fork)
+	w := doRequest(r, "POST", "/snippets/10/fork", map[string]interface{}{
+		"target_post_id": 20,
+	})
+
+	assertStatus(t, w, http.StatusForbidden)
+}
+
+func TestCodeSnippetFork_NotFound(t *testing.T) {
+	h, svc := setupCodeSnippetHandler()
+
+	svc.On("Fork", uint(1), uint(999), uint(20)).Return(nil, service.ErrNotFound)
+
+	r := newRouter(1)
+	r.POST("/snippets/:id/fork", h.Fork)
+	w := doRequest(r, "POST", "/snippets/999/fork", map[string]interface{}{
+		"target_post_id": 20,
+	})
+
+	assertStatus(t, w, http.StatusNotFound)
+}

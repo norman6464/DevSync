@@ -258,6 +258,7 @@ func registerSnippetRoutes(g *gin.RouterGroup, c *di.Container) {
 		snippets.POST("/:id/comments", c.CodeSnippetHandler.CreateComment)
 		snippets.DELETE("/:id/comments/:commentId", c.CodeSnippetHandler.DeleteComment)
 		snippets.GET("/language/:language", c.CodeSnippetHandler.GetByUserLanguage)
+		snippets.POST("/:id/fork", c.CodeSnippetHandler.Fork)
 	}
 }
 

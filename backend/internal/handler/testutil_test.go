@@ -233,6 +233,9 @@ func (m *MockCodeSnippetRepository) FindByUserIDAndLanguage(userID uint, languag
 	args := m.Called(userID, language)
 	return args.Get(0).([]model.CodeSnippet), args.Error(1)
 }
+func (m *MockCodeSnippetRepository) IncrementForkCount(id uint) error {
+	return m.Called(id).Error(0)
+}
 
 // MockQuestionRepository は QuestionRepositoryInterface のモック実装。
 type MockQuestionRepository struct{ mock.Mock }
@@ -1715,6 +1718,13 @@ func (m *MockCodeSnippetHandlerService) DeleteComment(id, userID uint) error {
 func (m *MockCodeSnippetHandlerService) GetByUserLanguage(userID uint, language string) ([]model.CodeSnippet, error) {
 	args := m.Called(userID, language)
 	return args.Get(0).([]model.CodeSnippet), args.Error(1)
+}
+func (m *MockCodeSnippetHandlerService) Fork(userID, snippetID, targetPostID uint) (*model.CodeSnippet, error) {
+	args := m.Called(userID, snippetID, targetPostID)
+	if s := args.Get(0); s != nil {
+		return s.(*model.CodeSnippet), args.Error(1)
+	}
+	return nil, args.Error(1)
 }
 
 // setupCodeSnippetHandler はCodeSnippetHandlerテスト用のセットアップを行う。

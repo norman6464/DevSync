@@ -14,6 +14,11 @@ type UpdateCodeSnippetRequest struct {
 	Code     string `json:"code" binding:"omitempty,max=50000"`
 }
 
+// ForkSnippetRequest はスニペットフォークリクエスト。
+type ForkSnippetRequest struct {
+	TargetPostID uint `json:"target_post_id" binding:"required"`
+}
+
 // CreateSnippetCommentRequest はスニペットコメント作成リクエスト。
 type CreateSnippetCommentRequest struct {
 	LineNumber int    `json:"line_number" binding:"required" validate:"required"`

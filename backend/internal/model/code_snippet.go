@@ -13,6 +13,8 @@ type CodeSnippet struct {
 	FileName     string    `json:"file_name"`
 	Code         string    `json:"code" gorm:"type:text;not null"`
 	CommentCount int       `json:"comment_count" gorm:"default:0"`
+	ForkedFromID *uint     `json:"forked_from_id" gorm:"index"`
+	ForkCount    int       `json:"fork_count" gorm:"default:0"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }

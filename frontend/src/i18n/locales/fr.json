@@ -1743,5 +1743,14 @@
     "updateFailed": "Échec de la mise à jour du jalon",
     "deleteFailed": "Échec de la suppression du jalon",
     "confirmDelete": "Êtes-vous sûr de vouloir supprimer ce jalon ?"
+  },
+  "snippetFork": {
+    "fork": "Dupliquer",
+    "forkSnippet": "Dupliquer l'extrait",
+    "forkSuccess": "Extrait dupliqué avec succès",
+    "forkFailed": "Échec de la duplication de l'extrait",
+    "forkedFrom": "Dupliqué depuis",
+    "forkCount": "Duplications",
+    "selectTargetPost": "Sélectionner la publication cible"
   }
 }

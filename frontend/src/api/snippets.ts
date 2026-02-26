@@ -21,3 +21,6 @@ export const createSnippetComment = (snippetId: number, data: { line_number: num
 
 export const deleteSnippetComment = (snippetId: number, commentId: number) =>
   client.delete(`/snippets/${snippetId}/comments/${commentId}`);
+
+export const forkSnippet = (snippetId: number, targetPostId: number) =>
+  client.post<CodeSnippet>(`/snippets/${snippetId}/fork`, { target_post_id: targetPostId });

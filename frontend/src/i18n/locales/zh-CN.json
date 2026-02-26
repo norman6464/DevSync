@@ -1743,5 +1743,14 @@
     "updateFailed": "更新里程碑失败",
     "deleteFailed": "删除里程碑失败",
     "confirmDelete": "确定要删除这个里程碑吗？"
+  },
+  "snippetFork": {
+    "fork": "派生",
+    "forkSnippet": "派生代码片段",
+    "forkSuccess": "代码片段已派生",
+    "forkFailed": "派生代码片段失败",
+    "forkedFrom": "派生自",
+    "forkCount": "派生数",
+    "selectTargetPost": "选择目标帖子"
   }
 }

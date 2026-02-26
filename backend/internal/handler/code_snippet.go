@@ -16,6 +16,7 @@ type CodeSnippetHandlerServiceInterface interface {
 	GetComments(snippetID uint) ([]model.SnippetComment, error)
 	CreateComment(comment *model.SnippetComment) error
 	DeleteComment(id, userID uint) error
+	Fork(userID, snippetID, targetPostID uint) (*model.CodeSnippet, error)
 }
 
 // CodeSnippetHandler はコードスニペット関連のHTTPハンドラ。
@@ -166,6 +167,28 @@ func (h *CodeSnippetHandler) DeleteComment(c *gin.Context) {
 		return
 	}
 	respondDeleted(c)
+}
+
+// Fork はスニペットをフォークして指定投稿にコピーする。
+func (h *CodeSnippetHandler) Fork(c *gin.Context) {
+	snippetID, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+	userID := c.GetUint("userID")
+
+	req := bindJSON[dto.ForkSnippetRequest](c)
+	if req == nil {
+		return
+	}
+
+	forked, err := h.service.Fork(userID, snippetID, req.TargetPostID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondCreated(c, forked)
 }
 
 // GetByUserLanguage は認証ユーザーのスニペットを言語でフィルタリングして取得する。

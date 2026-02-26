@@ -128,3 +128,38 @@ func (s *CodeSnippetService) GetComments(snippetID uint) ([]model.SnippetComment
 func (s *CodeSnippetService) DeleteComment(id, userID uint) error {
 	return s.repo.DeleteComment(id, userID)
 }
+
+// Fork は既存スニペットをコピーして指定投稿に新しいスニペットとして作成する。
+func (s *CodeSnippetService) Fork(userID, snippetID, targetPostID uint) (*model.CodeSnippet, error) {
+	original, err := s.repo.FindByID(snippetID)
+	if err != nil {
+		return nil, domain.NewError(domain.ErrCodeNotFound, "スニペットが見つかりません", err)
+	}
+
+	// 対象投稿の存在確認と所有権チェック
+	post, err := s.postRepo.FindByID(targetPostID)
+	if err != nil {
+		return nil, domain.NewError(domain.ErrCodeNotFound, "投稿が見つかりません", err)
+	}
+	if post.UserID != userID {
+		return nil, domain.NewError(domain.ErrCodeForbidden, "自分の投稿にのみフォークできます。投稿の編集権限がありません", nil)
+	}
+
+	forked := &model.CodeSnippet{
+		PostID:       targetPostID,
+		UserID:       userID,
+		Language:     original.Language,
+		FileName:     original.FileName,
+		Code:         original.Code,
+		ForkedFromID: &snippetID,
+	}
+
+	if err := s.repo.Create(forked); err != nil {
+		return nil, err
+	}
+
+	// フォーク元のカウンターをインクリメント
+	_ = s.repo.IncrementForkCount(snippetID)
+
+	return forked, nil
+}

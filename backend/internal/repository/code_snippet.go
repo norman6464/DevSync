@@ -85,3 +85,9 @@ func (r *CodeSnippetRepository) DeleteComment(id, userID uint) error {
 		UpdateColumn("comment_count", gorm.Expr("GREATEST(comment_count - 1, 0)"))
 	return r.db.Delete(&comment).Error
 }
+
+// IncrementForkCount はスニペットのfork_countをインクリメントする。
+func (r *CodeSnippetRepository) IncrementForkCount(id uint) error {
+	return r.db.Model(&model.CodeSnippet{}).Where("id = ?", id).
+		UpdateColumn("fork_count", gorm.Expr("fork_count + 1")).Error
+}
