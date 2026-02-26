@@ -64,7 +64,7 @@ type AutoSaveDraftResponse struct {
 
 // ReactionRequest はリアクション追加/削除リクエスト。
 type ReactionRequest struct {
-	Emoji string `json:"emoji" binding:"required"`
+	Emoji string `json:"emoji" binding:"required,max=10"`
 }
 
 // ReactionResponse はリアクション一覧レスポンス。

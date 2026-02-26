@@ -2,8 +2,10 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/stretchr/testify/assert"
 )
@@ -188,4 +190,44 @@ func TestRankingService_ContributionRanking_LargeScores(t *testing.T) {
 	assert.Equal(t, int64(999999), result[0].Score)
 	assert.Equal(t, int64(0), result[1].Score)
 	repo.AssertExpectations(t)
+}
+
+func TestRankingService_ContributionRanking_InvalidPeriod(t *testing.T) {
+	repo := new(MockRankingRepository)
+	svc := NewRankingService(repo)
+
+	result, err := svc.ContributionRanking("daily")
+	assert.Nil(t, result)
+	assert.Error(t, err)
+
+	var domainErr *domain.DomainError
+	assert.True(t, errors.As(err, &domainErr))
+	assert.Equal(t, domain.ErrCodeBadRequest, domainErr.Code)
+}
+
+func TestRankingService_LanguageRanking_InvalidPeriod(t *testing.T) {
+	repo := new(MockRankingRepository)
+	svc := NewRankingService(repo)
+
+	result, err := svc.LanguageRanking("Go", "yearly")
+	assert.Nil(t, result)
+	assert.Error(t, err)
+
+	var domainErr *domain.DomainError
+	assert.True(t, errors.As(err, &domainErr))
+	assert.Equal(t, domain.ErrCodeBadRequest, domainErr.Code)
+}
+
+func TestRankingService_LanguageRanking_TooLongLanguage(t *testing.T) {
+	repo := new(MockRankingRepository)
+	svc := NewRankingService(repo)
+
+	longLang := strings.Repeat("a", 51)
+	result, err := svc.LanguageRanking(longLang, "weekly")
+	assert.Nil(t, result)
+	assert.Error(t, err)
+
+	var domainErr *domain.DomainError
+	assert.True(t, errors.As(err, &domainErr))
+	assert.Equal(t, domain.ErrCodeBadRequest, domainErr.Code)
 }
