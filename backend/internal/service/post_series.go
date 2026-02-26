@@ -24,6 +24,9 @@ func (s *PostSeriesService) Create(series *model.PostSeries) error {
 	if err := domain.ValidateStringLength(series.Title, 1, 200, "タイトル"); err != nil {
 		return err
 	}
+	if len([]rune(series.Description)) > 1000 {
+		return domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
+	}
 	series.Title = strings.TrimSpace(series.Title)
 	return s.repo.Create(series)
 }
