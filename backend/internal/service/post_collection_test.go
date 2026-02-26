@@ -537,3 +537,29 @@ func TestPostCollectionAddPost_NoteAtLimit(t *testing.T) {
 	assert.NoError(t, err)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// CountByUserID（ユーザーコレクション総数取得）
+// ============================================================
+
+func TestPostCollectionCountByUserID_Success(t *testing.T) {
+	svc, repo := newTestPostCollectionService()
+
+	repo.On("CountByUserID", uint(1)).Return(int64(5), nil)
+
+	count, err := svc.CountByUserID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(5), count)
+	repo.AssertExpectations(t)
+}
+
+func TestPostCollectionCountByUserID_Error(t *testing.T) {
+	svc, repo := newTestPostCollectionService()
+
+	repo.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	count, err := svc.CountByUserID(1)
+	assert.Error(t, err)
+	assert.Equal(t, int64(0), count)
+	repo.AssertExpectations(t)
+}
