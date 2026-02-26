@@ -10,8 +10,6 @@ import (
 type PostCollectionServiceInterface interface {
 	Create(collection *model.PostCollection) (*model.PostCollection, error)
 	GetByID(id uint) (*model.PostCollection, error)
-	GetByUserID(userID uint, limit, offset int) ([]model.PostCollection, int64, error)
-	GetPublicByUserID(userID uint) ([]model.PostCollection, error)
 	GetCollectionsForViewer(viewerID, targetUserID uint, limit, offset int) ([]model.PostCollection, int64, error)
 	Update(id, userID uint, title, description string, isPublic bool) (*model.PostCollection, error)
 	Delete(id, userID uint) error
