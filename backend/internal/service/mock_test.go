@@ -446,6 +446,11 @@ func (m *MockQuestionRepository) FindUnanswered(limit, offset int) ([]model.Ques
 	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
 }
 
+func (m *MockQuestionRepository) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 // ============================================================
 // MockAnswerRepository は repository.AnswerRepositoryInterface のテスト用モック実装。
 // ============================================================
@@ -739,6 +744,11 @@ func (m *MockProjectRepository) Search(query string, limit, offset int) ([]model
 	return args.Get(0).([]model.Project), args.Get(1).(int64), args.Error(2)
 }
 
+func (m *MockProjectRepository) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 // ============================================================
 // MockBookReviewRepository は repository.BookReviewRepositoryInterface のテスト用モック実装。
 // ============================================================
@@ -788,6 +798,11 @@ func (m *MockBookReviewRepository) FindByRating(userID uint, minRating, maxRatin
 func (m *MockBookReviewRepository) Search(query string, limit, offset int) ([]model.BookReview, int64, error) {
 	args := m.Called(query, limit, offset)
 	return args.Get(0).([]model.BookReview), args.Get(1).(int64), args.Error(2)
+}
+
+func (m *MockBookReviewRepository) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
 }
 
 // ============================================================

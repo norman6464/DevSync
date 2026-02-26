@@ -84,3 +84,10 @@ func (r *BookReviewRepository) Update(review *model.BookReview) error {
 func (r *BookReviewRepository) Delete(id uint) error {
 	return r.db.Delete(&model.BookReview{}, id).Error
 }
+
+// CountByUserID は指定ユーザーの書籍レビュー総数を返す。
+func (r *BookReviewRepository) CountByUserID(userID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.BookReview{}).Where("user_id = ?", userID).Count(&count).Error
+	return count, err
+}

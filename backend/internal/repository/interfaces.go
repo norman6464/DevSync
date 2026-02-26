@@ -136,6 +136,7 @@ type QuestionRepositoryInterface interface {
 	HasBookmarked(userID, questionID uint) (bool, error)
 	FindBookmarkedByUserID(userID uint, limit, offset int) ([]model.Question, int64, error)
 	FindUnanswered(limit, offset int) ([]model.Question, int64, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // AnswerRepositoryInterface はQ&A回答データ操作の契約を定義する。
@@ -213,6 +214,7 @@ type ProjectRepositoryInterface interface {
 	Archive(id uint) error
 	Unarchive(id uint) error
 	FindArchivedByUserID(userID uint, limit, offset int) ([]model.Project, int64, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // BookReviewRepositoryInterface は書籍レビューデータ操作の契約を定義する。
@@ -225,6 +227,7 @@ type BookReviewRepositoryInterface interface {
 	Search(query string, limit, offset int) ([]model.BookReview, int64, error)
 	Update(review *model.BookReview) error
 	Delete(id uint) error
+	CountByUserID(userID uint) (int64, error)
 }
 
 // LearningResourceRepositoryInterface は学習リソースデータ操作の契約を定義する。

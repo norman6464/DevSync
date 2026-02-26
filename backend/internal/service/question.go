@@ -168,3 +168,8 @@ func (s *QuestionService) Unbookmark(userID, questionID uint) error {
 func (s *QuestionService) GetBookmarkedByUserID(userID uint, limit, offset int) ([]model.Question, int64, error) {
 	return s.repo.FindBookmarkedByUserID(userID, limit, offset)
 }
+
+// CountByUserID は指定ユーザーの質問総数を返す。
+func (s *QuestionService) CountByUserID(userID uint) (int64, error) {
+	return s.repo.CountByUserID(userID)
+}

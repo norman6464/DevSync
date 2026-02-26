@@ -21,6 +21,7 @@ type BookReviewServiceInterface interface {
 	UpdateStatus(id, userID uint, status model.ReviewStatus) error
 	UpdateProgress(id, userID uint, currentPage int) (*model.BookReview, error)
 	Search(query string, limit, offset int) ([]model.BookReview, int64, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // BookReviewHandler は書籍レビュー関連のHTTPハンドラ。
@@ -273,4 +274,17 @@ func (h *BookReviewHandler) Search(c *gin.Context) {
 // Delete は指定IDの書籍レビューを削除する。
 func (h *BookReviewHandler) Delete(c *gin.Context) {
 	handleDelete(c, h.service.Delete)
+}
+
+// GetMyCount は認証ユーザーの書籍レビュー総数を取得する。
+func (h *BookReviewHandler) GetMyCount(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	count, err := h.service.CountByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, gin.H{"count": count})
 }

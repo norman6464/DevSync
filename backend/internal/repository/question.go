@@ -238,3 +238,10 @@ func (r *QuestionRepository) FindBookmarkedByUserID(userID uint, limit, offset i
 
 	return questions, total, err
 }
+
+// CountByUserID は指定ユーザーの質問総数を返す。
+func (r *QuestionRepository) CountByUserID(userID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.Question{}).Where("user_id = ?", userID).Count(&count).Error
+	return count, err
+}
