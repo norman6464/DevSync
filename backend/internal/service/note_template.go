@@ -79,19 +79,19 @@ func (s *NoteTemplateService) Update(id, userID uint, name, description, default
 	}
 
 	if strings.TrimSpace(name) != "" {
-		template.Name = name
+		template.Name = strings.TrimSpace(name)
 	}
 	if strings.TrimSpace(description) != "" {
-		template.Description = description
+		template.Description = strings.TrimSpace(description)
 	}
 	if strings.TrimSpace(defaultTitle) != "" {
-		template.DefaultTitle = defaultTitle
+		template.DefaultTitle = strings.TrimSpace(defaultTitle)
 	}
 	if strings.TrimSpace(contentTemplate) != "" {
-		template.ContentTemplate = contentTemplate
+		template.ContentTemplate = strings.TrimSpace(contentTemplate)
 	}
 	if strings.TrimSpace(defaultTags) != "" {
-		template.DefaultTags = defaultTags
+		template.DefaultTags = strings.TrimSpace(defaultTags)
 	}
 	if isDefault != nil {
 		template.IsDefault = *isDefault
