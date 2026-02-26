@@ -223,6 +223,8 @@ func registerPostSeriesRoutes(g *gin.RouterGroup, c *di.Container) {
 	series := g.Group("/post-series")
 	{
 		series.POST("", c.PostSeriesHandler.Create)
+		series.GET("/my", c.PostSeriesHandler.GetMySeries)
+		series.GET("/my/count", c.PostSeriesHandler.GetMySeriesCount)
 		series.GET("/:id", c.PostSeriesHandler.GetByID)
 		series.PUT("/:id", c.PostSeriesHandler.Update)
 		series.DELETE("/:id", c.PostSeriesHandler.Delete)
@@ -237,6 +239,7 @@ func registerPostCollectionRoutes(g *gin.RouterGroup, c *di.Container) {
 	collections := g.Group("/post-collections")
 	{
 		collections.POST("", c.PostCollectionHandler.Create)
+		collections.GET("/my", c.PostCollectionHandler.GetMyCollections)
 		collections.GET("/:id", c.PostCollectionHandler.GetByID)
 		collections.PUT("/:id", c.PostCollectionHandler.Update)
 		collections.DELETE("/:id", c.PostCollectionHandler.Delete)
@@ -442,6 +445,7 @@ func registerResourceRoutes(g *gin.RouterGroup, c *di.Container) {
 	{
 		resources.POST("", c.LearningResourceHandler.Create)
 		resources.GET("", c.LearningResourceHandler.GetPublic)
+		resources.GET("/my", c.LearningResourceHandler.GetMyResources)
 		resources.GET("/search", c.LearningResourceHandler.Search)
 		resources.GET("/saved", c.LearningResourceHandler.GetSaved)
 		resources.GET("/:id", c.LearningResourceHandler.GetByID)
@@ -578,6 +582,7 @@ func registerCommunityRoutes(g *gin.RouterGroup, c *di.Container) {
 	{
 		questions.POST("", c.QuestionHandler.Create)
 		questions.GET("", c.QuestionHandler.GetAll)
+		questions.GET("/my", c.QuestionHandler.GetMyQuestions)
 		questions.GET("/search", c.QuestionHandler.Search)
 		questions.GET("/solved", c.QuestionHandler.GetSolved)
 		questions.GET("/unanswered", c.QuestionHandler.GetUnanswered)

@@ -93,6 +93,25 @@ func (h *PostCollectionHandler) GetByUserID(c *gin.Context) {
 	})
 }
 
+// GetMyCollections は認証ユーザーのコレクション一覧を取得する。
+func (h *PostCollectionHandler) GetMyCollections(c *gin.Context) {
+	userID := c.GetUint("userID")
+	limit, offset := parseLimitOffset(c)
+
+	collections, total, err := h.service.GetCollectionsForViewer(userID, userID, limit, offset)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, dto.PostCollectionListResponse{
+		Collections: ensureSlice(collections),
+		Total:       total,
+		Limit:       limit,
+		Offset:      offset,
+	})
+}
+
 // Update は指定IDのコレクションを更新する。
 func (h *PostCollectionHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
