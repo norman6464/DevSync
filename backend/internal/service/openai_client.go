@@ -3,8 +3,8 @@ package service
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"time"
 
@@ -107,7 +107,8 @@ func (c *OpenAIClient) Complete(messages []ChatMessage) (*ChatResponse, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, domain.NewError(domain.ErrCodeServiceUnavailable, fmt.Sprintf("OpenAI APIエラー (ステータス %d): %s", resp.StatusCode, string(body)), nil)
+		log.Printf("[WARN] OpenAI APIエラー (ステータス %d): %s", resp.StatusCode, string(body))
+		return nil, domain.NewError(domain.ErrCodeServiceUnavailable, "AI サービスが一時的に利用できません", nil)
 	}
 
 	var apiResp openAIResponse
@@ -116,7 +117,8 @@ func (c *OpenAIClient) Complete(messages []ChatMessage) (*ChatResponse, error) {
 	}
 
 	if apiResp.Error != nil {
-		return nil, domain.NewError(domain.ErrCodeServiceUnavailable, fmt.Sprintf("OpenAI APIエラー: %s", apiResp.Error.Message), nil)
+		log.Printf("[WARN] OpenAI APIエラー: %s", apiResp.Error.Message)
+		return nil, domain.NewError(domain.ErrCodeServiceUnavailable, "AI サービスが一時的に利用できません", nil)
 	}
 
 	if len(apiResp.Choices) == 0 {

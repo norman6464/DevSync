@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -101,8 +102,8 @@ func (c *YouTubeClient) SearchVideos(query string, maxResults int, language stri
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, domain.NewError(domain.ErrCodeServiceUnavailable,
-			fmt.Sprintf("YouTube APIエラー (ステータス %d): %s", resp.StatusCode, string(body)), nil)
+		log.Printf("[WARN] YouTube APIエラー (ステータス %d): %s", resp.StatusCode, string(body))
+		return nil, domain.NewError(domain.ErrCodeServiceUnavailable, "YouTube APIが一時的に利用できません", nil)
 	}
 
 	var apiResp youtubeSearchResponse
@@ -111,8 +112,8 @@ func (c *YouTubeClient) SearchVideos(query string, maxResults int, language stri
 	}
 
 	if apiResp.Error != nil {
-		return nil, domain.NewError(domain.ErrCodeServiceUnavailable,
-			fmt.Sprintf("YouTube APIエラー: %s", apiResp.Error.Message), nil)
+		log.Printf("[WARN] YouTube APIエラー: %s", apiResp.Error.Message)
+		return nil, domain.NewError(domain.ErrCodeServiceUnavailable, "YouTube APIが一時的に利用できません", nil)
 	}
 
 	var videos []model.YouTubeVideo
