@@ -702,3 +702,58 @@ func TestGetInsights_PeakTimeAllZeroMinutes(t *testing.T) {
 	}
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// AggregateDayOfWeek テスト
+// ============================================================
+
+func TestAggregateDayOfWeek_Empty(t *testing.T) {
+	result := AggregateDayOfWeek([]model.HeatmapEntry{})
+	assert.Len(t, result, 7)
+	for i := 0; i < 7; i++ {
+		assert.Equal(t, i, result[i].DayOfWeek)
+		assert.Equal(t, 0, result[i].TotalMinutes)
+		assert.Equal(t, 0, result[i].LogCount)
+		assert.Equal(t, 0, result[i].AverageMinutes)
+	}
+}
+
+func TestAggregateDayOfWeek_SingleEntry(t *testing.T) {
+	heatmap := []model.HeatmapEntry{
+		{DayOfWeek: 1, Hour: 10, TotalMinutes: 60},
+	}
+	result := AggregateDayOfWeek(heatmap)
+	assert.Equal(t, 60, result[1].TotalMinutes)
+	assert.Equal(t, 1, result[1].LogCount)
+	assert.Equal(t, 60, result[1].AverageMinutes)
+	assert.Equal(t, 0, result[0].TotalMinutes) // 日曜はデータなし
+}
+
+func TestAggregateDayOfWeek_MultipleEntriesSameDay(t *testing.T) {
+	heatmap := []model.HeatmapEntry{
+		{DayOfWeek: 3, Hour: 9, TotalMinutes: 30},
+		{DayOfWeek: 3, Hour: 14, TotalMinutes: 45},
+		{DayOfWeek: 3, Hour: 20, TotalMinutes: 25},
+	}
+	result := AggregateDayOfWeek(heatmap)
+	assert.Equal(t, 100, result[3].TotalMinutes)
+	assert.Equal(t, 3, result[3].LogCount)
+	assert.Equal(t, 33, result[3].AverageMinutes) // 100/3 = 33
+}
+
+func TestAggregateDayOfWeek_AllDays(t *testing.T) {
+	heatmap := []model.HeatmapEntry{
+		{DayOfWeek: 0, Hour: 8, TotalMinutes: 10},
+		{DayOfWeek: 1, Hour: 8, TotalMinutes: 20},
+		{DayOfWeek: 2, Hour: 8, TotalMinutes: 30},
+		{DayOfWeek: 3, Hour: 8, TotalMinutes: 40},
+		{DayOfWeek: 4, Hour: 8, TotalMinutes: 50},
+		{DayOfWeek: 5, Hour: 8, TotalMinutes: 60},
+		{DayOfWeek: 6, Hour: 8, TotalMinutes: 70},
+	}
+	result := AggregateDayOfWeek(heatmap)
+	for i := 0; i < 7; i++ {
+		assert.Equal(t, (i+1)*10, result[i].TotalMinutes)
+		assert.Equal(t, 1, result[i].LogCount)
+	}
+}

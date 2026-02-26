@@ -1825,3 +1825,84 @@ func TestPostAutoSaveDraft_UpdateWithImageURLs(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "https://example.com/img.png", result.ImageURLs)
 }
+
+// ============================================================
+// NormalizeReactionMaps テスト
+// ============================================================
+
+func TestNormalizeReactionMaps_NilToEmpty(t *testing.T) {
+	reactions := map[uint][]model.ReactionCount{
+		1: {{Emoji: "👍", Count: 3}},
+	}
+	userReactions := map[uint][]string{
+		1: {"👍"},
+	}
+	postIDs := []uint{1, 2, 3}
+
+	NormalizeReactionMaps(reactions, userReactions, postIDs)
+
+	assert.Equal(t, []model.ReactionCount{{Emoji: "👍", Count: 3}}, reactions[1])
+	assert.Equal(t, []model.ReactionCount{}, reactions[2])
+	assert.Equal(t, []model.ReactionCount{}, reactions[3])
+	assert.Equal(t, []string{"👍"}, userReactions[1])
+	assert.Equal(t, []string{}, userReactions[2])
+	assert.Equal(t, []string{}, userReactions[3])
+}
+
+func TestNormalizeReactionMaps_EmptyPostIDs(t *testing.T) {
+	reactions := map[uint][]model.ReactionCount{}
+	userReactions := map[uint][]string{}
+	NormalizeReactionMaps(reactions, userReactions, []uint{})
+	assert.Empty(t, reactions)
+	assert.Empty(t, userReactions)
+}
+
+// ============================================================
+// GetReactionsWithUser テスト
+// ============================================================
+
+func TestGetReactionsWithUser_Success(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("GetReactionsByPostID", uint(1)).Return([]model.ReactionCount{
+		{Emoji: "👍", Count: 5},
+	}, nil)
+	postRepo.On("GetUserReactions", uint(10), uint(1)).Return([]string{"👍"}, nil)
+
+	reactions, userReactions, err := svc.GetReactionsWithUser(10, 1)
+	assert.NoError(t, err)
+	assert.Len(t, reactions, 1)
+	assert.Equal(t, []string{"👍"}, userReactions)
+	postRepo.AssertExpectations(t)
+}
+
+func TestGetReactionsWithUser_NilNormalized(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("GetReactionsByPostID", uint(1)).Return([]model.ReactionCount(nil), nil)
+	postRepo.On("GetUserReactions", uint(10), uint(1)).Return([]string(nil), nil)
+
+	reactions, userReactions, err := svc.GetReactionsWithUser(10, 1)
+	assert.NoError(t, err)
+	assert.Equal(t, []model.ReactionCount{}, reactions)
+	assert.Equal(t, []string{}, userReactions)
+}
+
+func TestGetReactionsWithUser_RepoError(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("GetReactionsByPostID", uint(1)).Return([]model.ReactionCount(nil), assert.AnError)
+
+	_, _, err := svc.GetReactionsWithUser(10, 1)
+	assert.Error(t, err)
+}
+
+func TestGetReactionsWithUser_UserReactionsError(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("GetReactionsByPostID", uint(1)).Return([]model.ReactionCount{}, nil)
+	postRepo.On("GetUserReactions", uint(10), uint(1)).Return([]string(nil), assert.AnError)
+
+	_, _, err := svc.GetReactionsWithUser(10, 1)
+	assert.Error(t, err)
+}

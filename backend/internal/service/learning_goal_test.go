@@ -884,3 +884,111 @@ func TestLearningGoalGetPublicByUserID_Success(t *testing.T) {
 	assert.Equal(t, int64(1), total)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// CalculateGoalForecast テスト
+// ============================================================
+
+func TestCalculateGoalForecast_NoTargetDate_NoDailyAvg(t *testing.T) {
+	goal := &model.LearningGoal{Title: "Go学習", Progress: 30}
+	goal.ID = 1
+
+	f := CalculateGoalForecast(goal, 0, 0, time.Now())
+	assert.Equal(t, uint(1), f.GoalID)
+	assert.Equal(t, "Go学習", f.Title)
+	assert.Equal(t, 30, f.CurrentProgress)
+	assert.Equal(t, -1, f.EstimatedDaysLeft)
+	assert.Equal(t, -1, f.DaysUntilDeadline)
+	assert.Equal(t, "unknown", f.Difficulty)
+	assert.False(t, f.OnTrack)
+}
+
+func TestCalculateGoalForecast_WithDeadline_OnTrack(t *testing.T) {
+	deadline := time.Now().Add(30 * 24 * time.Hour)
+	goal := &model.LearningGoal{
+		Title:       "React学習",
+		TargetHours: 10,
+		TargetDate:  &deadline,
+	}
+	goal.ID = 2
+
+	// 10時間 = 600分目標、既に300分学習済み、日平均30分 → 残り10日
+	f := CalculateGoalForecast(goal, 300, 30, time.Now())
+	assert.Equal(t, 10, f.EstimatedDaysLeft)
+	assert.Equal(t, 30, f.DaysUntilDeadline)
+	assert.True(t, f.OnTrack)
+	assert.Equal(t, "easy", f.Difficulty) // 10/30 ≈ 0.33 ≤ 0.5
+}
+
+func TestCalculateGoalForecast_WithDeadline_OffTrack(t *testing.T) {
+	deadline := time.Now().Add(5 * 24 * time.Hour)
+	goal := &model.LearningGoal{
+		Title:       "難しい目標",
+		TargetHours: 100,
+		TargetDate:  &deadline,
+	}
+	goal.ID = 3
+
+	// 100時間 = 6000分、0分学習済み、日平均30分 → 200日必要
+	f := CalculateGoalForecast(goal, 0, 30, time.Now())
+	assert.Equal(t, 200, f.EstimatedDaysLeft)
+	assert.Equal(t, 5, f.DaysUntilDeadline)
+	assert.False(t, f.OnTrack)
+	assert.Equal(t, "hard", f.Difficulty) // 200/5 = 40.0 > 1.0
+}
+
+func TestCalculateGoalForecast_AlreadyCompleted(t *testing.T) {
+	deadline := time.Now().Add(10 * 24 * time.Hour)
+	goal := &model.LearningGoal{
+		Title:       "完了済み",
+		TargetHours: 5,
+		TargetDate:  &deadline,
+	}
+	goal.ID = 4
+
+	// 5時間 = 300分目標、既に400分学習済み → 残り0日
+	f := CalculateGoalForecast(goal, 400, 60, time.Now())
+	assert.Equal(t, 0, f.EstimatedDaysLeft)
+	assert.True(t, f.OnTrack)
+	assert.Equal(t, "easy", f.Difficulty)
+}
+
+func TestCalculateGoalForecast_NoDailyAvg_WithTargetHours(t *testing.T) {
+	goal := &model.LearningGoal{
+		Title:       "学習開始前",
+		TargetHours: 10,
+	}
+	goal.ID = 5
+
+	f := CalculateGoalForecast(goal, 0, 0, time.Now())
+	assert.Equal(t, -1, f.EstimatedDaysLeft)
+	assert.Equal(t, "hard", f.Difficulty)
+}
+
+func TestCalculateGoalForecast_MediumDifficulty(t *testing.T) {
+	deadline := time.Now().Add(10 * 24 * time.Hour)
+	goal := &model.LearningGoal{
+		Title:       "中程度",
+		TargetHours: 5,
+		TargetDate:  &deadline,
+	}
+	goal.ID = 6
+
+	// 300分目標、0分学習済み、日平均40分 → 8日必要、10日猶予 → ratio=0.8
+	f := CalculateGoalForecast(goal, 0, 40, time.Now())
+	assert.Equal(t, 8, f.EstimatedDaysLeft)
+	assert.True(t, f.OnTrack)
+	assert.Equal(t, "medium", f.Difficulty) // 8/10 = 0.8, 0.5 < 0.8 ≤ 1.0
+}
+
+func TestCalculateGoalForecast_PastDeadline(t *testing.T) {
+	deadline := time.Now().Add(-2 * 24 * time.Hour)
+	goal := &model.LearningGoal{
+		Title:      "期限切れ",
+		TargetDate: &deadline,
+	}
+	goal.ID = 7
+
+	f := CalculateGoalForecast(goal, 0, 0, time.Now())
+	assert.Equal(t, 0, f.DaysUntilDeadline) // 負の値は0に正規化
+}
