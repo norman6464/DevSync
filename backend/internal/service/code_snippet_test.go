@@ -712,3 +712,46 @@ func TestSnippetGetFavoritedByUserID_Empty(t *testing.T) {
 	assert.Equal(t, int64(0), total)
 	snippetRepo.AssertExpectations(t)
 }
+
+// ---------- 検索テスト ----------
+
+func TestSnippetSearch_Success(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+
+	expected := []model.CodeSnippet{
+		{Language: "go", Code: "package main"},
+	}
+	snippetRepo.On("Search", "main", 20, 0).Return(expected, int64(1), nil)
+
+	result, total, err := svc.Search("main", 20, 0)
+	assert.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, int64(1), total)
+	snippetRepo.AssertExpectations(t)
+}
+
+func TestSnippetSearch_EmptyQuery(t *testing.T) {
+	svc, _, _ := newTestCodeSnippetService()
+
+	_, _, err := svc.Search("", 20, 0)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "検索キーワードは必須です")
+}
+
+func TestSnippetSearch_WhitespaceQuery(t *testing.T) {
+	svc, _, _ := newTestCodeSnippetService()
+
+	_, _, err := svc.Search("   ", 20, 0)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "検索キーワードは必須です")
+}
+
+func TestSnippetSearch_RepoError(t *testing.T) {
+	svc, snippetRepo, _ := newTestCodeSnippetService()
+
+	snippetRepo.On("Search", "test", 20, 0).Return([]model.CodeSnippet{}, int64(0), assert.AnError)
+
+	_, _, err := svc.Search("test", 20, 0)
+	assert.Error(t, err)
+	snippetRepo.AssertExpectations(t)
+}
