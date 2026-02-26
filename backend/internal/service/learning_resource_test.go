@@ -869,3 +869,29 @@ func TestLearningResourceGetByDifficulty_RepoError(t *testing.T) {
 	assert.Equal(t, int64(0), total)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// CountByUserID（ユーザーリソース総数取得）
+// ============================================================
+
+func TestLearningResourceCountByUserID_Success(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+
+	repo.On("CountByUserID", uint(1)).Return(int64(42), nil)
+
+	count, err := svc.CountByUserID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(42), count)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningResourceCountByUserID_Error(t *testing.T) {
+	svc, repo := newTestLearningResourceService()
+
+	repo.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	count, err := svc.CountByUserID(1)
+	assert.Error(t, err)
+	assert.Equal(t, int64(0), count)
+	repo.AssertExpectations(t)
+}
