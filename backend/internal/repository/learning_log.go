@@ -241,3 +241,10 @@ func (r *LearningLogRepository) GetCalendarData(userID uint) ([]model.CalendarEn
 		Find(&entries).Error
 	return entries, err
 }
+
+// CountByUserID は指定ユーザーの学習ログ総数を返す。
+func (r *LearningLogRepository) CountByUserID(userID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.LearningLog{}).Where("user_id = ?", userID).Count(&count).Error
+	return count, err
+}

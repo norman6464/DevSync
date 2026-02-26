@@ -34,6 +34,7 @@ type LearningLogServiceInterface interface {
 	GetGoalProgress(goalID, userID uint) (*model.GoalProgress, error)
 	GetFavorites(userID uint, limit, offset int) ([]model.LearningLog, int64, error)
 	GetMonthlySummary(userID uint, months int) ([]model.MonthlySummary, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // LearningLogHandler は学習ログ関連のHTTPハンドラ。
@@ -72,6 +73,19 @@ func (h *LearningLogHandler) Create(c *gin.Context) {
 	}
 
 	respondCreated(c, log)
+}
+
+// GetMyCount は認証ユーザー自身の学習ログ総数を返す。
+func (h *LearningLogHandler) GetMyCount(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	count, err := h.service.CountByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, gin.H{"count": count})
 }
 
 // BatchCreate は複数の学習ログを一括作成する。
