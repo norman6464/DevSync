@@ -787,3 +787,88 @@ func TestLearningGoalDuplicate_CreateError(t *testing.T) {
 	assert.Nil(t, result)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// 共有トグルテスト
+// ============================================================
+
+func TestLearningGoalToggleShare_MakePublic(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	goal := &model.LearningGoal{UserID: 1, Title: "公開テスト", IsPublic: false}
+	goal.ID = 1
+	repo.On("FindByID", uint(1)).Return(goal, nil)
+	repo.On("Update", mock.MatchedBy(func(g *model.LearningGoal) bool {
+		return g.IsPublic == true
+	})).Return(nil)
+
+	result, err := svc.ToggleShare(1, 1)
+	assert.NoError(t, err)
+	assert.True(t, result.IsPublic)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningGoalToggleShare_MakePrivate(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	goal := &model.LearningGoal{UserID: 1, Title: "非公開テスト", IsPublic: true}
+	goal.ID = 1
+	repo.On("FindByID", uint(1)).Return(goal, nil)
+	repo.On("Update", mock.MatchedBy(func(g *model.LearningGoal) bool {
+		return g.IsPublic == false
+	})).Return(nil)
+
+	result, err := svc.ToggleShare(1, 1)
+	assert.NoError(t, err)
+	assert.False(t, result.IsPublic)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningGoalToggleShare_Forbidden(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	goal := &model.LearningGoal{UserID: 999, Title: "他人の目標"}
+	goal.ID = 1
+	repo.On("FindByID", uint(1)).Return(goal, nil)
+
+	_, err := svc.ToggleShare(1, 1)
+	assert.Error(t, err)
+}
+
+func TestLearningGoalToggleShare_NotFound(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	_, err := svc.ToggleShare(99, 1)
+	assert.Error(t, err)
+}
+
+func TestLearningGoalGetPublicGoals_Success(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	goals := []model.LearningGoal{
+		{Title: "公開目標1", IsPublic: true},
+		{Title: "公開目標2", IsPublic: true},
+	}
+	repo.On("GetPublicGoals", 20, 0).Return(goals, int64(2), nil)
+
+	result, total, err := svc.GetPublicGoals(20, 0)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, int64(2), total)
+	repo.AssertExpectations(t)
+}
+
+func TestLearningGoalGetPublicByUserID_Success(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+
+	goals := []model.LearningGoal{{Title: "公開目標", IsPublic: true, UserID: 5}}
+	repo.On("GetPublicByUserID", uint(5), 20, 0).Return(goals, int64(1), nil)
+
+	result, total, err := svc.GetPublicByUserID(5, 20, 0)
+	assert.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, int64(1), total)
+	repo.AssertExpectations(t)
+}

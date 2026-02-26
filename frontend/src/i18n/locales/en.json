@@ -655,7 +655,18 @@
       "activeCount": "Active",
       "completedCount": "Completed",
       "avgProgress": "Avg. Progress"
-    }
+    },
+    "toggleShare": "Toggle public/private",
+    "shareSuccess": "Sharing settings updated",
+    "shareFailed": "Failed to update sharing settings",
+    "publicGoals": "Public goals",
+    "noPublicGoals": "No public goals",
+    "makePublic": "Make public",
+    "makePrivate": "Make private",
+    "isPublic": "Public",
+    "isPrivate": "Private",
+    "publicGoalsList": "Community goals",
+    "loadPublicGoalsFailed": "Failed to load public goals"
   },
   "learningLogs": {
     "title": "Learning Logs",

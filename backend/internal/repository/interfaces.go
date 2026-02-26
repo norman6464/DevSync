@@ -179,6 +179,8 @@ type LearningGoalRepositoryInterface interface {
 	GetActiveByUserID(userID uint) ([]model.LearningGoal, error)
 	GetByCategory(userID uint, category string) ([]model.LearningGoal, error)
 	GetByStatus(userID uint, status string) ([]model.LearningGoal, error)
+	GetPublicByUserID(userID uint, limit, offset int) ([]model.LearningGoal, int64, error)
+	GetPublicGoals(limit, offset int) ([]model.LearningGoal, int64, error)
 	GetStats(userID uint) (*model.LearningGoalStats, error)
 }
 

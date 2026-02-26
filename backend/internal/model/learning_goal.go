@@ -36,6 +36,7 @@ type LearningGoal struct {
 	Progress    int          `json:"progress" gorm:"default:0"`         // 0〜100の達成率
 	TargetHours int          `json:"target_hours" gorm:"default:0"`     // 目標学習時間（時間単位、0=未設定）
 	Status      GoalStatus   `json:"status" gorm:"default:'active'"`
+	IsPublic    bool         `json:"is_public" gorm:"default:false"`
 	CreatedAt   time.Time    `json:"created_at"`
 	UpdatedAt   time.Time    `json:"updated_at"`
 	CompletedAt *time.Time   `json:"completed_at"`                      // 完了日時（完了時に自動設定）

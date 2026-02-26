@@ -655,7 +655,18 @@
       "activeCount": "Activos",
       "completedCount": "Completados",
       "avgProgress": "Progreso Promedio"
-    }
+    },
+    "toggleShare": "Alternar público/privado",
+    "shareSuccess": "Configuración de compartición actualizada",
+    "shareFailed": "Error al actualizar la configuración de compartición",
+    "publicGoals": "Objetivos públicos",
+    "noPublicGoals": "No hay objetivos públicos",
+    "makePublic": "Hacer público",
+    "makePrivate": "Hacer privado",
+    "isPublic": "Público",
+    "isPrivate": "Privado",
+    "publicGoalsList": "Objetivos de la comunidad",
+    "loadPublicGoalsFailed": "Error al cargar los objetivos públicos"
   },
   "learningLogs": {
     "title": "Registro de Aprendizaje",

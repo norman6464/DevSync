@@ -215,6 +215,30 @@ func (s *LearningGoalService) Duplicate(id, userID uint) (*model.LearningGoal, e
 	return newGoal, nil
 }
 
+// ToggleShare は学習目標の公開/非公開を切り替える。所有者のみ操作可能。
+func (s *LearningGoalService) ToggleShare(id, userID uint) (*model.LearningGoal, error) {
+	goal, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	goal.IsPublic = !goal.IsPublic
+	if err := s.repo.Update(goal); err != nil {
+		return nil, err
+	}
+	return goal, nil
+}
+
+// GetPublicGoals は全ユーザーの公開済み学習目標をページネーション付きで取得する。
+func (s *LearningGoalService) GetPublicGoals(limit, offset int) ([]model.LearningGoal, int64, error) {
+	return s.repo.GetPublicGoals(limit, offset)
+}
+
+// GetPublicByUserID は指定ユーザーの公開済み学習目標をページネーション付きで取得する。
+func (s *LearningGoalService) GetPublicByUserID(userID uint, limit, offset int) ([]model.LearningGoal, int64, error) {
+	return s.repo.GetPublicByUserID(userID, limit, offset)
+}
+
 // Delete は所有権を検証した後、学習目標を削除する。
 func (s *LearningGoalService) Delete(id, userID uint) error {
 	if _, err := s.findAndCheckOwnership(id, userID); err != nil {

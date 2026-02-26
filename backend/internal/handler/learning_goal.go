@@ -20,6 +20,9 @@ type LearningGoalServiceInterface interface {
 	Delete(id, userID uint) error
 	GetDeadlineAlerts(userID uint) ([]model.GoalDeadlineAlert, error)
 	Duplicate(id, userID uint) (*model.LearningGoal, error)
+	ToggleShare(id, userID uint) (*model.LearningGoal, error)
+	GetPublicGoals(limit, offset int) ([]model.LearningGoal, int64, error)
+	GetPublicByUserID(userID uint, limit, offset int) ([]model.LearningGoal, int64, error)
 }
 
 // LearningGoalHandler は学習目標関連のHTTPハンドラ。
@@ -243,4 +246,61 @@ func (h *LearningGoalHandler) GetStats(c *gin.Context) {
 	}
 
 	respondOK(c, stats)
+}
+
+// ToggleShare は学習目標の公開/非公開を切り替える。所有者のみ操作可能。
+func (h *LearningGoalHandler) ToggleShare(c *gin.Context) {
+	userID := c.GetUint("userID")
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	goal, err := h.service.ToggleShare(id, userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, goal)
+}
+
+// GetPublicGoals は全ユーザーの公開済み学習目標一覧を返す。
+func (h *LearningGoalHandler) GetPublicGoals(c *gin.Context) {
+	limit, offset := parseLimitOffset(c)
+
+	goals, total, err := h.service.GetPublicGoals(limit, offset)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, dto.GoalListResponse{
+		Goals:  goals,
+		Total:  total,
+		Limit:  limit,
+		Offset: offset,
+	})
+}
+
+// GetPublicByUserID は指定ユーザーの公開済み学習目標一覧を返す。
+func (h *LearningGoalHandler) GetPublicByUserID(c *gin.Context) {
+	userID, ok := parseID(c, "userId")
+	if !ok {
+		return
+	}
+
+	limit, offset := parseLimitOffset(c)
+	goals, total, err := h.service.GetPublicByUserID(userID, limit, offset)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, dto.GoalListResponse{
+		Goals:  goals,
+		Total:  total,
+		Limit:  limit,
+		Offset: offset,
+	})
 }

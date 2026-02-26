@@ -655,7 +655,18 @@
       "activeCount": "进行中",
       "completedCount": "已完成",
       "avgProgress": "平均进度"
-    }
+    },
+    "toggleShare": "切换公开/私密",
+    "shareSuccess": "共享设置已更新",
+    "shareFailed": "共享设置更新失败",
+    "publicGoals": "公开目标",
+    "noPublicGoals": "没有公开目标",
+    "makePublic": "设为公开",
+    "makePrivate": "设为私密",
+    "isPublic": "公开",
+    "isPrivate": "私密",
+    "publicGoalsList": "社区目标",
+    "loadPublicGoalsFailed": "加载公开目标失败"
   },
   "learningLogs": {
     "title": "学习日志",

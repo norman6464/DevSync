@@ -644,7 +644,18 @@
       "activeCount": "進行中",
       "completedCount": "完了",
       "avgProgress": "平均進捗"
-    }
+    },
+    "toggleShare": "公開/非公開を切り替え",
+    "shareSuccess": "共有設定を更新しました",
+    "shareFailed": "共有設定の更新に失敗しました",
+    "publicGoals": "公開中の目標",
+    "noPublicGoals": "公開中の目標はありません",
+    "makePublic": "公開する",
+    "makePrivate": "非公開にする",
+    "isPublic": "公開中",
+    "isPrivate": "非公開",
+    "publicGoalsList": "みんなの目標",
+    "loadPublicGoalsFailed": "公開目標の取得に失敗しました"
   },
   "learningLogs": {
     "title": "学習ログ",

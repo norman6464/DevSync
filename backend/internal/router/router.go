@@ -384,6 +384,9 @@ func registerGoalRoutes(g *gin.RouterGroup, c *di.Container) {
 		goals.GET("/category/:category", c.LearningGoalHandler.GetByCategory)
 		goals.GET("/status/:status", c.LearningGoalHandler.GetByStatus)
 		goals.POST("/:id/duplicate", c.LearningGoalHandler.Duplicate)
+		goals.PUT("/:id/share", c.LearningGoalHandler.ToggleShare)
+		goals.GET("/public", c.LearningGoalHandler.GetPublicGoals)
+		goals.GET("/public/user/:userId", c.LearningGoalHandler.GetPublicByUserID)
 		goals.GET("/:id/linked-logs", c.LearningLogHandler.GetLinkedLogs)
 	}
 }

@@ -657,7 +657,18 @@
       "activeCount": "진행 중",
       "completedCount": "완료",
       "avgProgress": "평균 진행률"
-    }
+    },
+    "toggleShare": "공개/비공개 전환",
+    "shareSuccess": "공유 설정이 업데이트되었습니다",
+    "shareFailed": "공유 설정 업데이트에 실패했습니다",
+    "publicGoals": "공개 목표",
+    "noPublicGoals": "공개 목표가 없습니다",
+    "makePublic": "공개하기",
+    "makePrivate": "비공개하기",
+    "isPublic": "공개",
+    "isPrivate": "비공개",
+    "publicGoalsList": "모두의 목표",
+    "loadPublicGoalsFailed": "공개 목표를 불러오지 못했습니다"
   },
   "learningLogs": {
     "title": "학습 로그",
