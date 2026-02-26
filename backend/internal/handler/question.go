@@ -25,6 +25,7 @@ type QuestionServiceInterface interface {
 	Unbookmark(userID, questionID uint) error
 	GetBookmarkedByUserID(userID uint, limit, offset int) ([]model.Question, int64, error)
 	GetUnanswered(limit, offset int) ([]model.Question, int64, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // QuestionHandler は質問関連のHTTPハンドラ。
@@ -318,4 +319,17 @@ func (h *QuestionHandler) GetBookmarks(c *gin.Context) {
 		Limit:     limit,
 		Offset:    offset,
 	})
+}
+
+// GetMyCount は認証ユーザーの質問総数を取得する。
+func (h *QuestionHandler) GetMyCount(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	count, err := h.service.CountByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, gin.H{"count": count})
 }

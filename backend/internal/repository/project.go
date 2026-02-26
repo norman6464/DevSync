@@ -112,3 +112,10 @@ func (r *ProjectRepository) FindArchivedByUserID(userID uint, limit, offset int)
 		Find(&projects).Error
 	return projects, total, err
 }
+
+// CountByUserID は指定ユーザーのプロジェクト総数を返す。
+func (r *ProjectRepository) CountByUserID(userID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.Project{}).Where("user_id = ?", userID).Count(&count).Error
+	return count, err
+}

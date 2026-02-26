@@ -20,6 +20,7 @@ type ProjectServiceInterface interface {
 	Archive(id, userID uint) error
 	Unarchive(id, userID uint) error
 	GetArchivedByUserID(userID uint, limit, offset int) ([]model.Project, int64, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // ProjectHandler はプロジェクト関連のHTTPハンドラ。
@@ -252,6 +253,19 @@ func (h *ProjectHandler) Search(c *gin.Context) {
 		Limit:    limit,
 		Offset:   offset,
 	})
+}
+
+// GetMyCount は認証ユーザーのプロジェクト総数を取得する。
+func (h *ProjectHandler) GetMyCount(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	count, err := h.service.CountByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, gin.H{"count": count})
 }
 
 // GetAll はプロジェクトの一覧をページネーション付きで取得する。

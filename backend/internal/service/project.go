@@ -168,3 +168,8 @@ func (s *ProjectService) Delete(id, userID uint) error {
 	}
 	return s.repo.Delete(id)
 }
+
+// CountByUserID は指定ユーザーのプロジェクト総数を返す。
+func (s *ProjectService) CountByUserID(userID uint) (int64, error) {
+	return s.repo.CountByUserID(userID)
+}
