@@ -23,8 +23,17 @@ func (s *PostTemplateService) Create(tmpl *model.PostTemplate) error {
 	if strings.TrimSpace(tmpl.Name) == "" {
 		return domain.NewError(domain.ErrCodeBadRequest, "テンプレート名は必須です", nil)
 	}
+	if len([]rune(tmpl.Name)) > 100 {
+		return domain.NewError(domain.ErrCodeValidation, "テンプレート名は100文字以下である必要があります", nil)
+	}
 	if strings.TrimSpace(tmpl.ContentTemplate) == "" {
 		return domain.NewError(domain.ErrCodeBadRequest, "テンプレート内容は必須です", nil)
+	}
+	if len([]rune(tmpl.ContentTemplate)) > 50000 {
+		return domain.NewError(domain.ErrCodeValidation, "テンプレート内容は50000文字以下である必要があります", nil)
+	}
+	if len([]rune(tmpl.TitleTemplate)) > 200 {
+		return domain.NewError(domain.ErrCodeValidation, "タイトルテンプレートは200文字以下である必要があります", nil)
 	}
 	return s.repo.Create(tmpl)
 }
@@ -47,12 +56,21 @@ func (s *PostTemplateService) Update(id, userID uint, updates *model.PostTemplat
 	}
 
 	if strings.TrimSpace(updates.Name) != "" {
+		if len([]rune(updates.Name)) > 100 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "テンプレート名は100文字以下である必要があります", nil)
+		}
 		tmpl.Name = updates.Name
 	}
 	if strings.TrimSpace(updates.TitleTemplate) != "" {
+		if len([]rune(updates.TitleTemplate)) > 200 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "タイトルテンプレートは200文字以下である必要があります", nil)
+		}
 		tmpl.TitleTemplate = updates.TitleTemplate
 	}
 	if strings.TrimSpace(updates.ContentTemplate) != "" {
+		if len([]rune(updates.ContentTemplate)) > 50000 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "テンプレート内容は50000文字以下である必要があります", nil)
+		}
 		tmpl.ContentTemplate = updates.ContentTemplate
 	}
 

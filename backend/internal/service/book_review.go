@@ -34,6 +34,12 @@ func (s *BookReviewService) Create(review *model.BookReview) error {
 	if err := validateRating(review.Rating); err != nil {
 		return err
 	}
+	if len([]rune(strings.TrimSpace(review.Author))) > 200 {
+		return domain.NewError(domain.ErrCodeValidation, "著者名は200文字以下である必要があります", nil)
+	}
+	if len(strings.TrimSpace(review.ISBN)) > 20 {
+		return domain.NewError(domain.ErrCodeValidation, "ISBNは20文字以下である必要があります", nil)
+	}
 	if len(strings.TrimSpace(review.Review)) > 10000 {
 		return domain.NewError(domain.ErrCodeValidation, "レビュー本文は10000文字以下である必要があります", nil)
 	}
@@ -92,9 +98,15 @@ func (s *BookReviewService) Update(id, userID uint, updates *model.BookReview) (
 		review.Title = strings.TrimSpace(updates.Title)
 	}
 	if strings.TrimSpace(updates.Author) != "" {
+		if len([]rune(strings.TrimSpace(updates.Author))) > 200 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "著者名は200文字以下である必要があります", nil)
+		}
 		review.Author = strings.TrimSpace(updates.Author)
 	}
 	if strings.TrimSpace(updates.ISBN) != "" {
+		if len(strings.TrimSpace(updates.ISBN)) > 20 {
+			return nil, domain.NewError(domain.ErrCodeValidation, "ISBNは20文字以下である必要があります", nil)
+		}
 		review.ISBN = strings.TrimSpace(updates.ISBN)
 	}
 	if updates.Rating != 0 {
