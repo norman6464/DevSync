@@ -714,3 +714,29 @@ func TestQuestionGetUnanswered_RepoError(t *testing.T) {
 	assert.Equal(t, int64(0), total)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// CountByUserID テスト
+// ============================================================
+
+func TestQuestionCountByUserID_Success(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	repo.On("CountByUserID", uint(1)).Return(int64(12), nil)
+
+	count, err := svc.CountByUserID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(12), count)
+	repo.AssertExpectations(t)
+}
+
+func TestQuestionCountByUserID_Error(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	repo.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	count, err := svc.CountByUserID(1)
+	assert.Error(t, err)
+	assert.Equal(t, int64(0), count)
+	repo.AssertExpectations(t)
+}

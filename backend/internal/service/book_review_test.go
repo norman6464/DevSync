@@ -789,3 +789,29 @@ func TestBookReviewUpdate_ISBNTooLong(t *testing.T) {
 	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), "ISBNは20文字以下")
 }
+
+// ============================================================
+// CountByUserID テスト
+// ============================================================
+
+func TestBookReviewCountByUserID_Success(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	repo.On("CountByUserID", uint(1)).Return(int64(8), nil)
+
+	count, err := svc.CountByUserID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(8), count)
+	repo.AssertExpectations(t)
+}
+
+func TestBookReviewCountByUserID_Error(t *testing.T) {
+	svc, repo := newTestBookReviewService()
+
+	repo.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	count, err := svc.CountByUserID(1)
+	assert.Error(t, err)
+	assert.Equal(t, int64(0), count)
+	repo.AssertExpectations(t)
+}
