@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/stretchr/testify/assert"
@@ -721,4 +722,70 @@ func TestNoteService_CountFavoritesByUserID_RepoError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, int64(0), count)
 	repo.AssertExpectations(t)
+}
+
+// ============================================================
+// ExportMarkdown テスト
+// ============================================================
+
+func TestNoteService_ExportMarkdown_Success(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	now := time.Date(2025, 6, 15, 10, 30, 0, 0, time.UTC)
+	note := &model.Note{
+		ID:        1,
+		UserID:    1,
+		Title:     "Go学習メモ",
+		Content:   "## インターフェース\n\nGoのインターフェースは暗黙的に実装される。",
+		Tags:      "Go,学習",
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+	repo.On("FindByID", uint(1)).Return(note, nil)
+
+	data, title, err := svc.ExportMarkdown(1, 1)
+	assert.NoError(t, err)
+	assert.Equal(t, "Go学習メモ", title)
+	content := string(data)
+	assert.Contains(t, content, "# Go学習メモ")
+	assert.Contains(t, content, "**Tags:** Go,学習")
+	assert.Contains(t, content, "**Created:** 2025-06-15 10:30")
+	assert.Contains(t, content, "---")
+	assert.Contains(t, content, "## インターフェース")
+	repo.AssertExpectations(t)
+}
+
+func TestNoteService_ExportMarkdown_NoTags(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	now := time.Now()
+	note := &model.Note{
+		ID: 1, UserID: 1, Title: "タグなしノート", Content: "内容", Tags: "",
+		CreatedAt: now, UpdatedAt: now,
+	}
+	repo.On("FindByID", uint(1)).Return(note, nil)
+
+	data, _, err := svc.ExportMarkdown(1, 1)
+	assert.NoError(t, err)
+	assert.NotContains(t, string(data), "**Tags:**")
+}
+
+func TestNoteService_ExportMarkdown_NotFound(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	repo.On("FindByID", uint(999)).Return(nil, errors.New("not found"))
+
+	_, _, err := svc.ExportMarkdown(999, 1)
+	assert.Error(t, err)
+}
+
+func TestNoteService_ExportMarkdown_Forbidden(t *testing.T) {
+	svc, repo := newTestNoteService()
+
+	note := &model.Note{ID: 1, UserID: 99, Title: "他人のノート"}
+	repo.On("FindByID", uint(1)).Return(note, nil)
+
+	_, _, err := svc.ExportMarkdown(1, 1)
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrForbidden)
 }

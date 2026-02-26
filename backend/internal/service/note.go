@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/norman6464/devsync/backend/internal/domain"
@@ -149,6 +150,29 @@ func (s *NoteService) GetArchived(userID uint, page, limit int) ([]model.Note, e
 // CountArchivedByUserID は指定ユーザーのアーカイブ済みノート総数を取得する。
 func (s *NoteService) CountArchivedByUserID(userID uint) (int64, error) {
 	return s.repo.CountArchivedByUserID(userID)
+}
+
+// ExportMarkdown はノートをMarkdown形式でエクスポートする。
+// メタデータ（タグ、作成日、更新日）をヘッダーに含む。
+func (s *NoteService) ExportMarkdown(id, userID uint) ([]byte, string, error) {
+	note, err := s.findAndCheckOwnership(id, userID)
+	if err != nil {
+		return nil, "", err
+	}
+
+	var b strings.Builder
+	b.WriteString(fmt.Sprintf("# %s\n\n", note.Title))
+
+	if note.Tags != "" {
+		b.WriteString(fmt.Sprintf("**Tags:** %s\n", note.Tags))
+	}
+	b.WriteString(fmt.Sprintf("**Created:** %s\n", note.CreatedAt.Format("2006-01-02 15:04")))
+	b.WriteString(fmt.Sprintf("**Updated:** %s\n", note.UpdatedAt.Format("2006-01-02 15:04")))
+	b.WriteString("\n---\n\n")
+	b.WriteString(note.Content)
+	b.WriteString("\n")
+
+	return []byte(b.String()), note.Title, nil
 }
 
 // Duplicate は既存のノートを複製する。

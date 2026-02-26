@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
@@ -26,6 +28,7 @@ type NoteServiceInterface interface {
 	GetArchived(userID uint, page, limit int) ([]model.Note, error)
 	CountArchivedByUserID(userID uint) (int64, error)
 	Duplicate(id uint, userID uint) (*model.Note, error)
+	ExportMarkdown(id, userID uint) ([]byte, string, error)
 }
 
 // NoteHandler は学習ノート関連のHTTPハンドラ。
@@ -255,4 +258,23 @@ func (h *NoteHandler) Duplicate(c *gin.Context) {
 	}
 
 	respondCreated(c, duplicate)
+}
+
+// Export はノートをMarkdownファイルとしてエクスポートする。
+func (h *NoteHandler) Export(c *gin.Context) {
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+	userID := c.GetUint("userID")
+
+	data, title, err := h.service.ExportMarkdown(id, userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	filename := fmt.Sprintf("%s.md", title)
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
+	c.Data(200, "text/markdown; charset=utf-8", data)
 }

@@ -1479,7 +1479,10 @@
     "tagsPlaceholder": "例如：React, TypeScript, Go",
     "allTags": "所有標籤",
     "volumeRegular": "標準",
-    "volumeDetailed": "詳細"
+    "volumeDetailed": "詳細",
+    "exportMarkdown": "匯出為Markdown",
+    "exportSuccess": "筆記匯出成功",
+    "exportError": "匯出失敗"
   },
   "githubCallback": {
     "missingOAuthParams": "缺少OAuth參數",

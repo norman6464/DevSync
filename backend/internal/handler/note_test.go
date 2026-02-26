@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -96,6 +97,14 @@ func (m *MockNoteService) Duplicate(id uint, userID uint) (*model.Note, error) {
 		return note.(*model.Note), args.Error(1)
 	}
 	return nil, args.Error(1)
+}
+
+func (m *MockNoteService) ExportMarkdown(id, userID uint) ([]byte, string, error) {
+	args := m.Called(id, userID)
+	if data := args.Get(0); data != nil {
+		return data.([]byte), args.String(1), args.Error(2)
+	}
+	return nil, "", args.Error(2)
 }
 
 // newTestNoteHandler はテスト用のNoteHandlerを生成する。
@@ -702,6 +711,47 @@ func TestNoteHandler_ToggleFavorite_ServiceError(t *testing.T) {
 	svc.On("ToggleFavorite", uint(1), uint(1)).Return(errors.New("error"))
 
 	w := doRequest(r, "PUT", "/notes/1/favorite", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+// ============================================================
+// Export テスト
+// ============================================================
+
+func TestNoteHandler_Export_Success(t *testing.T) {
+	h, svc := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/:id/export", h.Export)
+
+	mdContent := []byte("# テストノート\n\nコンテンツ")
+	svc.On("ExportMarkdown", uint(1), uint(1)).Return(mdContent, "テストノート", nil)
+
+	w := doRequest(r, "GET", "/notes/1/export", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Contains(t, w.Header().Get("Content-Disposition"), "テストノート.md")
+	assert.Contains(t, w.Header().Get("Content-Type"), "text/markdown")
+	assert.Contains(t, w.Body.String(), "# テストノート")
+	svc.AssertExpectations(t)
+}
+
+func TestNoteHandler_Export_InvalidID(t *testing.T) {
+	h, _ := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/:id/export", h.Export)
+
+	w := doRequest(r, "GET", "/notes/abc/export", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestNoteHandler_Export_ServiceError(t *testing.T) {
+	h, svc := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/:id/export", h.Export)
+
+	svc.On("ExportMarkdown", uint(999), uint(1)).Return(nil, "", errors.New("not found"))
+
+	w := doRequest(r, "GET", "/notes/999/export", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
 	svc.AssertExpectations(t)
 }

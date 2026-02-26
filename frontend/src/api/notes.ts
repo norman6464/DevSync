@@ -77,3 +77,6 @@ export const getArchivedNotes = (page = 1, limit = 20) =>
 
 export const duplicateNote = (id: number) =>
   client.post<Note>(`/notes/${id}/duplicate`);
+
+export const exportNoteMarkdown = (id: number) =>
+  client.get<Blob>(`/notes/${id}/export`, { responseType: 'blob' });
