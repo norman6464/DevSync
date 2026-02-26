@@ -902,7 +902,7 @@
     "title": "Buchrezensionen",
     "timeline": "Zeitleiste",
     "profile": "Profil",
-    "progress": "Fortschritt",
+    "progress": "Lesefortschritt",
     "activities": "Aktivitäten",
     "recommendations": "Empfehlungen",
     "subtitle": "Teile deine Meinung zu Technikbüchern",
@@ -945,7 +945,6 @@
     "statusUpdateFailed": "Statusaktualisierung fehlgeschlagen",
     "totalPages": "Gesamtseitenzahl",
     "currentPage": "Aktuelle Seite",
-    "progress": "Lesefortschritt",
     "progressPercent": "{{percent}}% abgeschlossen",
     "progressUpdate": "Fortschritt aktualisieren",
     "progressUpdated": "Lesefortschritt aktualisiert",
@@ -1654,5 +1653,13 @@
     "resetToDefault": "Auf Standard zurücksetzen",
     "saveSuccess": "Widget-Einstellungen gespeichert",
     "resetSuccess": "Widget-Einstellungen zurückgesetzt"
+  },
+  "reactionSummary": {
+    "title": "Reaktionszusammenfassung",
+    "totalReactions": "Gesamte Reaktionen",
+    "emojiBreakdown": "Emoji-Aufschlüsselung",
+    "topPosts": "Meistbeachtete Beiträge",
+    "noReactions": "Noch keine Reaktionen",
+    "loadFailed": "Laden der Reaktionszusammenfassung fehlgeschlagen"
   }
 }

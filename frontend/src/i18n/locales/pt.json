@@ -903,7 +903,7 @@
     "title": "Resenhas de Livros",
     "timeline": "Linha do tempo",
     "profile": "Perfil",
-    "progress": "Progresso",
+    "progress": "Progresso de leitura",
     "activities": "Atividades",
     "recommendations": "Recomendações",
     "subtitle": "Compartilhe suas opiniões sobre livros de tecnologia",
@@ -946,7 +946,6 @@
     "statusUpdateFailed": "Falha ao atualizar status",
     "totalPages": "Total de páginas",
     "currentPage": "Página atual",
-    "progress": "Progresso de leitura",
     "progressPercent": "{{percent}}% concluído",
     "progressUpdate": "Atualizar progresso",
     "progressUpdated": "Progresso de leitura atualizado",
@@ -1655,5 +1654,13 @@
     "resetToDefault": "Restaurar padrão",
     "saveSuccess": "Configurações de widgets salvas",
     "resetSuccess": "Configurações de widgets redefinidas"
+  },
+  "reactionSummary": {
+    "title": "Resumo de reações",
+    "totalReactions": "Total de reações",
+    "emojiBreakdown": "Detalhamento por emoji",
+    "topPosts": "Publicações mais reagidas",
+    "noReactions": "Ainda não há reações",
+    "loadFailed": "Falha ao carregar resumo de reações"
   }
 }

@@ -902,7 +902,7 @@
     "title": "Обзоры книг",
     "timeline": "Лента",
     "profile": "Профиль",
-    "progress": "Прогресс",
+    "progress": "Прогресс чтения",
     "activities": "Активности",
     "recommendations": "Рекомендации",
     "subtitle": "Поделитесь своим мнением о технических книгах",
@@ -945,7 +945,6 @@
     "statusUpdateFailed": "Не удалось обновить статус",
     "totalPages": "Всего страниц",
     "currentPage": "Текущая страница",
-    "progress": "Прогресс чтения",
     "progressPercent": "{{percent}}% завершено",
     "progressUpdate": "Обновить прогресс",
     "progressUpdated": "Прогресс чтения обновлён",
@@ -1654,5 +1653,13 @@
     "resetToDefault": "Сбросить по умолчанию",
     "saveSuccess": "Настройки виджетов сохранены",
     "resetSuccess": "Настройки виджетов сброшены"
+  },
+  "reactionSummary": {
+    "title": "Сводка реакций",
+    "totalReactions": "Всего реакций",
+    "emojiBreakdown": "Разбивка по эмодзи",
+    "topPosts": "Самые реагируемые посты",
+    "noReactions": "Реакций пока нет",
+    "loadFailed": "Не удалось загрузить сводку реакций"
   }
 }

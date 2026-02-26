@@ -637,6 +637,14 @@ func (m *MockReactionStatsService) GetReactionStats(userID uint) (*model.Reactio
 	return nil, args.Error(1)
 }
 
+func (m *MockReactionStatsService) GetReactionSummary(userID uint) (*model.ReactionSummary, error) {
+	args := m.Called(userID)
+	if v := args.Get(0); v != nil {
+		return v.(*model.ReactionSummary), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
 func TestReactionStats_GetStats_Success(t *testing.T) {
 	svc := new(MockReactionStatsService)
 	h := NewReactionStatsHandler(svc)
@@ -664,6 +672,41 @@ func TestReactionStats_GetStats_ServiceError(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/users/:id/stats/reactions", h.GetStats)
 	w := doRequest(r, http.MethodGet, "/users/5/stats/reactions", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	svc.AssertExpectations(t)
+}
+
+func TestReactionStats_GetSummary_Success(t *testing.T) {
+	svc := new(MockReactionStatsService)
+	h := NewReactionStatsHandler(svc)
+	svc.On("GetReactionSummary", uint(5)).Return(&model.ReactionSummary{
+		TotalReactions: 10,
+		EmojiCounts:    []model.ReactionCount{{Emoji: "👍", Count: 5}},
+		TopPosts:       []model.TopReactedPost{{ID: 1, Title: "Test", ReactionCount: 5}},
+	}, nil)
+	r := newRouter(1)
+	r.GET("/users/:id/reaction-summary", h.GetSummary)
+	w := doRequest(r, http.MethodGet, "/users/5/reaction-summary", nil)
+	assertStatus(t, w, http.StatusOK)
+	svc.AssertExpectations(t)
+}
+
+func TestReactionStats_GetSummary_InvalidID(t *testing.T) {
+	svc := new(MockReactionStatsService)
+	h := NewReactionStatsHandler(svc)
+	r := newRouter(1)
+	r.GET("/users/:id/reaction-summary", h.GetSummary)
+	w := doRequest(r, http.MethodGet, "/users/abc/reaction-summary", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestReactionStats_GetSummary_ServiceError(t *testing.T) {
+	svc := new(MockReactionStatsService)
+	h := NewReactionStatsHandler(svc)
+	svc.On("GetReactionSummary", uint(5)).Return(nil, errors.New("db error"))
+	r := newRouter(1)
+	r.GET("/users/:id/reaction-summary", h.GetSummary)
+	w := doRequest(r, http.MethodGet, "/users/5/reaction-summary", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
 	svc.AssertExpectations(t)
 }

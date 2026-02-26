@@ -1556,5 +1556,13 @@
     "resetToDefault": "デフォルトに戻す",
     "saveSuccess": "ウィジェット設定を保存しました",
     "resetSuccess": "ウィジェット設定をリセットしました"
+  },
+  "reactionSummary": {
+    "title": "リアクションサマリー",
+    "totalReactions": "リアクション合計",
+    "emojiBreakdown": "絵文字別集計",
+    "topPosts": "リアクション上位の投稿",
+    "noReactions": "まだリアクションがありません",
+    "loadFailed": "リアクションサマリーの読み込みに失敗しました"
   }
 }

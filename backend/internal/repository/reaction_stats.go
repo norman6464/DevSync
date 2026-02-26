@@ -50,3 +50,30 @@ func (r *ReactionStatsRepository) GetReactionStats(userID uint) (*model.Reaction
 
 	return &stats, nil
 }
+
+// GetEmojiBreakdown は指定ユーザーの全投稿に対する絵文字別リアクション集計を返す。
+func (r *ReactionStatsRepository) GetEmojiBreakdown(userID uint) ([]model.ReactionCount, error) {
+	var counts []model.ReactionCount
+	err := r.db.Model(&model.Reaction{}).
+		Select("reactions.emoji, COUNT(*) as count").
+		Joins("JOIN posts ON posts.id = reactions.post_id").
+		Where("posts.user_id = ?", userID).
+		Group("reactions.emoji").
+		Order("count DESC").
+		Find(&counts).Error
+	return counts, err
+}
+
+// GetTopReactedPosts は指定ユーザーの投稿のうちリアクション数が多い順にlimit件返す。
+func (r *ReactionStatsRepository) GetTopReactedPosts(userID uint, limit int) ([]model.TopReactedPost, error) {
+	var posts []model.TopReactedPost
+	err := r.db.Model(&model.Reaction{}).
+		Select("posts.id, posts.title, COUNT(*) as reaction_count").
+		Joins("JOIN posts ON posts.id = reactions.post_id").
+		Where("posts.user_id = ?", userID).
+		Group("posts.id, posts.title").
+		Order("reaction_count DESC").
+		Limit(limit).
+		Find(&posts).Error
+	return posts, err
+}

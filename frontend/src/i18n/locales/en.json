@@ -903,7 +903,7 @@
     "title": "Book Reviews",
     "timeline": "Timeline",
     "profile": "Profile",
-    "progress": "Progress",
+    "progress": "Reading Progress",
     "activities": "Activities",
     "recommendations": "Recommendations",
     "subtitle": "Share your thoughts on tech books",
@@ -946,7 +946,6 @@
     "statusUpdateFailed": "Failed to update status",
     "totalPages": "Total Pages",
     "currentPage": "Current Page",
-    "progress": "Reading Progress",
     "progressPercent": "{{percent}}% Complete",
     "progressUpdate": "Update Progress",
     "progressUpdated": "Reading progress updated",
@@ -1655,5 +1654,13 @@
     "resetToDefault": "Reset to Default",
     "saveSuccess": "Widget settings saved",
     "resetSuccess": "Widget settings reset"
+  },
+  "reactionSummary": {
+    "title": "Reaction Summary",
+    "totalReactions": "Total Reactions",
+    "emojiBreakdown": "Emoji Breakdown",
+    "topPosts": "Top Reacted Posts",
+    "noReactions": "No reactions yet",
+    "loadFailed": "Failed to load reaction summary"
   }
 }

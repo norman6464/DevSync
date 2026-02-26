@@ -57,6 +57,20 @@ type ReactionCount struct {
 	Count int    `json:"count"`
 }
 
+// TopReactedPost はリアクション数が多い投稿の要約。
+type TopReactedPost struct {
+	ID            uint   `json:"id"`
+	Title         string `json:"title"`
+	ReactionCount int    `json:"reaction_count"`
+}
+
+// ReactionSummary はユーザーのリアクションサマリー。
+type ReactionSummary struct {
+	EmojiCounts    []ReactionCount  `json:"emoji_counts"`
+	TopPosts       []TopReactedPost `json:"top_posts"`
+	TotalReactions int              `json:"total_reactions"`
+}
+
 // PostSeries は関連する投稿をシリーズとしてグループ化する。
 type PostSeries struct {
 	ID          uint      `json:"id" gorm:"primaryKey"`
