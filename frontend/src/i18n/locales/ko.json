@@ -1674,5 +1674,20 @@
     "targetHours": "목표 학습 시간",
     "autoProgressUpdate": "학습 로그 기록 시 목표 진행률이 자동 업데이트됩니다",
     "goalCompleted": "목표가 자동으로 완료되었습니다"
+  },
+  "weeklyGoal": {
+    "title": "주간 카테고리 목표",
+    "setGoal": "목표 설정",
+    "category": "카테고리",
+    "targetMinutes": "목표 시간(분)",
+    "actualMinutes": "실제 시간(분)",
+    "progress": "진행률",
+    "noGoals": "주간 목표가 설정되지 않았습니다",
+    "setSuccess": "주간 목표가 설정되었습니다",
+    "coding": "코딩",
+    "reading": "독서",
+    "video": "영상 학습",
+    "exercise": "연습",
+    "other": "기타"
   }
 }

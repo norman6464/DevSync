@@ -1574,5 +1574,20 @@
     "targetHours": "目標学習時間",
     "autoProgressUpdate": "学習ログ記録時にゴール進捗を自動更新します",
     "goalCompleted": "ゴールが自動的に完了しました"
+  },
+  "weeklyGoal": {
+    "title": "週間カテゴリ目標",
+    "setGoal": "目標を設定",
+    "category": "カテゴリ",
+    "targetMinutes": "目標時間（分）",
+    "actualMinutes": "実績時間（分）",
+    "progress": "進捗",
+    "noGoals": "週間目標が設定されていません",
+    "setSuccess": "週間目標を設定しました",
+    "coding": "コーディング",
+    "reading": "読書",
+    "video": "動画学習",
+    "exercise": "演習",
+    "other": "その他"
   }
 }

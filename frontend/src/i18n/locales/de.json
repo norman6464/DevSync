@@ -1671,5 +1671,20 @@
     "targetHours": "Zielstunden",
     "autoProgressUpdate": "Der Zielfortschritt wird beim Protokollieren automatisch aktualisiert",
     "goalCompleted": "Ziel wurde automatisch abgeschlossen"
+  },
+  "weeklyGoal": {
+    "title": "Wöchentliche Kategorie-Ziele",
+    "setGoal": "Ziel setzen",
+    "category": "Kategorie",
+    "targetMinutes": "Zielminuten",
+    "actualMinutes": "Tatsächliche Minuten",
+    "progress": "Fortschritt",
+    "noGoals": "Keine wöchentlichen Ziele gesetzt",
+    "setSuccess": "Wöchentliches Ziel gesetzt",
+    "coding": "Programmieren",
+    "reading": "Lesen",
+    "video": "Video-Lernen",
+    "exercise": "Übung",
+    "other": "Sonstiges"
   }
 }

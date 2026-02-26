@@ -340,6 +340,7 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 	registerNoteRoutes(g, c)
 	registerEmailPreferencesRoutes(g, c)
 	registerWeeklyChallengeRoutes(g, c)
+	registerWeeklyGoalRoutes(g, c)
 }
 
 func registerGoalRoutes(g *gin.RouterGroup, c *di.Container) {
@@ -721,6 +722,15 @@ func registerWeeklyChallengeRoutes(g *gin.RouterGroup, c *di.Container) {
 	{
 		challenges.GET("/current", c.WeeklyChallengeHandler.GetCurrent)
 		challenges.PUT("/progress", c.WeeklyChallengeHandler.UpdateProgress)
+	}
+}
+
+func registerWeeklyGoalRoutes(g *gin.RouterGroup, c *di.Container) {
+	weeklyGoals := g.Group("/weekly-goals")
+	{
+		weeklyGoals.PUT("", c.WeeklyGoalHandler.SetGoal)
+		weeklyGoals.GET("", c.WeeklyGoalHandler.GetGoals)
+		weeklyGoals.GET("/progress", c.WeeklyGoalHandler.GetProgress)
 	}
 }
 

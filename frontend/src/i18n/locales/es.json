@@ -1672,5 +1672,20 @@
     "targetHours": "Horas objetivo",
     "autoProgressUpdate": "El progreso del objetivo se actualiza automáticamente al registrar aprendizaje",
     "goalCompleted": "El objetivo se completó automáticamente"
+  },
+  "weeklyGoal": {
+    "title": "Objetivos semanales por categoría",
+    "setGoal": "Establecer objetivo",
+    "category": "Categoría",
+    "targetMinutes": "Minutos objetivo",
+    "actualMinutes": "Minutos reales",
+    "progress": "Progreso",
+    "noGoals": "No se han establecido objetivos semanales",
+    "setSuccess": "Objetivo semanal establecido",
+    "coding": "Programación",
+    "reading": "Lectura",
+    "video": "Aprendizaje en video",
+    "exercise": "Ejercicio",
+    "other": "Otro"
   }
 }
