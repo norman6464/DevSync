@@ -1671,12 +1671,29 @@
   },
   "widgetSettings": {
     "title": "小工具設定",
-    "customize": "自訂小工具",
+    "customize": "自訂",
+    "saveSuccess": "小工具設定已儲存",
+    "saveFailed": "儲存小工具設定失敗",
     "show": "顯示",
     "hide": "隱藏",
-    "resetToDefault": "恢復預設",
-    "saveSuccess": "小工具設定已儲存",
-    "resetSuccess": "小工具設定已重設"
+    "moveUp": "上移",
+    "moveDown": "下移",
+    "widgets": {
+      "userProfile": "使用者資料",
+      "level": "等級",
+      "streak": "連續天數",
+      "dailyChallenge": "每日挑戰",
+      "weeklyChallenge": "每週挑戰",
+      "studyCircle": "讀書圈",
+      "quickEntry": "快速記錄",
+      "quickActions": "快捷操作",
+      "recommendedUsers": "推薦使用者",
+      "trending": "熱門",
+      "aiAdvice": "AI建議",
+      "goalsProgress": "目標進度",
+      "recentNotifications": "最近通知",
+      "quickStats": "快速統計"
+    }
   },
   "reactionSummary": {
     "title": "反應摘要",

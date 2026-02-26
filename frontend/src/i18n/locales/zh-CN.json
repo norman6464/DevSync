@@ -1669,12 +1669,29 @@
   },
   "widgetSettings": {
     "title": "小部件设置",
-    "customize": "自定义小部件",
+    "customize": "自定义",
+    "saveSuccess": "小部件设置已保存",
+    "saveFailed": "保存小部件设置失败",
     "show": "显示",
     "hide": "隐藏",
-    "resetToDefault": "恢复默认",
-    "saveSuccess": "小部件设置已保存",
-    "resetSuccess": "小部件设置已重置"
+    "moveUp": "上移",
+    "moveDown": "下移",
+    "widgets": {
+      "userProfile": "用户资料",
+      "level": "等级",
+      "streak": "连续天数",
+      "dailyChallenge": "每日挑战",
+      "weeklyChallenge": "每周挑战",
+      "studyCircle": "学习圈",
+      "quickEntry": "快速记录",
+      "quickActions": "快捷操作",
+      "recommendedUsers": "推荐用户",
+      "trending": "热门",
+      "aiAdvice": "AI建议",
+      "goalsProgress": "目标进度",
+      "recentNotifications": "最近通知",
+      "quickStats": "快速统计"
+    }
   },
   "reactionSummary": {
     "title": "反应摘要",

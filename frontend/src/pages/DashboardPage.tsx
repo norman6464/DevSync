@@ -1,10 +1,10 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import QuickStatsWidget from '../components/dashboard/QuickStatsWidget';
 import QuickActionsWidget from '../components/dashboard/QuickActionsWidget';
 import { useAuthStore } from '../store/authStore';
-import { usePosts, useDashboard, useBadgeNotifier, useConfirm } from '../hooks';
+import { usePosts, useDashboard, useBadgeNotifier, useConfirm, useWidgetSettings } from '../hooks';
 import { getUserBadges } from '../api/badges';
 import { useAsyncData } from '../hooks/useAsyncData';
 import type { BadgeResult } from '../types/badge';
@@ -29,6 +29,7 @@ import StudyCircleWidget from '../components/dashboard/StudyCircleWidget';
 import GoalsProgressWidget from '../components/dashboard/GoalsProgressWidget';
 import QuickEntryWidget from '../components/dashboard/QuickEntryWidget';
 import WeeklyChallengeWidget from '../components/dashboard/WeeklyChallengeWidget';
+import WidgetSettingsPanel from '../components/dashboard/WidgetSettingsPanel';
 
 export default function DashboardPage() {
   const { t } = useTranslation();
@@ -49,6 +50,19 @@ export default function DashboardPage() {
     recentNotifications,
     notificationsLoading,
   } = useDashboard();
+
+  const {
+    widgets,
+    editing: widgetEditing,
+    localWidgets,
+    saving: widgetSaving,
+    startEditing: startWidgetEditing,
+    cancelEditing: cancelWidgetEditing,
+    toggleVisibility,
+    moveUp,
+    moveDown,
+    saveSettings: saveWidgetSettings,
+  } = useWidgetSettings();
 
   // Fetch badges for the current user and detect new acquisitions
   const { data: badges } = useAsyncData(
@@ -75,6 +89,43 @@ export default function DashboardPage() {
   ) => {
     await createPost(title, content, imageUrls, codeSnippets, isDraft);
   }, [createPost]);
+
+  // Widget component registry
+  const widgetComponents: Record<string, ReactNode> = {
+    userProfile: <UserProfileWidget />,
+    level: <LevelWidget />,
+    streak: <StreakWidget />,
+    dailyChallenge: <DailyChallengeWidget />,
+    weeklyChallenge: <WeeklyChallengeWidget />,
+    studyCircle: <StudyCircleWidget />,
+    quickEntry: <QuickEntryWidget />,
+    quickActions: <QuickActionsWidget />,
+    recommendedUsers: <RecommendedUsersWidget />,
+    trending: <TrendingWidget />,
+    aiAdvice: <AIAdviceWidget />,
+    goalsProgress: (
+      <GoalsProgressWidget
+        activeGoals={activeGoals}
+        completedGoals={completedGoals}
+        avgProgress={avgProgress}
+        loading={goalsLoading}
+      />
+    ),
+    recentNotifications: (
+      <RecentNotificationsWidget
+        notifications={recentNotifications}
+        loading={notificationsLoading}
+      />
+    ),
+    quickStats: (
+      <QuickStatsWidget
+        activeCount={activeGoals.length}
+        completedCount={completedGoals.length}
+      />
+    ),
+  };
+
+  const visibleWidgets = widgets.filter((w) => w.visible);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -178,67 +229,41 @@ export default function DashboardPage() {
       </div>
 
       {/* Sidebar */}
-      <div className="space-y-6">
-        {/* User Profile Section */}
-        <div>
-          <h2 className="section-heading">{t('dashboard.profile')}</h2>
-          <UserProfileWidget />
-        </div>
-
-        {/* Progress Section */}
-        <div>
-          <h2 className="section-heading">{t('dashboard.progress')}</h2>
-          <div className="space-y-4">
-            <LevelWidget />
-            <StreakWidget />
+      <div className="space-y-4">
+        {/* Widget Settings Toggle */}
+        {!widgetEditing && (
+          <div className="flex justify-end">
+            <button
+              onClick={startWidgetEditing}
+              className="flex items-center gap-1.5 px-2.5 py-1 text-xs text-gray-400 hover:text-white border border-gray-700 hover:border-gray-500 rounded transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
+              </svg>
+              {t('widgetSettings.customize')}
+            </button>
           </div>
-        </div>
+        )}
 
-        {/* Activities Section */}
-        <div>
-          <h2 className="section-heading">{t('dashboard.activities')}</h2>
-          <div className="space-y-4">
-            <DailyChallengeWidget />
-            <WeeklyChallengeWidget />
-            <StudyCircleWidget />
+        {/* Widget Settings Panel */}
+        {widgetEditing && (
+          <WidgetSettingsPanel
+            widgets={localWidgets}
+            saving={widgetSaving}
+            onToggleVisibility={toggleVisibility}
+            onMoveUp={moveUp}
+            onMoveDown={moveDown}
+            onSave={saveWidgetSettings}
+            onCancel={cancelWidgetEditing}
+          />
+        )}
+
+        {/* Dynamic Widgets */}
+        {!widgetEditing && visibleWidgets.map((widget) => (
+          <div key={widget.key}>
+            {widgetComponents[widget.key]}
           </div>
-        </div>
-
-        {/* Quick Entry */}
-        <QuickEntryWidget />
-
-        {/* Quick Actions */}
-        <QuickActionsWidget />
-
-        {/* Recommendations Section */}
-        <div>
-          <h2 className="section-heading">{t('dashboard.recommendations')}</h2>
-          <div className="space-y-4">
-            <RecommendedUsersWidget />
-            <TrendingWidget />
-            <AIAdviceWidget />
-          </div>
-        </div>
-
-        {/* Goals Progress Widget */}
-        <GoalsProgressWidget
-          activeGoals={activeGoals}
-          completedGoals={completedGoals}
-          avgProgress={avgProgress}
-          loading={goalsLoading}
-        />
-
-        {/* Recent Notifications Widget */}
-        <RecentNotificationsWidget
-          notifications={recentNotifications}
-          loading={notificationsLoading}
-        />
-
-        {/* Quick Stats */}
-        <QuickStatsWidget
-          activeCount={activeGoals.length}
-          completedCount={completedGoals.length}
-        />
+        ))}
       </div>
       <ConfirmDialog {...dialogProps} />
     </div>

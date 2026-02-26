@@ -60,3 +60,4 @@ export { useBookmarkCollections, useCollectionPosts as useBookmarkCollectionPost
 export { useScheduledPosts } from './useScheduledPosts';
 export { useQuickEntry } from './useQuickEntry';
 export { useWeeklyChallenge } from './useWeeklyChallenge';
+export { useWidgetSettings } from './useWidgetSettings';
