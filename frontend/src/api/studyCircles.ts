@@ -75,3 +75,6 @@ export const searchCircles = (query: string, limit = 20, offset = 0) =>
 
 export const getCirclesByStatus = (status: string) =>
   client.get<StudyCircle[]>(`/study-circles/status/${status}`);
+
+export const updateMemberRole = (circleId: number, userId: number, role: 'owner' | 'member') =>
+  client.put(`/study-circles/${circleId}/members/${userId}/role`, { role });

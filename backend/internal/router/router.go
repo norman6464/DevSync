@@ -694,6 +694,7 @@ func registerStudyCircleRoutes(g *gin.RouterGroup, c *di.Container) {
 		circles.GET("/:id/members", c.StudyCircleHandler.GetMembers)
 		circles.POST("/:id/members", c.StudyCircleHandler.AddMember)
 		circles.DELETE("/:id/members/:userId", c.StudyCircleHandler.RemoveMember)
+		circles.PUT("/:id/members/:userId/role", c.StudyCircleHandler.UpdateMemberRole)
 		circles.POST("/:id/steps", c.StudyCircleHandler.CreateStep)
 		circles.PUT("/:id/steps/:stepId", c.StudyCircleHandler.UpdateStep)
 		circles.DELETE("/:id/steps/:stepId", c.StudyCircleHandler.DeleteStep)

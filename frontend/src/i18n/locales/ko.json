@@ -888,7 +888,11 @@
     "saveFailed": "저장에 실패했습니다",
     "unsaveFailed": "저장 취소에 실패했습니다",
     "noteFavorites": "즐겨찾기 노트",
-    "noteFavoritesEmpty": "즐겨찾기 노트가 아직 없습니다"
+    "noteFavoritesEmpty": "즐겨찾기 노트가 아직 없습니다",
+    "updateMemberRole": "멤버 역할 변경",
+    "roleOwner": "소유자",
+    "roleMember": "멤버",
+    "memberRoleUpdated": "멤버 역할이 변경되었습니다"
   },
   "portfolio": {
     "generate": "포트폴리오",

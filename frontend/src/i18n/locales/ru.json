@@ -886,7 +886,11 @@
     "saveFailed": "Не удалось сохранить",
     "unsaveFailed": "Не удалось убрать из сохранённых",
     "noteFavorites": "Избранные заметки",
-    "noteFavoritesEmpty": "Избранных заметок пока нет"
+    "noteFavoritesEmpty": "Избранных заметок пока нет",
+    "updateMemberRole": "Обновить роль участника",
+    "roleOwner": "Владелец",
+    "roleMember": "Участник",
+    "memberRoleUpdated": "Роль участника обновлена"
   },
   "portfolio": {
     "generate": "Портфолио",

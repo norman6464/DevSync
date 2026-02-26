@@ -851,7 +851,11 @@
     "saveFailed": "保存に失敗しました",
     "unsaveFailed": "保存解除に失敗しました",
     "noteFavorites": "お気に入りノート",
-    "noteFavoritesEmpty": "お気に入りノートはまだありません"
+    "noteFavoritesEmpty": "お気に入りノートはまだありません",
+    "updateMemberRole": "メンバー役割を更新",
+    "roleOwner": "オーナー",
+    "roleMember": "メンバー",
+    "memberRoleUpdated": "メンバー役割を更新しました"
   },
   "portfolio": {
     "generate": "ポートフォリオ",

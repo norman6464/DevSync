@@ -460,6 +460,7 @@ type StudyCircleRepositoryInterface interface {
 	GetMembers(circleID uint) ([]model.StudyCircleMember, error)
 	IsMember(circleID, userID uint) (bool, error)
 	GetMemberCount(circleID uint) (int, error)
+	UpdateMemberRole(circleID, userID uint, role model.StudyCircleMemberRole) error
 
 	// ステップCRUD
 	CreateStep(step *model.StudyCircleStep) error

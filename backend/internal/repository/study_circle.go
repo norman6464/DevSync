@@ -113,6 +113,13 @@ func (r *StudyCircleRepository) RemoveMember(circleID, userID uint) error {
 	return r.db.Where("circle_id = ? AND user_id = ?", circleID, userID).Delete(&model.StudyCircleMember{}).Error
 }
 
+// UpdateMemberRole はメンバーの役割を更新する。
+func (r *StudyCircleRepository) UpdateMemberRole(circleID, userID uint, role model.StudyCircleMemberRole) error {
+	return r.db.Model(&model.StudyCircleMember{}).
+		Where("circle_id = ? AND user_id = ?", circleID, userID).
+		Update("role", role).Error
+}
+
 // GetMembers はメンバー一覧を返す。
 func (r *StudyCircleRepository) GetMembers(circleID uint) ([]model.StudyCircleMember, error) {
 	var members []model.StudyCircleMember

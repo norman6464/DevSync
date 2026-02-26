@@ -888,7 +888,11 @@
     "saveFailed": "收藏失敗",
     "unsaveFailed": "取消收藏失敗",
     "noteFavorites": "收藏筆記",
-    "noteFavoritesEmpty": "還沒有收藏的筆記"
+    "noteFavoritesEmpty": "還沒有收藏的筆記",
+    "updateMemberRole": "更新成員角色",
+    "roleOwner": "擁有者",
+    "roleMember": "成員",
+    "memberRoleUpdated": "成員角色已更新"
   },
   "portfolio": {
     "generate": "作品集",
