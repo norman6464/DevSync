@@ -1623,5 +1623,27 @@
     "noProgress": "まだ進捗がありません",
     "allStatuses": "全ステータス",
     "trackProgress": "進捗を記録"
+  },
+  "milestones": {
+    "title": "マイルストーン",
+    "addMilestone": "マイルストーンを追加",
+    "editMilestone": "マイルストーンを編集",
+    "milestoneTitle": "タイトル",
+    "milestoneTitlePlaceholder": "マイルストーンのタイトル",
+    "description": "説明",
+    "descriptionPlaceholder": "マイルストーンの説明...",
+    "dueDate": "期日",
+    "status": "ステータス",
+    "notStarted": "未着手",
+    "inProgress": "進行中",
+    "completed": "完了",
+    "noMilestones": "マイルストーンがありません",
+    "createSuccess": "マイルストーンを作成しました",
+    "updateSuccess": "マイルストーンを更新しました",
+    "deleteSuccess": "マイルストーンを削除しました",
+    "createFailed": "マイルストーンの作成に失敗しました",
+    "updateFailed": "マイルストーンの更新に失敗しました",
+    "deleteFailed": "マイルストーンの削除に失敗しました",
+    "confirmDelete": "このマイルストーンを削除してもよろしいですか？"
   }
 }

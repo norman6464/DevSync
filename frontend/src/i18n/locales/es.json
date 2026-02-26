@@ -1721,5 +1721,27 @@
     "noProgress": "Aún no hay progreso",
     "allStatuses": "Todos los estados",
     "trackProgress": "Registrar Progreso"
+  },
+  "milestones": {
+    "title": "Hitos",
+    "addMilestone": "Agregar Hito",
+    "editMilestone": "Editar Hito",
+    "milestoneTitle": "Título",
+    "milestoneTitlePlaceholder": "Título del hito",
+    "description": "Descripción",
+    "descriptionPlaceholder": "Descripción del hito...",
+    "dueDate": "Fecha Límite",
+    "status": "Estado",
+    "notStarted": "No Iniciado",
+    "inProgress": "En Progreso",
+    "completed": "Completado",
+    "noMilestones": "No hay hitos aún",
+    "createSuccess": "Hito creado",
+    "updateSuccess": "Hito actualizado",
+    "deleteSuccess": "Hito eliminado",
+    "createFailed": "Error al crear el hito",
+    "updateFailed": "Error al actualizar el hito",
+    "deleteFailed": "Error al eliminar el hito",
+    "confirmDelete": "¿Estás seguro de que quieres eliminar este hito?"
   }
 }

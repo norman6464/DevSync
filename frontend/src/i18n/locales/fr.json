@@ -1721,5 +1721,27 @@
     "noProgress": "Pas encore de progression",
     "allStatuses": "Tous les statuts",
     "trackProgress": "Suivre la Progression"
+  },
+  "milestones": {
+    "title": "Jalons",
+    "addMilestone": "Ajouter un Jalon",
+    "editMilestone": "Modifier le Jalon",
+    "milestoneTitle": "Titre",
+    "milestoneTitlePlaceholder": "Titre du jalon",
+    "description": "Description",
+    "descriptionPlaceholder": "Description du jalon...",
+    "dueDate": "Date Limite",
+    "status": "Statut",
+    "notStarted": "Non Commencé",
+    "inProgress": "En Cours",
+    "completed": "Terminé",
+    "noMilestones": "Pas encore de jalons",
+    "createSuccess": "Jalon créé",
+    "updateSuccess": "Jalon mis à jour",
+    "deleteSuccess": "Jalon supprimé",
+    "createFailed": "Échec de la création du jalon",
+    "updateFailed": "Échec de la mise à jour du jalon",
+    "deleteFailed": "Échec de la suppression du jalon",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer ce jalon ?"
   }
 }

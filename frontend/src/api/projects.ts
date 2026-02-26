@@ -34,3 +34,48 @@ export const updateProject = async (id: number, data: UpdateProjectRequest): Pro
 export const deleteProject = async (id: number): Promise<void> => {
   await client.delete(`/projects/${id}`);
 };
+
+// --- マイルストーン ---
+
+export interface ProjectMilestone {
+  id: number;
+  project_id: number;
+  title: string;
+  description: string;
+  status: 'not_started' | 'in_progress' | 'completed';
+  due_date: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateMilestoneRequest {
+  title: string;
+  description?: string;
+  due_date?: string;
+}
+
+export interface UpdateMilestoneRequest {
+  title?: string;
+  description?: string;
+  due_date?: string;
+  status?: 'not_started' | 'in_progress' | 'completed';
+}
+
+export const createMilestone = async (projectId: number, data: CreateMilestoneRequest): Promise<void> => {
+  await client.post(`/projects/${projectId}/milestones`, data);
+};
+
+export const getMilestones = async (projectId: number): Promise<ProjectMilestone[]> => {
+  const res = await client.get(`/projects/${projectId}/milestones`);
+  return res.data.milestones;
+};
+
+export const updateMilestone = async (milestoneId: number, data: UpdateMilestoneRequest): Promise<ProjectMilestone> => {
+  const res = await client.put(`/projects/milestones/${milestoneId}`, data);
+  return res.data;
+};
+
+export const deleteMilestone = async (milestoneId: number): Promise<void> => {
+  await client.delete(`/projects/milestones/${milestoneId}`);
+};

@@ -1721,5 +1721,27 @@
     "noProgress": "No progress yet",
     "allStatuses": "All Statuses",
     "trackProgress": "Track Progress"
+  },
+  "milestones": {
+    "title": "Milestones",
+    "addMilestone": "Add Milestone",
+    "editMilestone": "Edit Milestone",
+    "milestoneTitle": "Title",
+    "milestoneTitlePlaceholder": "Milestone title",
+    "description": "Description",
+    "descriptionPlaceholder": "Milestone description...",
+    "dueDate": "Due Date",
+    "status": "Status",
+    "notStarted": "Not Started",
+    "inProgress": "In Progress",
+    "completed": "Completed",
+    "noMilestones": "No milestones yet",
+    "createSuccess": "Milestone created",
+    "updateSuccess": "Milestone updated",
+    "deleteSuccess": "Milestone deleted",
+    "createFailed": "Failed to create milestone",
+    "updateFailed": "Failed to update milestone",
+    "deleteFailed": "Failed to delete milestone",
+    "confirmDelete": "Are you sure you want to delete this milestone?"
   }
 }

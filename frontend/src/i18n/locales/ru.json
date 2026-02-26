@@ -1720,5 +1720,27 @@
     "noProgress": "Прогресс пока отсутствует",
     "allStatuses": "Все статусы",
     "trackProgress": "Записать Прогресс"
+  },
+  "milestones": {
+    "title": "Вехи",
+    "addMilestone": "Добавить Веху",
+    "editMilestone": "Редактировать Веху",
+    "milestoneTitle": "Название",
+    "milestoneTitlePlaceholder": "Название вехи",
+    "description": "Описание",
+    "descriptionPlaceholder": "Описание вехи...",
+    "dueDate": "Срок",
+    "status": "Статус",
+    "notStarted": "Не Начато",
+    "inProgress": "В Процессе",
+    "completed": "Завершено",
+    "noMilestones": "Пока нет вех",
+    "createSuccess": "Веха создана",
+    "updateSuccess": "Веха обновлена",
+    "deleteSuccess": "Веха удалена",
+    "createFailed": "Не удалось создать веху",
+    "updateFailed": "Не удалось обновить веху",
+    "deleteFailed": "Не удалось удалить веху",
+    "confirmDelete": "Вы уверены, что хотите удалить эту веху?"
   }
 }
