@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -209,4 +210,167 @@ func TestBookmarkCollection_GetPosts_Success(t *testing.T) {
 	if result["total"].(float64) != 2 {
 		t.Errorf("expected total=2, got %v", result["total"])
 	}
+}
+
+// ============================================================
+// RemovePost テスト
+// ============================================================
+
+func TestBookmarkCollection_RemovePost_Success(t *testing.T) {
+	mockSvc := new(MockBookmarkCollectionService)
+	h := NewBookmarkCollectionHandler(mockSvc)
+
+	mockSvc.On("RemovePost", uint(1), uint(10), uint(1)).Return(nil)
+
+	r := gin.New()
+	r.DELETE("/bookmark-collections/:id/posts/:postId", authMiddleware(1), h.RemovePost)
+
+	req, _ := http.NewRequest("DELETE", "/bookmark-collections/1/posts/10", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assertStatus(t, w, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+}
+
+func TestBookmarkCollection_RemovePost_InvalidCollectionID(t *testing.T) {
+	mockSvc := new(MockBookmarkCollectionService)
+	h := NewBookmarkCollectionHandler(mockSvc)
+
+	r := gin.New()
+	r.DELETE("/bookmark-collections/:id/posts/:postId", authMiddleware(1), h.RemovePost)
+
+	req, _ := http.NewRequest("DELETE", "/bookmark-collections/abc/posts/10", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestBookmarkCollection_RemovePost_InvalidPostID(t *testing.T) {
+	mockSvc := new(MockBookmarkCollectionService)
+	h := NewBookmarkCollectionHandler(mockSvc)
+
+	r := gin.New()
+	r.DELETE("/bookmark-collections/:id/posts/:postId", authMiddleware(1), h.RemovePost)
+
+	req, _ := http.NewRequest("DELETE", "/bookmark-collections/1/posts/abc", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestBookmarkCollection_RemovePost_ServiceError(t *testing.T) {
+	mockSvc := new(MockBookmarkCollectionService)
+	h := NewBookmarkCollectionHandler(mockSvc)
+
+	mockSvc.On("RemovePost", uint(1), uint(10), uint(1)).Return(domain.ErrForbidden)
+
+	r := gin.New()
+	r.DELETE("/bookmark-collections/:id/posts/:postId", authMiddleware(1), h.RemovePost)
+
+	req, _ := http.NewRequest("DELETE", "/bookmark-collections/1/posts/10", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assertStatus(t, w, http.StatusForbidden)
+}
+
+// ============================================================
+// エラーケース追加テスト
+// ============================================================
+
+func TestBookmarkCollection_Create_ServiceError(t *testing.T) {
+	mockSvc := new(MockBookmarkCollectionService)
+	h := NewBookmarkCollectionHandler(mockSvc)
+
+	mockSvc.On("Create", mock.AnythingOfType("*model.BookmarkCollection")).Return(errors.New("db error"))
+
+	r := gin.New()
+	r.POST("/bookmark-collections", authMiddleware(1), h.Create)
+
+	body := jsonBody(map[string]string{"name": "Test"})
+	req, _ := http.NewRequest("POST", "/bookmark-collections", body)
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+func TestBookmarkCollection_GetMyCollections_ServiceError(t *testing.T) {
+	mockSvc := new(MockBookmarkCollectionService)
+	h := NewBookmarkCollectionHandler(mockSvc)
+
+	mockSvc.On("GetByUserID", uint(1)).Return([]model.BookmarkCollection(nil), errors.New("db error"))
+
+	r := gin.New()
+	r.GET("/bookmark-collections", authMiddleware(1), h.GetMyCollections)
+
+	req, _ := http.NewRequest("GET", "/bookmark-collections", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+func TestBookmarkCollection_Delete_ServiceError(t *testing.T) {
+	mockSvc := new(MockBookmarkCollectionService)
+	h := NewBookmarkCollectionHandler(mockSvc)
+
+	mockSvc.On("Delete", uint(1), uint(1)).Return(domain.ErrForbidden)
+
+	r := gin.New()
+	r.DELETE("/bookmark-collections/:id", authMiddleware(1), h.Delete)
+
+	req, _ := http.NewRequest("DELETE", "/bookmark-collections/1", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assertStatus(t, w, http.StatusForbidden)
+}
+
+func TestBookmarkCollection_Delete_InvalidID(t *testing.T) {
+	mockSvc := new(MockBookmarkCollectionService)
+	h := NewBookmarkCollectionHandler(mockSvc)
+
+	r := gin.New()
+	r.DELETE("/bookmark-collections/:id", authMiddleware(1), h.Delete)
+
+	req, _ := http.NewRequest("DELETE", "/bookmark-collections/abc", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+func TestBookmarkCollection_GetPosts_ServiceError(t *testing.T) {
+	mockSvc := new(MockBookmarkCollectionService)
+	h := NewBookmarkCollectionHandler(mockSvc)
+
+	mockSvc.On("GetPosts", uint(1), 20, 0).Return([]model.Post(nil), int64(0), errors.New("db error"))
+
+	r := gin.New()
+	r.GET("/bookmark-collections/:id/posts", h.GetPosts)
+
+	req, _ := http.NewRequest("GET", "/bookmark-collections/1/posts", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+func TestBookmarkCollection_GetPosts_InvalidID(t *testing.T) {
+	mockSvc := new(MockBookmarkCollectionService)
+	h := NewBookmarkCollectionHandler(mockSvc)
+
+	r := gin.New()
+	r.GET("/bookmark-collections/:id/posts", h.GetPosts)
+
+	req, _ := http.NewRequest("GET", "/bookmark-collections/abc/posts", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assertStatus(t, w, http.StatusBadRequest)
 }

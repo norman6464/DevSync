@@ -462,3 +462,50 @@ func TestPostCollectionUpdate_DescriptionTooLong(t *testing.T) {
 	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), "説明は1000文字以下")
 }
+
+// ============================================================
+// GetCollectionsForViewer テスト
+// ============================================================
+
+func TestGetCollectionsForViewer_OwnCollections(t *testing.T) {
+	svc, repo := newTestPostCollectionService()
+
+	collections := []model.PostCollection{
+		{Title: "Private集", UserID: 1, IsPublic: false},
+		{Title: "Public集", UserID: 1, IsPublic: true},
+	}
+	repo.On("FindByUserID", uint(1), 20, 0).Return(collections, int64(2), nil)
+
+	result, total, err := svc.GetCollectionsForViewer(1, 1, 20, 0)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, int64(2), total)
+	repo.AssertExpectations(t)
+}
+
+func TestGetCollectionsForViewer_OtherUserPublicOnly(t *testing.T) {
+	svc, repo := newTestPostCollectionService()
+
+	collections := []model.PostCollection{
+		{Title: "Public集", UserID: 2, IsPublic: true},
+	}
+	repo.On("FindPublicByUserID", uint(2)).Return(collections, nil)
+
+	result, total, err := svc.GetCollectionsForViewer(1, 2, 20, 0)
+	assert.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Equal(t, int64(1), total)
+	repo.AssertExpectations(t)
+}
+
+func TestGetCollectionsForViewer_OtherUserRepoError(t *testing.T) {
+	svc, repo := newTestPostCollectionService()
+
+	repo.On("FindPublicByUserID", uint(2)).Return([]model.PostCollection(nil), errors.New("db error"))
+
+	result, total, err := svc.GetCollectionsForViewer(1, 2, 20, 0)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, int64(0), total)
+	repo.AssertExpectations(t)
+}
