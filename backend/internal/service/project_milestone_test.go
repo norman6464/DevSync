@@ -74,6 +74,17 @@ func TestProjectMilestoneService_Create_EmptyTitle(t *testing.T) {
 	assert.Contains(t, err.Error(), "タイトル")
 }
 
+func TestProjectMilestoneService_Create_DescriptionTooLong(t *testing.T) {
+	svc, _, projectRepo := newTestProjectMilestoneService()
+
+	projectRepo.On("FindByID", uint(1)).Return(&model.Project{ID: 1, UserID: 10}, nil)
+
+	longDesc := string(make([]rune, 1001))
+	err := svc.Create(10, 1, "v1.0リリース", longDesc, nil)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "説明は1000文字以下")
+}
+
 // --- GetByProjectID ---
 
 func TestProjectMilestoneService_GetByProjectID_Success(t *testing.T) {
@@ -208,6 +219,19 @@ func TestProjectMilestoneService_Update_TitleTooLong(t *testing.T) {
 	_, err := svc.Update(10, 1, longTitle, "", nil, "")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "200文字")
+}
+
+func TestProjectMilestoneService_Update_DescriptionTooLong(t *testing.T) {
+	svc, milestoneRepo, projectRepo := newTestProjectMilestoneService()
+
+	milestone := &model.ProjectMilestone{ID: 1, ProjectID: 5, Title: "既存"}
+	milestoneRepo.On("FindByID", uint(1)).Return(milestone, nil)
+	projectRepo.On("FindByID", uint(5)).Return(&model.Project{ID: 5, UserID: 10}, nil)
+
+	longDesc := string(make([]rune, 1001))
+	_, err := svc.Update(10, 1, "", longDesc, nil, "")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "説明は1000文字以下")
 }
 
 func TestProjectMilestoneService_Update_StatusResetCompletedAt(t *testing.T) {

@@ -601,6 +601,15 @@ func TestChatRoomCreate_NameTooLong(t *testing.T) {
 	assert.Contains(t, err.Error(), "チャットルーム名は100文字以下")
 }
 
+func TestChatRoomCreate_DescriptionTooLong(t *testing.T) {
+	svc, _, _ := newTestChatRoomService()
+
+	room := &model.ChatRoom{Name: "Valid Room", Description: strings.Repeat("あ", 501), OwnerID: 1}
+	_, err := svc.Create(room, nil)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "説明は500文字以下")
+}
+
 func TestChatRoomUpdate_NameTooLong(t *testing.T) {
 	svc, roomRepo, _ := newTestChatRoomService()
 
