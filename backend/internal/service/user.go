@@ -127,6 +127,37 @@ func (s *UserService) UpdateProfile(id, userID uint, input *UpdateProfileInput) 
 	return existing, nil
 }
 
+// validEmailLanguages はメール配信で有効な言語コードの集合。
+var validEmailLanguages = map[string]bool{
+	"ja": true, "en": true, "ko": true, "zh-CN": true, "zh-TW": true,
+	"es": true, "fr": true, "de": true, "pt": true, "ru": true,
+}
+
+// UpdateEmailPreferences はメール配信設定を更新する。
+// 言語コードのバリデーションを含む。
+func (s *UserService) UpdateEmailPreferences(userID uint, weeklyReport *bool, language *string) (*model.User, error) {
+	user, err := s.repo.FindByID(userID)
+	if err != nil {
+		return nil, domain.NewError(domain.ErrCodeNotFound, "ユーザーが見つかりません", err)
+	}
+
+	if weeklyReport != nil {
+		user.EmailWeeklyReport = *weeklyReport
+	}
+	if language != nil {
+		if !validEmailLanguages[*language] {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, "invalid email language", nil)
+		}
+		user.EmailLanguage = *language
+	}
+
+	if err := s.repo.Update(user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
 // ProfileCompleteness はプロフィール完成度の計算結果を表す。
 type ProfileCompleteness struct {
 	Percentage    int      `json:"percentage"`

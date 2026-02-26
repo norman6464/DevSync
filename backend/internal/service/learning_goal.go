@@ -26,6 +26,10 @@ func (s *LearningGoalService) Create(goal *model.LearningGoal) error {
 		return err
 	}
 	goal.Title = strings.TrimSpace(goal.Title)
+	// カテゴリが未指定の場合はデフォルト値を設定
+	if goal.Category == "" {
+		goal.Category = model.GoalCategoryOther
+	}
 	return s.repo.Create(goal)
 }
 

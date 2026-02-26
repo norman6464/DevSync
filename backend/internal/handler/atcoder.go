@@ -10,26 +10,19 @@ import (
 // AtCoderServiceInterface はAtCoderサービスの抽象インターフェース。
 type AtCoderServiceInterface interface {
 	GetRating(username string) (*service.AtCoderRatingInfo, error)
-	ValidateUsername(username string) bool
-}
-
-// AtCoderUserServiceInterface はAtCoderハンドラーが必要とするユーザーサービスの抽象インターフェース。
-type AtCoderUserServiceInterface interface {
-	GetByID(id uint) (*model.User, error)
-	Update(user *model.User) error
+	ConnectAtCoder(userID uint, username string) (*model.User, error)
+	DisconnectAtCoder(userID uint) (*model.User, error)
 }
 
 // AtCoderHandler はAtCoder関連のHTTPハンドラ。
 type AtCoderHandler struct {
 	atcoderService AtCoderServiceInterface
-	userService    AtCoderUserServiceInterface
 }
 
 // NewAtCoderHandler は新しいAtCoderHandlerインスタンスを生成する。
-func NewAtCoderHandler(atcoderService AtCoderServiceInterface, userService AtCoderUserServiceInterface) *AtCoderHandler {
+func NewAtCoderHandler(atcoderService AtCoderServiceInterface) *AtCoderHandler {
 	return &AtCoderHandler{
 		atcoderService: atcoderService,
-		userService:    userService,
 	}
 }
 
@@ -59,19 +52,8 @@ func (h *AtCoderHandler) Connect(c *gin.Context) {
 		return
 	}
 
-	if !h.atcoderService.ValidateUsername(input.Username) {
-		respondBadRequest(c, "invalid AtCoder username")
-		return
-	}
-
-	user, err := h.userService.GetByID(userID)
+	user, err := h.atcoderService.ConnectAtCoder(userID, input.Username)
 	if err != nil {
-		respondNotFound(c, "user not found")
-		return
-	}
-
-	user.AtCoderUsername = input.Username
-	if err := h.userService.Update(user); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -83,14 +65,8 @@ func (h *AtCoderHandler) Connect(c *gin.Context) {
 func (h *AtCoderHandler) Disconnect(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	user, err := h.userService.GetByID(userID)
+	user, err := h.atcoderService.DisconnectAtCoder(userID)
 	if err != nil {
-		respondNotFound(c, "user not found")
-		return
-	}
-
-	user.AtCoderUsername = ""
-	if err := h.userService.Update(user); err != nil {
 		respondError(c, err)
 		return
 	}

@@ -54,11 +54,6 @@ func (h *LearningGoalHandler) Create(c *gin.Context) {
 		Progress:    0,
 	}
 
-	// カテゴリが未指定の場合はデフォルト値を設定
-	if req.Category == "" {
-		goal.Category = model.GoalCategoryOther
-	}
-
 	// 目標日が指定されている場合はパースして設定
 	if req.TargetDate != "" {
 		targetDate, err := time.Parse("2006-01-02", req.TargetDate)
