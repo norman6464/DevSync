@@ -266,3 +266,31 @@ func TestBookmarkCollection_AddPost_HasPostError(t *testing.T) {
 	err := svc.AddPost(1, 10, 1)
 	assert.Error(t, err)
 }
+
+// ============================================================
+// CountByUserID（ユーザーコレクション総数取得）
+// ============================================================
+
+func TestBookmarkCollection_CountByUserID_Success(t *testing.T) {
+	mockRepo := new(MockBookmarkCollectionRepository)
+	svc := NewBookmarkCollectionService(mockRepo)
+
+	mockRepo.On("CountByUserID", uint(1)).Return(int64(3), nil)
+
+	count, err := svc.CountByUserID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(3), count)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestBookmarkCollection_CountByUserID_Error(t *testing.T) {
+	mockRepo := new(MockBookmarkCollectionRepository)
+	svc := NewBookmarkCollectionService(mockRepo)
+
+	mockRepo.On("CountByUserID", uint(1)).Return(int64(0), assert.AnError)
+
+	count, err := svc.CountByUserID(1)
+	assert.Error(t, err)
+	assert.Equal(t, int64(0), count)
+	mockRepo.AssertExpectations(t)
+}

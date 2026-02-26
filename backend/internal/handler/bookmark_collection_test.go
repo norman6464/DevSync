@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -377,4 +378,37 @@ func TestBookmarkCollection_GetPosts_InvalidID(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// ============================================================
+// GetMyCount テスト
+// ============================================================
+
+func TestBookmarkCollection_GetMyCount_Success(t *testing.T) {
+	mockSvc := new(MockBookmarkCollectionService)
+	h := NewBookmarkCollectionHandler(mockSvc)
+
+	mockSvc.On("CountByUserID", uint(1)).Return(int64(3), nil)
+
+	r := newRouter(1)
+	r.GET("/bookmark-collections/my/count", h.GetMyCount)
+
+	w := doRequest(r, http.MethodGet, "/bookmark-collections/my/count", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Contains(t, w.Body.String(), `"count":3`)
+	mockSvc.AssertExpectations(t)
+}
+
+func TestBookmarkCollection_GetMyCount_ServiceError(t *testing.T) {
+	mockSvc := new(MockBookmarkCollectionService)
+	h := NewBookmarkCollectionHandler(mockSvc)
+
+	mockSvc.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	r := newRouter(1)
+	r.GET("/bookmark-collections/my/count", h.GetMyCount)
+
+	w := doRequest(r, http.MethodGet, "/bookmark-collections/my/count", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	mockSvc.AssertExpectations(t)
 }
