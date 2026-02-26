@@ -574,6 +574,7 @@ func registerNoteRoutes(g *gin.RouterGroup, c *di.Container) {
 	{
 		noteTemplates.POST("", c.NoteTemplateHandler.Create)
 		noteTemplates.GET("", c.NoteTemplateHandler.GetByUserID)
+		noteTemplates.GET("/my/count", c.NoteTemplateHandler.GetMyCount)
 		noteTemplates.GET("/default", c.NoteTemplateHandler.GetDefault)
 		noteTemplates.GET("/:id", c.NoteTemplateHandler.GetByID)
 		noteTemplates.PUT("/:id", c.NoteTemplateHandler.Update)

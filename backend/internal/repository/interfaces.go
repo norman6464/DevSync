@@ -788,4 +788,5 @@ type NoteTemplateRepositoryInterface interface {
 	Update(template *model.NoteTemplate) error
 	Delete(id uint) error
 	ClearDefaultFlag(userID uint) error
+	CountByUserID(userID uint) (int64, error)
 }

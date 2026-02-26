@@ -161,3 +161,8 @@ func (s *NoteTemplateService) UseTemplate(id, userID uint) (*model.Note, error) 
 	}
 	return note, nil
 }
+
+// CountByUserID は指定ユーザーのノートテンプレート総数を返す。
+func (s *NoteTemplateService) CountByUserID(userID uint) (int64, error) {
+	return s.repo.CountByUserID(userID)
+}

@@ -1987,6 +1987,11 @@ func (m *MockNoteTemplateService) UseTemplate(id, userID uint) (*model.Note, err
 	return nil, args.Error(1)
 }
 
+func (m *MockNoteTemplateService) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 func setupNoteTemplateHandler() (*NoteTemplateHandler, *MockNoteTemplateService) {
 	svc := new(MockNoteTemplateService)
 	h := NewNoteTemplateHandler(svc)
