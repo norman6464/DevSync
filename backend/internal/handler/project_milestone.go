@@ -42,8 +42,8 @@ func (h *ProjectMilestoneHandler) Create(c *gin.Context) {
 
 	var dueDate *time.Time
 	if req.DueDate != "" {
-		d, err := parseDate(req.DueDate)
-		if err != nil {
+		d, ok := parseDateParam(req.DueDate)
+		if !ok {
 			respondBadRequest(c, "日付の形式が不正です（YYYY-MM-DD）")
 			return
 		}
@@ -91,8 +91,8 @@ func (h *ProjectMilestoneHandler) Update(c *gin.Context) {
 
 	var dueDate *time.Time
 	if req.DueDate != "" {
-		d, err := parseDate(req.DueDate)
-		if err != nil {
+		d, ok := parseDateParam(req.DueDate)
+		if !ok {
 			respondBadRequest(c, "日付の形式が不正です（YYYY-MM-DD）")
 			return
 		}

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
@@ -273,6 +274,29 @@ func handleGetByIDPublic[T any](c *gin.Context, getter func(id uint) (*T, error)
 		return
 	}
 	respondOK(c, result)
+}
+
+// parseDateParam は "2006-01-02" 形式の日付文字列をパースする。
+// 空文字列の場合はゼロ値とtrueを返す。パース失敗時は400レスポンスを返しfalseを返す。
+func parseDateParam(dateStr string) (time.Time, bool) {
+	if dateStr == "" {
+		return time.Time{}, true
+	}
+	t, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		return time.Time{}, false
+	}
+	return t, true
+}
+
+// parseDateTimeRFC3339 は RFC3339 形式の日時文字列をパースする。
+// パース失敗時はゼロ値とfalseを返す。
+func parseDateTimeRFC3339(dateStr string) (time.Time, bool) {
+	t, err := time.Parse(time.RFC3339, dateStr)
+	if err != nil {
+		return time.Time{}, false
+	}
+	return t, true
 }
 
 // handleToggleAction はLike/Unlikeなどのトグル操作を共通化するヘルパー。

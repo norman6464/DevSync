@@ -1734,8 +1734,9 @@ func TestPostGetReactionsBatch_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, reactions[1], 2)
 	assert.Len(t, reactions[2], 1)
-	assert.Nil(t, reactions[3])
+	assert.Equal(t, []model.ReactionCount{}, reactions[3])
 	assert.Equal(t, []string{"👍"}, userReactions[1])
+	assert.Equal(t, []string{}, userReactions[3])
 	postRepo.AssertExpectations(t)
 }
 
