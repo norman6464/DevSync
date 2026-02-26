@@ -1103,6 +1103,8 @@
     "noSteps": "Пока нет шагов",
     "addFirstStep": "Добавьте первый шаг",
     "stepsReordered": "Порядок шагов изменён",
+    "batchComplete": "Завершить все",
+    "batchCompleteSuccess": "Шаги успешно завершены",
     "templates": "Рекомендуемые шаблоны",
     "templatesDescription": "Начните обучение с рекомендуемой дорожной карты",
     "templatesAvailable": "шаблонов",

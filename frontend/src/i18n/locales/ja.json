@@ -1055,6 +1055,8 @@
     "noSteps": "ステップがまだありません",
     "addFirstStep": "最初のステップを追加",
     "stepsReordered": "ステップの順序を変更しました",
+    "batchComplete": "一括完了",
+    "batchCompleteSuccess": "ステップを一括完了しました",
     "templates": "おすすめテンプレート",
     "templatesDescription": "おすすめのロードマップで学習を始めよう",
     "templatesAvailable": "件のテンプレート",

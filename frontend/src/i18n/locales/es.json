@@ -1104,6 +1104,8 @@
     "noSteps": "No hay pasos aún",
     "addFirstStep": "Agrega tu primer paso",
     "stepsReordered": "Pasos reordenados",
+    "batchComplete": "Completar todos",
+    "batchCompleteSuccess": "Pasos completados correctamente",
     "templates": "Plantillas recomendadas",
     "templatesDescription": "Comienza tu aprendizaje con una hoja de ruta recomendada",
     "templatesAvailable": "plantillas",

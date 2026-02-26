@@ -1104,6 +1104,8 @@
     "noSteps": "还没有步骤",
     "addFirstStep": "添加第一个步骤",
     "stepsReordered": "步骤顺序已更改",
+    "batchComplete": "批量完成",
+    "batchCompleteSuccess": "已批量完成步骤",
     "templates": "推荐模板",
     "templatesDescription": "使用推荐的路线图开始学习",
     "templatesAvailable": "个模板",

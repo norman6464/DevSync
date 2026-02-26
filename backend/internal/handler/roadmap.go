@@ -23,6 +23,7 @@ type RoadmapServiceInterface interface {
 	CreateStep(roadmapID, userID uint, step *model.RoadmapStep) error
 	UpdateStep(roadmapID, stepID, userID uint, updates *model.RoadmapStep) (*model.RoadmapStep, error)
 	UpdateStepCompletion(roadmapID, stepID, userID uint, isCompleted bool) (*model.RoadmapStep, error)
+	BatchCompleteSteps(roadmapID, userID uint, stepIDs []uint) (*model.Roadmap, error)
 	DeleteStep(roadmapID, stepID, userID uint) error
 	ReorderSteps(roadmapID, userID uint, orders []model.StepOrder) error
 }
@@ -300,6 +301,28 @@ func (h *RoadmapHandler) UpdateStep(c *gin.Context) {
 	}
 
 	respondOK(c, step)
+}
+
+// BatchCompleteSteps はロードマップの複数ステップを一括で完了にする。
+func (h *RoadmapHandler) BatchCompleteSteps(c *gin.Context) {
+	userID := c.GetUint("userID")
+	roadmapID, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	input := bindJSON[dto.BatchCompleteStepsRequest](c)
+	if input == nil {
+		return
+	}
+
+	roadmap, err := h.service.BatchCompleteSteps(roadmapID, userID, input.StepIDs)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, roadmap)
 }
 
 // DeleteStep はロードマップのステップを削除する。

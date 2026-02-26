@@ -1103,6 +1103,8 @@
     "noSteps": "Noch keine Schritte",
     "addFirstStep": "Fügen Sie Ihren ersten Schritt hinzu",
     "stepsReordered": "Schritte neu angeordnet",
+    "batchComplete": "Alle abschließen",
+    "batchCompleteSuccess": "Schritte erfolgreich abgeschlossen",
     "templates": "Empfohlene Vorlagen",
     "templatesDescription": "Starten Sie Ihr Lernen mit einer empfohlenen Roadmap",
     "templatesAvailable": "Vorlagen",

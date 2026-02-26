@@ -42,6 +42,11 @@ type ReorderRoadmapStepsRequest struct {
 	Orders []model.StepOrder `json:"orders" binding:"required"`
 }
 
+// BatchCompleteStepsRequest はステップ一括完了リクエストのDTO。
+type BatchCompleteStepsRequest struct {
+	StepIDs []uint `json:"step_ids" binding:"required,min=1"`
+}
+
 // RoadmapListResponse はロードマップ一覧レスポンス。
 type RoadmapListResponse struct {
 	Roadmaps []model.Roadmap `json:"roadmaps"`

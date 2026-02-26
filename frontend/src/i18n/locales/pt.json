@@ -1104,6 +1104,8 @@
     "noSteps": "Ainda não há etapas",
     "addFirstStep": "Adicione a primeira etapa",
     "stepsReordered": "Ordem das etapas alterada",
+    "batchComplete": "Concluir todos",
+    "batchCompleteSuccess": "Etapas concluídas com sucesso",
     "templates": "Modelos recomendados",
     "templatesDescription": "Comece seu aprendizado com um roteiro recomendado",
     "templatesAvailable": "modelos",

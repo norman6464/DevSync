@@ -380,6 +380,86 @@ func TestRoadmapUpdateStepCompletion_Uncomplete(t *testing.T) {
 }
 
 // ============================================================
+// ステップ一括完了テスト
+// ============================================================
+
+func TestRoadmapBatchCompleteSteps_Success(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 10
+
+	step1 := &model.RoadmapStep{RoadmapID: 10, IsCompleted: false}
+	step1.ID = 1
+	step2 := &model.RoadmapStep{RoadmapID: 10, IsCompleted: false}
+	step2.ID = 2
+
+	repo.On("FindByID", uint(10)).Return(roadmap, nil)
+	repo.On("FindStepByID", uint(1)).Return(step1, nil)
+	repo.On("UpdateStep", step1).Return(nil)
+	repo.On("FindStepByID", uint(2)).Return(step2, nil)
+	repo.On("UpdateStep", step2).Return(nil)
+
+	result, err := svc.BatchCompleteSteps(10, 1, []uint{1, 2})
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.True(t, step1.IsCompleted)
+	assert.True(t, step2.IsCompleted)
+	assert.NotNil(t, step1.CompletedAt)
+	assert.NotNil(t, step2.CompletedAt)
+}
+
+func TestRoadmapBatchCompleteSteps_Forbidden(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 10
+	repo.On("FindByID", uint(10)).Return(roadmap, nil)
+
+	result, err := svc.BatchCompleteSteps(10, 999, []uint{1})
+	assert.Nil(t, result)
+	assert.ErrorIs(t, err, ErrForbidden)
+}
+
+func TestRoadmapBatchCompleteSteps_StepNotBelonging(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 10
+
+	step := &model.RoadmapStep{RoadmapID: 20}
+	step.ID = 5
+
+	repo.On("FindByID", uint(10)).Return(roadmap, nil)
+	repo.On("FindStepByID", uint(5)).Return(step, nil)
+
+	result, err := svc.BatchCompleteSteps(10, 1, []uint{5})
+	assert.Nil(t, result)
+	assert.ErrorIs(t, err, ErrBadRequest)
+}
+
+func TestRoadmapBatchCompleteSteps_SkipsAlreadyCompleted(t *testing.T) {
+	svc, repo := newTestRoadmapService()
+
+	roadmap := &model.Roadmap{UserID: 1}
+	roadmap.ID = 10
+
+	step := &model.RoadmapStep{RoadmapID: 10, IsCompleted: true}
+	step.ID = 1
+
+	repo.On("FindByID", uint(10)).Return(roadmap, nil)
+	repo.On("FindStepByID", uint(1)).Return(step, nil)
+
+	updatedRoadmap := &model.Roadmap{UserID: 1, Progress: 50}
+	updatedRoadmap.ID = 10
+	repo.On("FindByID", uint(10)).Return(updatedRoadmap, nil)
+
+	result, err := svc.BatchCompleteSteps(10, 1, []uint{1})
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+}
+
+// ============================================================
 // 存在しないロードマップテスト
 // ============================================================
 
