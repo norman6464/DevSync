@@ -60,3 +60,6 @@ export const getConversation = (id: number) =>
 
 export const deleteConversation = (id: number) =>
   client.delete(`/advice/conversations/${id}`);
+
+export const getUnreadAdvice = () =>
+  client.get<AdviceResponse>('/advice/unread');

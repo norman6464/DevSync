@@ -96,3 +96,9 @@ export const getPublicGoalsByUser = (userId: number, limit = 20, offset = 0) =>
 
 export const getGoalProgress = (goalId: number) =>
   client.get<GoalProgress>(`/goals/${goalId}/progress`);
+
+export const getGoalsByCategory = (category: GoalCategory) =>
+  client.get<LearningGoal[]>(`/goals/category/${category}`);
+
+export const getGoalsByStatus = (status: GoalStatus) =>
+  client.get<LearningGoal[]>(`/goals/status/${status}`);

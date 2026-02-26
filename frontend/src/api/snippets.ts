@@ -34,3 +34,6 @@ export const unfavoriteSnippet = (id: number) =>
 
 export const getFavoritedSnippets = (limit = 20, offset = 0) =>
   client.get<{ snippets: CodeSnippet[]; total: number }>('/snippets/favorites', { params: { limit, offset } });
+
+export const getSnippetsByLanguage = (language: string, limit = 20, offset = 0) =>
+  client.get<CodeSnippet[]>(`/snippets/language/${language}`, { params: { limit, offset } });

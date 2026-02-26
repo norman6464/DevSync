@@ -159,3 +159,10 @@ export const updateResourceReview = async (reviewId: number, data: UpdateResourc
 export const deleteResourceReview = async (reviewId: number): Promise<void> => {
   await client.delete(`/resources/reviews/${reviewId}`);
 };
+
+export const getResourcesByDifficulty = async (
+  difficulty: string, limit = 20, offset = 0
+): Promise<{ resources: LearningResource[]; total: number }> => {
+  const res = await client.get(`/resources/difficulty/${difficulty}`, { params: { limit, offset } });
+  return res.data;
+};

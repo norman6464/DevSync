@@ -25,3 +25,6 @@ export const getNoteBacklinks = (noteId: number) =>
 
 export const deleteNoteLink = (sourceNoteId: number, targetNoteId: number) =>
   client.delete(`/notes/${sourceNoteId}/links/${targetNoteId}`);
+
+export const getNoteLinkStats = (noteId: number) =>
+  client.get(`/notes/${noteId}/link-stats`);
