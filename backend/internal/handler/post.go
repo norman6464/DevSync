@@ -229,6 +229,25 @@ func (h *PostHandler) GetUserPosts(c *gin.Context) {
 	})
 }
 
+// GetMyPosts は認証ユーザー自身の投稿一覧を取得する。
+func (h *PostHandler) GetMyPosts(c *gin.Context) {
+	userID := c.GetUint("userID")
+	limit, offset := parseLimitOffset(c)
+
+	posts, total, err := h.service.GetByUserID(userID, limit, offset)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, dto.PostListResponse{
+		Posts:  ensureSlice(posts),
+		Total:  total,
+		Limit:  limit,
+		Offset: offset,
+	})
+}
+
 // Like は投稿にいいねする。
 func (h *PostHandler) Like(c *gin.Context) {
 	handleToggleAction(c, h.service.Like, "liked")
