@@ -124,26 +124,20 @@ func (s *StudyCircleService) Update(id, userID uint, name, topic, description *s
 	}
 
 	if name != nil {
-		if strings.TrimSpace(*name) == "" {
-			return nil, domain.NewError(domain.ErrCodeBadRequest, "サークル名は空白のみでは入力できません", nil)
-		}
-		if len([]rune(strings.TrimSpace(*name))) > 100 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "サークル名は100文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(*name, 1, 100, "サークル名"); err != nil {
+			return nil, err
 		}
 		circle.Name = strings.TrimSpace(*name)
 	}
 	if topic != nil {
-		if strings.TrimSpace(*topic) == "" {
-			return nil, domain.NewError(domain.ErrCodeBadRequest, "トピックは空白のみでは入力できません", nil)
-		}
-		if len([]rune(strings.TrimSpace(*topic))) > 200 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "トピックは200文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(*topic, 1, 200, "トピック"); err != nil {
+			return nil, err
 		}
 		circle.Topic = strings.TrimSpace(*topic)
 	}
 	if description != nil {
-		if len([]rune(strings.TrimSpace(*description))) > 1000 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(*description, 0, 1000, "説明"); err != nil {
+			return nil, err
 		}
 		circle.Description = *description
 	}
@@ -273,17 +267,14 @@ func (s *StudyCircleService) UpdateStep(circleID, userID, stepID uint, title, de
 	}
 
 	if title != nil {
-		if strings.TrimSpace(*title) == "" {
-			return nil, domain.NewError(domain.ErrCodeBadRequest, "タイトルは空白のみでは入力できません", nil)
-		}
-		if len([]rune(strings.TrimSpace(*title))) > 200 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "タイトルは200文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(*title, 1, 200, "タイトル"); err != nil {
+			return nil, err
 		}
 		step.Title = strings.TrimSpace(*title)
 	}
 	if description != nil {
-		if len([]rune(strings.TrimSpace(*description))) > 1000 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(*description, 0, 1000, "説明"); err != nil {
+			return nil, err
 		}
 		step.Description = *description
 	}

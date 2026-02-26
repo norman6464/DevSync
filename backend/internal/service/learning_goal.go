@@ -100,14 +100,14 @@ func (s *LearningGoalService) Update(id, userID uint, updates *model.LearningGoa
 	}
 
 	if strings.TrimSpace(updates.Title) != "" {
-		if len([]rune(strings.TrimSpace(updates.Title))) > 200 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "タイトルは200文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(updates.Title, 1, 200, "タイトル"); err != nil {
+			return nil, err
 		}
 		goal.Title = strings.TrimSpace(updates.Title)
 	}
 	if strings.TrimSpace(updates.Description) != "" {
-		if len([]rune(strings.TrimSpace(updates.Description))) > 1000 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(updates.Description, 1, 1000, "説明"); err != nil {
+			return nil, err
 		}
 		goal.Description = strings.TrimSpace(updates.Description)
 	}

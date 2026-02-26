@@ -72,8 +72,8 @@ func (s *PostCollectionService) Update(id, userID uint, title, description strin
 	if err := domain.ValidateStringLength(title, 1, 200, "タイトル"); err != nil {
 		return nil, err
 	}
-	if len([]rune(strings.TrimSpace(description))) > 1000 {
-		return nil, domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
+	if err := domain.ValidateStringLength(description, 0, 1000, "説明"); err != nil {
+		return nil, err
 	}
 	collection, err := s.findAndCheckOwnership(id, userID)
 	if err != nil {

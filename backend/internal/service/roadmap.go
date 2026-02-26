@@ -104,14 +104,14 @@ func (s *RoadmapService) Update(id, userID uint, updates *model.Roadmap) (*model
 	}
 
 	if strings.TrimSpace(updates.Title) != "" {
-		if len([]rune(strings.TrimSpace(updates.Title))) > 200 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "タイトルは200文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(updates.Title, 1, 200, "タイトル"); err != nil {
+			return nil, err
 		}
 		roadmap.Title = strings.TrimSpace(updates.Title)
 	}
 	if strings.TrimSpace(updates.Description) != "" {
-		if len([]rune(strings.TrimSpace(updates.Description))) > 1000 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(updates.Description, 1, 1000, "説明"); err != nil {
+			return nil, err
 		}
 		roadmap.Description = strings.TrimSpace(updates.Description)
 	}
@@ -186,20 +186,20 @@ func (s *RoadmapService) UpdateStep(roadmapID, stepID, userID uint, updates *mod
 	}
 
 	if strings.TrimSpace(updates.Title) != "" {
-		if len([]rune(strings.TrimSpace(updates.Title))) > 200 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "タイトルは200文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(updates.Title, 1, 200, "タイトル"); err != nil {
+			return nil, err
 		}
 		step.Title = strings.TrimSpace(updates.Title)
 	}
 	if strings.TrimSpace(updates.Description) != "" {
-		if len([]rune(strings.TrimSpace(updates.Description))) > 1000 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "説明は1000文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(updates.Description, 1, 1000, "説明"); err != nil {
+			return nil, err
 		}
 		step.Description = strings.TrimSpace(updates.Description)
 	}
 	if strings.TrimSpace(updates.ResourceURL) != "" {
-		if len([]rune(strings.TrimSpace(updates.ResourceURL))) > 500 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "リソースURLは500文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(updates.ResourceURL, 1, 500, "リソースURL"); err != nil {
+			return nil, err
 		}
 		step.ResourceURL = strings.TrimSpace(updates.ResourceURL)
 	}

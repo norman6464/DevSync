@@ -90,20 +90,14 @@ func (s *ChatRoomService) Update(roomID, userID uint, name, description string) 
 	}
 
 	if name != "" {
-		if strings.TrimSpace(name) == "" {
-			return nil, domain.NewError(domain.ErrCodeBadRequest, "チャットルーム名は空白のみでは入力できません", nil)
-		}
-		if len([]rune(strings.TrimSpace(name))) > 100 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "チャットルーム名は100文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(name, 1, 100, "チャットルーム名"); err != nil {
+			return nil, err
 		}
 		room.Name = strings.TrimSpace(name)
 	}
 	if description != "" {
-		if strings.TrimSpace(description) == "" {
-			return nil, domain.NewError(domain.ErrCodeBadRequest, "説明は空白のみでは入力できません", nil)
-		}
-		if len([]rune(strings.TrimSpace(description))) > 500 {
-			return nil, domain.NewError(domain.ErrCodeValidation, "説明は500文字以下である必要があります", nil)
+		if err := domain.ValidateStringLength(description, 1, 500, "説明"); err != nil {
+			return nil, err
 		}
 		room.Description = strings.TrimSpace(description)
 	}
