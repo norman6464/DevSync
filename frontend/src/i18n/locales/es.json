@@ -1836,5 +1836,14 @@
     "unarchiveSuccess": "Proyecto desarchivado correctamente",
     "noArchived": "No hay proyectos archivados",
     "confirmArchive": "¿Estás seguro de que quieres archivar este proyecto?"
+  },
+  "questionBookmark": {
+    "bookmark": "Marcador",
+    "unbookmark": "Quitar marcador",
+    "bookmarked": "Marcado",
+    "bookmarkAdded": "Marcador añadido",
+    "bookmarkRemoved": "Marcador eliminado",
+    "bookmarkedQuestions": "Preguntas marcadas",
+    "noBookmarks": "No hay preguntas marcadas"
   }
 }

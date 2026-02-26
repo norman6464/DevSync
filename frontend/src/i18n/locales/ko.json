@@ -1838,5 +1838,14 @@
     "unarchiveSuccess": "아카이브를 해제했습니다",
     "noArchived": "아카이브된 프로젝트가 없습니다",
     "confirmArchive": "이 프로젝트를 아카이브하시겠습니까?"
+  },
+  "questionBookmark": {
+    "bookmark": "북마크",
+    "unbookmark": "북마크 해제",
+    "bookmarked": "북마크됨",
+    "bookmarkAdded": "북마크에 추가되었습니다",
+    "bookmarkRemoved": "북마크가 해제되었습니다",
+    "bookmarkedQuestions": "북마크한 질문",
+    "noBookmarks": "북마크한 질문이 없습니다"
   }
 }

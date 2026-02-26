@@ -572,3 +572,100 @@ func TestQuestionGetSolved_RepoError(t *testing.T) {
 	assert.Equal(t, int64(0), total)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// ブックマークテスト
+// ============================================================
+
+func TestQuestionBookmark_Success(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	question := &model.Question{UserID: 2}
+	question.ID = 10
+
+	repo.On("FindByID", uint(10)).Return(question, nil)
+	repo.On("HasBookmarked", uint(1), uint(10)).Return(false, nil)
+	repo.On("Bookmark", uint(1), uint(10)).Return(nil)
+
+	err := svc.Bookmark(1, 10)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestQuestionBookmark_AlreadyBookmarked(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	question := &model.Question{UserID: 2}
+	question.ID = 10
+
+	repo.On("FindByID", uint(10)).Return(question, nil)
+	repo.On("HasBookmarked", uint(1), uint(10)).Return(true, nil)
+
+	err := svc.Bookmark(1, 10)
+	assert.ErrorIs(t, err, ErrConflict)
+	repo.AssertNotCalled(t, "Bookmark")
+}
+
+func TestQuestionBookmark_QuestionNotFound(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	repo.On("FindByID", uint(99)).Return(nil, errors.New("not found"))
+
+	err := svc.Bookmark(1, 99)
+	assert.ErrorIs(t, err, ErrNotFound)
+	repo.AssertNotCalled(t, "Bookmark")
+}
+
+func TestQuestionBookmark_OwnQuestion(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	// 自分の質問もブックマーク可能（投票とは異なる）
+	question := &model.Question{UserID: 1}
+	question.ID = 10
+
+	repo.On("FindByID", uint(10)).Return(question, nil)
+	repo.On("HasBookmarked", uint(1), uint(10)).Return(false, nil)
+	repo.On("Bookmark", uint(1), uint(10)).Return(nil)
+
+	err := svc.Bookmark(1, 10)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestQuestionUnbookmark_Success(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	repo.On("Unbookmark", uint(1), uint(10)).Return(nil)
+
+	err := svc.Unbookmark(1, 10)
+	assert.NoError(t, err)
+	repo.AssertExpectations(t)
+}
+
+func TestQuestionGetBookmarkedByUserID_Success(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	questions := []model.Question{
+		{Title: "ブックマーク質問1"},
+		{Title: "ブックマーク質問2"},
+	}
+	repo.On("FindBookmarkedByUserID", uint(1), 20, 0).Return(questions, int64(2), nil)
+
+	result, total, err := svc.GetBookmarkedByUserID(1, 20, 0)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, int64(2), total)
+	repo.AssertExpectations(t)
+}
+
+func TestQuestionGetBookmarkedByUserID_Empty(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	repo.On("FindBookmarkedByUserID", uint(1), 20, 0).Return([]model.Question{}, int64(0), nil)
+
+	result, total, err := svc.GetBookmarkedByUserID(1, 20, 0)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	assert.Equal(t, int64(0), total)
+	repo.AssertExpectations(t)
+}

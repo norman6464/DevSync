@@ -21,6 +21,9 @@ type QuestionServiceInterface interface {
 	Vote(userID, questionID uint, value int) error
 	RemoveVote(userID, questionID uint) error
 	GetSolved(limit, offset int) ([]model.Question, int64, error)
+	Bookmark(userID, questionID uint) error
+	Unbookmark(userID, questionID uint) error
+	GetBookmarkedByUserID(userID uint, limit, offset int) ([]model.Question, int64, error)
 }
 
 // QuestionHandler は質問関連のHTTPハンドラ。
@@ -227,4 +230,55 @@ func (h *QuestionHandler) RemoveVote(c *gin.Context) {
 	}
 
 	respondOK(c, domain.NewMessageResponse("Vote removed successfully"))
+}
+
+// Bookmark は質問をブックマークする。
+func (h *QuestionHandler) Bookmark(c *gin.Context) {
+	userID := c.GetUint("userID")
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	if err := h.service.Bookmark(userID, id); err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, domain.NewMessageResponse("Bookmarked successfully"))
+}
+
+// Unbookmark は質問のブックマークを解除する。
+func (h *QuestionHandler) Unbookmark(c *gin.Context) {
+	userID := c.GetUint("userID")
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+
+	if err := h.service.Unbookmark(userID, id); err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, domain.NewMessageResponse("Bookmark removed successfully"))
+}
+
+// GetBookmarks はブックマーク済み質問一覧を取得する。
+func (h *QuestionHandler) GetBookmarks(c *gin.Context) {
+	userID := c.GetUint("userID")
+	limit, offset := parseLimitOffset(c)
+
+	questions, total, err := h.service.GetBookmarkedByUserID(userID, limit, offset)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, dto.QuestionListResponse{
+		Questions: questions,
+		Total:     total,
+		Limit:     limit,
+		Offset:    offset,
+	})
 }

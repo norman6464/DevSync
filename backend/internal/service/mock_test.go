@@ -421,6 +421,26 @@ func (m *MockQuestionRepository) FindSolved(limit, offset int) ([]model.Question
 	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
 }
 
+func (m *MockQuestionRepository) Bookmark(userID, questionID uint) error {
+	args := m.Called(userID, questionID)
+	return args.Error(0)
+}
+
+func (m *MockQuestionRepository) Unbookmark(userID, questionID uint) error {
+	args := m.Called(userID, questionID)
+	return args.Error(0)
+}
+
+func (m *MockQuestionRepository) HasBookmarked(userID, questionID uint) (bool, error) {
+	args := m.Called(userID, questionID)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockQuestionRepository) FindBookmarkedByUserID(userID uint, limit, offset int) ([]model.Question, int64, error) {
+	args := m.Called(userID, limit, offset)
+	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
+}
+
 // ============================================================
 // MockAnswerRepository は repository.AnswerRepositoryInterface のテスト用モック実装。
 // ============================================================

@@ -1835,5 +1835,14 @@
     "unarchiveSuccess": "Проект успешно разархивирован",
     "noArchived": "Нет архивированных проектов",
     "confirmArchive": "Вы уверены, что хотите архивировать этот проект?"
+  },
+  "questionBookmark": {
+    "bookmark": "Закладка",
+    "unbookmark": "Удалить закладку",
+    "bookmarked": "В закладках",
+    "bookmarkAdded": "Добавлено в закладки",
+    "bookmarkRemoved": "Удалено из закладок",
+    "bookmarkedQuestions": "Вопросы в закладках",
+    "noBookmarks": "Нет вопросов в закладках"
   }
 }
