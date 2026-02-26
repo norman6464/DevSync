@@ -40,6 +40,7 @@ type PostServiceInterface interface {
 	RemoveReaction(userID, postID uint, emoji string) error
 	GetReactionsByPostID(postID uint) ([]model.ReactionCount, error)
 	GetUserReactions(userID, postID uint) ([]string, error)
+	GetReactionsWithUser(userID, postID uint) ([]model.ReactionCount, []string, error)
 	GetReactionsBatch(userID uint, postIDs []uint) (map[uint][]model.ReactionCount, map[uint][]string, error)
 	SchedulePublish(id, userID uint, scheduledAt time.Time) (*model.Post, error)
 	CancelSchedule(id, userID uint) (*model.Post, error)
@@ -475,13 +476,7 @@ func (h *PostHandler) GetReactions(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	reactions, err := h.service.GetReactionsByPostID(id)
-	if err != nil {
-		respondError(c, err)
-		return
-	}
-
-	userReactions, err := h.service.GetUserReactions(userID, id)
+	reactions, userReactions, err := h.service.GetReactionsWithUser(userID, id)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -506,9 +501,9 @@ func (h *PostHandler) SchedulePublish(c *gin.Context) {
 		return
 	}
 
-	scheduledAt, err := time.Parse(time.RFC3339, input.ScheduledAt)
-	if err != nil {
-		respondError(c, domain.NewError(domain.ErrCodeBadRequest, "日時のフォーマットが不正です（RFC3339形式で指定してください）", err))
+	scheduledAt, ok := parseDateTimeRFC3339(input.ScheduledAt)
+	if !ok {
+		respondBadRequest(c, "日時のフォーマットが不正です（RFC3339形式で指定してください）")
 		return
 	}
 
@@ -587,19 +582,11 @@ func (h *PostHandler) GetReactionsBatch(c *gin.Context) {
 		return
 	}
 
-	result := make(map[uint]dto.ReactionResponse)
+	result := make(map[uint]dto.ReactionResponse, len(input.PostIDs))
 	for _, id := range input.PostIDs {
-		r := reactions[id]
-		ur := userReactions[id]
-		if r == nil {
-			r = []model.ReactionCount{}
-		}
-		if ur == nil {
-			ur = []string{}
-		}
 		result[id] = dto.ReactionResponse{
-			Reactions:     r,
-			UserReactions: ur,
+			Reactions:     reactions[id],
+			UserReactions: userReactions[id],
 		}
 	}
 

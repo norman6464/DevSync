@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"time"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -61,11 +59,8 @@ func (h *LearningGoalHandler) Create(c *gin.Context) {
 	}
 
 	// 目標日が指定されている場合はパースして設定
-	if req.TargetDate != "" {
-		targetDate, err := time.Parse("2006-01-02", req.TargetDate)
-		if err == nil {
-			goal.TargetDate = &targetDate
-		}
+	if targetDate, ok := parseDateParam(req.TargetDate); ok && !targetDate.IsZero() {
+		goal.TargetDate = &targetDate
 	}
 
 	if err := h.service.Create(goal); err != nil {
@@ -102,11 +97,8 @@ func (h *LearningGoalHandler) Update(c *gin.Context) {
 	if req.TargetDate != nil {
 		if *req.TargetDate == "" {
 			updates.TargetDate = nil
-		} else {
-			targetDate, err := time.Parse("2006-01-02", *req.TargetDate)
-			if err == nil {
-				updates.TargetDate = &targetDate
-			}
+		} else if targetDate, ok := parseDateParam(*req.TargetDate); ok {
+			updates.TargetDate = &targetDate
 		}
 	}
 	if req.Progress != nil {

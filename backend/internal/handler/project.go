@@ -1,18 +1,11 @@
 package handler
 
 import (
-	"time"
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 )
-
-// parseDate は日付文字列を "2006-01-02" 形式でパースする。
-func parseDate(dateStr string) (time.Time, error) {
-	return time.Parse("2006-01-02", dateStr)
-}
 
 // ProjectServiceInterface はProjectHandlerが依存するサービスメソッドを定義する。
 type ProjectServiceInterface interface {
@@ -62,17 +55,11 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 		GithubRepoID: req.GithubRepoID,
 	}
 
-	if req.StartDate != "" {
-		startDate, err := parseDate(req.StartDate)
-		if err == nil {
-			project.StartDate = &startDate
-		}
+	if startDate, ok := parseDateParam(req.StartDate); ok && !startDate.IsZero() {
+		project.StartDate = &startDate
 	}
-	if req.EndDate != "" {
-		endDate, err := parseDate(req.EndDate)
-		if err == nil {
-			project.EndDate = &endDate
-		}
+	if endDate, ok := parseDateParam(req.EndDate); ok && !endDate.IsZero() {
+		project.EndDate = &endDate
 	}
 
 	if err := h.service.Create(project); err != nil {
@@ -165,17 +152,11 @@ func (h *ProjectHandler) Update(c *gin.Context) {
 	if req.GithubRepoID != nil {
 		updates.GithubRepoID = req.GithubRepoID
 	}
-	if req.StartDate != "" {
-		startDate, err := parseDate(req.StartDate)
-		if err == nil {
-			updates.StartDate = &startDate
-		}
+	if startDate, ok := parseDateParam(req.StartDate); ok && !startDate.IsZero() {
+		updates.StartDate = &startDate
 	}
-	if req.EndDate != "" {
-		endDate, err := parseDate(req.EndDate)
-		if err == nil {
-			updates.EndDate = &endDate
-		}
+	if endDate, ok := parseDateParam(req.EndDate); ok && !endDate.IsZero() {
+		updates.EndDate = &endDate
 	}
 
 	project, err := h.service.Update(id, userID, updates)

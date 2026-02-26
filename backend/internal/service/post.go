@@ -339,7 +339,7 @@ func (s *PostService) GetUserReactions(userID, postID uint) ([]string, error) {
 }
 
 // GetReactionsBatch は複数投稿のリアクション情報を一括取得する。
-// 最大50件まで。
+// 最大50件まで。返却マップはリクエストされた全postIDに対してエントリを持ち、nilスライスは空スライスに正規化される。
 func (s *PostService) GetReactionsBatch(userID uint, postIDs []uint) (map[uint][]model.ReactionCount, map[uint][]string, error) {
 	if len(postIDs) == 0 {
 		return map[uint][]model.ReactionCount{}, map[uint][]string{}, nil
@@ -358,7 +358,45 @@ func (s *PostService) GetReactionsBatch(userID uint, postIDs []uint) (map[uint][
 		return nil, nil, err
 	}
 
+	// リクエストされた全postIDに対してエントリを保証（nilスライス正規化）
+	NormalizeReactionMaps(reactions, userReactions, postIDs)
+
 	return reactions, userReactions, nil
+}
+
+// GetReactionsWithUser は投稿のリアクション一覧とユーザーのリアクションを一括取得する。
+func (s *PostService) GetReactionsWithUser(userID, postID uint) ([]model.ReactionCount, []string, error) {
+	reactions, err := s.repo.GetReactionsByPostID(postID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	userReactions, err := s.repo.GetUserReactions(userID, postID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if reactions == nil {
+		reactions = []model.ReactionCount{}
+	}
+	if userReactions == nil {
+		userReactions = []string{}
+	}
+
+	return reactions, userReactions, nil
+}
+
+// NormalizeReactionMaps はリアクションマップをpostIDsに対して正規化する純粋関数。
+// nilスライスを空スライスに変換し、全postIDにエントリを保証する。
+func NormalizeReactionMaps(reactions map[uint][]model.ReactionCount, userReactions map[uint][]string, postIDs []uint) {
+	for _, id := range postIDs {
+		if reactions[id] == nil {
+			reactions[id] = []model.ReactionCount{}
+		}
+		if userReactions[id] == nil {
+			userReactions[id] = []string{}
+		}
+	}
 }
 
 // SchedulePublish は下書き投稿にスケジュール公開日時を設定する。
