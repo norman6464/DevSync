@@ -60,10 +60,11 @@ func (s *CodeSnippetService) GetByPostID(postID uint) ([]model.CodeSnippet, erro
 
 // Search はコードスニペットをキーワード検索する。
 func (s *CodeSnippetService) Search(query string, limit, offset int) ([]model.CodeSnippet, int64, error) {
-	if strings.TrimSpace(query) == "" {
-		return nil, 0, domain.NewError(domain.ErrCodeBadRequest, "検索キーワードは必須です", nil)
+	q, err := validateSearchQuery(query)
+	if err != nil {
+		return nil, 0, err
 	}
-	return s.repo.Search(strings.TrimSpace(query), limit, offset)
+	return s.repo.Search(q, limit, offset)
 }
 
 // GetByUserLanguage は指定ユーザーのスニペットをプログラミング言語でフィルタリングして取得する。
