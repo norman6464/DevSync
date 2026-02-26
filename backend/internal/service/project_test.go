@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -463,6 +464,30 @@ func TestProjectUpdate_TrimsPaddedTitle(t *testing.T) {
 	result, err := svc.Update(1, 1, &model.Project{Title: "  New Title  "})
 	assert.NoError(t, err)
 	assert.Equal(t, "New Title", result.Title)
+}
+
+func TestProjectUpdate_TechStackTooLong(t *testing.T) {
+	svc, repo := newTestProjectService()
+	existing := &model.Project{Title: "Project", Description: "Desc", TechStack: "Go", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	result, err := svc.Update(1, 1, &model.Project{TechStack: strings.Repeat("a", 501)})
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "技術スタックは500文字以下")
+}
+
+func TestProjectUpdate_RoleTooLong(t *testing.T) {
+	svc, repo := newTestProjectService()
+	existing := &model.Project{Title: "Project", Description: "Desc", Role: "Backend", UserID: 1}
+	existing.ID = 1
+	repo.On("FindByID", uint(1)).Return(existing, nil)
+
+	result, err := svc.Update(1, 1, &model.Project{Role: strings.Repeat("a", 101)})
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "役割は100文字以下")
 }
 
 // ============================================================
