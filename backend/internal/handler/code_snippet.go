@@ -17,6 +17,7 @@ type CodeSnippetHandlerServiceInterface interface {
 	GetComments(snippetID uint) ([]model.SnippetComment, error)
 	CreateComment(comment *model.SnippetComment) error
 	DeleteComment(id, userID uint) error
+	Search(query string, limit, offset int) ([]model.CodeSnippet, int64, error)
 	Fork(userID, snippetID, targetPostID uint) (*model.CodeSnippet, error)
 	Favorite(userID, snippetID uint) error
 	Unfavorite(userID, snippetID uint) error
@@ -206,6 +207,30 @@ func (h *CodeSnippetHandler) GetByUserLanguage(c *gin.Context) {
 		return
 	}
 	respondOK(c, ensureSlice(snippets))
+}
+
+// Search はコードスニペットをキーワード検索する。
+func (h *CodeSnippetHandler) Search(c *gin.Context) {
+	q := c.Query("q")
+	if q == "" {
+		respondBadRequest(c, "検索クエリは必須です")
+		return
+	}
+
+	limit, offset := parseLimitOffset(c)
+
+	snippets, total, err := h.service.Search(q, limit, offset)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, dto.CodeSnippetListResponse{
+		Snippets: ensureSlice(snippets),
+		Total:    total,
+		Limit:    limit,
+		Offset:   offset,
+	})
 }
 
 // Favorite はスニペットをお気に入りに追加する。

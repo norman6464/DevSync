@@ -41,6 +41,17 @@ func (r *CodeSnippetRepository) FindByUserIDAndLanguage(userID uint, language st
 	return snippets, err
 }
 
+// Search はコードスニペットを言語・ファイル名・コード内容からキーワード検索する。
+func (r *CodeSnippetRepository) Search(query string, limit, offset int) ([]model.CodeSnippet, int64, error) {
+	var snippets []model.CodeSnippet
+	var total int64
+	like := EscapeLikePattern(query)
+	q := r.db.Where("language ILIKE ? OR file_name ILIKE ? OR code ILIKE ?", like, like, like)
+	q.Model(&model.CodeSnippet{}).Count(&total)
+	err := q.Preload("User").Order("created_at DESC").Limit(limit).Offset(offset).Find(&snippets).Error
+	return snippets, total, err
+}
+
 // Update は既存のコードスニペットを更新する。
 func (r *CodeSnippetRepository) Update(snippet *model.CodeSnippet) error {
 	return r.db.Save(snippet).Error

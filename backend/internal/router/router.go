@@ -282,6 +282,7 @@ func registerPostViewRoutes(g *gin.RouterGroup, c *di.Container) {
 func registerSnippetRoutes(g *gin.RouterGroup, c *di.Container) {
 	snippets := g.Group("/snippets")
 	{
+		snippets.GET("/search", c.CodeSnippetHandler.Search)
 		snippets.GET("/:id", c.CodeSnippetHandler.GetByID)
 		snippets.PUT("/:id", c.CodeSnippetHandler.Update)
 		snippets.DELETE("/:id", c.CodeSnippetHandler.Delete)
@@ -422,6 +423,7 @@ func registerProjectRoutes(g *gin.RouterGroup, c *di.Container) {
 	{
 		projects.POST("", c.ProjectHandler.Create)
 		projects.GET("", c.ProjectHandler.GetAll)
+		projects.GET("/search", c.ProjectHandler.Search)
 		projects.GET("/my", c.ProjectHandler.GetMyProjects)
 		projects.GET("/:id", c.ProjectHandler.GetByID)
 		projects.PUT("/:id", c.ProjectHandler.Update)

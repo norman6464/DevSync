@@ -8,6 +8,14 @@ type CodeSnippetFavoritesResponse struct {
 	Total    int64               `json:"total"`
 }
 
+// CodeSnippetListResponse はコードスニペット検索結果レスポンス。
+type CodeSnippetListResponse struct {
+	Snippets []model.CodeSnippet `json:"snippets"`
+	Total    int64               `json:"total"`
+	Limit    int                 `json:"limit"`
+	Offset   int                 `json:"offset"`
+}
+
 // CreateCodeSnippetRequest はコードスニペット作成リクエスト。
 type CreateCodeSnippetRequest struct {
 	Language string `json:"language" binding:"required,max=100" validate:"required,max=100"`

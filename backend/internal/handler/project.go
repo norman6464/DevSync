@@ -13,6 +13,7 @@ type ProjectServiceInterface interface {
 	GetByUserID(userID uint, limit, offset int) ([]model.Project, int64, error)
 	GetFeaturedByUserID(userID uint) ([]model.Project, error)
 	GetAll(limit, offset int) ([]model.Project, int64, error)
+	Search(query string, limit, offset int) ([]model.Project, int64, error)
 	Update(id, userID uint, updates *model.Project) (*model.Project, error)
 	UpdateFeatured(id, userID uint, featured bool) (*model.Project, error)
 	Delete(id, userID uint) error
@@ -217,6 +218,30 @@ func (h *ProjectHandler) GetArchived(c *gin.Context) {
 	limit, offset := parseLimitOffset(c)
 
 	projects, total, err := h.service.GetArchivedByUserID(userID, limit, offset)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, dto.ProjectListResponse{
+		Projects: projects,
+		Total:    total,
+		Limit:    limit,
+		Offset:   offset,
+	})
+}
+
+// Search はプロジェクトをキーワード検索する。
+func (h *ProjectHandler) Search(c *gin.Context) {
+	q := c.Query("q")
+	if q == "" {
+		respondBadRequest(c, "検索クエリは必須です")
+		return
+	}
+
+	limit, offset := parseLimitOffset(c)
+
+	projects, total, err := h.service.Search(q, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return

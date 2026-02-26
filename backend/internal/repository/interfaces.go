@@ -209,6 +209,7 @@ type ProjectRepositoryInterface interface {
 	Update(project *model.Project) error
 	Delete(id uint) error
 	FindAll(limit, offset int) ([]model.Project, int64, error)
+	Search(query string, limit, offset int) ([]model.Project, int64, error)
 	Archive(id uint) error
 	Unarchive(id uint) error
 	FindArchivedByUserID(userID uint, limit, offset int) ([]model.Project, int64, error)
@@ -327,6 +328,7 @@ type CodeSnippetRepositoryInterface interface {
 	FindByID(id uint) (*model.CodeSnippet, error)
 	FindByPostID(postID uint) ([]model.CodeSnippet, error)
 	FindByUserIDAndLanguage(userID uint, language string) ([]model.CodeSnippet, error)
+	Search(query string, limit, offset int) ([]model.CodeSnippet, int64, error)
 	Update(snippet *model.CodeSnippet) error
 	Delete(id uint) error
 	CreateComment(comment *model.SnippetComment) error
