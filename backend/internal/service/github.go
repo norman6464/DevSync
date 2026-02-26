@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/norman6464/devsync/backend/internal/config"
@@ -69,7 +71,8 @@ func (s *GitHubService) ExchangeCode(code string) (string, error) {
 		return "", domain.NewError(domain.ErrCodeServiceUnavailable, "GitHub APIレスポンスの解析に失敗しました", err)
 	}
 	if result.Error != "" {
-		return "", domain.NewError(domain.ErrCodeServiceUnavailable, fmt.Sprintf("GitHub OAuthエラー: %s", result.Error), nil)
+		log.Printf("[WARN] GitHub OAuthエラー: %s", result.Error)
+		return "", domain.NewError(domain.ErrCodeServiceUnavailable, "GitHub認証に失敗しました", nil)
 	}
 	return result.AccessToken, nil
 }
@@ -162,6 +165,10 @@ func (s *GitHubService) syncContributions(user *model.User) error {
 	from := now.AddDate(-1, 0, 0).Format("2006-01-02T15:04:05Z")
 	to := now.Format("2006-01-02T15:04:05Z")
 
+	// GraphQLインジェクション防止: ユーザー名をサニタイズ
+	safeUsername := strings.ReplaceAll(user.GitHubUsername, `"`, "")
+	safeUsername = strings.ReplaceAll(safeUsername, `\`, "")
+
 	query := fmt.Sprintf(`query {
 		user(login: "%s") {
 			contributionsCollection(from: "%s", to: "%s") {
@@ -175,7 +182,7 @@ func (s *GitHubService) syncContributions(user *model.User) error {
 				}
 			}
 		}
-	}`, user.GitHubUsername, from, to)
+	}`, safeUsername, from, to)
 
 	body, _ := json.Marshal(map[string]string{"query": query})
 	req, _ := http.NewRequest("POST", "https://api.github.com/graphql", bytes.NewBuffer(body))

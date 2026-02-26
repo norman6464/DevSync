@@ -73,7 +73,7 @@ func TestComplete_ServerError(t *testing.T) {
 	var domainErr *domain.DomainError
 	assert.True(t, errors.As(err, &domainErr))
 	assert.Equal(t, domain.ErrCodeServiceUnavailable, domainErr.Code)
-	assert.Contains(t, domainErr.Message, "500")
+	assert.Contains(t, domainErr.Message, "AI サービスが一時的に利用できません")
 }
 
 func TestComplete_RateLimited(t *testing.T) {
@@ -92,7 +92,7 @@ func TestComplete_RateLimited(t *testing.T) {
 	var domainErr *domain.DomainError
 	assert.True(t, errors.As(err, &domainErr))
 	assert.Equal(t, domain.ErrCodeServiceUnavailable, domainErr.Code)
-	assert.Contains(t, domainErr.Message, "429")
+	assert.Contains(t, domainErr.Message, "AI サービスが一時的に利用できません")
 }
 
 func TestComplete_InvalidJSON(t *testing.T) {
@@ -130,7 +130,7 @@ func TestComplete_APIError(t *testing.T) {
 	var domainErr *domain.DomainError
 	assert.True(t, errors.As(err, &domainErr))
 	assert.Equal(t, domain.ErrCodeServiceUnavailable, domainErr.Code)
-	assert.Contains(t, domainErr.Message, "invalid api key")
+	assert.Contains(t, domainErr.Message, "AI サービスが一時的に利用できません")
 }
 
 func TestComplete_EmptyChoices(t *testing.T) {
@@ -210,7 +210,7 @@ func TestComplete_UnauthorizedError(t *testing.T) {
 	var domainErr *domain.DomainError
 	assert.True(t, errors.As(err, &domainErr))
 	assert.Equal(t, domain.ErrCodeServiceUnavailable, domainErr.Code)
-	assert.Contains(t, domainErr.Message, "401")
+	assert.Contains(t, domainErr.Message, "AI サービスが一時的に利用できません")
 }
 
 func TestComplete_ReadBodyError(t *testing.T) {

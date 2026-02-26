@@ -53,8 +53,11 @@ func (h *SearchHandler) SearchPosts(c *gin.Context) {
 		}
 	}
 
-	// ソート順
+	// ソート順（Handler層で無効値をデフォルトに正規化）
 	sortBy := model.SearchSortBy(c.DefaultQuery("sort_by", string(model.SearchSortByLatest)))
+	if !model.ValidSearchSortBy[sortBy] {
+		sortBy = model.SearchSortByLatest
+	}
 
 	// 日付範囲フィルター
 	var dateFrom, dateTo *time.Time
