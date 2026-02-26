@@ -715,3 +715,25 @@ type WidgetSettingsRepositoryInterface interface {
 	FindByUserID(userID uint) (*model.WidgetSettings, error)
 	Upsert(settings *model.WidgetSettings) error
 }
+
+// NoteLinkRepositoryInterface はノート間リンクデータ操作の契約を定義する。
+type NoteLinkRepositoryInterface interface {
+	Create(link *model.NoteLink) error
+	FindBySourceNoteID(sourceNoteID uint) ([]model.NoteLink, error)
+	FindByTargetNoteID(targetNoteID uint) ([]model.NoteLink, error)
+	Delete(sourceNoteID, targetNoteID uint) error
+	Exists(sourceNoteID, targetNoteID uint) (bool, error)
+	CountBySourceNoteID(noteID uint) (int64, error)
+	CountByTargetNoteID(noteID uint) (int64, error)
+}
+
+// NoteTemplateRepositoryInterface はノートテンプレートデータ操作の契約を定義する。
+type NoteTemplateRepositoryInterface interface {
+	Create(template *model.NoteTemplate) error
+	FindByID(id uint) (*model.NoteTemplate, error)
+	FindByUserID(userID uint) ([]model.NoteTemplate, error)
+	FindDefaultByUserID(userID uint) (*model.NoteTemplate, error)
+	Update(template *model.NoteTemplate) error
+	Delete(id uint) error
+	ClearDefaultFlag(userID uint) error
+}

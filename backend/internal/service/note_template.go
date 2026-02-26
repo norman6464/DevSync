@@ -5,18 +5,8 @@ import (
 
 	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/repository"
 )
-
-// NoteTemplateRepositoryInterface はNoteTemplateRepositoryのインターフェース。
-type NoteTemplateRepositoryInterface interface {
-	Create(template *model.NoteTemplate) error
-	FindByID(id uint) (*model.NoteTemplate, error)
-	FindByUserID(userID uint) ([]model.NoteTemplate, error)
-	FindDefaultByUserID(userID uint) (*model.NoteTemplate, error)
-	Update(template *model.NoteTemplate) error
-	Delete(id uint) error
-	ClearDefaultFlag(userID uint) error
-}
 
 // NoteCreatorInterface はノート作成機能のインターフェース。
 type NoteCreatorInterface interface {
@@ -25,12 +15,12 @@ type NoteCreatorInterface interface {
 
 // NoteTemplateService はノートテンプレートのビジネスロジック。
 type NoteTemplateService struct {
-	repo        NoteTemplateRepositoryInterface
+	repo        repository.NoteTemplateRepositoryInterface
 	noteCreator NoteCreatorInterface
 }
 
 // NewNoteTemplateService は新しいNoteTemplateServiceインスタンスを生成する。
-func NewNoteTemplateService(repo NoteTemplateRepositoryInterface, noteCreator NoteCreatorInterface) *NoteTemplateService {
+func NewNoteTemplateService(repo repository.NoteTemplateRepositoryInterface, noteCreator NoteCreatorInterface) *NoteTemplateService {
 	return &NoteTemplateService{repo: repo, noteCreator: noteCreator}
 }
 
