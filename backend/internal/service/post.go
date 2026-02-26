@@ -79,6 +79,11 @@ func (s *PostService) CountAll() (int64, error) {
 	return s.repo.CountAll()
 }
 
+// CountByUserID は指定ユーザーの公開済み投稿数を取得する。
+func (s *PostService) CountByUserID(userID uint) (int64, error) {
+	return s.repo.CountByUserID(userID)
+}
+
 // GetByUserID は指定ユーザーの投稿をページネーション付きで取得する。
 func (s *PostService) GetByUserID(userID uint, limit, offset int) ([]model.Post, int64, error) {
 	return s.repo.FindByUserID(userID, limit, offset)

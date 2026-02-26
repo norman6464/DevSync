@@ -189,6 +189,7 @@ func registerPostRoutes(g *gin.RouterGroup, c *di.Container) {
 		posts.GET("", c.PostHandler.GetAll)
 		posts.GET("/timeline", c.PostHandler.Timeline)
 		posts.GET("/my", c.PostHandler.GetMyPosts)
+		posts.GET("/my/count", c.PostHandler.GetMyCount)
 		posts.GET("/drafts", c.PostHandler.GetDrafts)
 		posts.PUT("/drafts/auto-save", c.PostHandler.AutoSaveDraft)
 		posts.GET("/:id", c.PostHandler.GetByID)

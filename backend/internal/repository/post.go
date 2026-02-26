@@ -46,6 +46,13 @@ func (r *PostRepository) CountAll() (int64, error) {
 	return count, err
 }
 
+// CountByUserID は指定ユーザーの公開済み投稿数を返す。
+func (r *PostRepository) CountByUserID(userID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.Post{}).Where("user_id = ? AND is_draft = ?", userID, false).Count(&count).Error
+	return count, err
+}
+
 // FindByUserID は指定ユーザーの投稿をページネーション付きで取得する（新しい順）。下書きは除外。
 func (r *PostRepository) FindByUserID(userID uint, limit, offset int) ([]model.Post, int64, error) {
 	var posts []model.Post

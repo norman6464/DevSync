@@ -46,6 +46,7 @@ type PostServiceInterface interface {
 	CancelSchedule(id, userID uint) (*model.Post, error)
 	GetScheduled(userID uint) ([]model.Post, error)
 	AutoSaveDraft(userID, draftID uint, title, content, imageURLs string) (*model.Post, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // CodeSnippetServiceInterface はCodeSnippetServiceが実装すべきインターフェース。
@@ -246,6 +247,19 @@ func (h *PostHandler) GetMyPosts(c *gin.Context) {
 		Limit:  limit,
 		Offset: offset,
 	})
+}
+
+// GetMyCount は認証ユーザーの投稿数を返す。
+func (h *PostHandler) GetMyCount(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	count, err := h.service.CountByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, gin.H{"count": count})
 }
 
 // Like は投稿にいいねする。
