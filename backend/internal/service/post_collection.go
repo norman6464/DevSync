@@ -80,8 +80,8 @@ func (s *PostCollectionService) Update(id, userID uint, title, description strin
 		return nil, err
 	}
 
-	collection.Title = title
-	collection.Description = description
+	collection.Title = strings.TrimSpace(title)
+	collection.Description = strings.TrimSpace(description)
 	collection.IsPublic = isPublic
 
 	if err := s.repo.Update(collection); err != nil {
