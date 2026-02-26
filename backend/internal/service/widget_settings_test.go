@@ -71,7 +71,7 @@ func TestWidgetSettingsUpdateSettings_EmptySettings(t *testing.T) {
 
 	err := svc.UpdateSettings(1, "")
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "設定は必須です")
+	assert.Contains(t, err.Error(), "設定を入力してください")
 }
 
 func TestWidgetSettingsUpdateSettings_InvalidJSON(t *testing.T) {
