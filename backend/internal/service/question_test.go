@@ -669,3 +669,48 @@ func TestQuestionGetBookmarkedByUserID_Empty(t *testing.T) {
 	assert.Equal(t, int64(0), total)
 	repo.AssertExpectations(t)
 }
+
+// ============================================================
+// 未回答質問一覧テスト
+// ============================================================
+
+func TestQuestionGetUnanswered_Success(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	questions := []model.Question{
+		{Title: "未回答Q1", AnswerCount: 0},
+		{Title: "未回答Q2", AnswerCount: 0},
+	}
+	repo.On("FindUnanswered", 20, 0).Return(questions, int64(2), nil)
+
+	result, total, err := svc.GetUnanswered(20, 0)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, int64(2), total)
+	assert.Equal(t, 0, result[0].AnswerCount)
+	repo.AssertExpectations(t)
+}
+
+func TestQuestionGetUnanswered_Empty(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	repo.On("FindUnanswered", 20, 0).Return([]model.Question{}, int64(0), nil)
+
+	result, total, err := svc.GetUnanswered(20, 0)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+	assert.Equal(t, int64(0), total)
+	repo.AssertExpectations(t)
+}
+
+func TestQuestionGetUnanswered_RepoError(t *testing.T) {
+	svc, repo := newTestQuestionService()
+
+	repo.On("FindUnanswered", 20, 0).Return([]model.Question{}, int64(0), errors.New("db error"))
+
+	result, total, err := svc.GetUnanswered(20, 0)
+	assert.Error(t, err)
+	assert.Empty(t, result)
+	assert.Equal(t, int64(0), total)
+	repo.AssertExpectations(t)
+}

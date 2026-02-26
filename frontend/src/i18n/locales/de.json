@@ -1037,7 +1037,9 @@
     "bestAnswerSet": "Beste Antwort festgelegt",
     "bestAnswerFailed": "Beste Antwort konnte nicht festgelegt werden",
     "voteFailed": "Abstimmung fehlgeschlagen",
-    "popularBadge": "Beliebt"
+    "popularBadge": "Beliebt",
+    "unanswered": "Unbeantwortet",
+    "noUnanswered": "Keine unbeantworteten Fragen"
   },
   "roadmaps": {
     "title": "Lern-Roadmaps",

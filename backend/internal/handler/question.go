@@ -24,6 +24,7 @@ type QuestionServiceInterface interface {
 	Bookmark(userID, questionID uint) error
 	Unbookmark(userID, questionID uint) error
 	GetBookmarkedByUserID(userID uint, limit, offset int) ([]model.Question, int64, error)
+	GetUnanswered(limit, offset int) ([]model.Question, int64, error)
 }
 
 // QuestionHandler は質問関連のHTTPハンドラ。
@@ -203,6 +204,24 @@ func (h *QuestionHandler) GetSolved(c *gin.Context) {
 	limit, offset := parseLimitOffset(c)
 
 	questions, total, err := h.service.GetSolved(limit, offset)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, dto.QuestionListResponse{
+		Questions: questions,
+		Total:     total,
+		Limit:     limit,
+		Offset:    offset,
+	})
+}
+
+// GetUnanswered は未回答の質問一覧を取得する。
+func (h *QuestionHandler) GetUnanswered(c *gin.Context) {
+	limit, offset := parseLimitOffset(c)
+
+	questions, total, err := h.service.GetUnanswered(limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return

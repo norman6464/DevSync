@@ -993,7 +993,9 @@
     "bestAnswerSet": "ベストアンサーを設定しました",
     "bestAnswerFailed": "ベストアンサーの設定に失敗しました",
     "voteFailed": "投票に失敗しました",
-    "popularBadge": "人気"
+    "popularBadge": "人気",
+    "unanswered": "未回答",
+    "noUnanswered": "未回答の質問はありません"
   },
   "roadmaps": {
     "title": "学習ロードマップ",

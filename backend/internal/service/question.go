@@ -129,6 +129,11 @@ func (s *QuestionService) GetSolved(limit, offset int) ([]model.Question, int64,
 	return s.repo.FindSolved(limit, offset)
 }
 
+// GetUnanswered は未回答の質問一覧をページネーション付きで取得する。
+func (s *QuestionService) GetUnanswered(limit, offset int) ([]model.Question, int64, error) {
+	return s.repo.FindUnanswered(limit, offset)
+}
+
 // RemoveVote は質問への投票を取り消す。
 // 自分の質問への投票削除は禁止する（そもそも投票できないため）。
 func (s *QuestionService) RemoveVote(userID, questionID uint) error {

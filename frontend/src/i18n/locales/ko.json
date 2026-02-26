@@ -1040,7 +1040,9 @@
     "bestAnswerSet": "채택 답변이 설정되었습니다",
     "bestAnswerFailed": "채택 답변 설정에 실패했습니다",
     "voteFailed": "투표에 실패했습니다",
-    "popularBadge": "인기"
+    "popularBadge": "인기",
+    "unanswered": "미답변",
+    "noUnanswered": "미답변 질문이 없습니다"
   },
   "roadmaps": {
     "title": "학습 로드맵",

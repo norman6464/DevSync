@@ -1040,7 +1040,9 @@
     "bestAnswerSet": "已設定最佳答案",
     "bestAnswerFailed": "設定最佳答案失敗",
     "voteFailed": "投票失敗",
-    "popularBadge": "熱門"
+    "popularBadge": "熱門",
+    "unanswered": "未回答",
+    "noUnanswered": "沒有未回答的問題"
   },
   "roadmaps": {
     "title": "學習路線圖",

@@ -169,6 +169,22 @@ func (r *QuestionRepository) FindSolved(limit, offset int) ([]model.Question, in
 	return questions, total, err
 }
 
+// FindUnanswered は回答が0件の質問をページネーション付きで取得する（新しい順）。
+func (r *QuestionRepository) FindUnanswered(limit, offset int) ([]model.Question, int64, error) {
+	var questions []model.Question
+	var total int64
+
+	query := r.db.Model(&model.Question{}).Where("answer_count = 0")
+	query.Count(&total)
+
+	err := query.Preload("User").
+		Order("created_at DESC").
+		Limit(limit).Offset(offset).
+		Find(&questions).Error
+
+	return questions, total, err
+}
+
 // GetUserVote は指定ユーザーの指定質問への投票値を取得する（未投票の場合は0を返す）。
 func (r *QuestionRepository) GetUserVote(userID, questionID uint) (int, error) {
 	var vote model.QuestionVote
