@@ -90,7 +90,7 @@ func (h *GitHubHandler) GetContributions(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, contributions)
+	respondOK(c, ensureSlice(contributions))
 }
 
 // GetLanguages は指定ユーザーのGitHubリポジトリの使用言語統計を取得する。
@@ -105,7 +105,7 @@ func (h *GitHubHandler) GetLanguages(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, stats)
+	respondOK(c, ensureSlice(stats))
 }
 
 // GetRepos は指定ユーザーのGitHubリポジトリ一覧を取得する。
@@ -120,7 +120,7 @@ func (h *GitHubHandler) GetRepos(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, repos)
+	respondOK(c, ensureSlice(repos))
 }
 
 // Sync は現在のユーザーのGitHubデータを手動で同期する。

@@ -38,7 +38,7 @@ func (h *UserHandler) GetAll(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, users)
+	respondOK(c, ensureSlice(users))
 }
 
 // GetByID は指定IDのユーザー情報を返す。

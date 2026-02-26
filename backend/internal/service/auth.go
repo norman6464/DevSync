@@ -134,7 +134,7 @@ func (s *AuthService) Login(input LoginInput) (*AuthResponse, error) {
 func (s *AuthService) ValidateToken(tokenString string) (uint, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, domain.NewError(domain.ErrCodeUnauthorized, "unexpected signing method", nil)
+			return nil, domain.NewError(domain.ErrCodeUnauthorized, "予期しない署名方式です", nil)
 		}
 		return s.jwtSecret, nil
 	})
@@ -169,7 +169,7 @@ func (s *AuthService) GenerateLoginState() (string, error) {
 func (s *AuthService) ValidateLoginState(state string) error {
 	token, err := jwt.Parse(state, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, domain.NewError(domain.ErrCodeUnauthorized, "unexpected signing method", nil)
+			return nil, domain.NewError(domain.ErrCodeUnauthorized, "予期しない署名方式です", nil)
 		}
 		return s.jwtSecret, nil
 	})
@@ -280,7 +280,7 @@ func (s *AuthService) GenerateOAuthState(userID uint) (string, error) {
 func (s *AuthService) ValidateOAuthState(state string) (uint, error) {
 	token, err := jwt.Parse(state, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, domain.NewError(domain.ErrCodeUnauthorized, "unexpected signing method", nil)
+			return nil, domain.NewError(domain.ErrCodeUnauthorized, "予期しない署名方式です", nil)
 		}
 		return s.jwtSecret, nil
 	})

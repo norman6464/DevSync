@@ -102,7 +102,7 @@ func (h *SpotifyHandler) GetRecentlyPlayed(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, tracks)
+	respondOK(c, ensureSlice(tracks))
 }
 
 // Disconnect はSpotify連携を解除する。
