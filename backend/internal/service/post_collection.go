@@ -28,6 +28,7 @@ func (s *PostCollectionService) Create(collection *model.PostCollection) (*model
 		return nil, err
 	}
 	collection.Title = strings.TrimSpace(collection.Title)
+	collection.Description = strings.TrimSpace(collection.Description)
 	if err := s.repo.Create(collection); err != nil {
 		return nil, err
 	}
