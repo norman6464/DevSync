@@ -49,23 +49,23 @@ func (s *PostTemplateService) Update(id, userID uint, updates *model.PostTemplat
 		return nil, err
 	}
 
-	if strings.TrimSpace(updates.Name) != "" {
-		if err := domain.ValidateStringLength(updates.Name, 1, 100, "テンプレート名"); err != nil {
+	if name := strings.TrimSpace(updates.Name); name != "" {
+		if err := domain.ValidateStringLength(name, 1, 100, "テンプレート名"); err != nil {
 			return nil, err
 		}
-		tmpl.Name = strings.TrimSpace(updates.Name)
+		tmpl.Name = name
 	}
-	if strings.TrimSpace(updates.TitleTemplate) != "" {
-		if err := domain.ValidateStringLength(updates.TitleTemplate, 1, 200, "タイトルテンプレート"); err != nil {
+	if tt := strings.TrimSpace(updates.TitleTemplate); tt != "" {
+		if err := domain.ValidateStringLength(tt, 1, 200, "タイトルテンプレート"); err != nil {
 			return nil, err
 		}
-		tmpl.TitleTemplate = strings.TrimSpace(updates.TitleTemplate)
+		tmpl.TitleTemplate = tt
 	}
-	if strings.TrimSpace(updates.ContentTemplate) != "" {
-		if err := domain.ValidateStringLength(updates.ContentTemplate, 1, 50000, "テンプレート内容"); err != nil {
+	if ct := strings.TrimSpace(updates.ContentTemplate); ct != "" {
+		if err := domain.ValidateStringLength(ct, 1, 50000, "テンプレート内容"); err != nil {
 			return nil, err
 		}
-		tmpl.ContentTemplate = strings.TrimSpace(updates.ContentTemplate)
+		tmpl.ContentTemplate = ct
 	}
 
 	if err := s.repo.Update(tmpl); err != nil {
