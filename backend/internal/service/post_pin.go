@@ -92,3 +92,8 @@ func (s *PostPinService) Reorder(userID uint, postIDs []uint) error {
 func (s *PostPinService) IsPinned(userID, postID uint) (bool, error) {
 	return s.pinRepo.IsPinned(userID, postID)
 }
+
+// CountByUserID は指定ユーザーのピン留め投稿数を返す。
+func (s *PostPinService) CountByUserID(userID uint) (int64, error) {
+	return s.pinRepo.CountByUserID(userID)
+}
