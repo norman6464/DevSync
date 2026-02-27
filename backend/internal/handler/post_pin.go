@@ -14,6 +14,7 @@ type PostPinServiceInterface interface {
 	GetByUserID(userID uint) ([]model.PostPin, error)
 	Reorder(userID uint, postIDs []uint) error
 	IsPinned(userID, postID uint) (bool, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // PostPinHandler は投稿ピン留めのHTTPハンドラー。
@@ -69,6 +70,17 @@ func (h *PostPinHandler) GetByUserID(c *gin.Context) {
 		return
 	}
 	respondOK(c, dto.PinsResponse{Pins: pins})
+}
+
+// GetMyCount は認証ユーザー自身のピン留め投稿数を返す。
+func (h *PostPinHandler) GetMyCount(c *gin.Context) {
+	userID := c.GetUint("userID")
+	count, err := h.service.CountByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, gin.H{"count": count})
 }
 
 // Reorder はピン留めの表示順序を変更する。

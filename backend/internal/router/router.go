@@ -266,6 +266,7 @@ func registerPostTagRoutes(g *gin.RouterGroup, c *di.Container) {
 func registerPostPinRoutes(g *gin.RouterGroup, c *di.Container) {
 	pins := g.Group("/post-pins")
 	{
+		pins.GET("/my/count", c.PostPinHandler.GetMyCount)
 		pins.POST("/posts/:postId", c.PostPinHandler.Pin)
 		pins.DELETE("/posts/:postId", c.PostPinHandler.Unpin)
 		pins.GET("/users/:userId", c.PostPinHandler.GetByUserID)
