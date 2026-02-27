@@ -63,3 +63,10 @@ func (r *NoteFolderRepository) Update(folder *model.NoteFolder) error {
 func (r *NoteFolderRepository) Delete(id uint) error {
 	return r.db.Delete(&model.NoteFolder{}, id).Error
 }
+
+// CountByUserID は指定ユーザーのフォルダ総数を返す。
+func (r *NoteFolderRepository) CountByUserID(userID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.NoteFolder{}).Where("user_id = ?", userID).Count(&count).Error
+	return count, err
+}

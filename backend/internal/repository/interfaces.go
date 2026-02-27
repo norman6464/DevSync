@@ -541,6 +541,7 @@ type NoteFolderRepositoryInterface interface {
 	GetRootFolders(userID uint) ([]model.NoteFolder, error)
 	Update(folder *model.NoteFolder) error
 	Delete(id uint) error
+	CountByUserID(userID uint) (int64, error)
 }
 
 // PostCollectionRepositoryInterface は投稿コレクションデータ操作の契約を定義する。

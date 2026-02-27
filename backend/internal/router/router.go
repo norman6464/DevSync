@@ -564,6 +564,7 @@ func registerNoteRoutes(g *gin.RouterGroup, c *di.Container) {
 	{
 		noteFolders.POST("", c.NoteFolderHandler.Create)
 		noteFolders.GET("", c.NoteFolderHandler.GetByUserID)
+		noteFolders.GET("/my/count", c.NoteFolderHandler.GetMyCount)
 		noteFolders.GET("/root", c.NoteFolderHandler.GetRootFolders)
 		noteFolders.GET("/:id", c.NoteFolderHandler.GetByID)
 		noteFolders.GET("/:id/children", c.NoteFolderHandler.GetChildren)
