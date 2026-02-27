@@ -47,23 +47,23 @@ func (s *BookmarkCollectionService) Update(id, userID uint, updates *model.Bookm
 		return nil, err
 	}
 
-	if strings.TrimSpace(updates.Name) != "" {
-		if err := domain.ValidateStringLength(updates.Name, 1, 100, "コレクション名"); err != nil {
+	if name := strings.TrimSpace(updates.Name); name != "" {
+		if err := domain.ValidateStringLength(name, 1, 100, "コレクション名"); err != nil {
 			return nil, err
 		}
-		collection.Name = strings.TrimSpace(updates.Name)
+		collection.Name = name
 	}
-	if strings.TrimSpace(updates.Description) != "" {
-		if err := domain.ValidateStringLength(updates.Description, 1, 500, "説明"); err != nil {
+	if desc := strings.TrimSpace(updates.Description); desc != "" {
+		if err := domain.ValidateStringLength(desc, 1, 500, "説明"); err != nil {
 			return nil, err
 		}
-		collection.Description = strings.TrimSpace(updates.Description)
+		collection.Description = desc
 	}
-	if strings.TrimSpace(updates.Color) != "" {
-		if err := domain.ValidateStringLength(updates.Color, 1, 20, "カラー"); err != nil {
+	if color := strings.TrimSpace(updates.Color); color != "" {
+		if err := domain.ValidateStringLength(color, 1, 20, "カラー"); err != nil {
 			return nil, err
 		}
-		collection.Color = strings.TrimSpace(updates.Color)
+		collection.Color = color
 	}
 
 	if err := s.repo.Update(collection); err != nil {
