@@ -36,6 +36,7 @@ func (s *ResourceReviewService) Create(review *model.ResourceReview) error {
 	}
 
 	// コメントバリデーション
+	review.Comment = strings.TrimSpace(review.Comment)
 	if err := domain.ValidateStringLength(review.Comment, 0, 5000, "コメント"); err != nil {
 		return err
 	}
