@@ -54,6 +54,11 @@ func (m *MockNoteFolderService) Delete(id, userID uint) error {
 	return m.Called(id, userID).Error(0)
 }
 
+func (m *MockNoteFolderService) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 // newTestNoteFolderHandler はテスト用のNoteFolderHandlerを生成する。
 func newTestNoteFolderHandler() (*NoteFolderHandler, *MockNoteFolderService) {
 	mockService := new(MockNoteFolderService)

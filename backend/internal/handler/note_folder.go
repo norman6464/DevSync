@@ -16,6 +16,7 @@ type NoteFolderServiceInterface interface {
 	GetRootFolders(userID uint) ([]model.NoteFolder, error)
 	Update(id, userID uint, name string, parentID *uint) (*model.NoteFolder, error)
 	Delete(id, userID uint) error
+	CountByUserID(userID uint) (int64, error)
 }
 
 // NoteFolderHandler はノートフォルダ関連のHTTPハンドラ。
@@ -124,6 +125,17 @@ func (h *NoteFolderHandler) Update(c *gin.Context) {
 	}
 
 	respondOK(c, folder)
+}
+
+// GetMyCount は認証ユーザー自身のフォルダ総数を返す。
+func (h *NoteFolderHandler) GetMyCount(c *gin.Context) {
+	userID := c.GetUint("userID")
+	count, err := h.service.CountByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, gin.H{"count": count})
 }
 
 // Delete はフォルダを削除する。

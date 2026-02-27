@@ -53,6 +53,11 @@ func (m *MockNoteFolderRepository) Delete(id uint) error {
 	return args.Error(0)
 }
 
+func (m *MockNoteFolderRepository) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 func TestNoteFolderService_Create(t *testing.T) {
 	mockRepo := new(MockNoteFolderRepository)
 	service := NewNoteFolderService(mockRepo)

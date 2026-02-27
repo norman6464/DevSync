@@ -116,6 +116,11 @@ func (s *NoteFolderService) Update(id, userID uint, name string, parentID *uint)
 	return folder, nil
 }
 
+// CountByUserID は指定ユーザーのフォルダ総数を返す。
+func (s *NoteFolderService) CountByUserID(userID uint) (int64, error) {
+	return s.repo.CountByUserID(userID)
+}
+
 // Delete は所有権を検証した後、フォルダを削除する。
 func (s *NoteFolderService) Delete(id, userID uint) error {
 	if _, err := s.findAndCheckOwnership(id, userID); err != nil {
