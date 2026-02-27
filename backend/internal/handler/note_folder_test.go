@@ -7,6 +7,7 @@ import (
 
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -321,4 +322,32 @@ func TestNoteFolderHandler_Delete_ServiceError(t *testing.T) {
 
 	w := doRequest(r, "DELETE", "/folders/1", nil)
 	assertStatus(t, w, http.StatusForbidden)
+}
+
+// ============================================================
+// GetMyCount テスト
+// ============================================================
+
+func TestNoteFolderHandler_GetMyCount_Success(t *testing.T) {
+	h, svc := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.GET("/folders/my/count", h.GetMyCount)
+
+	svc.On("CountByUserID", uint(1)).Return(int64(4), nil)
+
+	w := doRequest(r, "GET", "/folders/my/count", nil)
+	assertStatus(t, w, http.StatusOK)
+	body := parseJSON(t, w)
+	assert.Equal(t, float64(4), body["count"])
+}
+
+func TestNoteFolderHandler_GetMyCount_ServiceError(t *testing.T) {
+	h, svc := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.GET("/folders/my/count", h.GetMyCount)
+
+	svc.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	w := doRequest(r, "GET", "/folders/my/count", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
 }

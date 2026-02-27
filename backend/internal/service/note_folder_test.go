@@ -463,3 +463,26 @@ func TestNoteFolderService_Update_TrimSpaceName(t *testing.T) {
 	assert.Equal(t, "新しい名前", result.Name)
 	mockRepo.AssertExpectations(t)
 }
+
+func TestNoteFolderService_CountByUserID_Success(t *testing.T) {
+	mockRepo := new(MockNoteFolderRepository)
+	svc := NewNoteFolderService(mockRepo)
+
+	mockRepo.On("CountByUserID", uint(1)).Return(int64(3), nil)
+
+	count, err := svc.CountByUserID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(3), count)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestNoteFolderService_CountByUserID_Error(t *testing.T) {
+	mockRepo := new(MockNoteFolderRepository)
+	svc := NewNoteFolderService(mockRepo)
+
+	mockRepo.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	_, err := svc.CountByUserID(1)
+	assert.Error(t, err)
+	mockRepo.AssertExpectations(t)
+}
