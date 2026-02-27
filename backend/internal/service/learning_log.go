@@ -48,11 +48,11 @@ func (s *LearningLogService) Create(log *model.LearningLog) error {
 	if log.Category == "" {
 		log.Category = model.LogCategoryOther
 	} else if !model.ValidCategories[log.Category] {
-		return domain.NewError(domain.ErrCodeBadRequest, "無効なカテゴリです", nil)
+		return domain.NewError(domain.ErrCodeBadRequest, msgInvalidCategory, nil)
 	}
 	// Source: 空文字（デフォルト"manual"）または有効な値のみ許可
 	if log.Source != "" && !model.ValidSources[log.Source] {
-		return domain.NewError(domain.ErrCodeBadRequest, "無効なソースです", nil)
+		return domain.NewError(domain.ErrCodeBadRequest, msgInvalidSource, nil)
 	}
 
 	// ゴール紐付けバリデーション
@@ -151,10 +151,10 @@ func (s *LearningLogService) BatchCreate(userID uint, logs []model.LearningLog) 
 		if logs[i].Category == "" {
 			logs[i].Category = model.LogCategoryOther
 		} else if !model.ValidCategories[logs[i].Category] {
-			return nil, domain.NewError(domain.ErrCodeBadRequest, "無効なカテゴリです", nil)
+			return nil, domain.NewError(domain.ErrCodeBadRequest, msgInvalidCategory, nil)
 		}
 		if logs[i].Source != "" && !model.ValidSources[logs[i].Source] {
-			return nil, domain.NewError(domain.ErrCodeBadRequest, "無効なソースです", nil)
+			return nil, domain.NewError(domain.ErrCodeBadRequest, msgInvalidSource, nil)
 		}
 	}
 
@@ -178,7 +178,7 @@ func (s *LearningLogService) GetByUserID(userID uint, limit, offset int) ([]mode
 // GetByCategory は指定ユーザーの学習ログをカテゴリでフィルタリングして取得する。
 func (s *LearningLogService) GetByCategory(userID uint, category string) ([]model.LearningLog, error) {
 	if !model.ValidCategories[model.LogCategory(category)] {
-		return nil, domain.NewError(domain.ErrCodeBadRequest, "無効なカテゴリです", nil)
+		return nil, domain.NewError(domain.ErrCodeBadRequest, msgInvalidCategory, nil)
 	}
 	return s.repo.GetByCategory(userID, category)
 }
@@ -186,7 +186,7 @@ func (s *LearningLogService) GetByCategory(userID uint, category string) ([]mode
 // GetBySource は指定ユーザーの学習ログをソース（manual/pomodoro）でフィルタリングして取得する。
 func (s *LearningLogService) GetBySource(userID uint, source string) ([]model.LearningLog, error) {
 	if !model.ValidSources[model.LogSource(source)] {
-		return nil, domain.NewError(domain.ErrCodeBadRequest, "無効なソースです", nil)
+		return nil, domain.NewError(domain.ErrCodeBadRequest, msgInvalidSource, nil)
 	}
 	return s.repo.GetBySource(userID, source)
 }
