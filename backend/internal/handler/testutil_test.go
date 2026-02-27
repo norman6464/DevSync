@@ -168,6 +168,14 @@ func (m *MockPostRepository) CountByUserID(userID uint) (int64, error) {
 	args := m.Called(userID)
 	return args.Get(0).(int64), args.Error(1)
 }
+func (m *MockPostRepository) CountDraftsByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+func (m *MockPostRepository) CountScheduledByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
 func (m *MockPostRepository) GetReplies(parentID uint) ([]model.Comment, error) {
 	args := m.Called(parentID)
 	return args.Get(0).([]model.Comment), args.Error(1)

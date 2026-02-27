@@ -47,6 +47,8 @@ type PostServiceInterface interface {
 	GetScheduled(userID uint) ([]model.Post, error)
 	AutoSaveDraft(userID, draftID uint, title, content, imageURLs string) (*model.Post, error)
 	CountByUserID(userID uint) (int64, error)
+	CountDraftsByUserID(userID uint) (int64, error)
+	CountScheduledByUserID(userID uint) (int64, error)
 }
 
 // CodeSnippetServiceInterface はCodeSnippetServiceが実装すべきインターフェース。
@@ -254,6 +256,32 @@ func (h *PostHandler) GetMyCount(c *gin.Context) {
 	userID := c.GetUint("userID")
 
 	count, err := h.service.CountByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, gin.H{"count": count})
+}
+
+// GetDraftsCount は認証ユーザーの下書き投稿数を返す。
+func (h *PostHandler) GetDraftsCount(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	count, err := h.service.CountDraftsByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, gin.H{"count": count})
+}
+
+// GetScheduledCount は認証ユーザーのスケジュール済み投稿数を返す。
+func (h *PostHandler) GetScheduledCount(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	count, err := h.service.CountScheduledByUserID(userID)
 	if err != nil {
 		respondError(c, err)
 		return
