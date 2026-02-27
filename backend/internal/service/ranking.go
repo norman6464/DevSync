@@ -6,6 +6,8 @@ import (
 	"github.com/norman6464/devsync/backend/internal/repository"
 )
 
+const maxLanguageNameLength = 50
+
 // RankingService はランキングのビジネスロジックを提供する。
 // リポジトリ層に処理を委譲する薄いラッパー。
 type RankingService struct {
@@ -22,20 +24,28 @@ var validRankingPeriods = map[string]bool{
 	"weekly": true, "monthly": true,
 }
 
+// validatePeriod は期間パラメータを検証する。
+func validatePeriod(period string) error {
+	if !validRankingPeriods[period] {
+		return domain.NewError(domain.ErrCodeBadRequest, "periodはweekly/monthlyのいずれかを指定してください", nil)
+	}
+	return nil
+}
+
 // ContributionRanking は指定期間のコントリビューションランキングを返す。
 func (s *RankingService) ContributionRanking(period string) ([]model.RankingEntry, error) {
-	if !validRankingPeriods[period] {
-		return nil, domain.NewError(domain.ErrCodeBadRequest, "periodはweekly/monthlyのいずれかを指定してください", nil)
+	if err := validatePeriod(period); err != nil {
+		return nil, err
 	}
 	return s.repo.ContributionRanking(period)
 }
 
 // LanguageRanking は指定言語・期間の言語別ランキングを返す。
 func (s *RankingService) LanguageRanking(language, period string) ([]model.RankingEntry, error) {
-	if !validRankingPeriods[period] {
-		return nil, domain.NewError(domain.ErrCodeBadRequest, "periodはweekly/monthlyのいずれかを指定してください", nil)
+	if err := validatePeriod(period); err != nil {
+		return nil, err
 	}
-	if len(language) > 50 {
+	if len(language) > maxLanguageNameLength {
 		return nil, domain.NewError(domain.ErrCodeBadRequest, "言語名が長すぎます", nil)
 	}
 	return s.repo.LanguageRanking(language, period)
