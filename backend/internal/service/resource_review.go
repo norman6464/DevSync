@@ -72,12 +72,11 @@ func (s *ResourceReviewService) Update(id, userID uint, rating int, comment stri
 		}
 		review.Rating = rating
 	}
-	if strings.TrimSpace(comment) != "" {
-		comment = strings.TrimSpace(comment)
-		if err := domain.ValidateStringLength(comment, 1, 5000, "コメント"); err != nil {
+	if c := strings.TrimSpace(comment); c != "" {
+		if err := domain.ValidateStringLength(c, 1, 5000, "コメント"); err != nil {
 			return nil, err
 		}
-		review.Comment = comment
+		review.Comment = c
 	}
 
 	if err := s.repo.Update(review); err != nil {

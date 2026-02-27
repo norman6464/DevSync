@@ -75,41 +75,41 @@ func (s *ProjectService) Update(id, userID uint, updates *model.Project) (*model
 		return nil, err
 	}
 
-	if strings.TrimSpace(updates.Title) != "" {
-		project.Title = strings.TrimSpace(updates.Title)
+	if title := strings.TrimSpace(updates.Title); title != "" {
+		project.Title = title
 	}
-	if strings.TrimSpace(updates.Description) != "" {
-		project.Description = strings.TrimSpace(updates.Description)
+	if desc := strings.TrimSpace(updates.Description); desc != "" {
+		project.Description = desc
 	}
-	if strings.TrimSpace(updates.TechStack) != "" {
-		if err := domain.ValidateStringLength(updates.TechStack, 1, 500, "技術スタック"); err != nil {
+	if ts := strings.TrimSpace(updates.TechStack); ts != "" {
+		if err := domain.ValidateStringLength(ts, 1, 500, "技術スタック"); err != nil {
 			return nil, err
 		}
-		project.TechStack = strings.TrimSpace(updates.TechStack)
+		project.TechStack = ts
 	}
-	if strings.TrimSpace(updates.DemoURL) != "" {
-		if err := domain.ValidateStringLength(updates.DemoURL, 1, 2000, "デモURL"); err != nil {
+	if demoURL := strings.TrimSpace(updates.DemoURL); demoURL != "" {
+		if err := domain.ValidateStringLength(demoURL, 1, 2000, "デモURL"); err != nil {
 			return nil, err
 		}
-		project.DemoURL = strings.TrimSpace(updates.DemoURL)
+		project.DemoURL = demoURL
 	}
-	if strings.TrimSpace(updates.GithubURL) != "" {
-		if err := domain.ValidateStringLength(updates.GithubURL, 1, 2000, "GitHub URL"); err != nil {
+	if ghURL := strings.TrimSpace(updates.GithubURL); ghURL != "" {
+		if err := domain.ValidateStringLength(ghURL, 1, 2000, "GitHub URL"); err != nil {
 			return nil, err
 		}
-		project.GithubURL = strings.TrimSpace(updates.GithubURL)
+		project.GithubURL = ghURL
 	}
-	if strings.TrimSpace(updates.ImageURL) != "" {
-		if err := domain.ValidateStringLength(updates.ImageURL, 1, 2000, "画像URL"); err != nil {
+	if imgURL := strings.TrimSpace(updates.ImageURL); imgURL != "" {
+		if err := domain.ValidateStringLength(imgURL, 1, 2000, "画像URL"); err != nil {
 			return nil, err
 		}
-		project.ImageURL = strings.TrimSpace(updates.ImageURL)
+		project.ImageURL = imgURL
 	}
-	if strings.TrimSpace(updates.Role) != "" {
-		if err := domain.ValidateStringLength(updates.Role, 1, 100, "役割"); err != nil {
+	if role := strings.TrimSpace(updates.Role); role != "" {
+		if err := domain.ValidateStringLength(role, 1, 100, "役割"); err != nil {
 			return nil, err
 		}
-		project.Role = strings.TrimSpace(updates.Role)
+		project.Role = role
 	}
 	if updates.StartDate != nil {
 		project.StartDate = updates.StartDate
