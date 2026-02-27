@@ -981,6 +981,27 @@ func TestCalculateGoalForecast_MediumDifficulty(t *testing.T) {
 	assert.Equal(t, "medium", f.Difficulty) // 8/10 = 0.8, 0.5 < 0.8 ≤ 1.0
 }
 
+// ============================================================
+// CountByUserID テスト
+// ============================================================
+
+func TestLearningGoalCountByUserID_Success(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+	repo.On("CountByUserID", uint(1)).Return(int64(5), nil)
+
+	count, err := svc.CountByUserID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(5), count)
+}
+
+func TestLearningGoalCountByUserID_Error(t *testing.T) {
+	svc, repo := newTestLearningGoalService()
+	repo.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	_, err := svc.CountByUserID(1)
+	assert.Error(t, err)
+}
+
 func TestCalculateGoalForecast_PastDeadline(t *testing.T) {
 	deadline := time.Now().Add(-2 * 24 * time.Hour)
 	goal := &model.LearningGoal{
