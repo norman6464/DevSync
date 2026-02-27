@@ -91,6 +91,13 @@ func (r *LearningGoalRepository) GetPublicGoals(limit, offset int) ([]model.Lear
 	return goals, total, err
 }
 
+// CountByUserID は指定ユーザーの学習目標総数を返す。
+func (r *LearningGoalRepository) CountByUserID(userID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.LearningGoal{}).Where("user_id = ?", userID).Count(&count).Error
+	return count, err
+}
+
 // GetStats は指定ユーザーの学習目標統計情報を算出する。
 // 目標総数、アクティブ数、完了数、平均進捗率を返す。
 func (r *LearningGoalRepository) GetStats(userID uint) (*model.LearningGoalStats, error) {

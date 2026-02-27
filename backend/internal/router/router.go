@@ -391,6 +391,7 @@ func registerGoalRoutes(g *gin.RouterGroup, c *di.Container) {
 	{
 		goals.POST("", c.LearningGoalHandler.Create)
 		goals.GET("", c.LearningGoalHandler.GetMyGoals)
+		goals.GET("/my/count", c.LearningGoalHandler.GetMyCount)
 		goals.GET("/:id", c.LearningGoalHandler.GetByID)
 		goals.PUT("/:id", c.LearningGoalHandler.Update)
 		goals.DELETE("/:id", c.LearningGoalHandler.Delete)

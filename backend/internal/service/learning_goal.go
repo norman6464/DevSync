@@ -244,6 +244,11 @@ func (s *LearningGoalService) GetPublicByUserID(userID uint, limit, offset int) 
 	return s.repo.GetPublicByUserID(userID, limit, offset)
 }
 
+// CountByUserID は指定ユーザーの学習目標総数を返す。
+func (s *LearningGoalService) CountByUserID(userID uint) (int64, error) {
+	return s.repo.CountByUserID(userID)
+}
+
 // Delete は所有権を検証した後、学習目標を削除する。
 func (s *LearningGoalService) Delete(id, userID uint) error {
 	if _, err := s.findAndCheckOwnership(id, userID); err != nil {
