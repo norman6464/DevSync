@@ -79,19 +79,17 @@ func (s *ProjectMilestoneService) Update(userID, milestoneID uint, title, descri
 		return nil, err
 	}
 
-	if strings.TrimSpace(title) != "" {
-		title = strings.TrimSpace(title)
-		if err := domain.ValidateStringLength(title, 1, 200, "タイトル"); err != nil {
+	if t := strings.TrimSpace(title); t != "" {
+		if err := domain.ValidateStringLength(t, 1, 200, "タイトル"); err != nil {
 			return nil, err
 		}
-		milestone.Title = title
+		milestone.Title = t
 	}
-	if strings.TrimSpace(description) != "" {
-		description = strings.TrimSpace(description)
-		if err := domain.ValidateStringLength(description, 1, 1000, "説明"); err != nil {
+	if d := strings.TrimSpace(description); d != "" {
+		if err := domain.ValidateStringLength(d, 1, 1000, "説明"); err != nil {
 			return nil, err
 		}
-		milestone.Description = description
+		milestone.Description = d
 	}
 	if dueDate != nil {
 		milestone.DueDate = dueDate
