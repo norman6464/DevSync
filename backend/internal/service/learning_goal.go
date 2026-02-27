@@ -99,19 +99,19 @@ func (s *LearningGoalService) Update(id, userID uint, updates *model.LearningGoa
 		return nil, err
 	}
 
-	if strings.TrimSpace(updates.Title) != "" {
-		if err := domain.ValidateStringLength(updates.Title, 1, 200, "タイトル"); err != nil {
+	if title := strings.TrimSpace(updates.Title); title != "" {
+		if err := domain.ValidateStringLength(title, 1, 200, "タイトル"); err != nil {
 			return nil, err
 		}
-		goal.Title = strings.TrimSpace(updates.Title)
+		goal.Title = title
 	}
-	if strings.TrimSpace(updates.Description) != "" {
-		if err := domain.ValidateStringLength(updates.Description, 1, 1000, "説明"); err != nil {
+	if desc := strings.TrimSpace(updates.Description); desc != "" {
+		if err := domain.ValidateStringLength(desc, 1, 1000, "説明"); err != nil {
 			return nil, err
 		}
-		goal.Description = strings.TrimSpace(updates.Description)
+		goal.Description = desc
 	}
-	if strings.TrimSpace(string(updates.Category)) != "" {
+	if cat := strings.TrimSpace(string(updates.Category)); cat != "" {
 		goal.Category = updates.Category
 	}
 	if updates.TargetDate != nil {
@@ -131,7 +131,7 @@ func (s *LearningGoalService) Update(id, userID uint, updates *model.LearningGoa
 			goal.CompletedAt = &now
 		}
 	}
-	if strings.TrimSpace(string(updates.Status)) != "" {
+	if st := strings.TrimSpace(string(updates.Status)); st != "" {
 		goal.Status = updates.Status
 		if goal.Status == model.GoalStatusCompleted && goal.CompletedAt == nil {
 			now := time.Now()
