@@ -1966,3 +1966,28 @@ func TestPostCountScheduledByUserID_Error(t *testing.T) {
 	assert.Error(t, err)
 	postRepo.AssertExpectations(t)
 }
+
+// ============================================================
+// CountBookmarkedByUserID テスト
+// ============================================================
+
+func TestPostCountBookmarkedByUserID_Success(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("CountBookmarkedByUserID", uint(1)).Return(int64(7), nil)
+
+	count, err := svc.CountBookmarkedByUserID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(7), count)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostCountBookmarkedByUserID_Error(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("CountBookmarkedByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	_, err := svc.CountBookmarkedByUserID(1)
+	assert.Error(t, err)
+	postRepo.AssertExpectations(t)
+}
