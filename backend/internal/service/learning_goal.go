@@ -61,7 +61,7 @@ var validGoalCategories = map[string]bool{
 // GetByCategory は指定ユーザーの学習目標をカテゴリでフィルタリングして取得する。
 func (s *LearningGoalService) GetByCategory(userID uint, category string) ([]model.LearningGoal, error) {
 	if !validGoalCategories[category] {
-		return nil, domain.NewError(domain.ErrCodeBadRequest, "無効なカテゴリです", nil)
+		return nil, domain.NewError(domain.ErrCodeBadRequest, msgInvalidCategory, nil)
 	}
 	return s.repo.GetByCategory(userID, category)
 }

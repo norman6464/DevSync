@@ -36,7 +36,7 @@ func (s *LearningLogTemplateService) Create(template *model.LearningLogTemplate)
 		return err
 	}
 	if template.DefaultCategory != "" && !model.ValidCategories[template.DefaultCategory] {
-		return domain.NewError(domain.ErrCodeValidation, "無効なカテゴリです", nil)
+		return domain.NewError(domain.ErrCodeValidation, msgInvalidCategory, nil)
 	}
 	if template.DefaultDuration < 0 || template.DefaultDuration > 1440 {
 		return domain.NewError(domain.ErrCodeValidation, "デフォルト時間は0〜1440分の範囲で指定してください", nil)
@@ -98,7 +98,7 @@ func (s *LearningLogTemplateService) Update(id, userID uint, name, defaultTitle,
 	}
 	if defaultCategory != "" {
 		if !model.ValidCategories[defaultCategory] {
-			return nil, domain.NewError(domain.ErrCodeValidation, "無効なカテゴリです", nil)
+			return nil, domain.NewError(domain.ErrCodeValidation, msgInvalidCategory, nil)
 		}
 		template.DefaultCategory = defaultCategory
 	}

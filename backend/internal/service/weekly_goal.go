@@ -19,7 +19,7 @@ func NewWeeklyGoalService(repo repository.WeeklyGoalRepositoryInterface) *Weekly
 // SetGoal はカテゴリ別の週間学習目標を設定する（既存があれば更新）。
 func (s *WeeklyGoalService) SetGoal(userID uint, category string, targetMinutes int) (*model.WeeklyGoal, error) {
 	if !model.ValidCategories[model.LogCategory(category)] {
-		return nil, domain.NewError(domain.ErrCodeBadRequest, "無効なカテゴリです", nil)
+		return nil, domain.NewError(domain.ErrCodeBadRequest, msgInvalidCategory, nil)
 	}
 	if targetMinutes < 0 || targetMinutes > 10080 {
 		return nil, domain.NewError(domain.ErrCodeBadRequest, "目標時間は0〜10080分（1週間）で指定してください", nil)
