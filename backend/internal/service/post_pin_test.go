@@ -225,3 +225,28 @@ func TestPostPinService_Pin_CountError(t *testing.T) {
 	pinRepo.AssertExpectations(t)
 	postRepo.AssertExpectations(t)
 }
+
+// ============================================================
+// CountByUserID テスト
+// ============================================================
+
+func TestPostPinService_CountByUserID_Success(t *testing.T) {
+	svc, pinRepo, _ := newPostPinTestService()
+
+	pinRepo.On("CountByUserID", uint(1)).Return(int64(2), nil)
+
+	count, err := svc.CountByUserID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(2), count)
+	pinRepo.AssertExpectations(t)
+}
+
+func TestPostPinService_CountByUserID_Error(t *testing.T) {
+	svc, pinRepo, _ := newPostPinTestService()
+
+	pinRepo.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	_, err := svc.CountByUserID(1)
+	assert.Error(t, err)
+	pinRepo.AssertExpectations(t)
+}
