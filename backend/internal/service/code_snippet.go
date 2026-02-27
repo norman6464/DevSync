@@ -36,6 +36,7 @@ func (s *CodeSnippetService) Create(snippet *model.CodeSnippet) (*model.CodeSnip
 	}
 	snippet.Language = strings.TrimSpace(snippet.Language)
 	snippet.Code = strings.TrimSpace(snippet.Code)
+	snippet.FileName = strings.TrimSpace(snippet.FileName)
 
 	// 投稿の存在確認
 	if _, err := s.postRepo.FindByID(snippet.PostID); err != nil {
