@@ -57,6 +57,13 @@ func (r *LearningLogTemplateRepository) Delete(id uint) error {
 	return r.db.Delete(&model.LearningLogTemplate{}, id).Error
 }
 
+// CountByUserID は指定ユーザーのテンプレート総数を返す。
+func (r *LearningLogTemplateRepository) CountByUserID(userID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.LearningLogTemplate{}).Where("user_id = ?", userID).Count(&count).Error
+	return count, err
+}
+
 // ClearDefaultFlag は指定ユーザーの全テンプレートのis_defaultをfalseにする。
 func (r *LearningLogTemplateRepository) ClearDefaultFlag(userID uint) error {
 	return r.db.Model(&model.LearningLogTemplate{}).
