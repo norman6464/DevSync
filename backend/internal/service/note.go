@@ -60,19 +60,21 @@ func (s *NoteService) Update(id, userID uint, title, content, tags string, folde
 	}
 
 	if title != "" {
-		if strings.TrimSpace(title) == "" {
+		t := strings.TrimSpace(title)
+		if t == "" {
 			return nil, domain.NewError(domain.ErrCodeBadRequest, "タイトルは空白のみにできません", nil)
 		}
-		note.Title = title
+		note.Title = t
 	}
 	if content != "" {
-		if strings.TrimSpace(content) == "" {
+		c := strings.TrimSpace(content)
+		if c == "" {
 			return nil, domain.NewError(domain.ErrCodeBadRequest, "本文は空白のみにできません", nil)
 		}
-		note.Content = content
+		note.Content = c
 	}
 	if tags != "" {
-		note.Tags = tags
+		note.Tags = strings.TrimSpace(tags)
 	}
 	if folderID != nil {
 		note.FolderID = folderID
