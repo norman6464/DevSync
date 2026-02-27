@@ -107,16 +107,16 @@ func (s *UserService) UpdateProfile(id, userID uint, input *UpdateProfileInput) 
 	existing.Bio = strings.TrimSpace(input.Bio)
 	existing.AvatarURL = strings.TrimSpace(input.AvatarURL)
 	if input.SkillsLanguages != nil {
-		existing.SkillsLanguages = *input.SkillsLanguages
+		existing.SkillsLanguages = strings.TrimSpace(*input.SkillsLanguages)
 	}
 	if input.SkillsFrameworks != nil {
-		existing.SkillsFrameworks = *input.SkillsFrameworks
+		existing.SkillsFrameworks = strings.TrimSpace(*input.SkillsFrameworks)
 	}
 	if input.AtCoderUsername != nil {
-		existing.AtCoderUsername = *input.AtCoderUsername
+		existing.AtCoderUsername = strings.TrimSpace(*input.AtCoderUsername)
 	}
 	if input.PaizaRank != nil {
-		existing.PaizaRank = *input.PaizaRank
+		existing.PaizaRank = strings.TrimSpace(*input.PaizaRank)
 	}
 	if input.OnboardingCompleted != nil {
 		existing.OnboardingCompleted = *input.OnboardingCompleted
