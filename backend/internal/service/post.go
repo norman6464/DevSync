@@ -87,6 +87,16 @@ func (s *PostService) CountByUserID(userID uint) (int64, error) {
 	return s.repo.CountByUserID(userID)
 }
 
+// CountDraftsByUserID は指定ユーザーの下書き投稿数を返す。
+func (s *PostService) CountDraftsByUserID(userID uint) (int64, error) {
+	return s.repo.CountDraftsByUserID(userID)
+}
+
+// CountScheduledByUserID は指定ユーザーのスケジュール済み投稿数を返す。
+func (s *PostService) CountScheduledByUserID(userID uint) (int64, error) {
+	return s.repo.CountScheduledByUserID(userID)
+}
+
 // GetByUserID は指定ユーザーの投稿をページネーション付きで取得する。
 func (s *PostService) GetByUserID(userID uint, limit, offset int) ([]model.Post, int64, error) {
 	return s.repo.FindByUserID(userID, limit, offset)

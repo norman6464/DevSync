@@ -33,6 +33,10 @@ func (m *MockPostPinService) IsPinned(userID, postID uint) (bool, error) {
 	args := m.Called(userID, postID)
 	return args.Bool(0), args.Error(1)
 }
+func (m *MockPostPinService) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
 
 func setupPostPinHandler() (*PostPinHandler, *MockPostPinService) {
 	svc := new(MockPostPinService)

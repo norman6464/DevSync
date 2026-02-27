@@ -321,6 +321,20 @@ func (r *PostRepository) FindScheduledByUserID(userID uint) ([]model.Post, error
 	return posts, err
 }
 
+// CountDraftsByUserID は指定ユーザーの下書き投稿数を返す。
+func (r *PostRepository) CountDraftsByUserID(userID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.Post{}).Where("user_id = ? AND is_draft = ?", userID, true).Count(&count).Error
+	return count, err
+}
+
+// CountScheduledByUserID は指定ユーザーのスケジュール済み投稿数を返す。
+func (r *PostRepository) CountScheduledByUserID(userID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.Post{}).Where("user_id = ? AND is_draft = ? AND scheduled_at IS NOT NULL", userID, true).Count(&count).Error
+	return count, err
+}
+
 // SearchWithFilter はタグ・日付範囲・ソート順による高度な投稿検索を実行する。
 // 下書きは検索対象外。タグはAND条件で絞り込む。
 func (r *PostRepository) SearchWithFilter(
