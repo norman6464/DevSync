@@ -7,6 +7,7 @@ import (
 
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -724,4 +725,30 @@ func TestLearningGoalGetPublicByUserID_Success(t *testing.T) {
 
 	w := doRequest(r, http.MethodGet, "/goals/public/user/5", nil)
 	assertStatus(t, w, http.StatusOK)
+}
+
+// ========== GetMyCount ==========
+
+func TestLearningGoalGetMyCount_Success(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.GET("/goals/my/count", h.GetMyCount)
+
+	repo.On("CountByUserID", uint(1)).Return(int64(7), nil)
+
+	w := doRequest(r, http.MethodGet, "/goals/my/count", nil)
+	assertStatus(t, w, http.StatusOK)
+	body := parseJSON(t, w)
+	assert.Equal(t, float64(7), body["count"])
+}
+
+func TestLearningGoalGetMyCount_ServiceError(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.GET("/goals/my/count", h.GetMyCount)
+
+	repo.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/goals/my/count", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
 }
