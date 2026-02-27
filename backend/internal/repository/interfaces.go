@@ -77,6 +77,7 @@ type PostRepositoryInterface interface {
 	Unbookmark(userID, postID uint) error
 	HasBookmarked(userID, postID uint) bool
 	FindBookmarkedByUserID(userID uint, page, limit int) ([]model.Post, int64, error)
+	CountBookmarkedByUserID(userID uint) (int64, error)
 	AddReaction(userID, postID uint, emoji string) error
 	RemoveReaction(userID, postID uint, emoji string) error
 	GetReactionsByPostID(postID uint) ([]model.ReactionCount, error)

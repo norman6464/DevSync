@@ -49,6 +49,7 @@ type PostServiceInterface interface {
 	CountByUserID(userID uint) (int64, error)
 	CountDraftsByUserID(userID uint) (int64, error)
 	CountScheduledByUserID(userID uint) (int64, error)
+	CountBookmarkedByUserID(userID uint) (int64, error)
 }
 
 // CodeSnippetServiceInterface はCodeSnippetServiceが実装すべきインターフェース。
@@ -487,6 +488,19 @@ func (h *PostHandler) GetBookmarks(c *gin.Context) {
 		Limit:  limit,
 		Offset: (page - 1) * limit,
 	})
+}
+
+// GetBookmarksCount は認証ユーザーのブックマーク済み投稿数を返す。
+func (h *PostHandler) GetBookmarksCount(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	count, err := h.service.CountBookmarkedByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+
+	respondOK(c, gin.H{"count": count})
 }
 
 // AddReaction は投稿にリアクション（絵文字）を追加する。

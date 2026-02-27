@@ -317,6 +317,11 @@ func (s *PostService) GetBookmarks(userID uint, page, limit int) ([]model.Post, 
 	return s.repo.FindBookmarkedByUserID(userID, page, limit)
 }
 
+// CountBookmarkedByUserID は指定ユーザーのブックマーク済み投稿数を返す。
+func (s *PostService) CountBookmarkedByUserID(userID uint) (int64, error) {
+	return s.repo.CountBookmarkedByUserID(userID)
+}
+
 // AddReaction は投稿にリアクション（絵文字）を追加する。
 // 許可された絵文字のみ使用可能。自分の投稿への自己リアクションは禁止する。
 func (s *PostService) AddReaction(userID, postID uint, emoji string) error {

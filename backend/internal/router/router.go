@@ -207,6 +207,7 @@ func registerPostRoutes(g *gin.RouterGroup, c *di.Container) {
 		posts.POST("/:id/bookmark", c.PostHandler.Bookmark)
 		posts.DELETE("/:id/bookmark", c.PostHandler.Unbookmark)
 		posts.GET("/bookmarks", c.PostHandler.GetBookmarks)
+		posts.GET("/bookmarks/count", c.PostHandler.GetBookmarksCount)
 		posts.GET("/:id/comments", c.PostHandler.GetComments)
 		posts.POST("/:id/comments", c.PostHandler.CreateComment)
 		posts.GET("/:id/comments/:commentId/replies", c.PostHandler.GetReplies)
