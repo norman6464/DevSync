@@ -192,6 +192,7 @@ type LearningGoalRepositoryInterface interface {
 	GetPublicByUserID(userID uint, limit, offset int) ([]model.LearningGoal, int64, error)
 	GetPublicGoals(limit, offset int) ([]model.LearningGoal, int64, error)
 	GetStats(userID uint) (*model.LearningGoalStats, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // RankingRepositoryInterface はランキングデータ操作の契約を定義する。

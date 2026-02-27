@@ -27,6 +27,7 @@ type LearningGoalServiceInterface interface {
 		GoalID   uint
 		Progress int
 	}) ([]model.LearningGoal, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // LearningGoalHandler は学習目標関連のHTTPハンドラ。
@@ -349,6 +350,17 @@ func (h *LearningGoalHandler) GetActiveGoals(c *gin.Context) {
 	}
 
 	respondOK(c, ensureSlice(goals))
+}
+
+// GetMyCount は認証ユーザー自身の学習目標総数を返す。
+func (h *LearningGoalHandler) GetMyCount(c *gin.Context) {
+	userID := c.GetUint("userID")
+	count, err := h.service.CountByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, gin.H{"count": count})
 }
 
 // GetForecast は認証ユーザーのアクティブ目標の達成予測一覧を返す。

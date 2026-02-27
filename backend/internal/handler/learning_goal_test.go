@@ -71,6 +71,11 @@ func (m *MockLearningGoalRepository) GetPublicGoals(limit, offset int) ([]model.
 	return args.Get(0).([]model.LearningGoal), args.Get(1).(int64), args.Error(2)
 }
 
+func (m *MockLearningGoalRepository) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 // setupLearningGoalHandler はテスト用のLearningGoalHandlerとモックを準備する。
 func setupLearningGoalHandler() (*LearningGoalHandler, *MockLearningGoalRepository) {
 	repo := new(MockLearningGoalRepository)

@@ -689,6 +689,11 @@ func (m *MockLearningGoalRepository) GetStats(userID uint) (*model.LearningGoalS
 	return args.Get(0).(*model.LearningGoalStats), args.Error(1)
 }
 
+func (m *MockLearningGoalRepository) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 // ============================================================
 // MockProjectRepository は repository.ProjectRepositoryInterface のテスト用モック実装。
 // ============================================================
