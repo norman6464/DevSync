@@ -45,11 +45,11 @@ func (s *AnswerService) findAndCheckOwnership(answerID, userID uint) (*model.Ans
 
 // Update は所有権を検証した後、回答を更新する。
 func (s *AnswerService) Update(answerID, userID uint, body string) (*model.Answer, error) {
-	if err := domain.ValidateStringLength(body, 1, 10000, "回答内容"); err != nil {
-		return nil, err
-	}
 	answer, err := s.findAndCheckOwnership(answerID, userID)
 	if err != nil {
+		return nil, err
+	}
+	if err := domain.ValidateStringLength(body, 1, 10000, "回答内容"); err != nil {
 		return nil, err
 	}
 	answer.Body = strings.TrimSpace(body)

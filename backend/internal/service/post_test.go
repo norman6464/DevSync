@@ -456,7 +456,12 @@ func TestPostEditComment_NotFound(t *testing.T) {
 }
 
 func TestPostEditComment_EmptyContent(t *testing.T) {
-	svc, _, _ := newTestPostService()
+	svc, postRepo, _ := newTestPostService()
+
+	comment := &model.Comment{PostID: 10, Content: "old"}
+	comment.ID = 5
+	comment.UserID = 1
+	postRepo.On("FindCommentByID", uint(5)).Return(comment, nil)
 
 	result, err := svc.EditComment(5, 1, "")
 	assert.Nil(t, result)
@@ -464,7 +469,12 @@ func TestPostEditComment_EmptyContent(t *testing.T) {
 }
 
 func TestPostEditComment_TooLongContent(t *testing.T) {
-	svc, _, _ := newTestPostService()
+	svc, postRepo, _ := newTestPostService()
+
+	comment := &model.Comment{PostID: 10, Content: "old"}
+	comment.ID = 5
+	comment.UserID = 1
+	postRepo.On("FindCommentByID", uint(5)).Return(comment, nil)
 
 	longContent := strings.Repeat("a", 5001)
 	result, err := svc.EditComment(5, 1, longContent)

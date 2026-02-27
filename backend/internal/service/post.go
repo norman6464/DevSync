@@ -226,13 +226,13 @@ func (s *PostService) findAndCheckCommentOwnership(id, userID uint) (*model.Comm
 
 // EditComment は所有権を検証した後、コメント内容を更新する。
 func (s *PostService) EditComment(id, userID uint, content string) (*model.Comment, error) {
-	v := validator.NewPostValidator()
-	if err := v.ValidateComment(content); err != nil {
+	comment, err := s.findAndCheckCommentOwnership(id, userID)
+	if err != nil {
 		return nil, err
 	}
 
-	comment, err := s.findAndCheckCommentOwnership(id, userID)
-	if err != nil {
+	v := validator.NewPostValidator()
+	if err := v.ValidateComment(content); err != nil {
 		return nil, err
 	}
 

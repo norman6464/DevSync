@@ -134,7 +134,11 @@ func TestAnswerUpdate_RepoError(t *testing.T) {
 }
 
 func TestAnswerUpdate_EmptyBody(t *testing.T) {
-	svc, _, _ := newTestAnswerService()
+	svc, answerRepo, _ := newTestAnswerService()
+
+	answer := &model.Answer{Body: "元の回答", UserID: 1}
+	answer.ID = 1
+	answerRepo.On("FindByID", uint(1)).Return(answer, nil)
 
 	result, err := svc.Update(1, 1, "")
 	assert.Error(t, err)
@@ -143,7 +147,11 @@ func TestAnswerUpdate_EmptyBody(t *testing.T) {
 }
 
 func TestAnswerUpdate_WhitespaceBody(t *testing.T) {
-	svc, _, _ := newTestAnswerService()
+	svc, answerRepo, _ := newTestAnswerService()
+
+	answer := &model.Answer{Body: "元の回答", UserID: 1}
+	answer.ID = 1
+	answerRepo.On("FindByID", uint(1)).Return(answer, nil)
 
 	result, err := svc.Update(1, 1, "   ")
 	assert.Error(t, err)
@@ -565,7 +573,11 @@ func TestAnswerCreate_BodyTooLong(t *testing.T) {
 }
 
 func TestAnswerUpdate_BodyTooLong(t *testing.T) {
-	svc, _, _ := newTestAnswerService()
+	svc, answerRepo, _ := newTestAnswerService()
+
+	answer := &model.Answer{Body: "元の回答", UserID: 1}
+	answer.ID = 1
+	answerRepo.On("FindByID", uint(1)).Return(answer, nil)
 
 	result, err := svc.Update(1, 1, strings.Repeat("あ", 10001))
 	assert.Error(t, err)
