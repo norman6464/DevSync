@@ -15,6 +15,7 @@ type LearningLogTemplateServiceInterface interface {
 	Update(id, userID uint, name, defaultTitle, defaultContent string, defaultCategory model.LogCategory, defaultDuration *int, isDefault *bool) (*model.LearningLogTemplate, error)
 	Delete(id, userID uint) error
 	UseTemplate(id, userID uint) (*model.LearningLog, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 // LearningLogTemplateHandler は学習ログテンプレート関連のHTTPハンドラ。
@@ -116,6 +117,17 @@ func (h *LearningLogTemplateHandler) Update(c *gin.Context) {
 	}
 
 	respondOK(c, template)
+}
+
+// GetMyCount は認証ユーザー自身のテンプレート総数を返す。
+func (h *LearningLogTemplateHandler) GetMyCount(c *gin.Context) {
+	userID := c.GetUint("userID")
+	count, err := h.service.CountByUserID(userID)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	respondOK(c, gin.H{"count": count})
 }
 
 // Delete はテンプレートを削除する。

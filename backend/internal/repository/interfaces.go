@@ -779,6 +779,7 @@ type LearningLogTemplateRepositoryInterface interface {
 	Update(template *model.LearningLogTemplate) error
 	Delete(id uint) error
 	ClearDefaultFlag(userID uint) error
+	CountByUserID(userID uint) (int64, error)
 }
 
 // NoteTemplateRepositoryInterface はノートテンプレートデータ操作の契約を定義する。

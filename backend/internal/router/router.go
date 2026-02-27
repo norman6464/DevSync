@@ -494,6 +494,7 @@ func registerLearningLogTemplateRoutes(g *gin.RouterGroup, c *di.Container) {
 	{
 		logTemplates.POST("", c.LearningLogTemplateHandler.Create)
 		logTemplates.GET("", c.LearningLogTemplateHandler.GetByUserID)
+		logTemplates.GET("/my/count", c.LearningLogTemplateHandler.GetMyCount)
 		logTemplates.GET("/default", c.LearningLogTemplateHandler.GetDefault)
 		logTemplates.GET("/:id", c.LearningLogTemplateHandler.GetByID)
 		logTemplates.PUT("/:id", c.LearningLogTemplateHandler.Update)

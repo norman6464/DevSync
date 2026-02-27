@@ -123,6 +123,11 @@ func (s *LearningLogTemplateService) Update(id, userID uint, name, defaultTitle,
 	return template, nil
 }
 
+// CountByUserID は指定ユーザーのテンプレート総数を返す。
+func (s *LearningLogTemplateService) CountByUserID(userID uint) (int64, error) {
+	return s.repo.CountByUserID(userID)
+}
+
 // Delete は所有権を検証した後、テンプレートを削除する。
 func (s *LearningLogTemplateService) Delete(id, userID uint) error {
 	if _, err := s.findAndCheckOwnership(id, userID); err != nil {

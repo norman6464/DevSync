@@ -52,6 +52,11 @@ func (m *MockLearningLogTemplateRepository) ClearDefaultFlag(userID uint) error 
 	return m.Called(userID).Error(0)
 }
 
+func (m *MockLearningLogTemplateRepository) CountByUserID(userID uint) (int64, error) {
+	args := m.Called(userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 // MockLearningLogCreator は学習ログ作成のモック実装。
 type MockLearningLogCreator struct {
 	mock.Mock
