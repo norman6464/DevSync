@@ -122,7 +122,7 @@ func (s *PostCollectionService) AddPost(collectionID, userID, postID uint, note 
 	item := &model.PostCollectionItem{
 		CollectionID: collectionID,
 		PostID:       postID,
-		Note:         note,
+		Note:         strings.TrimSpace(note),
 	}
 	return s.repo.AddPost(item)
 }

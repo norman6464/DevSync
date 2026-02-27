@@ -56,6 +56,8 @@ func (s *StudyCircleService) Create(circle *model.StudyCircle, memberIDs []uint)
 		return err
 	}
 	circle.Name = strings.TrimSpace(circle.Name)
+	circle.Topic = strings.TrimSpace(circle.Topic)
+	circle.Description = strings.TrimSpace(circle.Description)
 	if circle.MaxMembers < 3 || circle.MaxMembers > 10 {
 		circle.MaxMembers = 5
 	}
