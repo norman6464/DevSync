@@ -1916,3 +1916,53 @@ func TestGetReactionsWithUser_UserReactionsError(t *testing.T) {
 	_, _, err := svc.GetReactionsWithUser(10, 1)
 	assert.Error(t, err)
 }
+
+// ============================================================
+// CountDraftsByUserID テスト
+// ============================================================
+
+func TestPostCountDraftsByUserID_Success(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("CountDraftsByUserID", uint(1)).Return(int64(3), nil)
+
+	count, err := svc.CountDraftsByUserID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(3), count)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostCountDraftsByUserID_Error(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("CountDraftsByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	_, err := svc.CountDraftsByUserID(1)
+	assert.Error(t, err)
+	postRepo.AssertExpectations(t)
+}
+
+// ============================================================
+// CountScheduledByUserID テスト
+// ============================================================
+
+func TestPostCountScheduledByUserID_Success(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("CountScheduledByUserID", uint(1)).Return(int64(2), nil)
+
+	count, err := svc.CountScheduledByUserID(1)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(2), count)
+	postRepo.AssertExpectations(t)
+}
+
+func TestPostCountScheduledByUserID_Error(t *testing.T) {
+	svc, postRepo, _ := newTestPostService()
+
+	postRepo.On("CountScheduledByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+
+	_, err := svc.CountScheduledByUserID(1)
+	assert.Error(t, err)
+	postRepo.AssertExpectations(t)
+}
