@@ -20,6 +20,10 @@ func NewPostTemplateService(repo repository.PostTemplateRepositoryInterface) *Po
 
 // Create は新しい投稿テンプレートを作成する。
 func (s *PostTemplateService) Create(tmpl *model.PostTemplate) error {
+	tmpl.Name = strings.TrimSpace(tmpl.Name)
+	tmpl.ContentTemplate = strings.TrimSpace(tmpl.ContentTemplate)
+	tmpl.TitleTemplate = strings.TrimSpace(tmpl.TitleTemplate)
+
 	if err := domain.ValidateStringLength(tmpl.Name, 1, 100, "テンプレート名"); err != nil {
 		return err
 	}
