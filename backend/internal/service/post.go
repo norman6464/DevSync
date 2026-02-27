@@ -37,6 +37,9 @@ func NewPostService(repo repository.PostRepositoryInterface, notificationService
 
 // Create は新しい投稿を作成し、下書きでない場合はフォロワーに非同期で通知する。
 func (s *PostService) Create(post *model.Post) (*model.Post, error) {
+	post.Title = strings.TrimSpace(post.Title)
+	post.Content = strings.TrimSpace(post.Content)
+
 	// バリデーション
 	v := validator.NewPostValidator()
 	// タグは空配列として渡す（post.Tagsフィールドは未確認のため）
@@ -185,6 +188,8 @@ func (s *PostService) HasLiked(userID, postID uint) bool {
 // CreateComment は投稿にコメントを作成する。
 // ParentIDが指定された場合は親コメントの存在確認と深さ制限（1階層）を行う。
 func (s *PostService) CreateComment(comment *model.Comment) error {
+	comment.Content = strings.TrimSpace(comment.Content)
+
 	// バリデーション
 	v := validator.NewPostValidator()
 	if err := v.ValidateComment(comment.Content); err != nil {
@@ -230,6 +235,8 @@ func (s *PostService) EditComment(id, userID uint, content string) (*model.Comme
 	if err != nil {
 		return nil, err
 	}
+
+	content = strings.TrimSpace(content)
 
 	v := validator.NewPostValidator()
 	if err := v.ValidateComment(content); err != nil {
