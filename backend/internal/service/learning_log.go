@@ -225,19 +225,19 @@ func (s *LearningLogService) Update(id, userID uint, updates *model.LearningLog)
 		return nil, err
 	}
 
-	if strings.TrimSpace(updates.Title) != "" {
-		if err := domain.ValidateStringLength(updates.Title, 1, 200, "タイトル"); err != nil {
+	if title := strings.TrimSpace(updates.Title); title != "" {
+		if err := domain.ValidateStringLength(title, 1, 200, "タイトル"); err != nil {
 			return nil, err
 		}
-		log.Title = strings.TrimSpace(updates.Title)
+		log.Title = title
 	}
-	if strings.TrimSpace(updates.Content) != "" {
-		if err := domain.ValidateStringLength(updates.Content, 1, 10000, "内容"); err != nil {
+	if content := strings.TrimSpace(updates.Content); content != "" {
+		if err := domain.ValidateStringLength(content, 1, 10000, "内容"); err != nil {
 			return nil, err
 		}
-		log.Content = strings.TrimSpace(updates.Content)
+		log.Content = content
 	}
-	if strings.TrimSpace(string(updates.Category)) != "" {
+	if cat := strings.TrimSpace(string(updates.Category)); cat != "" {
 		log.Category = updates.Category
 	}
 	if updates.Duration != 0 {
