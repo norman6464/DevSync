@@ -26,6 +26,10 @@ func NewLearningLogTemplateService(repo repository.LearningLogTemplateRepository
 
 // Create は新しいテンプレートを作成する。
 func (s *LearningLogTemplateService) Create(template *model.LearningLogTemplate) error {
+	template.Name = strings.TrimSpace(template.Name)
+	template.DefaultTitle = strings.TrimSpace(template.DefaultTitle)
+	template.DefaultContent = strings.TrimSpace(template.DefaultContent)
+
 	if err := domain.ValidateStringLength(template.Name, 1, 100, "テンプレート名"); err != nil {
 		return err
 	}
