@@ -26,6 +26,11 @@ func NewNoteTemplateService(repo repository.NoteTemplateRepositoryInterface, not
 
 // Create は新しいテンプレートを作成する。
 func (s *NoteTemplateService) Create(template *model.NoteTemplate) error {
+	template.Name = strings.TrimSpace(template.Name)
+	template.ContentTemplate = strings.TrimSpace(template.ContentTemplate)
+	template.Description = strings.TrimSpace(template.Description)
+	template.DefaultTitle = strings.TrimSpace(template.DefaultTitle)
+
 	v := validator.NewNoteTemplateValidator()
 	if err := v.ValidateCreateTemplate(template.Name, template.ContentTemplate); err != nil {
 		return err

@@ -47,6 +47,8 @@ func (s *BookReviewService) Create(review *model.BookReview) error {
 		return domain.NewError(domain.ErrCodeValidation, "総ページ数は0〜99999の範囲で指定してください", nil)
 	}
 	review.Title = strings.TrimSpace(review.Title)
+	review.Author = strings.TrimSpace(review.Author)
+	review.ISBN = strings.TrimSpace(review.ISBN)
 	review.Review = strings.TrimSpace(review.Review)
 	return s.repo.Create(review)
 }
