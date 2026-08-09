@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -935,29 +937,36 @@ func setupAnswerHandler() (*AnswerHandler, *MockAnswerService) {
 	return h, svc
 }
 
-// MockFollowService は FollowServiceInterface のモック実装。
-type MockFollowService struct{ mock.Mock }
+// mockFollowRepo は usecase/repository.FollowRepository のモック実装（ctx 付き）。
+// handler テストは「本物の usecase + port モック」で組む（FreStyle 流）。
+type mockFollowRepo struct{ mock.Mock }
 
-func (m *MockFollowService) Follow(followerID, followeeID uint) error {
-	return m.Called(followerID, followeeID).Error(0)
+func (m *mockFollowRepo) Follow(ctx context.Context, followerID, followeeID uint) error {
+	return m.Called(ctx, followerID, followeeID).Error(0)
 }
-func (m *MockFollowService) Unfollow(followerID, followeeID uint) error {
-	return m.Called(followerID, followeeID).Error(0)
+func (m *mockFollowRepo) Unfollow(ctx context.Context, followerID, followeeID uint) error {
+	return m.Called(ctx, followerID, followeeID).Error(0)
 }
-func (m *MockFollowService) GetFollowers(userID uint, limit, offset int) ([]model.User, int64, error) {
-	args := m.Called(userID, limit, offset)
+func (m *mockFollowRepo) GetFollowers(ctx context.Context, userID uint, limit, offset int) ([]model.User, int64, error) {
+	args := m.Called(ctx, userID, limit, offset)
 	return args.Get(0).([]model.User), args.Get(1).(int64), args.Error(2)
 }
-func (m *MockFollowService) GetFollowing(userID uint, limit, offset int) ([]model.User, int64, error) {
-	args := m.Called(userID, limit, offset)
+func (m *mockFollowRepo) GetFollowing(ctx context.Context, userID uint, limit, offset int) ([]model.User, int64, error) {
+	args := m.Called(ctx, userID, limit, offset)
 	return args.Get(0).([]model.User), args.Get(1).(int64), args.Error(2)
 }
 
-// setupFollowHandler はFollowHandlerテスト用のセットアップを行う。
-func setupFollowHandler() (*FollowHandler, *MockFollowService) {
-	svc := new(MockFollowService)
-	h := NewFollowHandler(svc)
-	return h, svc
+// setupFollowHandler は FollowHandler テスト用のセットアップを行う。
+// 本物の usecase を組み、port(mockFollowRepo)の呼び出しを検証する。
+func setupFollowHandler() (*FollowHandler, *mockFollowRepo) {
+	repo := new(mockFollowRepo)
+	h := NewFollowHandler(
+		usecase.NewFollowUserUseCase(repo),
+		usecase.NewUnfollowUserUseCase(repo),
+		usecase.NewListFollowersUseCase(repo),
+		usecase.NewListFollowingUseCase(repo),
+	)
+	return h, repo
 }
 
 // MockNotificationService は NotificationServiceInterface のモック実装。

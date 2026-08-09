@@ -90,14 +90,6 @@ type PostRepositoryInterface interface {
 	CountScheduledByUserID(userID uint) (int64, error)
 }
 
-// FollowRepositoryInterface はフォロー関係データ操作の契約を定義する。
-type FollowRepositoryInterface interface {
-	Follow(followerID, followeeID uint) error
-	Unfollow(followerID, followeeID uint) error
-	IsFollowing(followerID, followeeID uint) bool
-	GetFollowers(userID uint, limit, offset int) ([]model.User, int64, error)
-	GetFollowing(userID uint, limit, offset int) ([]model.User, int64, error)
-}
 
 // NotificationRepositoryInterface は通知データ操作の契約を定義する。
 // 一括作成、未読カウント、既読マーク等を含む。

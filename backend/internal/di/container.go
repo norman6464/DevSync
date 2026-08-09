@@ -5,11 +5,13 @@ package di
 import (
 	"log"
 
+	"github.com/norman6464/devsync/backend/internal/adapter/persistence"
 	"github.com/norman6464/devsync/backend/internal/config"
 	"github.com/norman6464/devsync/backend/internal/handler"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
 	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 	"gorm.io/gorm"
 )
 
@@ -109,7 +111,8 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 
 	// リポジトリ
 	userRepo := repository.NewUserRepository(db)
-	followRepo := repository.NewFollowRepository(db)
+	// follow はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	followRepo := persistence.NewFollowRepository(db)
 	githubRepo := repository.NewGitHubRepository(db)
 	postRepo := repository.NewPostRepository(db)
 	messageRepo := repository.NewMessageRepository(db)
@@ -158,7 +161,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	zennService := service.NewZennService(userRepo, zennRepo)
 	qiitaService := service.NewQiitaService(userRepo, qiitaRepo)
 	postService := service.NewPostService(postRepo, notificationService)
-	followService := service.NewFollowService(followRepo)
 	questionService := service.NewQuestionService(questionRepo)
 	answerService := service.NewAnswerService(answerRepo, questionRepo)
 	learningLogService := service.NewLearningLogService(learningLogRepo, learningGoalRepo)
@@ -224,7 +226,12 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	origins := cfg.CORSOrigins
 	c.AuthHandler = handler.NewAuthHandler(authService, githubService)
 	c.UserHandler = handler.NewUserHandler(userService)
-	c.FollowHandler = handler.NewFollowHandler(followService)
+	c.FollowHandler = handler.NewFollowHandler(
+		usecase.NewFollowUserUseCase(followRepo),
+		usecase.NewUnfollowUserUseCase(followRepo),
+		usecase.NewListFollowersUseCase(followRepo),
+		usecase.NewListFollowingUseCase(followRepo),
+	)
 	c.GitHubHandler = handler.NewGitHubHandler(githubService, authService)
 	c.PostHandler = handler.NewPostHandler(postService, codeSnippetService)
 	c.CodeSnippetHandler = handler.NewCodeSnippetHandler(codeSnippetService)
