@@ -305,9 +305,13 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewGetCommentLikeStatusUseCase(commentLikeRepo, commentReader),
 	)
 
-	postViewRepo := repository.NewPostViewRepository(db)
-	postViewService := service.NewPostViewService(postViewRepo)
-	c.PostViewHandler = handler.NewPostViewHandler(postViewService)
+	// 投稿閲覧数はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	postViewRepo := persistence.NewPostViewRepository(db)
+	c.PostViewHandler = handler.NewPostViewHandler(
+		usecase.NewRecordPostViewUseCase(postViewRepo),
+		usecase.NewGetPostViewCountUseCase(postViewRepo),
+		usecase.NewGetMostViewedPostsUseCase(postViewRepo),
+	)
 
 	mentionRepo := repository.NewMentionRepository(db)
 	mentionService := service.NewMentionService(mentionRepo, userRepo, notificationService)

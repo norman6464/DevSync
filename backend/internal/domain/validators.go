@@ -285,6 +285,14 @@ func ValidateRating(rating int) error {
 	return nil
 }
 
+// ValidateRequiredID は ID が必須（0 以外）であることをバリデーションする汎用関数。
+func ValidateRequiredID(id uint, name string) error {
+	if id == 0 {
+		return NewError(ErrCodeBadRequest, name+"は必須です", nil)
+	}
+	return nil
+}
+
 // External username validation constants
 const (
 	MinExternalUsernameLength = 1
