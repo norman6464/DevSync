@@ -440,9 +440,14 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	)
 
 	// リソース進捗サービス
-	resourceProgressRepo := repository.NewResourceProgressRepository(db)
-	resourceProgressService := service.NewResourceProgressService(resourceProgressRepo, learningResourceRepo)
-	c.ResourceProgressHandler = handler.NewResourceProgressHandler(resourceProgressService)
+	// リソース進捗はクリーンアーキテクチャ（DIP）へ移行済み。リソース存在確認は最小 port LearningResourceReader を再利用。
+	resourceProgressRepo := persistence.NewResourceProgressRepository(db)
+	resourceProgressResourceReader := persistence.NewLearningResourceReader(db)
+	c.ResourceProgressHandler = handler.NewResourceProgressHandler(
+		usecase.NewUpsertResourceProgressUseCase(resourceProgressRepo, resourceProgressResourceReader),
+		usecase.NewGetResourceProgressUseCase(resourceProgressRepo),
+		usecase.NewListResourceProgressUseCase(resourceProgressRepo),
+	)
 
 	// プロジェクトマイルストーンサービス
 	projectMilestoneRepo := repository.NewProjectMilestoneRepository(db)
