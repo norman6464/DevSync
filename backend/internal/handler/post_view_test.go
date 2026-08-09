@@ -15,16 +15,13 @@ import (
 // mockPostViewRepo は usecase/repository.PostViewRepository のモック（ctx 付き）。
 type mockPostViewRepo struct{ mock.Mock }
 
-func (m *mockPostViewRepo) RecordView(ctx context.Context, view *model.PostView) error {
-	return m.Called(ctx, view).Error(0)
+func (m *mockPostViewRepo) RecordViewIfAbsent(ctx context.Context, view *model.PostView) (bool, error) {
+	args := m.Called(ctx, view)
+	return args.Bool(0), args.Error(1)
 }
 func (m *mockPostViewRepo) GetViewCount(ctx context.Context, postID uint) (int64, error) {
 	args := m.Called(ctx, postID)
 	return args.Get(0).(int64), args.Error(1)
-}
-func (m *mockPostViewRepo) HasViewed(ctx context.Context, userID, postID uint) (bool, error) {
-	args := m.Called(ctx, userID, postID)
-	return args.Bool(0), args.Error(1)
 }
 func (m *mockPostViewRepo) GetMostViewed(ctx context.Context, limit int) ([]model.ViewCount, error) {
 	args := m.Called(ctx, limit)
@@ -47,8 +44,7 @@ func setupPostViewHandler() (*PostViewHandler, *mockPostViewRepo) {
 
 func TestPostViewRecordView_Success(t *testing.T) {
 	h, views := setupPostViewHandler()
-	views.On("HasViewed", mock.Anything, uint(1), uint(5)).Return(false, nil)
-	views.On("RecordView", mock.Anything, mock.AnythingOfType("*model.PostView")).Return(nil)
+	views.On("RecordViewIfAbsent", mock.Anything, mock.AnythingOfType("*model.PostView")).Return(true, nil)
 
 	r := newRouter(1)
 	r.POST("/posts/:postId/views", h.RecordView)
@@ -72,8 +68,7 @@ func TestPostViewRecordView_InvalidID(t *testing.T) {
 
 func TestPostViewRecordView_ServiceError(t *testing.T) {
 	h, views := setupPostViewHandler()
-	views.On("HasViewed", mock.Anything, uint(1), uint(5)).Return(false, nil)
-	views.On("RecordView", mock.Anything, mock.AnythingOfType("*model.PostView")).Return(errors.New("db error"))
+	views.On("RecordViewIfAbsent", mock.Anything, mock.AnythingOfType("*model.PostView")).Return(false, errors.New("db error"))
 
 	r := newRouter(1)
 	r.POST("/posts/:postId/views", h.RecordView)

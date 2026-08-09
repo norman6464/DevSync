@@ -14,16 +14,13 @@ import (
 // mockPostViewRepo は usecase/repository.PostViewRepository のモック。
 type mockPostViewRepo struct{ mock.Mock }
 
-func (m *mockPostViewRepo) RecordView(ctx context.Context, view *model.PostView) error {
-	return m.Called(ctx, view).Error(0)
+func (m *mockPostViewRepo) RecordViewIfAbsent(ctx context.Context, view *model.PostView) (bool, error) {
+	args := m.Called(ctx, view)
+	return args.Bool(0), args.Error(1)
 }
 func (m *mockPostViewRepo) GetViewCount(ctx context.Context, postID uint) (int64, error) {
 	args := m.Called(ctx, postID)
 	return args.Get(0).(int64), args.Error(1)
-}
-func (m *mockPostViewRepo) HasViewed(ctx context.Context, userID, postID uint) (bool, error) {
-	args := m.Called(ctx, userID, postID)
-	return args.Bool(0), args.Error(1)
 }
 func (m *mockPostViewRepo) GetMostViewed(ctx context.Context, limit int) ([]model.ViewCount, error) {
 	args := m.Called(ctx, limit)
@@ -34,8 +31,7 @@ func (m *mockPostViewRepo) GetMostViewed(ctx context.Context, limit int) ([]mode
 func TestRecordPostViewUseCase_Execute(t *testing.T) {
 	t.Run("未閲覧なら記録する", func(t *testing.T) {
 		views := new(mockPostViewRepo)
-		views.On("HasViewed", mock.Anything, uint(1), uint(5)).Return(false, nil)
-		views.On("RecordView", mock.Anything, mock.AnythingOfType("*model.PostView")).Return(nil)
+		views.On("RecordViewIfAbsent", mock.Anything, mock.AnythingOfType("*model.PostView")).Return(true, nil)
 		uc := usecase.NewRecordPostViewUseCase(views)
 
 		err := uc.Execute(context.Background(), 1, 5)
@@ -44,15 +40,15 @@ func TestRecordPostViewUseCase_Execute(t *testing.T) {
 		views.AssertExpectations(t)
 	})
 
-	t.Run("閲覧済みなら記録しない", func(t *testing.T) {
+	t.Run("閲覧済みでも成功する（記録はスキップ）", func(t *testing.T) {
 		views := new(mockPostViewRepo)
-		views.On("HasViewed", mock.Anything, uint(1), uint(5)).Return(true, nil)
+		views.On("RecordViewIfAbsent", mock.Anything, mock.AnythingOfType("*model.PostView")).Return(false, nil)
 		uc := usecase.NewRecordPostViewUseCase(views)
 
 		err := uc.Execute(context.Background(), 1, 5)
 
 		assert.NoError(t, err)
-		views.AssertNotCalled(t, "RecordView")
+		views.AssertExpectations(t)
 	})
 
 	t.Run("userID が 0 は 400", func(t *testing.T) {
@@ -62,7 +58,7 @@ func TestRecordPostViewUseCase_Execute(t *testing.T) {
 		err := uc.Execute(context.Background(), 0, 5)
 
 		assert.Error(t, err)
-		views.AssertNotCalled(t, "HasViewed")
+		views.AssertNotCalled(t, "RecordViewIfAbsent")
 	})
 
 	t.Run("postID が 0 は 400", func(t *testing.T) {
@@ -72,18 +68,17 @@ func TestRecordPostViewUseCase_Execute(t *testing.T) {
 		err := uc.Execute(context.Background(), 1, 0)
 
 		assert.Error(t, err)
-		views.AssertNotCalled(t, "HasViewed")
+		views.AssertNotCalled(t, "RecordViewIfAbsent")
 	})
 
-	t.Run("HasViewed のエラーは伝播する", func(t *testing.T) {
+	t.Run("記録のエラーは伝播する", func(t *testing.T) {
 		views := new(mockPostViewRepo)
-		views.On("HasViewed", mock.Anything, uint(1), uint(5)).Return(false, errors.New("db error"))
+		views.On("RecordViewIfAbsent", mock.Anything, mock.AnythingOfType("*model.PostView")).Return(false, errors.New("db error"))
 		uc := usecase.NewRecordPostViewUseCase(views)
 
 		err := uc.Execute(context.Background(), 1, 5)
 
 		assert.Error(t, err)
-		views.AssertNotCalled(t, "RecordView")
 	})
 }
 

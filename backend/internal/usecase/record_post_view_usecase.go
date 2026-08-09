@@ -18,7 +18,7 @@ func NewRecordPostViewUseCase(views repository.PostViewRepository) *RecordPostVi
 	return &RecordPostViewUseCase{views: views}
 }
 
-// Execute は閲覧を記録する。既に閲覧済みの場合は何もしない。
+// Execute は閲覧を記録する。既に閲覧済みの場合は何もしない（記録の判定と加算は原子的に行う）。
 func (uc *RecordPostViewUseCase) Execute(ctx context.Context, userID, postID uint) error {
 	if err := domain.ValidateRequiredID(userID, "userID"); err != nil {
 		return err
@@ -27,12 +27,6 @@ func (uc *RecordPostViewUseCase) Execute(ctx context.Context, userID, postID uin
 		return err
 	}
 
-	viewed, err := uc.views.HasViewed(ctx, userID, postID)
-	if err != nil {
-		return err
-	}
-	if viewed {
-		return nil
-	}
-	return uc.views.RecordView(ctx, &model.PostView{UserID: userID, PostID: postID})
+	_, err := uc.views.RecordViewIfAbsent(ctx, &model.PostView{UserID: userID, PostID: postID})
+	return err
 }
