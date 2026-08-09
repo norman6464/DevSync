@@ -37,7 +37,10 @@ func (r *followRepository) GetFollowers(ctx context.Context, userID uint, limit,
 	var users []model.User
 	var total int64
 	db := r.db.WithContext(ctx)
-	db.Raw(`SELECT COUNT(*) FROM follows WHERE followee_id = ?`, userID).Scan(&total)
+	// COUNT クエリのエラーも捕捉して返す（失敗を total=0 で握り潰さない）。
+	if err := db.Raw(`SELECT COUNT(*) FROM follows WHERE followee_id = ?`, userID).Scan(&total).Error; err != nil {
+		return nil, 0, err
+	}
 	err := db.Raw(
 		`SELECT u.* FROM users u JOIN follows f ON f.follower_id = u.id WHERE f.followee_id = ? ORDER BY f.created_at DESC LIMIT ? OFFSET ?`,
 		userID, limit, offset,
@@ -49,7 +52,10 @@ func (r *followRepository) GetFollowing(ctx context.Context, userID uint, limit,
 	var users []model.User
 	var total int64
 	db := r.db.WithContext(ctx)
-	db.Raw(`SELECT COUNT(*) FROM follows WHERE follower_id = ?`, userID).Scan(&total)
+	// COUNT クエリのエラーも捕捉して返す（失敗を total=0 で握り潰さない）。
+	if err := db.Raw(`SELECT COUNT(*) FROM follows WHERE follower_id = ?`, userID).Scan(&total).Error; err != nil {
+		return nil, 0, err
+	}
 	err := db.Raw(
 		`SELECT u.* FROM users u JOIN follows f ON f.followee_id = u.id WHERE f.follower_id = ? ORDER BY f.created_at DESC LIMIT ? OFFSET ?`,
 		userID, limit, offset,
