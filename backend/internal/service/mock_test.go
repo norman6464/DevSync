@@ -2199,36 +2199,6 @@ func (m *MockSpotifyRepository) DeleteUserData(userID uint) error {
 }
 
 // ============================================================
-// MockCommentLikeRepository は repository.CommentLikeRepositoryInterface のテスト用モック実装。
-// ============================================================
-
-type MockCommentLikeRepository struct {
-	mock.Mock
-}
-
-var _ repository.CommentLikeRepositoryInterface = (*MockCommentLikeRepository)(nil)
-
-func (m *MockCommentLikeRepository) Like(userID, commentID uint) error {
-	args := m.Called(userID, commentID)
-	return args.Error(0)
-}
-
-func (m *MockCommentLikeRepository) Unlike(userID, commentID uint) error {
-	args := m.Called(userID, commentID)
-	return args.Error(0)
-}
-
-func (m *MockCommentLikeRepository) HasLiked(userID, commentID uint) (bool, error) {
-	args := m.Called(userID, commentID)
-	return args.Bool(0), args.Error(1)
-}
-
-func (m *MockCommentLikeRepository) CountByCommentID(commentID uint) (int64, error) {
-	args := m.Called(commentID)
-	return args.Get(0).(int64), args.Error(1)
-}
-
-// ============================================================
 // MockUserDashboardRepository は repository.UserDashboardRepositoryInterface のテスト用モック実装。
 // ============================================================
 

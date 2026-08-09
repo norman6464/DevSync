@@ -2021,24 +2021,43 @@ func setupNoteTemplateHandler() (*NoteTemplateHandler, *MockNoteTemplateService)
 
 // ---------- CommentLikeHandler モック ----------
 
-// MockCommentLikeService は CommentLikeServiceInterface のモック実装。
-type MockCommentLikeService struct{ mock.Mock }
+// mockCommentLikeRepo は usecase/repository.CommentLikeRepository のモック（ctx 付き）。
+type mockCommentLikeRepo struct{ mock.Mock }
 
-func (m *MockCommentLikeService) Like(userID, commentID uint) error {
-	return m.Called(userID, commentID).Error(0)
+func (m *mockCommentLikeRepo) Like(ctx context.Context, userID, commentID uint) error {
+	return m.Called(ctx, userID, commentID).Error(0)
 }
-func (m *MockCommentLikeService) Unlike(userID, commentID uint) error {
-	return m.Called(userID, commentID).Error(0)
+func (m *mockCommentLikeRepo) Unlike(ctx context.Context, userID, commentID uint) error {
+	return m.Called(ctx, userID, commentID).Error(0)
 }
-func (m *MockCommentLikeService) GetStatus(userID, commentID uint) (bool, int64, error) {
-	args := m.Called(userID, commentID)
-	return args.Bool(0), args.Get(1).(int64), args.Error(2)
+func (m *mockCommentLikeRepo) HasLiked(ctx context.Context, userID, commentID uint) (bool, error) {
+	args := m.Called(ctx, userID, commentID)
+	return args.Bool(0), args.Error(1)
+}
+func (m *mockCommentLikeRepo) CountByCommentID(ctx context.Context, commentID uint) (int64, error) {
+	args := m.Called(ctx, commentID)
+	return args.Get(0).(int64), args.Error(1)
 }
 
-func setupCommentLikeHandler() (*CommentLikeHandler, *MockCommentLikeService) {
-	svc := new(MockCommentLikeService)
-	h := NewCommentLikeHandler(svc)
-	return h, svc
+// mockCommentReader は usecase/repository.CommentReader のモック（ctx 付き）。
+type mockCommentReader struct{ mock.Mock }
+
+func (m *mockCommentReader) FindCommentByID(ctx context.Context, id uint) (*model.Comment, error) {
+	args := m.Called(ctx, id)
+	c, _ := args.Get(0).(*model.Comment)
+	return c, args.Error(1)
+}
+
+// setupCommentLikeHandler は本物の usecase + port モックで CommentLikeHandler を組む。
+func setupCommentLikeHandler() (*CommentLikeHandler, *mockCommentLikeRepo, *mockCommentReader) {
+	likes := new(mockCommentLikeRepo)
+	reader := new(mockCommentReader)
+	h := NewCommentLikeHandler(
+		usecase.NewLikeCommentUseCase(likes, reader),
+		usecase.NewUnlikeCommentUseCase(likes, reader),
+		usecase.NewGetCommentLikeStatusUseCase(likes, reader),
+	)
+	return h, likes, reader
 }
 
 // ---------- YouTubeHandler モック ----------

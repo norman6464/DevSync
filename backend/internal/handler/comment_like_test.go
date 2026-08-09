@@ -1,28 +1,35 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/stretchr/testify/mock"
 )
+
+// otherComment は「他人（UserID=2）のコメント」。自己操作チェックを通す用。
+func otherComment() *model.Comment { return &model.Comment{UserID: 2} }
 
 // ---------- Like ----------
 
 func TestCommentLike_Like_Success(t *testing.T) {
-	h, svc := setupCommentLikeHandler()
+	h, likes, reader := setupCommentLikeHandler()
 	r := newRouter(1)
 	r.POST("/comments/:id/like", h.Like)
 
-	svc.On("Like", uint(1), uint(5)).Return(nil)
+	reader.On("FindCommentByID", mock.Anything, uint(5)).Return(otherComment(), nil)
+	likes.On("HasLiked", mock.Anything, uint(1), uint(5)).Return(false, nil)
+	likes.On("Like", mock.Anything, uint(1), uint(5)).Return(nil)
 
 	w := doRequest(r, http.MethodPost, "/comments/5/like", nil)
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	likes.AssertExpectations(t)
 }
 
 func TestCommentLike_Like_InvalidID(t *testing.T) {
-	h, _ := setupCommentLikeHandler()
+	h, _, _ := setupCommentLikeHandler()
 	r := newRouter(1)
 	r.POST("/comments/:id/like", h.Like)
 
@@ -30,34 +37,36 @@ func TestCommentLike_Like_InvalidID(t *testing.T) {
 	assertStatus(t, w, http.StatusBadRequest)
 }
 
-func TestCommentLike_Like_ServiceError(t *testing.T) {
-	h, svc := setupCommentLikeHandler()
+func TestCommentLike_Like_AlreadyLiked_BadRequest(t *testing.T) {
+	h, likes, reader := setupCommentLikeHandler()
 	r := newRouter(1)
 	r.POST("/comments/:id/like", h.Like)
 
-	svc.On("Like", uint(1), uint(5)).Return(service.ErrBadRequest)
+	reader.On("FindCommentByID", mock.Anything, uint(5)).Return(otherComment(), nil)
+	likes.On("HasLiked", mock.Anything, uint(1), uint(5)).Return(true, nil)
 
 	w := doRequest(r, http.MethodPost, "/comments/5/like", nil)
 	assertStatus(t, w, http.StatusBadRequest)
-	svc.AssertExpectations(t)
 }
 
 // ---------- Unlike ----------
 
 func TestCommentLike_Unlike_Success(t *testing.T) {
-	h, svc := setupCommentLikeHandler()
+	h, likes, reader := setupCommentLikeHandler()
 	r := newRouter(1)
 	r.DELETE("/comments/:id/like", h.Unlike)
 
-	svc.On("Unlike", uint(1), uint(5)).Return(nil)
+	reader.On("FindCommentByID", mock.Anything, uint(5)).Return(otherComment(), nil)
+	likes.On("HasLiked", mock.Anything, uint(1), uint(5)).Return(true, nil)
+	likes.On("Unlike", mock.Anything, uint(1), uint(5)).Return(nil)
 
 	w := doRequest(r, http.MethodDelete, "/comments/5/like", nil)
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	likes.AssertExpectations(t)
 }
 
 func TestCommentLike_Unlike_InvalidID(t *testing.T) {
-	h, _ := setupCommentLikeHandler()
+	h, _, _ := setupCommentLikeHandler()
 	r := newRouter(1)
 	r.DELETE("/comments/:id/like", h.Unlike)
 
@@ -65,34 +74,35 @@ func TestCommentLike_Unlike_InvalidID(t *testing.T) {
 	assertStatus(t, w, http.StatusBadRequest)
 }
 
-func TestCommentLike_Unlike_ServiceError(t *testing.T) {
-	h, svc := setupCommentLikeHandler()
+func TestCommentLike_Unlike_CommentNotFound(t *testing.T) {
+	h, _, reader := setupCommentLikeHandler()
 	r := newRouter(1)
 	r.DELETE("/comments/:id/like", h.Unlike)
 
-	svc.On("Unlike", uint(1), uint(5)).Return(service.ErrNotFound)
+	reader.On("FindCommentByID", mock.Anything, uint(5)).Return((*model.Comment)(nil), errors.New("not found"))
 
 	w := doRequest(r, http.MethodDelete, "/comments/5/like", nil)
 	assertStatus(t, w, http.StatusNotFound)
-	svc.AssertExpectations(t)
 }
 
 // ---------- GetStatus ----------
 
 func TestCommentLike_GetStatus_Success(t *testing.T) {
-	h, svc := setupCommentLikeHandler()
+	h, likes, reader := setupCommentLikeHandler()
 	r := newRouter(1)
 	r.GET("/comments/:id/like", h.GetStatus)
 
-	svc.On("GetStatus", uint(1), uint(5)).Return(true, int64(3), nil)
+	reader.On("FindCommentByID", mock.Anything, uint(5)).Return(otherComment(), nil)
+	likes.On("HasLiked", mock.Anything, uint(1), uint(5)).Return(true, nil)
+	likes.On("CountByCommentID", mock.Anything, uint(5)).Return(int64(3), nil)
 
 	w := doRequest(r, http.MethodGet, "/comments/5/like", nil)
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	likes.AssertExpectations(t)
 }
 
 func TestCommentLike_GetStatus_InvalidID(t *testing.T) {
-	h, _ := setupCommentLikeHandler()
+	h, _, _ := setupCommentLikeHandler()
 	r := newRouter(1)
 	r.GET("/comments/:id/like", h.GetStatus)
 
@@ -100,14 +110,13 @@ func TestCommentLike_GetStatus_InvalidID(t *testing.T) {
 	assertStatus(t, w, http.StatusBadRequest)
 }
 
-func TestCommentLike_GetStatus_ServiceError(t *testing.T) {
-	h, svc := setupCommentLikeHandler()
+func TestCommentLike_GetStatus_CommentNotFound(t *testing.T) {
+	h, _, reader := setupCommentLikeHandler()
 	r := newRouter(1)
 	r.GET("/comments/:id/like", h.GetStatus)
 
-	svc.On("GetStatus", uint(1), uint(5)).Return(false, int64(0), service.ErrNotFound)
+	reader.On("FindCommentByID", mock.Anything, uint(5)).Return((*model.Comment)(nil), errors.New("not found"))
 
 	w := doRequest(r, http.MethodGet, "/comments/5/like", nil)
 	assertStatus(t, w, http.StatusNotFound)
-	svc.AssertExpectations(t)
 }
