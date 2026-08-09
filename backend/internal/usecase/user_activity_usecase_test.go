@@ -49,6 +49,7 @@ func TestGetActivityTimelineUseCase_Execute(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, list, 1)
 		assert.Equal(t, int64(1), total)
+		activities.AssertExpectations(t)
 	})
 
 	t.Run("空でも成功する", func(t *testing.T) {
@@ -62,6 +63,7 @@ func TestGetActivityTimelineUseCase_Execute(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Empty(t, list)
 		assert.Equal(t, int64(0), total)
+		activities.AssertExpectations(t)
 	})
 
 	t.Run("リポジトリエラーは伝播する", func(t *testing.T) {
@@ -73,5 +75,6 @@ func TestGetActivityTimelineUseCase_Execute(t *testing.T) {
 		_, _, err := uc.Execute(context.Background(), 10, "", 20, 0)
 
 		assert.Error(t, err)
+		activities.AssertExpectations(t)
 	})
 }

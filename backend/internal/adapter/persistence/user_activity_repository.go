@@ -23,6 +23,7 @@ var _ repository.UserActivityRepository = (*userActivityRepository)(nil)
 
 // FindByUserID は指定ユーザーのアクティビティを時系列（新しい順）で取得する。
 // activityType が空でなければ種別で絞り込む。
+// created_at が同値の行でもページングが安定するよう、id を第 2 ソートキーにして順序を決定的にする。
 func (r *userActivityRepository) FindByUserID(ctx context.Context, userID uint, activityType string, limit, offset int) ([]model.UserActivity, int64, error) {
 	var activities []model.UserActivity
 	var total int64
@@ -36,7 +37,7 @@ func (r *userActivityRepository) FindByUserID(ctx context.Context, userID uint, 
 		return nil, 0, err
 	}
 
-	if err := query.Order("created_at DESC").Limit(limit).Offset(offset).Find(&activities).Error; err != nil {
+	if err := query.Order("created_at DESC").Order("id DESC").Limit(limit).Offset(offset).Find(&activities).Error; err != nil {
 		return nil, 0, err
 	}
 
