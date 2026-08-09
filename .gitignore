@@ -24,7 +24,7 @@ frontend/dist/
 # Docker
 postgres_data/
 
-# Claude Code
-.claude/
-
-CLAUDE.md
+# Claude Code: チーム共有の規約 (.claude/CLAUDE.md) と設定 (.claude/settings.json) はコミットする。
+# 個人用ローカル設定・リポ直下の個人メモ用 CLAUDE.md だけ除外する。
+.claude/settings.local.json
+/CLAUDE.md
