@@ -2,24 +2,27 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// WeeklyGoalServiceInterface はWeeklyGoalHandlerが依存するサービスメソッドを定義する。
-type WeeklyGoalServiceInterface interface {
-	SetGoal(userID uint, category string, targetMinutes int) (*model.WeeklyGoal, error)
-	GetGoals(userID uint) ([]model.WeeklyGoal, error)
-	GetProgress(userID uint) ([]model.WeeklyGoalProgress, error)
-}
-
-// WeeklyGoalHandler はカテゴリ別週間学習目標のHTTPハンドラ。
+// WeeklyGoalHandler はカテゴリ別週間学習目標の HTTP ハンドラー。各操作は 1 責務の usecase に委譲する。
 type WeeklyGoalHandler struct {
-	service WeeklyGoalServiceInterface
+	setGoal     *usecase.SetWeeklyGoalUseCase
+	listGoals   *usecase.ListWeeklyGoalsUseCase
+	getProgress *usecase.GetWeeklyGoalProgressUseCase
 }
 
-// NewWeeklyGoalHandler は新しいWeeklyGoalHandlerインスタンスを生成する。
-func NewWeeklyGoalHandler(s WeeklyGoalServiceInterface) *WeeklyGoalHandler {
-	return &WeeklyGoalHandler{service: s}
+// NewWeeklyGoalHandler は WeeklyGoalHandler を生成する。
+func NewWeeklyGoalHandler(
+	setGoal *usecase.SetWeeklyGoalUseCase,
+	listGoals *usecase.ListWeeklyGoalsUseCase,
+	getProgress *usecase.GetWeeklyGoalProgressUseCase,
+) *WeeklyGoalHandler {
+	return &WeeklyGoalHandler{
+		setGoal:     setGoal,
+		listGoals:   listGoals,
+		getProgress: getProgress,
+	}
 }
 
 // setWeeklyGoalRequest は週間目標設定リクエスト。
@@ -37,7 +40,7 @@ func (h *WeeklyGoalHandler) SetGoal(c *gin.Context) {
 		return
 	}
 
-	goal, err := h.service.SetGoal(userID, req.Category, req.TargetMinutes)
+	goal, err := h.setGoal.Execute(c.Request.Context(), userID, req.Category, req.TargetMinutes)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -50,7 +53,7 @@ func (h *WeeklyGoalHandler) SetGoal(c *gin.Context) {
 func (h *WeeklyGoalHandler) GetGoals(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	goals, err := h.service.GetGoals(userID)
+	goals, err := h.listGoals.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -63,7 +66,7 @@ func (h *WeeklyGoalHandler) GetGoals(c *gin.Context) {
 func (h *WeeklyGoalHandler) GetProgress(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	progress, err := h.service.GetProgress(userID)
+	progress, err := h.getProgress.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return

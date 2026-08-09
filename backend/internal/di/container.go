@@ -427,10 +427,13 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	widgetSettingsService := service.NewWidgetSettingsService(widgetSettingsRepo)
 	c.WidgetSettingsHandler = handler.NewWidgetSettingsHandler(widgetSettingsService)
 
-	// カテゴリ別週間学習目標サービス
-	weeklyGoalRepo := repository.NewWeeklyGoalRepository(db)
-	weeklyGoalService := service.NewWeeklyGoalService(weeklyGoalRepo)
-	c.WeeklyGoalHandler = handler.NewWeeklyGoalHandler(weeklyGoalService)
+	// カテゴリ別週間学習目標はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	weeklyGoalRepo := persistence.NewWeeklyGoalRepository(db)
+	c.WeeklyGoalHandler = handler.NewWeeklyGoalHandler(
+		usecase.NewSetWeeklyGoalUseCase(weeklyGoalRepo),
+		usecase.NewListWeeklyGoalsUseCase(weeklyGoalRepo),
+		usecase.NewGetWeeklyGoalProgressUseCase(weeklyGoalRepo),
+	)
 
 	// リソース進捗サービス
 	resourceProgressRepo := repository.NewResourceProgressRepository(db)
