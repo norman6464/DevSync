@@ -447,10 +447,15 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	userActivityService := service.NewUserActivityService(userActivityRepo)
 	c.UserActivityHandler = handler.NewUserActivityHandler(userActivityService)
 
-	// リソースレビューサービス
-	resourceReviewRepo := repository.NewResourceReviewRepository(db)
-	resourceReviewService := service.NewResourceReviewService(resourceReviewRepo, learningResourceRepo)
-	c.ResourceReviewHandler = handler.NewResourceReviewHandler(resourceReviewService)
+	// リソースレビューはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	resourceReviewRepo := persistence.NewResourceReviewRepository(db)
+	learningResourceReader := persistence.NewLearningResourceReader(db)
+	c.ResourceReviewHandler = handler.NewResourceReviewHandler(
+		usecase.NewCreateResourceReviewUseCase(resourceReviewRepo, learningResourceReader),
+		usecase.NewListResourceReviewsUseCase(resourceReviewRepo),
+		usecase.NewUpdateResourceReviewUseCase(resourceReviewRepo),
+		usecase.NewDeleteResourceReviewUseCase(resourceReviewRepo),
+	)
 
 	// 学習ダッシュボード統合サマリーサービス
 	learningDashboardService := service.NewLearningDashboardService(learningLogRepo, learningGoalRepo, analyticsRepo)

@@ -277,6 +277,14 @@ func ValidateStringLength(s string, min, max int, fieldName string) error {
 	return nil
 }
 
+// ValidateRating は評価値が 1〜5 の範囲かをバリデーションする汎用関数。
+func ValidateRating(rating int) error {
+	if rating < 1 || rating > 5 {
+		return NewError(ErrCodeBadRequest, "評価は1〜5の範囲で指定してください", nil)
+	}
+	return nil
+}
+
 // External username validation constants
 const (
 	MinExternalUsernameLength = 1

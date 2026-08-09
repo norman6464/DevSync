@@ -1,51 +1,76 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 	"github.com/stretchr/testify/mock"
 )
 
-// --- Mock ---
+// --- port モック（ctx 付き） ---
 
-type MockResourceReviewService struct{ mock.Mock }
+// mockResourceReviewRepo は usecase/repository.ResourceReviewRepository のモック。
+type mockResourceReviewRepo struct{ mock.Mock }
 
-func (m *MockResourceReviewService) Create(review *model.ResourceReview) error {
-	return m.Called(review).Error(0)
+func (m *mockResourceReviewRepo) Create(ctx context.Context, review *model.ResourceReview) error {
+	return m.Called(ctx, review).Error(0)
+}
+func (m *mockResourceReviewRepo) FindByID(ctx context.Context, id uint) (*model.ResourceReview, error) {
+	args := m.Called(ctx, id)
+	r, _ := args.Get(0).(*model.ResourceReview)
+	return r, args.Error(1)
+}
+func (m *mockResourceReviewRepo) FindByResourceID(ctx context.Context, resourceID uint, limit, offset int) ([]model.ResourceReview, int64, error) {
+	args := m.Called(ctx, resourceID, limit, offset)
+	reviews, _ := args.Get(0).([]model.ResourceReview)
+	return reviews, args.Get(1).(int64), args.Error(2)
+}
+func (m *mockResourceReviewRepo) FindByUserAndResource(ctx context.Context, userID, resourceID uint) (*model.ResourceReview, error) {
+	args := m.Called(ctx, userID, resourceID)
+	r, _ := args.Get(0).(*model.ResourceReview)
+	return r, args.Error(1)
+}
+func (m *mockResourceReviewRepo) Update(ctx context.Context, review *model.ResourceReview) error {
+	return m.Called(ctx, review).Error(0)
+}
+func (m *mockResourceReviewRepo) Delete(ctx context.Context, id uint) error {
+	return m.Called(ctx, id).Error(0)
 }
 
-func (m *MockResourceReviewService) GetByResourceID(resourceID uint, limit, offset int) ([]model.ResourceReview, int64, error) {
-	args := m.Called(resourceID, limit, offset)
-	return args.Get(0).([]model.ResourceReview), args.Get(1).(int64), args.Error(2)
+// mockLearningResourceReader は usecase/repository.LearningResourceReader のモック。
+type mockLearningResourceReader struct{ mock.Mock }
+
+func (m *mockLearningResourceReader) FindByID(ctx context.Context, id uint) (*model.LearningResource, error) {
+	args := m.Called(ctx, id)
+	r, _ := args.Get(0).(*model.LearningResource)
+	return r, args.Error(1)
 }
 
-func (m *MockResourceReviewService) Update(id, userID uint, rating int, comment string) (*model.ResourceReview, error) {
-	args := m.Called(id, userID, rating, comment)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.ResourceReview), args.Error(1)
-}
-
-func (m *MockResourceReviewService) Delete(id, userID uint) error {
-	return m.Called(id, userID).Error(0)
-}
-
-func setupResourceReviewHandler() (*ResourceReviewHandler, *MockResourceReviewService) {
-	svc := new(MockResourceReviewService)
-	h := NewResourceReviewHandler(svc)
-	return h, svc
+// setupResourceReviewHandler は本物の usecase + port モックで ResourceReviewHandler を組む。
+func setupResourceReviewHandler() (*ResourceReviewHandler, *mockResourceReviewRepo, *mockLearningResourceReader) {
+	reviews := new(mockResourceReviewRepo)
+	resources := new(mockLearningResourceReader)
+	h := NewResourceReviewHandler(
+		usecase.NewCreateResourceReviewUseCase(reviews, resources),
+		usecase.NewListResourceReviewsUseCase(reviews),
+		usecase.NewUpdateResourceReviewUseCase(reviews),
+		usecase.NewDeleteResourceReviewUseCase(reviews),
+	)
+	return h, reviews, resources
 }
 
 // --- Create ---
 
 func TestResourceReview_Create_Success(t *testing.T) {
-	h, svc := setupResourceReviewHandler()
-
-	svc.On("Create", mock.AnythingOfType("*model.ResourceReview")).Return(nil)
+	h, reviews, resources := setupResourceReviewHandler()
+	resources.On("FindByID", mock.Anything, uint(10)).Return(&model.LearningResource{}, nil)
+	reviews.On("FindByUserAndResource", mock.Anything, uint(1), uint(10)).
+		Return((*model.ResourceReview)(nil), errors.New("not found"))
+	reviews.On("Create", mock.Anything, mock.AnythingOfType("*model.ResourceReview")).Return(nil)
 
 	r := newRouter(1)
 	r.POST("/resources/:id/reviews", h.Create)
@@ -56,11 +81,11 @@ func TestResourceReview_Create_Success(t *testing.T) {
 	})
 
 	assertStatus(t, w, http.StatusCreated)
-	svc.AssertExpectations(t)
+	reviews.AssertExpectations(t)
 }
 
 func TestResourceReview_Create_InvalidID(t *testing.T) {
-	h, _ := setupResourceReviewHandler()
+	h, _, _ := setupResourceReviewHandler()
 
 	r := newRouter(1)
 	r.POST("/resources/:id/reviews", h.Create)
@@ -74,7 +99,7 @@ func TestResourceReview_Create_InvalidID(t *testing.T) {
 }
 
 func TestResourceReview_Create_InvalidJSON(t *testing.T) {
-	h, _ := setupResourceReviewHandler()
+	h, _, _ := setupResourceReviewHandler()
 
 	r := newRouter(1)
 	r.POST("/resources/:id/reviews", h.Create)
@@ -85,9 +110,12 @@ func TestResourceReview_Create_InvalidJSON(t *testing.T) {
 }
 
 func TestResourceReview_Create_ServiceError(t *testing.T) {
-	h, svc := setupResourceReviewHandler()
-
-	svc.On("Create", mock.AnythingOfType("*model.ResourceReview")).Return(errors.New("db error"))
+	h, reviews, resources := setupResourceReviewHandler()
+	resources.On("FindByID", mock.Anything, uint(10)).Return(&model.LearningResource{}, nil)
+	reviews.On("FindByUserAndResource", mock.Anything, uint(1), uint(10)).
+		Return((*model.ResourceReview)(nil), errors.New("not found"))
+	reviews.On("Create", mock.Anything, mock.AnythingOfType("*model.ResourceReview")).
+		Return(errors.New("db error"))
 
 	r := newRouter(1)
 	r.POST("/resources/:id/reviews", h.Create)
@@ -98,19 +126,19 @@ func TestResourceReview_Create_ServiceError(t *testing.T) {
 	})
 
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
+	reviews.AssertExpectations(t)
 }
 
 // --- GetByResourceID ---
 
 func TestResourceReview_GetByResourceID_Success(t *testing.T) {
-	h, svc := setupResourceReviewHandler()
+	h, reviews, _ := setupResourceReviewHandler()
 
-	reviews := []model.ResourceReview{
+	list := []model.ResourceReview{
 		{Rating: 5, Comment: "最高"},
 		{Rating: 3, Comment: "普通"},
 	}
-	svc.On("GetByResourceID", uint(10), 20, 0).Return(reviews, int64(2), nil)
+	reviews.On("FindByResourceID", mock.Anything, uint(10), 20, 0).Return(list, int64(2), nil)
 
 	r := newRouter(1)
 	r.GET("/resources/:id/reviews", h.GetByResourceID)
@@ -123,13 +151,13 @@ func TestResourceReview_GetByResourceID_Success(t *testing.T) {
 	if len(reviewList) != 2 {
 		t.Errorf("expected 2 reviews, got %d", len(reviewList))
 	}
-	svc.AssertExpectations(t)
+	reviews.AssertExpectations(t)
 }
 
 func TestResourceReview_GetByResourceID_Empty(t *testing.T) {
-	h, svc := setupResourceReviewHandler()
+	h, reviews, _ := setupResourceReviewHandler()
 
-	svc.On("GetByResourceID", uint(10), 20, 0).Return([]model.ResourceReview{}, int64(0), nil)
+	reviews.On("FindByResourceID", mock.Anything, uint(10), 20, 0).Return([]model.ResourceReview{}, int64(0), nil)
 
 	r := newRouter(1)
 	r.GET("/resources/:id/reviews", h.GetByResourceID)
@@ -142,13 +170,14 @@ func TestResourceReview_GetByResourceID_Empty(t *testing.T) {
 	if len(reviewList) != 0 {
 		t.Errorf("expected 0 reviews, got %d", len(reviewList))
 	}
-	svc.AssertExpectations(t)
+	reviews.AssertExpectations(t)
 }
 
 func TestResourceReview_GetByResourceID_ServiceError(t *testing.T) {
-	h, svc := setupResourceReviewHandler()
+	h, reviews, _ := setupResourceReviewHandler()
 
-	svc.On("GetByResourceID", uint(10), 20, 0).Return([]model.ResourceReview{}, int64(0), errors.New("db error"))
+	reviews.On("FindByResourceID", mock.Anything, uint(10), 20, 0).
+		Return([]model.ResourceReview{}, int64(0), errors.New("db error"))
 
 	r := newRouter(1)
 	r.GET("/resources/:id/reviews", h.GetByResourceID)
@@ -156,16 +185,16 @@ func TestResourceReview_GetByResourceID_ServiceError(t *testing.T) {
 	w := doRequest(r, http.MethodGet, "/resources/10/reviews", nil)
 
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
+	reviews.AssertExpectations(t)
 }
 
 // --- Update ---
 
 func TestResourceReview_Update_Success(t *testing.T) {
-	h, svc := setupResourceReviewHandler()
+	h, reviews, _ := setupResourceReviewHandler()
 
-	updated := &model.ResourceReview{Rating: 4, Comment: "更新後"}
-	svc.On("Update", uint(5), uint(1), 4, "更新後").Return(updated, nil)
+	reviews.On("FindByID", mock.Anything, uint(5)).Return(&model.ResourceReview{UserID: 1, Rating: 3}, nil)
+	reviews.On("Update", mock.Anything, mock.AnythingOfType("*model.ResourceReview")).Return(nil)
 
 	r := newRouter(1)
 	r.PUT("/reviews/:reviewId", h.Update)
@@ -176,11 +205,11 @@ func TestResourceReview_Update_Success(t *testing.T) {
 	})
 
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	reviews.AssertExpectations(t)
 }
 
 func TestResourceReview_Update_InvalidID(t *testing.T) {
-	h, _ := setupResourceReviewHandler()
+	h, _, _ := setupResourceReviewHandler()
 
 	r := newRouter(1)
 	r.PUT("/reviews/:reviewId", h.Update)
@@ -194,9 +223,11 @@ func TestResourceReview_Update_InvalidID(t *testing.T) {
 }
 
 func TestResourceReview_Update_ServiceError(t *testing.T) {
-	h, svc := setupResourceReviewHandler()
+	h, reviews, _ := setupResourceReviewHandler()
 
-	svc.On("Update", uint(5), uint(1), 4, "テスト").Return(nil, errors.New("forbidden"))
+	reviews.On("FindByID", mock.Anything, uint(5)).Return(&model.ResourceReview{UserID: 1, Rating: 3}, nil)
+	reviews.On("Update", mock.Anything, mock.AnythingOfType("*model.ResourceReview")).
+		Return(errors.New("db error"))
 
 	r := newRouter(1)
 	r.PUT("/reviews/:reviewId", h.Update)
@@ -207,15 +238,16 @@ func TestResourceReview_Update_ServiceError(t *testing.T) {
 	})
 
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
+	reviews.AssertExpectations(t)
 }
 
 // --- Delete ---
 
 func TestResourceReview_Delete_Success(t *testing.T) {
-	h, svc := setupResourceReviewHandler()
+	h, reviews, _ := setupResourceReviewHandler()
 
-	svc.On("Delete", uint(5), uint(1)).Return(nil)
+	reviews.On("FindByID", mock.Anything, uint(5)).Return(&model.ResourceReview{UserID: 1}, nil)
+	reviews.On("Delete", mock.Anything, uint(5)).Return(nil)
 
 	r := newRouter(1)
 	r.DELETE("/reviews/:reviewId", h.Delete)
@@ -223,11 +255,11 @@ func TestResourceReview_Delete_Success(t *testing.T) {
 	w := doRequest(r, http.MethodDelete, "/reviews/5", nil)
 
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	reviews.AssertExpectations(t)
 }
 
 func TestResourceReview_Delete_InvalidID(t *testing.T) {
-	h, _ := setupResourceReviewHandler()
+	h, _, _ := setupResourceReviewHandler()
 
 	r := newRouter(1)
 	r.DELETE("/reviews/:reviewId", h.Delete)
@@ -238,9 +270,10 @@ func TestResourceReview_Delete_InvalidID(t *testing.T) {
 }
 
 func TestResourceReview_Delete_ServiceError(t *testing.T) {
-	h, svc := setupResourceReviewHandler()
+	h, reviews, _ := setupResourceReviewHandler()
 
-	svc.On("Delete", uint(5), uint(1)).Return(errors.New("not found"))
+	reviews.On("FindByID", mock.Anything, uint(5)).Return(&model.ResourceReview{UserID: 1}, nil)
+	reviews.On("Delete", mock.Anything, uint(5)).Return(errors.New("db error"))
 
 	r := newRouter(1)
 	r.DELETE("/reviews/:reviewId", h.Delete)
@@ -248,5 +281,5 @@ func TestResourceReview_Delete_ServiceError(t *testing.T) {
 	w := doRequest(r, http.MethodDelete, "/reviews/5", nil)
 
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
+	reviews.AssertExpectations(t)
 }

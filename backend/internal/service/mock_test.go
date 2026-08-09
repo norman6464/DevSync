@@ -890,50 +890,6 @@ func (m *MockLearningResourceRepository) CountByUserID(userID uint) (int64, erro
 }
 
 // ============================================================
-// MockResourceReviewRepository は repository.ResourceReviewRepositoryInterface のテスト用モック実装。
-// ============================================================
-
-type MockResourceReviewRepository struct {
-	mock.Mock
-}
-
-func (m *MockResourceReviewRepository) Create(review *model.ResourceReview) error {
-	args := m.Called(review)
-	return args.Error(0)
-}
-
-func (m *MockResourceReviewRepository) FindByID(id uint) (*model.ResourceReview, error) {
-	args := m.Called(id)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.ResourceReview), args.Error(1)
-}
-
-func (m *MockResourceReviewRepository) FindByResourceID(resourceID uint, limit, offset int) ([]model.ResourceReview, int64, error) {
-	args := m.Called(resourceID, limit, offset)
-	return args.Get(0).([]model.ResourceReview), args.Get(1).(int64), args.Error(2)
-}
-
-func (m *MockResourceReviewRepository) FindByUserAndResource(userID, resourceID uint) (*model.ResourceReview, error) {
-	args := m.Called(userID, resourceID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.ResourceReview), args.Error(1)
-}
-
-func (m *MockResourceReviewRepository) Update(review *model.ResourceReview) error {
-	args := m.Called(review)
-	return args.Error(0)
-}
-
-func (m *MockResourceReviewRepository) Delete(id uint) error {
-	args := m.Called(id)
-	return args.Error(0)
-}
-
-// ============================================================
 // MockPasswordResetRepository は repository.PasswordResetRepositoryInterface のテスト用モック実装。
 // ============================================================
 
@@ -1272,7 +1228,6 @@ var _ repository.AIAdviceRepositoryInterface = (*MockAIAdviceRepository)(nil)
 var _ repository.WeeklyChallengeRepositoryInterface = (*MockWeeklyChallengeRepository)(nil)
 var _ repository.PostTemplateRepositoryInterface = (*MockPostTemplateRepository)(nil)
 var _ repository.WeeklyGoalRepositoryInterface = (*MockWeeklyGoalRepository)(nil)
-var _ repository.ResourceReviewRepositoryInterface = (*MockResourceReviewRepository)(nil)
 
 // ============================================================
 // MockWeeklyGoalRepository は repository.WeeklyGoalRepositoryInterface のテスト用モック実装。

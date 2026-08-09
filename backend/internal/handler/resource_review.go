@@ -4,24 +4,30 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// ResourceReviewServiceInterface はResourceReviewHandlerが依存するサービスのインターフェース。
-type ResourceReviewServiceInterface interface {
-	Create(review *model.ResourceReview) error
-	GetByResourceID(resourceID uint, limit, offset int) ([]model.ResourceReview, int64, error)
-	Update(id, userID uint, rating int, comment string) (*model.ResourceReview, error)
-	Delete(id, userID uint) error
-}
-
-// ResourceReviewHandler は学習リソースレビュー関連のHTTPハンドラ。
+// ResourceReviewHandler は学習リソースレビュー関連の HTTP ハンドラー。各操作は 1 責務の usecase に委譲する。
 type ResourceReviewHandler struct {
-	service ResourceReviewServiceInterface
+	createReview *usecase.CreateResourceReviewUseCase
+	listReviews  *usecase.ListResourceReviewsUseCase
+	updateReview *usecase.UpdateResourceReviewUseCase
+	deleteReview *usecase.DeleteResourceReviewUseCase
 }
 
-// NewResourceReviewHandler は新しいResourceReviewHandlerインスタンスを生成する。
-func NewResourceReviewHandler(s ResourceReviewServiceInterface) *ResourceReviewHandler {
-	return &ResourceReviewHandler{service: s}
+// NewResourceReviewHandler は ResourceReviewHandler を生成する。
+func NewResourceReviewHandler(
+	createReview *usecase.CreateResourceReviewUseCase,
+	listReviews *usecase.ListResourceReviewsUseCase,
+	updateReview *usecase.UpdateResourceReviewUseCase,
+	deleteReview *usecase.DeleteResourceReviewUseCase,
+) *ResourceReviewHandler {
+	return &ResourceReviewHandler{
+		createReview: createReview,
+		listReviews:  listReviews,
+		updateReview: updateReview,
+		deleteReview: deleteReview,
+	}
 }
 
 // Create は新しいレビューを作成する。
@@ -48,7 +54,7 @@ func (h *ResourceReviewHandler) Create(c *gin.Context) {
 		Comment:    req.Comment,
 	}
 
-	if err := h.service.Create(review); err != nil {
+	if err := h.createReview.Execute(c.Request.Context(), review); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -65,7 +71,7 @@ func (h *ResourceReviewHandler) GetByResourceID(c *gin.Context) {
 
 	limit, offset := parseLimitOffset(c)
 
-	reviews, total, err := h.service.GetByResourceID(resourceID, limit, offset)
+	reviews, total, err := h.listReviews.Execute(c.Request.Context(), resourceID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -94,7 +100,7 @@ func (h *ResourceReviewHandler) Update(c *gin.Context) {
 		return
 	}
 
-	review, err := h.service.Update(reviewID, userID, req.Rating, req.Comment)
+	review, err := h.updateReview.Execute(c.Request.Context(), reviewID, userID, req.Rating, req.Comment)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -111,7 +117,7 @@ func (h *ResourceReviewHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Delete(reviewID, userID); err != nil {
+	if err := h.deleteReview.Execute(c.Request.Context(), reviewID, userID); err != nil {
 		respondError(c, err)
 		return
 	}
