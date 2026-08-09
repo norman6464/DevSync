@@ -53,7 +53,8 @@ func (r *resourceProgressRepository) FindByUserID(ctx context.Context, userID ui
 		return nil, 0, err
 	}
 
-	if err := query.Preload("Resource").Order("updated_at DESC").Limit(limit).Offset(offset).Find(&progresses).Error; err != nil {
+	// updated_at 同値の行でもページングが安定するよう id を第 2 ソートキーにして順序を決定的にする。
+	if err := query.Preload("Resource").Order("updated_at DESC").Order("id DESC").Limit(limit).Offset(offset).Find(&progresses).Error; err != nil {
 		return nil, 0, err
 	}
 
