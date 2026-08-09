@@ -450,9 +450,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	c.ProjectMilestoneHandler = handler.NewProjectMilestoneHandler(projectMilestoneService)
 
 	// ユーザーアクティビティサービス
-	userActivityRepo := repository.NewUserActivityRepository(db)
-	userActivityService := service.NewUserActivityService(userActivityRepo)
-	c.UserActivityHandler = handler.NewUserActivityHandler(userActivityService)
+	// ユーザーアクティビティはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	userActivityRepo := persistence.NewUserActivityRepository(db)
+	c.UserActivityHandler = handler.NewUserActivityHandler(
+		usecase.NewGetActivityTimelineUseCase(userActivityRepo),
+	)
 
 	// リソースレビューはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	resourceReviewRepo := persistence.NewResourceReviewRepository(db)
