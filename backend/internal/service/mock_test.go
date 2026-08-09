@@ -2460,33 +2460,6 @@ func (m *MockWidgetSettingsRepository) Upsert(settings *model.WidgetSettings) er
 }
 
 // ============================================================
-// MockResourceProgressRepository は repository.ResourceProgressRepositoryInterface のテスト用モック実装。
-// ============================================================
-
-type MockResourceProgressRepository struct {
-	mock.Mock
-}
-
-var _ repository.ResourceProgressRepositoryInterface = (*MockResourceProgressRepository)(nil)
-
-func (m *MockResourceProgressRepository) Upsert(progress *model.ResourceProgress) error {
-	return m.Called(progress).Error(0)
-}
-
-func (m *MockResourceProgressRepository) FindByUserAndResource(userID, resourceID uint) (*model.ResourceProgress, error) {
-	args := m.Called(userID, resourceID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.ResourceProgress), args.Error(1)
-}
-
-func (m *MockResourceProgressRepository) FindByUserID(userID uint, status string, limit, offset int) ([]model.ResourceProgress, int64, error) {
-	args := m.Called(userID, status, limit, offset)
-	return args.Get(0).([]model.ResourceProgress), args.Get(1).(int64), args.Error(2)
-}
-
-// ============================================================
 // MockProjectMilestoneRepository は repository.ProjectMilestoneRepositoryInterface のテスト用モック実装。
 // ============================================================
 

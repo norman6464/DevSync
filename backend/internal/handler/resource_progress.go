@@ -3,27 +3,26 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// ResourceProgressServiceInterface はリソース進捗サービスの抽象インターフェース。
-type ResourceProgressServiceInterface interface {
-	UpsertProgress(userID, resourceID uint, status string, completionPercent int, note string) (*model.ResourceProgress, error)
-	GetProgress(userID, resourceID uint) (*model.ResourceProgress, error)
-	GetProgressList(userID uint, status string, limit, offset int) ([]model.ResourceProgress, int64, error)
-}
-
-// ResourceProgressHandler はリソース進捗関連のHTTPハンドラ。
+// ResourceProgressHandler はリソース進捗関連の HTTP ハンドラ。各操作は 1 責務の usecase に委譲する。
 type ResourceProgressHandler struct {
-	service ResourceProgressServiceInterface
+	upsert *usecase.UpsertResourceProgressUseCase
+	get    *usecase.GetResourceProgressUseCase
+	list   *usecase.ListResourceProgressUseCase
 }
 
-// NewResourceProgressHandler は新しいResourceProgressHandlerインスタンスを生成する。
-func NewResourceProgressHandler(s ResourceProgressServiceInterface) *ResourceProgressHandler {
-	return &ResourceProgressHandler{service: s}
+// NewResourceProgressHandler は ResourceProgressHandler を生成する。
+func NewResourceProgressHandler(
+	upsert *usecase.UpsertResourceProgressUseCase,
+	get *usecase.GetResourceProgressUseCase,
+	list *usecase.ListResourceProgressUseCase,
+) *ResourceProgressHandler {
+	return &ResourceProgressHandler{upsert: upsert, get: get, list: list}
 }
 
-// Upsert はリソース進捗をUPSERT（作成/更新）する。
+// Upsert はリソース進捗を UPSERT（作成/更新）する。
 func (h *ResourceProgressHandler) Upsert(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -32,7 +31,7 @@ func (h *ResourceProgressHandler) Upsert(c *gin.Context) {
 		return
 	}
 
-	result, err := h.service.UpsertProgress(userID, req.ResourceID, req.Status, req.CompletionPercent, req.Note)
+	result, err := h.upsert.Execute(c.Request.Context(), userID, req.ResourceID, req.Status, req.CompletionPercent, req.Note)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -49,7 +48,7 @@ func (h *ResourceProgressHandler) GetByResource(c *gin.Context) {
 		return
 	}
 
-	progress, err := h.service.GetProgress(userID, resourceID)
+	progress, err := h.get.Execute(c.Request.Context(), userID, resourceID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -64,7 +63,7 @@ func (h *ResourceProgressHandler) GetMyProgress(c *gin.Context) {
 	status := c.Query("status")
 	limit, offset := parseLimitOffset(c)
 
-	progresses, total, err := h.service.GetProgressList(userID, status, limit, offset)
+	progresses, total, err := h.list.Execute(c.Request.Context(), userID, status, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return

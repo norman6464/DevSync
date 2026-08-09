@@ -251,13 +251,6 @@ type ProjectMilestoneRepositoryInterface interface {
 	Delete(id uint) error
 }
 
-// ResourceProgressRepositoryInterface は学習リソース進捗データ操作の契約を定義する。
-type ResourceProgressRepositoryInterface interface {
-	Upsert(progress *model.ResourceProgress) error
-	FindByUserAndResource(userID, resourceID uint) (*model.ResourceProgress, error)
-	FindByUserID(userID uint, status string, limit, offset int) ([]model.ResourceProgress, int64, error)
-}
-
 // RoadmapRepositoryInterface は学習ロードマップデータ操作の契約を定義する。
 // ステップのCRUD操作やコピー機能も含む。
 type RoadmapRepositoryInterface interface {
