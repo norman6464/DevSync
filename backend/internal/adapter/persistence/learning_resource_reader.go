@@ -22,10 +22,10 @@ func NewLearningResourceReader(db *gorm.DB) repository.LearningResourceReader {
 // コンパイル時に port を満たすことを保証する。
 var _ repository.LearningResourceReader = (*learningResourceReader)(nil)
 
-// FindByID は指定 ID の学習リソースをユーザー情報付きで取得する。
+// FindByID は指定 ID の学習リソースを取得する。存在確認のみに使うため関連の Preload は行わない。
 func (r *learningResourceReader) FindByID(ctx context.Context, id uint) (*model.LearningResource, error) {
 	var resource model.LearningResource
-	if err := r.db.WithContext(ctx).Preload("User").First(&resource, id).Error; err != nil {
+	if err := r.db.WithContext(ctx).First(&resource, id).Error; err != nil {
 		return nil, err
 	}
 	return &resource, nil
