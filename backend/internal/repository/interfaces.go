@@ -584,14 +584,6 @@ type YouTubeVideoRepositoryInterface interface {
 	SaveSearchCache(cache *model.YouTubeSearchCache) error
 }
 
-// PostViewRepositoryInterface は投稿閲覧数データ操作の契約を定義する。
-type PostViewRepositoryInterface interface {
-	RecordView(view *model.PostView) error
-	GetViewCount(postID uint) (int64, error)
-	HasViewed(userID, postID uint) (bool, error)
-	GetMostViewed(limit int) ([]model.ViewCount, error)
-}
-
 // PostStatsRepositoryInterface はユーザー投稿集計統計データ操作の契約を定義する。
 type PostStatsRepositoryInterface interface {
 	GetPostStats(userID uint) (*model.PostStats, error)
