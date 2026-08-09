@@ -1,0 +1,6 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="DevSync">
+  <!-- favicon.svg と同じ「鋭角な3枚の飛翔マーク」を三段のパープルで再現（透過背景） -->
+  <path d="M8,52 L52,72 L8,92 Z" fill="#c4a3fb"/>
+  <path d="M30,40 L74,60 L30,80 Z" fill="#a06ef8"/>
+  <path d="M52,28 L96,48 L52,68 Z" fill="#7f37f6"/>
+</svg>

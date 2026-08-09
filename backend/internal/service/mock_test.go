@@ -258,39 +258,6 @@ func (m *MockPostRepository) CountScheduledByUserID(userID uint) (int64, error) 
 }
 
 // ============================================================
-// MockFollowRepository は repository.FollowRepositoryInterface のテスト用モック実装。
-// ============================================================
-
-type MockFollowRepository struct {
-	mock.Mock
-}
-
-func (m *MockFollowRepository) Follow(followerID, followeeID uint) error {
-	args := m.Called(followerID, followeeID)
-	return args.Error(0)
-}
-
-func (m *MockFollowRepository) Unfollow(followerID, followeeID uint) error {
-	args := m.Called(followerID, followeeID)
-	return args.Error(0)
-}
-
-func (m *MockFollowRepository) IsFollowing(followerID, followeeID uint) bool {
-	args := m.Called(followerID, followeeID)
-	return args.Bool(0)
-}
-
-func (m *MockFollowRepository) GetFollowers(userID uint, limit, offset int) ([]model.User, int64, error) {
-	args := m.Called(userID, limit, offset)
-	return args.Get(0).([]model.User), args.Get(1).(int64), args.Error(2)
-}
-
-func (m *MockFollowRepository) GetFollowing(userID uint, limit, offset int) ([]model.User, int64, error) {
-	args := m.Called(userID, limit, offset)
-	return args.Get(0).([]model.User), args.Get(1).(int64), args.Error(2)
-}
-
-// ============================================================
 // MockNotificationRepository は repository.NotificationRepositoryInterface のテスト用モック実装。
 // ============================================================
 
@@ -1286,7 +1253,6 @@ func (m *MockCodeSnippetRepository) CountByUserID(userID uint) (int64, error) {
 
 var _ repository.UserRepositoryInterface = (*MockUserRepository)(nil)
 var _ repository.PostRepositoryInterface = (*MockPostRepository)(nil)
-var _ repository.FollowRepositoryInterface = (*MockFollowRepository)(nil)
 var _ repository.NotificationRepositoryInterface = (*MockNotificationRepository)(nil)
 var _ repository.MessageRepositoryInterface = (*MockMessageRepository)(nil)
 var _ repository.QuestionRepositoryInterface = (*MockQuestionRepository)(nil)

@@ -1,0 +1,27 @@
+<svg width="400" height="150" viewBox="0 0 400 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="DevSync">
+  <!-- 背景色なし（透過） -->
+  <defs>
+    <style type="text/css">
+      .st0{fill:#7f37f6;}
+      .text-style {
+        font-family: 'Segoe UI', 'Helvetica Neue', 'Arial', sans-serif;
+        font-weight: 700;
+        font-style: normal;
+        letter-spacing: -1px;
+      }
+    </style>
+  </defs>
+
+  <g transform="translate(20, 85)">
+    <!-- 3 枚の鋭角な羽（favicon と同じモチーフ） -->
+    <g transform="translate(0, -35)">
+      <path class="st0" d="M15,10 L35,25 L15,40 Z" fill-opacity="0.4"/>
+      <path class="st0" d="M30,5 L50,20 L30,35 Z" fill-opacity="0.7"/>
+      <path class="st0" d="M45,0 L65,15 L45,30 Z"/>
+    </g>
+
+    <text x="80" y="0" class="st0 text-style" font-size="52">
+      DevSync
+    </text>
+  </g>
+</svg>

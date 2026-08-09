@@ -1,0 +1,19 @@
+<svg width="300" height="300" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 鮮やかなパープル (#7f37f6) -->
+    <style type="text/css">
+      .triangle { fill: #7f37f6; }
+    </style>
+  </defs>
+
+  <g transform="translate(50, 50)">
+    <!-- 左下の三角形（背面・一番薄い） -->
+    <path class="triangle" d="M0,100 L100,150 L0,200 Z" fill-opacity="0.4"/>
+    
+    <!-- 中央の三角形 -->
+    <path class="triangle" d="M50,50 L150,100 L50,150 Z" fill-opacity="0.7"/>
+    
+    <!-- 右上の三角形（前面・一番濃い） -->
+    <path class="triangle" d="M100,0 L200,50 L100,100 Z" />
+  </g>
+</svg>
