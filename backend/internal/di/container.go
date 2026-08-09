@@ -285,9 +285,16 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	c.PostTagHandler = handler.NewPostTagHandler(postTagService)
 	c.PostHandler.SetTagService(postTagService)
 
-	postPinRepo := repository.NewPostPinRepository(db)
-	postPinService := service.NewPostPinService(postPinRepo, postRepo)
-	c.PostPinHandler = handler.NewPostPinHandler(postPinService)
+	// post_pin はクリーンアーキテクチャ(DIP)へ移行済み。
+	postPinRepo := persistence.NewPostPinRepository(db)
+	postReader := persistence.NewPostReader(db)
+	c.PostPinHandler = handler.NewPostPinHandler(
+		usecase.NewPinPostUseCase(postPinRepo, postReader),
+		usecase.NewUnpinPostUseCase(postPinRepo),
+		usecase.NewListPinnedPostsUseCase(postPinRepo),
+		usecase.NewCountPinnedPostsUseCase(postPinRepo),
+		usecase.NewReorderPinnedPostsUseCase(postPinRepo),
+	)
 
 	// comment_like はクリーンアーキテクチャ(DIP)へ移行済み。
 	commentLikeRepo := persistence.NewCommentLikeRepository(db)
