@@ -242,16 +242,6 @@ type LearningResourceRepositoryInterface interface {
 	CountByUserID(userID uint) (int64, error)
 }
 
-// ResourceReviewRepositoryInterface は学習リソースレビューデータ操作の契約を定義する。
-type ResourceReviewRepositoryInterface interface {
-	Create(review *model.ResourceReview) error
-	FindByID(id uint) (*model.ResourceReview, error)
-	FindByResourceID(resourceID uint, limit, offset int) ([]model.ResourceReview, int64, error)
-	FindByUserAndResource(userID, resourceID uint) (*model.ResourceReview, error)
-	Update(review *model.ResourceReview) error
-	Delete(id uint) error
-}
-
 // ProjectMilestoneRepositoryInterface はプロジェクトマイルストーンデータ操作の契約を定義する。
 type ProjectMilestoneRepositoryInterface interface {
 	Create(milestone *model.ProjectMilestone) error
