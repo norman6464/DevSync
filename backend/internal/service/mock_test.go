@@ -1227,30 +1227,6 @@ var _ repository.RecommendationRepositoryInterface = (*MockRecommendationReposit
 var _ repository.AIAdviceRepositoryInterface = (*MockAIAdviceRepository)(nil)
 var _ repository.WeeklyChallengeRepositoryInterface = (*MockWeeklyChallengeRepository)(nil)
 var _ repository.PostTemplateRepositoryInterface = (*MockPostTemplateRepository)(nil)
-var _ repository.WeeklyGoalRepositoryInterface = (*MockWeeklyGoalRepository)(nil)
-
-// ============================================================
-// MockWeeklyGoalRepository は repository.WeeklyGoalRepositoryInterface のテスト用モック実装。
-// ============================================================
-
-type MockWeeklyGoalRepository struct {
-	mock.Mock
-}
-
-func (m *MockWeeklyGoalRepository) Upsert(goal *model.WeeklyGoal) error {
-	return m.Called(goal).Error(0)
-}
-
-func (m *MockWeeklyGoalRepository) GetByUserID(userID uint) ([]model.WeeklyGoal, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.WeeklyGoal), args.Error(1)
-}
-
-func (m *MockWeeklyGoalRepository) SumDurationByUserCategoryThisWeek(userID uint, category string) (int, error) {
-	args := m.Called(userID, category)
-	return args.Int(0), args.Error(1)
-}
-
 // ============================================================
 // MockPostTemplateRepository は repository.PostTemplateRepositoryInterface のテスト用モック実装。
 // ============================================================
