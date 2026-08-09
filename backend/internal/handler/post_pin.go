@@ -4,27 +4,33 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// PostPinServiceInterface はPostPinHandlerが依存するサービスインターフェース。
-type PostPinServiceInterface interface {
-	Pin(userID, postID uint) error
-	Unpin(userID, postID uint) error
-	GetByUserID(userID uint) ([]model.PostPin, error)
-	Reorder(userID uint, postIDs []uint) error
-	IsPinned(userID, postID uint) (bool, error)
-	CountByUserID(userID uint) (int64, error)
-}
-
-// PostPinHandler は投稿ピン留めのHTTPハンドラー。
+// PostPinHandler は投稿ピン留めの HTTP ハンドラー。各操作は 1 責務の usecase に委譲する。
 type PostPinHandler struct {
-	service PostPinServiceInterface
+	pinPost      *usecase.PinPostUseCase
+	unpinPost    *usecase.UnpinPostUseCase
+	listPinned   *usecase.ListPinnedPostsUseCase
+	countPinned  *usecase.CountPinnedPostsUseCase
+	reorderPinned *usecase.ReorderPinnedPostsUseCase
 }
 
-// NewPostPinHandler は新しいPostPinHandlerを生成する。
-func NewPostPinHandler(service PostPinServiceInterface) *PostPinHandler {
-	return &PostPinHandler{service: service}
+// NewPostPinHandler は PostPinHandler を生成する。
+func NewPostPinHandler(
+	pinPost *usecase.PinPostUseCase,
+	unpinPost *usecase.UnpinPostUseCase,
+	listPinned *usecase.ListPinnedPostsUseCase,
+	countPinned *usecase.CountPinnedPostsUseCase,
+	reorderPinned *usecase.ReorderPinnedPostsUseCase,
+) *PostPinHandler {
+	return &PostPinHandler{
+		pinPost:       pinPost,
+		unpinPost:     unpinPost,
+		listPinned:    listPinned,
+		countPinned:   countPinned,
+		reorderPinned: reorderPinned,
+	}
 }
 
 // Pin は投稿をピン留めする。
@@ -35,7 +41,7 @@ func (h *PostPinHandler) Pin(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.service.Pin(userID, postID); err != nil {
+	if err := h.pinPost.Execute(c.Request.Context(), userID, postID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -50,7 +56,7 @@ func (h *PostPinHandler) Unpin(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.service.Unpin(userID, postID); err != nil {
+	if err := h.unpinPost.Execute(c.Request.Context(), userID, postID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -64,7 +70,7 @@ func (h *PostPinHandler) GetByUserID(c *gin.Context) {
 		return
 	}
 
-	pins, err := h.service.GetByUserID(userID)
+	pins, err := h.listPinned.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -75,7 +81,7 @@ func (h *PostPinHandler) GetByUserID(c *gin.Context) {
 // GetMyCount は認証ユーザー自身のピン留め投稿数を返す。
 func (h *PostPinHandler) GetMyCount(c *gin.Context) {
 	userID := c.GetUint("userID")
-	count, err := h.service.CountByUserID(userID)
+	count, err := h.countPinned.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -92,7 +98,7 @@ func (h *PostPinHandler) Reorder(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Reorder(userID, req.PostIDs); err != nil {
+	if err := h.reorderPinned.Execute(c.Request.Context(), userID, req.PostIDs); err != nil {
 		respondError(c, err)
 		return
 	}
