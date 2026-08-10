@@ -524,14 +524,6 @@ type YouTubeVideoRepositoryInterface interface {
 
 
 
-// StreakFreezeRepositoryInterface はストリークフリーズデータ操作の契約を定義する。
-type StreakFreezeRepositoryInterface interface {
-	Create(freeze *model.StreakFreeze) error
-	GetByUserIDAndMonth(userID uint, year, month int) ([]model.StreakFreeze, error)
-	GetFreezeDates(userID uint) ([]string, error)
-	HasFreezeOnDate(userID uint, date string) (bool, error)
-}
-
 // NoteVersionRepositoryInterface はノートバージョン履歴データ操作の契約を定義する。
 type NoteVersionRepositoryInterface interface {
 	Create(version *model.NoteVersion) error

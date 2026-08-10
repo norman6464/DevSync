@@ -473,9 +473,12 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	c.YouTubeHandler = handler.NewYouTubeHandler(youtubeService)
 
 	// ストリークフリーズサービス
-	streakFreezeRepo := repository.NewStreakFreezeRepository(db)
-	streakFreezeService := service.NewStreakFreezeService(streakFreezeRepo)
-	c.StreakFreezeHandler = handler.NewStreakFreezeHandler(streakFreezeService)
+	// ストリークフリーズはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	streakFreezeRepo := persistence.NewStreakFreezeRepository(db)
+	c.StreakFreezeHandler = handler.NewStreakFreezeHandler(
+		usecase.NewUseStreakFreezeUseCase(streakFreezeRepo),
+		usecase.NewGetStreakFreezeStatusUseCase(streakFreezeRepo),
+	)
 
 	// ブックマークコレクションサービス
 	// ブックマークコレクションはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。

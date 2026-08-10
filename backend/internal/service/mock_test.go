@@ -1827,36 +1827,6 @@ func (m *MockSpotifyRepository) DeleteUserData(userID uint) error {
 }
 
 // ============================================================
-// MockStreakFreezeRepository は repository.StreakFreezeRepositoryInterface のテスト用モック実装。
-// ============================================================
-
-type MockStreakFreezeRepository struct {
-	mock.Mock
-}
-
-var _ repository.StreakFreezeRepositoryInterface = (*MockStreakFreezeRepository)(nil)
-
-func (m *MockStreakFreezeRepository) Create(freeze *model.StreakFreeze) error {
-	args := m.Called(freeze)
-	return args.Error(0)
-}
-
-func (m *MockStreakFreezeRepository) GetByUserIDAndMonth(userID uint, year, month int) ([]model.StreakFreeze, error) {
-	args := m.Called(userID, year, month)
-	return args.Get(0).([]model.StreakFreeze), args.Error(1)
-}
-
-func (m *MockStreakFreezeRepository) GetFreezeDates(userID uint) ([]string, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]string), args.Error(1)
-}
-
-func (m *MockStreakFreezeRepository) HasFreezeOnDate(userID uint, date string) (bool, error) {
-	args := m.Called(userID, date)
-	return args.Bool(0), args.Error(1)
-}
-
-// ============================================================
 // MockProjectMilestoneRepository は repository.ProjectMilestoneRepositoryInterface のテスト用モック実装。
 // ============================================================
 
