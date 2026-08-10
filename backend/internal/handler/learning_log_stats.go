@@ -2,22 +2,17 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// LearningLogStatsServiceInterface はLearningLogStatsHandlerが依存するサービスメソッドを定義する。
-type LearningLogStatsServiceInterface interface {
-	GetLearningLogStats(userID uint) (*model.LearningLogStats, error)
-}
-
-// LearningLogStatsHandler はユーザー学習ログ統計関連のHTTPハンドラ。
+// LearningLogStatsHandler はユーザー学習ログ統計関連の HTTP ハンドラ。
 type LearningLogStatsHandler struct {
-	service LearningLogStatsServiceInterface
+	getStats *usecase.GetLearningLogStatsUseCase
 }
 
-// NewLearningLogStatsHandler は新しいLearningLogStatsHandlerインスタンスを生成する。
-func NewLearningLogStatsHandler(s LearningLogStatsServiceInterface) *LearningLogStatsHandler {
-	return &LearningLogStatsHandler{service: s}
+// NewLearningLogStatsHandler は LearningLogStatsHandler を生成する。
+func NewLearningLogStatsHandler(getStats *usecase.GetLearningLogStatsUseCase) *LearningLogStatsHandler {
+	return &LearningLogStatsHandler{getStats: getStats}
 }
 
 // GetStats は指定ユーザーの学習ログ集計統計を返す。
@@ -27,7 +22,7 @@ func (h *LearningLogStatsHandler) GetStats(c *gin.Context) {
 		return
 	}
 
-	stats, err := h.service.GetLearningLogStats(userID)
+	stats, err := h.getStats.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
