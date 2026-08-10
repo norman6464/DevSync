@@ -123,48 +123,7 @@ func TestBookmarkStats_GetStats_ServiceError(t *testing.T) {
 
 // LearningResourceStats のハンドラーテストは learning_resource_stats_test.go（DIP 版）へ移設。
 
-// ---------- MentionStats ----------
-
-type MockMentionStatsService struct{ mock.Mock }
-
-func (m *MockMentionStatsService) GetMentionStats(userID uint) (*model.MentionStats, error) {
-	args := m.Called(userID)
-	if v := args.Get(0); v != nil {
-		return v.(*model.MentionStats), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-func TestMentionStats_GetStats_Success(t *testing.T) {
-	svc := new(MockMentionStatsService)
-	h := NewMentionStatsHandler(svc)
-	svc.On("GetMentionStats", uint(5)).Return(&model.MentionStats{}, nil)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/mentions", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/mentions", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestMentionStats_GetStats_InvalidID(t *testing.T) {
-	svc := new(MockMentionStatsService)
-	h := NewMentionStatsHandler(svc)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/mentions", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/abc/stats/mentions", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestMentionStats_GetStats_ServiceError(t *testing.T) {
-	svc := new(MockMentionStatsService)
-	h := NewMentionStatsHandler(svc)
-	svc.On("GetMentionStats", uint(5)).Return(nil, errors.New("db error"))
-	r := newRouter(1)
-	r.GET("/users/:id/stats/mentions", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/mentions", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
+// MentionStats のハンドラーテストは mention_stats_test.go（DIP 版）へ移設。
 
 // ---------- MessageStats ----------
 
