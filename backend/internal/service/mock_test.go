@@ -2107,22 +2107,6 @@ func (m *MockStudyCircleStatsRepository) GetCircleStats(circleID uint) (*model.S
 }
 
 // ============================================================
-// MockPostStatsRepository は repository.PostStatsRepositoryInterface のテスト用モック実装。
-// ============================================================
-
-type MockPostStatsRepository struct {
-	mock.Mock
-}
-
-func (m *MockPostStatsRepository) GetPostStats(userID uint) (*model.PostStats, error) {
-	args := m.Called(userID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.PostStats), args.Error(1)
-}
-
-// ============================================================
 // MockQAStatsRepository は repository.QAStatsRepositoryInterface のテスト用モック実装。
 // ============================================================
 
