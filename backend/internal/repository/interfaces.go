@@ -439,15 +439,6 @@ type NotificationSettingsRepositoryInterface interface {
 	GetOrCreateDefault(userID uint) (*model.NotificationSettings, error)
 }
 
-// ReminderSettingsRepositoryInterface は学習リマインダー設定データ操作の契約を定義する。
-type ReminderSettingsRepositoryInterface interface {
-	CreateOrUpdate(settings *model.ReminderSettings) error
-	GetByUserID(userID uint) (*model.ReminderSettings, error)
-	GetOrCreateDefault(userID uint) (*model.ReminderSettings, error)
-	GetEnabledSettings() ([]model.ReminderSettings, error)
-	UpdateLastRemindedAt(userID uint) error
-}
-
 // NoteRepositoryInterface は学習ノートデータ操作の契約を定義する。
 type NoteRepositoryInterface interface {
 	Create(note *model.Note) error
