@@ -4,26 +4,33 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// NoteLinkServiceInterface はNoteLinkServiceのインターフェース。
-type NoteLinkServiceInterface interface {
-	CreateLink(sourceNoteID, targetNoteID, userID uint) error
-	GetLinks(sourceNoteID uint) ([]model.NoteLink, error)
-	GetBacklinks(targetNoteID uint) ([]model.NoteLink, error)
-	DeleteLink(sourceNoteID, targetNoteID, userID uint) error
-	GetLinkStats(noteID, userID uint) (*model.NoteLinkStats, error)
-}
 
 // NoteLinkHandler はノート間リンク関連のHTTPハンドラ。
 type NoteLinkHandler struct {
-	service NoteLinkServiceInterface
+	createLink   *usecase.CreateNoteLinkUseCase
+	listLinks    *usecase.ListNoteLinksUseCase
+	listBacklink *usecase.ListNoteBacklinksUseCase
+	stats        *usecase.GetNoteLinkStatsUseCase
+	deleteLink   *usecase.DeleteNoteLinkUseCase
 }
 
 // NewNoteLinkHandler は新しいNoteLinkHandlerインスタンスを生成する。
-func NewNoteLinkHandler(s NoteLinkServiceInterface) *NoteLinkHandler {
-	return &NoteLinkHandler{service: s}
+func NewNoteLinkHandler(
+	createLink *usecase.CreateNoteLinkUseCase,
+	listLinks *usecase.ListNoteLinksUseCase,
+	listBacklink *usecase.ListNoteBacklinksUseCase,
+	stats *usecase.GetNoteLinkStatsUseCase,
+	deleteLink *usecase.DeleteNoteLinkUseCase,
+) *NoteLinkHandler {
+	return &NoteLinkHandler{
+		createLink:   createLink,
+		listLinks:    listLinks,
+		listBacklink: listBacklink,
+		stats:        stats,
+		deleteLink:   deleteLink,
+	}
 }
 
 // CreateLink は新しいリンクを作成する。
@@ -33,14 +40,12 @@ func (h *NoteLinkHandler) CreateLink(c *gin.Context) {
 		return
 	}
 
-	userID := c.GetUint("userID")
-
 	input := bindJSON[dto.CreateNoteLinkRequest](c)
 	if input == nil {
 		return
 	}
 
-	if err := h.service.CreateLink(sourceNoteID, input.TargetNoteID, userID); err != nil {
+	if err := h.createLink.Execute(c.Request.Context(), sourceNoteID, input.TargetNoteID, c.GetUint("userID")); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -55,7 +60,7 @@ func (h *NoteLinkHandler) GetLinks(c *gin.Context) {
 		return
 	}
 
-	links, err := h.service.GetLinks(noteID)
+	links, err := h.listLinks.Execute(c.Request.Context(), noteID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -71,7 +76,7 @@ func (h *NoteLinkHandler) GetBacklinks(c *gin.Context) {
 		return
 	}
 
-	backlinks, err := h.service.GetBacklinks(noteID)
+	backlinks, err := h.listBacklink.Execute(c.Request.Context(), noteID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -87,9 +92,7 @@ func (h *NoteLinkHandler) GetLinkStats(c *gin.Context) {
 		return
 	}
 
-	userID := c.GetUint("userID")
-
-	stats, err := h.service.GetLinkStats(noteID, userID)
+	stats, err := h.stats.Execute(c.Request.Context(), noteID, c.GetUint("userID"))
 	if err != nil {
 		respondError(c, err)
 		return
@@ -109,9 +112,7 @@ func (h *NoteLinkHandler) DeleteLink(c *gin.Context) {
 		return
 	}
 
-	userID := c.GetUint("userID")
-
-	if err := h.service.DeleteLink(sourceNoteID, targetNoteID, userID); err != nil {
+	if err := h.deleteLink.Execute(c.Request.Context(), sourceNoteID, targetNoteID, c.GetUint("userID")); err != nil {
 		respondError(c, err)
 		return
 	}

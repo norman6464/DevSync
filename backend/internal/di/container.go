@@ -147,7 +147,9 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	noteFolderRepo := persistence.NewNoteFolderRepository(db)
 	noteTemplateRepo := repository.NewNoteTemplateRepository(db)
 	learningLogTemplateRepo := repository.NewLearningLogTemplateRepository(db)
-	noteLinkRepo := repository.NewNoteLinkRepository(db)
+	// ノート間リンクはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	noteLinkRepo := persistence.NewNoteLinkRepository(db)
+	noteReader := persistence.NewNoteReader(db)
 	// 投稿シリーズはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	postSeriesRepo := persistence.NewPostSeriesRepository(db)
 
@@ -185,7 +187,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	noteService := service.NewNoteService(noteRepo)
 	noteTemplateService := service.NewNoteTemplateService(noteTemplateRepo, noteService)
 	learningLogTemplateService := service.NewLearningLogTemplateService(learningLogTemplateRepo, learningLogService)
-	noteLinkService := service.NewNoteLinkService(noteLinkRepo, noteRepo)
 
 	// テンプレートロードマップの初期登録
 	go seedTemplateRoadmaps(db, roadmapService)
@@ -291,7 +292,13 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	)
 	c.NoteTemplateHandler = handler.NewNoteTemplateHandler(noteTemplateService)
 	c.LearningLogTemplateHandler = handler.NewLearningLogTemplateHandler(learningLogTemplateService)
-	c.NoteLinkHandler = handler.NewNoteLinkHandler(noteLinkService)
+	c.NoteLinkHandler = handler.NewNoteLinkHandler(
+		usecase.NewCreateNoteLinkUseCase(noteLinkRepo, noteReader),
+		usecase.NewListNoteLinksUseCase(noteLinkRepo),
+		usecase.NewListNoteBacklinksUseCase(noteLinkRepo),
+		usecase.NewGetNoteLinkStatsUseCase(noteLinkRepo, noteReader),
+		usecase.NewDeleteNoteLinkUseCase(noteLinkRepo, noteReader),
+	)
 	c.PostSeriesHandler = handler.NewPostSeriesHandler(
 		usecase.NewCreatePostSeriesUseCase(postSeriesRepo),
 		usecase.NewGetPostSeriesUseCase(postSeriesRepo),

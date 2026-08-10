@@ -511,17 +511,6 @@ type NoteVersionRepositoryInterface interface {
 	GetLatestVersionNumber(noteID uint) (int, error)
 }
 
-// NoteLinkRepositoryInterface はノート間リンクデータ操作の契約を定義する。
-type NoteLinkRepositoryInterface interface {
-	Create(link *model.NoteLink) error
-	FindBySourceNoteID(sourceNoteID uint) ([]model.NoteLink, error)
-	FindByTargetNoteID(targetNoteID uint) ([]model.NoteLink, error)
-	Delete(sourceNoteID, targetNoteID uint) error
-	Exists(sourceNoteID, targetNoteID uint) (bool, error)
-	CountBySourceNoteID(noteID uint) (int64, error)
-	CountByTargetNoteID(noteID uint) (int64, error)
-}
-
 // LearningLogTemplateRepositoryInterface は学習ログテンプレートデータ操作の契約を定義する。
 type LearningLogTemplateRepositoryInterface interface {
 	Create(template *model.LearningLogTemplate) error
