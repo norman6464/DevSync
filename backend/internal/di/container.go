@@ -467,7 +467,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	postTemplateService := service.NewPostTemplateService(postTemplateRepo)
 	c.PostTemplateHandler = handler.NewPostTemplateHandler(postTemplateService)
 
-	// ウィジェット設定サービス
 	// ウィジェット設定はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	widgetSettingsRepo := persistence.NewWidgetSettingsRepository(db)
 	c.WidgetSettingsHandler = handler.NewWidgetSettingsHandler(
