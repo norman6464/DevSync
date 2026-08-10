@@ -524,20 +524,6 @@ type YouTubeVideoRepositoryInterface interface {
 
 
 
-// BookmarkCollectionRepositoryInterface はブックマークコレクションデータ操作の契約を定義する。
-type BookmarkCollectionRepositoryInterface interface {
-	Create(collection *model.BookmarkCollection) error
-	FindByID(id uint) (*model.BookmarkCollection, error)
-	FindByUserID(userID uint) ([]model.BookmarkCollection, error)
-	Update(collection *model.BookmarkCollection) error
-	Delete(id uint) error
-	AddPost(item *model.BookmarkCollectionItem) error
-	RemovePost(collectionID, postID uint) error
-	GetPosts(collectionID uint, limit, offset int) ([]model.Post, int64, error)
-	HasPost(collectionID, postID uint) (bool, error)
-	CountByUserID(userID uint) (int64, error)
-}
-
 // PostTemplateRepositoryInterface は投稿テンプレートデータ操作の契約を定義する。
 type PostTemplateRepositoryInterface interface {
 	Create(template *model.PostTemplate) error

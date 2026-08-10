@@ -1,60 +1,87 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
-// ============================================================
-// MockBookmarkCollectionService
-// ============================================================
+// mockBookmarkCollectionRepo は usecase/repository.BookmarkCollectionRepository のモック（ctx 付き）。
+type mockBookmarkCollectionRepo struct{ mock.Mock }
 
-type MockBookmarkCollectionService struct{ mock.Mock }
-
-func (m *MockBookmarkCollectionService) Create(collection *model.BookmarkCollection) error {
-	return m.Called(collection).Error(0)
+func (m *mockBookmarkCollectionRepo) Create(ctx context.Context, collection *model.BookmarkCollection) error {
+	return m.Called(ctx, collection).Error(0)
 }
 
-func (m *MockBookmarkCollectionService) GetByUserID(userID uint) ([]model.BookmarkCollection, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.BookmarkCollection), args.Error(1)
+func (m *mockBookmarkCollectionRepo) FindByID(ctx context.Context, id uint) (*model.BookmarkCollection, error) {
+	args := m.Called(ctx, id)
+	c, _ := args.Get(0).(*model.BookmarkCollection)
+	return c, args.Error(1)
 }
 
-func (m *MockBookmarkCollectionService) Update(id, userID uint, updates *model.BookmarkCollection) (*model.BookmarkCollection, error) {
-	args := m.Called(id, userID, updates)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.BookmarkCollection), args.Error(1)
+func (m *mockBookmarkCollectionRepo) FindByUserID(ctx context.Context, userID uint) ([]model.BookmarkCollection, error) {
+	args := m.Called(ctx, userID)
+	c, _ := args.Get(0).([]model.BookmarkCollection)
+	return c, args.Error(1)
 }
 
-func (m *MockBookmarkCollectionService) Delete(id, userID uint) error {
-	return m.Called(id, userID).Error(0)
+func (m *mockBookmarkCollectionRepo) Update(ctx context.Context, collection *model.BookmarkCollection) error {
+	return m.Called(ctx, collection).Error(0)
 }
 
-func (m *MockBookmarkCollectionService) AddPost(collectionID, postID, userID uint) error {
-	return m.Called(collectionID, postID, userID).Error(0)
+func (m *mockBookmarkCollectionRepo) Delete(ctx context.Context, id uint) error {
+	return m.Called(ctx, id).Error(0)
 }
 
-func (m *MockBookmarkCollectionService) RemovePost(collectionID, postID, userID uint) error {
-	return m.Called(collectionID, postID, userID).Error(0)
+func (m *mockBookmarkCollectionRepo) AddPost(ctx context.Context, item *model.BookmarkCollectionItem) error {
+	return m.Called(ctx, item).Error(0)
 }
 
-func (m *MockBookmarkCollectionService) GetPosts(collectionID uint, limit, offset int) ([]model.Post, int64, error) {
-	args := m.Called(collectionID, limit, offset)
-	return args.Get(0).([]model.Post), args.Get(1).(int64), args.Error(2)
+func (m *mockBookmarkCollectionRepo) RemovePost(ctx context.Context, collectionID, postID uint) error {
+	return m.Called(ctx, collectionID, postID).Error(0)
 }
-func (m *MockBookmarkCollectionService) CountByUserID(userID uint) (int64, error) {
-	args := m.Called(userID)
+
+func (m *mockBookmarkCollectionRepo) GetPosts(ctx context.Context, collectionID uint, limit, offset int) ([]model.Post, int64, error) {
+	args := m.Called(ctx, collectionID, limit, offset)
+	p, _ := args.Get(0).([]model.Post)
+	return p, args.Get(1).(int64), args.Error(2)
+}
+
+func (m *mockBookmarkCollectionRepo) HasPost(ctx context.Context, collectionID, postID uint) (bool, error) {
+	args := m.Called(ctx, collectionID, postID)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *mockBookmarkCollectionRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
+	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)
+}
+
+// newBookmarkCollectionHandlerWithRepo は本物の usecase と port モックで handler を組む。
+func newBookmarkCollectionHandlerWithRepo(repo *mockBookmarkCollectionRepo) *BookmarkCollectionHandler {
+	return NewBookmarkCollectionHandler(
+		usecase.NewCreateBookmarkCollectionUseCase(repo),
+		usecase.NewListBookmarkCollectionsUseCase(repo),
+		usecase.NewUpdateBookmarkCollectionUseCase(repo),
+		usecase.NewDeleteBookmarkCollectionUseCase(repo),
+		usecase.NewAddPostToBookmarkCollectionUseCase(repo),
+		usecase.NewRemovePostFromBookmarkCollectionUseCase(repo),
+		usecase.NewListBookmarkCollectionPostsUseCase(repo),
+		usecase.NewCountBookmarkCollectionsUseCase(repo),
+	)
+}
+
+// ownedBookmarkCollection は認証ユーザー（userID=1）が所有するコレクションを返す。
+func ownedBookmarkCollection() *model.BookmarkCollection {
+	return &model.BookmarkCollection{Name: "Go学習", UserID: 1}
 }
 
 // ============================================================
@@ -62,10 +89,10 @@ func (m *MockBookmarkCollectionService) CountByUserID(userID uint) (int64, error
 // ============================================================
 
 func TestBookmarkCollection_Create_Success(t *testing.T) {
-	mockSvc := new(MockBookmarkCollectionService)
-	h := NewBookmarkCollectionHandler(mockSvc)
+	mockSvc := new(mockBookmarkCollectionRepo)
+	h := newBookmarkCollectionHandlerWithRepo(mockSvc)
 
-	mockSvc.On("Create", mock.MatchedBy(func(c *model.BookmarkCollection) bool {
+	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(c *model.BookmarkCollection) bool {
 		return c.UserID == 1 && c.Name == "Go学習"
 	})).Return(nil)
 
@@ -83,14 +110,14 @@ func TestBookmarkCollection_Create_Success(t *testing.T) {
 }
 
 func TestBookmarkCollection_GetMyCollections_Success(t *testing.T) {
-	mockSvc := new(MockBookmarkCollectionService)
-	h := NewBookmarkCollectionHandler(mockSvc)
+	mockSvc := new(mockBookmarkCollectionRepo)
+	h := newBookmarkCollectionHandlerWithRepo(mockSvc)
 
 	collections := []model.BookmarkCollection{
 		{ID: 1, UserID: 1, Name: "Go"},
 		{ID: 2, UserID: 1, Name: "React"},
 	}
-	mockSvc.On("GetByUserID", uint(1)).Return(collections, nil)
+	mockSvc.On("FindByUserID", mock.Anything, uint(1)).Return(collections, nil)
 
 	r := gin.New()
 	r.GET("/bookmark-collections", authMiddleware(1), h.GetMyCollections)
@@ -104,11 +131,11 @@ func TestBookmarkCollection_GetMyCollections_Success(t *testing.T) {
 }
 
 func TestBookmarkCollection_Update_Success(t *testing.T) {
-	mockSvc := new(MockBookmarkCollectionService)
-	h := NewBookmarkCollectionHandler(mockSvc)
+	mockSvc := new(mockBookmarkCollectionRepo)
+	h := newBookmarkCollectionHandlerWithRepo(mockSvc)
 
-	updated := &model.BookmarkCollection{ID: 1, UserID: 1, Name: "新名"}
-	mockSvc.On("Update", uint(1), uint(1), mock.AnythingOfType("*model.BookmarkCollection")).Return(updated, nil)
+	mockSvc.On("FindByID", mock.Anything, uint(1)).Return(ownedBookmarkCollection(), nil)
+	mockSvc.On("Update", mock.Anything, mock.AnythingOfType("*model.BookmarkCollection")).Return(nil)
 
 	r := gin.New()
 	r.PUT("/bookmark-collections/:id", authMiddleware(1), h.Update)
@@ -127,11 +154,11 @@ func TestBookmarkCollection_Update_Success(t *testing.T) {
 }
 
 func TestBookmarkCollection_Update_Forbidden(t *testing.T) {
-	mockSvc := new(MockBookmarkCollectionService)
-	h := NewBookmarkCollectionHandler(mockSvc)
+	mockSvc := new(mockBookmarkCollectionRepo)
+	h := newBookmarkCollectionHandlerWithRepo(mockSvc)
 
-	mockSvc.On("Update", uint(1), uint(1), mock.AnythingOfType("*model.BookmarkCollection")).
-		Return(nil, domain.ErrForbidden)
+	// 他人のコレクションなので所有権チェックで弾かれ、更新は呼ばれない
+	mockSvc.On("FindByID", mock.Anything, uint(1)).Return(&model.BookmarkCollection{ID: 1, UserID: 99, Name: "他人の"}, nil)
 
 	r := gin.New()
 	r.PUT("/bookmark-collections/:id", authMiddleware(1), h.Update)
@@ -146,10 +173,11 @@ func TestBookmarkCollection_Update_Forbidden(t *testing.T) {
 }
 
 func TestBookmarkCollection_Delete_Success(t *testing.T) {
-	mockSvc := new(MockBookmarkCollectionService)
-	h := NewBookmarkCollectionHandler(mockSvc)
+	mockSvc := new(mockBookmarkCollectionRepo)
+	h := newBookmarkCollectionHandlerWithRepo(mockSvc)
 
-	mockSvc.On("Delete", uint(1), uint(1)).Return(nil)
+	mockSvc.On("FindByID", mock.Anything, uint(1)).Return(ownedBookmarkCollection(), nil)
+	mockSvc.On("Delete", mock.Anything, uint(1)).Return(nil)
 
 	r := gin.New()
 	r.DELETE("/bookmark-collections/:id", authMiddleware(1), h.Delete)
@@ -162,10 +190,12 @@ func TestBookmarkCollection_Delete_Success(t *testing.T) {
 }
 
 func TestBookmarkCollection_AddPost_Success(t *testing.T) {
-	mockSvc := new(MockBookmarkCollectionService)
-	h := NewBookmarkCollectionHandler(mockSvc)
+	mockSvc := new(mockBookmarkCollectionRepo)
+	h := newBookmarkCollectionHandlerWithRepo(mockSvc)
 
-	mockSvc.On("AddPost", uint(1), uint(10), uint(1)).Return(nil)
+	mockSvc.On("FindByID", mock.Anything, uint(1)).Return(ownedBookmarkCollection(), nil)
+	mockSvc.On("HasPost", mock.Anything, uint(1), uint(10)).Return(false, nil)
+	mockSvc.On("AddPost", mock.Anything, mock.AnythingOfType("*model.BookmarkCollectionItem")).Return(nil)
 
 	r := gin.New()
 	r.POST("/bookmark-collections/:id/posts/:postId", authMiddleware(1), h.AddPost)
@@ -178,10 +208,11 @@ func TestBookmarkCollection_AddPost_Success(t *testing.T) {
 }
 
 func TestBookmarkCollection_AddPost_Conflict(t *testing.T) {
-	mockSvc := new(MockBookmarkCollectionService)
-	h := NewBookmarkCollectionHandler(mockSvc)
+	mockSvc := new(mockBookmarkCollectionRepo)
+	h := newBookmarkCollectionHandlerWithRepo(mockSvc)
 
-	mockSvc.On("AddPost", uint(1), uint(10), uint(1)).Return(domain.ErrConflict)
+	mockSvc.On("FindByID", mock.Anything, uint(1)).Return(ownedBookmarkCollection(), nil)
+	mockSvc.On("HasPost", mock.Anything, uint(1), uint(10)).Return(true, nil)
 
 	r := gin.New()
 	r.POST("/bookmark-collections/:id/posts/:postId", authMiddleware(1), h.AddPost)
@@ -194,14 +225,14 @@ func TestBookmarkCollection_AddPost_Conflict(t *testing.T) {
 }
 
 func TestBookmarkCollection_GetPosts_Success(t *testing.T) {
-	mockSvc := new(MockBookmarkCollectionService)
-	h := NewBookmarkCollectionHandler(mockSvc)
+	mockSvc := new(mockBookmarkCollectionRepo)
+	h := newBookmarkCollectionHandlerWithRepo(mockSvc)
 
 	posts := []model.Post{
 		{ID: 1, Title: "投稿1"},
 		{ID: 2, Title: "投稿2"},
 	}
-	mockSvc.On("GetPosts", uint(1), 20, 0).Return(posts, int64(2), nil)
+	mockSvc.On("GetPosts", mock.Anything, uint(1), 20, 0).Return(posts, int64(2), nil)
 
 	r := gin.New()
 	r.GET("/bookmark-collections/:id/posts", h.GetPosts)
@@ -222,10 +253,11 @@ func TestBookmarkCollection_GetPosts_Success(t *testing.T) {
 // ============================================================
 
 func TestBookmarkCollection_RemovePost_Success(t *testing.T) {
-	mockSvc := new(MockBookmarkCollectionService)
-	h := NewBookmarkCollectionHandler(mockSvc)
+	mockSvc := new(mockBookmarkCollectionRepo)
+	h := newBookmarkCollectionHandlerWithRepo(mockSvc)
 
-	mockSvc.On("RemovePost", uint(1), uint(10), uint(1)).Return(nil)
+	mockSvc.On("FindByID", mock.Anything, uint(1)).Return(ownedBookmarkCollection(), nil)
+	mockSvc.On("RemovePost", mock.Anything, uint(1), uint(10)).Return(nil)
 
 	r := gin.New()
 	r.DELETE("/bookmark-collections/:id/posts/:postId", authMiddleware(1), h.RemovePost)
@@ -239,8 +271,8 @@ func TestBookmarkCollection_RemovePost_Success(t *testing.T) {
 }
 
 func TestBookmarkCollection_RemovePost_InvalidCollectionID(t *testing.T) {
-	mockSvc := new(MockBookmarkCollectionService)
-	h := NewBookmarkCollectionHandler(mockSvc)
+	mockSvc := new(mockBookmarkCollectionRepo)
+	h := newBookmarkCollectionHandlerWithRepo(mockSvc)
 
 	r := gin.New()
 	r.DELETE("/bookmark-collections/:id/posts/:postId", authMiddleware(1), h.RemovePost)
@@ -253,8 +285,8 @@ func TestBookmarkCollection_RemovePost_InvalidCollectionID(t *testing.T) {
 }
 
 func TestBookmarkCollection_RemovePost_InvalidPostID(t *testing.T) {
-	mockSvc := new(MockBookmarkCollectionService)
-	h := NewBookmarkCollectionHandler(mockSvc)
+	mockSvc := new(mockBookmarkCollectionRepo)
+	h := newBookmarkCollectionHandlerWithRepo(mockSvc)
 
 	r := gin.New()
 	r.DELETE("/bookmark-collections/:id/posts/:postId", authMiddleware(1), h.RemovePost)
@@ -267,10 +299,10 @@ func TestBookmarkCollection_RemovePost_InvalidPostID(t *testing.T) {
 }
 
 func TestBookmarkCollection_RemovePost_ServiceError(t *testing.T) {
-	mockSvc := new(MockBookmarkCollectionService)
-	h := NewBookmarkCollectionHandler(mockSvc)
+	mockSvc := new(mockBookmarkCollectionRepo)
+	h := newBookmarkCollectionHandlerWithRepo(mockSvc)
 
-	mockSvc.On("RemovePost", uint(1), uint(10), uint(1)).Return(domain.ErrForbidden)
+	mockSvc.On("FindByID", mock.Anything, uint(1)).Return(&model.BookmarkCollection{Name: "他人の", UserID: 99}, nil)
 
 	r := gin.New()
 	r.DELETE("/bookmark-collections/:id/posts/:postId", authMiddleware(1), h.RemovePost)
@@ -287,10 +319,10 @@ func TestBookmarkCollection_RemovePost_ServiceError(t *testing.T) {
 // ============================================================
 
 func TestBookmarkCollection_Create_ServiceError(t *testing.T) {
-	mockSvc := new(MockBookmarkCollectionService)
-	h := NewBookmarkCollectionHandler(mockSvc)
+	mockSvc := new(mockBookmarkCollectionRepo)
+	h := newBookmarkCollectionHandlerWithRepo(mockSvc)
 
-	mockSvc.On("Create", mock.AnythingOfType("*model.BookmarkCollection")).Return(errors.New("db error"))
+	mockSvc.On("Create", mock.Anything, mock.AnythingOfType("*model.BookmarkCollection")).Return(errors.New("db error"))
 
 	r := gin.New()
 	r.POST("/bookmark-collections", authMiddleware(1), h.Create)
@@ -305,10 +337,10 @@ func TestBookmarkCollection_Create_ServiceError(t *testing.T) {
 }
 
 func TestBookmarkCollection_GetMyCollections_ServiceError(t *testing.T) {
-	mockSvc := new(MockBookmarkCollectionService)
-	h := NewBookmarkCollectionHandler(mockSvc)
+	mockSvc := new(mockBookmarkCollectionRepo)
+	h := newBookmarkCollectionHandlerWithRepo(mockSvc)
 
-	mockSvc.On("GetByUserID", uint(1)).Return([]model.BookmarkCollection(nil), errors.New("db error"))
+	mockSvc.On("FindByUserID", mock.Anything, uint(1)).Return([]model.BookmarkCollection(nil), errors.New("db error"))
 
 	r := gin.New()
 	r.GET("/bookmark-collections", authMiddleware(1), h.GetMyCollections)
@@ -321,10 +353,10 @@ func TestBookmarkCollection_GetMyCollections_ServiceError(t *testing.T) {
 }
 
 func TestBookmarkCollection_Delete_ServiceError(t *testing.T) {
-	mockSvc := new(MockBookmarkCollectionService)
-	h := NewBookmarkCollectionHandler(mockSvc)
+	mockSvc := new(mockBookmarkCollectionRepo)
+	h := newBookmarkCollectionHandlerWithRepo(mockSvc)
 
-	mockSvc.On("Delete", uint(1), uint(1)).Return(domain.ErrForbidden)
+	mockSvc.On("FindByID", mock.Anything, uint(1)).Return(&model.BookmarkCollection{Name: "他人の", UserID: 99}, nil)
 
 	r := gin.New()
 	r.DELETE("/bookmark-collections/:id", authMiddleware(1), h.Delete)
@@ -337,8 +369,8 @@ func TestBookmarkCollection_Delete_ServiceError(t *testing.T) {
 }
 
 func TestBookmarkCollection_Delete_InvalidID(t *testing.T) {
-	mockSvc := new(MockBookmarkCollectionService)
-	h := NewBookmarkCollectionHandler(mockSvc)
+	mockSvc := new(mockBookmarkCollectionRepo)
+	h := newBookmarkCollectionHandlerWithRepo(mockSvc)
 
 	r := gin.New()
 	r.DELETE("/bookmark-collections/:id", authMiddleware(1), h.Delete)
@@ -351,10 +383,10 @@ func TestBookmarkCollection_Delete_InvalidID(t *testing.T) {
 }
 
 func TestBookmarkCollection_GetPosts_ServiceError(t *testing.T) {
-	mockSvc := new(MockBookmarkCollectionService)
-	h := NewBookmarkCollectionHandler(mockSvc)
+	mockSvc := new(mockBookmarkCollectionRepo)
+	h := newBookmarkCollectionHandlerWithRepo(mockSvc)
 
-	mockSvc.On("GetPosts", uint(1), 20, 0).Return([]model.Post(nil), int64(0), errors.New("db error"))
+	mockSvc.On("GetPosts", mock.Anything, uint(1), 20, 0).Return([]model.Post(nil), int64(0), errors.New("db error"))
 
 	r := gin.New()
 	r.GET("/bookmark-collections/:id/posts", h.GetPosts)
@@ -367,8 +399,8 @@ func TestBookmarkCollection_GetPosts_ServiceError(t *testing.T) {
 }
 
 func TestBookmarkCollection_GetPosts_InvalidID(t *testing.T) {
-	mockSvc := new(MockBookmarkCollectionService)
-	h := NewBookmarkCollectionHandler(mockSvc)
+	mockSvc := new(mockBookmarkCollectionRepo)
+	h := newBookmarkCollectionHandlerWithRepo(mockSvc)
 
 	r := gin.New()
 	r.GET("/bookmark-collections/:id/posts", h.GetPosts)
@@ -385,10 +417,10 @@ func TestBookmarkCollection_GetPosts_InvalidID(t *testing.T) {
 // ============================================================
 
 func TestBookmarkCollection_GetMyCount_Success(t *testing.T) {
-	mockSvc := new(MockBookmarkCollectionService)
-	h := NewBookmarkCollectionHandler(mockSvc)
+	mockSvc := new(mockBookmarkCollectionRepo)
+	h := newBookmarkCollectionHandlerWithRepo(mockSvc)
 
-	mockSvc.On("CountByUserID", uint(1)).Return(int64(3), nil)
+	mockSvc.On("CountByUserID", mock.Anything, uint(1)).Return(int64(3), nil)
 
 	r := newRouter(1)
 	r.GET("/bookmark-collections/my/count", h.GetMyCount)
@@ -400,10 +432,10 @@ func TestBookmarkCollection_GetMyCount_Success(t *testing.T) {
 }
 
 func TestBookmarkCollection_GetMyCount_ServiceError(t *testing.T) {
-	mockSvc := new(MockBookmarkCollectionService)
-	h := NewBookmarkCollectionHandler(mockSvc)
+	mockSvc := new(mockBookmarkCollectionRepo)
+	h := newBookmarkCollectionHandlerWithRepo(mockSvc)
 
-	mockSvc.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+	mockSvc.On("CountByUserID", mock.Anything, uint(1)).Return(int64(0), errors.New("db error"))
 
 	r := newRouter(1)
 	r.GET("/bookmark-collections/my/count", h.GetMyCount)
