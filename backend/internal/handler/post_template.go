@@ -4,25 +4,33 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// PostTemplateServiceInterface はPostTemplateHandlerが依存するサービスのインターフェース。
-type PostTemplateServiceInterface interface {
-	Create(tmpl *model.PostTemplate) error
-	GetByID(id, userID uint) (*model.PostTemplate, error)
-	GetByUserID(userID uint, limit, offset int) ([]model.PostTemplate, int64, error)
-	Update(id, userID uint, updates *model.PostTemplate) (*model.PostTemplate, error)
-	Delete(id, userID uint) error
-}
-
-// PostTemplateHandler は投稿テンプレート関連のHTTPハンドラ。
+// PostTemplateHandler は投稿テンプレート関連の HTTP ハンドラ。
 type PostTemplateHandler struct {
-	service PostTemplateServiceInterface
+	create *usecase.CreatePostTemplateUseCase
+	get    *usecase.GetPostTemplateUseCase
+	list   *usecase.ListPostTemplatesUseCase
+	update *usecase.UpdatePostTemplateUseCase
+	delete *usecase.DeletePostTemplateUseCase
 }
 
-// NewPostTemplateHandler は新しいPostTemplateHandlerインスタンスを生成する。
-func NewPostTemplateHandler(s PostTemplateServiceInterface) *PostTemplateHandler {
-	return &PostTemplateHandler{service: s}
+// NewPostTemplateHandler は PostTemplateHandler を生成する。
+func NewPostTemplateHandler(
+	create *usecase.CreatePostTemplateUseCase,
+	get *usecase.GetPostTemplateUseCase,
+	list *usecase.ListPostTemplatesUseCase,
+	update *usecase.UpdatePostTemplateUseCase,
+	deleteUC *usecase.DeletePostTemplateUseCase,
+) *PostTemplateHandler {
+	return &PostTemplateHandler{
+		create: create,
+		get:    get,
+		list:   list,
+		update: update,
+		delete: deleteUC,
+	}
 }
 
 // Create は新しい投稿テンプレートを作成する。
@@ -41,7 +49,7 @@ func (h *PostTemplateHandler) Create(c *gin.Context) {
 		ContentTemplate: input.ContentTemplate,
 	}
 
-	if err := h.service.Create(tmpl); err != nil {
+	if err := h.create.Execute(c.Request.Context(), tmpl); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -54,7 +62,7 @@ func (h *PostTemplateHandler) GetMyTemplates(c *gin.Context) {
 	userID := c.GetUint("userID")
 	limit, offset := parseLimitOffset(c)
 
-	templates, total, err := h.service.GetByUserID(userID, limit, offset)
+	templates, total, err := h.list.Execute(c.Request.Context(), userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -70,7 +78,10 @@ func (h *PostTemplateHandler) GetMyTemplates(c *gin.Context) {
 
 // GetByID は指定IDの投稿テンプレートを取得する。
 func (h *PostTemplateHandler) GetByID(c *gin.Context) {
-	handleGetByID(c, h.service.GetByID)
+	ctx := c.Request.Context()
+	handleGetByID(c, func(id, userID uint) (*model.PostTemplate, error) {
+		return h.get.Execute(ctx, id, userID)
+	})
 }
 
 // Update は指定された投稿テンプレートを更新する。
@@ -97,7 +108,7 @@ func (h *PostTemplateHandler) Update(c *gin.Context) {
 		updates.ContentTemplate = *input.ContentTemplate
 	}
 
-	tmpl, err := h.service.Update(id, userID, updates)
+	tmpl, err := h.update.Execute(c.Request.Context(), id, userID, updates)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -108,5 +119,8 @@ func (h *PostTemplateHandler) Update(c *gin.Context) {
 
 // Delete は指定された投稿テンプレートを削除する。
 func (h *PostTemplateHandler) Delete(c *gin.Context) {
-	handleDelete(c, h.service.Delete)
+	ctx := c.Request.Context()
+	handleDelete(c, func(id, userID uint) error {
+		return h.delete.Execute(ctx, id, userID)
+	})
 }
