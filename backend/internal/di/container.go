@@ -373,9 +373,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewGetFollowStatsUseCase(followStatsRepo),
 	)
 
-	roadmapStatsRepo := repository.NewRoadmapStatsRepository(db)
-	roadmapStatsService := service.NewRoadmapStatsService(roadmapStatsRepo)
-	c.RoadmapStatsHandler = handler.NewRoadmapStatsHandler(roadmapStatsService)
+	// ロードマップ統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	roadmapStatsRepo := persistence.NewRoadmapStatsRepository(db)
+	c.RoadmapStatsHandler = handler.NewRoadmapStatsHandler(
+		usecase.NewGetRoadmapStatsUseCase(roadmapStatsRepo),
+	)
 
 	// 学習ログ統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	learningLogStatsRepo := persistence.NewLearningLogStatsRepository(db)

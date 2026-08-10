@@ -573,10 +573,6 @@ type YouTubeVideoRepositoryInterface interface {
 
 
 
-// RoadmapStatsRepositoryInterface はユーザーロードマップ統計データ操作の契約を定義する。
-type RoadmapStatsRepositoryInterface interface {
-	GetRoadmapStats(userID uint) (*model.RoadmapStats, error)
-}
 
 
 

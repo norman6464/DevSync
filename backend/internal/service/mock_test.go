@@ -2090,21 +2090,6 @@ func (m *MockStudyCircleStatsRepository) GetCircleStats(circleID uint) (*model.S
 	return args.Get(0).(*model.StudyCircleStats), args.Error(1)
 }
 
-// MockRoadmapStatsRepository は repository.RoadmapStatsRepositoryInterface のテスト用モック実装。
-// ============================================================
-
-type MockRoadmapStatsRepository struct {
-	mock.Mock
-}
-
-func (m *MockRoadmapStatsRepository) GetRoadmapStats(userID uint) (*model.RoadmapStats, error) {
-	args := m.Called(userID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.RoadmapStats), args.Error(1)
-}
-
 // MockReactionStatsRepository は repository.ReactionStatsRepositoryInterface のテスト用モック実装。
 // ============================================================
 
