@@ -63,6 +63,18 @@ func (m *mockBookmarkCollectionRepo) CountByUserID(ctx context.Context, userID u
 	return args.Get(0).(int64), args.Error(1)
 }
 
+// assertForbidden はエラーが所有権違反（Forbidden）であることを確認する。
+func assertForbidden(t *testing.T, err error) {
+	t.Helper()
+	if !assert.Error(t, err) {
+		return
+	}
+	var de *domain.DomainError
+	if assert.ErrorAs(t, err, &de) {
+		assert.Equal(t, domain.ErrCodeForbidden, de.Code)
+	}
+}
+
 func TestCreateBookmarkCollectionUseCase_Execute(t *testing.T) {
 	t.Run("前後の空白を落として作成する", func(t *testing.T) {
 		repo := new(mockBookmarkCollectionRepo)
@@ -129,8 +141,9 @@ func TestUpdateBookmarkCollectionUseCase_Execute(t *testing.T) {
 
 		_, err := uc.Execute(context.Background(), 5, 1, &model.BookmarkCollection{Name: "新名"})
 
-		assert.Error(t, err)
+		assertForbidden(t, err)
 		repo.AssertNotCalled(t, "Update")
+		repo.AssertExpectations(t)
 	})
 }
 
@@ -140,8 +153,9 @@ func TestDeleteBookmarkCollectionUseCase_Execute(t *testing.T) {
 		repo.On("FindByID", mock.Anything, uint(5)).Return(&model.BookmarkCollection{UserID: 99}, nil)
 		uc := usecase.NewDeleteBookmarkCollectionUseCase(repo)
 
-		assert.Error(t, uc.Execute(context.Background(), 5, 1))
+		assertForbidden(t, uc.Execute(context.Background(), 5, 1))
 		repo.AssertNotCalled(t, "Delete")
+		repo.AssertExpectations(t)
 	})
 }
 
@@ -174,6 +188,7 @@ func TestAddPostToBookmarkCollectionUseCase_Execute(t *testing.T) {
 			assert.Equal(t, domain.ErrCodeConflict, de.Code)
 		}
 		repo.AssertNotCalled(t, "AddPost")
+		repo.AssertExpectations(t)
 	})
 
 	t.Run("他人のコレクションは 403（存在確認もしない）", func(t *testing.T) {
@@ -181,9 +196,10 @@ func TestAddPostToBookmarkCollectionUseCase_Execute(t *testing.T) {
 		repo.On("FindByID", mock.Anything, uint(5)).Return(&model.BookmarkCollection{UserID: 99}, nil)
 		uc := usecase.NewAddPostToBookmarkCollectionUseCase(repo)
 
-		assert.Error(t, uc.Execute(context.Background(), 5, 10, 1))
+		assertForbidden(t, uc.Execute(context.Background(), 5, 10, 1))
 		repo.AssertNotCalled(t, "HasPost")
 		repo.AssertNotCalled(t, "AddPost")
+		repo.AssertExpectations(t)
 	})
 }
 
@@ -193,7 +209,8 @@ func TestRemovePostFromBookmarkCollectionUseCase_Execute(t *testing.T) {
 		repo.On("FindByID", mock.Anything, uint(5)).Return(&model.BookmarkCollection{UserID: 99}, nil)
 		uc := usecase.NewRemovePostFromBookmarkCollectionUseCase(repo)
 
-		assert.Error(t, uc.Execute(context.Background(), 5, 10, 1))
+		assertForbidden(t, uc.Execute(context.Background(), 5, 10, 1))
 		repo.AssertNotCalled(t, "RemovePost")
+		repo.AssertExpectations(t)
 	})
 }
