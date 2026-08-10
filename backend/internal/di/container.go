@@ -387,9 +387,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	notificationStatsService := service.NewNotificationStatsService(notificationStatsRepo)
 	c.NotificationStatsHandler = handler.NewNotificationStatsHandler(notificationStatsService)
 
-	messageStatsRepo := repository.NewMessageStatsRepository(db)
-	messageStatsService := service.NewMessageStatsService(messageStatsRepo)
-	c.MessageStatsHandler = handler.NewMessageStatsHandler(messageStatsService)
+	// メッセージ統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	messageStatsRepo := persistence.NewMessageStatsRepository(db)
+	c.MessageStatsHandler = handler.NewMessageStatsHandler(
+		usecase.NewGetMessageStatsUseCase(messageStatsRepo),
+	)
 
 	// メンション統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	mentionStatsRepo := persistence.NewMentionStatsRepository(db)
