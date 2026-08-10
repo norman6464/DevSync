@@ -196,22 +196,33 @@ func (uc *UpdateNoteFolderUseCase) Execute(ctx context.Context, in UpdateNoteFol
 	return folder, nil
 }
 
-// isDescendant は targetID が ancestorID の子孫かを再帰的に判定する。
+// isDescendant は targetID が ancestorID の子孫かを判定する。
+//
+// 既に閉路を含むデータに対しても必ず停止するよう、訪問済みの ID を記録しながら
+// 幅優先で辿る。以前は再帰で辿っており、閉路があると停止せずスタックを食い潰して
+// プロセスごと落ちていた（閉路は木の更新が同時に走ったときに生じ得る）。
+// 閉路の無い正常なデータに対する判定結果は従来と同じ。
 func (uc *UpdateNoteFolderUseCase) isDescendant(ctx context.Context, ancestorID, targetID uint) (bool, error) {
-	children, err := uc.folders.FindByParentID(ctx, ancestorID)
-	if err != nil {
-		return false, err
-	}
-	for _, child := range children {
-		if child.ID == targetID {
-			return true, nil
-		}
-		desc, err := uc.isDescendant(ctx, child.ID, targetID)
+	visited := map[uint]bool{ancestorID: true}
+	queue := []uint{ancestorID}
+
+	for len(queue) > 0 {
+		current := queue[0]
+		queue = queue[1:]
+
+		children, err := uc.folders.FindByParentID(ctx, current)
 		if err != nil {
 			return false, err
 		}
-		if desc {
-			return true, nil
+		for _, child := range children {
+			if child.ID == targetID {
+				return true, nil
+			}
+			if visited[child.ID] {
+				continue
+			}
+			visited[child.ID] = true
+			queue = append(queue, child.ID)
 		}
 	}
 	return false, nil

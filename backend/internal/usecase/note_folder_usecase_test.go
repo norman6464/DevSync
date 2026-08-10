@@ -349,6 +349,48 @@ func TestUpdateNoteFolderUseCase_Execute(t *testing.T) {
 		repo.AssertNotCalled(t, "Update")
 	})
 
+	// 既に閉路を含むデータでも停止する（以前は無限再帰でプロセスごと落ちていた）。
+	t.Run("閉路のあるデータでも停止する", func(t *testing.T) {
+		repo := new(mockNoteFolderRepo)
+		repo.On("FindByID", mock.Anything, uint(1)).Return(ownedNoteFolder(), nil)
+		// 1 -> 2 -> 1 の閉路
+		repo.On("FindByParentID", mock.Anything, uint(1)).
+			Return([]model.NoteFolder{{ID: 2, UserID: 1}}, nil)
+		repo.On("FindByParentID", mock.Anything, uint(2)).
+			Return([]model.NoteFolder{{ID: 1, UserID: 1}}, nil)
+		repo.On("Update", mock.Anything, mock.Anything).Return(nil)
+		uc := usecase.NewUpdateNoteFolderUseCase(repo)
+		parent := uint(9)
+
+		_, err := uc.Execute(context.Background(), usecase.UpdateNoteFolderInput{
+			ID: 1, UserID: 1, ParentID: &parent,
+		})
+
+		assert.NoError(t, err)
+		repo.AssertExpectations(t)
+	})
+
+	// 同じフォルダを二度辿らない（閉路ガードが探索を打ち切る）。
+	t.Run("閉路があっても同じフォルダを二度辿らない", func(t *testing.T) {
+		repo := new(mockNoteFolderRepo)
+		repo.On("FindByID", mock.Anything, uint(1)).Return(ownedNoteFolder(), nil)
+		repo.On("FindByParentID", mock.Anything, uint(1)).
+			Return([]model.NoteFolder{{ID: 2, UserID: 1}}, nil).Once()
+		repo.On("FindByParentID", mock.Anything, uint(2)).
+			Return([]model.NoteFolder{{ID: 1, UserID: 1}}, nil).Once()
+		repo.On("Update", mock.Anything, mock.Anything).Return(nil)
+		uc := usecase.NewUpdateNoteFolderUseCase(repo)
+		parent := uint(9)
+
+		_, err := uc.Execute(context.Background(), usecase.UpdateNoteFolderInput{
+			ID: 1, UserID: 1, ParentID: &parent,
+		})
+
+		assert.NoError(t, err)
+		// Once() を超えて呼ばれていないこと＝各ノードを 1 度だけ辿ったこと
+		repo.AssertExpectations(t)
+	})
+
 	t.Run("子孫でない親は設定できる", func(t *testing.T) {
 		repo := new(mockNoteFolderRepo)
 		repo.On("FindByID", mock.Anything, uint(1)).Return(ownedNoteFolder(), nil)
