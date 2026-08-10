@@ -575,13 +575,6 @@ type YouTubeVideoRepositoryInterface interface {
 
 
 
-// ReactionStatsRepositoryInterface はユーザーリアクション集計統計データ操作の契約を定義する。
-type ReactionStatsRepositoryInterface interface {
-	GetReactionStats(userID uint) (*model.ReactionStats, error)
-	GetEmojiBreakdown(userID uint) ([]model.ReactionCount, error)
-	GetTopReactedPosts(userID uint, limit int) ([]model.TopReactedPost, error)
-}
-
 // BookmarkCollectionRepositoryInterface はブックマークコレクションデータ操作の契約を定義する。
 type BookmarkCollectionRepositoryInterface interface {
 	Create(collection *model.BookmarkCollection) error

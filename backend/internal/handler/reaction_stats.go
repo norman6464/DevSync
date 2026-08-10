@@ -2,23 +2,21 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// ReactionStatsServiceInterface はReactionStatsHandlerが依存するサービスメソッドを定義する。
-type ReactionStatsServiceInterface interface {
-	GetReactionStats(userID uint) (*model.ReactionStats, error)
-	GetReactionSummary(userID uint) (*model.ReactionSummary, error)
-}
-
-// ReactionStatsHandler はユーザーリアクション統計関連のHTTPハンドラ。
+// ReactionStatsHandler はユーザーリアクション統計関連の HTTP ハンドラ。
 type ReactionStatsHandler struct {
-	service ReactionStatsServiceInterface
+	getStats   *usecase.GetReactionStatsUseCase
+	getSummary *usecase.GetReactionSummaryUseCase
 }
 
-// NewReactionStatsHandler は新しいReactionStatsHandlerインスタンスを生成する。
-func NewReactionStatsHandler(s ReactionStatsServiceInterface) *ReactionStatsHandler {
-	return &ReactionStatsHandler{service: s}
+// NewReactionStatsHandler は ReactionStatsHandler を生成する。
+func NewReactionStatsHandler(
+	getStats *usecase.GetReactionStatsUseCase,
+	getSummary *usecase.GetReactionSummaryUseCase,
+) *ReactionStatsHandler {
+	return &ReactionStatsHandler{getStats: getStats, getSummary: getSummary}
 }
 
 // GetStats は指定ユーザーのリアクション集計統計を返す。
@@ -28,7 +26,7 @@ func (h *ReactionStatsHandler) GetStats(c *gin.Context) {
 		return
 	}
 
-	stats, err := h.service.GetReactionStats(userID)
+	stats, err := h.getStats.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -44,7 +42,7 @@ func (h *ReactionStatsHandler) GetSummary(c *gin.Context) {
 		return
 	}
 
-	summary, err := h.service.GetReactionSummary(userID)
+	summary, err := h.getSummary.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
