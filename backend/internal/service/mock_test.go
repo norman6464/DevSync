@@ -2152,21 +2152,6 @@ func (m *MockRoadmapStatsRepository) GetRoadmapStats(userID uint) (*model.Roadma
 	return args.Get(0).(*model.RoadmapStats), args.Error(1)
 }
 
-// MockLearningLogStatsRepository は repository.LearningLogStatsRepositoryInterface のテスト用モック実装。
-// ============================================================
-
-type MockLearningLogStatsRepository struct {
-	mock.Mock
-}
-
-func (m *MockLearningLogStatsRepository) GetLearningLogStats(userID uint) (*model.LearningLogStats, error) {
-	args := m.Called(userID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.LearningLogStats), args.Error(1)
-}
-
 // MockNotificationStatsRepository は repository.NotificationStatsRepositoryInterface のテスト用モック実装。
 // ============================================================
 

@@ -590,10 +590,6 @@ type RoadmapStatsRepositoryInterface interface {
 	GetRoadmapStats(userID uint) (*model.RoadmapStats, error)
 }
 
-// LearningLogStatsRepositoryInterface はユーザー学習ログ集計統計データ操作の契約を定義する。
-type LearningLogStatsRepositoryInterface interface {
-	GetLearningLogStats(userID uint) (*model.LearningLogStats, error)
-}
 
 
 // NotificationStatsRepositoryInterface はユーザー通知集計統計データ操作の契約を定義する。

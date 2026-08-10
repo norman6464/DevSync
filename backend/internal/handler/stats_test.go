@@ -119,48 +119,7 @@ func TestBookmarkStats_GetStats_ServiceError(t *testing.T) {
 
 // FollowStats のハンドラーテストは follow_stats_test.go（DIP 版）へ移設。
 
-// ---------- LearningLogStats ----------
-
-type MockLearningLogStatsService struct{ mock.Mock }
-
-func (m *MockLearningLogStatsService) GetLearningLogStats(userID uint) (*model.LearningLogStats, error) {
-	args := m.Called(userID)
-	if v := args.Get(0); v != nil {
-		return v.(*model.LearningLogStats), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-func TestLearningLogStats_GetStats_Success(t *testing.T) {
-	svc := new(MockLearningLogStatsService)
-	h := NewLearningLogStatsHandler(svc)
-	svc.On("GetLearningLogStats", uint(5)).Return(&model.LearningLogStats{}, nil)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/logs", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/logs", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestLearningLogStats_GetStats_InvalidID(t *testing.T) {
-	svc := new(MockLearningLogStatsService)
-	h := NewLearningLogStatsHandler(svc)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/logs", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/abc/stats/logs", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestLearningLogStats_GetStats_ServiceError(t *testing.T) {
-	svc := new(MockLearningLogStatsService)
-	h := NewLearningLogStatsHandler(svc)
-	svc.On("GetLearningLogStats", uint(5)).Return(nil, errors.New("db error"))
-	r := newRouter(1)
-	r.GET("/users/:id/stats/logs", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/logs", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
+// LearningLogStats のハンドラーテストは learning_log_stats_test.go（DIP 版）へ移設。
 
 // LearningResourceStats のハンドラーテストは learning_resource_stats_test.go（DIP 版）へ移設。
 
