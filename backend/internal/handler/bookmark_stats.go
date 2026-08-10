@@ -2,22 +2,17 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// BookmarkStatsServiceInterface はBookmarkStatsHandlerが依存するサービスメソッドを定義する。
-type BookmarkStatsServiceInterface interface {
-	GetBookmarkStats(userID uint) (*model.BookmarkStats, error)
-}
-
-// BookmarkStatsHandler はユーザーブックマーク統計関連のHTTPハンドラ。
+// BookmarkStatsHandler はユーザーブックマーク統計関連の HTTP ハンドラ。
 type BookmarkStatsHandler struct {
-	service BookmarkStatsServiceInterface
+	getStats *usecase.GetBookmarkStatsUseCase
 }
 
-// NewBookmarkStatsHandler は新しいBookmarkStatsHandlerインスタンスを生成する。
-func NewBookmarkStatsHandler(s BookmarkStatsServiceInterface) *BookmarkStatsHandler {
-	return &BookmarkStatsHandler{service: s}
+// NewBookmarkStatsHandler は BookmarkStatsHandler を生成する。
+func NewBookmarkStatsHandler(getStats *usecase.GetBookmarkStatsUseCase) *BookmarkStatsHandler {
+	return &BookmarkStatsHandler{getStats: getStats}
 }
 
 // GetStats は指定ユーザーのブックマーク集計統計を返す。
@@ -27,7 +22,7 @@ func (h *BookmarkStatsHandler) GetStats(c *gin.Context) {
 		return
 	}
 
-	stats, err := h.service.GetBookmarkStats(userID)
+	stats, err := h.getStats.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return

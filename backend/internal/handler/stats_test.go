@@ -29,48 +29,7 @@ type statsTestCase struct {
 
 // BookReviewStats のハンドラーテストは book_review_stats_test.go（DIP 版）へ移設。
 
-// ---------- BookmarkStats ----------
-
-type MockBookmarkStatsService struct{ mock.Mock }
-
-func (m *MockBookmarkStatsService) GetBookmarkStats(userID uint) (*model.BookmarkStats, error) {
-	args := m.Called(userID)
-	if v := args.Get(0); v != nil {
-		return v.(*model.BookmarkStats), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-func TestBookmarkStats_GetStats_Success(t *testing.T) {
-	svc := new(MockBookmarkStatsService)
-	h := NewBookmarkStatsHandler(svc)
-	svc.On("GetBookmarkStats", uint(5)).Return(&model.BookmarkStats{}, nil)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/bookmarks", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/bookmarks", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestBookmarkStats_GetStats_InvalidID(t *testing.T) {
-	svc := new(MockBookmarkStatsService)
-	h := NewBookmarkStatsHandler(svc)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/bookmarks", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/abc/stats/bookmarks", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestBookmarkStats_GetStats_ServiceError(t *testing.T) {
-	svc := new(MockBookmarkStatsService)
-	h := NewBookmarkStatsHandler(svc)
-	svc.On("GetBookmarkStats", uint(5)).Return(nil, errors.New("db error"))
-	r := newRouter(1)
-	r.GET("/users/:id/stats/bookmarks", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/bookmarks", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
+// BookmarkStats のハンドラーテストは bookmark_stats_test.go（DIP 版）へ移設。
 
 // CodeSnippetStats のハンドラーテストは code_snippet_stats_test.go（DIP 版）へ移設。
 

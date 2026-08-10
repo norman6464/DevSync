@@ -415,9 +415,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	reactionStatsService := service.NewReactionStatsService(reactionStatsRepo)
 	c.ReactionStatsHandler = handler.NewReactionStatsHandler(reactionStatsService)
 
-	bookmarkStatsRepo := repository.NewBookmarkStatsRepository(db)
-	bookmarkStatsService := service.NewBookmarkStatsService(bookmarkStatsRepo)
-	c.BookmarkStatsHandler = handler.NewBookmarkStatsHandler(bookmarkStatsService)
+	// ブックマーク統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	bookmarkStatsRepo := persistence.NewBookmarkStatsRepository(db)
+	c.BookmarkStatsHandler = handler.NewBookmarkStatsHandler(
+		usecase.NewGetBookmarkStatsUseCase(bookmarkStatsRepo),
+	)
 
 	// Spotifyサービス
 	spotifyRepo := repository.NewSpotifyRepository(db)
