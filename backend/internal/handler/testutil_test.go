@@ -2098,25 +2098,5 @@ func setupPostTemplateHandler() (*PostTemplateHandler, *MockPostTemplateService)
 	return h, svc
 }
 
-// ---------- WidgetSettingsHandler モック ----------
+// WidgetSettingsHandler のテスト用モックは widget_settings_test.go（DIP 版・port モック）に置く。
 
-// MockWidgetSettingsService は WidgetSettingsServiceInterface のモック実装。
-type MockWidgetSettingsService struct{ mock.Mock }
-
-func (m *MockWidgetSettingsService) GetSettings(userID uint) (*model.WidgetSettings, error) {
-	args := m.Called(userID)
-	if s := args.Get(0); s != nil {
-		return s.(*model.WidgetSettings), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockWidgetSettingsService) UpdateSettings(userID uint, settings string) error {
-	return m.Called(userID, settings).Error(0)
-}
-
-// setupWidgetSettingsHandler はWidgetSettingsHandlerテスト用のセットアップを行う。
-func setupWidgetSettingsHandler() (*WidgetSettingsHandler, *MockWidgetSettingsService) {
-	svc := new(MockWidgetSettingsService)
-	h := NewWidgetSettingsHandler(svc)
-	return h, svc
-}

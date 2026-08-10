@@ -467,10 +467,12 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	postTemplateService := service.NewPostTemplateService(postTemplateRepo)
 	c.PostTemplateHandler = handler.NewPostTemplateHandler(postTemplateService)
 
-	// ウィジェット設定サービス
-	widgetSettingsRepo := repository.NewWidgetSettingsRepository(db)
-	widgetSettingsService := service.NewWidgetSettingsService(widgetSettingsRepo)
-	c.WidgetSettingsHandler = handler.NewWidgetSettingsHandler(widgetSettingsService)
+	// ウィジェット設定はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	widgetSettingsRepo := persistence.NewWidgetSettingsRepository(db)
+	c.WidgetSettingsHandler = handler.NewWidgetSettingsHandler(
+		usecase.NewGetWidgetSettingsUseCase(widgetSettingsRepo),
+		usecase.NewUpdateWidgetSettingsUseCase(widgetSettingsRepo),
+	)
 
 	// カテゴリ別週間学習目標はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	weeklyGoalRepo := persistence.NewWeeklyGoalRepository(db)

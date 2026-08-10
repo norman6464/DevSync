@@ -2135,28 +2135,6 @@ func (m *MockBookmarkCollectionRepository) CountByUserID(userID uint) (int64, er
 }
 
 // ============================================================
-// MockWidgetSettingsRepository は repository.WidgetSettingsRepositoryInterface のテスト用モック実装。
-// ============================================================
-
-type MockWidgetSettingsRepository struct {
-	mock.Mock
-}
-
-var _ repository.WidgetSettingsRepositoryInterface = (*MockWidgetSettingsRepository)(nil)
-
-func (m *MockWidgetSettingsRepository) FindByUserID(userID uint) (*model.WidgetSettings, error) {
-	args := m.Called(userID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.WidgetSettings), args.Error(1)
-}
-
-func (m *MockWidgetSettingsRepository) Upsert(settings *model.WidgetSettings) error {
-	return m.Called(settings).Error(0)
-}
-
-// ============================================================
 // MockProjectMilestoneRepository は repository.ProjectMilestoneRepositoryInterface のテスト用モック実装。
 // ============================================================
 

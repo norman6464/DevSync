@@ -4,30 +4,28 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// WidgetSettingsServiceInterface はWidgetSettingsHandlerが依存するサービスのインターフェース。
-type WidgetSettingsServiceInterface interface {
-	GetSettings(userID uint) (*model.WidgetSettings, error)
-	UpdateSettings(userID uint, settings string) error
-}
-
-// WidgetSettingsHandler はダッシュボードウィジェット設定のHTTPハンドラ。
+// WidgetSettingsHandler はダッシュボードウィジェット設定の HTTP ハンドラ。
 type WidgetSettingsHandler struct {
-	service WidgetSettingsServiceInterface
+	getSettings    *usecase.GetWidgetSettingsUseCase
+	updateSettings *usecase.UpdateWidgetSettingsUseCase
 }
 
-// NewWidgetSettingsHandler は新しいWidgetSettingsHandlerインスタンスを生成する。
-func NewWidgetSettingsHandler(s WidgetSettingsServiceInterface) *WidgetSettingsHandler {
-	return &WidgetSettingsHandler{service: s}
+// NewWidgetSettingsHandler は WidgetSettingsHandler を生成する。
+func NewWidgetSettingsHandler(
+	getSettings *usecase.GetWidgetSettingsUseCase,
+	updateSettings *usecase.UpdateWidgetSettingsUseCase,
+) *WidgetSettingsHandler {
+	return &WidgetSettingsHandler{getSettings: getSettings, updateSettings: updateSettings}
 }
 
 // GetSettings は認証ユーザーのウィジェット設定を取得する。
 func (h *WidgetSettingsHandler) GetSettings(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	settings, err := h.service.GetSettings(userID)
+	settings, err := h.getSettings.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -45,7 +43,7 @@ func (h *WidgetSettingsHandler) UpdateSettings(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.UpdateSettings(userID, string(input.Settings)); err != nil {
+	if err := h.updateSettings.Execute(c.Request.Context(), userID, string(input.Settings)); err != nil {
 		respondError(c, err)
 		return
 	}
