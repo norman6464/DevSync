@@ -367,48 +367,7 @@ func TestLearningLogStats_GetStats_ServiceError(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
-// ---------- LearningResourceStats ----------
-
-type MockLearningResourceStatsService struct{ mock.Mock }
-
-func (m *MockLearningResourceStatsService) GetLearningResourceStats(userID uint) (*model.LearningResourceStats, error) {
-	args := m.Called(userID)
-	if v := args.Get(0); v != nil {
-		return v.(*model.LearningResourceStats), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-func TestLearningResourceStats_GetStats_Success(t *testing.T) {
-	svc := new(MockLearningResourceStatsService)
-	h := NewLearningResourceStatsHandler(svc)
-	svc.On("GetLearningResourceStats", uint(5)).Return(&model.LearningResourceStats{}, nil)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/resources", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/resources", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestLearningResourceStats_GetStats_InvalidID(t *testing.T) {
-	svc := new(MockLearningResourceStatsService)
-	h := NewLearningResourceStatsHandler(svc)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/resources", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/abc/stats/resources", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestLearningResourceStats_GetStats_ServiceError(t *testing.T) {
-	svc := new(MockLearningResourceStatsService)
-	h := NewLearningResourceStatsHandler(svc)
-	svc.On("GetLearningResourceStats", uint(5)).Return(nil, errors.New("db error"))
-	r := newRouter(1)
-	r.GET("/users/:id/stats/resources", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/resources", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
+// LearningResourceStats のハンドラーテストは learning_resource_stats_test.go（DIP 版）へ移設。
 
 // ---------- MentionStats ----------
 
