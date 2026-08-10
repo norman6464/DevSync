@@ -317,9 +317,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	mentionService := service.NewMentionService(mentionRepo, userRepo, notificationService)
 	c.MentionHandler = handler.NewMentionHandler(mentionService)
 
-	userDashboardRepo := repository.NewUserDashboardRepository(db)
-	userDashboardService := service.NewUserDashboardService(userDashboardRepo)
-	c.UserDashboardHandler = handler.NewUserDashboardHandler(userDashboardService)
+	// ユーザーダッシュボード統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	userDashboardRepo := persistence.NewUserDashboardRepository(db)
+	c.UserDashboardHandler = handler.NewUserDashboardHandler(
+		usecase.NewGetUserDashboardStatsUseCase(userDashboardRepo),
+	)
 
 	// ノート統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	noteStatsRepo := persistence.NewNoteStatsRepository(db)

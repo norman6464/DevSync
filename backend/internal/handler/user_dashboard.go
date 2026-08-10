@@ -2,22 +2,17 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// UserDashboardServiceInterface はUserDashboardHandlerが依存するサービスインターフェース。
-type UserDashboardServiceInterface interface {
-	GetStats(userID uint) (*model.UserDashboardStats, error)
-}
-
-// UserDashboardHandler はユーザーダッシュボード統計のHTTPハンドラー。
+// UserDashboardHandler はユーザーダッシュボード統計の HTTP ハンドラー。
 type UserDashboardHandler struct {
-	service UserDashboardServiceInterface
+	getStats *usecase.GetUserDashboardStatsUseCase
 }
 
-// NewUserDashboardHandler は新しいUserDashboardHandlerを生成する。
-func NewUserDashboardHandler(service UserDashboardServiceInterface) *UserDashboardHandler {
-	return &UserDashboardHandler{service: service}
+// NewUserDashboardHandler は UserDashboardHandler を生成する。
+func NewUserDashboardHandler(getStats *usecase.GetUserDashboardStatsUseCase) *UserDashboardHandler {
+	return &UserDashboardHandler{getStats: getStats}
 }
 
 // GetStats は指定ユーザーのダッシュボード統計情報を返す。
@@ -28,7 +23,7 @@ func (h *UserDashboardHandler) GetStats(c *gin.Context) {
 		return
 	}
 
-	stats, err := h.service.GetStats(userID)
+	stats, err := h.getStats.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
