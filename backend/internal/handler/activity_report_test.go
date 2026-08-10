@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -8,12 +9,46 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
+	"github.com/stretchr/testify/mock"
 )
 
+// mockActivityReportRepo は usecase/repository.ActivityReportRepository のモック（ctx 付き）。
+type mockActivityReportRepo struct{ mock.Mock }
+
+func (m *mockActivityReportRepo) GetWeeklyReport(ctx context.Context, userID uint) (*model.ActivityReport, error) {
+	args := m.Called(ctx, userID)
+	r, _ := args.Get(0).(*model.ActivityReport)
+	return r, args.Error(1)
+}
+
+func (m *mockActivityReportRepo) GetMonthlyReport(ctx context.Context, userID uint) (*model.ActivityReport, error) {
+	args := m.Called(ctx, userID)
+	r, _ := args.Get(0).(*model.ActivityReport)
+	return r, args.Error(1)
+}
+
+func (m *mockActivityReportRepo) GetComparison(ctx context.Context, userID uint, period model.ReportPeriod) (*model.ReportComparison, error) {
+	args := m.Called(ctx, userID, period)
+	c, _ := args.Get(0).(*model.ReportComparison)
+	return c, args.Error(1)
+}
+
+// setupActivityReportHandler は本物の usecase と port モックで ActivityReportHandler を組む。
+func setupActivityReportHandler() (*ActivityReportHandler, *mockActivityReportRepo) {
+	repo := new(mockActivityReportRepo)
+	h := NewActivityReportHandler(
+		usecase.NewGetWeeklyActivityReportUseCase(repo),
+		usecase.NewGetMonthlyActivityReportUseCase(repo),
+		usecase.NewGetActivityReportComparisonUseCase(repo),
+	)
+	return h, repo
+}
+
 func TestActivityReport_GetWeeklyReport_Success(t *testing.T) {
-	h, svc := setupActivityReportHandler()
+	h, repo := setupActivityReportHandler()
 	report := &model.ActivityReport{Period: model.ReportPeriodWeekly, TotalContributions: 10}
-	svc.On("GetWeeklyReport", uint(1)).Return(report, nil)
+	repo.On("GetWeeklyReport", mock.Anything, uint(1)).Return(report, nil)
 
 	r := gin.New()
 	r.GET("/users/:userId/reports/weekly", h.GetWeeklyReport)
@@ -23,7 +58,7 @@ func TestActivityReport_GetWeeklyReport_Success(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	repo.AssertExpectations(t)
 }
 
 func TestActivityReport_GetWeeklyReport_InvalidID(t *testing.T) {
@@ -40,8 +75,8 @@ func TestActivityReport_GetWeeklyReport_InvalidID(t *testing.T) {
 }
 
 func TestActivityReport_GetWeeklyReport_ServiceError(t *testing.T) {
-	h, svc := setupActivityReportHandler()
-	svc.On("GetWeeklyReport", uint(1)).Return(nil, errors.New("db error"))
+	h, repo := setupActivityReportHandler()
+	repo.On("GetWeeklyReport", mock.Anything, uint(1)).Return((*model.ActivityReport)(nil), errors.New("db error"))
 
 	r := gin.New()
 	r.GET("/users/:userId/reports/weekly", h.GetWeeklyReport)
@@ -51,13 +86,13 @@ func TestActivityReport_GetWeeklyReport_ServiceError(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
+	repo.AssertExpectations(t)
 }
 
 func TestActivityReport_GetMonthlyReport_Success(t *testing.T) {
-	h, svc := setupActivityReportHandler()
+	h, repo := setupActivityReportHandler()
 	report := &model.ActivityReport{Period: model.ReportPeriodMonthly, TotalContributions: 42}
-	svc.On("GetMonthlyReport", uint(1)).Return(report, nil)
+	repo.On("GetMonthlyReport", mock.Anything, uint(1)).Return(report, nil)
 
 	r := gin.New()
 	r.GET("/users/:userId/reports/monthly", h.GetMonthlyReport)
@@ -67,13 +102,13 @@ func TestActivityReport_GetMonthlyReport_Success(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	repo.AssertExpectations(t)
 }
 
 func TestActivityReport_GetMyWeeklyReport_Success(t *testing.T) {
-	h, svc := setupActivityReportHandler()
+	h, repo := setupActivityReportHandler()
 	report := &model.ActivityReport{Period: model.ReportPeriodWeekly}
-	svc.On("GetWeeklyReport", uint(5)).Return(report, nil)
+	repo.On("GetWeeklyReport", mock.Anything, uint(5)).Return(report, nil)
 
 	r := gin.New()
 	r.GET("/me/reports/weekly", authMiddleware(5), h.GetMyWeeklyReport)
@@ -83,13 +118,13 @@ func TestActivityReport_GetMyWeeklyReport_Success(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	repo.AssertExpectations(t)
 }
 
 func TestActivityReport_GetMyMonthlyReport_Success(t *testing.T) {
-	h, svc := setupActivityReportHandler()
+	h, repo := setupActivityReportHandler()
 	report := &model.ActivityReport{Period: model.ReportPeriodMonthly}
-	svc.On("GetMonthlyReport", uint(5)).Return(report, nil)
+	repo.On("GetMonthlyReport", mock.Anything, uint(5)).Return(report, nil)
 
 	r := gin.New()
 	r.GET("/me/reports/monthly", authMiddleware(5), h.GetMyMonthlyReport)
@@ -99,13 +134,13 @@ func TestActivityReport_GetMyMonthlyReport_Success(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	repo.AssertExpectations(t)
 }
 
 func TestActivityReport_GetComparison_Success(t *testing.T) {
-	h, svc := setupActivityReportHandler()
+	h, repo := setupActivityReportHandler()
 	comp := &model.ReportComparison{ContributionsDiff: 5}
-	svc.On("GetComparison", uint(3), model.ReportPeriodWeekly).Return(comp, nil)
+	repo.On("GetComparison", mock.Anything, uint(3), model.ReportPeriodWeekly).Return(comp, nil)
 
 	r := gin.New()
 	r.GET("/me/reports/comparison", authMiddleware(3), h.GetComparison)
@@ -115,7 +150,7 @@ func TestActivityReport_GetComparison_Success(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	repo.AssertExpectations(t)
 }
 
 // ============================================================
@@ -123,15 +158,15 @@ func TestActivityReport_GetComparison_Success(t *testing.T) {
 // ============================================================
 
 func TestActivityReport_GetMonthlyReport_ServiceError(t *testing.T) {
-	h, svc := setupActivityReportHandler()
-	svc.On("GetMonthlyReport", uint(1)).Return(nil, errors.New("db error"))
+	h, repo := setupActivityReportHandler()
+	repo.On("GetMonthlyReport", mock.Anything, uint(1)).Return((*model.ActivityReport)(nil), errors.New("db error"))
 
 	r := newRouter(1)
 	r.GET("/users/:userId/reports/monthly", h.GetMonthlyReport)
 
 	w := doRequest(r, http.MethodGet, "/users/1/reports/monthly", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
+	repo.AssertExpectations(t)
 }
 
 func TestActivityReport_GetMonthlyReport_InvalidID(t *testing.T) {
@@ -148,33 +183,33 @@ func TestActivityReport_GetMonthlyReport_InvalidID(t *testing.T) {
 // ============================================================
 
 func TestActivityReport_GetMyWeeklyReport_ServiceError(t *testing.T) {
-	h, svc := setupActivityReportHandler()
-	svc.On("GetWeeklyReport", uint(1)).Return(nil, errors.New("db error"))
+	h, repo := setupActivityReportHandler()
+	repo.On("GetWeeklyReport", mock.Anything, uint(1)).Return((*model.ActivityReport)(nil), errors.New("db error"))
 
 	r := newRouter(1)
 	r.GET("/me/reports/weekly", h.GetMyWeeklyReport)
 
 	w := doRequest(r, http.MethodGet, "/me/reports/weekly", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
+	repo.AssertExpectations(t)
 }
 
 func TestActivityReport_GetMyMonthlyReport_ServiceError(t *testing.T) {
-	h, svc := setupActivityReportHandler()
-	svc.On("GetMonthlyReport", uint(1)).Return(nil, errors.New("db error"))
+	h, repo := setupActivityReportHandler()
+	repo.On("GetMonthlyReport", mock.Anything, uint(1)).Return((*model.ActivityReport)(nil), errors.New("db error"))
 
 	r := newRouter(1)
 	r.GET("/me/reports/monthly", h.GetMyMonthlyReport)
 
 	w := doRequest(r, http.MethodGet, "/me/reports/monthly", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
+	repo.AssertExpectations(t)
 }
 
 func TestActivityReport_GetComparison_Monthly(t *testing.T) {
-	h, svc := setupActivityReportHandler()
+	h, repo := setupActivityReportHandler()
 	comp := &model.ReportComparison{ContributionsDiff: -2}
-	svc.On("GetComparison", uint(3), model.ReportPeriodMonthly).Return(comp, nil)
+	repo.On("GetComparison", mock.Anything, uint(3), model.ReportPeriodMonthly).Return(comp, nil)
 
 	r := gin.New()
 	r.GET("/me/reports/comparison", authMiddleware(3), h.GetComparison)
@@ -184,5 +219,5 @@ func TestActivityReport_GetComparison_Monthly(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	repo.AssertExpectations(t)
 }

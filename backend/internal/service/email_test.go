@@ -13,13 +13,12 @@ import (
 )
 
 // newTestWeeklyReportEmailService はWeeklyReportEmailServiceのテスト用インスタンスを生成するヘルパー。
-func newTestWeeklyReportEmailService() (*WeeklyReportEmailService, *MockEmailSender, *MockUserRepository, *MockActivityReportRepository) {
+func newTestWeeklyReportEmailService() (*WeeklyReportEmailService, *MockEmailSender, *MockUserRepository, *MockWeeklyActivityReportReader) {
 	sender := new(MockEmailSender)
 	userRepo := new(MockUserRepository)
-	reportRepo := new(MockActivityReportRepository)
-	reportService := NewActivityReportService(reportRepo)
-	svc := NewWeeklyReportEmailService(sender, reportService, userRepo)
-	return svc, sender, userRepo, reportRepo
+	reportReader := new(MockWeeklyActivityReportReader)
+	svc := NewWeeklyReportEmailService(sender, reportReader, userRepo)
+	return svc, sender, userRepo, reportReader
 }
 
 // テスト用のレポートデータ生成ヘルパー
@@ -97,7 +96,7 @@ func TestSendAllWeeklyReports_SkipDisabledUsers(t *testing.T) {
 	users[1].ID = 2
 
 	userRepo.On("FindAll").Return(users, nil)
-	reportRepo.On("GetWeeklyReport", uint(1)).Return(testReport(), nil)
+	reportRepo.On("GetWeeklyReport", mock.Anything, uint(1)).Return(testReport(), nil)
 	// ユーザー2のレポートは呼ばれないはず
 	sender.On("Send", "enabled@example.com", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil)
 
@@ -119,8 +118,8 @@ func TestSendAllWeeklyReports_ContinueOnError(t *testing.T) {
 	users[1].ID = 2
 
 	userRepo.On("FindAll").Return(users, nil)
-	reportRepo.On("GetWeeklyReport", uint(1)).Return(testReport(), nil)
-	reportRepo.On("GetWeeklyReport", uint(2)).Return(testReport(), nil)
+	reportRepo.On("GetWeeklyReport", mock.Anything, uint(1)).Return(testReport(), nil)
+	reportRepo.On("GetWeeklyReport", mock.Anything, uint(2)).Return(testReport(), nil)
 
 	// ユーザー1のメール送信でエラー発生
 	sender.On("Send", "user1@example.com", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(assert.AnError)
@@ -256,7 +255,7 @@ func TestSendAllWeeklyReports_GetWeeklyReportError(t *testing.T) {
 
 	userRepo.On("FindAll").Return(users, nil)
 	// GetWeeklyReport がエラーを返す → continue でスキップ
-	reportRepo.On("GetWeeklyReport", uint(1)).Return((*model.ActivityReport)(nil), errors.New("report error"))
+	reportRepo.On("GetWeeklyReport", mock.Anything, uint(1)).Return((*model.ActivityReport)(nil), errors.New("report error"))
 
 	err := svc.SendAllWeeklyReports()
 	// 一部エラーでもnilを返す

@@ -6,6 +6,7 @@ import (
 
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
+	usecaserepo "github.com/norman6464/devsync/backend/internal/usecase/repository"
 	"github.com/robfig/cron/v3"
 	"github.com/stretchr/testify/mock"
 )
@@ -1510,35 +1511,17 @@ func (m *MockEmailSender) Send(to, subject, htmlBody string) error {
 }
 
 // ============================================================
-// MockActivityReportRepository は repository.ActivityReportRepositoryInterface のテスト用モック実装。
+// MockWeeklyActivityReportReader は usecase/repository.WeeklyActivityReportReader のテスト用モック実装。
 // ============================================================
 
-type MockActivityReportRepository struct {
+type MockWeeklyActivityReportReader struct {
 	mock.Mock
 }
 
-func (m *MockActivityReportRepository) GetWeeklyReport(userID uint) (*model.ActivityReport, error) {
-	args := m.Called(userID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.ActivityReport), args.Error(1)
-}
-
-func (m *MockActivityReportRepository) GetMonthlyReport(userID uint) (*model.ActivityReport, error) {
-	args := m.Called(userID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.ActivityReport), args.Error(1)
-}
-
-func (m *MockActivityReportRepository) GetComparison(userID uint, period model.ReportPeriod) (*model.ReportComparison, error) {
-	args := m.Called(userID, period)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.ReportComparison), args.Error(1)
+func (m *MockWeeklyActivityReportReader) GetWeeklyReport(ctx context.Context, userID uint) (*model.ActivityReport, error) {
+	args := m.Called(ctx, userID)
+	r, _ := args.Get(0).(*model.ActivityReport)
+	return r, args.Error(1)
 }
 
 // ============================================================
@@ -1732,7 +1715,7 @@ func (m *MockStudyCircleRepository) CountByUserID(userID uint) (int64, error) {
 
 // インターフェース適合チェック
 var _ EmailSenderInterface = (*MockEmailSender)(nil)
-var _ repository.ActivityReportRepositoryInterface = (*MockActivityReportRepository)(nil)
+var _ usecaserepo.WeeklyActivityReportReader = (*MockWeeklyActivityReportReader)(nil)
 var _ repository.LevelRepositoryInterface = (*MockLevelRepository)(nil)
 var _ repository.LearningAnalyticsRepositoryInterface = (*MockLearningAnalyticsRepository)(nil)
 var _ repository.StudyCircleRepositoryInterface = (*MockStudyCircleRepository)(nil)

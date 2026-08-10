@@ -340,14 +340,6 @@ type PasswordResetRepositoryInterface interface {
 	DeleteExpired() error
 }
 
-// ActivityReportRepositoryInterface はアクティビティレポートデータ操作の契約を定義する。
-// 週次・月次レポートの生成と前期間比較を提供する。
-type ActivityReportRepositoryInterface interface {
-	GetWeeklyReport(userID uint) (*model.ActivityReport, error)
-	GetMonthlyReport(userID uint) (*model.ActivityReport, error)
-	GetComparison(userID uint, period model.ReportPeriod) (*model.ReportComparison, error)
-}
-
 // AIAdviceRepositoryInterface はAIアドバイスデータ操作の契約を定義する。
 // ルールエンジンが生成したアドバイスのCRUDと既読管理を含む。
 type AIAdviceRepositoryInterface interface {
