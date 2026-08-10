@@ -608,12 +608,6 @@ type NoteVersionRepositoryInterface interface {
 	GetLatestVersionNumber(noteID uint) (int, error)
 }
 
-// WidgetSettingsRepositoryInterface はダッシュボードウィジェット設定の操作契約を定義する。
-type WidgetSettingsRepositoryInterface interface {
-	FindByUserID(userID uint) (*model.WidgetSettings, error)
-	Upsert(settings *model.WidgetSettings) error
-}
-
 // NoteLinkRepositoryInterface はノート間リンクデータ操作の契約を定義する。
 type NoteLinkRepositoryInterface interface {
 	Create(link *model.NoteLink) error
