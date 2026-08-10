@@ -25,48 +25,7 @@ type statsTestCase struct {
 
 // PostStats のハンドラーテストは post_stats_test.go（DIP 版）へ移設。
 
-// ---------- NoteStats ----------
-
-type MockNoteStatsService struct{ mock.Mock }
-
-func (m *MockNoteStatsService) GetNoteStats(userID uint) (*model.NoteStats, error) {
-	args := m.Called(userID)
-	if v := args.Get(0); v != nil {
-		return v.(*model.NoteStats), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-func TestNoteStats_GetStats_Success(t *testing.T) {
-	svc := new(MockNoteStatsService)
-	h := NewNoteStatsHandler(svc)
-	svc.On("GetNoteStats", uint(5)).Return(&model.NoteStats{}, nil)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/notes", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/notes", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestNoteStats_GetStats_InvalidID(t *testing.T) {
-	svc := new(MockNoteStatsService)
-	h := NewNoteStatsHandler(svc)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/notes", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/abc/stats/notes", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestNoteStats_GetStats_ServiceError(t *testing.T) {
-	svc := new(MockNoteStatsService)
-	h := NewNoteStatsHandler(svc)
-	svc.On("GetNoteStats", uint(5)).Return(nil, errors.New("db error"))
-	r := newRouter(1)
-	r.GET("/users/:id/stats/notes", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/notes", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
+// NoteStats のハンドラーテストは note_stats_test.go（DIP 版）へ移設。
 
 // BookReviewStats のハンドラーテストは book_review_stats_test.go（DIP 版）へ移設。
 

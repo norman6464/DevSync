@@ -2,22 +2,17 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// NoteStatsServiceInterface はNoteStatsHandlerが依存するサービスメソッドを定義する。
-type NoteStatsServiceInterface interface {
-	GetNoteStats(userID uint) (*model.NoteStats, error)
-}
-
-// NoteStatsHandler はノート統計関連のHTTPハンドラ。
+// NoteStatsHandler はノート統計関連の HTTP ハンドラ。
 type NoteStatsHandler struct {
-	service NoteStatsServiceInterface
+	getStats *usecase.GetNoteStatsUseCase
 }
 
-// NewNoteStatsHandler は新しいNoteStatsHandlerインスタンスを生成する。
-func NewNoteStatsHandler(s NoteStatsServiceInterface) *NoteStatsHandler {
-	return &NoteStatsHandler{service: s}
+// NewNoteStatsHandler は NoteStatsHandler を生成する。
+func NewNoteStatsHandler(getStats *usecase.GetNoteStatsUseCase) *NoteStatsHandler {
+	return &NoteStatsHandler{getStats: getStats}
 }
 
 // GetStats は指定ユーザーのノート集計統計を返す。
@@ -27,7 +22,7 @@ func (h *NoteStatsHandler) GetStats(c *gin.Context) {
 		return
 	}
 
-	stats, err := h.service.GetNoteStats(userID)
+	stats, err := h.getStats.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return

@@ -13,10 +13,6 @@ type UserDashboardRepositoryInterface interface {
 	GetDashboardStats(userID uint) (*model.UserDashboardStats, error)
 }
 
-// NoteStatsRepositoryInterface はユーザーのノート集計統計の取得契約を定義する。
-type NoteStatsRepositoryInterface interface {
-	GetNoteStats(userID uint) (*model.NoteStats, error)
-}
 
 // StudyCircleStatsRepositoryInterface はスタディサークルの集計統計の取得契約を定義する。
 type StudyCircleStatsRepositoryInterface interface {
