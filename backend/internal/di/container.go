@@ -295,9 +295,19 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewListPostSeriesPostsUseCase(postSeriesRepo),
 	)
 
-	postCollectionRepo := repository.NewPostCollectionRepository(db)
-	postCollectionService := service.NewPostCollectionService(postCollectionRepo)
-	c.PostCollectionHandler = handler.NewPostCollectionHandler(postCollectionService)
+	// 投稿コレクションはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	postCollectionRepo := persistence.NewPostCollectionRepository(db)
+	c.PostCollectionHandler = handler.NewPostCollectionHandler(
+		usecase.NewCreatePostCollectionUseCase(postCollectionRepo),
+		usecase.NewGetPostCollectionUseCase(postCollectionRepo),
+		usecase.NewListPostCollectionsForViewerUseCase(postCollectionRepo),
+		usecase.NewCountPostCollectionsUseCase(postCollectionRepo),
+		usecase.NewUpdatePostCollectionUseCase(postCollectionRepo),
+		usecase.NewDeletePostCollectionUseCase(postCollectionRepo),
+		usecase.NewAddPostToCollectionUseCase(postCollectionRepo),
+		usecase.NewRemovePostFromCollectionUseCase(postCollectionRepo),
+		usecase.NewListPostCollectionPostsUseCase(postCollectionRepo),
+	)
 
 	postTagRepo := repository.NewPostTagRepository(db)
 	postTagService := service.NewPostTagService(postTagRepo, postRepo)

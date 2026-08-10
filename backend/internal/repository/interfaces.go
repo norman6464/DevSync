@@ -479,21 +479,6 @@ type NoteFolderRepositoryInterface interface {
 	CountByUserID(userID uint) (int64, error)
 }
 
-// PostCollectionRepositoryInterface は投稿コレクションデータ操作の契約を定義する。
-type PostCollectionRepositoryInterface interface {
-	Create(collection *model.PostCollection) error
-	FindByID(id uint) (*model.PostCollection, error)
-	FindByUserID(userID uint, limit, offset int) ([]model.PostCollection, int64, error)
-	FindPublicByUserID(userID uint) ([]model.PostCollection, error)
-	Update(collection *model.PostCollection) error
-	Delete(id uint) error
-	AddPost(item *model.PostCollectionItem) error
-	RemovePost(collectionID, postID uint) error
-	HasPost(collectionID, postID uint) (bool, error)
-	GetPostsByCollectionID(collectionID uint) ([]model.PostCollectionItem, error)
-	CountByUserID(userID uint) (int64, error)
-}
-
 
 // PostTagRepositoryInterface は投稿タグデータ操作の契約を定義する。
 type PostTagRepositoryInterface interface {

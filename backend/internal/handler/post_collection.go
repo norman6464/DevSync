@@ -4,29 +4,45 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// PostCollectionServiceInterface はPostCollectionHandlerが依存するサービスメソッドを定義する。
-type PostCollectionServiceInterface interface {
-	Create(collection *model.PostCollection) (*model.PostCollection, error)
-	GetByID(id uint) (*model.PostCollection, error)
-	GetCollectionsForViewer(viewerID, targetUserID uint, limit, offset int) ([]model.PostCollection, int64, error)
-	Update(id, userID uint, title, description string, isPublic bool) (*model.PostCollection, error)
-	Delete(id, userID uint) error
-	AddPost(collectionID, userID, postID uint, note string) error
-	RemovePost(collectionID, userID, postID uint) error
-	GetPosts(collectionID uint) ([]model.PostCollectionItem, error)
-	CountByUserID(userID uint) (int64, error)
-}
-
-// PostCollectionHandler は投稿コレクション関連のHTTPハンドラ。
+// PostCollectionHandler は投稿コレクション関連の HTTP ハンドラ。
 type PostCollectionHandler struct {
-	service PostCollectionServiceInterface
+	create        *usecase.CreatePostCollectionUseCase
+	get           *usecase.GetPostCollectionUseCase
+	listForViewer *usecase.ListPostCollectionsForViewerUseCase
+	count         *usecase.CountPostCollectionsUseCase
+	update        *usecase.UpdatePostCollectionUseCase
+	delete        *usecase.DeletePostCollectionUseCase
+	addPost       *usecase.AddPostToCollectionUseCase
+	removePost    *usecase.RemovePostFromCollectionUseCase
+	listPosts     *usecase.ListPostCollectionPostsUseCase
 }
 
-// NewPostCollectionHandler は新しいPostCollectionHandlerインスタンスを生成する。
-func NewPostCollectionHandler(s PostCollectionServiceInterface) *PostCollectionHandler {
-	return &PostCollectionHandler{service: s}
+// NewPostCollectionHandler は PostCollectionHandler を生成する。
+func NewPostCollectionHandler(
+	create *usecase.CreatePostCollectionUseCase,
+	get *usecase.GetPostCollectionUseCase,
+	listForViewer *usecase.ListPostCollectionsForViewerUseCase,
+	count *usecase.CountPostCollectionsUseCase,
+	update *usecase.UpdatePostCollectionUseCase,
+	deleteUC *usecase.DeletePostCollectionUseCase,
+	addPost *usecase.AddPostToCollectionUseCase,
+	removePost *usecase.RemovePostFromCollectionUseCase,
+	listPosts *usecase.ListPostCollectionPostsUseCase,
+) *PostCollectionHandler {
+	return &PostCollectionHandler{
+		create:        create,
+		get:           get,
+		listForViewer: listForViewer,
+		count:         count,
+		update:        update,
+		delete:        deleteUC,
+		addPost:       addPost,
+		removePost:    removePost,
+		listPosts:     listPosts,
+	}
 }
 
 // Create は新しい投稿コレクションを作成する。
@@ -45,7 +61,7 @@ func (h *PostCollectionHandler) Create(c *gin.Context) {
 		IsPublic:    req.IsPublic,
 	}
 
-	result, err := h.service.Create(collection)
+	result, err := h.create.Execute(c.Request.Context(), collection)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -61,7 +77,7 @@ func (h *PostCollectionHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	collection, err := h.service.GetByID(id)
+	collection, err := h.get.Execute(c.Request.Context(), id)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -80,7 +96,7 @@ func (h *PostCollectionHandler) GetByUserID(c *gin.Context) {
 	}
 	limit, offset := parseLimitOffset(c)
 
-	collections, total, err := h.service.GetCollectionsForViewer(currentUserID, targetUserID, limit, offset)
+	collections, total, err := h.listForViewer.Execute(c.Request.Context(), currentUserID, targetUserID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -99,7 +115,7 @@ func (h *PostCollectionHandler) GetMyCollections(c *gin.Context) {
 	userID := c.GetUint("userID")
 	limit, offset := parseLimitOffset(c)
 
-	collections, total, err := h.service.GetCollectionsForViewer(userID, userID, limit, offset)
+	collections, total, err := h.listForViewer.Execute(c.Request.Context(), userID, userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -126,7 +142,7 @@ func (h *PostCollectionHandler) Update(c *gin.Context) {
 		return
 	}
 
-	collection, err := h.service.Update(id, userID, req.Title, req.Description, req.IsPublic)
+	collection, err := h.update.Execute(c.Request.Context(), id, userID, req.Title, req.Description, req.IsPublic)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -143,7 +159,7 @@ func (h *PostCollectionHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Delete(id, userID); err != nil {
+	if err := h.delete.Execute(c.Request.Context(), id, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -158,7 +174,7 @@ func (h *PostCollectionHandler) GetPosts(c *gin.Context) {
 		return
 	}
 
-	items, err := h.service.GetPosts(id)
+	items, err := h.listPosts.Execute(c.Request.Context(), id)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -180,7 +196,7 @@ func (h *PostCollectionHandler) AddPost(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.AddPost(id, userID, req.PostID, req.Note); err != nil {
+	if err := h.addPost.Execute(c.Request.Context(), id, userID, req.PostID, req.Note); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -200,7 +216,7 @@ func (h *PostCollectionHandler) RemovePost(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.RemovePost(collectionID, userID, postID); err != nil {
+	if err := h.removePost.Execute(c.Request.Context(), collectionID, userID, postID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -211,7 +227,7 @@ func (h *PostCollectionHandler) RemovePost(c *gin.Context) {
 // GetMyCount は認証ユーザーのコレクション総数を返す。
 func (h *PostCollectionHandler) GetMyCount(c *gin.Context) {
 	userID := c.GetUint("userID")
-	count, err := h.service.CountByUserID(userID)
+	count, err := h.count.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
