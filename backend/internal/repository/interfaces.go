@@ -575,10 +575,6 @@ type QAStatsRepositoryInterface interface {
 }
 
 
-// ProjectStatsRepositoryInterface はユーザープロジェクト活動集計統計データ操作の契約を定義する。
-type ProjectStatsRepositoryInterface interface {
-	GetProjectStats(userID uint) (*model.ProjectStats, error)
-}
 
 
 // RoadmapStatsRepositoryInterface はユーザーロードマップ統計データ操作の契約を定義する。

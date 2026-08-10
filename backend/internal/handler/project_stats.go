@@ -2,22 +2,17 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// ProjectStatsServiceInterface はProjectStatsHandlerが依存するサービスメソッドを定義する。
-type ProjectStatsServiceInterface interface {
-	GetProjectStats(userID uint) (*model.ProjectStats, error)
-}
-
-// ProjectStatsHandler はユーザープロジェクト統計関連のHTTPハンドラ。
+// ProjectStatsHandler はユーザープロジェクト統計関連の HTTP ハンドラ。
 type ProjectStatsHandler struct {
-	service ProjectStatsServiceInterface
+	getStats *usecase.GetProjectStatsUseCase
 }
 
-// NewProjectStatsHandler は新しいProjectStatsHandlerインスタンスを生成する。
-func NewProjectStatsHandler(s ProjectStatsServiceInterface) *ProjectStatsHandler {
-	return &ProjectStatsHandler{service: s}
+// NewProjectStatsHandler は ProjectStatsHandler を生成する。
+func NewProjectStatsHandler(getStats *usecase.GetProjectStatsUseCase) *ProjectStatsHandler {
+	return &ProjectStatsHandler{getStats: getStats}
 }
 
 // GetStats は指定ユーザーのプロジェクト活動集計統計を返す。
@@ -27,7 +22,7 @@ func (h *ProjectStatsHandler) GetStats(c *gin.Context) {
 		return
 	}
 
-	stats, err := h.service.GetProjectStats(userID)
+	stats, err := h.getStats.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return

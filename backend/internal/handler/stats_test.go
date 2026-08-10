@@ -88,48 +88,7 @@ func TestBookmarkStats_GetStats_ServiceError(t *testing.T) {
 
 // NotificationStats のハンドラーテストは notification_stats_test.go（DIP 版）へ移設。
 
-// ---------- ProjectStats ----------
-
-type MockProjectStatsService struct{ mock.Mock }
-
-func (m *MockProjectStatsService) GetProjectStats(userID uint) (*model.ProjectStats, error) {
-	args := m.Called(userID)
-	if v := args.Get(0); v != nil {
-		return v.(*model.ProjectStats), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-func TestProjectStats_GetStats_Success(t *testing.T) {
-	svc := new(MockProjectStatsService)
-	h := NewProjectStatsHandler(svc)
-	svc.On("GetProjectStats", uint(5)).Return(&model.ProjectStats{}, nil)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/projects", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/projects", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestProjectStats_GetStats_InvalidID(t *testing.T) {
-	svc := new(MockProjectStatsService)
-	h := NewProjectStatsHandler(svc)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/projects", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/abc/stats/projects", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestProjectStats_GetStats_ServiceError(t *testing.T) {
-	svc := new(MockProjectStatsService)
-	h := NewProjectStatsHandler(svc)
-	svc.On("GetProjectStats", uint(5)).Return(nil, errors.New("db error"))
-	r := newRouter(1)
-	r.GET("/users/:id/stats/projects", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/projects", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
+// ProjectStats のハンドラーテストは project_stats_test.go（DIP 版）へ移設。
 
 // ---------- QAStats ----------
 
