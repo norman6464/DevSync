@@ -2,22 +2,17 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// PostStatsServiceInterface はPostStatsHandlerが依存するサービスメソッドを定義する。
-type PostStatsServiceInterface interface {
-	GetPostStats(userID uint) (*model.PostStats, error)
-}
-
-// PostStatsHandler はユーザー投稿統計関連のHTTPハンドラ。
+// PostStatsHandler はユーザー投稿統計関連の HTTP ハンドラ。
 type PostStatsHandler struct {
-	service PostStatsServiceInterface
+	getStats *usecase.GetPostStatsUseCase
 }
 
-// NewPostStatsHandler は新しいPostStatsHandlerインスタンスを生成する。
-func NewPostStatsHandler(s PostStatsServiceInterface) *PostStatsHandler {
-	return &PostStatsHandler{service: s}
+// NewPostStatsHandler は PostStatsHandler を生成する。
+func NewPostStatsHandler(getStats *usecase.GetPostStatsUseCase) *PostStatsHandler {
+	return &PostStatsHandler{getStats: getStats}
 }
 
 // GetStats は指定ユーザーの投稿集計統計を返す。
@@ -27,7 +22,7 @@ func (h *PostStatsHandler) GetStats(c *gin.Context) {
 		return
 	}
 
-	stats, err := h.service.GetPostStats(userID)
+	stats, err := h.getStats.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return

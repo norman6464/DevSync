@@ -23,48 +23,7 @@ type statsTestCase struct {
 	wantStatus int
 }
 
-// ---------- PostStats ----------
-
-type MockPostStatsService struct{ mock.Mock }
-
-func (m *MockPostStatsService) GetPostStats(userID uint) (*model.PostStats, error) {
-	args := m.Called(userID)
-	if v := args.Get(0); v != nil {
-		return v.(*model.PostStats), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-func TestPostStats_GetStats_Success(t *testing.T) {
-	svc := new(MockPostStatsService)
-	h := NewPostStatsHandler(svc)
-	svc.On("GetPostStats", uint(5)).Return(&model.PostStats{}, nil)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/posts", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/posts", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestPostStats_GetStats_InvalidID(t *testing.T) {
-	svc := new(MockPostStatsService)
-	h := NewPostStatsHandler(svc)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/posts", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/abc/stats/posts", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestPostStats_GetStats_ServiceError(t *testing.T) {
-	svc := new(MockPostStatsService)
-	h := NewPostStatsHandler(svc)
-	svc.On("GetPostStats", uint(5)).Return(nil, errors.New("db error"))
-	r := newRouter(1)
-	r.GET("/users/:id/stats/posts", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/posts", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
+// PostStats のハンドラーテストは post_stats_test.go（DIP 版）へ移設。
 
 // ---------- NoteStats ----------
 

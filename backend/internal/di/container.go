@@ -329,9 +329,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	studyCircleStatsService := service.NewStudyCircleStatsService(studyCircleStatsRepo)
 	c.StudyCircleStatsHandler = handler.NewStudyCircleStatsHandler(studyCircleStatsService)
 
-	postStatsRepo := repository.NewPostStatsRepository(db)
-	postStatsService := service.NewPostStatsService(postStatsRepo)
-	c.PostStatsHandler = handler.NewPostStatsHandler(postStatsService)
+	// 投稿統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	postStatsRepo := persistence.NewPostStatsRepository(db)
+	c.PostStatsHandler = handler.NewPostStatsHandler(
+		usecase.NewGetPostStatsUseCase(postStatsRepo),
+	)
 
 	// 書籍レビュー統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	bookReviewStatsRepo := persistence.NewBookReviewStatsRepository(db)
