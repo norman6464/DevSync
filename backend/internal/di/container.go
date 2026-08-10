@@ -562,10 +562,12 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	learningDashboardService := service.NewLearningDashboardService(learningLogRepo, learningGoalRepo, analyticsRepo)
 	c.LearningDashboardHandler = handler.NewLearningDashboardHandler(learningDashboardService)
 
-	// リマインダー設定サービス
-	reminderSettingsRepo := repository.NewReminderSettingsRepository(db)
-	reminderSettingsService := service.NewReminderSettingsService(reminderSettingsRepo)
-	c.ReminderSettingsHandler = handler.NewReminderSettingsHandler(reminderSettingsService)
+	// リマインダー設定はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	reminderSettingsRepo := persistence.NewReminderSettingsRepository(db)
+	c.ReminderSettingsHandler = handler.NewReminderSettingsHandler(
+		usecase.NewGetReminderSettingsUseCase(reminderSettingsRepo),
+		usecase.NewUpdateReminderSettingsUseCase(reminderSettingsRepo),
+	)
 
 	// 通知設定サービス
 	notificationSettingsRepo := repository.NewNotificationSettingsRepository(db)

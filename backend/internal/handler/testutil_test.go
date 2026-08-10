@@ -1531,30 +1531,8 @@ func setupMessageHandler() (*MessageHandler, *MockMessageService) {
 	return h, svc
 }
 
-// MockReminderSettingsService は ReminderSettingsServiceInterface のモック実装。
-type MockReminderSettingsService struct{ mock.Mock }
-
-func (m *MockReminderSettingsService) GetSettings(userID uint) (*model.ReminderSettings, error) {
-	args := m.Called(userID)
-	if s := args.Get(0); s != nil {
-		return s.(*model.ReminderSettings), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockReminderSettingsService) UpdateSettings(userID uint, updates *model.ReminderSettings) (*model.ReminderSettings, error) {
-	args := m.Called(userID, updates)
-	if s := args.Get(0); s != nil {
-		return s.(*model.ReminderSettings), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-// setupReminderSettingsHandler はReminderSettingsHandlerテスト用のセットアップを行う。
-func setupReminderSettingsHandler() (*ReminderSettingsHandler, *MockReminderSettingsService) {
-	svc := new(MockReminderSettingsService)
-	h := NewReminderSettingsHandler(svc)
-	return h, svc
-}
+// ReminderSettings は DIP へ移行済み。テストは reminder_settings_test.go で
+// 「本物の usecase + port モック」を組み立てる。
 
 // MockRecommendationService は RecommendationServiceInterface のモック実装。
 type MockRecommendationService struct{ mock.Mock }
