@@ -2075,22 +2075,6 @@ func (m *MockUserDashboardRepository) GetDashboardStats(userID uint) (*model.Use
 }
 
 // ============================================================
-// MockNoteStatsRepository は repository.NoteStatsRepositoryInterface のテスト用モック実装。
-// ============================================================
-
-type MockNoteStatsRepository struct {
-	mock.Mock
-}
-
-func (m *MockNoteStatsRepository) GetNoteStats(userID uint) (*model.NoteStats, error) {
-	args := m.Called(userID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.NoteStats), args.Error(1)
-}
-
-// ============================================================
 // MockStudyCircleStatsRepository は repository.StudyCircleStatsRepositoryInterface のテスト用モック実装。
 // ============================================================
 

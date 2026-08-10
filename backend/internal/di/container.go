@@ -321,9 +321,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	userDashboardService := service.NewUserDashboardService(userDashboardRepo)
 	c.UserDashboardHandler = handler.NewUserDashboardHandler(userDashboardService)
 
-	noteStatsRepo := repository.NewNoteStatsRepository(db)
-	noteStatsService := service.NewNoteStatsService(noteStatsRepo)
-	c.NoteStatsHandler = handler.NewNoteStatsHandler(noteStatsService)
+	// ノート統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	noteStatsRepo := persistence.NewNoteStatsRepository(db)
+	c.NoteStatsHandler = handler.NewNoteStatsHandler(
+		usecase.NewGetNoteStatsUseCase(noteStatsRepo),
+	)
 
 	studyCircleStatsRepo := repository.NewStudyCircleStatsRepository(db)
 	studyCircleStatsService := service.NewStudyCircleStatsService(studyCircleStatsRepo)
