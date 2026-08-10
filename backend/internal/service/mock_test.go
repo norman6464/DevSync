@@ -1228,6 +1228,7 @@ var _ repository.RecommendationRepositoryInterface = (*MockRecommendationReposit
 var _ repository.AIAdviceRepositoryInterface = (*MockAIAdviceRepository)(nil)
 var _ repository.WeeklyChallengeRepositoryInterface = (*MockWeeklyChallengeRepository)(nil)
 var _ repository.PostTemplateRepositoryInterface = (*MockPostTemplateRepository)(nil)
+
 // ============================================================
 // MockPostTemplateRepository は repository.PostTemplateRepositoryInterface のテスト用モック実装。
 // ============================================================
@@ -1307,6 +1308,7 @@ func (m *MockRecommendationRepository) GetTrendingResources(limit int, days int)
 	args := m.Called(limit, days)
 	return args.Get(0).([]model.LearningResource), args.Error(1)
 }
+
 var _ repository.AIConversationRepositoryInterface = (*MockAIConversationRepository)(nil)
 var _ repository.GitHubRepositoryInterface = (*MockGitHubRepository)(nil)
 var _ LLMClientInterface = (*MockLLMClient)(nil)
@@ -1753,69 +1755,6 @@ func (m *MockNotificationService) CreateNotification(notification *model.Notific
 
 func (m *MockNotificationService) NotifyFollowers(actorID uint, postID uint, notificationType model.NotificationType) {
 	m.Called(actorID, postID, notificationType)
-}
-
-// ============================================================
-// MockPostSeriesRepository
-// ============================================================
-
-type MockPostSeriesRepository struct {
-	mock.Mock
-}
-
-var _ repository.PostSeriesRepositoryInterface = (*MockPostSeriesRepository)(nil)
-
-func (m *MockPostSeriesRepository) Create(series *model.PostSeries) error {
-	args := m.Called(series)
-	return args.Error(0)
-}
-
-func (m *MockPostSeriesRepository) FindByID(id uint) (*model.PostSeries, error) {
-	args := m.Called(id)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.PostSeries), args.Error(1)
-}
-
-func (m *MockPostSeriesRepository) FindByUserID(userID uint, offset, limit int) ([]model.PostSeries, error) {
-	args := m.Called(userID, offset, limit)
-	return args.Get(0).([]model.PostSeries), args.Error(1)
-}
-
-func (m *MockPostSeriesRepository) CountByUser(userID uint) (int64, error) {
-	args := m.Called(userID)
-	return args.Get(0).(int64), args.Error(1)
-}
-
-func (m *MockPostSeriesRepository) Update(series *model.PostSeries) error {
-	args := m.Called(series)
-	return args.Error(0)
-}
-
-func (m *MockPostSeriesRepository) Delete(id uint) error {
-	args := m.Called(id)
-	return args.Error(0)
-}
-
-func (m *MockPostSeriesRepository) AddPost(item *model.PostSeriesItem) error {
-	args := m.Called(item)
-	return args.Error(0)
-}
-
-func (m *MockPostSeriesRepository) HasPost(seriesID, postID uint) (bool, error) {
-	args := m.Called(seriesID, postID)
-	return args.Bool(0), args.Error(1)
-}
-
-func (m *MockPostSeriesRepository) RemovePost(seriesID, postID uint) error {
-	args := m.Called(seriesID, postID)
-	return args.Error(0)
-}
-
-func (m *MockPostSeriesRepository) GetPostsBySeriesID(seriesID uint) ([]model.PostSeriesItem, error) {
-	args := m.Called(seriesID)
-	return args.Get(0).([]model.PostSeriesItem), args.Error(1)
 }
 
 // MockPostCollectionRepository は repository.PostCollectionRepositoryInterface のテスト用モック実装。

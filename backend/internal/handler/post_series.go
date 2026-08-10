@@ -4,29 +4,45 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// PostSeriesServiceInterface はPostSeriesHandlerが依存するサービスメソッドを定義する。
-type PostSeriesServiceInterface interface {
-	Create(series *model.PostSeries) error
-	GetByID(id uint) (*model.PostSeries, error)
-	GetByUserID(userID uint, page, limit int) ([]model.PostSeries, error)
-	CountByUser(userID uint) (int64, error)
-	Update(id, userID uint, updates *model.PostSeries) (*model.PostSeries, error)
-	Delete(id, userID uint) error
-	AddPost(seriesID, postID uint, orderIndex int, userID uint) error
-	RemovePost(seriesID, postID, userID uint) error
-	GetPosts(seriesID uint) ([]model.PostSeriesItem, error)
-}
-
-// PostSeriesHandler は投稿シリーズ関連のHTTPハンドラ。
+// PostSeriesHandler は投稿シリーズ関連の HTTP ハンドラ。
 type PostSeriesHandler struct {
-	service PostSeriesServiceInterface
+	create     *usecase.CreatePostSeriesUseCase
+	get        *usecase.GetPostSeriesUseCase
+	list       *usecase.ListPostSeriesUseCase
+	count      *usecase.CountPostSeriesUseCase
+	update     *usecase.UpdatePostSeriesUseCase
+	delete     *usecase.DeletePostSeriesUseCase
+	addPost    *usecase.AddPostToSeriesUseCase
+	removePost *usecase.RemovePostFromSeriesUseCase
+	listPosts  *usecase.ListPostSeriesPostsUseCase
 }
 
-// NewPostSeriesHandler は新しいPostSeriesHandlerインスタンスを生成する。
-func NewPostSeriesHandler(s PostSeriesServiceInterface) *PostSeriesHandler {
-	return &PostSeriesHandler{service: s}
+// NewPostSeriesHandler は PostSeriesHandler を生成する。
+func NewPostSeriesHandler(
+	create *usecase.CreatePostSeriesUseCase,
+	get *usecase.GetPostSeriesUseCase,
+	list *usecase.ListPostSeriesUseCase,
+	count *usecase.CountPostSeriesUseCase,
+	update *usecase.UpdatePostSeriesUseCase,
+	deleteUC *usecase.DeletePostSeriesUseCase,
+	addPost *usecase.AddPostToSeriesUseCase,
+	removePost *usecase.RemovePostFromSeriesUseCase,
+	listPosts *usecase.ListPostSeriesPostsUseCase,
+) *PostSeriesHandler {
+	return &PostSeriesHandler{
+		create:     create,
+		get:        get,
+		list:       list,
+		count:      count,
+		update:     update,
+		delete:     deleteUC,
+		addPost:    addPost,
+		removePost: removePost,
+		listPosts:  listPosts,
+	}
 }
 
 // Create は新しい投稿シリーズを作成する。
@@ -44,7 +60,7 @@ func (h *PostSeriesHandler) Create(c *gin.Context) {
 		Description: req.Description,
 	}
 
-	if err := h.service.Create(series); err != nil {
+	if err := h.create.Execute(c.Request.Context(), series); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -54,7 +70,10 @@ func (h *PostSeriesHandler) Create(c *gin.Context) {
 
 // GetByID は指定IDのシリーズを取得する。
 func (h *PostSeriesHandler) GetByID(c *gin.Context) {
-	handleGetByIDPublic(c, h.service.GetByID)
+	ctx := c.Request.Context()
+	handleGetByIDPublic(c, func(id uint) (*model.PostSeries, error) {
+		return h.get.Execute(ctx, id)
+	})
 }
 
 // GetByUserID は指定ユーザーのシリーズ一覧をページネーション付きで取得する。
@@ -66,13 +85,13 @@ func (h *PostSeriesHandler) GetByUserID(c *gin.Context) {
 
 	page, limit := parsePagination(c)
 
-	series, err := h.service.GetByUserID(userID, page, limit)
+	series, err := h.list.Execute(c.Request.Context(), userID, page, limit)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
 
-	total, err := h.service.CountByUser(userID)
+	total, err := h.count.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -86,13 +105,13 @@ func (h *PostSeriesHandler) GetMySeries(c *gin.Context) {
 	userID := c.GetUint("userID")
 	page, limit := parsePagination(c)
 
-	series, err := h.service.GetByUserID(userID, page, limit)
+	series, err := h.list.Execute(c.Request.Context(), userID, page, limit)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
 
-	total, err := h.service.CountByUser(userID)
+	total, err := h.count.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -105,7 +124,7 @@ func (h *PostSeriesHandler) GetMySeries(c *gin.Context) {
 func (h *PostSeriesHandler) GetMySeriesCount(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	count, err := h.service.CountByUser(userID)
+	count, err := h.count.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -132,7 +151,7 @@ func (h *PostSeriesHandler) Update(c *gin.Context) {
 		Description: req.Description,
 	}
 
-	series, err := h.service.Update(id, userID, updates)
+	series, err := h.update.Execute(c.Request.Context(), id, userID, updates)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -143,7 +162,10 @@ func (h *PostSeriesHandler) Update(c *gin.Context) {
 
 // Delete は指定IDのシリーズを削除する。
 func (h *PostSeriesHandler) Delete(c *gin.Context) {
-	handleDelete(c, h.service.Delete)
+	ctx := c.Request.Context()
+	handleDelete(c, func(id, userID uint) error {
+		return h.delete.Execute(ctx, id, userID)
+	})
 }
 
 // GetPosts はシリーズ内の投稿一覧を取得する。
@@ -153,7 +175,7 @@ func (h *PostSeriesHandler) GetPosts(c *gin.Context) {
 		return
 	}
 
-	items, err := h.service.GetPosts(id)
+	items, err := h.listPosts.Execute(c.Request.Context(), id)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -175,7 +197,7 @@ func (h *PostSeriesHandler) AddPost(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.AddPost(id, req.PostID, req.OrderIndex, userID); err != nil {
+	if err := h.addPost.Execute(c.Request.Context(), id, req.PostID, req.OrderIndex, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -195,7 +217,7 @@ func (h *PostSeriesHandler) RemovePost(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.RemovePost(seriesID, postID, userID); err != nil {
+	if err := h.removePost.Execute(c.Request.Context(), seriesID, postID, userID); err != nil {
 		respondError(c, err)
 		return
 	}
