@@ -2154,21 +2154,6 @@ func (m *MockQAStatsRepository) GetQAStats(userID uint) (*model.QAStats, error) 
 	return args.Get(0).(*model.QAStats), args.Error(1)
 }
 
-// MockCodeSnippetStatsRepository は repository.CodeSnippetStatsRepositoryInterface のテスト用モック実装。
-// ============================================================
-
-type MockCodeSnippetStatsRepository struct {
-	mock.Mock
-}
-
-func (m *MockCodeSnippetStatsRepository) GetCodeSnippetStats(userID uint) (*model.CodeSnippetStats, error) {
-	args := m.Called(userID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.CodeSnippetStats), args.Error(1)
-}
-
 // MockProjectStatsRepository は repository.ProjectStatsRepositoryInterface のテスト用モック実装。
 // ============================================================
 

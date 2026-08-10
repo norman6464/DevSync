@@ -2,22 +2,17 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// CodeSnippetStatsServiceInterface はCodeSnippetStatsHandlerが依存するサービスメソッドを定義する。
-type CodeSnippetStatsServiceInterface interface {
-	GetCodeSnippetStats(userID uint) (*model.CodeSnippetStats, error)
-}
-
-// CodeSnippetStatsHandler はユーザーコードスニペット統計関連のHTTPハンドラ。
+// CodeSnippetStatsHandler はユーザーコードスニペット統計関連の HTTP ハンドラ。
 type CodeSnippetStatsHandler struct {
-	service CodeSnippetStatsServiceInterface
+	getStats *usecase.GetCodeSnippetStatsUseCase
 }
 
-// NewCodeSnippetStatsHandler は新しいCodeSnippetStatsHandlerインスタンスを生成する。
-func NewCodeSnippetStatsHandler(s CodeSnippetStatsServiceInterface) *CodeSnippetStatsHandler {
-	return &CodeSnippetStatsHandler{service: s}
+// NewCodeSnippetStatsHandler は CodeSnippetStatsHandler を生成する。
+func NewCodeSnippetStatsHandler(getStats *usecase.GetCodeSnippetStatsUseCase) *CodeSnippetStatsHandler {
+	return &CodeSnippetStatsHandler{getStats: getStats}
 }
 
 // GetStats は指定ユーザーのコードスニペット活動集計統計を返す。
@@ -27,7 +22,7 @@ func (h *CodeSnippetStatsHandler) GetStats(c *gin.Context) {
 		return
 	}
 
-	stats, err := h.service.GetCodeSnippetStats(userID)
+	stats, err := h.getStats.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return

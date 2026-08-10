@@ -586,10 +586,6 @@ type QAStatsRepositoryInterface interface {
 	GetQAStats(userID uint) (*model.QAStats, error)
 }
 
-// CodeSnippetStatsRepositoryInterface はユーザーコードスニペット活動集計統計データ操作の契約を定義する。
-type CodeSnippetStatsRepositoryInterface interface {
-	GetCodeSnippetStats(userID uint) (*model.CodeSnippetStats, error)
-}
 
 // ProjectStatsRepositoryInterface はユーザープロジェクト活動集計統計データ操作の契約を定義する。
 type ProjectStatsRepositoryInterface interface {
