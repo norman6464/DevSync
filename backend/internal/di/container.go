@@ -375,9 +375,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	learningLogStatsService := service.NewLearningLogStatsService(learningLogStatsRepo)
 	c.LearningLogStatsHandler = handler.NewLearningLogStatsHandler(learningLogStatsService)
 
-	commentStatsRepo := repository.NewCommentStatsRepository(db)
-	commentStatsService := service.NewCommentStatsService(commentStatsRepo)
-	c.CommentStatsHandler = handler.NewCommentStatsHandler(commentStatsService)
+	// コメント統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	commentStatsRepo := persistence.NewCommentStatsRepository(db)
+	c.CommentStatsHandler = handler.NewCommentStatsHandler(
+		usecase.NewGetCommentStatsUseCase(commentStatsRepo),
+	)
 
 	notificationStatsRepo := repository.NewNotificationStatsRepository(db)
 	notificationStatsService := service.NewNotificationStatsService(notificationStatsRepo)
