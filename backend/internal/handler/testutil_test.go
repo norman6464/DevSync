@@ -1856,36 +1856,8 @@ func setupCodeSnippetHandler() (*CodeSnippetHandler, *MockCodeSnippetHandlerServ
 
 // ---------- NoteLinkHandler モック ----------
 
-// MockNoteLinkService は NoteLinkServiceInterface のモック実装。
-type MockNoteLinkService struct{ mock.Mock }
-
-func (m *MockNoteLinkService) CreateLink(sourceNoteID, targetNoteID, userID uint) error {
-	return m.Called(sourceNoteID, targetNoteID, userID).Error(0)
-}
-func (m *MockNoteLinkService) GetLinks(sourceNoteID uint) ([]model.NoteLink, error) {
-	args := m.Called(sourceNoteID)
-	return args.Get(0).([]model.NoteLink), args.Error(1)
-}
-func (m *MockNoteLinkService) GetBacklinks(targetNoteID uint) ([]model.NoteLink, error) {
-	args := m.Called(targetNoteID)
-	return args.Get(0).([]model.NoteLink), args.Error(1)
-}
-func (m *MockNoteLinkService) DeleteLink(sourceNoteID, targetNoteID, userID uint) error {
-	return m.Called(sourceNoteID, targetNoteID, userID).Error(0)
-}
-func (m *MockNoteLinkService) GetLinkStats(noteID, userID uint) (*model.NoteLinkStats, error) {
-	args := m.Called(noteID, userID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.NoteLinkStats), args.Error(1)
-}
-
-func setupNoteLinkHandler() (*NoteLinkHandler, *MockNoteLinkService) {
-	svc := new(MockNoteLinkService)
-	h := NewNoteLinkHandler(svc)
-	return h, svc
-}
+// NoteLink は DIP へ移行済み。テストは note_link_test.go で
+// 「本物の usecase + port モック」を組み立てる。
 
 // ---------- NoteTemplateHandler モック ----------
 
