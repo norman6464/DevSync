@@ -90,48 +90,7 @@ func TestBookmarkStats_GetStats_ServiceError(t *testing.T) {
 
 // ProjectStats のハンドラーテストは project_stats_test.go（DIP 版）へ移設。
 
-// ---------- QAStats ----------
-
-type MockQAStatsService struct{ mock.Mock }
-
-func (m *MockQAStatsService) GetQAStats(userID uint) (*model.QAStats, error) {
-	args := m.Called(userID)
-	if v := args.Get(0); v != nil {
-		return v.(*model.QAStats), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-func TestQAStats_GetStats_Success(t *testing.T) {
-	svc := new(MockQAStatsService)
-	h := NewQAStatsHandler(svc)
-	svc.On("GetQAStats", uint(5)).Return(&model.QAStats{}, nil)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/qa", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/qa", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestQAStats_GetStats_InvalidID(t *testing.T) {
-	svc := new(MockQAStatsService)
-	h := NewQAStatsHandler(svc)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/qa", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/abc/stats/qa", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestQAStats_GetStats_ServiceError(t *testing.T) {
-	svc := new(MockQAStatsService)
-	h := NewQAStatsHandler(svc)
-	svc.On("GetQAStats", uint(5)).Return(nil, errors.New("db error"))
-	r := newRouter(1)
-	r.GET("/users/:id/stats/qa", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/qa", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
+// QAStats のハンドラーテストは qa_stats_test.go（DIP 版）へ移設。
 
 // ---------- ReactionStats ----------
 
