@@ -19,74 +19,74 @@ import (
 // 全ハンドラとルーティングに必要な公開フィールドを保持する。
 type Container struct {
 	// ハンドラ
-	AuthHandler              *handler.AuthHandler
-	UserHandler              *handler.UserHandler
-	FollowHandler            *handler.FollowHandler
-	GitHubHandler            *handler.GitHubHandler
-	PostHandler              *handler.PostHandler
-	CodeSnippetHandler       *handler.CodeSnippetHandler
-	RankingHandler           *handler.RankingHandler
-	MessageHandler           *handler.MessageHandler
-	WebSocketHandler         *handler.WebSocketHandler
-	UploadHandler            *handler.UploadHandler
-	NotificationHandler      *handler.NotificationHandler
-	ZennHandler              *handler.ArticlePlatformHandler[model.ZennArticle, model.ZennStats]
-	QiitaHandler             *handler.ArticlePlatformHandler[model.QiitaArticle, model.QiitaStats]
-	LearningGoalHandler      *handler.LearningGoalHandler
-	ActivityReportHandler    *handler.ActivityReportHandler
-	ProjectHandler           *handler.ProjectHandler
-	LearningResourceHandler  *handler.LearningResourceHandler
-	BookReviewHandler        *handler.BookReviewHandler
-	QuestionHandler          *handler.QuestionHandler
-	AnswerHandler            *handler.AnswerHandler
-	RoadmapHandler           *handler.RoadmapHandler
-	ChatRoomHandler          *handler.ChatRoomHandler
-	AtCoderHandler           *handler.AtCoderHandler
-	BadgeHandler             *handler.BadgeHandler
-	LearningLogHandler       *handler.LearningLogHandler
-	AIAdviceHandler          *handler.AIAdviceHandler
-	EmailPreferencesHandler  *handler.EmailPreferencesHandler
-	LevelHandler             *handler.LevelHandler
-	LearningAnalyticsHandler *handler.LearningAnalyticsHandler
-	RecommendationHandler    *handler.RecommendationHandler
-	StudyCircleHandler       *handler.StudyCircleHandler
-	SearchHandler            *handler.SearchHandler
-	NoteHandler              *handler.NoteHandler
-	NoteFolderHandler        *handler.NoteFolderHandler
-	NoteTemplateHandler      *handler.NoteTemplateHandler
-	NoteLinkHandler          *handler.NoteLinkHandler
-	PostSeriesHandler        *handler.PostSeriesHandler
-	PostCollectionHandler    *handler.PostCollectionHandler
-	PostTagHandler           *handler.PostTagHandler
-	PostPinHandler           *handler.PostPinHandler
-	PostViewHandler          *handler.PostViewHandler
-	CommentLikeHandler       *handler.CommentLikeHandler
-	MentionHandler           *handler.MentionHandler
-	UserDashboardHandler     *handler.UserDashboardHandler
-	NoteStatsHandler              *handler.NoteStatsHandler
-	StudyCircleStatsHandler       *handler.StudyCircleStatsHandler
-	PostStatsHandler              *handler.PostStatsHandler
-	BookReviewStatsHandler        *handler.BookReviewStatsHandler
-	QAStatsHandler                *handler.QAStatsHandler
-	CodeSnippetStatsHandler       *handler.CodeSnippetStatsHandler
-	LearningResourceStatsHandler  *handler.LearningResourceStatsHandler
-	ProjectStatsHandler           *handler.ProjectStatsHandler
-	FollowStatsHandler            *handler.FollowStatsHandler
-	RoadmapStatsHandler           *handler.RoadmapStatsHandler
-	LearningLogStatsHandler       *handler.LearningLogStatsHandler
-	CommentStatsHandler           *handler.CommentStatsHandler
-	NotificationStatsHandler      *handler.NotificationStatsHandler
-	MessageStatsHandler           *handler.MessageStatsHandler
-	MentionStatsHandler           *handler.MentionStatsHandler
-	ReactionStatsHandler          *handler.ReactionStatsHandler
-	BookmarkStatsHandler          *handler.BookmarkStatsHandler
-	YouTubeHandler                *handler.YouTubeHandler
-	SpotifyHandler           *handler.SpotifyHandler
-	StreakFreezeHandler            *handler.StreakFreezeHandler
-	BookmarkCollectionHandler     *handler.BookmarkCollectionHandler
-	WeeklyChallengeHandler        *handler.WeeklyChallengeHandler
-	PostTemplateHandler           *handler.PostTemplateHandler
-	WidgetSettingsHandler         *handler.WidgetSettingsHandler
+	AuthHandler                  *handler.AuthHandler
+	UserHandler                  *handler.UserHandler
+	FollowHandler                *handler.FollowHandler
+	GitHubHandler                *handler.GitHubHandler
+	PostHandler                  *handler.PostHandler
+	CodeSnippetHandler           *handler.CodeSnippetHandler
+	RankingHandler               *handler.RankingHandler
+	MessageHandler               *handler.MessageHandler
+	WebSocketHandler             *handler.WebSocketHandler
+	UploadHandler                *handler.UploadHandler
+	NotificationHandler          *handler.NotificationHandler
+	ZennHandler                  *handler.ArticlePlatformHandler[model.ZennArticle, model.ZennStats]
+	QiitaHandler                 *handler.ArticlePlatformHandler[model.QiitaArticle, model.QiitaStats]
+	LearningGoalHandler          *handler.LearningGoalHandler
+	ActivityReportHandler        *handler.ActivityReportHandler
+	ProjectHandler               *handler.ProjectHandler
+	LearningResourceHandler      *handler.LearningResourceHandler
+	BookReviewHandler            *handler.BookReviewHandler
+	QuestionHandler              *handler.QuestionHandler
+	AnswerHandler                *handler.AnswerHandler
+	RoadmapHandler               *handler.RoadmapHandler
+	ChatRoomHandler              *handler.ChatRoomHandler
+	AtCoderHandler               *handler.AtCoderHandler
+	BadgeHandler                 *handler.BadgeHandler
+	LearningLogHandler           *handler.LearningLogHandler
+	AIAdviceHandler              *handler.AIAdviceHandler
+	EmailPreferencesHandler      *handler.EmailPreferencesHandler
+	LevelHandler                 *handler.LevelHandler
+	LearningAnalyticsHandler     *handler.LearningAnalyticsHandler
+	RecommendationHandler        *handler.RecommendationHandler
+	StudyCircleHandler           *handler.StudyCircleHandler
+	SearchHandler                *handler.SearchHandler
+	NoteHandler                  *handler.NoteHandler
+	NoteFolderHandler            *handler.NoteFolderHandler
+	NoteTemplateHandler          *handler.NoteTemplateHandler
+	NoteLinkHandler              *handler.NoteLinkHandler
+	PostSeriesHandler            *handler.PostSeriesHandler
+	PostCollectionHandler        *handler.PostCollectionHandler
+	PostTagHandler               *handler.PostTagHandler
+	PostPinHandler               *handler.PostPinHandler
+	PostViewHandler              *handler.PostViewHandler
+	CommentLikeHandler           *handler.CommentLikeHandler
+	MentionHandler               *handler.MentionHandler
+	UserDashboardHandler         *handler.UserDashboardHandler
+	NoteStatsHandler             *handler.NoteStatsHandler
+	StudyCircleStatsHandler      *handler.StudyCircleStatsHandler
+	PostStatsHandler             *handler.PostStatsHandler
+	BookReviewStatsHandler       *handler.BookReviewStatsHandler
+	QAStatsHandler               *handler.QAStatsHandler
+	CodeSnippetStatsHandler      *handler.CodeSnippetStatsHandler
+	LearningResourceStatsHandler *handler.LearningResourceStatsHandler
+	ProjectStatsHandler          *handler.ProjectStatsHandler
+	FollowStatsHandler           *handler.FollowStatsHandler
+	RoadmapStatsHandler          *handler.RoadmapStatsHandler
+	LearningLogStatsHandler      *handler.LearningLogStatsHandler
+	CommentStatsHandler          *handler.CommentStatsHandler
+	NotificationStatsHandler     *handler.NotificationStatsHandler
+	MessageStatsHandler          *handler.MessageStatsHandler
+	MentionStatsHandler          *handler.MentionStatsHandler
+	ReactionStatsHandler         *handler.ReactionStatsHandler
+	BookmarkStatsHandler         *handler.BookmarkStatsHandler
+	YouTubeHandler               *handler.YouTubeHandler
+	SpotifyHandler               *handler.SpotifyHandler
+	StreakFreezeHandler          *handler.StreakFreezeHandler
+	BookmarkCollectionHandler    *handler.BookmarkCollectionHandler
+	WeeklyChallengeHandler       *handler.WeeklyChallengeHandler
+	PostTemplateHandler          *handler.PostTemplateHandler
+	WidgetSettingsHandler        *handler.WidgetSettingsHandler
 	WeeklyGoalHandler            *handler.WeeklyGoalHandler
 	NoteVersionHandler           *handler.NoteVersionHandler
 	ResourceProgressHandler      *handler.ResourceProgressHandler
@@ -478,9 +478,18 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	c.StreakFreezeHandler = handler.NewStreakFreezeHandler(streakFreezeService)
 
 	// ブックマークコレクションサービス
-	bookmarkCollectionRepo := repository.NewBookmarkCollectionRepository(db)
-	bookmarkCollectionService := service.NewBookmarkCollectionService(bookmarkCollectionRepo)
-	c.BookmarkCollectionHandler = handler.NewBookmarkCollectionHandler(bookmarkCollectionService)
+	// ブックマークコレクションはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	bookmarkCollectionRepo := persistence.NewBookmarkCollectionRepository(db)
+	c.BookmarkCollectionHandler = handler.NewBookmarkCollectionHandler(
+		usecase.NewCreateBookmarkCollectionUseCase(bookmarkCollectionRepo),
+		usecase.NewListBookmarkCollectionsUseCase(bookmarkCollectionRepo),
+		usecase.NewUpdateBookmarkCollectionUseCase(bookmarkCollectionRepo),
+		usecase.NewDeleteBookmarkCollectionUseCase(bookmarkCollectionRepo),
+		usecase.NewAddPostToBookmarkCollectionUseCase(bookmarkCollectionRepo),
+		usecase.NewRemovePostFromBookmarkCollectionUseCase(bookmarkCollectionRepo),
+		usecase.NewListBookmarkCollectionPostsUseCase(bookmarkCollectionRepo),
+		usecase.NewCountBookmarkCollectionsUseCase(bookmarkCollectionRepo),
+	)
 
 	// ウィークリーチャレンジサービス
 	weeklyChallengeRepo := repository.NewWeeklyChallengeRepository(db)

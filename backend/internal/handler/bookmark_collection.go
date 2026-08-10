@@ -5,28 +5,42 @@ import (
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// BookmarkCollectionServiceInterface はBookmarkCollectionHandlerが依存するサービスのインターフェース。
-type BookmarkCollectionServiceInterface interface {
-	Create(collection *model.BookmarkCollection) error
-	GetByUserID(userID uint) ([]model.BookmarkCollection, error)
-	Update(id, userID uint, updates *model.BookmarkCollection) (*model.BookmarkCollection, error)
-	Delete(id, userID uint) error
-	AddPost(collectionID, postID, userID uint) error
-	RemovePost(collectionID, postID, userID uint) error
-	GetPosts(collectionID uint, limit, offset int) ([]model.Post, int64, error)
-	CountByUserID(userID uint) (int64, error)
-}
-
-// BookmarkCollectionHandler はブックマークコレクション関連のHTTPハンドラ。
+// BookmarkCollectionHandler はブックマークコレクション関連の HTTP ハンドラ。
 type BookmarkCollectionHandler struct {
-	service BookmarkCollectionServiceInterface
+	create     *usecase.CreateBookmarkCollectionUseCase
+	list       *usecase.ListBookmarkCollectionsUseCase
+	update     *usecase.UpdateBookmarkCollectionUseCase
+	delete     *usecase.DeleteBookmarkCollectionUseCase
+	addPost    *usecase.AddPostToBookmarkCollectionUseCase
+	removePost *usecase.RemovePostFromBookmarkCollectionUseCase
+	listPosts  *usecase.ListBookmarkCollectionPostsUseCase
+	count      *usecase.CountBookmarkCollectionsUseCase
 }
 
-// NewBookmarkCollectionHandler は新しいBookmarkCollectionHandlerインスタンスを生成する。
-func NewBookmarkCollectionHandler(s BookmarkCollectionServiceInterface) *BookmarkCollectionHandler {
-	return &BookmarkCollectionHandler{service: s}
+// NewBookmarkCollectionHandler は BookmarkCollectionHandler を生成する。
+func NewBookmarkCollectionHandler(
+	create *usecase.CreateBookmarkCollectionUseCase,
+	list *usecase.ListBookmarkCollectionsUseCase,
+	update *usecase.UpdateBookmarkCollectionUseCase,
+	deleteUC *usecase.DeleteBookmarkCollectionUseCase,
+	addPost *usecase.AddPostToBookmarkCollectionUseCase,
+	removePost *usecase.RemovePostFromBookmarkCollectionUseCase,
+	listPosts *usecase.ListBookmarkCollectionPostsUseCase,
+	count *usecase.CountBookmarkCollectionsUseCase,
+) *BookmarkCollectionHandler {
+	return &BookmarkCollectionHandler{
+		create:     create,
+		list:       list,
+		update:     update,
+		delete:     deleteUC,
+		addPost:    addPost,
+		removePost: removePost,
+		listPosts:  listPosts,
+		count:      count,
+	}
 }
 
 // Create は新しいブックマークコレクションを作成する。
@@ -45,7 +59,7 @@ func (h *BookmarkCollectionHandler) Create(c *gin.Context) {
 		Color:       input.Color,
 	}
 
-	if err := h.service.Create(collection); err != nil {
+	if err := h.create.Execute(c.Request.Context(), collection); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -57,7 +71,7 @@ func (h *BookmarkCollectionHandler) Create(c *gin.Context) {
 func (h *BookmarkCollectionHandler) GetMyCollections(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	collections, err := h.service.GetByUserID(userID)
+	collections, err := h.list.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -79,7 +93,7 @@ func (h *BookmarkCollectionHandler) Update(c *gin.Context) {
 		return
 	}
 
-	updated, err := h.service.Update(id, userID, &model.BookmarkCollection{
+	updated, err := h.update.Execute(c.Request.Context(), id, userID, &model.BookmarkCollection{
 		Name:        input.Name,
 		Description: input.Description,
 		Color:       input.Color,
@@ -100,7 +114,7 @@ func (h *BookmarkCollectionHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Delete(id, userID); err != nil {
+	if err := h.delete.Execute(c.Request.Context(), id, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -120,7 +134,7 @@ func (h *BookmarkCollectionHandler) AddPost(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.AddPost(collectionID, postID, userID); err != nil {
+	if err := h.addPost.Execute(c.Request.Context(), collectionID, postID, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -140,7 +154,7 @@ func (h *BookmarkCollectionHandler) RemovePost(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.RemovePost(collectionID, postID, userID); err != nil {
+	if err := h.removePost.Execute(c.Request.Context(), collectionID, postID, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -156,7 +170,7 @@ func (h *BookmarkCollectionHandler) GetPosts(c *gin.Context) {
 	}
 	limit, offset := parseLimitOffset(c)
 
-	posts, total, err := h.service.GetPosts(collectionID, limit, offset)
+	posts, total, err := h.listPosts.Execute(c.Request.Context(), collectionID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -171,7 +185,7 @@ func (h *BookmarkCollectionHandler) GetPosts(c *gin.Context) {
 // GetMyCount は認証ユーザーのコレクション総数を返す。
 func (h *BookmarkCollectionHandler) GetMyCount(c *gin.Context) {
 	userID := c.GetUint("userID")
-	count, err := h.service.CountByUserID(userID)
+	count, err := h.count.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
