@@ -2,22 +2,17 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// BookReviewStatsServiceInterface はBookReviewStatsHandlerが依存するサービスメソッドを定義する。
-type BookReviewStatsServiceInterface interface {
-	GetBookReviewStats(userID uint) (*model.BookReviewStats, error)
-}
-
-// BookReviewStatsHandler はユーザー書籍レビュー統計関連のHTTPハンドラ。
+// BookReviewStatsHandler はユーザー書籍レビュー統計関連の HTTP ハンドラ。
 type BookReviewStatsHandler struct {
-	service BookReviewStatsServiceInterface
+	getStats *usecase.GetBookReviewStatsUseCase
 }
 
-// NewBookReviewStatsHandler は新しいBookReviewStatsHandlerインスタンスを生成する。
-func NewBookReviewStatsHandler(s BookReviewStatsServiceInterface) *BookReviewStatsHandler {
-	return &BookReviewStatsHandler{service: s}
+// NewBookReviewStatsHandler は BookReviewStatsHandler を生成する。
+func NewBookReviewStatsHandler(getStats *usecase.GetBookReviewStatsUseCase) *BookReviewStatsHandler {
+	return &BookReviewStatsHandler{getStats: getStats}
 }
 
 // GetStats は指定ユーザーの書籍レビュー集計統計を返す。
@@ -27,7 +22,7 @@ func (h *BookReviewStatsHandler) GetStats(c *gin.Context) {
 		return
 	}
 
-	stats, err := h.service.GetBookReviewStats(userID)
+	stats, err := h.getStats.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return

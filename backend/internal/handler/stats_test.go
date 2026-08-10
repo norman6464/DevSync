@@ -109,48 +109,7 @@ func TestNoteStats_GetStats_ServiceError(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
-// ---------- BookReviewStats ----------
-
-type MockBookReviewStatsService struct{ mock.Mock }
-
-func (m *MockBookReviewStatsService) GetBookReviewStats(userID uint) (*model.BookReviewStats, error) {
-	args := m.Called(userID)
-	if v := args.Get(0); v != nil {
-		return v.(*model.BookReviewStats), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-func TestBookReviewStats_GetStats_Success(t *testing.T) {
-	svc := new(MockBookReviewStatsService)
-	h := NewBookReviewStatsHandler(svc)
-	svc.On("GetBookReviewStats", uint(5)).Return(&model.BookReviewStats{}, nil)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/book-reviews", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/book-reviews", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestBookReviewStats_GetStats_InvalidID(t *testing.T) {
-	svc := new(MockBookReviewStatsService)
-	h := NewBookReviewStatsHandler(svc)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/book-reviews", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/abc/stats/book-reviews", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestBookReviewStats_GetStats_ServiceError(t *testing.T) {
-	svc := new(MockBookReviewStatsService)
-	h := NewBookReviewStatsHandler(svc)
-	svc.On("GetBookReviewStats", uint(5)).Return(nil, errors.New("db error"))
-	r := newRouter(1)
-	r.GET("/users/:id/stats/book-reviews", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/book-reviews", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
+// BookReviewStats のハンドラーテストは book_review_stats_test.go（DIP 版）へ移設。
 
 // ---------- BookmarkStats ----------
 

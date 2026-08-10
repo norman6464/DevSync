@@ -576,10 +576,6 @@ type PostStatsRepositoryInterface interface {
 	GetPostStats(userID uint) (*model.PostStats, error)
 }
 
-// BookReviewStatsRepositoryInterface はユーザー書籍レビュー集計統計データ操作の契約を定義する。
-type BookReviewStatsRepositoryInterface interface {
-	GetBookReviewStats(userID uint) (*model.BookReviewStats, error)
-}
 
 // QAStatsRepositoryInterface はユーザーQ&A活動集計統計データ操作の契約を定義する。
 type QAStatsRepositoryInterface interface {
