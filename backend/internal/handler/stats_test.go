@@ -115,48 +115,7 @@ func TestBookmarkStats_GetStats_ServiceError(t *testing.T) {
 
 // CodeSnippetStats のハンドラーテストは code_snippet_stats_test.go（DIP 版）へ移設。
 
-// ---------- CommentStats ----------
-
-type MockCommentStatsService struct{ mock.Mock }
-
-func (m *MockCommentStatsService) GetCommentStats(userID uint) (*model.CommentStats, error) {
-	args := m.Called(userID)
-	if v := args.Get(0); v != nil {
-		return v.(*model.CommentStats), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-func TestCommentStats_GetStats_Success(t *testing.T) {
-	svc := new(MockCommentStatsService)
-	h := NewCommentStatsHandler(svc)
-	svc.On("GetCommentStats", uint(5)).Return(&model.CommentStats{}, nil)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/comments", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/comments", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestCommentStats_GetStats_InvalidID(t *testing.T) {
-	svc := new(MockCommentStatsService)
-	h := NewCommentStatsHandler(svc)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/comments", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/abc/stats/comments", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestCommentStats_GetStats_ServiceError(t *testing.T) {
-	svc := new(MockCommentStatsService)
-	h := NewCommentStatsHandler(svc)
-	svc.On("GetCommentStats", uint(5)).Return(nil, errors.New("db error"))
-	r := newRouter(1)
-	r.GET("/users/:id/stats/comments", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/comments", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
+// CommentStats のハンドラーテストは comment_stats_test.go（DIP 版）へ移設。
 
 // FollowStats のハンドラーテストは follow_stats_test.go（DIP 版）へ移設。
 
