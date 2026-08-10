@@ -2,22 +2,17 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// RoadmapStatsServiceInterface はRoadmapStatsHandlerが依存するサービスメソッドを定義する。
-type RoadmapStatsServiceInterface interface {
-	GetRoadmapStats(userID uint) (*model.RoadmapStats, error)
-}
-
-// RoadmapStatsHandler はユーザーロードマップ統計関連のHTTPハンドラ。
+// RoadmapStatsHandler はユーザーロードマップ統計関連の HTTP ハンドラ。
 type RoadmapStatsHandler struct {
-	service RoadmapStatsServiceInterface
+	getStats *usecase.GetRoadmapStatsUseCase
 }
 
-// NewRoadmapStatsHandler は新しいRoadmapStatsHandlerインスタンスを生成する。
-func NewRoadmapStatsHandler(s RoadmapStatsServiceInterface) *RoadmapStatsHandler {
-	return &RoadmapStatsHandler{service: s}
+// NewRoadmapStatsHandler は RoadmapStatsHandler を生成する。
+func NewRoadmapStatsHandler(getStats *usecase.GetRoadmapStatsUseCase) *RoadmapStatsHandler {
+	return &RoadmapStatsHandler{getStats: getStats}
 }
 
 // GetStats は指定ユーザーのロードマップ統計を返す。
@@ -27,7 +22,7 @@ func (h *RoadmapStatsHandler) GetStats(c *gin.Context) {
 		return
 	}
 
-	stats, err := h.service.GetRoadmapStats(userID)
+	stats, err := h.getStats.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return

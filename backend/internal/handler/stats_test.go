@@ -178,48 +178,7 @@ func TestReactionStats_GetSummary_ServiceError(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
-// ---------- RoadmapStats ----------
-
-type MockRoadmapStatsService struct{ mock.Mock }
-
-func (m *MockRoadmapStatsService) GetRoadmapStats(userID uint) (*model.RoadmapStats, error) {
-	args := m.Called(userID)
-	if v := args.Get(0); v != nil {
-		return v.(*model.RoadmapStats), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-func TestRoadmapStats_GetStats_Success(t *testing.T) {
-	svc := new(MockRoadmapStatsService)
-	h := NewRoadmapStatsHandler(svc)
-	svc.On("GetRoadmapStats", uint(5)).Return(&model.RoadmapStats{}, nil)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/roadmaps", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/roadmaps", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestRoadmapStats_GetStats_InvalidID(t *testing.T) {
-	svc := new(MockRoadmapStatsService)
-	h := NewRoadmapStatsHandler(svc)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/roadmaps", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/abc/stats/roadmaps", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestRoadmapStats_GetStats_ServiceError(t *testing.T) {
-	svc := new(MockRoadmapStatsService)
-	h := NewRoadmapStatsHandler(svc)
-	svc.On("GetRoadmapStats", uint(5)).Return(nil, errors.New("db error"))
-	r := newRouter(1)
-	r.GET("/users/:id/stats/roadmaps", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/roadmaps", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
+// RoadmapStats のハンドラーテストは roadmap_stats_test.go（DIP 版）へ移設。
 
 // ---------- StudyCircleStats ----------
 
