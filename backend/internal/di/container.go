@@ -359,9 +359,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewGetLearningResourceStatsUseCase(learningResourceStatsRepo),
 	)
 
-	projectStatsRepo := repository.NewProjectStatsRepository(db)
-	projectStatsService := service.NewProjectStatsService(projectStatsRepo)
-	c.ProjectStatsHandler = handler.NewProjectStatsHandler(projectStatsService)
+	// プロジェクト統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	projectStatsRepo := persistence.NewProjectStatsRepository(db)
+	c.ProjectStatsHandler = handler.NewProjectStatsHandler(
+		usecase.NewGetProjectStatsUseCase(projectStatsRepo),
+	)
 
 	// フォロー統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	followStatsRepo := persistence.NewFollowStatsRepository(db)
