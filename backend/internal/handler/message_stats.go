@@ -2,22 +2,17 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// MessageStatsServiceInterface はMessageStatsHandlerが依存するサービスメソッドを定義する。
-type MessageStatsServiceInterface interface {
-	GetMessageStats(userID uint) (*model.MessageStats, error)
-}
-
-// MessageStatsHandler はユーザーメッセージ統計関連のHTTPハンドラ。
+// MessageStatsHandler はユーザーメッセージ統計関連の HTTP ハンドラ。
 type MessageStatsHandler struct {
-	service MessageStatsServiceInterface
+	getStats *usecase.GetMessageStatsUseCase
 }
 
-// NewMessageStatsHandler は新しいMessageStatsHandlerインスタンスを生成する。
-func NewMessageStatsHandler(s MessageStatsServiceInterface) *MessageStatsHandler {
-	return &MessageStatsHandler{service: s}
+// NewMessageStatsHandler は MessageStatsHandler を生成する。
+func NewMessageStatsHandler(getStats *usecase.GetMessageStatsUseCase) *MessageStatsHandler {
+	return &MessageStatsHandler{getStats: getStats}
 }
 
 // GetStats は指定ユーザーのメッセージ集計統計を返す。
@@ -27,7 +22,7 @@ func (h *MessageStatsHandler) GetStats(c *gin.Context) {
 		return
 	}
 
-	stats, err := h.service.GetMessageStats(userID)
+	stats, err := h.getStats.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
