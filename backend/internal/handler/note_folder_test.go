@@ -1,70 +1,80 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
-// MockNoteFolderService は NoteFolderService のモック実装。
-type MockNoteFolderService struct {
-	mock.Mock
+// mockNoteFolderRepo は usecase/repository.NoteFolderRepository のモック（ctx 付き）。
+type mockNoteFolderRepo struct{ mock.Mock }
+
+func (m *mockNoteFolderRepo) Create(ctx context.Context, folder *model.NoteFolder) error {
+	return m.Called(ctx, folder).Error(0)
 }
 
-func (m *MockNoteFolderService) Create(folder *model.NoteFolder) error {
-	return m.Called(folder).Error(0)
+func (m *mockNoteFolderRepo) FindByID(ctx context.Context, id uint) (*model.NoteFolder, error) {
+	args := m.Called(ctx, id)
+	f, _ := args.Get(0).(*model.NoteFolder)
+	return f, args.Error(1)
 }
 
-func (m *MockNoteFolderService) GetByID(id uint) (*model.NoteFolder, error) {
-	args := m.Called(id)
-	if folder := args.Get(0); folder != nil {
-		return folder.(*model.NoteFolder), args.Error(1)
-	}
-	return nil, args.Error(1)
+func (m *mockNoteFolderRepo) FindByUserID(ctx context.Context, userID uint, limit, offset int) ([]model.NoteFolder, int64, error) {
+	args := m.Called(ctx, userID, limit, offset)
+	f, _ := args.Get(0).([]model.NoteFolder)
+	return f, args.Get(1).(int64), args.Error(2)
 }
 
-func (m *MockNoteFolderService) GetByUserID(userID uint, limit, offset int) ([]model.NoteFolder, int64, error) {
-	args := m.Called(userID, limit, offset)
-	return args.Get(0).([]model.NoteFolder), args.Get(1).(int64), args.Error(2)
+func (m *mockNoteFolderRepo) FindByParentID(ctx context.Context, parentID uint) ([]model.NoteFolder, error) {
+	args := m.Called(ctx, parentID)
+	f, _ := args.Get(0).([]model.NoteFolder)
+	return f, args.Error(1)
 }
 
-func (m *MockNoteFolderService) GetChildren(parentID uint) ([]model.NoteFolder, error) {
-	args := m.Called(parentID)
-	return args.Get(0).([]model.NoteFolder), args.Error(1)
+func (m *mockNoteFolderRepo) FindRootsByUserID(ctx context.Context, userID uint) ([]model.NoteFolder, error) {
+	args := m.Called(ctx, userID)
+	f, _ := args.Get(0).([]model.NoteFolder)
+	return f, args.Error(1)
 }
 
-func (m *MockNoteFolderService) GetRootFolders(userID uint) ([]model.NoteFolder, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.NoteFolder), args.Error(1)
+func (m *mockNoteFolderRepo) Update(ctx context.Context, folder *model.NoteFolder) error {
+	return m.Called(ctx, folder).Error(0)
 }
 
-func (m *MockNoteFolderService) Update(id, userID uint, name string, parentID *uint) (*model.NoteFolder, error) {
-	args := m.Called(id, userID, name, parentID)
-	if f := args.Get(0); f != nil {
-		return f.(*model.NoteFolder), args.Error(1)
-	}
-	return nil, args.Error(1)
+func (m *mockNoteFolderRepo) Delete(ctx context.Context, id uint) error {
+	return m.Called(ctx, id).Error(0)
 }
 
-func (m *MockNoteFolderService) Delete(id, userID uint) error {
-	return m.Called(id, userID).Error(0)
-}
-
-func (m *MockNoteFolderService) CountByUserID(userID uint) (int64, error) {
-	args := m.Called(userID)
+func (m *mockNoteFolderRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
+	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)
 }
 
-// newTestNoteFolderHandler はテスト用のNoteFolderHandlerを生成する。
-func newTestNoteFolderHandler() (*NoteFolderHandler, *MockNoteFolderService) {
-	mockService := new(MockNoteFolderService)
-	handler := NewNoteFolderHandler(mockService)
-	return handler, mockService
+// newTestNoteFolderHandler は本物の usecase と port モックで NoteFolderHandler を組む。
+func newTestNoteFolderHandler() (*NoteFolderHandler, *mockNoteFolderRepo) {
+	repo := new(mockNoteFolderRepo)
+	h := NewNoteFolderHandler(
+		usecase.NewCreateNoteFolderUseCase(repo),
+		usecase.NewGetNoteFolderUseCase(repo),
+		usecase.NewListNoteFoldersUseCase(repo),
+		usecase.NewListChildNoteFoldersUseCase(repo),
+		usecase.NewListRootNoteFoldersUseCase(repo),
+		usecase.NewUpdateNoteFolderUseCase(repo),
+		usecase.NewCountNoteFoldersUseCase(repo),
+		usecase.NewDeleteNoteFolderUseCase(repo),
+	)
+	return h, repo
+}
+
+// ownedFolder は所有者が userID=1 のフォルダを返す。
+func ownedFolder() *model.NoteFolder {
+	return &model.NoteFolder{ID: 1, UserID: 1, Name: "テストフォルダ"}
 }
 
 // ============================================================
@@ -72,15 +82,44 @@ func newTestNoteFolderHandler() (*NoteFolderHandler, *MockNoteFolderService) {
 // ============================================================
 
 func TestNoteFolderHandler_Create(t *testing.T) {
-	h, svc := newTestNoteFolderHandler()
+	h, repo := newTestNoteFolderHandler()
 	r := newRouter(1)
 	r.POST("/folders", h.Create)
 
-	svc.On("Create", mock.AnythingOfType("*model.NoteFolder")).Return(nil)
+	repo.On("Create", mock.Anything, mock.MatchedBy(func(f *model.NoteFolder) bool {
+		return f.UserID == 1 && f.Name == "新規フォルダ"
+	})).Return(nil)
 
 	w := doRequest(r, "POST", "/folders", map[string]interface{}{"name": "新規フォルダ"})
 	assertStatus(t, w, http.StatusCreated)
-	svc.AssertExpectations(t)
+	repo.AssertExpectations(t)
+}
+
+// 名前が長すぎる場合は 400 を返し、作成しない。
+func TestNoteFolderHandler_Create_NameTooLong(t *testing.T) {
+	h, repo := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.POST("/folders", h.Create)
+
+	long := ""
+	for i := 0; i < 101; i++ {
+		long += "a"
+	}
+
+	w := doRequest(r, "POST", "/folders", map[string]interface{}{"name": long})
+	assertStatus(t, w, http.StatusBadRequest)
+	repo.AssertNotCalled(t, "Create")
+}
+
+// 名前が空白のみの場合は 400 を返し、作成しない。
+func TestNoteFolderHandler_Create_BlankName(t *testing.T) {
+	h, repo := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.POST("/folders", h.Create)
+
+	w := doRequest(r, "POST", "/folders", map[string]interface{}{"name": "   "})
+	assertStatus(t, w, http.StatusBadRequest)
+	repo.AssertNotCalled(t, "Create")
 }
 
 // ============================================================
@@ -88,21 +127,29 @@ func TestNoteFolderHandler_Create(t *testing.T) {
 // ============================================================
 
 func TestNoteFolderHandler_GetByID(t *testing.T) {
-	h, svc := newTestNoteFolderHandler()
+	h, repo := newTestNoteFolderHandler()
 	r := newRouter(1)
 	r.GET("/folders/:id", h.GetByID)
 
-	folder := &model.NoteFolder{
-		ID:     1,
-		UserID: 1,
-		Name:   "テストフォルダ",
-	}
-
-	svc.On("GetByID", uint(1)).Return(folder, nil)
+	repo.On("FindByID", mock.Anything, uint(1)).Return(ownedFolder(), nil)
 
 	w := doRequest(r, "GET", "/folders/1", nil)
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	repo.AssertExpectations(t)
+}
+
+// 所有権を検証しないため、他ユーザーのフォルダも取得できる（移行前の挙動を維持している）。
+func TestNoteFolderHandler_GetByID_OtherUsersFolder(t *testing.T) {
+	h, repo := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.GET("/folders/:id", h.GetByID)
+
+	repo.On("FindByID", mock.Anything, uint(1)).
+		Return(&model.NoteFolder{ID: 1, UserID: 999, Name: "他人のフォルダ"}, nil)
+
+	w := doRequest(r, "GET", "/folders/1", nil)
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
 }
 
 // ============================================================
@@ -110,7 +157,7 @@ func TestNoteFolderHandler_GetByID(t *testing.T) {
 // ============================================================
 
 func TestNoteFolderHandler_GetByUserID(t *testing.T) {
-	h, svc := newTestNoteFolderHandler()
+	h, repo := newTestNoteFolderHandler()
 	r := newRouter(1)
 	r.GET("/folders", h.GetByUserID)
 
@@ -118,12 +165,13 @@ func TestNoteFolderHandler_GetByUserID(t *testing.T) {
 		{ID: 1, UserID: 1, Name: "フォルダ1"},
 		{ID: 2, UserID: 1, Name: "フォルダ2"},
 	}
-
-	svc.On("GetByUserID", uint(1), 20, 0).Return(folders, int64(2), nil)
+	repo.On("FindByUserID", mock.Anything, uint(1), 20, 0).Return(folders, int64(2), nil)
 
 	w := doRequest(r, "GET", "/folders", nil)
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	body := parseJSON(t, w)
+	assert.Equal(t, float64(2), body["total"])
+	repo.AssertExpectations(t)
 }
 
 // ============================================================
@@ -131,7 +179,7 @@ func TestNoteFolderHandler_GetByUserID(t *testing.T) {
 // ============================================================
 
 func TestNoteFolderHandler_GetChildren(t *testing.T) {
-	h, svc := newTestNoteFolderHandler()
+	h, repo := newTestNoteFolderHandler()
 	r := newRouter(1)
 	r.GET("/folders/:id/children", h.GetChildren)
 
@@ -140,12 +188,11 @@ func TestNoteFolderHandler_GetChildren(t *testing.T) {
 		{ID: 2, UserID: 1, Name: "子フォルダ1", ParentID: &parentID},
 		{ID: 3, UserID: 1, Name: "子フォルダ2", ParentID: &parentID},
 	}
-
-	svc.On("GetChildren", uint(1)).Return(children, nil)
+	repo.On("FindByParentID", mock.Anything, uint(1)).Return(children, nil)
 
 	w := doRequest(r, "GET", "/folders/1/children", nil)
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	repo.AssertExpectations(t)
 }
 
 // ============================================================
@@ -153,20 +200,19 @@ func TestNoteFolderHandler_GetChildren(t *testing.T) {
 // ============================================================
 
 func TestNoteFolderHandler_GetRootFolders(t *testing.T) {
-	h, svc := newTestNoteFolderHandler()
+	h, repo := newTestNoteFolderHandler()
 	r := newRouter(1)
 	r.GET("/folders/root", h.GetRootFolders)
 
-	rootFolders := []model.NoteFolder{
-		{ID: 1, UserID: 1, Name: "ルートフォルダ1", ParentID: nil},
-		{ID: 2, UserID: 1, Name: "ルートフォルダ2", ParentID: nil},
+	roots := []model.NoteFolder{
+		{ID: 1, UserID: 1, Name: "ルートフォルダ1"},
+		{ID: 2, UserID: 1, Name: "ルートフォルダ2"},
 	}
-
-	svc.On("GetRootFolders", uint(1)).Return(rootFolders, nil)
+	repo.On("FindRootsByUserID", mock.Anything, uint(1)).Return(roots, nil)
 
 	w := doRequest(r, "GET", "/folders/root", nil)
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	repo.AssertExpectations(t)
 }
 
 // ============================================================
@@ -174,21 +220,73 @@ func TestNoteFolderHandler_GetRootFolders(t *testing.T) {
 // ============================================================
 
 func TestNoteFolderHandler_Update(t *testing.T) {
-	h, svc := newTestNoteFolderHandler()
+	h, repo := newTestNoteFolderHandler()
 	r := newRouter(1)
 	r.PUT("/folders/:id", h.Update)
 
-	updatedFolder := &model.NoteFolder{
-		ID:     1,
-		UserID: 1,
-		Name:   "更新後フォルダ名",
-	}
-
-	svc.On("Update", uint(1), uint(1), "更新後フォルダ名", (*uint)(nil)).Return(updatedFolder, nil)
+	repo.On("FindByID", mock.Anything, uint(1)).Return(ownedFolder(), nil)
+	repo.On("Update", mock.Anything, mock.MatchedBy(func(f *model.NoteFolder) bool {
+		return f.Name == "更新後フォルダ名"
+	})).Return(nil)
 
 	w := doRequest(r, "PUT", "/folders/1", map[string]interface{}{"name": "更新後フォルダ名"})
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	repo.AssertExpectations(t)
+}
+
+// 所有者以外の更新は 403 を返し、保存しない。
+func TestNoteFolderHandler_Update_Forbidden(t *testing.T) {
+	h, repo := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.PUT("/folders/:id", h.Update)
+
+	repo.On("FindByID", mock.Anything, uint(1)).
+		Return(&model.NoteFolder{ID: 1, UserID: 999, Name: "他人のフォルダ"}, nil)
+
+	w := doRequest(r, "PUT", "/folders/1", map[string]interface{}{"name": "変更"})
+	assertStatus(t, w, http.StatusForbidden)
+	repo.AssertNotCalled(t, "Update")
+}
+
+// 自分自身を親にする更新は 400 を返し、保存しない。
+func TestNoteFolderHandler_Update_SelfParent(t *testing.T) {
+	h, repo := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.PUT("/folders/:id", h.Update)
+
+	repo.On("FindByID", mock.Anything, uint(1)).Return(ownedFolder(), nil)
+
+	w := doRequest(r, "PUT", "/folders/1", map[string]interface{}{"parent_id": 1})
+	assertStatus(t, w, http.StatusBadRequest)
+	repo.AssertNotCalled(t, "Update")
+}
+
+// 自分の子孫を親にする更新は 400 を返し、保存しない。
+func TestNoteFolderHandler_Update_Cycle(t *testing.T) {
+	h, repo := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.PUT("/folders/:id", h.Update)
+
+	repo.On("FindByID", mock.Anything, uint(1)).Return(ownedFolder(), nil)
+	repo.On("FindByParentID", mock.Anything, uint(1)).
+		Return([]model.NoteFolder{{ID: 2, UserID: 1, Name: "子"}}, nil)
+
+	w := doRequest(r, "PUT", "/folders/1", map[string]interface{}{"parent_id": 2})
+	assertStatus(t, w, http.StatusBadRequest)
+	repo.AssertNotCalled(t, "Update")
+}
+
+// 名前が空白のみの更新は 400 を返し、保存しない。
+func TestNoteFolderHandler_Update_BlankName(t *testing.T) {
+	h, repo := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.PUT("/folders/:id", h.Update)
+
+	repo.On("FindByID", mock.Anything, uint(1)).Return(ownedFolder(), nil)
+
+	w := doRequest(r, "PUT", "/folders/1", map[string]interface{}{"name": "   "})
+	assertStatus(t, w, http.StatusBadRequest)
+	repo.AssertNotCalled(t, "Update")
 }
 
 // ============================================================
@@ -196,27 +294,79 @@ func TestNoteFolderHandler_Update(t *testing.T) {
 // ============================================================
 
 func TestNoteFolderHandler_Delete(t *testing.T) {
-	h, svc := newTestNoteFolderHandler()
+	h, repo := newTestNoteFolderHandler()
 	r := newRouter(1)
 	r.DELETE("/folders/:id", h.Delete)
 
-	svc.On("Delete", uint(1), uint(1)).Return(nil)
+	repo.On("FindByID", mock.Anything, uint(1)).Return(ownedFolder(), nil)
+	repo.On("Delete", mock.Anything, uint(1)).Return(nil)
 
 	w := doRequest(r, "DELETE", "/folders/1", nil)
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	repo.AssertExpectations(t)
+}
+
+// 所有者以外の削除は 403 を返し、削除しない。
+func TestNoteFolderHandler_Delete_Forbidden(t *testing.T) {
+	h, repo := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.DELETE("/folders/:id", h.Delete)
+
+	repo.On("FindByID", mock.Anything, uint(1)).
+		Return(&model.NoteFolder{ID: 1, UserID: 999}, nil)
+
+	w := doRequest(r, "DELETE", "/folders/1", nil)
+	assertStatus(t, w, http.StatusForbidden)
+	repo.AssertNotCalled(t, "Delete")
 }
 
 // ============================================================
-// ServiceError / InvalidID テスト
+// 不在 / 不正 ID / DB 障害
 // ============================================================
 
-func TestNoteFolderHandler_Create_ServiceError(t *testing.T) {
-	h, svc := newTestNoteFolderHandler()
+// 存在しないフォルダは 500 を返す（移行前の挙動を維持している）。
+func TestNoteFolderHandler_GetByID_NotFound(t *testing.T) {
+	h, repo := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.GET("/folders/:id", h.GetByID)
+
+	repo.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
+
+	w := doRequest(r, "GET", "/folders/1", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteFolderHandler_Update_NotFound(t *testing.T) {
+	h, repo := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.PUT("/folders/:id", h.Update)
+
+	repo.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
+
+	w := doRequest(r, "PUT", "/folders/1", map[string]interface{}{"name": "変更"})
+	assertStatus(t, w, http.StatusInternalServerError)
+	repo.AssertNotCalled(t, "Update")
+}
+
+func TestNoteFolderHandler_Delete_NotFound(t *testing.T) {
+	h, repo := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.DELETE("/folders/:id", h.Delete)
+
+	repo.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
+
+	w := doRequest(r, "DELETE", "/folders/1", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	repo.AssertNotCalled(t, "Delete")
+}
+
+func TestNoteFolderHandler_Create_RepoError(t *testing.T) {
+	h, repo := newTestNoteFolderHandler()
 	r := newRouter(1)
 	r.POST("/folders", h.Create)
 
-	svc.On("Create", mock.AnythingOfType("*model.NoteFolder")).Return(errors.New("db error"))
+	repo.On("Create", mock.Anything, mock.Anything).Return(errors.New("db error"))
 
 	w := doRequest(r, "POST", "/folders", map[string]interface{}{"name": "テスト"})
 	assertStatus(t, w, http.StatusInternalServerError)
@@ -231,23 +381,13 @@ func TestNoteFolderHandler_GetByID_InvalidID(t *testing.T) {
 	assertStatus(t, w, http.StatusBadRequest)
 }
 
-func TestNoteFolderHandler_GetByID_ServiceError(t *testing.T) {
-	h, svc := newTestNoteFolderHandler()
-	r := newRouter(1)
-	r.GET("/folders/:id", h.GetByID)
-
-	svc.On("GetByID", uint(1)).Return(nil, service.ErrNotFound)
-
-	w := doRequest(r, "GET", "/folders/1", nil)
-	assertStatus(t, w, http.StatusNotFound)
-}
-
-func TestNoteFolderHandler_GetByUserID_ServiceError(t *testing.T) {
-	h, svc := newTestNoteFolderHandler()
+func TestNoteFolderHandler_GetByUserID_RepoError(t *testing.T) {
+	h, repo := newTestNoteFolderHandler()
 	r := newRouter(1)
 	r.GET("/folders", h.GetByUserID)
 
-	svc.On("GetByUserID", uint(1), 20, 0).Return([]model.NoteFolder(nil), int64(0), errors.New("db error"))
+	repo.On("FindByUserID", mock.Anything, uint(1), 20, 0).
+		Return([]model.NoteFolder(nil), int64(0), errors.New("db error"))
 
 	w := doRequest(r, "GET", "/folders", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
@@ -262,23 +402,25 @@ func TestNoteFolderHandler_GetChildren_InvalidID(t *testing.T) {
 	assertStatus(t, w, http.StatusBadRequest)
 }
 
-func TestNoteFolderHandler_GetChildren_ServiceError(t *testing.T) {
-	h, svc := newTestNoteFolderHandler()
+func TestNoteFolderHandler_GetChildren_RepoError(t *testing.T) {
+	h, repo := newTestNoteFolderHandler()
 	r := newRouter(1)
 	r.GET("/folders/:id/children", h.GetChildren)
 
-	svc.On("GetChildren", uint(1)).Return([]model.NoteFolder(nil), errors.New("db error"))
+	repo.On("FindByParentID", mock.Anything, uint(1)).
+		Return([]model.NoteFolder(nil), errors.New("db error"))
 
 	w := doRequest(r, "GET", "/folders/1/children", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
 }
 
-func TestNoteFolderHandler_GetRootFolders_ServiceError(t *testing.T) {
-	h, svc := newTestNoteFolderHandler()
+func TestNoteFolderHandler_GetRootFolders_RepoError(t *testing.T) {
+	h, repo := newTestNoteFolderHandler()
 	r := newRouter(1)
 	r.GET("/folders/root", h.GetRootFolders)
 
-	svc.On("GetRootFolders", uint(1)).Return([]model.NoteFolder(nil), errors.New("db error"))
+	repo.On("FindRootsByUserID", mock.Anything, uint(1)).
+		Return([]model.NoteFolder(nil), errors.New("db error"))
 
 	w := doRequest(r, "GET", "/folders/root", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
@@ -293,17 +435,6 @@ func TestNoteFolderHandler_Update_InvalidID(t *testing.T) {
 	assertStatus(t, w, http.StatusBadRequest)
 }
 
-func TestNoteFolderHandler_Update_ServiceError(t *testing.T) {
-	h, svc := newTestNoteFolderHandler()
-	r := newRouter(1)
-	r.PUT("/folders/:id", h.Update)
-
-	svc.On("Update", uint(1), uint(1), "変更", (*uint)(nil)).Return(nil, service.ErrForbidden)
-
-	w := doRequest(r, "PUT", "/folders/1", map[string]interface{}{"name": "変更"})
-	assertStatus(t, w, http.StatusForbidden)
-}
-
 func TestNoteFolderHandler_Delete_InvalidID(t *testing.T) {
 	h, _ := newTestNoteFolderHandler()
 	r := newRouter(1)
@@ -313,27 +444,16 @@ func TestNoteFolderHandler_Delete_InvalidID(t *testing.T) {
 	assertStatus(t, w, http.StatusBadRequest)
 }
 
-func TestNoteFolderHandler_Delete_ServiceError(t *testing.T) {
-	h, svc := newTestNoteFolderHandler()
-	r := newRouter(1)
-	r.DELETE("/folders/:id", h.Delete)
-
-	svc.On("Delete", uint(1), uint(1)).Return(service.ErrForbidden)
-
-	w := doRequest(r, "DELETE", "/folders/1", nil)
-	assertStatus(t, w, http.StatusForbidden)
-}
-
 // ============================================================
 // GetMyCount テスト
 // ============================================================
 
 func TestNoteFolderHandler_GetMyCount_Success(t *testing.T) {
-	h, svc := newTestNoteFolderHandler()
+	h, repo := newTestNoteFolderHandler()
 	r := newRouter(1)
 	r.GET("/folders/my/count", h.GetMyCount)
 
-	svc.On("CountByUserID", uint(1)).Return(int64(4), nil)
+	repo.On("CountByUserID", mock.Anything, uint(1)).Return(int64(4), nil)
 
 	w := doRequest(r, "GET", "/folders/my/count", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -341,12 +461,12 @@ func TestNoteFolderHandler_GetMyCount_Success(t *testing.T) {
 	assert.Equal(t, float64(4), body["count"])
 }
 
-func TestNoteFolderHandler_GetMyCount_ServiceError(t *testing.T) {
-	h, svc := newTestNoteFolderHandler()
+func TestNoteFolderHandler_GetMyCount_RepoError(t *testing.T) {
+	h, repo := newTestNoteFolderHandler()
 	r := newRouter(1)
 	r.GET("/folders/my/count", h.GetMyCount)
 
-	svc.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+	repo.On("CountByUserID", mock.Anything, uint(1)).Return(int64(0), errors.New("db error"))
 
 	w := doRequest(r, "GET", "/folders/my/count", nil)
 	assertStatus(t, w, http.StatusInternalServerError)

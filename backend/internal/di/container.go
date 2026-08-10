@@ -143,7 +143,8 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	recommendationRepo := repository.NewRecommendationRepository(db)
 	studyCircleRepo := repository.NewStudyCircleRepository(db)
 	noteRepo := repository.NewNoteRepository(db)
-	noteFolderRepo := repository.NewNoteFolderRepository(db)
+	// ノートフォルダはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	noteFolderRepo := persistence.NewNoteFolderRepository(db)
 	noteTemplateRepo := repository.NewNoteTemplateRepository(db)
 	learningLogTemplateRepo := repository.NewLearningLogTemplateRepository(db)
 	noteLinkRepo := repository.NewNoteLinkRepository(db)
@@ -182,7 +183,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	recommendationService := service.NewRecommendationService(recommendationRepo, userRepo)
 	studyCircleService := service.NewStudyCircleService(studyCircleRepo)
 	noteService := service.NewNoteService(noteRepo)
-	noteFolderService := service.NewNoteFolderService(noteFolderRepo)
 	noteTemplateService := service.NewNoteTemplateService(noteTemplateRepo, noteService)
 	learningLogTemplateService := service.NewLearningLogTemplateService(learningLogTemplateRepo, learningLogService)
 	noteLinkService := service.NewNoteLinkService(noteLinkRepo, noteRepo)
@@ -279,7 +279,16 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	noteVersionRepo := repository.NewNoteVersionRepository(db)
 	noteVersionService := service.NewNoteVersionService(noteRepo, noteVersionRepo)
 	c.NoteVersionHandler = handler.NewNoteVersionHandler(noteVersionService)
-	c.NoteFolderHandler = handler.NewNoteFolderHandler(noteFolderService)
+	c.NoteFolderHandler = handler.NewNoteFolderHandler(
+		usecase.NewCreateNoteFolderUseCase(noteFolderRepo),
+		usecase.NewGetNoteFolderUseCase(noteFolderRepo),
+		usecase.NewListNoteFoldersUseCase(noteFolderRepo),
+		usecase.NewListChildNoteFoldersUseCase(noteFolderRepo),
+		usecase.NewListRootNoteFoldersUseCase(noteFolderRepo),
+		usecase.NewUpdateNoteFolderUseCase(noteFolderRepo),
+		usecase.NewCountNoteFoldersUseCase(noteFolderRepo),
+		usecase.NewDeleteNoteFolderUseCase(noteFolderRepo),
+	)
 	c.NoteTemplateHandler = handler.NewNoteTemplateHandler(noteTemplateService)
 	c.LearningLogTemplateHandler = handler.NewLearningLogTemplateHandler(learningLogTemplateService)
 	c.NoteLinkHandler = handler.NewNoteLinkHandler(noteLinkService)

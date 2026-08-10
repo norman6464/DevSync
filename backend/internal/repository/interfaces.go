@@ -458,18 +458,6 @@ type NoteRepositoryInterface interface {
 	CountArchivedByUserID(userID uint) (int64, error)
 }
 
-// NoteFolderRepositoryInterface はノートフォルダデータ操作の契約を定義する。
-type NoteFolderRepositoryInterface interface {
-	Create(folder *model.NoteFolder) error
-	FindByID(id uint) (*model.NoteFolder, error)
-	FindByUserID(userID uint, limit, offset int) ([]model.NoteFolder, int64, error)
-	FindByParentID(parentID uint) ([]model.NoteFolder, error)
-	GetRootFolders(userID uint) ([]model.NoteFolder, error)
-	Update(folder *model.NoteFolder) error
-	Delete(id uint) error
-	CountByUserID(userID uint) (int64, error)
-}
-
 
 // PostTagRepositoryInterface は投稿タグデータ操作の契約を定義する。
 type PostTagRepositoryInterface interface {
