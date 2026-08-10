@@ -2099,21 +2099,6 @@ func (m *MockReactionStatsRepository) GetTopReactedPosts(userID uint, limit int)
 	return args.Get(0).([]model.TopReactedPost), args.Error(1)
 }
 
-// MockBookmarkStatsRepository は repository.BookmarkStatsRepositoryInterface のテスト用モック実装。
-// ============================================================
-
-type MockBookmarkStatsRepository struct {
-	mock.Mock
-}
-
-func (m *MockBookmarkStatsRepository) GetBookmarkStats(userID uint) (*model.BookmarkStats, error) {
-	args := m.Called(userID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.BookmarkStats), args.Error(1)
-}
-
 // ============================================================
 // MockStreakFreezeRepository は repository.StreakFreezeRepositoryInterface のテスト用モック実装。
 // ============================================================

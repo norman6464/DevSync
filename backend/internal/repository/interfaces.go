@@ -582,11 +582,6 @@ type ReactionStatsRepositoryInterface interface {
 	GetTopReactedPosts(userID uint, limit int) ([]model.TopReactedPost, error)
 }
 
-// BookmarkStatsRepositoryInterface はユーザーブックマーク集計統計データ操作の契約を定義する。
-type BookmarkStatsRepositoryInterface interface {
-	GetBookmarkStats(userID uint) (*model.BookmarkStats, error)
-}
-
 // BookmarkCollectionRepositoryInterface はブックマークコレクションデータ操作の契約を定義する。
 type BookmarkCollectionRepositoryInterface interface {
 	Create(collection *model.BookmarkCollection) error
