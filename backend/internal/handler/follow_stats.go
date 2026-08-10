@@ -2,22 +2,17 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// FollowStatsServiceInterface はFollowStatsHandlerが依存するサービスメソッドを定義する。
-type FollowStatsServiceInterface interface {
-	GetFollowStats(userID uint) (*model.FollowStats, error)
-}
-
-// FollowStatsHandler はユーザーフォロー統計関連のHTTPハンドラ。
+// FollowStatsHandler はユーザーフォロー統計関連の HTTP ハンドラ。
 type FollowStatsHandler struct {
-	service FollowStatsServiceInterface
+	getStats *usecase.GetFollowStatsUseCase
 }
 
-// NewFollowStatsHandler は新しいFollowStatsHandlerインスタンスを生成する。
-func NewFollowStatsHandler(s FollowStatsServiceInterface) *FollowStatsHandler {
-	return &FollowStatsHandler{service: s}
+// NewFollowStatsHandler は FollowStatsHandler を生成する。
+func NewFollowStatsHandler(getStats *usecase.GetFollowStatsUseCase) *FollowStatsHandler {
+	return &FollowStatsHandler{getStats: getStats}
 }
 
 // GetStats は指定ユーザーのフォロー関係集計統計を返す。
@@ -27,7 +22,7 @@ func (h *FollowStatsHandler) GetStats(c *gin.Context) {
 		return
 	}
 
-	stats, err := h.service.GetFollowStats(userID)
+	stats, err := h.getStats.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
