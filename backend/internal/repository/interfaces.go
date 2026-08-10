@@ -170,15 +170,6 @@ type LearningGoalRepositoryInterface interface {
 	CountByUserID(userID uint) (int64, error)
 }
 
-// RankingRepositoryInterface はランキングデータ操作の契約を定義する。
-// GitHubコントリビューションと言語別ランキングを提供する。
-type RankingRepositoryInterface interface {
-	ContributionRanking(period string) ([]model.RankingEntry, error)
-	LanguageRanking(language, period string) ([]model.RankingEntry, error)
-	LevelRanking() ([]model.RankingEntry, error)
-	AvailableLanguages() ([]string, error)
-}
-
 // ProjectRepositoryInterface はプロジェクトショーケースデータ操作の契約を定義する。
 type ProjectRepositoryInterface interface {
 	Create(project *model.Project) error

@@ -1196,32 +1196,7 @@ func setupBadgeHandler() (*BadgeHandler, *MockBadgeService) {
 	return h, svc
 }
 
-// MockRankingService は RankingServiceInterface のモック実装。
-type MockRankingService struct{ mock.Mock }
-
-func (m *MockRankingService) ContributionRanking(period string) ([]model.RankingEntry, error) {
-	args := m.Called(period)
-	return args.Get(0).([]model.RankingEntry), args.Error(1)
-}
-func (m *MockRankingService) LanguageRanking(language, period string) ([]model.RankingEntry, error) {
-	args := m.Called(language, period)
-	return args.Get(0).([]model.RankingEntry), args.Error(1)
-}
-func (m *MockRankingService) LevelRanking() ([]model.RankingEntry, error) {
-	args := m.Called()
-	return args.Get(0).([]model.RankingEntry), args.Error(1)
-}
-func (m *MockRankingService) AvailableLanguages() ([]string, error) {
-	args := m.Called()
-	return args.Get(0).([]string), args.Error(1)
-}
-
-// setupRankingHandler はRankingHandlerテスト用のセットアップを行う。
-func setupRankingHandler() (*RankingHandler, *MockRankingService) {
-	svc := new(MockRankingService)
-	h := NewRankingHandler(svc)
-	return h, svc
-}
+// RankingHandler のテスト用モックは ranking_test.go（DIP 版・port モック）に置く。
 
 // MockLevelService は LevelServiceInterface のモック実装。
 type MockLevelService struct{ mock.Mock }
