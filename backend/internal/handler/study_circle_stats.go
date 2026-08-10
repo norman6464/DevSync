@@ -2,22 +2,17 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// StudyCircleStatsServiceInterface はStudyCircleStatsHandlerが依存するサービスメソッドを定義する。
-type StudyCircleStatsServiceInterface interface {
-	GetCircleStats(circleID uint) (*model.StudyCircleStats, error)
-}
-
-// StudyCircleStatsHandler はスタディサークル統計関連のHTTPハンドラ。
+// StudyCircleStatsHandler はスタディサークル統計関連の HTTP ハンドラ。
 type StudyCircleStatsHandler struct {
-	service StudyCircleStatsServiceInterface
+	getStats *usecase.GetStudyCircleStatsUseCase
 }
 
-// NewStudyCircleStatsHandler は新しいStudyCircleStatsHandlerインスタンスを生成する。
-func NewStudyCircleStatsHandler(s StudyCircleStatsServiceInterface) *StudyCircleStatsHandler {
-	return &StudyCircleStatsHandler{service: s}
+// NewStudyCircleStatsHandler は StudyCircleStatsHandler を生成する。
+func NewStudyCircleStatsHandler(getStats *usecase.GetStudyCircleStatsUseCase) *StudyCircleStatsHandler {
+	return &StudyCircleStatsHandler{getStats: getStats}
 }
 
 // GetStats は指定サークルの集計統計を返す。
@@ -27,7 +22,7 @@ func (h *StudyCircleStatsHandler) GetStats(c *gin.Context) {
 		return
 	}
 
-	stats, err := h.service.GetCircleStats(circleID)
+	stats, err := h.getStats.Execute(c.Request.Context(), circleID)
 	if err != nil {
 		respondError(c, err)
 		return

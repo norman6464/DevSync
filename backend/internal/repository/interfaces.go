@@ -14,10 +14,6 @@ type UserDashboardRepositoryInterface interface {
 }
 
 
-// StudyCircleStatsRepositoryInterface はスタディサークルの集計統計の取得契約を定義する。
-type StudyCircleStatsRepositoryInterface interface {
-	GetCircleStats(circleID uint) (*model.StudyCircleStats, error)
-}
 
 // PostAdvancedSearchRepositoryInterface は投稿の高度な検索フィルター機能の契約を定義する。
 // タグ・日付範囲・ソート順による絞り込みを提供する。
