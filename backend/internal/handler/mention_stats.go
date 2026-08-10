@@ -2,22 +2,17 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// MentionStatsServiceInterface はMentionStatsHandlerが依存するサービスメソッドを定義する。
-type MentionStatsServiceInterface interface {
-	GetMentionStats(userID uint) (*model.MentionStats, error)
-}
-
-// MentionStatsHandler はユーザーメンション統計関連のHTTPハンドラ。
+// MentionStatsHandler はユーザーメンション統計関連の HTTP ハンドラ。
 type MentionStatsHandler struct {
-	service MentionStatsServiceInterface
+	getStats *usecase.GetMentionStatsUseCase
 }
 
-// NewMentionStatsHandler は新しいMentionStatsHandlerインスタンスを生成する。
-func NewMentionStatsHandler(s MentionStatsServiceInterface) *MentionStatsHandler {
-	return &MentionStatsHandler{service: s}
+// NewMentionStatsHandler は MentionStatsHandler を生成する。
+func NewMentionStatsHandler(getStats *usecase.GetMentionStatsUseCase) *MentionStatsHandler {
+	return &MentionStatsHandler{getStats: getStats}
 }
 
 // GetStats は指定ユーザーのメンション集計統計を返す。
@@ -27,7 +22,7 @@ func (h *MentionStatsHandler) GetStats(c *gin.Context) {
 		return
 	}
 
-	stats, err := h.service.GetMentionStats(userID)
+	stats, err := h.getStats.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
