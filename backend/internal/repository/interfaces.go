@@ -494,20 +494,6 @@ type PostCollectionRepositoryInterface interface {
 	CountByUserID(userID uint) (int64, error)
 }
 
-// PostSeriesRepositoryInterface は投稿シリーズデータ操作の契約を定義する。
-type PostSeriesRepositoryInterface interface {
-	Create(series *model.PostSeries) error
-	FindByID(id uint) (*model.PostSeries, error)
-	FindByUserID(userID uint, offset, limit int) ([]model.PostSeries, error)
-	CountByUser(userID uint) (int64, error)
-	Update(series *model.PostSeries) error
-	Delete(id uint) error
-	AddPost(item *model.PostSeriesItem) error
-	RemovePost(seriesID, postID uint) error
-	HasPost(seriesID, postID uint) (bool, error)
-	GetPostsBySeriesID(seriesID uint) ([]model.PostSeriesItem, error)
-}
-
 
 // PostTagRepositoryInterface は投稿タグデータ操作の契約を定義する。
 type PostTagRepositoryInterface interface {

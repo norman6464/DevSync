@@ -147,7 +147,8 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	noteTemplateRepo := repository.NewNoteTemplateRepository(db)
 	learningLogTemplateRepo := repository.NewLearningLogTemplateRepository(db)
 	noteLinkRepo := repository.NewNoteLinkRepository(db)
-	postSeriesRepo := repository.NewPostSeriesRepository(db)
+	// 投稿シリーズはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	postSeriesRepo := persistence.NewPostSeriesRepository(db)
 
 	c.GroupMessageRepo = groupMessageRepo
 
@@ -185,7 +186,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	noteTemplateService := service.NewNoteTemplateService(noteTemplateRepo, noteService)
 	learningLogTemplateService := service.NewLearningLogTemplateService(learningLogTemplateRepo, learningLogService)
 	noteLinkService := service.NewNoteLinkService(noteLinkRepo, noteRepo)
-	postSeriesService := service.NewPostSeriesService(postSeriesRepo)
 
 	// テンプレートロードマップの初期登録
 	go seedTemplateRoadmaps(db, roadmapService)
@@ -283,7 +283,17 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	c.NoteTemplateHandler = handler.NewNoteTemplateHandler(noteTemplateService)
 	c.LearningLogTemplateHandler = handler.NewLearningLogTemplateHandler(learningLogTemplateService)
 	c.NoteLinkHandler = handler.NewNoteLinkHandler(noteLinkService)
-	c.PostSeriesHandler = handler.NewPostSeriesHandler(postSeriesService)
+	c.PostSeriesHandler = handler.NewPostSeriesHandler(
+		usecase.NewCreatePostSeriesUseCase(postSeriesRepo),
+		usecase.NewGetPostSeriesUseCase(postSeriesRepo),
+		usecase.NewListPostSeriesUseCase(postSeriesRepo),
+		usecase.NewCountPostSeriesUseCase(postSeriesRepo),
+		usecase.NewUpdatePostSeriesUseCase(postSeriesRepo),
+		usecase.NewDeletePostSeriesUseCase(postSeriesRepo),
+		usecase.NewAddPostToSeriesUseCase(postSeriesRepo),
+		usecase.NewRemovePostFromSeriesUseCase(postSeriesRepo),
+		usecase.NewListPostSeriesPostsUseCase(postSeriesRepo),
+	)
 
 	postCollectionRepo := repository.NewPostCollectionRepository(db)
 	postCollectionService := service.NewPostCollectionService(postCollectionRepo)
