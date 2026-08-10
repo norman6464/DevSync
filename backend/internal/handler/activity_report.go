@@ -3,24 +3,28 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// ActivityReportServiceInterface はActivityReportHandlerが依存するサービスのインターフェース。
-type ActivityReportServiceInterface interface {
-	GetWeeklyReport(userID uint) (*model.ActivityReport, error)
-	GetMonthlyReport(userID uint) (*model.ActivityReport, error)
-	GetComparison(userID uint, period model.ReportPeriod) (*model.ReportComparison, error)
-}
-
-// ActivityReportHandler はアクティビティレポート関連のHTTPハンドラ。
+// ActivityReportHandler はアクティビティレポート関連の HTTP ハンドラ。
 // 週次・月次レポートの取得および期間比較を処理する。
 type ActivityReportHandler struct {
-	service ActivityReportServiceInterface
+	getWeekly     *usecase.GetWeeklyActivityReportUseCase
+	getMonthly    *usecase.GetMonthlyActivityReportUseCase
+	getComparison *usecase.GetActivityReportComparisonUseCase
 }
 
-// NewActivityReportHandler は新しいActivityReportHandlerインスタンスを生成する。
-func NewActivityReportHandler(s ActivityReportServiceInterface) *ActivityReportHandler {
-	return &ActivityReportHandler{service: s}
+// NewActivityReportHandler は ActivityReportHandler を生成する。
+func NewActivityReportHandler(
+	getWeekly *usecase.GetWeeklyActivityReportUseCase,
+	getMonthly *usecase.GetMonthlyActivityReportUseCase,
+	getComparison *usecase.GetActivityReportComparisonUseCase,
+) *ActivityReportHandler {
+	return &ActivityReportHandler{
+		getWeekly:     getWeekly,
+		getMonthly:    getMonthly,
+		getComparison: getComparison,
+	}
 }
 
 // GetWeeklyReport は指定ユーザーの週次アクティビティレポートを返す。
@@ -30,7 +34,7 @@ func (h *ActivityReportHandler) GetWeeklyReport(c *gin.Context) {
 		return
 	}
 
-	report, err := h.service.GetWeeklyReport(userID)
+	report, err := h.getWeekly.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -46,7 +50,7 @@ func (h *ActivityReportHandler) GetMonthlyReport(c *gin.Context) {
 		return
 	}
 
-	report, err := h.service.GetMonthlyReport(userID)
+	report, err := h.getMonthly.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -59,7 +63,7 @@ func (h *ActivityReportHandler) GetMonthlyReport(c *gin.Context) {
 func (h *ActivityReportHandler) GetMyWeeklyReport(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	report, err := h.service.GetWeeklyReport(userID)
+	report, err := h.getWeekly.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -72,7 +76,7 @@ func (h *ActivityReportHandler) GetMyWeeklyReport(c *gin.Context) {
 func (h *ActivityReportHandler) GetMyMonthlyReport(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	report, err := h.service.GetMonthlyReport(userID)
+	report, err := h.getMonthly.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -91,7 +95,7 @@ func (h *ActivityReportHandler) GetComparison(c *gin.Context) {
 		period = model.ReportPeriodMonthly
 	}
 
-	comparison, err := h.service.GetComparison(userID, period)
+	comparison, err := h.getComparison.Execute(c.Request.Context(), userID, period)
 	if err != nil {
 		respondError(c, err)
 		return

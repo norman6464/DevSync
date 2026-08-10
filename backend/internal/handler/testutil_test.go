@@ -1248,37 +1248,7 @@ func setupLevelHandler() (*LevelHandler, *MockLevelService) {
 	return h, svc
 }
 
-// MockActivityReportService は ActivityReportServiceInterface のモック実装。
-type MockActivityReportService struct{ mock.Mock }
-
-func (m *MockActivityReportService) GetWeeklyReport(userID uint) (*model.ActivityReport, error) {
-	args := m.Called(userID)
-	if r := args.Get(0); r != nil {
-		return r.(*model.ActivityReport), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockActivityReportService) GetMonthlyReport(userID uint) (*model.ActivityReport, error) {
-	args := m.Called(userID)
-	if r := args.Get(0); r != nil {
-		return r.(*model.ActivityReport), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockActivityReportService) GetComparison(userID uint, period model.ReportPeriod) (*model.ReportComparison, error) {
-	args := m.Called(userID, period)
-	if r := args.Get(0); r != nil {
-		return r.(*model.ReportComparison), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-// setupActivityReportHandler はActivityReportHandlerテスト用のセットアップを行う。
-func setupActivityReportHandler() (*ActivityReportHandler, *MockActivityReportService) {
-	svc := new(MockActivityReportService)
-	h := NewActivityReportHandler(svc)
-	return h, svc
-}
+// ActivityReportHandler のテスト用モックは activity_report_test.go（DIP 版・port モック）に置く。
 
 // MockAIAdviceService は AIAdviceServiceInterface のモック実装。
 type MockAIAdviceService struct{ mock.Mock }

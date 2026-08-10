@@ -122,7 +122,8 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	zennRepo := repository.NewZennRepository(db)
 	qiitaRepo := repository.NewQiitaRepository(db)
 	learningGoalRepo := repository.NewLearningGoalRepository(db)
-	activityReportRepo := repository.NewActivityReportRepository(db)
+	// アクティビティレポートはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	activityReportRepo := persistence.NewActivityReportRepository(db)
 	projectRepo := repository.NewProjectRepository(db)
 	learningResourceRepo := repository.NewLearningResourceRepository(db)
 	bookReviewRepo := repository.NewBookReviewRepository(db)
@@ -173,7 +174,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	codeSnippetService := service.NewCodeSnippetService(codeSnippetRepo, postRepo)
 	roadmapService := service.NewRoadmapService(roadmapRepo)
 	chatRoomService := service.NewChatRoomService(chatRoomRepo, groupMessageRepo, hub)
-	activityReportService := service.NewActivityReportService(activityReportRepo)
 	atcoderService := service.NewAtCoderService(userRepo)
 	badgeService := service.NewBadgeService(badgeRepo, notificationService)
 	levelService := service.NewLevelService(levelRepo, notificationService)
@@ -211,7 +211,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		emailSender = service.NewSMTPEmailSender(cfg)
 		log.Println("SMTP設定が検出されました。メール機能が有効です。")
 	}
-	weeklyReportEmailService := service.NewWeeklyReportEmailService(emailSender, activityReportService, userRepo)
+	weeklyReportEmailService := service.NewWeeklyReportEmailService(emailSender, activityReportRepo, userRepo)
 	weeklyReportEmailService.SetAppURL(cfg.AppURL)
 
 	// スケジューラの初期化
@@ -247,7 +247,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	c.ZennHandler = handler.NewArticlePlatformHandler[model.ZennArticle, model.ZennStats](zennService, "Zenn")
 	c.QiitaHandler = handler.NewArticlePlatformHandler[model.QiitaArticle, model.QiitaStats](qiitaService, "Qiita")
 	c.LearningGoalHandler = handler.NewLearningGoalHandler(learningGoalService)
-	c.ActivityReportHandler = handler.NewActivityReportHandler(activityReportService)
+	c.ActivityReportHandler = handler.NewActivityReportHandler(
+		usecase.NewGetWeeklyActivityReportUseCase(activityReportRepo),
+		usecase.NewGetMonthlyActivityReportUseCase(activityReportRepo),
+		usecase.NewGetActivityReportComparisonUseCase(activityReportRepo),
+	)
 	c.ProjectHandler = handler.NewProjectHandler(projectService)
 	c.LearningResourceHandler = handler.NewLearningResourceHandler(learningResourceService)
 	c.BookReviewHandler = handler.NewBookReviewHandler(bookReviewService)

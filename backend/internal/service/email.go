@@ -2,6 +2,7 @@ package service
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"html/template"
 	"log"
@@ -12,6 +13,7 @@ import (
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
+	usecaserepo "github.com/norman6464/devsync/backend/internal/usecase/repository"
 )
 
 // EmailSenderInterface はメール送信の抽象化インターフェース。
@@ -62,20 +64,20 @@ func (s *SMTPEmailSender) Send(to, subject, htmlBody string) error {
 // WeeklyReportEmailService はウィークリーレポートメールの生成・送信を管理する。
 // レポートデータの取得、HTMLレンダリング、メール送信のオーケストレーションを担当する。
 type WeeklyReportEmailService struct {
-	sender        EmailSenderInterface
-	reportService *ActivityReportService
-	userRepo      repository.UserRepositoryInterface
-	appURL        string
-	tmpl          *template.Template
+	sender   EmailSenderInterface
+	reports  usecaserepo.WeeklyActivityReportReader
+	userRepo repository.UserRepositoryInterface
+	appURL   string
+	tmpl     *template.Template
 }
 
 // NewWeeklyReportEmailService は新しいWeeklyReportEmailServiceインスタンスを生成する。
-func NewWeeklyReportEmailService(sender EmailSenderInterface, reportService *ActivityReportService, userRepo repository.UserRepositoryInterface) *WeeklyReportEmailService {
+func NewWeeklyReportEmailService(sender EmailSenderInterface, reports usecaserepo.WeeklyActivityReportReader, userRepo repository.UserRepositoryInterface) *WeeklyReportEmailService {
 	svc := &WeeklyReportEmailService{
-		sender:        sender,
-		reportService: reportService,
-		userRepo:      userRepo,
-		appURL:        "http://localhost:5173",
+		sender:   sender,
+		reports:  reports,
+		userRepo: userRepo,
+		appURL:   "http://localhost:5173",
 	}
 
 	// HTMLテンプレートをパース
@@ -128,7 +130,8 @@ func (s *WeeklyReportEmailService) SendAllWeeklyReports() error {
 			continue
 		}
 
-		report, err := s.reportService.GetWeeklyReport(user.ID)
+		// 定時バッチからの呼び出しでリクエスト ctx を持たないため、ここが ctx の起点になる
+		report, err := s.reports.GetWeeklyReport(context.Background(), user.ID)
 		if err != nil {
 			log.Printf("ウィークリーレポート生成失敗 (userID=%d): %v", user.ID, err)
 			continue
