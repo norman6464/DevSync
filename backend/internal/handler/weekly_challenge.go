@@ -2,30 +2,28 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// WeeklyChallengeServiceInterface はWeeklyChallengeHandlerが依存するサービスのインターフェース。
-type WeeklyChallengeServiceInterface interface {
-	GetCurrentChallenge(userID uint) (*model.WeeklyChallenge, error)
-	UpdateProgress(userID uint, value int) (*model.WeeklyChallenge, error)
-}
-
-// WeeklyChallengeHandler はウィークリーチャレンジのHTTPハンドラ。
+// WeeklyChallengeHandler はウィークリーチャレンジの HTTP ハンドラ。
 type WeeklyChallengeHandler struct {
-	service WeeklyChallengeServiceInterface
+	getCurrent     *usecase.GetCurrentWeeklyChallengeUseCase
+	updateProgress *usecase.UpdateWeeklyChallengeProgressUseCase
 }
 
-// NewWeeklyChallengeHandler は新しいWeeklyChallengeHandlerを生成する。
-func NewWeeklyChallengeHandler(s WeeklyChallengeServiceInterface) *WeeklyChallengeHandler {
-	return &WeeklyChallengeHandler{service: s}
+// NewWeeklyChallengeHandler は WeeklyChallengeHandler を生成する。
+func NewWeeklyChallengeHandler(
+	getCurrent *usecase.GetCurrentWeeklyChallengeUseCase,
+	updateProgress *usecase.UpdateWeeklyChallengeProgressUseCase,
+) *WeeklyChallengeHandler {
+	return &WeeklyChallengeHandler{getCurrent: getCurrent, updateProgress: updateProgress}
 }
 
 // GetCurrent は今週のチャレンジを返す。
 func (h *WeeklyChallengeHandler) GetCurrent(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	challenge, err := h.service.GetCurrentChallenge(userID)
+	challenge, err := h.getCurrent.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -47,7 +45,7 @@ func (h *WeeklyChallengeHandler) UpdateProgress(c *gin.Context) {
 		return
 	}
 
-	challenge, err := h.service.UpdateProgress(userID, input.Value)
+	challenge, err := h.updateProgress.Execute(c.Request.Context(), userID, input.Value)
 	if err != nil {
 		respondError(c, err)
 		return

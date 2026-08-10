@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -9,46 +10,44 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
-// MockWeeklyChallengeService は WeeklyChallengeServiceInterface のモック実装。
-type MockWeeklyChallengeService struct{ mock.Mock }
+// mockWeeklyChallengeRepo は usecase/repository.WeeklyChallengeRepository のモック（ctx 付き）。
+// FindByUserAndWeek は「不在」を (nil, nil) で表す契約。
+type mockWeeklyChallengeRepo struct{ mock.Mock }
 
-func (m *MockWeeklyChallengeService) GetCurrentChallenge(userID uint) (*model.WeeklyChallenge, error) {
-	args := m.Called(userID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.WeeklyChallenge), args.Error(1)
+func (m *mockWeeklyChallengeRepo) Create(ctx context.Context, challenge *model.WeeklyChallenge) error {
+	return m.Called(ctx, challenge).Error(0)
 }
 
-func (m *MockWeeklyChallengeService) UpdateProgress(userID uint, value int) (*model.WeeklyChallenge, error) {
-	args := m.Called(userID, value)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.WeeklyChallenge), args.Error(1)
+func (m *mockWeeklyChallengeRepo) FindByUserAndWeek(ctx context.Context, userID uint, year, week int) (*model.WeeklyChallenge, error) {
+	args := m.Called(ctx, userID, year, week)
+	c, _ := args.Get(0).(*model.WeeklyChallenge)
+	return c, args.Error(1)
 }
 
-func setupWeeklyChallengeHandler() (*WeeklyChallengeHandler, *MockWeeklyChallengeService) {
-	svc := new(MockWeeklyChallengeService)
-	h := NewWeeklyChallengeHandler(svc)
-	return h, svc
+func (m *mockWeeklyChallengeRepo) Update(ctx context.Context, challenge *model.WeeklyChallenge) error {
+	return m.Called(ctx, challenge).Error(0)
 }
 
-// ============================================================
-// ウィークリーチャレンジ: 取得ハンドラーテスト
-// ============================================================
+// setupWeeklyChallengeHandler は本物の usecase と port モックで WeeklyChallengeHandler を組む。
+func setupWeeklyChallengeHandler() (*WeeklyChallengeHandler, *mockWeeklyChallengeRepo) {
+	repo := new(mockWeeklyChallengeRepo)
+	h := NewWeeklyChallengeHandler(
+		usecase.NewGetCurrentWeeklyChallengeUseCase(repo),
+		usecase.NewUpdateWeeklyChallengeProgressUseCase(repo),
+	)
+	return h, repo
+}
 
-func TestWeeklyChallenge_GetCurrent_Success(t *testing.T) {
-	h, svc := setupWeeklyChallengeHandler()
-
+// currentWeekChallenge は今週分のチャレンジを返す。
+func currentWeekChallenge() *model.WeeklyChallenge {
 	year, week := time.Now().ISOWeek()
-	challenge := &model.WeeklyChallenge{
+	return &model.WeeklyChallenge{
 		ID:            1,
 		UserID:        1,
 		Year:          year,
@@ -56,7 +55,17 @@ func TestWeeklyChallenge_GetCurrent_Success(t *testing.T) {
 		ChallengeType: model.ChallengeDurationTotal,
 		TargetValue:   300,
 	}
-	svc.On("GetCurrentChallenge", uint(1)).Return(challenge, nil)
+}
+
+// ============================================================
+// ウィークリーチャレンジ: 取得ハンドラーテスト
+// ============================================================
+
+func TestWeeklyChallenge_GetCurrent_Success(t *testing.T) {
+	h, repo := setupWeeklyChallengeHandler()
+
+	year, week := time.Now().ISOWeek()
+	repo.On("FindByUserAndWeek", mock.Anything, uint(1), year, week).Return(currentWeekChallenge(), nil)
 
 	r := gin.New()
 	r.GET("/weekly-challenges/current", authMiddleware(1), h.GetCurrent)
@@ -66,7 +75,32 @@ func TestWeeklyChallenge_GetCurrent_Success(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	svc.AssertExpectations(t)
+	repo.AssertNotCalled(t, "Create")
+	repo.AssertExpectations(t)
+}
+
+// 今週分が未登録なら自動生成して 200 を返す。
+// 旧テストは service モックが domain.ErrNotFound を返す 404 ケースを持っていたが、
+// 実際の実装は未登録時に自動生成するため到達しない経路だった。
+func TestWeeklyChallenge_GetCurrent_GeneratesWhenAbsent(t *testing.T) {
+	h, repo := setupWeeklyChallengeHandler()
+
+	year, week := time.Now().ISOWeek()
+	repo.On("FindByUserAndWeek", mock.Anything, uint(1), year, week).
+		Return((*model.WeeklyChallenge)(nil), nil)
+	repo.On("Create", mock.Anything, mock.MatchedBy(func(c *model.WeeklyChallenge) bool {
+		return c.UserID == 1 && c.Year == year && c.Week == week && c.TargetValue > 0
+	})).Return(nil)
+
+	r := gin.New()
+	r.GET("/weekly-challenges/current", authMiddleware(1), h.GetCurrent)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/weekly-challenges/current", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	repo.AssertExpectations(t)
 }
 
 // ============================================================
@@ -74,19 +108,11 @@ func TestWeeklyChallenge_GetCurrent_Success(t *testing.T) {
 // ============================================================
 
 func TestWeeklyChallenge_UpdateProgress_Success(t *testing.T) {
-	h, svc := setupWeeklyChallengeHandler()
+	h, repo := setupWeeklyChallengeHandler()
 
 	year, week := time.Now().ISOWeek()
-	challenge := &model.WeeklyChallenge{
-		ID:            1,
-		UserID:        1,
-		Year:          year,
-		Week:          week,
-		ChallengeType: model.ChallengeDurationTotal,
-		TargetValue:   300,
-		CurrentValue:  200,
-	}
-	svc.On("UpdateProgress", uint(1), 200).Return(challenge, nil)
+	repo.On("FindByUserAndWeek", mock.Anything, uint(1), year, week).Return(currentWeekChallenge(), nil)
+	repo.On("Update", mock.Anything, mock.AnythingOfType("*model.WeeklyChallenge")).Return(nil)
 
 	r := gin.New()
 	r.PUT("/weekly-challenges/progress", authMiddleware(1), h.UpdateProgress)
@@ -99,7 +125,7 @@ func TestWeeklyChallenge_UpdateProgress_Success(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	svc.AssertExpectations(t)
+	repo.AssertExpectations(t)
 }
 
 // ============================================================
@@ -107,9 +133,11 @@ func TestWeeklyChallenge_UpdateProgress_Success(t *testing.T) {
 // ============================================================
 
 func TestWeeklyChallenge_GetCurrent_ServiceError(t *testing.T) {
-	h, svc := setupWeeklyChallengeHandler()
+	h, repo := setupWeeklyChallengeHandler()
 
-	svc.On("GetCurrentChallenge", uint(1)).Return(nil, errors.New("db error"))
+	year, week := time.Now().ISOWeek()
+	repo.On("FindByUserAndWeek", mock.Anything, uint(1), year, week).
+		Return((*model.WeeklyChallenge)(nil), errors.New("db error"))
 
 	r := gin.New()
 	r.GET("/weekly-challenges/current", authMiddleware(1), h.GetCurrent)
@@ -119,27 +147,37 @@ func TestWeeklyChallenge_GetCurrent_ServiceError(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	repo.AssertNotCalled(t, "Create")
 }
 
-func TestWeeklyChallenge_GetCurrent_NotFound(t *testing.T) {
-	h, svc := setupWeeklyChallengeHandler()
+// 今週分が未登録のまま進捗更新を呼ぶと 500（移行前と同じ扱い）。
+func TestWeeklyChallenge_UpdateProgress_AbsentChallenge(t *testing.T) {
+	h, repo := setupWeeklyChallengeHandler()
 
-	svc.On("GetCurrentChallenge", uint(1)).Return(nil, domain.ErrNotFound)
+	year, week := time.Now().ISOWeek()
+	repo.On("FindByUserAndWeek", mock.Anything, uint(1), year, week).
+		Return((*model.WeeklyChallenge)(nil), nil)
 
 	r := gin.New()
-	r.GET("/weekly-challenges/current", authMiddleware(1), h.GetCurrent)
+	r.PUT("/weekly-challenges/progress", authMiddleware(1), h.UpdateProgress)
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/weekly-challenges/current", nil)
+	req, _ := http.NewRequest("PUT", "/weekly-challenges/progress", jsonBody(map[string]interface{}{
+		"value": 100,
+	}))
+	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 
-	assert.Equal(t, http.StatusNotFound, w.Code)
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	repo.AssertNotCalled(t, "Update")
 }
 
 func TestWeeklyChallenge_UpdateProgress_ServiceError(t *testing.T) {
-	h, svc := setupWeeklyChallengeHandler()
+	h, repo := setupWeeklyChallengeHandler()
 
-	svc.On("UpdateProgress", uint(1), 100).Return(nil, errors.New("db error"))
+	year, week := time.Now().ISOWeek()
+	repo.On("FindByUserAndWeek", mock.Anything, uint(1), year, week).
+		Return((*model.WeeklyChallenge)(nil), errors.New("db error"))
 
 	r := gin.New()
 	r.PUT("/weekly-challenges/progress", authMiddleware(1), h.UpdateProgress)
