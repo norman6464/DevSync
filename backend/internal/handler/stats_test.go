@@ -195,48 +195,7 @@ func TestBookmarkStats_GetStats_ServiceError(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
-// ---------- CodeSnippetStats ----------
-
-type MockCodeSnippetStatsService struct{ mock.Mock }
-
-func (m *MockCodeSnippetStatsService) GetCodeSnippetStats(userID uint) (*model.CodeSnippetStats, error) {
-	args := m.Called(userID)
-	if v := args.Get(0); v != nil {
-		return v.(*model.CodeSnippetStats), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-func TestCodeSnippetStats_GetStats_Success(t *testing.T) {
-	svc := new(MockCodeSnippetStatsService)
-	h := NewCodeSnippetStatsHandler(svc)
-	svc.On("GetCodeSnippetStats", uint(5)).Return(&model.CodeSnippetStats{}, nil)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/snippets", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/snippets", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestCodeSnippetStats_GetStats_InvalidID(t *testing.T) {
-	svc := new(MockCodeSnippetStatsService)
-	h := NewCodeSnippetStatsHandler(svc)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/snippets", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/abc/stats/snippets", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestCodeSnippetStats_GetStats_ServiceError(t *testing.T) {
-	svc := new(MockCodeSnippetStatsService)
-	h := NewCodeSnippetStatsHandler(svc)
-	svc.On("GetCodeSnippetStats", uint(5)).Return(nil, errors.New("db error"))
-	r := newRouter(1)
-	r.GET("/users/:id/stats/snippets", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/snippets", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
+// CodeSnippetStats のハンドラーテストは code_snippet_stats_test.go（DIP 版）へ移設。
 
 // ---------- CommentStats ----------
 

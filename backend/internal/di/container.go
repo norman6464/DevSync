@@ -341,9 +341,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	qaStatsService := service.NewQAStatsService(qaStatsRepo)
 	c.QAStatsHandler = handler.NewQAStatsHandler(qaStatsService)
 
-	codeSnippetStatsRepo := repository.NewCodeSnippetStatsRepository(db)
-	codeSnippetStatsService := service.NewCodeSnippetStatsService(codeSnippetStatsRepo)
-	c.CodeSnippetStatsHandler = handler.NewCodeSnippetStatsHandler(codeSnippetStatsService)
+	// コードスニペット統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	codeSnippetStatsRepo := persistence.NewCodeSnippetStatsRepository(db)
+	c.CodeSnippetStatsHandler = handler.NewCodeSnippetStatsHandler(
+		usecase.NewGetCodeSnippetStatsUseCase(codeSnippetStatsRepo),
+	)
 
 	// 学習リソース統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	learningResourceStatsRepo := persistence.NewLearningResourceStatsRepository(db)
