@@ -569,10 +569,6 @@ type YouTubeVideoRepositoryInterface interface {
 
 
 
-// QAStatsRepositoryInterface はユーザーQ&A活動集計統計データ操作の契約を定義する。
-type QAStatsRepositoryInterface interface {
-	GetQAStats(userID uint) (*model.QAStats, error)
-}
 
 
 

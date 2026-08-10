@@ -343,9 +343,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewGetBookReviewStatsUseCase(bookReviewStatsRepo),
 	)
 
-	qaStatsRepo := repository.NewQAStatsRepository(db)
-	qaStatsService := service.NewQAStatsService(qaStatsRepo)
-	c.QAStatsHandler = handler.NewQAStatsHandler(qaStatsService)
+	// Q&A 統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	qaStatsRepo := persistence.NewQAStatsRepository(db)
+	c.QAStatsHandler = handler.NewQAStatsHandler(
+		usecase.NewGetQAStatsUseCase(qaStatsRepo),
+	)
 
 	// コードスニペット統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	codeSnippetStatsRepo := persistence.NewCodeSnippetStatsRepository(db)
