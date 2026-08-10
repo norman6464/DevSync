@@ -180,45 +180,4 @@ func TestReactionStats_GetSummary_ServiceError(t *testing.T) {
 
 // RoadmapStats のハンドラーテストは roadmap_stats_test.go（DIP 版）へ移設。
 
-// ---------- StudyCircleStats ----------
-
-type MockStudyCircleStatsService struct{ mock.Mock }
-
-func (m *MockStudyCircleStatsService) GetCircleStats(circleID uint) (*model.StudyCircleStats, error) {
-	args := m.Called(circleID)
-	if v := args.Get(0); v != nil {
-		return v.(*model.StudyCircleStats), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-func TestStudyCircleStats_GetStats_Success(t *testing.T) {
-	svc := new(MockStudyCircleStatsService)
-	h := NewStudyCircleStatsHandler(svc)
-	svc.On("GetCircleStats", uint(5)).Return(&model.StudyCircleStats{}, nil)
-	r := newRouter(1)
-	r.GET("/circles/:id/stats", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/circles/5/stats", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestStudyCircleStats_GetStats_InvalidID(t *testing.T) {
-	svc := new(MockStudyCircleStatsService)
-	h := NewStudyCircleStatsHandler(svc)
-	r := newRouter(1)
-	r.GET("/circles/:id/stats", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/circles/abc/stats", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestStudyCircleStats_GetStats_ServiceError(t *testing.T) {
-	svc := new(MockStudyCircleStatsService)
-	h := NewStudyCircleStatsHandler(svc)
-	svc.On("GetCircleStats", uint(5)).Return(nil, errors.New("db error"))
-	r := newRouter(1)
-	r.GET("/circles/:id/stats", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/circles/5/stats", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
+// StudyCircleStats のハンドラーテストは study_circle_stats_test.go（DIP 版）へ移設。
