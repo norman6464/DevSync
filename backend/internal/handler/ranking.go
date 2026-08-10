@@ -2,32 +2,37 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// RankingServiceInterface はRankingHandlerが依存するサービスメソッドを定義する。
-type RankingServiceInterface interface {
-	ContributionRanking(period string) ([]model.RankingEntry, error)
-	LanguageRanking(language, period string) ([]model.RankingEntry, error)
-	LevelRanking() ([]model.RankingEntry, error)
-	AvailableLanguages() ([]string, error)
-}
-
-// RankingHandler はランキング関連のHTTPハンドラ。
+// RankingHandler はランキング関連の HTTP ハンドラ。
 // コントリビューションランキング・言語別ランキングの取得を処理する。
 type RankingHandler struct {
-	service RankingServiceInterface
+	getContribution *usecase.GetContributionRankingUseCase
+	getLanguage     *usecase.GetLanguageRankingUseCase
+	getLevel        *usecase.GetLevelRankingUseCase
+	listLanguages   *usecase.ListRankingLanguagesUseCase
 }
 
-// NewRankingHandler は新しいRankingHandlerインスタンスを生成する。
-func NewRankingHandler(s RankingServiceInterface) *RankingHandler {
-	return &RankingHandler{service: s}
+// NewRankingHandler は RankingHandler を生成する。
+func NewRankingHandler(
+	getContribution *usecase.GetContributionRankingUseCase,
+	getLanguage *usecase.GetLanguageRankingUseCase,
+	getLevel *usecase.GetLevelRankingUseCase,
+	listLanguages *usecase.ListRankingLanguagesUseCase,
+) *RankingHandler {
+	return &RankingHandler{
+		getContribution: getContribution,
+		getLanguage:     getLanguage,
+		getLevel:        getLevel,
+		listLanguages:   listLanguages,
+	}
 }
 
 // ContributionRanking はコントリビューション数によるランキングを返す。
 func (h *RankingHandler) ContributionRanking(c *gin.Context) {
 	period := c.DefaultQuery("period", "weekly")
-	entries, err := h.service.ContributionRanking(period)
+	entries, err := h.getContribution.Execute(c.Request.Context(), period)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -39,7 +44,7 @@ func (h *RankingHandler) ContributionRanking(c *gin.Context) {
 func (h *RankingHandler) LanguageRanking(c *gin.Context) {
 	lang := c.Param("lang")
 	period := c.DefaultQuery("period", "weekly")
-	entries, err := h.service.LanguageRanking(lang, period)
+	entries, err := h.getLanguage.Execute(c.Request.Context(), lang, period)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -49,7 +54,7 @@ func (h *RankingHandler) LanguageRanking(c *gin.Context) {
 
 // LevelRanking はXP合計に基づくレベルランキングを返す。
 func (h *RankingHandler) LevelRanking(c *gin.Context) {
-	entries, err := h.service.LevelRanking()
+	entries, err := h.getLevel.Execute(c.Request.Context())
 	if err != nil {
 		respondError(c, err)
 		return
@@ -59,7 +64,7 @@ func (h *RankingHandler) LevelRanking(c *gin.Context) {
 
 // AvailableLanguages はランキング対象の利用可能な言語一覧を返す。
 func (h *RankingHandler) AvailableLanguages(c *gin.Context) {
-	languages, err := h.service.AvailableLanguages()
+	languages, err := h.listLanguages.Execute(c.Request.Context())
 	if err != nil {
 		respondError(c, err)
 		return

@@ -1,25 +1,30 @@
-package repository
+package persistence
 
 import (
+	"context"
 	"time"
 
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase/repository"
 	"gorm.io/gorm"
 )
 
-// RankingRepository はユーザーランキングデータの集計・取得を提供するリポジトリ実装。
-type RankingRepository struct {
+// rankingRepository は [repository.RankingRepository] の GORM 実装。
+type rankingRepository struct {
 	db *gorm.DB
 }
 
-// NewRankingRepository は新しいRankingRepositoryインスタンスを生成する。
-func NewRankingRepository(db *gorm.DB) *RankingRepository {
-	return &RankingRepository{db: db}
+// NewRankingRepository は RankingRepository の GORM 実装を返す。
+func NewRankingRepository(db *gorm.DB) repository.RankingRepository {
+	return &rankingRepository{db: db}
 }
+
+// コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
+var _ repository.RankingRepository = (*rankingRepository)(nil)
 
 // ContributionRanking は指定期間（weekly/monthly）のGitHubコントリビューションランキングを取得する。
 // コントリビューション数の合計で降順ソートし、上位50件を返す。
-func (r *RankingRepository) ContributionRanking(period string) ([]model.RankingEntry, error) {
+func (r *rankingRepository) ContributionRanking(ctx context.Context, period string) ([]model.RankingEntry, error) {
 	days := 7
 	if period == "monthly" {
 		days = 30
@@ -27,7 +32,7 @@ func (r *RankingRepository) ContributionRanking(period string) ([]model.RankingE
 	since := time.Now().AddDate(0, 0, -days)
 
 	var entries []model.RankingEntry
-	err := r.db.Raw(`
+	err := r.db.WithContext(ctx).Raw(`
 		SELECT u.id as user_id, u.username, u.name, u.avatar_url, COALESCE(SUM(gc.count), 0) as score
 		FROM users u
 		JOIN git_hub_contributions gc ON gc.user_id = u.id
@@ -42,9 +47,9 @@ func (r *RankingRepository) ContributionRanking(period string) ([]model.RankingE
 
 // LanguageRanking は指定プログラミング言語のバイト数ランキングを取得する。
 // GitHubの言語統計データに基づき、上位50件を返す。
-func (r *RankingRepository) LanguageRanking(language, period string) ([]model.RankingEntry, error) {
+func (r *rankingRepository) LanguageRanking(ctx context.Context, language, period string) ([]model.RankingEntry, error) {
 	var entries []model.RankingEntry
-	err := r.db.Raw(`
+	err := r.db.WithContext(ctx).Raw(`
 		SELECT u.id as user_id, u.username, u.name, u.avatar_url, gls.bytes as score
 		FROM users u
 		JOIN git_hub_language_stats gls ON gls.user_id = u.id
@@ -57,9 +62,9 @@ func (r *RankingRepository) LanguageRanking(language, period string) ([]model.Ra
 
 // LevelRanking はユーザーのXP合計に基づくレベルランキングを取得する。
 // 各種アクティビティから獲得したXPの合計で降順ソートし、上位50件を返す。
-func (r *RankingRepository) LevelRanking() ([]model.RankingEntry, error) {
+func (r *rankingRepository) LevelRanking(ctx context.Context) ([]model.RankingEntry, error) {
 	var entries []model.RankingEntry
-	err := r.db.Raw(`
+	err := r.db.WithContext(ctx).Raw(`
 		SELECT u.id as user_id, u.username, u.name, u.avatar_url,
 			COALESCE(ll.xp, 0) + COALESCE(p.xp, 0) + COALESCE(gh.xp, 0) +
 			COALESCE(g.xp, 0) + COALESCE(c.xp, 0) + COALESCE(lk.xp, 0) as score
@@ -97,8 +102,8 @@ func (r *RankingRepository) LevelRanking() ([]model.RankingEntry, error) {
 
 // AvailableLanguages はランキング対象となるプログラミング言語の一覧を取得する。
 // GitHubの言語統計データに存在する言語をアルファベット順で返す。
-func (r *RankingRepository) AvailableLanguages() ([]string, error) {
+func (r *rankingRepository) AvailableLanguages(ctx context.Context) ([]string, error) {
 	var languages []string
-	err := r.db.Raw(`SELECT DISTINCT language FROM git_hub_language_stats ORDER BY language`).Scan(&languages).Error
+	err := r.db.WithContext(ctx).Raw(`SELECT DISTINCT language FROM git_hub_language_stats ORDER BY language`).Scan(&languages).Error
 	return languages, err
 }

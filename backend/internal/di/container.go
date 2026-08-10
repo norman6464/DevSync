@@ -116,7 +116,8 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	githubRepo := repository.NewGitHubRepository(db)
 	postRepo := repository.NewPostRepository(db)
 	messageRepo := repository.NewMessageRepository(db)
-	rankingRepo := repository.NewRankingRepository(db)
+	// ランキングはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	rankingRepo := persistence.NewRankingRepository(db)
 	notificationRepo := repository.NewNotificationRepository(db)
 	passwordResetRepo := repository.NewPasswordResetRepository(db)
 	zennRepo := repository.NewZennRepository(db)
@@ -167,7 +168,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	learningLogService := service.NewLearningLogService(learningLogRepo, learningGoalRepo)
 	learningGoalService := service.NewLearningGoalService(learningGoalRepo)
 	messageService := service.NewMessageService(messageRepo, notificationService)
-	rankingService := service.NewRankingService(rankingRepo)
 	projectService := service.NewProjectService(projectRepo)
 	bookReviewService := service.NewBookReviewService(bookReviewRepo)
 	learningResourceService := service.NewLearningResourceService(learningResourceRepo)
@@ -235,7 +235,12 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	c.GitHubHandler = handler.NewGitHubHandler(githubService, authService)
 	c.PostHandler = handler.NewPostHandler(postService, codeSnippetService)
 	c.CodeSnippetHandler = handler.NewCodeSnippetHandler(codeSnippetService)
-	c.RankingHandler = handler.NewRankingHandler(rankingService)
+	c.RankingHandler = handler.NewRankingHandler(
+		usecase.NewGetContributionRankingUseCase(rankingRepo),
+		usecase.NewGetLanguageRankingUseCase(rankingRepo),
+		usecase.NewGetLevelRankingUseCase(rankingRepo),
+		usecase.NewListRankingLanguagesUseCase(rankingRepo),
+	)
 	c.MessageHandler = handler.NewMessageHandler(messageService)
 	c.WebSocketHandler = handler.NewWebSocketHandler(hub, authService, parseOrigins(origins))
 	uploadHandler, err := handler.NewUploadHandler()
