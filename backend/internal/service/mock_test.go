@@ -2074,31 +2074,6 @@ func (m *MockUserDashboardRepository) GetDashboardStats(userID uint) (*model.Use
 	return args.Get(0).(*model.UserDashboardStats), args.Error(1)
 }
 
-// MockReactionStatsRepository は repository.ReactionStatsRepositoryInterface のテスト用モック実装。
-// ============================================================
-
-type MockReactionStatsRepository struct {
-	mock.Mock
-}
-
-func (m *MockReactionStatsRepository) GetReactionStats(userID uint) (*model.ReactionStats, error) {
-	args := m.Called(userID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.ReactionStats), args.Error(1)
-}
-
-func (m *MockReactionStatsRepository) GetEmojiBreakdown(userID uint) ([]model.ReactionCount, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.ReactionCount), args.Error(1)
-}
-
-func (m *MockReactionStatsRepository) GetTopReactedPosts(userID uint, limit int) ([]model.TopReactedPost, error) {
-	args := m.Called(userID, limit)
-	return args.Get(0).([]model.TopReactedPost), args.Error(1)
-}
-
 // ============================================================
 // MockStreakFreezeRepository は repository.StreakFreezeRepositoryInterface のテスト用モック実装。
 // ============================================================

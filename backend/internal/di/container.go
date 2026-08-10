@@ -411,9 +411,12 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewGetMentionStatsUseCase(mentionStatsRepo),
 	)
 
-	reactionStatsRepo := repository.NewReactionStatsRepository(db)
-	reactionStatsService := service.NewReactionStatsService(reactionStatsRepo)
-	c.ReactionStatsHandler = handler.NewReactionStatsHandler(reactionStatsService)
+	// リアクション統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	reactionStatsRepo := persistence.NewReactionStatsRepository(db)
+	c.ReactionStatsHandler = handler.NewReactionStatsHandler(
+		usecase.NewGetReactionStatsUseCase(reactionStatsRepo),
+		usecase.NewGetReactionSummaryUseCase(reactionStatsRepo),
+	)
 
 	// ブックマーク統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	bookmarkStatsRepo := persistence.NewBookmarkStatsRepository(db)
