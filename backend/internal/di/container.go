@@ -359,9 +359,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	projectStatsService := service.NewProjectStatsService(projectStatsRepo)
 	c.ProjectStatsHandler = handler.NewProjectStatsHandler(projectStatsService)
 
-	followStatsRepo := repository.NewFollowStatsRepository(db)
-	followStatsService := service.NewFollowStatsService(followStatsRepo)
-	c.FollowStatsHandler = handler.NewFollowStatsHandler(followStatsService)
+	// フォロー統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	followStatsRepo := persistence.NewFollowStatsRepository(db)
+	c.FollowStatsHandler = handler.NewFollowStatsHandler(
+		usecase.NewGetFollowStatsUseCase(followStatsRepo),
+	)
 
 	roadmapStatsRepo := repository.NewRoadmapStatsRepository(db)
 	roadmapStatsService := service.NewRoadmapStatsService(roadmapStatsRepo)

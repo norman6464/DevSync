@@ -588,10 +588,6 @@ type ProjectStatsRepositoryInterface interface {
 	GetProjectStats(userID uint) (*model.ProjectStats, error)
 }
 
-// FollowStatsRepositoryInterface はユーザーフォロー関係集計統計データ操作の契約を定義する。
-type FollowStatsRepositoryInterface interface {
-	GetFollowStats(userID uint) (*model.FollowStats, error)
-}
 
 // RoadmapStatsRepositoryInterface はユーザーロードマップ統計データ操作の契約を定義する。
 type RoadmapStatsRepositoryInterface interface {

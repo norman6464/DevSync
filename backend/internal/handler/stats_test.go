@@ -199,48 +199,7 @@ func TestCommentStats_GetStats_ServiceError(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
-// ---------- FollowStats ----------
-
-type MockFollowStatsService struct{ mock.Mock }
-
-func (m *MockFollowStatsService) GetFollowStats(userID uint) (*model.FollowStats, error) {
-	args := m.Called(userID)
-	if v := args.Get(0); v != nil {
-		return v.(*model.FollowStats), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-func TestFollowStats_GetStats_Success(t *testing.T) {
-	svc := new(MockFollowStatsService)
-	h := NewFollowStatsHandler(svc)
-	svc.On("GetFollowStats", uint(5)).Return(&model.FollowStats{}, nil)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/follows", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/follows", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestFollowStats_GetStats_InvalidID(t *testing.T) {
-	svc := new(MockFollowStatsService)
-	h := NewFollowStatsHandler(svc)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/follows", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/abc/stats/follows", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestFollowStats_GetStats_ServiceError(t *testing.T) {
-	svc := new(MockFollowStatsService)
-	h := NewFollowStatsHandler(svc)
-	svc.On("GetFollowStats", uint(5)).Return(nil, errors.New("db error"))
-	r := newRouter(1)
-	r.GET("/users/:id/stats/follows", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/follows", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
+// FollowStats のハンドラーテストは follow_stats_test.go（DIP 版）へ移設。
 
 // ---------- LearningLogStats ----------
 
