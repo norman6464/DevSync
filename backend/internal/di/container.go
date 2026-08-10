@@ -496,7 +496,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	weeklyChallengeService := service.NewWeeklyChallengeService(weeklyChallengeRepo)
 	c.WeeklyChallengeHandler = handler.NewWeeklyChallengeHandler(weeklyChallengeService)
 
-	// 投稿テンプレートサービス
 	// 投稿テンプレートはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	postTemplateRepo := persistence.NewPostTemplateRepository(db)
 	c.PostTemplateHandler = handler.NewPostTemplateHandler(
