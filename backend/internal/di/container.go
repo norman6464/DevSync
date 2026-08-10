@@ -491,7 +491,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewCountBookmarkCollectionsUseCase(bookmarkCollectionRepo),
 	)
 
-	// ウィークリーチャレンジサービス
 	// ウィークリーチャレンジはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	weeklyChallengeRepo := persistence.NewWeeklyChallengeRepository(db)
 	c.WeeklyChallengeHandler = handler.NewWeeklyChallengeHandler(
