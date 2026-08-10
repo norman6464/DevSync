@@ -86,48 +86,7 @@ func TestBookmarkStats_GetStats_ServiceError(t *testing.T) {
 
 // MessageStats のハンドラーテストは message_stats_test.go（DIP 版）へ移設。
 
-// ---------- NotificationStats ----------
-
-type MockNotificationStatsService struct{ mock.Mock }
-
-func (m *MockNotificationStatsService) GetNotificationStats(userID uint) (*model.NotificationStats, error) {
-	args := m.Called(userID)
-	if v := args.Get(0); v != nil {
-		return v.(*model.NotificationStats), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-func TestNotificationStats_GetStats_Success(t *testing.T) {
-	svc := new(MockNotificationStatsService)
-	h := NewNotificationStatsHandler(svc)
-	svc.On("GetNotificationStats", uint(5)).Return(&model.NotificationStats{}, nil)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/notifications", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/notifications", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestNotificationStats_GetStats_InvalidID(t *testing.T) {
-	svc := new(MockNotificationStatsService)
-	h := NewNotificationStatsHandler(svc)
-	r := newRouter(1)
-	r.GET("/users/:id/stats/notifications", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/abc/stats/notifications", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestNotificationStats_GetStats_ServiceError(t *testing.T) {
-	svc := new(MockNotificationStatsService)
-	h := NewNotificationStatsHandler(svc)
-	svc.On("GetNotificationStats", uint(5)).Return(nil, errors.New("db error"))
-	r := newRouter(1)
-	r.GET("/users/:id/stats/notifications", h.GetStats)
-	w := doRequest(r, http.MethodGet, "/users/5/stats/notifications", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
+// NotificationStats のハンドラーテストは notification_stats_test.go（DIP 版）へ移設。
 
 // ---------- ProjectStats ----------
 

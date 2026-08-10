@@ -2,22 +2,17 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// NotificationStatsServiceInterface はNotificationStatsHandlerが依存するサービスメソッドを定義する。
-type NotificationStatsServiceInterface interface {
-	GetNotificationStats(userID uint) (*model.NotificationStats, error)
-}
-
-// NotificationStatsHandler はユーザー通知統計関連のHTTPハンドラ。
+// NotificationStatsHandler はユーザー通知統計関連の HTTP ハンドラ。
 type NotificationStatsHandler struct {
-	service NotificationStatsServiceInterface
+	getStats *usecase.GetNotificationStatsUseCase
 }
 
-// NewNotificationStatsHandler は新しいNotificationStatsHandlerインスタンスを生成する。
-func NewNotificationStatsHandler(s NotificationStatsServiceInterface) *NotificationStatsHandler {
-	return &NotificationStatsHandler{service: s}
+// NewNotificationStatsHandler は NotificationStatsHandler を生成する。
+func NewNotificationStatsHandler(getStats *usecase.GetNotificationStatsUseCase) *NotificationStatsHandler {
+	return &NotificationStatsHandler{getStats: getStats}
 }
 
 // GetStats は指定ユーザーの通知集計統計を返す。
@@ -27,7 +22,7 @@ func (h *NotificationStatsHandler) GetStats(c *gin.Context) {
 		return
 	}
 
-	stats, err := h.service.GetNotificationStats(userID)
+	stats, err := h.getStats.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
