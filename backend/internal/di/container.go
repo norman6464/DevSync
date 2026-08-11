@@ -174,7 +174,10 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	questionService := service.NewQuestionService(questionRepo)
 	answerService := service.NewAnswerService(answerRepo, questionRepo)
 	learningLogService := service.NewLearningLogService(learningLogRepo, learningGoalRepo)
-	learningGoalService := service.NewLearningGoalService(learningGoalRepo)
+	// 学習目標はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	// 旧 learningGoalRepo は learning_log / recommendation / learning_dashboard がまだ使うため残している。
+	learningGoalPort := persistence.NewLearningGoalRepository(db)
+	updateLearningGoal := usecase.NewUpdateLearningGoalUseCase(learningGoalPort)
 	messageService := service.NewMessageService(messageRepo, notificationService)
 	projectService := service.NewProjectService(projectRepo)
 	learningResourceService := service.NewLearningResourceService(learningResourceRepo)
@@ -269,7 +272,25 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	c.NotificationHandler = handler.NewNotificationHandler(notificationService)
 	c.ZennHandler = handler.NewArticlePlatformHandler[model.ZennArticle, model.ZennStats](zennService, "Zenn")
 	c.QiitaHandler = handler.NewArticlePlatformHandler[model.QiitaArticle, model.QiitaStats](qiitaService, "Qiita")
-	c.LearningGoalHandler = handler.NewLearningGoalHandler(learningGoalService)
+	c.LearningGoalHandler = handler.NewLearningGoalHandler(
+		usecase.NewCreateLearningGoalUseCase(learningGoalPort),
+		usecase.NewGetLearningGoalUseCase(learningGoalPort),
+		usecase.NewListLearningGoalsUseCase(learningGoalPort),
+		usecase.NewListActiveLearningGoalsUseCase(learningGoalPort),
+		usecase.NewListLearningGoalsByCategoryUseCase(learningGoalPort),
+		usecase.NewListLearningGoalsByStatusUseCase(learningGoalPort),
+		usecase.NewGetLearningGoalStatsUseCase(learningGoalPort),
+		updateLearningGoal,
+		usecase.NewGetGoalDeadlineAlertsUseCase(learningGoalPort),
+		usecase.NewDuplicateLearningGoalUseCase(learningGoalPort),
+		usecase.NewToggleLearningGoalShareUseCase(learningGoalPort),
+		usecase.NewListPublicLearningGoalsUseCase(learningGoalPort),
+		usecase.NewListPublicLearningGoalsByUserUseCase(learningGoalPort),
+		usecase.NewCountLearningGoalsUseCase(learningGoalPort),
+		usecase.NewDeleteLearningGoalUseCase(learningGoalPort),
+		usecase.NewBatchUpdateGoalProgressUseCase(updateLearningGoal),
+		usecase.NewGetGoalForecastUseCase(learningGoalPort),
+	)
 	c.ActivityReportHandler = handler.NewActivityReportHandler(
 		usecase.NewGetWeeklyActivityReportUseCase(activityReportRepo),
 		usecase.NewGetMonthlyActivityReportUseCase(activityReportRepo),

@@ -1,12 +1,14 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"testing"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -14,74 +16,92 @@ import (
 // MockLearningGoalRepository は LearningGoalRepositoryInterface のモック実装。
 type MockLearningGoalRepository struct{ mock.Mock }
 
-func (m *MockLearningGoalRepository) Create(goal *model.LearningGoal) error {
-	return m.Called(goal).Error(0)
+func (m *MockLearningGoalRepository) Create(ctx context.Context, goal *model.LearningGoal) error {
+	return m.Called(ctx, goal).Error(0)
 }
 
-func (m *MockLearningGoalRepository) FindByID(id uint) (*model.LearningGoal, error) {
-	args := m.Called(id)
+func (m *MockLearningGoalRepository) FindByID(ctx context.Context, id uint) (*model.LearningGoal, error) {
+	args := m.Called(ctx, id)
 	if goal := args.Get(0); goal != nil {
 		return goal.(*model.LearningGoal), args.Error(1)
 	}
 	return nil, args.Error(1)
 }
 
-func (m *MockLearningGoalRepository) GetByUserID(userID uint, limit, offset int) ([]model.LearningGoal, int64, error) {
-	args := m.Called(userID, limit, offset)
+func (m *MockLearningGoalRepository) GetByUserID(ctx context.Context, userID uint, limit, offset int) ([]model.LearningGoal, int64, error) {
+	args := m.Called(ctx, userID, limit, offset)
 	return args.Get(0).([]model.LearningGoal), args.Get(1).(int64), args.Error(2)
 }
 
-func (m *MockLearningGoalRepository) GetActiveByUserID(userID uint) ([]model.LearningGoal, error) {
-	args := m.Called(userID)
+func (m *MockLearningGoalRepository) GetActiveByUserID(ctx context.Context, userID uint) ([]model.LearningGoal, error) {
+	args := m.Called(ctx, userID)
 	return args.Get(0).([]model.LearningGoal), args.Error(1)
 }
 
-func (m *MockLearningGoalRepository) Update(goal *model.LearningGoal) error {
-	return m.Called(goal).Error(0)
+func (m *MockLearningGoalRepository) Update(ctx context.Context, goal *model.LearningGoal) error {
+	return m.Called(ctx, goal).Error(0)
 }
 
-func (m *MockLearningGoalRepository) Delete(id uint) error {
-	return m.Called(id).Error(0)
+func (m *MockLearningGoalRepository) Delete(ctx context.Context, id uint) error {
+	return m.Called(ctx, id).Error(0)
 }
 
-func (m *MockLearningGoalRepository) GetStats(userID uint) (*model.LearningGoalStats, error) {
-	args := m.Called(userID)
+func (m *MockLearningGoalRepository) GetStats(ctx context.Context, userID uint) (*model.LearningGoalStats, error) {
+	args := m.Called(ctx, userID)
 	if stats := args.Get(0); stats != nil {
 		return stats.(*model.LearningGoalStats), args.Error(1)
 	}
 	return nil, args.Error(1)
 }
 
-func (m *MockLearningGoalRepository) GetByCategory(userID uint, category string) ([]model.LearningGoal, error) {
-	args := m.Called(userID, category)
+func (m *MockLearningGoalRepository) GetByCategory(ctx context.Context, userID uint, category string) ([]model.LearningGoal, error) {
+	args := m.Called(ctx, userID, category)
 	return args.Get(0).([]model.LearningGoal), args.Error(1)
 }
 
-func (m *MockLearningGoalRepository) GetByStatus(userID uint, status string) ([]model.LearningGoal, error) {
-	args := m.Called(userID, status)
+func (m *MockLearningGoalRepository) GetByStatus(ctx context.Context, userID uint, status string) ([]model.LearningGoal, error) {
+	args := m.Called(ctx, userID, status)
 	return args.Get(0).([]model.LearningGoal), args.Error(1)
 }
 
-func (m *MockLearningGoalRepository) GetPublicByUserID(userID uint, limit, offset int) ([]model.LearningGoal, int64, error) {
-	args := m.Called(userID, limit, offset)
+func (m *MockLearningGoalRepository) GetPublicByUserID(ctx context.Context, userID uint, limit, offset int) ([]model.LearningGoal, int64, error) {
+	args := m.Called(ctx, userID, limit, offset)
 	return args.Get(0).([]model.LearningGoal), args.Get(1).(int64), args.Error(2)
 }
 
-func (m *MockLearningGoalRepository) GetPublicGoals(limit, offset int) ([]model.LearningGoal, int64, error) {
-	args := m.Called(limit, offset)
+func (m *MockLearningGoalRepository) GetPublicGoals(ctx context.Context, limit, offset int) ([]model.LearningGoal, int64, error) {
+	args := m.Called(ctx, limit, offset)
 	return args.Get(0).([]model.LearningGoal), args.Get(1).(int64), args.Error(2)
 }
 
-func (m *MockLearningGoalRepository) CountByUserID(userID uint) (int64, error) {
-	args := m.Called(userID)
+func (m *MockLearningGoalRepository) CountByUserID(ctx context.Context, userID uint) (int64, error) {
+	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)
 }
 
-// setupLearningGoalHandler はテスト用のLearningGoalHandlerとモックを準備する。
+// setupLearningGoalHandler は本物の usecase と port モックで LearningGoalHandler を組む。
 func setupLearningGoalHandler() (*LearningGoalHandler, *MockLearningGoalRepository) {
 	repo := new(MockLearningGoalRepository)
-	svc := service.NewLearningGoalService(repo)
-	handler := NewLearningGoalHandler(svc)
+	update := usecase.NewUpdateLearningGoalUseCase(repo)
+	handler := NewLearningGoalHandler(
+		usecase.NewCreateLearningGoalUseCase(repo),
+		usecase.NewGetLearningGoalUseCase(repo),
+		usecase.NewListLearningGoalsUseCase(repo),
+		usecase.NewListActiveLearningGoalsUseCase(repo),
+		usecase.NewListLearningGoalsByCategoryUseCase(repo),
+		usecase.NewListLearningGoalsByStatusUseCase(repo),
+		usecase.NewGetLearningGoalStatsUseCase(repo),
+		update,
+		usecase.NewGetGoalDeadlineAlertsUseCase(repo),
+		usecase.NewDuplicateLearningGoalUseCase(repo),
+		usecase.NewToggleLearningGoalShareUseCase(repo),
+		usecase.NewListPublicLearningGoalsUseCase(repo),
+		usecase.NewListPublicLearningGoalsByUserUseCase(repo),
+		usecase.NewCountLearningGoalsUseCase(repo),
+		usecase.NewDeleteLearningGoalUseCase(repo),
+		usecase.NewBatchUpdateGoalProgressUseCase(update),
+		usecase.NewGetGoalForecastUseCase(repo),
+	)
 	return handler, repo
 }
 
@@ -92,7 +112,7 @@ func TestLearningGoalCreate_Success(t *testing.T) {
 	r := newRouter(1)
 	r.POST("/goals", h.Create)
 
-	repo.On("Create", mock.AnythingOfType("*model.LearningGoal")).Return(nil)
+	repo.On("Create", mock.Anything, mock.AnythingOfType("*model.LearningGoal")).Return(nil)
 
 	w := doRequest(r, http.MethodPost, "/goals", map[string]string{
 		"title": "Test Goal",
@@ -132,8 +152,8 @@ func TestLearningGoalUpdate_Success(t *testing.T) {
 	goal.UserID = 1
 	goal.Title = "Old Title"
 
-	repo.On("FindByID", uint(10)).Return(goal, nil)
-	repo.On("Update", mock.AnythingOfType("*model.LearningGoal")).Return(nil)
+	repo.On("FindByID", mock.Anything, uint(10)).Return(goal, nil)
+	repo.On("Update", mock.Anything, mock.AnythingOfType("*model.LearningGoal")).Return(nil)
 
 	newTitle := "Updated Title"
 	w := doRequest(r, http.MethodPut, "/goals/10", map[string]interface{}{
@@ -153,7 +173,7 @@ func TestLearningGoalUpdate_Forbidden(t *testing.T) {
 	goal.UserID = 999 // 別のユーザー
 	goal.Title = "Goal"
 
-	repo.On("FindByID", uint(10)).Return(goal, nil)
+	repo.On("FindByID", mock.Anything, uint(10)).Return(goal, nil)
 
 	newTitle := "Updated"
 	w := doRequest(r, http.MethodPut, "/goals/10", map[string]interface{}{
@@ -168,7 +188,7 @@ func TestLearningGoalUpdate_NotFound(t *testing.T) {
 	r := newRouter(1)
 	r.PUT("/goals/:id", h.Update)
 
-	repo.On("FindByID", uint(999)).Return(nil, service.ErrNotFound)
+	repo.On("FindByID", mock.Anything, uint(999)).Return(nil, domain.ErrNotFound)
 
 	newTitle := "Updated"
 	w := doRequest(r, http.MethodPut, "/goals/999", map[string]interface{}{
@@ -189,8 +209,8 @@ func TestLearningGoalDelete_Success(t *testing.T) {
 	goal.ID = 10
 	goal.UserID = 1
 
-	repo.On("FindByID", uint(10)).Return(goal, nil)
-	repo.On("Delete", uint(10)).Return(nil)
+	repo.On("FindByID", mock.Anything, uint(10)).Return(goal, nil)
+	repo.On("Delete", mock.Anything, uint(10)).Return(nil)
 
 	w := doRequest(r, http.MethodDelete, "/goals/10", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -205,7 +225,7 @@ func TestLearningGoalDelete_Forbidden(t *testing.T) {
 	goal.ID = 10
 	goal.UserID = 999 // 別のユーザー
 
-	repo.On("FindByID", uint(10)).Return(goal, nil)
+	repo.On("FindByID", mock.Anything, uint(10)).Return(goal, nil)
 
 	w := doRequest(r, http.MethodDelete, "/goals/10", nil)
 	assertStatus(t, w, http.StatusForbidden)
@@ -216,7 +236,7 @@ func TestLearningGoalDelete_NotFound(t *testing.T) {
 	r := newRouter(1)
 	r.DELETE("/goals/:id", h.Delete)
 
-	repo.On("FindByID", uint(999)).Return(nil, service.ErrNotFound)
+	repo.On("FindByID", mock.Anything, uint(999)).Return(nil, domain.ErrNotFound)
 
 	w := doRequest(r, http.MethodDelete, "/goals/999", nil)
 	assertStatus(t, w, http.StatusNotFound)
@@ -234,7 +254,7 @@ func TestLearningGoalGetByID_Success(t *testing.T) {
 	goal.UserID = 1
 	goal.Title = "Test Goal"
 
-	repo.On("FindByID", uint(10)).Return(goal, nil)
+	repo.On("FindByID", mock.Anything, uint(10)).Return(goal, nil)
 
 	w := doRequest(r, http.MethodGet, "/goals/10", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -249,7 +269,7 @@ func TestLearningGoalGetByID_Forbidden(t *testing.T) {
 	goal.ID = 10
 	goal.UserID = 999 // 別のユーザー
 
-	repo.On("FindByID", uint(10)).Return(goal, nil)
+	repo.On("FindByID", mock.Anything, uint(10)).Return(goal, nil)
 
 	w := doRequest(r, http.MethodGet, "/goals/10", nil)
 	assertStatus(t, w, http.StatusForbidden)
@@ -260,7 +280,7 @@ func TestLearningGoalGetByID_NotFound(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/goals/:id", h.GetByID)
 
-	repo.On("FindByID", uint(999)).Return(nil, service.ErrNotFound)
+	repo.On("FindByID", mock.Anything, uint(999)).Return(nil, domain.ErrNotFound)
 
 	w := doRequest(r, http.MethodGet, "/goals/999", nil)
 	assertStatus(t, w, http.StatusNotFound)
@@ -278,7 +298,7 @@ func TestLearningGoalGetMyGoals_Success(t *testing.T) {
 		{Title: "Goal 2"},
 	}
 
-	repo.On("GetByUserID", uint(1), 20, 0).Return(goals, int64(2), nil)
+	repo.On("GetByUserID", mock.Anything, uint(1), 20, 0).Return(goals, int64(2), nil)
 
 	w := doRequest(r, http.MethodGet, "/goals/my", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -292,7 +312,7 @@ func TestLearningGoalGetByUserID_Success(t *testing.T) {
 	r.GET("/users/:userId/goals", h.GetByUserID)
 
 	goals := []model.LearningGoal{{Title: "Goal 1"}, {Title: "Goal 2"}}
-	repo.On("GetByUserID", uint(5), 20, 0).Return(goals, int64(2), nil)
+	repo.On("GetByUserID", mock.Anything, uint(5), 20, 0).Return(goals, int64(2), nil)
 
 	w := doRequest(r, http.MethodGet, "/users/5/goals", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -316,7 +336,7 @@ func TestLearningGoalGetByUserID_ServiceError(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/users/:userId/goals", h.GetByUserID)
 
-	repo.On("GetByUserID", uint(5), 20, 0).Return([]model.LearningGoal{}, int64(0), errors.New("db error"))
+	repo.On("GetByUserID", mock.Anything, uint(5), 20, 0).Return([]model.LearningGoal{}, int64(0), errors.New("db error"))
 
 	w := doRequest(r, http.MethodGet, "/users/5/goals", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
@@ -329,7 +349,7 @@ func TestLearningGoalGetDeadlineAlerts_Success(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/goals/deadline-alerts", h.GetDeadlineAlerts)
 
-	repo.On("GetActiveByUserID", uint(1)).Return([]model.LearningGoal{}, nil)
+	repo.On("GetActiveByUserID", mock.Anything, uint(1)).Return([]model.LearningGoal{}, nil)
 
 	w := doRequest(r, http.MethodGet, "/goals/deadline-alerts", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -340,7 +360,7 @@ func TestLearningGoalGetDeadlineAlerts_ServiceError(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/goals/deadline-alerts", h.GetDeadlineAlerts)
 
-	repo.On("GetActiveByUserID", uint(1)).Return([]model.LearningGoal{}, errors.New("db error"))
+	repo.On("GetActiveByUserID", mock.Anything, uint(1)).Return([]model.LearningGoal{}, errors.New("db error"))
 
 	w := doRequest(r, http.MethodGet, "/goals/deadline-alerts", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
@@ -354,7 +374,7 @@ func TestLearningGoalGetByCategory_Success(t *testing.T) {
 	r.GET("/goals/category/:category", h.GetByCategory)
 
 	goals := []model.LearningGoal{{Title: "Go学習", Category: model.GoalCategoryLanguage}}
-	repo.On("GetByCategory", uint(1), "language").Return(goals, nil)
+	repo.On("GetByCategory", mock.Anything, uint(1), "language").Return(goals, nil)
 
 	w := doRequest(r, http.MethodGet, "/goals/category/language", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -366,7 +386,7 @@ func TestLearningGoalGetByCategory_NilResult(t *testing.T) {
 	r.GET("/goals/category/:category", h.GetByCategory)
 
 	var nilGoals []model.LearningGoal
-	repo.On("GetByCategory", uint(1), "framework").Return(nilGoals, nil)
+	repo.On("GetByCategory", mock.Anything, uint(1), "framework").Return(nilGoals, nil)
 
 	w := doRequest(r, http.MethodGet, "/goals/category/framework", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -389,7 +409,7 @@ func TestLearningGoalGetByStatus_Success(t *testing.T) {
 	r.GET("/goals/status/:status", h.GetByStatus)
 
 	goals := []model.LearningGoal{{Title: "完了目標", Status: model.GoalStatusCompleted}}
-	repo.On("GetByStatus", uint(1), "completed").Return(goals, nil)
+	repo.On("GetByStatus", mock.Anything, uint(1), "completed").Return(goals, nil)
 
 	w := doRequest(r, http.MethodGet, "/goals/status/completed", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -401,7 +421,7 @@ func TestLearningGoalGetByStatus_NilResult(t *testing.T) {
 	r.GET("/goals/status/:status", h.GetByStatus)
 
 	var nilGoals []model.LearningGoal
-	repo.On("GetByStatus", uint(1), "paused").Return(nilGoals, nil)
+	repo.On("GetByStatus", mock.Anything, uint(1), "paused").Return(nilGoals, nil)
 
 	w := doRequest(r, http.MethodGet, "/goals/status/paused", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -430,7 +450,7 @@ func TestLearningGoalGetStats_Success(t *testing.T) {
 		AverageProgress: 60,
 	}
 
-	repo.On("GetStats", uint(1)).Return(stats, nil)
+	repo.On("GetStats", mock.Anything, uint(1)).Return(stats, nil)
 
 	w := doRequest(r, http.MethodGet, "/users/1/goals/stats", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -441,7 +461,7 @@ func TestLearningGoalGetStats_ServiceError(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/users/:userId/goals/stats", h.GetStats)
 
-	repo.On("GetStats", uint(1)).Return(nil, errors.New("db error"))
+	repo.On("GetStats", mock.Anything, uint(1)).Return(nil, errors.New("db error"))
 
 	w := doRequest(r, http.MethodGet, "/users/1/goals/stats", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
@@ -463,7 +483,7 @@ func TestLearningGoalCreate_WithCategoryAndTargetDate(t *testing.T) {
 	r := newRouter(1)
 	r.POST("/goals", h.Create)
 
-	repo.On("Create", mock.AnythingOfType("*model.LearningGoal")).Return(nil)
+	repo.On("Create", mock.Anything, mock.AnythingOfType("*model.LearningGoal")).Return(nil)
 
 	w := doRequest(r, http.MethodPost, "/goals", map[string]interface{}{
 		"title":       "Learn Go",
@@ -479,7 +499,7 @@ func TestLearningGoalCreate_DefaultCategory(t *testing.T) {
 	r := newRouter(1)
 	r.POST("/goals", h.Create)
 
-	repo.On("Create", mock.MatchedBy(func(g *model.LearningGoal) bool {
+	repo.On("Create", mock.Anything, mock.MatchedBy(func(g *model.LearningGoal) bool {
 		return g.Category == model.GoalCategoryOther
 	})).Return(nil)
 
@@ -496,7 +516,7 @@ func TestLearningGoalCreate_ServiceError(t *testing.T) {
 	r := newRouter(1)
 	r.POST("/goals", h.Create)
 
-	repo.On("Create", mock.AnythingOfType("*model.LearningGoal")).Return(service.ErrBadRequest)
+	repo.On("Create", mock.Anything, mock.AnythingOfType("*model.LearningGoal")).Return(domain.ErrBadRequest)
 
 	w := doRequest(r, http.MethodPost, "/goals", map[string]interface{}{
 		"title": "My Goal",
@@ -517,8 +537,8 @@ func TestLearningGoalUpdate_AllFields(t *testing.T) {
 	goal.UserID = 1
 	goal.Title = "Old Title"
 
-	repo.On("FindByID", uint(10)).Return(goal, nil)
-	repo.On("Update", mock.AnythingOfType("*model.LearningGoal")).Return(nil)
+	repo.On("FindByID", mock.Anything, uint(10)).Return(goal, nil)
+	repo.On("Update", mock.Anything, mock.AnythingOfType("*model.LearningGoal")).Return(nil)
 
 	title := "New Title"
 	desc := "New Description"
@@ -549,8 +569,8 @@ func TestLearningGoalUpdate_ClearTargetDate(t *testing.T) {
 	goal.ID = 10
 	goal.UserID = 1
 
-	repo.On("FindByID", uint(10)).Return(goal, nil)
-	repo.On("Update", mock.AnythingOfType("*model.LearningGoal")).Return(nil)
+	repo.On("FindByID", mock.Anything, uint(10)).Return(goal, nil)
+	repo.On("Update", mock.Anything, mock.AnythingOfType("*model.LearningGoal")).Return(nil)
 
 	emptyDate := ""
 	w := doRequest(r, http.MethodPut, "/goals/10", map[string]interface{}{
@@ -588,7 +608,7 @@ func TestLearningGoalGetMyGoals_ServiceError(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/goals/me", h.GetMyGoals)
 
-	repo.On("GetByUserID", uint(1), 20, 0).Return([]model.LearningGoal(nil), int64(0), service.ErrNotFound)
+	repo.On("GetByUserID", mock.Anything, uint(1), 20, 0).Return([]model.LearningGoal(nil), int64(0), domain.ErrNotFound)
 
 	w := doRequest(r, http.MethodGet, "/goals/me", nil)
 	assertStatus(t, w, http.StatusNotFound)
@@ -603,8 +623,8 @@ func TestLearningGoalDuplicate_Success(t *testing.T) {
 
 	existing := &model.LearningGoal{Title: "Goマスター", Description: "Go習得", Category: model.GoalCategoryLanguage, UserID: 1}
 	existing.ID = 10
-	repo.On("FindByID", uint(10)).Return(existing, nil)
-	repo.On("Create", mock.AnythingOfType("*model.LearningGoal")).Return(nil)
+	repo.On("FindByID", mock.Anything, uint(10)).Return(existing, nil)
+	repo.On("Create", mock.Anything, mock.AnythingOfType("*model.LearningGoal")).Return(nil)
 
 	w := doRequest(r, http.MethodPost, "/goals/10/duplicate", nil)
 	assertStatus(t, w, http.StatusCreated)
@@ -618,7 +638,7 @@ func TestLearningGoalDuplicate_Forbidden(t *testing.T) {
 
 	existing := &model.LearningGoal{Title: "他人の目標", UserID: 999}
 	existing.ID = 10
-	repo.On("FindByID", uint(10)).Return(existing, nil)
+	repo.On("FindByID", mock.Anything, uint(10)).Return(existing, nil)
 
 	w := doRequest(r, http.MethodPost, "/goals/10/duplicate", nil)
 	assertStatus(t, w, http.StatusForbidden)
@@ -629,7 +649,7 @@ func TestLearningGoalDuplicate_NotFound(t *testing.T) {
 	r := newRouter(1)
 	r.POST("/goals/:id/duplicate", h.Duplicate)
 
-	repo.On("FindByID", uint(99)).Return(nil, service.ErrNotFound)
+	repo.On("FindByID", mock.Anything, uint(99)).Return(nil, domain.ErrNotFound)
 
 	w := doRequest(r, http.MethodPost, "/goals/99/duplicate", nil)
 	assertStatus(t, w, http.StatusNotFound)
@@ -653,8 +673,8 @@ func TestLearningGoalToggleShare_Success(t *testing.T) {
 
 	goal := &model.LearningGoal{Title: "目標", IsPublic: false, UserID: 1}
 	goal.ID = 10
-	repo.On("FindByID", uint(10)).Return(goal, nil)
-	repo.On("Update", mock.AnythingOfType("*model.LearningGoal")).Return(nil)
+	repo.On("FindByID", mock.Anything, uint(10)).Return(goal, nil)
+	repo.On("Update", mock.Anything, mock.AnythingOfType("*model.LearningGoal")).Return(nil)
 
 	w := doRequest(r, http.MethodPut, "/goals/10/share", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -667,7 +687,7 @@ func TestLearningGoalToggleShare_Forbidden(t *testing.T) {
 
 	goal := &model.LearningGoal{Title: "目標", UserID: 999}
 	goal.ID = 10
-	repo.On("FindByID", uint(10)).Return(goal, nil)
+	repo.On("FindByID", mock.Anything, uint(10)).Return(goal, nil)
 
 	w := doRequest(r, http.MethodPut, "/goals/10/share", nil)
 	assertStatus(t, w, http.StatusForbidden)
@@ -678,7 +698,7 @@ func TestLearningGoalToggleShare_NotFound(t *testing.T) {
 	r := newRouter(1)
 	r.PUT("/goals/:id/share", h.ToggleShare)
 
-	repo.On("FindByID", uint(99)).Return(nil, service.ErrNotFound)
+	repo.On("FindByID", mock.Anything, uint(99)).Return(nil, domain.ErrNotFound)
 
 	w := doRequest(r, http.MethodPut, "/goals/99/share", nil)
 	assertStatus(t, w, http.StatusNotFound)
@@ -692,7 +712,7 @@ func TestLearningGoalGetPublicGoals_Success(t *testing.T) {
 	r.GET("/goals/public", h.GetPublicGoals)
 
 	goals := []model.LearningGoal{{Title: "公開目標1"}, {Title: "公開目標2"}}
-	repo.On("GetPublicGoals", 20, 0).Return(goals, int64(2), nil)
+	repo.On("GetPublicGoals", mock.Anything, 20, 0).Return(goals, int64(2), nil)
 
 	w := doRequest(r, http.MethodGet, "/goals/public", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -707,7 +727,7 @@ func TestLearningGoalGetPublicGoals_ServiceError(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/goals/public", h.GetPublicGoals)
 
-	repo.On("GetPublicGoals", 20, 0).Return([]model.LearningGoal{}, int64(0), errors.New("db error"))
+	repo.On("GetPublicGoals", mock.Anything, 20, 0).Return([]model.LearningGoal{}, int64(0), errors.New("db error"))
 
 	w := doRequest(r, http.MethodGet, "/goals/public", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
@@ -721,7 +741,7 @@ func TestLearningGoalGetPublicByUserID_Success(t *testing.T) {
 	r.GET("/goals/public/user/:userId", h.GetPublicByUserID)
 
 	goals := []model.LearningGoal{{Title: "公開目標"}}
-	repo.On("GetPublicByUserID", uint(5), 20, 0).Return(goals, int64(1), nil)
+	repo.On("GetPublicByUserID", mock.Anything, uint(5), 20, 0).Return(goals, int64(1), nil)
 
 	w := doRequest(r, http.MethodGet, "/goals/public/user/5", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -734,7 +754,7 @@ func TestLearningGoalGetMyCount_Success(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/goals/my/count", h.GetMyCount)
 
-	repo.On("CountByUserID", uint(1)).Return(int64(7), nil)
+	repo.On("CountByUserID", mock.Anything, uint(1)).Return(int64(7), nil)
 
 	w := doRequest(r, http.MethodGet, "/goals/my/count", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -747,7 +767,7 @@ func TestLearningGoalGetMyCount_ServiceError(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/goals/my/count", h.GetMyCount)
 
-	repo.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+	repo.On("CountByUserID", mock.Anything, uint(1)).Return(int64(0), errors.New("db error"))
 
 	w := doRequest(r, http.MethodGet, "/goals/my/count", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
