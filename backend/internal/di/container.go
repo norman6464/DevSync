@@ -129,11 +129,10 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	learningResourceRepo := repository.NewLearningResourceRepository(db)
 	// 書籍レビューはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	bookReviewRepo := persistence.NewBookReviewRepository(db)
-	questionRepo := repository.NewQuestionRepository(db)
 	// 質問はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	// 旧 questionRepo は answerService がまだ使うため残している。
 	questionPort := persistence.NewQuestionRepository(db)
-	answerRepo := repository.NewAnswerRepository(db)
+	// 回答はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	answerPort := persistence.NewAnswerRepository(db)
 	roadmapRepo := repository.NewRoadmapRepository(db)
 	chatRoomRepo := repository.NewChatRoomRepository(db)
 	groupMessageRepo := repository.NewGroupMessageRepository(db)
@@ -176,7 +175,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	zennService := service.NewZennService(userRepo, zennRepo)
 	qiitaService := service.NewQiitaService(userRepo, qiitaRepo)
 	postService := service.NewPostService(postRepo, notificationService)
-	answerService := service.NewAnswerService(answerRepo, questionRepo)
 	learningLogService := service.NewLearningLogService(learningLogRepo, learningGoalRepo)
 	// 学習目標はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	// 旧 learningGoalRepo は learning_log / recommendation / learning_dashboard がまだ使うため残している。
@@ -333,7 +331,16 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewListBookmarkedQuestionsUseCase(questionPort),
 		usecase.NewCountQuestionsUseCase(questionPort),
 	)
-	c.AnswerHandler = handler.NewAnswerHandler(answerService)
+	c.AnswerHandler = handler.NewAnswerHandler(
+		usecase.NewListAnswersUseCase(answerPort),
+		usecase.NewCreateAnswerUseCase(answerPort, questionPort),
+		usecase.NewUpdateAnswerUseCase(answerPort),
+		usecase.NewDeleteAnswerUseCase(answerPort),
+		usecase.NewSetBestAnswerUseCase(answerPort, questionPort),
+		usecase.NewVoteAnswerUseCase(answerPort),
+		usecase.NewRemoveAnswerVoteUseCase(answerPort),
+		usecase.NewListAnswersByVoteRangeUseCase(answerPort),
+	)
 	c.RoadmapHandler = handler.NewRoadmapHandler(roadmapService)
 	c.ChatRoomHandler = handler.NewChatRoomHandler(chatRoomService)
 	c.AtCoderHandler = handler.NewAtCoderHandler(atcoderService)
