@@ -356,77 +356,74 @@ func (m *MockLearningResourceRepository) CountByUserID(userID uint) (int64, erro
 	return args.Get(0).(int64), args.Error(1)
 }
 
-// MockRoadmapRepository は RoadmapRepositoryInterface のモック実装。
-type MockRoadmapRepository struct{ mock.Mock }
+// mockRoadmapRepo は usecase/repository.RoadmapRepository のモック（ctx 付き）。
+type mockRoadmapRepo struct{ mock.Mock }
 
-func (m *MockRoadmapRepository) Create(r *model.Roadmap) error {
-	return m.Called(r).Error(0)
+func (m *mockRoadmapRepo) Create(ctx context.Context, r *model.Roadmap) error {
+	return m.Called(ctx, r).Error(0)
 }
-func (m *MockRoadmapRepository) Update(r *model.Roadmap) error {
-	return m.Called(r).Error(0)
+func (m *mockRoadmapRepo) Update(ctx context.Context, r *model.Roadmap) error {
+	return m.Called(ctx, r).Error(0)
 }
-func (m *MockRoadmapRepository) Delete(id uint) error {
-	return m.Called(id).Error(0)
+func (m *mockRoadmapRepo) Delete(ctx context.Context, id uint) error {
+	return m.Called(ctx, id).Error(0)
 }
-func (m *MockRoadmapRepository) FindByID(id uint) (*model.Roadmap, error) {
-	args := m.Called(id)
+func (m *mockRoadmapRepo) FindByID(ctx context.Context, id uint) (*model.Roadmap, error) {
+	args := m.Called(ctx, id)
 	if r := args.Get(0); r != nil {
 		return r.(*model.Roadmap), args.Error(1)
 	}
 	return nil, args.Error(1)
 }
-func (m *MockRoadmapRepository) GetByUserID(userID uint, limit, offset int) ([]model.Roadmap, int64, error) {
-	args := m.Called(userID, limit, offset)
-	return args.Get(0).([]model.Roadmap), args.Get(1).(int64), args.Error(2)
+func (m *mockRoadmapRepo) GetByUserID(ctx context.Context, userID uint, limit, offset int) ([]model.Roadmap, int64, error) {
+	args := m.Called(ctx, userID, limit, offset)
+	r, _ := args.Get(0).([]model.Roadmap)
+	return r, args.Get(1).(int64), args.Error(2)
 }
-func (m *MockRoadmapRepository) GetPublicRoadmaps(limit, offset int) ([]model.Roadmap, int64, error) {
-	args := m.Called(limit, offset)
-	return args.Get(0).([]model.Roadmap), args.Get(1).(int64), args.Error(2)
+func (m *mockRoadmapRepo) GetByStatus(ctx context.Context, userID uint, status string) ([]model.Roadmap, error) {
+	args := m.Called(ctx, userID, status)
+	r, _ := args.Get(0).([]model.Roadmap)
+	return r, args.Error(1)
 }
-func (m *MockRoadmapRepository) CopyRoadmap(originalID, newUserID uint) (*model.Roadmap, error) {
-	args := m.Called(originalID, newUserID)
+func (m *mockRoadmapRepo) GetPublicRoadmaps(ctx context.Context, limit, offset int) ([]model.Roadmap, int64, error) {
+	args := m.Called(ctx, limit, offset)
+	r, _ := args.Get(0).([]model.Roadmap)
+	return r, args.Get(1).(int64), args.Error(2)
+}
+func (m *mockRoadmapRepo) GetTemplates(ctx context.Context) ([]model.Roadmap, error) {
+	args := m.Called(ctx)
+	r, _ := args.Get(0).([]model.Roadmap)
+	return r, args.Error(1)
+}
+func (m *mockRoadmapRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
+	args := m.Called(ctx, userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+func (m *mockRoadmapRepo) CopyRoadmap(ctx context.Context, originalID, newUserID uint) (*model.Roadmap, error) {
+	args := m.Called(ctx, originalID, newUserID)
 	if r := args.Get(0); r != nil {
 		return r.(*model.Roadmap), args.Error(1)
 	}
 	return nil, args.Error(1)
 }
-func (m *MockRoadmapRepository) GetStats(userID uint) (*model.RoadmapStats, error) {
-	args := m.Called(userID)
-	if s := args.Get(0); s != nil {
-		return s.(*model.RoadmapStats), args.Error(1)
-	}
-	return nil, args.Error(1)
+func (m *mockRoadmapRepo) CreateStep(ctx context.Context, step *model.RoadmapStep) error {
+	return m.Called(ctx, step).Error(0)
 }
-func (m *MockRoadmapRepository) CreateStep(step *model.RoadmapStep) error {
-	return m.Called(step).Error(0)
+func (m *mockRoadmapRepo) UpdateStep(ctx context.Context, step *model.RoadmapStep) error {
+	return m.Called(ctx, step).Error(0)
 }
-func (m *MockRoadmapRepository) UpdateStep(step *model.RoadmapStep) error {
-	return m.Called(step).Error(0)
+func (m *mockRoadmapRepo) DeleteStep(ctx context.Context, stepID uint) error {
+	return m.Called(ctx, stepID).Error(0)
 }
-func (m *MockRoadmapRepository) DeleteStep(stepID uint) error {
-	return m.Called(stepID).Error(0)
-}
-func (m *MockRoadmapRepository) FindStepByID(stepID uint) (*model.RoadmapStep, error) {
-	args := m.Called(stepID)
+func (m *mockRoadmapRepo) FindStepByID(ctx context.Context, stepID uint) (*model.RoadmapStep, error) {
+	args := m.Called(ctx, stepID)
 	if s := args.Get(0); s != nil {
 		return s.(*model.RoadmapStep), args.Error(1)
 	}
 	return nil, args.Error(1)
 }
-func (m *MockRoadmapRepository) ReorderSteps(roadmapID uint, stepOrders []model.StepOrder) error {
-	return m.Called(roadmapID, stepOrders).Error(0)
-}
-func (m *MockRoadmapRepository) GetTemplates() ([]model.Roadmap, error) {
-	args := m.Called()
-	return args.Get(0).([]model.Roadmap), args.Error(1)
-}
-func (m *MockRoadmapRepository) GetByStatus(userID uint, status string) ([]model.Roadmap, error) {
-	args := m.Called(userID, status)
-	return args.Get(0).([]model.Roadmap), args.Error(1)
-}
-func (m *MockRoadmapRepository) CountByUserID(userID uint) (int64, error) {
-	args := m.Called(userID)
-	return args.Get(0).(int64), args.Error(1)
+func (m *mockRoadmapRepo) ReorderSteps(ctx context.Context, roadmapID uint, stepOrders []model.StepOrder) error {
+	return m.Called(ctx, roadmapID, stepOrders).Error(0)
 }
 
 // MockChatRoomRepository は ChatRoomRepositoryInterface のモック実装。
@@ -596,12 +593,39 @@ func setupEmailPreferencesHandler() (*EmailPreferencesHandler, *MockEmailPrefere
 	return h, svc
 }
 
+// roadmapHandlerPorts は RoadmapHandler に注入した port モックをまとめる。
+type roadmapHandlerPorts struct {
+	Roadmaps *mockRoadmapRepo
+	Stats    *mockRoadmapStatsRepo
+}
+
 // setupRoadmapHandler はRoadmapHandlerテスト用のセットアップを行う。
-func setupRoadmapHandler() (*RoadmapHandler, *MockRoadmapRepository) {
-	repo := new(MockRoadmapRepository)
-	svc := service.NewRoadmapService(repo)
-	h := NewRoadmapHandler(svc)
-	return h, repo
+// 本物の usecase に port モックを注入する。
+func setupRoadmapHandler() (*RoadmapHandler, *roadmapHandlerPorts) {
+	roadmaps := new(mockRoadmapRepo)
+	stats := new(mockRoadmapStatsRepo)
+	h := NewRoadmapHandler(
+		usecase.NewCreateRoadmapUseCase(roadmaps),
+		usecase.NewGetRoadmapUseCase(roadmaps),
+		usecase.NewListRoadmapsByUserUseCase(roadmaps),
+		usecase.NewListRoadmapsByStatusUseCase(roadmaps),
+		usecase.NewListPublicRoadmapsUseCase(roadmaps),
+		usecase.NewUpdateRoadmapUseCase(roadmaps),
+		usecase.NewUpdateRoadmapVisibilityUseCase(roadmaps),
+		usecase.NewDeleteRoadmapUseCase(roadmaps),
+		usecase.NewCopyRoadmapUseCase(roadmaps),
+		usecase.NewListRoadmapTemplatesUseCase(roadmaps),
+		usecase.NewCreateRoadmapFromTemplateUseCase(roadmaps),
+		usecase.NewCreateRoadmapStepUseCase(roadmaps),
+		usecase.NewUpdateRoadmapStepUseCase(roadmaps),
+		usecase.NewUpdateRoadmapStepCompletionUseCase(roadmaps),
+		usecase.NewBatchCompleteRoadmapStepsUseCase(roadmaps),
+		usecase.NewDeleteRoadmapStepUseCase(roadmaps),
+		usecase.NewReorderRoadmapStepsUseCase(roadmaps),
+		usecase.NewGetRoadmapStatsUseCase(stats),
+		usecase.NewCountRoadmapsUseCase(roadmaps),
+	)
+	return h, &roadmapHandlerPorts{Roadmaps: roadmaps, Stats: stats}
 }
 
 // setupChatRoomHandlerRepo はChatRoomHandlerテスト用のリポジトリレベルセットアップを行う。
@@ -985,115 +1009,6 @@ func (m *MockProjectService) CountByUserID(userID uint) (int64, error) {
 func setupProjectHandler() (*ProjectHandler, *MockProjectService) {
 	svc := new(MockProjectService)
 	h := NewProjectHandler(svc)
-	return h, svc
-}
-
-// MockRoadmapService は RoadmapServiceInterface のモック実装。
-type MockRoadmapService struct{ mock.Mock }
-
-func (m *MockRoadmapService) Create(roadmap *model.Roadmap) error {
-	return m.Called(roadmap).Error(0)
-}
-func (m *MockRoadmapService) GetByID(id, userID uint) (*model.Roadmap, error) {
-	args := m.Called(id, userID)
-	if r := args.Get(0); r != nil {
-		return r.(*model.Roadmap), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockRoadmapService) GetByUserID(userID uint, limit, offset int) ([]model.Roadmap, int64, error) {
-	args := m.Called(userID, limit, offset)
-	return args.Get(0).([]model.Roadmap), args.Get(1).(int64), args.Error(2)
-}
-func (m *MockRoadmapService) GetPublicRoadmaps(limit, offset int) ([]model.Roadmap, int64, error) {
-	args := m.Called(limit, offset)
-	return args.Get(0).([]model.Roadmap), args.Get(1).(int64), args.Error(2)
-}
-func (m *MockRoadmapService) Update(id, userID uint, updates *model.Roadmap) (*model.Roadmap, error) {
-	args := m.Called(id, userID, updates)
-	if r := args.Get(0); r != nil {
-		return r.(*model.Roadmap), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockRoadmapService) UpdateVisibility(id, userID uint, isPublic bool) (*model.Roadmap, error) {
-	args := m.Called(id, userID, isPublic)
-	if r := args.Get(0); r != nil {
-		return r.(*model.Roadmap), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockRoadmapService) Delete(id, userID uint) error {
-	return m.Called(id, userID).Error(0)
-}
-func (m *MockRoadmapService) CopyRoadmap(roadmapID, userID uint) (*model.Roadmap, error) {
-	args := m.Called(roadmapID, userID)
-	if r := args.Get(0); r != nil {
-		return r.(*model.Roadmap), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockRoadmapService) GetTemplates() ([]model.Roadmap, error) {
-	args := m.Called()
-	return args.Get(0).([]model.Roadmap), args.Error(1)
-}
-func (m *MockRoadmapService) CreateFromTemplate(templateID, userID uint) (*model.Roadmap, error) {
-	args := m.Called(templateID, userID)
-	if r := args.Get(0); r != nil {
-		return r.(*model.Roadmap), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockRoadmapService) CreateStep(roadmapID, userID uint, step *model.RoadmapStep) error {
-	return m.Called(roadmapID, userID, step).Error(0)
-}
-func (m *MockRoadmapService) UpdateStep(roadmapID, stepID, userID uint, updates *model.RoadmapStep) (*model.RoadmapStep, error) {
-	args := m.Called(roadmapID, stepID, userID, updates)
-	if s := args.Get(0); s != nil {
-		return s.(*model.RoadmapStep), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockRoadmapService) UpdateStepCompletion(roadmapID, stepID, userID uint, isCompleted bool) (*model.RoadmapStep, error) {
-	args := m.Called(roadmapID, stepID, userID, isCompleted)
-	if s := args.Get(0); s != nil {
-		return s.(*model.RoadmapStep), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockRoadmapService) DeleteStep(roadmapID, stepID, userID uint) error {
-	return m.Called(roadmapID, stepID, userID).Error(0)
-}
-func (m *MockRoadmapService) ReorderSteps(roadmapID, userID uint, orders []model.StepOrder) error {
-	return m.Called(roadmapID, userID, orders).Error(0)
-}
-func (m *MockRoadmapService) GetByStatus(userID uint, status string) ([]model.Roadmap, error) {
-	args := m.Called(userID, status)
-	return args.Get(0).([]model.Roadmap), args.Error(1)
-}
-func (m *MockRoadmapService) BatchCompleteSteps(roadmapID, userID uint, stepIDs []uint) (*model.Roadmap, error) {
-	args := m.Called(roadmapID, userID, stepIDs)
-	if r := args.Get(0); r != nil {
-		return r.(*model.Roadmap), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockRoadmapService) GetStats(userID uint) (*model.RoadmapStats, error) {
-	args := m.Called(userID)
-	if s := args.Get(0); s != nil {
-		return s.(*model.RoadmapStats), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockRoadmapService) CountByUserID(userID uint) (int64, error) {
-	args := m.Called(userID)
-	return args.Get(0).(int64), args.Error(1)
-}
-
-// setupRoadmapHandlerMock はRoadmapHandlerテスト用のモックセットアップを行う。
-func setupRoadmapHandlerMock() (*RoadmapHandler, *MockRoadmapService) {
-	svc := new(MockRoadmapService)
-	h := NewRoadmapHandler(svc)
 	return h, svc
 }
 
