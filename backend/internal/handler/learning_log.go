@@ -9,43 +9,73 @@ import (
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// LearningLogServiceInterface はLearningLogHandlerが依存するサービスのインターフェース。
-type LearningLogServiceInterface interface {
-	Create(log *model.LearningLog) error
-	BatchCreate(userID uint, logs []model.LearningLog) ([]model.LearningLog, error)
-	ImportCSV(userID uint, data []byte) ([]model.LearningLog, error)
-	GetByID(id, userID uint) (*model.LearningLog, error)
-	GetByUserID(userID uint, limit, offset int) ([]model.LearningLog, int64, error)
-	Update(id, userID uint, updates *model.LearningLog) (*model.LearningLog, error)
-	Delete(id, userID uint) error
-	GetStreakInfo(userID uint) (*model.StreakInfo, error)
-	GetCalendarData(userID uint) ([]model.CalendarEntry, error)
-	ExportCSV(userID uint, days int) ([]byte, error)
-	ExportJSON(userID uint, days int) ([]byte, error)
-	GetByCategory(userID uint, category string) ([]model.LearningLog, error)
-	GetBySource(userID uint, source string) ([]model.LearningLog, error)
-	GetWeeklyDuration(userID uint) (int, error)
-	FavoriteLog(id, userID uint) error
-	UnfavoriteLog(id, userID uint) error
-	GetRecentCategories(userID uint) ([]string, error)
-	GetLinkedLogs(goalID, userID uint, limit, offset int) ([]model.LearningLog, int64, error)
-	GetGoalProgress(goalID, userID uint) (*model.GoalProgress, error)
-	GetFavorites(userID uint, limit, offset int) ([]model.LearningLog, int64, error)
-	GetMonthlySummary(userID uint, months int) ([]model.MonthlySummary, error)
-	CountByUserID(userID uint) (int64, error)
-}
 
 // LearningLogHandler は学習ログ関連のHTTPハンドラ。
 // 学習ログのCRUD・ストリーク・カレンダーデータの取得を処理する。
 type LearningLogHandler struct {
-	service LearningLogServiceInterface
+	create           *usecase.CreateLearningLogUseCase
+	batchCreate      *usecase.BatchCreateLearningLogsUseCase
+	importCSV        *usecase.ImportLearningLogsCSVUseCase
+	get              *usecase.GetLearningLogUseCase
+	list             *usecase.ListLearningLogsUseCase
+	update           *usecase.UpdateLearningLogUseCase
+	remove           *usecase.DeleteLearningLogUseCase
+	streak           *usecase.GetLearningStreakUseCase
+	calendar         *usecase.GetLearningCalendarUseCase
+	exportCSV        *usecase.ExportLearningLogsCSVUseCase
+	exportJSON       *usecase.ExportLearningLogsJSONUseCase
+	listByCategory   *usecase.ListLearningLogsByCategoryUseCase
+	listBySource     *usecase.ListLearningLogsBySourceUseCase
+	weeklyDuration   *usecase.GetWeeklyLearningDurationUseCase
+	favorite         *usecase.FavoriteLearningLogUseCase
+	unfavorite       *usecase.UnfavoriteLearningLogUseCase
+	recentCategories *usecase.ListRecentLearningCategoriesUseCase
+	listLinked       *usecase.ListGoalLinkedLogsUseCase
+	goalProgress     *usecase.GetGoalProgressUseCase
+	listFavorites    *usecase.ListFavoriteLearningLogsUseCase
+	monthlySummary   *usecase.GetLearningLogMonthlySummaryUseCase
+	count            *usecase.CountLearningLogsUseCase
 }
 
 // NewLearningLogHandler は新しいLearningLogHandlerインスタンスを生成する。
-func NewLearningLogHandler(s LearningLogServiceInterface) *LearningLogHandler {
-	return &LearningLogHandler{service: s}
+func NewLearningLogHandler(
+	create *usecase.CreateLearningLogUseCase,
+	batchCreate *usecase.BatchCreateLearningLogsUseCase,
+	importCSV *usecase.ImportLearningLogsCSVUseCase,
+	get *usecase.GetLearningLogUseCase,
+	list *usecase.ListLearningLogsUseCase,
+	update *usecase.UpdateLearningLogUseCase,
+	remove *usecase.DeleteLearningLogUseCase,
+	streak *usecase.GetLearningStreakUseCase,
+	calendar *usecase.GetLearningCalendarUseCase,
+	exportCSV *usecase.ExportLearningLogsCSVUseCase,
+	exportJSON *usecase.ExportLearningLogsJSONUseCase,
+	listByCategory *usecase.ListLearningLogsByCategoryUseCase,
+	listBySource *usecase.ListLearningLogsBySourceUseCase,
+	weeklyDuration *usecase.GetWeeklyLearningDurationUseCase,
+	favorite *usecase.FavoriteLearningLogUseCase,
+	unfavorite *usecase.UnfavoriteLearningLogUseCase,
+	recentCategories *usecase.ListRecentLearningCategoriesUseCase,
+	listLinked *usecase.ListGoalLinkedLogsUseCase,
+	goalProgress *usecase.GetGoalProgressUseCase,
+	listFavorites *usecase.ListFavoriteLearningLogsUseCase,
+	monthlySummary *usecase.GetLearningLogMonthlySummaryUseCase,
+	count *usecase.CountLearningLogsUseCase,
+) *LearningLogHandler {
+	return &LearningLogHandler{
+		create: create, batchCreate: batchCreate, importCSV: importCSV,
+		get: get, list: list, update: update, remove: remove,
+		streak: streak, calendar: calendar,
+		exportCSV: exportCSV, exportJSON: exportJSON,
+		listByCategory: listByCategory, listBySource: listBySource,
+		weeklyDuration: weeklyDuration,
+		favorite:       favorite, unfavorite: unfavorite,
+		recentCategories: recentCategories,
+		listLinked:       listLinked, goalProgress: goalProgress,
+		listFavorites: listFavorites, monthlySummary: monthlySummary, count: count,
+	}
 }
 
 // Create は新しい学習ログを作成する。
@@ -67,7 +97,7 @@ func (h *LearningLogHandler) Create(c *gin.Context) {
 		GoalID:   input.GoalID,
 	}
 
-	if err := h.service.Create(log); err != nil {
+	if err := h.create.Execute(c.Request.Context(), log); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -79,7 +109,7 @@ func (h *LearningLogHandler) Create(c *gin.Context) {
 func (h *LearningLogHandler) GetMyCount(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	count, err := h.service.CountByUserID(userID)
+	count, err := h.count.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -108,7 +138,7 @@ func (h *LearningLogHandler) BatchCreate(c *gin.Context) {
 		}
 	}
 
-	results, err := h.service.BatchCreate(userID, logs)
+	results, err := h.batchCreate.Execute(c.Request.Context(), userID, logs)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -144,7 +174,7 @@ func (h *LearningLogHandler) Update(c *gin.Context) {
 		updates.Duration = *input.Duration
 	}
 
-	log, err := h.service.Update(logID, userID, updates)
+	log, err := h.update.Execute(c.Request.Context(), logID, userID, updates)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -155,31 +185,22 @@ func (h *LearningLogHandler) Update(c *gin.Context) {
 
 // Delete は指定された学習ログを削除する。
 func (h *LearningLogHandler) Delete(c *gin.Context) {
-	handleDelete(c, h.service.Delete)
+	handleDelete(c, func(id, userID uint) error {
+		return h.remove.Execute(c.Request.Context(), id, userID)
+	})
 }
 
 // GetByID は指定されたIDの学習ログを取得する。
 func (h *LearningLogHandler) GetByID(c *gin.Context) {
-	handleGetByID(c, h.service.GetByID)
+	handleGetByID(c, func(id, userID uint) (*model.LearningLog, error) {
+		return h.get.Execute(c.Request.Context(), id, userID)
+	})
 }
 
 // GetMyLogs は認証ユーザー自身の学習ログ一覧を取得する。
 func (h *LearningLogHandler) GetMyLogs(c *gin.Context) {
 	userID := c.GetUint("userID")
-	limit, offset := parseLimitOffset(c)
-
-	logs, total, err := h.service.GetByUserID(userID, limit, offset)
-	if err != nil {
-		respondError(c, err)
-		return
-	}
-
-	respondOK(c, dto.LearningLogListResponse{
-		Logs:   logs,
-		Total:  total,
-		Limit:  limit,
-		Offset: offset,
-	})
+	h.respondLogList(c, userID)
 }
 
 // GetByUserID は指定されたユーザーの学習ログ一覧を取得する。
@@ -188,9 +209,14 @@ func (h *LearningLogHandler) GetByUserID(c *gin.Context) {
 	if !ok {
 		return
 	}
+	h.respondLogList(c, userID)
+}
+
+// respondLogList は学習ログ一覧をページネーション付きで返す共通処理。
+func (h *LearningLogHandler) respondLogList(c *gin.Context, userID uint) {
 	limit, offset := parseLimitOffset(c)
 
-	logs, total, err := h.service.GetByUserID(userID, limit, offset)
+	logs, total, err := h.list.Execute(c.Request.Context(), userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -211,7 +237,7 @@ func (h *LearningLogHandler) GetStreakInfo(c *gin.Context) {
 		return
 	}
 
-	info, err := h.service.GetStreakInfo(userID)
+	info, err := h.streak.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -227,7 +253,7 @@ func (h *LearningLogHandler) GetCalendarData(c *gin.Context) {
 		return
 	}
 
-	entries, err := h.service.GetCalendarData(userID)
+	entries, err := h.calendar.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -241,7 +267,7 @@ func (h *LearningLogHandler) GetByCategory(c *gin.Context) {
 	userID := c.GetUint("userID")
 	category := c.Param("category")
 
-	logs, err := h.service.GetByCategory(userID, category)
+	logs, err := h.listByCategory.Execute(c.Request.Context(), userID, category)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -255,7 +281,7 @@ func (h *LearningLogHandler) GetBySource(c *gin.Context) {
 	userID := c.GetUint("userID")
 	source := c.Param("source")
 
-	logs, err := h.service.GetBySource(userID, source)
+	logs, err := h.listBySource.Execute(c.Request.Context(), userID, source)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -279,7 +305,7 @@ func (h *LearningLogHandler) ExportLogs(c *gin.Context) {
 
 	switch format {
 	case "json":
-		jsonBytes, err := h.service.ExportJSON(userID, days)
+		jsonBytes, err := h.exportJSON.Execute(c.Request.Context(), userID, days)
 		if err != nil {
 			respondError(c, err)
 			return
@@ -291,7 +317,7 @@ func (h *LearningLogHandler) ExportLogs(c *gin.Context) {
 		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
 		c.Data(200, "application/json; charset=utf-8", jsonBytes)
 	case "csv":
-		csvBytes, err := h.service.ExportCSV(userID, days)
+		csvBytes, err := h.exportCSV.Execute(c.Request.Context(), userID, days)
 		if err != nil {
 			respondError(c, err)
 			return
@@ -314,7 +340,7 @@ func (h *LearningLogHandler) GetWeeklyDuration(c *gin.Context) {
 		return
 	}
 
-	duration, err := h.service.GetWeeklyDuration(userID)
+	duration, err := h.weeklyDuration.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -332,7 +358,7 @@ func (h *LearningLogHandler) GetMonthlySummary(c *gin.Context) {
 
 	months := parseQueryIntSilent(c, "months", 12)
 
-	summaries, err := h.service.GetMonthlySummary(userID, months)
+	summaries, err := h.monthlySummary.Execute(c.Request.Context(), userID, months)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -349,7 +375,7 @@ func (h *LearningLogHandler) Favorite(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.FavoriteLog(id, userID); err != nil {
+	if err := h.favorite.Execute(c.Request.Context(), id, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -361,7 +387,7 @@ func (h *LearningLogHandler) Favorite(c *gin.Context) {
 func (h *LearningLogHandler) GetRecentCategories(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	categories, err := h.service.GetRecentCategories(userID)
+	categories, err := h.recentCategories.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -375,7 +401,7 @@ func (h *LearningLogHandler) GetFavorites(c *gin.Context) {
 	userID := c.GetUint("userID")
 	limit, offset := parseLimitOffset(c)
 
-	logs, total, err := h.service.GetFavorites(userID, limit, offset)
+	logs, total, err := h.listFavorites.Execute(c.Request.Context(), userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -397,7 +423,7 @@ func (h *LearningLogHandler) Unfavorite(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.UnfavoriteLog(id, userID); err != nil {
+	if err := h.unfavorite.Execute(c.Request.Context(), id, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -434,7 +460,7 @@ func (h *LearningLogHandler) ImportCSV(c *gin.Context) {
 		return
 	}
 
-	logs, err := h.service.ImportCSV(userID, data)
+	logs, err := h.importCSV.Execute(c.Request.Context(), userID, data)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -455,7 +481,7 @@ func (h *LearningLogHandler) GetLinkedLogs(c *gin.Context) {
 	}
 
 	limit, offset := parseLimitOffset(c)
-	logs, total, err := h.service.GetLinkedLogs(goalID, userID, limit, offset)
+	logs, total, err := h.listLinked.Execute(c.Request.Context(), goalID, userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -477,7 +503,7 @@ func (h *LearningLogHandler) GetGoalProgress(c *gin.Context) {
 		return
 	}
 
-	progress, err := h.service.GetGoalProgress(goalID, userID)
+	progress, err := h.goalProgress.Execute(c.Request.Context(), goalID, userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -490,7 +516,7 @@ func (h *LearningLogHandler) GetGoalProgress(c *gin.Context) {
 func (h *LearningLogHandler) GetMyStreakInfo(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	info, err := h.service.GetStreakInfo(userID)
+	info, err := h.streak.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -503,7 +529,7 @@ func (h *LearningLogHandler) GetMyStreakInfo(c *gin.Context) {
 func (h *LearningLogHandler) GetMyCalendarData(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	entries, err := h.service.GetCalendarData(userID)
+	entries, err := h.calendar.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -516,7 +542,7 @@ func (h *LearningLogHandler) GetMyCalendarData(c *gin.Context) {
 func (h *LearningLogHandler) GetMyWeeklyDuration(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	duration, err := h.service.GetWeeklyDuration(userID)
+	duration, err := h.weeklyDuration.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
