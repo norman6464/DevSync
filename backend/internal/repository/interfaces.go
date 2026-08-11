@@ -264,27 +264,6 @@ type GroupMessageRepositoryInterface interface {
 	GetMemberUserIDs(roomID uint) []uint
 }
 
-// CodeSnippetRepositoryInterface はコードスニペットデータ操作の契約を定義する。
-// スニペットのCRUDおよびインラインコメント操作を含む。
-type CodeSnippetRepositoryInterface interface {
-	Create(snippet *model.CodeSnippet) error
-	FindByID(id uint) (*model.CodeSnippet, error)
-	FindByPostID(postID uint) ([]model.CodeSnippet, error)
-	FindByUserIDAndLanguage(userID uint, language string) ([]model.CodeSnippet, error)
-	Search(query string, limit, offset int) ([]model.CodeSnippet, int64, error)
-	Update(snippet *model.CodeSnippet) error
-	Delete(id uint) error
-	CreateComment(comment *model.SnippetComment) error
-	GetComments(snippetID uint) ([]model.SnippetComment, error)
-	DeleteComment(id, userID uint) error
-	IncrementForkCount(id uint) error
-	Favorite(userID, snippetID uint) error
-	Unfavorite(userID, snippetID uint) error
-	HasFavorited(userID, snippetID uint) (bool, error)
-	FindFavoritedByUserID(userID uint, limit, offset int) ([]model.CodeSnippet, int64, error)
-	CountByUserID(userID uint) (int64, error)
-}
-
 // GitHubRepositoryInterface はGitHub連携データ操作の契約を定義する。
 // コントリビューション、言語統計、リポジトリのUpsert操作を提供する。
 type GitHubRepositoryInterface interface {

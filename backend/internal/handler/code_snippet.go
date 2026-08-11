@@ -5,34 +5,52 @@ import (
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// CodeSnippetHandlerServiceInterface はCodeSnippetHandlerが依存するサービスのインターフェース。
-type CodeSnippetHandlerServiceInterface interface {
-	Create(snippet *model.CodeSnippet) (*model.CodeSnippet, error)
-	GetByPostID(postID uint) ([]model.CodeSnippet, error)
-	GetByUserLanguage(userID uint, language string) ([]model.CodeSnippet, error)
-	Update(id, userID uint, language, fileName, code string) (*model.CodeSnippet, error)
-	Delete(id, userID uint) error
-	GetComments(snippetID uint) ([]model.SnippetComment, error)
-	CreateComment(comment *model.SnippetComment) error
-	DeleteComment(id, userID uint) error
-	Search(query string, limit, offset int) ([]model.CodeSnippet, int64, error)
-	Fork(userID, snippetID, targetPostID uint) (*model.CodeSnippet, error)
-	Favorite(userID, snippetID uint) error
-	Unfavorite(userID, snippetID uint) error
-	GetFavoritedByUserID(userID uint, limit, offset int) ([]model.CodeSnippet, int64, error)
-	CountByUserID(userID uint) (int64, error)
-}
 
 // CodeSnippetHandler はコードスニペット関連のHTTPハンドラ。
 type CodeSnippetHandler struct {
-	service CodeSnippetHandlerServiceInterface
+	create        *usecase.CreateCodeSnippetUseCase
+	listByPost    *usecase.ListCodeSnippetsByPostUseCase
+	byLanguage    *usecase.ListCodeSnippetsByLanguageUseCase
+	update        *usecase.UpdateCodeSnippetUseCase
+	remove        *usecase.DeleteCodeSnippetUseCase
+	listComments  *usecase.ListSnippetCommentsUseCase
+	createComment *usecase.CreateSnippetCommentUseCase
+	deleteComment *usecase.DeleteSnippetCommentUseCase
+	search        *usecase.SearchCodeSnippetsUseCase
+	fork          *usecase.ForkCodeSnippetUseCase
+	favorite      *usecase.FavoriteCodeSnippetUseCase
+	unfavorite    *usecase.UnfavoriteCodeSnippetUseCase
+	listFavorited *usecase.ListFavoritedCodeSnippetsUseCase
+	count         *usecase.CountCodeSnippetsUseCase
 }
 
 // NewCodeSnippetHandler は新しいCodeSnippetHandlerインスタンスを生成する。
-func NewCodeSnippetHandler(s CodeSnippetHandlerServiceInterface) *CodeSnippetHandler {
-	return &CodeSnippetHandler{service: s}
+func NewCodeSnippetHandler(
+	create *usecase.CreateCodeSnippetUseCase,
+	listByPost *usecase.ListCodeSnippetsByPostUseCase,
+	byLanguage *usecase.ListCodeSnippetsByLanguageUseCase,
+	update *usecase.UpdateCodeSnippetUseCase,
+	remove *usecase.DeleteCodeSnippetUseCase,
+	listComments *usecase.ListSnippetCommentsUseCase,
+	createComment *usecase.CreateSnippetCommentUseCase,
+	deleteComment *usecase.DeleteSnippetCommentUseCase,
+	search *usecase.SearchCodeSnippetsUseCase,
+	fork *usecase.ForkCodeSnippetUseCase,
+	favorite *usecase.FavoriteCodeSnippetUseCase,
+	unfavorite *usecase.UnfavoriteCodeSnippetUseCase,
+	listFavorited *usecase.ListFavoritedCodeSnippetsUseCase,
+	count *usecase.CountCodeSnippetsUseCase,
+) *CodeSnippetHandler {
+	return &CodeSnippetHandler{
+		create: create, listByPost: listByPost, byLanguage: byLanguage,
+		update: update, remove: remove,
+		listComments: listComments, createComment: createComment, deleteComment: deleteComment,
+		search: search, fork: fork,
+		favorite: favorite, unfavorite: unfavorite, listFavorited: listFavorited,
+		count: count,
+	}
 }
 
 // Create は投稿にコードスニペットを追加する。
@@ -55,7 +73,7 @@ func (h *CodeSnippetHandler) Create(c *gin.Context) {
 		FileName: input.FileName,
 		Code:     input.Code,
 	}
-	created, err := h.service.Create(snippet)
+	created, err := h.create.Execute(c.Request.Context(), snippet)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -70,7 +88,7 @@ func (h *CodeSnippetHandler) GetByPostID(c *gin.Context) {
 		return
 	}
 
-	snippets, err := h.service.GetByPostID(postID)
+	snippets, err := h.listByPost.Execute(c.Request.Context(), postID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -85,7 +103,7 @@ func (h *CodeSnippetHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	snippets, err := h.service.GetByPostID(id)
+	snippets, err := h.listByPost.Execute(c.Request.Context(), id)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -106,7 +124,10 @@ func (h *CodeSnippetHandler) Update(c *gin.Context) {
 		return
 	}
 
-	snippet, err := h.service.Update(id, userID, input.Language, input.FileName, input.Code)
+	snippet, err := h.update.Execute(c.Request.Context(), usecase.UpdateCodeSnippetInput{
+		ID: id, UserID: userID,
+		Language: input.Language, FileName: input.FileName, Code: input.Code,
+	})
 	if err != nil {
 		respondError(c, err)
 		return
@@ -116,7 +137,9 @@ func (h *CodeSnippetHandler) Update(c *gin.Context) {
 
 // Delete はスニペットを削除する。所有者のみ削除可能。
 func (h *CodeSnippetHandler) Delete(c *gin.Context) {
-	handleDelete(c, h.service.Delete)
+	handleDelete(c, func(id, userID uint) error {
+		return h.remove.Execute(c.Request.Context(), id, userID)
+	})
 }
 
 // GetComments はスニペットのインラインコメント一覧を返す。
@@ -126,7 +149,7 @@ func (h *CodeSnippetHandler) GetComments(c *gin.Context) {
 		return
 	}
 
-	comments, err := h.service.GetComments(snippetID)
+	comments, err := h.listComments.Execute(c.Request.Context(), snippetID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -153,7 +176,7 @@ func (h *CodeSnippetHandler) CreateComment(c *gin.Context) {
 		LineNumber: input.LineNumber,
 		Content:    input.Content,
 	}
-	if err := h.service.CreateComment(comment); err != nil {
+	if err := h.createComment.Execute(c.Request.Context(), comment); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -168,7 +191,7 @@ func (h *CodeSnippetHandler) DeleteComment(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.service.DeleteComment(commentID, userID); err != nil {
+	if err := h.deleteComment.Execute(c.Request.Context(), commentID, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -188,7 +211,7 @@ func (h *CodeSnippetHandler) Fork(c *gin.Context) {
 		return
 	}
 
-	forked, err := h.service.Fork(userID, snippetID, req.TargetPostID)
+	forked, err := h.fork.Execute(c.Request.Context(), userID, snippetID, req.TargetPostID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -202,7 +225,7 @@ func (h *CodeSnippetHandler) GetByUserLanguage(c *gin.Context) {
 	userID := c.GetUint("userID")
 	language := c.Param("language")
 
-	snippets, err := h.service.GetByUserLanguage(userID, language)
+	snippets, err := h.byLanguage.Execute(c.Request.Context(), userID, language)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -219,7 +242,7 @@ func (h *CodeSnippetHandler) Search(c *gin.Context) {
 
 	limit, offset := parseLimitOffset(c)
 
-	snippets, total, err := h.service.Search(q, limit, offset)
+	snippets, total, err := h.search.Execute(c.Request.Context(), q, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -241,7 +264,7 @@ func (h *CodeSnippetHandler) Favorite(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Favorite(userID, id); err != nil {
+	if err := h.favorite.Execute(c.Request.Context(), userID, id); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -257,7 +280,7 @@ func (h *CodeSnippetHandler) Unfavorite(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Unfavorite(userID, id); err != nil {
+	if err := h.unfavorite.Execute(c.Request.Context(), userID, id); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -270,7 +293,7 @@ func (h *CodeSnippetHandler) GetFavorites(c *gin.Context) {
 	userID := c.GetUint("userID")
 	limit, offset := parseLimitOffset(c)
 
-	snippets, total, err := h.service.GetFavoritedByUserID(userID, limit, offset)
+	snippets, total, err := h.listFavorited.Execute(c.Request.Context(), userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -285,7 +308,7 @@ func (h *CodeSnippetHandler) GetFavorites(c *gin.Context) {
 // GetMyCount は認証ユーザーのコードスニペット総数を返す。
 func (h *CodeSnippetHandler) GetMyCount(c *gin.Context) {
 	userID := c.GetUint("userID")
-	count, err := h.service.CountByUserID(userID)
+	count, err := h.count.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return

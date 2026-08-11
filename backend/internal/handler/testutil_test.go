@@ -222,68 +222,7 @@ func (m *MockNotificationRepository) GetFollowerIDs(userID uint) ([]uint, error)
 	return args.Get(0).([]uint), args.Error(1)
 }
 
-// MockCodeSnippetRepository は CodeSnippetRepositoryInterface のモック実装。
-type MockCodeSnippetRepository struct{ mock.Mock }
-
-func (m *MockCodeSnippetRepository) Create(s *model.CodeSnippet) error {
-	return m.Called(s).Error(0)
-}
-func (m *MockCodeSnippetRepository) FindByID(id uint) (*model.CodeSnippet, error) {
-	args := m.Called(id)
-	if s := args.Get(0); s != nil {
-		return s.(*model.CodeSnippet), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockCodeSnippetRepository) FindByPostID(postID uint) ([]model.CodeSnippet, error) {
-	args := m.Called(postID)
-	return args.Get(0).([]model.CodeSnippet), args.Error(1)
-}
-func (m *MockCodeSnippetRepository) Update(s *model.CodeSnippet) error {
-	return m.Called(s).Error(0)
-}
-func (m *MockCodeSnippetRepository) Delete(id uint) error {
-	return m.Called(id).Error(0)
-}
-func (m *MockCodeSnippetRepository) CreateComment(c *model.SnippetComment) error {
-	return m.Called(c).Error(0)
-}
-func (m *MockCodeSnippetRepository) GetComments(snippetID uint) ([]model.SnippetComment, error) {
-	args := m.Called(snippetID)
-	return args.Get(0).([]model.SnippetComment), args.Error(1)
-}
-func (m *MockCodeSnippetRepository) DeleteComment(id, userID uint) error {
-	return m.Called(id, userID).Error(0)
-}
-func (m *MockCodeSnippetRepository) FindByUserIDAndLanguage(userID uint, language string) ([]model.CodeSnippet, error) {
-	args := m.Called(userID, language)
-	return args.Get(0).([]model.CodeSnippet), args.Error(1)
-}
-func (m *MockCodeSnippetRepository) IncrementForkCount(id uint) error {
-	return m.Called(id).Error(0)
-}
-func (m *MockCodeSnippetRepository) Favorite(userID, snippetID uint) error {
-	return m.Called(userID, snippetID).Error(0)
-}
-func (m *MockCodeSnippetRepository) Unfavorite(userID, snippetID uint) error {
-	return m.Called(userID, snippetID).Error(0)
-}
-func (m *MockCodeSnippetRepository) HasFavorited(userID, snippetID uint) (bool, error) {
-	args := m.Called(userID, snippetID)
-	return args.Bool(0), args.Error(1)
-}
-func (m *MockCodeSnippetRepository) FindFavoritedByUserID(userID uint, limit, offset int) ([]model.CodeSnippet, int64, error) {
-	args := m.Called(userID, limit, offset)
-	return args.Get(0).([]model.CodeSnippet), args.Get(1).(int64), args.Error(2)
-}
-func (m *MockCodeSnippetRepository) Search(query string, limit, offset int) ([]model.CodeSnippet, int64, error) {
-	args := m.Called(query, limit, offset)
-	return args.Get(0).([]model.CodeSnippet), args.Get(1).(int64), args.Error(2)
-}
-func (m *MockCodeSnippetRepository) CountByUserID(userID uint) (int64, error) {
-	args := m.Called(userID)
-	return args.Get(0).(int64), args.Error(1)
-}
+// (MockCodeSnippetRepository は code_snippet の DIP 移行に伴い撤去)
 
 // MockQuestionRepository は QuestionRepositoryInterface のモック実装。
 type MockQuestionRepository struct{ mock.Mock }
@@ -575,17 +514,24 @@ func (m *MockRecommendationRepository) GetTrendingResources(limit int, days int)
 // ---------- ヘルパー関数 ----------
 
 // setupPostHandler はPostHandlerテスト用のセットアップを行う。
-func setupPostHandler() (*PostHandler, *MockPostRepository, *MockNotificationRepository, *MockCodeSnippetRepository) {
+// スニペット作成は DIP へ移行済みのため、本物の usecase と port モックを注入する。
+func setupPostHandler() (*PostHandler, *MockPostRepository, *MockNotificationRepository, *postHandlerSnippetPorts) {
 	postRepo := new(MockPostRepository)
 	notifRepo := new(MockNotificationRepository)
-	snippetRepo := new(MockCodeSnippetRepository)
+	snippets := new(mockCodeSnippetRepo)
+	posts := new(mockPostReader)
 
 	notifService := service.NewNotificationService(notifRepo)
 	postService := service.NewPostService(postRepo, notifService)
-	snippetService := service.NewCodeSnippetService(snippetRepo, postRepo)
-	h := NewPostHandler(postService, snippetService)
+	h := NewPostHandler(postService, usecase.NewCreateCodeSnippetUseCase(snippets, posts))
 
-	return h, postRepo, notifRepo, snippetRepo
+	return h, postRepo, notifRepo, &postHandlerSnippetPorts{Snippets: snippets, Posts: posts}
+}
+
+// postHandlerSnippetPorts は PostHandler のスニペット作成に注入した port モックをまとめる。
+type postHandlerSnippetPorts struct {
+	Snippets *mockCodeSnippetRepo
+	Posts    *mockPostReader
 }
 
 // setupQuestionHandler はQuestionHandlerテスト用のセットアップを行う。
@@ -1783,76 +1729,8 @@ func setupGitHubHandlerMock() (*GitHubHandler, *MockGHService, *MockGHAuthServic
 
 // ---------- CodeSnippetHandler モック ----------
 
-// MockCodeSnippetHandlerService は CodeSnippetHandlerServiceInterface のモック実装。
-type MockCodeSnippetHandlerService struct{ mock.Mock }
-
-func (m *MockCodeSnippetHandlerService) Create(snippet *model.CodeSnippet) (*model.CodeSnippet, error) {
-	args := m.Called(snippet)
-	if s := args.Get(0); s != nil {
-		return s.(*model.CodeSnippet), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockCodeSnippetHandlerService) GetByPostID(postID uint) ([]model.CodeSnippet, error) {
-	args := m.Called(postID)
-	return args.Get(0).([]model.CodeSnippet), args.Error(1)
-}
-func (m *MockCodeSnippetHandlerService) Update(id, userID uint, language, fileName, code string) (*model.CodeSnippet, error) {
-	args := m.Called(id, userID, language, fileName, code)
-	if s := args.Get(0); s != nil {
-		return s.(*model.CodeSnippet), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockCodeSnippetHandlerService) Delete(id, userID uint) error {
-	return m.Called(id, userID).Error(0)
-}
-func (m *MockCodeSnippetHandlerService) GetComments(snippetID uint) ([]model.SnippetComment, error) {
-	args := m.Called(snippetID)
-	return args.Get(0).([]model.SnippetComment), args.Error(1)
-}
-func (m *MockCodeSnippetHandlerService) CreateComment(comment *model.SnippetComment) error {
-	return m.Called(comment).Error(0)
-}
-func (m *MockCodeSnippetHandlerService) DeleteComment(id, userID uint) error {
-	return m.Called(id, userID).Error(0)
-}
-func (m *MockCodeSnippetHandlerService) GetByUserLanguage(userID uint, language string) ([]model.CodeSnippet, error) {
-	args := m.Called(userID, language)
-	return args.Get(0).([]model.CodeSnippet), args.Error(1)
-}
-func (m *MockCodeSnippetHandlerService) Fork(userID, snippetID, targetPostID uint) (*model.CodeSnippet, error) {
-	args := m.Called(userID, snippetID, targetPostID)
-	if s := args.Get(0); s != nil {
-		return s.(*model.CodeSnippet), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockCodeSnippetHandlerService) Favorite(userID, snippetID uint) error {
-	return m.Called(userID, snippetID).Error(0)
-}
-func (m *MockCodeSnippetHandlerService) Unfavorite(userID, snippetID uint) error {
-	return m.Called(userID, snippetID).Error(0)
-}
-func (m *MockCodeSnippetHandlerService) GetFavoritedByUserID(userID uint, limit, offset int) ([]model.CodeSnippet, int64, error) {
-	args := m.Called(userID, limit, offset)
-	return args.Get(0).([]model.CodeSnippet), args.Get(1).(int64), args.Error(2)
-}
-func (m *MockCodeSnippetHandlerService) Search(query string, limit, offset int) ([]model.CodeSnippet, int64, error) {
-	args := m.Called(query, limit, offset)
-	return args.Get(0).([]model.CodeSnippet), args.Get(1).(int64), args.Error(2)
-}
-func (m *MockCodeSnippetHandlerService) CountByUserID(userID uint) (int64, error) {
-	args := m.Called(userID)
-	return args.Get(0).(int64), args.Error(1)
-}
-
-// setupCodeSnippetHandler はCodeSnippetHandlerテスト用のセットアップを行う。
-func setupCodeSnippetHandler() (*CodeSnippetHandler, *MockCodeSnippetHandlerService) {
-	svc := new(MockCodeSnippetHandlerService)
-	h := NewCodeSnippetHandler(svc)
-	return h, svc
-}
+// (MockCodeSnippetHandlerService は code_snippet の DIP 移行に伴い撤去。
+// テストは code_snippet_test.go で「本物の usecase + port モック」を組み立てる)
 
 // ---------- NoteLinkHandler モック ----------
 

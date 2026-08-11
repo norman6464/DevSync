@@ -53,22 +53,17 @@ type PostServiceInterface interface {
 	CountBookmarkedByUserID(userID uint) (int64, error)
 }
 
-// CodeSnippetServiceInterface はCodeSnippetServiceが実装すべきインターフェース。
-type CodeSnippetServiceInterface interface {
-	Create(snippet *model.CodeSnippet) (*model.CodeSnippet, error)
-}
-
 // PostHandler は投稿関連のHTTPハンドラ。
 // 投稿のCRUD・いいね・コメント・タイムラインを処理する。
 type PostHandler struct {
-	service        PostServiceInterface
-	snippetService CodeSnippetServiceInterface
-	autoTags       *usecase.SetAutoPostTagsUseCase
+	service       PostServiceInterface
+	createSnippet *usecase.CreateCodeSnippetUseCase
+	autoTags      *usecase.SetAutoPostTagsUseCase
 }
 
 // NewPostHandler は新しいPostHandlerインスタンスを生成する。
-func NewPostHandler(s PostServiceInterface, snippetService CodeSnippetServiceInterface) *PostHandler {
-	return &PostHandler{service: s, snippetService: snippetService}
+func NewPostHandler(s PostServiceInterface, createSnippet *usecase.CreateCodeSnippetUseCase) *PostHandler {
+	return &PostHandler{service: s, createSnippet: createSnippet}
 }
 
 // SetAutoTagsUseCase はオプショナルな自動タグ設定を注入する。
@@ -99,7 +94,7 @@ func (h *PostHandler) Create(c *gin.Context) {
 	}
 
 	// コードスニペットを一括作成
-	if len(input.CodeSnippets) > 0 && h.snippetService != nil {
+	if len(input.CodeSnippets) > 0 && h.createSnippet != nil {
 		for _, s := range input.CodeSnippets {
 			if s.Language == "" || s.Code == "" {
 				continue
@@ -111,7 +106,7 @@ func (h *PostHandler) Create(c *gin.Context) {
 				FileName: s.FileName,
 				Code:     s.Code,
 			}
-			h.snippetService.Create(snippet)
+			h.createSnippet.Execute(c.Request.Context(), snippet)
 		}
 		// スニペット付きで再取得
 		if updated, err := h.service.GetByID(created.ID); err == nil {

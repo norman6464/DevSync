@@ -1017,7 +1017,7 @@ func TestPostCreateComment_InvalidJSON(t *testing.T) {
 // ---------- Create with CodeSnippets ----------
 
 func TestPostCreate_WithCodeSnippets(t *testing.T) {
-	h, postRepo, notifRepo, snippetRepo := setupPostHandler()
+	h, postRepo, notifRepo, snippetPorts := setupPostHandler()
 	r := newRouter(1)
 	r.POST("/posts", h.Create)
 
@@ -1028,10 +1028,11 @@ func TestPostCreate_WithCodeSnippets(t *testing.T) {
 		p.ID = 10
 	})
 	notifRepo.On("GetFollowerIDs", uint(1)).Return([]uint{}, nil)
-	// CodeSnippetService.Create 内部で postRepo.FindByID, snippetRepo.Create, snippetRepo.FindByID を呼ぶ
+	// スニペット作成 usecase が投稿の存在確認 → 作成 → 再取得を行う
 	postRepo.On("FindByID", mock.AnythingOfType("uint")).Return(createdPost, nil)
-	snippetRepo.On("Create", mock.AnythingOfType("*model.CodeSnippet")).Return(nil)
-	snippetRepo.On("FindByID", mock.AnythingOfType("uint")).Return(&model.CodeSnippet{
+	snippetPorts.Posts.On("FindByID", mock.Anything, mock.AnythingOfType("uint")).Return(createdPost, nil)
+	snippetPorts.Snippets.On("Create", mock.Anything, mock.AnythingOfType("*model.CodeSnippet")).Return(nil)
+	snippetPorts.Snippets.On("FindByID", mock.Anything, mock.AnythingOfType("uint")).Return(&model.CodeSnippet{
 		Language: "go", Code: "package main",
 	}, nil)
 
@@ -1044,7 +1045,7 @@ func TestPostCreate_WithCodeSnippets(t *testing.T) {
 	})
 
 	assertStatus(t, w, http.StatusCreated)
-	snippetRepo.AssertCalled(t, "Create", mock.AnythingOfType("*model.CodeSnippet"))
+	snippetPorts.Snippets.AssertCalled(t, "Create", mock.Anything, mock.AnythingOfType("*model.CodeSnippet"))
 }
 
 func TestPostCreate_WithCodeSnippets_SkipsEmpty(t *testing.T) {

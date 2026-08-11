@@ -134,7 +134,10 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	chatRoomRepo := repository.NewChatRoomRepository(db)
 	groupMessageRepo := repository.NewGroupMessageRepository(db)
 	learningLogRepo := repository.NewLearningLogRepository(db)
-	codeSnippetRepo := repository.NewCodeSnippetRepository(db)
+	// コードスニペットはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	codeSnippetRepo := persistence.NewCodeSnippetRepository(db)
+	codeSnippetPostReader := persistence.NewPostReader(db)
+	createCodeSnippet := usecase.NewCreateCodeSnippetUseCase(codeSnippetRepo, codeSnippetPostReader)
 	aiAdviceRepo := repository.NewAIAdviceRepository(db)
 	aiConversationRepo := repository.NewAIConversationRepository(db)
 	levelRepo := repository.NewLevelRepository(db)
@@ -175,7 +178,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	projectService := service.NewProjectService(projectRepo)
 	bookReviewService := service.NewBookReviewService(bookReviewRepo)
 	learningResourceService := service.NewLearningResourceService(learningResourceRepo)
-	codeSnippetService := service.NewCodeSnippetService(codeSnippetRepo, postRepo)
 	roadmapService := service.NewRoadmapService(roadmapRepo)
 	chatRoomService := service.NewChatRoomService(chatRoomRepo, groupMessageRepo, hub)
 	atcoderService := service.NewAtCoderService(userRepo)
@@ -234,8 +236,23 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewListFollowingUseCase(followRepo),
 	)
 	c.GitHubHandler = handler.NewGitHubHandler(githubService, authService)
-	c.PostHandler = handler.NewPostHandler(postService, codeSnippetService)
-	c.CodeSnippetHandler = handler.NewCodeSnippetHandler(codeSnippetService)
+	c.PostHandler = handler.NewPostHandler(postService, createCodeSnippet)
+	c.CodeSnippetHandler = handler.NewCodeSnippetHandler(
+		createCodeSnippet,
+		usecase.NewListCodeSnippetsByPostUseCase(codeSnippetRepo),
+		usecase.NewListCodeSnippetsByLanguageUseCase(codeSnippetRepo),
+		usecase.NewUpdateCodeSnippetUseCase(codeSnippetRepo),
+		usecase.NewDeleteCodeSnippetUseCase(codeSnippetRepo),
+		usecase.NewListSnippetCommentsUseCase(codeSnippetRepo),
+		usecase.NewCreateSnippetCommentUseCase(codeSnippetRepo),
+		usecase.NewDeleteSnippetCommentUseCase(codeSnippetRepo),
+		usecase.NewSearchCodeSnippetsUseCase(codeSnippetRepo),
+		usecase.NewForkCodeSnippetUseCase(codeSnippetRepo, codeSnippetPostReader),
+		usecase.NewFavoriteCodeSnippetUseCase(codeSnippetRepo),
+		usecase.NewUnfavoriteCodeSnippetUseCase(codeSnippetRepo),
+		usecase.NewListFavoritedCodeSnippetsUseCase(codeSnippetRepo),
+		usecase.NewCountCodeSnippetsUseCase(codeSnippetRepo),
+	)
 	c.RankingHandler = handler.NewRankingHandler(
 		usecase.NewGetContributionRankingUseCase(rankingRepo),
 		usecase.NewGetLanguageRankingUseCase(rankingRepo),
