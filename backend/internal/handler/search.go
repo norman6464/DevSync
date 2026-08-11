@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
 // PostSearchService は投稿の高度な検索サービスのインターフェース。
@@ -13,23 +14,17 @@ type PostSearchService interface {
 	SearchPosts(params model.PostSearchParams) (*model.PostSearchResult, error)
 }
 
-// CircleSearchService はスタディサークル検索のサービスインターフェース。
-// Service 層を経由することでクリーンアーキテクチャを維持する。
-type CircleSearchService interface {
-	SearchCircles(query string, limit, offset int) ([]model.StudyCircle, int64, error)
-}
-
 // SearchHandler is the handler for search operations
 type SearchHandler struct {
 	searchService PostSearchService
-	circleService CircleSearchService
+	circleSearch  *usecase.SearchStudyCirclesUseCase
 }
 
 // NewSearchHandler creates a new search handler instance
-func NewSearchHandler(searchService PostSearchService, circleService CircleSearchService) *SearchHandler {
+func NewSearchHandler(searchService PostSearchService, circleSearch *usecase.SearchStudyCirclesUseCase) *SearchHandler {
 	return &SearchHandler{
 		searchService: searchService,
-		circleService: circleService,
+		circleSearch:  circleSearch,
 	}
 }
 
@@ -100,7 +95,7 @@ func (h *SearchHandler) SearchCircles(c *gin.Context) {
 
 	limit, offset := parseLimitOffset(c)
 
-	results, _, err := h.circleService.SearchCircles(query, limit, offset)
+	results, _, err := h.circleSearch.Execute(c.Request.Context(), query, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return

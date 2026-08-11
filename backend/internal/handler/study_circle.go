@@ -5,41 +5,67 @@ import (
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// StudyCircleServiceInterface はStudyCircleHandlerが依存するサービスメソッドを定義する。
-type StudyCircleServiceInterface interface {
-	Create(circle *model.StudyCircle, memberIDs []uint) error
-	GetMyCircles(userID uint, limit, offset int) ([]model.StudyCircle, int64, error)
-	GetByID(id, userID uint) (*model.StudyCircle, error)
-	Update(id, userID uint, name, topic, description *string) (*model.StudyCircle, error)
-	Delete(id, userID uint) error
-	GetMembers(circleID, userID uint) ([]model.StudyCircleMember, error)
-	AddMember(circleID, userID, targetUserID uint) error
-	RemoveMember(circleID, userID, targetUserID uint) error
-	CreateStep(circleID, userID uint, step *model.StudyCircleStep) error
-	UpdateStep(circleID, userID, stepID uint, title, description *string) (*model.StudyCircleStep, error)
-	DeleteStep(circleID, userID, stepID uint) error
-	ReorderSteps(circleID, userID uint, orders []model.StepOrder) error
-	UpdateProgress(circleID, userID, stepID uint, isCompleted bool) error
-	GetProgress(circleID, userID uint) ([]model.StudyCircleMemberProgress, error)
-	CreateCheckin(circleID, userID uint, content string) (*model.StudyCircleCheckin, error)
-	GetCheckins(circleID, userID uint) ([]model.StudyCircleCheckin, error)
-	GetStreakRanking(circleID, userID uint) ([]model.CircleMemberStreak, error)
-	GetByStatus(userID uint, status string) ([]model.StudyCircle, error)
-	UpdateMemberRole(circleID, userID, targetUserID uint, role string) error
-	SearchCircles(query string, limit, offset int) ([]model.StudyCircle, int64, error)
-	CountByUserID(userID uint) (int64, error)
-}
 
 // StudyCircleHandler はスタディサークル関連のHTTPリクエストを処理する。
 type StudyCircleHandler struct {
-	service StudyCircleServiceInterface
+	create           *usecase.CreateStudyCircleUseCase
+	listMine         *usecase.ListMyStudyCirclesUseCase
+	listByStatus     *usecase.ListStudyCirclesByStatusUseCase
+	get              *usecase.GetStudyCircleUseCase
+	update           *usecase.UpdateStudyCircleUseCase
+	remove           *usecase.DeleteStudyCircleUseCase
+	listMembers      *usecase.ListStudyCircleMembersUseCase
+	addMember        *usecase.AddStudyCircleMemberUseCase
+	updateMemberRole *usecase.UpdateStudyCircleMemberRoleUseCase
+	removeMember     *usecase.RemoveStudyCircleMemberUseCase
+	createStep       *usecase.CreateStudyCircleStepUseCase
+	updateStep       *usecase.UpdateStudyCircleStepUseCase
+	deleteStep       *usecase.DeleteStudyCircleStepUseCase
+	reorderSteps     *usecase.ReorderStudyCircleStepsUseCase
+	updateProgress   *usecase.UpdateStudyCircleProgressUseCase
+	listProgress     *usecase.ListStudyCircleProgressUseCase
+	createCheckin    *usecase.CreateStudyCircleCheckinUseCase
+	listCheckins     *usecase.ListStudyCircleCheckinsUseCase
+	streakRanking    *usecase.GetStudyCircleStreakRankingUseCase
+	search           *usecase.SearchStudyCirclesUseCase
+	count            *usecase.CountStudyCirclesUseCase
 }
 
 // NewStudyCircleHandler は新しいStudyCircleHandlerインスタンスを生成する。
-func NewStudyCircleHandler(svc StudyCircleServiceInterface) *StudyCircleHandler {
-	return &StudyCircleHandler{service: svc}
+func NewStudyCircleHandler(
+	create *usecase.CreateStudyCircleUseCase,
+	listMine *usecase.ListMyStudyCirclesUseCase,
+	listByStatus *usecase.ListStudyCirclesByStatusUseCase,
+	get *usecase.GetStudyCircleUseCase,
+	update *usecase.UpdateStudyCircleUseCase,
+	remove *usecase.DeleteStudyCircleUseCase,
+	listMembers *usecase.ListStudyCircleMembersUseCase,
+	addMember *usecase.AddStudyCircleMemberUseCase,
+	updateMemberRole *usecase.UpdateStudyCircleMemberRoleUseCase,
+	removeMember *usecase.RemoveStudyCircleMemberUseCase,
+	createStep *usecase.CreateStudyCircleStepUseCase,
+	updateStep *usecase.UpdateStudyCircleStepUseCase,
+	deleteStep *usecase.DeleteStudyCircleStepUseCase,
+	reorderSteps *usecase.ReorderStudyCircleStepsUseCase,
+	updateProgress *usecase.UpdateStudyCircleProgressUseCase,
+	listProgress *usecase.ListStudyCircleProgressUseCase,
+	createCheckin *usecase.CreateStudyCircleCheckinUseCase,
+	listCheckins *usecase.ListStudyCircleCheckinsUseCase,
+	streakRanking *usecase.GetStudyCircleStreakRankingUseCase,
+	search *usecase.SearchStudyCirclesUseCase,
+	count *usecase.CountStudyCirclesUseCase,
+) *StudyCircleHandler {
+	return &StudyCircleHandler{
+		create: create, listMine: listMine, listByStatus: listByStatus, get: get,
+		update: update, remove: remove, listMembers: listMembers, addMember: addMember,
+		updateMemberRole: updateMemberRole, removeMember: removeMember,
+		createStep: createStep, updateStep: updateStep, deleteStep: deleteStep,
+		reorderSteps: reorderSteps, updateProgress: updateProgress, listProgress: listProgress,
+		createCheckin: createCheckin, listCheckins: listCheckins, streakRanking: streakRanking,
+		search: search, count: count,
+	}
 }
 
 // Create はサークルを作成する。
@@ -58,7 +84,7 @@ func (h *StudyCircleHandler) Create(c *gin.Context) {
 		MaxMembers:  input.MaxMembers,
 	}
 
-	if err := h.service.Create(circle, input.MemberIDs); err != nil {
+	if err := h.create.Execute(c.Request.Context(), circle, input.MemberIDs); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -69,7 +95,7 @@ func (h *StudyCircleHandler) Create(c *gin.Context) {
 func (h *StudyCircleHandler) GetMyCircles(c *gin.Context) {
 	userID := c.GetUint("userID")
 	limit, offset := parseLimitOffset(c)
-	circles, total, err := h.service.GetMyCircles(userID, limit, offset)
+	circles, total, err := h.listMine.Execute(c.Request.Context(), userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -84,7 +110,9 @@ func (h *StudyCircleHandler) GetMyCircles(c *gin.Context) {
 
 // GetByID はサークル詳細を返す。
 func (h *StudyCircleHandler) GetByID(c *gin.Context) {
-	handleGetByID(c, h.service.GetByID)
+	handleGetByID(c, func(id, userID uint) (*model.StudyCircle, error) {
+		return h.get.Execute(c.Request.Context(), id, userID)
+	})
 }
 
 // Update はサークル情報を更新する。
@@ -98,7 +126,7 @@ func (h *StudyCircleHandler) Update(c *gin.Context) {
 		return
 	}
 	userID := c.GetUint("userID")
-	circle, err := h.service.Update(id, userID, input.Name, input.Topic, input.Description)
+	circle, err := h.update.Execute(c.Request.Context(), id, userID, input.Name, input.Topic, input.Description)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -108,7 +136,9 @@ func (h *StudyCircleHandler) Update(c *gin.Context) {
 
 // Delete はサークルを削除する。
 func (h *StudyCircleHandler) Delete(c *gin.Context) {
-	handleDelete(c, h.service.Delete)
+	handleDelete(c, func(id, userID uint) error {
+		return h.remove.Execute(c.Request.Context(), id, userID)
+	})
 }
 
 // GetMembers はメンバー一覧を返す。
@@ -118,7 +148,7 @@ func (h *StudyCircleHandler) GetMembers(c *gin.Context) {
 		return
 	}
 	userID := c.GetUint("userID")
-	members, err := h.service.GetMembers(id, userID)
+	members, err := h.listMembers.Execute(c.Request.Context(), id, userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -137,7 +167,7 @@ func (h *StudyCircleHandler) AddMember(c *gin.Context) {
 		return
 	}
 	userID := c.GetUint("userID")
-	if err := h.service.AddMember(id, userID, input.UserID); err != nil {
+	if err := h.addMember.Execute(c.Request.Context(), id, userID, input.UserID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -155,7 +185,7 @@ func (h *StudyCircleHandler) RemoveMember(c *gin.Context) {
 		return
 	}
 	userID := c.GetUint("userID")
-	if err := h.service.RemoveMember(id, userID, targetID); err != nil {
+	if err := h.removeMember.Execute(c.Request.Context(), id, userID, targetID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -180,7 +210,7 @@ func (h *StudyCircleHandler) CreateStep(c *gin.Context) {
 		ResourceURL: input.ResourceURL,
 		OrderIndex:  input.OrderIndex,
 	}
-	if err := h.service.CreateStep(id, userID, step); err != nil {
+	if err := h.createStep.Execute(c.Request.Context(), id, userID, step); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -202,7 +232,7 @@ func (h *StudyCircleHandler) UpdateStep(c *gin.Context) {
 		return
 	}
 	userID := c.GetUint("userID")
-	step, err := h.service.UpdateStep(id, userID, stepID, input.Title, input.Description)
+	step, err := h.updateStep.Execute(c.Request.Context(), id, userID, stepID, input.Title, input.Description)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -221,7 +251,7 @@ func (h *StudyCircleHandler) DeleteStep(c *gin.Context) {
 		return
 	}
 	userID := c.GetUint("userID")
-	if err := h.service.DeleteStep(id, userID, stepID); err != nil {
+	if err := h.deleteStep.Execute(c.Request.Context(), id, userID, stepID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -239,7 +269,7 @@ func (h *StudyCircleHandler) ReorderSteps(c *gin.Context) {
 		return
 	}
 	userID := c.GetUint("userID")
-	if err := h.service.ReorderSteps(id, userID, input.Orders); err != nil {
+	if err := h.reorderSteps.Execute(c.Request.Context(), id, userID, input.Orders); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -261,7 +291,7 @@ func (h *StudyCircleHandler) UpdateProgress(c *gin.Context) {
 		return
 	}
 	userID := c.GetUint("userID")
-	if err := h.service.UpdateProgress(id, userID, stepID, input.IsCompleted); err != nil {
+	if err := h.updateProgress.Execute(c.Request.Context(), id, userID, stepID, input.IsCompleted); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -275,7 +305,7 @@ func (h *StudyCircleHandler) GetProgress(c *gin.Context) {
 		return
 	}
 	userID := c.GetUint("userID")
-	progress, err := h.service.GetProgress(id, userID)
+	progress, err := h.listProgress.Execute(c.Request.Context(), id, userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -294,7 +324,7 @@ func (h *StudyCircleHandler) CreateCheckin(c *gin.Context) {
 		return
 	}
 	userID := c.GetUint("userID")
-	checkin, err := h.service.CreateCheckin(id, userID, input.Content)
+	checkin, err := h.createCheckin.Execute(c.Request.Context(), id, userID, input.Content)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -309,7 +339,7 @@ func (h *StudyCircleHandler) GetCheckins(c *gin.Context) {
 		return
 	}
 	userID := c.GetUint("userID")
-	checkins, err := h.service.GetCheckins(id, userID)
+	checkins, err := h.listCheckins.Execute(c.Request.Context(), id, userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -324,7 +354,7 @@ func (h *StudyCircleHandler) GetStreakRanking(c *gin.Context) {
 		return
 	}
 	userID := c.GetUint("userID")
-	ranking, err := h.service.GetStreakRanking(id, userID)
+	ranking, err := h.streakRanking.Execute(c.Request.Context(), id, userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -337,7 +367,7 @@ func (h *StudyCircleHandler) GetByStatus(c *gin.Context) {
 	userID := c.GetUint("userID")
 	status := c.Param("status")
 
-	circles, err := h.service.GetByStatus(userID, status)
+	circles, err := h.listByStatus.Execute(c.Request.Context(), userID, status)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -365,7 +395,7 @@ func (h *StudyCircleHandler) UpdateMemberRole(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.UpdateMemberRole(circleID, userID, targetUserID, req.Role); err != nil {
+	if err := h.updateMemberRole.Execute(c.Request.Context(), circleID, userID, targetUserID, req.Role); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -381,7 +411,7 @@ func (h *StudyCircleHandler) Search(c *gin.Context) {
 	}
 	limit, offset := parseLimitOffset(c)
 
-	circles, total, err := h.service.SearchCircles(query, limit, offset)
+	circles, total, err := h.search.Execute(c.Request.Context(), query, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -398,7 +428,7 @@ func (h *StudyCircleHandler) Search(c *gin.Context) {
 // GetMyCount は認証ユーザーが参加しているスタディサークル総数を返す。
 func (h *StudyCircleHandler) GetMyCount(c *gin.Context) {
 	userID := c.GetUint("userID")
-	count, err := h.service.CountByUserID(userID)
+	count, err := h.count.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return

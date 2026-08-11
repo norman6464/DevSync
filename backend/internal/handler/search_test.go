@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -25,17 +26,10 @@ func (m *MockPostSearchService) SearchPosts(params model.PostSearchParams) (*mod
 	return args.Get(0).(*model.PostSearchResult), args.Error(1)
 }
 
-// MockCircleSearchService は CircleSearchService のテスト用モック。
-type MockCircleSearchService struct {
-	mock.Mock
-}
-
-func (m *MockCircleSearchService) SearchCircles(query string, limit, offset int) ([]model.StudyCircle, int64, error) {
-	args := m.Called(query, limit, offset)
-	if v := args.Get(0); v != nil {
-		return v.([]model.StudyCircle), args.Get(1).(int64), args.Error(2)
-	}
-	return nil, args.Get(1).(int64), args.Error(2)
+// newCircleSearchUseCase はサークル検索の usecase を port モック付きで組み立てる。
+func newCircleSearchUseCase() (*usecase.SearchStudyCirclesUseCase, *mockStudyCircleRepo) {
+	repo := new(mockStudyCircleRepo)
+	return usecase.NewSearchStudyCirclesUseCase(repo), repo
 }
 
 func TestSearchPosts_Success(t *testing.T) {
@@ -146,14 +140,14 @@ func TestSearchPosts_WithSortBy(t *testing.T) {
 func TestSearchCircles_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	mockCircleSvc := new(MockCircleSearchService)
-	mockCircleSvc.On("SearchCircles", "golang", 20, 0).Return(
+	circleSearch, repo := newCircleSearchUseCase()
+	repo.On("Search", mock.Anything, "golang", 20, 0).Return(
 		[]model.StudyCircle{{ID: 1, Name: "Golang Study", Topic: "Programming"}},
 		int64(1),
 		nil,
 	)
 
-	h := &SearchHandler{circleService: mockCircleSvc}
+	h := &SearchHandler{circleSearch: circleSearch}
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -173,8 +167,8 @@ func TestSearchCircles_Success(t *testing.T) {
 func TestSearchCircles_EmptyQuery(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	mockCircleSvc := new(MockCircleSearchService)
-	h := &SearchHandler{circleService: mockCircleSvc}
+	circleSearch, _ := newCircleSearchUseCase()
+	h := &SearchHandler{circleSearch: circleSearch}
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -202,16 +196,16 @@ func TestSearchPosts_ServiceError(t *testing.T) {
 }
 
 func TestSearchCircles_ServiceError(t *testing.T) {
-	mockCircleSvc := new(MockCircleSearchService)
-	mockCircleSvc.On("SearchCircles", "error", 20, 0).Return(nil, int64(0), assert.AnError)
+	circleSearch, repo := newCircleSearchUseCase()
+	repo.On("Search", mock.Anything, "error", 20, 0).Return(nil, int64(0), assert.AnError)
 
-	h := NewSearchHandler(nil, mockCircleSvc)
+	h := NewSearchHandler(nil, circleSearch)
 	r := newRouter(1)
 	r.GET("/search/circles", h.SearchCircles)
 
 	w := doRequest(r, "GET", "/search/circles?q=error", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
-	mockCircleSvc.AssertExpectations(t)
+	repo.AssertExpectations(t)
 }
 
 func TestSearchPosts_WithDateRange(t *testing.T) {

@@ -342,53 +342,6 @@ type AIConversationRepositoryInterface interface {
 	DeleteConversation(id, userID uint) error
 }
 
-// StudyCircleRepositoryInterface はスタディサークルのデータ操作の契約を定義する。
-// サークルCRUD、メンバー管理、ステップ管理、進捗、チェックイン、ストリークランキングを提供する。
-type StudyCircleRepositoryInterface interface {
-	// サークルCRUD
-	Create(circle *model.StudyCircle) error
-	FindByID(id uint) (*model.StudyCircle, error)
-	FindByUserID(userID uint, limit, offset int) ([]model.StudyCircle, int64, error)
-	Update(circle *model.StudyCircle) error
-	Delete(id uint) error
-
-	// フィルタリング
-	GetByStatus(userID uint, status string) ([]model.StudyCircle, error)
-
-	// 検索
-	Search(query string, limit, offset int) ([]model.StudyCircle, int64, error)
-
-	// メンバー管理
-	AddMember(circleID, userID uint, role model.StudyCircleMemberRole) error
-	RemoveMember(circleID, userID uint) error
-	GetMembers(circleID uint) ([]model.StudyCircleMember, error)
-	IsMember(circleID, userID uint) (bool, error)
-	GetMemberCount(circleID uint) (int, error)
-	UpdateMemberRole(circleID, userID uint, role model.StudyCircleMemberRole) error
-
-	// ステップCRUD
-	CreateStep(step *model.StudyCircleStep) error
-	UpdateStep(step *model.StudyCircleStep) error
-	DeleteStep(stepID uint) error
-	FindStepByID(stepID uint) (*model.StudyCircleStep, error)
-	ReorderSteps(circleID uint, stepOrders []model.StepOrder) error
-
-	// 進捗管理
-	UpsertProgress(progress *model.StudyCircleMemberProgress) error
-	GetProgress(circleID uint) ([]model.StudyCircleMemberProgress, error)
-
-	// チェックイン
-	CreateCheckin(checkin *model.StudyCircleCheckin) error
-	GetCheckins(circleID uint) ([]model.StudyCircleCheckin, error)
-	HasCheckedInToday(circleID, userID uint) (bool, error)
-
-	// ストリークランキング
-	GetStreakRanking(circleID uint) ([]model.CircleMemberStreak, error)
-
-	// カウント
-	CountByUserID(userID uint) (int64, error)
-}
-
 // NoteRepositoryInterface は学習ノートデータ操作の契約を定義する。
 type NoteRepositoryInterface interface {
 	Create(note *model.Note) error
