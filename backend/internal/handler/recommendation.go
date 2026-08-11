@@ -2,30 +2,29 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// RecommendationServiceInterface はRecommendationHandlerが依存するサービスのインターフェース。
-type RecommendationServiceInterface interface {
-	GetRecommendedUsers(userID uint) ([]model.RecommendedUser, error)
-	GetTrendingPosts() ([]model.Post, error)
-	GetTrendingResources() ([]model.LearningResource, error)
-}
 
 // RecommendationHandler はレコメンド関連のHTTPリクエストを処理する。
 type RecommendationHandler struct {
-	service RecommendationServiceInterface
+	users     *usecase.GetRecommendedUsersUseCase
+	posts     *usecase.GetTrendingPostsUseCase
+	resources *usecase.GetTrendingResourcesUseCase
 }
 
 // NewRecommendationHandler は新しいRecommendationHandlerインスタンスを生成する。
-func NewRecommendationHandler(service RecommendationServiceInterface) *RecommendationHandler {
-	return &RecommendationHandler{service: service}
+func NewRecommendationHandler(
+	users *usecase.GetRecommendedUsersUseCase,
+	posts *usecase.GetTrendingPostsUseCase,
+	resources *usecase.GetTrendingResourcesUseCase,
+) *RecommendationHandler {
+	return &RecommendationHandler{users: users, posts: posts, resources: resources}
 }
 
 // GetRecommendedUsers はスキルマッチングに基づくおすすめユーザーを返す。
 func (h *RecommendationHandler) GetRecommendedUsers(c *gin.Context) {
 	userID := c.GetUint("userID")
-	users, err := h.service.GetRecommendedUsers(userID)
+	users, err := h.users.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -35,7 +34,7 @@ func (h *RecommendationHandler) GetRecommendedUsers(c *gin.Context) {
 
 // GetTrendingPosts は直近7日間の人気投稿を返す。
 func (h *RecommendationHandler) GetTrendingPosts(c *gin.Context) {
-	posts, err := h.service.GetTrendingPosts()
+	posts, err := h.posts.Execute(c.Request.Context())
 	if err != nil {
 		respondError(c, err)
 		return
@@ -45,7 +44,7 @@ func (h *RecommendationHandler) GetTrendingPosts(c *gin.Context) {
 
 // GetTrendingResources は直近30日間の人気学習リソースを返す。
 func (h *RecommendationHandler) GetTrendingResources(c *gin.Context) {
-	resources, err := h.service.GetTrendingResources()
+	resources, err := h.resources.Execute(c.Request.Context())
 	if err != nil {
 		respondError(c, err)
 		return

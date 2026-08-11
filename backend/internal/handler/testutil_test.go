@@ -491,21 +491,8 @@ func (m *MockGroupMessageRepository) GetMemberUserIDs(roomID uint) []uint {
 	return args.Get(0).([]uint)
 }
 
-// MockRecommendationRepository は RecommendationRepositoryInterface のモック実装。
-type MockRecommendationRepository struct{ mock.Mock }
-
-func (m *MockRecommendationRepository) GetRecommendedUsers(userID uint, skills []string, limit int) ([]model.RecommendedUser, error) {
-	args := m.Called(userID, skills, limit)
-	return args.Get(0).([]model.RecommendedUser), args.Error(1)
-}
-func (m *MockRecommendationRepository) GetTrendingPosts(limit int, days int) ([]model.Post, error) {
-	args := m.Called(limit, days)
-	return args.Get(0).([]model.Post), args.Error(1)
-}
-func (m *MockRecommendationRepository) GetTrendingResources(limit int, days int) ([]model.LearningResource, error) {
-	args := m.Called(limit, days)
-	return args.Get(0).([]model.LearningResource), args.Error(1)
-}
+// Recommendation は DIP へ移行済み。テストは recommendation_test.go で
+// 「本物の usecase + port モック」を組み立てる。
 
 // ---------- リポジトリインターフェース適合チェック ----------
 // import cycle を避けるため repository パッケージは使わないが、
@@ -659,15 +646,6 @@ func setupChatRoomHandlerRepo() (*ChatRoomHandler, *MockChatRoomRepository, *Moc
 	svc := service.NewChatRoomService(roomRepo, msgRepo, hub)
 	h := NewChatRoomHandler(svc)
 	return h, roomRepo, msgRepo
-}
-
-// setupRecommendationHandlerRepo はRecommendationHandlerテスト用のセットアップを行う（リポジトリモック版）。
-func setupRecommendationHandlerRepo() (*RecommendationHandler, *MockRecommendationRepository, *MockUserRepository) {
-	recRepo := new(MockRecommendationRepository)
-	userRepo := new(MockUserRepository)
-	svc := service.NewRecommendationService(recRepo, userRepo)
-	h := NewRecommendationHandler(svc)
-	return h, recRepo, userRepo
 }
 
 // doRequest はHTTPリクエストを実行してレスポンスを返す。
@@ -1164,29 +1142,6 @@ func setupMessageHandler() (*MessageHandler, *MockMessageService) {
 
 // ReminderSettings は DIP へ移行済み。テストは reminder_settings_test.go で
 // 「本物の usecase + port モック」を組み立てる。
-
-// MockRecommendationService は RecommendationServiceInterface のモック実装。
-type MockRecommendationService struct{ mock.Mock }
-
-func (m *MockRecommendationService) GetRecommendedUsers(userID uint) ([]model.RecommendedUser, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.RecommendedUser), args.Error(1)
-}
-func (m *MockRecommendationService) GetTrendingPosts() ([]model.Post, error) {
-	args := m.Called()
-	return args.Get(0).([]model.Post), args.Error(1)
-}
-func (m *MockRecommendationService) GetTrendingResources() ([]model.LearningResource, error) {
-	args := m.Called()
-	return args.Get(0).([]model.LearningResource), args.Error(1)
-}
-
-// setupRecommendationHandler はRecommendationHandlerテスト用のセットアップを行う。
-func setupRecommendationHandler() (*RecommendationHandler, *MockRecommendationService) {
-	svc := new(MockRecommendationService)
-	h := NewRecommendationHandler(svc)
-	return h, svc
-}
 
 // MockQiitaService は QiitaServiceInterface のモック実装。
 type MockQiitaService struct{ mock.Mock }
