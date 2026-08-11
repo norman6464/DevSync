@@ -277,9 +277,14 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	searchService := service.NewSearchService(postRepo)
 	c.SearchHandler = handler.NewSearchHandler(searchService, studyCircleService)
 	c.NoteHandler = handler.NewNoteHandler(noteService)
-	noteVersionRepo := repository.NewNoteVersionRepository(db)
-	noteVersionService := service.NewNoteVersionService(noteRepo, noteVersionRepo)
-	c.NoteVersionHandler = handler.NewNoteVersionHandler(noteVersionService)
+	// ノートのバージョン履歴はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	noteVersionRepo := persistence.NewNoteVersionRepository(db)
+	noteUpdater := persistence.NewNoteUpdater(db)
+	c.NoteVersionHandler = handler.NewNoteVersionHandler(
+		usecase.NewListNoteVersionsUseCase(noteVersionRepo, noteReader),
+		usecase.NewGetNoteVersionUseCase(noteVersionRepo, noteReader),
+		usecase.NewRestoreNoteVersionUseCase(noteVersionRepo, noteReader, noteUpdater),
+	)
 	c.NoteFolderHandler = handler.NewNoteFolderHandler(
 		usecase.NewCreateNoteFolderUseCase(noteFolderRepo),
 		usecase.NewGetNoteFolderUseCase(noteFolderRepo),

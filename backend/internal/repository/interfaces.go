@@ -503,14 +503,6 @@ type YouTubeVideoRepositoryInterface interface {
 
 
 
-// NoteVersionRepositoryInterface はノートバージョン履歴データ操作の契約を定義する。
-type NoteVersionRepositoryInterface interface {
-	Create(version *model.NoteVersion) error
-	FindByNoteID(noteID uint, limit, offset int) ([]model.NoteVersion, int64, error)
-	FindByID(id uint) (*model.NoteVersion, error)
-	GetLatestVersionNumber(noteID uint) (int, error)
-}
-
 // LearningLogTemplateRepositoryInterface は学習ログテンプレートデータ操作の契約を定義する。
 type LearningLogTemplateRepositoryInterface interface {
 	Create(template *model.LearningLogTemplate) error
