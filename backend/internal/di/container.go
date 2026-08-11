@@ -127,7 +127,8 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	activityReportRepo := persistence.NewActivityReportRepository(db)
 	projectRepo := repository.NewProjectRepository(db)
 	learningResourceRepo := repository.NewLearningResourceRepository(db)
-	bookReviewRepo := repository.NewBookReviewRepository(db)
+	// 書籍レビューはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	bookReviewRepo := persistence.NewBookReviewRepository(db)
 	questionRepo := repository.NewQuestionRepository(db)
 	answerRepo := repository.NewAnswerRepository(db)
 	roadmapRepo := repository.NewRoadmapRepository(db)
@@ -176,7 +177,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	learningGoalService := service.NewLearningGoalService(learningGoalRepo)
 	messageService := service.NewMessageService(messageRepo, notificationService)
 	projectService := service.NewProjectService(projectRepo)
-	bookReviewService := service.NewBookReviewService(bookReviewRepo)
 	learningResourceService := service.NewLearningResourceService(learningResourceRepo)
 	roadmapService := service.NewRoadmapService(roadmapRepo)
 	chatRoomService := service.NewChatRoomService(chatRoomRepo, groupMessageRepo, hub)
@@ -277,7 +277,20 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	)
 	c.ProjectHandler = handler.NewProjectHandler(projectService)
 	c.LearningResourceHandler = handler.NewLearningResourceHandler(learningResourceService)
-	c.BookReviewHandler = handler.NewBookReviewHandler(bookReviewService)
+	c.BookReviewHandler = handler.NewBookReviewHandler(
+		usecase.NewCreateBookReviewUseCase(bookReviewRepo),
+		usecase.NewGetBookReviewUseCase(bookReviewRepo),
+		usecase.NewListBookReviewsByUserUseCase(bookReviewRepo),
+		usecase.NewListAllBookReviewsUseCase(bookReviewRepo),
+		usecase.NewListBookReviewsByRatingUseCase(bookReviewRepo),
+		usecase.NewSearchBookReviewsUseCase(bookReviewRepo),
+		usecase.NewUpdateBookReviewUseCase(bookReviewRepo),
+		usecase.NewUpdateBookReviewStatusUseCase(bookReviewRepo),
+		usecase.NewArchiveBookReviewUseCase(bookReviewRepo),
+		usecase.NewUpdateBookReviewProgressUseCase(bookReviewRepo),
+		usecase.NewDeleteBookReviewUseCase(bookReviewRepo),
+		usecase.NewCountBookReviewsUseCase(bookReviewRepo),
+	)
 	c.QuestionHandler = handler.NewQuestionHandler(questionService)
 	c.AnswerHandler = handler.NewAnswerHandler(answerService)
 	c.RoadmapHandler = handler.NewRoadmapHandler(roadmapService)

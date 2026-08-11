@@ -186,19 +186,6 @@ type ProjectRepositoryInterface interface {
 	CountByUserID(userID uint) (int64, error)
 }
 
-// BookReviewRepositoryInterface は書籍レビューデータ操作の契約を定義する。
-type BookReviewRepositoryInterface interface {
-	Create(review *model.BookReview) error
-	FindByID(id uint) (*model.BookReview, error)
-	FindByUserID(userID uint, limit, offset int) ([]model.BookReview, int64, error)
-	FindAll(limit, offset int) ([]model.BookReview, int64, error)
-	FindByRating(userID uint, minRating, maxRating int) ([]model.BookReview, error)
-	Search(query string, limit, offset int) ([]model.BookReview, int64, error)
-	Update(review *model.BookReview) error
-	Delete(id uint) error
-	CountByUserID(userID uint) (int64, error)
-}
-
 // LearningResourceRepositoryInterface は学習リソースデータ操作の契約を定義する。
 // いいね・ブックマーク（保存）操作も含む。
 type LearningResourceRepositoryInterface interface {

@@ -1,616 +1,415 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
-// ============================================================
-// Create テスト
-// ============================================================
+// mockBookReviewRepo は usecase/repository.BookReviewRepository のモック（ctx 付き）。
+type mockBookReviewRepo struct{ mock.Mock }
 
-func TestBookReviewCreate_Success(t *testing.T) {
-	h, svc := setupBookReviewHandler()
+func (m *mockBookReviewRepo) Create(ctx context.Context, r *model.BookReview) error {
+	return m.Called(ctx, r).Error(0)
+}
+
+func (m *mockBookReviewRepo) FindByID(ctx context.Context, id uint) (*model.BookReview, error) {
+	args := m.Called(ctx, id)
+	r, _ := args.Get(0).(*model.BookReview)
+	return r, args.Error(1)
+}
+
+func (m *mockBookReviewRepo) FindByUserID(ctx context.Context, userID uint, limit, offset int) ([]model.BookReview, int64, error) {
+	args := m.Called(ctx, userID, limit, offset)
+	r, _ := args.Get(0).([]model.BookReview)
+	return r, args.Get(1).(int64), args.Error(2)
+}
+
+func (m *mockBookReviewRepo) FindAll(ctx context.Context, limit, offset int) ([]model.BookReview, int64, error) {
+	args := m.Called(ctx, limit, offset)
+	r, _ := args.Get(0).([]model.BookReview)
+	return r, args.Get(1).(int64), args.Error(2)
+}
+
+func (m *mockBookReviewRepo) FindByRating(ctx context.Context, userID uint, minRating, maxRating int) ([]model.BookReview, error) {
+	args := m.Called(ctx, userID, minRating, maxRating)
+	r, _ := args.Get(0).([]model.BookReview)
+	return r, args.Error(1)
+}
+
+func (m *mockBookReviewRepo) Search(ctx context.Context, query string, limit, offset int) ([]model.BookReview, int64, error) {
+	args := m.Called(ctx, query, limit, offset)
+	r, _ := args.Get(0).([]model.BookReview)
+	return r, args.Get(1).(int64), args.Error(2)
+}
+
+func (m *mockBookReviewRepo) Update(ctx context.Context, r *model.BookReview) error {
+	return m.Called(ctx, r).Error(0)
+}
+
+func (m *mockBookReviewRepo) Delete(ctx context.Context, id uint) error {
+	return m.Called(ctx, id).Error(0)
+}
+
+func (m *mockBookReviewRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
+	args := m.Called(ctx, userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+// setupBookReviewHandler は本物の usecase と port モックで BookReviewHandler を組む。
+func setupBookReviewHandler() (*BookReviewHandler, *mockBookReviewRepo) {
+	repo := new(mockBookReviewRepo)
+	h := NewBookReviewHandler(
+		usecase.NewCreateBookReviewUseCase(repo),
+		usecase.NewGetBookReviewUseCase(repo),
+		usecase.NewListBookReviewsByUserUseCase(repo),
+		usecase.NewListAllBookReviewsUseCase(repo),
+		usecase.NewListBookReviewsByRatingUseCase(repo),
+		usecase.NewSearchBookReviewsUseCase(repo),
+		usecase.NewUpdateBookReviewUseCase(repo),
+		usecase.NewUpdateBookReviewStatusUseCase(repo),
+		usecase.NewArchiveBookReviewUseCase(repo),
+		usecase.NewUpdateBookReviewProgressUseCase(repo),
+		usecase.NewDeleteBookReviewUseCase(repo),
+		usecase.NewCountBookReviewsUseCase(repo),
+	)
+	return h, repo
+}
+
+// ownedReview は所有者が userID=1 の書籍レビューを返す。
+func ownedReview(id uint) *model.BookReview {
+	r := &model.BookReview{
+		UserID: 1, Title: "元のタイトル", Author: "元の著者", Rating: 3,
+		TotalPages: 100, Status: model.ReviewStatusNotStarted,
+	}
+	r.ID = id
+	return r
+}
+
+// --- Create ---
+
+func TestBookReview_Create_Success(t *testing.T) {
+	h, repo := setupBookReviewHandler()
+	repo.On("Create", mock.Anything, mock.MatchedBy(func(r *model.BookReview) bool {
+		return r.Title == "書名" && r.Author == "著者" && r.Rating == 4
+	})).Return(nil)
+
 	r := newRouter(1)
 	r.POST("/book-reviews", h.Create)
-
-	svc.On("Create", mock.AnythingOfType("*model.BookReview")).Return(nil)
-
 	w := doRequest(r, http.MethodPost, "/book-reviews", map[string]interface{}{
-		"title":  "Go言語入門",
-		"author": "テスト著者",
-		"rating": 5,
-		"review": "とても良い本です",
+		"title": "  書名  ", "author": "  著者  ", "rating": 4,
 	})
+
 	assertStatus(t, w, http.StatusCreated)
-	svc.AssertExpectations(t)
+	repo.AssertExpectations(t)
 }
 
-func TestBookReviewCreate_ValidationError(t *testing.T) {
-	h, _ := setupBookReviewHandler()
+// 評価が範囲外なら 400 を返し、作成しない。
+func TestBookReview_Create_InvalidRating(t *testing.T) {
+	for _, rating := range []int{0, 6} {
+		h, repo := setupBookReviewHandler()
+
+		r := newRouter(1)
+		r.POST("/book-reviews", h.Create)
+		w := doRequest(r, http.MethodPost, "/book-reviews", map[string]interface{}{
+			"title": "書名", "rating": rating,
+		})
+
+		assertStatus(t, w, http.StatusBadRequest)
+		repo.AssertNotCalled(t, "Create")
+	}
+}
+
+// 総ページ数が上限超過なら 400 を返し、作成しない。
+func TestBookReview_Create_TotalPagesTooLarge(t *testing.T) {
+	h, repo := setupBookReviewHandler()
+
 	r := newRouter(1)
 	r.POST("/book-reviews", h.Create)
-
-	// title と rating は required
 	w := doRequest(r, http.MethodPost, "/book-reviews", map[string]interface{}{
-		"review": "レビューのみ",
+		"title": "書名", "rating": 3, "total_pages": 100000,
 	})
+
 	assertStatus(t, w, http.StatusBadRequest)
+	repo.AssertNotCalled(t, "Create")
 }
 
-func TestBookReviewCreate_InvalidJSON(t *testing.T) {
-	h, _ := setupBookReviewHandler()
-	r := newRouter(1)
-	r.POST("/book-reviews", h.Create)
+// --- Get / List ---
 
-	w := doRequestRaw(r, http.MethodPost, "/book-reviews", "not json")
-	assertStatus(t, w, http.StatusBadRequest)
-}
+func TestBookReview_GetByID_Success(t *testing.T) {
+	h, repo := setupBookReviewHandler()
+	repo.On("FindByID", mock.Anything, uint(1)).Return(ownedReview(1), nil)
 
-func TestBookReviewCreate_ServiceError(t *testing.T) {
-	h, svc := setupBookReviewHandler()
-	r := newRouter(1)
-	r.POST("/book-reviews", h.Create)
-
-	svc.On("Create", mock.AnythingOfType("*model.BookReview")).Return(errors.New("db error"))
-
-	w := doRequest(r, http.MethodPost, "/book-reviews", map[string]interface{}{
-		"title":  "Go言語入門",
-		"rating": 5,
-	})
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
-
-// ============================================================
-// GetByID テスト
-// ============================================================
-
-func TestBookReviewGetByID_Success(t *testing.T) {
-	h, svc := setupBookReviewHandler()
 	r := newRouter(1)
 	r.GET("/book-reviews/:id", h.GetByID)
-
-	review := &model.BookReview{Title: "Go言語入門", Rating: 5}
-	review.ID = 1
-	svc.On("GetByID", uint(1)).Return(review, nil)
-
 	w := doRequest(r, http.MethodGet, "/book-reviews/1", nil)
-	assertStatus(t, w, http.StatusOK)
 
-	body := parseJSON(t, w)
-	assert.Equal(t, "Go言語入門", body["title"])
-	svc.AssertExpectations(t)
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
 }
 
-func TestBookReviewGetByID_NotFound(t *testing.T) {
-	h, svc := setupBookReviewHandler()
+// 存在しない ID は 500（移行前の挙動を維持している）。
+func TestBookReview_GetByID_NotFound(t *testing.T) {
+	h, repo := setupBookReviewHandler()
+	repo.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
+
 	r := newRouter(1)
 	r.GET("/book-reviews/:id", h.GetByID)
+	w := doRequest(r, http.MethodGet, "/book-reviews/1", nil)
 
-	svc.On("GetByID", uint(999)).Return(nil, service.ErrNotFound)
-
-	w := doRequest(r, http.MethodGet, "/book-reviews/999", nil)
-	assertStatus(t, w, http.StatusNotFound)
-	svc.AssertExpectations(t)
-}
-
-func TestBookReviewGetByID_InvalidID(t *testing.T) {
-	h, _ := setupBookReviewHandler()
-	r := newRouter(1)
-	r.GET("/book-reviews/:id", h.GetByID)
-
-	w := doRequest(r, http.MethodGet, "/book-reviews/abc", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-// ============================================================
-// GetAll テスト
-// ============================================================
-
-func TestBookReviewGetAll_Success(t *testing.T) {
-	h, svc := setupBookReviewHandler()
-	r := newRouter(1)
-	r.GET("/book-reviews", h.GetAll)
-
-	reviews := []model.BookReview{
-		{Title: "Go言語入門", Rating: 5},
-		{Title: "Rust入門", Rating: 4},
-	}
-	svc.On("GetAll", 20, 0).Return(reviews, int64(2), nil)
-
-	w := doRequest(r, http.MethodGet, "/book-reviews", nil)
-	assertStatus(t, w, http.StatusOK)
-
-	body := parseJSON(t, w)
-	assert.Equal(t, float64(2), body["total"])
-	svc.AssertExpectations(t)
-}
-
-func TestBookReviewGetAll_WithPagination(t *testing.T) {
-	h, svc := setupBookReviewHandler()
-	r := newRouter(1)
-	r.GET("/book-reviews", h.GetAll)
-
-	svc.On("GetAll", 10, 5).Return([]model.BookReview{}, int64(0), nil)
-
-	w := doRequest(r, http.MethodGet, "/book-reviews?limit=10&offset=5", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestBookReviewGetAll_LimitCap(t *testing.T) {
-	h, svc := setupBookReviewHandler()
-	r := newRouter(1)
-	r.GET("/book-reviews", h.GetAll)
-
-	// limit=200 は 100 に制限される
-	svc.On("GetAll", 100, 0).Return([]model.BookReview{}, int64(0), nil)
-
-	w := doRequest(r, http.MethodGet, "/book-reviews?limit=200", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-// ============================================================
-// GetByUserID テスト
-// ============================================================
-
-func TestBookReviewGetByUserID_Success(t *testing.T) {
-	h, svc := setupBookReviewHandler()
-	r := newRouter(1)
-	r.GET("/users/:userId/book-reviews", h.GetByUserID)
-
-	reviews := []model.BookReview{
-		{Title: "Go言語入門", Rating: 5},
-	}
-	svc.On("GetByUserID", uint(1), 20, 0).Return(reviews, int64(1), nil)
-
-	w := doRequest(r, http.MethodGet, "/users/1/book-reviews", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestBookReviewGetByUserID_ServiceError(t *testing.T) {
-	h, svc := setupBookReviewHandler()
-	r := newRouter(1)
-	r.GET("/users/:userId/book-reviews", h.GetByUserID)
-
-	svc.On("GetByUserID", uint(1), 20, 0).Return([]model.BookReview(nil), int64(0), errors.New("db error"))
-
-	w := doRequest(r, http.MethodGet, "/users/1/book-reviews", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
 }
 
-func TestBookReviewGetByUserID_InvalidID(t *testing.T) {
-	h, _ := setupBookReviewHandler()
-	r := newRouter(1)
-	r.GET("/users/:userId/book-reviews", h.GetByUserID)
+func TestBookReview_GetAll_Success(t *testing.T) {
+	h, repo := setupBookReviewHandler()
+	repo.On("FindAll", mock.Anything, 20, 0).
+		Return([]model.BookReview{*ownedReview(1)}, int64(1), nil)
 
-	w := doRequest(r, http.MethodGet, "/users/abc/book-reviews", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-// ============================================================
-// GetAll テスト（追加分）
-// ============================================================
-
-func TestBookReviewGetAll_ServiceError(t *testing.T) {
-	h, svc := setupBookReviewHandler()
 	r := newRouter(1)
 	r.GET("/book-reviews", h.GetAll)
-
-	svc.On("GetAll", 20, 0).Return([]model.BookReview(nil), int64(0), errors.New("db error"))
-
 	w := doRequest(r, http.MethodGet, "/book-reviews", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
+
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
 }
 
-// ============================================================
-// Update テスト
-// ============================================================
+// 評価範囲が不正なら 400 を返し、DB を触らない。
+func TestBookReview_GetByRating_InvalidRange(t *testing.T) {
+	h, repo := setupBookReviewHandler()
 
-func TestBookReviewUpdate_Success(t *testing.T) {
-	h, svc := setupBookReviewHandler()
+	r := newRouter(1)
+	r.GET("/book-reviews/rating", h.GetByRating)
+	w := doRequest(r, http.MethodGet, "/book-reviews/rating?min=4&max=2", nil)
+
+	assertStatus(t, w, http.StatusBadRequest)
+	repo.AssertNotCalled(t, "FindByRating")
+}
+
+func TestBookReview_Search_Success(t *testing.T) {
+	h, repo := setupBookReviewHandler()
+	repo.On("Search", mock.Anything, "go", 20, 0).
+		Return([]model.BookReview{*ownedReview(1)}, int64(1), nil)
+
+	r := newRouter(1)
+	r.GET("/book-reviews/search", h.Search)
+	w := doRequest(r, http.MethodGet, "/book-reviews/search?q=go", nil)
+
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
+}
+
+// --- Update ---
+
+func TestBookReview_Update_PartialKeepsOthers(t *testing.T) {
+	h, repo := setupBookReviewHandler()
+	repo.On("FindByID", mock.Anything, uint(1)).Return(ownedReview(1), nil)
+	repo.On("Update", mock.Anything, mock.MatchedBy(func(r *model.BookReview) bool {
+		// タイトルだけ変わり、著者と評価は据え置き
+		return r.Title == "新タイトル" && r.Author == "元の著者" && r.Rating == 3
+	})).Return(nil)
+
 	r := newRouter(1)
 	r.PUT("/book-reviews/:id", h.Update)
+	w := doRequest(r, http.MethodPut, "/book-reviews/1", map[string]interface{}{"title": "新タイトル"})
 
-	updated := &model.BookReview{Title: "更新後タイトル", Rating: 4}
-	updated.ID = 1
-	svc.On("Update", uint(1), uint(1), mock.AnythingOfType("*model.BookReview")).Return(updated, nil)
-
-	w := doRequest(r, http.MethodPut, "/book-reviews/1", map[string]interface{}{
-		"title": "更新後タイトル",
-	})
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	repo.AssertExpectations(t)
 }
 
-func TestBookReviewUpdate_Forbidden(t *testing.T) {
-	h, svc := setupBookReviewHandler()
+// 所有者以外の更新は 403 を返し、保存しない。
+func TestBookReview_Update_Forbidden(t *testing.T) {
+	h, repo := setupBookReviewHandler()
+	other := ownedReview(1)
+	other.UserID = 999
+	repo.On("FindByID", mock.Anything, uint(1)).Return(other, nil)
+
 	r := newRouter(1)
 	r.PUT("/book-reviews/:id", h.Update)
+	w := doRequest(r, http.MethodPut, "/book-reviews/1", map[string]interface{}{"title": "乗っ取り"})
 
-	svc.On("Update", uint(5), uint(1), mock.AnythingOfType("*model.BookReview")).Return(nil, service.ErrForbidden)
-
-	w := doRequest(r, http.MethodPut, "/book-reviews/5", map[string]interface{}{
-		"title": "不正更新",
-	})
 	assertStatus(t, w, http.StatusForbidden)
-	svc.AssertExpectations(t)
+	repo.AssertNotCalled(t, "Update")
 }
 
-func TestBookReviewUpdate_InvalidJSON(t *testing.T) {
-	h, _ := setupBookReviewHandler()
-	r := newRouter(1)
-	r.PUT("/book-reviews/:id", h.Update)
+// --- Status / Archive ---
 
-	w := doRequestRaw(r, http.MethodPut, "/book-reviews/1", "not json")
+// 無効なステータスは 400 を返し、DB を触らない。
+func TestBookReview_UpdateStatus_Invalid(t *testing.T) {
+	h, repo := setupBookReviewHandler()
+
+	r := newRouter(1)
+	r.PUT("/book-reviews/:id/status", h.UpdateStatus)
+	w := doRequest(r, http.MethodPut, "/book-reviews/1/status", map[string]interface{}{"status": "unknown"})
+
 	assertStatus(t, w, http.StatusBadRequest)
+	repo.AssertNotCalled(t, "FindByID")
+	repo.AssertNotCalled(t, "Update")
 }
 
-func TestBookReviewUpdate_InvalidID(t *testing.T) {
-	h, _ := setupBookReviewHandler()
-	r := newRouter(1)
-	r.PUT("/book-reviews/:id", h.Update)
+func TestBookReview_Archive_Success(t *testing.T) {
+	h, repo := setupBookReviewHandler()
+	repo.On("FindByID", mock.Anything, uint(1)).Return(ownedReview(1), nil)
+	repo.On("Update", mock.Anything, mock.MatchedBy(func(r *model.BookReview) bool {
+		return r.IsArchived
+	})).Return(nil)
 
-	w := doRequest(r, http.MethodPut, "/book-reviews/abc", map[string]interface{}{
-		"title": "テスト",
-	})
+	r := newRouter(1)
+	r.POST("/book-reviews/:id/archive", h.Archive)
+	w := doRequest(r, http.MethodPost, "/book-reviews/1/archive", nil)
+
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
+}
+
+func TestBookReview_Unarchive_Success(t *testing.T) {
+	h, repo := setupBookReviewHandler()
+	archived := ownedReview(1)
+	archived.IsArchived = true
+	repo.On("FindByID", mock.Anything, uint(1)).Return(archived, nil)
+	repo.On("Update", mock.Anything, mock.MatchedBy(func(r *model.BookReview) bool {
+		return !r.IsArchived
+	})).Return(nil)
+
+	r := newRouter(1)
+	r.POST("/book-reviews/:id/unarchive", h.Unarchive)
+	w := doRequest(r, http.MethodPost, "/book-reviews/1/unarchive", nil)
+
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
+}
+
+// --- Progress ---
+
+// 総ページ数に到達すると読了へ自動遷移する。
+func TestBookReview_UpdateProgress_CompletesAtTotal(t *testing.T) {
+	h, repo := setupBookReviewHandler()
+	repo.On("FindByID", mock.Anything, uint(1)).Return(ownedReview(1), nil)
+	repo.On("Update", mock.Anything, mock.MatchedBy(func(r *model.BookReview) bool {
+		return r.CurrentPage == 100 && r.Status == model.ReviewStatusCompleted
+	})).Return(nil)
+
+	r := newRouter(1)
+	r.PUT("/book-reviews/:id/progress", h.UpdateProgress)
+	w := doRequest(r, http.MethodPut, "/book-reviews/1/progress", map[string]interface{}{"current_page": 100})
+
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
+}
+
+// 未読から 1 ページ以上で読中へ自動遷移する。
+func TestBookReview_UpdateProgress_StartsReading(t *testing.T) {
+	h, repo := setupBookReviewHandler()
+	repo.On("FindByID", mock.Anything, uint(1)).Return(ownedReview(1), nil)
+	repo.On("Update", mock.Anything, mock.MatchedBy(func(r *model.BookReview) bool {
+		return r.CurrentPage == 10 && r.Status == model.ReviewStatusReading
+	})).Return(nil)
+
+	r := newRouter(1)
+	r.PUT("/book-reviews/:id/progress", h.UpdateProgress)
+	w := doRequest(r, http.MethodPut, "/book-reviews/1/progress", map[string]interface{}{"current_page": 10})
+
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
+}
+
+// 総ページ数を超える指定は 400 を返し、保存しない。
+func TestBookReview_UpdateProgress_ExceedsTotal(t *testing.T) {
+	h, repo := setupBookReviewHandler()
+	repo.On("FindByID", mock.Anything, uint(1)).Return(ownedReview(1), nil)
+
+	r := newRouter(1)
+	r.PUT("/book-reviews/:id/progress", h.UpdateProgress)
+	w := doRequest(r, http.MethodPut, "/book-reviews/1/progress", map[string]interface{}{"current_page": 101})
+
 	assertStatus(t, w, http.StatusBadRequest)
+	repo.AssertNotCalled(t, "Update")
 }
 
-func TestBookReviewUpdate_NotFound(t *testing.T) {
-	h, svc := setupBookReviewHandler()
+// 総ページ数が未設定なら 400 を返し、保存しない。
+func TestBookReview_UpdateProgress_NoTotalPages(t *testing.T) {
+	h, repo := setupBookReviewHandler()
+	noTotal := ownedReview(1)
+	noTotal.TotalPages = 0
+	repo.On("FindByID", mock.Anything, uint(1)).Return(noTotal, nil)
+
 	r := newRouter(1)
-	r.PUT("/book-reviews/:id", h.Update)
+	r.PUT("/book-reviews/:id/progress", h.UpdateProgress)
+	w := doRequest(r, http.MethodPut, "/book-reviews/1/progress", map[string]interface{}{"current_page": 10})
 
-	svc.On("Update", uint(999), uint(1), mock.AnythingOfType("*model.BookReview")).Return(nil, service.ErrNotFound)
-
-	w := doRequest(r, http.MethodPut, "/book-reviews/999", map[string]interface{}{
-		"title": "存在しない",
-	})
-	assertStatus(t, w, http.StatusNotFound)
-	svc.AssertExpectations(t)
+	assertStatus(t, w, http.StatusBadRequest)
+	repo.AssertNotCalled(t, "Update")
 }
 
-// ============================================================
-// Delete テスト
-// ============================================================
+// --- Delete / Count ---
 
-func TestBookReviewDelete_Success(t *testing.T) {
-	h, svc := setupBookReviewHandler()
+func TestBookReview_Delete_Success(t *testing.T) {
+	h, repo := setupBookReviewHandler()
+	repo.On("FindByID", mock.Anything, uint(1)).Return(ownedReview(1), nil)
+	repo.On("Delete", mock.Anything, uint(1)).Return(nil)
+
 	r := newRouter(1)
 	r.DELETE("/book-reviews/:id", h.Delete)
-
-	svc.On("Delete", uint(1), uint(1)).Return(nil)
-
 	w := doRequest(r, http.MethodDelete, "/book-reviews/1", nil)
+
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	repo.AssertExpectations(t)
 }
 
-func TestBookReviewDelete_Forbidden(t *testing.T) {
-	h, svc := setupBookReviewHandler()
+func TestBookReview_Delete_Forbidden(t *testing.T) {
+	h, repo := setupBookReviewHandler()
+	other := ownedReview(1)
+	other.UserID = 999
+	repo.On("FindByID", mock.Anything, uint(1)).Return(other, nil)
+
 	r := newRouter(1)
 	r.DELETE("/book-reviews/:id", h.Delete)
+	w := doRequest(r, http.MethodDelete, "/book-reviews/1", nil)
 
-	svc.On("Delete", uint(5), uint(1)).Return(service.ErrForbidden)
-
-	w := doRequest(r, http.MethodDelete, "/book-reviews/5", nil)
 	assertStatus(t, w, http.StatusForbidden)
-	svc.AssertExpectations(t)
+	repo.AssertNotCalled(t, "Delete")
 }
 
-func TestBookReviewDelete_NotFound(t *testing.T) {
-	h, svc := setupBookReviewHandler()
+func TestBookReview_GetMyCount_Success(t *testing.T) {
+	h, repo := setupBookReviewHandler()
+	repo.On("CountByUserID", mock.Anything, uint(1)).Return(int64(5), nil)
+
 	r := newRouter(1)
-	r.DELETE("/book-reviews/:id", h.Delete)
+	r.GET("/book-reviews/my/count", h.GetMyCount)
+	w := doRequest(r, http.MethodGet, "/book-reviews/my/count", nil)
 
-	svc.On("Delete", uint(999), uint(1)).Return(service.ErrNotFound)
-
-	w := doRequest(r, http.MethodDelete, "/book-reviews/999", nil)
-	assertStatus(t, w, http.StatusNotFound)
-	svc.AssertExpectations(t)
-}
-
-// ============================================================
-// GetByRating テスト
-// ============================================================
-
-func TestBookReviewGetByRating_Success(t *testing.T) {
-	h, svc := setupBookReviewHandler()
-	r := newRouter(1)
-	r.GET("/book-reviews/rating", h.GetByRating)
-
-	reviews := []model.BookReview{
-		{Title: "良書", Rating: 4},
-	}
-	svc.On("GetByRating", uint(1), 4, 5).Return(reviews, nil)
-
-	w := doRequest(r, http.MethodGet, "/book-reviews/rating?min_rating=4&max_rating=5", nil)
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestBookReviewGetByRating_InvalidMinRating(t *testing.T) {
-	h, _ := setupBookReviewHandler()
-	r := newRouter(1)
-	r.GET("/book-reviews/rating", h.GetByRating)
-
-	w := doRequest(r, http.MethodGet, "/book-reviews/rating?min_rating=abc&max_rating=5", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestBookReviewGetByRating_InvalidMaxRating(t *testing.T) {
-	h, _ := setupBookReviewHandler()
-	r := newRouter(1)
-	r.GET("/book-reviews/rating", h.GetByRating)
-
-	w := doRequest(r, http.MethodGet, "/book-reviews/rating?min_rating=1&max_rating=abc", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestBookReviewGetByRating_ServiceError(t *testing.T) {
-	h, svc := setupBookReviewHandler()
-	r := newRouter(1)
-	r.GET("/book-reviews/rating", h.GetByRating)
-
-	svc.On("GetByRating", uint(1), 1, 5).Return([]model.BookReview(nil), errors.New("db error"))
-
-	w := doRequest(r, http.MethodGet, "/book-reviews/rating?min_rating=1&max_rating=5", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
-
-// ============================================================
-// Archive テスト
-// ============================================================
-
-func TestBookReviewArchive_Success(t *testing.T) {
-	h, svc := setupBookReviewHandler()
-	r := newRouter(1)
-	r.PUT("/book-reviews/:id/archive", h.Archive)
-
-	svc.On("ArchiveReview", uint(1), uint(1)).Return(nil)
-
-	w := doRequest(r, http.MethodPut, "/book-reviews/1/archive", nil)
-	assertStatus(t, w, http.StatusOK)
-	assert.Contains(t, w.Body.String(), "アーカイブしました")
-	svc.AssertExpectations(t)
-}
-
-func TestBookReviewArchive_Forbidden(t *testing.T) {
-	h, svc := setupBookReviewHandler()
-	r := newRouter(1)
-	r.PUT("/book-reviews/:id/archive", h.Archive)
-
-	svc.On("ArchiveReview", uint(5), uint(1)).Return(service.ErrForbidden)
-
-	w := doRequest(r, http.MethodPut, "/book-reviews/5/archive", nil)
-	assertStatus(t, w, http.StatusForbidden)
-	svc.AssertExpectations(t)
-}
-
-func TestBookReviewArchive_InvalidID(t *testing.T) {
-	h, _ := setupBookReviewHandler()
-	r := newRouter(1)
-	r.PUT("/book-reviews/:id/archive", h.Archive)
-
-	w := doRequest(r, http.MethodPut, "/book-reviews/abc/archive", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-// ============================================================
-// Unarchive テスト
-// ============================================================
-
-func TestBookReviewUnarchive_Success(t *testing.T) {
-	h, svc := setupBookReviewHandler()
-	r := newRouter(1)
-	r.PUT("/book-reviews/:id/unarchive", h.Unarchive)
-
-	svc.On("UnarchiveReview", uint(1), uint(1)).Return(nil)
-
-	w := doRequest(r, http.MethodPut, "/book-reviews/1/unarchive", nil)
-	assertStatus(t, w, http.StatusOK)
-	assert.Contains(t, w.Body.String(), "アーカイブを解除しました")
-	svc.AssertExpectations(t)
-}
-
-func TestBookReviewUnarchive_InvalidID(t *testing.T) {
-	h, _ := setupBookReviewHandler()
-	r := newRouter(1)
-	r.PUT("/book-reviews/:id/unarchive", h.Unarchive)
-
-	w := doRequest(r, http.MethodPut, "/book-reviews/abc/unarchive", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestBookReviewUpdateStatus_Success(t *testing.T) {
-	h, svc := setupBookReviewHandler()
-	r := newRouter(1)
-	r.PUT("/book-reviews/:id/status", h.UpdateStatus)
-
-	svc.On("UpdateStatus", uint(5), uint(1), model.ReviewStatus("reading")).Return(nil)
-
-	w := doRequest(r, http.MethodPut, "/book-reviews/5/status", map[string]string{
-		"status": "reading",
-	})
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestBookReviewUpdateStatus_Forbidden(t *testing.T) {
-	h, svc := setupBookReviewHandler()
-	r := newRouter(1)
-	r.PUT("/book-reviews/:id/status", h.UpdateStatus)
-
-	svc.On("UpdateStatus", uint(5), uint(1), model.ReviewStatus("completed")).Return(service.ErrForbidden)
-
-	w := doRequest(r, http.MethodPut, "/book-reviews/5/status", map[string]string{
-		"status": "completed",
-	})
-	assertStatus(t, w, http.StatusForbidden)
-	svc.AssertExpectations(t)
-}
-
-func TestBookReviewUpdateStatus_InvalidID(t *testing.T) {
-	h, _ := setupBookReviewHandler()
-	r := newRouter(1)
-	r.PUT("/book-reviews/:id/status", h.UpdateStatus)
-
-	w := doRequest(r, http.MethodPut, "/book-reviews/abc/status", map[string]string{
-		"status": "reading",
-	})
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-// ============================================================
-// Search テスト
-// ============================================================
-
-func TestBookReviewSearch_Success(t *testing.T) {
-	h, svc := setupBookReviewHandler()
-	r := newRouter(1)
-	r.GET("/book-reviews/search", h.Search)
-
-	svc.On("Search", "Go", 20, 0).Return([]model.BookReview{
-		{Title: "Go言語入門", Author: "テスト著者"},
-	}, int64(1), nil)
-
-	w := doRequest(r, http.MethodGet, "/book-reviews/search?q=Go", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestBookReviewSearch_EmptyQuery(t *testing.T) {
-	h, svc := setupBookReviewHandler()
-	r := newRouter(1)
-	r.GET("/book-reviews/search", h.Search)
-
-	svc.On("Search", "", 20, 0).Return([]model.BookReview(nil), int64(0), service.ErrBadRequest)
-
-	w := doRequest(r, http.MethodGet, "/book-reviews/search?q=", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestBookReviewSearch_ServiceError(t *testing.T) {
-	h, svc := setupBookReviewHandler()
-	r := newRouter(1)
-	r.GET("/book-reviews/search", h.Search)
-
-	svc.On("Search", "test", 20, 0).Return([]model.BookReview(nil), int64(0), errors.New("db error"))
-
-	w := doRequest(r, http.MethodGet, "/book-reviews/search?q=test", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
-
-// ============================================================
-// UpdateProgress テスト
-// ============================================================
-
-func TestBookReviewUpdateProgress_Success(t *testing.T) {
-	h, svc := setupBookReviewHandler()
-	r := newRouter(1)
-	r.PUT("/book-reviews/:id/progress", h.UpdateProgress)
-
-	review := &model.BookReview{Title: "Go本", TotalPages: 300, CurrentPage: 150, Status: model.ReviewStatusReading}
-	review.ID = 1
-	svc.On("UpdateProgress", uint(1), uint(1), 150).Return(review, nil)
-
-	w := doRequest(r, http.MethodPut, "/book-reviews/1/progress", map[string]interface{}{
-		"current_page": 150,
-	})
-	assertStatus(t, w, http.StatusOK)
-
 	body := parseJSON(t, w)
-	assert.Equal(t, float64(150), body["current_page"])
-	assert.Equal(t, float64(300), body["total_pages"])
-	svc.AssertExpectations(t)
+	assert.Equal(t, float64(5), body["count"])
 }
 
-func TestBookReviewUpdateProgress_InvalidJSON(t *testing.T) {
-	h, _ := setupBookReviewHandler()
+func TestBookReview_GetMyCount_RepoError(t *testing.T) {
+	h, repo := setupBookReviewHandler()
+	repo.On("CountByUserID", mock.Anything, uint(1)).Return(int64(0), errors.New("db error"))
+
 	r := newRouter(1)
-	r.PUT("/book-reviews/:id/progress", h.UpdateProgress)
+	r.GET("/book-reviews/my/count", h.GetMyCount)
+	w := doRequest(r, http.MethodGet, "/book-reviews/my/count", nil)
 
-	w := doRequestRaw(r, http.MethodPut, "/book-reviews/1/progress", "not json")
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestBookReviewUpdateProgress_InvalidID(t *testing.T) {
-	h, _ := setupBookReviewHandler()
-	r := newRouter(1)
-	r.PUT("/book-reviews/:id/progress", h.UpdateProgress)
-
-	w := doRequest(r, http.MethodPut, "/book-reviews/abc/progress", map[string]interface{}{
-		"current_page": 50,
-	})
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestBookReviewUpdateProgress_Forbidden(t *testing.T) {
-	h, svc := setupBookReviewHandler()
-	r := newRouter(1)
-	r.PUT("/book-reviews/:id/progress", h.UpdateProgress)
-
-	svc.On("UpdateProgress", uint(5), uint(1), 50).Return(nil, service.ErrForbidden)
-
-	w := doRequest(r, http.MethodPut, "/book-reviews/5/progress", map[string]interface{}{
-		"current_page": 50,
-	})
-	assertStatus(t, w, http.StatusForbidden)
-	svc.AssertExpectations(t)
-}
-
-func TestBookReviewUpdateProgress_ServiceError(t *testing.T) {
-	h, svc := setupBookReviewHandler()
-	r := newRouter(1)
-	r.PUT("/book-reviews/:id/progress", h.UpdateProgress)
-
-	svc.On("UpdateProgress", uint(1), uint(1), 50).Return(nil, errors.New("db error"))
-
-	w := doRequest(r, http.MethodPut, "/book-reviews/1/progress", map[string]interface{}{
-		"current_page": 50,
-	})
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
 }
 
-// ============================================================
-// ImageURL バリデーションテスト
-// ============================================================
+// タイトルが長すぎる場合は 400。
+func TestBookReview_Create_TitleTooLong(t *testing.T) {
+	h, repo := setupBookReviewHandler()
 
-func TestBookReviewCreate_InvalidImageURL(t *testing.T) {
-	h, _ := setupBookReviewHandler()
 	r := newRouter(1)
 	r.POST("/book-reviews", h.Create)
-
 	w := doRequest(r, http.MethodPost, "/book-reviews", map[string]interface{}{
-		"title":     "テスト本",
-		"rating":    4,
-		"image_url": "javascript:alert('xss')",
+		"title": strings.Repeat("a", 201), "rating": 3,
 	})
-	assertStatus(t, w, http.StatusBadRequest)
-}
 
-func TestBookReviewUpdate_InvalidImageURL(t *testing.T) {
-	h, _ := setupBookReviewHandler()
-	r := newRouter(1)
-	r.PUT("/book-reviews/:id", h.Update)
-
-	w := doRequest(r, http.MethodPut, "/book-reviews/1", map[string]interface{}{
-		"image_url": "data:text/html,<script>alert('xss')</script>",
-	})
 	assertStatus(t, w, http.StatusBadRequest)
+	repo.AssertNotCalled(t, "Create")
 }

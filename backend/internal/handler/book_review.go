@@ -5,34 +5,46 @@ import (
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// BookReviewServiceInterface はBookReviewServiceが実装すべきインターフェース。
-type BookReviewServiceInterface interface {
-	Create(review *model.BookReview) error
-	GetByID(id uint) (*model.BookReview, error)
-	GetByUserID(userID uint, limit, offset int) ([]model.BookReview, int64, error)
-	GetAll(limit, offset int) ([]model.BookReview, int64, error)
-	Update(id, userID uint, updates *model.BookReview) (*model.BookReview, error)
-	Delete(id, userID uint) error
-	GetByRating(userID uint, minRating, maxRating int) ([]model.BookReview, error)
-	ArchiveReview(id, userID uint) error
-	UnarchiveReview(id, userID uint) error
-	UpdateStatus(id, userID uint, status model.ReviewStatus) error
-	UpdateProgress(id, userID uint, currentPage int) (*model.BookReview, error)
-	Search(query string, limit, offset int) ([]model.BookReview, int64, error)
-	CountByUserID(userID uint) (int64, error)
-}
-
 // BookReviewHandler は書籍レビュー関連のHTTPハンドラ。
-// 書籍レビューのCRUD・一覧取得を処理する。
 type BookReviewHandler struct {
-	service BookReviewServiceInterface
+	create      *usecase.CreateBookReviewUseCase
+	get         *usecase.GetBookReviewUseCase
+	listByUser  *usecase.ListBookReviewsByUserUseCase
+	listAll     *usecase.ListAllBookReviewsUseCase
+	byRating    *usecase.ListBookReviewsByRatingUseCase
+	search      *usecase.SearchBookReviewsUseCase
+	update      *usecase.UpdateBookReviewUseCase
+	setStatus   *usecase.UpdateBookReviewStatusUseCase
+	setArchived *usecase.ArchiveBookReviewUseCase
+	setProgress *usecase.UpdateBookReviewProgressUseCase
+	remove      *usecase.DeleteBookReviewUseCase
+	count       *usecase.CountBookReviewsUseCase
 }
 
 // NewBookReviewHandler は新しいBookReviewHandlerインスタンスを生成する。
-func NewBookReviewHandler(s BookReviewServiceInterface) *BookReviewHandler {
-	return &BookReviewHandler{service: s}
+func NewBookReviewHandler(
+	create *usecase.CreateBookReviewUseCase,
+	get *usecase.GetBookReviewUseCase,
+	listByUser *usecase.ListBookReviewsByUserUseCase,
+	listAll *usecase.ListAllBookReviewsUseCase,
+	byRating *usecase.ListBookReviewsByRatingUseCase,
+	search *usecase.SearchBookReviewsUseCase,
+	update *usecase.UpdateBookReviewUseCase,
+	setStatus *usecase.UpdateBookReviewStatusUseCase,
+	setArchived *usecase.ArchiveBookReviewUseCase,
+	setProgress *usecase.UpdateBookReviewProgressUseCase,
+	remove *usecase.DeleteBookReviewUseCase,
+	count *usecase.CountBookReviewsUseCase,
+) *BookReviewHandler {
+	return &BookReviewHandler{
+		create: create, get: get, listByUser: listByUser, listAll: listAll,
+		byRating: byRating, search: search, update: update,
+		setStatus: setStatus, setArchived: setArchived, setProgress: setProgress,
+		remove: remove, count: count,
+	}
 }
 
 // Create は新しい書籍レビューを作成する。
@@ -57,7 +69,7 @@ func (h *BookReviewHandler) Create(c *gin.Context) {
 		review.TotalPages = *req.TotalPages
 	}
 
-	if err := h.service.Create(review); err != nil {
+	if err := h.create.Execute(c.Request.Context(), review); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -67,7 +79,9 @@ func (h *BookReviewHandler) Create(c *gin.Context) {
 
 // GetByID は指定IDの書籍レビューを取得する。
 func (h *BookReviewHandler) GetByID(c *gin.Context) {
-	handleGetByIDPublic(c, h.service.GetByID)
+	handleGetByIDPublic(c, func(id uint) (*model.BookReview, error) {
+		return h.get.Execute(c.Request.Context(), id)
+	})
 }
 
 // GetByUserID は指定ユーザーの書籍レビュー一覧をページネーション付きで取得する。
@@ -79,7 +93,7 @@ func (h *BookReviewHandler) GetByUserID(c *gin.Context) {
 
 	limit, offset := parseLimitOffset(c)
 
-	reviews, total, err := h.service.GetByUserID(userID, limit, offset)
+	reviews, total, err := h.listByUser.Execute(c.Request.Context(), userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -99,7 +113,7 @@ func (h *BookReviewHandler) GetMyReviews(c *gin.Context) {
 
 	limit, offset := parseLimitOffset(c)
 
-	reviews, total, err := h.service.GetByUserID(userID, limit, offset)
+	reviews, total, err := h.listByUser.Execute(c.Request.Context(), userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -117,7 +131,7 @@ func (h *BookReviewHandler) GetMyReviews(c *gin.Context) {
 func (h *BookReviewHandler) GetAll(c *gin.Context) {
 	limit, offset := parseLimitOffset(c)
 
-	reviews, total, err := h.service.GetAll(limit, offset)
+	reviews, total, err := h.listAll.Execute(c.Request.Context(), limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -164,7 +178,7 @@ func (h *BookReviewHandler) Update(c *gin.Context) {
 		updates.ImageURL = req.ImageURL
 	}
 
-	review, err := h.service.Update(id, userID, updates)
+	review, err := h.update.Execute(c.Request.Context(), id, userID, updates)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -187,7 +201,7 @@ func (h *BookReviewHandler) GetByRating(c *gin.Context) {
 		return
 	}
 
-	reviews, err := h.service.GetByRating(userID, minRating, maxRating)
+	reviews, err := h.byRating.Execute(c.Request.Context(), userID, minRating, maxRating)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -198,12 +212,16 @@ func (h *BookReviewHandler) GetByRating(c *gin.Context) {
 
 // Archive は指定IDの書籍レビューをアーカイブする。
 func (h *BookReviewHandler) Archive(c *gin.Context) {
-	handleAction(c, h.service.ArchiveReview, "書籍レビューをアーカイブしました")
+	handleAction(c, func(id, userID uint) error {
+		return h.setArchived.Execute(c.Request.Context(), id, userID, true)
+	}, "書籍レビューをアーカイブしました")
 }
 
 // Unarchive は指定IDの書籍レビューのアーカイブを解除する。
 func (h *BookReviewHandler) Unarchive(c *gin.Context) {
-	handleAction(c, h.service.UnarchiveReview, "書籍レビューのアーカイブを解除しました")
+	handleAction(c, func(id, userID uint) error {
+		return h.setArchived.Execute(c.Request.Context(), id, userID, false)
+	}, "書籍レビューのアーカイブを解除しました")
 }
 
 // UpdateStatus は書籍レビューの読書状態を更新する。
@@ -219,7 +237,7 @@ func (h *BookReviewHandler) UpdateStatus(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.UpdateStatus(id, userID, model.ReviewStatus(req.Status)); err != nil {
+	if err := h.setStatus.Execute(c.Request.Context(), id, userID, model.ReviewStatus(req.Status)); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -240,7 +258,7 @@ func (h *BookReviewHandler) UpdateProgress(c *gin.Context) {
 		return
 	}
 
-	review, err := h.service.UpdateProgress(id, userID, req.CurrentPage)
+	review, err := h.setProgress.Execute(c.Request.Context(), id, userID, req.CurrentPage)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -257,7 +275,7 @@ func (h *BookReviewHandler) Search(c *gin.Context) {
 	}
 	limit, offset := parseLimitOffset(c)
 
-	reviews, total, err := h.service.Search(query, limit, offset)
+	reviews, total, err := h.search.Execute(c.Request.Context(), query, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -273,14 +291,16 @@ func (h *BookReviewHandler) Search(c *gin.Context) {
 
 // Delete は指定IDの書籍レビューを削除する。
 func (h *BookReviewHandler) Delete(c *gin.Context) {
-	handleDelete(c, h.service.Delete)
+	handleDelete(c, func(id, userID uint) error {
+		return h.remove.Execute(c.Request.Context(), id, userID)
+	})
 }
 
 // GetMyCount は認証ユーザーの書籍レビュー総数を取得する。
 func (h *BookReviewHandler) GetMyCount(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	count, err := h.service.CountByUserID(userID)
+	count, err := h.count.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
