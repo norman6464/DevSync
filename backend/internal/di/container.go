@@ -153,6 +153,9 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	aiConversationRepo := repository.NewAIConversationRepository(db)
 	levelRepo := repository.NewLevelRepository(db)
 	analyticsRepo := repository.NewLearningAnalyticsRepository(db)
+	// 学習分析はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	// 旧 analyticsRepo は learning_dashboard がまだ使うため残している。
+	analyticsPort := persistence.NewLearningAnalyticsRepository(db)
 	badgeRepo := repository.NewBadgeRepository(db)
 	recommendationRepo := repository.NewRecommendationRepository(db)
 	// スタディサークルはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
@@ -195,7 +198,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	atcoderService := service.NewAtCoderService(userRepo)
 	badgeService := service.NewBadgeService(badgeRepo, notificationService)
 	levelService := service.NewLevelService(levelRepo, notificationService)
-	analyticsService := service.NewLearningAnalyticsService(analyticsRepo)
 	recommendationService := service.NewRecommendationService(recommendationRepo, userRepo)
 	createNote := usecase.NewCreateNoteUseCase(notePort)
 	// 学習ログはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
@@ -433,7 +435,14 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	c.AIAdviceHandler = handler.NewAIAdviceHandler(aiAdviceService)
 	c.EmailPreferencesHandler = handler.NewEmailPreferencesHandler(userService)
 	c.LevelHandler = handler.NewLevelHandler(levelService)
-	c.LearningAnalyticsHandler = handler.NewLearningAnalyticsHandler(analyticsService)
+	c.LearningAnalyticsHandler = handler.NewLearningAnalyticsHandler(
+		usecase.NewGetLearningHeatmapUseCase(analyticsPort),
+		usecase.NewGetCategoryBreakdownUseCase(analyticsPort),
+		usecase.NewGetWeeklyTrendsUseCase(analyticsPort),
+		usecase.NewGetDayOfWeekSummaryUseCase(analyticsPort),
+		usecase.NewGetProductivityScoreUseCase(analyticsPort),
+		usecase.NewGetLearningInsightsUseCase(analyticsPort),
+	)
 	c.RecommendationHandler = handler.NewRecommendationHandler(recommendationService)
 	c.StudyCircleHandler = handler.NewStudyCircleHandler(
 		usecase.NewCreateStudyCircleUseCase(studyCirclePort),

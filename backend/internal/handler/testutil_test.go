@@ -1067,43 +1067,8 @@ func setupAIAdviceHandler() (*AIAdviceHandler, *MockAIAdviceService) {
 	return h, svc
 }
 
-// MockLearningAnalyticsService は LearningAnalyticsServiceInterface のモック実装。
-type MockLearningAnalyticsService struct{ mock.Mock }
-
-func (m *MockLearningAnalyticsService) GetHeatmap(userID uint) ([]model.HeatmapEntry, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.HeatmapEntry), args.Error(1)
-}
-func (m *MockLearningAnalyticsService) GetCategoryBreakdown(userID uint) ([]model.CategoryBreakdown, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.CategoryBreakdown), args.Error(1)
-}
-func (m *MockLearningAnalyticsService) GetWeeklyTrends(userID uint, weeks int) ([]model.WeeklyTrend, error) {
-	args := m.Called(userID, weeks)
-	return args.Get(0).([]model.WeeklyTrend), args.Error(1)
-}
-func (m *MockLearningAnalyticsService) GetProductivityScore(userID uint) (*model.ProductivityScore, error) {
-	args := m.Called(userID)
-	if s := args.Get(0); s != nil {
-		return s.(*model.ProductivityScore), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockLearningAnalyticsService) GetInsights(userID uint) ([]model.AIInsight, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.AIInsight), args.Error(1)
-}
-func (m *MockLearningAnalyticsService) GetDayOfWeekSummary(userID uint) ([]model.DayOfWeekSummary, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.DayOfWeekSummary), args.Error(1)
-}
-
-// setupLearningAnalyticsHandler はLearningAnalyticsHandlerテスト用のセットアップを行う。
-func setupLearningAnalyticsHandler() (*LearningAnalyticsHandler, *MockLearningAnalyticsService) {
-	svc := new(MockLearningAnalyticsService)
-	h := NewLearningAnalyticsHandler(svc)
-	return h, svc
-}
+// LearningAnalytics は DIP へ移行済み。テストは learning_analytics_test.go で
+// 「本物の usecase + port モック」を組み立てる。
 
 // MockChatRoomService は ChatRoomServiceInterface のモック実装。
 type MockChatRoomService struct{ mock.Mock }
