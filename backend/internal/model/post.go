@@ -107,10 +107,13 @@ type PostCollection struct {
 
 // PostCollectionItem はコレクション内の投稿を表す。
 // uniqueIndex制約でコレクション内に同じ投稿が重複しないことを保証する。
+// インデックス名は PostgreSQL のスキーマ内で一意でなければならない。
+// BookmarkCollectionItem も (collection_id, post_id) の複合ユニークを持つため、
+// 名前が衝突しないよう別名にしている。
 type PostCollectionItem struct {
 	ID           uint      `json:"id" gorm:"primaryKey"`
-	CollectionID uint      `json:"collection_id" gorm:"not null;uniqueIndex:idx_collection_post;index"`
-	PostID       uint      `json:"post_id" gorm:"not null;uniqueIndex:idx_collection_post;index"`
+	CollectionID uint      `json:"collection_id" gorm:"not null;uniqueIndex:idx_post_collection_item;index"`
+	PostID       uint      `json:"post_id" gorm:"not null;uniqueIndex:idx_post_collection_item;index"`
 	Post         Post      `json:"post,omitempty" gorm:"foreignKey:PostID"`
 	Note         string    `json:"note" gorm:"type:text"`
 	OrderIndex   int       `json:"order_index" gorm:"not null;default:0"`
