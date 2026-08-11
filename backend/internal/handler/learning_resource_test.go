@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -18,7 +17,7 @@ func TestResourceCreate_Success(t *testing.T) {
 	r := newRouter(1)
 	r.POST("/resources", h.Create)
 
-	repo.On("Create", mock.AnythingOfType("*model.LearningResource")).Return(nil)
+	repo.On("Create", mock.Anything, mock.AnythingOfType("*model.LearningResource")).Return(nil)
 
 	w := doRequest(r, http.MethodPost, "/resources", map[string]string{
 		"title": "Go Tutorial", "category": "article", "url": "https://example.com/go-tutorial",
@@ -57,9 +56,9 @@ func TestResourceGetByID_Success(t *testing.T) {
 	resource := &model.LearningResource{Title: "Found", IsPublic: true}
 	resource.ID = 10
 	resource.UserID = 1
-	repo.On("FindByID", uint(10)).Return(resource, nil)
-	repo.On("HasLiked", uint(1), uint(10)).Return(true, nil)
-	repo.On("HasSaved", uint(1), uint(10)).Return(false, nil)
+	repo.On("FindByID", mock.Anything, uint(10)).Return(resource, nil)
+	repo.On("HasLiked", mock.Anything, uint(1), uint(10)).Return(true, nil)
+	repo.On("HasSaved", mock.Anything, uint(1), uint(10)).Return(false, nil)
 
 	w := doRequest(r, http.MethodGet, "/resources/10", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -69,15 +68,17 @@ func TestResourceGetByID_Success(t *testing.T) {
 	assert.Equal(t, false, body["has_saved"])
 }
 
-func TestResourceGetByID_NotFound(t *testing.T) {
+// 不在のリソースは 404 にならず 500 になる（移行前からの挙動）。
+func TestResourceGetByID_MissingReturnsInternalError(t *testing.T) {
 	h, repo := setupLearningResourceHandler()
 	r := newRouter(1)
 	r.GET("/resources/:id", h.GetByID)
 
-	repo.On("FindByID", uint(999)).Return(nil, service.ErrNotFound)
+	// port は不在を (nil, nil) で表す。
+	repo.On("FindByID", mock.Anything, uint(999)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodGet, "/resources/999", nil)
-	assertStatus(t, w, http.StatusNotFound)
+	assertStatus(t, w, http.StatusInternalServerError)
 }
 
 func TestResourceGetByID_ForbiddenPrivate(t *testing.T) {
@@ -89,7 +90,7 @@ func TestResourceGetByID_ForbiddenPrivate(t *testing.T) {
 	resource := &model.LearningResource{Title: "Private", IsPublic: false}
 	resource.ID = 10
 	resource.UserID = 999
-	repo.On("FindByID", uint(10)).Return(resource, nil)
+	repo.On("FindByID", mock.Anything, uint(10)).Return(resource, nil)
 
 	w := doRequest(r, http.MethodGet, "/resources/10", nil)
 	assertStatus(t, w, http.StatusForbidden)
@@ -111,7 +112,7 @@ func TestResourceGetPublic_Success(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/resources", h.GetPublic)
 
-	repo.On("FindPublic", 20, 0, "", "").Return(
+	repo.On("FindPublic", mock.Anything, 20, 0, "", "").Return(
 		[]model.LearningResource{{Title: "Public Resource"}},
 		int64(1), nil,
 	)
@@ -129,7 +130,7 @@ func TestResourceGetPublic_WithFilters(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/resources", h.GetPublic)
 
-	repo.On("FindPublic", 10, 5, "programming", "beginner").Return(
+	repo.On("FindPublic", mock.Anything, 10, 5, "programming", "beginner").Return(
 		[]model.LearningResource{}, int64(0), nil,
 	)
 
@@ -142,7 +143,7 @@ func TestResourceGetPublic_LimitCap(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/resources", h.GetPublic)
 
-	repo.On("FindPublic", 100, 0, "", "").Return(
+	repo.On("FindPublic", mock.Anything, 100, 0, "", "").Return(
 		[]model.LearningResource{}, int64(0), nil,
 	)
 
@@ -157,7 +158,7 @@ func TestResourceSearch_Success(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/resources/search", h.Search)
 
-	repo.On("Search", "go", 20, 0).Return(
+	repo.On("Search", mock.Anything, "go", 20, 0).Return(
 		[]model.LearningResource{{Title: "Go Basics"}},
 		int64(1), nil,
 	)
@@ -176,8 +177,8 @@ func TestResourceUpdate_Success(t *testing.T) {
 	resource := &model.LearningResource{Title: "Old Title"}
 	resource.ID = 10
 	resource.UserID = 1
-	repo.On("FindByID", uint(10)).Return(resource, nil)
-	repo.On("Update", mock.AnythingOfType("*model.LearningResource")).Return(nil)
+	repo.On("FindByID", mock.Anything, uint(10)).Return(resource, nil)
+	repo.On("Update", mock.Anything, mock.AnythingOfType("*model.LearningResource")).Return(nil)
 
 	w := doRequest(r, http.MethodPut, "/resources/10", map[string]string{
 		"title": "Updated Title",
@@ -193,7 +194,7 @@ func TestResourceUpdate_Forbidden(t *testing.T) {
 	resource := &model.LearningResource{Title: "Other's"}
 	resource.ID = 10
 	resource.UserID = 999
-	repo.On("FindByID", uint(10)).Return(resource, nil)
+	repo.On("FindByID", mock.Anything, uint(10)).Return(resource, nil)
 
 	w := doRequest(r, http.MethodPut, "/resources/10", map[string]string{
 		"title": "Hacked",
@@ -201,15 +202,16 @@ func TestResourceUpdate_Forbidden(t *testing.T) {
 	assertStatus(t, w, http.StatusForbidden)
 }
 
-func TestResourceUpdate_NotFound(t *testing.T) {
+// 更新も不在は 404 にならず 500 になる（移行前からの挙動）。
+func TestResourceUpdate_MissingReturnsInternalError(t *testing.T) {
 	h, repo := setupLearningResourceHandler()
 	r := newRouter(1)
 	r.PUT("/resources/:id", h.Update)
 
-	repo.On("FindByID", uint(10)).Return(nil, service.ErrNotFound)
+	repo.On("FindByID", mock.Anything, uint(10)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodPut, "/resources/10", map[string]string{"title": "X"})
-	assertStatus(t, w, http.StatusNotFound)
+	assertStatus(t, w, http.StatusInternalServerError)
 }
 
 // ---------- Delete ----------
@@ -222,8 +224,8 @@ func TestResourceDelete_Success(t *testing.T) {
 	resource := &model.LearningResource{}
 	resource.ID = 10
 	resource.UserID = 1
-	repo.On("FindByID", uint(10)).Return(resource, nil)
-	repo.On("Delete", uint(10)).Return(nil)
+	repo.On("FindByID", mock.Anything, uint(10)).Return(resource, nil)
+	repo.On("Delete", mock.Anything, uint(10)).Return(nil)
 
 	w := doRequest(r, http.MethodDelete, "/resources/10", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -237,7 +239,7 @@ func TestResourceDelete_Forbidden(t *testing.T) {
 	resource := &model.LearningResource{}
 	resource.ID = 10
 	resource.UserID = 999
-	repo.On("FindByID", uint(10)).Return(resource, nil)
+	repo.On("FindByID", mock.Anything, uint(10)).Return(resource, nil)
 
 	w := doRequest(r, http.MethodDelete, "/resources/10", nil)
 	assertStatus(t, w, http.StatusForbidden)
@@ -257,7 +259,7 @@ func TestResourceUpdate_ServiceError(t *testing.T) {
 	r := newRouter(1)
 	r.PUT("/resources/:id", h.Update)
 
-	repo.On("FindByID", uint(10)).Return(nil, errors.New("db error"))
+	repo.On("FindByID", mock.Anything, uint(10)).Return(nil, errors.New("db error"))
 
 	w := doRequest(r, http.MethodPut, "/resources/10", map[string]string{"title": "X"})
 	assertStatus(t, w, http.StatusInternalServerError)
@@ -277,7 +279,7 @@ func TestResourceGetPublic_ServiceError(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/resources", h.GetPublic)
 
-	repo.On("FindPublic", 20, 0, "", "").Return(
+	repo.On("FindPublic", mock.Anything, 20, 0, "", "").Return(
 		[]model.LearningResource{}, int64(0), errors.New("db error"),
 	)
 
@@ -290,7 +292,7 @@ func TestResourceSearch_ServiceError(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/resources/search", h.Search)
 
-	repo.On("Search", "go", 20, 0).Return(
+	repo.On("Search", mock.Anything, "go", 20, 0).Return(
 		[]model.LearningResource{}, int64(0), errors.New("db error"),
 	)
 
@@ -307,8 +309,8 @@ func TestResourceLike_Success(t *testing.T) {
 
 	otherResource := &model.LearningResource{UserID: 99}
 	otherResource.ID = 5
-	repo.On("FindByID", uint(5)).Return(otherResource, nil)
-	repo.On("Like", uint(1), uint(5)).Return(nil)
+	repo.On("FindByID", mock.Anything, uint(5)).Return(otherResource, nil)
+	repo.On("Like", mock.Anything, uint(1), uint(5)).Return(nil)
 
 	w := doRequest(r, http.MethodPost, "/resources/5/like", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -330,8 +332,8 @@ func TestResourceLike_ServiceError(t *testing.T) {
 
 	otherResource := &model.LearningResource{UserID: 99}
 	otherResource.ID = 5
-	repo.On("FindByID", uint(5)).Return(otherResource, nil)
-	repo.On("Like", uint(1), uint(5)).Return(errors.New("already liked"))
+	repo.On("FindByID", mock.Anything, uint(5)).Return(otherResource, nil)
+	repo.On("Like", mock.Anything, uint(1), uint(5)).Return(errors.New("already liked"))
 
 	w := doRequest(r, http.MethodPost, "/resources/5/like", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
@@ -353,8 +355,8 @@ func TestResourceUnlike_ServiceError(t *testing.T) {
 
 	otherResource := &model.LearningResource{UserID: 99}
 	otherResource.ID = 5
-	repo.On("FindByID", uint(5)).Return(otherResource, nil)
-	repo.On("Unlike", uint(1), uint(5)).Return(errors.New("not liked"))
+	repo.On("FindByID", mock.Anything, uint(5)).Return(otherResource, nil)
+	repo.On("Unlike", mock.Anything, uint(1), uint(5)).Return(errors.New("not liked"))
 
 	w := doRequest(r, http.MethodDelete, "/resources/5/like", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
@@ -367,8 +369,8 @@ func TestResourceUnlike_Success(t *testing.T) {
 
 	otherResource := &model.LearningResource{UserID: 99}
 	otherResource.ID = 5
-	repo.On("FindByID", uint(5)).Return(otherResource, nil)
-	repo.On("Unlike", uint(1), uint(5)).Return(nil)
+	repo.On("FindByID", mock.Anything, uint(5)).Return(otherResource, nil)
+	repo.On("Unlike", mock.Anything, uint(1), uint(5)).Return(nil)
 
 	w := doRequest(r, http.MethodDelete, "/resources/5/like", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -383,8 +385,8 @@ func TestResourceSave_Success(t *testing.T) {
 
 	otherResource := &model.LearningResource{UserID: 99}
 	otherResource.ID = 5
-	repo.On("FindByID", uint(5)).Return(otherResource, nil)
-	repo.On("Save", uint(1), uint(5)).Return(nil)
+	repo.On("FindByID", mock.Anything, uint(5)).Return(otherResource, nil)
+	repo.On("Save", mock.Anything, uint(1), uint(5)).Return(nil)
 
 	w := doRequest(r, http.MethodPost, "/resources/5/save", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -406,8 +408,8 @@ func TestResourceSave_ServiceError(t *testing.T) {
 
 	otherResource := &model.LearningResource{UserID: 99}
 	otherResource.ID = 5
-	repo.On("FindByID", uint(5)).Return(otherResource, nil)
-	repo.On("Save", uint(1), uint(5)).Return(errors.New("already saved"))
+	repo.On("FindByID", mock.Anything, uint(5)).Return(otherResource, nil)
+	repo.On("Save", mock.Anything, uint(1), uint(5)).Return(errors.New("already saved"))
 
 	w := doRequest(r, http.MethodPost, "/resources/5/save", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
@@ -429,8 +431,8 @@ func TestResourceUnsave_ServiceError(t *testing.T) {
 
 	otherResource := &model.LearningResource{UserID: 99}
 	otherResource.ID = 5
-	repo.On("FindByID", uint(5)).Return(otherResource, nil)
-	repo.On("Unsave", uint(1), uint(5)).Return(errors.New("not saved"))
+	repo.On("FindByID", mock.Anything, uint(5)).Return(otherResource, nil)
+	repo.On("Unsave", mock.Anything, uint(1), uint(5)).Return(errors.New("not saved"))
 
 	w := doRequest(r, http.MethodDelete, "/resources/5/save", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
@@ -443,8 +445,8 @@ func TestResourceUnsave_Success(t *testing.T) {
 
 	otherResource := &model.LearningResource{UserID: 99}
 	otherResource.ID = 5
-	repo.On("FindByID", uint(5)).Return(otherResource, nil)
-	repo.On("Unsave", uint(1), uint(5)).Return(nil)
+	repo.On("FindByID", mock.Anything, uint(5)).Return(otherResource, nil)
+	repo.On("Unsave", mock.Anything, uint(1), uint(5)).Return(nil)
 
 	w := doRequest(r, http.MethodDelete, "/resources/5/save", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -455,7 +457,7 @@ func TestResourceGetSaved_ServiceError(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/resources/saved", h.GetSaved)
 
-	repo.On("FindSavedByUserID", uint(1), 20, 0).Return(
+	repo.On("FindSavedByUserID", mock.Anything, uint(1), 20, 0).Return(
 		[]model.LearningResource{}, int64(0), errors.New("db error"),
 	)
 
@@ -470,7 +472,7 @@ func TestResourceGetSaved_Success(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/resources/saved", h.GetSaved)
 
-	repo.On("FindSavedByUserID", uint(1), 20, 0).Return(
+	repo.On("FindSavedByUserID", mock.Anything, uint(1), 20, 0).Return(
 		[]model.LearningResource{{Title: "Saved"}},
 		int64(1), nil,
 	)
@@ -489,7 +491,7 @@ func TestResourceGetByUserID_Success(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/users/:userId/resources", h.GetByUserID)
 
-	repo.On("FindByUserID", uint(1), true, 20, 0).Return(
+	repo.On("FindByUserID", mock.Anything, uint(1), true, 20, 0).Return(
 		[]model.LearningResource{{Title: "My Resource"}},
 		int64(1), nil,
 	)
@@ -515,7 +517,7 @@ func TestResourceGetByUserID_ServiceError(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/users/:userId/resources", h.GetByUserID)
 
-	repo.On("FindByUserID", uint(1), true, 20, 0).Return(
+	repo.On("FindByUserID", mock.Anything, uint(1), true, 20, 0).Return(
 		[]model.LearningResource{}, int64(0), errors.New("db error"),
 	)
 
@@ -530,7 +532,7 @@ func TestResourceGetByDifficulty_Success(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/resources/difficulty/:difficulty", h.GetByDifficulty)
 
-	repo.On("FindByDifficulty", "beginner", 20, 0).Return(
+	repo.On("FindByDifficulty", mock.Anything, "beginner", 20, 0).Return(
 		[]model.LearningResource{{Title: "Beginner Guide"}},
 		int64(1), nil,
 	)
@@ -547,7 +549,7 @@ func TestResourceGetByDifficulty_ServiceError(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/resources/difficulty/:difficulty", h.GetByDifficulty)
 
-	repo.On("FindByDifficulty", "beginner", 20, 0).Return(
+	repo.On("FindByDifficulty", mock.Anything, "beginner", 20, 0).Return(
 		[]model.LearningResource{}, int64(0), errors.New("db error"),
 	)
 
@@ -588,7 +590,7 @@ func TestResourceGetMyCount_Success(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/resources/my/count", h.GetMyCount)
 
-	repo.On("CountByUserID", uint(1)).Return(int64(7), nil)
+	repo.On("CountByUserID", mock.Anything, uint(1)).Return(int64(7), nil)
 
 	w := doRequest(r, http.MethodGet, "/resources/my/count", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -601,7 +603,7 @@ func TestResourceGetMyCount_ServiceError(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/resources/my/count", h.GetMyCount)
 
-	repo.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+	repo.On("CountByUserID", mock.Anything, uint(1)).Return(int64(0), errors.New("db error"))
 
 	w := doRequest(r, http.MethodGet, "/resources/my/count", nil)
 	assertStatus(t, w, http.StatusInternalServerError)

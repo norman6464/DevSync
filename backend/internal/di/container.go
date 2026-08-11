@@ -128,6 +128,9 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	activityReportRepo := persistence.NewActivityReportRepository(db)
 	projectRepo := repository.NewProjectRepository(db)
 	learningResourceRepo := repository.NewLearningResourceRepository(db)
+	// 学習リソースはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	// 旧 learningResourceRepo は aiAdviceService がまだ使うため残している。
+	learningResourcePort := persistence.NewLearningResourceRepository(db)
 	// 書籍レビューはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	bookReviewRepo := persistence.NewBookReviewRepository(db)
 	// 質問はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
@@ -186,7 +189,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	updateLearningGoal := usecase.NewUpdateLearningGoalUseCase(learningGoalPort)
 	messageService := service.NewMessageService(messageRepo, notificationService)
 	projectService := service.NewProjectService(projectRepo)
-	learningResourceService := service.NewLearningResourceService(learningResourceRepo)
 	chatRoomService := service.NewChatRoomService(chatRoomRepo, groupMessageRepo, hub)
 	atcoderService := service.NewAtCoderService(userRepo)
 	badgeService := service.NewBadgeService(badgeRepo, notificationService)
@@ -301,7 +303,25 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewGetActivityReportComparisonUseCase(activityReportRepo),
 	)
 	c.ProjectHandler = handler.NewProjectHandler(projectService)
-	c.LearningResourceHandler = handler.NewLearningResourceHandler(learningResourceService)
+	c.LearningResourceHandler = handler.NewLearningResourceHandler(
+		usecase.NewCreateLearningResourceUseCase(learningResourcePort),
+		usecase.NewGetLearningResourceUseCase(learningResourcePort),
+		usecase.NewListLearningResourcesByUserUseCase(learningResourcePort),
+		usecase.NewListPublicLearningResourcesUseCase(learningResourcePort),
+		usecase.NewListLearningResourcesByDifficultyUseCase(learningResourcePort),
+		usecase.NewSearchLearningResourcesUseCase(learningResourcePort),
+		usecase.NewUpdateLearningResourceUseCase(learningResourcePort),
+		usecase.NewUpdateLearningResourceVisibilityUseCase(learningResourcePort),
+		usecase.NewDeleteLearningResourceUseCase(learningResourcePort),
+		usecase.NewLikeLearningResourceUseCase(learningResourcePort),
+		usecase.NewUnlikeLearningResourceUseCase(learningResourcePort),
+		usecase.NewHasLikedLearningResourceUseCase(learningResourcePort),
+		usecase.NewSaveLearningResourceUseCase(learningResourcePort),
+		usecase.NewUnsaveLearningResourceUseCase(learningResourcePort),
+		usecase.NewHasSavedLearningResourceUseCase(learningResourcePort),
+		usecase.NewListSavedLearningResourcesUseCase(learningResourcePort),
+		usecase.NewCountLearningResourcesUseCase(learningResourcePort),
+	)
 	c.BookReviewHandler = handler.NewBookReviewHandler(
 		usecase.NewCreateBookReviewUseCase(bookReviewRepo),
 		usecase.NewGetBookReviewUseCase(bookReviewRepo),

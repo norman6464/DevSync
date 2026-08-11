@@ -292,68 +292,73 @@ func (m *mockQuestionRepo) FindBookmarkedByUserID(ctx context.Context, userID ui
 	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
 }
 
-// MockLearningResourceRepository は LearningResourceRepositoryInterface のモック実装。
-type MockLearningResourceRepository struct{ mock.Mock }
+// mockLearningResourceRepo は usecase/repository.LearningResourceRepository のモック（ctx 付き）。
+type mockLearningResourceRepo struct{ mock.Mock }
 
-func (m *MockLearningResourceRepository) Create(r *model.LearningResource) error {
-	return m.Called(r).Error(0)
+func (m *mockLearningResourceRepo) Create(ctx context.Context, r *model.LearningResource) error {
+	return m.Called(ctx, r).Error(0)
 }
-func (m *MockLearningResourceRepository) FindByID(id uint) (*model.LearningResource, error) {
-	args := m.Called(id)
+func (m *mockLearningResourceRepo) Update(ctx context.Context, r *model.LearningResource) error {
+	return m.Called(ctx, r).Error(0)
+}
+func (m *mockLearningResourceRepo) Delete(ctx context.Context, id uint) error {
+	return m.Called(ctx, id).Error(0)
+}
+func (m *mockLearningResourceRepo) FindByID(ctx context.Context, id uint) (*model.LearningResource, error) {
+	args := m.Called(ctx, id)
 	if r := args.Get(0); r != nil {
 		return r.(*model.LearningResource), args.Error(1)
 	}
 	return nil, args.Error(1)
 }
-func (m *MockLearningResourceRepository) FindByUserID(userID uint, includePrivate bool, limit, offset int) ([]model.LearningResource, int64, error) {
-	args := m.Called(userID, includePrivate, limit, offset)
-	return args.Get(0).([]model.LearningResource), args.Get(1).(int64), args.Error(2)
+func (m *mockLearningResourceRepo) FindByUserID(ctx context.Context, userID uint, includePrivate bool, limit, offset int) ([]model.LearningResource, int64, error) {
+	args := m.Called(ctx, userID, includePrivate, limit, offset)
+	r, _ := args.Get(0).([]model.LearningResource)
+	return r, args.Get(1).(int64), args.Error(2)
 }
-func (m *MockLearningResourceRepository) FindPublic(limit, offset int, category string, difficulty string) ([]model.LearningResource, int64, error) {
-	args := m.Called(limit, offset, category, difficulty)
-	return args.Get(0).([]model.LearningResource), args.Get(1).(int64), args.Error(2)
+func (m *mockLearningResourceRepo) FindPublic(ctx context.Context, limit, offset int, category, difficulty string) ([]model.LearningResource, int64, error) {
+	args := m.Called(ctx, limit, offset, category, difficulty)
+	r, _ := args.Get(0).([]model.LearningResource)
+	return r, args.Get(1).(int64), args.Error(2)
 }
-func (m *MockLearningResourceRepository) Update(r *model.LearningResource) error {
-	return m.Called(r).Error(0)
+func (m *mockLearningResourceRepo) FindByDifficulty(ctx context.Context, difficulty string, limit, offset int) ([]model.LearningResource, int64, error) {
+	args := m.Called(ctx, difficulty, limit, offset)
+	r, _ := args.Get(0).([]model.LearningResource)
+	return r, args.Get(1).(int64), args.Error(2)
 }
-func (m *MockLearningResourceRepository) Delete(id uint) error {
-	return m.Called(id).Error(0)
+func (m *mockLearningResourceRepo) Search(ctx context.Context, query string, limit, offset int) ([]model.LearningResource, int64, error) {
+	args := m.Called(ctx, query, limit, offset)
+	r, _ := args.Get(0).([]model.LearningResource)
+	return r, args.Get(1).(int64), args.Error(2)
 }
-func (m *MockLearningResourceRepository) Search(query string, limit, offset int) ([]model.LearningResource, int64, error) {
-	args := m.Called(query, limit, offset)
-	return args.Get(0).([]model.LearningResource), args.Get(1).(int64), args.Error(2)
+func (m *mockLearningResourceRepo) FindSavedByUserID(ctx context.Context, userID uint, limit, offset int) ([]model.LearningResource, int64, error) {
+	args := m.Called(ctx, userID, limit, offset)
+	r, _ := args.Get(0).([]model.LearningResource)
+	return r, args.Get(1).(int64), args.Error(2)
 }
-func (m *MockLearningResourceRepository) Like(userID, resourceID uint) error {
-	return m.Called(userID, resourceID).Error(0)
-}
-func (m *MockLearningResourceRepository) Unlike(userID, resourceID uint) error {
-	return m.Called(userID, resourceID).Error(0)
-}
-func (m *MockLearningResourceRepository) HasLiked(userID, resourceID uint) (bool, error) {
-	args := m.Called(userID, resourceID)
-	return args.Bool(0), args.Error(1)
-}
-func (m *MockLearningResourceRepository) Save(userID, resourceID uint) error {
-	return m.Called(userID, resourceID).Error(0)
-}
-func (m *MockLearningResourceRepository) Unsave(userID, resourceID uint) error {
-	return m.Called(userID, resourceID).Error(0)
-}
-func (m *MockLearningResourceRepository) HasSaved(userID, resourceID uint) (bool, error) {
-	args := m.Called(userID, resourceID)
-	return args.Bool(0), args.Error(1)
-}
-func (m *MockLearningResourceRepository) FindSavedByUserID(userID uint, limit, offset int) ([]model.LearningResource, int64, error) {
-	args := m.Called(userID, limit, offset)
-	return args.Get(0).([]model.LearningResource), args.Get(1).(int64), args.Error(2)
-}
-func (m *MockLearningResourceRepository) FindByDifficulty(difficulty string, limit, offset int) ([]model.LearningResource, int64, error) {
-	args := m.Called(difficulty, limit, offset)
-	return args.Get(0).([]model.LearningResource), args.Get(1).(int64), args.Error(2)
-}
-func (m *MockLearningResourceRepository) CountByUserID(userID uint) (int64, error) {
-	args := m.Called(userID)
+func (m *mockLearningResourceRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
+	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)
+}
+func (m *mockLearningResourceRepo) Like(ctx context.Context, userID, resourceID uint) error {
+	return m.Called(ctx, userID, resourceID).Error(0)
+}
+func (m *mockLearningResourceRepo) Unlike(ctx context.Context, userID, resourceID uint) error {
+	return m.Called(ctx, userID, resourceID).Error(0)
+}
+func (m *mockLearningResourceRepo) HasLiked(ctx context.Context, userID, resourceID uint) (bool, error) {
+	args := m.Called(ctx, userID, resourceID)
+	return args.Bool(0), args.Error(1)
+}
+func (m *mockLearningResourceRepo) Save(ctx context.Context, userID, resourceID uint) error {
+	return m.Called(ctx, userID, resourceID).Error(0)
+}
+func (m *mockLearningResourceRepo) Unsave(ctx context.Context, userID, resourceID uint) error {
+	return m.Called(ctx, userID, resourceID).Error(0)
+}
+func (m *mockLearningResourceRepo) HasSaved(ctx context.Context, userID, resourceID uint) (bool, error) {
+	args := m.Called(ctx, userID, resourceID)
+	return args.Bool(0), args.Error(1)
 }
 
 // mockRoadmapRepo は usecase/repository.RoadmapRepository のモック（ctx 付き）。
@@ -556,11 +561,29 @@ func setupQuestionHandler() (*QuestionHandler, *mockQuestionRepo) {
 	return h, repo
 }
 
-// setupLearningResourceHandler はLearningResourceHandlerテスト用のセットアップを行う（リポジトリレベル）。
-func setupLearningResourceHandler() (*LearningResourceHandler, *MockLearningResourceRepository) {
-	repo := new(MockLearningResourceRepository)
-	svc := service.NewLearningResourceService(repo)
-	h := NewLearningResourceHandler(svc)
+// setupLearningResourceHandler はLearningResourceHandlerテスト用のセットアップを行う。
+// 本物の usecase に port モックを注入する。
+func setupLearningResourceHandler() (*LearningResourceHandler, *mockLearningResourceRepo) {
+	repo := new(mockLearningResourceRepo)
+	h := NewLearningResourceHandler(
+		usecase.NewCreateLearningResourceUseCase(repo),
+		usecase.NewGetLearningResourceUseCase(repo),
+		usecase.NewListLearningResourcesByUserUseCase(repo),
+		usecase.NewListPublicLearningResourcesUseCase(repo),
+		usecase.NewListLearningResourcesByDifficultyUseCase(repo),
+		usecase.NewSearchLearningResourcesUseCase(repo),
+		usecase.NewUpdateLearningResourceUseCase(repo),
+		usecase.NewUpdateLearningResourceVisibilityUseCase(repo),
+		usecase.NewDeleteLearningResourceUseCase(repo),
+		usecase.NewLikeLearningResourceUseCase(repo),
+		usecase.NewUnlikeLearningResourceUseCase(repo),
+		usecase.NewHasLikedLearningResourceUseCase(repo),
+		usecase.NewSaveLearningResourceUseCase(repo),
+		usecase.NewUnsaveLearningResourceUseCase(repo),
+		usecase.NewHasSavedLearningResourceUseCase(repo),
+		usecase.NewListSavedLearningResourcesUseCase(repo),
+		usecase.NewCountLearningResourcesUseCase(repo),
+	)
 	return h, repo
 }
 

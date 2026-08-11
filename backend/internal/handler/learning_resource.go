@@ -4,38 +4,57 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// LearningResourceServiceInterface は学習リソースサービスの抽象インターフェース。
-type LearningResourceServiceInterface interface {
-	Create(resource *model.LearningResource) error
-	GetByID(id, userID uint) (*model.LearningResource, error)
-	HasLiked(userID, resourceID uint) (bool, error)
-	HasSaved(userID, resourceID uint) (bool, error)
-	GetByUserID(targetUserID, currentUserID uint, limit, offset int) ([]model.LearningResource, int64, error)
-	GetPublic(limit, offset int, category, difficulty string) ([]model.LearningResource, int64, error)
-	Search(query string, limit, offset int) ([]model.LearningResource, int64, error)
-	Update(id, userID uint, updates *model.LearningResource) (*model.LearningResource, error)
-	UpdateVisibility(id, userID uint, isPublic bool) (*model.LearningResource, error)
-	Delete(id, userID uint) error
-	Like(userID, resourceID uint) error
-	Unlike(userID, resourceID uint) error
-	Save(userID, resourceID uint) error
-	Unsave(userID, resourceID uint) error
-	GetSavedByUserID(userID uint, limit, offset int) ([]model.LearningResource, int64, error)
-	GetByDifficulty(difficulty string, limit, offset int) ([]model.LearningResource, int64, error)
-	CountByUserID(userID uint) (int64, error)
-}
 
 // LearningResourceHandler は学習リソース関連のHTTPハンドラ。
 // 学習リソースのCRUD・検索・いいね・保存を処理する。
 type LearningResourceHandler struct {
-	service LearningResourceServiceInterface
+	create        *usecase.CreateLearningResourceUseCase
+	get           *usecase.GetLearningResourceUseCase
+	listByUser    *usecase.ListLearningResourcesByUserUseCase
+	listPublic    *usecase.ListPublicLearningResourcesUseCase
+	listByDiff    *usecase.ListLearningResourcesByDifficultyUseCase
+	search        *usecase.SearchLearningResourcesUseCase
+	update        *usecase.UpdateLearningResourceUseCase
+	updateVisible *usecase.UpdateLearningResourceVisibilityUseCase
+	remove        *usecase.DeleteLearningResourceUseCase
+	like          *usecase.LikeLearningResourceUseCase
+	unlike        *usecase.UnlikeLearningResourceUseCase
+	hasLiked      *usecase.HasLikedLearningResourceUseCase
+	save          *usecase.SaveLearningResourceUseCase
+	unsave        *usecase.UnsaveLearningResourceUseCase
+	hasSaved      *usecase.HasSavedLearningResourceUseCase
+	listSaved     *usecase.ListSavedLearningResourcesUseCase
+	count         *usecase.CountLearningResourcesUseCase
 }
 
 // NewLearningResourceHandler は新しいLearningResourceHandlerインスタンスを生成する。
-func NewLearningResourceHandler(s LearningResourceServiceInterface) *LearningResourceHandler {
-	return &LearningResourceHandler{service: s}
+func NewLearningResourceHandler(
+	create *usecase.CreateLearningResourceUseCase,
+	get *usecase.GetLearningResourceUseCase,
+	listByUser *usecase.ListLearningResourcesByUserUseCase,
+	listPublic *usecase.ListPublicLearningResourcesUseCase,
+	listByDiff *usecase.ListLearningResourcesByDifficultyUseCase,
+	search *usecase.SearchLearningResourcesUseCase,
+	update *usecase.UpdateLearningResourceUseCase,
+	updateVisible *usecase.UpdateLearningResourceVisibilityUseCase,
+	remove *usecase.DeleteLearningResourceUseCase,
+	like *usecase.LikeLearningResourceUseCase,
+	unlike *usecase.UnlikeLearningResourceUseCase,
+	hasLiked *usecase.HasLikedLearningResourceUseCase,
+	save *usecase.SaveLearningResourceUseCase,
+	unsave *usecase.UnsaveLearningResourceUseCase,
+	hasSaved *usecase.HasSavedLearningResourceUseCase,
+	listSaved *usecase.ListSavedLearningResourcesUseCase,
+	count *usecase.CountLearningResourcesUseCase,
+) *LearningResourceHandler {
+	return &LearningResourceHandler{
+		create: create, get: get, listByUser: listByUser, listPublic: listPublic,
+		listByDiff: listByDiff, search: search, update: update, updateVisible: updateVisible,
+		remove: remove, like: like, unlike: unlike, hasLiked: hasLiked,
+		save: save, unsave: unsave, hasSaved: hasSaved, listSaved: listSaved, count: count,
+	}
 }
 
 // Create は新しい学習リソースを作成する。
@@ -65,7 +84,7 @@ func (h *LearningResourceHandler) Create(c *gin.Context) {
 		IsPublic:    isPublic,
 	}
 
-	if err := h.service.Create(resource); err != nil {
+	if err := h.create.Execute(c.Request.Context(), resource); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -82,15 +101,15 @@ func (h *LearningResourceHandler) GetByID(c *gin.Context) {
 
 	userID := c.GetUint("userID")
 
-	resource, err := h.service.GetByID(id, userID)
+	resource, err := h.get.Execute(c.Request.Context(), id, userID)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
 
 	// 現在のユーザーがいいね・保存済みかを確認
-	hasLiked, _ := h.service.HasLiked(userID, id)
-	hasSaved, _ := h.service.HasSaved(userID, id)
+	hasLiked, _ := h.hasLiked.Execute(c.Request.Context(), userID, id)
+	hasSaved, _ := h.hasSaved.Execute(c.Request.Context(), userID, id)
 
 	respondOK(c, dto.ResourceDetailResponse{
 		Resource: *resource,
@@ -109,7 +128,7 @@ func (h *LearningResourceHandler) GetByUserID(c *gin.Context) {
 	currentUserID := c.GetUint("userID")
 	limit, offset := parseLimitOffset(c)
 
-	resources, total, err := h.service.GetByUserID(targetUserID, currentUserID, limit, offset)
+	resources, total, err := h.listByUser.Execute(c.Request.Context(), targetUserID, currentUserID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -128,7 +147,7 @@ func (h *LearningResourceHandler) GetMyResources(c *gin.Context) {
 	userID := c.GetUint("userID")
 	limit, offset := parseLimitOffset(c)
 
-	resources, total, err := h.service.GetByUserID(userID, userID, limit, offset)
+	resources, total, err := h.listByUser.Execute(c.Request.Context(), userID, userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -148,7 +167,7 @@ func (h *LearningResourceHandler) GetPublic(c *gin.Context) {
 	category := c.Query("category")
 	difficulty := c.Query("difficulty")
 
-	resources, total, err := h.service.GetPublic(limit, offset, category, difficulty)
+	resources, total, err := h.listPublic.Execute(c.Request.Context(), limit, offset, category, difficulty)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -170,7 +189,7 @@ func (h *LearningResourceHandler) Search(c *gin.Context) {
 	}
 	limit, offset := parseLimitOffset(c)
 
-	resources, total, err := h.service.Search(query, limit, offset)
+	resources, total, err := h.search.Execute(c.Request.Context(), query, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -220,7 +239,7 @@ func (h *LearningResourceHandler) Update(c *gin.Context) {
 		updates.ImageURL = req.ImageURL
 	}
 
-	resource, err := h.service.Update(id, userID, updates)
+	resource, err := h.update.Execute(c.Request.Context(), id, userID, updates)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -228,7 +247,7 @@ func (h *LearningResourceHandler) Update(c *gin.Context) {
 
 	// 公開設定が指定されている場合は別途更新
 	if req.IsPublic != nil {
-		resource, err = h.service.UpdateVisibility(id, userID, *req.IsPublic)
+		resource, err = h.updateVisible.Execute(c.Request.Context(), id, userID, *req.IsPublic)
 		if err != nil {
 			respondError(c, err)
 			return
@@ -240,27 +259,37 @@ func (h *LearningResourceHandler) Update(c *gin.Context) {
 
 // Delete は指定された学習リソースを削除する。
 func (h *LearningResourceHandler) Delete(c *gin.Context) {
-	handleDelete(c, h.service.Delete)
+	handleDelete(c, func(id, userID uint) error {
+		return h.remove.Execute(c.Request.Context(), id, userID)
+	})
 }
 
 // Like は学習リソースにいいねする。
 func (h *LearningResourceHandler) Like(c *gin.Context) {
-	handleToggleAction(c, h.service.Like, "リソースにいいねしました")
+	handleToggleAction(c, func(userID, id uint) error {
+		return h.like.Execute(c.Request.Context(), userID, id)
+	}, "リソースにいいねしました")
 }
 
 // Unlike は学習リソースのいいねを取り消す。
 func (h *LearningResourceHandler) Unlike(c *gin.Context) {
-	handleToggleAction(c, h.service.Unlike, "いいねを取り消しました")
+	handleToggleAction(c, func(userID, id uint) error {
+		return h.unlike.Execute(c.Request.Context(), userID, id)
+	}, "いいねを取り消しました")
 }
 
 // SaveResource は学習リソースを保存する。
 func (h *LearningResourceHandler) SaveResource(c *gin.Context) {
-	handleToggleAction(c, h.service.Save, "リソースを保存しました")
+	handleToggleAction(c, func(userID, id uint) error {
+		return h.save.Execute(c.Request.Context(), userID, id)
+	}, "リソースを保存しました")
 }
 
 // UnsaveResource は学習リソースの保存を取り消す。
 func (h *LearningResourceHandler) UnsaveResource(c *gin.Context) {
-	handleToggleAction(c, h.service.Unsave, "保存を解除しました")
+	handleToggleAction(c, func(userID, id uint) error {
+		return h.unsave.Execute(c.Request.Context(), userID, id)
+	}, "保存を解除しました")
 }
 
 // GetByDifficulty は難易度別の公開学習リソースを取得する。
@@ -268,7 +297,7 @@ func (h *LearningResourceHandler) GetByDifficulty(c *gin.Context) {
 	difficulty := c.Param("difficulty")
 	limit, offset := parseLimitOffset(c)
 
-	resources, total, err := h.service.GetByDifficulty(difficulty, limit, offset)
+	resources, total, err := h.listByDiff.Execute(c.Request.Context(), difficulty, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -287,7 +316,7 @@ func (h *LearningResourceHandler) GetSaved(c *gin.Context) {
 	userID := c.GetUint("userID")
 	limit, offset := parseLimitOffset(c)
 
-	resources, total, err := h.service.GetSavedByUserID(userID, limit, offset)
+	resources, total, err := h.listSaved.Execute(c.Request.Context(), userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -304,7 +333,7 @@ func (h *LearningResourceHandler) GetSaved(c *gin.Context) {
 // GetMyCount は認証ユーザーの学習リソース総数を返す。
 func (h *LearningResourceHandler) GetMyCount(c *gin.Context) {
 	userID := c.GetUint("userID")
-	count, err := h.service.CountByUserID(userID)
+	count, err := h.count.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
