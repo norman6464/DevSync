@@ -3,31 +3,29 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// EmailPreferencesServiceInterface はメール配信設定に必要なサービスの抽象インターフェース。
-type EmailPreferencesServiceInterface interface {
-	GetByID(id uint) (*model.User, error)
-	UpdateEmailPreferences(userID uint, weeklyReport *bool, language *string) (*model.User, error)
-}
 
 // EmailPreferencesHandler はメール配信設定関連のHTTPハンドラ。
 // ユーザーのメール配信設定の取得・更新を処理する。
 type EmailPreferencesHandler struct {
-	userService EmailPreferencesServiceInterface
+	get    *usecase.GetEmailPreferencesUseCase
+	update *usecase.UpdateEmailPreferencesUseCase
 }
 
 // NewEmailPreferencesHandler は新しいEmailPreferencesHandlerインスタンスを生成する。
-func NewEmailPreferencesHandler(userService EmailPreferencesServiceInterface) *EmailPreferencesHandler {
-	return &EmailPreferencesHandler{userService: userService}
+func NewEmailPreferencesHandler(
+	get *usecase.GetEmailPreferencesUseCase,
+	update *usecase.UpdateEmailPreferencesUseCase,
+) *EmailPreferencesHandler {
+	return &EmailPreferencesHandler{get: get, update: update}
 }
 
 // GetPreferences はユーザーのメール配信設定を取得する。
 func (h *EmailPreferencesHandler) GetPreferences(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	user, err := h.userService.GetByID(userID)
+	user, err := h.get.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -48,7 +46,7 @@ func (h *EmailPreferencesHandler) UpdatePreferences(c *gin.Context) {
 		return
 	}
 
-	user, err := h.userService.UpdateEmailPreferences(userID, input.EmailWeeklyReport, input.EmailLanguage)
+	user, err := h.update.Execute(c.Request.Context(), userID, input.EmailWeeklyReport, input.EmailLanguage)
 	if err != nil {
 		respondError(c, err)
 		return

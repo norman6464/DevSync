@@ -578,30 +578,8 @@ func setupLearningResourceHandler() (*LearningResourceHandler, *mockLearningReso
 // NotificationSettings は DIP へ移行済み。テストは notification_settings_test.go で
 // 「本物の usecase + port モック」を組み立てる。
 
-// MockEmailPreferencesService は EmailPreferencesServiceInterface のモック実装。
-type MockEmailPreferencesService struct{ mock.Mock }
-
-func (m *MockEmailPreferencesService) GetByID(id uint) (*model.User, error) {
-	args := m.Called(id)
-	if u := args.Get(0); u != nil {
-		return u.(*model.User), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockEmailPreferencesService) UpdateEmailPreferences(userID uint, weeklyReport *bool, language *string) (*model.User, error) {
-	args := m.Called(userID, weeklyReport, language)
-	if u := args.Get(0); u != nil {
-		return u.(*model.User), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-// setupEmailPreferencesHandler はEmailPreferencesHandlerテスト用のセットアップを行う。
-func setupEmailPreferencesHandler() (*EmailPreferencesHandler, *MockEmailPreferencesService) {
-	svc := new(MockEmailPreferencesService)
-	h := NewEmailPreferencesHandler(svc)
-	return h, svc
-}
+// EmailPreferences は user スライスと一緒に DIP へ移行済み。テストは
+// email_preferences_test.go で「本物の usecase + port モック」を組み立てる。
 
 // roadmapHandlerPorts は RoadmapHandler に注入した port モックをまとめる。
 type roadmapHandlerPorts struct {

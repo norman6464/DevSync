@@ -157,8 +157,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	badgeRepo := repository.NewBadgeRepository(db)
 	// レコメンドはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	recommendationRepo := persistence.NewRecommendationRepository(db)
-	// ユーザーのスキル参照は最小 port で受ける（共有の user リポジトリには依存しない）。
-	userSkillsReader := persistence.NewUserSkillsReader(db)
+
 	// スタディサークルはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	studyCirclePort := persistence.NewStudyCircleRepository(db)
 	searchStudyCircles := usecase.NewSearchStudyCirclesUseCase(studyCirclePort)
@@ -183,7 +182,9 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	c.AuthService = authService
 
 	notificationService := service.NewNotificationService(notificationRepo)
-	userService := service.NewUserService(userRepo)
+	// ユーザー情報はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	// 旧 userRepo は認証・GitHub・Zenn・Qiita・AtCoder・YouTube・メンションがまだ使うため残している。
+	userPort := persistence.NewUserRepository(db)
 
 	// ドメインサービス
 	githubService := service.NewGitHubService(cfg, userRepo, githubRepo)
@@ -243,7 +244,13 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	// ハンドラ
 	origins := cfg.CORSOrigins
 	c.AuthHandler = handler.NewAuthHandler(authService, githubService)
-	c.UserHandler = handler.NewUserHandler(userService)
+	c.UserHandler = handler.NewUserHandler(
+		usecase.NewListUsersUseCase(userPort),
+		usecase.NewGetUserUseCase(userPort),
+		usecase.NewGetUserByUsernameUseCase(userPort),
+		usecase.NewUpdateUserProfileUseCase(userPort),
+		usecase.NewGetProfileCompletenessUseCase(userPort),
+	)
 	c.FollowHandler = handler.NewFollowHandler(
 		usecase.NewFollowUserUseCase(followRepo),
 		usecase.NewUnfollowUserUseCase(followRepo),
@@ -433,7 +440,10 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewCountLearningLogsUseCase(learningLogPort),
 	)
 	c.AIAdviceHandler = handler.NewAIAdviceHandler(aiAdviceService)
-	c.EmailPreferencesHandler = handler.NewEmailPreferencesHandler(userService)
+	c.EmailPreferencesHandler = handler.NewEmailPreferencesHandler(
+		usecase.NewGetEmailPreferencesUseCase(userPort),
+		usecase.NewUpdateEmailPreferencesUseCase(userPort),
+	)
 	c.LevelHandler = handler.NewLevelHandler(levelService)
 	c.LearningAnalyticsHandler = handler.NewLearningAnalyticsHandler(
 		usecase.NewGetLearningHeatmapUseCase(analyticsPort),
@@ -444,7 +454,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewGetLearningInsightsUseCase(analyticsPort),
 	)
 	c.RecommendationHandler = handler.NewRecommendationHandler(
-		usecase.NewGetRecommendedUsersUseCase(recommendationRepo, userSkillsReader),
+		usecase.NewGetRecommendedUsersUseCase(recommendationRepo, userPort),
 		usecase.NewGetTrendingPostsUseCase(recommendationRepo),
 		usecase.NewGetTrendingResourcesUseCase(recommendationRepo),
 	)
