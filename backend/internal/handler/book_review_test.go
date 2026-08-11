@@ -186,7 +186,9 @@ func TestBookReview_GetByRating_InvalidRange(t *testing.T) {
 
 	r := newRouter(1)
 	r.GET("/book-reviews/rating", h.GetByRating)
-	w := doRequest(r, http.MethodGet, "/book-reviews/rating?min=4&max=2", nil)
+	// パラメータ名は min_rating / max_rating。誤った名前だとクエリ解析側で 400 になり、
+	// 評価範囲の検証そのものを通らないため、正しい名前で最小 > 最大を渡す。
+	w := doRequest(r, http.MethodGet, "/book-reviews/rating?min_rating=4&max_rating=2", nil)
 
 	assertStatus(t, w, http.StatusBadRequest)
 	repo.AssertNotCalled(t, "FindByRating")
