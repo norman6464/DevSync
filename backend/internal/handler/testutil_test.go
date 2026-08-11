@@ -641,115 +641,134 @@ func fmtPath(format string, args ...interface{}) string {
 	return fmt.Sprintf(format, args...)
 }
 
-// MockStudyCircleRepository は StudyCircleRepositoryInterface のモック実装。
-type MockStudyCircleRepository struct{ mock.Mock }
+// mockStudyCircleRepo は usecase/repository.StudyCircleRepository のモック（ctx 付き）。
+type mockStudyCircleRepo struct{ mock.Mock }
 
-func (m *MockStudyCircleRepository) Create(circle *model.StudyCircle) error {
-	return m.Called(circle).Error(0)
+func (m *mockStudyCircleRepo) Create(ctx context.Context, circle *model.StudyCircle) error {
+	return m.Called(ctx, circle).Error(0)
 }
-func (m *MockStudyCircleRepository) FindByID(id uint) (*model.StudyCircle, error) {
-	args := m.Called(id)
+func (m *mockStudyCircleRepo) FindByID(ctx context.Context, id uint) (*model.StudyCircle, error) {
+	args := m.Called(ctx, id)
 	if c := args.Get(0); c != nil {
 		return c.(*model.StudyCircle), args.Error(1)
 	}
 	return nil, args.Error(1)
 }
-func (m *MockStudyCircleRepository) FindByUserID(userID uint, limit, offset int) ([]model.StudyCircle, int64, error) {
-	args := m.Called(userID, limit, offset)
+func (m *mockStudyCircleRepo) FindByUserID(ctx context.Context, userID uint, limit, offset int) ([]model.StudyCircle, int64, error) {
+	args := m.Called(ctx, userID, limit, offset)
 	return args.Get(0).([]model.StudyCircle), args.Get(1).(int64), args.Error(2)
 }
-func (m *MockStudyCircleRepository) Update(circle *model.StudyCircle) error {
-	return m.Called(circle).Error(0)
+func (m *mockStudyCircleRepo) Update(ctx context.Context, circle *model.StudyCircle) error {
+	return m.Called(ctx, circle).Error(0)
 }
-func (m *MockStudyCircleRepository) Delete(id uint) error {
-	return m.Called(id).Error(0)
+func (m *mockStudyCircleRepo) Delete(ctx context.Context, id uint) error {
+	return m.Called(ctx, id).Error(0)
 }
-func (m *MockStudyCircleRepository) AddMember(circleID, userID uint, role model.StudyCircleMemberRole) error {
-	return m.Called(circleID, userID, role).Error(0)
+func (m *mockStudyCircleRepo) GetByStatus(ctx context.Context, userID uint, status string) ([]model.StudyCircle, error) {
+	args := m.Called(ctx, userID, status)
+	return args.Get(0).([]model.StudyCircle), args.Error(1)
 }
-func (m *MockStudyCircleRepository) RemoveMember(circleID, userID uint) error {
-	return m.Called(circleID, userID).Error(0)
-}
-func (m *MockStudyCircleRepository) GetMembers(circleID uint) ([]model.StudyCircleMember, error) {
-	args := m.Called(circleID)
-	return args.Get(0).([]model.StudyCircleMember), args.Error(1)
-}
-func (m *MockStudyCircleRepository) IsMember(circleID, userID uint) (bool, error) {
-	args := m.Called(circleID, userID)
-	return args.Bool(0), args.Error(1)
-}
-func (m *MockStudyCircleRepository) GetMemberCount(circleID uint) (int, error) {
-	args := m.Called(circleID)
-	return args.Int(0), args.Error(1)
-}
-func (m *MockStudyCircleRepository) CreateStep(step *model.StudyCircleStep) error {
-	return m.Called(step).Error(0)
-}
-func (m *MockStudyCircleRepository) UpdateStep(step *model.StudyCircleStep) error {
-	return m.Called(step).Error(0)
-}
-func (m *MockStudyCircleRepository) DeleteStep(stepID uint) error {
-	return m.Called(stepID).Error(0)
-}
-func (m *MockStudyCircleRepository) FindStepByID(stepID uint) (*model.StudyCircleStep, error) {
-	args := m.Called(stepID)
-	if s := args.Get(0); s != nil {
-		return s.(*model.StudyCircleStep), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockStudyCircleRepository) ReorderSteps(circleID uint, stepOrders []model.StepOrder) error {
-	return m.Called(circleID, stepOrders).Error(0)
-}
-func (m *MockStudyCircleRepository) UpsertProgress(progress *model.StudyCircleMemberProgress) error {
-	return m.Called(progress).Error(0)
-}
-func (m *MockStudyCircleRepository) GetProgress(circleID uint) ([]model.StudyCircleMemberProgress, error) {
-	args := m.Called(circleID)
-	return args.Get(0).([]model.StudyCircleMemberProgress), args.Error(1)
-}
-func (m *MockStudyCircleRepository) CreateCheckin(checkin *model.StudyCircleCheckin) error {
-	return m.Called(checkin).Error(0)
-}
-func (m *MockStudyCircleRepository) GetCheckins(circleID uint) ([]model.StudyCircleCheckin, error) {
-	args := m.Called(circleID)
-	return args.Get(0).([]model.StudyCircleCheckin), args.Error(1)
-}
-func (m *MockStudyCircleRepository) HasCheckedInToday(circleID, userID uint) (bool, error) {
-	args := m.Called(circleID, userID)
-	return args.Bool(0), args.Error(1)
-}
-func (m *MockStudyCircleRepository) GetStreakRanking(circleID uint) ([]model.CircleMemberStreak, error) {
-	args := m.Called(circleID)
-	return args.Get(0).([]model.CircleMemberStreak), args.Error(1)
-}
-func (m *MockStudyCircleRepository) Search(query string, limit, offset int) ([]model.StudyCircle, int64, error) {
-	args := m.Called(query, limit, offset)
+func (m *mockStudyCircleRepo) Search(ctx context.Context, query string, limit, offset int) ([]model.StudyCircle, int64, error) {
+	args := m.Called(ctx, query, limit, offset)
 	if v := args.Get(0); v != nil {
 		return v.([]model.StudyCircle), args.Get(1).(int64), args.Error(2)
 	}
 	return nil, args.Get(1).(int64), args.Error(2)
 }
-func (m *MockStudyCircleRepository) GetByStatus(userID uint, status string) ([]model.StudyCircle, error) {
-	args := m.Called(userID, status)
-	return args.Get(0).([]model.StudyCircle), args.Error(1)
+func (m *mockStudyCircleRepo) AddMember(ctx context.Context, circleID, userID uint, role model.StudyCircleMemberRole) error {
+	return m.Called(ctx, circleID, userID, role).Error(0)
 }
-
-func (m *MockStudyCircleRepository) UpdateMemberRole(circleID, userID uint, role model.StudyCircleMemberRole) error {
-	args := m.Called(circleID, userID, role)
-	return args.Error(0)
+func (m *mockStudyCircleRepo) RemoveMember(ctx context.Context, circleID, userID uint) error {
+	return m.Called(ctx, circleID, userID).Error(0)
 }
-
-func (m *MockStudyCircleRepository) CountByUserID(userID uint) (int64, error) {
-	args := m.Called(userID)
+func (m *mockStudyCircleRepo) GetMembers(ctx context.Context, circleID uint) ([]model.StudyCircleMember, error) {
+	args := m.Called(ctx, circleID)
+	return args.Get(0).([]model.StudyCircleMember), args.Error(1)
+}
+func (m *mockStudyCircleRepo) IsMember(ctx context.Context, circleID, userID uint) (bool, error) {
+	args := m.Called(ctx, circleID, userID)
+	return args.Bool(0), args.Error(1)
+}
+func (m *mockStudyCircleRepo) GetMemberCount(ctx context.Context, circleID uint) (int, error) {
+	args := m.Called(ctx, circleID)
+	return args.Int(0), args.Error(1)
+}
+func (m *mockStudyCircleRepo) UpdateMemberRole(ctx context.Context, circleID, userID uint, role model.StudyCircleMemberRole) error {
+	return m.Called(ctx, circleID, userID, role).Error(0)
+}
+func (m *mockStudyCircleRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
+	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)
+}
+func (m *mockStudyCircleRepo) CreateStep(ctx context.Context, step *model.StudyCircleStep) error {
+	return m.Called(ctx, step).Error(0)
+}
+func (m *mockStudyCircleRepo) UpdateStep(ctx context.Context, step *model.StudyCircleStep) error {
+	return m.Called(ctx, step).Error(0)
+}
+func (m *mockStudyCircleRepo) DeleteStep(ctx context.Context, stepID uint) error {
+	return m.Called(ctx, stepID).Error(0)
+}
+func (m *mockStudyCircleRepo) FindStepByID(ctx context.Context, stepID uint) (*model.StudyCircleStep, error) {
+	args := m.Called(ctx, stepID)
+	if s := args.Get(0); s != nil {
+		return s.(*model.StudyCircleStep), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+func (m *mockStudyCircleRepo) ReorderSteps(ctx context.Context, circleID uint, stepOrders []model.StepOrder) error {
+	return m.Called(ctx, circleID, stepOrders).Error(0)
+}
+func (m *mockStudyCircleRepo) UpsertProgress(ctx context.Context, progress *model.StudyCircleMemberProgress) error {
+	return m.Called(ctx, progress).Error(0)
+}
+func (m *mockStudyCircleRepo) GetProgress(ctx context.Context, circleID uint) ([]model.StudyCircleMemberProgress, error) {
+	args := m.Called(ctx, circleID)
+	return args.Get(0).([]model.StudyCircleMemberProgress), args.Error(1)
+}
+func (m *mockStudyCircleRepo) CreateCheckin(ctx context.Context, checkin *model.StudyCircleCheckin) error {
+	return m.Called(ctx, checkin).Error(0)
+}
+func (m *mockStudyCircleRepo) GetCheckins(ctx context.Context, circleID uint) ([]model.StudyCircleCheckin, error) {
+	args := m.Called(ctx, circleID)
+	return args.Get(0).([]model.StudyCircleCheckin), args.Error(1)
+}
+func (m *mockStudyCircleRepo) HasCheckedInToday(ctx context.Context, circleID, userID uint) (bool, error) {
+	args := m.Called(ctx, circleID, userID)
+	return args.Bool(0), args.Error(1)
+}
+func (m *mockStudyCircleRepo) GetStreakRanking(ctx context.Context, circleID uint) ([]model.CircleMemberStreak, error) {
+	args := m.Called(ctx, circleID)
+	return args.Get(0).([]model.CircleMemberStreak), args.Error(1)
 }
 
 // setupStudyCircleHandler はStudyCircleHandlerテスト用のセットアップを行う。
-func setupStudyCircleHandler() (*StudyCircleHandler, *MockStudyCircleRepository) {
-	repo := new(MockStudyCircleRepository)
-	svc := service.NewStudyCircleService(repo)
-	h := NewStudyCircleHandler(svc)
+// 本物の usecase に port モックを注入する。
+func setupStudyCircleHandler() (*StudyCircleHandler, *mockStudyCircleRepo) {
+	repo := new(mockStudyCircleRepo)
+	h := NewStudyCircleHandler(
+		usecase.NewCreateStudyCircleUseCase(repo),
+		usecase.NewListMyStudyCirclesUseCase(repo),
+		usecase.NewListStudyCirclesByStatusUseCase(repo),
+		usecase.NewGetStudyCircleUseCase(repo),
+		usecase.NewUpdateStudyCircleUseCase(repo),
+		usecase.NewDeleteStudyCircleUseCase(repo),
+		usecase.NewListStudyCircleMembersUseCase(repo),
+		usecase.NewAddStudyCircleMemberUseCase(repo),
+		usecase.NewUpdateStudyCircleMemberRoleUseCase(repo),
+		usecase.NewRemoveStudyCircleMemberUseCase(repo),
+		usecase.NewCreateStudyCircleStepUseCase(repo),
+		usecase.NewUpdateStudyCircleStepUseCase(repo),
+		usecase.NewDeleteStudyCircleStepUseCase(repo),
+		usecase.NewReorderStudyCircleStepsUseCase(repo),
+		usecase.NewUpdateStudyCircleProgressUseCase(repo),
+		usecase.NewListStudyCircleProgressUseCase(repo),
+		usecase.NewCreateStudyCircleCheckinUseCase(repo),
+		usecase.NewListStudyCircleCheckinsUseCase(repo),
+		usecase.NewGetStudyCircleStreakRankingUseCase(repo),
+		usecase.NewSearchStudyCirclesUseCase(repo),
+		usecase.NewCountStudyCirclesUseCase(repo),
+	)
 	return h, repo
 }
 

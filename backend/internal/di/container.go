@@ -145,7 +145,9 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	analyticsRepo := repository.NewLearningAnalyticsRepository(db)
 	badgeRepo := repository.NewBadgeRepository(db)
 	recommendationRepo := repository.NewRecommendationRepository(db)
-	studyCircleRepo := repository.NewStudyCircleRepository(db)
+	// スタディサークルはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	studyCirclePort := persistence.NewStudyCircleRepository(db)
+	searchStudyCircles := usecase.NewSearchStudyCirclesUseCase(studyCirclePort)
 	noteRepo := repository.NewNoteRepository(db)
 	// ノートフォルダはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	noteFolderRepo := persistence.NewNoteFolderRepository(db)
@@ -188,7 +190,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	levelService := service.NewLevelService(levelRepo, notificationService)
 	analyticsService := service.NewLearningAnalyticsService(analyticsRepo)
 	recommendationService := service.NewRecommendationService(recommendationRepo, userRepo)
-	studyCircleService := service.NewStudyCircleService(studyCircleRepo)
 	noteService := service.NewNoteService(noteRepo)
 	noteTemplateService := service.NewNoteTemplateService(noteTemplateRepo, noteService)
 	learningLogTemplateService := service.NewLearningLogTemplateService(learningLogTemplateRepo, learningLogService)
@@ -324,9 +325,31 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	c.LevelHandler = handler.NewLevelHandler(levelService)
 	c.LearningAnalyticsHandler = handler.NewLearningAnalyticsHandler(analyticsService)
 	c.RecommendationHandler = handler.NewRecommendationHandler(recommendationService)
-	c.StudyCircleHandler = handler.NewStudyCircleHandler(studyCircleService)
+	c.StudyCircleHandler = handler.NewStudyCircleHandler(
+		usecase.NewCreateStudyCircleUseCase(studyCirclePort),
+		usecase.NewListMyStudyCirclesUseCase(studyCirclePort),
+		usecase.NewListStudyCirclesByStatusUseCase(studyCirclePort),
+		usecase.NewGetStudyCircleUseCase(studyCirclePort),
+		usecase.NewUpdateStudyCircleUseCase(studyCirclePort),
+		usecase.NewDeleteStudyCircleUseCase(studyCirclePort),
+		usecase.NewListStudyCircleMembersUseCase(studyCirclePort),
+		usecase.NewAddStudyCircleMemberUseCase(studyCirclePort),
+		usecase.NewUpdateStudyCircleMemberRoleUseCase(studyCirclePort),
+		usecase.NewRemoveStudyCircleMemberUseCase(studyCirclePort),
+		usecase.NewCreateStudyCircleStepUseCase(studyCirclePort),
+		usecase.NewUpdateStudyCircleStepUseCase(studyCirclePort),
+		usecase.NewDeleteStudyCircleStepUseCase(studyCirclePort),
+		usecase.NewReorderStudyCircleStepsUseCase(studyCirclePort),
+		usecase.NewUpdateStudyCircleProgressUseCase(studyCirclePort),
+		usecase.NewListStudyCircleProgressUseCase(studyCirclePort),
+		usecase.NewCreateStudyCircleCheckinUseCase(studyCirclePort),
+		usecase.NewListStudyCircleCheckinsUseCase(studyCirclePort),
+		usecase.NewGetStudyCircleStreakRankingUseCase(studyCirclePort),
+		searchStudyCircles,
+		usecase.NewCountStudyCirclesUseCase(studyCirclePort),
+	)
 	searchService := service.NewSearchService(postRepo)
-	c.SearchHandler = handler.NewSearchHandler(searchService, studyCircleService)
+	c.SearchHandler = handler.NewSearchHandler(searchService, searchStudyCircles)
 	c.NoteHandler = handler.NewNoteHandler(noteService)
 	// ノートのバージョン履歴はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	noteVersionRepo := persistence.NewNoteVersionRepository(db)
