@@ -2,28 +2,33 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// LearningAnalyticsServiceInterface はLearningAnalyticsHandlerが依存するサービスのインターフェース。
-type LearningAnalyticsServiceInterface interface {
-	GetHeatmap(userID uint) ([]model.HeatmapEntry, error)
-	GetCategoryBreakdown(userID uint) ([]model.CategoryBreakdown, error)
-	GetWeeklyTrends(userID uint, weeks int) ([]model.WeeklyTrend, error)
-	GetProductivityScore(userID uint) (*model.ProductivityScore, error)
-	GetInsights(userID uint) ([]model.AIInsight, error)
-	GetDayOfWeekSummary(userID uint) ([]model.DayOfWeekSummary, error)
-}
 
 // LearningAnalyticsHandler は学習分析関連のHTTPハンドラ。
 // ヒートマップ、カテゴリ別、トレンド、生産性スコア、AIインサイトの取得を処理する。
 type LearningAnalyticsHandler struct {
-	service LearningAnalyticsServiceInterface
+	heatmap      *usecase.GetLearningHeatmapUseCase
+	categories   *usecase.GetCategoryBreakdownUseCase
+	weeklyTrends *usecase.GetWeeklyTrendsUseCase
+	dayOfWeek    *usecase.GetDayOfWeekSummaryUseCase
+	productivity *usecase.GetProductivityScoreUseCase
+	insights     *usecase.GetLearningInsightsUseCase
 }
 
 // NewLearningAnalyticsHandler は新しいLearningAnalyticsHandlerインスタンスを生成する。
-func NewLearningAnalyticsHandler(s LearningAnalyticsServiceInterface) *LearningAnalyticsHandler {
-	return &LearningAnalyticsHandler{service: s}
+func NewLearningAnalyticsHandler(
+	heatmap *usecase.GetLearningHeatmapUseCase,
+	categories *usecase.GetCategoryBreakdownUseCase,
+	weeklyTrends *usecase.GetWeeklyTrendsUseCase,
+	dayOfWeek *usecase.GetDayOfWeekSummaryUseCase,
+	productivity *usecase.GetProductivityScoreUseCase,
+	insights *usecase.GetLearningInsightsUseCase,
+) *LearningAnalyticsHandler {
+	return &LearningAnalyticsHandler{
+		heatmap: heatmap, categories: categories, weeklyTrends: weeklyTrends,
+		dayOfWeek: dayOfWeek, productivity: productivity, insights: insights,
+	}
 }
 
 // GetHeatmap は指定ユーザーの学習時間ヒートマップを返す。
@@ -33,7 +38,7 @@ func (h *LearningAnalyticsHandler) GetHeatmap(c *gin.Context) {
 		return
 	}
 
-	data, err := h.service.GetHeatmap(userID)
+	data, err := h.heatmap.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -49,7 +54,7 @@ func (h *LearningAnalyticsHandler) GetCategoryBreakdown(c *gin.Context) {
 		return
 	}
 
-	data, err := h.service.GetCategoryBreakdown(userID)
+	data, err := h.categories.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -65,7 +70,7 @@ func (h *LearningAnalyticsHandler) GetProductivityScore(c *gin.Context) {
 		return
 	}
 
-	score, err := h.service.GetProductivityScore(userID)
+	score, err := h.productivity.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -83,7 +88,7 @@ func (h *LearningAnalyticsHandler) GetWeeklyTrends(c *gin.Context) {
 
 	weeks := parseQueryIntSilent(c, "weeks", 12)
 
-	data, err := h.service.GetWeeklyTrends(userID, weeks)
+	data, err := h.weeklyTrends.Execute(c.Request.Context(), userID, weeks)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -99,7 +104,7 @@ func (h *LearningAnalyticsHandler) GetDayOfWeekSummary(c *gin.Context) {
 		return
 	}
 
-	data, err := h.service.GetDayOfWeekSummary(userID)
+	data, err := h.dayOfWeek.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -112,7 +117,7 @@ func (h *LearningAnalyticsHandler) GetDayOfWeekSummary(c *gin.Context) {
 func (h *LearningAnalyticsHandler) GetInsights(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	insights, err := h.service.GetInsights(userID)
+	insights, err := h.insights.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return

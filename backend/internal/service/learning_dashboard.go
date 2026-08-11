@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
 // LearningDashboardService は学習ダッシュボードの統合サマリーを提供する。
@@ -51,7 +52,9 @@ func (s *LearningDashboardService) GetSummary(userID uint) (*model.LearningDashb
 	if err != nil {
 		return nil, err
 	}
-	productivityScore := CalculateProductivityScore(stats)
+	// 生産性スコアの算出は学習分析スライスの移行で usecase 側へ移った。
+	// 複製せずそちらを参照する（本スライスの移行時にこの依存ごと解消する）。
+	productivityScore := usecase.CalculateProductivityScore(stats)
 
 	return &model.LearningDashboardSummary{
 		StreakInfo:         streakInfo,
