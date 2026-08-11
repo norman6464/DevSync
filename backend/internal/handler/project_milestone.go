@@ -6,25 +6,25 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// ProjectMilestoneServiceInterface はマイルストーンサービスの抽象インターフェース。
-type ProjectMilestoneServiceInterface interface {
-	Create(userID, projectID uint, title, description string, dueDate *time.Time) error
-	GetByProjectID(projectID uint) ([]model.ProjectMilestone, error)
-	Update(userID, milestoneID uint, title, description string, dueDate *time.Time, status string) (*model.ProjectMilestone, error)
-	Delete(userID, milestoneID uint) error
-}
 
 // ProjectMilestoneHandler はマイルストーン関連のHTTPハンドラ。
 type ProjectMilestoneHandler struct {
-	service ProjectMilestoneServiceInterface
+	create *usecase.CreateProjectMilestoneUseCase
+	list   *usecase.ListProjectMilestonesUseCase
+	update *usecase.UpdateProjectMilestoneUseCase
+	remove *usecase.DeleteProjectMilestoneUseCase
 }
 
 // NewProjectMilestoneHandler は新しいProjectMilestoneHandlerインスタンスを生成する。
-func NewProjectMilestoneHandler(s ProjectMilestoneServiceInterface) *ProjectMilestoneHandler {
-	return &ProjectMilestoneHandler{service: s}
+func NewProjectMilestoneHandler(
+	create *usecase.CreateProjectMilestoneUseCase,
+	list *usecase.ListProjectMilestonesUseCase,
+	update *usecase.UpdateProjectMilestoneUseCase,
+	remove *usecase.DeleteProjectMilestoneUseCase,
+) *ProjectMilestoneHandler {
+	return &ProjectMilestoneHandler{create: create, list: list, update: update, remove: remove}
 }
 
 // Create はマイルストーンを作成する。
@@ -50,7 +50,13 @@ func (h *ProjectMilestoneHandler) Create(c *gin.Context) {
 		dueDate = &d
 	}
 
-	if err := h.service.Create(userID, projectID, req.Title, req.Description, dueDate); err != nil {
+	if err := h.create.Execute(c.Request.Context(), usecase.CreateProjectMilestoneInput{
+		UserID:      userID,
+		ProjectID:   projectID,
+		Title:       req.Title,
+		Description: req.Description,
+		DueDate:     dueDate,
+	}); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -65,7 +71,7 @@ func (h *ProjectMilestoneHandler) GetByProjectID(c *gin.Context) {
 		return
 	}
 
-	milestones, err := h.service.GetByProjectID(projectID)
+	milestones, err := h.list.Execute(c.Request.Context(), projectID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -99,7 +105,14 @@ func (h *ProjectMilestoneHandler) Update(c *gin.Context) {
 		dueDate = &d
 	}
 
-	result, err := h.service.Update(userID, milestoneID, req.Title, req.Description, dueDate, req.Status)
+	result, err := h.update.Execute(c.Request.Context(), usecase.UpdateProjectMilestoneInput{
+		UserID:      userID,
+		MilestoneID: milestoneID,
+		Title:       req.Title,
+		Description: req.Description,
+		DueDate:     dueDate,
+		Status:      req.Status,
+	})
 	if err != nil {
 		respondError(c, err)
 		return
@@ -116,7 +129,7 @@ func (h *ProjectMilestoneHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Delete(userID, milestoneID); err != nil {
+	if err := h.remove.Execute(c.Request.Context(), userID, milestoneID); err != nil {
 		respondError(c, err)
 		return
 	}

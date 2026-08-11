@@ -564,9 +564,15 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	)
 
 	// プロジェクトマイルストーンサービス
-	projectMilestoneRepo := repository.NewProjectMilestoneRepository(db)
-	projectMilestoneService := service.NewProjectMilestoneService(projectMilestoneRepo, projectRepo)
-	c.ProjectMilestoneHandler = handler.NewProjectMilestoneHandler(projectMilestoneService)
+	// プロジェクトマイルストーンはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	projectMilestoneRepo := persistence.NewProjectMilestoneRepository(db)
+	projectReader := persistence.NewProjectReader(db)
+	c.ProjectMilestoneHandler = handler.NewProjectMilestoneHandler(
+		usecase.NewCreateProjectMilestoneUseCase(projectMilestoneRepo, projectReader),
+		usecase.NewListProjectMilestonesUseCase(projectMilestoneRepo),
+		usecase.NewUpdateProjectMilestoneUseCase(projectMilestoneRepo, projectReader),
+		usecase.NewDeleteProjectMilestoneUseCase(projectMilestoneRepo, projectReader),
+	)
 
 	// ユーザーアクティビティサービス
 	// ユーザーアクティビティはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
