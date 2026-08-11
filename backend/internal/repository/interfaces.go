@@ -353,14 +353,3 @@ type LearningLogTemplateRepositoryInterface interface {
 	CountByUserID(userID uint) (int64, error)
 }
 
-// NoteTemplateRepositoryInterface はノートテンプレートデータ操作の契約を定義する。
-type NoteTemplateRepositoryInterface interface {
-	Create(template *model.NoteTemplate) error
-	FindByID(id uint) (*model.NoteTemplate, error)
-	FindByUserID(userID uint) ([]model.NoteTemplate, error)
-	FindDefaultByUserID(userID uint) (*model.NoteTemplate, error)
-	Update(template *model.NoteTemplate) error
-	Delete(id uint) error
-	ClearDefaultFlag(userID uint) error
-	CountByUserID(userID uint) (int64, error)
-}

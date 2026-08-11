@@ -161,7 +161,8 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	notePort := persistence.NewNoteRepository(db)
 	// ノートフォルダはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	noteFolderRepo := persistence.NewNoteFolderRepository(db)
-	noteTemplateRepo := repository.NewNoteTemplateRepository(db)
+	// ノートテンプレートはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	noteTemplateRepo := persistence.NewNoteTemplateRepository(db)
 	learningLogTemplateRepo := repository.NewLearningLogTemplateRepository(db)
 	// ノート間リンクはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	noteLinkRepo := persistence.NewNoteLinkRepository(db)
@@ -197,7 +198,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	analyticsService := service.NewLearningAnalyticsService(analyticsRepo)
 	recommendationService := service.NewRecommendationService(recommendationRepo, userRepo)
 	createNote := usecase.NewCreateNoteUseCase(notePort)
-	noteTemplateService := service.NewNoteTemplateService(noteTemplateRepo, noteCreator{create: createNote})
 	learningLogTemplateService := service.NewLearningLogTemplateService(learningLogTemplateRepo, learningLogService)
 
 	// テンプレートロードマップの初期登録
@@ -458,7 +458,16 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewCountNoteFoldersUseCase(noteFolderRepo),
 		usecase.NewDeleteNoteFolderUseCase(noteFolderRepo),
 	)
-	c.NoteTemplateHandler = handler.NewNoteTemplateHandler(noteTemplateService)
+	c.NoteTemplateHandler = handler.NewNoteTemplateHandler(
+		usecase.NewCreateNoteTemplateUseCase(noteTemplateRepo),
+		usecase.NewGetNoteTemplateUseCase(noteTemplateRepo),
+		usecase.NewListNoteTemplatesUseCase(noteTemplateRepo),
+		usecase.NewGetDefaultNoteTemplateUseCase(noteTemplateRepo),
+		usecase.NewUpdateNoteTemplateUseCase(noteTemplateRepo),
+		usecase.NewDeleteNoteTemplateUseCase(noteTemplateRepo),
+		usecase.NewCreateNoteFromTemplateUseCase(noteTemplateRepo, createNote),
+		usecase.NewCountNoteTemplatesUseCase(noteTemplateRepo),
+	)
 	c.LearningLogTemplateHandler = handler.NewLearningLogTemplateHandler(learningLogTemplateService)
 	c.NoteLinkHandler = handler.NewNoteLinkHandler(
 		usecase.NewCreateNoteLinkUseCase(noteLinkRepo, noteReader),
@@ -846,16 +855,4 @@ func seedTemplateRoadmaps(db *gorm.DB, seed *usecase.SeedRoadmapTemplatesUseCase
 	if err := seed.Execute(context.Background(), user.ID); err != nil {
 		log.Printf("テンプレートシード失敗: %v", err)
 	}
-}
-
-// noteCreator は未移行の note_template が要求する service.NoteCreatorInterface を
-// ノート作成 usecase で満たすための橋渡し。note_template 側の署名に ctx が無いため
-// ここでは context.Background() を使う。note_template を移行した時点で撤去する。
-type noteCreator struct {
-	create *usecase.CreateNoteUseCase
-}
-
-// Create はノート作成 usecase へ委譲する。
-func (n noteCreator) Create(note *model.Note) error {
-	return n.create.Execute(context.Background(), note)
 }

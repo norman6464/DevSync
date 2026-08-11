@@ -4,28 +4,36 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// NoteTemplateServiceInterface はNoteTemplateServiceのインターフェース。
-type NoteTemplateServiceInterface interface {
-	Create(template *model.NoteTemplate) error
-	GetByID(id, userID uint) (*model.NoteTemplate, error)
-	GetByUserID(userID uint) ([]model.NoteTemplate, error)
-	GetDefaultByUserID(userID uint) (*model.NoteTemplate, error)
-	Update(id, userID uint, name, description, defaultTitle, contentTemplate, defaultTags string, isDefault *bool) (*model.NoteTemplate, error)
-	Delete(id, userID uint) error
-	UseTemplate(id, userID uint) (*model.Note, error)
-	CountByUserID(userID uint) (int64, error)
-}
 
 // NoteTemplateHandler はノートテンプレート関連のHTTPハンドラ。
 type NoteTemplateHandler struct {
-	service NoteTemplateServiceInterface
+	create     *usecase.CreateNoteTemplateUseCase
+	get        *usecase.GetNoteTemplateUseCase
+	list       *usecase.ListNoteTemplatesUseCase
+	getDefault *usecase.GetDefaultNoteTemplateUseCase
+	update     *usecase.UpdateNoteTemplateUseCase
+	remove     *usecase.DeleteNoteTemplateUseCase
+	createNote *usecase.CreateNoteFromTemplateUseCase
+	count      *usecase.CountNoteTemplatesUseCase
 }
 
 // NewNoteTemplateHandler は新しいNoteTemplateHandlerインスタンスを生成する。
-func NewNoteTemplateHandler(s NoteTemplateServiceInterface) *NoteTemplateHandler {
-	return &NoteTemplateHandler{service: s}
+func NewNoteTemplateHandler(
+	create *usecase.CreateNoteTemplateUseCase,
+	get *usecase.GetNoteTemplateUseCase,
+	list *usecase.ListNoteTemplatesUseCase,
+	getDefault *usecase.GetDefaultNoteTemplateUseCase,
+	update *usecase.UpdateNoteTemplateUseCase,
+	remove *usecase.DeleteNoteTemplateUseCase,
+	createNote *usecase.CreateNoteFromTemplateUseCase,
+	count *usecase.CountNoteTemplatesUseCase,
+) *NoteTemplateHandler {
+	return &NoteTemplateHandler{
+		create: create, get: get, list: list, getDefault: getDefault,
+		update: update, remove: remove, createNote: createNote, count: count,
+	}
 }
 
 // Create は新しいテンプレートを作成する。
@@ -46,7 +54,7 @@ func (h *NoteTemplateHandler) Create(c *gin.Context) {
 		IsDefault:       input.IsDefault,
 	}
 
-	if err := h.service.Create(template); err != nil {
+	if err := h.create.Execute(c.Request.Context(), template); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -62,7 +70,7 @@ func (h *NoteTemplateHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	template, err := h.service.GetByID(id, userID)
+	template, err := h.get.Execute(c.Request.Context(), id, userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -75,7 +83,7 @@ func (h *NoteTemplateHandler) GetByID(c *gin.Context) {
 func (h *NoteTemplateHandler) GetByUserID(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	templates, err := h.service.GetByUserID(userID)
+	templates, err := h.list.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -88,7 +96,7 @@ func (h *NoteTemplateHandler) GetByUserID(c *gin.Context) {
 func (h *NoteTemplateHandler) GetDefault(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	template, err := h.service.GetDefaultByUserID(userID)
+	template, err := h.getDefault.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -110,7 +118,16 @@ func (h *NoteTemplateHandler) Update(c *gin.Context) {
 		return
 	}
 
-	template, err := h.service.Update(id, userID, input.Name, input.Description, input.DefaultTitle, input.ContentTemplate, input.DefaultTags, input.IsDefault)
+	template, err := h.update.Execute(c.Request.Context(), usecase.UpdateNoteTemplateInput{
+		ID:              id,
+		UserID:          userID,
+		Name:            input.Name,
+		Description:     input.Description,
+		DefaultTitle:    input.DefaultTitle,
+		ContentTemplate: input.ContentTemplate,
+		DefaultTags:     input.DefaultTags,
+		IsDefault:       input.IsDefault,
+	})
 	if err != nil {
 		respondError(c, err)
 		return
@@ -127,7 +144,7 @@ func (h *NoteTemplateHandler) Delete(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.service.Delete(id, userID); err != nil {
+	if err := h.remove.Execute(c.Request.Context(), id, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -143,7 +160,7 @@ func (h *NoteTemplateHandler) UseTemplate(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	note, err := h.service.UseTemplate(id, userID)
+	note, err := h.createNote.Execute(c.Request.Context(), id, userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -155,7 +172,7 @@ func (h *NoteTemplateHandler) UseTemplate(c *gin.Context) {
 // GetMyCount は認証ユーザーのノートテンプレート総数を返す。
 func (h *NoteTemplateHandler) GetMyCount(c *gin.Context) {
 	userID := c.GetUint("userID")
-	count, err := h.service.CountByUserID(userID)
+	count, err := h.count.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
