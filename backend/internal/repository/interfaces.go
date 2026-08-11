@@ -262,15 +262,6 @@ type LevelRepositoryInterface interface {
 	GetXPStats(userID uint) (*model.XPStats, error)
 }
 
-// LearningAnalyticsRepositoryInterface は学習分析データ操作の契約を定義する。
-// 学習ログから集計したヒートマップ・カテゴリ別・週間トレンド・生産性統計を提供する。
-type LearningAnalyticsRepositoryInterface interface {
-	GetHeatmapData(userID uint) ([]model.HeatmapEntry, error)
-	GetCategoryBreakdown(userID uint) ([]model.CategoryBreakdown, error)
-	GetWeeklyTrends(userID uint, weeks int) ([]model.WeeklyTrend, error)
-	GetProductivityStats(userID uint) (*model.ProductivityStats, error)
-}
-
 // BadgeRepositoryInterface はバッジ判定に必要な統計データ操作の契約を定義する。
 // 複数テーブルからの集計をカプセル化する。
 type BadgeRepositoryInterface interface {

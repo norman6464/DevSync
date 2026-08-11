@@ -152,9 +152,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	aiAdviceRepo := repository.NewAIAdviceRepository(db)
 	aiConversationRepo := repository.NewAIConversationRepository(db)
 	levelRepo := repository.NewLevelRepository(db)
-	analyticsRepo := repository.NewLearningAnalyticsRepository(db)
 	// 学習分析はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	// 旧 analyticsRepo は learning_dashboard がまだ使うため残している。
 	analyticsPort := persistence.NewLearningAnalyticsRepository(db)
 	badgeRepo := repository.NewBadgeRepository(db)
 	recommendationRepo := repository.NewRecommendationRepository(db)
@@ -822,8 +820,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	)
 
 	// 学習ダッシュボード統合サマリーサービス
-	learningDashboardService := service.NewLearningDashboardService(learningLogRepo, learningGoalRepo, analyticsRepo)
-	c.LearningDashboardHandler = handler.NewLearningDashboardHandler(learningDashboardService)
+	// 学習ダッシュボードはクリーンアーキテクチャ（DIP）へ移行済み。
+	// 学習ログ・目標・分析の移行済み実装を、それぞれ最小 port として受け取る。
+	c.LearningDashboardHandler = handler.NewLearningDashboardHandler(
+		usecase.NewGetLearningDashboardSummaryUseCase(learningLogPort, learningGoalPort, analyticsPort),
+	)
 
 	// リマインダー設定はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	reminderSettingsRepo := persistence.NewReminderSettingsRepository(db)
