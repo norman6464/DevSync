@@ -5,40 +5,63 @@ import (
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// RoadmapServiceInterface はRoadmapHandlerが依存するサービスメソッドを定義する。
-type RoadmapServiceInterface interface {
-	Create(roadmap *model.Roadmap) error
-	GetByID(id, userID uint) (*model.Roadmap, error)
-	GetByUserID(userID uint, limit, offset int) ([]model.Roadmap, int64, error)
-	GetByStatus(userID uint, status string) ([]model.Roadmap, error)
-	GetPublicRoadmaps(limit, offset int) ([]model.Roadmap, int64, error)
-	Update(id, userID uint, updates *model.Roadmap) (*model.Roadmap, error)
-	UpdateVisibility(id, userID uint, isPublic bool) (*model.Roadmap, error)
-	Delete(id, userID uint) error
-	CopyRoadmap(roadmapID, userID uint) (*model.Roadmap, error)
-	GetTemplates() ([]model.Roadmap, error)
-	CreateFromTemplate(templateID, userID uint) (*model.Roadmap, error)
-	CreateStep(roadmapID, userID uint, step *model.RoadmapStep) error
-	UpdateStep(roadmapID, stepID, userID uint, updates *model.RoadmapStep) (*model.RoadmapStep, error)
-	UpdateStepCompletion(roadmapID, stepID, userID uint, isCompleted bool) (*model.RoadmapStep, error)
-	BatchCompleteSteps(roadmapID, userID uint, stepIDs []uint) (*model.Roadmap, error)
-	DeleteStep(roadmapID, stepID, userID uint) error
-	ReorderSteps(roadmapID, userID uint, orders []model.StepOrder) error
-	GetStats(userID uint) (*model.RoadmapStats, error)
-	CountByUserID(userID uint) (int64, error)
-}
 
 // RoadmapHandler はロードマップ関連のHTTPハンドラ。
 // ロードマップとステップのCRUD・公開一覧・コピー・並べ替えを処理する。
 type RoadmapHandler struct {
-	service RoadmapServiceInterface
+	create        *usecase.CreateRoadmapUseCase
+	get           *usecase.GetRoadmapUseCase
+	listByUser    *usecase.ListRoadmapsByUserUseCase
+	listByStatus  *usecase.ListRoadmapsByStatusUseCase
+	listPublic    *usecase.ListPublicRoadmapsUseCase
+	update        *usecase.UpdateRoadmapUseCase
+	updateVisible *usecase.UpdateRoadmapVisibilityUseCase
+	remove        *usecase.DeleteRoadmapUseCase
+	copy          *usecase.CopyRoadmapUseCase
+	listTemplates *usecase.ListRoadmapTemplatesUseCase
+	fromTemplate  *usecase.CreateRoadmapFromTemplateUseCase
+	createStep    *usecase.CreateRoadmapStepUseCase
+	updateStep    *usecase.UpdateRoadmapStepUseCase
+	completeStep  *usecase.UpdateRoadmapStepCompletionUseCase
+	batchComplete *usecase.BatchCompleteRoadmapStepsUseCase
+	deleteStep    *usecase.DeleteRoadmapStepUseCase
+	reorderSteps  *usecase.ReorderRoadmapStepsUseCase
+	stats         *usecase.GetRoadmapStatsUseCase
+	count         *usecase.CountRoadmapsUseCase
 }
 
 // NewRoadmapHandler は新しいRoadmapHandlerインスタンスを生成する。
-func NewRoadmapHandler(s RoadmapServiceInterface) *RoadmapHandler {
-	return &RoadmapHandler{service: s}
+func NewRoadmapHandler(
+	create *usecase.CreateRoadmapUseCase,
+	get *usecase.GetRoadmapUseCase,
+	listByUser *usecase.ListRoadmapsByUserUseCase,
+	listByStatus *usecase.ListRoadmapsByStatusUseCase,
+	listPublic *usecase.ListPublicRoadmapsUseCase,
+	update *usecase.UpdateRoadmapUseCase,
+	updateVisible *usecase.UpdateRoadmapVisibilityUseCase,
+	remove *usecase.DeleteRoadmapUseCase,
+	copyRoadmap *usecase.CopyRoadmapUseCase,
+	listTemplates *usecase.ListRoadmapTemplatesUseCase,
+	fromTemplate *usecase.CreateRoadmapFromTemplateUseCase,
+	createStep *usecase.CreateRoadmapStepUseCase,
+	updateStep *usecase.UpdateRoadmapStepUseCase,
+	completeStep *usecase.UpdateRoadmapStepCompletionUseCase,
+	batchComplete *usecase.BatchCompleteRoadmapStepsUseCase,
+	deleteStep *usecase.DeleteRoadmapStepUseCase,
+	reorderSteps *usecase.ReorderRoadmapStepsUseCase,
+	stats *usecase.GetRoadmapStatsUseCase,
+	count *usecase.CountRoadmapsUseCase,
+) *RoadmapHandler {
+	return &RoadmapHandler{
+		create: create, get: get, listByUser: listByUser, listByStatus: listByStatus,
+		listPublic: listPublic, update: update, updateVisible: updateVisible, remove: remove,
+		copy: copyRoadmap, listTemplates: listTemplates, fromTemplate: fromTemplate,
+		createStep: createStep, updateStep: updateStep, completeStep: completeStep,
+		batchComplete: batchComplete, deleteStep: deleteStep, reorderSteps: reorderSteps,
+		stats: stats, count: count,
+	}
 }
 
 // === ロードマップエンドポイント ===
@@ -65,7 +88,7 @@ func (h *RoadmapHandler) Create(c *gin.Context) {
 		roadmap.Category = model.RoadmapCategoryOther
 	}
 
-	if err := h.service.Create(roadmap); err != nil {
+	if err := h.create.Execute(c.Request.Context(), roadmap); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -78,7 +101,7 @@ func (h *RoadmapHandler) GetMyRoadmaps(c *gin.Context) {
 	userID := c.GetUint("userID")
 	limit, offset := parseLimitOffset(c)
 
-	roadmaps, total, err := h.service.GetByUserID(userID, limit, offset)
+	roadmaps, total, err := h.listByUser.Execute(c.Request.Context(), userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -97,7 +120,7 @@ func (h *RoadmapHandler) GetByStatus(c *gin.Context) {
 	userID := c.GetUint("userID")
 	status := c.Param("status")
 
-	roadmaps, err := h.service.GetByStatus(userID, status)
+	roadmaps, err := h.listByStatus.Execute(c.Request.Context(), userID, status)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -109,7 +132,7 @@ func (h *RoadmapHandler) GetByStatus(c *gin.Context) {
 func (h *RoadmapHandler) GetPublicRoadmaps(c *gin.Context) {
 	limit, offset := parseLimitOffset(c)
 
-	roadmaps, total, err := h.service.GetPublicRoadmaps(limit, offset)
+	roadmaps, total, err := h.listPublic.Execute(c.Request.Context(), limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -125,7 +148,9 @@ func (h *RoadmapHandler) GetPublicRoadmaps(c *gin.Context) {
 
 // GetByID は指定IDのロードマップをステップ付きで取得する。
 func (h *RoadmapHandler) GetByID(c *gin.Context) {
-	handleGetByID(c, h.service.GetByID)
+	handleGetByID(c, func(id, userID uint) (*model.Roadmap, error) {
+		return h.get.Execute(c.Request.Context(), id, userID)
+	})
 }
 
 // Update は指定IDのロードマップを更新する。
@@ -155,7 +180,7 @@ func (h *RoadmapHandler) Update(c *gin.Context) {
 		updates.Status = model.RoadmapStatus(*input.Status)
 	}
 
-	roadmap, err := h.service.Update(roadmapID, userID, updates)
+	roadmap, err := h.update.Execute(c.Request.Context(), roadmapID, userID, updates)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -163,7 +188,7 @@ func (h *RoadmapHandler) Update(c *gin.Context) {
 
 	// IsPublicが指定されている場合は別途処理する
 	if input.IsPublic != nil {
-		roadmap, err = h.service.UpdateVisibility(roadmapID, userID, *input.IsPublic)
+		roadmap, err = h.updateVisible.Execute(c.Request.Context(), roadmapID, userID, *input.IsPublic)
 		if err != nil {
 			respondError(c, err)
 			return
@@ -175,7 +200,9 @@ func (h *RoadmapHandler) Update(c *gin.Context) {
 
 // Delete は指定IDのロードマップを削除する。
 func (h *RoadmapHandler) Delete(c *gin.Context) {
-	handleDelete(c, h.service.Delete)
+	handleDelete(c, func(id, userID uint) error {
+		return h.remove.Execute(c.Request.Context(), id, userID)
+	})
 }
 
 // CopyRoadmap は公開ロードマップをテンプレートとしてコピーする。
@@ -186,7 +213,7 @@ func (h *RoadmapHandler) CopyRoadmap(c *gin.Context) {
 		return
 	}
 
-	copied, err := h.service.CopyRoadmap(roadmapID, userID)
+	copied, err := h.copy.Execute(c.Request.Context(), roadmapID, userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -197,7 +224,7 @@ func (h *RoadmapHandler) CopyRoadmap(c *gin.Context) {
 
 // GetTemplates はテンプレートロードマップの一覧を取得する。
 func (h *RoadmapHandler) GetTemplates(c *gin.Context) {
-	templates, err := h.service.GetTemplates()
+	templates, err := h.listTemplates.Execute(c.Request.Context())
 	if err != nil {
 		respondError(c, err)
 		return
@@ -213,7 +240,7 @@ func (h *RoadmapHandler) CreateFromTemplate(c *gin.Context) {
 		return
 	}
 
-	roadmap, err := h.service.CreateFromTemplate(templateID, userID)
+	roadmap, err := h.fromTemplate.Execute(c.Request.Context(), templateID, userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -246,7 +273,7 @@ func (h *RoadmapHandler) CreateStep(c *gin.Context) {
 		step.OrderIndex = *input.OrderIndex
 	}
 
-	if err := h.service.CreateStep(roadmapID, userID, step); err != nil {
+	if err := h.createStep.Execute(c.Request.Context(), roadmapID, userID, step); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -273,7 +300,7 @@ func (h *RoadmapHandler) UpdateStep(c *gin.Context) {
 
 	// 完了ステータスの変更を別途処理する
 	if input.IsCompleted != nil {
-		step, err := h.service.UpdateStepCompletion(roadmapID, stepID, userID, *input.IsCompleted)
+		step, err := h.completeStep.Execute(c.Request.Context(), roadmapID, stepID, userID, *input.IsCompleted)
 		if err != nil {
 			respondError(c, err)
 			return
@@ -296,7 +323,7 @@ func (h *RoadmapHandler) UpdateStep(c *gin.Context) {
 		updates.ResourceURL = *input.ResourceURL
 	}
 
-	step, err := h.service.UpdateStep(roadmapID, stepID, userID, updates)
+	step, err := h.updateStep.Execute(c.Request.Context(), roadmapID, stepID, userID, updates)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -318,7 +345,7 @@ func (h *RoadmapHandler) BatchCompleteSteps(c *gin.Context) {
 		return
 	}
 
-	roadmap, err := h.service.BatchCompleteSteps(roadmapID, userID, input.StepIDs)
+	roadmap, err := h.batchComplete.Execute(c.Request.Context(), roadmapID, userID, input.StepIDs)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -339,7 +366,7 @@ func (h *RoadmapHandler) DeleteStep(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.DeleteStep(roadmapID, stepID, userID); err != nil {
+	if err := h.deleteStep.Execute(c.Request.Context(), roadmapID, stepID, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -360,7 +387,7 @@ func (h *RoadmapHandler) ReorderSteps(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.ReorderSteps(roadmapID, userID, input.Orders); err != nil {
+	if err := h.reorderSteps.Execute(c.Request.Context(), roadmapID, userID, input.Orders); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -371,7 +398,7 @@ func (h *RoadmapHandler) ReorderSteps(c *gin.Context) {
 // GetMyCount は認証ユーザーのロードマップ総数を返す。
 func (h *RoadmapHandler) GetMyCount(c *gin.Context) {
 	userID := c.GetUint("userID")
-	count, err := h.service.CountByUserID(userID)
+	count, err := h.count.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -383,7 +410,7 @@ func (h *RoadmapHandler) GetMyCount(c *gin.Context) {
 func (h *RoadmapHandler) GetMyStats(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	stats, err := h.service.GetStats(userID)
+	stats, err := h.stats.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return

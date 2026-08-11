@@ -3,6 +3,7 @@
 package di
 
 import (
+	"context"
 	"log"
 
 	"github.com/norman6464/devsync/backend/internal/adapter/persistence"
@@ -134,6 +135,9 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	// 回答はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	answerPort := persistence.NewAnswerRepository(db)
 	roadmapRepo := repository.NewRoadmapRepository(db)
+	// ロードマップはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	// 旧 roadmapRepo は aiAdviceService がまだ使うため残している。
+	roadmapPort := persistence.NewRoadmapRepository(db)
 	chatRoomRepo := repository.NewChatRoomRepository(db)
 	groupMessageRepo := repository.NewGroupMessageRepository(db)
 	learningLogRepo := repository.NewLearningLogRepository(db)
@@ -183,7 +187,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	messageService := service.NewMessageService(messageRepo, notificationService)
 	projectService := service.NewProjectService(projectRepo)
 	learningResourceService := service.NewLearningResourceService(learningResourceRepo)
-	roadmapService := service.NewRoadmapService(roadmapRepo)
 	chatRoomService := service.NewChatRoomService(chatRoomRepo, groupMessageRepo, hub)
 	atcoderService := service.NewAtCoderService(userRepo)
 	badgeService := service.NewBadgeService(badgeRepo, notificationService)
@@ -195,7 +198,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	learningLogTemplateService := service.NewLearningLogTemplateService(learningLogTemplateRepo, learningLogService)
 
 	// テンプレートロードマップの初期登録
-	go seedTemplateRoadmaps(db, roadmapService)
+	go seedTemplateRoadmaps(db, usecase.NewSeedRoadmapTemplatesUseCase(roadmapPort))
 
 	// AIアドバイスサービス（LLMクライアントはAPIキー設定時のみ初期化）
 	var llmClient service.LLMClientInterface
@@ -341,7 +344,27 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewRemoveAnswerVoteUseCase(answerPort),
 		usecase.NewListAnswersByVoteRangeUseCase(answerPort),
 	)
-	c.RoadmapHandler = handler.NewRoadmapHandler(roadmapService)
+	c.RoadmapHandler = handler.NewRoadmapHandler(
+		usecase.NewCreateRoadmapUseCase(roadmapPort),
+		usecase.NewGetRoadmapUseCase(roadmapPort),
+		usecase.NewListRoadmapsByUserUseCase(roadmapPort),
+		usecase.NewListRoadmapsByStatusUseCase(roadmapPort),
+		usecase.NewListPublicRoadmapsUseCase(roadmapPort),
+		usecase.NewUpdateRoadmapUseCase(roadmapPort),
+		usecase.NewUpdateRoadmapVisibilityUseCase(roadmapPort),
+		usecase.NewDeleteRoadmapUseCase(roadmapPort),
+		usecase.NewCopyRoadmapUseCase(roadmapPort),
+		usecase.NewListRoadmapTemplatesUseCase(roadmapPort),
+		usecase.NewCreateRoadmapFromTemplateUseCase(roadmapPort),
+		usecase.NewCreateRoadmapStepUseCase(roadmapPort),
+		usecase.NewUpdateRoadmapStepUseCase(roadmapPort),
+		usecase.NewUpdateRoadmapStepCompletionUseCase(roadmapPort),
+		usecase.NewBatchCompleteRoadmapStepsUseCase(roadmapPort),
+		usecase.NewDeleteRoadmapStepUseCase(roadmapPort),
+		usecase.NewReorderRoadmapStepsUseCase(roadmapPort),
+		usecase.NewGetRoadmapStatsUseCase(persistence.NewRoadmapStatsRepository(db)),
+		usecase.NewCountRoadmapsUseCase(roadmapPort),
+	)
 	c.ChatRoomHandler = handler.NewChatRoomHandler(chatRoomService)
 	c.AtCoderHandler = handler.NewAtCoderHandler(atcoderService)
 	c.BadgeHandler = handler.NewBadgeHandler(badgeService)
@@ -763,7 +786,7 @@ func trimSpace(s string) string {
 }
 
 // seedTemplateRoadmaps はシステムユーザーを取得/作成し、テンプレートロードマップを登録する。
-func seedTemplateRoadmaps(db *gorm.DB, roadmapService *service.RoadmapService) {
+func seedTemplateRoadmaps(db *gorm.DB, seed *usecase.SeedRoadmapTemplatesUseCase) {
 	const systemEmail = "system@devsync.local"
 	var user model.User
 	err := db.Where("email = ?", systemEmail).First(&user).Error
@@ -780,7 +803,7 @@ func seedTemplateRoadmaps(db *gorm.DB, roadmapService *service.RoadmapService) {
 			return
 		}
 	}
-	if err := roadmapService.SeedTemplates(user.ID); err != nil {
+	if err := seed.Execute(context.Background(), user.ID); err != nil {
 		log.Printf("テンプレートシード失敗: %v", err)
 	}
 }

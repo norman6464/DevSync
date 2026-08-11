@@ -1,0 +1,38 @@
+package repository
+
+import (
+	"context"
+
+	"github.com/norman6464/devsync/backend/internal/model"
+)
+
+// RoadmapRepository は学習ロードマップの永続化に対する、usecase 側が要求する契約。
+type RoadmapRepository interface {
+	Create(ctx context.Context, roadmap *model.Roadmap) error
+	Update(ctx context.Context, roadmap *model.Roadmap) error
+	Delete(ctx context.Context, id uint) error
+	// FindByID はステップ（表示順）とユーザーを含めてロードマップを返す。
+	// 不在の場合は「不在」を表す (nil, nil) を返し、DB 障害だけを error として返す。
+	FindByID(ctx context.Context, id uint) (*model.Roadmap, error)
+
+	GetByUserID(ctx context.Context, userID uint, limit, offset int) ([]model.Roadmap, int64, error)
+	GetByStatus(ctx context.Context, userID uint, status string) ([]model.Roadmap, error)
+	GetPublicRoadmaps(ctx context.Context, limit, offset int) ([]model.Roadmap, int64, error)
+	GetTemplates(ctx context.Context) ([]model.Roadmap, error)
+	CountByUserID(ctx context.Context, userID uint) (int64, error)
+
+	// CopyRoadmap は元のロードマップとそのステップを複製する。
+	// 複製は非公開・アクティブで作られ、ステップの完了状態は引き継がない。
+	CopyRoadmap(ctx context.Context, originalID, newUserID uint) (*model.Roadmap, error)
+
+	// CreateStep はステップを追加し、ロードマップのステップ数を 1 増やす。
+	CreateStep(ctx context.Context, step *model.RoadmapStep) error
+	// UpdateStep はステップを更新する。完了状態が変わった場合は
+	// ロードマップの完了ステップ数・進捗率・ステータスも再計算する。
+	UpdateStep(ctx context.Context, step *model.RoadmapStep) error
+	// DeleteStep はステップを削除し、ロードマップのステップ数・完了ステップ数・進捗率を再計算する。
+	DeleteStep(ctx context.Context, stepID uint) error
+	// FindStepByID は指定 ID のステップを返す。不在の場合は (nil, nil) を返す。
+	FindStepByID(ctx context.Context, stepID uint) (*model.RoadmapStep, error)
+	ReorderSteps(ctx context.Context, roadmapID uint, stepOrders []model.StepOrder) error
+}

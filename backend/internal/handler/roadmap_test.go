@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -14,11 +13,11 @@ import (
 // ---------- Create ----------
 
 func TestRoadmapCreate_Success(t *testing.T) {
-	h, repo := setupRoadmapHandler()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.POST("/roadmaps", h.Create)
 
-	repo.On("Create", mock.AnythingOfType("*model.Roadmap")).Return(nil)
+	ports.Roadmaps.On("Create", mock.Anything, mock.AnythingOfType("*model.Roadmap")).Return(nil)
 
 	w := doRequest(r, http.MethodPost, "/roadmaps", map[string]interface{}{
 		"title": "Learn Go", "category": "language", "is_public": true,
@@ -37,11 +36,11 @@ func TestRoadmapCreate_ValidationError(t *testing.T) {
 }
 
 func TestRoadmapCreate_DefaultCategory(t *testing.T) {
-	h, repo := setupRoadmapHandler()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.POST("/roadmaps", h.Create)
 
-	repo.On("Create", mock.MatchedBy(func(rm *model.Roadmap) bool {
+	ports.Roadmaps.On("Create", mock.Anything, mock.MatchedBy(func(rm *model.Roadmap) bool {
 		return rm.Category == model.RoadmapCategoryOther
 	})).Return(nil)
 
@@ -54,27 +53,27 @@ func TestRoadmapCreate_DefaultCategory(t *testing.T) {
 // ---------- GetMyRoadmaps ----------
 
 func TestRoadmapGetMy_Success(t *testing.T) {
-	h, repo := setupRoadmapHandler()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.GET("/roadmaps/my", h.GetMyRoadmaps)
 
-	repo.On("GetByUserID", uint(1), 20, 0).Return([]model.Roadmap{
+	ports.Roadmaps.On("GetByUserID", mock.Anything, uint(1), 20, 0).Return([]model.Roadmap{
 		{Title: "My Roadmap"},
 	}, int64(1), nil)
 
 	w := doRequest(r, http.MethodGet, "/roadmaps/my", nil)
 	assertStatus(t, w, http.StatusOK)
-	repo.AssertExpectations(t)
+	ports.Roadmaps.AssertExpectations(t)
 }
 
 // ---------- GetPublicRoadmaps ----------
 
 func TestRoadmapGetPublic_Success(t *testing.T) {
-	h, repo := setupRoadmapHandler()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.GET("/roadmaps/public", h.GetPublicRoadmaps)
 
-	repo.On("GetPublicRoadmaps", 20, 0).Return(
+	ports.Roadmaps.On("GetPublicRoadmaps", mock.Anything, 20, 0).Return(
 		[]model.Roadmap{{Title: "Public"}}, int64(1), nil,
 	)
 
@@ -85,32 +84,34 @@ func TestRoadmapGetPublic_Success(t *testing.T) {
 // ---------- GetByID ----------
 
 func TestRoadmapGetByID_Success(t *testing.T) {
-	h, repo := setupRoadmapHandler()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.GET("/roadmaps/:id", h.GetByID)
 
 	rm := &model.Roadmap{Title: "Found", IsPublic: true}
 	rm.ID = 10
 	rm.UserID = 1
-	repo.On("FindByID", uint(10)).Return(rm, nil)
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(10)).Return(rm, nil)
 
 	w := doRequest(r, http.MethodGet, "/roadmaps/10", nil)
 	assertStatus(t, w, http.StatusOK)
 }
 
-func TestRoadmapGetByID_NotFound(t *testing.T) {
-	h, repo := setupRoadmapHandler()
+// 不在のロードマップは 404 にならず 500 になる（移行前からの挙動）。
+func TestRoadmapGetByID_MissingReturnsInternalError(t *testing.T) {
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.GET("/roadmaps/:id", h.GetByID)
 
-	repo.On("FindByID", uint(999)).Return(nil, service.ErrNotFound)
+	// port は不在を (nil, nil) で表す。
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(999)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodGet, "/roadmaps/999", nil)
-	assertStatus(t, w, http.StatusNotFound)
+	assertStatus(t, w, http.StatusInternalServerError)
 }
 
 func TestRoadmapGetByID_ForbiddenPrivate(t *testing.T) {
-	h, repo := setupRoadmapHandler()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.GET("/roadmaps/:id", h.GetByID)
 
@@ -118,7 +119,7 @@ func TestRoadmapGetByID_ForbiddenPrivate(t *testing.T) {
 	rm := &model.Roadmap{Title: "Private", IsPublic: false}
 	rm.ID = 10
 	rm.UserID = 999
-	repo.On("FindByID", uint(10)).Return(rm, nil)
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(10)).Return(rm, nil)
 
 	w := doRequest(r, http.MethodGet, "/roadmaps/10", nil)
 	assertStatus(t, w, http.StatusForbidden)
@@ -136,15 +137,15 @@ func TestRoadmapGetByID_InvalidID(t *testing.T) {
 // ---------- Update ----------
 
 func TestRoadmapUpdate_Success(t *testing.T) {
-	h, repo := setupRoadmapHandler()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.PUT("/roadmaps/:id", h.Update)
 
 	rm := &model.Roadmap{Title: "Old"}
 	rm.ID = 10
 	rm.UserID = 1
-	repo.On("FindByID", uint(10)).Return(rm, nil)
-	repo.On("Update", mock.AnythingOfType("*model.Roadmap")).Return(nil)
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(10)).Return(rm, nil)
+	ports.Roadmaps.On("Update", mock.Anything, mock.AnythingOfType("*model.Roadmap")).Return(nil)
 
 	title := "Updated"
 	w := doRequest(r, http.MethodPut, "/roadmaps/10", map[string]interface{}{
@@ -154,56 +155,57 @@ func TestRoadmapUpdate_Success(t *testing.T) {
 }
 
 func TestRoadmapUpdate_Forbidden(t *testing.T) {
-	h, repo := setupRoadmapHandler()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.PUT("/roadmaps/:id", h.Update)
 
 	rm := &model.Roadmap{Title: "Other"}
 	rm.ID = 10
 	rm.UserID = 999
-	repo.On("FindByID", uint(10)).Return(rm, nil)
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(10)).Return(rm, nil)
 
 	w := doRequest(r, http.MethodPut, "/roadmaps/10", map[string]string{"title": "X"})
 	assertStatus(t, w, http.StatusForbidden)
 }
 
-func TestRoadmapUpdate_NotFound(t *testing.T) {
-	h, repo := setupRoadmapHandler()
+// 更新も不在は 404 にならず 500 になる（移行前からの挙動）。
+func TestRoadmapUpdate_MissingReturnsInternalError(t *testing.T) {
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.PUT("/roadmaps/:id", h.Update)
 
-	repo.On("FindByID", uint(10)).Return(nil, service.ErrNotFound)
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(10)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodPut, "/roadmaps/10", map[string]string{"title": "X"})
-	assertStatus(t, w, http.StatusNotFound)
+	assertStatus(t, w, http.StatusInternalServerError)
 }
 
 // ---------- Delete ----------
 
 func TestRoadmapDelete_Success(t *testing.T) {
-	h, repo := setupRoadmapHandler()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.DELETE("/roadmaps/:id", h.Delete)
 
 	rm := &model.Roadmap{}
 	rm.ID = 10
 	rm.UserID = 1
-	repo.On("FindByID", uint(10)).Return(rm, nil)
-	repo.On("Delete", uint(10)).Return(nil)
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(10)).Return(rm, nil)
+	ports.Roadmaps.On("Delete", mock.Anything, uint(10)).Return(nil)
 
 	w := doRequest(r, http.MethodDelete, "/roadmaps/10", nil)
 	assertStatus(t, w, http.StatusOK)
 }
 
 func TestRoadmapDelete_Forbidden(t *testing.T) {
-	h, repo := setupRoadmapHandler()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.DELETE("/roadmaps/:id", h.Delete)
 
 	rm := &model.Roadmap{}
 	rm.ID = 10
 	rm.UserID = 999
-	repo.On("FindByID", uint(10)).Return(rm, nil)
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(10)).Return(rm, nil)
 
 	w := doRequest(r, http.MethodDelete, "/roadmaps/10", nil)
 	assertStatus(t, w, http.StatusForbidden)
@@ -212,32 +214,32 @@ func TestRoadmapDelete_Forbidden(t *testing.T) {
 // ---------- CopyRoadmap ----------
 
 func TestRoadmapCopy_Success(t *testing.T) {
-	h, repo := setupRoadmapHandler()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.POST("/roadmaps/:id/copy", h.CopyRoadmap)
 
 	original := &model.Roadmap{Title: "Template", IsPublic: true}
 	original.ID = 10
-	repo.On("FindByID", uint(10)).Return(original, nil)
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(10)).Return(original, nil)
 
 	copied := &model.Roadmap{Title: "Template"}
 	copied.ID = 20
 	copied.UserID = 1
-	repo.On("CopyRoadmap", uint(10), uint(1)).Return(copied, nil)
+	ports.Roadmaps.On("CopyRoadmap", mock.Anything, uint(10), uint(1)).Return(copied, nil)
 
 	w := doRequest(r, http.MethodPost, "/roadmaps/10/copy", nil)
 	assertStatus(t, w, http.StatusCreated)
 }
 
 func TestRoadmapCopy_ForbiddenPrivate(t *testing.T) {
-	h, repo := setupRoadmapHandler()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.POST("/roadmaps/:id/copy", h.CopyRoadmap)
 
 	original := &model.Roadmap{Title: "Private", IsPublic: false}
 	original.ID = 10
 	original.UserID = 999
-	repo.On("FindByID", uint(10)).Return(original, nil)
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(10)).Return(original, nil)
 
 	w := doRequest(r, http.MethodPost, "/roadmaps/10/copy", nil)
 	assertStatus(t, w, http.StatusForbidden)
@@ -246,11 +248,11 @@ func TestRoadmapCopy_ForbiddenPrivate(t *testing.T) {
 // ---------- GetTemplates ----------
 
 func TestRoadmapGetTemplates_Success(t *testing.T) {
-	h, repo := setupRoadmapHandler()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.GET("/roadmaps/templates", h.GetTemplates)
 
-	repo.On("GetTemplates").Return([]model.Roadmap{
+	ports.Roadmaps.On("GetTemplates", mock.Anything).Return([]model.Roadmap{
 		{Title: "Template 1", IsTemplate: true},
 	}, nil)
 
@@ -261,15 +263,15 @@ func TestRoadmapGetTemplates_Success(t *testing.T) {
 // ---------- CreateStep ----------
 
 func TestRoadmapCreateStep_Success(t *testing.T) {
-	h, repo := setupRoadmapHandler()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.POST("/roadmaps/:id/steps", h.CreateStep)
 
 	rm := &model.Roadmap{Title: "My Roadmap"}
 	rm.ID = 10
 	rm.UserID = 1
-	repo.On("FindByID", uint(10)).Return(rm, nil)
-	repo.On("CreateStep", mock.AnythingOfType("*model.RoadmapStep")).Return(nil)
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(10)).Return(rm, nil)
+	ports.Roadmaps.On("CreateStep", mock.Anything, mock.AnythingOfType("*model.RoadmapStep")).Return(nil)
 
 	w := doRequest(r, http.MethodPost, "/roadmaps/10/steps", map[string]string{
 		"title": "Step 1",
@@ -278,14 +280,14 @@ func TestRoadmapCreateStep_Success(t *testing.T) {
 }
 
 func TestRoadmapCreateStep_Forbidden(t *testing.T) {
-	h, repo := setupRoadmapHandler()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.POST("/roadmaps/:id/steps", h.CreateStep)
 
 	rm := &model.Roadmap{Title: "Other"}
 	rm.ID = 10
 	rm.UserID = 999
-	repo.On("FindByID", uint(10)).Return(rm, nil)
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(10)).Return(rm, nil)
 
 	w := doRequest(r, http.MethodPost, "/roadmaps/10/steps", map[string]string{
 		"title": "Step 1",
@@ -307,19 +309,19 @@ func TestRoadmapCreateStep_ValidationError(t *testing.T) {
 // ---------- UpdateStep ----------
 
 func TestRoadmapUpdateStep_Success(t *testing.T) {
-	h, repo := setupRoadmapHandler()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.PUT("/roadmaps/:id/steps/:stepId", h.UpdateStep)
 
 	rm := &model.Roadmap{Title: "My Roadmap"}
 	rm.ID = 10
 	rm.UserID = 1
-	repo.On("FindByID", uint(10)).Return(rm, nil)
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(10)).Return(rm, nil)
 
 	step := &model.RoadmapStep{Title: "Old Step", RoadmapID: 10}
 	step.ID = 5
-	repo.On("FindStepByID", uint(5)).Return(step, nil)
-	repo.On("UpdateStep", mock.AnythingOfType("*model.RoadmapStep")).Return(nil)
+	ports.Roadmaps.On("FindStepByID", mock.Anything, uint(5)).Return(step, nil)
+	ports.Roadmaps.On("UpdateStep", mock.Anything, mock.AnythingOfType("*model.RoadmapStep")).Return(nil)
 
 	title := "Updated Step"
 	w := doRequest(r, http.MethodPut, "/roadmaps/10/steps/5", map[string]interface{}{
@@ -329,14 +331,14 @@ func TestRoadmapUpdateStep_Success(t *testing.T) {
 }
 
 func TestRoadmapUpdateStep_Forbidden(t *testing.T) {
-	h, repo := setupRoadmapHandler()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.PUT("/roadmaps/:id/steps/:stepId", h.UpdateStep)
 
 	rm := &model.Roadmap{Title: "Other"}
 	rm.ID = 10
 	rm.UserID = 999
-	repo.On("FindByID", uint(10)).Return(rm, nil)
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(10)).Return(rm, nil)
 
 	w := doRequest(r, http.MethodPut, "/roadmaps/10/steps/5", map[string]string{"title": "X"})
 	assertStatus(t, w, http.StatusForbidden)
@@ -345,33 +347,33 @@ func TestRoadmapUpdateStep_Forbidden(t *testing.T) {
 // ---------- DeleteStep ----------
 
 func TestRoadmapDeleteStep_Success(t *testing.T) {
-	h, repo := setupRoadmapHandler()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.DELETE("/roadmaps/:id/steps/:stepId", h.DeleteStep)
 
 	rm := &model.Roadmap{Title: "My Roadmap"}
 	rm.ID = 10
 	rm.UserID = 1
-	repo.On("FindByID", uint(10)).Return(rm, nil)
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(10)).Return(rm, nil)
 
 	step := &model.RoadmapStep{Title: "Step", RoadmapID: 10}
 	step.ID = 5
-	repo.On("FindStepByID", uint(5)).Return(step, nil)
-	repo.On("DeleteStep", uint(5)).Return(nil)
+	ports.Roadmaps.On("FindStepByID", mock.Anything, uint(5)).Return(step, nil)
+	ports.Roadmaps.On("DeleteStep", mock.Anything, uint(5)).Return(nil)
 
 	w := doRequest(r, http.MethodDelete, "/roadmaps/10/steps/5", nil)
 	assertStatus(t, w, http.StatusOK)
 }
 
 func TestRoadmapDeleteStep_Forbidden(t *testing.T) {
-	h, repo := setupRoadmapHandler()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.DELETE("/roadmaps/:id/steps/:stepId", h.DeleteStep)
 
 	rm := &model.Roadmap{Title: "Other"}
 	rm.ID = 10
 	rm.UserID = 999
-	repo.On("FindByID", uint(10)).Return(rm, nil)
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(10)).Return(rm, nil)
 
 	w := doRequest(r, http.MethodDelete, "/roadmaps/10/steps/5", nil)
 	assertStatus(t, w, http.StatusForbidden)
@@ -380,15 +382,15 @@ func TestRoadmapDeleteStep_Forbidden(t *testing.T) {
 // ---------- ReorderSteps ----------
 
 func TestRoadmapReorderSteps_Success(t *testing.T) {
-	h, repo := setupRoadmapHandler()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.PUT("/roadmaps/:id/steps/reorder", h.ReorderSteps)
 
 	rm := &model.Roadmap{Title: "My Roadmap"}
 	rm.ID = 10
 	rm.UserID = 1
-	repo.On("FindByID", uint(10)).Return(rm, nil)
-	repo.On("ReorderSteps", uint(10), mock.AnythingOfType("[]model.StepOrder")).Return(nil)
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(10)).Return(rm, nil)
+	ports.Roadmaps.On("ReorderSteps", mock.Anything, uint(10), mock.AnythingOfType("[]model.StepOrder")).Return(nil)
 
 	w := doRequest(r, http.MethodPut, "/roadmaps/10/steps/reorder", map[string]interface{}{
 		"orders": []map[string]interface{}{
@@ -400,14 +402,14 @@ func TestRoadmapReorderSteps_Success(t *testing.T) {
 }
 
 func TestRoadmapReorderSteps_Forbidden(t *testing.T) {
-	h, repo := setupRoadmapHandler()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.PUT("/roadmaps/:id/steps/reorder", h.ReorderSteps)
 
 	rm := &model.Roadmap{Title: "Other"}
 	rm.ID = 10
 	rm.UserID = 999
-	repo.On("FindByID", uint(10)).Return(rm, nil)
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(10)).Return(rm, nil)
 
 	w := doRequest(r, http.MethodPut, "/roadmaps/10/steps/reorder", map[string]interface{}{
 		"orders": []map[string]interface{}{
@@ -422,41 +424,41 @@ func TestRoadmapReorderSteps_Forbidden(t *testing.T) {
 // ============================================================
 
 func TestRoadmap_GetByStatus_Success(t *testing.T) {
-	h, svc := setupRoadmapHandlerMock()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.GET("/roadmaps/status/:status", h.GetByStatus)
 
 	roadmaps := []model.Roadmap{{Title: "Go入門"}}
-	svc.On("GetByStatus", uint(1), "active").Return(roadmaps, nil)
+	ports.Roadmaps.On("GetByStatus", mock.Anything, uint(1), "active").Return(roadmaps, nil)
 
 	w := doRequest(r, http.MethodGet, "/roadmaps/status/active", nil)
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	ports.Roadmaps.AssertExpectations(t)
 }
 
 func TestRoadmap_GetByStatus_NilResult(t *testing.T) {
-	h, svc := setupRoadmapHandlerMock()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.GET("/roadmaps/status/:status", h.GetByStatus)
 
-	svc.On("GetByStatus", uint(1), "completed").Return([]model.Roadmap(nil), nil)
+	ports.Roadmaps.On("GetByStatus", mock.Anything, uint(1), "completed").Return([]model.Roadmap(nil), nil)
 
 	w := doRequest(r, http.MethodGet, "/roadmaps/status/completed", nil)
 	assertStatus(t, w, http.StatusOK)
 	assert.Equal(t, "[]", w.Body.String())
-	svc.AssertExpectations(t)
+	ports.Roadmaps.AssertExpectations(t)
 }
 
-func TestRoadmap_GetByStatus_ServiceError(t *testing.T) {
-	h, svc := setupRoadmapHandlerMock()
+// 未知のステータスはリポジトリを引かずに 400 を返す。
+func TestRoadmap_GetByStatus_InvalidStatus(t *testing.T) {
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.GET("/roadmaps/status/:status", h.GetByStatus)
 
-	svc.On("GetByStatus", uint(1), "invalid").Return([]model.Roadmap(nil), service.ErrNotFound)
-
 	w := doRequest(r, http.MethodGet, "/roadmaps/status/invalid", nil)
-	assertStatus(t, w, http.StatusNotFound)
-	svc.AssertExpectations(t)
+	assertStatus(t, w, http.StatusBadRequest)
+	assert.Contains(t, w.Body.String(), "無効なステータスです")
+	ports.Roadmaps.AssertNotCalled(t, "GetByStatus", mock.Anything, mock.Anything, mock.Anything)
 }
 
 func TestRoadmapReorderSteps_ValidationError(t *testing.T) {
@@ -472,21 +474,22 @@ func TestRoadmapReorderSteps_ValidationError(t *testing.T) {
 // ---------- CreateFromTemplate ----------
 
 func TestRoadmapCreateFromTemplate_Success(t *testing.T) {
-	h, svc := setupRoadmapHandlerMock()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.POST("/roadmaps/templates/:id/create", h.CreateFromTemplate)
 
 	roadmap := &model.Roadmap{Title: "From Template"}
 	roadmap.ID = 10
-	svc.On("CreateFromTemplate", uint(5), uint(1)).Return(roadmap, nil)
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(5)).Return(&model.Roadmap{ID: 5, IsTemplate: true}, nil)
+	ports.Roadmaps.On("CopyRoadmap", mock.Anything, uint(5), uint(1)).Return(roadmap, nil)
 
 	w := doRequest(r, http.MethodPost, "/roadmaps/templates/5/create", nil)
 	assertStatus(t, w, http.StatusCreated)
-	svc.AssertExpectations(t)
+	ports.Roadmaps.AssertExpectations(t)
 }
 
 func TestRoadmapCreateFromTemplate_InvalidID(t *testing.T) {
-	h, _ := setupRoadmapHandlerMock()
+	h, _ := setupRoadmapHandler()
 	r := newRouter(1)
 	r.POST("/roadmaps/templates/:id/create", h.CreateFromTemplate)
 
@@ -494,97 +497,112 @@ func TestRoadmapCreateFromTemplate_InvalidID(t *testing.T) {
 	assertStatus(t, w, http.StatusBadRequest)
 }
 
-func TestRoadmapCreateFromTemplate_ServiceError(t *testing.T) {
-	h, svc := setupRoadmapHandlerMock()
+// テンプレートが不在のときは 404 にならず 500 になる（移行前からの挙動）。
+func TestRoadmapCreateFromTemplate_MissingReturnsInternalError(t *testing.T) {
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.POST("/roadmaps/templates/:id/create", h.CreateFromTemplate)
 
-	svc.On("CreateFromTemplate", uint(5), uint(1)).Return(nil, service.ErrNotFound)
+	// port は不在を (nil, nil) で表す。
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(5)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodPost, "/roadmaps/templates/5/create", nil)
-	assertStatus(t, w, http.StatusNotFound)
-	svc.AssertExpectations(t)
+	assertStatus(t, w, http.StatusInternalServerError)
+	ports.Roadmaps.AssertNotCalled(t, "CopyRoadmap", mock.Anything, mock.Anything, mock.Anything)
+}
+
+// テンプレートでないロードマップを指定すると 400。
+func TestRoadmapCreateFromTemplate_NotATemplate(t *testing.T) {
+	h, ports := setupRoadmapHandler()
+	r := newRouter(1)
+	r.POST("/roadmaps/templates/:id/create", h.CreateFromTemplate)
+
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(5)).
+		Return(&model.Roadmap{ID: 5, IsTemplate: false}, nil)
+
+	w := doRequest(r, http.MethodPost, "/roadmaps/templates/5/create", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+	ports.Roadmaps.AssertNotCalled(t, "CopyRoadmap", mock.Anything, mock.Anything, mock.Anything)
 }
 
 // ---------- GetTemplates エラーパス ----------
 
 func TestRoadmapGetTemplates_ServiceError(t *testing.T) {
-	h, svc := setupRoadmapHandlerMock()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.GET("/roadmaps/templates", h.GetTemplates)
 
-	svc.On("GetTemplates").Return([]model.Roadmap(nil), assert.AnError)
+	ports.Roadmaps.On("GetTemplates", mock.Anything).Return([]model.Roadmap(nil), assert.AnError)
 
 	w := doRequest(r, http.MethodGet, "/roadmaps/templates", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
+	ports.Roadmaps.AssertExpectations(t)
 }
 
 // ---------- GetMyRoadmaps エラーパス ----------
 
 func TestRoadmapGetMy_ServiceError(t *testing.T) {
-	h, svc := setupRoadmapHandlerMock()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.GET("/roadmaps", h.GetMyRoadmaps)
 
-	svc.On("GetByUserID", uint(1), 20, 0).Return([]model.Roadmap(nil), int64(0), assert.AnError)
+	ports.Roadmaps.On("GetByUserID", mock.Anything, uint(1), 20, 0).Return([]model.Roadmap(nil), int64(0), assert.AnError)
 
 	w := doRequest(r, http.MethodGet, "/roadmaps", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
+	ports.Roadmaps.AssertExpectations(t)
 }
 
 // ---------- GetPublicRoadmaps エラーパス ----------
 
 func TestRoadmapGetPublic_ServiceError(t *testing.T) {
-	h, svc := setupRoadmapHandlerMock()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.GET("/roadmaps/public", h.GetPublicRoadmaps)
 
-	svc.On("GetPublicRoadmaps", 20, 0).Return([]model.Roadmap(nil), int64(0), assert.AnError)
+	ports.Roadmaps.On("GetPublicRoadmaps", mock.Anything, 20, 0).Return([]model.Roadmap(nil), int64(0), assert.AnError)
 
 	w := doRequest(r, http.MethodGet, "/roadmaps/public", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
+	ports.Roadmaps.AssertExpectations(t)
 }
 
 // ---------- UpdateStep (完了ステータスのみ) ----------
 
 func TestRoadmapUpdateStep_CompletionOnly(t *testing.T) {
-	h, svc := setupRoadmapHandlerMock()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.PUT("/roadmaps/:id/steps/:stepId", h.UpdateStep)
 
-	completed := true
-	step := &model.RoadmapStep{Title: "Step1"}
-	step.ID = 2
-	svc.On("UpdateStepCompletion", uint(1), uint(2), uint(1), completed).Return(step, nil)
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(1)).Return(&model.Roadmap{ID: 1, UserID: 1}, nil)
+	ports.Roadmaps.On("FindStepByID", mock.Anything, uint(2)).Return(&model.RoadmapStep{ID: 2, RoadmapID: 1}, nil)
+	ports.Roadmaps.On("UpdateStep", mock.Anything, mock.AnythingOfType("*model.RoadmapStep")).Return(nil)
 
 	w := doRequest(r, http.MethodPut, "/roadmaps/1/steps/2", map[string]interface{}{
 		"is_completed": true,
 	})
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	ports.Roadmaps.AssertExpectations(t)
 }
 
 func TestRoadmapUpdateStep_CompletionError(t *testing.T) {
-	h, svc := setupRoadmapHandlerMock()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.PUT("/roadmaps/:id/steps/:stepId", h.UpdateStep)
 
-	svc.On("UpdateStepCompletion", uint(1), uint(2), uint(1), true).Return(nil, service.ErrForbidden)
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(1)).Return(&model.Roadmap{ID: 1, UserID: 999}, nil)
 
 	w := doRequest(r, http.MethodPut, "/roadmaps/1/steps/2", map[string]interface{}{
 		"is_completed": true,
 	})
 	assertStatus(t, w, http.StatusForbidden)
-	svc.AssertExpectations(t)
+	ports.Roadmaps.AssertExpectations(t)
 }
 
 // ---------- UpdateStep InvalidStepID ----------
 
 func TestRoadmapUpdateStep_InvalidStepID(t *testing.T) {
-	h, _ := setupRoadmapHandlerMock()
+	h, _ := setupRoadmapHandler()
 	r := newRouter(1)
 	r.PUT("/roadmaps/:id/steps/:stepId", h.UpdateStep)
 
@@ -597,7 +615,7 @@ func TestRoadmapUpdateStep_InvalidStepID(t *testing.T) {
 // ---------- DeleteStep InvalidStepID ----------
 
 func TestRoadmapDeleteStep_InvalidStepID(t *testing.T) {
-	h, _ := setupRoadmapHandlerMock()
+	h, _ := setupRoadmapHandler()
 	r := newRouter(1)
 	r.DELETE("/roadmaps/:id/steps/:stepId", h.DeleteStep)
 
@@ -608,7 +626,7 @@ func TestRoadmapDeleteStep_InvalidStepID(t *testing.T) {
 // ---------- CopyRoadmap InvalidID ----------
 
 func TestRoadmapCopy_InvalidID(t *testing.T) {
-	h, _ := setupRoadmapHandlerMock()
+	h, _ := setupRoadmapHandler()
 	r := newRouter(1)
 	r.POST("/roadmaps/:id/copy", h.CopyRoadmap)
 
@@ -619,21 +637,22 @@ func TestRoadmapCopy_InvalidID(t *testing.T) {
 // ---------- CopyRoadmap ServiceError ----------
 
 func TestRoadmapCopy_ServiceError(t *testing.T) {
-	h, svc := setupRoadmapHandlerMock()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.POST("/roadmaps/:id/copy", h.CopyRoadmap)
 
-	svc.On("CopyRoadmap", uint(5), uint(1)).Return(nil, assert.AnError)
+	ports.Roadmaps.On("FindByID", mock.Anything, uint(5)).Return(&model.Roadmap{ID: 5, IsPublic: true}, nil)
+	ports.Roadmaps.On("CopyRoadmap", mock.Anything, uint(5), uint(1)).Return(nil, assert.AnError)
 
 	w := doRequest(r, http.MethodPost, "/roadmaps/5/copy", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
+	ports.Roadmaps.AssertExpectations(t)
 }
 
 // ---------- ReorderSteps InvalidID ----------
 
 func TestRoadmapReorderSteps_InvalidID(t *testing.T) {
-	h, _ := setupRoadmapHandlerMock()
+	h, _ := setupRoadmapHandler()
 	r := newRouter(1)
 	r.PUT("/roadmaps/:id/steps/reorder", h.ReorderSteps)
 
@@ -648,53 +667,53 @@ func TestRoadmapReorderSteps_InvalidID(t *testing.T) {
 // ============================================================
 
 func TestRoadmapGetMyStats_Success(t *testing.T) {
-	h, svc := setupRoadmapHandlerMock()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.GET("/roadmaps/my/stats", h.GetMyStats)
 
 	stats := &model.RoadmapStats{TotalRoadmaps: 3, ActiveRoadmaps: 2, CompletedRoadmaps: 1, TotalSteps: 10, CompletedSteps: 5}
-	svc.On("GetStats", uint(1)).Return(stats, nil)
+	ports.Stats.On("GetRoadmapStats", mock.Anything, uint(1)).Return(stats, nil)
 
 	w := doRequest(r, http.MethodGet, "/roadmaps/my/stats", nil)
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	ports.Roadmaps.AssertExpectations(t)
 }
 
 func TestRoadmapGetMyStats_ServiceError(t *testing.T) {
-	h, svc := setupRoadmapHandlerMock()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.GET("/roadmaps/my/stats", h.GetMyStats)
 
-	svc.On("GetStats", uint(1)).Return(nil, errors.New("db error"))
+	ports.Stats.On("GetRoadmapStats", mock.Anything, uint(1)).Return(nil, errors.New("db error"))
 
 	w := doRequest(r, http.MethodGet, "/roadmaps/my/stats", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
+	ports.Roadmaps.AssertExpectations(t)
 }
 
 // ---------- GetMyCount ----------
 
 func TestRoadmapGetMyCount_Success(t *testing.T) {
-	h, svc := setupRoadmapHandlerMock()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.GET("/roadmaps/my/count", h.GetMyCount)
 
-	svc.On("CountByUserID", uint(1)).Return(int64(5), nil)
+	ports.Roadmaps.On("CountByUserID", mock.Anything, uint(1)).Return(int64(5), nil)
 
 	w := doRequest(r, http.MethodGet, "/roadmaps/my/count", nil)
 	assertStatus(t, w, http.StatusOK)
 	assert.Contains(t, w.Body.String(), `"count":5`)
-	svc.AssertExpectations(t)
+	ports.Roadmaps.AssertExpectations(t)
 }
 
 func TestRoadmapGetMyCount_ServiceError(t *testing.T) {
-	h, svc := setupRoadmapHandlerMock()
+	h, ports := setupRoadmapHandler()
 	r := newRouter(1)
 	r.GET("/roadmaps/my/count", h.GetMyCount)
 
-	svc.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+	ports.Roadmaps.On("CountByUserID", mock.Anything, uint(1)).Return(int64(0), errors.New("db error"))
 
 	w := doRequest(r, http.MethodGet, "/roadmaps/my/count", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
+	ports.Roadmaps.AssertExpectations(t)
 }
