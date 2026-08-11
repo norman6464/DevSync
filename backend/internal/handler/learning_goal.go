@@ -4,41 +4,58 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// LearningGoalServiceInterface はLearningGoalServiceが実装すべきインターフェース。
-type LearningGoalServiceInterface interface {
-	Create(goal *model.LearningGoal) error
-	GetByID(id, userID uint) (*model.LearningGoal, error)
-	GetByUserID(userID uint, limit, offset int) ([]model.LearningGoal, int64, error)
-	GetByCategory(userID uint, category string) ([]model.LearningGoal, error)
-	GetByStatus(userID uint, status string) ([]model.LearningGoal, error)
-	GetStats(userID uint) (*model.LearningGoalStats, error)
-	Update(id, userID uint, updates *model.LearningGoal) (*model.LearningGoal, error)
-	Delete(id, userID uint) error
-	GetDeadlineAlerts(userID uint) ([]model.GoalDeadlineAlert, error)
-	Duplicate(id, userID uint) (*model.LearningGoal, error)
-	ToggleShare(id, userID uint) (*model.LearningGoal, error)
-	GetPublicGoals(limit, offset int) ([]model.LearningGoal, int64, error)
-	GetPublicByUserID(userID uint, limit, offset int) ([]model.LearningGoal, int64, error)
-	GetActiveByUserID(userID uint) ([]model.LearningGoal, error)
-	GetForecast(userID uint) ([]model.GoalForecast, error)
-	BatchUpdateProgress(userID uint, updates []struct {
-		GoalID   uint
-		Progress int
-	}) ([]model.LearningGoal, error)
-	CountByUserID(userID uint) (int64, error)
-}
 
 // LearningGoalHandler は学習目標関連のHTTPハンドラ。
 // 学習目標のCRUD・統計情報の取得を処理する。
 type LearningGoalHandler struct {
-	service LearningGoalServiceInterface
+	create        *usecase.CreateLearningGoalUseCase
+	get           *usecase.GetLearningGoalUseCase
+	list          *usecase.ListLearningGoalsUseCase
+	listActive    *usecase.ListActiveLearningGoalsUseCase
+	byCategory    *usecase.ListLearningGoalsByCategoryUseCase
+	byStatus      *usecase.ListLearningGoalsByStatusUseCase
+	stats         *usecase.GetLearningGoalStatsUseCase
+	update        *usecase.UpdateLearningGoalUseCase
+	deadlineAlert *usecase.GetGoalDeadlineAlertsUseCase
+	duplicate     *usecase.DuplicateLearningGoalUseCase
+	toggleShare   *usecase.ToggleLearningGoalShareUseCase
+	listPublic    *usecase.ListPublicLearningGoalsUseCase
+	listPublicBy  *usecase.ListPublicLearningGoalsByUserUseCase
+	count         *usecase.CountLearningGoalsUseCase
+	remove        *usecase.DeleteLearningGoalUseCase
+	batchProgress *usecase.BatchUpdateGoalProgressUseCase
+	forecast      *usecase.GetGoalForecastUseCase
 }
 
 // NewLearningGoalHandler は新しいLearningGoalHandlerインスタンスを生成する。
-func NewLearningGoalHandler(s LearningGoalServiceInterface) *LearningGoalHandler {
-	return &LearningGoalHandler{service: s}
+func NewLearningGoalHandler(
+	create *usecase.CreateLearningGoalUseCase,
+	get *usecase.GetLearningGoalUseCase,
+	list *usecase.ListLearningGoalsUseCase,
+	listActive *usecase.ListActiveLearningGoalsUseCase,
+	byCategory *usecase.ListLearningGoalsByCategoryUseCase,
+	byStatus *usecase.ListLearningGoalsByStatusUseCase,
+	stats *usecase.GetLearningGoalStatsUseCase,
+	update *usecase.UpdateLearningGoalUseCase,
+	deadlineAlert *usecase.GetGoalDeadlineAlertsUseCase,
+	duplicate *usecase.DuplicateLearningGoalUseCase,
+	toggleShare *usecase.ToggleLearningGoalShareUseCase,
+	listPublic *usecase.ListPublicLearningGoalsUseCase,
+	listPublicBy *usecase.ListPublicLearningGoalsByUserUseCase,
+	count *usecase.CountLearningGoalsUseCase,
+	remove *usecase.DeleteLearningGoalUseCase,
+	batchProgress *usecase.BatchUpdateGoalProgressUseCase,
+	forecast *usecase.GetGoalForecastUseCase,
+) *LearningGoalHandler {
+	return &LearningGoalHandler{
+		create: create, get: get, list: list, listActive: listActive,
+		byCategory: byCategory, byStatus: byStatus, stats: stats, update: update,
+		deadlineAlert: deadlineAlert, duplicate: duplicate, toggleShare: toggleShare,
+		listPublic: listPublic, listPublicBy: listPublicBy, count: count,
+		remove: remove, batchProgress: batchProgress, forecast: forecast,
+	}
 }
 
 // Create は新しい学習目標を作成する。
@@ -64,7 +81,7 @@ func (h *LearningGoalHandler) Create(c *gin.Context) {
 		goal.TargetDate = &targetDate
 	}
 
-	if err := h.service.Create(goal); err != nil {
+	if err := h.create.Execute(c.Request.Context(), goal); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -109,7 +126,7 @@ func (h *LearningGoalHandler) Update(c *gin.Context) {
 		updates.Status = model.GoalStatus(*req.Status)
 	}
 
-	goal, err := h.service.Update(goalID, userID, updates)
+	goal, err := h.update.Execute(c.Request.Context(), goalID, userID, updates)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -120,12 +137,16 @@ func (h *LearningGoalHandler) Update(c *gin.Context) {
 
 // Delete は指定された学習目標を削除する。
 func (h *LearningGoalHandler) Delete(c *gin.Context) {
-	handleDelete(c, h.service.Delete)
+	handleDelete(c, func(id, userID uint) error {
+		return h.remove.Execute(c.Request.Context(), id, userID)
+	})
 }
 
 // GetByID は指定されたIDの学習目標を取得する。所有者のみ取得可能。
 func (h *LearningGoalHandler) GetByID(c *gin.Context) {
-	handleGetByID(c, h.service.GetByID)
+	handleGetByID(c, func(id, userID uint) (*model.LearningGoal, error) {
+		return h.get.Execute(c.Request.Context(), id, userID)
+	})
 }
 
 // GetByUserID は指定されたユーザーの学習目標一覧を取得する。
@@ -136,7 +157,7 @@ func (h *LearningGoalHandler) GetByUserID(c *gin.Context) {
 	}
 
 	limit, offset := parseLimitOffset(c)
-	goals, total, err := h.service.GetByUserID(userID, limit, offset)
+	goals, total, err := h.list.Execute(c.Request.Context(), userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -155,7 +176,7 @@ func (h *LearningGoalHandler) GetMyGoals(c *gin.Context) {
 	userID := c.GetUint("userID")
 
 	limit, offset := parseLimitOffset(c)
-	goals, total, err := h.service.GetByUserID(userID, limit, offset)
+	goals, total, err := h.list.Execute(c.Request.Context(), userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -173,7 +194,7 @@ func (h *LearningGoalHandler) GetMyGoals(c *gin.Context) {
 func (h *LearningGoalHandler) GetDeadlineAlerts(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	alerts, err := h.service.GetDeadlineAlerts(userID)
+	alerts, err := h.deadlineAlert.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -186,7 +207,7 @@ func (h *LearningGoalHandler) GetByCategory(c *gin.Context) {
 	userID := c.GetUint("userID")
 	category := c.Param("category")
 
-	goals, err := h.service.GetByCategory(userID, category)
+	goals, err := h.byCategory.Execute(c.Request.Context(), userID, category)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -200,7 +221,7 @@ func (h *LearningGoalHandler) GetByStatus(c *gin.Context) {
 	userID := c.GetUint("userID")
 	status := c.Param("status")
 
-	goals, err := h.service.GetByStatus(userID, status)
+	goals, err := h.byStatus.Execute(c.Request.Context(), userID, status)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -217,7 +238,7 @@ func (h *LearningGoalHandler) Duplicate(c *gin.Context) {
 		return
 	}
 
-	goal, err := h.service.Duplicate(id, userID)
+	goal, err := h.duplicate.Execute(c.Request.Context(), id, userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -233,7 +254,7 @@ func (h *LearningGoalHandler) GetStats(c *gin.Context) {
 		return
 	}
 
-	stats, err := h.service.GetStats(userID)
+	stats, err := h.stats.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -250,7 +271,7 @@ func (h *LearningGoalHandler) ToggleShare(c *gin.Context) {
 		return
 	}
 
-	goal, err := h.service.ToggleShare(id, userID)
+	goal, err := h.toggleShare.Execute(c.Request.Context(), id, userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -263,7 +284,7 @@ func (h *LearningGoalHandler) ToggleShare(c *gin.Context) {
 func (h *LearningGoalHandler) GetPublicGoals(c *gin.Context) {
 	limit, offset := parseLimitOffset(c)
 
-	goals, total, err := h.service.GetPublicGoals(limit, offset)
+	goals, total, err := h.listPublic.Execute(c.Request.Context(), limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -285,7 +306,7 @@ func (h *LearningGoalHandler) GetPublicByUserID(c *gin.Context) {
 	}
 
 	limit, offset := parseLimitOffset(c)
-	goals, total, err := h.service.GetPublicByUserID(userID, limit, offset)
+	goals, total, err := h.listPublicBy.Execute(c.Request.Context(), userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -308,16 +329,12 @@ func (h *LearningGoalHandler) BatchUpdateProgress(c *gin.Context) {
 		return
 	}
 
-	updates := make([]struct {
-		GoalID   uint
-		Progress int
-	}, len(req.Updates))
+	updates := make([]usecase.GoalProgressUpdate, len(req.Updates))
 	for i, u := range req.Updates {
-		updates[i].GoalID = u.GoalID
-		updates[i].Progress = u.Progress
+		updates[i] = usecase.GoalProgressUpdate{GoalID: u.GoalID, Progress: u.Progress}
 	}
 
-	results, err := h.service.BatchUpdateProgress(userID, updates)
+	results, err := h.batchProgress.Execute(c.Request.Context(), userID, updates)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -330,7 +347,7 @@ func (h *LearningGoalHandler) BatchUpdateProgress(c *gin.Context) {
 func (h *LearningGoalHandler) GetMyStats(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	stats, err := h.service.GetStats(userID)
+	stats, err := h.stats.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -343,7 +360,7 @@ func (h *LearningGoalHandler) GetMyStats(c *gin.Context) {
 func (h *LearningGoalHandler) GetActiveGoals(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	goals, err := h.service.GetActiveByUserID(userID)
+	goals, err := h.listActive.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -355,7 +372,7 @@ func (h *LearningGoalHandler) GetActiveGoals(c *gin.Context) {
 // GetMyCount は認証ユーザー自身の学習目標総数を返す。
 func (h *LearningGoalHandler) GetMyCount(c *gin.Context) {
 	userID := c.GetUint("userID")
-	count, err := h.service.CountByUserID(userID)
+	count, err := h.count.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -367,7 +384,7 @@ func (h *LearningGoalHandler) GetMyCount(c *gin.Context) {
 func (h *LearningGoalHandler) GetForecast(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	forecasts, err := h.service.GetForecast(userID)
+	forecasts, err := h.forecast.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
