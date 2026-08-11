@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -18,7 +17,7 @@ func TestQuestionCreate_Success(t *testing.T) {
 	r := newRouter(1)
 	r.POST("/questions", h.Create)
 
-	repo.On("Create", mock.AnythingOfType("*model.Question")).Return(nil)
+	repo.On("Create", mock.Anything, mock.AnythingOfType("*model.Question")).Return(nil)
 
 	w := doRequest(r, http.MethodPost, "/questions", map[string]string{
 		"title": "How to use Go?", "body": "I want to learn Go.",
@@ -54,7 +53,7 @@ func TestQuestionGetAll_Success(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/questions", h.GetAll)
 
-	repo.On("FindAll", 20, 0, "", "newest").Return([]model.Question{
+	repo.On("FindAll", mock.Anything, 20, 0, "", "newest").Return([]model.Question{
 		{Title: "Q1"}, {Title: "Q2"},
 	}, int64(2), nil)
 
@@ -72,7 +71,7 @@ func TestQuestionGetAll_WithFilters(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/questions", h.GetAll)
 
-	repo.On("FindAll", 10, 5, "go", "popular").Return([]model.Question{}, int64(0), nil)
+	repo.On("FindAll", mock.Anything, 10, 5, "go", "popular").Return([]model.Question{}, int64(0), nil)
 
 	w := doRequest(r, http.MethodGet, "/questions?limit=10&offset=5&tag=go&sort=popular", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -84,7 +83,7 @@ func TestQuestionGetAll_LimitCap(t *testing.T) {
 	r.GET("/questions", h.GetAll)
 
 	// limit=200 は 100 に制限される
-	repo.On("FindAll", 100, 0, "", "newest").Return([]model.Question{}, int64(0), nil)
+	repo.On("FindAll", mock.Anything, 100, 0, "", "newest").Return([]model.Question{}, int64(0), nil)
 
 	w := doRequest(r, http.MethodGet, "/questions?limit=200", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -97,7 +96,7 @@ func TestQuestionSearch_Success(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/questions/search", h.Search)
 
-	repo.On("Search", "golang", 20, 0).Return([]model.Question{
+	repo.On("Search", mock.Anything, "golang", 20, 0).Return([]model.Question{
 		{Title: "Go Question"},
 	}, int64(1), nil)
 
@@ -121,8 +120,8 @@ func TestQuestionGetByID_Success(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/questions/:id", h.GetByID)
 
-	repo.On("FindByID", uint(5)).Return(&model.Question{Title: "Q"}, nil)
-	repo.On("GetUserVote", uint(1), uint(5)).Return(1, nil)
+	repo.On("FindByID", mock.Anything, uint(5)).Return(&model.Question{Title: "Q"}, nil)
+	repo.On("GetUserVote", mock.Anything, uint(1), uint(5)).Return(1, nil)
 
 	w := doRequest(r, http.MethodGet, "/questions/5", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -131,15 +130,17 @@ func TestQuestionGetByID_Success(t *testing.T) {
 	assert.Equal(t, float64(1), body["user_vote"])
 }
 
-func TestQuestionGetByID_NotFound(t *testing.T) {
+// 単体取得は不在でも 404 にならない。リポジトリのエラーがそのまま返るため 500 になる（移行前からの挙動）。
+func TestQuestionGetByID_MissingReturnsInternalError(t *testing.T) {
 	h, repo := setupQuestionHandler()
 	r := newRouter(1)
 	r.GET("/questions/:id", h.GetByID)
 
-	repo.On("FindByID", uint(999)).Return(nil, service.ErrNotFound)
+	// port は不在を (nil, nil) で表す。
+	repo.On("FindByID", mock.Anything, uint(999)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodGet, "/questions/999", nil)
-	assertStatus(t, w, http.StatusNotFound)
+	assertStatus(t, w, http.StatusInternalServerError)
 }
 
 func TestQuestionGetByID_InvalidID(t *testing.T) {
@@ -161,8 +162,8 @@ func TestQuestionUpdate_Success(t *testing.T) {
 	q := &model.Question{Title: "Old", Body: "Old Body"}
 	q.ID = 5
 	q.UserID = 1
-	repo.On("FindByID", uint(5)).Return(q, nil)
-	repo.On("Update", mock.AnythingOfType("*model.Question")).Return(nil)
+	repo.On("FindByID", mock.Anything, uint(5)).Return(q, nil)
+	repo.On("Update", mock.Anything, mock.AnythingOfType("*model.Question")).Return(nil)
 
 	w := doRequest(r, http.MethodPut, "/questions/5", map[string]string{
 		"title": "Updated",
@@ -178,7 +179,7 @@ func TestQuestionUpdate_Forbidden(t *testing.T) {
 	q := &model.Question{Title: "Other"}
 	q.ID = 5
 	q.UserID = 999
-	repo.On("FindByID", uint(5)).Return(q, nil)
+	repo.On("FindByID", mock.Anything, uint(5)).Return(q, nil)
 
 	w := doRequest(r, http.MethodPut, "/questions/5", map[string]string{
 		"title": "Hacked",
@@ -186,15 +187,27 @@ func TestQuestionUpdate_Forbidden(t *testing.T) {
 	assertStatus(t, w, http.StatusForbidden)
 }
 
-func TestQuestionUpdate_NotFound(t *testing.T) {
+// 更新も不在は 404 にならず 500 になる（移行前からの挙動）。
+func TestQuestionUpdate_MissingReturnsInternalError(t *testing.T) {
 	h, repo := setupQuestionHandler()
 	r := newRouter(1)
 	r.PUT("/questions/:id", h.Update)
 
-	repo.On("FindByID", uint(5)).Return(nil, service.ErrNotFound)
+	repo.On("FindByID", mock.Anything, uint(5)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodPut, "/questions/5", map[string]string{"title": "X"})
-	assertStatus(t, w, http.StatusNotFound)
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+func TestQuestionUpdate_RepositoryError(t *testing.T) {
+	h, repo := setupQuestionHandler()
+	r := newRouter(1)
+	r.PUT("/questions/:id", h.Update)
+
+	repo.On("FindByID", mock.Anything, uint(5)).Return(nil, errors.New("db error"))
+
+	w := doRequest(r, http.MethodPut, "/questions/5", map[string]string{"title": "X"})
+	assertStatus(t, w, http.StatusInternalServerError)
 }
 
 // ---------- Delete ----------
@@ -207,8 +220,8 @@ func TestQuestionDelete_Success(t *testing.T) {
 	q := &model.Question{}
 	q.ID = 5
 	q.UserID = 1
-	repo.On("FindByID", uint(5)).Return(q, nil)
-	repo.On("Delete", uint(5)).Return(nil)
+	repo.On("FindByID", mock.Anything, uint(5)).Return(q, nil)
+	repo.On("Delete", mock.Anything, uint(5)).Return(nil)
 
 	w := doRequest(r, http.MethodDelete, "/questions/5", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -222,7 +235,7 @@ func TestQuestionDelete_Forbidden(t *testing.T) {
 	q := &model.Question{}
 	q.ID = 5
 	q.UserID = 999
-	repo.On("FindByID", uint(5)).Return(q, nil)
+	repo.On("FindByID", mock.Anything, uint(5)).Return(q, nil)
 
 	w := doRequest(r, http.MethodDelete, "/questions/5", nil)
 	assertStatus(t, w, http.StatusForbidden)
@@ -237,8 +250,8 @@ func TestQuestionVote_Success(t *testing.T) {
 
 	otherQuestion := &model.Question{UserID: 99}
 	otherQuestion.ID = 5
-	repo.On("FindByID", uint(5)).Return(otherQuestion, nil)
-	repo.On("Vote", uint(1), uint(5), 1).Return(nil)
+	repo.On("FindByID", mock.Anything, uint(5)).Return(otherQuestion, nil)
+	repo.On("Vote", mock.Anything, uint(1), uint(5), 1).Return(nil)
 
 	w := doRequest(r, http.MethodPost, "/questions/5/vote", map[string]int{
 		"value": 1,
@@ -268,7 +281,7 @@ func TestQuestion_GetByUserID_Success(t *testing.T) {
 	r.GET("/users/:userId/questions", h.GetByUserID)
 
 	questions := []model.Question{{Title: "Go質問"}}
-	repo.On("FindByUserID", uint(5), 20, 0).Return(questions, int64(1), nil)
+	repo.On("FindByUserID", mock.Anything, uint(5), 20, 0).Return(questions, int64(1), nil)
 
 	w := doRequest(r, http.MethodGet, "/users/5/questions", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -280,7 +293,7 @@ func TestQuestion_GetByUserID_Empty(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/users/:userId/questions", h.GetByUserID)
 
-	repo.On("FindByUserID", uint(99), 20, 0).Return([]model.Question{}, int64(0), nil)
+	repo.On("FindByUserID", mock.Anything, uint(99), 20, 0).Return([]model.Question{}, int64(0), nil)
 
 	w := doRequest(r, http.MethodGet, "/users/99/questions", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -303,7 +316,7 @@ func TestQuestionGetSolved_Success(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/questions/solved", h.GetSolved)
 
-	repo.On("FindSolved", 20, 0).Return(
+	repo.On("FindSolved", mock.Anything, 20, 0).Return(
 		[]model.Question{{Title: "Solved Q"}},
 		int64(1), nil,
 	)
@@ -320,7 +333,7 @@ func TestQuestionGetSolved_ServiceError(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/questions/solved", h.GetSolved)
 
-	repo.On("FindSolved", 20, 0).Return(
+	repo.On("FindSolved", mock.Anything, 20, 0).Return(
 		[]model.Question{}, int64(0), errors.New("db error"),
 	)
 
@@ -335,8 +348,8 @@ func TestQuestionRemoveVote_Success(t *testing.T) {
 
 	otherQuestion := &model.Question{UserID: 99}
 	otherQuestion.ID = 5
-	repo.On("FindByID", uint(5)).Return(otherQuestion, nil)
-	repo.On("RemoveVote", uint(1), uint(5)).Return(nil)
+	repo.On("FindByID", mock.Anything, uint(5)).Return(otherQuestion, nil)
+	repo.On("RemoveVote", mock.Anything, uint(1), uint(5)).Return(nil)
 
 	w := doRequest(r, http.MethodDelete, "/questions/5/vote", nil)
 	assertStatus(t, w, http.StatusOK)

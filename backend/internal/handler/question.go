@@ -1,42 +1,60 @@
 package handler
 
 import (
-
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// QuestionServiceInterface はQuestionServiceが実装すべきインターフェース。
-type QuestionServiceInterface interface {
-	Create(question *model.Question) error
-	GetAll(limit, offset int, tag, sort string) ([]model.Question, int64, error)
-	Search(q string, limit, offset int) ([]model.Question, int64, error)
-	GetByID(id uint) (*model.Question, error)
-	GetByUserID(userID uint, limit, offset int) ([]model.Question, int64, error)
-	GetUserVote(userID, questionID uint) (int, error)
-	Update(id, userID uint, title, body, tags string) (*model.Question, error)
-	Delete(id, userID uint) error
-	Vote(userID, questionID uint, value int) error
-	RemoveVote(userID, questionID uint) error
-	GetSolved(limit, offset int) ([]model.Question, int64, error)
-	Bookmark(userID, questionID uint) error
-	Unbookmark(userID, questionID uint) error
-	GetBookmarkedByUserID(userID uint, limit, offset int) ([]model.Question, int64, error)
-	GetUnanswered(limit, offset int) ([]model.Question, int64, error)
-	CountByUserID(userID uint) (int64, error)
-}
 
 // QuestionHandler は質問関連のHTTPハンドラ。
 // 質問のCRUD・検索・投票を処理する。
 type QuestionHandler struct {
-	service QuestionServiceInterface
+	create         *usecase.CreateQuestionUseCase
+	list           *usecase.ListQuestionsUseCase
+	search         *usecase.SearchQuestionsUseCase
+	get            *usecase.GetQuestionUseCase
+	listByUser     *usecase.ListQuestionsByUserUseCase
+	userVote       *usecase.GetQuestionUserVoteUseCase
+	update         *usecase.UpdateQuestionUseCase
+	remove         *usecase.DeleteQuestionUseCase
+	vote           *usecase.VoteQuestionUseCase
+	removeVote     *usecase.RemoveQuestionVoteUseCase
+	listSolved     *usecase.ListSolvedQuestionsUseCase
+	listUnanswered *usecase.ListUnansweredQuestionsUseCase
+	bookmark       *usecase.BookmarkQuestionUseCase
+	unbookmark     *usecase.UnbookmarkQuestionUseCase
+	listBookmarked *usecase.ListBookmarkedQuestionsUseCase
+	count          *usecase.CountQuestionsUseCase
 }
 
 // NewQuestionHandler は新しいQuestionHandlerインスタンスを生成する。
-func NewQuestionHandler(s QuestionServiceInterface) *QuestionHandler {
-	return &QuestionHandler{service: s}
+func NewQuestionHandler(
+	create *usecase.CreateQuestionUseCase,
+	list *usecase.ListQuestionsUseCase,
+	search *usecase.SearchQuestionsUseCase,
+	get *usecase.GetQuestionUseCase,
+	listByUser *usecase.ListQuestionsByUserUseCase,
+	userVote *usecase.GetQuestionUserVoteUseCase,
+	update *usecase.UpdateQuestionUseCase,
+	remove *usecase.DeleteQuestionUseCase,
+	vote *usecase.VoteQuestionUseCase,
+	removeVote *usecase.RemoveQuestionVoteUseCase,
+	listSolved *usecase.ListSolvedQuestionsUseCase,
+	listUnanswered *usecase.ListUnansweredQuestionsUseCase,
+	bookmark *usecase.BookmarkQuestionUseCase,
+	unbookmark *usecase.UnbookmarkQuestionUseCase,
+	listBookmarked *usecase.ListBookmarkedQuestionsUseCase,
+	count *usecase.CountQuestionsUseCase,
+) *QuestionHandler {
+	return &QuestionHandler{
+		create: create, list: list, search: search, get: get,
+		listByUser: listByUser, userVote: userVote, update: update, remove: remove,
+		vote: vote, removeVote: removeVote, listSolved: listSolved,
+		listUnanswered: listUnanswered, bookmark: bookmark, unbookmark: unbookmark,
+		listBookmarked: listBookmarked, count: count,
+	}
 }
 
 // Create は新しい質問を作成する。
@@ -55,7 +73,7 @@ func (h *QuestionHandler) Create(c *gin.Context) {
 		Tags:   req.Tags,
 	}
 
-	if err := h.service.Create(question); err != nil {
+	if err := h.create.Execute(c.Request.Context(), question); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -69,7 +87,7 @@ func (h *QuestionHandler) GetAll(c *gin.Context) {
 	tag := c.Query("tag")
 	sort := c.DefaultQuery("sort", "newest")
 
-	questions, total, err := h.service.GetAll(limit, offset, tag, sort)
+	questions, total, err := h.list.Execute(c.Request.Context(), limit, offset, tag, sort)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -92,7 +110,7 @@ func (h *QuestionHandler) Search(c *gin.Context) {
 
 	limit, offset := parseLimitOffset(c)
 
-	questions, total, err := h.service.Search(q, limit, offset)
+	questions, total, err := h.search.Execute(c.Request.Context(), q, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -114,13 +132,13 @@ func (h *QuestionHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	question, err := h.service.GetByID(id)
+	question, err := h.get.Execute(c.Request.Context(), id)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
 
-	userVote, _ := h.service.GetUserVote(userID, id)
+	userVote, _ := h.userVote.Execute(c.Request.Context(), userID, id)
 
 	respondOK(c, dto.QuestionDetailResponse{
 		Question: *question,
@@ -137,7 +155,7 @@ func (h *QuestionHandler) GetByUserID(c *gin.Context) {
 
 	limit, offset := parseLimitOffset(c)
 
-	questions, total, err := h.service.GetByUserID(userID, limit, offset)
+	questions, total, err := h.listByUser.Execute(c.Request.Context(), userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -156,7 +174,7 @@ func (h *QuestionHandler) GetMyQuestions(c *gin.Context) {
 	userID := c.GetUint("userID")
 	limit, offset := parseLimitOffset(c)
 
-	questions, total, err := h.service.GetByUserID(userID, limit, offset)
+	questions, total, err := h.listByUser.Execute(c.Request.Context(), userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -183,7 +201,7 @@ func (h *QuestionHandler) Update(c *gin.Context) {
 		return
 	}
 
-	question, err := h.service.Update(id, userID, req.Title, req.Body, req.Tags)
+	question, err := h.update.Execute(c.Request.Context(), id, userID, req.Title, req.Body, req.Tags)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -194,7 +212,9 @@ func (h *QuestionHandler) Update(c *gin.Context) {
 
 // Delete は指定された質問を削除する。
 func (h *QuestionHandler) Delete(c *gin.Context) {
-	handleDelete(c, h.service.Delete)
+	handleDelete(c, func(id, userID uint) error {
+		return h.remove.Execute(c.Request.Context(), id, userID)
+	})
 }
 
 // Vote は質問に投票する。
@@ -210,7 +230,7 @@ func (h *QuestionHandler) Vote(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Vote(userID, id, req.Value); err != nil {
+	if err := h.vote.Execute(c.Request.Context(), userID, id, req.Value); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -222,7 +242,7 @@ func (h *QuestionHandler) Vote(c *gin.Context) {
 func (h *QuestionHandler) GetSolved(c *gin.Context) {
 	limit, offset := parseLimitOffset(c)
 
-	questions, total, err := h.service.GetSolved(limit, offset)
+	questions, total, err := h.listSolved.Execute(c.Request.Context(), limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -240,7 +260,7 @@ func (h *QuestionHandler) GetSolved(c *gin.Context) {
 func (h *QuestionHandler) GetUnanswered(c *gin.Context) {
 	limit, offset := parseLimitOffset(c)
 
-	questions, total, err := h.service.GetUnanswered(limit, offset)
+	questions, total, err := h.listUnanswered.Execute(c.Request.Context(), limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -262,7 +282,7 @@ func (h *QuestionHandler) RemoveVote(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.RemoveVote(userID, id); err != nil {
+	if err := h.removeVote.Execute(c.Request.Context(), userID, id); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -278,7 +298,7 @@ func (h *QuestionHandler) Bookmark(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Bookmark(userID, id); err != nil {
+	if err := h.bookmark.Execute(c.Request.Context(), userID, id); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -294,7 +314,7 @@ func (h *QuestionHandler) Unbookmark(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Unbookmark(userID, id); err != nil {
+	if err := h.unbookmark.Execute(c.Request.Context(), userID, id); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -307,7 +327,7 @@ func (h *QuestionHandler) GetBookmarks(c *gin.Context) {
 	userID := c.GetUint("userID")
 	limit, offset := parseLimitOffset(c)
 
-	questions, total, err := h.service.GetBookmarkedByUserID(userID, limit, offset)
+	questions, total, err := h.listBookmarked.Execute(c.Request.Context(), userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -325,7 +345,7 @@ func (h *QuestionHandler) GetBookmarks(c *gin.Context) {
 func (h *QuestionHandler) GetMyCount(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	count, err := h.service.CountByUserID(userID)
+	count, err := h.count.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return

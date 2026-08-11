@@ -224,72 +224,72 @@ func (m *MockNotificationRepository) GetFollowerIDs(userID uint) ([]uint, error)
 
 // (MockCodeSnippetRepository は code_snippet の DIP 移行に伴い撤去)
 
-// MockQuestionRepository は QuestionRepositoryInterface のモック実装。
-type MockQuestionRepository struct{ mock.Mock }
+// mockQuestionRepo は usecase/repository.QuestionRepository のモック（ctx 付き）。
+type mockQuestionRepo struct{ mock.Mock }
 
-func (m *MockQuestionRepository) Create(q *model.Question) error {
-	return m.Called(q).Error(0)
+func (m *mockQuestionRepo) Create(ctx context.Context, q *model.Question) error {
+	return m.Called(ctx, q).Error(0)
 }
-func (m *MockQuestionRepository) FindByID(id uint) (*model.Question, error) {
-	args := m.Called(id)
+func (m *mockQuestionRepo) FindByID(ctx context.Context, id uint) (*model.Question, error) {
+	args := m.Called(ctx, id)
 	if q := args.Get(0); q != nil {
 		return q.(*model.Question), args.Error(1)
 	}
 	return nil, args.Error(1)
 }
-func (m *MockQuestionRepository) FindAll(limit, offset int, tag string, sort string) ([]model.Question, int64, error) {
-	args := m.Called(limit, offset, tag, sort)
+func (m *mockQuestionRepo) Update(ctx context.Context, q *model.Question) error {
+	return m.Called(ctx, q).Error(0)
+}
+func (m *mockQuestionRepo) Delete(ctx context.Context, id uint) error {
+	return m.Called(ctx, id).Error(0)
+}
+func (m *mockQuestionRepo) FindAll(ctx context.Context, limit, offset int, tag, sort string) ([]model.Question, int64, error) {
+	args := m.Called(ctx, limit, offset, tag, sort)
 	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
 }
-func (m *MockQuestionRepository) Search(q string, limit, offset int) ([]model.Question, int64, error) {
-	args := m.Called(q, limit, offset)
+func (m *mockQuestionRepo) Search(ctx context.Context, q string, limit, offset int) ([]model.Question, int64, error) {
+	args := m.Called(ctx, q, limit, offset)
 	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
 }
-func (m *MockQuestionRepository) FindByUserID(userID uint, limit, offset int) ([]model.Question, int64, error) {
-	args := m.Called(userID, limit, offset)
+func (m *mockQuestionRepo) FindByUserID(ctx context.Context, userID uint, limit, offset int) ([]model.Question, int64, error) {
+	args := m.Called(ctx, userID, limit, offset)
 	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
 }
-func (m *MockQuestionRepository) Update(q *model.Question) error {
-	return m.Called(q).Error(0)
+func (m *mockQuestionRepo) FindSolved(ctx context.Context, limit, offset int) ([]model.Question, int64, error) {
+	args := m.Called(ctx, limit, offset)
+	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
 }
-func (m *MockQuestionRepository) Delete(id uint) error {
-	return m.Called(id).Error(0)
+func (m *mockQuestionRepo) FindUnanswered(ctx context.Context, limit, offset int) ([]model.Question, int64, error) {
+	args := m.Called(ctx, limit, offset)
+	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
 }
-func (m *MockQuestionRepository) Vote(userID, questionID uint, value int) error {
-	return m.Called(userID, questionID, value).Error(0)
+func (m *mockQuestionRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
+	args := m.Called(ctx, userID)
+	return args.Get(0).(int64), args.Error(1)
 }
-func (m *MockQuestionRepository) RemoveVote(userID, questionID uint) error {
-	return m.Called(userID, questionID).Error(0)
+func (m *mockQuestionRepo) Vote(ctx context.Context, userID, questionID uint, value int) error {
+	return m.Called(ctx, userID, questionID, value).Error(0)
 }
-func (m *MockQuestionRepository) GetUserVote(userID, questionID uint) (int, error) {
-	args := m.Called(userID, questionID)
+func (m *mockQuestionRepo) RemoveVote(ctx context.Context, userID, questionID uint) error {
+	return m.Called(ctx, userID, questionID).Error(0)
+}
+func (m *mockQuestionRepo) GetUserVote(ctx context.Context, userID, questionID uint) (int, error) {
+	args := m.Called(ctx, userID, questionID)
 	return args.Int(0), args.Error(1)
 }
-func (m *MockQuestionRepository) FindSolved(limit, offset int) ([]model.Question, int64, error) {
-	args := m.Called(limit, offset)
-	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
+func (m *mockQuestionRepo) Bookmark(ctx context.Context, userID, questionID uint) error {
+	return m.Called(ctx, userID, questionID).Error(0)
 }
-func (m *MockQuestionRepository) Bookmark(userID, questionID uint) error {
-	return m.Called(userID, questionID).Error(0)
+func (m *mockQuestionRepo) Unbookmark(ctx context.Context, userID, questionID uint) error {
+	return m.Called(ctx, userID, questionID).Error(0)
 }
-func (m *MockQuestionRepository) Unbookmark(userID, questionID uint) error {
-	return m.Called(userID, questionID).Error(0)
-}
-func (m *MockQuestionRepository) HasBookmarked(userID, questionID uint) (bool, error) {
-	args := m.Called(userID, questionID)
+func (m *mockQuestionRepo) HasBookmarked(ctx context.Context, userID, questionID uint) (bool, error) {
+	args := m.Called(ctx, userID, questionID)
 	return args.Bool(0), args.Error(1)
 }
-func (m *MockQuestionRepository) FindBookmarkedByUserID(userID uint, limit, offset int) ([]model.Question, int64, error) {
-	args := m.Called(userID, limit, offset)
+func (m *mockQuestionRepo) FindBookmarkedByUserID(ctx context.Context, userID uint, limit, offset int) ([]model.Question, int64, error) {
+	args := m.Called(ctx, userID, limit, offset)
 	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
-}
-func (m *MockQuestionRepository) FindUnanswered(limit, offset int) ([]model.Question, int64, error) {
-	args := m.Called(limit, offset)
-	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
-}
-func (m *MockQuestionRepository) CountByUserID(userID uint) (int64, error) {
-	args := m.Called(userID)
-	return args.Get(0).(int64), args.Error(1)
 }
 
 // MockLearningResourceRepository は LearningResourceRepositoryInterface のモック実装。
@@ -535,10 +535,27 @@ type postHandlerSnippetPorts struct {
 }
 
 // setupQuestionHandler はQuestionHandlerテスト用のセットアップを行う。
-func setupQuestionHandler() (*QuestionHandler, *MockQuestionRepository) {
-	repo := new(MockQuestionRepository)
-	svc := service.NewQuestionService(repo)
-	h := NewQuestionHandler(svc)
+// 本物の usecase に port モックを注入する。
+func setupQuestionHandler() (*QuestionHandler, *mockQuestionRepo) {
+	repo := new(mockQuestionRepo)
+	h := NewQuestionHandler(
+		usecase.NewCreateQuestionUseCase(repo),
+		usecase.NewListQuestionsUseCase(repo),
+		usecase.NewSearchQuestionsUseCase(repo),
+		usecase.NewGetQuestionUseCase(repo),
+		usecase.NewListQuestionsByUserUseCase(repo),
+		usecase.NewGetQuestionUserVoteUseCase(repo),
+		usecase.NewUpdateQuestionUseCase(repo),
+		usecase.NewDeleteQuestionUseCase(repo),
+		usecase.NewVoteQuestionUseCase(repo),
+		usecase.NewRemoveQuestionVoteUseCase(repo),
+		usecase.NewListSolvedQuestionsUseCase(repo),
+		usecase.NewListUnansweredQuestionsUseCase(repo),
+		usecase.NewBookmarkQuestionUseCase(repo),
+		usecase.NewUnbookmarkQuestionUseCase(repo),
+		usecase.NewListBookmarkedQuestionsUseCase(repo),
+		usecase.NewCountQuestionsUseCase(repo),
+	)
 	return h, repo
 }
 
