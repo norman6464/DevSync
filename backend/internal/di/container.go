@@ -184,9 +184,8 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	zennService := service.NewZennService(userRepo, zennRepo)
 	qiitaService := service.NewQiitaService(userRepo, qiitaRepo)
 	postService := service.NewPostService(postRepo, notificationService)
-	learningLogService := service.NewLearningLogService(learningLogRepo, learningGoalRepo)
 	// 学習目標はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	// 旧 learningGoalRepo は learning_log / recommendation / learning_dashboard がまだ使うため残している。
+	// 旧 learningGoalRepo は recommendation / learning_dashboard がまだ使うため残している。
 	learningGoalPort := persistence.NewLearningGoalRepository(db)
 	updateLearningGoal := usecase.NewUpdateLearningGoalUseCase(learningGoalPort)
 	messageService := service.NewMessageService(messageRepo, notificationService)
@@ -198,7 +197,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	analyticsService := service.NewLearningAnalyticsService(analyticsRepo)
 	recommendationService := service.NewRecommendationService(recommendationRepo, userRepo)
 	createNote := usecase.NewCreateNoteUseCase(notePort)
-	learningLogTemplateService := service.NewLearningLogTemplateService(learningLogTemplateRepo, learningLogService)
+	// 学習ログはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	// 旧 learningLogRepo は learning_dashboard と AI アドバイスがまだ使うため残している。
+	learningLogPort := persistence.NewLearningLogRepository(db)
+	createLearningLog := usecase.NewCreateLearningLogUseCase(learningLogPort, learningGoalPort)
+	learningLogTemplateService := service.NewLearningLogTemplateService(learningLogTemplateRepo, learningLogCreator{create: createLearningLog})
 
 	// テンプレートロードマップの初期登録
 	go seedTemplateRoadmaps(db, usecase.NewSeedRoadmapTemplatesUseCase(roadmapPort))
@@ -389,7 +392,30 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	c.ChatRoomHandler = handler.NewChatRoomHandler(chatRoomService)
 	c.AtCoderHandler = handler.NewAtCoderHandler(atcoderService)
 	c.BadgeHandler = handler.NewBadgeHandler(badgeService)
-	c.LearningLogHandler = handler.NewLearningLogHandler(learningLogService)
+	c.LearningLogHandler = handler.NewLearningLogHandler(
+		createLearningLog,
+		usecase.NewBatchCreateLearningLogsUseCase(learningLogPort),
+		usecase.NewImportLearningLogsCSVUseCase(learningLogPort),
+		usecase.NewGetLearningLogUseCase(learningLogPort),
+		usecase.NewListLearningLogsUseCase(learningLogPort),
+		usecase.NewUpdateLearningLogUseCase(learningLogPort),
+		usecase.NewDeleteLearningLogUseCase(learningLogPort),
+		usecase.NewGetLearningStreakUseCase(learningLogPort),
+		usecase.NewGetLearningCalendarUseCase(learningLogPort),
+		usecase.NewExportLearningLogsCSVUseCase(learningLogPort),
+		usecase.NewExportLearningLogsJSONUseCase(learningLogPort),
+		usecase.NewListLearningLogsByCategoryUseCase(learningLogPort),
+		usecase.NewListLearningLogsBySourceUseCase(learningLogPort),
+		usecase.NewGetWeeklyLearningDurationUseCase(learningLogPort),
+		usecase.NewFavoriteLearningLogUseCase(learningLogPort),
+		usecase.NewUnfavoriteLearningLogUseCase(learningLogPort),
+		usecase.NewListRecentLearningCategoriesUseCase(learningLogPort),
+		usecase.NewListGoalLinkedLogsUseCase(learningLogPort, learningGoalPort),
+		usecase.NewGetGoalProgressUseCase(learningLogPort, learningGoalPort),
+		usecase.NewListFavoriteLearningLogsUseCase(learningLogPort),
+		usecase.NewGetLearningLogMonthlySummaryUseCase(learningLogPort),
+		usecase.NewCountLearningLogsUseCase(learningLogPort),
+	)
 	c.AIAdviceHandler = handler.NewAIAdviceHandler(aiAdviceService)
 	c.EmailPreferencesHandler = handler.NewEmailPreferencesHandler(userService)
 	c.LevelHandler = handler.NewLevelHandler(levelService)
@@ -855,4 +881,17 @@ func seedTemplateRoadmaps(db *gorm.DB, seed *usecase.SeedRoadmapTemplatesUseCase
 	if err := seed.Execute(context.Background(), user.ID); err != nil {
 		log.Printf("テンプレートシード失敗: %v", err)
 	}
+}
+
+// learningLogCreator は未移行の learning_log_template が要求する
+// service.LearningLogCreatorInterface を学習ログ作成 usecase で満たすための橋渡し。
+// テンプレート側の署名に ctx が無いためここでは context.Background() を使う。
+// learning_log_template を移行した時点で撤去する。
+type learningLogCreator struct {
+	create *usecase.CreateLearningLogUseCase
+}
+
+// Create は学習ログ作成 usecase へ委譲する。
+func (l learningLogCreator) Create(log *model.LearningLog) error {
+	return l.create.Execute(context.Background(), log)
 }
