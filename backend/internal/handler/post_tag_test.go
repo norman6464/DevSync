@@ -1,236 +1,220 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"strings"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/stretchr/testify/assert"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 	"github.com/stretchr/testify/mock"
 )
 
-// MockPostTagService は PostTagServiceInterface のモック実装。
-type MockPostTagService struct{ mock.Mock }
+// mockPostTagRepo は usecase/repository.PostTagRepository のモック（ctx 付き）。
+type mockPostTagRepo struct{ mock.Mock }
 
-func (m *MockPostTagService) SetTags(postID, userID uint, tags []string) error {
-	return m.Called(postID, userID, tags).Error(0)
-}
-func (m *MockPostTagService) SetAutoTags(postID, userID uint, content string) error {
-	return m.Called(postID, userID, content).Error(0)
-}
-func (m *MockPostTagService) GetByPostID(postID uint) ([]string, error) {
-	args := m.Called(postID)
-	if v := args.Get(0); v != nil {
-		return v.([]string), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockPostTagService) FindPostsByTag(tag string, limit, offset int) ([]model.Post, int64, error) {
-	args := m.Called(tag, limit, offset)
-	if v := args.Get(0); v != nil {
-		return v.([]model.Post), args.Get(1).(int64), args.Error(2)
-	}
-	return nil, args.Get(1).(int64), args.Error(2)
-}
-func (m *MockPostTagService) GetPopularTags(limit int) ([]model.TagCount, error) {
-	args := m.Called(limit)
-	if v := args.Get(0); v != nil {
-		return v.([]model.TagCount), args.Error(1)
-	}
-	return nil, args.Error(1)
+func (m *mockPostTagRepo) SetTags(ctx context.Context, postID uint, tags []string) error {
+	return m.Called(ctx, postID, tags).Error(0)
 }
 
-func setupPostTagHandler() (*PostTagHandler, *MockPostTagService) {
-	svc := new(MockPostTagService)
-	h := NewPostTagHandler(svc)
-	return h, svc
+func (m *mockPostTagRepo) GetByPostID(ctx context.Context, postID uint) ([]string, error) {
+	args := m.Called(ctx, postID)
+	t, _ := args.Get(0).([]string)
+	return t, args.Error(1)
 }
 
-// ============================================================
-// SetTags テスト
-// ============================================================
+func (m *mockPostTagRepo) FindPostsByTag(ctx context.Context, tag string, limit, offset int) ([]model.Post, int64, error) {
+	args := m.Called(ctx, tag, limit, offset)
+	p, _ := args.Get(0).([]model.Post)
+	return p, args.Get(1).(int64), args.Error(2)
+}
 
-func TestPostTagSetTags_Success(t *testing.T) {
-	h, svc := setupPostTagHandler()
-	svc.On("SetTags", uint(5), uint(1), []string{"Go", "React"}).Return(nil)
+func (m *mockPostTagRepo) GetPopularTags(ctx context.Context, limit int) ([]model.TagCount, error) {
+	args := m.Called(ctx, limit)
+	t, _ := args.Get(0).([]model.TagCount)
+	return t, args.Error(1)
+}
+
+// PostReader のモックは post_pin_test.go の mockPostReader を再利用する。
+
+// setupPostTagHandler は本物の usecase と port モックで PostTagHandler を組む。
+func setupPostTagHandler() (*PostTagHandler, *mockPostTagRepo, *mockPostReader) {
+	tags := new(mockPostTagRepo)
+	posts := new(mockPostReader)
+	h := NewPostTagHandler(
+		usecase.NewSetPostTagsUseCase(tags, posts),
+		usecase.NewGetPostTagsUseCase(tags),
+		usecase.NewFindPostsByTagUseCase(tags),
+		usecase.NewGetPopularTagsUseCase(tags),
+	)
+	return h, tags, posts
+}
+
+// ownedPost は所有者が userID=1 の投稿を返す。
+func ownedPost(id uint) *model.Post {
+	p := &model.Post{}
+	p.ID = id
+	p.UserID = 1
+	return p
+}
+
+func TestPostTag_SetTags_Success(t *testing.T) {
+	h, tags, posts := setupPostTagHandler()
+	posts.On("FindByID", mock.Anything, uint(5)).Return(ownedPost(5), nil)
+	// 正規化されて渡る（小文字化・重複除外）
+	tags.On("SetTags", mock.Anything, uint(5), []string{"go", "web"}).Return(nil)
 
 	r := newRouter(1)
-	r.POST("/posts/:postId/tags", h.SetTags)
-
-	w := doRequest(r, http.MethodPost, "/posts/5/tags", map[string]interface{}{
-		"tags": []string{"Go", "React"},
+	r.PUT("/tags/posts/:postId", h.SetTags)
+	w := doRequest(r, http.MethodPut, "/tags/posts/5", map[string]interface{}{
+		"tags": []string{"Go", " web ", "GO"},
 	})
+
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	tags.AssertExpectations(t)
 }
 
-func TestPostTagSetTags_InvalidID(t *testing.T) {
-	h, _ := setupPostTagHandler()
+// 所有者以外のタグ設定は 403 を返し、保存しない。
+func TestPostTag_SetTags_Forbidden(t *testing.T) {
+	h, tags, posts := setupPostTagHandler()
+	other := &model.Post{}
+	other.ID = 5
+	other.UserID = 999
+	posts.On("FindByID", mock.Anything, uint(5)).Return(other, nil)
 
 	r := newRouter(1)
-	r.POST("/posts/:postId/tags", h.SetTags)
+	r.PUT("/tags/posts/:postId", h.SetTags)
+	w := doRequest(r, http.MethodPut, "/tags/posts/5", map[string]interface{}{"tags": []string{"go"}})
 
-	w := doRequest(r, http.MethodPost, "/posts/abc/tags", map[string]interface{}{
-		"tags": []string{"Go"},
+	assertStatus(t, w, http.StatusForbidden)
+	tags.AssertNotCalled(t, "SetTags")
+}
+
+// 正規化後に 11 個以上あれば 400 を返し、保存しない。
+func TestPostTag_SetTags_TooMany(t *testing.T) {
+	h, tags, posts := setupPostTagHandler()
+	posts.On("FindByID", mock.Anything, uint(5)).Return(ownedPost(5), nil)
+
+	many := make([]string, 0, 11)
+	for _, s := range []string{"a1", "b2", "c3", "d4", "e5", "f6", "g7", "h8", "i9", "j10", "k11"} {
+		many = append(many, s)
+	}
+
+	r := newRouter(1)
+	r.PUT("/tags/posts/:postId", h.SetTags)
+	w := doRequest(r, http.MethodPut, "/tags/posts/5", map[string]interface{}{"tags": many})
+
+	assertStatus(t, w, http.StatusBadRequest)
+	tags.AssertNotCalled(t, "SetTags")
+}
+
+// 51 文字以上のタグは 400 を返し、保存しない。
+func TestPostTag_SetTags_TagTooLong(t *testing.T) {
+	h, tags, posts := setupPostTagHandler()
+	posts.On("FindByID", mock.Anything, uint(5)).Return(ownedPost(5), nil)
+
+	r := newRouter(1)
+	r.PUT("/tags/posts/:postId", h.SetTags)
+	w := doRequest(r, http.MethodPut, "/tags/posts/5", map[string]interface{}{
+		"tags": []string{strings.Repeat("a", 51)},
 	})
+
 	assertStatus(t, w, http.StatusBadRequest)
+	tags.AssertNotCalled(t, "SetTags")
 }
 
-func TestPostTagSetTags_InvalidBody(t *testing.T) {
-	h, _ := setupPostTagHandler()
+// 投稿が存在しない場合は 500（移行前の挙動を維持している）。
+func TestPostTag_SetTags_PostNotFound(t *testing.T) {
+	h, tags, posts := setupPostTagHandler()
+	posts.On("FindByID", mock.Anything, uint(5)).Return(nil, errors.New("record not found"))
 
 	r := newRouter(1)
-	r.POST("/posts/:postId/tags", h.SetTags)
+	r.PUT("/tags/posts/:postId", h.SetTags)
+	w := doRequest(r, http.MethodPut, "/tags/posts/5", map[string]interface{}{"tags": []string{"go"}})
 
-	w := doRequestRaw(r, http.MethodPost, "/posts/5/tags", `{invalid}`)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestPostTagSetTags_ServiceError(t *testing.T) {
-	h, svc := setupPostTagHandler()
-	svc.On("SetTags", uint(5), uint(1), []string{"Go"}).Return(errors.New("db error"))
-
-	r := newRouter(1)
-	r.POST("/posts/:postId/tags", h.SetTags)
-
-	w := doRequest(r, http.MethodPost, "/posts/5/tags", map[string]interface{}{
-		"tags": []string{"Go"},
-	})
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
+	tags.AssertNotCalled(t, "SetTags")
 }
 
-// ============================================================
-// GetByPostID テスト
-// ============================================================
-
-func TestPostTagGetByPostID_Success(t *testing.T) {
-	h, svc := setupPostTagHandler()
-	svc.On("GetByPostID", uint(5)).Return([]string{"Go", "React"}, nil)
+func TestPostTag_GetByPostID_Success(t *testing.T) {
+	h, tags, _ := setupPostTagHandler()
+	tags.On("GetByPostID", mock.Anything, uint(5)).Return([]string{"go", "web"}, nil)
 
 	r := newRouter(1)
-	r.GET("/posts/:postId/tags", h.GetByPostID)
+	r.GET("/tags/posts/:postId", h.GetByPostID)
+	w := doRequest(r, http.MethodGet, "/tags/posts/5", nil)
 
-	w := doRequest(r, http.MethodGet, "/posts/5/tags", nil)
 	assertStatus(t, w, http.StatusOK)
-	body := parseJSON(t, w)
-	assert.NotNil(t, body["tags"])
-	svc.AssertExpectations(t)
+	tags.AssertExpectations(t)
 }
 
-func TestPostTagGetByPostID_InvalidID(t *testing.T) {
-	h, _ := setupPostTagHandler()
+func TestPostTag_GetByPostID_RepoError(t *testing.T) {
+	h, tags, _ := setupPostTagHandler()
+	tags.On("GetByPostID", mock.Anything, uint(5)).Return([]string(nil), errors.New("db error"))
 
 	r := newRouter(1)
-	r.GET("/posts/:postId/tags", h.GetByPostID)
+	r.GET("/tags/posts/:postId", h.GetByPostID)
+	w := doRequest(r, http.MethodGet, "/tags/posts/5", nil)
 
-	w := doRequest(r, http.MethodGet, "/posts/abc/tags", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+func TestPostTag_FindPostsByTag_Success(t *testing.T) {
+	h, tags, _ := setupPostTagHandler()
+	tags.On("FindPostsByTag", mock.Anything, "go", 20, 0).
+		Return([]model.Post{{Title: "t"}}, int64(1), nil)
+
+	r := newRouter(1)
+	r.GET("/tags/search", h.FindPostsByTag)
+	w := doRequest(r, http.MethodGet, "/tags/search?tag=go", nil)
+
+	assertStatus(t, w, http.StatusOK)
+	tags.AssertExpectations(t)
+}
+
+func TestPostTag_FindPostsByTag_MissingParam(t *testing.T) {
+	h, _, _ := setupPostTagHandler()
+
+	r := newRouter(1)
+	r.GET("/tags/search", h.FindPostsByTag)
+	w := doRequest(r, http.MethodGet, "/tags/search", nil)
+
 	assertStatus(t, w, http.StatusBadRequest)
 }
 
-func TestPostTagGetByPostID_ServiceError(t *testing.T) {
-	h, svc := setupPostTagHandler()
-	svc.On("GetByPostID", uint(5)).Return(nil, errors.New("db error"))
+func TestPostTag_FindPostsByTag_TooLong(t *testing.T) {
+	h, _, _ := setupPostTagHandler()
 
 	r := newRouter(1)
-	r.GET("/posts/:postId/tags", h.GetByPostID)
+	r.GET("/tags/search", h.FindPostsByTag)
+	w := doRequest(r, http.MethodGet, "/tags/search?tag="+strings.Repeat("a", 101), nil)
 
-	w := doRequest(r, http.MethodGet, "/posts/5/tags", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
-
-// ============================================================
-// FindPostsByTag テスト
-// ============================================================
-
-func TestPostTagFindPostsByTag_Success(t *testing.T) {
-	h, svc := setupPostTagHandler()
-	posts := []model.Post{{Title: "Go入門", UserID: 1}}
-	svc.On("FindPostsByTag", "Go", 20, 0).Return(posts, int64(1), nil)
-
-	r := newRouter(1)
-	r.GET("/posts/tags/search", h.FindPostsByTag)
-
-	w := doRequest(r, http.MethodGet, "/posts/tags/search?tag=Go", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestPostTagFindPostsByTag_MissingTag(t *testing.T) {
-	h, _ := setupPostTagHandler()
-
-	r := newRouter(1)
-	r.GET("/posts/tags/search", h.FindPostsByTag)
-
-	w := doRequest(r, http.MethodGet, "/posts/tags/search", nil)
 	assertStatus(t, w, http.StatusBadRequest)
 }
 
-func TestPostTagFindPostsByTag_TagTooLong(t *testing.T) {
-	h, _ := setupPostTagHandler()
+func TestPostTag_GetPopularTags_Success(t *testing.T) {
+	h, tags, _ := setupPostTagHandler()
+	tags.On("GetPopularTags", mock.Anything, 20).
+		Return([]model.TagCount{{Tag: "go", Count: 3}}, nil)
 
 	r := newRouter(1)
-	r.GET("/posts/tags/search", h.FindPostsByTag)
+	r.GET("/tags/popular", h.GetPopularTags)
+	w := doRequest(r, http.MethodGet, "/tags/popular", nil)
 
-	longTag := strings.Repeat("あ", 101)
-	w := doRequest(r, http.MethodGet, "/posts/tags/search?tag="+longTag, nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestPostTagFindPostsByTag_TagExact100Chars(t *testing.T) {
-	h, svc := setupPostTagHandler()
-
-	r := newRouter(1)
-	r.GET("/posts/tags/search", h.FindPostsByTag)
-
-	tag100 := strings.Repeat("あ", 100)
-	svc.On("FindPostsByTag", tag100, 20, 0).Return([]model.Post{}, int64(0), nil)
-
-	w := doRequest(r, http.MethodGet, "/posts/tags/search?tag="+tag100, nil)
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	tags.AssertExpectations(t)
 }
 
-func TestPostTagFindPostsByTag_ServiceError(t *testing.T) {
-	h, svc := setupPostTagHandler()
-	svc.On("FindPostsByTag", "Go", 20, 0).Return(nil, int64(0), errors.New("db error"))
+func TestPostTag_GetPopularTags_RepoError(t *testing.T) {
+	h, tags, _ := setupPostTagHandler()
+	tags.On("GetPopularTags", mock.Anything, 20).
+		Return([]model.TagCount(nil), errors.New("db error"))
 
 	r := newRouter(1)
-	r.GET("/posts/tags/search", h.FindPostsByTag)
+	r.GET("/tags/popular", h.GetPopularTags)
+	w := doRequest(r, http.MethodGet, "/tags/popular", nil)
 
-	w := doRequest(r, http.MethodGet, "/posts/tags/search?tag=Go", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
-
-// ============================================================
-// GetPopularTags テスト
-// ============================================================
-
-func TestPostTagGetPopularTags_Success(t *testing.T) {
-	h, svc := setupPostTagHandler()
-	tags := []model.TagCount{{Tag: "Go", Count: 100}, {Tag: "React", Count: 50}}
-	svc.On("GetPopularTags", 20).Return(tags, nil)
-
-	r := newRouter(1)
-	r.GET("/posts/tags/popular", h.GetPopularTags)
-
-	w := doRequest(r, http.MethodGet, "/posts/tags/popular", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestPostTagGetPopularTags_ServiceError(t *testing.T) {
-	h, svc := setupPostTagHandler()
-	svc.On("GetPopularTags", 20).Return(nil, errors.New("db error"))
-
-	r := newRouter(1)
-	r.GET("/posts/tags/popular", h.GetPopularTags)
-
-	w := doRequest(r, http.MethodGet, "/posts/tags/popular", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
 }
