@@ -792,46 +792,69 @@ func setupStudyCircleHandler() (*StudyCircleHandler, *mockStudyCircleRepo) {
 // BookReview は DIP へ移行済み。テストは book_review_test.go で
 // 「本物の usecase + port モック」を組み立てる。
 
-// MockAnswerService は AnswerServiceInterface のモック実装。
-type MockAnswerService struct{ mock.Mock }
+// mockAnswerRepo は usecase/repository.AnswerRepository のモック（ctx 付き）。
+type mockAnswerRepo struct{ mock.Mock }
 
-func (m *MockAnswerService) GetByQuestionID(questionID uint) ([]model.Answer, error) {
-	args := m.Called(questionID)
-	return args.Get(0).([]model.Answer), args.Error(1)
+func (m *mockAnswerRepo) Create(ctx context.Context, answer *model.Answer) error {
+	return m.Called(ctx, answer).Error(0)
 }
-func (m *MockAnswerService) Create(answer *model.Answer) error {
-	return m.Called(answer).Error(0)
-}
-func (m *MockAnswerService) Update(answerID, userID uint, body string) (*model.Answer, error) {
-	args := m.Called(answerID, userID, body)
+func (m *mockAnswerRepo) FindByID(ctx context.Context, id uint) (*model.Answer, error) {
+	args := m.Called(ctx, id)
 	if a := args.Get(0); a != nil {
 		return a.(*model.Answer), args.Error(1)
 	}
 	return nil, args.Error(1)
 }
-func (m *MockAnswerService) Delete(answerID, userID uint) error {
-	return m.Called(answerID, userID).Error(0)
+func (m *mockAnswerRepo) Update(ctx context.Context, answer *model.Answer) error {
+	return m.Called(ctx, answer).Error(0)
 }
-func (m *MockAnswerService) SetBestAnswer(questionID, answerID, userID uint) error {
-	return m.Called(questionID, answerID, userID).Error(0)
+func (m *mockAnswerRepo) Delete(ctx context.Context, answer *model.Answer) error {
+	return m.Called(ctx, answer).Error(0)
 }
-func (m *MockAnswerService) Vote(userID, answerID uint, value int) error {
-	return m.Called(userID, answerID, value).Error(0)
+func (m *mockAnswerRepo) FindByQuestionID(ctx context.Context, questionID uint) ([]model.Answer, error) {
+	args := m.Called(ctx, questionID)
+	a, _ := args.Get(0).([]model.Answer)
+	return a, args.Error(1)
 }
-func (m *MockAnswerService) RemoveVote(userID, answerID uint) error {
-	return m.Called(userID, answerID).Error(0)
+func (m *mockAnswerRepo) FindByVoteRange(ctx context.Context, questionID uint, minVote, maxVote int) ([]model.Answer, error) {
+	args := m.Called(ctx, questionID, minVote, maxVote)
+	a, _ := args.Get(0).([]model.Answer)
+	return a, args.Error(1)
 }
-func (m *MockAnswerService) GetByVoteRange(questionID uint, minVote, maxVote int) ([]model.Answer, error) {
-	args := m.Called(questionID, minVote, maxVote)
-	return args.Get(0).([]model.Answer), args.Error(1)
+func (m *mockAnswerRepo) SetBestAnswer(ctx context.Context, questionID, answerID uint) error {
+	return m.Called(ctx, questionID, answerID).Error(0)
+}
+func (m *mockAnswerRepo) Vote(ctx context.Context, userID, answerID uint, value int) error {
+	return m.Called(ctx, userID, answerID, value).Error(0)
+}
+func (m *mockAnswerRepo) RemoveVote(ctx context.Context, userID, answerID uint) error {
+	return m.Called(ctx, userID, answerID).Error(0)
+}
+
+// answerHandlerPorts は AnswerHandler に注入した port モックをまとめる。
+type answerHandlerPorts struct {
+	Answers   *mockAnswerRepo
+	Questions *mockQuestionRepo
 }
 
 // setupAnswerHandler はAnswerHandlerテスト用のセットアップを行う。
-func setupAnswerHandler() (*AnswerHandler, *MockAnswerService) {
-	svc := new(MockAnswerService)
-	h := NewAnswerHandler(svc)
-	return h, svc
+// 本物の usecase に port モックを注入する。
+func setupAnswerHandler() (*AnswerHandler, *answerHandlerPorts) {
+	answers := new(mockAnswerRepo)
+	questions := new(mockQuestionRepo)
+	h := NewAnswerHandler(
+		usecase.NewListAnswersUseCase(answers),
+		usecase.NewCreateAnswerUseCase(answers, questions),
+		usecase.NewUpdateAnswerUseCase(answers),
+		usecase.NewDeleteAnswerUseCase(answers),
+		usecase.NewSetBestAnswerUseCase(answers, questions),
+		usecase.NewVoteAnswerUseCase(answers),
+		usecase.NewRemoveAnswerVoteUseCase(answers),
+		usecase.NewListAnswersByVoteRangeUseCase(answers),
+	)
+	return h, &answerHandlerPorts{Answers: answers, Questions: questions}
 }
+
 
 // mockFollowRepo は usecase/repository.FollowRepository のモック実装（ctx 付き）。
 // handler テストは「本物の usecase + port モック」で組む（FreStyle 流）。

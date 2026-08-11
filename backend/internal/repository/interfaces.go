@@ -93,43 +93,6 @@ type MessageRepositoryInterface interface {
 	MarkAsRead(senderID, receiverID uint) error
 }
 
-// QuestionRepositoryInterface はQ&A質問データ操作の契約を定義する。
-// 投票操作も含む。
-type QuestionRepositoryInterface interface {
-	Create(question *model.Question) error
-	FindByID(id uint) (*model.Question, error)
-	FindAll(limit, offset int, tag string, sort string) ([]model.Question, int64, error)
-	Search(q string, limit, offset int) ([]model.Question, int64, error)
-	FindByUserID(userID uint, limit, offset int) ([]model.Question, int64, error)
-	Update(question *model.Question) error
-	Delete(id uint) error
-	Vote(userID, questionID uint, value int) error
-	RemoveVote(userID, questionID uint) error
-	GetUserVote(userID, questionID uint) (int, error)
-	FindSolved(limit, offset int) ([]model.Question, int64, error)
-	Bookmark(userID, questionID uint) error
-	Unbookmark(userID, questionID uint) error
-	HasBookmarked(userID, questionID uint) (bool, error)
-	FindBookmarkedByUserID(userID uint, limit, offset int) ([]model.Question, int64, error)
-	FindUnanswered(limit, offset int) ([]model.Question, int64, error)
-	CountByUserID(userID uint) (int64, error)
-}
-
-// AnswerRepositoryInterface はQ&A回答データ操作の契約を定義する。
-// ベストアンサー設定や投票操作も含む。
-type AnswerRepositoryInterface interface {
-	Create(answer *model.Answer) error
-	FindByQuestionID(questionID uint) ([]model.Answer, error)
-	FindByID(id uint) (*model.Answer, error)
-	Update(answer *model.Answer) error
-	Delete(answer *model.Answer) error
-	SetBestAnswer(questionID, answerID uint) error
-	Vote(userID, answerID uint, value int) error
-	RemoveVote(userID, answerID uint) error
-	GetUserVotes(userID uint, answerIDs []uint) (map[uint]int, error)
-	FindByVoteRange(questionID uint, minVote, maxVote int) ([]model.Answer, error)
-}
-
 // LearningLogRepositoryInterface は学習ログデータ操作の契約を定義する。
 // ストリーク計算やカレンダーデータ取得も含む。
 type LearningLogRepositoryInterface interface {

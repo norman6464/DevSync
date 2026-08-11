@@ -5,29 +5,37 @@ import (
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// AnswerServiceInterface はAnswerServiceが実装すべきインターフェース。
-type AnswerServiceInterface interface {
-	GetByQuestionID(questionID uint) ([]model.Answer, error)
-	Create(answer *model.Answer) error
-	Update(answerID, userID uint, body string) (*model.Answer, error)
-	Delete(answerID, userID uint) error
-	SetBestAnswer(questionID, answerID, userID uint) error
-	Vote(userID, answerID uint, value int) error
-	RemoveVote(userID, answerID uint) error
-	GetByVoteRange(questionID uint, minVote, maxVote int) ([]model.Answer, error)
-}
 
 // AnswerHandler は回答関連のHTTPハンドラ。
 // 回答のCRUD・ベストアンサー選定・投票を処理する。
 type AnswerHandler struct {
-	service AnswerServiceInterface
+	list          *usecase.ListAnswersUseCase
+	create        *usecase.CreateAnswerUseCase
+	update        *usecase.UpdateAnswerUseCase
+	remove        *usecase.DeleteAnswerUseCase
+	setBest       *usecase.SetBestAnswerUseCase
+	vote          *usecase.VoteAnswerUseCase
+	removeVote    *usecase.RemoveAnswerVoteUseCase
+	listVoteRange *usecase.ListAnswersByVoteRangeUseCase
 }
 
 // NewAnswerHandler は新しいAnswerHandlerインスタンスを生成する。
-func NewAnswerHandler(s AnswerServiceInterface) *AnswerHandler {
-	return &AnswerHandler{service: s}
+func NewAnswerHandler(
+	list *usecase.ListAnswersUseCase,
+	create *usecase.CreateAnswerUseCase,
+	update *usecase.UpdateAnswerUseCase,
+	remove *usecase.DeleteAnswerUseCase,
+	setBest *usecase.SetBestAnswerUseCase,
+	vote *usecase.VoteAnswerUseCase,
+	removeVote *usecase.RemoveAnswerVoteUseCase,
+	listVoteRange *usecase.ListAnswersByVoteRangeUseCase,
+) *AnswerHandler {
+	return &AnswerHandler{
+		list: list, create: create, update: update, remove: remove,
+		setBest: setBest, vote: vote, removeVote: removeVote, listVoteRange: listVoteRange,
+	}
 }
 
 // GetByQuestionID は指定された質問の回答一覧を取得する。
@@ -37,7 +45,7 @@ func (h *AnswerHandler) GetByQuestionID(c *gin.Context) {
 		return
 	}
 
-	answers, err := h.service.GetByQuestionID(questionID)
+	answers, err := h.list.Execute(c.Request.Context(), questionID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -65,7 +73,7 @@ func (h *AnswerHandler) Create(c *gin.Context) {
 		Body:       req.Body,
 	}
 
-	if err := h.service.Create(answer); err != nil {
+	if err := h.create.Execute(c.Request.Context(), answer); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -86,7 +94,7 @@ func (h *AnswerHandler) Update(c *gin.Context) {
 		return
 	}
 
-	answer, err := h.service.Update(answerID, userID, req.Body)
+	answer, err := h.update.Execute(c.Request.Context(), answerID, userID, req.Body)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -103,7 +111,7 @@ func (h *AnswerHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Delete(answerID, userID); err != nil {
+	if err := h.remove.Execute(c.Request.Context(), answerID, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -125,7 +133,7 @@ func (h *AnswerHandler) SetBestAnswer(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.SetBestAnswer(questionID, answerID, userID); err != nil {
+	if err := h.setBest.Execute(c.Request.Context(), questionID, answerID, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -146,7 +154,7 @@ func (h *AnswerHandler) Vote(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Vote(userID, answerID, req.Value); err != nil {
+	if err := h.vote.Execute(c.Request.Context(), userID, answerID, req.Value); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -170,7 +178,7 @@ func (h *AnswerHandler) GetByVoteRange(c *gin.Context) {
 		return
 	}
 
-	answers, err := h.service.GetByVoteRange(questionID, minVote, maxVote)
+	answers, err := h.listVoteRange.Execute(c.Request.Context(), questionID, minVote, maxVote)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -187,7 +195,7 @@ func (h *AnswerHandler) RemoveVote(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.RemoveVote(userID, answerID); err != nil {
+	if err := h.removeVote.Execute(c.Request.Context(), userID, answerID); err != nil {
 		respondError(c, err)
 		return
 	}
