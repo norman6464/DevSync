@@ -4,28 +4,36 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// LearningLogTemplateServiceInterface はLearningLogTemplateServiceのインターフェース。
-type LearningLogTemplateServiceInterface interface {
-	Create(template *model.LearningLogTemplate) error
-	GetByID(id, userID uint) (*model.LearningLogTemplate, error)
-	GetByUserID(userID uint) ([]model.LearningLogTemplate, error)
-	GetDefaultByUserID(userID uint) (*model.LearningLogTemplate, error)
-	Update(id, userID uint, name, defaultTitle, defaultContent string, defaultCategory model.LogCategory, defaultDuration *int, isDefault *bool) (*model.LearningLogTemplate, error)
-	Delete(id, userID uint) error
-	UseTemplate(id, userID uint) (*model.LearningLog, error)
-	CountByUserID(userID uint) (int64, error)
-}
 
 // LearningLogTemplateHandler は学習ログテンプレート関連のHTTPハンドラ。
 type LearningLogTemplateHandler struct {
-	service LearningLogTemplateServiceInterface
+	create     *usecase.CreateLearningLogTemplateUseCase
+	get        *usecase.GetLearningLogTemplateUseCase
+	list       *usecase.ListLearningLogTemplatesUseCase
+	getDefault *usecase.GetDefaultLearningLogTemplateUseCase
+	update     *usecase.UpdateLearningLogTemplateUseCase
+	remove     *usecase.DeleteLearningLogTemplateUseCase
+	createLog  *usecase.CreateLearningLogFromTemplateUseCase
+	count      *usecase.CountLearningLogTemplatesUseCase
 }
 
 // NewLearningLogTemplateHandler は新しいLearningLogTemplateHandlerインスタンスを生成する。
-func NewLearningLogTemplateHandler(s LearningLogTemplateServiceInterface) *LearningLogTemplateHandler {
-	return &LearningLogTemplateHandler{service: s}
+func NewLearningLogTemplateHandler(
+	create *usecase.CreateLearningLogTemplateUseCase,
+	get *usecase.GetLearningLogTemplateUseCase,
+	list *usecase.ListLearningLogTemplatesUseCase,
+	getDefault *usecase.GetDefaultLearningLogTemplateUseCase,
+	update *usecase.UpdateLearningLogTemplateUseCase,
+	remove *usecase.DeleteLearningLogTemplateUseCase,
+	createLog *usecase.CreateLearningLogFromTemplateUseCase,
+	count *usecase.CountLearningLogTemplatesUseCase,
+) *LearningLogTemplateHandler {
+	return &LearningLogTemplateHandler{
+		create: create, get: get, list: list, getDefault: getDefault,
+		update: update, remove: remove, createLog: createLog, count: count,
+	}
 }
 
 // Create は新しいテンプレートを作成する。
@@ -46,7 +54,7 @@ func (h *LearningLogTemplateHandler) Create(c *gin.Context) {
 		IsDefault:       input.IsDefault,
 	}
 
-	if err := h.service.Create(template); err != nil {
+	if err := h.create.Execute(c.Request.Context(), template); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -62,7 +70,7 @@ func (h *LearningLogTemplateHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	template, err := h.service.GetByID(id, userID)
+	template, err := h.get.Execute(c.Request.Context(), id, userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -75,7 +83,7 @@ func (h *LearningLogTemplateHandler) GetByID(c *gin.Context) {
 func (h *LearningLogTemplateHandler) GetByUserID(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	templates, err := h.service.GetByUserID(userID)
+	templates, err := h.list.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -88,7 +96,7 @@ func (h *LearningLogTemplateHandler) GetByUserID(c *gin.Context) {
 func (h *LearningLogTemplateHandler) GetDefault(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	template, err := h.service.GetDefaultByUserID(userID)
+	template, err := h.getDefault.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -110,7 +118,16 @@ func (h *LearningLogTemplateHandler) Update(c *gin.Context) {
 		return
 	}
 
-	template, err := h.service.Update(id, userID, input.Name, input.DefaultTitle, input.DefaultContent, model.LogCategory(input.DefaultCategory), input.DefaultDuration, input.IsDefault)
+	template, err := h.update.Execute(c.Request.Context(), usecase.UpdateLearningLogTemplateInput{
+		ID:              id,
+		UserID:          userID,
+		Name:            input.Name,
+		DefaultTitle:    input.DefaultTitle,
+		DefaultContent:  input.DefaultContent,
+		DefaultCategory: model.LogCategory(input.DefaultCategory),
+		DefaultDuration: input.DefaultDuration,
+		IsDefault:       input.IsDefault,
+	})
 	if err != nil {
 		respondError(c, err)
 		return
@@ -122,7 +139,7 @@ func (h *LearningLogTemplateHandler) Update(c *gin.Context) {
 // GetMyCount は認証ユーザー自身のテンプレート総数を返す。
 func (h *LearningLogTemplateHandler) GetMyCount(c *gin.Context) {
 	userID := c.GetUint("userID")
-	count, err := h.service.CountByUserID(userID)
+	count, err := h.count.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -138,7 +155,7 @@ func (h *LearningLogTemplateHandler) Delete(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.service.Delete(id, userID); err != nil {
+	if err := h.remove.Execute(c.Request.Context(), id, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -154,7 +171,7 @@ func (h *LearningLogTemplateHandler) UseTemplate(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	log, err := h.service.UseTemplate(id, userID)
+	log, err := h.createLog.Execute(c.Request.Context(), id, userID)
 	if err != nil {
 		respondError(c, err)
 		return

@@ -18,7 +18,6 @@ import (
 
 const (
 	// msgInvalidLogCategory は無効なカテゴリのメッセージ。
-	// 旧 service/errors.go の msgInvalidCategory と同一文言（あちらは未移行スライスが使うため残している）。
 	msgInvalidLogCategory = "無効なカテゴリです"
 	// msgInvalidLogSource は無効なソースのメッセージ。
 	msgInvalidLogSource = "無効なソースです"

@@ -341,15 +341,3 @@ type YouTubeVideoRepositoryInterface interface {
 
 
 
-// LearningLogTemplateRepositoryInterface は学習ログテンプレートデータ操作の契約を定義する。
-type LearningLogTemplateRepositoryInterface interface {
-	Create(template *model.LearningLogTemplate) error
-	FindByID(id uint) (*model.LearningLogTemplate, error)
-	FindByUserID(userID uint) ([]model.LearningLogTemplate, error)
-	FindDefaultByUserID(userID uint) (*model.LearningLogTemplate, error)
-	Update(template *model.LearningLogTemplate) error
-	Delete(id uint) error
-	ClearDefaultFlag(userID uint) error
-	CountByUserID(userID uint) (int64, error)
-}
-
