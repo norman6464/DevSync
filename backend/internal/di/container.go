@@ -163,7 +163,8 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	noteFolderRepo := persistence.NewNoteFolderRepository(db)
 	// ノートテンプレートはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	noteTemplateRepo := persistence.NewNoteTemplateRepository(db)
-	learningLogTemplateRepo := repository.NewLearningLogTemplateRepository(db)
+	// 学習ログテンプレートはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	learningLogTemplateRepo := persistence.NewLearningLogTemplateRepository(db)
 	// ノート間リンクはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	noteLinkRepo := persistence.NewNoteLinkRepository(db)
 	noteReader := persistence.NewNoteReader(db)
@@ -201,7 +202,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	// 旧 learningLogRepo は learning_dashboard と AI アドバイスがまだ使うため残している。
 	learningLogPort := persistence.NewLearningLogRepository(db)
 	createLearningLog := usecase.NewCreateLearningLogUseCase(learningLogPort, learningGoalPort)
-	learningLogTemplateService := service.NewLearningLogTemplateService(learningLogTemplateRepo, learningLogCreator{create: createLearningLog})
 
 	// テンプレートロードマップの初期登録
 	go seedTemplateRoadmaps(db, usecase.NewSeedRoadmapTemplatesUseCase(roadmapPort))
@@ -494,7 +494,16 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewCreateNoteFromTemplateUseCase(noteTemplateRepo, createNote),
 		usecase.NewCountNoteTemplatesUseCase(noteTemplateRepo),
 	)
-	c.LearningLogTemplateHandler = handler.NewLearningLogTemplateHandler(learningLogTemplateService)
+	c.LearningLogTemplateHandler = handler.NewLearningLogTemplateHandler(
+		usecase.NewCreateLearningLogTemplateUseCase(learningLogTemplateRepo),
+		usecase.NewGetLearningLogTemplateUseCase(learningLogTemplateRepo),
+		usecase.NewListLearningLogTemplatesUseCase(learningLogTemplateRepo),
+		usecase.NewGetDefaultLearningLogTemplateUseCase(learningLogTemplateRepo),
+		usecase.NewUpdateLearningLogTemplateUseCase(learningLogTemplateRepo),
+		usecase.NewDeleteLearningLogTemplateUseCase(learningLogTemplateRepo),
+		usecase.NewCreateLearningLogFromTemplateUseCase(learningLogTemplateRepo, createLearningLog),
+		usecase.NewCountLearningLogTemplatesUseCase(learningLogTemplateRepo),
+	)
 	c.NoteLinkHandler = handler.NewNoteLinkHandler(
 		usecase.NewCreateNoteLinkUseCase(noteLinkRepo, noteReader),
 		usecase.NewListNoteLinksUseCase(noteLinkRepo),
@@ -881,17 +890,4 @@ func seedTemplateRoadmaps(db *gorm.DB, seed *usecase.SeedRoadmapTemplatesUseCase
 	if err := seed.Execute(context.Background(), user.ID); err != nil {
 		log.Printf("テンプレートシード失敗: %v", err)
 	}
-}
-
-// learningLogCreator は未移行の learning_log_template が要求する
-// service.LearningLogCreatorInterface を学習ログ作成 usecase で満たすための橋渡し。
-// テンプレート側の署名に ctx が無いためここでは context.Background() を使う。
-// learning_log_template を移行した時点で撤去する。
-type learningLogCreator struct {
-	create *usecase.CreateLearningLogUseCase
-}
-
-// Create は学習ログ作成 usecase へ委譲する。
-func (l learningLogCreator) Create(log *model.LearningLog) error {
-	return l.create.Execute(context.Background(), log)
 }

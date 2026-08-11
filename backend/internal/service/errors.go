@@ -17,12 +17,6 @@ var (
 	ErrLLMNotConfigured  = domain.ErrServiceUnavailable // LLM未設定（503）
 )
 
-// 共通バリデーションエラーメッセージ。
-const (
-	msgInvalidCategory = "無効なカテゴリです"
-	msgInvalidSource   = "無効なソースです"
-)
-
 // validateRequiredID はIDが0でないことを検証する。
 // 0の場合はBadRequestエラーを返す。
 func validateRequiredID(id uint, name string) error {

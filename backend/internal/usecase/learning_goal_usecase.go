@@ -12,7 +12,6 @@ import (
 )
 
 // msgInvalidGoalCategory は無効なカテゴリのメッセージ。
-// 旧 service/errors.go の msgInvalidCategory と同一文言（あちらは未移行スライスが使うため残している）。
 const msgInvalidGoalCategory = "無効なカテゴリです"
 
 // validGoalCategories は有効な目標カテゴリの集合。
