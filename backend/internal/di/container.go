@@ -155,7 +155,10 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	// 学習分析はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	analyticsPort := persistence.NewLearningAnalyticsRepository(db)
 	badgeRepo := repository.NewBadgeRepository(db)
-	recommendationRepo := repository.NewRecommendationRepository(db)
+	// レコメンドはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	recommendationRepo := persistence.NewRecommendationRepository(db)
+	// ユーザーのスキル参照は最小 port で受ける（共有の user リポジトリには依存しない）。
+	userSkillsReader := persistence.NewUserSkillsReader(db)
 	// スタディサークルはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	studyCirclePort := persistence.NewStudyCircleRepository(db)
 	searchStudyCircles := usecase.NewSearchStudyCirclesUseCase(studyCirclePort)
@@ -196,7 +199,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	atcoderService := service.NewAtCoderService(userRepo)
 	badgeService := service.NewBadgeService(badgeRepo, notificationService)
 	levelService := service.NewLevelService(levelRepo, notificationService)
-	recommendationService := service.NewRecommendationService(recommendationRepo, userRepo)
 	createNote := usecase.NewCreateNoteUseCase(notePort)
 	// 学習ログはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	// 旧 learningLogRepo は learning_dashboard と AI アドバイスがまだ使うため残している。
@@ -441,7 +443,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewGetProductivityScoreUseCase(analyticsPort),
 		usecase.NewGetLearningInsightsUseCase(analyticsPort),
 	)
-	c.RecommendationHandler = handler.NewRecommendationHandler(recommendationService)
+	c.RecommendationHandler = handler.NewRecommendationHandler(
+		usecase.NewGetRecommendedUsersUseCase(recommendationRepo, userSkillsReader),
+		usecase.NewGetTrendingPostsUseCase(recommendationRepo),
+		usecase.NewGetTrendingResourcesUseCase(recommendationRepo),
+	)
 	c.StudyCircleHandler = handler.NewStudyCircleHandler(
 		usecase.NewCreateStudyCircleUseCase(studyCirclePort),
 		usecase.NewListMyStudyCirclesUseCase(studyCirclePort),

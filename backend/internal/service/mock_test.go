@@ -1047,29 +1047,6 @@ func (m *MockGroupMessageRepository) GetMemberUserIDs(roomID uint) []uint {
 
 // (MockCodeSnippetRepository は code_snippet の DIP 移行に伴い撤去)
 
-// ============================================================
-// MockRecommendationRepository は repository.RecommendationRepositoryInterface のテスト用モック実装。
-// ============================================================
-
-type MockRecommendationRepository struct {
-	mock.Mock
-}
-
-func (m *MockRecommendationRepository) GetRecommendedUsers(userID uint, skills []string, limit int) ([]model.RecommendedUser, error) {
-	args := m.Called(userID, skills, limit)
-	return args.Get(0).([]model.RecommendedUser), args.Error(1)
-}
-
-func (m *MockRecommendationRepository) GetTrendingPosts(limit int, days int) ([]model.Post, error) {
-	args := m.Called(limit, days)
-	return args.Get(0).([]model.Post), args.Error(1)
-}
-
-func (m *MockRecommendationRepository) GetTrendingResources(limit int, days int) ([]model.LearningResource, error) {
-	args := m.Called(limit, days)
-	return args.Get(0).([]model.LearningResource), args.Error(1)
-}
-
 var _ repository.AIConversationRepositoryInterface = (*MockAIConversationRepository)(nil)
 var _ repository.GitHubRepositoryInterface = (*MockGitHubRepository)(nil)
 var _ LLMClientInterface = (*MockLLMClient)(nil)

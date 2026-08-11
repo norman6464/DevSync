@@ -8,6 +8,7 @@ import (
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/repository"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
 const (
@@ -102,7 +103,9 @@ func (s *YouTubeService) GetRecommendations(userID uint) ([]model.YouTubeVideo, 
 		return nil, nil, err
 	}
 
-	skills := parseSkills(user.SkillsLanguages, user.SkillsFrameworks)
+	// スキル文字列の分解はレコメンドスライスの移行で usecase 側へ移った。
+	// 複製せずそちらを参照する（本スライスの移行時にこの依存ごと解消する）。
+	skills := usecase.ParseSkills(user.SkillsLanguages, user.SkillsFrameworks)
 	if len(skills) == 0 {
 		return []model.YouTubeVideo{}, []string{}, nil
 	}
