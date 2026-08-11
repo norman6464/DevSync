@@ -1,576 +1,325 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
-// MockNoteService は NoteService のモック実装。
-type MockNoteService struct {
-	mock.Mock
-}
+// mockNoteRepo は usecase/repository.NoteRepository のモック（ctx 付き）。
+type mockNoteRepo struct{ mock.Mock }
 
-func (m *MockNoteService) Create(note *model.Note) error {
-	return m.Called(note).Error(0)
+func (m *mockNoteRepo) Create(ctx context.Context, note *model.Note) error {
+	return m.Called(ctx, note).Error(0)
 }
-
-func (m *MockNoteService) GetByID(id, userID uint) (*model.Note, error) {
-	args := m.Called(id, userID)
-	if note := args.Get(0); note != nil {
-		return note.(*model.Note), args.Error(1)
-	}
-	return nil, args.Error(1)
+func (m *mockNoteRepo) Update(ctx context.Context, note *model.Note) error {
+	return m.Called(ctx, note).Error(0)
 }
-
-func (m *MockNoteService) GetByUserID(userID uint, page, limit int) ([]model.Note, error) {
-	args := m.Called(userID, page, limit)
-	return args.Get(0).([]model.Note), args.Error(1)
+func (m *mockNoteRepo) Delete(ctx context.Context, id uint) error {
+	return m.Called(ctx, id).Error(0)
 }
-
-func (m *MockNoteService) GetByFolderID(folderID, userID uint) ([]model.Note, error) {
-	args := m.Called(folderID, userID)
-	return args.Get(0).([]model.Note), args.Error(1)
+func (m *mockNoteRepo) FindByID(ctx context.Context, id uint) (*model.Note, error) {
+	args := m.Called(ctx, id)
+	n, _ := args.Get(0).(*model.Note)
+	return n, args.Error(1)
 }
-
-func (m *MockNoteService) Update(id, userID uint, title, content, tags string, folderID *uint) (*model.Note, error) {
-	args := m.Called(id, userID, title, content, tags, folderID)
-	if n := args.Get(0); n != nil {
-		return n.(*model.Note), args.Error(1)
-	}
-	return nil, args.Error(1)
+func (m *mockNoteRepo) FindByUserID(ctx context.Context, userID uint, page, limit int) ([]model.Note, error) {
+	args := m.Called(ctx, userID, page, limit)
+	n, _ := args.Get(0).([]model.Note)
+	return n, args.Error(1)
 }
-
-func (m *MockNoteService) Delete(id, userID uint) error {
-	return m.Called(id, userID).Error(0)
+func (m *mockNoteRepo) FindByFolderID(ctx context.Context, folderID, userID uint) ([]model.Note, error) {
+	args := m.Called(ctx, folderID, userID)
+	n, _ := args.Get(0).([]model.Note)
+	return n, args.Error(1)
 }
-
-func (m *MockNoteService) Search(userID uint, query string, page, limit int) ([]model.Note, int64, error) {
-	args := m.Called(userID, query, page, limit)
-	return args.Get(0).([]model.Note), args.Get(1).(int64), args.Error(2)
+func (m *mockNoteRepo) Search(ctx context.Context, userID uint, query string, limit, offset int) ([]model.Note, int64, error) {
+	args := m.Called(ctx, userID, query, limit, offset)
+	n, _ := args.Get(0).([]model.Note)
+	return n, args.Get(1).(int64), args.Error(2)
 }
-
-func (m *MockNoteService) CountByUserID(userID uint) (int64, error) {
-	args := m.Called(userID)
+func (m *mockNoteRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
+	args := m.Called(ctx, userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+func (m *mockNoteRepo) ToggleFavorite(ctx context.Context, id uint) error {
+	return m.Called(ctx, id).Error(0)
+}
+func (m *mockNoteRepo) FindFavorites(ctx context.Context, userID uint, page, limit int) ([]model.Note, error) {
+	args := m.Called(ctx, userID, page, limit)
+	n, _ := args.Get(0).([]model.Note)
+	return n, args.Error(1)
+}
+func (m *mockNoteRepo) CountFavoritesByUserID(ctx context.Context, userID uint) (int64, error) {
+	args := m.Called(ctx, userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+func (m *mockNoteRepo) Archive(ctx context.Context, id uint) error {
+	return m.Called(ctx, id).Error(0)
+}
+func (m *mockNoteRepo) Unarchive(ctx context.Context, id uint) error {
+	return m.Called(ctx, id).Error(0)
+}
+func (m *mockNoteRepo) FindArchived(ctx context.Context, userID uint, page, limit int) ([]model.Note, error) {
+	args := m.Called(ctx, userID, page, limit)
+	n, _ := args.Get(0).([]model.Note)
+	return n, args.Error(1)
+}
+func (m *mockNoteRepo) CountArchivedByUserID(ctx context.Context, userID uint) (int64, error) {
+	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)
 }
 
-func (m *MockNoteService) ToggleFavorite(id, userID uint) error {
-	return m.Called(id, userID).Error(0)
+// newTestNoteHandler は本物の usecase に port モックを注入した NoteHandler を生成する。
+func newTestNoteHandler() (*NoteHandler, *mockNoteRepo) {
+	repo := new(mockNoteRepo)
+	h := NewNoteHandler(
+		usecase.NewCreateNoteUseCase(repo),
+		usecase.NewGetNoteUseCase(repo),
+		usecase.NewListNotesUseCase(repo),
+		usecase.NewListNotesByFolderUseCase(repo),
+		usecase.NewUpdateNoteUseCase(repo),
+		usecase.NewDeleteNoteUseCase(repo),
+		usecase.NewSearchNotesUseCase(repo),
+		usecase.NewCountNotesUseCase(repo),
+		usecase.NewToggleNoteFavoriteUseCase(repo),
+		usecase.NewListFavoriteNotesUseCase(repo),
+		usecase.NewCountFavoriteNotesUseCase(repo),
+		usecase.NewArchiveNoteUseCase(repo),
+		usecase.NewUnarchiveNoteUseCase(repo),
+		usecase.NewListArchivedNotesUseCase(repo),
+		usecase.NewCountArchivedNotesUseCase(repo),
+		usecase.NewListNoteTagsUseCase(repo),
+		usecase.NewExportNoteMarkdownUseCase(repo),
+		usecase.NewDuplicateNoteUseCase(repo),
+	)
+	return h, repo
 }
 
-func (m *MockNoteService) GetFavorites(userID uint, page, limit int) ([]model.Note, error) {
-	args := m.Called(userID, page, limit)
-	return args.Get(0).([]model.Note), args.Error(1)
-}
-
-func (m *MockNoteService) CountFavoritesByUserID(userID uint) (int64, error) {
-	args := m.Called(userID)
-	return args.Get(0).(int64), args.Error(1)
-}
-
-func (m *MockNoteService) Archive(id, userID uint) error {
-	return m.Called(id, userID).Error(0)
-}
-
-func (m *MockNoteService) Unarchive(id, userID uint) error {
-	return m.Called(id, userID).Error(0)
-}
-
-func (m *MockNoteService) GetArchived(userID uint, page, limit int) ([]model.Note, error) {
-	args := m.Called(userID, page, limit)
-	return args.Get(0).([]model.Note), args.Error(1)
-}
-
-func (m *MockNoteService) CountArchivedByUserID(userID uint) (int64, error) {
-	args := m.Called(userID)
-	return args.Get(0).(int64), args.Error(1)
-}
-
-func (m *MockNoteService) Duplicate(id uint, userID uint) (*model.Note, error) {
-	args := m.Called(id, userID)
-	if note := args.Get(0); note != nil {
-		return note.(*model.Note), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-func (m *MockNoteService) ExportMarkdown(id, userID uint) ([]byte, string, error) {
-	args := m.Called(id, userID)
-	if data := args.Get(0); data != nil {
-		return data.([]byte), args.String(1), args.Error(2)
-	}
-	return nil, "", args.Error(2)
-}
-
-func (m *MockNoteService) GetTags(userID uint) ([]string, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]string), args.Error(1)
-}
-
-// newTestNoteHandler はテスト用のNoteHandlerを生成する。
-func newTestNoteHandler() (*NoteHandler, *MockNoteService) {
-	mockService := new(MockNoteService)
-	handler := NewNoteHandler(mockService)
-	return handler, mockService
+// noteOwnedBy は指定ユーザーが所有するノートを返すテスト用ヘルパー。
+func noteOwnedBy(id, userID uint) *model.Note {
+	return &model.Note{ID: id, UserID: userID, Title: "既存ノート", Content: "本文", Tags: "go,test"}
 }
 
 // ============================================================
-// Create テスト
+// Create
 // ============================================================
 
 func TestNoteHandler_Create(t *testing.T) {
-	h, svc := newTestNoteHandler()
+	h, repo := newTestNoteHandler()
 	r := newRouter(1)
 	r.POST("/notes", h.Create)
 
-	svc.On("Create", mock.AnythingOfType("*model.Note")).Return(nil)
+	repo.On("Create", mock.Anything, mock.AnythingOfType("*model.Note")).Return(nil)
 
-	w := doRequest(r, "POST", "/notes", map[string]interface{}{
-		"title":   "テストノート",
-		"content": "これはテスト内容です",
-		"tags":    "Go,TDD",
+	w := doRequest(r, http.MethodPost, "/notes", map[string]interface{}{
+		"title": "新しいノート", "content": "本文です",
 	})
 	assertStatus(t, w, http.StatusCreated)
-	svc.AssertExpectations(t)
+	repo.AssertExpectations(t)
 }
-
-// ============================================================
-// GetByID テスト
-// ============================================================
-
-func TestNoteHandler_GetByID(t *testing.T) {
-	h, svc := newTestNoteHandler()
-	r := newRouter(1)
-	r.GET("/notes/:id", h.GetByID)
-
-	note := &model.Note{
-		ID:      1,
-		UserID:  1,
-		Title:   "テストノート",
-		Content: "内容",
-	}
-
-	svc.On("GetByID", uint(1), uint(1)).Return(note, nil)
-
-	w := doRequest(r, "GET", "/notes/1", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-// ============================================================
-// GetByUserID テスト
-// ============================================================
-
-func TestNoteHandler_GetByUserID(t *testing.T) {
-	h, svc := newTestNoteHandler()
-	r := newRouter(1)
-	r.GET("/notes", h.GetByUserID)
-
-	notes := []model.Note{
-		{ID: 1, UserID: 1, Title: "ノート1"},
-		{ID: 2, UserID: 1, Title: "ノート2"},
-	}
-
-	svc.On("GetByUserID", uint(1), 1, 20).Return(notes, nil)
-	svc.On("CountByUserID", uint(1)).Return(int64(2), nil)
-
-	w := doRequest(r, "GET", "/notes?page=1&limit=20", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-// ============================================================
-// Update テスト
-// ============================================================
-
-func TestNoteHandler_Update(t *testing.T) {
-	h, svc := newTestNoteHandler()
-	r := newRouter(1)
-	r.PUT("/notes/:id", h.Update)
-
-	updatedNote := &model.Note{
-		ID:      1,
-		UserID:  1,
-		Title:   "更新後タイトル",
-		Content: "更新後内容",
-	}
-
-	svc.On("Update", uint(1), uint(1), "更新後タイトル", "更新後内容", "", (*uint)(nil)).Return(updatedNote, nil)
-
-	w := doRequest(r, "PUT", "/notes/1", map[string]interface{}{
-		"title":   "更新後タイトル",
-		"content": "更新後内容",
-	})
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-// ============================================================
-// Delete テスト
-// ============================================================
-
-func TestNoteHandler_Delete(t *testing.T) {
-	h, svc := newTestNoteHandler()
-	r := newRouter(1)
-	r.DELETE("/notes/:id", h.Delete)
-
-	svc.On("Delete", uint(1), uint(1)).Return(nil)
-
-	w := doRequest(r, "DELETE", "/notes/1", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-// ============================================================
-// Search テスト
-// ============================================================
-
-func TestNoteHandler_Search(t *testing.T) {
-	h, svc := newTestNoteHandler()
-	r := newRouter(1)
-	r.GET("/notes/search", h.Search)
-
-	notes := []model.Note{
-		{ID: 1, UserID: 1, Title: "Go学習", Content: "Goを学習中"},
-	}
-
-	svc.On("Search", uint(1), "Go", 1, 20).Return(notes, int64(1), nil)
-
-	w := doRequest(r, "GET", "/notes/search?q=Go&page=1&limit=20", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-// ============================================================
-// ToggleFavorite テスト
-// ============================================================
-
-func TestNoteHandler_ToggleFavorite(t *testing.T) {
-	h, svc := newTestNoteHandler()
-	r := newRouter(1)
-	r.PUT("/notes/:id/favorite", h.ToggleFavorite)
-
-	svc.On("ToggleFavorite", uint(1), uint(1)).Return(nil)
-
-	w := doRequest(r, "PUT", "/notes/1/favorite", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-// ============================================================
-// GetByFolderID テスト
-// ============================================================
-
-func TestNoteHandler_GetByFolderID(t *testing.T) {
-	t.Run("Success", func(t *testing.T) {
-		h, svc := newTestNoteHandler()
-		r := newRouter(1)
-		r.GET("/folders/:folderId/notes", h.GetByFolderID)
-
-		notes := []model.Note{
-			{ID: 1, UserID: 1, Title: "フォルダ内ノート1"},
-			{ID: 2, UserID: 1, Title: "フォルダ内ノート2"},
-		}
-
-		svc.On("GetByFolderID", uint(5), uint(1)).Return(notes, nil)
-
-		w := doRequest(r, "GET", "/folders/5/notes", nil)
-		assertStatus(t, w, http.StatusOK)
-		svc.AssertExpectations(t)
-	})
-
-	t.Run("InvalidFolderID", func(t *testing.T) {
-		h, _ := newTestNoteHandler()
-		r := newRouter(1)
-		r.GET("/folders/:folderId/notes", h.GetByFolderID)
-
-		w := doRequest(r, "GET", "/folders/abc/notes", nil)
-		assertStatus(t, w, http.StatusBadRequest)
-	})
-
-	t.Run("ServiceError", func(t *testing.T) {
-		h, svc := newTestNoteHandler()
-		r := newRouter(1)
-		r.GET("/folders/:folderId/notes", h.GetByFolderID)
-
-		svc.On("GetByFolderID", uint(5), uint(1)).Return([]model.Note{}, errors.New("error"))
-
-		w := doRequest(r, "GET", "/folders/5/notes", nil)
-		assertStatus(t, w, http.StatusInternalServerError)
-		svc.AssertExpectations(t)
-	})
-}
-
-// ============================================================
-// Archive テスト
-// ============================================================
-
-func TestNoteHandler_Archive(t *testing.T) {
-	t.Run("Success", func(t *testing.T) {
-		h, svc := newTestNoteHandler()
-		r := newRouter(1)
-		r.PUT("/notes/:id/archive", h.Archive)
-
-		svc.On("Archive", uint(1), uint(1)).Return(nil)
-
-		w := doRequest(r, "PUT", "/notes/1/archive", nil)
-		assertStatus(t, w, http.StatusOK)
-		svc.AssertExpectations(t)
-	})
-
-	t.Run("InvalidID", func(t *testing.T) {
-		h, _ := newTestNoteHandler()
-		r := newRouter(1)
-		r.PUT("/notes/:id/archive", h.Archive)
-
-		w := doRequest(r, "PUT", "/notes/abc/archive", nil)
-		assertStatus(t, w, http.StatusBadRequest)
-	})
-
-	t.Run("ServiceError", func(t *testing.T) {
-		h, svc := newTestNoteHandler()
-		r := newRouter(1)
-		r.PUT("/notes/:id/archive", h.Archive)
-
-		svc.On("Archive", uint(1), uint(1)).Return(errors.New("error"))
-
-		w := doRequest(r, "PUT", "/notes/1/archive", nil)
-		assertStatus(t, w, http.StatusInternalServerError)
-		svc.AssertExpectations(t)
-	})
-}
-
-// ============================================================
-// Unarchive テスト
-// ============================================================
-
-func TestNoteHandler_Unarchive(t *testing.T) {
-	t.Run("Success", func(t *testing.T) {
-		h, svc := newTestNoteHandler()
-		r := newRouter(1)
-		r.PUT("/notes/:id/unarchive", h.Unarchive)
-
-		svc.On("Unarchive", uint(1), uint(1)).Return(nil)
-
-		w := doRequest(r, "PUT", "/notes/1/unarchive", nil)
-		assertStatus(t, w, http.StatusOK)
-		svc.AssertExpectations(t)
-	})
-
-	t.Run("InvalidID", func(t *testing.T) {
-		h, _ := newTestNoteHandler()
-		r := newRouter(1)
-		r.PUT("/notes/:id/unarchive", h.Unarchive)
-
-		w := doRequest(r, "PUT", "/notes/abc/unarchive", nil)
-		assertStatus(t, w, http.StatusBadRequest)
-	})
-
-	t.Run("ServiceError", func(t *testing.T) {
-		h, svc := newTestNoteHandler()
-		r := newRouter(1)
-		r.PUT("/notes/:id/unarchive", h.Unarchive)
-
-		svc.On("Unarchive", uint(1), uint(1)).Return(errors.New("error"))
-
-		w := doRequest(r, "PUT", "/notes/1/unarchive", nil)
-		assertStatus(t, w, http.StatusInternalServerError)
-		svc.AssertExpectations(t)
-	})
-}
-
-// ============================================================
-// GetArchived テスト
-// ============================================================
-
-func TestNoteHandler_GetArchived(t *testing.T) {
-	t.Run("Success", func(t *testing.T) {
-		h, svc := newTestNoteHandler()
-		r := newRouter(1)
-		r.GET("/notes/archived", h.GetArchived)
-
-		notes := []model.Note{
-			{ID: 3, UserID: 1, Title: "アーカイブノート1"},
-		}
-
-		svc.On("GetArchived", uint(1), 1, 20).Return(notes, nil)
-		svc.On("CountArchivedByUserID", uint(1)).Return(int64(1), nil)
-
-		w := doRequest(r, "GET", "/notes/archived?page=1&limit=20", nil)
-		assertStatus(t, w, http.StatusOK)
-		svc.AssertExpectations(t)
-	})
-
-	t.Run("GetArchivedError", func(t *testing.T) {
-		h, svc := newTestNoteHandler()
-		r := newRouter(1)
-		r.GET("/notes/archived", h.GetArchived)
-
-		svc.On("GetArchived", uint(1), 1, 20).Return([]model.Note{}, errors.New("error"))
-
-		w := doRequest(r, "GET", "/notes/archived?page=1&limit=20", nil)
-		assertStatus(t, w, http.StatusInternalServerError)
-		svc.AssertExpectations(t)
-	})
-
-	t.Run("CountError", func(t *testing.T) {
-		h, svc := newTestNoteHandler()
-		r := newRouter(1)
-		r.GET("/notes/archived", h.GetArchived)
-
-		notes := []model.Note{
-			{ID: 3, UserID: 1, Title: "アーカイブノート1"},
-		}
-
-		svc.On("GetArchived", uint(1), 1, 20).Return(notes, nil)
-		svc.On("CountArchivedByUserID", uint(1)).Return(int64(0), errors.New("error"))
-
-		w := doRequest(r, "GET", "/notes/archived?page=1&limit=20", nil)
-		assertStatus(t, w, http.StatusInternalServerError)
-		svc.AssertExpectations(t)
-	})
-}
-
-// ============================================================
-// Duplicate テスト
-// ============================================================
-
-func TestNoteHandler_Duplicate(t *testing.T) {
-	t.Run("Success", func(t *testing.T) {
-		h, svc := newTestNoteHandler()
-		r := newRouter(1)
-		r.POST("/notes/:id/duplicate", h.Duplicate)
-
-		duplicate := &model.Note{
-			ID:      10,
-			UserID:  1,
-			Title:   "テストノート (コピー)",
-			Content: "元の内容",
-		}
-
-		svc.On("Duplicate", uint(1), uint(1)).Return(duplicate, nil)
-
-		w := doRequest(r, "POST", "/notes/1/duplicate", nil)
-		assertStatus(t, w, http.StatusCreated)
-		svc.AssertExpectations(t)
-	})
-
-	t.Run("InvalidID", func(t *testing.T) {
-		h, _ := newTestNoteHandler()
-		r := newRouter(1)
-		r.POST("/notes/:id/duplicate", h.Duplicate)
-
-		w := doRequest(r, "POST", "/notes/abc/duplicate", nil)
-		assertStatus(t, w, http.StatusBadRequest)
-	})
-
-	t.Run("ServiceError", func(t *testing.T) {
-		h, svc := newTestNoteHandler()
-		r := newRouter(1)
-		r.POST("/notes/:id/duplicate", h.Duplicate)
-
-		svc.On("Duplicate", uint(1), uint(1)).Return(nil, errors.New("error"))
-
-		w := doRequest(r, "POST", "/notes/1/duplicate", nil)
-		assertStatus(t, w, http.StatusInternalServerError)
-		svc.AssertExpectations(t)
-	})
-}
-
-// ============================================================
-// Create エラーパステスト
-// ============================================================
 
 func TestNoteHandler_Create_InvalidJSON(t *testing.T) {
 	h, _ := newTestNoteHandler()
 	r := newRouter(1)
 	r.POST("/notes", h.Create)
 
-	w := doRequestRaw(r, "POST", "/notes", "invalid json")
+	w := doRequestRaw(r, http.MethodPost, "/notes", "not json")
 	assertStatus(t, w, http.StatusBadRequest)
 }
 
-func TestNoteHandler_Create_ServiceError(t *testing.T) {
-	h, svc := newTestNoteHandler()
+// タイトルが空なら usecase の検証で 400 になり、リポジトリは呼ばれない。
+func TestNoteHandler_Create_ValidationError(t *testing.T) {
+	h, repo := newTestNoteHandler()
 	r := newRouter(1)
 	r.POST("/notes", h.Create)
 
-	svc.On("Create", mock.AnythingOfType("*model.Note")).Return(errors.New("error"))
+	w := doRequest(r, http.MethodPost, "/notes", map[string]interface{}{"title": "", "content": "本文"})
+	assertStatus(t, w, http.StatusBadRequest)
+	repo.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
+}
 
-	w := doRequest(r, "POST", "/notes", map[string]interface{}{"title": "テスト", "content": "内容"})
+func TestNoteHandler_Create_RepositoryError(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.POST("/notes", h.Create)
+
+	repo.On("Create", mock.Anything, mock.AnythingOfType("*model.Note")).Return(errors.New("db error"))
+
+	w := doRequest(r, http.MethodPost, "/notes", map[string]interface{}{"title": "題", "content": "本文"})
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
 }
 
 // ============================================================
-// GetByID エラーパステスト
+// GetByID
 // ============================================================
+
+func TestNoteHandler_GetByID(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/:id", h.GetByID)
+
+	repo.On("FindByID", mock.Anything, uint(1)).Return(noteOwnedBy(1, 1), nil)
+
+	w := doRequest(r, http.MethodGet, "/notes/1", nil)
+	assertStatus(t, w, http.StatusOK)
+	body := parseJSON(t, w)
+	assert.Equal(t, "既存ノート", body["title"])
+}
 
 func TestNoteHandler_GetByID_InvalidID(t *testing.T) {
 	h, _ := newTestNoteHandler()
 	r := newRouter(1)
 	r.GET("/notes/:id", h.GetByID)
 
-	w := doRequest(r, "GET", "/notes/abc", nil)
+	w := doRequest(r, http.MethodGet, "/notes/abc", nil)
 	assertStatus(t, w, http.StatusBadRequest)
 }
 
-func TestNoteHandler_GetByID_ServiceError(t *testing.T) {
-	h, svc := newTestNoteHandler()
+// 他人のノートは 403。
+func TestNoteHandler_GetByID_Forbidden(t *testing.T) {
+	h, repo := newTestNoteHandler()
 	r := newRouter(1)
 	r.GET("/notes/:id", h.GetByID)
 
-	svc.On("GetByID", uint(1), uint(1)).Return(nil, errors.New("error"))
+	repo.On("FindByID", mock.Anything, uint(1)).Return(noteOwnedBy(1, 999), nil)
 
-	w := doRequest(r, "GET", "/notes/1", nil)
+	w := doRequest(r, http.MethodGet, "/notes/1", nil)
+	assertStatus(t, w, http.StatusForbidden)
+}
+
+// 不在は 404 にならず 500 になる（移行前からの挙動）。
+func TestNoteHandler_GetByID_MissingReturnsInternalError(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/:id", h.GetByID)
+
+	// port は不在を (nil, nil) で表す。
+	repo.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
+
+	w := doRequest(r, http.MethodGet, "/notes/1", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
 }
 
 // ============================================================
-// GetByUserID エラーパステスト
+// GetByUserID / GetMyCount
 // ============================================================
 
-func TestNoteHandler_GetByUserID_ServiceError(t *testing.T) {
-	h, svc := newTestNoteHandler()
+func TestNoteHandler_GetByUserID(t *testing.T) {
+	h, repo := newTestNoteHandler()
 	r := newRouter(1)
 	r.GET("/notes", h.GetByUserID)
 
-	svc.On("GetByUserID", uint(1), 1, 20).Return([]model.Note{}, errors.New("error"))
+	repo.On("FindByUserID", mock.Anything, uint(1), 1, 20).
+		Return([]model.Note{{ID: 1}, {ID: 2}}, nil)
+	repo.On("CountByUserID", mock.Anything, uint(1)).Return(int64(2), nil)
 
-	w := doRequest(r, "GET", "/notes?page=1&limit=20", nil)
+	w := doRequest(r, http.MethodGet, "/notes", nil)
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteHandler_GetByUserID_RepositoryError(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes", h.GetByUserID)
+
+	repo.On("FindByUserID", mock.Anything, uint(1), 1, 20).
+		Return([]model.Note(nil), errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/notes", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
 }
 
 func TestNoteHandler_GetByUserID_CountError(t *testing.T) {
-	h, svc := newTestNoteHandler()
+	h, repo := newTestNoteHandler()
 	r := newRouter(1)
 	r.GET("/notes", h.GetByUserID)
 
-	svc.On("GetByUserID", uint(1), 1, 20).Return([]model.Note{}, nil)
-	svc.On("CountByUserID", uint(1)).Return(int64(0), errors.New("error"))
+	repo.On("FindByUserID", mock.Anything, uint(1), 1, 20).Return([]model.Note{}, nil)
+	repo.On("CountByUserID", mock.Anything, uint(1)).Return(int64(0), errors.New("db error"))
 
-	w := doRequest(r, "GET", "/notes?page=1&limit=20", nil)
+	w := doRequest(r, http.MethodGet, "/notes", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
+}
+
+func TestNoteHandler_GetMyCount_Success(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/my/count", h.GetMyCount)
+
+	repo.On("CountByUserID", mock.Anything, uint(1)).Return(int64(7), nil)
+
+	w := doRequest(r, http.MethodGet, "/notes/my/count", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Equal(t, float64(7), parseJSON(t, w)["count"])
+}
+
+func TestNoteHandler_GetMyCount_RepositoryError(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/my/count", h.GetMyCount)
+
+	repo.On("CountByUserID", mock.Anything, uint(1)).Return(int64(0), errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/notes/my/count", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
 }
 
 // ============================================================
-// Update エラーパステスト
+// GetByFolderID
 // ============================================================
+
+func TestNoteHandler_GetByFolderID(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/folder/:folderId", h.GetByFolderID)
+
+	repo.On("FindByFolderID", mock.Anything, uint(5), uint(1)).Return([]model.Note{{ID: 1}}, nil)
+
+	w := doRequest(r, http.MethodGet, "/notes/folder/5", nil)
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteHandler_GetByFolderID_InvalidID(t *testing.T) {
+	h, _ := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/folder/:folderId", h.GetByFolderID)
+
+	w := doRequest(r, http.MethodGet, "/notes/folder/abc", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+}
+
+// ============================================================
+// Update
+// ============================================================
+
+func TestNoteHandler_Update(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.PUT("/notes/:id", h.Update)
+
+	repo.On("FindByID", mock.Anything, uint(1)).Return(noteOwnedBy(1, 1), nil)
+	repo.On("Update", mock.Anything, mock.AnythingOfType("*model.Note")).Return(nil)
+
+	w := doRequest(r, http.MethodPut, "/notes/1", map[string]interface{}{"title": "更新後"})
+	assertStatus(t, w, http.StatusOK)
+	assert.Equal(t, "更新後", parseJSON(t, w)["title"])
+}
 
 func TestNoteHandler_Update_InvalidID(t *testing.T) {
 	h, _ := newTestNoteHandler()
 	r := newRouter(1)
 	r.PUT("/notes/:id", h.Update)
 
-	w := doRequest(r, "PUT", "/notes/abc", map[string]interface{}{"title": "t"})
+	w := doRequest(r, http.MethodPut, "/notes/abc", map[string]interface{}{"title": "X"})
 	assertStatus(t, w, http.StatusBadRequest)
 }
 
@@ -579,165 +328,333 @@ func TestNoteHandler_Update_InvalidJSON(t *testing.T) {
 	r := newRouter(1)
 	r.PUT("/notes/:id", h.Update)
 
-	w := doRequestRaw(r, "PUT", "/notes/1", "invalid")
+	w := doRequestRaw(r, http.MethodPut, "/notes/1", "not json")
 	assertStatus(t, w, http.StatusBadRequest)
 }
 
-func TestNoteHandler_Update_ServiceError(t *testing.T) {
-	h, svc := newTestNoteHandler()
+// 他人のノートの更新は 403。
+func TestNoteHandler_Update_Forbidden(t *testing.T) {
+	h, repo := newTestNoteHandler()
 	r := newRouter(1)
 	r.PUT("/notes/:id", h.Update)
 
-	svc.On("Update", uint(1), uint(1), "更新", "", "", (*uint)(nil)).Return(nil, errors.New("error"))
+	repo.On("FindByID", mock.Anything, uint(1)).Return(noteOwnedBy(1, 999), nil)
 
-	w := doRequest(r, "PUT", "/notes/1", map[string]interface{}{"title": "更新"})
+	w := doRequest(r, http.MethodPut, "/notes/1", map[string]interface{}{"title": "X"})
+	assertStatus(t, w, http.StatusForbidden)
+	repo.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
+}
+
+// 空白のみのタイトルは専用メッセージで 400。
+func TestNoteHandler_Update_BlankTitle(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.PUT("/notes/:id", h.Update)
+
+	repo.On("FindByID", mock.Anything, uint(1)).Return(noteOwnedBy(1, 1), nil)
+
+	w := doRequest(r, http.MethodPut, "/notes/1", map[string]interface{}{"title": "   "})
+	assertStatus(t, w, http.StatusBadRequest)
+	assert.Contains(t, w.Body.String(), "タイトルは空白のみにできません")
+	repo.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
+}
+
+func TestNoteHandler_Update_RepositoryError(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.PUT("/notes/:id", h.Update)
+
+	repo.On("FindByID", mock.Anything, uint(1)).Return(noteOwnedBy(1, 1), nil)
+	repo.On("Update", mock.Anything, mock.AnythingOfType("*model.Note")).Return(errors.New("db error"))
+
+	w := doRequest(r, http.MethodPut, "/notes/1", map[string]interface{}{"title": "X"})
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
 }
 
 // ============================================================
-// Delete エラーパステスト
+// Delete
 // ============================================================
+
+func TestNoteHandler_Delete(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.DELETE("/notes/:id", h.Delete)
+
+	repo.On("FindByID", mock.Anything, uint(1)).Return(noteOwnedBy(1, 1), nil)
+	repo.On("Delete", mock.Anything, uint(1)).Return(nil)
+
+	w := doRequest(r, http.MethodDelete, "/notes/1", nil)
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
+}
 
 func TestNoteHandler_Delete_InvalidID(t *testing.T) {
 	h, _ := newTestNoteHandler()
 	r := newRouter(1)
 	r.DELETE("/notes/:id", h.Delete)
 
-	w := doRequest(r, "DELETE", "/notes/abc", nil)
+	w := doRequest(r, http.MethodDelete, "/notes/abc", nil)
 	assertStatus(t, w, http.StatusBadRequest)
 }
 
-func TestNoteHandler_Delete_ServiceError(t *testing.T) {
-	h, svc := newTestNoteHandler()
+func TestNoteHandler_Delete_Forbidden(t *testing.T) {
+	h, repo := newTestNoteHandler()
 	r := newRouter(1)
 	r.DELETE("/notes/:id", h.Delete)
 
-	svc.On("Delete", uint(1), uint(1)).Return(errors.New("error"))
+	repo.On("FindByID", mock.Anything, uint(1)).Return(noteOwnedBy(1, 999), nil)
 
-	w := doRequest(r, "DELETE", "/notes/1", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
+	w := doRequest(r, http.MethodDelete, "/notes/1", nil)
+	assertStatus(t, w, http.StatusForbidden)
+	repo.AssertNotCalled(t, "Delete", mock.Anything, mock.Anything)
 }
 
 // ============================================================
-// Search エラーパステスト
+// Search
 // ============================================================
+
+func TestNoteHandler_Search(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/search", h.Search)
+
+	repo.On("Search", mock.Anything, uint(1), "go", 20, 0).
+		Return([]model.Note{{ID: 1}}, int64(1), nil)
+
+	w := doRequest(r, http.MethodGet, "/notes/search?q=go", nil)
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
+}
 
 func TestNoteHandler_Search_MissingQuery(t *testing.T) {
-	h, _ := newTestNoteHandler()
+	h, repo := newTestNoteHandler()
 	r := newRouter(1)
 	r.GET("/notes/search", h.Search)
 
-	w := doRequest(r, "GET", "/notes/search", nil)
+	w := doRequest(r, http.MethodGet, "/notes/search", nil)
 	assertStatus(t, w, http.StatusBadRequest)
+	repo.AssertNotCalled(t, "Search", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 }
 
-func TestNoteHandler_Search_ServiceError(t *testing.T) {
-	h, svc := newTestNoteHandler()
+func TestNoteHandler_Search_RepositoryError(t *testing.T) {
+	h, repo := newTestNoteHandler()
 	r := newRouter(1)
 	r.GET("/notes/search", h.Search)
 
-	svc.On("Search", uint(1), "Go", 1, 20).Return([]model.Note{}, int64(0), errors.New("error"))
+	repo.On("Search", mock.Anything, uint(1), "go", 20, 0).
+		Return([]model.Note(nil), int64(0), errors.New("db error"))
 
-	w := doRequest(r, "GET", "/notes/search?q=Go&page=1&limit=20", nil)
+	w := doRequest(r, http.MethodGet, "/notes/search?q=go", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
 }
 
 // ============================================================
-// ToggleFavorite エラーパステスト
+// お気に入り
 // ============================================================
+
+func TestNoteHandler_ToggleFavorite(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.PUT("/notes/:id/favorite", h.ToggleFavorite)
+
+	repo.On("FindByID", mock.Anything, uint(1)).Return(noteOwnedBy(1, 1), nil)
+	repo.On("ToggleFavorite", mock.Anything, uint(1)).Return(nil)
+
+	w := doRequest(r, http.MethodPut, "/notes/1/favorite", nil)
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
+}
 
 func TestNoteHandler_ToggleFavorite_InvalidID(t *testing.T) {
 	h, _ := newTestNoteHandler()
 	r := newRouter(1)
 	r.PUT("/notes/:id/favorite", h.ToggleFavorite)
 
-	w := doRequest(r, "PUT", "/notes/abc/favorite", nil)
+	w := doRequest(r, http.MethodPut, "/notes/abc/favorite", nil)
 	assertStatus(t, w, http.StatusBadRequest)
 }
 
-// ============================================================
-// GetFavorites テスト
-// ============================================================
-
-func TestNoteHandler_GetFavorites_Success(t *testing.T) {
-	h, svc := newTestNoteHandler()
-	r := newRouter(1)
-	r.GET("/notes/favorites", h.GetFavorites)
-
-	notes := []model.Note{
-		{ID: 1, UserID: 1, Title: "お気に入りノート"},
-	}
-
-	svc.On("GetFavorites", uint(1), 1, 20).Return(notes, nil)
-	svc.On("CountFavoritesByUserID", uint(1)).Return(int64(1), nil)
-
-	w := doRequest(r, "GET", "/notes/favorites?page=1&limit=20", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestNoteHandler_GetFavorites_ServiceError(t *testing.T) {
-	h, svc := newTestNoteHandler()
-	r := newRouter(1)
-	r.GET("/notes/favorites", h.GetFavorites)
-
-	svc.On("GetFavorites", uint(1), 1, 20).Return([]model.Note{}, errors.New("error"))
-
-	w := doRequest(r, "GET", "/notes/favorites?page=1&limit=20", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
-
-func TestNoteHandler_GetFavorites_CountError(t *testing.T) {
-	h, svc := newTestNoteHandler()
-	r := newRouter(1)
-	r.GET("/notes/favorites", h.GetFavorites)
-
-	notes := []model.Note{
-		{ID: 1, UserID: 1, Title: "お気に入りノート"},
-	}
-
-	svc.On("GetFavorites", uint(1), 1, 20).Return(notes, nil)
-	svc.On("CountFavoritesByUserID", uint(1)).Return(int64(0), errors.New("error"))
-
-	w := doRequest(r, "GET", "/notes/favorites?page=1&limit=20", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
-
-func TestNoteHandler_ToggleFavorite_ServiceError(t *testing.T) {
-	h, svc := newTestNoteHandler()
+// 他人のノートのお気に入り切替は 403。
+func TestNoteHandler_ToggleFavorite_Forbidden(t *testing.T) {
+	h, repo := newTestNoteHandler()
 	r := newRouter(1)
 	r.PUT("/notes/:id/favorite", h.ToggleFavorite)
 
-	svc.On("ToggleFavorite", uint(1), uint(1)).Return(errors.New("error"))
+	repo.On("FindByID", mock.Anything, uint(1)).Return(noteOwnedBy(1, 999), nil)
 
-	w := doRequest(r, "PUT", "/notes/1/favorite", nil)
+	w := doRequest(r, http.MethodPut, "/notes/1/favorite", nil)
+	assertStatus(t, w, http.StatusForbidden)
+	repo.AssertNotCalled(t, "ToggleFavorite", mock.Anything, mock.Anything)
+}
+
+func TestNoteHandler_ToggleFavorite_RepositoryError(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.PUT("/notes/:id/favorite", h.ToggleFavorite)
+
+	repo.On("FindByID", mock.Anything, uint(1)).Return(noteOwnedBy(1, 1), nil)
+	repo.On("ToggleFavorite", mock.Anything, uint(1)).Return(errors.New("db error"))
+
+	w := doRequest(r, http.MethodPut, "/notes/1/favorite", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
+}
+
+func TestNoteHandler_GetFavorites_Success(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/favorites", h.GetFavorites)
+
+	repo.On("FindFavorites", mock.Anything, uint(1), 1, 20).Return([]model.Note{{ID: 1}}, nil)
+	repo.On("CountFavoritesByUserID", mock.Anything, uint(1)).Return(int64(1), nil)
+
+	w := doRequest(r, http.MethodGet, "/notes/favorites", nil)
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteHandler_GetFavorites_RepositoryError(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/favorites", h.GetFavorites)
+
+	repo.On("FindFavorites", mock.Anything, uint(1), 1, 20).
+		Return([]model.Note(nil), errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/notes/favorites", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+func TestNoteHandler_GetFavorites_CountError(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/favorites", h.GetFavorites)
+
+	repo.On("FindFavorites", mock.Anything, uint(1), 1, 20).Return([]model.Note{}, nil)
+	repo.On("CountFavoritesByUserID", mock.Anything, uint(1)).Return(int64(0), errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/notes/favorites", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
 }
 
 // ============================================================
-// Export テスト
+// アーカイブ
 // ============================================================
 
+func TestNoteHandler_Archive(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.PUT("/notes/:id/archive", h.Archive)
+
+	repo.On("FindByID", mock.Anything, uint(1)).Return(noteOwnedBy(1, 1), nil)
+	repo.On("Archive", mock.Anything, uint(1)).Return(nil)
+
+	w := doRequest(r, http.MethodPut, "/notes/1/archive", nil)
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteHandler_Archive_Forbidden(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.PUT("/notes/:id/archive", h.Archive)
+
+	repo.On("FindByID", mock.Anything, uint(1)).Return(noteOwnedBy(1, 999), nil)
+
+	w := doRequest(r, http.MethodPut, "/notes/1/archive", nil)
+	assertStatus(t, w, http.StatusForbidden)
+	repo.AssertNotCalled(t, "Archive", mock.Anything, mock.Anything)
+}
+
+func TestNoteHandler_Unarchive(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.PUT("/notes/:id/unarchive", h.Unarchive)
+
+	repo.On("FindByID", mock.Anything, uint(1)).Return(noteOwnedBy(1, 1), nil)
+	repo.On("Unarchive", mock.Anything, uint(1)).Return(nil)
+
+	w := doRequest(r, http.MethodPut, "/notes/1/unarchive", nil)
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteHandler_Unarchive_Forbidden(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.PUT("/notes/:id/unarchive", h.Unarchive)
+
+	repo.On("FindByID", mock.Anything, uint(1)).Return(noteOwnedBy(1, 999), nil)
+
+	w := doRequest(r, http.MethodPut, "/notes/1/unarchive", nil)
+	assertStatus(t, w, http.StatusForbidden)
+	repo.AssertNotCalled(t, "Unarchive", mock.Anything, mock.Anything)
+}
+
+func TestNoteHandler_GetArchived(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/archived", h.GetArchived)
+
+	repo.On("FindArchived", mock.Anything, uint(1), 1, 20).Return([]model.Note{{ID: 1}}, nil)
+	repo.On("CountArchivedByUserID", mock.Anything, uint(1)).Return(int64(1), nil)
+
+	w := doRequest(r, http.MethodGet, "/notes/archived", nil)
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
+}
+
+func TestNoteHandler_GetArchived_RepositoryError(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.GET("/notes/archived", h.GetArchived)
+
+	repo.On("FindArchived", mock.Anything, uint(1), 1, 20).
+		Return([]model.Note(nil), errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/notes/archived", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+// ============================================================
+// 複製・エクスポート・タグ
+// ============================================================
+
+func TestNoteHandler_Duplicate(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.POST("/notes/:id/duplicate", h.Duplicate)
+
+	repo.On("FindByID", mock.Anything, uint(1)).Return(noteOwnedBy(1, 1), nil)
+	repo.On("Create", mock.Anything, mock.AnythingOfType("*model.Note")).Return(nil)
+
+	w := doRequest(r, http.MethodPost, "/notes/1/duplicate", nil)
+	assertStatus(t, w, http.StatusCreated)
+	assert.Equal(t, "既存ノート (コピー)", parseJSON(t, w)["title"])
+}
+
+func TestNoteHandler_Duplicate_Forbidden(t *testing.T) {
+	h, repo := newTestNoteHandler()
+	r := newRouter(1)
+	r.POST("/notes/:id/duplicate", h.Duplicate)
+
+	repo.On("FindByID", mock.Anything, uint(1)).Return(noteOwnedBy(1, 999), nil)
+
+	w := doRequest(r, http.MethodPost, "/notes/1/duplicate", nil)
+	assertStatus(t, w, http.StatusForbidden)
+	repo.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
+}
+
 func TestNoteHandler_Export_Success(t *testing.T) {
-	h, svc := newTestNoteHandler()
+	h, repo := newTestNoteHandler()
 	r := newRouter(1)
 	r.GET("/notes/:id/export", h.Export)
 
-	mdContent := []byte("# テストノート\n\nコンテンツ")
-	svc.On("ExportMarkdown", uint(1), uint(1)).Return(mdContent, "テストノート", nil)
+	repo.On("FindByID", mock.Anything, uint(1)).Return(noteOwnedBy(1, 1), nil)
 
-	w := doRequest(r, "GET", "/notes/1/export", nil)
+	w := doRequest(r, http.MethodGet, "/notes/1/export", nil)
 	assertStatus(t, w, http.StatusOK)
-	assert.Contains(t, w.Header().Get("Content-Disposition"), "テストノート.md")
-	assert.Contains(t, w.Header().Get("Content-Type"), "text/markdown")
-	assert.Contains(t, w.Body.String(), "# テストノート")
-	svc.AssertExpectations(t)
+	assert.Contains(t, w.Body.String(), "# 既存ノート")
+	assert.Contains(t, w.Body.String(), "**Tags:** go,test")
 }
 
 func TestNoteHandler_Export_InvalidID(t *testing.T) {
@@ -745,46 +662,43 @@ func TestNoteHandler_Export_InvalidID(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/notes/:id/export", h.Export)
 
-	w := doRequest(r, "GET", "/notes/abc/export", nil)
+	w := doRequest(r, http.MethodGet, "/notes/abc/export", nil)
 	assertStatus(t, w, http.StatusBadRequest)
 }
 
-func TestNoteHandler_Export_ServiceError(t *testing.T) {
-	h, svc := newTestNoteHandler()
+func TestNoteHandler_Export_Forbidden(t *testing.T) {
+	h, repo := newTestNoteHandler()
 	r := newRouter(1)
 	r.GET("/notes/:id/export", h.Export)
 
-	svc.On("ExportMarkdown", uint(999), uint(1)).Return(nil, "", errors.New("not found"))
+	repo.On("FindByID", mock.Anything, uint(1)).Return(noteOwnedBy(1, 999), nil)
 
-	w := doRequest(r, "GET", "/notes/999/export", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
+	w := doRequest(r, http.MethodGet, "/notes/1/export", nil)
+	assertStatus(t, w, http.StatusForbidden)
 }
 
-// ============================================================
-// GetMyCount テスト
-// ============================================================
-
-func TestNoteHandler_GetMyCount_Success(t *testing.T) {
-	h, svc := newTestNoteHandler()
+func TestNoteHandler_GetTags(t *testing.T) {
+	h, repo := newTestNoteHandler()
 	r := newRouter(1)
-	r.GET("/notes/my/count", h.GetMyCount)
+	r.GET("/notes/tags", h.GetTags)
 
-	svc.On("CountByUserID", uint(1)).Return(int64(42), nil)
+	repo.On("FindByUserID", mock.Anything, uint(1), 1, 1000).
+		Return([]model.Note{{Tags: "go, test"}, {Tags: "go,web"}}, nil)
 
-	w := doRequest(r, "GET", "/notes/my/count", nil)
+	w := doRequest(r, http.MethodGet, "/notes/tags", nil)
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	assert.Contains(t, w.Body.String(), "go")
+	assert.Contains(t, w.Body.String(), "web")
 }
 
-func TestNoteHandler_GetMyCount_ServiceError(t *testing.T) {
-	h, svc := newTestNoteHandler()
+func TestNoteHandler_GetTags_RepositoryError(t *testing.T) {
+	h, repo := newTestNoteHandler()
 	r := newRouter(1)
-	r.GET("/notes/my/count", h.GetMyCount)
+	r.GET("/notes/tags", h.GetTags)
 
-	svc.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+	repo.On("FindByUserID", mock.Anything, uint(1), 1, 1000).
+		Return([]model.Note(nil), errors.New("db error"))
 
-	w := doRequest(r, "GET", "/notes/my/count", nil)
+	w := doRequest(r, http.MethodGet, "/notes/tags", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
 }
