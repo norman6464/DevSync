@@ -402,13 +402,6 @@ type StudyCircleRepositoryInterface interface {
 	CountByUserID(userID uint) (int64, error)
 }
 
-// NotificationSettingsRepositoryInterface は通知設定データ操作の契約を定義する。
-type NotificationSettingsRepositoryInterface interface {
-	CreateOrUpdate(settings *model.NotificationSettings) error
-	GetByUserID(userID uint) (*model.NotificationSettings, error)
-	GetOrCreateDefault(userID uint) (*model.NotificationSettings, error)
-}
-
 // NoteRepositoryInterface は学習ノートデータ操作の契約を定義する。
 type NoteRepositoryInterface interface {
 	Create(note *model.Note) error

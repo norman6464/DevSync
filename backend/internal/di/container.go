@@ -620,9 +620,12 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	)
 
 	// 通知設定サービス
-	notificationSettingsRepo := repository.NewNotificationSettingsRepository(db)
-	notificationSettingsService := service.NewNotificationSettingsService(notificationSettingsRepo)
-	c.NotificationSettingsHandler = handler.NewNotificationSettingsHandler(notificationSettingsService)
+	// 通知設定はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	notificationSettingsRepo := persistence.NewNotificationSettingsRepository(db)
+	c.NotificationSettingsHandler = handler.NewNotificationSettingsHandler(
+		usecase.NewGetNotificationSettingsUseCase(notificationSettingsRepo),
+		usecase.NewUpdateNotificationSettingsUseCase(notificationSettingsRepo),
+	)
 
 	// HubのGetRoomMembersコールバックを設定
 	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs

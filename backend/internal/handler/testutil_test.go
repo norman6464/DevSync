@@ -551,29 +551,8 @@ func setupLearningResourceHandler() (*LearningResourceHandler, *MockLearningReso
 }
 
 // MockNotificationSettingsService は NotificationSettingsServiceInterface のモック実装。
-type MockNotificationSettingsServiceMock struct{ mock.Mock }
-
-func (m *MockNotificationSettingsServiceMock) GetSettings(userID uint) (*model.NotificationSettings, error) {
-	args := m.Called(userID)
-	if s := args.Get(0); s != nil {
-		return s.(*model.NotificationSettings), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockNotificationSettingsServiceMock) UpdateSettings(userID uint, updates *model.NotificationSettings) (*model.NotificationSettings, error) {
-	args := m.Called(userID, updates)
-	if s := args.Get(0); s != nil {
-		return s.(*model.NotificationSettings), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-// setupNotificationSettingsHandler はNotificationSettingsHandlerテスト用のセットアップを行う。
-func setupNotificationSettingsHandler() (*NotificationSettingsHandler, *MockNotificationSettingsServiceMock) {
-	svc := new(MockNotificationSettingsServiceMock)
-	h := NewNotificationSettingsHandler(svc)
-	return h, svc
-}
+// NotificationSettings は DIP へ移行済み。テストは notification_settings_test.go で
+// 「本物の usecase + port モック」を組み立てる。
 
 // MockEmailPreferencesService は EmailPreferencesServiceInterface のモック実装。
 type MockEmailPreferencesService struct{ mock.Mock }
