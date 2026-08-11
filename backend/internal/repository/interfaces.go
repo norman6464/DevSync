@@ -133,22 +133,6 @@ type LearningGoalRepositoryInterface interface {
 	CountByUserID(userID uint) (int64, error)
 }
 
-// ProjectRepositoryInterface はプロジェクトショーケースデータ操作の契約を定義する。
-type ProjectRepositoryInterface interface {
-	Create(project *model.Project) error
-	FindByID(id uint) (*model.Project, error)
-	FindByUserID(userID uint, limit, offset int) ([]model.Project, int64, error)
-	FindFeaturedByUserID(userID uint) ([]model.Project, error)
-	Update(project *model.Project) error
-	Delete(id uint) error
-	FindAll(limit, offset int) ([]model.Project, int64, error)
-	Search(query string, limit, offset int) ([]model.Project, int64, error)
-	Archive(id uint) error
-	Unarchive(id uint) error
-	FindArchivedByUserID(userID uint, limit, offset int) ([]model.Project, int64, error)
-	CountByUserID(userID uint) (int64, error)
-}
-
 // LearningResourceRepositoryInterface は学習リソースデータ操作の契約を定義する。
 // いいね・ブックマーク（保存）操作も含む。
 type LearningResourceRepositoryInterface interface {

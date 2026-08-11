@@ -4,34 +4,50 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// ProjectServiceInterface はProjectHandlerが依存するサービスメソッドを定義する。
-type ProjectServiceInterface interface {
-	Create(project *model.Project) error
-	GetByID(id, userID uint) (*model.Project, error)
-	GetByUserID(userID uint, limit, offset int) ([]model.Project, int64, error)
-	GetFeaturedByUserID(userID uint) ([]model.Project, error)
-	GetAll(limit, offset int) ([]model.Project, int64, error)
-	Search(query string, limit, offset int) ([]model.Project, int64, error)
-	Update(id, userID uint, updates *model.Project) (*model.Project, error)
-	UpdateFeatured(id, userID uint, featured bool) (*model.Project, error)
-	Delete(id, userID uint) error
-	Archive(id, userID uint) error
-	Unarchive(id, userID uint) error
-	GetArchivedByUserID(userID uint, limit, offset int) ([]model.Project, int64, error)
-	CountByUserID(userID uint) (int64, error)
-}
 
 // ProjectHandler はプロジェクト関連のHTTPハンドラ。
 // プロジェクトのCRUD・注目プロジェクト取得・一覧取得を処理する。
 type ProjectHandler struct {
-	service ProjectServiceInterface
+	create         *usecase.CreateProjectUseCase
+	get            *usecase.GetProjectUseCase
+	listByUser     *usecase.ListProjectsByUserUseCase
+	listFeatured   *usecase.ListFeaturedProjectsUseCase
+	listAll        *usecase.ListAllProjectsUseCase
+	listArchived   *usecase.ListArchivedProjectsUseCase
+	search         *usecase.SearchProjectsUseCase
+	update         *usecase.UpdateProjectUseCase
+	updateFeatured *usecase.UpdateProjectFeaturedUseCase
+	archive        *usecase.ArchiveProjectUseCase
+	unarchive      *usecase.UnarchiveProjectUseCase
+	remove         *usecase.DeleteProjectUseCase
+	count          *usecase.CountProjectsUseCase
 }
 
 // NewProjectHandler は新しいProjectHandlerインスタンスを生成する。
-func NewProjectHandler(s ProjectServiceInterface) *ProjectHandler {
-	return &ProjectHandler{service: s}
+func NewProjectHandler(
+	create *usecase.CreateProjectUseCase,
+	get *usecase.GetProjectUseCase,
+	listByUser *usecase.ListProjectsByUserUseCase,
+	listFeatured *usecase.ListFeaturedProjectsUseCase,
+	listAll *usecase.ListAllProjectsUseCase,
+	listArchived *usecase.ListArchivedProjectsUseCase,
+	search *usecase.SearchProjectsUseCase,
+	update *usecase.UpdateProjectUseCase,
+	updateFeatured *usecase.UpdateProjectFeaturedUseCase,
+	archive *usecase.ArchiveProjectUseCase,
+	unarchive *usecase.UnarchiveProjectUseCase,
+	remove *usecase.DeleteProjectUseCase,
+	count *usecase.CountProjectsUseCase,
+) *ProjectHandler {
+	return &ProjectHandler{
+		create: create, get: get,
+		listByUser: listByUser, listFeatured: listFeatured,
+		listAll: listAll, listArchived: listArchived, search: search,
+		update: update, updateFeatured: updateFeatured,
+		archive: archive, unarchive: unarchive, remove: remove, count: count,
+	}
 }
 
 // Create は新しいプロジェクトを作成する。
@@ -63,7 +79,7 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 		project.EndDate = &endDate
 	}
 
-	if err := h.service.Create(project); err != nil {
+	if err := h.create.Execute(c.Request.Context(), project); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -73,7 +89,9 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 
 // GetByID は指定IDのプロジェクトを取得する。
 func (h *ProjectHandler) GetByID(c *gin.Context) {
-	handleGetByID(c, h.service.GetByID)
+	handleGetByID(c, func(id, userID uint) (*model.Project, error) {
+		return h.get.Execute(c.Request.Context(), id, userID)
+	})
 }
 
 // GetByUserID は指定ユーザーのプロジェクト一覧をページネーション付きで取得する。
@@ -85,7 +103,7 @@ func (h *ProjectHandler) GetByUserID(c *gin.Context) {
 
 	limit, offset := parseLimitOffset(c)
 
-	projects, total, err := h.service.GetByUserID(userID, limit, offset)
+	projects, total, err := h.listByUser.Execute(c.Request.Context(), userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -105,7 +123,7 @@ func (h *ProjectHandler) GetMyProjects(c *gin.Context) {
 
 	limit, offset := parseLimitOffset(c)
 
-	projects, total, err := h.service.GetByUserID(userID, limit, offset)
+	projects, total, err := h.listByUser.Execute(c.Request.Context(), userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -126,7 +144,7 @@ func (h *ProjectHandler) GetFeatured(c *gin.Context) {
 		return
 	}
 
-	projects, err := h.service.GetFeaturedByUserID(userID)
+	projects, err := h.listFeatured.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -180,7 +198,7 @@ func (h *ProjectHandler) Update(c *gin.Context) {
 		updates.EndDate = &endDate
 	}
 
-	project, err := h.service.Update(id, userID, updates)
+	project, err := h.update.Execute(c.Request.Context(), id, userID, updates)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -188,7 +206,7 @@ func (h *ProjectHandler) Update(c *gin.Context) {
 
 	// featuredはboolポインタのため別途処理する
 	if req.Featured != nil {
-		project, err = h.service.UpdateFeatured(id, userID, *req.Featured)
+		project, err = h.updateFeatured.Execute(c.Request.Context(), id, userID, *req.Featured)
 		if err != nil {
 			respondError(c, err)
 			return
@@ -200,17 +218,23 @@ func (h *ProjectHandler) Update(c *gin.Context) {
 
 // Delete は指定IDのプロジェクトを削除する。
 func (h *ProjectHandler) Delete(c *gin.Context) {
-	handleDelete(c, h.service.Delete)
+	handleDelete(c, func(id, userID uint) error {
+		return h.remove.Execute(c.Request.Context(), id, userID)
+	})
 }
 
 // Archive はプロジェクトをアーカイブする。
 func (h *ProjectHandler) Archive(c *gin.Context) {
-	handleAction(c, h.service.Archive, "archived")
+	handleAction(c, func(id, userID uint) error {
+		return h.archive.Execute(c.Request.Context(), id, userID)
+	}, "archived")
 }
 
 // Unarchive はプロジェクトのアーカイブを解除する。
 func (h *ProjectHandler) Unarchive(c *gin.Context) {
-	handleAction(c, h.service.Unarchive, "unarchived")
+	handleAction(c, func(id, userID uint) error {
+		return h.unarchive.Execute(c.Request.Context(), id, userID)
+	}, "unarchived")
 }
 
 // GetArchived はアーカイブ済みプロジェクト一覧を取得する。
@@ -218,7 +242,7 @@ func (h *ProjectHandler) GetArchived(c *gin.Context) {
 	userID := c.GetUint("userID")
 	limit, offset := parseLimitOffset(c)
 
-	projects, total, err := h.service.GetArchivedByUserID(userID, limit, offset)
+	projects, total, err := h.listArchived.Execute(c.Request.Context(), userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -241,7 +265,7 @@ func (h *ProjectHandler) Search(c *gin.Context) {
 
 	limit, offset := parseLimitOffset(c)
 
-	projects, total, err := h.service.Search(q, limit, offset)
+	projects, total, err := h.search.Execute(c.Request.Context(), q, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -259,7 +283,7 @@ func (h *ProjectHandler) Search(c *gin.Context) {
 func (h *ProjectHandler) GetMyCount(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	count, err := h.service.CountByUserID(userID)
+	count, err := h.count.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -272,7 +296,7 @@ func (h *ProjectHandler) GetMyCount(c *gin.Context) {
 func (h *ProjectHandler) GetAll(c *gin.Context) {
 	limit, offset := parseLimitOffset(c)
 
-	projects, total, err := h.service.GetAll(limit, offset)
+	projects, total, err := h.listAll.Execute(c.Request.Context(), limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
