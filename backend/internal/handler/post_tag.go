@@ -4,26 +4,25 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// PostTagServiceInterface はPostTagHandlerが依存するサービスインターフェース。
-type PostTagServiceInterface interface {
-	SetTags(postID, userID uint, tags []string) error
-	SetAutoTags(postID, userID uint, content string) error
-	GetByPostID(postID uint) ([]string, error)
-	FindPostsByTag(tag string, limit, offset int) ([]model.Post, int64, error)
-	GetPopularTags(limit int) ([]model.TagCount, error)
-}
 
 // PostTagHandler は投稿タグのHTTPハンドラー。
 type PostTagHandler struct {
-	service PostTagServiceInterface
+	setTags     *usecase.SetPostTagsUseCase
+	getTags     *usecase.GetPostTagsUseCase
+	findByTag   *usecase.FindPostsByTagUseCase
+	popularTags *usecase.GetPopularTagsUseCase
 }
 
 // NewPostTagHandler は新しいPostTagHandlerを生成する。
-func NewPostTagHandler(service PostTagServiceInterface) *PostTagHandler {
-	return &PostTagHandler{service: service}
+func NewPostTagHandler(
+	setTags *usecase.SetPostTagsUseCase,
+	getTags *usecase.GetPostTagsUseCase,
+	findByTag *usecase.FindPostsByTagUseCase,
+	popularTags *usecase.GetPopularTagsUseCase,
+) *PostTagHandler {
+	return &PostTagHandler{setTags: setTags, getTags: getTags, findByTag: findByTag, popularTags: popularTags}
 }
 
 // SetTags は投稿のタグを設定する。
@@ -32,14 +31,13 @@ func (h *PostTagHandler) SetTags(c *gin.Context) {
 	if !ok {
 		return
 	}
-	userID := c.GetUint("userID")
 
 	req := bindJSON[dto.SetTagsRequest](c)
 	if req == nil {
 		return
 	}
 
-	if err := h.service.SetTags(postID, userID, req.Tags); err != nil {
+	if err := h.setTags.Execute(c.Request.Context(), postID, c.GetUint("userID"), req.Tags); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -53,7 +51,7 @@ func (h *PostTagHandler) GetByPostID(c *gin.Context) {
 		return
 	}
 
-	tags, err := h.service.GetByPostID(postID)
+	tags, err := h.getTags.Execute(c.Request.Context(), postID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -76,7 +74,7 @@ func (h *PostTagHandler) FindPostsByTag(c *gin.Context) {
 	page, limit := parsePagination(c)
 	offset := (page - 1) * limit
 
-	posts, total, err := h.service.FindPostsByTag(tag, limit, offset)
+	posts, total, err := h.findByTag.Execute(c.Request.Context(), tag, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -86,7 +84,7 @@ func (h *PostTagHandler) FindPostsByTag(c *gin.Context) {
 
 // GetPopularTags は人気タグ一覧を取得する。
 func (h *PostTagHandler) GetPopularTags(c *gin.Context) {
-	tags, err := h.service.GetPopularTags(20)
+	tags, err := h.popularTags.Execute(c.Request.Context(), 20)
 	if err != nil {
 		respondError(c, err)
 		return

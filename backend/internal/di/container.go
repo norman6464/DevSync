@@ -330,10 +330,16 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewListPostCollectionPostsUseCase(postCollectionRepo),
 	)
 
-	postTagRepo := repository.NewPostTagRepository(db)
-	postTagService := service.NewPostTagService(postTagRepo, postRepo)
-	c.PostTagHandler = handler.NewPostTagHandler(postTagService)
-	c.PostHandler.SetTagService(postTagService)
+	// 投稿タグはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	postTagRepo := persistence.NewPostTagRepository(db)
+	setPostTags := usecase.NewSetPostTagsUseCase(postTagRepo, persistence.NewPostReader(db))
+	c.PostTagHandler = handler.NewPostTagHandler(
+		setPostTags,
+		usecase.NewGetPostTagsUseCase(postTagRepo),
+		usecase.NewFindPostsByTagUseCase(postTagRepo),
+		usecase.NewGetPopularTagsUseCase(postTagRepo),
+	)
+	c.PostHandler.SetAutoTagsUseCase(usecase.NewSetAutoPostTagsUseCase(setPostTags))
 
 	// post_pin はクリーンアーキテクチャ(DIP)へ移行済み。
 	postPinRepo := persistence.NewPostPinRepository(db)

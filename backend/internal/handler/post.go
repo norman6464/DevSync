@@ -7,6 +7,7 @@ import (
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
 // PostServiceInterface はPostServiceが実装すべきインターフェース。
@@ -62,7 +63,7 @@ type CodeSnippetServiceInterface interface {
 type PostHandler struct {
 	service        PostServiceInterface
 	snippetService CodeSnippetServiceInterface
-	tagService     PostTagServiceInterface
+	autoTags       *usecase.SetAutoPostTagsUseCase
 }
 
 // NewPostHandler は新しいPostHandlerインスタンスを生成する。
@@ -70,10 +71,10 @@ func NewPostHandler(s PostServiceInterface, snippetService CodeSnippetServiceInt
 	return &PostHandler{service: s, snippetService: snippetService}
 }
 
-// SetTagService はオプショナルなタグサービスを設定する。
+// SetAutoTagsUseCase はオプショナルな自動タグ設定を注入する。
 // 設定すると、投稿の作成・更新時にコンテンツからハッシュタグを自動抽出してタグを設定する。
-func (h *PostHandler) SetTagService(tagService PostTagServiceInterface) {
-	h.tagService = tagService
+func (h *PostHandler) SetAutoTagsUseCase(autoTags *usecase.SetAutoPostTagsUseCase) {
+	h.autoTags = autoTags
 }
 
 // Create は新しい投稿を作成する。
@@ -119,8 +120,8 @@ func (h *PostHandler) Create(c *gin.Context) {
 	}
 
 	// コンテンツからハッシュタグを自動抽出してタグを設定
-	if h.tagService != nil {
-		_ = h.tagService.SetAutoTags(created.ID, userID, input.Content)
+	if h.autoTags != nil {
+		_ = h.autoTags.Execute(c.Request.Context(), created.ID, userID, input.Content)
 	}
 
 	respondCreated(c, created)
@@ -186,8 +187,8 @@ func (h *PostHandler) Update(c *gin.Context) {
 	}
 
 	// コンテンツ更新時にハッシュタグを自動再抽出
-	if h.tagService != nil && input.Content != "" {
-		_ = h.tagService.SetAutoTags(id, userID, input.Content)
+	if h.autoTags != nil && input.Content != "" {
+		_ = h.autoTags.Execute(c.Request.Context(), id, userID, input.Content)
 	}
 
 	respondOK(c, post)
@@ -227,8 +228,8 @@ func (h *PostHandler) GetUserPosts(c *gin.Context) {
 
 	respondOK(c, dto.PostListResponse{
 		Posts:  ensureSlice(posts),
-		Total: total,
-		Limit: limit,
+		Total:  total,
+		Limit:  limit,
 		Offset: offset,
 	})
 }

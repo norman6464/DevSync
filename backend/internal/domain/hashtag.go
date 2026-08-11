@@ -1,12 +1,12 @@
-package service
+package domain
 
 import (
 	"regexp"
 	"strings"
 )
 
-// maxHashtags は1コンテンツから抽出するハッシュタグの最大数。
-const maxHashtags = 10
+// MaxHashtags は1コンテンツから抽出するハッシュタグの最大数。
+const MaxHashtags = 10
 
 // hashtagRegex はテキスト中の #hashtag パターンを抽出する正規表現。
 // 英数字・アンダースコア・CJK文字に対応。URL中のフラグメントを除外するため、
@@ -45,11 +45,26 @@ func ExtractHashtags(content string) []string {
 		if !seen[lower] {
 			seen[lower] = true
 			tags = append(tags, tag)
-			if len(tags) >= maxHashtags {
+			if len(tags) >= MaxHashtags {
 				break
 			}
 		}
 	}
 
 	return tags
+}
+
+// NormalizeTags はタグを正規化する（小文字変換・トリム・空文字除外・重複除外）。
+func NormalizeTags(tags []string) []string {
+	seen := make(map[string]bool)
+	var result []string
+	for _, tag := range tags {
+		t := strings.ToLower(strings.TrimSpace(tag))
+		if t == "" || seen[t] {
+			continue
+		}
+		seen[t] = true
+		result = append(result, t)
+	}
+	return result
 }

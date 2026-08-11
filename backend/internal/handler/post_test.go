@@ -8,6 +8,7 @@ import (
 
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -1073,13 +1074,17 @@ func TestPostCreate_WithCodeSnippets_SkipsEmpty(t *testing.T) {
 	assertStatus(t, w, http.StatusCreated)
 }
 
-// ---------- Create with TagService ----------
+// ---------- Create with AutoTags ----------
 
-func TestPostCreate_WithTagService(t *testing.T) {
+// 自動タグ設定は本物の usecase を注入し、本文からの抽出と保存まで通す。
+func TestPostCreate_WithAutoTags(t *testing.T) {
 	h, postRepo, notifRepo, _ := setupPostHandler()
 
-	tagSvc := new(MockPostTagService)
-	h.SetTagService(tagSvc)
+	tagRepo := new(mockPostTagRepo)
+	postReader := new(mockPostReader)
+	h.SetAutoTagsUseCase(usecase.NewSetAutoPostTagsUseCase(
+		usecase.NewSetPostTagsUseCase(tagRepo, postReader),
+	))
 
 	r := newRouter(1)
 	r.POST("/posts", h.Create)
@@ -1092,14 +1097,16 @@ func TestPostCreate_WithTagService(t *testing.T) {
 	})
 	notifRepo.On("GetFollowerIDs", uint(1)).Return([]uint{}, nil)
 	postRepo.On("FindByID", uint(12)).Return(createdPost, nil)
-	tagSvc.On("SetAutoTags", uint(12), uint(1), "Hello #golang").Return(nil)
+	postReader.On("FindByID", mock.Anything, uint(12)).Return(ownedPost(12), nil)
+	tagRepo.On("SetTags", mock.Anything, uint(12), []string{"golang"}).Return(nil)
 
 	w := doRequest(r, http.MethodPost, "/posts", map[string]string{
 		"title": "Tagged Post", "content": "Hello #golang",
 	})
 
 	assertStatus(t, w, http.StatusCreated)
-	tagSvc.AssertCalled(t, "SetAutoTags", uint(12), uint(1), "Hello #golang")
+	// 本文の #golang が抽出され、正規化されたうえで保存される
+	tagRepo.AssertCalled(t, "SetTags", mock.Anything, uint(12), []string{"golang"})
 }
 
 // ---------- HideComment / UnhideComment ----------

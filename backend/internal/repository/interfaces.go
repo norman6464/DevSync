@@ -459,14 +459,6 @@ type NoteRepositoryInterface interface {
 }
 
 
-// PostTagRepositoryInterface は投稿タグデータ操作の契約を定義する。
-type PostTagRepositoryInterface interface {
-	SetTags(postID uint, tags []string) error
-	GetByPostID(postID uint) ([]string, error)
-	FindPostsByTag(tag string, limit, offset int) ([]model.Post, int64, error)
-	GetPopularTags(limit int) ([]model.TagCount, error)
-}
-
 // MentionRepositoryInterface はメンションデータ操作の契約を定義する。
 type MentionRepositoryInterface interface {
 	Create(mention *model.Mention) error
