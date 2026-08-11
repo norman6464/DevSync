@@ -126,7 +126,8 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	learningGoalRepo := repository.NewLearningGoalRepository(db)
 	// アクティビティレポートはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	activityReportRepo := persistence.NewActivityReportRepository(db)
-	projectRepo := repository.NewProjectRepository(db)
+	// プロジェクトはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	projectRepo := persistence.NewProjectRepository(db)
 	learningResourceRepo := repository.NewLearningResourceRepository(db)
 	// 学習リソースはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	// 旧 learningResourceRepo は aiAdviceService がまだ使うため残している。
@@ -190,7 +191,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	learningGoalPort := persistence.NewLearningGoalRepository(db)
 	updateLearningGoal := usecase.NewUpdateLearningGoalUseCase(learningGoalPort)
 	messageService := service.NewMessageService(messageRepo, notificationService)
-	projectService := service.NewProjectService(projectRepo)
 	chatRoomService := service.NewChatRoomService(chatRoomRepo, groupMessageRepo, hub)
 	atcoderService := service.NewAtCoderService(userRepo)
 	badgeService := service.NewBadgeService(badgeRepo, notificationService)
@@ -306,7 +306,21 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewGetMonthlyActivityReportUseCase(activityReportRepo),
 		usecase.NewGetActivityReportComparisonUseCase(activityReportRepo),
 	)
-	c.ProjectHandler = handler.NewProjectHandler(projectService)
+	c.ProjectHandler = handler.NewProjectHandler(
+		usecase.NewCreateProjectUseCase(projectRepo),
+		usecase.NewGetProjectUseCase(projectRepo),
+		usecase.NewListProjectsByUserUseCase(projectRepo),
+		usecase.NewListFeaturedProjectsUseCase(projectRepo),
+		usecase.NewListAllProjectsUseCase(projectRepo),
+		usecase.NewListArchivedProjectsUseCase(projectRepo),
+		usecase.NewSearchProjectsUseCase(projectRepo),
+		usecase.NewUpdateProjectUseCase(projectRepo),
+		usecase.NewUpdateProjectFeaturedUseCase(projectRepo),
+		usecase.NewArchiveProjectUseCase(projectRepo),
+		usecase.NewUnarchiveProjectUseCase(projectRepo),
+		usecase.NewDeleteProjectUseCase(projectRepo),
+		usecase.NewCountProjectsUseCase(projectRepo),
+	)
 	c.LearningResourceHandler = handler.NewLearningResourceHandler(
 		usecase.NewCreateLearningResourceUseCase(learningResourcePort),
 		usecase.NewGetLearningResourceUseCase(learningResourcePort),

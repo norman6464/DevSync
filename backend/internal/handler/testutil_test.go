@@ -967,73 +967,8 @@ func setupNotificationHandler() (*NotificationHandler, *MockNotificationService)
 	return h, svc
 }
 
-// MockProjectService は ProjectServiceInterface のモック実装。
-type MockProjectService struct{ mock.Mock }
-
-func (m *MockProjectService) Create(project *model.Project) error {
-	return m.Called(project).Error(0)
-}
-func (m *MockProjectService) GetByID(id, userID uint) (*model.Project, error) {
-	args := m.Called(id, userID)
-	if p := args.Get(0); p != nil {
-		return p.(*model.Project), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockProjectService) GetByUserID(userID uint, limit, offset int) ([]model.Project, int64, error) {
-	args := m.Called(userID, limit, offset)
-	return args.Get(0).([]model.Project), args.Get(1).(int64), args.Error(2)
-}
-func (m *MockProjectService) GetFeaturedByUserID(userID uint) ([]model.Project, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.Project), args.Error(1)
-}
-func (m *MockProjectService) GetAll(limit, offset int) ([]model.Project, int64, error) {
-	args := m.Called(limit, offset)
-	return args.Get(0).([]model.Project), args.Get(1).(int64), args.Error(2)
-}
-func (m *MockProjectService) Update(id, userID uint, updates *model.Project) (*model.Project, error) {
-	args := m.Called(id, userID, updates)
-	if p := args.Get(0); p != nil {
-		return p.(*model.Project), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockProjectService) UpdateFeatured(id, userID uint, featured bool) (*model.Project, error) {
-	args := m.Called(id, userID, featured)
-	if p := args.Get(0); p != nil {
-		return p.(*model.Project), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockProjectService) Delete(id, userID uint) error {
-	return m.Called(id, userID).Error(0)
-}
-func (m *MockProjectService) Archive(id, userID uint) error {
-	return m.Called(id, userID).Error(0)
-}
-func (m *MockProjectService) Unarchive(id, userID uint) error {
-	return m.Called(id, userID).Error(0)
-}
-func (m *MockProjectService) GetArchivedByUserID(userID uint, limit, offset int) ([]model.Project, int64, error) {
-	args := m.Called(userID, limit, offset)
-	return args.Get(0).([]model.Project), args.Get(1).(int64), args.Error(2)
-}
-func (m *MockProjectService) Search(query string, limit, offset int) ([]model.Project, int64, error) {
-	args := m.Called(query, limit, offset)
-	return args.Get(0).([]model.Project), args.Get(1).(int64), args.Error(2)
-}
-func (m *MockProjectService) CountByUserID(userID uint) (int64, error) {
-	args := m.Called(userID)
-	return args.Get(0).(int64), args.Error(1)
-}
-
-// setupProjectHandler はProjectHandlerテスト用のセットアップを行う。
-func setupProjectHandler() (*ProjectHandler, *MockProjectService) {
-	svc := new(MockProjectService)
-	h := NewProjectHandler(svc)
-	return h, svc
-}
+// Project は DIP へ移行済み。テストは project_test.go で
+// 「本物の usecase + port モック」を組み立てる。
 
 // MockBadgeService は BadgeServiceInterface のモック実装。
 type MockBadgeService struct{ mock.Mock }
