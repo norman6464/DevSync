@@ -431,66 +431,6 @@ func (m *mockRoadmapRepo) ReorderSteps(ctx context.Context, roadmapID uint, step
 	return m.Called(ctx, roadmapID, stepOrders).Error(0)
 }
 
-// MockChatRoomRepository は ChatRoomRepositoryInterface のモック実装。
-type MockChatRoomRepository struct{ mock.Mock }
-
-func (m *MockChatRoomRepository) Create(room *model.ChatRoom) error {
-	return m.Called(room).Error(0)
-}
-func (m *MockChatRoomRepository) FindByID(id uint) (*model.ChatRoom, error) {
-	args := m.Called(id)
-	if r := args.Get(0); r != nil {
-		return r.(*model.ChatRoom), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockChatRoomRepository) FindByUserID(userID uint, limit, offset int) ([]model.ChatRoom, int64, error) {
-	args := m.Called(userID, limit, offset)
-	return args.Get(0).([]model.ChatRoom), args.Get(1).(int64), args.Error(2)
-}
-func (m *MockChatRoomRepository) Update(room *model.ChatRoom) error {
-	return m.Called(room).Error(0)
-}
-func (m *MockChatRoomRepository) Delete(roomID uint) error {
-	return m.Called(roomID).Error(0)
-}
-func (m *MockChatRoomRepository) AddMember(roomID, userID uint) error {
-	return m.Called(roomID, userID).Error(0)
-}
-func (m *MockChatRoomRepository) RemoveMember(roomID, userID uint) error {
-	return m.Called(roomID, userID).Error(0)
-}
-func (m *MockChatRoomRepository) GetMembers(roomID uint) ([]model.ChatRoomMember, error) {
-	args := m.Called(roomID)
-	return args.Get(0).([]model.ChatRoomMember), args.Error(1)
-}
-func (m *MockChatRoomRepository) IsMember(roomID, userID uint) (bool, error) {
-	args := m.Called(roomID, userID)
-	return args.Bool(0), args.Error(1)
-}
-func (m *MockChatRoomRepository) CountByUserID(userID uint) (int64, error) {
-	args := m.Called(userID)
-	return args.Get(0).(int64), args.Error(1)
-}
-
-// MockGroupMessageRepository は GroupMessageRepositoryInterface のモック実装。
-type MockGroupMessageRepository struct{ mock.Mock }
-
-func (m *MockGroupMessageRepository) Create(msg *model.GroupMessage) error {
-	return m.Called(msg).Error(0)
-}
-func (m *MockGroupMessageRepository) FindByRoomID(roomID uint, page, limit int) ([]model.GroupMessage, error) {
-	args := m.Called(roomID, page, limit)
-	return args.Get(0).([]model.GroupMessage), args.Error(1)
-}
-func (m *MockGroupMessageRepository) FindSenderByID(msg *model.GroupMessage) {
-	m.Called(msg)
-}
-func (m *MockGroupMessageRepository) GetMemberUserIDs(roomID uint) []uint {
-	args := m.Called(roomID)
-	return args.Get(0).([]uint)
-}
-
 // Recommendation は DIP へ移行済み。テストは recommendation_test.go で
 // 「本物の usecase + port モック」を組み立てる。
 
@@ -614,16 +554,6 @@ func setupRoadmapHandler() (*RoadmapHandler, *roadmapHandlerPorts) {
 		usecase.NewCountRoadmapsUseCase(roadmaps),
 	)
 	return h, &roadmapHandlerPorts{Roadmaps: roadmaps, Stats: stats}
-}
-
-// setupChatRoomHandlerRepo はChatRoomHandlerテスト用のリポジトリレベルセットアップを行う。
-func setupChatRoomHandlerRepo() (*ChatRoomHandler, *MockChatRoomRepository, *MockGroupMessageRepository) {
-	roomRepo := new(MockChatRoomRepository)
-	msgRepo := new(MockGroupMessageRepository)
-	hub := service.NewHub()
-	svc := service.NewChatRoomService(roomRepo, msgRepo, hub)
-	h := NewChatRoomHandler(svc)
-	return h, roomRepo, msgRepo
 }
 
 // doRequest はHTTPリクエストを実行してレスポンスを返す。
@@ -1026,69 +956,8 @@ func setupAIAdviceHandler() (*AIAdviceHandler, *MockAIAdviceService) {
 // LearningAnalytics は DIP へ移行済み。テストは learning_analytics_test.go で
 // 「本物の usecase + port モック」を組み立てる。
 
-// MockChatRoomService は ChatRoomServiceInterface のモック実装。
-type MockChatRoomService struct{ mock.Mock }
-
-func (m *MockChatRoomService) Create(room *model.ChatRoom, memberIDs []uint) (*model.ChatRoom, error) {
-	args := m.Called(room, memberIDs)
-	if r := args.Get(0); r != nil {
-		return r.(*model.ChatRoom), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockChatRoomService) GetByUserID(userID uint, limit, offset int) ([]model.ChatRoom, int64, error) {
-	args := m.Called(userID, limit, offset)
-	return args.Get(0).([]model.ChatRoom), args.Get(1).(int64), args.Error(2)
-}
-func (m *MockChatRoomService) GetByID(roomID, userID uint) (*model.ChatRoom, error) {
-	args := m.Called(roomID, userID)
-	if r := args.Get(0); r != nil {
-		return r.(*model.ChatRoom), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockChatRoomService) Update(roomID, userID uint, name, description string) (*model.ChatRoom, error) {
-	args := m.Called(roomID, userID, name, description)
-	if r := args.Get(0); r != nil {
-		return r.(*model.ChatRoom), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockChatRoomService) Delete(roomID, userID uint) error {
-	return m.Called(roomID, userID).Error(0)
-}
-func (m *MockChatRoomService) GetMembers(roomID, userID uint) ([]model.ChatRoomMember, error) {
-	args := m.Called(roomID, userID)
-	return args.Get(0).([]model.ChatRoomMember), args.Error(1)
-}
-func (m *MockChatRoomService) AddMember(roomID, userID, targetUserID uint) error {
-	return m.Called(roomID, userID, targetUserID).Error(0)
-}
-func (m *MockChatRoomService) RemoveMember(roomID, userID, targetUserID uint) error {
-	return m.Called(roomID, userID, targetUserID).Error(0)
-}
-func (m *MockChatRoomService) GetMessages(roomID, userID uint, page, limit int) ([]model.GroupMessage, error) {
-	args := m.Called(roomID, userID, page, limit)
-	return args.Get(0).([]model.GroupMessage), args.Error(1)
-}
-func (m *MockChatRoomService) SendMessage(roomID, userID uint, content string) (*model.GroupMessage, error) {
-	args := m.Called(roomID, userID, content)
-	if r := args.Get(0); r != nil {
-		return r.(*model.GroupMessage), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockChatRoomService) CountByUserID(userID uint) (int64, error) {
-	args := m.Called(userID)
-	return args.Get(0).(int64), args.Error(1)
-}
-
-// setupChatRoomHandler はChatRoomHandlerテスト用のセットアップを行う。
-func setupChatRoomHandler() (*ChatRoomHandler, *MockChatRoomService) {
-	svc := new(MockChatRoomService)
-	h := NewChatRoomHandler(svc)
-	return h, svc
-}
+// ChatRoom は DIP へ移行済み。テストは chat_room_test.go で
+// 「本物の usecase + port モック」を組み立てる。
 
 // LearningLog は DIP へ移行済み。テストは learning_log_test.go で
 // 「本物の usecase + port モック」を組み立てる。

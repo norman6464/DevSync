@@ -142,7 +142,10 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	// ロードマップはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	// 旧 roadmapRepo は aiAdviceService がまだ使うため残している。
 	roadmapPort := persistence.NewRoadmapRepository(db)
-	chatRoomRepo := repository.NewChatRoomRepository(db)
+	// チャットルームはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	chatRoomPort := persistence.NewChatRoomRepository(db)
+	chatRoomMessagePort := persistence.NewChatRoomMessageRepository(db)
+	// 旧 groupMessageRepo は Hub のルームメンバー取得コールバックがまだ使うため残している。
 	groupMessageRepo := repository.NewGroupMessageRepository(db)
 	learningLogRepo := repository.NewLearningLogRepository(db)
 	// コードスニペットはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
@@ -196,7 +199,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	learningGoalPort := persistence.NewLearningGoalRepository(db)
 	updateLearningGoal := usecase.NewUpdateLearningGoalUseCase(learningGoalPort)
 	messageService := service.NewMessageService(messageRepo, notificationService)
-	chatRoomService := service.NewChatRoomService(chatRoomRepo, groupMessageRepo, hub)
 	atcoderService := service.NewAtCoderService(userRepo)
 	badgeService := service.NewBadgeService(badgeRepo, notificationService)
 	levelService := service.NewLevelService(levelRepo, notificationService)
@@ -412,7 +414,19 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewGetRoadmapStatsUseCase(persistence.NewRoadmapStatsRepository(db)),
 		usecase.NewCountRoadmapsUseCase(roadmapPort),
 	)
-	c.ChatRoomHandler = handler.NewChatRoomHandler(chatRoomService)
+	c.ChatRoomHandler = handler.NewChatRoomHandler(
+		usecase.NewCreateChatRoomUseCase(chatRoomPort),
+		usecase.NewListMyChatRoomsUseCase(chatRoomPort),
+		usecase.NewGetChatRoomUseCase(chatRoomPort),
+		usecase.NewUpdateChatRoomUseCase(chatRoomPort),
+		usecase.NewDeleteChatRoomUseCase(chatRoomPort),
+		usecase.NewListChatRoomMembersUseCase(chatRoomPort),
+		usecase.NewAddChatRoomMemberUseCase(chatRoomPort),
+		usecase.NewRemoveChatRoomMemberUseCase(chatRoomPort),
+		usecase.NewListChatRoomMessagesUseCase(chatRoomPort, chatRoomMessagePort),
+		usecase.NewSendChatRoomMessageUseCase(chatRoomPort, chatRoomMessagePort, hub),
+		usecase.NewCountMyChatRoomsUseCase(chatRoomPort),
+	)
 	c.AtCoderHandler = handler.NewAtCoderHandler(atcoderService)
 	c.BadgeHandler = handler.NewBadgeHandler(badgeService)
 	c.LearningLogHandler = handler.NewLearningLogHandler(
