@@ -220,15 +220,6 @@ type LearningResourceRepositoryInterface interface {
 	CountByUserID(userID uint) (int64, error)
 }
 
-// ProjectMilestoneRepositoryInterface はプロジェクトマイルストーンデータ操作の契約を定義する。
-type ProjectMilestoneRepositoryInterface interface {
-	Create(milestone *model.ProjectMilestone) error
-	FindByID(id uint) (*model.ProjectMilestone, error)
-	FindByProjectID(projectID uint) ([]model.ProjectMilestone, error)
-	Update(milestone *model.ProjectMilestone) error
-	Delete(id uint) error
-}
-
 // RoadmapRepositoryInterface は学習ロードマップデータ操作の契約を定義する。
 // ステップのCRUD操作やコピー機能も含む。
 type RoadmapRepositoryInterface interface {

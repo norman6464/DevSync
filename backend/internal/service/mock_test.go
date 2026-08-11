@@ -1797,39 +1797,6 @@ func (m *MockSpotifyRepository) DeleteUserData(userID uint) error {
 	return args.Error(0)
 }
 
-// ============================================================
-// MockProjectMilestoneRepository は repository.ProjectMilestoneRepositoryInterface のテスト用モック実装。
-// ============================================================
-
-type MockProjectMilestoneRepository struct {
-	mock.Mock
-}
-
-var _ repository.ProjectMilestoneRepositoryInterface = (*MockProjectMilestoneRepository)(nil)
-
-func (m *MockProjectMilestoneRepository) Create(milestone *model.ProjectMilestone) error {
-	return m.Called(milestone).Error(0)
-}
-
-func (m *MockProjectMilestoneRepository) FindByID(id uint) (*model.ProjectMilestone, error) {
-	args := m.Called(id)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.ProjectMilestone), args.Error(1)
-}
-
-func (m *MockProjectMilestoneRepository) FindByProjectID(projectID uint) ([]model.ProjectMilestone, error) {
-	args := m.Called(projectID)
-	return args.Get(0).([]model.ProjectMilestone), args.Error(1)
-}
-
-func (m *MockProjectMilestoneRepository) Update(milestone *model.ProjectMilestone) error {
-	return m.Called(milestone).Error(0)
-}
-
-func (m *MockProjectMilestoneRepository) Delete(id uint) error {
-	return m.Called(id).Error(0)
-}
+// (MockProjectMilestoneRepository は project_milestone の DIP 移行に伴い撤去)
 
 // (MockUserActivityRepository は user_activity の DIP 移行に伴い撤去)
