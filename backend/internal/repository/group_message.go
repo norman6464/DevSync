@@ -5,7 +5,8 @@ import (
 	"gorm.io/gorm"
 )
 
-// GroupMessageRepository はグループチャットメッセージデータへのアクセスを提供するリポジトリ実装。
+// GroupMessageRepository はWebSocket配信に必要なグループチャットのメンバー情報を提供する。
+// メッセージ本体の永続化はクリーンアーキテクチャ（DIP）へ移行済みで adapter/persistence が担う。
 type GroupMessageRepository struct {
 	db *gorm.DB
 }
@@ -13,29 +14,6 @@ type GroupMessageRepository struct {
 // NewGroupMessageRepository は新しいGroupMessageRepositoryインスタンスを生成する。
 func NewGroupMessageRepository(db *gorm.DB) *GroupMessageRepository {
 	return &GroupMessageRepository{db: db}
-}
-
-// Create は新しいグループメッセージをデータベースに作成する。
-func (r *GroupMessageRepository) Create(msg *model.GroupMessage) error {
-	return r.db.Create(msg).Error
-}
-
-// FindByRoomID は指定チャットルームのメッセージをページネーション付きで取得する。
-// 送信者情報をPreloadし、作成日時の昇順（古い順）でソートされる。
-func (r *GroupMessageRepository) FindByRoomID(roomID uint, page, limit int) ([]model.GroupMessage, error) {
-	var messages []model.GroupMessage
-	offset := (page - 1) * limit
-	err := r.db.Preload("Sender").
-		Where("chat_room_id = ?", roomID).
-		Order("created_at ASC").
-		Offset(offset).Limit(limit).
-		Find(&messages).Error
-	return messages, err
-}
-
-// FindSenderByID はメッセージの送信者情報をデータベースから取得してセットする。
-func (r *GroupMessageRepository) FindSenderByID(msg *model.GroupMessage) {
-	r.db.Model(&model.User{}).First(msg.Sender, msg.SenderID)
 }
 
 // GetMemberUserIDs は指定チャットルームの全メンバーのユーザーIDリストを取得する。

@@ -175,29 +175,6 @@ type RoadmapRepositoryInterface interface {
 	CountByUserID(userID uint) (int64, error)
 }
 
-// ChatRoomRepositoryInterface はチャットルームデータ操作の契約を定義する。
-// メンバー管理操作も含む。
-type ChatRoomRepositoryInterface interface {
-	Create(room *model.ChatRoom) error
-	FindByID(id uint) (*model.ChatRoom, error)
-	FindByUserID(userID uint, limit, offset int) ([]model.ChatRoom, int64, error)
-	Update(room *model.ChatRoom) error
-	Delete(roomID uint) error
-	AddMember(roomID, userID uint) error
-	RemoveMember(roomID, userID uint) error
-	GetMembers(roomID uint) ([]model.ChatRoomMember, error)
-	IsMember(roomID, userID uint) (bool, error)
-	CountByUserID(userID uint) (int64, error)
-}
-
-// GroupMessageRepositoryInterface はグループメッセージデータ操作の契約を定義する。
-type GroupMessageRepositoryInterface interface {
-	Create(msg *model.GroupMessage) error
-	FindByRoomID(roomID uint, page, limit int) ([]model.GroupMessage, error)
-	FindSenderByID(msg *model.GroupMessage)
-	GetMemberUserIDs(roomID uint) []uint
-}
-
 // GitHubRepositoryInterface はGitHub連携データ操作の契約を定義する。
 // コントリビューション、言語統計、リポジトリのUpsert操作を提供する。
 type GitHubRepositoryInterface interface {
