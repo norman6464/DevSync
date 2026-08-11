@@ -1,294 +1,589 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
-func TestNoteTemplateCreate_Success(t *testing.T) {
-	h, svc := setupNoteTemplateHandler()
-	svc.On("Create", mock.AnythingOfType("*model.NoteTemplate")).Return(nil)
+// mockNoteTemplateRepo は usecase/repository.NoteTemplateRepository のモック（ctx 付き）。
+type mockNoteTemplateRepo struct{ mock.Mock }
 
-	r := newRouter(1)
-	r.POST("/note-templates", h.Create)
-	w := doRequest(r, "POST", "/note-templates", map[string]interface{}{
-		"name":             "テスト",
-		"content_template": "テンプレート内容",
-	})
-
-	assertStatus(t, w, http.StatusCreated)
-	svc.AssertExpectations(t)
+func (m *mockNoteTemplateRepo) Create(ctx context.Context, template *model.NoteTemplate) error {
+	return m.Called(ctx, template).Error(0)
+}
+func (m *mockNoteTemplateRepo) Update(ctx context.Context, template *model.NoteTemplate) error {
+	return m.Called(ctx, template).Error(0)
+}
+func (m *mockNoteTemplateRepo) Delete(ctx context.Context, id uint) error {
+	return m.Called(ctx, id).Error(0)
+}
+func (m *mockNoteTemplateRepo) FindByID(ctx context.Context, id uint) (*model.NoteTemplate, error) {
+	args := m.Called(ctx, id)
+	t, _ := args.Get(0).(*model.NoteTemplate)
+	return t, args.Error(1)
+}
+func (m *mockNoteTemplateRepo) FindByUserID(ctx context.Context, userID uint) ([]model.NoteTemplate, error) {
+	args := m.Called(ctx, userID)
+	t, _ := args.Get(0).([]model.NoteTemplate)
+	return t, args.Error(1)
+}
+func (m *mockNoteTemplateRepo) FindDefaultByUserID(ctx context.Context, userID uint) (*model.NoteTemplate, error) {
+	args := m.Called(ctx, userID)
+	t, _ := args.Get(0).(*model.NoteTemplate)
+	return t, args.Error(1)
+}
+func (m *mockNoteTemplateRepo) ClearDefaultFlag(ctx context.Context, userID uint) error {
+	return m.Called(ctx, userID).Error(0)
+}
+func (m *mockNoteTemplateRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
+	args := m.Called(ctx, userID)
+	return args.Get(0).(int64), args.Error(1)
 }
 
-func TestNoteTemplateCreate_ServiceError(t *testing.T) {
-	h, svc := setupNoteTemplateHandler()
-	svc.On("Create", mock.AnythingOfType("*model.NoteTemplate")).Return(service.ErrBadRequest)
+// noteTemplatePorts は NoteTemplateHandler が使う port モックの束。
+type noteTemplatePorts struct {
+	Templates *mockNoteTemplateRepo
+	Notes     *mockNoteRepo
+}
 
+// newTestNoteTemplateHandler は本物の usecase に port モックを注入した NoteTemplateHandler を生成する。
+func newTestNoteTemplateHandler() (*NoteTemplateHandler, noteTemplatePorts) {
+	templates := new(mockNoteTemplateRepo)
+	notes := new(mockNoteRepo)
+	h := NewNoteTemplateHandler(
+		usecase.NewCreateNoteTemplateUseCase(templates),
+		usecase.NewGetNoteTemplateUseCase(templates),
+		usecase.NewListNoteTemplatesUseCase(templates),
+		usecase.NewGetDefaultNoteTemplateUseCase(templates),
+		usecase.NewUpdateNoteTemplateUseCase(templates),
+		usecase.NewDeleteNoteTemplateUseCase(templates),
+		usecase.NewCreateNoteFromTemplateUseCase(templates, usecase.NewCreateNoteUseCase(notes)),
+		usecase.NewCountNoteTemplatesUseCase(templates),
+	)
+	return h, noteTemplatePorts{Templates: templates, Notes: notes}
+}
+
+// templateOwnedBy は指定ユーザーが所有するテンプレートを返すテスト用ヘルパー。
+func templateOwnedBy(id, userID uint) *model.NoteTemplate {
+	return &model.NoteTemplate{
+		ID: id, UserID: userID,
+		Name: "既存テンプレート", ContentTemplate: "## 本文", Description: "説明",
+		DefaultTitle: "既定タイトル", DefaultTags: "go,test",
+	}
+}
+
+// ============================================================
+// Create
+// ============================================================
+
+func TestNoteTemplateHandler_Create(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
 	r := newRouter(1)
 	r.POST("/note-templates", h.Create)
-	w := doRequest(r, "POST", "/note-templates", map[string]interface{}{
-		"name":             "テスト",
-		"content_template": "テンプレート内容",
-	})
 
+	p.Templates.On("Create", mock.Anything, mock.AnythingOfType("*model.NoteTemplate")).Return(nil)
+
+	w := doRequest(r, http.MethodPost, "/note-templates", map[string]interface{}{
+		"name": "テスト", "content_template": "テンプレート内容",
+	})
+	assertStatus(t, w, http.StatusCreated)
+	p.Templates.AssertExpectations(t)
+}
+
+// 前後の空白は落としてから保存する。
+func TestNoteTemplateHandler_Create_TrimsWhitespace(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.POST("/note-templates", h.Create)
+
+	p.Templates.On("Create", mock.Anything, mock.MatchedBy(func(tmpl *model.NoteTemplate) bool {
+		return tmpl.Name == "テスト" && tmpl.ContentTemplate == "本文" &&
+			tmpl.Description == "説明" && tmpl.DefaultTitle == "既定"
+	})).Return(nil)
+
+	w := doRequest(r, http.MethodPost, "/note-templates", map[string]interface{}{
+		"name": "  テスト  ", "content_template": " 本文 ",
+		"description": "  説明 ", "default_title": " 既定 ",
+	})
+	assertStatus(t, w, http.StatusCreated)
+	p.Templates.AssertExpectations(t)
+}
+
+// デフォルト指定つきの作成は、先に既存のデフォルト指定を外してから書き込む。
+func TestNoteTemplateHandler_Create_WithDefaultFlag(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.POST("/note-templates", h.Create)
+
+	p.Templates.On("ClearDefaultFlag", mock.Anything, uint(1)).Return(nil)
+	p.Templates.On("Create", mock.Anything, mock.AnythingOfType("*model.NoteTemplate")).Return(nil)
+
+	w := doRequest(r, http.MethodPost, "/note-templates", map[string]interface{}{
+		"name": "既定", "content_template": "本文", "is_default": true,
+	})
+	assertStatus(t, w, http.StatusCreated)
+	p.Templates.AssertExpectations(t)
+}
+
+// デフォルト指定の解除に失敗したら作成しない。
+func TestNoteTemplateHandler_Create_ClearDefaultFlagError(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.POST("/note-templates", h.Create)
+
+	p.Templates.On("ClearDefaultFlag", mock.Anything, uint(1)).Return(errors.New("db error"))
+
+	w := doRequest(r, http.MethodPost, "/note-templates", map[string]interface{}{
+		"name": "既定", "content_template": "本文", "is_default": true,
+	})
+	assertStatus(t, w, http.StatusInternalServerError)
+	p.Templates.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
+}
+
+// name / content_template は DTO の binding で必須。
+func TestNoteTemplateHandler_Create_BadRequest(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.POST("/note-templates", h.Create)
+
+	w := doRequest(r, http.MethodPost, "/note-templates", map[string]interface{}{})
 	assertStatus(t, w, http.StatusBadRequest)
-	svc.AssertExpectations(t)
+	p.Templates.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 }
 
-func TestNoteTemplateGetByID_Success(t *testing.T) {
-	h, svc := setupNoteTemplateHandler()
-	tmpl := &model.NoteTemplate{ID: 1, UserID: 1, Name: "テスト"}
-	svc.On("GetByID", uint(1), uint(1)).Return(tmpl, nil)
-
+// 空白のみの名前は binding を通るため、usecase の検証で 400 になる。
+func TestNoteTemplateHandler_Create_ValidationError(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
 	r := newRouter(1)
-	r.GET("/note-templates/:id", h.GetByID)
-	w := doRequest(r, "GET", "/note-templates/1", nil)
+	r.POST("/note-templates", h.Create)
 
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestNoteTemplateGetByID_Forbidden(t *testing.T) {
-	h, svc := setupNoteTemplateHandler()
-	svc.On("GetByID", uint(1), uint(1)).Return(nil, service.ErrForbidden)
-
-	r := newRouter(1)
-	r.GET("/note-templates/:id", h.GetByID)
-	w := doRequest(r, "GET", "/note-templates/1", nil)
-
-	assertStatus(t, w, http.StatusForbidden)
-	svc.AssertExpectations(t)
-}
-
-func TestNoteTemplateGetByID_NotFound(t *testing.T) {
-	h, svc := setupNoteTemplateHandler()
-	svc.On("GetByID", uint(99), uint(1)).Return(nil, service.ErrNotFound)
-
-	r := newRouter(1)
-	r.GET("/note-templates/:id", h.GetByID)
-	w := doRequest(r, "GET", "/note-templates/99", nil)
-
-	assertStatus(t, w, http.StatusNotFound)
-	svc.AssertExpectations(t)
-}
-
-func TestNoteTemplateGetByUserID_Success(t *testing.T) {
-	h, svc := setupNoteTemplateHandler()
-	templates := []model.NoteTemplate{{ID: 1, UserID: 1, Name: "テスト"}}
-	svc.On("GetByUserID", uint(1)).Return(templates, nil)
-
-	r := newRouter(1)
-	r.GET("/note-templates", h.GetByUserID)
-	w := doRequest(r, "GET", "/note-templates", nil)
-
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestNoteTemplateGetDefault_Success(t *testing.T) {
-	h, svc := setupNoteTemplateHandler()
-	tmpl := &model.NoteTemplate{ID: 1, UserID: 1, Name: "デフォルト", IsDefault: true}
-	svc.On("GetDefaultByUserID", uint(1)).Return(tmpl, nil)
-
-	r := newRouter(1)
-	r.GET("/note-templates/default", h.GetDefault)
-	w := doRequest(r, "GET", "/note-templates/default", nil)
-
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestNoteTemplateUpdate_Success(t *testing.T) {
-	h, svc := setupNoteTemplateHandler()
-	updated := &model.NoteTemplate{ID: 1, UserID: 1, Name: "新名"}
-	svc.On("Update", uint(1), uint(1), "新名", "", "", "", "", (*bool)(nil)).Return(updated, nil)
-
-	r := newRouter(1)
-	r.PUT("/note-templates/:id", h.Update)
-	w := doRequest(r, "PUT", "/note-templates/1", map[string]interface{}{
-		"name": "新名",
+	w := doRequest(r, http.MethodPost, "/note-templates", map[string]interface{}{
+		"name": "   ", "content_template": "本文",
 	})
-
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	assertStatus(t, w, http.StatusBadRequest)
+	p.Templates.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 }
 
-func TestNoteTemplateUpdate_Forbidden(t *testing.T) {
-	h, svc := setupNoteTemplateHandler()
-	svc.On("Update", uint(1), uint(1), "変更", "", "", "", "", (*bool)(nil)).Return(nil, service.ErrForbidden)
-
+// 説明が上限超過なら 400。
+func TestNoteTemplateHandler_Create_DescriptionTooLong(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
 	r := newRouter(1)
-	r.PUT("/note-templates/:id", h.Update)
-	w := doRequest(r, "PUT", "/note-templates/1", map[string]interface{}{
-		"name": "変更",
+	r.POST("/note-templates", h.Create)
+
+	w := doRequest(r, http.MethodPost, "/note-templates", map[string]interface{}{
+		"name": "テスト", "content_template": "本文", "description": strings.Repeat("あ", 501),
 	})
-
-	assertStatus(t, w, http.StatusForbidden)
-	svc.AssertExpectations(t)
+	assertStatus(t, w, http.StatusBadRequest)
+	p.Templates.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 }
 
-func TestNoteTemplateDelete_Success(t *testing.T) {
-	h, svc := setupNoteTemplateHandler()
-	svc.On("Delete", uint(1), uint(1)).Return(nil)
-
+func TestNoteTemplateHandler_Create_RepositoryError(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
 	r := newRouter(1)
-	r.DELETE("/note-templates/:id", h.Delete)
-	w := doRequest(r, "DELETE", "/note-templates/1", nil)
+	r.POST("/note-templates", h.Create)
 
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
+	p.Templates.On("Create", mock.Anything, mock.AnythingOfType("*model.NoteTemplate")).Return(errors.New("db error"))
 
-func TestNoteTemplateDelete_Forbidden(t *testing.T) {
-	h, svc := setupNoteTemplateHandler()
-	svc.On("Delete", uint(1), uint(1)).Return(service.ErrForbidden)
-
-	r := newRouter(1)
-	r.DELETE("/note-templates/:id", h.Delete)
-	w := doRequest(r, "DELETE", "/note-templates/1", nil)
-
-	assertStatus(t, w, http.StatusForbidden)
-	svc.AssertExpectations(t)
-}
-
-func TestNoteTemplateUseTemplate_Success(t *testing.T) {
-	h, svc := setupNoteTemplateHandler()
-	note := &model.Note{UserID: 1, Title: "テンプレタイトル", Content: "テンプレ内容", Tags: "tag1"}
-	svc.On("UseTemplate", uint(1), uint(1)).Return(note, nil)
-
-	r := newRouter(1)
-	r.POST("/note-templates/:id/use", h.UseTemplate)
-	w := doRequest(r, "POST", "/note-templates/1/use", nil)
-
-	assertStatus(t, w, http.StatusCreated)
-	svc.AssertExpectations(t)
-}
-
-func TestNoteTemplateUseTemplate_Forbidden(t *testing.T) {
-	h, svc := setupNoteTemplateHandler()
-	svc.On("UseTemplate", uint(1), uint(1)).Return(nil, service.ErrForbidden)
-
-	r := newRouter(1)
-	r.POST("/note-templates/:id/use", h.UseTemplate)
-	w := doRequest(r, "POST", "/note-templates/1/use", nil)
-
-	assertStatus(t, w, http.StatusForbidden)
-	svc.AssertExpectations(t)
-}
-
-func TestNoteTemplateUseTemplate_NotFound(t *testing.T) {
-	h, svc := setupNoteTemplateHandler()
-	svc.On("UseTemplate", uint(99), uint(1)).Return(nil, service.ErrNotFound)
-
-	r := newRouter(1)
-	r.POST("/note-templates/:id/use", h.UseTemplate)
-	w := doRequest(r, "POST", "/note-templates/99/use", nil)
-
-	assertStatus(t, w, http.StatusNotFound)
-	svc.AssertExpectations(t)
-}
-
-func TestNoteTemplateGetByUserID_ServiceError(t *testing.T) {
-	h, svc := setupNoteTemplateHandler()
-	svc.On("GetByUserID", uint(1)).Return([]model.NoteTemplate(nil), errors.New("db error"))
-
-	r := newRouter(1)
-	r.GET("/note-templates", h.GetByUserID)
-	w := doRequest(r, "GET", "/note-templates", nil)
-
+	w := doRequest(r, http.MethodPost, "/note-templates", map[string]interface{}{
+		"name": "テスト", "content_template": "本文",
+	})
 	assertStatus(t, w, http.StatusInternalServerError)
 }
 
-func TestNoteTemplateGetDefault_ServiceError(t *testing.T) {
-	h, svc := setupNoteTemplateHandler()
-	svc.On("GetDefaultByUserID", uint(1)).Return(nil, errors.New("db error"))
+// ============================================================
+// GetByID
+// ============================================================
 
+func TestNoteTemplateHandler_GetByID(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
 	r := newRouter(1)
-	r.GET("/note-templates/default", h.GetDefault)
-	w := doRequest(r, "GET", "/note-templates/default", nil)
+	r.GET("/note-templates/:id", h.GetByID)
 
+	p.Templates.On("FindByID", mock.Anything, uint(1)).Return(templateOwnedBy(1, 1), nil)
+
+	w := doRequest(r, http.MethodGet, "/note-templates/1", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Contains(t, w.Body.String(), "既存テンプレート")
+	p.Templates.AssertExpectations(t)
+}
+
+func TestNoteTemplateHandler_GetByID_Forbidden(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.GET("/note-templates/:id", h.GetByID)
+
+	p.Templates.On("FindByID", mock.Anything, uint(1)).Return(templateOwnedBy(1, 2), nil)
+
+	w := doRequest(r, http.MethodGet, "/note-templates/1", nil)
+	assertStatus(t, w, http.StatusForbidden)
+	p.Templates.AssertExpectations(t)
+}
+
+// 不在のテンプレートは 500 になる（移行前から変わらない挙動）。
+func TestNoteTemplateHandler_GetByID_NotFoundIs500(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.GET("/note-templates/:id", h.GetByID)
+
+	p.Templates.On("FindByID", mock.Anything, uint(99)).Return(nil, nil)
+
+	w := doRequest(r, http.MethodGet, "/note-templates/99", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	p.Templates.AssertExpectations(t)
+}
+
+func TestNoteTemplateHandler_GetByID_InvalidID(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.GET("/note-templates/:id", h.GetByID)
+
+	w := doRequest(r, http.MethodGet, "/note-templates/abc", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+	p.Templates.AssertNotCalled(t, "FindByID", mock.Anything, mock.Anything)
+}
+
+// ============================================================
+// GetByUserID
+// ============================================================
+
+func TestNoteTemplateHandler_GetByUserID(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.GET("/note-templates", h.GetByUserID)
+
+	p.Templates.On("FindByUserID", mock.Anything, uint(1)).
+		Return([]model.NoteTemplate{*templateOwnedBy(1, 1)}, nil)
+
+	w := doRequest(r, http.MethodGet, "/note-templates", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Contains(t, w.Body.String(), "既存テンプレート")
+	p.Templates.AssertExpectations(t)
+}
+
+// 0 件でも null ではなく空配列を返す。
+func TestNoteTemplateHandler_GetByUserID_Empty(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.GET("/note-templates", h.GetByUserID)
+
+	p.Templates.On("FindByUserID", mock.Anything, uint(1)).Return([]model.NoteTemplate(nil), nil)
+
+	w := doRequest(r, http.MethodGet, "/note-templates", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Equal(t, "[]", w.Body.String())
+}
+
+func TestNoteTemplateHandler_GetByUserID_RepositoryError(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.GET("/note-templates", h.GetByUserID)
+
+	p.Templates.On("FindByUserID", mock.Anything, uint(1)).
+		Return([]model.NoteTemplate(nil), errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/note-templates", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
 }
 
-func TestNoteTemplateCreate_BadRequest(t *testing.T) {
-	h, _ := setupNoteTemplateHandler()
+// ============================================================
+// GetDefault
+// ============================================================
 
+func TestNoteTemplateHandler_GetDefault(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
 	r := newRouter(1)
-	r.POST("/note-templates", h.Create)
-	w := doRequest(r, "POST", "/note-templates", map[string]interface{}{})
+	r.GET("/note-templates/default", h.GetDefault)
 
-	assertStatus(t, w, http.StatusBadRequest)
+	tmpl := templateOwnedBy(1, 1)
+	tmpl.IsDefault = true
+	p.Templates.On("FindDefaultByUserID", mock.Anything, uint(1)).Return(tmpl, nil)
+
+	w := doRequest(r, http.MethodGet, "/note-templates/default", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Contains(t, w.Body.String(), `"is_default":true`)
+	p.Templates.AssertExpectations(t)
 }
 
-func TestNoteTemplateGetByID_InvalidID(t *testing.T) {
-	h, _ := setupNoteTemplateHandler()
-
+// デフォルト未設定は 500 になる（移行前から変わらない挙動）。
+func TestNoteTemplateHandler_GetDefault_NotSetIs500(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
 	r := newRouter(1)
-	r.GET("/note-templates/:id", h.GetByID)
-	w := doRequest(r, "GET", "/note-templates/abc", nil)
+	r.GET("/note-templates/default", h.GetDefault)
 
-	assertStatus(t, w, http.StatusBadRequest)
+	p.Templates.On("FindDefaultByUserID", mock.Anything, uint(1)).Return(nil, nil)
+
+	w := doRequest(r, http.MethodGet, "/note-templates/default", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	p.Templates.AssertExpectations(t)
 }
 
-func TestNoteTemplateUpdate_InvalidID(t *testing.T) {
-	h, _ := setupNoteTemplateHandler()
+func TestNoteTemplateHandler_GetDefault_RepositoryError(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.GET("/note-templates/default", h.GetDefault)
 
+	p.Templates.On("FindDefaultByUserID", mock.Anything, uint(1)).Return(nil, errors.New("db error"))
+
+	w := doRequest(r, http.MethodGet, "/note-templates/default", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+// ============================================================
+// Update
+// ============================================================
+
+func TestNoteTemplateHandler_Update(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
 	r := newRouter(1)
 	r.PUT("/note-templates/:id", h.Update)
-	w := doRequest(r, "PUT", "/note-templates/abc", map[string]interface{}{"name": "テスト"})
 
-	assertStatus(t, w, http.StatusBadRequest)
+	p.Templates.On("FindByID", mock.Anything, uint(1)).Return(templateOwnedBy(1, 1), nil)
+	p.Templates.On("Update", mock.Anything, mock.MatchedBy(func(tmpl *model.NoteTemplate) bool {
+		// 指定しなかったフィールドは据え置かれる。
+		return tmpl.Name == "新名" && tmpl.ContentTemplate == "## 本文" && tmpl.DefaultTitle == "既定タイトル"
+	})).Return(nil)
+
+	w := doRequest(r, http.MethodPut, "/note-templates/1", map[string]interface{}{"name": "新名"})
+	assertStatus(t, w, http.StatusOK)
+	p.Templates.AssertExpectations(t)
 }
 
-func TestNoteTemplateDelete_InvalidID(t *testing.T) {
-	h, _ := setupNoteTemplateHandler()
+// デフォルト指定つきの更新は、書き込み前に既存のデフォルト指定を外す。
+func TestNoteTemplateHandler_Update_WithDefaultFlag(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.PUT("/note-templates/:id", h.Update)
 
+	p.Templates.On("FindByID", mock.Anything, uint(1)).Return(templateOwnedBy(1, 1), nil)
+	p.Templates.On("ClearDefaultFlag", mock.Anything, uint(1)).Return(nil)
+	p.Templates.On("Update", mock.Anything, mock.MatchedBy(func(tmpl *model.NoteTemplate) bool {
+		return tmpl.IsDefault
+	})).Return(nil)
+
+	w := doRequest(r, http.MethodPut, "/note-templates/1", map[string]interface{}{"is_default": true})
+	assertStatus(t, w, http.StatusOK)
+	p.Templates.AssertExpectations(t)
+}
+
+func TestNoteTemplateHandler_Update_Forbidden(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.PUT("/note-templates/:id", h.Update)
+
+	p.Templates.On("FindByID", mock.Anything, uint(1)).Return(templateOwnedBy(1, 2), nil)
+
+	w := doRequest(r, http.MethodPut, "/note-templates/1", map[string]interface{}{"name": "変更"})
+	assertStatus(t, w, http.StatusForbidden)
+	p.Templates.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
+}
+
+// 不在のテンプレートの更新は 500 になる（移行前から変わらない挙動）。
+func TestNoteTemplateHandler_Update_NotFoundIs500(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.PUT("/note-templates/:id", h.Update)
+
+	p.Templates.On("FindByID", mock.Anything, uint(99)).Return(nil, nil)
+
+	w := doRequest(r, http.MethodPut, "/note-templates/99", map[string]interface{}{"name": "変更"})
+	assertStatus(t, w, http.StatusInternalServerError)
+	p.Templates.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
+}
+
+func TestNoteTemplateHandler_Update_ValidationError(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.PUT("/note-templates/:id", h.Update)
+
+	p.Templates.On("FindByID", mock.Anything, uint(1)).Return(templateOwnedBy(1, 1), nil)
+
+	w := doRequest(r, http.MethodPut, "/note-templates/1", map[string]interface{}{
+		"name": strings.Repeat("あ", 101),
+	})
+	assertStatus(t, w, http.StatusBadRequest)
+	p.Templates.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
+}
+
+func TestNoteTemplateHandler_Update_InvalidID(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.PUT("/note-templates/:id", h.Update)
+
+	w := doRequest(r, http.MethodPut, "/note-templates/abc", map[string]interface{}{"name": "テスト"})
+	assertStatus(t, w, http.StatusBadRequest)
+	p.Templates.AssertNotCalled(t, "FindByID", mock.Anything, mock.Anything)
+}
+
+// ============================================================
+// Delete
+// ============================================================
+
+func TestNoteTemplateHandler_Delete(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
 	r := newRouter(1)
 	r.DELETE("/note-templates/:id", h.Delete)
-	w := doRequest(r, "DELETE", "/note-templates/abc", nil)
 
-	assertStatus(t, w, http.StatusBadRequest)
+	p.Templates.On("FindByID", mock.Anything, uint(1)).Return(templateOwnedBy(1, 1), nil)
+	p.Templates.On("Delete", mock.Anything, uint(1)).Return(nil)
+
+	w := doRequest(r, http.MethodDelete, "/note-templates/1", nil)
+	assertStatus(t, w, http.StatusOK)
+	p.Templates.AssertExpectations(t)
 }
 
-// ---------- GetMyCount ----------
+func TestNoteTemplateHandler_Delete_Forbidden(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.DELETE("/note-templates/:id", h.Delete)
 
-func TestNoteTemplateGetMyCount_Success(t *testing.T) {
-	h, svc := setupNoteTemplateHandler()
+	p.Templates.On("FindByID", mock.Anything, uint(1)).Return(templateOwnedBy(1, 2), nil)
+
+	w := doRequest(r, http.MethodDelete, "/note-templates/1", nil)
+	assertStatus(t, w, http.StatusForbidden)
+	p.Templates.AssertNotCalled(t, "Delete", mock.Anything, mock.Anything)
+}
+
+// 不在のテンプレートの削除は 500 になる（移行前から変わらない挙動）。
+func TestNoteTemplateHandler_Delete_NotFoundIs500(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.DELETE("/note-templates/:id", h.Delete)
+
+	p.Templates.On("FindByID", mock.Anything, uint(99)).Return(nil, nil)
+
+	w := doRequest(r, http.MethodDelete, "/note-templates/99", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	p.Templates.AssertNotCalled(t, "Delete", mock.Anything, mock.Anything)
+}
+
+func TestNoteTemplateHandler_Delete_InvalidID(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.DELETE("/note-templates/:id", h.Delete)
+
+	w := doRequest(r, http.MethodDelete, "/note-templates/abc", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+	p.Templates.AssertNotCalled(t, "FindByID", mock.Anything, mock.Anything)
+}
+
+// ============================================================
+// UseTemplate
+// ============================================================
+
+func TestNoteTemplateHandler_UseTemplate(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.POST("/note-templates/:id/use", h.UseTemplate)
+
+	p.Templates.On("FindByID", mock.Anything, uint(1)).Return(templateOwnedBy(1, 1), nil)
+	p.Notes.On("Create", mock.Anything, mock.MatchedBy(func(n *model.Note) bool {
+		return n.UserID == 1 && n.Title == "既定タイトル" && n.Content == "## 本文" && n.Tags == "go,test"
+	})).Return(nil)
+
+	w := doRequest(r, http.MethodPost, "/note-templates/1/use", nil)
+	assertStatus(t, w, http.StatusCreated)
+	p.Templates.AssertExpectations(t)
+	p.Notes.AssertExpectations(t)
+}
+
+// デフォルトタイトルが空なら既定のノート名を使う。
+func TestNoteTemplateHandler_UseTemplate_FallbackTitle(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.POST("/note-templates/:id/use", h.UseTemplate)
+
+	tmpl := templateOwnedBy(1, 1)
+	tmpl.DefaultTitle = ""
+	p.Templates.On("FindByID", mock.Anything, uint(1)).Return(tmpl, nil)
+	p.Notes.On("Create", mock.Anything, mock.MatchedBy(func(n *model.Note) bool {
+		return n.Title == "新しいノート"
+	})).Return(nil)
+
+	w := doRequest(r, http.MethodPost, "/note-templates/1/use", nil)
+	assertStatus(t, w, http.StatusCreated)
+	p.Notes.AssertExpectations(t)
+}
+
+func TestNoteTemplateHandler_UseTemplate_Forbidden(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.POST("/note-templates/:id/use", h.UseTemplate)
+
+	p.Templates.On("FindByID", mock.Anything, uint(1)).Return(templateOwnedBy(1, 2), nil)
+
+	w := doRequest(r, http.MethodPost, "/note-templates/1/use", nil)
+	assertStatus(t, w, http.StatusForbidden)
+	p.Notes.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
+}
+
+// 不在のテンプレートの利用は 500 になる（移行前から変わらない挙動）。
+func TestNoteTemplateHandler_UseTemplate_NotFoundIs500(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.POST("/note-templates/:id/use", h.UseTemplate)
+
+	p.Templates.On("FindByID", mock.Anything, uint(99)).Return(nil, nil)
+
+	w := doRequest(r, http.MethodPost, "/note-templates/99/use", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	p.Notes.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
+}
+
+func TestNoteTemplateHandler_UseTemplate_NoteCreateError(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.POST("/note-templates/:id/use", h.UseTemplate)
+
+	p.Templates.On("FindByID", mock.Anything, uint(1)).Return(templateOwnedBy(1, 1), nil)
+	p.Notes.On("Create", mock.Anything, mock.AnythingOfType("*model.Note")).Return(errors.New("db error"))
+
+	w := doRequest(r, http.MethodPost, "/note-templates/1/use", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+func TestNoteTemplateHandler_UseTemplate_InvalidID(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
+	r := newRouter(1)
+	r.POST("/note-templates/:id/use", h.UseTemplate)
+
+	w := doRequest(r, http.MethodPost, "/note-templates/abc/use", nil)
+	assertStatus(t, w, http.StatusBadRequest)
+	p.Templates.AssertNotCalled(t, "FindByID", mock.Anything, mock.Anything)
+}
+
+// ============================================================
+// GetMyCount
+// ============================================================
+
+func TestNoteTemplateHandler_GetMyCount(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
 	r := newRouter(1)
 	r.GET("/note-templates/my/count", h.GetMyCount)
 
-	svc.On("CountByUserID", uint(1)).Return(int64(5), nil)
+	p.Templates.On("CountByUserID", mock.Anything, uint(1)).Return(int64(5), nil)
 
 	w := doRequest(r, http.MethodGet, "/note-templates/my/count", nil)
 	assertStatus(t, w, http.StatusOK)
 	assert.Contains(t, w.Body.String(), `"count":5`)
-	svc.AssertExpectations(t)
+	p.Templates.AssertExpectations(t)
 }
 
-func TestNoteTemplateGetMyCount_ServiceError(t *testing.T) {
-	h, svc := setupNoteTemplateHandler()
+func TestNoteTemplateHandler_GetMyCount_RepositoryError(t *testing.T) {
+	h, p := newTestNoteTemplateHandler()
 	r := newRouter(1)
 	r.GET("/note-templates/my/count", h.GetMyCount)
 
-	svc.On("CountByUserID", uint(1)).Return(int64(0), errors.New("db error"))
+	p.Templates.On("CountByUserID", mock.Anything, uint(1)).Return(int64(0), errors.New("db error"))
 
 	w := doRequest(r, http.MethodGet, "/note-templates/my/count", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
-
-func TestNoteTemplateUseTemplate_InvalidID(t *testing.T) {
-	h, _ := setupNoteTemplateHandler()
-
-	r := newRouter(1)
-	r.POST("/note-templates/:id/use", h.UseTemplate)
-	w := doRequest(r, "POST", "/note-templates/abc/use", nil)
-
-	assertStatus(t, w, http.StatusBadRequest)
+	p.Templates.AssertExpectations(t)
 }

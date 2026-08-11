@@ -1650,58 +1650,8 @@ func setupGitHubHandlerMock() (*GitHubHandler, *MockGHService, *MockGHAuthServic
 
 // ---------- NoteTemplateHandler モック ----------
 
-// MockNoteTemplateService は NoteTemplateServiceInterface のモック実装。
-type MockNoteTemplateService struct{ mock.Mock }
-
-func (m *MockNoteTemplateService) Create(template *model.NoteTemplate) error {
-	return m.Called(template).Error(0)
-}
-func (m *MockNoteTemplateService) GetByID(id, userID uint) (*model.NoteTemplate, error) {
-	args := m.Called(id, userID)
-	if t := args.Get(0); t != nil {
-		return t.(*model.NoteTemplate), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockNoteTemplateService) GetByUserID(userID uint) ([]model.NoteTemplate, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.NoteTemplate), args.Error(1)
-}
-func (m *MockNoteTemplateService) GetDefaultByUserID(userID uint) (*model.NoteTemplate, error) {
-	args := m.Called(userID)
-	if t := args.Get(0); t != nil {
-		return t.(*model.NoteTemplate), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockNoteTemplateService) Update(id, userID uint, name, description, defaultTitle, contentTemplate, defaultTags string, isDefault *bool) (*model.NoteTemplate, error) {
-	args := m.Called(id, userID, name, description, defaultTitle, contentTemplate, defaultTags, isDefault)
-	if t := args.Get(0); t != nil {
-		return t.(*model.NoteTemplate), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockNoteTemplateService) Delete(id, userID uint) error {
-	return m.Called(id, userID).Error(0)
-}
-func (m *MockNoteTemplateService) UseTemplate(id, userID uint) (*model.Note, error) {
-	args := m.Called(id, userID)
-	if n := args.Get(0); n != nil {
-		return n.(*model.Note), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-func (m *MockNoteTemplateService) CountByUserID(userID uint) (int64, error) {
-	args := m.Called(userID)
-	return args.Get(0).(int64), args.Error(1)
-}
-
-func setupNoteTemplateHandler() (*NoteTemplateHandler, *MockNoteTemplateService) {
-	svc := new(MockNoteTemplateService)
-	h := NewNoteTemplateHandler(svc)
-	return h, svc
-}
+// NoteTemplate は DIP へ移行済み。テストは note_template_test.go で
+// 「本物の usecase + port モック」を組み立てる。
 
 // ---------- CommentLikeHandler モック ----------
 
