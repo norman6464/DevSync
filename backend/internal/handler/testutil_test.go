@@ -1056,37 +1056,8 @@ func setupZennHandler() (*ArticlePlatformHandler[model.ZennArticle, model.ZennSt
 	return h, svc
 }
 
-// MockAtCoderService は AtCoderServiceInterface のモック実装。
-type MockAtCoderService struct{ mock.Mock }
-
-func (m *MockAtCoderService) GetRating(username string) (*service.AtCoderRatingInfo, error) {
-	args := m.Called(username)
-	if r := args.Get(0); r != nil {
-		return r.(*service.AtCoderRatingInfo), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockAtCoderService) ConnectAtCoder(userID uint, username string) (*model.User, error) {
-	args := m.Called(userID, username)
-	if u := args.Get(0); u != nil {
-		return u.(*model.User), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockAtCoderService) DisconnectAtCoder(userID uint) (*model.User, error) {
-	args := m.Called(userID)
-	if u := args.Get(0); u != nil {
-		return u.(*model.User), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-// setupAtCoderHandler はAtCoderHandlerテスト用のセットアップを行う。
-func setupAtCoderHandler() (*AtCoderHandler, *MockAtCoderService) {
-	atcoderSvc := new(MockAtCoderService)
-	h := NewAtCoderHandler(atcoderSvc)
-	return h, atcoderSvc
-}
+// AtCoder は DIP へ移行済み。テストは atcoder_test.go で
+// 「本物の usecase + port モック」を組み立てる。
 
 // MockAuthService は AuthServiceInterface のモック実装。
 type MockAuthService struct{ mock.Mock }

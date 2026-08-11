@@ -3,26 +3,26 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
-	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// AtCoderServiceInterface はAtCoderサービスの抽象インターフェース。
-type AtCoderServiceInterface interface {
-	GetRating(username string) (*service.AtCoderRatingInfo, error)
-	ConnectAtCoder(userID uint, username string) (*model.User, error)
-	DisconnectAtCoder(userID uint) (*model.User, error)
-}
 
 // AtCoderHandler はAtCoder関連のHTTPハンドラ。
 type AtCoderHandler struct {
-	atcoderService AtCoderServiceInterface
+	getRating  *usecase.GetAtCoderRatingUseCase
+	connect    *usecase.ConnectAtCoderUseCase
+	disconnect *usecase.DisconnectAtCoderUseCase
 }
 
 // NewAtCoderHandler は新しいAtCoderHandlerインスタンスを生成する。
-func NewAtCoderHandler(atcoderService AtCoderServiceInterface) *AtCoderHandler {
+func NewAtCoderHandler(
+	getRating *usecase.GetAtCoderRatingUseCase,
+	connect *usecase.ConnectAtCoderUseCase,
+	disconnect *usecase.DisconnectAtCoderUseCase,
+) *AtCoderHandler {
 	return &AtCoderHandler{
-		atcoderService: atcoderService,
+		getRating:  getRating,
+		connect:    connect,
+		disconnect: disconnect,
 	}
 }
 
@@ -34,7 +34,7 @@ func (h *AtCoderHandler) GetRating(c *gin.Context) {
 		return
 	}
 
-	info, err := h.atcoderService.GetRating(username)
+	info, err := h.getRating.Execute(c.Request.Context(), username)
 	if err != nil {
 		respondBadRequest(c, err.Error())
 		return
@@ -52,7 +52,7 @@ func (h *AtCoderHandler) Connect(c *gin.Context) {
 		return
 	}
 
-	user, err := h.atcoderService.ConnectAtCoder(userID, input.Username)
+	user, err := h.connect.Execute(c.Request.Context(), userID, input.Username)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -65,7 +65,7 @@ func (h *AtCoderHandler) Connect(c *gin.Context) {
 func (h *AtCoderHandler) Disconnect(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	user, err := h.atcoderService.DisconnectAtCoder(userID)
+	user, err := h.disconnect.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return

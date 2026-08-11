@@ -14,6 +14,14 @@ type UserSkillsReader interface {
 	FindByID(ctx context.Context, id uint) (*model.User, error)
 }
 
+// ExternalAccountLinker は外部サービスのアカウント連携が必要とする最小の契約。
+// 対象ユーザーを 1 件読み、連携先のユーザー名を書き戻すだけで足りる。
+type ExternalAccountLinker interface {
+	UserSkillsReader
+
+	Update(ctx context.Context, user *model.User) error
+}
+
 // UserRepository はユーザー情報の永続化に対する、usecase 側が要求する契約。
 // 認証や外部サービス連携が使う操作（作成・削除・パスワード更新など）は含まない。
 type UserRepository interface {
