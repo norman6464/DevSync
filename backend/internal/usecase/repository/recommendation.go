@@ -17,10 +17,4 @@ type RecommendationRepository interface {
 	GetTrendingResources(ctx context.Context, limit, days int) ([]model.LearningResource, error)
 }
 
-// UserSkillsReader はおすすめユーザーの算出でプロフィールのスキルを読むための最小の契約。
-// 共有の user リポジトリ全体には依存しない。
-type UserSkillsReader interface {
-	// FindByID は指定 ID のユーザーを返す。
-	// 不在の場合は「不在」を表す (nil, nil) を返し、DB 障害だけを error として返す。
-	FindByID(ctx context.Context, id uint) (*model.User, error)
-}
+// おすすめユーザーの算出で使うプロフィール参照は、user スライスの [UserSkillsReader] を使う。

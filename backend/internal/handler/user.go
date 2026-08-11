@@ -3,28 +3,31 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
-	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// UserServiceInterface はUserServiceが実装すべきインターフェース。
-type UserServiceInterface interface {
-	GetAll(query string) ([]model.User, error)
-	GetByID(id uint) (*model.User, error)
-	GetByUsername(username string) (*model.User, error)
-	UpdateProfile(id, userID uint, input *service.UpdateProfileInput) (*model.User, error)
-	GetProfileCompleteness(userID uint) (*service.ProfileCompleteness, error)
-}
 
 // UserHandler はユーザー関連のHTTPハンドラ。
 // ユーザー検索・詳細取得・プロフィール更新を処理する。
 type UserHandler struct {
-	service UserServiceInterface
+	list          *usecase.ListUsersUseCase
+	get           *usecase.GetUserUseCase
+	getByName     *usecase.GetUserByUsernameUseCase
+	updateProfile *usecase.UpdateUserProfileUseCase
+	completeness  *usecase.GetProfileCompletenessUseCase
 }
 
 // NewUserHandler は新しいUserHandlerインスタンスを生成する。
-func NewUserHandler(s UserServiceInterface) *UserHandler {
-	return &UserHandler{service: s}
+func NewUserHandler(
+	list *usecase.ListUsersUseCase,
+	get *usecase.GetUserUseCase,
+	getByName *usecase.GetUserByUsernameUseCase,
+	updateProfile *usecase.UpdateUserProfileUseCase,
+	completeness *usecase.GetProfileCompletenessUseCase,
+) *UserHandler {
+	return &UserHandler{
+		list: list, get: get, getByName: getByName,
+		updateProfile: updateProfile, completeness: completeness,
+	}
 }
 
 // GetAll はユーザー一覧を返す。クエリパラメータqで検索可能（最大100文字）。
@@ -33,7 +36,7 @@ func (h *UserHandler) GetAll(c *gin.Context) {
 	if !ok {
 		return
 	}
-	users, err := h.service.GetAll(q)
+	users, err := h.list.Execute(c.Request.Context(), q)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -48,7 +51,7 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	user, err := h.service.GetByID(id)
+	user, err := h.get.Execute(c.Request.Context(), id)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -68,7 +71,7 @@ func (h *UserHandler) GetByUsername(c *gin.Context) {
 		return
 	}
 
-	user, err := h.service.GetByUsername(username)
+	user, err := h.getByName.Execute(c.Request.Context(), username)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -90,7 +93,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 		return
 	}
 
-	profileInput := &service.UpdateProfileInput{
+	profileInput := &usecase.UpdateProfileInput{
 		Name:                input.Name,
 		Bio:                 input.Bio,
 		AvatarURL:           input.AvatarURL,
@@ -101,7 +104,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 		OnboardingCompleted: input.OnboardingCompleted,
 	}
 
-	user, err := h.service.UpdateProfile(id, userID, profileInput)
+	user, err := h.updateProfile.Execute(c.Request.Context(), id, userID, profileInput)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -112,7 +115,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 // GetProfileCompleteness は認証ユーザーのプロフィール完成度を返す。
 func (h *UserHandler) GetProfileCompleteness(c *gin.Context) {
 	userID := c.GetUint("userID")
-	result, err := h.service.GetProfileCompleteness(userID)
+	result, err := h.completeness.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
