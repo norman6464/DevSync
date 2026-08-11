@@ -2,29 +2,24 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// LearningDashboardServiceInterface はLearningDashboardHandlerが依存するサービスのインターフェース。
-type LearningDashboardServiceInterface interface {
-	GetSummary(userID uint) (*model.LearningDashboardSummary, error)
-}
 
 // LearningDashboardHandler は学習ダッシュボード統合サマリーのHTTPハンドラ。
 type LearningDashboardHandler struct {
-	service LearningDashboardServiceInterface
+	summary *usecase.GetLearningDashboardSummaryUseCase
 }
 
 // NewLearningDashboardHandler は新しいLearningDashboardHandlerインスタンスを生成する。
-func NewLearningDashboardHandler(s LearningDashboardServiceInterface) *LearningDashboardHandler {
-	return &LearningDashboardHandler{service: s}
+func NewLearningDashboardHandler(summary *usecase.GetLearningDashboardSummaryUseCase) *LearningDashboardHandler {
+	return &LearningDashboardHandler{summary: summary}
 }
 
 // GetSummary は認証ユーザーの学習ダッシュボード統合サマリーを返す。
 func (h *LearningDashboardHandler) GetSummary(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	summary, err := h.service.GetSummary(userID)
+	summary, err := h.summary.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
