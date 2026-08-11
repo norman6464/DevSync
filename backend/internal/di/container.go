@@ -157,7 +157,8 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	// スタディサークルはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	studyCirclePort := persistence.NewStudyCircleRepository(db)
 	searchStudyCircles := usecase.NewSearchStudyCirclesUseCase(studyCirclePort)
-	noteRepo := repository.NewNoteRepository(db)
+	// ノートはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	notePort := persistence.NewNoteRepository(db)
 	// ノートフォルダはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	noteFolderRepo := persistence.NewNoteFolderRepository(db)
 	noteTemplateRepo := repository.NewNoteTemplateRepository(db)
@@ -195,8 +196,8 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	levelService := service.NewLevelService(levelRepo, notificationService)
 	analyticsService := service.NewLearningAnalyticsService(analyticsRepo)
 	recommendationService := service.NewRecommendationService(recommendationRepo, userRepo)
-	noteService := service.NewNoteService(noteRepo)
-	noteTemplateService := service.NewNoteTemplateService(noteTemplateRepo, noteService)
+	createNote := usecase.NewCreateNoteUseCase(notePort)
+	noteTemplateService := service.NewNoteTemplateService(noteTemplateRepo, noteCreator{create: createNote})
 	learningLogTemplateService := service.NewLearningLogTemplateService(learningLogTemplateRepo, learningLogService)
 
 	// テンプレートロードマップの初期登録
@@ -419,7 +420,26 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	)
 	searchService := service.NewSearchService(postRepo)
 	c.SearchHandler = handler.NewSearchHandler(searchService, searchStudyCircles)
-	c.NoteHandler = handler.NewNoteHandler(noteService)
+	c.NoteHandler = handler.NewNoteHandler(
+		createNote,
+		usecase.NewGetNoteUseCase(notePort),
+		usecase.NewListNotesUseCase(notePort),
+		usecase.NewListNotesByFolderUseCase(notePort),
+		usecase.NewUpdateNoteUseCase(notePort),
+		usecase.NewDeleteNoteUseCase(notePort),
+		usecase.NewSearchNotesUseCase(notePort),
+		usecase.NewCountNotesUseCase(notePort),
+		usecase.NewToggleNoteFavoriteUseCase(notePort),
+		usecase.NewListFavoriteNotesUseCase(notePort),
+		usecase.NewCountFavoriteNotesUseCase(notePort),
+		usecase.NewArchiveNoteUseCase(notePort),
+		usecase.NewUnarchiveNoteUseCase(notePort),
+		usecase.NewListArchivedNotesUseCase(notePort),
+		usecase.NewCountArchivedNotesUseCase(notePort),
+		usecase.NewListNoteTagsUseCase(notePort),
+		usecase.NewExportNoteMarkdownUseCase(notePort),
+		usecase.NewDuplicateNoteUseCase(notePort),
+	)
 	// ノートのバージョン履歴はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	noteVersionRepo := persistence.NewNoteVersionRepository(db)
 	noteUpdater := persistence.NewNoteUpdater(db)
@@ -826,4 +846,16 @@ func seedTemplateRoadmaps(db *gorm.DB, seed *usecase.SeedRoadmapTemplatesUseCase
 	if err := seed.Execute(context.Background(), user.ID); err != nil {
 		log.Printf("テンプレートシード失敗: %v", err)
 	}
+}
+
+// noteCreator は未移行の note_template が要求する service.NoteCreatorInterface を
+// ノート作成 usecase で満たすための橋渡し。note_template 側の署名に ctx が無いため
+// ここでは context.Background() を使う。note_template を移行した時点で撤去する。
+type noteCreator struct {
+	create *usecase.CreateNoteUseCase
+}
+
+// Create はノート作成 usecase へ委譲する。
+func (n noteCreator) Create(note *model.Note) error {
+	return n.create.Execute(context.Background(), note)
 }

@@ -7,40 +7,60 @@ import (
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// NoteServiceInterface はNoteServiceのインターフェース。
-// テスト時のモック化を容易にするため、インターフェースとして定義する。
-type NoteServiceInterface interface {
-	Create(note *model.Note) error
-	GetByID(id, userID uint) (*model.Note, error)
-	GetByUserID(userID uint, page, limit int) ([]model.Note, error)
-	GetByFolderID(folderID, userID uint) ([]model.Note, error)
-	Update(id, userID uint, title, content, tags string, folderID *uint) (*model.Note, error)
-	Delete(id, userID uint) error
-	Search(userID uint, query string, page, limit int) ([]model.Note, int64, error)
-	CountByUserID(userID uint) (int64, error)
-	ToggleFavorite(id, userID uint) error
-	GetFavorites(userID uint, page, limit int) ([]model.Note, error)
-	CountFavoritesByUserID(userID uint) (int64, error)
-	Archive(id, userID uint) error
-	Unarchive(id, userID uint) error
-	GetArchived(userID uint, page, limit int) ([]model.Note, error)
-	CountArchivedByUserID(userID uint) (int64, error)
-	Duplicate(id uint, userID uint) (*model.Note, error)
-	ExportMarkdown(id, userID uint) ([]byte, string, error)
-	GetTags(userID uint) ([]string, error)
-}
 
 // NoteHandler は学習ノート関連のHTTPハンドラ。
 // ノートのCRUD・検索・お気に入り管理を処理する。
 type NoteHandler struct {
-	service NoteServiceInterface
+	create         *usecase.CreateNoteUseCase
+	get            *usecase.GetNoteUseCase
+	list           *usecase.ListNotesUseCase
+	listByFolder   *usecase.ListNotesByFolderUseCase
+	update         *usecase.UpdateNoteUseCase
+	remove         *usecase.DeleteNoteUseCase
+	search         *usecase.SearchNotesUseCase
+	count          *usecase.CountNotesUseCase
+	toggleFavorite *usecase.ToggleNoteFavoriteUseCase
+	listFavorites  *usecase.ListFavoriteNotesUseCase
+	countFavorites *usecase.CountFavoriteNotesUseCase
+	archive        *usecase.ArchiveNoteUseCase
+	unarchive      *usecase.UnarchiveNoteUseCase
+	listArchived   *usecase.ListArchivedNotesUseCase
+	countArchived  *usecase.CountArchivedNotesUseCase
+	listTags       *usecase.ListNoteTagsUseCase
+	export         *usecase.ExportNoteMarkdownUseCase
+	duplicate      *usecase.DuplicateNoteUseCase
 }
 
 // NewNoteHandler は新しいNoteHandlerインスタンスを生成する。
-func NewNoteHandler(s NoteServiceInterface) *NoteHandler {
-	return &NoteHandler{service: s}
+func NewNoteHandler(
+	create *usecase.CreateNoteUseCase,
+	get *usecase.GetNoteUseCase,
+	list *usecase.ListNotesUseCase,
+	listByFolder *usecase.ListNotesByFolderUseCase,
+	update *usecase.UpdateNoteUseCase,
+	remove *usecase.DeleteNoteUseCase,
+	search *usecase.SearchNotesUseCase,
+	count *usecase.CountNotesUseCase,
+	toggleFavorite *usecase.ToggleNoteFavoriteUseCase,
+	listFavorites *usecase.ListFavoriteNotesUseCase,
+	countFavorites *usecase.CountFavoriteNotesUseCase,
+	archive *usecase.ArchiveNoteUseCase,
+	unarchive *usecase.UnarchiveNoteUseCase,
+	listArchived *usecase.ListArchivedNotesUseCase,
+	countArchived *usecase.CountArchivedNotesUseCase,
+	listTags *usecase.ListNoteTagsUseCase,
+	export *usecase.ExportNoteMarkdownUseCase,
+	duplicate *usecase.DuplicateNoteUseCase,
+) *NoteHandler {
+	return &NoteHandler{
+		create: create, get: get, list: list, listByFolder: listByFolder,
+		update: update, remove: remove, search: search, count: count,
+		toggleFavorite: toggleFavorite, listFavorites: listFavorites, countFavorites: countFavorites,
+		archive: archive, unarchive: unarchive, listArchived: listArchived, countArchived: countArchived,
+		listTags: listTags, export: export, duplicate: duplicate,
+	}
 }
 
 // Create は新しいノートを作成する。
@@ -59,7 +79,7 @@ func (h *NoteHandler) Create(c *gin.Context) {
 		FolderID: input.FolderID,
 	}
 
-	if err := h.service.Create(note); err != nil {
+	if err := h.create.Execute(c.Request.Context(), note); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -69,7 +89,9 @@ func (h *NoteHandler) Create(c *gin.Context) {
 
 // GetByID は指定IDのノートを所有権検証付きで取得する。
 func (h *NoteHandler) GetByID(c *gin.Context) {
-	handleGetByID(c, h.service.GetByID)
+	handleGetByID(c, func(id, userID uint) (*model.Note, error) {
+		return h.get.Execute(c.Request.Context(), id, userID)
+	})
 }
 
 // GetByUserID は現在のユーザーのノート一覧をページネーション付きで取得する。
@@ -77,13 +99,13 @@ func (h *NoteHandler) GetByUserID(c *gin.Context) {
 	userID := c.GetUint("userID")
 	page, limit := parsePagination(c)
 
-	notes, err := h.service.GetByUserID(userID, page, limit)
+	notes, err := h.list.Execute(c.Request.Context(), userID, page, limit)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
 
-	total, err := h.service.CountByUserID(userID)
+	total, err := h.count.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -96,7 +118,7 @@ func (h *NoteHandler) GetByUserID(c *gin.Context) {
 func (h *NoteHandler) GetMyCount(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	count, err := h.service.CountByUserID(userID)
+	count, err := h.count.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -113,7 +135,7 @@ func (h *NoteHandler) GetByFolderID(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	notes, err := h.service.GetByFolderID(folderID, userID)
+	notes, err := h.listByFolder.Execute(c.Request.Context(), folderID, userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -135,7 +157,7 @@ func (h *NoteHandler) Update(c *gin.Context) {
 		return
 	}
 
-	note, err := h.service.Update(id, userID, input.Title, input.Content, input.Tags, input.FolderID)
+	note, err := h.update.Execute(c.Request.Context(), id, userID, input.Title, input.Content, input.Tags, input.FolderID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -146,7 +168,9 @@ func (h *NoteHandler) Update(c *gin.Context) {
 
 // Delete はノートを削除する。
 func (h *NoteHandler) Delete(c *gin.Context) {
-	handleDelete(c, h.service.Delete)
+	handleDelete(c, func(id, userID uint) error {
+		return h.remove.Execute(c.Request.Context(), id, userID)
+	})
 }
 
 // Search はキーワードでノートを検索する（ページネーション付き）。
@@ -160,7 +184,7 @@ func (h *NoteHandler) Search(c *gin.Context) {
 
 	page, limit := parsePagination(c)
 
-	notes, total, err := h.service.Search(userID, query, page, limit)
+	notes, total, err := h.search.Execute(c.Request.Context(), userID, query, page, limit)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -177,7 +201,7 @@ func (h *NoteHandler) ToggleFavorite(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.service.ToggleFavorite(id, userID); err != nil {
+	if err := h.toggleFavorite.Execute(c.Request.Context(), id, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -187,12 +211,16 @@ func (h *NoteHandler) ToggleFavorite(c *gin.Context) {
 
 // Archive はノートをアーカイブする。
 func (h *NoteHandler) Archive(c *gin.Context) {
-	handleAction(c, h.service.Archive, "ノートをアーカイブしました")
+	handleAction(c, func(id, userID uint) error {
+		return h.archive.Execute(c.Request.Context(), id, userID)
+	}, "ノートをアーカイブしました")
 }
 
 // Unarchive はノートのアーカイブを解除する。
 func (h *NoteHandler) Unarchive(c *gin.Context) {
-	handleAction(c, h.service.Unarchive, "ノートのアーカイブを解除しました")
+	handleAction(c, func(id, userID uint) error {
+		return h.unarchive.Execute(c.Request.Context(), id, userID)
+	}, "ノートのアーカイブを解除しました")
 }
 
 // GetFavorites は現在のユーザーのお気に入りノート一覧をページネーション付きで取得する。
@@ -200,13 +228,13 @@ func (h *NoteHandler) GetFavorites(c *gin.Context) {
 	userID := c.GetUint("userID")
 	page, limit := parsePagination(c)
 
-	notes, err := h.service.GetFavorites(userID, page, limit)
+	notes, err := h.listFavorites.Execute(c.Request.Context(), userID, page, limit)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
 
-	total, err := h.service.CountFavoritesByUserID(userID)
+	total, err := h.countFavorites.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -220,13 +248,13 @@ func (h *NoteHandler) GetArchived(c *gin.Context) {
 	userID := c.GetUint("userID")
 	page, limit := parsePagination(c)
 
-	notes, err := h.service.GetArchived(userID, page, limit)
+	notes, err := h.listArchived.Execute(c.Request.Context(), userID, page, limit)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
 
-	total, err := h.service.CountArchivedByUserID(userID)
+	total, err := h.countArchived.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -243,7 +271,7 @@ func (h *NoteHandler) Duplicate(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	duplicate, err := h.service.Duplicate(id, userID)
+	duplicate, err := h.duplicate.Execute(c.Request.Context(), id, userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -256,7 +284,7 @@ func (h *NoteHandler) Duplicate(c *gin.Context) {
 func (h *NoteHandler) GetTags(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	tags, err := h.service.GetTags(userID)
+	tags, err := h.listTags.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -273,7 +301,7 @@ func (h *NoteHandler) Export(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	data, title, err := h.service.ExportMarkdown(id, userID)
+	data, title, err := h.export.Execute(c.Request.Context(), id, userID)
 	if err != nil {
 		respondError(c, err)
 		return
