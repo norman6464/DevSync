@@ -130,6 +130,9 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	// 書籍レビューはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	bookReviewRepo := persistence.NewBookReviewRepository(db)
 	questionRepo := repository.NewQuestionRepository(db)
+	// 質問はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	// 旧 questionRepo は answerService がまだ使うため残している。
+	questionPort := persistence.NewQuestionRepository(db)
 	answerRepo := repository.NewAnswerRepository(db)
 	roadmapRepo := repository.NewRoadmapRepository(db)
 	chatRoomRepo := repository.NewChatRoomRepository(db)
@@ -173,7 +176,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	zennService := service.NewZennService(userRepo, zennRepo)
 	qiitaService := service.NewQiitaService(userRepo, qiitaRepo)
 	postService := service.NewPostService(postRepo, notificationService)
-	questionService := service.NewQuestionService(questionRepo)
 	answerService := service.NewAnswerService(answerRepo, questionRepo)
 	learningLogService := service.NewLearningLogService(learningLogRepo, learningGoalRepo)
 	// 学習目標はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
@@ -313,7 +315,24 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewDeleteBookReviewUseCase(bookReviewRepo),
 		usecase.NewCountBookReviewsUseCase(bookReviewRepo),
 	)
-	c.QuestionHandler = handler.NewQuestionHandler(questionService)
+	c.QuestionHandler = handler.NewQuestionHandler(
+		usecase.NewCreateQuestionUseCase(questionPort),
+		usecase.NewListQuestionsUseCase(questionPort),
+		usecase.NewSearchQuestionsUseCase(questionPort),
+		usecase.NewGetQuestionUseCase(questionPort),
+		usecase.NewListQuestionsByUserUseCase(questionPort),
+		usecase.NewGetQuestionUserVoteUseCase(questionPort),
+		usecase.NewUpdateQuestionUseCase(questionPort),
+		usecase.NewDeleteQuestionUseCase(questionPort),
+		usecase.NewVoteQuestionUseCase(questionPort),
+		usecase.NewRemoveQuestionVoteUseCase(questionPort),
+		usecase.NewListSolvedQuestionsUseCase(questionPort),
+		usecase.NewListUnansweredQuestionsUseCase(questionPort),
+		usecase.NewBookmarkQuestionUseCase(questionPort),
+		usecase.NewUnbookmarkQuestionUseCase(questionPort),
+		usecase.NewListBookmarkedQuestionsUseCase(questionPort),
+		usecase.NewCountQuestionsUseCase(questionPort),
+	)
 	c.AnswerHandler = handler.NewAnswerHandler(answerService)
 	c.RoadmapHandler = handler.NewRoadmapHandler(roadmapService)
 	c.ChatRoomHandler = handler.NewChatRoomHandler(chatRoomService)
