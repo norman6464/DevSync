@@ -861,10 +861,18 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewGetBookmarkStatsUseCase(bookmarkStatsRepo),
 	)
 
-	// Spotifyサービス
-	spotifyRepo := repository.NewSpotifyRepository(db)
-	spotifyService := service.NewSpotifyService(cfg, userRepo, spotifyRepo)
-	c.SpotifyHandler = handler.NewSpotifyHandler(spotifyService, authService)
+	// Spotify 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、
+	// 実装は adapter/persistence（永続化）と adapter/external（Spotify API）。
+	spotifyPort := persistence.NewSpotifyRepository(db)
+	spotifyClient := external.NewSpotifyClient(cfg.SpotifyClientID, cfg.SpotifyClientSecret, cfg.SpotifyRedirectURL)
+	spotifyUseCases := handler.SpotifyUseCases{
+		OAuthURL:         usecase.NewGetSpotifyOAuthURLUseCase(spotifyClient),
+		Connect:          usecase.NewConnectSpotifyUseCase(userPort, spotifyClient),
+		Disconnect:       usecase.NewDisconnectSpotifyUseCase(userPort, spotifyPort),
+		CurrentlyPlaying: usecase.NewGetSpotifyCurrentlyPlayingUseCase(userPort, spotifyClient),
+		RecentlyPlayed:   usecase.NewGetSpotifyRecentlyPlayedUseCase(userPort, spotifyClient),
+	}
+	c.SpotifyHandler = handler.NewSpotifyHandler(spotifyUseCases, authService)
 
 	// YouTube 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence と adapter/external。
 	// APIキー未設定のときは検索クライアントを nil のままにし、利用不可（503）として扱う。
