@@ -4,31 +4,37 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// MessageServiceInterface はMessageHandlerが依存するサービスのインターフェース。
-type MessageServiceInterface interface {
-	GetConversations(userID uint) ([]model.ConversationSummary, error)
-	GetConversation(userID, otherUserID uint, page, limit int) ([]model.Message, error)
-	SendMessage(msg *model.Message) error
-	MarkAsRead(senderID, receiverID uint) error
-}
 
 // MessageHandler はDM（ダイレクトメッセージ）関連のHTTPハンドラ。
 // 会話一覧・メッセージ取得・メッセージ送信を処理する。
 type MessageHandler struct {
-	service MessageServiceInterface
+	listConversations *usecase.ListConversationsUseCase
+	getConversation   *usecase.GetConversationUseCase
+	send              *usecase.SendMessageUseCase
+	markAsRead        *usecase.MarkMessagesAsReadUseCase
 }
 
 // NewMessageHandler は新しいMessageHandlerインスタンスを生成する。
-func NewMessageHandler(s MessageServiceInterface) *MessageHandler {
-	return &MessageHandler{service: s}
+func NewMessageHandler(
+	listConversations *usecase.ListConversationsUseCase,
+	getConversation *usecase.GetConversationUseCase,
+	send *usecase.SendMessageUseCase,
+	markAsRead *usecase.MarkMessagesAsReadUseCase,
+) *MessageHandler {
+	return &MessageHandler{
+		listConversations: listConversations,
+		getConversation:   getConversation,
+		send:              send,
+		markAsRead:        markAsRead,
+	}
 }
 
 // GetConversations は認証ユーザーの会話一覧を返す。
 func (h *MessageHandler) GetConversations(c *gin.Context) {
 	userID := c.GetUint("userID")
-	conversations, err := h.service.GetConversations(userID)
+	conversations, err := h.listConversations.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -46,7 +52,7 @@ func (h *MessageHandler) GetMessages(c *gin.Context) {
 
 	page, limit := parsePagination(c)
 
-	messages, err := h.service.GetConversation(userID, otherID, page, limit)
+	messages, err := h.getConversation.Execute(c.Request.Context(), userID, otherID, page, limit)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -62,7 +68,7 @@ func (h *MessageHandler) MarkAsRead(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.MarkAsRead(senderID, userID); err != nil {
+	if err := h.markAsRead.Execute(c.Request.Context(), senderID, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -87,7 +93,7 @@ func (h *MessageHandler) SendMessage(c *gin.Context) {
 		ReceiverID: receiverID,
 		Content:    input.Content,
 	}
-	if err := h.service.SendMessage(msg); err != nil {
+	if err := h.send.Execute(c.Request.Context(), msg); err != nil {
 		respondError(c, err)
 		return
 	}

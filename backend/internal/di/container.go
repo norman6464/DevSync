@@ -118,7 +118,8 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	followRepo := persistence.NewFollowRepository(db)
 	githubRepo := repository.NewGitHubRepository(db)
 	postRepo := repository.NewPostRepository(db)
-	messageRepo := repository.NewMessageRepository(db)
+	// ダイレクトメッセージはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	messagePort := persistence.NewMessageRepository(db)
 	// ランキングはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	rankingRepo := persistence.NewRankingRepository(db)
 	notificationRepo := repository.NewNotificationRepository(db)
@@ -210,7 +211,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	// 旧 learningGoalRepo は recommendation / learning_dashboard がまだ使うため残している。
 	learningGoalPort := persistence.NewLearningGoalRepository(db)
 	updateLearningGoal := usecase.NewUpdateLearningGoalUseCase(learningGoalPort)
-	messageService := service.NewMessageService(messageRepo, notificationService)
 	// AtCoder 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、HTTP 実装は adapter/external。
 	atcoderClient := external.NewAtCoderClient()
 	createNote := usecase.NewCreateNoteUseCase(notePort)
@@ -294,7 +294,12 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewGetLevelRankingUseCase(rankingRepo),
 		usecase.NewListRankingLanguagesUseCase(rankingRepo),
 	)
-	c.MessageHandler = handler.NewMessageHandler(messageService)
+	c.MessageHandler = handler.NewMessageHandler(
+		usecase.NewListConversationsUseCase(messagePort),
+		usecase.NewGetConversationUseCase(messagePort),
+		usecase.NewSendMessageUseCase(messagePort, persistence.NewNotificationCreator(db)),
+		usecase.NewMarkMessagesAsReadUseCase(messagePort),
+	)
 	c.WebSocketHandler = handler.NewWebSocketHandler(hub, authService, parseOrigins(origins))
 	uploadHandler, err := handler.NewUploadHandler()
 	if err != nil {

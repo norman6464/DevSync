@@ -312,34 +312,6 @@ func (m *MockNotificationRepository) GetFollowerIDs(userID uint) ([]uint, error)
 }
 
 // ============================================================
-// MockMessageRepository は repository.MessageRepositoryInterface のテスト用モック実装。
-// ============================================================
-
-type MockMessageRepository struct {
-	mock.Mock
-}
-
-func (m *MockMessageRepository) Create(msg *model.Message) error {
-	args := m.Called(msg)
-	return args.Error(0)
-}
-
-func (m *MockMessageRepository) GetConversation(userID, otherUserID uint, page, limit int) ([]model.Message, error) {
-	args := m.Called(userID, otherUserID, page, limit)
-	return args.Get(0).([]model.Message), args.Error(1)
-}
-
-func (m *MockMessageRepository) GetConversations(userID uint) ([]model.ConversationSummary, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.ConversationSummary), args.Error(1)
-}
-
-func (m *MockMessageRepository) MarkAsRead(senderID, receiverID uint) error {
-	args := m.Called(senderID, receiverID)
-	return args.Error(0)
-}
-
-// ============================================================
 // MockQuestionRepository は repository.QuestionRepositoryInterface のテスト用モック実装。
 // ============================================================
 
