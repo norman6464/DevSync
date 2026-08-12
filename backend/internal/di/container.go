@@ -253,18 +253,17 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		llmClient,
 	)
 
-	// メールサービスの初期化（SMTP設定がある場合のみ有効化）
-	var emailSender service.EmailSenderInterface
+	// ウィークリーレポートメールはクリーンアーキテクチャ（DIP）へ移行済み。
+	// port は usecase/repository、SMTP 実装は adapter/external。
+	// SMTP 未設定のときはスケジューラを起動しないため送信 usecase も組み立てない。
 	if cfg.SMTPHost != "" {
-		emailSender = service.NewSMTPEmailSender(cfg)
 		log.Println("SMTP設定が検出されました。メール機能が有効です。")
-	}
-	weeklyReportEmailService := service.NewWeeklyReportEmailService(emailSender, activityReportRepo, userRepo)
-	weeklyReportEmailService.SetAppURL(cfg.AppURL)
-
-	// スケジューラの初期化
-	if cfg.SMTPHost != "" {
-		scheduler := service.NewScheduler(weeklyReportEmailService)
+		sendWeeklyReports := usecase.NewSendAllWeeklyReportsUseCase(
+			userPort,
+			activityReportRepo,
+			usecase.NewSendWeeklyReportUseCase(external.NewSMTPEmailSender(cfg), cfg.AppURL),
+		)
+		scheduler := service.NewScheduler(sendWeeklyReports)
 		go scheduler.Start()
 	} else {
 		log.Println("SMTP未設定。ウィークリーレポートメールのスケジューラは無効です。")

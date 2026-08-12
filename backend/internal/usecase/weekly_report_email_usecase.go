@@ -1,4 +1,4 @@
-package service
+package usecase
 
 import (
 	"bytes"
@@ -6,93 +6,32 @@ import (
 	"fmt"
 	"html/template"
 	"log"
-	"net/smtp"
 	"strings"
 
-	"github.com/norman6464/devsync/backend/internal/config"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
-	usecaserepo "github.com/norman6464/devsync/backend/internal/usecase/repository"
+	"github.com/norman6464/devsync/backend/internal/usecase/repository"
 )
 
-// EmailSenderInterface はメール送信の抽象化インターフェース。
-// テスト時にモック実装に差し替え可能にするために使用する。
-type EmailSenderInterface interface {
-	Send(to, subject, htmlBody string) error
+// defaultEmailLanguage はユーザーが言語を設定していないときに使う既定の言語。
+const defaultEmailLanguage = "ja"
+
+// weeklyReportTmpl はウィークリーレポートメールのテンプレート。パースは 1 度だけ行う。
+var weeklyReportTmpl = template.Must(template.New("weekly_report").Parse(weeklyReportTemplate))
+
+// SendWeeklyReportUseCase は 1 ユーザーへウィークリーレポートメールを送信する。
+type SendWeeklyReportUseCase struct {
+	sender repository.EmailSender
+	appURL string
 }
 
-// SMTPEmailSender はSMTP経由でメールを送信する本番用実装。
-type SMTPEmailSender struct {
-	cfg *config.Config
+// NewSendWeeklyReportUseCase は SendWeeklyReportUseCase を生成する。
+func NewSendWeeklyReportUseCase(sender repository.EmailSender, appURL string) *SendWeeklyReportUseCase {
+	return &SendWeeklyReportUseCase{sender: sender, appURL: appURL}
 }
 
-// NewSMTPEmailSender は新しいSMTPEmailSenderインスタンスを生成する。
-func NewSMTPEmailSender(cfg *config.Config) *SMTPEmailSender {
-	return &SMTPEmailSender{cfg: cfg}
-}
-
-// Send はSMTPサーバーを通じてHTMLメールを送信する。
-func (s *SMTPEmailSender) Send(to, subject, htmlBody string) error {
-	from := s.cfg.EmailFrom
-	addr := fmt.Sprintf("%s:%s", s.cfg.SMTPHost, s.cfg.SMTPPort)
-
-	// MIMEヘッダーを構築
-	headers := make(map[string]string)
-	headers["From"] = from
-	headers["To"] = to
-	headers["Subject"] = subject
-	headers["MIME-Version"] = "1.0"
-	headers["Content-Type"] = "text/html; charset=UTF-8"
-
-	var msg bytes.Buffer
-	for k, v := range headers {
-		msg.WriteString(fmt.Sprintf("%s: %s\r\n", k, v))
-	}
-	msg.WriteString("\r\n")
-	msg.WriteString(htmlBody)
-
-	// SMTP認証（ユーザー名が空の場合は認証なし）
-	var auth smtp.Auth
-	if s.cfg.SMTPUser != "" {
-		auth = smtp.PlainAuth("", s.cfg.SMTPUser, s.cfg.SMTPPassword, s.cfg.SMTPHost)
-	}
-
-	return smtp.SendMail(addr, auth, from, []string{to}, msg.Bytes())
-}
-
-// WeeklyReportEmailService はウィークリーレポートメールの生成・送信を管理する。
-// レポートデータの取得、HTMLレンダリング、メール送信のオーケストレーションを担当する。
-type WeeklyReportEmailService struct {
-	sender   EmailSenderInterface
-	reports  usecaserepo.WeeklyActivityReportReader
-	userRepo repository.UserRepositoryInterface
-	appURL   string
-	tmpl     *template.Template
-}
-
-// NewWeeklyReportEmailService は新しいWeeklyReportEmailServiceインスタンスを生成する。
-func NewWeeklyReportEmailService(sender EmailSenderInterface, reports usecaserepo.WeeklyActivityReportReader, userRepo repository.UserRepositoryInterface) *WeeklyReportEmailService {
-	svc := &WeeklyReportEmailService{
-		sender:   sender,
-		reports:  reports,
-		userRepo: userRepo,
-		appURL:   "http://localhost:5173",
-	}
-
-	// HTMLテンプレートをパース
-	svc.tmpl = template.Must(template.New("weekly_report").Parse(weeklyReportTemplate))
-
-	return svc
-}
-
-// SetAppURL はメール内で使用するアプリケーションURLを設定する。
-func (s *WeeklyReportEmailService) SetAppURL(url string) {
-	s.appURL = url
-}
-
-// SendWeeklyReport は指定ユーザーにウィークリーレポートメールを送信する。
-func (s *WeeklyReportEmailService) SendWeeklyReport(user *model.User, report *model.ActivityReport) error {
+// Execute はレポートを HTML に整形してメールを送信する。
+func (uc *SendWeeklyReportUseCase) Execute(ctx context.Context, user *model.User, report *model.ActivityReport) error {
 	if user.Email == "" {
 		return domain.NewError(domain.ErrCodeBadRequest, "メールアドレスが空です", nil)
 	}
@@ -102,49 +41,61 @@ func (s *WeeklyReportEmailService) SendWeeklyReport(user *model.User, report *mo
 
 	lang := user.EmailLanguage
 	if lang == "" {
-		lang = "ja"
+		lang = defaultEmailLanguage
 	}
 
-	html, err := s.RenderHTML(user, report, lang)
+	html, err := RenderWeeklyReportHTML(user, report, lang, uc.appURL)
 	if err != nil {
 		return domain.NewError(domain.ErrCodeInternal, "メールテンプレートのレンダリングに失敗", err)
 	}
 
-	texts := getEmailTexts(lang)
-	subject := fmt.Sprintf("[DevSync] %s", texts["subject"])
-
-	return s.sender.Send(user.Email, subject, html)
+	subject := fmt.Sprintf("[DevSync] %s", getEmailTexts(lang)["subject"])
+	return uc.sender.Send(ctx, user.Email, subject, html)
 }
 
-// SendAllWeeklyReports は全対象ユーザーにウィークリーレポートメールを一括送信する。
-// メール配信が無効なユーザーはスキップし、1ユーザーのエラーで他は止まらない。
-func (s *WeeklyReportEmailService) SendAllWeeklyReports() error {
-	users, err := s.userRepo.FindAll()
+// SendAllWeeklyReportsUseCase は配信対象の全ユーザーへウィークリーレポートメールを送信する。
+type SendAllWeeklyReportsUseCase struct {
+	users   repository.UserRepository
+	reports repository.WeeklyActivityReportReader
+	send    *SendWeeklyReportUseCase
+}
+
+// NewSendAllWeeklyReportsUseCase は SendAllWeeklyReportsUseCase を生成する。
+func NewSendAllWeeklyReportsUseCase(
+	users repository.UserRepository,
+	reports repository.WeeklyActivityReportReader,
+	send *SendWeeklyReportUseCase,
+) *SendAllWeeklyReportsUseCase {
+	return &SendAllWeeklyReportsUseCase{users: users, reports: reports, send: send}
+}
+
+// Execute は配信を有効にしている全ユーザーへ送信する。
+// 1 ユーザーの失敗で全体を止めず、ログに残して次のユーザーへ進む。
+func (uc *SendAllWeeklyReportsUseCase) Execute(ctx context.Context) error {
+	users, err := uc.users.FindAll(ctx)
 	if err != nil {
 		return domain.NewError(domain.ErrCodeDatabase, "ユーザー一覧の取得に失敗", err)
 	}
 
-	for _, user := range users {
-		// メール配信が無効なユーザーはスキップ
+	for i := range users {
+		user := &users[i]
 		if !user.EmailWeeklyReport {
 			continue
 		}
 
-		// 定時バッチからの呼び出しでリクエスト ctx を持たないため、ここが ctx の起点になる
-		report, err := s.reports.GetWeeklyReport(context.Background(), user.ID)
+		report, err := uc.reports.GetWeeklyReport(ctx, user.ID)
 		if err != nil {
 			log.Printf("ウィークリーレポート生成失敗 (userID=%d): %v", user.ID, err)
 			continue
 		}
 
-		if err := s.SendWeeklyReport(&user, report); err != nil {
+		if err := uc.send.Execute(ctx, user, report); err != nil {
 			log.Printf("ウィークリーレポートメール送信失敗 (userID=%d): %v", user.ID, err)
 			continue
 		}
 
 		log.Printf("ウィークリーレポートメール送信成功 (userID=%d)", user.ID)
 	}
-
 	return nil
 }
 
@@ -166,8 +117,9 @@ type emailTemplateData struct {
 	Texts              map[string]string
 }
 
-// RenderHTML はレポートデータからHTMLメール本文をレンダリングする。
-func (s *WeeklyReportEmailService) RenderHTML(user *model.User, report *model.ActivityReport, lang string) (string, error) {
+// RenderWeeklyReportHTML はレポートデータから HTML メール本文をレンダリングする。
+// テンプレートと言語テキストだけに依存する純粋な処理。
+func RenderWeeklyReportHTML(user *model.User, report *model.ActivityReport, lang, appURL string) (string, error) {
 	texts := getEmailTexts(lang)
 
 	data := emailTemplateData{
@@ -183,12 +135,12 @@ func (s *WeeklyReportEmailService) RenderHTML(user *model.User, report *model.Ac
 		NewFollowers:       report.NewFollowers,
 		MessagesExchanged:  report.MessagesExchanged,
 		TopLanguages:       report.TopLanguages,
-		AppURL:             s.appURL,
+		AppURL:             appURL,
 		Texts:              texts,
 	}
 
 	var buf bytes.Buffer
-	if err := s.tmpl.Execute(&buf, data); err != nil {
+	if err := weeklyReportTmpl.Execute(&buf, data); err != nil {
 		return "", err
 	}
 

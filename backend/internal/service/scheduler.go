@@ -15,8 +15,9 @@ type CronScheduler interface {
 }
 
 // WeeklyReportSender はウィークリーレポート送信の抽象インターフェース。
+// 定期実行の入り口であり、リクエスト ctx を持たないためここが ctx の起点になる。
 type WeeklyReportSender interface {
-	SendAllWeeklyReports() error
+	Execute(ctx context.Context) error
 }
 
 // Scheduler はcronベースの定期実行サービス。
@@ -27,10 +28,10 @@ type Scheduler struct {
 }
 
 // NewScheduler は新しいSchedulerインスタンスを生成する。
-func NewScheduler(emailSvc *WeeklyReportEmailService) *Scheduler {
+func NewScheduler(weeklyReport WeeklyReportSender) *Scheduler {
 	return &Scheduler{
 		cron:     cron.New(),
-		emailSvc: emailSvc,
+		emailSvc: weeklyReport,
 	}
 }
 
@@ -40,7 +41,7 @@ func (s *Scheduler) Start() {
 	// 毎週月曜日 9:00 に実行
 	_, err := s.cron.AddFunc("0 9 * * 1", func() {
 		log.Println("スケジューラ: ウィークリーレポートメール送信開始")
-		if err := s.emailSvc.SendAllWeeklyReports(); err != nil {
+		if err := s.emailSvc.Execute(context.Background()); err != nil {
 			log.Printf("スケジューラ: ウィークリーレポートメール送信エラー: %v", err)
 		} else {
 			log.Println("スケジューラ: ウィークリーレポートメール送信完了")

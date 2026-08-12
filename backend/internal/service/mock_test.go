@@ -864,19 +864,6 @@ func (m *MockGitHubRepository) DeleteUserData(userID uint) error {
 }
 
 // ============================================================
-// MockEmailSender は EmailSenderInterface のテスト用モック実装。
-// ============================================================
-
-type MockEmailSender struct {
-	mock.Mock
-}
-
-func (m *MockEmailSender) Send(to, subject, htmlBody string) error {
-	args := m.Called(to, subject, htmlBody)
-	return args.Error(0)
-}
-
-// ============================================================
 // MockWeeklyActivityReportReader は usecase/repository.WeeklyActivityReportReader のテスト用モック実装。
 // ============================================================
 
@@ -891,7 +878,6 @@ func (m *MockWeeklyActivityReportReader) GetWeeklyReport(ctx context.Context, us
 }
 
 // インターフェース適合チェック
-var _ EmailSenderInterface = (*MockEmailSender)(nil)
 var _ usecaserepo.WeeklyActivityReportReader = (*MockWeeklyActivityReportReader)(nil)
 
 // ============================================================
@@ -928,9 +914,8 @@ type MockWeeklyReportSender struct {
 
 var _ WeeklyReportSender = (*MockWeeklyReportSender)(nil)
 
-func (m *MockWeeklyReportSender) SendAllWeeklyReports() error {
-	args := m.Called()
-	return args.Error(0)
+func (m *MockWeeklyReportSender) Execute(ctx context.Context) error {
+	return m.Called(ctx).Error(0)
 }
 
 // (MockSpotifyRepository は spotify の DIP 移行に伴い撤去)
