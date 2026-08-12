@@ -2,31 +2,29 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// LevelServiceInterface はLevelHandlerが依存するサービスメソッドを定義する。
-type LevelServiceInterface interface {
-	GetLevelInfo(userID uint) (*model.LevelInfo, error)
-	GetXPBreakdown(userID uint) (*model.XPBreakdown, error)
-}
 
 // LevelHandler はレベルシステム関連のHTTPハンドラ。
 // ユーザーのレベル情報とXP内訳の取得を処理する。
 type LevelHandler struct {
-	service LevelServiceInterface
+	levelInfo *usecase.GetLevelInfoUseCase
+	breakdown *usecase.GetXPBreakdownUseCase
 }
 
 // NewLevelHandler は新しいLevelHandlerインスタンスを生成する。
-func NewLevelHandler(s LevelServiceInterface) *LevelHandler {
-	return &LevelHandler{service: s}
+func NewLevelHandler(
+	levelInfo *usecase.GetLevelInfoUseCase,
+	breakdown *usecase.GetXPBreakdownUseCase,
+) *LevelHandler {
+	return &LevelHandler{levelInfo: levelInfo, breakdown: breakdown}
 }
 
 // GetMyLevelInfo は認証済みユーザー自身のレベル情報を返す。
 func (h *LevelHandler) GetMyLevelInfo(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	info, err := h.service.GetLevelInfo(userID)
+	info, err := h.levelInfo.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -42,7 +40,7 @@ func (h *LevelHandler) GetLevelInfo(c *gin.Context) {
 		return
 	}
 
-	info, err := h.service.GetLevelInfo(userID)
+	info, err := h.levelInfo.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -58,7 +56,7 @@ func (h *LevelHandler) GetXPBreakdown(c *gin.Context) {
 		return
 	}
 
-	breakdown, err := h.service.GetXPBreakdown(userID)
+	breakdown, err := h.breakdown.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return

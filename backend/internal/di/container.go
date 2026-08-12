@@ -160,7 +160,8 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	createCodeSnippet := usecase.NewCreateCodeSnippetUseCase(codeSnippetRepo, codeSnippetPostReader)
 	aiAdviceRepo := repository.NewAIAdviceRepository(db)
 	aiConversationRepo := repository.NewAIConversationRepository(db)
-	levelRepo := repository.NewLevelRepository(db)
+	// レベル / XP はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	levelPort := persistence.NewLevelRepository(db)
 	// 学習分析はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	analyticsPort := persistence.NewLearningAnalyticsRepository(db)
 	// バッジはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
@@ -212,7 +213,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	messageService := service.NewMessageService(messageRepo, notificationService)
 	// AtCoder 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、HTTP 実装は adapter/external。
 	atcoderClient := external.NewAtCoderClient()
-	levelService := service.NewLevelService(levelRepo, notificationService)
 	createNote := usecase.NewCreateNoteUseCase(notePort)
 	// 学習ログはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	// 旧 learningLogRepo は learning_dashboard と AI アドバイスがまだ使うため残している。
@@ -497,7 +497,10 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewGetEmailPreferencesUseCase(userPort),
 		usecase.NewUpdateEmailPreferencesUseCase(userPort),
 	)
-	c.LevelHandler = handler.NewLevelHandler(levelService)
+	c.LevelHandler = handler.NewLevelHandler(
+		usecase.NewGetLevelInfoUseCase(levelPort),
+		usecase.NewGetXPBreakdownUseCase(levelPort),
+	)
 	c.LearningAnalyticsHandler = handler.NewLearningAnalyticsHandler(
 		usecase.NewGetLearningHeatmapUseCase(analyticsPort),
 		usecase.NewGetCategoryBreakdownUseCase(analyticsPort),

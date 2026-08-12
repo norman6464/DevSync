@@ -1143,26 +1143,9 @@ func (m *MockWeeklyActivityReportReader) GetWeeklyReport(ctx context.Context, us
 	return r, args.Error(1)
 }
 
-// ============================================================
-// MockLevelRepository は repository.LevelRepositoryInterface のテスト用モック実装。
-// ============================================================
-
-type MockLevelRepository struct {
-	mock.Mock
-}
-
-func (m *MockLevelRepository) GetXPStats(userID uint) (*model.XPStats, error) {
-	args := m.Called(userID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.XPStats), args.Error(1)
-}
-
 // インターフェース適合チェック
 var _ EmailSenderInterface = (*MockEmailSender)(nil)
 var _ usecaserepo.WeeklyActivityReportReader = (*MockWeeklyActivityReportReader)(nil)
-var _ repository.LevelRepositoryInterface = (*MockLevelRepository)(nil)
 var _ NotificationServiceInterface = (*MockNotificationService)(nil)
 
 // ============================================================
