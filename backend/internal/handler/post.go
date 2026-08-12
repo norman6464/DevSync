@@ -37,12 +37,6 @@ type PostServiceInterface interface {
 	Unbookmark(userID, postID uint) error
 	HasBookmarked(userID, postID uint) bool
 	GetBookmarks(userID uint, page, limit int) ([]model.Post, int64, error)
-	AddReaction(userID, postID uint, emoji string) error
-	RemoveReaction(userID, postID uint, emoji string) error
-	GetReactionsByPostID(postID uint) ([]model.ReactionCount, error)
-	GetUserReactions(userID, postID uint) ([]string, error)
-	GetReactionsWithUser(userID, postID uint) ([]model.ReactionCount, []string, error)
-	GetReactionsBatch(userID uint, postIDs []uint) (map[uint][]model.ReactionCount, map[uint][]string, error)
 	SchedulePublish(id, userID uint, scheduledAt time.Time) (*model.Post, error)
 	CancelSchedule(id, userID uint) (*model.Post, error)
 	GetScheduled(userID uint) ([]model.Post, error)
@@ -59,11 +53,31 @@ type PostHandler struct {
 	service       PostServiceInterface
 	createSnippet *usecase.CreateCodeSnippetUseCase
 	autoTags      *usecase.SetAutoPostTagsUseCase
+
+	// リアクションは DIP へ移行済み。他の操作は順次 usecase へ移していく。
+	addReaction    *usecase.AddPostReactionUseCase
+	removeReaction *usecase.RemovePostReactionUseCase
+	getReactions   *usecase.GetPostReactionsUseCase
+	reactionsBatch *usecase.GetPostReactionsBatchUseCase
 }
 
 // NewPostHandler は新しいPostHandlerインスタンスを生成する。
-func NewPostHandler(s PostServiceInterface, createSnippet *usecase.CreateCodeSnippetUseCase) *PostHandler {
-	return &PostHandler{service: s, createSnippet: createSnippet}
+func NewPostHandler(
+	s PostServiceInterface,
+	createSnippet *usecase.CreateCodeSnippetUseCase,
+	addReaction *usecase.AddPostReactionUseCase,
+	removeReaction *usecase.RemovePostReactionUseCase,
+	getReactions *usecase.GetPostReactionsUseCase,
+	reactionsBatch *usecase.GetPostReactionsBatchUseCase,
+) *PostHandler {
+	return &PostHandler{
+		service:        s,
+		createSnippet:  createSnippet,
+		addReaction:    addReaction,
+		removeReaction: removeReaction,
+		getReactions:   getReactions,
+		reactionsBatch: reactionsBatch,
+	}
 }
 
 // SetAutoTagsUseCase はオプショナルな自動タグ設定を注入する。
@@ -512,7 +526,7 @@ func (h *PostHandler) AddReaction(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.AddReaction(userID, id, input.Emoji); err != nil {
+	if err := h.addReaction.Execute(c.Request.Context(), userID, id, input.Emoji); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -532,7 +546,7 @@ func (h *PostHandler) RemoveReaction(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.RemoveReaction(userID, id, input.Emoji); err != nil {
+	if err := h.removeReaction.Execute(c.Request.Context(), userID, id, input.Emoji); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -547,7 +561,7 @@ func (h *PostHandler) GetReactions(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	reactions, userReactions, err := h.service.GetReactionsWithUser(userID, id)
+	reactions, userReactions, err := h.getReactions.Execute(c.Request.Context(), userID, id)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -647,7 +661,7 @@ func (h *PostHandler) GetReactionsBatch(c *gin.Context) {
 		return
 	}
 
-	reactions, userReactions, err := h.service.GetReactionsBatch(userID, input.PostIDs)
+	reactions, userReactions, err := h.reactionsBatch.Execute(c.Request.Context(), userID, input.PostIDs)
 	if err != nil {
 		respondError(c, err)
 		return
