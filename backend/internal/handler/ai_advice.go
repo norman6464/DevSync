@@ -4,30 +4,29 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// AIAdviceServiceInterface はAIAdviceHandlerが依存するサービスのインターフェース。
-type AIAdviceServiceInterface interface {
-	GenerateAdvice(userID uint) []model.AIAdvice
-	IsLLMAvailable() bool
-	GetDailyChatRemaining(userID uint) (int, error)
-	MarkAsRead(id, userID uint) error
-	Chat(userID uint, message string, conversationID uint) (*model.AIConversation, error)
-	DeleteConversation(id, userID uint) error
-	GetConversations(userID uint, limit, offset int) ([]model.AIConversation, error)
-	GetConversation(id, userID uint) (*model.AIConversation, error)
-	GetUnreadAdvice(userID uint) ([]model.AIAdvice, error)
+// AIAdviceUseCases は AIAdviceHandler が依存する AI 機能の usecase をまとめる。
+type AIAdviceUseCases struct {
+	Generate           *usecase.GenerateAIAdviceUseCase
+	MarkAsRead         *usecase.MarkAIAdviceAsReadUseCase
+	Unread             *usecase.GetUnreadAIAdviceUseCase
+	DailyChatRemaining *usecase.GetDailyChatRemainingUseCase
+	Chat               *usecase.ChatWithAIUseCase
+	ListConversations  *usecase.ListAIConversationsUseCase
+	GetConversation    *usecase.GetAIConversationUseCase
+	DeleteConversation *usecase.DeleteAIConversationUseCase
 }
 
 // AIAdviceHandler はAIアドバイス関連のHTTPハンドラ。
 type AIAdviceHandler struct {
-	service AIAdviceServiceInterface
+	uc AIAdviceUseCases
 }
 
 // NewAIAdviceHandler は新しいAIAdviceHandlerインスタンスを生成する。
-func NewAIAdviceHandler(s AIAdviceServiceInterface) *AIAdviceHandler {
-	return &AIAdviceHandler{service: s}
+func NewAIAdviceHandler(uc AIAdviceUseCases) *AIAdviceHandler {
+	return &AIAdviceHandler{uc: uc}
 }
 
 // GetAdvice はルールベースアドバイスを取得する。
@@ -36,16 +35,16 @@ func (h *AIAdviceHandler) GetAdvice(c *gin.Context) {
 	userID := c.GetUint("userID")
 
 	// ルールエンジンを実行してリアルタイムにアドバイス生成
-	advices := h.service.GenerateAdvice(userID)
+	advices := h.uc.Generate.Execute(c.Request.Context(), userID)
 
 	// LLM利用可否
-	llmAvailable := h.service.IsLLMAvailable()
+	llmAvailable := h.uc.Chat.IsAvailable()
 
 	// 本日の残りチャット回数
 	remaining := 0
 	if llmAvailable {
 		var err error
-		remaining, err = h.service.GetDailyChatRemaining(userID)
+		remaining, err = h.uc.DailyChatRemaining.Execute(c.Request.Context(), userID)
 		if err != nil {
 			remaining = 0
 		}
@@ -66,7 +65,7 @@ func (h *AIAdviceHandler) MarkAsRead(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.service.MarkAsRead(id, userID); err != nil {
+	if err := h.uc.MarkAsRead.Execute(c.Request.Context(), id, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -83,7 +82,7 @@ func (h *AIAdviceHandler) Chat(c *gin.Context) {
 		return
 	}
 
-	conv, err := h.service.Chat(userID, input.Message, input.ConversationID)
+	conv, err := h.uc.Chat.Execute(c.Request.Context(), userID, input.Message, input.ConversationID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -100,7 +99,7 @@ func (h *AIAdviceHandler) DeleteConversation(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.service.DeleteConversation(id, userID); err != nil {
+	if err := h.uc.DeleteConversation.Execute(c.Request.Context(), id, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -114,7 +113,7 @@ func (h *AIAdviceHandler) GetConversations(c *gin.Context) {
 
 	limit, offset := parseLimitOffset(c)
 
-	conversations, err := h.service.GetConversations(userID, limit, offset)
+	conversations, err := h.uc.ListConversations.Execute(c.Request.Context(), userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -131,7 +130,7 @@ func (h *AIAdviceHandler) GetConversation(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	conv, err := h.service.GetConversation(id, userID)
+	conv, err := h.uc.GetConversation.Execute(c.Request.Context(), id, userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -144,7 +143,7 @@ func (h *AIAdviceHandler) GetConversation(c *gin.Context) {
 func (h *AIAdviceHandler) GetUnreadAdvice(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	advices, err := h.service.GetUnreadAdvice(userID)
+	advices, err := h.uc.Unread.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return

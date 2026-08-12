@@ -1,6 +1,7 @@
-package service
+package usecase
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"sort"
@@ -8,10 +9,36 @@ import (
 	"time"
 
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase/repository"
 )
 
-// userContext はルールエンジンが分析するユーザーデータの集約構造体。
-type userContext struct {
+// GenerateAIAdviceUseCase は学習状況からルールベースでアドバイスを生成する。
+type GenerateAIAdviceUseCase struct {
+	logs      repository.LearningLogRepository
+	goals     repository.LearningGoalRepository
+	roadmaps  repository.RoadmapRepository
+	github    repository.GitHubRepository
+	resources repository.LearningResourceRepository
+	users     repository.UserSkillsReader
+}
+
+// NewGenerateAIAdviceUseCase は GenerateAIAdviceUseCase を生成する。
+func NewGenerateAIAdviceUseCase(
+	logs repository.LearningLogRepository,
+	goals repository.LearningGoalRepository,
+	roadmaps repository.RoadmapRepository,
+	github repository.GitHubRepository,
+	resources repository.LearningResourceRepository,
+	users repository.UserSkillsReader,
+) *GenerateAIAdviceUseCase {
+	return &GenerateAIAdviceUseCase{
+		logs: logs, goals: goals, roadmaps: roadmaps,
+		github: github, resources: resources, users: users,
+	}
+}
+
+// aiUserContext はルールエンジンが分析するユーザーデータの集約構造体。
+type aiUserContext struct {
 	streak    *model.StreakInfo
 	goals     []model.LearningGoal
 	stats     *model.LearningGoalStats
@@ -23,62 +50,62 @@ type userContext struct {
 }
 
 // collectContext はルールエンジンに必要なユーザーデータを収集する。
-func (s *AIAdviceService) collectContext(userID uint) (*userContext, error) {
-	ctx := &userContext{}
+func (uc *GenerateAIAdviceUseCase) collectContext(ctx context.Context, userID uint) (*aiUserContext, error) {
+	data := &aiUserContext{}
 	var err error
 
-	ctx.streak, err = s.logRepo.GetStreakInfo(userID)
+	data.streak, err = uc.logs.GetStreakInfo(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	ctx.goals, _, err = s.goalRepo.GetByUserID(userID, 100, 0)
+	data.goals, _, err = uc.goals.GetByUserID(ctx, userID, 100, 0)
 	if err != nil {
 		return nil, err
 	}
 
-	ctx.stats, err = s.goalRepo.GetStats(userID)
+	data.stats, err = uc.goals.GetStats(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	ctx.roadmaps, _, err = s.roadmapRepo.GetByUserID(userID, 100, 0)
+	data.roadmaps, _, err = uc.roadmaps.GetByUserID(ctx, userID, 100, 0)
 	if err != nil {
 		return nil, err
 	}
 
-	ctx.langStats, err = s.githubRepo.GetLanguageStats(userID)
+	data.langStats, err = uc.github.GetLanguageStats(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	ctx.logs, _, err = s.logRepo.GetByUserID(userID, 100, 0)
+	data.logs, _, err = uc.logs.GetByUserID(ctx, userID, 100, 0)
 	if err != nil {
 		return nil, err
 	}
 
-	ctx.resources, _, err = s.resourceRepo.FindByUserID(userID, true, 100, 0)
+	data.resources, _, err = uc.resources.FindByUserID(ctx, userID, true, 100, 0)
 	if err != nil {
 		return nil, err
 	}
 
-	ctx.user, err = s.userRepo.FindByID(userID)
+	data.user, err = uc.users.FindByID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	return ctx, nil
+	return data, nil
 }
 
 // paramsToJSON はmap[string]stringをJSON文字列に変換する。
-func paramsToJSON(params map[string]string) string {
+func aiParamsToJSON(params map[string]string) string {
 	b, _ := json.Marshal(params)
 	return string(b)
 }
 
 // GenerateAdvice はルールエンジンを実行し、パーソナライズされたアドバイスを優先度順で返す。
-func (s *AIAdviceService) GenerateAdvice(userID uint) []model.AIAdvice {
-	ctx, err := s.collectContext(userID)
+func (uc *GenerateAIAdviceUseCase) Execute(ctx context.Context, userID uint) []model.AIAdvice {
+	data, err := uc.collectContext(ctx, userID)
 	if err != nil {
 		return []model.AIAdvice{}
 	}
@@ -86,20 +113,20 @@ func (s *AIAdviceService) GenerateAdvice(userID uint) []model.AIAdvice {
 	var advices []model.AIAdvice
 
 	// ルール1: ストリーク途切れ（優先度1: Critical）
-	if ctx.streak.CurrentStreak == 0 && ctx.streak.TotalDays > 0 {
+	if data.streak.CurrentStreak == 0 && data.streak.TotalDays > 0 {
 		advices = append(advices, model.AIAdvice{
 			UserID:     userID,
 			Type:       model.AdviceTypeStreakRecovery,
 			Priority:   model.AdvicePriorityCritical,
 			TitleKey:   "advice.streakBroken",
 			MessageKey: "advice.streakBrokenMsg",
-			Params:     paramsToJSON(map[string]string{"longestStreak": fmt.Sprintf("%d", ctx.streak.LongestStreak)}),
+			Params:     aiParamsToJSON(map[string]string{"longestStreak": fmt.Sprintf("%d", data.streak.LongestStreak)}),
 			ActionURL:  "/learning-logs",
 		})
 	}
 
 	// ルール2: ロードマップ停滞（優先度2: High）
-	for _, rm := range ctx.roadmaps {
+	for _, rm := range data.roadmaps {
 		if rm.Status != model.RoadmapStatusActive {
 			continue
 		}
@@ -111,7 +138,7 @@ func (s *AIAdviceService) GenerateAdvice(userID uint) []model.AIAdvice {
 				Priority:   model.AdvicePriorityHigh,
 				TitleKey:   "advice.roadmapStalled",
 				MessageKey: "advice.roadmapStalledMsg",
-				Params:     paramsToJSON(map[string]string{"roadmapTitle": rm.Title, "days": fmt.Sprintf("%d", int(stalledDays))}),
+				Params:     aiParamsToJSON(map[string]string{"roadmapTitle": rm.Title, "days": fmt.Sprintf("%d", int(stalledDays))}),
 				ActionURL:  fmt.Sprintf("/roadmaps/%d", rm.ID),
 			})
 			break // 1つのみ表示
@@ -119,7 +146,7 @@ func (s *AIAdviceService) GenerateAdvice(userID uint) []model.AIAdvice {
 	}
 
 	// ルール3: 目標期限超過（優先度2: High）
-	for _, goal := range ctx.goals {
+	for _, goal := range data.goals {
 		if goal.Status == model.GoalStatusActive && goal.TargetDate != nil && goal.TargetDate.Before(time.Now()) {
 			advices = append(advices, model.AIAdvice{
 				UserID:     userID,
@@ -127,7 +154,7 @@ func (s *AIAdviceService) GenerateAdvice(userID uint) []model.AIAdvice {
 				Priority:   model.AdvicePriorityHigh,
 				TitleKey:   "advice.goalOverdue",
 				MessageKey: "advice.goalOverdueMsg",
-				Params:     paramsToJSON(map[string]string{"goalTitle": goal.Title}),
+				Params:     aiParamsToJSON(map[string]string{"goalTitle": goal.Title}),
 				ActionURL:  "/goals",
 			})
 			break // 1つのみ表示
@@ -136,7 +163,7 @@ func (s *AIAdviceService) GenerateAdvice(userID uint) []model.AIAdvice {
 
 	// ルール4: React提案（優先度3: Medium）
 	hasTypeScript := false
-	for _, ls := range ctx.langStats {
+	for _, ls := range data.langStats {
 		if ls.Language == "TypeScript" && ls.Bytes > 10000 {
 			hasTypeScript = true
 			break
@@ -144,7 +171,7 @@ func (s *AIAdviceService) GenerateAdvice(userID uint) []model.AIAdvice {
 	}
 	if hasTypeScript {
 		hasReactGoal := false
-		for _, g := range ctx.goals {
+		for _, g := range data.goals {
 			if strings.Contains(strings.ToLower(g.Title), "react") ||
 				strings.Contains(strings.ToLower(g.Title), "next") {
 				hasReactGoal = true
@@ -164,15 +191,15 @@ func (s *AIAdviceService) GenerateAdvice(userID uint) []model.AIAdvice {
 	}
 
 	// ルール5: 技術提案（優先度3: Medium）
-	if len(ctx.langStats) > 0 && !hasTypeScript {
-		topLang := ctx.langStats[0]
-		for _, ls := range ctx.langStats {
+	if len(data.langStats) > 0 && !hasTypeScript {
+		topLang := data.langStats[0]
+		for _, ls := range data.langStats {
 			if ls.Bytes > topLang.Bytes {
 				topLang = ls
 			}
 		}
 		goalHasLang := false
-		for _, g := range ctx.goals {
+		for _, g := range data.goals {
 			if strings.Contains(strings.ToLower(g.Title), strings.ToLower(topLang.Language)) {
 				goalHasLang = true
 				break
@@ -185,14 +212,14 @@ func (s *AIAdviceService) GenerateAdvice(userID uint) []model.AIAdvice {
 				Priority:   model.AdvicePriorityMedium,
 				TitleKey:   "advice.suggestFromGithub",
 				MessageKey: "advice.suggestFromGithubMsg",
-				Params:     paramsToJSON(map[string]string{"language": topLang.Language}),
+				Params:     aiParamsToJSON(map[string]string{"language": topLang.Language}),
 				ActionURL:  "/goals",
 			})
 		}
 	}
 
 	// ルール6: 目標未設定（優先度3: Medium）
-	if ctx.stats.TotalGoals == 0 && len(ctx.langStats) > 0 {
+	if data.stats.TotalGoals == 0 && len(data.langStats) > 0 {
 		advices = append(advices, model.AIAdvice{
 			UserID:     userID,
 			Type:       model.AdviceTypeGoalSuggestion,
@@ -204,7 +231,7 @@ func (s *AIAdviceService) GenerateAdvice(userID uint) []model.AIAdvice {
 	}
 
 	// ルール7: ロードマップ未作成（優先度3: Medium）
-	if len(ctx.goals) > 0 && len(ctx.roadmaps) == 0 {
+	if len(data.goals) > 0 && len(data.roadmaps) == 0 {
 		advices = append(advices, model.AIAdvice{
 			UserID:     userID,
 			Type:       model.AdviceTypeGoalSuggestion,
@@ -216,14 +243,14 @@ func (s *AIAdviceService) GenerateAdvice(userID uint) []model.AIAdvice {
 	}
 
 	// ルール8: 難易度UP（優先度4: Low）
-	if ctx.stats.CompletedGoals >= 3 && ctx.stats.AverageProgress > 70 {
+	if data.stats.CompletedGoals >= 3 && data.stats.AverageProgress > 70 {
 		advices = append(advices, model.AIAdvice{
 			UserID:     userID,
 			Type:       model.AdviceTypeDifficultyUp,
 			Priority:   model.AdvicePriorityLow,
 			TitleKey:   "advice.difficultyUp",
 			MessageKey: "advice.difficultyUpMsg",
-			Params:     paramsToJSON(map[string]string{"completedGoals": fmt.Sprintf("%d", ctx.stats.CompletedGoals)}),
+			Params:     aiParamsToJSON(map[string]string{"completedGoals": fmt.Sprintf("%d", data.stats.CompletedGoals)}),
 			ActionURL:  "/goals",
 		})
 	}
@@ -232,7 +259,7 @@ func (s *AIAdviceService) GenerateAdvice(userID uint) []model.AIAdvice {
 	sevenDaysAgo := time.Now().Add(-7 * 24 * time.Hour)
 	var recentTotalMinutes int
 	var recentDays int
-	for _, log := range ctx.logs {
+	for _, log := range data.logs {
 		if log.CreatedAt.After(sevenDaysAgo) {
 			recentTotalMinutes += log.Duration
 			recentDays++
@@ -247,7 +274,7 @@ func (s *AIAdviceService) GenerateAdvice(userID uint) []model.AIAdvice {
 				Priority:   model.AdvicePriorityLow,
 				TitleKey:   "advice.praise",
 				MessageKey: "advice.praiseMsg",
-				Params:     paramsToJSON(map[string]string{"avgMinutes": fmt.Sprintf("%d", avgMinutes)}),
+				Params:     aiParamsToJSON(map[string]string{"avgMinutes": fmt.Sprintf("%d", avgMinutes)}),
 			})
 		}
 
@@ -265,7 +292,7 @@ func (s *AIAdviceService) GenerateAdvice(userID uint) []model.AIAdvice {
 	}
 
 	// ルール11: リソース探索（優先度5: Info）
-	if len(ctx.resources) < 3 {
+	if len(data.resources) < 3 {
 		advices = append(advices, model.AIAdvice{
 			UserID:     userID,
 			Type:       model.AdviceTypeGeneral,

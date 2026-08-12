@@ -13,6 +13,7 @@ import (
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
 	"github.com/norman6464/devsync/backend/internal/usecase"
+	usecaserepo "github.com/norman6464/devsync/backend/internal/usecase/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -874,54 +875,57 @@ func setupFollowHandler() (*FollowHandler, *mockFollowRepo) {
 
 // ActivityReportHandler のテスト用モックは activity_report_test.go（DIP 版・port モック）に置く。
 
-// MockAIAdviceService は AIAdviceServiceInterface のモック実装。
-type MockAIAdviceService struct{ mock.Mock }
-
-func (m *MockAIAdviceService) GenerateAdvice(userID uint) []model.AIAdvice {
-	args := m.Called(userID)
-	return args.Get(0).([]model.AIAdvice)
-}
-func (m *MockAIAdviceService) IsLLMAvailable() bool {
-	return m.Called().Bool(0)
-}
-func (m *MockAIAdviceService) GetDailyChatRemaining(userID uint) (int, error) {
-	args := m.Called(userID)
-	return args.Int(0), args.Error(1)
-}
-func (m *MockAIAdviceService) MarkAsRead(id, userID uint) error {
-	return m.Called(id, userID).Error(0)
-}
-func (m *MockAIAdviceService) Chat(userID uint, message string, conversationID uint) (*model.AIConversation, error) {
-	args := m.Called(userID, message, conversationID)
-	if c := args.Get(0); c != nil {
-		return c.(*model.AIConversation), args.Error(1)
+// setupAIAdviceHandler は AIAdviceHandler テスト用のセットアップを行う。
+// AI 機能は DIP へ移行済みのため、本物の usecase と port モックを注入する。
+func setupAIAdviceHandler() (*AIAdviceHandler, *aiPorts) {
+	ports := &aiPorts{
+		Advices:       new(mockAIAdviceRepo),
+		Conversations: new(mockAIConversationRepo),
+		LLM:           new(mockLLMClient),
+		Goals:         new(MockLearningGoalRepository),
+		Logs:          new(mockLearningLogRepo),
+		Roadmaps:      new(mockRoadmapRepo),
+		GitHub:        new(mockGitHubRepo),
+		Resources:     new(mockLearningResourceRepo),
+		Users:         new(mockUserPort),
 	}
-	return nil, args.Error(1)
-}
-func (m *MockAIAdviceService) DeleteConversation(id, userID uint) error {
-	return m.Called(id, userID).Error(0)
-}
-func (m *MockAIAdviceService) GetConversations(userID uint, limit, offset int) ([]model.AIConversation, error) {
-	args := m.Called(userID, limit, offset)
-	return args.Get(0).([]model.AIConversation), args.Error(1)
-}
-func (m *MockAIAdviceService) GetConversation(id, userID uint) (*model.AIConversation, error) {
-	args := m.Called(id, userID)
-	if c := args.Get(0); c != nil {
-		return c.(*model.AIConversation), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockAIAdviceService) GetUnreadAdvice(userID uint) ([]model.AIAdvice, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.AIAdvice), args.Error(1)
+	h := NewAIAdviceHandler(newAIUseCases(ports, ports.LLM))
+	return h, ports
 }
 
-// setupAIAdviceHandler はAIAdviceHandlerテスト用のセットアップを行う。
-func setupAIAdviceHandler() (*AIAdviceHandler, *MockAIAdviceService) {
-	svc := new(MockAIAdviceService)
-	h := NewAIAdviceHandler(svc)
-	return h, svc
+// setupAIAdviceHandlerWithoutLLM は LLM 未設定（API キー未設定）のセットアップを行う。
+func setupAIAdviceHandlerWithoutLLM() (*AIAdviceHandler, *aiPorts) {
+	ports := &aiPorts{
+		Advices:       new(mockAIAdviceRepo),
+		Conversations: new(mockAIConversationRepo),
+		LLM:           new(mockLLMClient),
+		Goals:         new(MockLearningGoalRepository),
+		Logs:          new(mockLearningLogRepo),
+		Roadmaps:      new(mockRoadmapRepo),
+		GitHub:        new(mockGitHubRepo),
+		Resources:     new(mockLearningResourceRepo),
+		Users:         new(mockUserPort),
+	}
+	h := NewAIAdviceHandler(newAIUseCases(ports, nil))
+	return h, ports
+}
+
+// newAIUseCases は port モックから AI 機能の usecase 一式を組み立てる。
+func newAIUseCases(ports *aiPorts, llm usecaserepo.LLMClient) AIAdviceUseCases {
+	generate := usecase.NewGenerateAIAdviceUseCase(
+		ports.Logs, ports.Goals, ports.Roadmaps, ports.GitHub, ports.Resources, ports.Users,
+	)
+	prompt := usecase.NewBuildAIChatPromptUseCase(ports.Goals, ports.Logs, ports.Roadmaps, ports.GitHub)
+	return AIAdviceUseCases{
+		Generate:           generate,
+		MarkAsRead:         usecase.NewMarkAIAdviceAsReadUseCase(ports.Advices),
+		Unread:             usecase.NewGetUnreadAIAdviceUseCase(ports.Advices),
+		DailyChatRemaining: usecase.NewGetDailyChatRemainingUseCase(ports.Conversations),
+		Chat:               usecase.NewChatWithAIUseCase(ports.Conversations, llm, prompt),
+		ListConversations:  usecase.NewListAIConversationsUseCase(ports.Conversations),
+		GetConversation:    usecase.NewGetAIConversationUseCase(ports.Conversations),
+		DeleteConversation: usecase.NewDeleteAIConversationUseCase(ports.Conversations),
+	}
 }
 
 // LearningAnalytics は DIP へ移行済み。テストは learning_analytics_test.go で

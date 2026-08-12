@@ -116,7 +116,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	userRepo := repository.NewUserRepository(db)
 	// follow はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	followRepo := persistence.NewFollowRepository(db)
-	githubRepo := repository.NewGitHubRepository(db)
 	// ダイレクトメッセージはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	messagePort := persistence.NewMessageRepository(db)
 	// ランキングはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
@@ -128,12 +127,10 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	// Qiita 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence と adapter/external。
 	qiitaPort := persistence.NewQiitaRepository(db)
 	qiitaClient := external.NewQiitaClient()
-	learningGoalRepo := repository.NewLearningGoalRepository(db)
 	// アクティビティレポートはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	activityReportRepo := persistence.NewActivityReportRepository(db)
 	// プロジェクトはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	projectRepo := persistence.NewProjectRepository(db)
-	learningResourceRepo := repository.NewLearningResourceRepository(db)
 	// 学習リソースはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	// 旧 learningResourceRepo は aiAdviceService がまだ使うため残している。
 	learningResourcePort := persistence.NewLearningResourceRepository(db)
@@ -143,7 +140,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	questionPort := persistence.NewQuestionRepository(db)
 	// 回答はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	answerPort := persistence.NewAnswerRepository(db)
-	roadmapRepo := repository.NewRoadmapRepository(db)
 	// ロードマップはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	// 旧 roadmapRepo は aiAdviceService がまだ使うため残している。
 	roadmapPort := persistence.NewRoadmapRepository(db)
@@ -152,13 +148,10 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	chatRoomMessagePort := persistence.NewChatRoomMessageRepository(db)
 	// 旧 groupMessageRepo は Hub のルームメンバー取得コールバックがまだ使うため残している。
 	groupMessageRepo := repository.NewGroupMessageRepository(db)
-	learningLogRepo := repository.NewLearningLogRepository(db)
 	// コードスニペットはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	codeSnippetRepo := persistence.NewCodeSnippetRepository(db)
 	codeSnippetPostReader := persistence.NewPostReader(db)
 	createCodeSnippet := usecase.NewCreateCodeSnippetUseCase(codeSnippetRepo, codeSnippetPostReader)
-	aiAdviceRepo := repository.NewAIAdviceRepository(db)
-	aiConversationRepo := repository.NewAIConversationRepository(db)
 	// レベル / XP はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	levelPort := persistence.NewLevelRepository(db)
 	// 学習分析はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
@@ -238,20 +231,33 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	// テンプレートロードマップの初期登録
 	go seedTemplateRoadmaps(db, usecase.NewSeedRoadmapTemplatesUseCase(roadmapPort))
 
-	// AIアドバイスサービス（LLMクライアントはAPIキー設定時のみ初期化）
-	var llmClient service.LLMClientInterface
+	// AI 機能はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、
+	// 実装は adapter/persistence（永続化）と adapter/external（OpenAI）。
+	// LLM クライアントは API キー設定時のみ初期化し、未設定ならチャットは 503 になる。
+	var llmClient usecaserepo.LLMClient
 	if cfg.OpenAIAPIKey != "" {
-		llmClient = service.NewOpenAIClient(cfg.OpenAIAPIKey)
+		llmClient = external.NewOpenAIClient(cfg.OpenAIAPIKey)
 		log.Println("OpenAI APIキーが設定されています。LLMチャット機能が有効です。")
 	} else {
 		log.Println("OpenAI APIキー未設定。ルールベース推薦のみ有効です。")
 	}
-	aiAdviceService := service.NewAIAdviceService(
-		aiAdviceRepo, aiConversationRepo,
-		learningGoalRepo, learningLogRepo, roadmapRepo,
-		githubRepo, learningResourceRepo, userRepo,
-		llmClient,
+	aiAdvicePort := persistence.NewAIAdviceRepository(db)
+	aiConversationPort := persistence.NewAIConversationRepository(db)
+	generateAIAdvice := usecase.NewGenerateAIAdviceUseCase(
+		learningLogPort, learningGoalPort, roadmapPort,
+		githubPort, learningResourcePort, userPort,
 	)
+	aiChatPrompt := usecase.NewBuildAIChatPromptUseCase(learningGoalPort, learningLogPort, roadmapPort, githubPort)
+	aiUseCases := handler.AIAdviceUseCases{
+		Generate:           generateAIAdvice,
+		MarkAsRead:         usecase.NewMarkAIAdviceAsReadUseCase(aiAdvicePort),
+		Unread:             usecase.NewGetUnreadAIAdviceUseCase(aiAdvicePort),
+		DailyChatRemaining: usecase.NewGetDailyChatRemainingUseCase(aiConversationPort),
+		Chat:               usecase.NewChatWithAIUseCase(aiConversationPort, llmClient, aiChatPrompt),
+		ListConversations:  usecase.NewListAIConversationsUseCase(aiConversationPort),
+		GetConversation:    usecase.NewGetAIConversationUseCase(aiConversationPort),
+		DeleteConversation: usecase.NewDeleteAIConversationUseCase(aiConversationPort),
+	}
 
 	// ウィークリーレポートメールはクリーンアーキテクチャ（DIP）へ移行済み。
 	// port は usecase/repository、SMTP 実装は adapter/external。
@@ -564,7 +570,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewGetLearningLogMonthlySummaryUseCase(learningLogPort),
 		usecase.NewCountLearningLogsUseCase(learningLogPort),
 	)
-	c.AIAdviceHandler = handler.NewAIAdviceHandler(aiAdviceService)
+	c.AIAdviceHandler = handler.NewAIAdviceHandler(aiUseCases)
 	c.EmailPreferencesHandler = handler.NewEmailPreferencesHandler(
 		usecase.NewGetEmailPreferencesUseCase(userPort),
 		usecase.NewUpdateEmailPreferencesUseCase(userPort),
