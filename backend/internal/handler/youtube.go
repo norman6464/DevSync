@@ -3,24 +3,23 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// YouTubeServiceInterface はYouTubeサービスの抽象インターフェース。
-type YouTubeServiceInterface interface {
-	Search(query, language string) ([]model.YouTubeVideo, bool, error)
-	GetRecommendations(userID uint) ([]model.YouTubeVideo, []string, error)
-	IsAvailable() bool
-}
 
 // YouTubeHandler はYouTube関連のHTTPハンドラ。
 type YouTubeHandler struct {
-	service YouTubeServiceInterface
+	search       *usecase.SearchYouTubeVideosUseCase
+	recommend    *usecase.RecommendYouTubeVideosUseCase
+	availability *usecase.CheckYouTubeAvailabilityUseCase
 }
 
 // NewYouTubeHandler は新しいYouTubeHandlerインスタンスを生成する。
-func NewYouTubeHandler(s YouTubeServiceInterface) *YouTubeHandler {
-	return &YouTubeHandler{service: s}
+func NewYouTubeHandler(
+	search *usecase.SearchYouTubeVideosUseCase,
+	recommend *usecase.RecommendYouTubeVideosUseCase,
+	availability *usecase.CheckYouTubeAvailabilityUseCase,
+) *YouTubeHandler {
+	return &YouTubeHandler{search: search, recommend: recommend, availability: availability}
 }
 
 // Search はキーワードでYouTube動画を検索する。
@@ -33,7 +32,7 @@ func (h *YouTubeHandler) Search(c *gin.Context) {
 		return
 	}
 
-	videos, cached, err := h.service.Search(query, language)
+	videos, cached, err := h.search.Execute(c.Request.Context(), query, language)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -51,23 +50,20 @@ func (h *YouTubeHandler) Search(c *gin.Context) {
 func (h *YouTubeHandler) Recommend(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	videos, skills, err := h.service.GetRecommendations(userID)
+	videos, skills, err := h.recommend.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
 
-	videos = ensureSlice(videos)
-	skills = ensureSlice(skills)
-
 	respondOK(c, dto.YouTubeRecommendResponse{
-		Videos:    videos,
-		Skills:    skills,
-		Available: h.service.IsAvailable(),
+		Videos:    ensureSlice(videos),
+		Skills:    ensureSlice(skills),
+		Available: h.availability.Execute(),
 	})
 }
 
 // Status はYouTube API機能の利用可能状態を返す。
 func (h *YouTubeHandler) Status(c *gin.Context) {
-	respondOK(c, dto.AvailabilityResponse{Available: h.service.IsAvailable()})
+	respondOK(c, dto.AvailabilityResponse{Available: h.availability.Execute()})
 }

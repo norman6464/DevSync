@@ -248,24 +248,3 @@ type MentionRepositoryInterface interface {
 type SpotifyRepositoryInterface interface {
 	DeleteUserData(userID uint) error
 }
-
-// YouTubeVideoRepositoryInterface はYouTube動画キャッシュデータ操作の契約を定義する。
-type YouTubeVideoRepositoryInterface interface {
-	UpsertVideos(videos []model.YouTubeVideo) error
-	FindByVideoIDs(videoIDs []string) ([]model.YouTubeVideo, error)
-	FindCachedSearch(query, language string) (*model.YouTubeSearchCache, error)
-	SaveSearchCache(cache *model.YouTubeSearchCache) error
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
