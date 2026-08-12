@@ -1,7 +1,8 @@
-package service
+package external
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"log"
@@ -9,53 +10,49 @@ import (
 	"time"
 
 	"github.com/norman6464/devsync/backend/internal/domain"
+	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase/repository"
 )
 
-// LLMClientInterface はLLM APIクライアントの契約を定義する。
-// テスト時にモックに差し替え可能。
-type LLMClientInterface interface {
-	Complete(messages []ChatMessage) (*ChatResponse, error)
-}
+// openAIRequestTimeout は OpenAI への 1 リクエストのタイムアウト。
+const openAIRequestTimeout = 30 * time.Second
 
-// ChatMessage はLLM APIに送信するメッセージを表す。
-type ChatMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
+const (
+	openAIModel              = "gpt-4o-mini"
+	openAIChatCompletionsURL = "https://api.openai.com/v1/chat/completions"
+	// openAIMaxTokens は 1 応答あたりの最大トークン数。
+	openAIMaxTokens = 1024
+	// openAITemperature は応答のばらつき。
+	openAITemperature = 0.7
+)
 
-// ChatResponse はLLM APIからのレスポンスを表す。
-type ChatResponse struct {
-	Content    string `json:"content"`
-	TokensUsed int    `json:"tokens_used"`
-}
-
-// OpenAIClient はOpenAI Chat Completions APIのクライアント実装。
-// net/httpのみを使用し、外部ライブラリに依存しない。
-type OpenAIClient struct {
+// openAIClient は [repository.LLMClient] の OpenAI Chat Completions API 実装。
+// net/http のみを使用し、外部ライブラリに依存しない。
+type openAIClient struct {
 	apiKey     string
 	httpClient *http.Client
 	model      string
 	baseURL    string
 }
 
-// NewOpenAIClient は新しいOpenAIClientインスタンスを生成する。
-func NewOpenAIClient(apiKey string) *OpenAIClient {
-	return &OpenAIClient{
-		apiKey: apiKey,
-		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
-		},
-		model:   "gpt-4o-mini",
-		baseURL: "https://api.openai.com/v1/chat/completions",
+// NewOpenAIClient は LLMClient の OpenAI 実装を返す。
+func NewOpenAIClient(apiKey string) repository.LLMClient {
+	return &openAIClient{
+		apiKey:     apiKey,
+		httpClient: &http.Client{Timeout: openAIRequestTimeout},
+		model:      openAIModel,
+		baseURL:    openAIChatCompletionsURL,
 	}
 }
 
+var _ repository.LLMClient = (*openAIClient)(nil)
+
 // openAIRequest はOpenAI APIリクエストボディを表す。
 type openAIRequest struct {
-	Model       string        `json:"model"`
-	Messages    []ChatMessage `json:"messages"`
-	MaxTokens   int           `json:"max_tokens"`
-	Temperature float64       `json:"temperature"`
+	Model       string              `json:"model"`
+	Messages    []model.ChatMessage `json:"messages"`
+	MaxTokens   int                 `json:"max_tokens"`
+	Temperature float64             `json:"temperature"`
 }
 
 // openAIResponse はOpenAI APIレスポンスを表す。
@@ -73,13 +70,13 @@ type openAIResponse struct {
 	} `json:"error"`
 }
 
-// Complete はOpenAI Chat Completions APIを呼び出し、LLMの応答を返す。
-func (c *OpenAIClient) Complete(messages []ChatMessage) (*ChatResponse, error) {
+// Complete は OpenAI Chat Completions API を呼び出し、LLM の応答を返す。
+func (c *openAIClient) Complete(ctx context.Context, messages []model.ChatMessage) (*model.ChatResponse, error) {
 	reqBody := openAIRequest{
 		Model:       c.model,
 		Messages:    messages,
-		MaxTokens:   1024,
-		Temperature: 0.7,
+		MaxTokens:   openAIMaxTokens,
+		Temperature: openAITemperature,
 	}
 
 	jsonData, err := json.Marshal(reqBody)
@@ -87,7 +84,7 @@ func (c *OpenAIClient) Complete(messages []ChatMessage) (*ChatResponse, error) {
 		return nil, domain.NewError(domain.ErrCodeInternal, "リクエストのシリアライズに失敗", err)
 	}
 
-	req, err := http.NewRequest("POST", c.baseURL, bytes.NewReader(jsonData))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL, bytes.NewReader(jsonData))
 	if err != nil {
 		return nil, domain.NewError(domain.ErrCodeInternal, "HTTPリクエストの作成に失敗", err)
 	}
@@ -125,7 +122,7 @@ func (c *OpenAIClient) Complete(messages []ChatMessage) (*ChatResponse, error) {
 		return nil, domain.NewError(domain.ErrCodeServiceUnavailable, "OpenAI APIからの応答がありません", nil)
 	}
 
-	return &ChatResponse{
+	return &model.ChatResponse{
 		Content:    apiResp.Choices[0].Message.Content,
 		TokensUsed: apiResp.Usage.TotalTokens,
 	}, nil

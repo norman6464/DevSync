@@ -3,314 +3,366 @@ package handler
 import (
 	"errors"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
+// stubAdviceContext はルールエンジンが参照するデータの取得をすべて成功させる。
+// 生成されるアドバイスの内容は usecase 側のテストで検証する。
+func stubAdviceContext(ports *aiPorts) {
+	ports.Logs.On("GetStreakInfo", mock.Anything, mock.Anything).
+		Return(&model.StreakInfo{CurrentStreak: 3, LongestStreak: 5, TotalDays: 10}, nil).Maybe()
+	ports.Goals.On("GetByUserID", mock.Anything, mock.Anything, 100, 0).
+		Return([]model.LearningGoal{}, int64(0), nil).Maybe()
+	ports.Goals.On("GetStats", mock.Anything, mock.Anything).Return(&model.LearningGoalStats{}, nil).Maybe()
+	ports.Roadmaps.On("GetByUserID", mock.Anything, mock.Anything, 100, 0).
+		Return([]model.Roadmap{}, int64(0), nil).Maybe()
+	ports.GitHub.On("GetLanguageStats", mock.Anything, mock.Anything).
+		Return([]model.GitHubLanguageStat{}, nil).Maybe()
+	ports.Logs.On("GetByUserID", mock.Anything, mock.Anything, 100, 0).
+		Return([]model.LearningLog{}, int64(0), nil).Maybe()
+	ports.Resources.On("FindByUserID", mock.Anything, mock.Anything, true, 100, 0).
+		Return([]model.LearningResource{}, int64(0), nil).Maybe()
+	ports.Users.On("FindByID", mock.Anything, mock.Anything).Return(&model.User{ID: 1}, nil).Maybe()
+}
+
+// ---------- GetAdvice ----------
+
 func TestAIAdvice_GetAdvice_Success(t *testing.T) {
-	h, svc := setupAIAdviceHandler()
-	advices := []model.AIAdvice{{ID: 1, TitleKey: "test"}}
-	svc.On("GenerateAdvice", uint(1)).Return(advices)
-	svc.On("IsLLMAvailable").Return(true)
-	svc.On("GetDailyChatRemaining", uint(1)).Return(5, nil)
+	h, ports := setupAIAdviceHandler()
+	stubAdviceContext(ports)
+	ports.Conversations.On("CountTodayMessages", mock.Anything, uint(1)).Return(int64(2), nil)
 
-	r := gin.New()
-	r.GET("/advice", authMiddleware(1), h.GetAdvice)
-
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/advice", nil)
-	r.ServeHTTP(w, req)
+	r := newRouter(1)
+	r.GET("/advice", h.GetAdvice)
+	w := doRequest(r, http.MethodGet, "/advice", nil)
 
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	assert.Contains(t, w.Body.String(), `"llm_available":true`)
+	// 上限 5 回のうち 2 回使用しているので残り 3 回
+	assert.Contains(t, w.Body.String(), `"daily_chat_remaining":3`)
+	ports.Conversations.AssertExpectations(t)
 }
 
+// LLM 未設定のときは残り回数を数えない。
 func TestAIAdvice_GetAdvice_LLMUnavailable(t *testing.T) {
-	h, svc := setupAIAdviceHandler()
-	svc.On("GenerateAdvice", uint(1)).Return([]model.AIAdvice{})
-	svc.On("IsLLMAvailable").Return(false)
+	h, ports := setupAIAdviceHandlerWithoutLLM()
+	stubAdviceContext(ports)
 
-	r := gin.New()
-	r.GET("/advice", authMiddleware(1), h.GetAdvice)
-
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/advice", nil)
-	r.ServeHTTP(w, req)
+	r := newRouter(1)
+	r.GET("/advice", h.GetAdvice)
+	w := doRequest(r, http.MethodGet, "/advice", nil)
 
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	assert.Contains(t, w.Body.String(), `"llm_available":false`)
+	assert.Contains(t, w.Body.String(), `"daily_chat_remaining":0`)
+	ports.Conversations.AssertNotCalled(t, "CountTodayMessages", mock.Anything, mock.Anything)
 }
+
+// 残り回数の取得に失敗しても 200 で 0 を返す。
+func TestAIAdvice_GetAdvice_RemainingError(t *testing.T) {
+	h, ports := setupAIAdviceHandler()
+	stubAdviceContext(ports)
+	ports.Conversations.On("CountTodayMessages", mock.Anything, uint(1)).Return(int64(0), errors.New("db error"))
+
+	r := newRouter(1)
+	r.GET("/advice", h.GetAdvice)
+	w := doRequest(r, http.MethodGet, "/advice", nil)
+
+	assertStatus(t, w, http.StatusOK)
+	assert.Contains(t, w.Body.String(), `"daily_chat_remaining":0`)
+}
+
+// 学習状況の取得に失敗してもアドバイスは空配列で返す。
+func TestAIAdvice_GetAdvice_ContextError(t *testing.T) {
+	h, ports := setupAIAdviceHandler()
+	ports.Logs.On("GetStreakInfo", mock.Anything, uint(1)).Return(nil, errors.New("db error"))
+	ports.Conversations.On("CountTodayMessages", mock.Anything, uint(1)).Return(int64(0), nil)
+
+	r := newRouter(1)
+	r.GET("/advice", h.GetAdvice)
+	w := doRequest(r, http.MethodGet, "/advice", nil)
+
+	assertStatus(t, w, http.StatusOK)
+	assert.Contains(t, w.Body.String(), `"advices":[]`)
+}
+
+// ---------- MarkAsRead ----------
 
 func TestAIAdvice_MarkAsRead_Success(t *testing.T) {
-	h, svc := setupAIAdviceHandler()
-	svc.On("MarkAsRead", uint(10), uint(1)).Return(nil)
+	h, ports := setupAIAdviceHandler()
+	ports.Advices.On("MarkAsRead", mock.Anything, uint(10), uint(1)).Return(nil)
 
-	r := gin.New()
-	r.PUT("/advice/:id/read", authMiddleware(1), h.MarkAsRead)
-
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/advice/10/read", nil)
-	r.ServeHTTP(w, req)
+	r := newRouter(1)
+	r.PUT("/advice/:id/read", h.MarkAsRead)
+	w := doRequest(r, http.MethodPut, "/advice/10/read", nil)
 
 	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	ports.Advices.AssertExpectations(t)
 }
 
 func TestAIAdvice_MarkAsRead_NotFound(t *testing.T) {
-	h, svc := setupAIAdviceHandler()
-	svc.On("MarkAsRead", uint(99), uint(1)).Return(domain.NewError(domain.ErrCodeNotFound, "not found", nil))
+	h, ports := setupAIAdviceHandler()
+	ports.Advices.On("MarkAsRead", mock.Anything, uint(10), uint(1)).Return(errors.New("not found"))
 
-	r := gin.New()
-	r.PUT("/advice/:id/read", authMiddleware(1), h.MarkAsRead)
-
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/advice/99/read", nil)
-	r.ServeHTTP(w, req)
+	r := newRouter(1)
+	r.PUT("/advice/:id/read", h.MarkAsRead)
+	w := doRequest(r, http.MethodPut, "/advice/10/read", nil)
 
 	assertStatus(t, w, http.StatusNotFound)
-	svc.AssertExpectations(t)
-}
-
-func TestAIAdvice_Chat_Success(t *testing.T) {
-	h, svc := setupAIAdviceHandler()
-	conv := &model.AIConversation{ID: 1, Title: "Test"}
-	svc.On("Chat", uint(1), "hello", uint(0)).Return(conv, nil)
-
-	r := gin.New()
-	r.POST("/advice/chat", authMiddleware(1), h.Chat)
-
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/advice/chat", jsonBody(map[string]interface{}{
-		"message": "hello",
-	}))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestAIAdvice_Chat_ValidationError(t *testing.T) {
-	h, _ := setupAIAdviceHandler()
-
-	r := gin.New()
-	r.POST("/advice/chat", authMiddleware(1), h.Chat)
-
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/advice/chat", jsonBody(map[string]interface{}{}))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestAIAdvice_DeleteConversation_Success(t *testing.T) {
-	h, svc := setupAIAdviceHandler()
-	svc.On("DeleteConversation", uint(5), uint(1)).Return(nil)
-
-	r := gin.New()
-	r.DELETE("/conversations/:id", authMiddleware(1), h.DeleteConversation)
-
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/conversations/5", nil)
-	r.ServeHTTP(w, req)
-
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestAIAdvice_GetConversations_Success(t *testing.T) {
-	h, svc := setupAIAdviceHandler()
-	convs := []model.AIConversation{{ID: 1}, {ID: 2}}
-	svc.On("GetConversations", uint(1), 20, 0).Return(convs, nil)
-
-	r := gin.New()
-	r.GET("/conversations", authMiddleware(1), h.GetConversations)
-
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/conversations", nil)
-	r.ServeHTTP(w, req)
-
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestAIAdvice_GetConversation_Success(t *testing.T) {
-	h, svc := setupAIAdviceHandler()
-	conv := &model.AIConversation{ID: 3, Title: "Test Conv"}
-	svc.On("GetConversation", uint(3), uint(1)).Return(conv, nil)
-
-	r := gin.New()
-	r.GET("/conversations/:id", authMiddleware(1), h.GetConversation)
-
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/conversations/3", nil)
-	r.ServeHTTP(w, req)
-
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestAIAdvice_GetConversation_ServiceError(t *testing.T) {
-	h, svc := setupAIAdviceHandler()
-	svc.On("GetConversation", uint(99), uint(1)).Return(nil, errors.New("not found"))
-
-	r := gin.New()
-	r.GET("/conversations/:id", authMiddleware(1), h.GetConversation)
-
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/conversations/99", nil)
-	r.ServeHTTP(w, req)
-
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
-
-// ============================================================
-// GetUnreadAdvice テスト
-// ============================================================
-
-func TestAIAdviceGetUnreadAdvice_Success(t *testing.T) {
-	h, svc := setupAIAdviceHandler()
-	r := newRouter(1)
-	r.GET("/ai-advice/unread", h.GetUnreadAdvice)
-
-	advices := []model.AIAdvice{
-		{TitleKey: "advice.study_daily"},
-	}
-	svc.On("GetUnreadAdvice", uint(1)).Return(advices, nil)
-
-	w := doRequest(r, http.MethodGet, "/ai-advice/unread", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestAIAdviceGetUnreadAdvice_Empty(t *testing.T) {
-	h, svc := setupAIAdviceHandler()
-	r := newRouter(1)
-	r.GET("/ai-advice/unread", h.GetUnreadAdvice)
-
-	svc.On("GetUnreadAdvice", uint(1)).Return([]model.AIAdvice(nil), nil)
-
-	w := doRequest(r, http.MethodGet, "/ai-advice/unread", nil)
-	assertStatus(t, w, http.StatusOK)
-	// nilの場合は空配列[]に変換されるべき
-	assert.Equal(t, "[]", w.Body.String())
-	svc.AssertExpectations(t)
-}
-
-// ============================================================
-// DeleteConversation テスト
-// ============================================================
-
-func TestAIAdviceDeleteConversation_Success(t *testing.T) {
-	h, svc := setupAIAdviceHandler()
-	r := newRouter(1)
-	r.DELETE("/ai-advice/conversations/:id", h.DeleteConversation)
-
-	svc.On("DeleteConversation", uint(5), uint(1)).Return(nil)
-
-	w := doRequest(r, http.MethodDelete, "/ai-advice/conversations/5", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
-}
-
-func TestAIAdviceDeleteConversation_ServiceError(t *testing.T) {
-	h, svc := setupAIAdviceHandler()
-	r := newRouter(1)
-	r.DELETE("/ai-advice/conversations/:id", h.DeleteConversation)
-
-	svc.On("DeleteConversation", uint(99), uint(1)).Return(errors.New("not found"))
-
-	w := doRequest(r, http.MethodDelete, "/ai-advice/conversations/99", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
-
-func TestAIAdviceDeleteConversation_InvalidID(t *testing.T) {
-	h, _ := setupAIAdviceHandler()
-	r := newRouter(1)
-	r.DELETE("/ai-advice/conversations/:id", h.DeleteConversation)
-
-	w := doRequest(r, http.MethodDelete, "/ai-advice/conversations/abc", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestAIAdviceGetUnreadAdvice_ServiceError(t *testing.T) {
-	h, svc := setupAIAdviceHandler()
-	r := newRouter(1)
-	r.GET("/ai-advice/unread", h.GetUnreadAdvice)
-
-	svc.On("GetUnreadAdvice", uint(1)).Return([]model.AIAdvice(nil), errors.New("db error"))
-
-	w := doRequest(r, http.MethodGet, "/ai-advice/unread", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
-
-// ============================================================
-// カバレッジ向上テスト
-// ============================================================
-
-func TestAIAdvice_GetConversations_ServiceError(t *testing.T) {
-	h, svc := setupAIAdviceHandler()
-	r := newRouter(1)
-	r.GET("/conversations", h.GetConversations)
-
-	svc.On("GetConversations", uint(1), 20, 0).Return([]model.AIConversation(nil), errors.New("db error"))
-
-	w := doRequest(r, http.MethodGet, "/conversations", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
-
-func TestAIAdvice_Chat_ServiceError(t *testing.T) {
-	h, svc := setupAIAdviceHandler()
-	r := newRouter(1)
-	r.POST("/advice/chat", h.Chat)
-
-	svc.On("Chat", uint(1), "hello", uint(0)).Return(nil, errors.New("llm error"))
-
-	w := doRequest(r, http.MethodPost, "/advice/chat", map[string]interface{}{
-		"message": "hello",
-	})
-	assertStatus(t, w, http.StatusInternalServerError)
-	svc.AssertExpectations(t)
-}
-
-func TestAIAdvice_GetAdvice_RemainingError(t *testing.T) {
-	h, svc := setupAIAdviceHandler()
-	r := newRouter(1)
-	r.GET("/advice", h.GetAdvice)
-
-	svc.On("GenerateAdvice", uint(1)).Return([]model.AIAdvice{})
-	svc.On("IsLLMAvailable").Return(true)
-	svc.On("GetDailyChatRemaining", uint(1)).Return(0, errors.New("db error"))
-
-	w := doRequest(r, http.MethodGet, "/advice", nil)
-	assertStatus(t, w, http.StatusOK)
-	svc.AssertExpectations(t)
+	ports.Advices.AssertExpectations(t)
 }
 
 func TestAIAdvice_MarkAsRead_InvalidID(t *testing.T) {
-	h, _ := setupAIAdviceHandler()
+	h, ports := setupAIAdviceHandler()
+
 	r := newRouter(1)
 	r.PUT("/advice/:id/read", h.MarkAsRead)
-
 	w := doRequest(r, http.MethodPut, "/advice/abc/read", nil)
+
 	assertStatus(t, w, http.StatusBadRequest)
+	ports.Advices.AssertNotCalled(t, "MarkAsRead", mock.Anything, mock.Anything, mock.Anything)
 }
 
-func TestAIAdvice_GetConversation_InvalidID(t *testing.T) {
-	h, _ := setupAIAdviceHandler()
+// ---------- Chat ----------
+
+func TestAIAdvice_Chat_Success(t *testing.T) {
+	h, ports := setupAIAdviceHandler()
+	stubAdviceContext(ports)
+	ports.Conversations.On("CountTodayMessages", mock.Anything, uint(1)).Return(int64(0), nil)
+	ports.Conversations.On("CreateConversation", mock.Anything, mock.MatchedBy(func(c *model.AIConversation) bool {
+		return c.UserID == 1 && c.Title == "Goの学習方法を教えて"
+	})).Return(nil).Run(func(args mock.Arguments) {
+		args.Get(1).(*model.AIConversation).ID = 7
+	})
+	ports.Conversations.On("AddMessage", mock.Anything, mock.MatchedBy(func(m *model.AIMessage) bool {
+		return m.Role == model.AIMessageRoleUser && m.Content == "Goの学習方法を教えて"
+	})).Return(nil)
+	ports.LLM.On("Complete", mock.Anything, mock.MatchedBy(func(msgs []model.ChatMessage) bool {
+		// 先頭はシステムプロンプト、末尾がユーザーの発言
+		return len(msgs) == 2 && msgs[0].Role == "system" && msgs[1].Content == "Goの学習方法を教えて"
+	})).Return(&model.ChatResponse{Content: "まずは公式ツアーから", TokensUsed: 120}, nil)
+	ports.Conversations.On("AddMessage", mock.Anything, mock.MatchedBy(func(m *model.AIMessage) bool {
+		return m.Role == model.AIMessageRoleAssistant && m.TokensUsed == 120
+	})).Return(nil)
+	ports.Conversations.On("FindConversationByID", mock.Anything, uint(7)).
+		Return(&model.AIConversation{ID: 7, UserID: 1}, nil)
+
+	r := newRouter(1)
+	r.POST("/chat", h.Chat)
+	w := doRequest(r, http.MethodPost, "/chat", map[string]interface{}{"message": "Goの学習方法を教えて"})
+
+	assertStatus(t, w, http.StatusOK)
+	ports.LLM.AssertExpectations(t)
+	ports.Conversations.AssertExpectations(t)
+}
+
+func TestAIAdvice_Chat_ValidationError(t *testing.T) {
+	h, ports := setupAIAdviceHandler()
+
+	r := newRouter(1)
+	r.POST("/chat", h.Chat)
+	w := doRequest(r, http.MethodPost, "/chat", map[string]interface{}{"message": ""})
+
+	assertStatus(t, w, http.StatusBadRequest)
+	ports.LLM.AssertNotCalled(t, "Complete", mock.Anything, mock.Anything)
+}
+
+// LLM 未設定なら 503 を返す。
+func TestAIAdvice_Chat_LLMNotConfigured(t *testing.T) {
+	h, ports := setupAIAdviceHandlerWithoutLLM()
+
+	r := newRouter(1)
+	r.POST("/chat", h.Chat)
+	w := doRequest(r, http.MethodPost, "/chat", map[string]interface{}{"message": "こんにちは"})
+
+	assertStatus(t, w, http.StatusServiceUnavailable)
+	ports.Conversations.AssertNotCalled(t, "CountTodayMessages", mock.Anything, mock.Anything)
+}
+
+// 1 日の上限に達していたら 429 を返す。
+func TestAIAdvice_Chat_RateLimited(t *testing.T) {
+	h, ports := setupAIAdviceHandler()
+	ports.Conversations.On("CountTodayMessages", mock.Anything, uint(1)).Return(int64(5), nil)
+
+	r := newRouter(1)
+	r.POST("/chat", h.Chat)
+	w := doRequest(r, http.MethodPost, "/chat", map[string]interface{}{"message": "こんにちは"})
+
+	assertStatus(t, w, http.StatusTooManyRequests)
+	ports.LLM.AssertNotCalled(t, "Complete", mock.Anything, mock.Anything)
+}
+
+// 他人の会話には投稿できない。
+func TestAIAdvice_Chat_ForbiddenConversation(t *testing.T) {
+	h, ports := setupAIAdviceHandler()
+	stubAdviceContext(ports)
+	ports.Conversations.On("CountTodayMessages", mock.Anything, uint(1)).Return(int64(0), nil)
+	ports.Conversations.On("FindConversationByID", mock.Anything, uint(9)).
+		Return(&model.AIConversation{ID: 9, UserID: 999}, nil)
+
+	r := newRouter(1)
+	r.POST("/chat", h.Chat)
+	w := doRequest(r, http.MethodPost, "/chat", map[string]interface{}{"message": "こんにちは", "conversation_id": 9})
+
+	assertStatus(t, w, http.StatusForbidden)
+	ports.LLM.AssertNotCalled(t, "Complete", mock.Anything, mock.Anything)
+}
+
+func TestAIAdvice_Chat_LLMError(t *testing.T) {
+	h, ports := setupAIAdviceHandler()
+	stubAdviceContext(ports)
+	ports.Conversations.On("CountTodayMessages", mock.Anything, uint(1)).Return(int64(0), nil)
+	ports.Conversations.On("CreateConversation", mock.Anything, mock.Anything).Return(nil)
+	ports.Conversations.On("AddMessage", mock.Anything, mock.Anything).Return(nil)
+	ports.LLM.On("Complete", mock.Anything, mock.Anything).Return(nil, errors.New("api error"))
+
+	r := newRouter(1)
+	r.POST("/chat", h.Chat)
+	w := doRequest(r, http.MethodPost, "/chat", map[string]interface{}{"message": "こんにちは"})
+
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+// ---------- 会話 ----------
+
+func TestAIAdvice_GetConversations_Success(t *testing.T) {
+	h, ports := setupAIAdviceHandler()
+	ports.Conversations.On("FindConversationsByUserID", mock.Anything, uint(1), 20, 0).
+		Return([]model.AIConversation{{ID: 1, UserID: 1, Title: "会話"}}, nil)
+
+	r := newRouter(1)
+	r.GET("/conversations", h.GetConversations)
+	w := doRequest(r, http.MethodGet, "/conversations", nil)
+
+	assertStatus(t, w, http.StatusOK)
+	ports.Conversations.AssertExpectations(t)
+}
+
+func TestAIAdvice_GetConversations_RepositoryError(t *testing.T) {
+	h, ports := setupAIAdviceHandler()
+	ports.Conversations.On("FindConversationsByUserID", mock.Anything, uint(1), 20, 0).
+		Return(nil, errors.New("db error"))
+
+	r := newRouter(1)
+	r.GET("/conversations", h.GetConversations)
+	w := doRequest(r, http.MethodGet, "/conversations", nil)
+
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+func TestAIAdvice_GetConversation_Success(t *testing.T) {
+	h, ports := setupAIAdviceHandler()
+	ports.Conversations.On("FindConversationByID", mock.Anything, uint(3)).
+		Return(&model.AIConversation{ID: 3, UserID: 1}, nil)
+
 	r := newRouter(1)
 	r.GET("/conversations/:id", h.GetConversation)
+	w := doRequest(r, http.MethodGet, "/conversations/3", nil)
 
-	w := doRequest(r, http.MethodGet, "/conversations/abc", nil)
+	assertStatus(t, w, http.StatusOK)
+	ports.Conversations.AssertExpectations(t)
+}
+
+func TestAIAdvice_GetConversation_NotFound(t *testing.T) {
+	h, ports := setupAIAdviceHandler()
+	ports.Conversations.On("FindConversationByID", mock.Anything, uint(3)).Return(nil, nil)
+
+	r := newRouter(1)
+	r.GET("/conversations/:id", h.GetConversation)
+	w := doRequest(r, http.MethodGet, "/conversations/3", nil)
+
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+func TestAIAdvice_GetConversation_Forbidden(t *testing.T) {
+	h, ports := setupAIAdviceHandler()
+	ports.Conversations.On("FindConversationByID", mock.Anything, uint(3)).
+		Return(&model.AIConversation{ID: 3, UserID: 999}, nil)
+
+	r := newRouter(1)
+	r.GET("/conversations/:id", h.GetConversation)
+	w := doRequest(r, http.MethodGet, "/conversations/3", nil)
+
+	assertStatus(t, w, http.StatusForbidden)
+}
+
+func TestAIAdvice_DeleteConversation_Success(t *testing.T) {
+	h, ports := setupAIAdviceHandler()
+	ports.Conversations.On("FindConversationByID", mock.Anything, uint(3)).
+		Return(&model.AIConversation{ID: 3, UserID: 1}, nil)
+	ports.Conversations.On("DeleteConversation", mock.Anything, uint(3), uint(1)).Return(nil)
+
+	r := newRouter(1)
+	r.DELETE("/conversations/:id", h.DeleteConversation)
+	w := doRequest(r, http.MethodDelete, "/conversations/3", nil)
+
+	assertStatus(t, w, http.StatusOK)
+	ports.Conversations.AssertExpectations(t)
+}
+
+func TestAIAdvice_DeleteConversation_Forbidden(t *testing.T) {
+	h, ports := setupAIAdviceHandler()
+	ports.Conversations.On("FindConversationByID", mock.Anything, uint(3)).
+		Return(&model.AIConversation{ID: 3, UserID: 999}, nil)
+
+	r := newRouter(1)
+	r.DELETE("/conversations/:id", h.DeleteConversation)
+	w := doRequest(r, http.MethodDelete, "/conversations/3", nil)
+
+	assertStatus(t, w, http.StatusForbidden)
+	ports.Conversations.AssertNotCalled(t, "DeleteConversation", mock.Anything, mock.Anything, mock.Anything)
+}
+
+func TestAIAdvice_DeleteConversation_InvalidID(t *testing.T) {
+	h, ports := setupAIAdviceHandler()
+
+	r := newRouter(1)
+	r.DELETE("/conversations/:id", h.DeleteConversation)
+	w := doRequest(r, http.MethodDelete, "/conversations/abc", nil)
+
 	assertStatus(t, w, http.StatusBadRequest)
+	ports.Conversations.AssertNotCalled(t, "FindConversationByID", mock.Anything, mock.Anything)
+}
+
+// ---------- 未読アドバイス ----------
+
+func TestAIAdviceGetUnreadAdvice_Success(t *testing.T) {
+	h, ports := setupAIAdviceHandler()
+	ports.Advices.On("FindUnreadByUserID", mock.Anything, uint(1)).
+		Return([]model.AIAdvice{{ID: 1, TitleKey: "advice.streakBroken"}}, nil)
+
+	r := newRouter(1)
+	r.GET("/advice/unread", h.GetUnreadAdvice)
+	w := doRequest(r, http.MethodGet, "/advice/unread", nil)
+
+	assertStatus(t, w, http.StatusOK)
+	ports.Advices.AssertExpectations(t)
+}
+
+func TestAIAdviceGetUnreadAdvice_Empty(t *testing.T) {
+	h, ports := setupAIAdviceHandler()
+	ports.Advices.On("FindUnreadByUserID", mock.Anything, uint(1)).Return(nil, nil)
+
+	r := newRouter(1)
+	r.GET("/advice/unread", h.GetUnreadAdvice)
+	w := doRequest(r, http.MethodGet, "/advice/unread", nil)
+
+	assertStatus(t, w, http.StatusOK)
+	assert.Equal(t, "[]", w.Body.String())
+}
+
+func TestAIAdviceGetUnreadAdvice_RepositoryError(t *testing.T) {
+	h, ports := setupAIAdviceHandler()
+	ports.Advices.On("FindUnreadByUserID", mock.Anything, uint(1)).Return(nil, errors.New("db error"))
+
+	r := newRouter(1)
+	r.GET("/advice/unread", h.GetUnreadAdvice)
+	w := doRequest(r, http.MethodGet, "/advice/unread", nil)
+
+	assertStatus(t, w, http.StatusInternalServerError)
+	ports.Advices.AssertExpectations(t)
 }

@@ -7,14 +7,14 @@ type AdviceType string
 
 // AIアドバイスの種別定数群。
 const (
-	AdviceTypeStreakRecovery  AdviceType = "streak_recovery"  // ストリーク途切れ回復
-	AdviceTypeStalledRoadmap AdviceType = "stalled_roadmap"  // ロードマップ停滞
-	AdviceTypeGoalOverdue    AdviceType = "goal_overdue"     // 目標期限超過
-	AdviceTypeTechSuggestion AdviceType = "tech_suggestion"  // 技術提案
-	AdviceTypeGoalSuggestion AdviceType = "goal_suggestion"  // 目標提案
-	AdviceTypeDifficultyUp   AdviceType = "difficulty_up"    // 難易度アップ
-	AdviceTypePraise         AdviceType = "praise"           // 称賛
-	AdviceTypeGeneral        AdviceType = "general"          // 一般
+	AdviceTypeStreakRecovery AdviceType = "streak_recovery" // ストリーク途切れ回復
+	AdviceTypeStalledRoadmap AdviceType = "stalled_roadmap" // ロードマップ停滞
+	AdviceTypeGoalOverdue    AdviceType = "goal_overdue"    // 目標期限超過
+	AdviceTypeTechSuggestion AdviceType = "tech_suggestion" // 技術提案
+	AdviceTypeGoalSuggestion AdviceType = "goal_suggestion" // 目標提案
+	AdviceTypeDifficultyUp   AdviceType = "difficulty_up"   // 難易度アップ
+	AdviceTypePraise         AdviceType = "praise"          // 称賛
+	AdviceTypeGeneral        AdviceType = "general"         // 一般
 )
 
 // AdvicePriority はAIアドバイスの優先度を表す型（1=Critical〜5=Info）。
@@ -75,4 +75,16 @@ type AIMessage struct {
 	Content        string        `json:"content" gorm:"type:text;not null"`
 	TokensUsed     int           `json:"tokens_used" gorm:"default:0"`
 	CreatedAt      time.Time     `json:"created_at"`
+}
+
+// ChatMessage は LLM に送信する 1 メッセージを表す。
+type ChatMessage struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
+// ChatResponse は LLM からの応答を表す。
+type ChatResponse struct {
+	Content    string `json:"content"`
+	TokensUsed int    `json:"tokens_used"`
 }
