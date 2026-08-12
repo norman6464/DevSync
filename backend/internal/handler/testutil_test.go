@@ -445,22 +445,46 @@ func (m *mockRoadmapRepo) ReorderSteps(ctx context.Context, roadmapID uint, step
 // setupPostHandler はPostHandlerテスト用のセットアップを行う。
 // スニペット作成は DIP へ移行済みのため、本物の usecase と port モックを注入する。
 func setupPostHandler() (*PostHandler, *MockPostRepository, *MockNotificationRepository, *postHandlerSnippetPorts) {
+	h, postRepo, notifRepo, ports, _ := setupPostHandlerWithReactionPorts()
+	return h, postRepo, notifRepo, ports
+}
+
+// setupPostHandlerWithReactionPorts はリアクションの port モックも返すセットアップ。
+// リアクションは DIP へ移行済みのため、本物の usecase と port モックを注入する。
+func setupPostHandlerWithReactionPorts() (*PostHandler, *MockPostRepository, *MockNotificationRepository, *postHandlerSnippetPorts, *postHandlerReactionPorts) {
 	postRepo := new(MockPostRepository)
 	notifRepo := new(MockNotificationRepository)
 	snippets := new(mockCodeSnippetRepo)
 	posts := new(mockPostReader)
+	reactions := new(mockPostReactionPort)
+	authors := new(mockPostAuthorPort)
 
 	notifService := service.NewNotificationService(notifRepo)
 	postService := service.NewPostService(postRepo, notifService)
-	h := NewPostHandler(postService, usecase.NewCreateCodeSnippetUseCase(snippets, posts))
+	h := NewPostHandler(
+		postService,
+		usecase.NewCreateCodeSnippetUseCase(snippets, posts),
+		usecase.NewAddPostReactionUseCase(reactions, authors),
+		usecase.NewRemovePostReactionUseCase(reactions, authors),
+		usecase.NewGetPostReactionsUseCase(reactions),
+		usecase.NewGetPostReactionsBatchUseCase(reactions),
+	)
 
-	return h, postRepo, notifRepo, &postHandlerSnippetPorts{Snippets: snippets, Posts: posts}
+	return h, postRepo, notifRepo,
+		&postHandlerSnippetPorts{Snippets: snippets, Posts: posts},
+		&postHandlerReactionPorts{Reactions: reactions, Authors: authors}
 }
 
 // postHandlerSnippetPorts は PostHandler のスニペット作成に注入した port モックをまとめる。
 type postHandlerSnippetPorts struct {
 	Snippets *mockCodeSnippetRepo
 	Posts    *mockPostReader
+}
+
+// postHandlerReactionPorts は PostHandler のリアクションに注入した port モックをまとめる。
+type postHandlerReactionPorts struct {
+	Reactions *mockPostReactionPort
+	Authors   *mockPostAuthorPort
 }
 
 // setupQuestionHandler はQuestionHandlerテスト用のセットアップを行う。

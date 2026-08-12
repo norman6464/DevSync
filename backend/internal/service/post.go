@@ -5,7 +5,6 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/norman6464/devsync/backend/internal/constants"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/domain/validator"
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -320,101 +319,6 @@ func (s *PostService) GetBookmarks(userID uint, page, limit int) ([]model.Post, 
 // CountBookmarkedByUserID は指定ユーザーのブックマーク済み投稿数を返す。
 func (s *PostService) CountBookmarkedByUserID(userID uint) (int64, error) {
 	return s.repo.CountBookmarkedByUserID(userID)
-}
-
-// AddReaction は投稿にリアクション（絵文字）を追加する。
-// 許可された絵文字のみ使用可能。自分の投稿への自己リアクションは禁止する。
-func (s *PostService) AddReaction(userID, postID uint, emoji string) error {
-	if !constants.IsAllowedReactionEmoji(emoji) {
-		return domain.NewError(domain.ErrCodeBadRequest, "許可されていない絵文字です: "+emoji, nil)
-	}
-	if err := s.findAndPreventSelfAction(userID, postID); err != nil {
-		return err
-	}
-	return s.repo.AddReaction(userID, postID, emoji)
-}
-
-// RemoveReaction は投稿のリアクションを削除する。
-// 自分の投稿へのリアクション削除は禁止する（そもそもリアクションできないため）。
-func (s *PostService) RemoveReaction(userID, postID uint, emoji string) error {
-	if !constants.IsAllowedReactionEmoji(emoji) {
-		return domain.NewError(domain.ErrCodeBadRequest, "許可されていない絵文字です: "+emoji, nil)
-	}
-	if err := s.findAndPreventSelfAction(userID, postID); err != nil {
-		return err
-	}
-	return s.repo.RemoveReaction(userID, postID, emoji)
-}
-
-// GetReactionsByPostID は指定投稿のリアクション集計を取得する。
-func (s *PostService) GetReactionsByPostID(postID uint) ([]model.ReactionCount, error) {
-	return s.repo.GetReactionsByPostID(postID)
-}
-
-// GetUserReactions は指定ユーザーが投稿に付けたリアクション絵文字一覧を取得する。
-func (s *PostService) GetUserReactions(userID, postID uint) ([]string, error) {
-	return s.repo.GetUserReactions(userID, postID)
-}
-
-// GetReactionsBatch は複数投稿のリアクション情報を一括取得する。
-// 最大50件まで。返却マップはリクエストされた全postIDに対してエントリを持ち、nilスライスは空スライスに正規化される。
-func (s *PostService) GetReactionsBatch(userID uint, postIDs []uint) (map[uint][]model.ReactionCount, map[uint][]string, error) {
-	if len(postIDs) == 0 {
-		return map[uint][]model.ReactionCount{}, map[uint][]string{}, nil
-	}
-	if len(postIDs) > 50 {
-		return nil, nil, domain.NewError(domain.ErrCodeBadRequest, "一度に取得できる投稿は50件までです", nil)
-	}
-
-	reactions, err := s.repo.GetReactionsBatch(postIDs)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	userReactions, err := s.repo.GetUserReactionsBatch(userID, postIDs)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// リクエストされた全postIDに対してエントリを保証（nilスライス正規化）
-	NormalizeReactionMaps(reactions, userReactions, postIDs)
-
-	return reactions, userReactions, nil
-}
-
-// GetReactionsWithUser は投稿のリアクション一覧とユーザーのリアクションを一括取得する。
-func (s *PostService) GetReactionsWithUser(userID, postID uint) ([]model.ReactionCount, []string, error) {
-	reactions, err := s.repo.GetReactionsByPostID(postID)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	userReactions, err := s.repo.GetUserReactions(userID, postID)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	if reactions == nil {
-		reactions = []model.ReactionCount{}
-	}
-	if userReactions == nil {
-		userReactions = []string{}
-	}
-
-	return reactions, userReactions, nil
-}
-
-// NormalizeReactionMaps はリアクションマップをpostIDsに対して正規化する純粋関数。
-// nilスライスを空スライスに変換し、全postIDにエントリを保証する。
-func NormalizeReactionMaps(reactions map[uint][]model.ReactionCount, userReactions map[uint][]string, postIDs []uint) {
-	for _, id := range postIDs {
-		if reactions[id] == nil {
-			reactions[id] = []model.ReactionCount{}
-		}
-		if userReactions[id] == nil {
-			userReactions[id] = []string{}
-		}
-	}
 }
 
 // SchedulePublish は下書き投稿にスケジュール公開日時を設定する。
