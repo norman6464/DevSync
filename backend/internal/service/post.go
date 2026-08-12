@@ -194,39 +194,6 @@ func (s *PostService) HasLiked(userID, postID uint) bool {
 	return s.repo.HasLiked(userID, postID)
 }
 
-// Bookmark は投稿をブックマークする。
-// 自分の投稿へのブックマークは禁止する。
-func (s *PostService) Bookmark(userID, postID uint) error {
-	if err := s.findAndPreventSelfAction(userID, postID); err != nil {
-		return err
-	}
-	return s.repo.Bookmark(userID, postID)
-}
-
-// Unbookmark は投稿のブックマークを解除する。
-// 自分の投稿のブックマークは解除できない（そもそもブックマークできないため）。
-func (s *PostService) Unbookmark(userID, postID uint) error {
-	if err := s.findAndPreventSelfAction(userID, postID); err != nil {
-		return err
-	}
-	return s.repo.Unbookmark(userID, postID)
-}
-
-// HasBookmarked は指定ユーザーが投稿をブックマーク済みかを判定する。
-func (s *PostService) HasBookmarked(userID, postID uint) bool {
-	return s.repo.HasBookmarked(userID, postID)
-}
-
-// GetBookmarks は指定ユーザーのブックマーク済み投稿一覧を取得する。
-func (s *PostService) GetBookmarks(userID uint, page, limit int) ([]model.Post, int64, error) {
-	return s.repo.FindBookmarkedByUserID(userID, page, limit)
-}
-
-// CountBookmarkedByUserID は指定ユーザーのブックマーク済み投稿数を返す。
-func (s *PostService) CountBookmarkedByUserID(userID uint) (int64, error) {
-	return s.repo.CountBookmarkedByUserID(userID)
-}
-
 // SchedulePublish は下書き投稿にスケジュール公開日時を設定する。
 func (s *PostService) SchedulePublish(id, userID uint, scheduledAt time.Time) (*model.Post, error) {
 	post, err := s.findAndCheckOwnership(id, userID)

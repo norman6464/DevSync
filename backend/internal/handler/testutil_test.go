@@ -99,23 +99,6 @@ func (m *MockPostRepository) Unlike(userID, postID uint) error {
 func (m *MockPostRepository) HasLiked(userID, postID uint) bool {
 	return m.Called(userID, postID).Bool(0)
 }
-func (m *MockPostRepository) Bookmark(userID, postID uint) error {
-	return m.Called(userID, postID).Error(0)
-}
-func (m *MockPostRepository) Unbookmark(userID, postID uint) error {
-	return m.Called(userID, postID).Error(0)
-}
-func (m *MockPostRepository) HasBookmarked(userID, postID uint) bool {
-	return m.Called(userID, postID).Bool(0)
-}
-func (m *MockPostRepository) FindBookmarkedByUserID(userID uint, page, limit int) ([]model.Post, int64, error) {
-	args := m.Called(userID, page, limit)
-	return args.Get(0).([]model.Post), args.Get(1).(int64), args.Error(2)
-}
-func (m *MockPostRepository) CountBookmarkedByUserID(userID uint) (int64, error) {
-	args := m.Called(userID)
-	return args.Get(0).(int64), args.Error(1)
-}
 func (m *MockPostRepository) AddReaction(userID, postID uint, emoji string) error {
 	return m.Called(userID, postID, emoji).Error(0)
 }
@@ -420,25 +403,37 @@ func (m *mockRoadmapRepo) ReorderSteps(ctx context.Context, roadmapID uint, step
 // setupPostHandler はPostHandlerテスト用のセットアップを行う。
 // スニペット作成は DIP へ移行済みのため、本物の usecase と port モックを注入する。
 func setupPostHandler() (*PostHandler, *MockPostRepository, *MockNotificationRepository, *postHandlerSnippetPorts) {
-	h, postRepo, notifRepo, ports, _, _ := setupPostHandlerWithPorts()
+	h, postRepo, notifRepo, ports, _, _, _ := setupPostHandlerWithPorts()
 	return h, postRepo, notifRepo, ports
 }
 
 // setupPostHandlerWithReactionPorts はリアクションの port モックも返すセットアップ。
 func setupPostHandlerWithReactionPorts() (*PostHandler, *MockPostRepository, *MockNotificationRepository, *postHandlerSnippetPorts, *postHandlerReactionPorts) {
-	h, postRepo, notifRepo, snippetPorts, reactionPorts, _ := setupPostHandlerWithPorts()
+	h, postRepo, notifRepo, snippetPorts, reactionPorts, _, _ := setupPostHandlerWithPorts()
 	return h, postRepo, notifRepo, snippetPorts, reactionPorts
 }
 
 // setupPostHandlerWithCommentPort はコメントの port モックも返すセットアップ。
 func setupPostHandlerWithCommentPort() (*PostHandler, *mockPostCommentPort) {
-	h, _, _, _, _, comments := setupPostHandlerWithPorts()
+	h, _, _, _, _, comments, _ := setupPostHandlerWithPorts()
 	return h, comments
 }
 
+// setupPostHandlerWithBookmarkPort はブックマークの port モックも返すセットアップ。
+func setupPostHandlerWithBookmarkPort() (*PostHandler, *MockPostRepository, *mockPostBookmarkPort) {
+	h, postRepo, _, _, _, _, bookmarks := setupPostHandlerWithPorts()
+	return h, postRepo, bookmarks
+}
+
+// setupPostHandlerWithBookmarkPorts はブックマークと投稿者判定の port モックを返すセットアップ。
+func setupPostHandlerWithBookmarkPorts() (*PostHandler, *mockPostBookmarkPort, *mockPostAuthorPort) {
+	h, _, _, _, reactionPorts, _, bookmarks := setupPostHandlerWithPorts()
+	return h, bookmarks, reactionPorts.Authors
+}
+
 // setupPostHandlerWithPorts は移行済みスライスの port モックをすべて注入したセットアップ。
-// リアクション・コメントは DIP へ移行済みのため、本物の usecase と port モックを注入する。
-func setupPostHandlerWithPorts() (*PostHandler, *MockPostRepository, *MockNotificationRepository, *postHandlerSnippetPorts, *postHandlerReactionPorts, *mockPostCommentPort) {
+// リアクション・コメント・ブックマークは DIP へ移行済みのため、本物の usecase と port モックを注入する。
+func setupPostHandlerWithPorts() (*PostHandler, *MockPostRepository, *MockNotificationRepository, *postHandlerSnippetPorts, *postHandlerReactionPorts, *mockPostCommentPort, *mockPostBookmarkPort) {
 	postRepo := new(MockPostRepository)
 	notifRepo := new(MockNotificationRepository)
 	snippets := new(mockCodeSnippetRepo)
@@ -446,6 +441,7 @@ func setupPostHandlerWithPorts() (*PostHandler, *MockPostRepository, *MockNotifi
 	reactions := new(mockPostReactionPort)
 	authors := new(mockPostAuthorPort)
 	comments := new(mockPostCommentPort)
+	bookmarks := new(mockPostBookmarkPort)
 
 	notifService := service.NewNotificationService(notifRepo)
 	postService := service.NewPostService(postRepo, notifService)
@@ -463,12 +459,17 @@ func setupPostHandlerWithPorts() (*PostHandler, *MockPostRepository, *MockNotifi
 		usecase.NewDeletePostCommentUseCase(comments),
 		usecase.NewHidePostCommentUseCase(comments),
 		usecase.NewUnhidePostCommentUseCase(comments),
+		usecase.NewBookmarkPostUseCase(bookmarks, authors),
+		usecase.NewUnbookmarkPostUseCase(bookmarks, authors),
+		usecase.NewHasBookmarkedPostUseCase(bookmarks),
+		usecase.NewListBookmarkedPostsUseCase(bookmarks),
+		usecase.NewCountBookmarkedPostsUseCase(bookmarks),
 	)
 
 	return h, postRepo, notifRepo,
 		&postHandlerSnippetPorts{Snippets: snippets, Posts: posts},
 		&postHandlerReactionPorts{Reactions: reactions, Authors: authors},
-		comments
+		comments, bookmarks
 }
 
 // postHandlerSnippetPorts は PostHandler のスニペット作成に注入した port モックをまとめる。

@@ -83,13 +83,13 @@ func TestPostGetAll_WithPagination(t *testing.T) {
 // ---------- GetByID ----------
 
 func TestPostGetByID_Success(t *testing.T) {
-	h, postRepo, _, _ := setupPostHandler()
+	h, postRepo, bookmarks := setupPostHandlerWithBookmarkPort()
 	r := newRouter(1)
 	r.GET("/posts/:id", h.GetByID)
 
 	postRepo.On("FindByID", uint(10)).Return(&model.Post{Title: "Found"}, nil)
 	postRepo.On("HasLiked", uint(1), uint(0)).Return(false)
-	postRepo.On("HasBookmarked", uint(1), uint(0)).Return(false)
+	bookmarks.On("HasBookmarked", mock.Anything, uint(1), uint(0)).Return(false, nil)
 
 	w := doRequest(r, http.MethodGet, "/posts/10", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -454,104 +454,6 @@ func TestPostGetUserPosts_ServiceError(t *testing.T) {
 	postRepo.On("FindByUserID", uint(2), 20, 0).Return([]model.Post(nil), int64(0), service.ErrNotFound)
 
 	w := doRequest(r, http.MethodGet, "/users/2/posts", nil)
-	assertStatus(t, w, http.StatusNotFound)
-}
-
-// ---------- Bookmark ----------
-
-func TestPostBookmark_Success(t *testing.T) {
-	h, postRepo, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.POST("/posts/:id/bookmark", h.Bookmark)
-
-	otherPost := &model.Post{UserID: 99}
-	otherPost.ID = 5
-	postRepo.On("FindByID", uint(5)).Return(otherPost, nil)
-	postRepo.On("Bookmark", uint(1), uint(5)).Return(nil)
-
-	w := doRequest(r, http.MethodPost, "/posts/5/bookmark", nil)
-	assertStatus(t, w, http.StatusOK)
-}
-
-func TestPostBookmark_InvalidID(t *testing.T) {
-	h, _, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.POST("/posts/:id/bookmark", h.Bookmark)
-
-	w := doRequest(r, http.MethodPost, "/posts/abc/bookmark", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestPostBookmark_ServiceError(t *testing.T) {
-	h, postRepo, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.POST("/posts/:id/bookmark", h.Bookmark)
-
-	postRepo.On("FindByID", uint(5)).Return(nil, service.ErrNotFound)
-
-	w := doRequest(r, http.MethodPost, "/posts/5/bookmark", nil)
-	assertStatus(t, w, http.StatusNotFound)
-}
-
-// ---------- Unbookmark ----------
-
-func TestPostUnbookmark_Success(t *testing.T) {
-	h, postRepo, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.DELETE("/posts/:id/bookmark", h.Unbookmark)
-
-	otherPost := &model.Post{UserID: 99}
-	otherPost.ID = 5
-	postRepo.On("FindByID", uint(5)).Return(otherPost, nil)
-	postRepo.On("Unbookmark", uint(1), uint(5)).Return(nil)
-
-	w := doRequest(r, http.MethodDelete, "/posts/5/bookmark", nil)
-	assertStatus(t, w, http.StatusOK)
-}
-
-func TestPostUnbookmark_InvalidID(t *testing.T) {
-	h, _, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.DELETE("/posts/:id/bookmark", h.Unbookmark)
-
-	w := doRequest(r, http.MethodDelete, "/posts/abc/bookmark", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestPostUnbookmark_ServiceError(t *testing.T) {
-	h, postRepo, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.DELETE("/posts/:id/bookmark", h.Unbookmark)
-
-	postRepo.On("FindByID", uint(5)).Return(nil, service.ErrNotFound)
-
-	w := doRequest(r, http.MethodDelete, "/posts/5/bookmark", nil)
-	assertStatus(t, w, http.StatusNotFound)
-}
-
-// ---------- GetBookmarks ----------
-
-func TestPostGetBookmarks_Success(t *testing.T) {
-	h, postRepo, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.GET("/posts/bookmarks", h.GetBookmarks)
-
-	postRepo.On("FindBookmarkedByUserID", uint(1), 1, 20).Return([]model.Post{
-		{Title: "Bookmarked 1"},
-	}, int64(1), nil)
-
-	w := doRequest(r, http.MethodGet, "/posts/bookmarks", nil)
-	assertStatus(t, w, http.StatusOK)
-}
-
-func TestPostGetBookmarks_ServiceError(t *testing.T) {
-	h, postRepo, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.GET("/posts/bookmarks", h.GetBookmarks)
-
-	postRepo.On("FindBookmarkedByUserID", uint(1), 1, 20).Return([]model.Post(nil), int64(0), service.ErrNotFound)
-
-	w := doRequest(r, http.MethodGet, "/posts/bookmarks", nil)
 	assertStatus(t, w, http.StatusNotFound)
 }
 

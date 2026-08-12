@@ -130,58 +130,6 @@ func (r *PostRepository) Search(query string, limit, offset int) ([]model.Post, 
 	return posts, total, err
 }
 
-// Bookmark は投稿をブックマークする。
-func (r *PostRepository) Bookmark(userID, postID uint) error {
-	err := r.db.Create(&model.Bookmark{UserID: userID, PostID: postID}).Error
-	if err != nil {
-		return err
-	}
-	return r.db.Model(&model.Post{}).Where("id = ?", postID).UpdateColumn("bookmark_count", gorm.Expr("bookmark_count + 1")).Error
-}
-
-// Unbookmark は投稿のブックマークを解除し、bookmark_countをデクリメントする。
-func (r *PostRepository) Unbookmark(userID, postID uint) error {
-	result := r.db.Where("user_id = ? AND post_id = ?", userID, postID).Delete(&model.Bookmark{})
-	if result.RowsAffected > 0 {
-		r.db.Model(&model.Post{}).Where("id = ?", postID).UpdateColumn("bookmark_count", gorm.Expr("GREATEST(bookmark_count - 1, 0)"))
-	}
-	return result.Error
-}
-
-// HasBookmarked は指定ユーザーが投稿をブックマーク済みかどうかを判定する。
-func (r *PostRepository) HasBookmarked(userID, postID uint) bool {
-	var count int64
-	r.db.Model(&model.Bookmark{}).Where("user_id = ? AND post_id = ?", userID, postID).Count(&count)
-	return count > 0
-}
-
-// FindBookmarkedByUserID は指定ユーザーのブックマーク済み投稿をページネーション付きで取得する。
-func (r *PostRepository) FindBookmarkedByUserID(userID uint, page, limit int) ([]model.Post, int64, error) {
-	var posts []model.Post
-	var total int64
-	offset := (page - 1) * limit
-
-	subQuery := r.db.Model(&model.Bookmark{}).Select("post_id").Where("user_id = ?", userID)
-
-	if err := r.db.Model(&model.Post{}).Where("id IN (?)", subQuery).Count(&total).Error; err != nil {
-		return nil, 0, err
-	}
-
-	err := r.db.Preload("User").Preload("CodeSnippets").
-		Where("id IN (?)", subQuery).
-		Order("created_at DESC").
-		Offset(offset).Limit(limit).
-		Find(&posts).Error
-	return posts, total, err
-}
-
-// CountBookmarkedByUserID は指定ユーザーのブックマーク済み投稿数を返す。
-func (r *PostRepository) CountBookmarkedByUserID(userID uint) (int64, error) {
-	var count int64
-	err := r.db.Model(&model.Bookmark{}).Where("user_id = ?", userID).Count(&count).Error
-	return count, err
-}
-
 // AddReaction は投稿にリアクション（絵文字）を追加する。
 func (r *PostRepository) AddReaction(userID, postID uint, emoji string) error {
 	return r.db.Create(&model.Reaction{UserID: userID, PostID: postID, Emoji: emoji}).Error

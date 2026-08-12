@@ -26,10 +26,6 @@ type PostServiceInterface interface {
 	HasLiked(userID, postID uint) bool
 	Publish(id, userID uint) (*model.Post, error)
 	Unpublish(id, userID uint) (*model.Post, error)
-	Bookmark(userID, postID uint) error
-	Unbookmark(userID, postID uint) error
-	HasBookmarked(userID, postID uint) bool
-	GetBookmarks(userID uint, page, limit int) ([]model.Post, int64, error)
 	SchedulePublish(id, userID uint, scheduledAt time.Time) (*model.Post, error)
 	CancelSchedule(id, userID uint) (*model.Post, error)
 	GetScheduled(userID uint) ([]model.Post, error)
@@ -37,7 +33,6 @@ type PostServiceInterface interface {
 	CountByUserID(userID uint) (int64, error)
 	CountDraftsByUserID(userID uint) (int64, error)
 	CountScheduledByUserID(userID uint) (int64, error)
-	CountBookmarkedByUserID(userID uint) (int64, error)
 }
 
 // PostHandler は投稿関連のHTTPハンドラ。
@@ -47,11 +42,17 @@ type PostHandler struct {
 	createSnippet *usecase.CreateCodeSnippetUseCase
 	autoTags      *usecase.SetAutoPostTagsUseCase
 
-	// リアクションとコメントは DIP へ移行済み。他の操作は順次 usecase へ移していく。
+	// リアクション・コメント・ブックマークは DIP へ移行済み。他の操作は順次 usecase へ移していく。
 	addReaction    *usecase.AddPostReactionUseCase
 	removeReaction *usecase.RemovePostReactionUseCase
 	getReactions   *usecase.GetPostReactionsUseCase
 	reactionsBatch *usecase.GetPostReactionsBatchUseCase
+
+	bookmark       *usecase.BookmarkPostUseCase
+	unbookmark     *usecase.UnbookmarkPostUseCase
+	hasBookmarked  *usecase.HasBookmarkedPostUseCase
+	listBookmarks  *usecase.ListBookmarkedPostsUseCase
+	countBookmarks *usecase.CountBookmarkedPostsUseCase
 
 	createComment *usecase.CreatePostCommentUseCase
 	listComments  *usecase.ListPostCommentsUseCase
@@ -77,6 +78,11 @@ func NewPostHandler(
 	deleteComment *usecase.DeletePostCommentUseCase,
 	hideComment *usecase.HidePostCommentUseCase,
 	unhideComment *usecase.UnhidePostCommentUseCase,
+	bookmark *usecase.BookmarkPostUseCase,
+	unbookmark *usecase.UnbookmarkPostUseCase,
+	hasBookmarked *usecase.HasBookmarkedPostUseCase,
+	listBookmarks *usecase.ListBookmarkedPostsUseCase,
+	countBookmarks *usecase.CountBookmarkedPostsUseCase,
 ) *PostHandler {
 	return &PostHandler{
 		service:        s,
@@ -92,6 +98,11 @@ func NewPostHandler(
 		deleteComment:  deleteComment,
 		hideComment:    hideComment,
 		unhideComment:  unhideComment,
+		bookmark:       bookmark,
+		unbookmark:     unbookmark,
+		hasBookmarked:  hasBookmarked,
+		listBookmarks:  listBookmarks,
+		countBookmarks: countBookmarks,
 	}
 }
 
@@ -187,7 +198,7 @@ func (h *PostHandler) GetByID(c *gin.Context) {
 	respondOK(c, dto.PostDetailResponse{
 		Post:       *post,
 		Liked:      h.service.HasLiked(userID, post.ID),
-		Bookmarked: h.service.HasBookmarked(userID, post.ID),
+		Bookmarked: h.isBookmarked(c, userID, post.ID),
 	})
 }
 
@@ -487,14 +498,28 @@ func (h *PostHandler) Unpublish(c *gin.Context) {
 	respondOK(c, post)
 }
 
+// isBookmarked は投稿詳細に載せるブックマーク済みフラグを返す。
+// 取得に失敗しても投稿詳細自体は返したいため、移行前と同じく false にフォールバックする。
+func (h *PostHandler) isBookmarked(c *gin.Context, userID, postID uint) bool {
+	bookmarked, err := h.hasBookmarked.Execute(c.Request.Context(), userID, postID)
+	if err != nil {
+		return false
+	}
+	return bookmarked
+}
+
 // Bookmark は投稿をブックマークする。
 func (h *PostHandler) Bookmark(c *gin.Context) {
-	handleToggleAction(c, h.service.Bookmark, "bookmarked")
+	handleToggleAction(c, func(userID, id uint) error {
+		return h.bookmark.Execute(c.Request.Context(), userID, id)
+	}, "bookmarked")
 }
 
 // Unbookmark は投稿のブックマークを解除する。
 func (h *PostHandler) Unbookmark(c *gin.Context) {
-	handleToggleAction(c, h.service.Unbookmark, "unbookmarked")
+	handleToggleAction(c, func(userID, id uint) error {
+		return h.unbookmark.Execute(c.Request.Context(), userID, id)
+	}, "unbookmarked")
 }
 
 // GetBookmarks は現在のユーザーのブックマーク済み投稿一覧を返す。
@@ -502,7 +527,7 @@ func (h *PostHandler) GetBookmarks(c *gin.Context) {
 	userID := c.GetUint("userID")
 	page, limit := parsePagination(c)
 
-	posts, total, err := h.service.GetBookmarks(userID, page, limit)
+	posts, total, err := h.listBookmarks.Execute(c.Request.Context(), userID, page, limit)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -519,7 +544,7 @@ func (h *PostHandler) GetBookmarks(c *gin.Context) {
 func (h *PostHandler) GetBookmarksCount(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	count, err := h.service.CountBookmarkedByUserID(userID)
+	count, err := h.countBookmarks.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
