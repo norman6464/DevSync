@@ -196,7 +196,27 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	userPort := persistence.NewUserRepository(db)
 
 	// ドメインサービス
-	githubService := service.NewGitHubService(cfg, userRepo, githubRepo)
+	// GitHub 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、
+	// 実装は adapter/persistence（永続化）と adapter/external（GitHub API）。
+	// 旧 githubRepo は ai_chat / ai_rule_engine がまだ使うため残している。
+	githubPort := persistence.NewGitHubRepository(db)
+	githubClient := external.NewGitHubClient(cfg.GitHubClientID, cfg.GitHubClientSecret, cfg.GitHubRedirectURL)
+	syncGitHubData := usecase.NewSyncGitHubDataUseCase(userPort, githubPort, githubClient)
+	githubUseCases := handler.GitHubUseCases{
+		OAuthURL:      usecase.NewGetGitHubOAuthURLUseCase(githubClient),
+		Connect:       usecase.NewConnectGitHubUseCase(userPort, githubClient, syncGitHubData),
+		Disconnect:    usecase.NewDisconnectGitHubUseCase(userPort, githubPort),
+		Sync:          syncGitHubData,
+		Contributions: usecase.NewGetGitHubContributionsUseCase(githubPort),
+		Languages:     usecase.NewGetGitHubLanguagesUseCase(githubPort),
+		Repos:         usecase.NewGetGitHubReposUseCase(githubPort),
+	}
+	authGitHubUseCases := handler.AuthGitHubUseCases{
+		LoginURL:     usecase.NewGetGitHubLoginURLUseCase(githubClient),
+		ExchangeCode: usecase.NewExchangeGitHubCodeUseCase(githubClient),
+		GetUser:      usecase.NewGetGitHubUserUseCase(githubClient),
+		Sync:         syncGitHubData,
+	}
 	connectZenn := usecase.NewConnectZennUseCase(userPort, zennPort, zennClient)
 	disconnectZenn := usecase.NewDisconnectZennUseCase(userPort, zennPort)
 	syncZenn := usecase.NewSyncZennUseCase(userPort, zennPort, zennClient)
@@ -252,7 +272,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 
 	// ハンドラ
 	origins := cfg.CORSOrigins
-	c.AuthHandler = handler.NewAuthHandler(authService, githubService)
+	c.AuthHandler = handler.NewAuthHandler(authService, authGitHubUseCases)
 	c.UserHandler = handler.NewUserHandler(
 		usecase.NewListUsersUseCase(userPort),
 		usecase.NewGetUserUseCase(userPort),
@@ -266,7 +286,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewListFollowersUseCase(followRepo),
 		usecase.NewListFollowingUseCase(followRepo),
 	)
-	c.GitHubHandler = handler.NewGitHubHandler(githubService, authService)
+	c.GitHubHandler = handler.NewGitHubHandler(githubUseCases, authService)
 	// 投稿スライスはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	postPort := persistence.NewPostRepository(db)
 	postReactionPort := persistence.NewPostReactionRepository(db)

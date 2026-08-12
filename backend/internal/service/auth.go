@@ -191,7 +191,7 @@ func (s *AuthService) ValidateLoginState(state string) error {
 // 1. GitHub IDで既存ユーザーを検索 → 見つかればトークン更新してログイン
 // 2. メールアドレスで既存ユーザーを検索 → 見つかればGitHub連携してログイン
 // 3. どちらも見つからなければ新規ユーザーを作成
-func (s *AuthService) GitHubLogin(ghUser *GitHubUserInfo, accessToken string) (*AuthResponse, error) {
+func (s *AuthService) GitHubLogin(ghUser *model.GitHubUserInfo, accessToken string) (*AuthResponse, error) {
 	// 1. GitHub IDで既存ユーザーを検索
 	user, err := s.userRepo.FindByGitHubID(ghUser.ID)
 	if err == nil && user != nil {

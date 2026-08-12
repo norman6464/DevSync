@@ -443,7 +443,7 @@ func TestGitHubLogin_ExistingGitHubUser(t *testing.T) {
 	userRepo.On("FindByGitHubID", int64(12345)).Return(user, nil)
 	userRepo.On("Update", mock.AnythingOfType("*model.User")).Return(nil)
 
-	ghUser := &GitHubUserInfo{
+	ghUser := &model.GitHubUserInfo{
 		ID:        12345,
 		Login:     "ghuser",
 		Email:     "gh@example.com",
@@ -469,7 +469,7 @@ func TestGitHubLogin_LinkByEmail(t *testing.T) {
 	userRepo.On("FindByEmail", "existing@example.com").Return(user, nil)
 	userRepo.On("Update", mock.AnythingOfType("*model.User")).Return(nil)
 
-	ghUser := &GitHubUserInfo{
+	ghUser := &model.GitHubUserInfo{
 		ID:    12345,
 		Login: "ghuser",
 		Email: "existing@example.com",
@@ -492,7 +492,7 @@ func TestGitHubLogin_CreateNewUser(t *testing.T) {
 	userRepo.On("FindByUsername", "newghuser").Return(nil, errors.New("not found"))
 	userRepo.On("Create", mock.AnythingOfType("*model.User")).Return(nil)
 
-	ghUser := &GitHubUserInfo{
+	ghUser := &model.GitHubUserInfo{
 		ID:    12345,
 		Login: "newghuser",
 		Email: "new@example.com",
@@ -520,7 +520,7 @@ func TestGitHubLogin_NoEmailFallback(t *testing.T) {
 		assert.Equal(t, "ghuser", user.Username)
 	}).Return(nil)
 
-	ghUser := &GitHubUserInfo{
+	ghUser := &model.GitHubUserInfo{
 		ID:    12345,
 		Login: "ghuser",
 		Email: "",
@@ -541,7 +541,7 @@ func TestGitHubLogin_CreateNewUser_CreateError(t *testing.T) {
 	userRepo.On("FindByUsername", "newghuser").Return(nil, errors.New("not found"))
 	userRepo.On("Create", mock.AnythingOfType("*model.User")).Return(errors.New("db error"))
 
-	ghUser := &GitHubUserInfo{
+	ghUser := &model.GitHubUserInfo{
 		ID:    12345,
 		Login: "newghuser",
 		Email: "new@example.com",
@@ -562,7 +562,7 @@ func TestGitHubLogin_LinkByEmail_WithAvatarURL(t *testing.T) {
 	userRepo.On("FindByEmail", "existing@example.com").Return(user, nil)
 	userRepo.On("Update", mock.AnythingOfType("*model.User")).Return(nil)
 
-	ghUser := &GitHubUserInfo{
+	ghUser := &model.GitHubUserInfo{
 		ID:        12345,
 		Login:     "ghuser",
 		Email:     "existing@example.com",

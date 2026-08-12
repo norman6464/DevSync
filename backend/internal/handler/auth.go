@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"log"
 	"net/http"
 	"os"
 
@@ -9,6 +8,7 @@ import (
 	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
 // oauthCodeMaxLen はOAuth認可コード・stateパラメータの最大許容長。
@@ -20,34 +20,31 @@ type AuthServiceInterface interface {
 	Login(input service.LoginInput) (*service.AuthResponse, error)
 	GenerateLoginState() (string, error)
 	ValidateLoginState(state string) error
-	GitHubLogin(ghUser *service.GitHubUserInfo, accessToken string) (*service.AuthResponse, error)
+	GitHubLogin(ghUser *model.GitHubUserInfo, accessToken string) (*service.AuthResponse, error)
 	GetMe(userID uint) (*model.User, error)
 	RequestPasswordReset(email string) (string, error)
 	ResetPassword(token string, newPassword string) error
 	DeleteAccount(userID uint, password string) error
 }
 
-// AuthGitHubServiceInterface はAuthHandler用のGitHubサービスの抽象インターフェース。
-type AuthGitHubServiceInterface interface {
-	GetLoginOAuthURL(state string) string
-	ExchangeCode(code string) (string, error)
-	GetGitHubUser(token string) (*service.GitHubUserInfo, error)
-	SyncUserData(userID uint) error
+// AuthGitHubUseCases は GitHub ログインで使う GitHub 連携の usecase をまとめる。
+type AuthGitHubUseCases struct {
+	LoginURL     *usecase.GetGitHubLoginURLUseCase
+	ExchangeCode *usecase.ExchangeGitHubCodeUseCase
+	GetUser      *usecase.GetGitHubUserUseCase
+	Sync         *usecase.SyncGitHubDataUseCase
 }
 
 // AuthHandler は認証関連のHTTPハンドラ。
 // ユーザー登録・ログイン・GitHub OAuth・パスワードリセット・アカウント削除を処理する。
 type AuthHandler struct {
-	authService   AuthServiceInterface       // 認証ビジネスロジック
-	githubService AuthGitHubServiceInterface // GitHub OAuth連携
+	authService AuthServiceInterface // 認証ビジネスロジック
+	github      AuthGitHubUseCases   // GitHub OAuth 連携
 }
 
 // NewAuthHandler は新しいAuthHandlerインスタンスを生成する。
-func NewAuthHandler(authService AuthServiceInterface, githubService AuthGitHubServiceInterface) *AuthHandler {
-	return &AuthHandler{
-		authService:   authService,
-		githubService: githubService,
-	}
+func NewAuthHandler(authService AuthServiceInterface, github AuthGitHubUseCases) *AuthHandler {
+	return &AuthHandler{authService: authService, github: github}
 }
 
 // cookieMaxAge はJWTトークンの有効期限と同じ72時間（秒単位）。
@@ -123,7 +120,7 @@ func (h *AuthHandler) GitHubLogin(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	url := h.githubService.GetLoginOAuthURL(state)
+	url := h.github.LoginURL.Execute(state)
 	respondOK(c, dto.URLResponse{URL: url})
 }
 
@@ -144,13 +141,13 @@ func (h *AuthHandler) GitHubLoginCallback(c *gin.Context) {
 		return
 	}
 
-	accessToken, err := h.githubService.ExchangeCode(code)
+	accessToken, err := h.github.ExchangeCode.Execute(c.Request.Context(), code)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
 
-	ghUser, err := h.githubService.GetGitHubUser(accessToken)
+	ghUser, err := h.github.GetUser.Execute(c.Request.Context(), accessToken)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -163,11 +160,7 @@ func (h *AuthHandler) GitHubLoginCallback(c *gin.Context) {
 	}
 
 	// バックグラウンドでGitHubデータを同期
-	go func() {
-		if err := h.githubService.SyncUserData(resp.User.ID); err != nil {
-			log.Printf("GitHubデータ同期エラー (userID=%d): %v", resp.User.ID, err)
-		}
-	}()
+	h.github.Sync.SyncInBackground(c.Request.Context(), resp.User.ID)
 
 	setAuthCookie(c, resp.Token)
 	respondOK(c, dto.UserResponse{User: resp.User})
