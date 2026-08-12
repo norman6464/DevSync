@@ -29,47 +29,6 @@ type UserRepositoryInterface interface {
 	UpdatePassword(userID uint, hashedPassword string) error
 }
 
-// PostRepositoryInterface は投稿データ操作の契約を定義する。
-// いいね・コメント操作も含む。
-type PostRepositoryInterface interface {
-	Create(post *model.Post) error
-	FindByID(id uint) (*model.Post, error)
-	FindAll(page, limit int) ([]model.Post, error)
-	CountAll() (int64, error)
-	FindByUserID(userID uint, limit, offset int) ([]model.Post, int64, error)
-	FindDraftsByUserID(userID uint) ([]model.Post, error)
-	Timeline(userID uint, page, limit int) ([]model.Post, error)
-	Update(post *model.Post) error
-	Delete(id uint) error
-	Like(userID, postID uint) error
-	Unlike(userID, postID uint) error
-	HasLiked(userID, postID uint) bool
-	AddReaction(userID, postID uint, emoji string) error
-	RemoveReaction(userID, postID uint, emoji string) error
-	GetReactionsByPostID(postID uint) ([]model.ReactionCount, error)
-	GetUserReactions(userID, postID uint) ([]string, error)
-	GetReactionsBatch(postIDs []uint) (map[uint][]model.ReactionCount, error)
-	GetUserReactionsBatch(userID uint, postIDs []uint) (map[uint][]string, error)
-	FindScheduledByUserID(userID uint) ([]model.Post, error)
-	CountByUserID(userID uint) (int64, error)
-	CountDraftsByUserID(userID uint) (int64, error)
-	CountScheduledByUserID(userID uint) (int64, error)
-}
-
-// NotificationRepositoryInterface は通知データ操作の契約を定義する。
-// 一括作成、未読カウント、既読マーク等を含む。
-type NotificationRepositoryInterface interface {
-	Create(notification *model.Notification) error
-	CreateBatch(notifications []*model.Notification) error
-	FindByUserID(userID uint, page, limit int, notificationType string) ([]model.Notification, error)
-	CountByUserID(userID uint, notificationType string) (int64, error)
-	CountUnread(userID uint) (int64, error)
-	MarkAsRead(id, userID uint) error
-	MarkAllAsRead(userID uint) error
-	Delete(id, userID uint) error
-	GetFollowerIDs(userID uint) ([]uint, error)
-}
-
 // LearningLogRepositoryInterface は学習ログデータ操作の契約を定義する。
 // ストリーク計算やカレンダーデータ取得も含む。
 type LearningLogRepositoryInterface interface {

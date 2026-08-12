@@ -400,82 +400,99 @@ func (m *mockRoadmapRepo) ReorderSteps(ctx context.Context, roadmapID uint, step
 
 // ---------- ヘルパー関数 ----------
 
-// setupPostHandler はPostHandlerテスト用のセットアップを行う。
-// スニペット作成は DIP へ移行済みのため、本物の usecase と port モックを注入する。
-func setupPostHandler() (*PostHandler, *MockPostRepository, *MockNotificationRepository, *postHandlerSnippetPorts) {
-	h, postRepo, notifRepo, ports, _, _, _ := setupPostHandlerWithPorts()
-	return h, postRepo, notifRepo, ports
+// postHandlerPorts は PostHandler に注入した port モックをまとめる。
+type postHandlerPorts struct {
+	Posts        *mockPostPort
+	Likes        *mockPostLikePort
+	Followers    *mockFollowerNotifierPort
+	Snippets     *mockCodeSnippetRepo
+	SnippetPosts *mockPostReader
+	Reactions    *mockPostReactionPort
+	Authors      *mockPostAuthorPort
+	Comments     *mockPostCommentPort
+	Bookmarks    *mockPostBookmarkPort
 }
 
-// setupPostHandlerWithReactionPorts はリアクションの port モックも返すセットアップ。
-func setupPostHandlerWithReactionPorts() (*PostHandler, *MockPostRepository, *MockNotificationRepository, *postHandlerSnippetPorts, *postHandlerReactionPorts) {
-	h, postRepo, notifRepo, snippetPorts, reactionPorts, _, _ := setupPostHandlerWithPorts()
-	return h, postRepo, notifRepo, snippetPorts, reactionPorts
+// setupPostHandler は PostHandler テスト用のセットアップを行う。
+// 投稿スライスは DIP へ移行済みのため、本物の usecase に port モックを注入する。
+func setupPostHandler() (*PostHandler, *postHandlerPorts) {
+	ports := &postHandlerPorts{
+		Posts:        new(mockPostPort),
+		Likes:        new(mockPostLikePort),
+		Followers:    new(mockFollowerNotifierPort),
+		Snippets:     new(mockCodeSnippetRepo),
+		SnippetPosts: new(mockPostReader),
+		Reactions:    new(mockPostReactionPort),
+		Authors:      new(mockPostAuthorPort),
+		Comments:     new(mockPostCommentPort),
+		Bookmarks:    new(mockPostBookmarkPort),
+	}
+
+	notifyFollowers := usecase.NewNotifyFollowersUseCase(ports.Followers)
+	h := NewPostHandler(PostUseCases{
+		Create:         usecase.NewCreatePostUseCase(ports.Posts, notifyFollowers),
+		Get:            usecase.NewGetPostUseCase(ports.Posts),
+		List:           usecase.NewListPostsUseCase(ports.Posts),
+		Count:          usecase.NewCountPostsUseCase(ports.Posts),
+		ListByUser:     usecase.NewListUserPostsUseCase(ports.Posts),
+		ListDrafts:     usecase.NewListDraftPostsUseCase(ports.Posts),
+		ListScheduled:  usecase.NewListScheduledPostsUseCase(ports.Posts),
+		Timeline:       usecase.NewGetTimelineUseCase(ports.Posts),
+		Update:         usecase.NewUpdatePostUseCase(ports.Posts),
+		Delete:         usecase.NewDeletePostUseCase(ports.Posts),
+		Publish:        usecase.NewPublishPostUseCase(ports.Posts, notifyFollowers),
+		Unpublish:      usecase.NewUnpublishPostUseCase(ports.Posts),
+		Schedule:       usecase.NewSchedulePostPublishUseCase(ports.Posts),
+		CancelSchedule: usecase.NewCancelPostScheduleUseCase(ports.Posts),
+		AutoSaveDraft:  usecase.NewAutoSaveDraftUseCase(ports.Posts),
+		CountByUser:    usecase.NewCountUserPostsUseCase(ports.Posts),
+		CountDrafts:    usecase.NewCountUserDraftsUseCase(ports.Posts),
+		CountScheduled: usecase.NewCountUserScheduledPostsUseCase(ports.Posts),
+
+		Like:     usecase.NewLikePostUseCase(ports.Likes, ports.Authors),
+		Unlike:   usecase.NewUnlikePostUseCase(ports.Likes, ports.Authors),
+		HasLiked: usecase.NewHasLikedPostUseCase(ports.Likes),
+
+		CreateSnippet: usecase.NewCreateCodeSnippetUseCase(ports.Snippets, ports.SnippetPosts),
+
+		AddReaction:    usecase.NewAddPostReactionUseCase(ports.Reactions, ports.Authors),
+		RemoveReaction: usecase.NewRemovePostReactionUseCase(ports.Reactions, ports.Authors),
+		GetReactions:   usecase.NewGetPostReactionsUseCase(ports.Reactions),
+		ReactionsBatch: usecase.NewGetPostReactionsBatchUseCase(ports.Reactions),
+
+		CreateComment: usecase.NewCreatePostCommentUseCase(ports.Comments),
+		ListComments:  usecase.NewListPostCommentsUseCase(ports.Comments),
+		ListReplies:   usecase.NewListCommentRepliesUseCase(ports.Comments),
+		EditComment:   usecase.NewEditPostCommentUseCase(ports.Comments),
+		DeleteComment: usecase.NewDeletePostCommentUseCase(ports.Comments),
+		HideComment:   usecase.NewHidePostCommentUseCase(ports.Comments),
+		UnhideComment: usecase.NewUnhidePostCommentUseCase(ports.Comments),
+
+		Bookmark:       usecase.NewBookmarkPostUseCase(ports.Bookmarks, ports.Authors),
+		Unbookmark:     usecase.NewUnbookmarkPostUseCase(ports.Bookmarks, ports.Authors),
+		HasBookmarked:  usecase.NewHasBookmarkedPostUseCase(ports.Bookmarks),
+		ListBookmarks:  usecase.NewListBookmarkedPostsUseCase(ports.Bookmarks),
+		CountBookmarks: usecase.NewCountBookmarkedPostsUseCase(ports.Bookmarks),
+	})
+	return h, ports
 }
 
-// setupPostHandlerWithCommentPort はコメントの port モックも返すセットアップ。
+// setupPostHandlerWithReactionPorts はリアクションの port モックを返すセットアップ。
+func setupPostHandlerWithReactionPorts() (*PostHandler, *postHandlerReactionPorts) {
+	h, ports := setupPostHandler()
+	return h, &postHandlerReactionPorts{Reactions: ports.Reactions, Authors: ports.Authors}
+}
+
+// setupPostHandlerWithCommentPort はコメントの port モックを返すセットアップ。
 func setupPostHandlerWithCommentPort() (*PostHandler, *mockPostCommentPort) {
-	h, _, _, _, _, comments, _ := setupPostHandlerWithPorts()
-	return h, comments
-}
-
-// setupPostHandlerWithBookmarkPort はブックマークの port モックも返すセットアップ。
-func setupPostHandlerWithBookmarkPort() (*PostHandler, *MockPostRepository, *mockPostBookmarkPort) {
-	h, postRepo, _, _, _, _, bookmarks := setupPostHandlerWithPorts()
-	return h, postRepo, bookmarks
+	h, ports := setupPostHandler()
+	return h, ports.Comments
 }
 
 // setupPostHandlerWithBookmarkPorts はブックマークと投稿者判定の port モックを返すセットアップ。
 func setupPostHandlerWithBookmarkPorts() (*PostHandler, *mockPostBookmarkPort, *mockPostAuthorPort) {
-	h, _, _, _, reactionPorts, _, bookmarks := setupPostHandlerWithPorts()
-	return h, bookmarks, reactionPorts.Authors
-}
-
-// setupPostHandlerWithPorts は移行済みスライスの port モックをすべて注入したセットアップ。
-// リアクション・コメント・ブックマークは DIP へ移行済みのため、本物の usecase と port モックを注入する。
-func setupPostHandlerWithPorts() (*PostHandler, *MockPostRepository, *MockNotificationRepository, *postHandlerSnippetPorts, *postHandlerReactionPorts, *mockPostCommentPort, *mockPostBookmarkPort) {
-	postRepo := new(MockPostRepository)
-	notifRepo := new(MockNotificationRepository)
-	snippets := new(mockCodeSnippetRepo)
-	posts := new(mockPostReader)
-	reactions := new(mockPostReactionPort)
-	authors := new(mockPostAuthorPort)
-	comments := new(mockPostCommentPort)
-	bookmarks := new(mockPostBookmarkPort)
-
-	notifService := service.NewNotificationService(notifRepo)
-	postService := service.NewPostService(postRepo, notifService)
-	h := NewPostHandler(
-		postService,
-		usecase.NewCreateCodeSnippetUseCase(snippets, posts),
-		usecase.NewAddPostReactionUseCase(reactions, authors),
-		usecase.NewRemovePostReactionUseCase(reactions, authors),
-		usecase.NewGetPostReactionsUseCase(reactions),
-		usecase.NewGetPostReactionsBatchUseCase(reactions),
-		usecase.NewCreatePostCommentUseCase(comments),
-		usecase.NewListPostCommentsUseCase(comments),
-		usecase.NewListCommentRepliesUseCase(comments),
-		usecase.NewEditPostCommentUseCase(comments),
-		usecase.NewDeletePostCommentUseCase(comments),
-		usecase.NewHidePostCommentUseCase(comments),
-		usecase.NewUnhidePostCommentUseCase(comments),
-		usecase.NewBookmarkPostUseCase(bookmarks, authors),
-		usecase.NewUnbookmarkPostUseCase(bookmarks, authors),
-		usecase.NewHasBookmarkedPostUseCase(bookmarks),
-		usecase.NewListBookmarkedPostsUseCase(bookmarks),
-		usecase.NewCountBookmarkedPostsUseCase(bookmarks),
-	)
-
-	return h, postRepo, notifRepo,
-		&postHandlerSnippetPorts{Snippets: snippets, Posts: posts},
-		&postHandlerReactionPorts{Reactions: reactions, Authors: authors},
-		comments, bookmarks
-}
-
-// postHandlerSnippetPorts は PostHandler のスニペット作成に注入した port モックをまとめる。
-type postHandlerSnippetPorts struct {
-	Snippets *mockCodeSnippetRepo
-	Posts    *mockPostReader
+	h, ports := setupPostHandler()
+	return h, ports.Bookmarks, ports.Authors
 }
 
 // postHandlerReactionPorts は PostHandler のリアクションに注入した port モックをまとめる。

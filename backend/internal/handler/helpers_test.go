@@ -242,9 +242,9 @@ func TestRespondError_WrappedError(t *testing.T) {
 
 func TestRespondError_DomainError(t *testing.T) {
 	tests := []struct {
-		name     string
-		err      *domain.DomainError
-		wantCode int
+		name        string
+		err         *domain.DomainError
+		wantCode    int
 		wantErrCode domain.ErrorCode
 	}{
 		{"NotFound", domain.ErrNotFound, http.StatusNotFound, domain.ErrCodeNotFound},
