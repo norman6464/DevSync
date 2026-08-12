@@ -14,6 +14,7 @@ import (
 	"github.com/norman6464/devsync/backend/internal/repository"
 	"github.com/norman6464/devsync/backend/internal/service"
 	"github.com/norman6464/devsync/backend/internal/usecase"
+	usecaserepo "github.com/norman6464/devsync/backend/internal/usecase/repository"
 	"gorm.io/gorm"
 )
 
@@ -771,17 +772,21 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	spotifyService := service.NewSpotifyService(cfg, userRepo, spotifyRepo)
 	c.SpotifyHandler = handler.NewSpotifyHandler(spotifyService, authService)
 
-	// YouTubeサービス（APIキー設定時のみクライアント初期化）
-	youtubeVideoRepo := repository.NewYouTubeVideoRepository(db)
-	var youtubeClient service.YouTubeClientInterface
+	// YouTube 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence と adapter/external。
+	// APIキー未設定のときは検索クライアントを nil のままにし、利用不可（503）として扱う。
+	youtubeVideoPort := persistence.NewYouTubeVideoRepository(db)
+	var youtubeSearcher usecaserepo.YouTubeVideoSearcher
 	if cfg.YouTubeAPIKey != "" {
-		youtubeClient = service.NewYouTubeClient(cfg.YouTubeAPIKey)
+		youtubeSearcher = external.NewYouTubeClient(cfg.YouTubeAPIKey)
 		log.Println("YouTube APIキーが設定されています。YouTube動画検索機能が有効です。")
 	} else {
 		log.Println("YouTube APIキー未設定。YouTube動画検索機能は無効です。")
 	}
-	youtubeService := service.NewYouTubeService(youtubeVideoRepo, userRepo, youtubeClient)
-	c.YouTubeHandler = handler.NewYouTubeHandler(youtubeService)
+	c.YouTubeHandler = handler.NewYouTubeHandler(
+		usecase.NewSearchYouTubeVideosUseCase(youtubeVideoPort, youtubeSearcher),
+		usecase.NewRecommendYouTubeVideosUseCase(userPort, youtubeVideoPort, youtubeSearcher),
+		usecase.NewCheckYouTubeAvailabilityUseCase(youtubeSearcher),
+	)
 
 	// ストリークフリーズサービス
 	// ストリークフリーズはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。

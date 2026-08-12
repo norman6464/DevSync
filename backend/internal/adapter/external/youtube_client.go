@@ -1,6 +1,7 @@
-package service
+package external
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,33 +12,22 @@ import (
 
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase/repository"
 )
 
-// YouTubeClientInterface はYouTube Data API v3クライアントの契約を定義する。
-// テスト時にモックに差し替え可能。
-type YouTubeClientInterface interface {
-	SearchVideos(query string, maxResults int, language string) ([]model.YouTubeVideo, error)
-}
+// youtubeRequestTimeout は YouTube への 1 リクエストのタイムアウト。
+const youtubeRequestTimeout = 15 * time.Second
 
-// YouTubeClient はYouTube Data API v3のクライアント実装。
-type YouTubeClient struct {
-	apiKey     string
-	httpClient *http.Client
-	baseURL    string
-}
+// youtubeAPIBaseURL は YouTube Data API v3 のベース URL。
+const youtubeAPIBaseURL = "https://www.googleapis.com/youtube/v3"
 
-// NewYouTubeClient は新しいYouTubeClientインスタンスを生成する。
-func NewYouTubeClient(apiKey string) *YouTubeClient {
-	return &YouTubeClient{
-		apiKey: apiKey,
-		httpClient: &http.Client{
-			Timeout: 15 * time.Second,
-		},
-		baseURL: "https://www.googleapis.com/youtube/v3",
-	}
-}
+// 検索件数の既定値と上限。
+const (
+	youtubeDefaultMaxResults = 10
+	youtubeMaxAllowedResults = 50
+)
 
-// youtubeSearchResponse はYouTube Search APIのレスポンス構造体。
+// youtubeSearchResponse は YouTube Search API のレスポンス構造。
 type youtubeSearchResponse struct {
 	Items []struct {
 		ID struct {
@@ -65,10 +55,29 @@ type youtubeSearchResponse struct {
 	} `json:"error"`
 }
 
-// SearchVideos はYouTube Search APIで動画を検索する。
-func (c *YouTubeClient) SearchVideos(query string, maxResults int, language string) ([]model.YouTubeVideo, error) {
-	if maxResults <= 0 || maxResults > 50 {
-		maxResults = 10
+// youTubeClient は [repository.YouTubeVideoSearcher] の HTTP 実装。
+type youTubeClient struct {
+	apiKey  string
+	client  *http.Client
+	baseURL string
+}
+
+// NewYouTubeClient は YouTubeVideoSearcher の HTTP 実装を返す。
+func NewYouTubeClient(apiKey string) repository.YouTubeVideoSearcher {
+	return &youTubeClient{
+		apiKey:  apiKey,
+		client:  &http.Client{Timeout: youtubeRequestTimeout},
+		baseURL: youtubeAPIBaseURL,
+	}
+}
+
+// コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
+var _ repository.YouTubeVideoSearcher = (*youTubeClient)(nil)
+
+// SearchVideos は YouTube Search API で動画を検索する。
+func (c *youTubeClient) SearchVideos(ctx context.Context, query string, maxResults int, language string) ([]model.YouTubeVideo, error) {
+	if maxResults <= 0 || maxResults > youtubeMaxAllowedResults {
+		maxResults = youtubeDefaultMaxResults
 	}
 	if language == "" {
 		language = "ja"
@@ -83,14 +92,12 @@ func (c *YouTubeClient) SearchVideos(query string, maxResults int, language stri
 	params.Set("order", "relevance")
 	params.Set("key", c.apiKey)
 
-	reqURL := fmt.Sprintf("%s/search?%s", c.baseURL, params.Encode())
-
-	req, err := http.NewRequest("GET", reqURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+"/search?"+params.Encode(), nil)
 	if err != nil {
 		return nil, domain.NewError(domain.ErrCodeInternal, "HTTPリクエストの作成に失敗", err)
 	}
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, domain.NewError(domain.ErrCodeServiceUnavailable, "YouTube APIの呼び出しに失敗", err)
 	}
