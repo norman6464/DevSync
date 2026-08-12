@@ -6,6 +6,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/norman6464/devsync/backend/internal/adapter/external"
 	"github.com/norman6464/devsync/backend/internal/adapter/persistence"
 	"github.com/norman6464/devsync/backend/internal/config"
 	"github.com/norman6464/devsync/backend/internal/handler"
@@ -199,7 +200,8 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	learningGoalPort := persistence.NewLearningGoalRepository(db)
 	updateLearningGoal := usecase.NewUpdateLearningGoalUseCase(learningGoalPort)
 	messageService := service.NewMessageService(messageRepo, notificationService)
-	atcoderService := service.NewAtCoderService(userRepo)
+	// AtCoder 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、HTTP 実装は adapter/external。
+	atcoderClient := external.NewAtCoderClient()
 	badgeService := service.NewBadgeService(badgeRepo, notificationService)
 	levelService := service.NewLevelService(levelRepo, notificationService)
 	createNote := usecase.NewCreateNoteUseCase(notePort)
@@ -427,7 +429,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewSendChatRoomMessageUseCase(chatRoomPort, chatRoomMessagePort, hub),
 		usecase.NewCountMyChatRoomsUseCase(chatRoomPort),
 	)
-	c.AtCoderHandler = handler.NewAtCoderHandler(atcoderService)
+	c.AtCoderHandler = handler.NewAtCoderHandler(
+		usecase.NewGetAtCoderRatingUseCase(atcoderClient),
+		usecase.NewConnectAtCoderUseCase(userPort, atcoderClient),
+		usecase.NewDisconnectAtCoderUseCase(userPort),
+	)
 	c.BadgeHandler = handler.NewBadgeHandler(badgeService)
 	c.LearningLogHandler = handler.NewLearningLogHandler(
 		createLearningLog,
