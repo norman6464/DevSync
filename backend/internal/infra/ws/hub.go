@@ -8,9 +8,14 @@ import (
 	"encoding/json"
 	"log"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
+
+// roomMemberLookupTimeout はルームの参加者を引くときの上限時間。
+// この取得はメッセージ 1 通ごとに走るため、DB が詰まっても読み取りループを止めない。
+const roomMemberLookupTimeout = 5 * time.Second
 
 // RoomMemberLookup はルームの参加者を引くために、ハブが必要とする最小の契約。
 type RoomMemberLookup interface {
@@ -124,13 +129,16 @@ func (h *Hub) SendToRoom(roomID uint, senderID uint, message []byte) {
 }
 
 // roomMembers はルームの参加者を取得する。
-// 取得に失敗した場合は空扱いにして、配信も認可も通さない。
+// 取得に失敗した場合・期限切れの場合は空扱いにして、配信も認可も通さない。
 // WebSocket 接続は個々の HTTP リクエストより長く生きるため、ここが ctx の起点になる。
 func (h *Hub) roomMembers(roomID uint) []uint {
 	if h.members == nil {
 		return nil
 	}
-	memberIDs, err := h.members.MemberUserIDs(context.Background(), roomID)
+	ctx, cancel := context.WithTimeout(context.Background(), roomMemberLookupTimeout)
+	defer cancel()
+
+	memberIDs, err := h.members.MemberUserIDs(ctx, roomID)
 	if err != nil {
 		log.Printf("websocket: ルーム %d のメンバー取得に失敗: %v", roomID, err)
 		return nil

@@ -11,13 +11,15 @@ import (
 
 // stubMembers は RoomMemberLookup のスタブ。呼び出されたルーム ID を記録する。
 type stubMembers struct {
-	ids       []uint
-	err       error
-	lastRooms []uint
+	ids         []uint
+	err         error
+	lastRooms   []uint
+	hadDeadline bool
 }
 
-func (s *stubMembers) MemberUserIDs(_ context.Context, roomID uint) ([]uint, error) {
+func (s *stubMembers) MemberUserIDs(ctx context.Context, roomID uint) ([]uint, error) {
 	s.lastRooms = append(s.lastRooms, roomID)
+	_, s.hadDeadline = ctx.Deadline()
 	return s.ids, s.err
 }
 
@@ -148,6 +150,7 @@ func TestHub_IsRoomMember_Found(t *testing.T) {
 
 	assert.True(t, hub.IsRoomMember(7, 2))
 	assert.Equal(t, []uint{7}, members.lastRooms, "問い合わせたルーム ID をそのまま渡す")
+	assert.True(t, members.hadDeadline, "DB が詰まっても読み取りループを止めないよう期限を付ける")
 }
 
 func TestHub_IsRoomMember_NotFound(t *testing.T) {
