@@ -104,7 +104,8 @@ func (m *mockPostLikeRepo) HasLiked(ctx context.Context, userID, postID uint) (b
 }
 
 // fakeFollowerNotifier は FollowerNotifier の fake。
-// フォロワー通知は goroutine で実行されるため、完了を待てるように WaitGroup を持つ。
+// フォロワー通知は goroutine で実行されるため、呼び出し内容は mutex で保護して記録し、
+// 完了はテスト側の assert.Eventually で待つ。
 type fakeFollowerNotifier struct {
 	mu            sync.Mutex
 	followerIDs   []uint
@@ -112,7 +113,6 @@ type fakeFollowerNotifier struct {
 	createErr     error
 	notifications []*model.Notification
 	called        int
-	wg            sync.WaitGroup
 }
 
 func (f *fakeFollowerNotifier) FindFollowerIDs(ctx context.Context, userID uint) ([]uint, error) {
