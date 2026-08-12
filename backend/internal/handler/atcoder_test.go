@@ -68,6 +68,7 @@ func TestAtCoder_GetRating_EmptyHistory(t *testing.T) {
 	w := doRequest(r, http.MethodGet, "/atcoder/newbie/rating", nil)
 	assertStatus(t, w, http.StatusOK)
 	assert.JSONEq(t, `{"username":"newbie","rating":0,"color":"gray","rank":"灰"}`, w.Body.String())
+	ratings.AssertExpectations(t)
 }
 
 // 取得に失敗した場合は 400 でエラー文字列をそのまま返す（移行前と同じ）。
@@ -82,6 +83,7 @@ func TestAtCoder_GetRating_FetchError(t *testing.T) {
 	w := doRequest(r, http.MethodGet, "/atcoder/ghost/rating", nil)
 	assertStatus(t, w, http.StatusBadRequest)
 	assert.Contains(t, w.Body.String(), "AtCoderユーザーが見つかりません: ghost")
+	ratings.AssertExpectations(t)
 }
 
 // ユーザー名の形式が不正なら外部 API を叩かない。
