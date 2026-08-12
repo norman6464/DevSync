@@ -13,7 +13,7 @@ import (
 // ---------- AddReaction ----------
 
 func TestPostAddReaction_Success(t *testing.T) {
-	h, _, _, _, reactions := setupPostHandlerWithReactionPorts()
+	h, reactions := setupPostHandlerWithReactionPorts()
 	r := newRouter(1)
 	r.POST("/posts/:id/reactions", h.AddReaction)
 
@@ -30,7 +30,7 @@ func TestPostAddReaction_Success(t *testing.T) {
 
 // 自分の投稿にはリアクションできない。
 func TestPostAddReaction_OwnPost(t *testing.T) {
-	h, _, _, _, reactions := setupPostHandlerWithReactionPorts()
+	h, reactions := setupPostHandlerWithReactionPorts()
 	r := newRouter(1)
 	r.POST("/posts/:id/reactions", h.AddReaction)
 
@@ -43,7 +43,7 @@ func TestPostAddReaction_OwnPost(t *testing.T) {
 
 // 投稿が存在しなければ 404。
 func TestPostAddReaction_PostNotFound(t *testing.T) {
-	h, _, _, _, reactions := setupPostHandlerWithReactionPorts()
+	h, reactions := setupPostHandlerWithReactionPorts()
 	r := newRouter(1)
 	r.POST("/posts/:id/reactions", h.AddReaction)
 
@@ -56,7 +56,7 @@ func TestPostAddReaction_PostNotFound(t *testing.T) {
 
 // 許可されていない絵文字は 400。投稿の取得も行わない。
 func TestPostAddReaction_InvalidEmoji(t *testing.T) {
-	h, _, _, _, reactions := setupPostHandlerWithReactionPorts()
+	h, reactions := setupPostHandlerWithReactionPorts()
 	r := newRouter(1)
 	r.POST("/posts/:id/reactions", h.AddReaction)
 
@@ -67,7 +67,7 @@ func TestPostAddReaction_InvalidEmoji(t *testing.T) {
 }
 
 func TestPostAddReaction_InvalidID(t *testing.T) {
-	h, _, _, _, reactions := setupPostHandlerWithReactionPorts()
+	h, reactions := setupPostHandlerWithReactionPorts()
 	r := newRouter(1)
 	r.POST("/posts/:id/reactions", h.AddReaction)
 
@@ -77,7 +77,7 @@ func TestPostAddReaction_InvalidID(t *testing.T) {
 }
 
 func TestPostAddReaction_InvalidJSON(t *testing.T) {
-	h, _, _, _, reactions := setupPostHandlerWithReactionPorts()
+	h, reactions := setupPostHandlerWithReactionPorts()
 	r := newRouter(1)
 	r.POST("/posts/:id/reactions", h.AddReaction)
 
@@ -87,7 +87,7 @@ func TestPostAddReaction_InvalidJSON(t *testing.T) {
 }
 
 func TestPostAddReaction_RepositoryError(t *testing.T) {
-	h, _, _, _, reactions := setupPostHandlerWithReactionPorts()
+	h, reactions := setupPostHandlerWithReactionPorts()
 	r := newRouter(1)
 	r.POST("/posts/:id/reactions", h.AddReaction)
 
@@ -102,7 +102,7 @@ func TestPostAddReaction_RepositoryError(t *testing.T) {
 // ---------- RemoveReaction ----------
 
 func TestPostRemoveReaction_Success(t *testing.T) {
-	h, _, _, _, reactions := setupPostHandlerWithReactionPorts()
+	h, reactions := setupPostHandlerWithReactionPorts()
 	r := newRouter(1)
 	r.DELETE("/posts/:id/reactions", h.RemoveReaction)
 
@@ -116,7 +116,7 @@ func TestPostRemoveReaction_Success(t *testing.T) {
 }
 
 func TestPostRemoveReaction_OwnPost(t *testing.T) {
-	h, _, _, _, reactions := setupPostHandlerWithReactionPorts()
+	h, reactions := setupPostHandlerWithReactionPorts()
 	r := newRouter(1)
 	r.DELETE("/posts/:id/reactions", h.RemoveReaction)
 
@@ -128,7 +128,7 @@ func TestPostRemoveReaction_OwnPost(t *testing.T) {
 }
 
 func TestPostRemoveReaction_InvalidEmoji(t *testing.T) {
-	h, _, _, _, reactions := setupPostHandlerWithReactionPorts()
+	h, reactions := setupPostHandlerWithReactionPorts()
 	r := newRouter(1)
 	r.DELETE("/posts/:id/reactions", h.RemoveReaction)
 
@@ -138,7 +138,7 @@ func TestPostRemoveReaction_InvalidEmoji(t *testing.T) {
 }
 
 func TestPostRemoveReaction_InvalidID(t *testing.T) {
-	h, _, _, _, reactions := setupPostHandlerWithReactionPorts()
+	h, reactions := setupPostHandlerWithReactionPorts()
 	r := newRouter(1)
 	r.DELETE("/posts/:id/reactions", h.RemoveReaction)
 
@@ -148,7 +148,7 @@ func TestPostRemoveReaction_InvalidID(t *testing.T) {
 }
 
 func TestPostRemoveReaction_InvalidJSON(t *testing.T) {
-	h, _, _, _, reactions := setupPostHandlerWithReactionPorts()
+	h, reactions := setupPostHandlerWithReactionPorts()
 	r := newRouter(1)
 	r.DELETE("/posts/:id/reactions", h.RemoveReaction)
 
@@ -158,7 +158,7 @@ func TestPostRemoveReaction_InvalidJSON(t *testing.T) {
 }
 
 func TestPostRemoveReaction_RepositoryError(t *testing.T) {
-	h, _, _, _, reactions := setupPostHandlerWithReactionPorts()
+	h, reactions := setupPostHandlerWithReactionPorts()
 	r := newRouter(1)
 	r.DELETE("/posts/:id/reactions", h.RemoveReaction)
 
@@ -172,7 +172,7 @@ func TestPostRemoveReaction_RepositoryError(t *testing.T) {
 // ---------- GetReactions ----------
 
 func TestPostGetReactions_Success(t *testing.T) {
-	h, _, _, _, reactions := setupPostHandlerWithReactionPorts()
+	h, reactions := setupPostHandlerWithReactionPorts()
 	r := newRouter(1)
 	r.GET("/posts/:id/reactions", h.GetReactions)
 
@@ -190,7 +190,7 @@ func TestPostGetReactions_Success(t *testing.T) {
 
 // リアクションが無ければ空配列を返す（null にしない）。
 func TestPostGetReactions_Empty(t *testing.T) {
-	h, _, _, _, reactions := setupPostHandlerWithReactionPorts()
+	h, reactions := setupPostHandlerWithReactionPorts()
 	r := newRouter(1)
 	r.GET("/posts/:id/reactions", h.GetReactions)
 
@@ -203,7 +203,7 @@ func TestPostGetReactions_Empty(t *testing.T) {
 }
 
 func TestPostGetReactions_InvalidID(t *testing.T) {
-	h, _, _, _, reactions := setupPostHandlerWithReactionPorts()
+	h, reactions := setupPostHandlerWithReactionPorts()
 	r := newRouter(1)
 	r.GET("/posts/:id/reactions", h.GetReactions)
 
@@ -213,7 +213,7 @@ func TestPostGetReactions_InvalidID(t *testing.T) {
 }
 
 func TestPostGetReactions_RepositoryError(t *testing.T) {
-	h, _, _, _, reactions := setupPostHandlerWithReactionPorts()
+	h, reactions := setupPostHandlerWithReactionPorts()
 	r := newRouter(1)
 	r.GET("/posts/:id/reactions", h.GetReactions)
 
@@ -225,7 +225,7 @@ func TestPostGetReactions_RepositoryError(t *testing.T) {
 }
 
 func TestPostGetReactions_UserReactionsError(t *testing.T) {
-	h, _, _, _, reactions := setupPostHandlerWithReactionPorts()
+	h, reactions := setupPostHandlerWithReactionPorts()
 	r := newRouter(1)
 	r.GET("/posts/:id/reactions", h.GetReactions)
 
@@ -239,7 +239,7 @@ func TestPostGetReactions_UserReactionsError(t *testing.T) {
 // ---------- GetReactionsBatch ----------
 
 func TestPostGetReactionsBatch_Success(t *testing.T) {
-	h, _, _, _, reactions := setupPostHandlerWithReactionPorts()
+	h, reactions := setupPostHandlerWithReactionPorts()
 	r := newRouter(1)
 	r.POST("/posts/reactions/batch", h.GetReactionsBatch)
 
@@ -260,7 +260,7 @@ func TestPostGetReactionsBatch_Success(t *testing.T) {
 
 // 51 件以上は 400。
 func TestPostGetReactionsBatch_TooMany(t *testing.T) {
-	h, _, _, _, reactions := setupPostHandlerWithReactionPorts()
+	h, reactions := setupPostHandlerWithReactionPorts()
 	r := newRouter(1)
 	r.POST("/posts/reactions/batch", h.GetReactionsBatch)
 
@@ -275,7 +275,7 @@ func TestPostGetReactionsBatch_TooMany(t *testing.T) {
 }
 
 func TestPostGetReactionsBatch_InvalidJSON(t *testing.T) {
-	h, _, _, _, reactions := setupPostHandlerWithReactionPorts()
+	h, reactions := setupPostHandlerWithReactionPorts()
 	r := newRouter(1)
 	r.POST("/posts/reactions/batch", h.GetReactionsBatch)
 
@@ -285,7 +285,7 @@ func TestPostGetReactionsBatch_InvalidJSON(t *testing.T) {
 }
 
 func TestPostGetReactionsBatch_RepositoryError(t *testing.T) {
-	h, _, _, _, reactions := setupPostHandlerWithReactionPorts()
+	h, reactions := setupPostHandlerWithReactionPorts()
 	r := newRouter(1)
 	r.POST("/posts/reactions/batch", h.GetReactionsBatch)
 

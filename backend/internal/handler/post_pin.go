@@ -9,10 +9,10 @@ import (
 
 // PostPinHandler は投稿ピン留めの HTTP ハンドラー。各操作は 1 責務の usecase に委譲する。
 type PostPinHandler struct {
-	pinPost      *usecase.PinPostUseCase
-	unpinPost    *usecase.UnpinPostUseCase
-	listPinned   *usecase.ListPinnedPostsUseCase
-	countPinned  *usecase.CountPinnedPostsUseCase
+	pinPost       *usecase.PinPostUseCase
+	unpinPost     *usecase.UnpinPostUseCase
+	listPinned    *usecase.ListPinnedPostsUseCase
+	countPinned   *usecase.CountPinnedPostsUseCase
 	reorderPinned *usecase.ReorderPinnedPostsUseCase
 }
 

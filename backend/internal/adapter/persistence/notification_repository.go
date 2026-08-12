@@ -24,13 +24,37 @@ func NewNotificationCreator(db *gorm.DB) repository.NotificationCreator {
 	return &notificationRepository{db: db}
 }
 
+// NewFollowerNotifier は FollowerNotifier の GORM 実装を返す。
+// フォロワー全員への一括通知を必要とする利用者（投稿の公開など）はこちらを受け取る。
+func NewFollowerNotifier(db *gorm.DB) repository.FollowerNotifier {
+	return &notificationRepository{db: db}
+}
+
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
 var _ repository.NotificationReader = (*notificationRepository)(nil)
 var _ repository.NotificationCreator = (*notificationRepository)(nil)
+var _ repository.FollowerNotifier = (*notificationRepository)(nil)
 
 // Create は通知を 1 件保存する。
 func (r *notificationRepository) Create(ctx context.Context, notification *model.Notification) error {
 	return r.db.WithContext(ctx).Create(notification).Error
+}
+
+// CreateBatch は通知をまとめて保存する。
+func (r *notificationRepository) CreateBatch(ctx context.Context, notifications []*model.Notification) error {
+	if len(notifications) == 0 {
+		return nil
+	}
+	return r.db.WithContext(ctx).Create(&notifications).Error
+}
+
+// FindFollowerIDs は指定ユーザーをフォローしているユーザーの ID を返す。
+func (r *notificationRepository) FindFollowerIDs(ctx context.Context, userID uint) ([]uint, error) {
+	var followerIDs []uint
+	err := r.db.WithContext(ctx).Model(&model.Follow{}).
+		Where("followee_id = ?", userID).
+		Pluck("follower_id", &followerIDs).Error
+	return followerIDs, err
 }
 
 // FindByUserID は指定ユーザーの通知を作成日時の降順で取得する。

@@ -10,100 +10,64 @@ import (
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// PostServiceInterface はPostServiceが実装すべきインターフェース。
-type PostServiceInterface interface {
-	Create(post *model.Post) (*model.Post, error)
-	GetByID(id uint) (*model.Post, error)
-	GetAll(page, limit int) ([]model.Post, error)
-	CountAll() (int64, error)
-	GetByUserID(userID uint, limit, offset int) ([]model.Post, int64, error)
-	GetDrafts(userID uint) ([]model.Post, error)
-	Timeline(userID uint, page, limit int) ([]model.Post, error)
-	Update(id, userID uint, title, content, imageUrls string) (*model.Post, error)
-	Delete(id, userID uint) error
-	Like(userID, postID uint) error
-	Unlike(userID, postID uint) error
-	HasLiked(userID, postID uint) bool
-	Publish(id, userID uint) (*model.Post, error)
-	Unpublish(id, userID uint) (*model.Post, error)
-	SchedulePublish(id, userID uint, scheduledAt time.Time) (*model.Post, error)
-	CancelSchedule(id, userID uint) (*model.Post, error)
-	GetScheduled(userID uint) ([]model.Post, error)
-	AutoSaveDraft(userID, draftID uint, title, content, imageURLs string) (*model.Post, error)
-	CountByUserID(userID uint) (int64, error)
-	CountDraftsByUserID(userID uint) (int64, error)
-	CountScheduledByUserID(userID uint) (int64, error)
+// PostUseCases は PostHandler が依存する投稿系 usecase をまとめる。
+// 投稿スライスは操作数が多いため、コンストラクタの引数を 1 つにまとめて対応関係を明示する。
+type PostUseCases struct {
+	Create         *usecase.CreatePostUseCase
+	Get            *usecase.GetPostUseCase
+	List           *usecase.ListPostsUseCase
+	Count          *usecase.CountPostsUseCase
+	ListByUser     *usecase.ListUserPostsUseCase
+	ListDrafts     *usecase.ListDraftPostsUseCase
+	ListScheduled  *usecase.ListScheduledPostsUseCase
+	Timeline       *usecase.GetTimelineUseCase
+	Update         *usecase.UpdatePostUseCase
+	Delete         *usecase.DeletePostUseCase
+	Publish        *usecase.PublishPostUseCase
+	Unpublish      *usecase.UnpublishPostUseCase
+	Schedule       *usecase.SchedulePostPublishUseCase
+	CancelSchedule *usecase.CancelPostScheduleUseCase
+	AutoSaveDraft  *usecase.AutoSaveDraftUseCase
+	CountByUser    *usecase.CountUserPostsUseCase
+	CountDrafts    *usecase.CountUserDraftsUseCase
+	CountScheduled *usecase.CountUserScheduledPostsUseCase
+
+	Like     *usecase.LikePostUseCase
+	Unlike   *usecase.UnlikePostUseCase
+	HasLiked *usecase.HasLikedPostUseCase
+
+	CreateSnippet *usecase.CreateCodeSnippetUseCase
+
+	AddReaction    *usecase.AddPostReactionUseCase
+	RemoveReaction *usecase.RemovePostReactionUseCase
+	GetReactions   *usecase.GetPostReactionsUseCase
+	ReactionsBatch *usecase.GetPostReactionsBatchUseCase
+
+	CreateComment *usecase.CreatePostCommentUseCase
+	ListComments  *usecase.ListPostCommentsUseCase
+	ListReplies   *usecase.ListCommentRepliesUseCase
+	EditComment   *usecase.EditPostCommentUseCase
+	DeleteComment *usecase.DeletePostCommentUseCase
+	HideComment   *usecase.HidePostCommentUseCase
+	UnhideComment *usecase.UnhidePostCommentUseCase
+
+	Bookmark       *usecase.BookmarkPostUseCase
+	Unbookmark     *usecase.UnbookmarkPostUseCase
+	HasBookmarked  *usecase.HasBookmarkedPostUseCase
+	ListBookmarks  *usecase.ListBookmarkedPostsUseCase
+	CountBookmarks *usecase.CountBookmarkedPostsUseCase
 }
 
 // PostHandler は投稿関連のHTTPハンドラ。
-// 投稿のCRUD・いいね・コメント・タイムラインを処理する。
+// 投稿のCRUD・いいね・コメント・リアクション・ブックマーク・タイムラインを処理する。
 type PostHandler struct {
-	service       PostServiceInterface
-	createSnippet *usecase.CreateCodeSnippetUseCase
-	autoTags      *usecase.SetAutoPostTagsUseCase
-
-	// リアクション・コメント・ブックマークは DIP へ移行済み。他の操作は順次 usecase へ移していく。
-	addReaction    *usecase.AddPostReactionUseCase
-	removeReaction *usecase.RemovePostReactionUseCase
-	getReactions   *usecase.GetPostReactionsUseCase
-	reactionsBatch *usecase.GetPostReactionsBatchUseCase
-
-	bookmark       *usecase.BookmarkPostUseCase
-	unbookmark     *usecase.UnbookmarkPostUseCase
-	hasBookmarked  *usecase.HasBookmarkedPostUseCase
-	listBookmarks  *usecase.ListBookmarkedPostsUseCase
-	countBookmarks *usecase.CountBookmarkedPostsUseCase
-
-	createComment *usecase.CreatePostCommentUseCase
-	listComments  *usecase.ListPostCommentsUseCase
-	listReplies   *usecase.ListCommentRepliesUseCase
-	editComment   *usecase.EditPostCommentUseCase
-	deleteComment *usecase.DeletePostCommentUseCase
-	hideComment   *usecase.HidePostCommentUseCase
-	unhideComment *usecase.UnhidePostCommentUseCase
+	uc       PostUseCases
+	autoTags *usecase.SetAutoPostTagsUseCase
 }
 
 // NewPostHandler は新しいPostHandlerインスタンスを生成する。
-func NewPostHandler(
-	s PostServiceInterface,
-	createSnippet *usecase.CreateCodeSnippetUseCase,
-	addReaction *usecase.AddPostReactionUseCase,
-	removeReaction *usecase.RemovePostReactionUseCase,
-	getReactions *usecase.GetPostReactionsUseCase,
-	reactionsBatch *usecase.GetPostReactionsBatchUseCase,
-	createComment *usecase.CreatePostCommentUseCase,
-	listComments *usecase.ListPostCommentsUseCase,
-	listReplies *usecase.ListCommentRepliesUseCase,
-	editComment *usecase.EditPostCommentUseCase,
-	deleteComment *usecase.DeletePostCommentUseCase,
-	hideComment *usecase.HidePostCommentUseCase,
-	unhideComment *usecase.UnhidePostCommentUseCase,
-	bookmark *usecase.BookmarkPostUseCase,
-	unbookmark *usecase.UnbookmarkPostUseCase,
-	hasBookmarked *usecase.HasBookmarkedPostUseCase,
-	listBookmarks *usecase.ListBookmarkedPostsUseCase,
-	countBookmarks *usecase.CountBookmarkedPostsUseCase,
-) *PostHandler {
-	return &PostHandler{
-		service:        s,
-		createSnippet:  createSnippet,
-		addReaction:    addReaction,
-		removeReaction: removeReaction,
-		getReactions:   getReactions,
-		reactionsBatch: reactionsBatch,
-		createComment:  createComment,
-		listComments:   listComments,
-		listReplies:    listReplies,
-		editComment:    editComment,
-		deleteComment:  deleteComment,
-		hideComment:    hideComment,
-		unhideComment:  unhideComment,
-		bookmark:       bookmark,
-		unbookmark:     unbookmark,
-		hasBookmarked:  hasBookmarked,
-		listBookmarks:  listBookmarks,
-		countBookmarks: countBookmarks,
-	}
+func NewPostHandler(uc PostUseCases) *PostHandler {
+	return &PostHandler{uc: uc}
 }
 
 // SetAutoTagsUseCase はオプショナルな自動タグ設定を注入する。
@@ -127,14 +91,14 @@ func (h *PostHandler) Create(c *gin.Context) {
 		ImageURLs: input.ImageURLs,
 		IsDraft:   input.IsDraft,
 	}
-	created, err := h.service.Create(post)
+	created, err := h.uc.Create.Execute(c.Request.Context(), post)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
 
 	// コードスニペットを一括作成
-	if len(input.CodeSnippets) > 0 && h.createSnippet != nil {
+	if len(input.CodeSnippets) > 0 && h.uc.CreateSnippet != nil {
 		for _, s := range input.CodeSnippets {
 			if s.Language == "" || s.Code == "" {
 				continue
@@ -146,10 +110,10 @@ func (h *PostHandler) Create(c *gin.Context) {
 				FileName: s.FileName,
 				Code:     s.Code,
 			}
-			h.createSnippet.Execute(c.Request.Context(), snippet)
+			h.uc.CreateSnippet.Execute(c.Request.Context(), snippet)
 		}
 		// スニペット付きで再取得
-		if updated, err := h.service.GetByID(created.ID); err == nil {
+		if updated, err := h.uc.Get.Execute(c.Request.Context(), created.ID); err == nil {
 			created = updated
 		}
 	}
@@ -166,13 +130,13 @@ func (h *PostHandler) Create(c *gin.Context) {
 func (h *PostHandler) GetAll(c *gin.Context) {
 	page, limit := parsePagination(c)
 
-	posts, err := h.service.GetAll(page, limit)
+	posts, err := h.uc.List.Execute(c.Request.Context(), page, limit)
 	if err != nil {
 		respondError(c, err)
 		return
 	}
 
-	total, err := h.service.CountAll()
+	total, err := h.uc.Count.Execute(c.Request.Context())
 	if err != nil {
 		respondError(c, err)
 		return
@@ -188,7 +152,7 @@ func (h *PostHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	post, err := h.service.GetByID(id)
+	post, err := h.uc.Get.Execute(c.Request.Context(), id)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -197,7 +161,7 @@ func (h *PostHandler) GetByID(c *gin.Context) {
 	userID := c.GetUint("userID")
 	respondOK(c, dto.PostDetailResponse{
 		Post:       *post,
-		Liked:      h.service.HasLiked(userID, post.ID),
+		Liked:      h.hasLiked(c, userID, post.ID),
 		Bookmarked: h.isBookmarked(c, userID, post.ID),
 	})
 }
@@ -215,7 +179,7 @@ func (h *PostHandler) Update(c *gin.Context) {
 		return
 	}
 
-	post, err := h.service.Update(id, userID, input.Title, input.Content, input.ImageURLs)
+	post, err := h.uc.Update.Execute(c.Request.Context(), id, userID, input.Title, input.Content, input.ImageURLs)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -231,7 +195,9 @@ func (h *PostHandler) Update(c *gin.Context) {
 
 // Delete は投稿を削除する。所有者のみ削除可能。
 func (h *PostHandler) Delete(c *gin.Context) {
-	handleDelete(c, h.service.Delete)
+	handleDelete(c, func(id, userID uint) error {
+		return h.uc.Delete.Execute(c.Request.Context(), id, userID)
+	})
 }
 
 // Timeline はフォロー中ユーザーの投稿タイムラインを返す。
@@ -239,7 +205,7 @@ func (h *PostHandler) Timeline(c *gin.Context) {
 	userID := c.GetUint("userID")
 	page, limit := parsePagination(c)
 
-	posts, err := h.service.Timeline(userID, page, limit)
+	posts, err := h.uc.Timeline.Execute(c.Request.Context(), userID, page, limit)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -255,7 +221,7 @@ func (h *PostHandler) GetUserPosts(c *gin.Context) {
 	}
 	limit, offset := parseLimitOffset(c)
 
-	posts, total, err := h.service.GetByUserID(id, limit, offset)
+	posts, total, err := h.uc.ListByUser.Execute(c.Request.Context(), id, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -274,7 +240,7 @@ func (h *PostHandler) GetMyPosts(c *gin.Context) {
 	userID := c.GetUint("userID")
 	limit, offset := parseLimitOffset(c)
 
-	posts, total, err := h.service.GetByUserID(userID, limit, offset)
+	posts, total, err := h.uc.ListByUser.Execute(c.Request.Context(), userID, limit, offset)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -292,7 +258,7 @@ func (h *PostHandler) GetMyPosts(c *gin.Context) {
 func (h *PostHandler) GetMyCount(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	count, err := h.service.CountByUserID(userID)
+	count, err := h.uc.CountByUser.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -305,7 +271,7 @@ func (h *PostHandler) GetMyCount(c *gin.Context) {
 func (h *PostHandler) GetDraftsCount(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	count, err := h.service.CountDraftsByUserID(userID)
+	count, err := h.uc.CountDrafts.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -318,7 +284,7 @@ func (h *PostHandler) GetDraftsCount(c *gin.Context) {
 func (h *PostHandler) GetScheduledCount(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	count, err := h.service.CountScheduledByUserID(userID)
+	count, err := h.uc.CountScheduled.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -329,12 +295,16 @@ func (h *PostHandler) GetScheduledCount(c *gin.Context) {
 
 // Like は投稿にいいねする。
 func (h *PostHandler) Like(c *gin.Context) {
-	handleToggleAction(c, h.service.Like, "liked")
+	handleToggleAction(c, func(userID, id uint) error {
+		return h.uc.Like.Execute(c.Request.Context(), userID, id)
+	}, "liked")
 }
 
 // Unlike は投稿のいいねを取り消す。
 func (h *PostHandler) Unlike(c *gin.Context) {
-	handleToggleAction(c, h.service.Unlike, "unliked")
+	handleToggleAction(c, func(userID, id uint) error {
+		return h.uc.Unlike.Execute(c.Request.Context(), userID, id)
+	}, "unliked")
 }
 
 // GetComments は投稿のコメント一覧を返す。
@@ -344,7 +314,7 @@ func (h *PostHandler) GetComments(c *gin.Context) {
 		return
 	}
 
-	comments, err := h.listComments.Execute(c.Request.Context(), id)
+	comments, err := h.uc.ListComments.Execute(c.Request.Context(), id)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -365,7 +335,7 @@ func (h *PostHandler) CreateComment(c *gin.Context) {
 		return
 	}
 
-	comment, err := h.createComment.Execute(c.Request.Context(), userID, id, input.Content, input.ParentID)
+	comment, err := h.uc.CreateComment.Execute(c.Request.Context(), userID, id, input.Content, input.ParentID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -380,7 +350,7 @@ func (h *PostHandler) GetReplies(c *gin.Context) {
 		return
 	}
 
-	replies, err := h.listReplies.Execute(c.Request.Context(), commentID)
+	replies, err := h.uc.ListReplies.Execute(c.Request.Context(), commentID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -401,7 +371,7 @@ func (h *PostHandler) EditComment(c *gin.Context) {
 		return
 	}
 
-	comment, err := h.editComment.Execute(c.Request.Context(), commentID, userID, input.Content)
+	comment, err := h.uc.EditComment.Execute(c.Request.Context(), commentID, userID, input.Content)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -417,7 +387,7 @@ func (h *PostHandler) DeleteComment(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.deleteComment.Execute(c.Request.Context(), commentID, userID); err != nil {
+	if err := h.uc.DeleteComment.Execute(c.Request.Context(), commentID, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -432,7 +402,7 @@ func (h *PostHandler) HideComment(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.hideComment.Execute(c.Request.Context(), commentID, userID); err != nil {
+	if err := h.uc.HideComment.Execute(c.Request.Context(), commentID, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -447,7 +417,7 @@ func (h *PostHandler) UnhideComment(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.unhideComment.Execute(c.Request.Context(), commentID, userID); err != nil {
+	if err := h.uc.UnhideComment.Execute(c.Request.Context(), commentID, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -458,7 +428,7 @@ func (h *PostHandler) UnhideComment(c *gin.Context) {
 func (h *PostHandler) GetDrafts(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	drafts, err := h.service.GetDrafts(userID)
+	drafts, err := h.uc.ListDrafts.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -474,7 +444,7 @@ func (h *PostHandler) Publish(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	post, err := h.service.Publish(id, userID)
+	post, err := h.uc.Publish.Execute(c.Request.Context(), id, userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -490,7 +460,7 @@ func (h *PostHandler) Unpublish(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	post, err := h.service.Unpublish(id, userID)
+	post, err := h.uc.Unpublish.Execute(c.Request.Context(), id, userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -498,10 +468,20 @@ func (h *PostHandler) Unpublish(c *gin.Context) {
 	respondOK(c, post)
 }
 
+// hasLiked は投稿詳細に載せるいいね済みフラグを返す。
+// 取得に失敗しても投稿詳細自体は返したいため、移行前と同じく false にフォールバックする。
+func (h *PostHandler) hasLiked(c *gin.Context, userID, postID uint) bool {
+	liked, err := h.uc.HasLiked.Execute(c.Request.Context(), userID, postID)
+	if err != nil {
+		return false
+	}
+	return liked
+}
+
 // isBookmarked は投稿詳細に載せるブックマーク済みフラグを返す。
 // 取得に失敗しても投稿詳細自体は返したいため、移行前と同じく false にフォールバックする。
 func (h *PostHandler) isBookmarked(c *gin.Context, userID, postID uint) bool {
-	bookmarked, err := h.hasBookmarked.Execute(c.Request.Context(), userID, postID)
+	bookmarked, err := h.uc.HasBookmarked.Execute(c.Request.Context(), userID, postID)
 	if err != nil {
 		return false
 	}
@@ -511,14 +491,14 @@ func (h *PostHandler) isBookmarked(c *gin.Context, userID, postID uint) bool {
 // Bookmark は投稿をブックマークする。
 func (h *PostHandler) Bookmark(c *gin.Context) {
 	handleToggleAction(c, func(userID, id uint) error {
-		return h.bookmark.Execute(c.Request.Context(), userID, id)
+		return h.uc.Bookmark.Execute(c.Request.Context(), userID, id)
 	}, "bookmarked")
 }
 
 // Unbookmark は投稿のブックマークを解除する。
 func (h *PostHandler) Unbookmark(c *gin.Context) {
 	handleToggleAction(c, func(userID, id uint) error {
-		return h.unbookmark.Execute(c.Request.Context(), userID, id)
+		return h.uc.Unbookmark.Execute(c.Request.Context(), userID, id)
 	}, "unbookmarked")
 }
 
@@ -527,7 +507,7 @@ func (h *PostHandler) GetBookmarks(c *gin.Context) {
 	userID := c.GetUint("userID")
 	page, limit := parsePagination(c)
 
-	posts, total, err := h.listBookmarks.Execute(c.Request.Context(), userID, page, limit)
+	posts, total, err := h.uc.ListBookmarks.Execute(c.Request.Context(), userID, page, limit)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -544,7 +524,7 @@ func (h *PostHandler) GetBookmarks(c *gin.Context) {
 func (h *PostHandler) GetBookmarksCount(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	count, err := h.countBookmarks.Execute(c.Request.Context(), userID)
+	count, err := h.uc.CountBookmarks.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -566,7 +546,7 @@ func (h *PostHandler) AddReaction(c *gin.Context) {
 		return
 	}
 
-	if err := h.addReaction.Execute(c.Request.Context(), userID, id, input.Emoji); err != nil {
+	if err := h.uc.AddReaction.Execute(c.Request.Context(), userID, id, input.Emoji); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -586,7 +566,7 @@ func (h *PostHandler) RemoveReaction(c *gin.Context) {
 		return
 	}
 
-	if err := h.removeReaction.Execute(c.Request.Context(), userID, id, input.Emoji); err != nil {
+	if err := h.uc.RemoveReaction.Execute(c.Request.Context(), userID, id, input.Emoji); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -601,7 +581,7 @@ func (h *PostHandler) GetReactions(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	reactions, userReactions, err := h.getReactions.Execute(c.Request.Context(), userID, id)
+	reactions, userReactions, err := h.uc.GetReactions.Execute(c.Request.Context(), userID, id)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -632,7 +612,7 @@ func (h *PostHandler) SchedulePublish(c *gin.Context) {
 		return
 	}
 
-	post, err := h.service.SchedulePublish(id, userID, scheduledAt)
+	post, err := h.uc.Schedule.Execute(c.Request.Context(), id, userID, scheduledAt)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -649,7 +629,7 @@ func (h *PostHandler) CancelSchedule(c *gin.Context) {
 		return
 	}
 
-	post, err := h.service.CancelSchedule(id, userID)
+	post, err := h.uc.CancelSchedule.Execute(c.Request.Context(), id, userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -662,7 +642,7 @@ func (h *PostHandler) CancelSchedule(c *gin.Context) {
 func (h *PostHandler) GetScheduled(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	posts, err := h.service.GetScheduled(userID)
+	posts, err := h.uc.ListScheduled.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -680,7 +660,7 @@ func (h *PostHandler) AutoSaveDraft(c *gin.Context) {
 		return
 	}
 
-	result, err := h.service.AutoSaveDraft(userID, req.ID, req.Title, req.Content, req.ImageURLs)
+	result, err := h.uc.AutoSaveDraft.Execute(c.Request.Context(), userID, req.ID, req.Title, req.Content, req.ImageURLs)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -701,7 +681,7 @@ func (h *PostHandler) GetReactionsBatch(c *gin.Context) {
 		return
 	}
 
-	reactions, userReactions, err := h.reactionsBatch.Execute(c.Request.Context(), userID, input.PostIDs)
+	reactions, userReactions, err := h.uc.ReactionsBatch.Execute(c.Request.Context(), userID, input.PostIDs)
 	if err != nil {
 		respondError(c, err)
 		return

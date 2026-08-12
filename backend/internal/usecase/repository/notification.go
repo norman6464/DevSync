@@ -24,6 +24,15 @@ type NotificationReader interface {
 	Delete(ctx context.Context, id, userID uint) error
 }
 
+// FollowerNotifier はフォロワー全員へ通知を一括作成するための最小の契約。
+// 投稿の公開など、1 アクションで複数ユーザーに通知するスライスが利用する。
+type FollowerNotifier interface {
+	// FindFollowerIDs は指定ユーザーをフォローしているユーザーの ID を返す。
+	FindFollowerIDs(ctx context.Context, userID uint) ([]uint, error)
+	// CreateBatch は通知をまとめて作成する。空スライスなら何もしない。
+	CreateBatch(ctx context.Context, notifications []*model.Notification) error
+}
+
 // NotificationCreator は通知を 1 件作成するための最小の契約。
 // バッジ獲得など、他スライスからの通知作成はこの契約で受ける。
 type NotificationCreator interface {

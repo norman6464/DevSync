@@ -117,12 +117,12 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	// follow はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	followRepo := persistence.NewFollowRepository(db)
 	githubRepo := repository.NewGitHubRepository(db)
+	// 旧 postRepo は検索（search_service）がまだ使うため残している。
 	postRepo := repository.NewPostRepository(db)
 	// ダイレクトメッセージはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	messagePort := persistence.NewMessageRepository(db)
 	// ランキングはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	rankingRepo := persistence.NewRankingRepository(db)
-	notificationRepo := repository.NewNotificationRepository(db)
 	passwordResetRepo := repository.NewPasswordResetRepository(db)
 	// Zenn 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence と adapter/external。
 	zennPort := persistence.NewZennRepository(db)
@@ -193,7 +193,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	authService := service.NewAuthService(userRepo, passwordResetRepo, cfg.JWTSecret)
 	c.AuthService = authService
 
-	notificationService := service.NewNotificationService(notificationRepo)
 	// ユーザー情報はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	// 旧 userRepo は認証・GitHub・Zenn・Qiita・AtCoder・YouTube・メンションがまだ使うため残している。
 	userPort := persistence.NewUserRepository(db)
@@ -206,7 +205,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	connectQiita := usecase.NewConnectQiitaUseCase(userPort, qiitaPort, qiitaClient)
 	disconnectQiita := usecase.NewDisconnectQiitaUseCase(userPort, qiitaPort)
 	syncQiita := usecase.NewSyncQiitaUseCase(userPort, qiitaPort, qiitaClient)
-	postService := service.NewPostService(postRepo, notificationService)
 	// 学習目標はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	// 旧 learningGoalRepo は recommendation / learning_dashboard がまだ使うため残している。
 	learningGoalPort := persistence.NewLearningGoalRepository(db)
@@ -271,32 +269,59 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewListFollowingUseCase(followRepo),
 	)
 	c.GitHubHandler = handler.NewGitHubHandler(githubService, authService)
-	// 投稿のリアクション・コメント・ブックマークはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	// 他の投稿操作は順次サブスライス単位で移行する。
+	// 投稿スライスはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	postPort := persistence.NewPostRepository(db)
 	postReactionPort := persistence.NewPostReactionRepository(db)
 	postAuthorPort := persistence.NewPostAuthorReader(db)
 	postCommentPort := persistence.NewPostCommentRepository(db)
 	postBookmarkPort := persistence.NewPostBookmarkRepository(db)
-	c.PostHandler = handler.NewPostHandler(
-		postService,
-		createCodeSnippet,
-		usecase.NewAddPostReactionUseCase(postReactionPort, postAuthorPort),
-		usecase.NewRemovePostReactionUseCase(postReactionPort, postAuthorPort),
-		usecase.NewGetPostReactionsUseCase(postReactionPort),
-		usecase.NewGetPostReactionsBatchUseCase(postReactionPort),
-		usecase.NewCreatePostCommentUseCase(postCommentPort),
-		usecase.NewListPostCommentsUseCase(postCommentPort),
-		usecase.NewListCommentRepliesUseCase(postCommentPort),
-		usecase.NewEditPostCommentUseCase(postCommentPort),
-		usecase.NewDeletePostCommentUseCase(postCommentPort),
-		usecase.NewHidePostCommentUseCase(postCommentPort),
-		usecase.NewUnhidePostCommentUseCase(postCommentPort),
-		usecase.NewBookmarkPostUseCase(postBookmarkPort, postAuthorPort),
-		usecase.NewUnbookmarkPostUseCase(postBookmarkPort, postAuthorPort),
-		usecase.NewHasBookmarkedPostUseCase(postBookmarkPort),
-		usecase.NewListBookmarkedPostsUseCase(postBookmarkPort),
-		usecase.NewCountBookmarkedPostsUseCase(postBookmarkPort),
-	)
+	postLikePort := persistence.NewPostLikeRepository(db)
+	notifyFollowers := usecase.NewNotifyFollowersUseCase(persistence.NewFollowerNotifier(db))
+	c.PostHandler = handler.NewPostHandler(handler.PostUseCases{
+		Create:         usecase.NewCreatePostUseCase(postPort, notifyFollowers),
+		Get:            usecase.NewGetPostUseCase(postPort),
+		List:           usecase.NewListPostsUseCase(postPort),
+		Count:          usecase.NewCountPostsUseCase(postPort),
+		ListByUser:     usecase.NewListUserPostsUseCase(postPort),
+		ListDrafts:     usecase.NewListDraftPostsUseCase(postPort),
+		ListScheduled:  usecase.NewListScheduledPostsUseCase(postPort),
+		Timeline:       usecase.NewGetTimelineUseCase(postPort),
+		Update:         usecase.NewUpdatePostUseCase(postPort),
+		Delete:         usecase.NewDeletePostUseCase(postPort),
+		Publish:        usecase.NewPublishPostUseCase(postPort, notifyFollowers),
+		Unpublish:      usecase.NewUnpublishPostUseCase(postPort),
+		Schedule:       usecase.NewSchedulePostPublishUseCase(postPort),
+		CancelSchedule: usecase.NewCancelPostScheduleUseCase(postPort),
+		AutoSaveDraft:  usecase.NewAutoSaveDraftUseCase(postPort),
+		CountByUser:    usecase.NewCountUserPostsUseCase(postPort),
+		CountDrafts:    usecase.NewCountUserDraftsUseCase(postPort),
+		CountScheduled: usecase.NewCountUserScheduledPostsUseCase(postPort),
+
+		Like:     usecase.NewLikePostUseCase(postLikePort, postAuthorPort),
+		Unlike:   usecase.NewUnlikePostUseCase(postLikePort, postAuthorPort),
+		HasLiked: usecase.NewHasLikedPostUseCase(postLikePort),
+
+		CreateSnippet: createCodeSnippet,
+
+		AddReaction:    usecase.NewAddPostReactionUseCase(postReactionPort, postAuthorPort),
+		RemoveReaction: usecase.NewRemovePostReactionUseCase(postReactionPort, postAuthorPort),
+		GetReactions:   usecase.NewGetPostReactionsUseCase(postReactionPort),
+		ReactionsBatch: usecase.NewGetPostReactionsBatchUseCase(postReactionPort),
+
+		CreateComment: usecase.NewCreatePostCommentUseCase(postCommentPort),
+		ListComments:  usecase.NewListPostCommentsUseCase(postCommentPort),
+		ListReplies:   usecase.NewListCommentRepliesUseCase(postCommentPort),
+		EditComment:   usecase.NewEditPostCommentUseCase(postCommentPort),
+		DeleteComment: usecase.NewDeletePostCommentUseCase(postCommentPort),
+		HideComment:   usecase.NewHidePostCommentUseCase(postCommentPort),
+		UnhideComment: usecase.NewUnhidePostCommentUseCase(postCommentPort),
+
+		Bookmark:       usecase.NewBookmarkPostUseCase(postBookmarkPort, postAuthorPort),
+		Unbookmark:     usecase.NewUnbookmarkPostUseCase(postBookmarkPort, postAuthorPort),
+		HasBookmarked:  usecase.NewHasBookmarkedPostUseCase(postBookmarkPort),
+		ListBookmarks:  usecase.NewListBookmarkedPostsUseCase(postBookmarkPort),
+		CountBookmarks: usecase.NewCountBookmarkedPostsUseCase(postBookmarkPort),
+	})
 	c.CodeSnippetHandler = handler.NewCodeSnippetHandler(
 		createCodeSnippet,
 		usecase.NewListCodeSnippetsByPostUseCase(codeSnippetRepo),
