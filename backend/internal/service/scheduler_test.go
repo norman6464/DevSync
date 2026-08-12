@@ -61,7 +61,7 @@ func TestStart_JobExecutes_SendSuccess(t *testing.T) {
 		Return(cron.EntryID(1), nil)
 	cronMock.On("Start").Return()
 
-	senderMock.On("SendAllWeeklyReports").Return(nil)
+	senderMock.On("Execute", mock.Anything).Return(nil)
 
 	s.Start()
 	assert.NotNil(t, capturedJob)
@@ -83,7 +83,7 @@ func TestStart_JobExecutes_SendError(t *testing.T) {
 		Return(cron.EntryID(1), nil)
 	cronMock.On("Start").Return()
 
-	senderMock.On("SendAllWeeklyReports").Return(errors.New("smtp error"))
+	senderMock.On("Execute", mock.Anything).Return(errors.New("smtp error"))
 
 	s.Start()
 	assert.NotNil(t, capturedJob)
