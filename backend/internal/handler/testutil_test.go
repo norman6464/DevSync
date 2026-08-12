@@ -990,55 +990,8 @@ func setupMessageHandler() (*MessageHandler, *MockMessageService) {
 // ReminderSettings は DIP へ移行済み。テストは reminder_settings_test.go で
 // 「本物の usecase + port モック」を組み立てる。
 
-// MockQiitaService は QiitaServiceInterface のモック実装。
-type MockQiitaService struct{ mock.Mock }
-
-func (m *MockQiitaService) Connect(userID uint, username string) (int, error) {
-	args := m.Called(userID, username)
-	return args.Int(0), args.Error(1)
-}
-func (m *MockQiitaService) Disconnect(userID uint) error {
-	return m.Called(userID).Error(0)
-}
-func (m *MockQiitaService) Sync(userID uint) (int, error) {
-	args := m.Called(userID)
-	return args.Int(0), args.Error(1)
-}
-func (m *MockQiitaService) GetArticles(userID uint) ([]model.QiitaArticle, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.QiitaArticle), args.Error(1)
-}
-func (m *MockQiitaService) GetStats(userID uint) (*model.QiitaStats, error) {
-	args := m.Called(userID)
-	if s := args.Get(0); s != nil {
-		return s.(*model.QiitaStats), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-// setupQiitaHandler はQiitaHandlerテスト用のセットアップを行う。
-// Qiita は未移行のため、ctx を受け取れない旧サービスを DI と同じ形で橋渡しする。
-func setupQiitaHandler() (*ArticlePlatformHandler[model.QiitaArticle, model.QiitaStats], *MockQiitaService) {
-	svc := new(MockQiitaService)
-	h := NewArticlePlatformHandler("Qiita", ArticlePlatformOps[model.QiitaArticle, model.QiitaStats]{
-		Connect: func(_ context.Context, userID uint, username string) (int, error) {
-			return svc.Connect(userID, username)
-		},
-		Disconnect: func(_ context.Context, userID uint) error {
-			return svc.Disconnect(userID)
-		},
-		Sync: func(_ context.Context, userID uint) (int, error) {
-			return svc.Sync(userID)
-		},
-		GetArticles: func(_ context.Context, userID uint) ([]model.QiitaArticle, error) {
-			return svc.GetArticles(userID)
-		},
-		GetStats: func(_ context.Context, userID uint) (*model.QiitaStats, error) {
-			return svc.GetStats(userID)
-		},
-	})
-	return h, svc
-}
+// Qiita は DIP へ移行済み。テストは qiita_test.go で
+// 「本物の usecase + port モック」を組み立てる。
 
 // Zenn は DIP へ移行済み。テストは zenn_test.go で
 // 「本物の usecase + port モック」を組み立てる。

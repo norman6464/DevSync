@@ -125,7 +125,9 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	// Zenn 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence と adapter/external。
 	zennPort := persistence.NewZennRepository(db)
 	zennClient := external.NewZennClient()
-	qiitaRepo := repository.NewQiitaRepository(db)
+	// Qiita 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence と adapter/external。
+	qiitaPort := persistence.NewQiitaRepository(db)
+	qiitaClient := external.NewQiitaClient()
 	learningGoalRepo := repository.NewLearningGoalRepository(db)
 	// アクティビティレポートはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	activityReportRepo := persistence.NewActivityReportRepository(db)
@@ -197,7 +199,9 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	connectZenn := usecase.NewConnectZennUseCase(userPort, zennPort, zennClient)
 	disconnectZenn := usecase.NewDisconnectZennUseCase(userPort, zennPort)
 	syncZenn := usecase.NewSyncZennUseCase(userPort, zennPort, zennClient)
-	qiitaService := service.NewQiitaService(userRepo, qiitaRepo)
+	connectQiita := usecase.NewConnectQiitaUseCase(userPort, qiitaPort, qiitaClient)
+	disconnectQiita := usecase.NewDisconnectQiitaUseCase(userPort, qiitaPort)
+	syncQiita := usecase.NewSyncQiitaUseCase(userPort, qiitaPort, qiitaClient)
 	postService := service.NewPostService(postRepo, notificationService)
 	// 学習目標はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	// 旧 learningGoalRepo は recommendation / learning_dashboard がまだ使うため残している。
@@ -304,24 +308,12 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		GetArticles: usecase.NewListZennArticlesUseCase(zennPort).Execute,
 		GetStats:    usecase.NewGetZennStatsUseCase(zennPort).Execute,
 	})
-	// Qiita は未移行のため、ctx を受け取れない旧サービスをここで橋渡しする。
-	// Qiita スライスの移行時にこの受け渡しは撤去する。
 	c.QiitaHandler = handler.NewArticlePlatformHandler("Qiita", handler.ArticlePlatformOps[model.QiitaArticle, model.QiitaStats]{
-		Connect: func(_ context.Context, userID uint, username string) (int, error) {
-			return qiitaService.Connect(userID, username)
-		},
-		Disconnect: func(_ context.Context, userID uint) error {
-			return qiitaService.Disconnect(userID)
-		},
-		Sync: func(_ context.Context, userID uint) (int, error) {
-			return qiitaService.Sync(userID)
-		},
-		GetArticles: func(_ context.Context, userID uint) ([]model.QiitaArticle, error) {
-			return qiitaService.GetArticles(userID)
-		},
-		GetStats: func(_ context.Context, userID uint) (*model.QiitaStats, error) {
-			return qiitaService.GetStats(userID)
-		},
+		Connect:     connectQiita.Execute,
+		Disconnect:  disconnectQiita.Execute,
+		Sync:        syncQiita.Execute,
+		GetArticles: usecase.NewListQiitaArticlesUseCase(qiitaPort).Execute,
+		GetStats:    usecase.NewGetQiitaStatsUseCase(qiitaPort).Execute,
 	})
 	c.LearningGoalHandler = handler.NewLearningGoalHandler(
 		usecase.NewCreateLearningGoalUseCase(learningGoalPort),

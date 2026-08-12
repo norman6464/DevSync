@@ -1117,39 +1117,6 @@ func (m *MockGitHubRepository) DeleteUserData(userID uint) error {
 }
 
 // ============================================================
-// MockQiitaRepository は repository.QiitaRepositoryInterface のテスト用モック実装。
-// ============================================================
-
-type MockQiitaRepository struct {
-	mock.Mock
-}
-
-var _ repository.QiitaRepositoryInterface = (*MockQiitaRepository)(nil)
-
-func (m *MockQiitaRepository) UpsertArticles(userID uint, articles []model.QiitaArticle) error {
-	args := m.Called(userID, articles)
-	return args.Error(0)
-}
-
-func (m *MockQiitaRepository) GetArticles(userID uint) ([]model.QiitaArticle, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.QiitaArticle), args.Error(1)
-}
-
-func (m *MockQiitaRepository) GetStats(userID uint) (*model.QiitaStats, error) {
-	args := m.Called(userID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.QiitaStats), args.Error(1)
-}
-
-func (m *MockQiitaRepository) DeleteUserArticles(userID uint) error {
-	args := m.Called(userID)
-	return args.Error(0)
-}
-
-// ============================================================
 // MockEmailSender は EmailSenderInterface のテスト用モック実装。
 // ============================================================
 
