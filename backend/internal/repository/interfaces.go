@@ -187,14 +187,6 @@ type GitHubRepositoryInterface interface {
 	DeleteUserData(userID uint) error
 }
 
-// QiitaRepositoryInterface はQiita連携データ操作の契約を定義する。
-type QiitaRepositoryInterface interface {
-	UpsertArticles(userID uint, articles []model.QiitaArticle) error
-	GetArticles(userID uint) ([]model.QiitaArticle, error)
-	GetStats(userID uint) (*model.QiitaStats, error)
-	DeleteUserArticles(userID uint) error
-}
-
 // PasswordResetRepositoryInterface はパスワードリセットトークンデータ操作の契約を定義する。
 type PasswordResetRepositoryInterface interface {
 	Create(token *model.PasswordResetToken) error
