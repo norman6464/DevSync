@@ -301,7 +301,16 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		log.Fatalf("アップロードハンドラの初期化に失敗: %v", err)
 	}
 	c.UploadHandler = uploadHandler
-	c.NotificationHandler = handler.NewNotificationHandler(notificationService)
+	// 通知の参照・既読・削除はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	// 通知の作成（WebSocket 配信を含む）は post / badge / level / mention / message がまだ service 経由で使うため残している。
+	notificationPort := persistence.NewNotificationRepository(db)
+	c.NotificationHandler = handler.NewNotificationHandler(
+		usecase.NewListNotificationsUseCase(notificationPort),
+		usecase.NewCountUnreadNotificationsUseCase(notificationPort),
+		usecase.NewMarkNotificationAsReadUseCase(notificationPort),
+		usecase.NewMarkAllNotificationsAsReadUseCase(notificationPort),
+		usecase.NewDeleteNotificationUseCase(notificationPort),
+	)
 	c.ZennHandler = handler.NewArticlePlatformHandler("Zenn", handler.ArticlePlatformOps[model.ZennArticle, model.ZennStats]{
 		Connect:     connectZenn.Execute,
 		Disconnect:  disconnectZenn.Execute,

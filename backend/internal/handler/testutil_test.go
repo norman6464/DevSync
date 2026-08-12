@@ -821,37 +821,8 @@ func setupFollowHandler() (*FollowHandler, *mockFollowRepo) {
 	return h, repo
 }
 
-// MockNotificationService は NotificationServiceInterface のモック実装。
-type MockNotificationService struct{ mock.Mock }
-
-func (m *MockNotificationService) GetByUserID(userID uint, page, limit int, notificationType string) ([]model.Notification, error) {
-	args := m.Called(userID, page, limit, notificationType)
-	return args.Get(0).([]model.Notification), args.Error(1)
-}
-func (m *MockNotificationService) CountByUserID(userID uint, notificationType string) (int64, error) {
-	args := m.Called(userID, notificationType)
-	return args.Get(0).(int64), args.Error(1)
-}
-func (m *MockNotificationService) CountUnread(userID uint) (int64, error) {
-	args := m.Called(userID)
-	return args.Get(0).(int64), args.Error(1)
-}
-func (m *MockNotificationService) MarkAsRead(id, userID uint) error {
-	return m.Called(id, userID).Error(0)
-}
-func (m *MockNotificationService) MarkAllAsRead(userID uint) error {
-	return m.Called(userID).Error(0)
-}
-func (m *MockNotificationService) Delete(id, userID uint) error {
-	return m.Called(id, userID).Error(0)
-}
-
-// setupNotificationHandler はNotificationHandlerテスト用のセットアップを行う。
-func setupNotificationHandler() (*NotificationHandler, *MockNotificationService) {
-	svc := new(MockNotificationService)
-	h := NewNotificationHandler(svc)
-	return h, svc
-}
+// Notification（参照・既読・削除）は DIP へ移行済み。テストは notification_test.go で
+// 「本物の usecase + port モック」を組み立てる。
 
 // Project は DIP へ移行済み。テストは project_test.go で
 // 「本物の usecase + port モック」を組み立てる。
