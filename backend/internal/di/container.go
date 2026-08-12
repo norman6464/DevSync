@@ -271,11 +271,12 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewListFollowingUseCase(followRepo),
 	)
 	c.GitHubHandler = handler.NewGitHubHandler(githubService, authService)
-	// 投稿のリアクションとコメントはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	// 投稿のリアクション・コメント・ブックマークはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	// 他の投稿操作は順次サブスライス単位で移行する。
 	postReactionPort := persistence.NewPostReactionRepository(db)
 	postAuthorPort := persistence.NewPostAuthorReader(db)
 	postCommentPort := persistence.NewPostCommentRepository(db)
+	postBookmarkPort := persistence.NewPostBookmarkRepository(db)
 	c.PostHandler = handler.NewPostHandler(
 		postService,
 		createCodeSnippet,
@@ -290,6 +291,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewDeletePostCommentUseCase(postCommentPort),
 		usecase.NewHidePostCommentUseCase(postCommentPort),
 		usecase.NewUnhidePostCommentUseCase(postCommentPort),
+		usecase.NewBookmarkPostUseCase(postBookmarkPort, postAuthorPort),
+		usecase.NewUnbookmarkPostUseCase(postBookmarkPort, postAuthorPort),
+		usecase.NewHasBookmarkedPostUseCase(postBookmarkPort),
+		usecase.NewListBookmarkedPostsUseCase(postBookmarkPort),
+		usecase.NewCountBookmarkedPostsUseCase(postBookmarkPort),
 	)
 	c.CodeSnippetHandler = handler.NewCodeSnippetHandler(
 		createCodeSnippet,
