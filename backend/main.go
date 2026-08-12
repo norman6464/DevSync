@@ -6,10 +6,11 @@ import (
 	"log"
 
 	"github.com/joho/godotenv"
+	"github.com/norman6464/devsync/backend/internal/adapter/persistence"
 	"github.com/norman6464/devsync/backend/internal/config"
+	"github.com/norman6464/devsync/backend/internal/infra/ws"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/router"
-	"github.com/norman6464/devsync/backend/internal/service"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -141,7 +142,7 @@ func main() {
 	db.Model(&model.User{}).Where("onboarding_completed = ?", false).Update("onboarding_completed", true)
 
 	// WebSocket Hubをバックグラウンドで起動
-	hub := service.NewHub()
+	hub := ws.NewHub(persistence.NewRoomMemberLookup(db))
 	go hub.Run()
 
 	// ルーターを構築しサーバーを起動

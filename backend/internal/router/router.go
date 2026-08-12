@@ -12,14 +12,14 @@ import (
 	"github.com/norman6464/devsync/backend/internal/config"
 	"github.com/norman6464/devsync/backend/internal/di"
 	"github.com/norman6464/devsync/backend/internal/handler"
+	"github.com/norman6464/devsync/backend/internal/infra/ws"
 	"github.com/norman6464/devsync/backend/internal/middleware"
-	"github.com/norman6464/devsync/backend/internal/service"
 	"gorm.io/gorm"
 )
 
 // Setup はGinルーターを構築し、全エンドポイントを登録して返す。
 // DIコンテナを利用して依存関係を解決し、ルーティングのみに集中する。
-func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
+func Setup(db *gorm.DB, cfg *config.Config, hub *ws.Hub) *gin.Engine {
 	// DIコンテナ構築
 	c := di.NewContainer(db, cfg, hub)
 

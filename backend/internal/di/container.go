@@ -10,8 +10,8 @@ import (
 	"github.com/norman6464/devsync/backend/internal/adapter/persistence"
 	"github.com/norman6464/devsync/backend/internal/config"
 	"github.com/norman6464/devsync/backend/internal/handler"
+	"github.com/norman6464/devsync/backend/internal/infra/ws"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
 	"github.com/norman6464/devsync/backend/internal/service"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 	usecaserepo "github.com/norman6464/devsync/backend/internal/usecase/repository"
@@ -103,13 +103,12 @@ type Container struct {
 
 	// ミドルウェア・コールバック用
 	ValidateAuthToken *usecase.ValidateAuthTokenUseCase
-	Hub               *service.Hub
-	GroupMessageRepo  *repository.GroupMessageRepository
+	Hub               *ws.Hub
 }
 
 // NewContainer はDIコンテナを構築する。
 // リポジトリ→サービス→ハンドラの順で依存関係を解決する。
-func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container {
+func NewContainer(db *gorm.DB, cfg *config.Config, hub *ws.Hub) *Container {
 	c := &Container{Hub: hub}
 
 	// follow はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
@@ -143,8 +142,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	// チャットルームはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	chatRoomPort := persistence.NewChatRoomRepository(db)
 	chatRoomMessagePort := persistence.NewChatRoomMessageRepository(db)
-	// 旧 groupMessageRepo は Hub のルームメンバー取得コールバックがまだ使うため残している。
-	groupMessageRepo := repository.NewGroupMessageRepository(db)
 	// コードスニペットはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	codeSnippetRepo := persistence.NewCodeSnippetRepository(db)
 	codeSnippetPostReader := persistence.NewPostReader(db)
@@ -174,8 +171,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	noteReader := persistence.NewNoteReader(db)
 	// 投稿シリーズはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	postSeriesRepo := persistence.NewPostSeriesRepository(db)
-
-	c.GroupMessageRepo = groupMessageRepo
 
 	// 共通サービス
 	// 認証はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
@@ -1020,9 +1015,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewGetNotificationSettingsUseCase(notificationSettingsRepo),
 		usecase.NewUpdateNotificationSettingsUseCase(notificationSettingsRepo),
 	)
-
-	// HubのGetRoomMembersコールバックを設定
-	hub.GetRoomMembers = groupMessageRepo.GetMemberUserIDs
 
 	return c
 }
