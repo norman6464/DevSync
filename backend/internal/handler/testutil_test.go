@@ -967,7 +967,7 @@ func newGitHubPorts() *githubPorts {
 // GitHub 連携は DIP へ移行済みのため、本物の usecase と port モックを注入する。
 func setupGitHubHandlerMock() (*GitHubHandler, *githubPorts, *usecase.OAuthStateUseCase) {
 	ports := newGitHubPorts()
-	oauthState := usecase.NewOAuthStateUseCase(testJWTSecret)
+	oauthState := usecase.NewOAuthStateUseCase(testJWTSecret, usecase.OAuthProviderGitHub)
 	sync := usecase.NewSyncGitHubDataUseCase(ports.Users, ports.Repo, ports.Client)
 	h := NewGitHubHandler(GitHubUseCases{
 		OAuthURL:      usecase.NewGetGitHubOAuthURLUseCase(ports.Client),

@@ -85,25 +85,13 @@ func (r *userRepository) Update(ctx context.Context, user *model.User) error {
 // FindByEmail はメールアドレスでユーザーを取得する。不在の場合は (nil, nil) を返す。
 func (r *userRepository) FindByEmail(ctx context.Context, email string) (*model.User, error) {
 	var user model.User
-	if err := r.db.WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	return &user, nil
+	return firstUser(r.db.WithContext(ctx).Where("email = ?", email).First(&user), &user)
 }
 
 // FindByGitHubID は GitHub の ID でユーザーを取得する。不在の場合は (nil, nil) を返す。
 func (r *userRepository) FindByGitHubID(ctx context.Context, githubID int64) (*model.User, error) {
 	var user model.User
-	if err := r.db.WithContext(ctx).Where("git_hub_id = ?", githubID).First(&user).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	return &user, nil
+	return firstUser(r.db.WithContext(ctx).Where("git_hub_id = ?", githubID).First(&user), &user)
 }
 
 // Create はユーザーを作成する。

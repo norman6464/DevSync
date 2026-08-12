@@ -8,6 +8,7 @@ import (
 
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -116,6 +117,22 @@ func TestGitHubCallback_InvalidState(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/github/callback", h.Callback)
 	w := doRequest(r, "GET", "/github/callback?code=test-code&state=bad-state", nil)
+
+	assertStatus(t, w, http.StatusBadRequest)
+	ports.Client.AssertNotCalled(t, "ExchangeCode", mock.Anything, mock.Anything)
+}
+
+// TestGitHubCallback_RejectsOtherProviderState は他サービス連携の state を GitHub の callback が
+// 受け付けないことをテストする。state は同じ鍵で署名されるため、連携先を区別しないと使い回せてしまう。
+func TestGitHubCallback_RejectsOtherProviderState(t *testing.T) {
+	h, ports, _ := setupGitHubHandlerMock()
+
+	spotifyState, err := usecase.NewOAuthStateUseCase(testJWTSecret, usecase.OAuthProviderSpotify).Generate(1)
+	require.NoError(t, err)
+
+	r := newRouter(1)
+	r.GET("/github/callback", h.Callback)
+	w := doRequest(r, "GET", "/github/callback?code=test-code&state="+spotifyState, nil)
 
 	assertStatus(t, w, http.StatusBadRequest)
 	ports.Client.AssertNotCalled(t, "ExchangeCode", mock.Anything, mock.Anything)

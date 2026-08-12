@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -25,8 +26,19 @@ const (
 	passwordResetTTL = 1 * time.Hour
 	// githubLoginStatePurpose は GitHub ログイン用 state であることを示す用途。
 	githubLoginStatePurpose = "github_login"
-	// oauthStatePurpose は GitHub 連携用 state であることを示す用途。
+	// oauthStatePurpose は外部サービス連携用 state であることを示す用途。
+	// 連携先ごとに "oauth_state:github" のようにサフィックスを付けて区別する。
 	oauthStatePurpose = "oauth_state"
+	// accessTokenPurpose はログイン後のアクセストークンであることを示す用途。
+	accessTokenPurpose = "access_token"
+	// maxUsernameCandidates は連番でユーザー名の空きを探す試行回数の上限。
+	maxUsernameCandidates = 100
+)
+
+// OAuth の state を連携先ごとに区別するための識別子。
+const (
+	OAuthProviderGitHub  = "github"
+	OAuthProviderSpotify = "spotify"
 )
 
 // AuthUserInput はユーザー登録の入力値。
@@ -60,9 +72,11 @@ func newAuthTokenIssuer(jwtSecret string) *authTokenIssuer {
 }
 
 // issue は指定ユーザーのアクセストークンを発行する。
+// state トークンと同じ鍵で署名するため、用途を purpose クレームで明示する。
 func (t *authTokenIssuer) issue(userID uint) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
+		"purpose": accessTokenPurpose,
 		"exp":     time.Now().Add(authTokenTTL).Unix(),
 		"iat":     time.Now().Unix(),
 	}
@@ -195,10 +209,15 @@ func NewValidateAuthTokenUseCase(jwtSecret string) *ValidateAuthTokenUseCase {
 }
 
 // Execute はトークンからユーザー ID を取り出す。外部 I/O を行わないため ctx は取らない。
+// OAuth の state トークンも同じ鍵で署名され user_id を含むため、purpose を検証して弾く。
+// purpose を持たないトークンは、この検証を入れる前に発行した既存のアクセストークンとして受け入れる。
 func (uc *ValidateAuthTokenUseCase) Execute(tokenString string) (uint, error) {
 	claims, err := uc.tokens.parse(tokenString, "無効なトークンです")
 	if err != nil {
 		return 0, err
+	}
+	if purpose, ok := claims["purpose"].(string); ok && purpose != accessTokenPurpose {
+		return 0, domain.ErrUnauthorized
 	}
 	userID, ok := claims["user_id"].(float64)
 	if !ok {
@@ -238,33 +257,36 @@ func (uc *GitHubLoginStateUseCase) Validate(state string) error {
 	return nil
 }
 
-// OAuthStateUseCase は GitHub 連携用の state トークン（ユーザー ID 入り）を発行・検証する。
+// OAuthStateUseCase は外部サービス連携用の state トークン（ユーザー ID 入り）を発行・検証する。
+// provider ごとに別インスタンスを作り、連携先をまたいだ state の使い回しを防ぐ。
 type OAuthStateUseCase struct {
-	tokens *authTokenIssuer
+	tokens   *authTokenIssuer
+	provider string
 }
 
-// NewOAuthStateUseCase は OAuthStateUseCase を生成する。
-func NewOAuthStateUseCase(jwtSecret string) *OAuthStateUseCase {
-	return &OAuthStateUseCase{tokens: newAuthTokenIssuer(jwtSecret)}
+// NewOAuthStateUseCase は指定した連携先向けの OAuthStateUseCase を生成する。
+func NewOAuthStateUseCase(jwtSecret, provider string) *OAuthStateUseCase {
+	return &OAuthStateUseCase{tokens: newAuthTokenIssuer(jwtSecret), provider: provider}
 }
 
 // Generate はユーザー ID を埋め込んだ state を発行する（有効期限 5 分）。
 func (uc *OAuthStateUseCase) Generate(userID uint) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
-		"purpose": oauthStatePurpose,
+		"purpose": uc.purpose(),
 		"exp":     time.Now().Add(oauthStateTTL).Unix(),
 	}
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(uc.tokens.secret)
 }
 
 // Validate は state を検証し、埋め込まれたユーザー ID を返す。
+// 連携先が異なる state は受け付けない。
 func (uc *OAuthStateUseCase) Validate(state string) (uint, error) {
 	claims, err := uc.tokens.parse(state, "無効なOAuthステートです")
 	if err != nil {
 		return 0, err
 	}
-	if purpose, _ := claims["purpose"].(string); purpose != oauthStatePurpose {
+	if purpose, _ := claims["purpose"].(string); purpose != uc.purpose() {
 		return 0, domain.ErrUnauthorized
 	}
 	userID, ok := claims["user_id"].(float64)
@@ -272,6 +294,14 @@ func (uc *OAuthStateUseCase) Validate(state string) (uint, error) {
 		return 0, domain.ErrUnauthorized
 	}
 	return uint(userID), nil
+}
+
+// purpose は連携先を含む用途文字列を返す。
+func (uc *OAuthStateUseCase) purpose() string {
+	if uc.provider == "" {
+		return oauthStatePurpose
+	}
+	return oauthStatePurpose + ":" + uc.provider
 }
 
 // GitHubLoginUseCase は GitHub アカウントでログイン（必要なら登録）する。
@@ -351,15 +381,23 @@ func (uc *GitHubLoginUseCase) issueFor(user *model.User) (*AuthResult, error) {
 
 // uniqueUsername は使われていないユーザー名を作る。
 // 候補が使用済みなら末尾に連番を付ける（alice → alice2 → alice3）。
+// 連番で決まらない場合はランダムなサフィックスにフォールバックし、無限ループを避ける。
 func (uc *GitHubLoginUseCase) uniqueUsername(ctx context.Context, base string) string {
 	candidate := base
-	for i := 2; ; i++ {
+	for i := 2; i <= maxUsernameCandidates; i++ {
 		existing, _ := uc.users.FindByUsername(ctx, candidate)
 		if existing == nil {
 			return candidate
 		}
 		candidate = fmt.Sprintf("%s%d", base, i)
 	}
+
+	suffix := make([]byte, 4)
+	if _, err := rand.Read(suffix); err != nil {
+		// 乱数が使えない場合でも衝突しにくい値にする
+		return fmt.Sprintf("%s%d", base, time.Now().UnixNano())
+	}
+	return fmt.Sprintf("%s-%s", base, hex.EncodeToString(suffix))
 }
 
 // GetMeUseCase はログイン中のユーザー情報を返す。
@@ -435,7 +473,12 @@ func NewRequestPasswordResetUseCase(
 // メールアドレスの存在有無を漏らさないため、未登録でもエラーにせず空文字を返す。
 func (uc *RequestPasswordResetUseCase) Execute(ctx context.Context, email string) (string, error) {
 	user, err := uc.users.FindByEmail(ctx, email)
-	if err != nil || user == nil {
+	if err != nil {
+		// アカウントの有無を漏らさないため成功扱いのままにするが、障害が埋もれないようログに残す
+		log.Printf("パスワードリセット: ユーザー検索に失敗しました: %v", err)
+		return "", nil
+	}
+	if user == nil {
 		return "", nil
 	}
 

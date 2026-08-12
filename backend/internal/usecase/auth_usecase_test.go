@@ -2,6 +2,8 @@ package usecase_test
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"testing"
 	"time"
@@ -211,7 +213,7 @@ func TestValidateAuthTokenUseCase(t *testing.T) {
 }
 
 func TestOAuthStateUseCase(t *testing.T) {
-	state := usecase.NewOAuthStateUseCase(testAuthSecret)
+	state := usecase.NewOAuthStateUseCase(testAuthSecret, usecase.OAuthProviderGitHub)
 
 	t.Run("発行した state からユーザー ID を取り出せる", func(t *testing.T) {
 		token, err := state.Generate(12)
@@ -235,6 +237,36 @@ func TestOAuthStateUseCase(t *testing.T) {
 		require.NoError(t, err)
 
 		err = usecase.NewGitHubLoginStateUseCase(testAuthSecret).Validate(oauthState)
+		assert.ErrorIs(t, err, domain.ErrUnauthorized)
+	})
+
+	t.Run("連携先が違う state は受け付けない", func(t *testing.T) {
+		spotifyState := usecase.NewOAuthStateUseCase(testAuthSecret, usecase.OAuthProviderSpotify)
+		token, err := spotifyState.Generate(1)
+		require.NoError(t, err)
+
+		_, err = state.Validate(token)
+		assert.ErrorIs(t, err, domain.ErrUnauthorized, "GitHub の callback が Spotify の state を受け入れてはいけない")
+
+		githubToken, err := state.Generate(1)
+		require.NoError(t, err)
+		_, err = spotifyState.Validate(githubToken)
+		assert.ErrorIs(t, err, domain.ErrUnauthorized)
+	})
+
+	t.Run("連携用 state はアクセストークンとして使えない", func(t *testing.T) {
+		token, err := state.Generate(1)
+		require.NoError(t, err)
+
+		_, err = usecase.NewValidateAuthTokenUseCase(testAuthSecret).Execute(token)
+		assert.ErrorIs(t, err, domain.ErrUnauthorized, "同じ鍵で署名された state で API 認証を通してはいけない")
+	})
+
+	t.Run("ログイン用 state もアクセストークンとして使えない", func(t *testing.T) {
+		loginState, err := usecase.NewGitHubLoginStateUseCase(testAuthSecret).Generate()
+		require.NoError(t, err)
+
+		_, err = usecase.NewValidateAuthTokenUseCase(testAuthSecret).Execute(loginState)
 		assert.ErrorIs(t, err, domain.ErrUnauthorized)
 	})
 }
@@ -271,6 +303,7 @@ func TestGitHubLoginUseCase(t *testing.T) {
 		got, err := usecase.NewGitHubLoginUseCase(users, testAuthSecret).Execute(ctx, ghUser, "token")
 		require.NoError(t, err)
 		assert.Equal(t, uint(6), got.User.ID)
+		users.AssertExpectations(t)
 	})
 
 	t.Run("見つからなければ新規作成する", func(t *testing.T) {
@@ -412,10 +445,24 @@ func TestPasswordResetUseCases(t *testing.T) {
 		tokens.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 	})
 
+	t.Run("検索に失敗しても存在有無を漏らさずトークンも作らない", func(t *testing.T) {
+		users := new(mockAuthUsers)
+		tokens := new(mockResetTokens)
+		users.On("FindByEmail", mock.Anything, "a@example.com").Return(nil, errors.New("db down"))
+
+		plain, err := usecase.NewRequestPasswordResetUseCase(users, tokens).Execute(ctx, "a@example.com")
+		require.NoError(t, err, "アカウントの有無を漏らさないため成功扱いにする")
+		assert.Empty(t, plain)
+		tokens.AssertNotCalled(t, "InvalidateUserTokens", mock.Anything, mock.Anything)
+		tokens.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
+		users.AssertExpectations(t)
+	})
+
 	t.Run("有効なトークンでパスワードを更新する", func(t *testing.T) {
 		users := new(mockAuthUsers)
 		tokens := new(mockResetTokens)
-		tokens.On("FindByToken", mock.Anything, mock.AnythingOfType("string")).
+		hashedRaw := hex.EncodeToString(sha256Sum("raw"))
+		tokens.On("FindByToken", mock.Anything, hashedRaw).
 			Return(&model.PasswordResetToken{ID: 2, UserID: 1, ExpiresAt: time.Now().Add(time.Hour)}, nil)
 		users.On("UpdatePassword", mock.Anything, uint(1), mock.MatchedBy(func(hashed string) bool {
 			return bcrypt.CompareHashAndPassword([]byte(hashed), []byte("newpassword123")) == nil
@@ -496,4 +543,10 @@ func TestGetMeUseCase(t *testing.T) {
 		_, err := usecase.NewGetMeUseCase(users).Execute(ctx, 1)
 		assert.ErrorIs(t, err, dbErr)
 	})
+}
+
+// sha256Sum は usecase 側と同じハッシュ計算をテストで再現する。
+func sha256Sum(raw string) []byte {
+	sum := sha256.Sum256([]byte(raw))
+	return sum[:]
 }

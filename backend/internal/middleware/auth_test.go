@@ -16,8 +16,22 @@ import (
 // テスト用のJWTシークレットキー
 const testJWTSecret = "test-secret-key-for-middleware-tests"
 
-// generateTestToken はテスト用のJWTトークンを生成するヘルパー関数。
+// generateTestToken はテスト用のアクセストークンを生成するヘルパー関数。
+// purpose は usecase が発行するアクセストークンと同じ値にする。
 func generateTestToken(userID uint) string {
+	claims := jwt.MapClaims{
+		"user_id": userID,
+		"purpose": "access_token",
+		"exp":     time.Now().Add(72 * time.Hour).Unix(),
+		"iat":     time.Now().Unix(),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, _ := token.SignedString([]byte(testJWTSecret))
+	return tokenString
+}
+
+// generateLegacyTestToken は purpose クレームを持たない旧アクセストークンを生成する。
+func generateLegacyTestToken(userID uint) string {
 	claims := jwt.MapClaims{
 		"user_id": userID,
 		"exp":     time.Now().Add(72 * time.Hour).Unix(),
@@ -170,4 +184,42 @@ func TestAuthRequired_InvalidAuthorizationHeaderFormat(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
+}
+
+// TestAuthRequired_RejectsOAuthState は OAuth の state トークンで認証を通せないことをテストする。
+// state はアクセストークンと同じ鍵で署名され user_id を含むうえ、URL のクエリパラメータを経由するため漏れやすい。
+func TestAuthRequired_RejectsOAuthState(t *testing.T) {
+	r, validateToken := setupTestRouter()
+	r.GET("/protected", AuthRequired(validateToken), func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"user_id": c.GetUint("userID")})
+	})
+
+	state, err := usecase.NewOAuthStateUseCase(testJWTSecret, usecase.OAuthProviderGitHub).Generate(123)
+	assert.NoError(t, err)
+
+	req := httptest.NewRequest("GET", "/protected", nil)
+	req.AddCookie(&http.Cookie{Name: "token", Value: state})
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+}
+
+// TestAuthRequired_AcceptsLegacyTokenWithoutPurpose は purpose 検証を入れる前に発行したトークンが
+// そのまま使えることをテストする（既存のログイン状態を切らないため）。
+func TestAuthRequired_AcceptsLegacyTokenWithoutPurpose(t *testing.T) {
+	r, validateToken := setupTestRouter()
+	r.GET("/protected", AuthRequired(validateToken), func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"user_id": c.GetUint("userID")})
+	})
+
+	req := httptest.NewRequest("GET", "/protected", nil)
+	req.AddCookie(&http.Cookie{Name: "token", Value: generateLegacyTestToken(456)})
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), "456")
 }

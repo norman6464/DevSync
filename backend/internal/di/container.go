@@ -182,7 +182,8 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	authUserPort := persistence.NewAuthUserRepository(db)
 	passwordResetPort := persistence.NewPasswordResetTokenRepository(db)
 	validateAuthToken := usecase.NewValidateAuthTokenUseCase(cfg.JWTSecret)
-	oauthState := usecase.NewOAuthStateUseCase(cfg.JWTSecret)
+	githubOAuthState := usecase.NewOAuthStateUseCase(cfg.JWTSecret, usecase.OAuthProviderGitHub)
+	spotifyOAuthState := usecase.NewOAuthStateUseCase(cfg.JWTSecret, usecase.OAuthProviderSpotify)
 	authUseCases := handler.AuthUseCases{
 		Register:             usecase.NewRegisterUserUseCase(authUserPort, cfg.JWTSecret),
 		Login:                usecase.NewLoginUseCase(authUserPort, cfg.JWTSecret),
@@ -302,7 +303,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewListFollowersUseCase(followRepo),
 		usecase.NewListFollowingUseCase(followRepo),
 	)
-	c.GitHubHandler = handler.NewGitHubHandler(githubUseCases, oauthState)
+	c.GitHubHandler = handler.NewGitHubHandler(githubUseCases, githubOAuthState)
 	// 投稿スライスはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	postPort := persistence.NewPostRepository(db)
 	postReactionPort := persistence.NewPostReactionRepository(db)
@@ -888,7 +889,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		CurrentlyPlaying: usecase.NewGetSpotifyCurrentlyPlayingUseCase(userPort, spotifyClient),
 		RecentlyPlayed:   usecase.NewGetSpotifyRecentlyPlayedUseCase(userPort, spotifyClient),
 	}
-	c.SpotifyHandler = handler.NewSpotifyHandler(spotifyUseCases, oauthState)
+	c.SpotifyHandler = handler.NewSpotifyHandler(spotifyUseCases, spotifyOAuthState)
 
 	// YouTube 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence と adapter/external。
 	// APIキー未設定のときは検索クライアントを nil のままにし、利用不可（503）として扱う。

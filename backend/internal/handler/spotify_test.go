@@ -67,7 +67,7 @@ func setupSpotifyHandler() (*SpotifyHandler, *spotifyPorts, *usecase.OAuthStateU
 		Repo:   new(mockSpotifyRepo),
 		Client: new(mockSpotifyAPIClient),
 	}
-	oauthState := usecase.NewOAuthStateUseCase(testJWTSecret)
+	oauthState := usecase.NewOAuthStateUseCase(testJWTSecret, usecase.OAuthProviderSpotify)
 	h := NewSpotifyHandler(SpotifyUseCases{
 		OAuthURL:         usecase.NewGetSpotifyOAuthURLUseCase(ports.Client),
 		Connect:          usecase.NewConnectSpotifyUseCase(ports.Users, ports.Client),
