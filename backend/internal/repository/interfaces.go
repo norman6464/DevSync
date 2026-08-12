@@ -85,14 +85,6 @@ type NotificationRepositoryInterface interface {
 	GetFollowerIDs(userID uint) ([]uint, error)
 }
 
-// MessageRepositoryInterface はDMメッセージデータ操作の契約を定義する。
-type MessageRepositoryInterface interface {
-	Create(msg *model.Message) error
-	GetConversation(userID, otherUserID uint, page, limit int) ([]model.Message, error)
-	GetConversations(userID uint) ([]model.ConversationSummary, error)
-	MarkAsRead(senderID, receiverID uint) error
-}
-
 // LearningLogRepositoryInterface は学習ログデータ操作の契約を定義する。
 // ストリーク計算やカレンダーデータ取得も含む。
 type LearningLogRepositoryInterface interface {

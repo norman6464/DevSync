@@ -896,30 +896,8 @@ func setupAIAdviceHandler() (*AIAdviceHandler, *MockAIAdviceService) {
 // LearningLog は DIP へ移行済み。テストは learning_log_test.go で
 // 「本物の usecase + port モック」を組み立てる。
 
-// MockMessageService は MessageServiceInterface のモック実装。
-type MockMessageService struct{ mock.Mock }
-
-func (m *MockMessageService) GetConversations(userID uint) ([]model.ConversationSummary, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.ConversationSummary), args.Error(1)
-}
-func (m *MockMessageService) GetConversation(userID, otherUserID uint, page, limit int) ([]model.Message, error) {
-	args := m.Called(userID, otherUserID, page, limit)
-	return args.Get(0).([]model.Message), args.Error(1)
-}
-func (m *MockMessageService) SendMessage(msg *model.Message) error {
-	return m.Called(msg).Error(0)
-}
-func (m *MockMessageService) MarkAsRead(senderID, receiverID uint) error {
-	return m.Called(senderID, receiverID).Error(0)
-}
-
-// setupMessageHandler はMessageHandlerテスト用のセットアップを行う。
-func setupMessageHandler() (*MessageHandler, *MockMessageService) {
-	svc := new(MockMessageService)
-	h := NewMessageHandler(svc)
-	return h, svc
-}
+// Message は DIP へ移行済み。テストは message_test.go で
+// 「本物の usecase + port モック」を組み立てる。
 
 // ReminderSettings は DIP へ移行済み。テストは reminder_settings_test.go で
 // 「本物の usecase + port モック」を組み立てる。
