@@ -7,32 +7,28 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// WebSocketAuthServiceInterface はWebSocketHandler用の認証サービスの抽象インターフェース。
-type WebSocketAuthServiceInterface interface {
-	ValidateToken(tokenString string) (uint, error)
-}
 
 // WebSocketHandler はWebSocket関連のHTTPハンドラ。
 // リアルタイム通信のためのWebSocket接続確立を処理する。
 type WebSocketHandler struct {
 	hub            *service.Hub
-	authService    WebSocketAuthServiceInterface
+	validateToken  *usecase.ValidateAuthTokenUseCase
 	allowedOrigins map[string]bool // CORS設定と連動した許可オリジン
 	upgrader       websocket.Upgrader
 }
 
 // NewWebSocketHandler は新しいWebSocketHandlerインスタンスを生成する。
 // allowedOriginsにはCORS設定のオリジン一覧を渡す。
-func NewWebSocketHandler(hub *service.Hub, authService WebSocketAuthServiceInterface, allowedOrigins []string) *WebSocketHandler {
+func NewWebSocketHandler(hub *service.Hub, validateToken *usecase.ValidateAuthTokenUseCase, allowedOrigins []string) *WebSocketHandler {
 	originsMap := make(map[string]bool, len(allowedOrigins))
 	for _, o := range allowedOrigins {
 		originsMap[o] = true
 	}
 	h := &WebSocketHandler{
 		hub:            hub,
-		authService:    authService,
+		validateToken:  validateToken,
 		allowedOrigins: originsMap,
 	}
 	h.upgrader = websocket.Upgrader{
@@ -68,7 +64,7 @@ func (h *WebSocketHandler) HandleWebSocket(c *gin.Context) {
 	}
 
 	// トークンを検証してユーザーIDを取得
-	userID, err := h.authService.ValidateToken(token)
+	userID, err := h.validateToken.Execute(token)
 	if err != nil {
 		respondUnauthorized(c, "invalid token")
 		return

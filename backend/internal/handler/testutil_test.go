@@ -11,7 +11,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 	usecaserepo "github.com/norman6464/devsync/backend/internal/usecase/repository"
 	"github.com/stretchr/testify/assert"
@@ -952,68 +951,8 @@ func newAIUseCases(ports *aiPorts, llm usecaserepo.LLMClient) AIAdviceUseCases {
 // AtCoder は DIP へ移行済み。テストは atcoder_test.go で
 // 「本物の usecase + port モック」を組み立てる。
 
-// MockAuthService は AuthServiceInterface のモック実装。
-type MockAuthService struct{ mock.Mock }
-
-func (m *MockAuthService) Register(input service.RegisterInput) (*service.AuthResponse, error) {
-	args := m.Called(input)
-	if r := args.Get(0); r != nil {
-		return r.(*service.AuthResponse), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockAuthService) Login(input service.LoginInput) (*service.AuthResponse, error) {
-	args := m.Called(input)
-	if r := args.Get(0); r != nil {
-		return r.(*service.AuthResponse), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockAuthService) GenerateLoginState() (string, error) {
-	args := m.Called()
-	return args.String(0), args.Error(1)
-}
-func (m *MockAuthService) ValidateLoginState(state string) error {
-	return m.Called(state).Error(0)
-}
-func (m *MockAuthService) GitHubLogin(ghUser *model.GitHubUserInfo, accessToken string) (*service.AuthResponse, error) {
-	args := m.Called(ghUser, accessToken)
-	if r := args.Get(0); r != nil {
-		return r.(*service.AuthResponse), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockAuthService) GetMe(userID uint) (*model.User, error) {
-	args := m.Called(userID)
-	if u := args.Get(0); u != nil {
-		return u.(*model.User), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockAuthService) RequestPasswordReset(email string) (string, error) {
-	args := m.Called(email)
-	return args.String(0), args.Error(1)
-}
-func (m *MockAuthService) ResetPassword(token string, newPassword string) error {
-	return m.Called(token, newPassword).Error(0)
-}
-func (m *MockAuthService) DeleteAccount(userID uint, password string) error {
-	return m.Called(userID, password).Error(0)
-}
-
-// setupAuthHandlerMock はAuthHandlerテスト用のセットアップを行う。
-// GitHub 連携は DIP へ移行済みのため、本物の usecase と port モックを注入する。
-func setupAuthHandlerMock() (*AuthHandler, *MockAuthService, *githubPorts) {
-	authSvc := new(MockAuthService)
-	ports := newGitHubPorts()
-	h := NewAuthHandler(authSvc, AuthGitHubUseCases{
-		LoginURL:     usecase.NewGetGitHubLoginURLUseCase(ports.Client),
-		ExchangeCode: usecase.NewExchangeGitHubCodeUseCase(ports.Client),
-		GetUser:      usecase.NewGetGitHubUserUseCase(ports.Client),
-		Sync:         usecase.NewSyncGitHubDataUseCase(ports.Users, ports.Repo, ports.Client),
-	})
-	return h, authSvc, ports
-}
+// (MockAuthService / setupAuthHandlerMock は auth スライスの DIP 移行に伴い撤去。
+// 認証のテストは auth_test.go で port モックを使って組む)
 
 // newGitHubPorts は GitHub 連携の port モック一式を生成する。
 func newGitHubPorts() *githubPorts {
@@ -1024,23 +963,11 @@ func newGitHubPorts() *githubPorts {
 	}
 }
 
-// MockGHAuthService は GitHubAuthServiceInterface のモック実装。
-type MockGHAuthService struct{ mock.Mock }
-
-func (m *MockGHAuthService) GenerateOAuthState(userID uint) (string, error) {
-	args := m.Called(userID)
-	return args.String(0), args.Error(1)
-}
-func (m *MockGHAuthService) ValidateOAuthState(state string) (uint, error) {
-	args := m.Called(state)
-	return uint(args.Int(0)), args.Error(1)
-}
-
 // setupGitHubHandlerMock はGitHubHandlerテスト用のセットアップを行う。
 // GitHub 連携は DIP へ移行済みのため、本物の usecase と port モックを注入する。
-func setupGitHubHandlerMock() (*GitHubHandler, *githubPorts, *MockGHAuthService) {
+func setupGitHubHandlerMock() (*GitHubHandler, *githubPorts, *usecase.OAuthStateUseCase) {
 	ports := newGitHubPorts()
-	authSvc := new(MockGHAuthService)
+	oauthState := usecase.NewOAuthStateUseCase(testJWTSecret, usecase.OAuthProviderGitHub)
 	sync := usecase.NewSyncGitHubDataUseCase(ports.Users, ports.Repo, ports.Client)
 	h := NewGitHubHandler(GitHubUseCases{
 		OAuthURL:      usecase.NewGetGitHubOAuthURLUseCase(ports.Client),
@@ -1050,8 +977,8 @@ func setupGitHubHandlerMock() (*GitHubHandler, *githubPorts, *MockGHAuthService)
 		Contributions: usecase.NewGetGitHubContributionsUseCase(ports.Repo),
 		Languages:     usecase.NewGetGitHubLanguagesUseCase(ports.Repo),
 		Repos:         usecase.NewGetGitHubReposUseCase(ports.Repo),
-	}, authSvc)
-	return h, ports, authSvc
+	}, oauthState)
+	return h, ports, oauthState
 }
 
 // ---------- CodeSnippetHandler モック ----------

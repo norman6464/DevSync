@@ -7,12 +7,6 @@ import (
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// GitHubAuthServiceInterface はGitHubHandler用の認証サービスの抽象インターフェース。
-type GitHubAuthServiceInterface interface {
-	GenerateOAuthState(userID uint) (string, error)
-	ValidateOAuthState(state string) (uint, error)
-}
-
 // GitHubUseCases は GitHubHandler が依存する GitHub 連携の usecase をまとめる。
 type GitHubUseCases struct {
 	OAuthURL      *usecase.GetGitHubOAuthURLUseCase
@@ -27,19 +21,19 @@ type GitHubUseCases struct {
 // GitHubHandler はGitHub連携関連のHTTPハンドラ。
 // GitHub OAuth認証・データ同期・コントリビューション取得を処理する。
 type GitHubHandler struct {
-	uc          GitHubUseCases
-	authService GitHubAuthServiceInterface
+	uc         GitHubUseCases
+	oauthState *usecase.OAuthStateUseCase
 }
 
 // NewGitHubHandler は新しいGitHubHandlerインスタンスを生成する。
-func NewGitHubHandler(uc GitHubUseCases, authService GitHubAuthServiceInterface) *GitHubHandler {
-	return &GitHubHandler{uc: uc, authService: authService}
+func NewGitHubHandler(uc GitHubUseCases, oauthState *usecase.OAuthStateUseCase) *GitHubHandler {
+	return &GitHubHandler{uc: uc, oauthState: oauthState}
 }
 
 // Connect はGitHub OAuth認証のURLを生成して返す。
 func (h *GitHubHandler) Connect(c *gin.Context) {
 	userID := c.GetUint("userID")
-	state, err := h.authService.GenerateOAuthState(userID)
+	state, err := h.oauthState.Generate(userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -58,7 +52,7 @@ func (h *GitHubHandler) Callback(c *gin.Context) {
 		return
 	}
 
-	userID, err := h.authService.ValidateOAuthState(state)
+	userID, err := h.oauthState.Validate(state)
 	if err != nil {
 		respondBadRequest(c, "stateが無効です")
 		return

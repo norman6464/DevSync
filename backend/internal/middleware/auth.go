@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
 // AuthRequired はJWT認証を必須とするミドルウェアを返す。
@@ -16,7 +16,7 @@ import (
 //  2. Authorizationヘッダー（"Bearer <token>"）— 後方互換性のため維持
 //
 // 検証に成功した場合はコンテキストにuserIDをセットして次のハンドラに処理を委譲する。
-func AuthRequired(authService *service.AuthService) gin.HandlerFunc {
+func AuthRequired(validateToken *usecase.ValidateAuthTokenUseCase) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var tokenString string
 
@@ -47,7 +47,7 @@ func AuthRequired(authService *service.AuthService) gin.HandlerFunc {
 			return
 		}
 
-		userID, err := authService.ValidateToken(tokenString)
+		userID, err := validateToken.Execute(tokenString)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, domain.NewErrorResponse("invalid or expired token", string(domain.ErrCodeUnauthorized), nil))
 			c.Abort()

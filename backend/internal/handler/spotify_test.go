@@ -12,6 +12,7 @@ import (
 	"github.com/norman6464/devsync/backend/internal/usecase"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 // mockSpotifyRepo は usecase/repository.SpotifyRepository のモック。
@@ -60,21 +61,21 @@ type spotifyPorts struct {
 }
 
 // setupSpotifyHandler は本物の usecase に port モックを注入した SpotifyHandler を生成する。
-func setupSpotifyHandler() (*SpotifyHandler, *spotifyPorts, *MockGHAuthService) {
+func setupSpotifyHandler() (*SpotifyHandler, *spotifyPorts, *usecase.OAuthStateUseCase) {
 	ports := &spotifyPorts{
 		Users:  new(mockUserPort),
 		Repo:   new(mockSpotifyRepo),
 		Client: new(mockSpotifyAPIClient),
 	}
-	authSvc := new(MockGHAuthService)
+	oauthState := usecase.NewOAuthStateUseCase(testJWTSecret, usecase.OAuthProviderSpotify)
 	h := NewSpotifyHandler(SpotifyUseCases{
 		OAuthURL:         usecase.NewGetSpotifyOAuthURLUseCase(ports.Client),
 		Connect:          usecase.NewConnectSpotifyUseCase(ports.Users, ports.Client),
 		Disconnect:       usecase.NewDisconnectSpotifyUseCase(ports.Users, ports.Repo),
 		CurrentlyPlaying: usecase.NewGetSpotifyCurrentlyPlayingUseCase(ports.Users, ports.Client),
 		RecentlyPlayed:   usecase.NewGetSpotifyRecentlyPlayedUseCase(ports.Users, ports.Client),
-	}, authSvc)
-	return h, ports, authSvc
+	}, oauthState)
+	return h, ports, oauthState
 }
 
 // spotifyLinkedUser は Spotify 連携済みのユーザーを返す。
@@ -91,9 +92,8 @@ func spotifyLinkedUser(expiry time.Time) *model.User {
 // ---------- Connect ----------
 
 func TestSpotifyConnect_Success(t *testing.T) {
-	h, ports, authSvc := setupSpotifyHandler()
-	authSvc.On("GenerateOAuthState", uint(1)).Return("test-state", nil)
-	ports.Client.On("AuthorizeURL", "test-state").Return("https://accounts.spotify.com/authorize?state=test-state")
+	h, ports, _ := setupSpotifyHandler()
+	ports.Client.On("AuthorizeURL", mock.AnythingOfType("string")).Return("https://accounts.spotify.com/authorize?state=test-state")
 
 	r := newRouter(1)
 	r.GET("/spotify/connect", h.Connect)
@@ -101,27 +101,15 @@ func TestSpotifyConnect_Success(t *testing.T) {
 
 	assertStatus(t, w, http.StatusOK)
 	assert.Contains(t, w.Body.String(), "accounts.spotify.com")
-	authSvc.AssertExpectations(t)
 	ports.Client.AssertExpectations(t)
-}
-
-func TestSpotifyConnect_StateError(t *testing.T) {
-	h, ports, authSvc := setupSpotifyHandler()
-	authSvc.On("GenerateOAuthState", uint(1)).Return("", service.ErrBadRequest)
-
-	r := newRouter(1)
-	r.GET("/spotify/connect", h.Connect)
-	w := doRequest(r, http.MethodGet, "/spotify/connect", nil)
-
-	assertStatus(t, w, http.StatusBadRequest)
-	ports.Client.AssertNotCalled(t, "AuthorizeURL", mock.Anything)
 }
 
 // ---------- Callback ----------
 
 func TestSpotifyCallback_Success(t *testing.T) {
 	h, ports, authSvc := setupSpotifyHandler()
-	authSvc.On("ValidateOAuthState", "valid-state").Return(1, nil)
+	state, err := authSvc.Generate(1)
+	require.NoError(t, err)
 	ports.Client.On("ExchangeCode", mock.Anything, "test-code").Return(&model.SpotifyToken{
 		AccessToken: "new-access", RefreshToken: "new-refresh", ExpiresIn: 3600,
 	}, nil)
@@ -133,7 +121,7 @@ func TestSpotifyCallback_Success(t *testing.T) {
 
 	r := newRouter(1)
 	r.GET("/spotify/callback", h.Callback)
-	w := doRequest(r, http.MethodGet, "/spotify/callback?code=test-code&state=valid-state", nil)
+	w := doRequest(r, http.MethodGet, "/spotify/callback?code=test-code&state="+state+"", nil)
 
 	assertStatus(t, w, http.StatusOK)
 	ports.Users.AssertExpectations(t)
@@ -152,8 +140,7 @@ func TestSpotifyCallback_MissingParams(t *testing.T) {
 }
 
 func TestSpotifyCallback_InvalidState(t *testing.T) {
-	h, ports, authSvc := setupSpotifyHandler()
-	authSvc.On("ValidateOAuthState", "bad-state").Return(0, service.ErrBadRequest)
+	h, ports, _ := setupSpotifyHandler()
 
 	r := newRouter(1)
 	r.GET("/spotify/callback", h.Callback)
@@ -165,12 +152,13 @@ func TestSpotifyCallback_InvalidState(t *testing.T) {
 
 func TestSpotifyCallback_ExchangeError(t *testing.T) {
 	h, ports, authSvc := setupSpotifyHandler()
-	authSvc.On("ValidateOAuthState", "valid-state").Return(1, nil)
+	state, err := authSvc.Generate(1)
+	require.NoError(t, err)
 	ports.Client.On("ExchangeCode", mock.Anything, "test-code").Return(nil, service.ErrBadRequest)
 
 	r := newRouter(1)
 	r.GET("/spotify/callback", h.Callback)
-	w := doRequest(r, http.MethodGet, "/spotify/callback?code=test-code&state=valid-state", nil)
+	w := doRequest(r, http.MethodGet, "/spotify/callback?code=test-code&state="+state+"", nil)
 
 	assertStatus(t, w, http.StatusBadRequest)
 	ports.Users.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
@@ -179,7 +167,8 @@ func TestSpotifyCallback_ExchangeError(t *testing.T) {
 // ユーザー情報の保存に失敗したら 500 を返す。
 func TestSpotifyCallback_UpdateError(t *testing.T) {
 	h, ports, authSvc := setupSpotifyHandler()
-	authSvc.On("ValidateOAuthState", "valid-state").Return(1, nil)
+	state, err := authSvc.Generate(1)
+	require.NoError(t, err)
 	ports.Client.On("ExchangeCode", mock.Anything, "test-code").
 		Return(&model.SpotifyToken{AccessToken: "a", RefreshToken: "r", ExpiresIn: 3600}, nil)
 	ports.Users.On("FindByID", mock.Anything, uint(1)).Return(&model.User{ID: 1}, nil)
@@ -187,7 +176,7 @@ func TestSpotifyCallback_UpdateError(t *testing.T) {
 
 	r := newRouter(1)
 	r.GET("/spotify/callback", h.Callback)
-	w := doRequest(r, http.MethodGet, "/spotify/callback?code=test-code&state=valid-state", nil)
+	w := doRequest(r, http.MethodGet, "/spotify/callback?code=test-code&state="+state+"", nil)
 
 	assertStatus(t, w, http.StatusInternalServerError)
 	ports.Users.AssertExpectations(t)

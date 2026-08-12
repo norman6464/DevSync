@@ -8,8 +8,10 @@ import (
 
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 // linkedUser は GitHub 連携済みのユーザーを返す。
@@ -24,10 +26,9 @@ func linkedUser(id uint) *model.User {
 }
 
 func TestGitHubConnect_Success(t *testing.T) {
-	h, ports, authSvc := setupGitHubHandlerMock()
-	authSvc.On("GenerateOAuthState", uint(1)).Return("test-state", nil)
-	ports.Client.On("ConnectAuthorizeURL", "test-state").
-		Return("https://github.com/login/oauth/authorize?state=test-state")
+	h, ports, _ := setupGitHubHandlerMock()
+	ports.Client.On("ConnectAuthorizeURL", mock.AnythingOfType("string")).
+		Return("https://github.com/login/oauth/authorize?state=generated")
 
 	r := newRouter(1)
 	r.GET("/github/connect", h.Connect)
@@ -36,27 +37,14 @@ func TestGitHubConnect_Success(t *testing.T) {
 	assertStatus(t, w, http.StatusOK)
 	body := parseJSON(t, w)
 	assert.NotEmpty(t, body["url"])
-	authSvc.AssertExpectations(t)
 	ports.Client.AssertExpectations(t)
-}
-
-func TestGitHubConnect_StateError(t *testing.T) {
-	h, ports, authSvc := setupGitHubHandlerMock()
-	authSvc.On("GenerateOAuthState", uint(1)).Return("", service.ErrBadRequest)
-
-	r := newRouter(1)
-	r.GET("/github/connect", h.Connect)
-	w := doRequest(r, "GET", "/github/connect", nil)
-
-	assertStatus(t, w, http.StatusBadRequest)
-	authSvc.AssertExpectations(t)
-	ports.Client.AssertNotCalled(t, "ConnectAuthorizeURL", mock.Anything)
 }
 
 // 連携はトークン交換 → ユーザー取得 → 連携情報の保存まで通す。
 func TestGitHubCallback_Success(t *testing.T) {
 	h, ports, authSvc := setupGitHubHandlerMock()
-	authSvc.On("ValidateOAuthState", "valid-state").Return(1, nil)
+	state, err := authSvc.Generate(1)
+	require.NoError(t, err)
 	ports.Client.On("ExchangeCode", mock.Anything, "test-code").Return("access-token", nil)
 	ports.Client.On("GetUser", mock.Anything, "access-token").
 		Return(&model.GitHubUserInfo{ID: 42, Login: "dev", AvatarURL: "https://example.com/a.png"}, nil)
@@ -71,23 +59,23 @@ func TestGitHubCallback_Success(t *testing.T) {
 
 	r := newRouter(1)
 	r.GET("/github/callback", h.Callback)
-	w := doRequest(r, "GET", "/github/callback?code=test-code&state=valid-state", nil)
+	w := doRequest(r, "GET", "/github/callback?code=test-code&state="+state, nil)
 
 	assertStatus(t, w, http.StatusOK)
 	body := parseJSON(t, w)
 	assert.NotEmpty(t, body["message"])
-	authSvc.AssertExpectations(t)
 }
 
 // トークン交換に失敗したらユーザー情報は更新しない。
 func TestGitHubCallback_ExchangeError(t *testing.T) {
 	h, ports, authSvc := setupGitHubHandlerMock()
-	authSvc.On("ValidateOAuthState", "valid-state").Return(1, nil)
+	state, err := authSvc.Generate(1)
+	require.NoError(t, err)
 	ports.Client.On("ExchangeCode", mock.Anything, "test-code").Return("", service.ErrBadRequest)
 
 	r := newRouter(1)
 	r.GET("/github/callback", h.Callback)
-	w := doRequest(r, "GET", "/github/callback?code=test-code&state=valid-state", nil)
+	w := doRequest(r, "GET", "/github/callback?code=test-code&state="+state, nil)
 
 	assertStatus(t, w, http.StatusBadRequest)
 	ports.Users.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
@@ -96,7 +84,8 @@ func TestGitHubCallback_ExchangeError(t *testing.T) {
 // アバターが空なら既存のアバターを維持する。
 func TestGitHubCallback_KeepsAvatarWhenEmpty(t *testing.T) {
 	h, ports, authSvc := setupGitHubHandlerMock()
-	authSvc.On("ValidateOAuthState", "valid-state").Return(1, nil)
+	state, err := authSvc.Generate(1)
+	require.NoError(t, err)
 	ports.Client.On("ExchangeCode", mock.Anything, "test-code").Return("access-token", nil)
 	ports.Client.On("GetUser", mock.Anything, "access-token").Return(&model.GitHubUserInfo{ID: 42, Login: "dev"}, nil)
 	ports.Users.On("FindByID", mock.Anything, uint(1)).Return(&model.User{ID: 1, AvatarURL: "existing.png"}, nil)
@@ -107,7 +96,7 @@ func TestGitHubCallback_KeepsAvatarWhenEmpty(t *testing.T) {
 
 	r := newRouter(1)
 	r.GET("/github/callback", h.Callback)
-	w := doRequest(r, "GET", "/github/callback?code=test-code&state=valid-state", nil)
+	w := doRequest(r, "GET", "/github/callback?code=test-code&state="+state, nil)
 
 	assertStatus(t, w, http.StatusOK)
 }
@@ -123,15 +112,29 @@ func TestGitHubCallback_MissingParams(t *testing.T) {
 }
 
 func TestGitHubCallback_InvalidState(t *testing.T) {
-	h, ports, authSvc := setupGitHubHandlerMock()
-	authSvc.On("ValidateOAuthState", "bad-state").Return(0, service.ErrBadRequest)
+	h, ports, _ := setupGitHubHandlerMock()
 
 	r := newRouter(1)
 	r.GET("/github/callback", h.Callback)
 	w := doRequest(r, "GET", "/github/callback?code=test-code&state=bad-state", nil)
 
 	assertStatus(t, w, http.StatusBadRequest)
-	authSvc.AssertExpectations(t)
+	ports.Client.AssertNotCalled(t, "ExchangeCode", mock.Anything, mock.Anything)
+}
+
+// TestGitHubCallback_RejectsOtherProviderState は他サービス連携の state を GitHub の callback が
+// 受け付けないことをテストする。state は同じ鍵で署名されるため、連携先を区別しないと使い回せてしまう。
+func TestGitHubCallback_RejectsOtherProviderState(t *testing.T) {
+	h, ports, _ := setupGitHubHandlerMock()
+
+	spotifyState, err := usecase.NewOAuthStateUseCase(testJWTSecret, usecase.OAuthProviderSpotify).Generate(1)
+	require.NoError(t, err)
+
+	r := newRouter(1)
+	r.GET("/github/callback", h.Callback)
+	w := doRequest(r, "GET", "/github/callback?code=test-code&state="+spotifyState, nil)
+
+	assertStatus(t, w, http.StatusBadRequest)
 	ports.Client.AssertNotCalled(t, "ExchangeCode", mock.Anything, mock.Anything)
 }
 

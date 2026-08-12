@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
-	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/service"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
@@ -14,17 +13,16 @@ import (
 // oauthCodeMaxLen はOAuth認可コード・stateパラメータの最大許容長。
 const oauthCodeMaxLen = 2048
 
-// AuthServiceInterface は認証サービスの抽象インターフェース。
-type AuthServiceInterface interface {
-	Register(input service.RegisterInput) (*service.AuthResponse, error)
-	Login(input service.LoginInput) (*service.AuthResponse, error)
-	GenerateLoginState() (string, error)
-	ValidateLoginState(state string) error
-	GitHubLogin(ghUser *model.GitHubUserInfo, accessToken string) (*service.AuthResponse, error)
-	GetMe(userID uint) (*model.User, error)
-	RequestPasswordReset(email string) (string, error)
-	ResetPassword(token string, newPassword string) error
-	DeleteAccount(userID uint, password string) error
+// AuthUseCases は AuthHandler が依存する認証の usecase をまとめる。
+type AuthUseCases struct {
+	Register             *usecase.RegisterUserUseCase
+	Login                *usecase.LoginUseCase
+	GitHubLogin          *usecase.GitHubLoginUseCase
+	LoginState           *usecase.GitHubLoginStateUseCase
+	GetMe                *usecase.GetMeUseCase
+	RequestPasswordReset *usecase.RequestPasswordResetUseCase
+	ResetPassword        *usecase.ResetPasswordUseCase
+	DeleteAccount        *usecase.DeleteAccountUseCase
 }
 
 // AuthGitHubUseCases は GitHub ログインで使う GitHub 連携の usecase をまとめる。
@@ -38,13 +36,13 @@ type AuthGitHubUseCases struct {
 // AuthHandler は認証関連のHTTPハンドラ。
 // ユーザー登録・ログイン・GitHub OAuth・パスワードリセット・アカウント削除を処理する。
 type AuthHandler struct {
-	authService AuthServiceInterface // 認証ビジネスロジック
-	github      AuthGitHubUseCases   // GitHub OAuth 連携
+	uc     AuthUseCases       // 認証ビジネスロジック
+	github AuthGitHubUseCases // GitHub OAuth 連携
 }
 
 // NewAuthHandler は新しいAuthHandlerインスタンスを生成する。
-func NewAuthHandler(authService AuthServiceInterface, github AuthGitHubUseCases) *AuthHandler {
-	return &AuthHandler{authService: authService, github: github}
+func NewAuthHandler(uc AuthUseCases, github AuthGitHubUseCases) *AuthHandler {
+	return &AuthHandler{uc: uc, github: github}
 }
 
 // cookieMaxAge はJWTトークンの有効期限と同じ72時間（秒単位）。
@@ -72,15 +70,15 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	// DTOをservice層の入力に変換
-	input := service.RegisterInput{
+	// DTO を usecase の入力に変換する
+	input := usecase.AuthUserInput{
 		Name:     req.Name,
 		Username: req.Username,
 		Email:    req.Email,
 		Password: req.Password,
 	}
 
-	resp, err := h.authService.Register(input)
+	resp, err := h.uc.Register.Execute(c.Request.Context(), input)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -97,13 +95,13 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	// DTOをservice層の入力に変換
-	input := service.LoginInput{
+	// DTO を usecase の入力に変換する
+	input := usecase.LoginInput{
 		Email:    req.Email,
 		Password: req.Password,
 	}
 
-	resp, err := h.authService.Login(input)
+	resp, err := h.uc.Login.Execute(c.Request.Context(), input)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -115,7 +113,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 // GitHubLogin はGitHub OAuthログインのURLを生成して返す。
 func (h *AuthHandler) GitHubLogin(c *gin.Context) {
-	state, err := h.authService.GenerateLoginState()
+	state, err := h.uc.LoginState.Generate()
 	if err != nil {
 		respondError(c, err)
 		return
@@ -136,7 +134,7 @@ func (h *AuthHandler) GitHubLoginCallback(c *gin.Context) {
 		return
 	}
 
-	if err := h.authService.ValidateLoginState(state); err != nil {
+	if err := h.uc.LoginState.Validate(state); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -153,7 +151,7 @@ func (h *AuthHandler) GitHubLoginCallback(c *gin.Context) {
 		return
 	}
 
-	resp, err := h.authService.GitHubLogin(ghUser, accessToken)
+	resp, err := h.uc.GitHubLogin.Execute(c.Request.Context(), ghUser, accessToken)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -169,7 +167,7 @@ func (h *AuthHandler) GitHubLoginCallback(c *gin.Context) {
 // Me は認証済みユーザーの情報を返す。
 func (h *AuthHandler) Me(c *gin.Context) {
 	userID := c.GetUint("userID")
-	user, err := h.authService.GetMe(userID)
+	user, err := h.uc.GetMe.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -186,7 +184,7 @@ func (h *AuthHandler) RequestPasswordReset(c *gin.Context) {
 		return
 	}
 
-	token, err := h.authService.RequestPasswordReset(req.Email)
+	token, err := h.uc.RequestPasswordReset.Execute(c.Request.Context(), req.Email)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -206,7 +204,7 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 		return
 	}
 
-	if err := h.authService.ResetPassword(req.Token, req.NewPassword); err != nil {
+	if err := h.uc.ResetPassword.Execute(c.Request.Context(), req.Token, req.NewPassword); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -230,7 +228,7 @@ func (h *AuthHandler) DeleteAccount(c *gin.Context) {
 		return
 	}
 
-	if err := h.authService.DeleteAccount(userID, req.Password); err != nil {
+	if err := h.uc.DeleteAccount.Execute(c.Request.Context(), userID, req.Password); err != nil {
 		respondError(c, err)
 		return
 	}
