@@ -1,6 +1,10 @@
-package service
+// Package ws は WebSocket 接続の管理と配信を担う。
+// 接続の登録・解除、ユーザー単位・ルーム単位の配信だけを扱い、
+// 何を配信するかというビジネスルールは持たない。
+package ws
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"sync"
@@ -8,44 +12,51 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// WSMessage はWebSocketで送受信されるメッセージ構造体。
-type WSMessage struct {
-	Type       string `json:"type"`                 // メッセージ種別（"message", "group_message"等）
-	SenderID   uint   `json:"sender_id"`            // 送信者ユーザーID
-	ReceiverID uint   `json:"receiver_id"`          // 受信者ユーザーID（DM用）
-	RoomID     uint   `json:"room_id,omitempty"`    // チャットルームID（グループ用）
-	Content    string `json:"content"`              // メッセージ本文
+// RoomMemberLookup はルームの参加者を引くために、ハブが必要とする最小の契約。
+type RoomMemberLookup interface {
+	// MemberUserIDs は指定ルームの参加者のユーザー ID を返す。
+	MemberUserIDs(ctx context.Context, roomID uint) ([]uint, error)
+}
+
+// Message は WebSocket で送受信されるメッセージ。
+type Message struct {
+	Type       string `json:"type"`                  // メッセージ種別（"message", "group_message"等）
+	SenderID   uint   `json:"sender_id"`             // 送信者ユーザーID
+	ReceiverID uint   `json:"receiver_id"`           // 受信者ユーザーID（DM用）
+	RoomID     uint   `json:"room_id,omitempty"`     // チャットルームID（グループ用）
+	Content    string `json:"content"`               // メッセージ本文
 	SenderName string `json:"sender_name,omitempty"` // 送信者名
 }
 
-// Client はWebSocket接続を持つ個別クライアントを表す。
+// Client は WebSocket 接続を持つ個別クライアントを表す。
 type Client struct {
 	Hub    *Hub            // 所属するHub
 	UserID uint            // クライアントのユーザーID
 	Conn   *websocket.Conn // WebSocketコネクション
-	Send   chan []byte      // 送信キュー
+	Send   chan []byte     // 送信キュー
 }
 
-// Hub はWebSocketクライアントを一元管理する中央ハブ。
+// Hub は WebSocket クライアントを一元管理する中央ハブ。
 // クライアントの登録・解除と、ユーザー/ルームへのメッセージ配信を担当する。
 type Hub struct {
-	clients        map[uint]*Client          // ユーザーID → クライアントのマップ
-	register       chan *Client              // クライアント登録チャネル
-	unregister     chan *Client              // クライアント解除チャネル
-	mu             sync.RWMutex             // clientsマップの排他制御
-	GetRoomMembers func(roomID uint) []uint // ルームメンバー取得用コールバック
+	clients    map[uint]*Client // ユーザーID → クライアントのマップ
+	register   chan *Client     // クライアント登録チャネル
+	unregister chan *Client     // クライアント解除チャネル
+	mu         sync.RWMutex     // clientsマップの排他制御
+	members    RoomMemberLookup // ルームメンバーの取得先
 }
 
-// NewHub は新しいHubインスタンスを生成する。
-func NewHub() *Hub {
+// NewHub は新しい Hub インスタンスを生成する。
+func NewHub(members RoomMemberLookup) *Hub {
 	return &Hub{
 		clients:    make(map[uint]*Client),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
+		members:    members,
 	}
 }
 
-// Run はHubのメインイベントループを起動する。
+// Run は Hub のメインイベントループを起動する。
 // register/unregisterチャネルからクライアントの登録・解除を処理する。
 // 通常はgoroutineとして実行される。
 func (h *Hub) Run() {
@@ -95,11 +106,7 @@ func (h *Hub) SendToUser(userID uint, message []byte) {
 
 // IsRoomMember は指定ユーザーが指定ルームのメンバーかどうかを確認する。
 func (h *Hub) IsRoomMember(roomID uint, userID uint) bool {
-	if h.GetRoomMembers == nil {
-		return false
-	}
-	memberIDs := h.GetRoomMembers(roomID)
-	for _, memberID := range memberIDs {
+	for _, memberID := range h.roomMembers(roomID) {
 		if memberID == userID {
 			return true
 		}
@@ -109,15 +116,26 @@ func (h *Hub) IsRoomMember(roomID uint, userID uint) bool {
 
 // SendToRoom はチャットルームの全メンバー（送信者を除く）にメッセージを配信する。
 func (h *Hub) SendToRoom(roomID uint, senderID uint, message []byte) {
-	if h.GetRoomMembers == nil {
-		return
-	}
-	memberIDs := h.GetRoomMembers(roomID)
-	for _, memberID := range memberIDs {
+	for _, memberID := range h.roomMembers(roomID) {
 		if memberID != senderID {
 			h.SendToUser(memberID, message)
 		}
 	}
+}
+
+// roomMembers はルームの参加者を取得する。
+// 取得に失敗した場合は空扱いにして、配信も認可も通さない。
+// WebSocket 接続は個々の HTTP リクエストより長く生きるため、ここが ctx の起点になる。
+func (h *Hub) roomMembers(roomID uint) []uint {
+	if h.members == nil {
+		return nil
+	}
+	memberIDs, err := h.members.MemberUserIDs(context.Background(), roomID)
+	if err != nil {
+		log.Printf("websocket: ルーム %d のメンバー取得に失敗: %v", roomID, err)
+		return nil
+	}
+	return memberIDs
 }
 
 // ReadPump はWebSocketからメッセージを読み取り、適切な宛先に配信する。
@@ -135,7 +153,7 @@ func (c *Client) ReadPump() {
 			break
 		}
 
-		var msg WSMessage
+		var msg Message
 		if err := json.Unmarshal(message, &msg); err != nil {
 			continue
 		}

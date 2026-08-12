@@ -6,14 +6,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/infra/ws"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
 // WebSocketHandler はWebSocket関連のHTTPハンドラ。
 // リアルタイム通信のためのWebSocket接続確立を処理する。
 type WebSocketHandler struct {
-	hub            *service.Hub
+	hub            *ws.Hub
 	validateToken  *usecase.ValidateAuthTokenUseCase
 	allowedOrigins map[string]bool // CORS設定と連動した許可オリジン
 	upgrader       websocket.Upgrader
@@ -21,7 +21,7 @@ type WebSocketHandler struct {
 
 // NewWebSocketHandler は新しいWebSocketHandlerインスタンスを生成する。
 // allowedOriginsにはCORS設定のオリジン一覧を渡す。
-func NewWebSocketHandler(hub *service.Hub, validateToken *usecase.ValidateAuthTokenUseCase, allowedOrigins []string) *WebSocketHandler {
+func NewWebSocketHandler(hub *ws.Hub, validateToken *usecase.ValidateAuthTokenUseCase, allowedOrigins []string) *WebSocketHandler {
 	originsMap := make(map[string]bool, len(allowedOrigins))
 	for _, o := range allowedOrigins {
 		originsMap[o] = true
@@ -77,7 +77,7 @@ func (h *WebSocketHandler) HandleWebSocket(c *gin.Context) {
 	}
 
 	// クライアントを作成してハブに登録
-	client := &service.Client{
+	client := &ws.Client{
 		Hub:    h.hub,
 		UserID: userID,
 		Conn:   conn,
