@@ -1,61 +1,60 @@
-package service
+package usecase
 
 import (
+	"context"
+
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/repository"
+	"github.com/norman6464/devsync/backend/internal/usecase/repository"
 )
 
-// BadgeResult は個別バッジの獲得状況を表す。
-type BadgeResult struct {
-	ID          string `json:"id"`          // バッジ識別子
-	Name        string `json:"name"`        // バッジ名（i18nキー）
-	Description string `json:"description"` // バッジ説明（i18nキー）
-	Category    string `json:"category"`    // バッジカテゴリ
-	Earned      bool   `json:"earned"`      // 獲得済みフラグ
+// GetUserBadgesUseCase は指定ユーザーの全バッジと獲得状況を返す。
+type GetUserBadgesUseCase struct {
+	stats repository.BadgeStatsReader
 }
 
-// BadgeService はバッジ判定のビジネスロジックを提供する。
-// 各種統計を集計し、閾値ベースでバッジの獲得状況を評価する。
-type BadgeService struct {
-	repo                repository.BadgeRepositoryInterface
-	notificationService NotificationServiceInterface
+// NewGetUserBadgesUseCase は GetUserBadgesUseCase を生成する。
+func NewGetUserBadgesUseCase(stats repository.BadgeStatsReader) *GetUserBadgesUseCase {
+	return &GetUserBadgesUseCase{stats: stats}
 }
 
-// NewBadgeService は新しいBadgeServiceインスタンスを生成する。
-func NewBadgeService(repo repository.BadgeRepositoryInterface, notificationService NotificationServiceInterface) *BadgeService {
-	return &BadgeService{repo: repo, notificationService: notificationService}
-}
-
-// GetUserBadges は指定ユーザーの全バッジと獲得状況を返す。
-// 統計を集計した後、全18バッジを閾値で評価する。
-func (s *BadgeService) GetUserBadges(userID uint) ([]BadgeResult, error) {
-	stats, err := s.repo.GetBadgeStats(userID)
+// Execute は統計を集計し、全バッジの獲得状況を評価して返す。
+func (uc *GetUserBadgesUseCase) Execute(ctx context.Context, userID uint) ([]model.BadgeResult, error) {
+	stats, err := uc.stats.GetBadgeStats(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
-	return evaluateBadges(stats), nil
+	return EvaluateBadges(stats), nil
 }
 
-// NotifyBadgeEarned は新しいバッジ獲得の通知を作成する。
-func (s *BadgeService) NotifyBadgeEarned(userID uint, badgeID string) error {
-	notification := &model.Notification{
+// NotifyBadgeEarnedUseCase はバッジ獲得の通知を作成する。
+type NotifyBadgeEarnedUseCase struct {
+	notifications repository.NotificationCreator
+}
+
+// NewNotifyBadgeEarnedUseCase は NotifyBadgeEarnedUseCase を生成する。
+func NewNotifyBadgeEarnedUseCase(notifications repository.NotificationCreator) *NotifyBadgeEarnedUseCase {
+	return &NotifyBadgeEarnedUseCase{notifications: notifications}
+}
+
+// Execute は本人宛のバッジ獲得通知を作成する。
+func (uc *NotifyBadgeEarnedUseCase) Execute(ctx context.Context, userID uint, badgeID string) error {
+	return uc.notifications.Create(ctx, &model.Notification{
 		UserID:  userID,
 		Type:    model.NotificationTypeBadge,
 		ActorID: userID,
 		BadgeID: &badgeID,
-	}
-	return s.notificationService.CreateNotification(notification)
+	})
 }
 
-// evaluateBadges は統計データに基づいて全18バッジの獲得状況を評価する。
-func evaluateBadges(stats *model.BadgeStats) []BadgeResult {
+// EvaluateBadges は統計データに基づいて全 18 バッジの獲得状況を評価する。
+func EvaluateBadges(stats *model.BadgeStats) []model.BadgeResult {
 	// GitHubストリークと学習ログストリークの大きい方を使用
 	combinedStreak := stats.CurrentStreak
 	if stats.LearningLogStreak > combinedStreak {
 		combinedStreak = stats.LearningLogStreak
 	}
 
-	return []BadgeResult{
+	return []model.BadgeResult{
 		// コントリビューションバッジ（1, 50, 200, 500, 1000回）
 		{ID: "first-commit", Name: "badges.firstCommit", Description: "badges.firstCommitDesc", Category: "contribution", Earned: stats.TotalContributions >= 1},
 		{ID: "contributor", Name: "badges.contributor", Description: "badges.contributorDesc", Category: "contribution", Earned: stats.TotalContributions >= 50},

@@ -827,23 +827,8 @@ func setupFollowHandler() (*FollowHandler, *mockFollowRepo) {
 // Project は DIP へ移行済み。テストは project_test.go で
 // 「本物の usecase + port モック」を組み立てる。
 
-// MockBadgeService は BadgeServiceInterface のモック実装。
-type MockBadgeService struct{ mock.Mock }
-
-func (m *MockBadgeService) GetUserBadges(userID uint) ([]service.BadgeResult, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]service.BadgeResult), args.Error(1)
-}
-func (m *MockBadgeService) NotifyBadgeEarned(userID uint, badgeID string) error {
-	return m.Called(userID, badgeID).Error(0)
-}
-
-// setupBadgeHandler はBadgeHandlerテスト用のセットアップを行う。
-func setupBadgeHandler() (*BadgeHandler, *MockBadgeService) {
-	svc := new(MockBadgeService)
-	h := NewBadgeHandler(svc)
-	return h, svc
-}
+// Badge は DIP へ移行済み。テストは badge_test.go で
+// 「本物の usecase + port モック」を組み立てる。
 
 // RankingHandler のテスト用モックは ranking_test.go（DIP 版・port モック）に置く。
 

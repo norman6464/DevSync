@@ -163,7 +163,8 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	levelRepo := repository.NewLevelRepository(db)
 	// 学習分析はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	analyticsPort := persistence.NewLearningAnalyticsRepository(db)
-	badgeRepo := repository.NewBadgeRepository(db)
+	// バッジはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	badgePort := persistence.NewBadgeRepository(db)
 	// レコメンドはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	recommendationRepo := persistence.NewRecommendationRepository(db)
 
@@ -211,7 +212,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	messageService := service.NewMessageService(messageRepo, notificationService)
 	// AtCoder 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、HTTP 実装は adapter/external。
 	atcoderClient := external.NewAtCoderClient()
-	badgeService := service.NewBadgeService(badgeRepo, notificationService)
 	levelService := service.NewLevelService(levelRepo, notificationService)
 	createNote := usecase.NewCreateNoteUseCase(notePort)
 	// 学習ログはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
@@ -464,7 +464,10 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewConnectAtCoderUseCase(userPort, atcoderClient),
 		usecase.NewDisconnectAtCoderUseCase(userPort),
 	)
-	c.BadgeHandler = handler.NewBadgeHandler(badgeService)
+	c.BadgeHandler = handler.NewBadgeHandler(
+		usecase.NewGetUserBadgesUseCase(badgePort),
+		usecase.NewNotifyBadgeEarnedUseCase(persistence.NewNotificationCreator(db)),
+	)
 	c.LearningLogHandler = handler.NewLearningLogHandler(
 		createLearningLog,
 		usecase.NewBatchCreateLearningLogsUseCase(learningLogPort),

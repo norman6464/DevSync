@@ -215,12 +215,6 @@ type LevelRepositoryInterface interface {
 	GetXPStats(userID uint) (*model.XPStats, error)
 }
 
-// BadgeRepositoryInterface はバッジ判定に必要な統計データ操作の契約を定義する。
-// 複数テーブルからの集計をカプセル化する。
-type BadgeRepositoryInterface interface {
-	GetBadgeStats(userID uint) (*model.BadgeStats, error)
-}
-
 // AIConversationRepositoryInterface はAI会話セッションデータ操作の契約を定義する。
 // LLMとの会話管理とレート制限用のメッセージカウントを含む。
 type AIConversationRepositoryInterface interface {

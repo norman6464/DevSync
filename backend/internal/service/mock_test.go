@@ -1163,24 +1163,7 @@ func (m *MockLevelRepository) GetXPStats(userID uint) (*model.XPStats, error) {
 var _ EmailSenderInterface = (*MockEmailSender)(nil)
 var _ usecaserepo.WeeklyActivityReportReader = (*MockWeeklyActivityReportReader)(nil)
 var _ repository.LevelRepositoryInterface = (*MockLevelRepository)(nil)
-var _ repository.BadgeRepositoryInterface = (*MockBadgeRepository)(nil)
 var _ NotificationServiceInterface = (*MockNotificationService)(nil)
-
-// ============================================================
-// MockBadgeRepository は repository.BadgeRepositoryInterface のテスト用モック実装。
-// ============================================================
-
-type MockBadgeRepository struct {
-	mock.Mock
-}
-
-func (m *MockBadgeRepository) GetBadgeStats(userID uint) (*model.BadgeStats, error) {
-	args := m.Called(userID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.BadgeStats), args.Error(1)
-}
 
 // ============================================================
 // MockNotificationService は NotificationServiceInterface のテスト用モック実装。
