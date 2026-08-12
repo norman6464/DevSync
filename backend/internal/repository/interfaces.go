@@ -148,8 +148,3 @@ type AIConversationRepositoryInterface interface {
 	CountTodayMessages(userID uint) (int64, error)
 	DeleteConversation(id, userID uint) error
 }
-
-// SpotifyRepositoryInterface はSpotify連携データ操作の契約を定義する。
-type SpotifyRepositoryInterface interface {
-	DeleteUserData(userID uint) error
-}

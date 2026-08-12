@@ -4,17 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// SpotifyServiceInterface はSpotifyサービスの抽象インターフェース。
-type SpotifyServiceInterface interface {
-	GetOAuthURL(state string) string
-	ConnectSpotify(userID uint, code string) error
-	DisconnectSpotify(userID uint) error
-	GetCurrentlyPlaying(userID uint) (*service.SpotifyCurrentlyPlaying, error)
-	GetRecentlyPlayed(userID uint) ([]service.SpotifyRecentTrackResponse, error)
-}
 
 // SpotifyAuthServiceInterface はSpotifyHandler用の認証サービスの抽象インターフェース。
 type SpotifyAuthServiceInterface interface {
@@ -22,21 +13,24 @@ type SpotifyAuthServiceInterface interface {
 	ValidateOAuthState(state string) (uint, error)
 }
 
+// SpotifyUseCases は SpotifyHandler が依存する Spotify 連携の usecase をまとめる。
+type SpotifyUseCases struct {
+	OAuthURL         *usecase.GetSpotifyOAuthURLUseCase
+	Connect          *usecase.ConnectSpotifyUseCase
+	Disconnect       *usecase.DisconnectSpotifyUseCase
+	CurrentlyPlaying *usecase.GetSpotifyCurrentlyPlayingUseCase
+	RecentlyPlayed   *usecase.GetSpotifyRecentlyPlayedUseCase
+}
+
 // SpotifyHandler はSpotify連携関連のHTTPハンドラ。
 type SpotifyHandler struct {
-	spotifyService SpotifyServiceInterface
-	authService    SpotifyAuthServiceInterface
+	uc          SpotifyUseCases
+	authService SpotifyAuthServiceInterface
 }
 
 // NewSpotifyHandler は新しいSpotifyHandlerインスタンスを生成する。
-func NewSpotifyHandler(
-	spotifyService SpotifyServiceInterface,
-	authService SpotifyAuthServiceInterface,
-) *SpotifyHandler {
-	return &SpotifyHandler{
-		spotifyService: spotifyService,
-		authService:    authService,
-	}
+func NewSpotifyHandler(uc SpotifyUseCases, authService SpotifyAuthServiceInterface) *SpotifyHandler {
+	return &SpotifyHandler{uc: uc, authService: authService}
 }
 
 // Connect はSpotify OAuth認証URLを生成して返す。
@@ -47,7 +41,7 @@ func (h *SpotifyHandler) Connect(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	url := h.spotifyService.GetOAuthURL(state)
+	url := h.uc.OAuthURL.Execute(state)
 	respondOK(c, dto.URLResponse{URL: url})
 }
 
@@ -67,7 +61,7 @@ func (h *SpotifyHandler) Callback(c *gin.Context) {
 		return
 	}
 
-	if err := h.spotifyService.ConnectSpotify(userID, code); err != nil {
+	if err := h.uc.Connect.Execute(c.Request.Context(), userID, code); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -82,7 +76,7 @@ func (h *SpotifyHandler) GetCurrentlyPlaying(c *gin.Context) {
 		return
 	}
 
-	track, err := h.spotifyService.GetCurrentlyPlaying(userID)
+	track, err := h.uc.CurrentlyPlaying.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -97,7 +91,7 @@ func (h *SpotifyHandler) GetRecentlyPlayed(c *gin.Context) {
 		return
 	}
 
-	tracks, err := h.spotifyService.GetRecentlyPlayed(userID)
+	tracks, err := h.uc.RecentlyPlayed.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -109,7 +103,7 @@ func (h *SpotifyHandler) GetRecentlyPlayed(c *gin.Context) {
 func (h *SpotifyHandler) Disconnect(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	if err := h.spotifyService.DisconnectSpotify(userID); err != nil {
+	if err := h.uc.Disconnect.Execute(c.Request.Context(), userID); err != nil {
 		respondError(c, err)
 		return
 	}

@@ -933,20 +933,7 @@ func (m *MockWeeklyReportSender) SendAllWeeklyReports() error {
 	return args.Error(0)
 }
 
-// ============================================================
-// MockSpotifyRepository は repository.SpotifyRepositoryInterface のテスト用モック実装。
-// ============================================================
-
-type MockSpotifyRepository struct {
-	mock.Mock
-}
-
-var _ repository.SpotifyRepositoryInterface = (*MockSpotifyRepository)(nil)
-
-func (m *MockSpotifyRepository) DeleteUserData(userID uint) error {
-	args := m.Called(userID)
-	return args.Error(0)
-}
+// (MockSpotifyRepository は spotify の DIP 移行に伴い撤去)
 
 // (MockProjectMilestoneRepository は project_milestone の DIP 移行に伴い撤去)
 
