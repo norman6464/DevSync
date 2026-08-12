@@ -176,6 +176,23 @@ func TestSpotifyCallback_ExchangeError(t *testing.T) {
 	ports.Users.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
 }
 
+// ユーザー情報の保存に失敗したら 500 を返す。
+func TestSpotifyCallback_UpdateError(t *testing.T) {
+	h, ports, authSvc := setupSpotifyHandler()
+	authSvc.On("ValidateOAuthState", "valid-state").Return(1, nil)
+	ports.Client.On("ExchangeCode", mock.Anything, "test-code").
+		Return(&model.SpotifyToken{AccessToken: "a", RefreshToken: "r", ExpiresIn: 3600}, nil)
+	ports.Users.On("FindByID", mock.Anything, uint(1)).Return(&model.User{ID: 1}, nil)
+	ports.Users.On("Update", mock.Anything, mock.Anything).Return(errors.New("db error"))
+
+	r := newRouter(1)
+	r.GET("/spotify/callback", h.Callback)
+	w := doRequest(r, http.MethodGet, "/spotify/callback?code=test-code&state=valid-state", nil)
+
+	assertStatus(t, w, http.StatusInternalServerError)
+	ports.Users.AssertExpectations(t)
+}
+
 // ---------- 再生情報 ----------
 
 // 有効期限に余裕があればトークンを更新せずに使う。

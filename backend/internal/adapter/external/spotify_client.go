@@ -47,13 +47,15 @@ func NewSpotifyClient(clientID, clientSecret, redirectURL string) repository.Spo
 var _ repository.SpotifyAPIClient = (*spotifyClient)(nil)
 
 // AuthorizeURL は連携用の OAuth 認可 URL を返す。
+// クライアント ID と state も含めてすべてのパラメータをエスケープする。
 func (c *spotifyClient) AuthorizeURL(state string) string {
-	return spotifyAuthorizeURL + "?" +
-		"client_id=" + c.clientID +
-		"&response_type=code" +
-		"&redirect_uri=" + url.QueryEscape(c.redirectURL) +
-		"&scope=" + url.QueryEscape(spotifyScopes) +
-		"&state=" + state
+	q := url.Values{}
+	q.Set("client_id", c.clientID)
+	q.Set("response_type", "code")
+	q.Set("redirect_uri", c.redirectURL)
+	q.Set("scope", spotifyScopes)
+	q.Set("state", state)
+	return spotifyAuthorizeURL + "?" + q.Encode()
 }
 
 // ExchangeCode は認可コードをトークンに交換する。
