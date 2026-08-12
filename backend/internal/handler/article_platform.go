@@ -1,30 +1,33 @@
 package handler
 
 import (
+	"context"
+
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
 )
 
-// ArticlePlatformServiceInterface は記事プラットフォーム（Qiita/Zenn等）サービスの共通インターフェース。
-type ArticlePlatformServiceInterface[A any, S any] interface {
-	Connect(userID uint, username string) (int, error)
-	Disconnect(userID uint) error
-	Sync(userID uint) (int, error)
-	GetArticles(userID uint) ([]A, error)
-	GetStats(userID uint) (*S, error)
+// ArticlePlatformOps は記事プラットフォーム（Qiita/Zenn等）連携ハンドラーが呼び出す操作の集合。
+// 移行済みのスライスは usecase のメソッド値をそのまま渡せる。
+type ArticlePlatformOps[A any, S any] struct {
+	Connect     func(ctx context.Context, userID uint, username string) (int, error)
+	Disconnect  func(ctx context.Context, userID uint) error
+	Sync        func(ctx context.Context, userID uint) (int, error)
+	GetArticles func(ctx context.Context, userID uint) ([]A, error)
+	GetStats    func(ctx context.Context, userID uint) (*S, error)
 }
 
 // ArticlePlatformHandler は記事プラットフォーム連携の共通HTTPハンドラ。
 // プラットフォームアカウントの接続・切断・記事同期・統計情報の取得を処理する。
 type ArticlePlatformHandler[A any, S any] struct {
-	service ArticlePlatformServiceInterface[A, S]
-	name    string
+	ops  ArticlePlatformOps[A, S]
+	name string
 }
 
 // NewArticlePlatformHandler は新しいArticlePlatformHandlerインスタンスを生成する。
-func NewArticlePlatformHandler[A any, S any](s ArticlePlatformServiceInterface[A, S], name string) *ArticlePlatformHandler[A, S] {
-	return &ArticlePlatformHandler[A, S]{service: s, name: name}
+func NewArticlePlatformHandler[A any, S any](name string, ops ArticlePlatformOps[A, S]) *ArticlePlatformHandler[A, S] {
+	return &ArticlePlatformHandler[A, S]{ops: ops, name: name}
 }
 
 // Connect はプラットフォームのユーザー名を設定し、記事を同期する。
@@ -36,7 +39,7 @@ func (h *ArticlePlatformHandler[A, S]) Connect(c *gin.Context) {
 		return
 	}
 
-	count, err := h.service.Connect(userID, input.Username)
+	count, err := h.ops.Connect(c.Request.Context(), userID, input.Username)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -52,7 +55,7 @@ func (h *ArticlePlatformHandler[A, S]) Connect(c *gin.Context) {
 func (h *ArticlePlatformHandler[A, S]) Disconnect(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	if err := h.service.Disconnect(userID); err != nil {
+	if err := h.ops.Disconnect(c.Request.Context(), userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -64,7 +67,7 @@ func (h *ArticlePlatformHandler[A, S]) Disconnect(c *gin.Context) {
 func (h *ArticlePlatformHandler[A, S]) Sync(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	count, err := h.service.Sync(userID)
+	count, err := h.ops.Sync(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -83,7 +86,7 @@ func (h *ArticlePlatformHandler[A, S]) GetArticles(c *gin.Context) {
 		return
 	}
 
-	articles, err := h.service.GetArticles(userID)
+	articles, err := h.ops.GetArticles(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -99,7 +102,7 @@ func (h *ArticlePlatformHandler[A, S]) GetStats(c *gin.Context) {
 		return
 	}
 
-	stats, err := h.service.GetStats(userID)
+	stats, err := h.ops.GetStats(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return

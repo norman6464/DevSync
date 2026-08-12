@@ -122,7 +122,9 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	rankingRepo := persistence.NewRankingRepository(db)
 	notificationRepo := repository.NewNotificationRepository(db)
 	passwordResetRepo := repository.NewPasswordResetRepository(db)
-	zennRepo := repository.NewZennRepository(db)
+	// Zenn 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence と adapter/external。
+	zennPort := persistence.NewZennRepository(db)
+	zennClient := external.NewZennClient()
 	qiitaRepo := repository.NewQiitaRepository(db)
 	learningGoalRepo := repository.NewLearningGoalRepository(db)
 	// アクティビティレポートはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
@@ -192,7 +194,9 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 
 	// ドメインサービス
 	githubService := service.NewGitHubService(cfg, userRepo, githubRepo)
-	zennService := service.NewZennService(userRepo, zennRepo)
+	connectZenn := usecase.NewConnectZennUseCase(userPort, zennPort, zennClient)
+	disconnectZenn := usecase.NewDisconnectZennUseCase(userPort, zennPort)
+	syncZenn := usecase.NewSyncZennUseCase(userPort, zennPort, zennClient)
 	qiitaService := service.NewQiitaService(userRepo, qiitaRepo)
 	postService := service.NewPostService(postRepo, notificationService)
 	// 学習目標はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
@@ -293,8 +297,32 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	}
 	c.UploadHandler = uploadHandler
 	c.NotificationHandler = handler.NewNotificationHandler(notificationService)
-	c.ZennHandler = handler.NewArticlePlatformHandler[model.ZennArticle, model.ZennStats](zennService, "Zenn")
-	c.QiitaHandler = handler.NewArticlePlatformHandler[model.QiitaArticle, model.QiitaStats](qiitaService, "Qiita")
+	c.ZennHandler = handler.NewArticlePlatformHandler("Zenn", handler.ArticlePlatformOps[model.ZennArticle, model.ZennStats]{
+		Connect:     connectZenn.Execute,
+		Disconnect:  disconnectZenn.Execute,
+		Sync:        syncZenn.Execute,
+		GetArticles: usecase.NewListZennArticlesUseCase(zennPort).Execute,
+		GetStats:    usecase.NewGetZennStatsUseCase(zennPort).Execute,
+	})
+	// Qiita は未移行のため、ctx を受け取れない旧サービスをここで橋渡しする。
+	// Qiita スライスの移行時にこの受け渡しは撤去する。
+	c.QiitaHandler = handler.NewArticlePlatformHandler("Qiita", handler.ArticlePlatformOps[model.QiitaArticle, model.QiitaStats]{
+		Connect: func(_ context.Context, userID uint, username string) (int, error) {
+			return qiitaService.Connect(userID, username)
+		},
+		Disconnect: func(_ context.Context, userID uint) error {
+			return qiitaService.Disconnect(userID)
+		},
+		Sync: func(_ context.Context, userID uint) (int, error) {
+			return qiitaService.Sync(userID)
+		},
+		GetArticles: func(_ context.Context, userID uint) ([]model.QiitaArticle, error) {
+			return qiitaService.GetArticles(userID)
+		},
+		GetStats: func(_ context.Context, userID uint) (*model.QiitaStats, error) {
+			return qiitaService.GetStats(userID)
+		},
+	})
 	c.LearningGoalHandler = handler.NewLearningGoalHandler(
 		usecase.NewCreateLearningGoalUseCase(learningGoalPort),
 		usecase.NewGetLearningGoalUseCase(learningGoalPort),
