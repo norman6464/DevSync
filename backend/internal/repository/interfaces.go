@@ -3,16 +3,8 @@
 package repository
 
 import (
-	"time"
-
 	"github.com/norman6464/devsync/backend/internal/model"
 )
-
-// PostAdvancedSearchRepositoryInterface は投稿の高度な検索フィルター機能の契約を定義する。
-// タグ・日付範囲・ソート順による絞り込みを提供する。
-type PostAdvancedSearchRepositoryInterface interface {
-	SearchWithFilter(query string, tags []string, sortBy string, dateFrom, dateTo *time.Time, limit, offset int) ([]model.Post, int64, error)
-}
 
 // UserRepositoryInterface はユーザーデータ操作の契約を定義する。
 type UserRepositoryInterface interface {
