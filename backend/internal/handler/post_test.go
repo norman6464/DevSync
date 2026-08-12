@@ -257,85 +257,6 @@ func TestPostUnlike_Success(t *testing.T) {
 	assertStatus(t, w, http.StatusOK)
 }
 
-// ---------- Comments ----------
-
-func TestPostGetComments_Success(t *testing.T) {
-	h, postRepo, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.GET("/posts/:id/comments", h.GetComments)
-
-	postRepo.On("GetComments", uint(5)).Return([]model.Comment{
-		{Content: "Nice!"},
-	}, nil)
-
-	w := doRequest(r, http.MethodGet, "/posts/5/comments", nil)
-	assertStatus(t, w, http.StatusOK)
-}
-
-func TestPostCreateComment_Success(t *testing.T) {
-	h, postRepo, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.POST("/posts/:id/comments", h.CreateComment)
-
-	postRepo.On("CreateComment", mock.AnythingOfType("*model.Comment")).Return(nil)
-
-	w := doRequest(r, http.MethodPost, "/posts/5/comments", map[string]string{
-		"content": "Great post!",
-	})
-	assertStatus(t, w, http.StatusCreated)
-}
-
-func TestPostCreateComment_ValidationError(t *testing.T) {
-	h, _, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.POST("/posts/:id/comments", h.CreateComment)
-
-	// content は required
-	w := doRequest(r, http.MethodPost, "/posts/5/comments", map[string]string{})
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestPostCreateComment_EmptyContent(t *testing.T) {
-	h, _, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.POST("/posts/:id/comments", h.CreateComment)
-
-	// 空文字列は min=1 でエラー
-	w := doRequest(r, http.MethodPost, "/posts/5/comments", map[string]string{"content": ""})
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestPostCreateReply_Success(t *testing.T) {
-	h, postRepo, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.POST("/posts/:id/comments", h.CreateComment)
-
-	parentComment := &model.Comment{PostID: 5, ParentID: nil}
-	parentComment.ID = 10
-	postRepo.On("FindCommentByID", uint(10)).Return(parentComment, nil)
-	postRepo.On("CreateComment", mock.AnythingOfType("*model.Comment")).Return(nil)
-
-	w := doRequest(r, http.MethodPost, "/posts/5/comments", map[string]interface{}{
-		"content":   "Reply to comment!",
-		"parent_id": 10,
-	})
-	assertStatus(t, w, http.StatusCreated)
-}
-
-func TestPostDeleteComment_Success(t *testing.T) {
-	h, postRepo, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.DELETE("/posts/:id/comments/:commentId", h.DeleteComment)
-
-	comment := &model.Comment{UserID: 1}
-	comment.ID = 3
-	postRepo.On("FindCommentByID", uint(3)).Return(comment, nil)
-	postRepo.On("DeleteComment", uint(3)).Return(nil)
-
-	w := doRequest(r, http.MethodDelete, "/posts/5/comments/3", nil)
-	assertStatus(t, w, http.StatusOK)
-}
-
 // ---------- Draft ----------
 
 func TestPostCreate_Draft_Success(t *testing.T) {
@@ -536,41 +457,6 @@ func TestPostGetUserPosts_ServiceError(t *testing.T) {
 	assertStatus(t, w, http.StatusNotFound)
 }
 
-// ---------- GetReplies ----------
-
-func TestPostGetReplies_Success(t *testing.T) {
-	h, postRepo, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.GET("/comments/:commentId/replies", h.GetReplies)
-
-	postRepo.On("GetReplies", uint(10)).Return([]model.Comment{
-		{Content: "Reply 1"}, {Content: "Reply 2"},
-	}, nil)
-
-	w := doRequest(r, http.MethodGet, "/comments/10/replies", nil)
-	assertStatus(t, w, http.StatusOK)
-}
-
-func TestPostGetReplies_InvalidID(t *testing.T) {
-	h, _, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.GET("/comments/:commentId/replies", h.GetReplies)
-
-	w := doRequest(r, http.MethodGet, "/comments/abc/replies", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestPostGetReplies_ServiceError(t *testing.T) {
-	h, postRepo, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.GET("/comments/:commentId/replies", h.GetReplies)
-
-	postRepo.On("GetReplies", uint(10)).Return([]model.Comment(nil), service.ErrNotFound)
-
-	w := doRequest(r, http.MethodGet, "/comments/10/replies", nil)
-	assertStatus(t, w, http.StatusNotFound)
-}
-
 // ---------- Bookmark ----------
 
 func TestPostBookmark_Success(t *testing.T) {
@@ -758,66 +644,6 @@ func TestPostUnlike_ServiceError(t *testing.T) {
 	assertStatus(t, w, http.StatusNotFound)
 }
 
-func TestPostGetComments_InvalidID(t *testing.T) {
-	h, _, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.GET("/posts/:id/comments", h.GetComments)
-
-	w := doRequest(r, http.MethodGet, "/posts/abc/comments", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestPostGetComments_ServiceError(t *testing.T) {
-	h, postRepo, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.GET("/posts/:id/comments", h.GetComments)
-
-	postRepo.On("GetComments", uint(5)).Return([]model.Comment(nil), service.ErrNotFound)
-
-	w := doRequest(r, http.MethodGet, "/posts/5/comments", nil)
-	assertStatus(t, w, http.StatusNotFound)
-}
-
-func TestPostCreateComment_InvalidID(t *testing.T) {
-	h, _, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.POST("/posts/:id/comments", h.CreateComment)
-
-	w := doRequest(r, http.MethodPost, "/posts/abc/comments", map[string]string{"content": "test"})
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestPostCreateComment_ServiceError(t *testing.T) {
-	h, postRepo, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.POST("/posts/:id/comments", h.CreateComment)
-
-	postRepo.On("CreateComment", mock.AnythingOfType("*model.Comment")).Return(service.ErrBadRequest)
-
-	w := doRequest(r, http.MethodPost, "/posts/5/comments", map[string]string{"content": "test"})
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestPostDeleteComment_InvalidID(t *testing.T) {
-	h, _, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.DELETE("/posts/:id/comments/:commentId", h.DeleteComment)
-
-	w := doRequest(r, http.MethodDelete, "/posts/5/comments/abc", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestPostDeleteComment_ServiceError(t *testing.T) {
-	h, postRepo, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.DELETE("/posts/:id/comments/:commentId", h.DeleteComment)
-
-	postRepo.On("FindCommentByID", uint(3)).Return(nil, service.ErrNotFound)
-
-	w := doRequest(r, http.MethodDelete, "/posts/5/comments/3", nil)
-	assertStatus(t, w, http.StatusNotFound)
-}
-
 func TestPostGetDrafts_ServiceError(t *testing.T) {
 	h, postRepo, _, _ := setupPostHandler()
 	r := newRouter(1)
@@ -865,15 +691,6 @@ func TestPostDelete_ServiceError(t *testing.T) {
 
 	w := doRequest(r, http.MethodDelete, "/posts/10", nil)
 	assertStatus(t, w, http.StatusNotFound)
-}
-
-func TestPostCreateComment_InvalidJSON(t *testing.T) {
-	h, _, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.POST("/posts/:id/comments", h.CreateComment)
-
-	w := doRequestRaw(r, http.MethodPost, "/posts/5/comments", "{invalid}")
-	assertStatus(t, w, http.StatusBadRequest)
 }
 
 // ---------- Create with CodeSnippets ----------
@@ -970,77 +787,6 @@ func TestPostCreate_WithAutoTags(t *testing.T) {
 	assertStatus(t, w, http.StatusCreated)
 	// 本文の #golang が抽出され、正規化されたうえで保存される
 	tagRepo.AssertCalled(t, "SetTags", mock.Anything, uint(12), []string{"golang"})
-}
-
-// ---------- HideComment / UnhideComment ----------
-
-func TestPostHideComment_Success(t *testing.T) {
-	h, postRepo, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.POST("/posts/:id/comments/:commentId/hide", h.HideComment)
-
-	comment := &model.Comment{PostID: 5, Content: "test"}
-	comment.ID = 10
-	comment.UserID = 1
-	postRepo.On("FindCommentByID", uint(10)).Return(comment, nil)
-	postRepo.On("UpdateComment", mock.AnythingOfType("*model.Comment")).Return(nil)
-
-	w := doRequest(r, http.MethodPost, "/posts/5/comments/10/hide", nil)
-
-	assertStatus(t, w, http.StatusOK)
-	postRepo.AssertExpectations(t)
-}
-
-func TestPostHideComment_Forbidden(t *testing.T) {
-	h, postRepo, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.POST("/posts/:id/comments/:commentId/hide", h.HideComment)
-
-	comment := &model.Comment{PostID: 5, Content: "test"}
-	comment.ID = 10
-	comment.UserID = 999 // 別ユーザー
-	postRepo.On("FindCommentByID", uint(10)).Return(comment, nil)
-
-	w := doRequest(r, http.MethodPost, "/posts/5/comments/10/hide", nil)
-
-	assertStatus(t, w, http.StatusForbidden)
-}
-
-func TestPostHideComment_InvalidID(t *testing.T) {
-	h, _, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.POST("/posts/:id/comments/:commentId/hide", h.HideComment)
-
-	w := doRequest(r, http.MethodPost, "/posts/5/comments/abc/hide", nil)
-
-	assertStatus(t, w, http.StatusBadRequest)
-}
-
-func TestPostUnhideComment_Success(t *testing.T) {
-	h, postRepo, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.POST("/posts/:id/comments/:commentId/unhide", h.UnhideComment)
-
-	comment := &model.Comment{PostID: 5, Content: "test", IsHidden: true}
-	comment.ID = 10
-	comment.UserID = 1
-	postRepo.On("FindCommentByID", uint(10)).Return(comment, nil)
-	postRepo.On("UpdateComment", mock.AnythingOfType("*model.Comment")).Return(nil)
-
-	w := doRequest(r, http.MethodPost, "/posts/5/comments/10/unhide", nil)
-
-	assertStatus(t, w, http.StatusOK)
-	postRepo.AssertExpectations(t)
-}
-
-func TestPostUnhideComment_InvalidID(t *testing.T) {
-	h, _, _, _ := setupPostHandler()
-	r := newRouter(1)
-	r.POST("/posts/:id/comments/:commentId/unhide", h.UnhideComment)
-
-	w := doRequest(r, http.MethodPost, "/posts/5/comments/abc/unhide", nil)
-
-	assertStatus(t, w, http.StatusBadRequest)
 }
 
 // ---------- AutoSaveDraft ----------

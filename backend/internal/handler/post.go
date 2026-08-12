@@ -24,13 +24,6 @@ type PostServiceInterface interface {
 	Like(userID, postID uint) error
 	Unlike(userID, postID uint) error
 	HasLiked(userID, postID uint) bool
-	CreateComment(comment *model.Comment) error
-	GetComments(postID uint) ([]model.Comment, error)
-	GetReplies(parentID uint) ([]model.Comment, error)
-	EditComment(id, userID uint, content string) (*model.Comment, error)
-	DeleteComment(id, userID uint) error
-	HideComment(id, userID uint) error
-	UnhideComment(id, userID uint) error
 	Publish(id, userID uint) (*model.Post, error)
 	Unpublish(id, userID uint) (*model.Post, error)
 	Bookmark(userID, postID uint) error
@@ -54,11 +47,19 @@ type PostHandler struct {
 	createSnippet *usecase.CreateCodeSnippetUseCase
 	autoTags      *usecase.SetAutoPostTagsUseCase
 
-	// リアクションは DIP へ移行済み。他の操作は順次 usecase へ移していく。
+	// リアクションとコメントは DIP へ移行済み。他の操作は順次 usecase へ移していく。
 	addReaction    *usecase.AddPostReactionUseCase
 	removeReaction *usecase.RemovePostReactionUseCase
 	getReactions   *usecase.GetPostReactionsUseCase
 	reactionsBatch *usecase.GetPostReactionsBatchUseCase
+
+	createComment *usecase.CreatePostCommentUseCase
+	listComments  *usecase.ListPostCommentsUseCase
+	listReplies   *usecase.ListCommentRepliesUseCase
+	editComment   *usecase.EditPostCommentUseCase
+	deleteComment *usecase.DeletePostCommentUseCase
+	hideComment   *usecase.HidePostCommentUseCase
+	unhideComment *usecase.UnhidePostCommentUseCase
 }
 
 // NewPostHandler は新しいPostHandlerインスタンスを生成する。
@@ -69,6 +70,13 @@ func NewPostHandler(
 	removeReaction *usecase.RemovePostReactionUseCase,
 	getReactions *usecase.GetPostReactionsUseCase,
 	reactionsBatch *usecase.GetPostReactionsBatchUseCase,
+	createComment *usecase.CreatePostCommentUseCase,
+	listComments *usecase.ListPostCommentsUseCase,
+	listReplies *usecase.ListCommentRepliesUseCase,
+	editComment *usecase.EditPostCommentUseCase,
+	deleteComment *usecase.DeletePostCommentUseCase,
+	hideComment *usecase.HidePostCommentUseCase,
+	unhideComment *usecase.UnhidePostCommentUseCase,
 ) *PostHandler {
 	return &PostHandler{
 		service:        s,
@@ -77,6 +85,13 @@ func NewPostHandler(
 		removeReaction: removeReaction,
 		getReactions:   getReactions,
 		reactionsBatch: reactionsBatch,
+		createComment:  createComment,
+		listComments:   listComments,
+		listReplies:    listReplies,
+		editComment:    editComment,
+		deleteComment:  deleteComment,
+		hideComment:    hideComment,
+		unhideComment:  unhideComment,
 	}
 }
 
@@ -318,7 +333,7 @@ func (h *PostHandler) GetComments(c *gin.Context) {
 		return
 	}
 
-	comments, err := h.service.GetComments(id)
+	comments, err := h.listComments.Execute(c.Request.Context(), id)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -339,8 +354,8 @@ func (h *PostHandler) CreateComment(c *gin.Context) {
 		return
 	}
 
-	comment := &model.Comment{UserID: userID, PostID: id, Content: input.Content, ParentID: input.ParentID}
-	if err := h.service.CreateComment(comment); err != nil {
+	comment, err := h.createComment.Execute(c.Request.Context(), userID, id, input.Content, input.ParentID)
+	if err != nil {
 		respondError(c, err)
 		return
 	}
@@ -354,7 +369,7 @@ func (h *PostHandler) GetReplies(c *gin.Context) {
 		return
 	}
 
-	replies, err := h.service.GetReplies(commentID)
+	replies, err := h.listReplies.Execute(c.Request.Context(), commentID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -375,7 +390,7 @@ func (h *PostHandler) EditComment(c *gin.Context) {
 		return
 	}
 
-	comment, err := h.service.EditComment(commentID, userID, input.Content)
+	comment, err := h.editComment.Execute(c.Request.Context(), commentID, userID, input.Content)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -391,7 +406,7 @@ func (h *PostHandler) DeleteComment(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.service.DeleteComment(commentID, userID); err != nil {
+	if err := h.deleteComment.Execute(c.Request.Context(), commentID, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -406,7 +421,7 @@ func (h *PostHandler) HideComment(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.service.HideComment(commentID, userID); err != nil {
+	if err := h.hideComment.Execute(c.Request.Context(), commentID, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -421,7 +436,7 @@ func (h *PostHandler) UnhideComment(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	if err := h.service.UnhideComment(commentID, userID); err != nil {
+	if err := h.unhideComment.Execute(c.Request.Context(), commentID, userID); err != nil {
 		respondError(c, err)
 		return
 	}
