@@ -4,28 +4,34 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// NotificationServiceInterface はNotificationServiceが実装すべきインターフェース。
-type NotificationServiceInterface interface {
-	GetByUserID(userID uint, page, limit int, notificationType string) ([]model.Notification, error)
-	CountByUserID(userID uint, notificationType string) (int64, error)
-	CountUnread(userID uint) (int64, error)
-	MarkAsRead(id, userID uint) error
-	MarkAllAsRead(userID uint) error
-	Delete(id, userID uint) error
-}
 
 // NotificationHandler は通知関連のHTTPハンドラ。
 // 通知の取得・既読処理・削除を処理する。
 type NotificationHandler struct {
-	service NotificationServiceInterface
+	list        *usecase.ListNotificationsUseCase
+	countUnread *usecase.CountUnreadNotificationsUseCase
+	markAsRead  *usecase.MarkNotificationAsReadUseCase
+	markAllRead *usecase.MarkAllNotificationsAsReadUseCase
+	remove      *usecase.DeleteNotificationUseCase
 }
 
 // NewNotificationHandler は新しいNotificationHandlerインスタンスを生成する。
-func NewNotificationHandler(s NotificationServiceInterface) *NotificationHandler {
-	return &NotificationHandler{service: s}
+func NewNotificationHandler(
+	list *usecase.ListNotificationsUseCase,
+	countUnread *usecase.CountUnreadNotificationsUseCase,
+	markAsRead *usecase.MarkNotificationAsReadUseCase,
+	markAllRead *usecase.MarkAllNotificationsAsReadUseCase,
+	remove *usecase.DeleteNotificationUseCase,
+) *NotificationHandler {
+	return &NotificationHandler{
+		list:        list,
+		countUnread: countUnread,
+		markAsRead:  markAsRead,
+		markAllRead: markAllRead,
+		remove:      remove,
+	}
 }
 
 // GetAll は認証ユーザーの通知一覧をページネーション付きで取得する。
@@ -34,13 +40,7 @@ func (h *NotificationHandler) GetAll(c *gin.Context) {
 	page, limit := parsePagination(c)
 	notificationType := c.DefaultQuery("type", "")
 
-	notifications, err := h.service.GetByUserID(userID, page, limit, notificationType)
-	if err != nil {
-		respondError(c, err)
-		return
-	}
-
-	total, err := h.service.CountByUserID(userID, notificationType)
+	notifications, total, err := h.list.Execute(c.Request.Context(), userID, page, limit, notificationType)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -58,7 +58,7 @@ func (h *NotificationHandler) GetAll(c *gin.Context) {
 func (h *NotificationHandler) GetUnreadCount(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	count, err := h.service.CountUnread(userID)
+	count, err := h.countUnread.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -74,7 +74,7 @@ func (h *NotificationHandler) MarkAsRead(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.MarkAsRead(id, userID); err != nil {
+	if err := h.markAsRead.Execute(c.Request.Context(), id, userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -85,7 +85,7 @@ func (h *NotificationHandler) MarkAsRead(c *gin.Context) {
 func (h *NotificationHandler) MarkAllAsRead(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	if err := h.service.MarkAllAsRead(userID); err != nil {
+	if err := h.markAllRead.Execute(c.Request.Context(), userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -100,7 +100,7 @@ func (h *NotificationHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Delete(id, userID); err != nil {
+	if err := h.remove.Execute(c.Request.Context(), id, userID); err != nil {
 		respondError(c, err)
 		return
 	}
