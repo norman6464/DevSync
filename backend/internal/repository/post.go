@@ -112,55 +112,6 @@ func (r *PostRepository) HasLiked(userID, postID uint) bool {
 	return count > 0
 }
 
-// CreateComment は投稿にコメントを追加し、投稿のcomment_countをインクリメントする。
-func (r *PostRepository) CreateComment(comment *model.Comment) error {
-	err := r.db.Create(comment).Error
-	if err != nil {
-		return err
-	}
-	return r.db.Model(&model.Post{}).Where("id = ?", comment.PostID).UpdateColumn("comment_count", gorm.Expr("comment_count + 1")).Error
-}
-
-// FindCommentByID はコメントをIDで取得する。
-func (r *PostRepository) FindCommentByID(id uint) (*model.Comment, error) {
-	var comment model.Comment
-	if err := r.db.First(&comment, id).Error; err != nil {
-		return nil, err
-	}
-	return &comment, nil
-}
-
-// UpdateComment はコメントを更新する。
-func (r *PostRepository) UpdateComment(comment *model.Comment) error {
-	return r.db.Save(comment).Error
-}
-
-// GetComments は指定投稿の全コメントをユーザー情報付きで取得する（古い順）。
-func (r *PostRepository) GetComments(postID uint) ([]model.Comment, error) {
-	var comments []model.Comment
-	err := r.db.Preload("User").Preload("Replies").Preload("Replies.User").
-		Where("post_id = ? AND parent_id IS NULL", postID).
-		Order("created_at ASC").Find(&comments).Error
-	return comments, err
-}
-
-func (r *PostRepository) GetReplies(parentID uint) ([]model.Comment, error) {
-	var replies []model.Comment
-	err := r.db.Preload("User").Where("parent_id = ?", parentID).Order("created_at ASC").Find(&replies).Error
-	return replies, err
-}
-
-// DeleteComment はコメントを削除し、投稿のcomment_countをデクリメントする。
-// 所有権チェックはservice層で実施済みであること。
-func (r *PostRepository) DeleteComment(id uint) error {
-	var comment model.Comment
-	if err := r.db.First(&comment, id).Error; err != nil {
-		return err
-	}
-	r.db.Model(&model.Post{}).Where("id = ?", comment.PostID).UpdateColumn("comment_count", gorm.Expr("GREATEST(comment_count - 1, 0)"))
-	return r.db.Delete(&comment).Error
-}
-
 // Search はキーワードで投稿を検索する（タイトルまたは本文に部分一致）。下書きは除外。
 func (r *PostRepository) Search(query string, limit, offset int) ([]model.Post, int64, error) {
 	var posts []model.Post

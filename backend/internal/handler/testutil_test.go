@@ -99,26 +99,6 @@ func (m *MockPostRepository) Unlike(userID, postID uint) error {
 func (m *MockPostRepository) HasLiked(userID, postID uint) bool {
 	return m.Called(userID, postID).Bool(0)
 }
-func (m *MockPostRepository) CreateComment(comment *model.Comment) error {
-	return m.Called(comment).Error(0)
-}
-func (m *MockPostRepository) FindCommentByID(id uint) (*model.Comment, error) {
-	args := m.Called(id)
-	if p := args.Get(0); p != nil {
-		return p.(*model.Comment), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockPostRepository) GetComments(postID uint) ([]model.Comment, error) {
-	args := m.Called(postID)
-	return args.Get(0).([]model.Comment), args.Error(1)
-}
-func (m *MockPostRepository) UpdateComment(comment *model.Comment) error {
-	return m.Called(comment).Error(0)
-}
-func (m *MockPostRepository) DeleteComment(id uint) error {
-	return m.Called(id).Error(0)
-}
 func (m *MockPostRepository) Bookmark(userID, postID uint) error {
 	return m.Called(userID, postID).Error(0)
 }
@@ -181,10 +161,6 @@ func (m *MockPostRepository) CountDraftsByUserID(userID uint) (int64, error) {
 func (m *MockPostRepository) CountScheduledByUserID(userID uint) (int64, error) {
 	args := m.Called(userID)
 	return args.Get(0).(int64), args.Error(1)
-}
-func (m *MockPostRepository) GetReplies(parentID uint) ([]model.Comment, error) {
-	args := m.Called(parentID)
-	return args.Get(0).([]model.Comment), args.Error(1)
 }
 
 // MockNotificationRepository は NotificationRepositoryInterface のモック実装。
@@ -439,25 +415,37 @@ func (m *mockRoadmapRepo) ReorderSteps(ctx context.Context, roadmapID uint, step
 // コンパイル時にインターフェース適合を検証したい場合は repository パッケージを
 // import する必要がある。ここではハンドラ層テスト内でのみ使用する。
 
-
 // ---------- ヘルパー関数 ----------
 
 // setupPostHandler はPostHandlerテスト用のセットアップを行う。
 // スニペット作成は DIP へ移行済みのため、本物の usecase と port モックを注入する。
 func setupPostHandler() (*PostHandler, *MockPostRepository, *MockNotificationRepository, *postHandlerSnippetPorts) {
-	h, postRepo, notifRepo, ports, _ := setupPostHandlerWithReactionPorts()
+	h, postRepo, notifRepo, ports, _, _ := setupPostHandlerWithPorts()
 	return h, postRepo, notifRepo, ports
 }
 
 // setupPostHandlerWithReactionPorts はリアクションの port モックも返すセットアップ。
-// リアクションは DIP へ移行済みのため、本物の usecase と port モックを注入する。
 func setupPostHandlerWithReactionPorts() (*PostHandler, *MockPostRepository, *MockNotificationRepository, *postHandlerSnippetPorts, *postHandlerReactionPorts) {
+	h, postRepo, notifRepo, snippetPorts, reactionPorts, _ := setupPostHandlerWithPorts()
+	return h, postRepo, notifRepo, snippetPorts, reactionPorts
+}
+
+// setupPostHandlerWithCommentPort はコメントの port モックも返すセットアップ。
+func setupPostHandlerWithCommentPort() (*PostHandler, *mockPostCommentPort) {
+	h, _, _, _, _, comments := setupPostHandlerWithPorts()
+	return h, comments
+}
+
+// setupPostHandlerWithPorts は移行済みスライスの port モックをすべて注入したセットアップ。
+// リアクション・コメントは DIP へ移行済みのため、本物の usecase と port モックを注入する。
+func setupPostHandlerWithPorts() (*PostHandler, *MockPostRepository, *MockNotificationRepository, *postHandlerSnippetPorts, *postHandlerReactionPorts, *mockPostCommentPort) {
 	postRepo := new(MockPostRepository)
 	notifRepo := new(MockNotificationRepository)
 	snippets := new(mockCodeSnippetRepo)
 	posts := new(mockPostReader)
 	reactions := new(mockPostReactionPort)
 	authors := new(mockPostAuthorPort)
+	comments := new(mockPostCommentPort)
 
 	notifService := service.NewNotificationService(notifRepo)
 	postService := service.NewPostService(postRepo, notifService)
@@ -468,11 +456,19 @@ func setupPostHandlerWithReactionPorts() (*PostHandler, *MockPostRepository, *Mo
 		usecase.NewRemovePostReactionUseCase(reactions, authors),
 		usecase.NewGetPostReactionsUseCase(reactions),
 		usecase.NewGetPostReactionsBatchUseCase(reactions),
+		usecase.NewCreatePostCommentUseCase(comments),
+		usecase.NewListPostCommentsUseCase(comments),
+		usecase.NewListCommentRepliesUseCase(comments),
+		usecase.NewEditPostCommentUseCase(comments),
+		usecase.NewDeletePostCommentUseCase(comments),
+		usecase.NewHidePostCommentUseCase(comments),
+		usecase.NewUnhidePostCommentUseCase(comments),
 	)
 
 	return h, postRepo, notifRepo,
 		&postHandlerSnippetPorts{Snippets: snippets, Posts: posts},
-		&postHandlerReactionPorts{Reactions: reactions, Authors: authors}
+		&postHandlerReactionPorts{Reactions: reactions, Authors: authors},
+		comments
 }
 
 // postHandlerSnippetPorts は PostHandler のスニペット作成に注入した port モックをまとめる。
@@ -812,7 +808,6 @@ func setupAnswerHandler() (*AnswerHandler, *answerHandlerPorts) {
 	return h, &answerHandlerPorts{Answers: answers, Questions: questions}
 }
 
-
 // mockFollowRepo は usecase/repository.FollowRepository のモック実装（ctx 付き）。
 // handler テストは「本物の usecase + port モック」で組む（FreStyle 流）。
 type mockFollowRepo struct{ mock.Mock }
@@ -1126,6 +1121,4 @@ func setupCommentLikeHandler() (*CommentLikeHandler, *mockCommentLikeRepo, *mock
 
 // PostTemplateHandler のテスト用モックは post_template_test.go（DIP 版・port モック）に置く。
 
-
 // WidgetSettingsHandler のテスト用モックは widget_settings_test.go（DIP 版・port モック）に置く。
-

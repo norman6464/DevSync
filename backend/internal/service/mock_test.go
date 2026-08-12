@@ -157,38 +157,6 @@ func (m *MockPostRepository) HasLiked(userID, postID uint) bool {
 	return args.Bool(0)
 }
 
-func (m *MockPostRepository) CreateComment(comment *model.Comment) error {
-	args := m.Called(comment)
-	return args.Error(0)
-}
-
-func (m *MockPostRepository) FindCommentByID(id uint) (*model.Comment, error) {
-	args := m.Called(id)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.Comment), args.Error(1)
-}
-
-func (m *MockPostRepository) GetComments(postID uint) ([]model.Comment, error) {
-	args := m.Called(postID)
-	return args.Get(0).([]model.Comment), args.Error(1)
-}
-
-func (m *MockPostRepository) GetReplies(parentID uint) ([]model.Comment, error) {
-	args := m.Called(parentID)
-	return args.Get(0).([]model.Comment), args.Error(1)
-}
-
-func (m *MockPostRepository) UpdateComment(comment *model.Comment) error {
-	return m.Called(comment).Error(0)
-}
-
-func (m *MockPostRepository) DeleteComment(id uint) error {
-	args := m.Called(id)
-	return args.Error(0)
-}
-
 func (m *MockPostRepository) Bookmark(userID, postID uint) error {
 	args := m.Called(userID, postID)
 	return args.Error(0)
