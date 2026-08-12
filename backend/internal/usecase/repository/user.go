@@ -34,3 +34,10 @@ type UserRepository interface {
 	Search(ctx context.Context, query string) ([]model.User, error)
 	Update(ctx context.Context, user *model.User) error
 }
+
+// UsernameLookup はユーザー名からユーザーを 1 件引くだけの最小の契約。
+// メンションの解決のように、ユーザー名でユーザーを特定する usecase はこちらに依存する。
+type UsernameLookup interface {
+	// FindByUsername は指定ユーザー名のユーザーを返す。不在の場合は (nil, nil) を返す。
+	FindByUsername(ctx context.Context, username string) (*model.User, error)
+}

@@ -2,26 +2,21 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// MentionServiceInterface はMentionHandlerが依存するサービスインターフェース。
-type MentionServiceInterface interface {
-	ProcessMentions(actorID uint, text string, postID *uint, commentID *uint) error
-	GetMentionsByUserID(userID uint, page, limit int) ([]model.Mention, error)
-	GetMentionsByPostID(postID uint) ([]model.Mention, error)
-	DeleteMentionsByPostID(postID uint) error
-	DeleteMentionsByCommentID(commentID uint) error
-}
 
 // MentionHandler はメンションのHTTPハンドラー。
 type MentionHandler struct {
-	service MentionServiceInterface
+	listMine *usecase.ListUserMentionsUseCase
+	listPost *usecase.ListPostMentionsUseCase
 }
 
 // NewMentionHandler は新しいMentionHandlerを生成する。
-func NewMentionHandler(service MentionServiceInterface) *MentionHandler {
-	return &MentionHandler{service: service}
+func NewMentionHandler(
+	listMine *usecase.ListUserMentionsUseCase,
+	listPost *usecase.ListPostMentionsUseCase,
+) *MentionHandler {
+	return &MentionHandler{listMine: listMine, listPost: listPost}
 }
 
 // GetMyMentions は認証ユーザーへのメンション一覧を取得する。
@@ -29,7 +24,7 @@ func (h *MentionHandler) GetMyMentions(c *gin.Context) {
 	userID := c.GetUint("userID")
 	page, limit := parsePagination(c)
 
-	mentions, err := h.service.GetMentionsByUserID(userID, page, limit)
+	mentions, err := h.listMine.Execute(c.Request.Context(), userID, page, limit)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -44,7 +39,7 @@ func (h *MentionHandler) GetPostMentions(c *gin.Context) {
 		return
 	}
 
-	mentions, err := h.service.GetMentionsByPostID(postID)
+	mentions, err := h.listPost.Execute(c.Request.Context(), postID)
 	if err != nil {
 		respondError(c, err)
 		return

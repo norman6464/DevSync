@@ -674,9 +674,12 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewGetMostViewedPostsUseCase(postViewRepo),
 	)
 
-	mentionRepo := repository.NewMentionRepository(db)
-	mentionService := service.NewMentionService(mentionRepo, userRepo, notificationService)
-	c.MentionHandler = handler.NewMentionHandler(mentionService)
+	// メンションはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	mentionPort := persistence.NewMentionRepository(db)
+	c.MentionHandler = handler.NewMentionHandler(
+		usecase.NewListUserMentionsUseCase(mentionPort),
+		usecase.NewListPostMentionsUseCase(mentionPort),
+	)
 
 	// ユーザーダッシュボード統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	userDashboardRepo := persistence.NewUserDashboardRepository(db)
