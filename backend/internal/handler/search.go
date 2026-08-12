@@ -9,22 +9,17 @@ import (
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// PostSearchService は投稿の高度な検索サービスのインターフェース。
-type PostSearchService interface {
-	SearchPosts(params model.PostSearchParams) (*model.PostSearchResult, error)
-}
-
-// SearchHandler is the handler for search operations
+// SearchHandler は検索エンドポイントのハンドラ。
 type SearchHandler struct {
-	searchService PostSearchService
-	circleSearch  *usecase.SearchStudyCirclesUseCase
+	postSearch   *usecase.SearchPostsUseCase
+	circleSearch *usecase.SearchStudyCirclesUseCase
 }
 
-// NewSearchHandler creates a new search handler instance
-func NewSearchHandler(searchService PostSearchService, circleSearch *usecase.SearchStudyCirclesUseCase) *SearchHandler {
+// NewSearchHandler は新しい SearchHandler インスタンスを生成する。
+func NewSearchHandler(postSearch *usecase.SearchPostsUseCase, circleSearch *usecase.SearchStudyCirclesUseCase) *SearchHandler {
 	return &SearchHandler{
-		searchService: searchService,
-		circleSearch:  circleSearch,
+		postSearch:   postSearch,
+		circleSearch: circleSearch,
 	}
 }
 
@@ -77,7 +72,7 @@ func (h *SearchHandler) SearchPosts(c *gin.Context) {
 		Offset:   offset,
 	}
 
-	result, err := h.searchService.SearchPosts(params)
+	result, err := h.postSearch.Execute(c.Request.Context(), params)
 	if err != nil {
 		respondError(c, err)
 		return

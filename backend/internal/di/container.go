@@ -117,8 +117,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	// follow はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	followRepo := persistence.NewFollowRepository(db)
 	githubRepo := repository.NewGitHubRepository(db)
-	// 旧 postRepo は検索（search_service）がまだ使うため残している。
-	postRepo := repository.NewPostRepository(db)
 	// ダイレクトメッセージはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	messagePort := persistence.NewMessageRepository(db)
 	// ランキングはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
@@ -592,8 +590,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		searchStudyCircles,
 		usecase.NewCountStudyCirclesUseCase(studyCirclePort),
 	)
-	searchService := service.NewSearchService(postRepo)
-	c.SearchHandler = handler.NewSearchHandler(searchService, searchStudyCircles)
+	// 投稿検索はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	c.SearchHandler = handler.NewSearchHandler(
+		usecase.NewSearchPostsUseCase(persistence.NewPostSearchRepository(db)),
+		searchStudyCircles,
+	)
 	c.NoteHandler = handler.NewNoteHandler(
 		createNote,
 		usecase.NewGetNoteUseCase(notePort),
