@@ -10,80 +10,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// ============================================================
-// MockUserRepository は repository.UserRepositoryInterface のテスト用モック実装。
-// ============================================================
-
-type MockUserRepository struct {
-	mock.Mock
-}
-
-func (m *MockUserRepository) FindAll() ([]model.User, error) {
-	args := m.Called()
-	return args.Get(0).([]model.User), args.Error(1)
-}
-
-func (m *MockUserRepository) FindByID(id uint) (*model.User, error) {
-	args := m.Called(id)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.User), args.Error(1)
-}
-
-func (m *MockUserRepository) FindByEmail(email string) (*model.User, error) {
-	args := m.Called(email)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.User), args.Error(1)
-}
-
-func (m *MockUserRepository) FindByUsername(username string) (*model.User, error) {
-	args := m.Called(username)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.User), args.Error(1)
-}
-
-func (m *MockUserRepository) Search(query string) ([]model.User, error) {
-	args := m.Called(query)
-	return args.Get(0).([]model.User), args.Error(1)
-}
-
-func (m *MockUserRepository) FindByGitHubID(githubID int64) (*model.User, error) {
-	args := m.Called(githubID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.User), args.Error(1)
-}
-
-func (m *MockUserRepository) Create(user *model.User) error {
-	args := m.Called(user)
-	return args.Error(0)
-}
-
-func (m *MockUserRepository) Update(user *model.User) error {
-	args := m.Called(user)
-	return args.Error(0)
-}
-
-func (m *MockUserRepository) Delete(id uint) error {
-	args := m.Called(id)
-	return args.Error(0)
-}
-
-func (m *MockUserRepository) DeleteWithRelatedData(id uint) error {
-	args := m.Called(id)
-	return args.Error(0)
-}
-
-func (m *MockUserRepository) UpdatePassword(userID uint, hashedPassword string) error {
-	args := m.Called(userID, hashedPassword)
-	return args.Error(0)
-}
+// (MockUserRepository は auth スライスの DIP 移行に伴い撤去)
 
 // ============================================================
 // MockQuestionRepository は repository.QuestionRepositoryInterface のテスト用モック実装。
@@ -304,47 +231,7 @@ func (m *MockBookReviewRepository) CountByUserID(userID uint) (int64, error) {
 
 // (MockLearningResourceRepository は DIP 移行に伴い撤去)
 
-// ============================================================
-// MockPasswordResetRepository は repository.PasswordResetRepositoryInterface のテスト用モック実装。
-// ============================================================
-
-type MockPasswordResetRepository struct {
-	mock.Mock
-}
-
-func (m *MockPasswordResetRepository) Create(token *model.PasswordResetToken) error {
-	args := m.Called(token)
-	return args.Error(0)
-}
-
-func (m *MockPasswordResetRepository) FindByToken(token string) (*model.PasswordResetToken, error) {
-	args := m.Called(token)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.PasswordResetToken), args.Error(1)
-}
-
-func (m *MockPasswordResetRepository) MarkAsUsed(id uint) error {
-	args := m.Called(id)
-	return args.Error(0)
-}
-
-func (m *MockPasswordResetRepository) InvalidateUserTokens(userID uint) error {
-	args := m.Called(userID)
-	return args.Error(0)
-}
-
-func (m *MockPasswordResetRepository) DeleteExpired() error {
-	args := m.Called()
-	return args.Error(0)
-}
-
-// (MockRoadmapRepository は DIP 移行に伴い撤去)
-
-// (MockAIAdviceRepository は DIP 移行に伴い撤去)
-
-// (MockAIConversationRepository は DIP 移行に伴い撤去)
+// (MockPasswordResetRepository は auth スライスの DIP 移行に伴い撤去)
 
 // ============================================================
 // MockWeeklyActivityReportReader は usecase/repository.WeeklyActivityReportReader のテスト用モック実装。

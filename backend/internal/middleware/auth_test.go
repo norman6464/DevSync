@@ -9,7 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -28,18 +28,18 @@ func generateTestToken(userID uint) string {
 	return tokenString
 }
 
-// setupTestRouter はテスト用のGinルーターとAuthServiceを生成するヘルパー関数。
-func setupTestRouter() (*gin.Engine, *service.AuthService) {
+// setupTestRouter はテスト用の Gin ルーターとトークン検証 usecase を生成するヘルパー関数。
+func setupTestRouter() (*gin.Engine, *usecase.ValidateAuthTokenUseCase) {
 	gin.SetMode(gin.TestMode)
-	authService := service.NewAuthService(nil, nil, testJWTSecret)
+	validateToken := usecase.NewValidateAuthTokenUseCase(testJWTSecret)
 	r := gin.New()
-	return r, authService
+	return r, validateToken
 }
 
 // TestAuthRequired_WithCookie はCookieからトークンを抽出して認証成功することをテストする。
 func TestAuthRequired_WithCookie(t *testing.T) {
-	r, authService := setupTestRouter()
-	r.GET("/protected", AuthRequired(authService), func(c *gin.Context) {
+	r, validateToken := setupTestRouter()
+	r.GET("/protected", AuthRequired(validateToken), func(c *gin.Context) {
 		userID := c.GetUint("userID")
 		c.JSON(http.StatusOK, gin.H{"user_id": userID})
 	})
@@ -57,8 +57,8 @@ func TestAuthRequired_WithCookie(t *testing.T) {
 
 // TestAuthRequired_WithAuthorizationHeader は後方互換性のためAuthorizationヘッダーでも認証成功することをテストする。
 func TestAuthRequired_WithAuthorizationHeader(t *testing.T) {
-	r, authService := setupTestRouter()
-	r.GET("/protected", AuthRequired(authService), func(c *gin.Context) {
+	r, validateToken := setupTestRouter()
+	r.GET("/protected", AuthRequired(validateToken), func(c *gin.Context) {
 		userID := c.GetUint("userID")
 		c.JSON(http.StatusOK, gin.H{"user_id": userID})
 	})
@@ -76,8 +76,8 @@ func TestAuthRequired_WithAuthorizationHeader(t *testing.T) {
 
 // TestAuthRequired_CookiePriority はCookieとAuthorizationヘッダーの両方が存在する場合、Cookieを優先することをテストする。
 func TestAuthRequired_CookiePriority(t *testing.T) {
-	r, authService := setupTestRouter()
-	r.GET("/protected", AuthRequired(authService), func(c *gin.Context) {
+	r, validateToken := setupTestRouter()
+	r.GET("/protected", AuthRequired(validateToken), func(c *gin.Context) {
 		userID := c.GetUint("userID")
 		c.JSON(http.StatusOK, gin.H{"user_id": userID})
 	})
@@ -100,8 +100,8 @@ func TestAuthRequired_CookiePriority(t *testing.T) {
 
 // TestAuthRequired_NeitherProvided はCookieもAuthorizationヘッダーもない場合に401エラーを返すことをテストする。
 func TestAuthRequired_NeitherProvided(t *testing.T) {
-	r, authService := setupTestRouter()
-	r.GET("/protected", AuthRequired(authService), func(c *gin.Context) {
+	r, validateToken := setupTestRouter()
+	r.GET("/protected", AuthRequired(validateToken), func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "should not reach here"})
 	})
 
@@ -116,8 +116,8 @@ func TestAuthRequired_NeitherProvided(t *testing.T) {
 
 // TestAuthRequired_InvalidCookieToken は不正なCookieトークンで401エラーを返すことをテストする。
 func TestAuthRequired_InvalidCookieToken(t *testing.T) {
-	r, authService := setupTestRouter()
-	r.GET("/protected", AuthRequired(authService), func(c *gin.Context) {
+	r, validateToken := setupTestRouter()
+	r.GET("/protected", AuthRequired(validateToken), func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "should not reach here"})
 	})
 
@@ -133,8 +133,8 @@ func TestAuthRequired_InvalidCookieToken(t *testing.T) {
 
 // TestAuthRequired_ExpiredCookieToken は期限切れのCookieトークンで401エラーを返すことをテストする。
 func TestAuthRequired_ExpiredCookieToken(t *testing.T) {
-	r, authService := setupTestRouter()
-	r.GET("/protected", AuthRequired(authService), func(c *gin.Context) {
+	r, validateToken := setupTestRouter()
+	r.GET("/protected", AuthRequired(validateToken), func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "should not reach here"})
 	})
 
@@ -158,8 +158,8 @@ func TestAuthRequired_ExpiredCookieToken(t *testing.T) {
 
 // TestAuthRequired_InvalidAuthorizationHeaderFormat は不正なAuthorizationヘッダー形式で401エラーを返すことをテストする。
 func TestAuthRequired_InvalidAuthorizationHeaderFormat(t *testing.T) {
-	r, authService := setupTestRouter()
-	r.GET("/protected", AuthRequired(authService), func(c *gin.Context) {
+	r, validateToken := setupTestRouter()
+	r.GET("/protected", AuthRequired(validateToken), func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "should not reach here"})
 	})
 

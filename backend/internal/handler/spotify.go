@@ -7,12 +7,6 @@ import (
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
-// SpotifyAuthServiceInterface はSpotifyHandler用の認証サービスの抽象インターフェース。
-type SpotifyAuthServiceInterface interface {
-	GenerateOAuthState(userID uint) (string, error)
-	ValidateOAuthState(state string) (uint, error)
-}
-
 // SpotifyUseCases は SpotifyHandler が依存する Spotify 連携の usecase をまとめる。
 type SpotifyUseCases struct {
 	OAuthURL         *usecase.GetSpotifyOAuthURLUseCase
@@ -24,19 +18,19 @@ type SpotifyUseCases struct {
 
 // SpotifyHandler はSpotify連携関連のHTTPハンドラ。
 type SpotifyHandler struct {
-	uc          SpotifyUseCases
-	authService SpotifyAuthServiceInterface
+	uc         SpotifyUseCases
+	oauthState *usecase.OAuthStateUseCase
 }
 
 // NewSpotifyHandler は新しいSpotifyHandlerインスタンスを生成する。
-func NewSpotifyHandler(uc SpotifyUseCases, authService SpotifyAuthServiceInterface) *SpotifyHandler {
-	return &SpotifyHandler{uc: uc, authService: authService}
+func NewSpotifyHandler(uc SpotifyUseCases, oauthState *usecase.OAuthStateUseCase) *SpotifyHandler {
+	return &SpotifyHandler{uc: uc, oauthState: oauthState}
 }
 
 // Connect はSpotify OAuth認証URLを生成して返す。
 func (h *SpotifyHandler) Connect(c *gin.Context) {
 	userID := c.GetUint("userID")
-	state, err := h.authService.GenerateOAuthState(userID)
+	state, err := h.oauthState.Generate(userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -55,7 +49,7 @@ func (h *SpotifyHandler) Callback(c *gin.Context) {
 		return
 	}
 
-	userID, err := h.authService.ValidateOAuthState(state)
+	userID, err := h.oauthState.Validate(state)
 	if err != nil {
 		respondBadRequest(c, "stateが無効です")
 		return

@@ -1,796 +1,560 @@
-// Package handler は認証ハンドラーのhttpOnly Cookie設定テストを提供する。
+// Package handler は認証ハンドラーのテストを提供する。
 package handler
 
 import (
-	"bytes"
-	"encoding/json"
+	"context"
+	"errors"
 	"net/http"
-	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"golang.org/x/crypto/bcrypt"
 )
 
-// MockUserRepository は認証ハンドラーテスト用のユーザーリポジトリモック。
-type MockUserRepository struct {
-	mock.Mock
-}
-
-func (m *MockUserRepository) FindByEmail(email string) (*model.User, error) {
-	args := m.Called(email)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.User), args.Error(1)
-}
-
-func (m *MockUserRepository) Create(user *model.User) error {
-	args := m.Called(user)
-	if args.Error(0) == nil {
-		user.ID = 1 // テスト用にIDをセット
-	}
-	return args.Error(0)
-}
-
-func (m *MockUserRepository) FindByID(id uint) (*model.User, error) {
-	args := m.Called(id)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.User), args.Error(1)
-}
-
-func (m *MockUserRepository) FindByUsername(username string) (*model.User, error) {
-	args := m.Called(username)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.User), args.Error(1)
-}
-
-func (m *MockUserRepository) Update(user *model.User) error {
-	args := m.Called(user)
-	return args.Error(0)
-}
-
-func (m *MockUserRepository) FindByGitHubID(githubID int64) (*model.User, error) {
-	args := m.Called(githubID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.User), args.Error(1)
-}
-
-func (m *MockUserRepository) Delete(id uint) error {
-	args := m.Called(id)
-	return args.Error(0)
-}
-
-func (m *MockUserRepository) UpdatePassword(userID uint, hashedPassword string) error {
-	args := m.Called(userID, hashedPassword)
-	return args.Error(0)
-}
-
-func (m *MockUserRepository) DeleteWithRelatedData(userID uint) error {
-	args := m.Called(userID)
-	return args.Error(0)
-}
-
-func (m *MockUserRepository) GetAll() ([]model.User, error) {
-	args := m.Called()
-	return args.Get(0).([]model.User), args.Error(1)
-}
-
-func (m *MockUserRepository) Search(query string) ([]model.User, error) {
-	args := m.Called(query)
-	return args.Get(0).([]model.User), args.Error(1)
-}
-
-func (m *MockUserRepository) FindAll() ([]model.User, error) {
-	args := m.Called()
-	return args.Get(0).([]model.User), args.Error(1)
-}
-
-// MockPasswordResetRepository はパスワードリセットリポジトリモック。
-type MockPasswordResetRepository struct {
-	mock.Mock
-}
-
-func (m *MockPasswordResetRepository) Create(token *model.PasswordResetToken) error {
-	args := m.Called(token)
-	return args.Error(0)
-}
-
-func (m *MockPasswordResetRepository) FindByToken(token string) (*model.PasswordResetToken, error) {
-	args := m.Called(token)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.PasswordResetToken), args.Error(1)
-}
-
-func (m *MockPasswordResetRepository) MarkAsUsed(id uint) error {
-	args := m.Called(id)
-	return args.Error(0)
-}
-
-func (m *MockPasswordResetRepository) InvalidateUserTokens(userID uint) error {
-	args := m.Called(userID)
-	return args.Error(0)
-}
-
-func (m *MockPasswordResetRepository) DeleteExpired() error {
-	args := m.Called()
-	return args.Error(0)
-}
-
-// テスト用のJWTシークレットキー
+// testJWTSecret はテスト用の JWT 署名鍵。
 const testJWTSecret = "test-secret-key-for-handler-tests"
 
-// setupLoginTest はログインテスト用のルーターとモックをセットアップするヘルパー関数。
-func setupLoginTest() (*gin.Engine, *MockUserRepository) {
-	gin.SetMode(gin.TestMode)
-	mockUserRepo := new(MockUserRepository)
-	mockPwResetRepo := new(MockPasswordResetRepository)
-	authService := service.NewAuthService(mockUserRepo, mockPwResetRepo, testJWTSecret)
-	authHandler := NewAuthHandler(authService, AuthGitHubUseCases{})
+// mockAuthUserRepo は usecase/repository.AuthUserRepository のモック。
+type mockAuthUserRepo struct{ mock.Mock }
 
-	r := gin.New()
-	// 認証不要なルート
-	r.POST("/api/v1/auth/login", authHandler.Login)
-	r.POST("/api/v1/auth/register", authHandler.Register)
-	r.POST("/api/v1/auth/password-reset", authHandler.RequestPasswordReset)
-	r.POST("/api/v1/auth/password-reset/confirm", authHandler.ResetPassword)
-
-	// 認証が必要なルート（テスト用に簡易的なミドルウェアを追加）
-	authorized := r.Group("/api/v1/auth")
-	authorized.Use(func(c *gin.Context) {
-		// テスト用の簡易認証ミドルウェア（userIDをcontextから取得または設定）
-		if userID, exists := c.Get("userID"); !exists {
-			c.Set("userID", uint(1)) // デフォルトでuserID=1を設定
-		} else {
-			c.Set("userID", userID)
-		}
-		c.Next()
-	})
-	authorized.GET("/me", authHandler.Me)
-	authorized.POST("/logout", authHandler.Logout)
-	authorized.DELETE("/account", authHandler.DeleteAccount)
-
-	return r, mockUserRepo
+func (m *mockAuthUserRepo) FindByID(ctx context.Context, id uint) (*model.User, error) {
+	args := m.Called(ctx, id)
+	u, _ := args.Get(0).(*model.User)
+	return u, args.Error(1)
 }
 
-// TestLogin_SetsCookie はログイン成功時にSet-Cookieヘッダーがセットされることをテストする。
+func (m *mockAuthUserRepo) FindByEmail(ctx context.Context, email string) (*model.User, error) {
+	args := m.Called(ctx, email)
+	u, _ := args.Get(0).(*model.User)
+	return u, args.Error(1)
+}
+
+func (m *mockAuthUserRepo) FindByUsername(ctx context.Context, username string) (*model.User, error) {
+	args := m.Called(ctx, username)
+	u, _ := args.Get(0).(*model.User)
+	return u, args.Error(1)
+}
+
+func (m *mockAuthUserRepo) FindByGitHubID(ctx context.Context, githubID int64) (*model.User, error) {
+	args := m.Called(ctx, githubID)
+	u, _ := args.Get(0).(*model.User)
+	return u, args.Error(1)
+}
+
+func (m *mockAuthUserRepo) Create(ctx context.Context, user *model.User) error {
+	args := m.Called(ctx, user)
+	if args.Error(0) == nil && user.ID == 0 {
+		user.ID = 1 // 作成後に ID が入る挙動を模す
+	}
+	return args.Error(0)
+}
+
+func (m *mockAuthUserRepo) Update(ctx context.Context, user *model.User) error {
+	return m.Called(ctx, user).Error(0)
+}
+
+func (m *mockAuthUserRepo) UpdatePassword(ctx context.Context, userID uint, hashedPassword string) error {
+	return m.Called(ctx, userID, hashedPassword).Error(0)
+}
+
+func (m *mockAuthUserRepo) DeleteWithRelatedData(ctx context.Context, id uint) error {
+	return m.Called(ctx, id).Error(0)
+}
+
+// mockPasswordResetRepo は usecase/repository.PasswordResetTokenRepository のモック。
+type mockPasswordResetRepo struct{ mock.Mock }
+
+func (m *mockPasswordResetRepo) Create(ctx context.Context, token *model.PasswordResetToken) error {
+	return m.Called(ctx, token).Error(0)
+}
+
+func (m *mockPasswordResetRepo) FindByToken(ctx context.Context, hashedToken string) (*model.PasswordResetToken, error) {
+	args := m.Called(ctx, hashedToken)
+	t, _ := args.Get(0).(*model.PasswordResetToken)
+	return t, args.Error(1)
+}
+
+func (m *mockPasswordResetRepo) MarkAsUsed(ctx context.Context, id uint) error {
+	return m.Called(ctx, id).Error(0)
+}
+
+func (m *mockPasswordResetRepo) InvalidateUserTokens(ctx context.Context, userID uint) error {
+	return m.Called(ctx, userID).Error(0)
+}
+
+// authPorts は認証の usecase に注入した port モックをまとめる。
+type authPorts struct {
+	Users  *mockAuthUserRepo
+	Tokens *mockPasswordResetRepo
+	GitHub *githubPorts
+}
+
+// setupAuthHandler は本物の usecase に port モックを注入した AuthHandler とルーターを生成する。
+func setupAuthHandler() (*gin.Engine, *AuthHandler, *authPorts) {
+	gin.SetMode(gin.TestMode)
+	ports := &authPorts{
+		Users:  new(mockAuthUserRepo),
+		Tokens: new(mockPasswordResetRepo),
+		GitHub: newGitHubPorts(),
+	}
+
+	h := NewAuthHandler(AuthUseCases{
+		Register:             usecase.NewRegisterUserUseCase(ports.Users, testJWTSecret),
+		Login:                usecase.NewLoginUseCase(ports.Users, testJWTSecret),
+		GitHubLogin:          usecase.NewGitHubLoginUseCase(ports.Users, testJWTSecret),
+		LoginState:           usecase.NewGitHubLoginStateUseCase(testJWTSecret),
+		GetMe:                usecase.NewGetMeUseCase(ports.Users),
+		RequestPasswordReset: usecase.NewRequestPasswordResetUseCase(ports.Users, ports.Tokens),
+		ResetPassword:        usecase.NewResetPasswordUseCase(ports.Users, ports.Tokens),
+		DeleteAccount:        usecase.NewDeleteAccountUseCase(ports.Users),
+	}, AuthGitHubUseCases{
+		LoginURL:     usecase.NewGetGitHubLoginURLUseCase(ports.GitHub.Client),
+		ExchangeCode: usecase.NewExchangeGitHubCodeUseCase(ports.GitHub.Client),
+		GetUser:      usecase.NewGetGitHubUserUseCase(ports.GitHub.Client),
+		Sync:         usecase.NewSyncGitHubDataUseCase(ports.GitHub.Users, ports.GitHub.Repo, ports.GitHub.Client),
+	})
+
+	r := gin.New()
+	r.POST("/auth/login", h.Login)
+	r.POST("/auth/register", h.Register)
+	r.POST("/auth/password-reset", h.RequestPasswordReset)
+	r.POST("/auth/password-reset/confirm", h.ResetPassword)
+	r.GET("/auth/github", h.GitHubLogin)
+	r.GET("/auth/github/callback", h.GitHubLoginCallback)
+
+	authorized := r.Group("/auth")
+	authorized.Use(func(c *gin.Context) { c.Set("userID", uint(1)); c.Next() })
+	authorized.GET("/me", h.Me)
+	authorized.POST("/logout", h.Logout)
+	authorized.DELETE("/account", h.DeleteAccount)
+
+	return r, h, ports
+}
+
+// tokenCookie はレスポンスから token Cookie を取り出す。
+func tokenCookie(w *http.Response) *http.Cookie {
+	for _, c := range w.Cookies() {
+		if c.Name == "token" {
+			return c
+		}
+	}
+	return nil
+}
+
+// hashedPassword はテスト用に bcrypt ハッシュを作る。
+func hashedPassword(plain string) string {
+	h, err := bcrypt.GenerateFromPassword([]byte(plain), bcrypt.DefaultCost)
+	if err != nil {
+		panic(err)
+	}
+	return string(h)
+}
+
+// ---------- ログイン ----------
+
 func TestLogin_SetsCookie(t *testing.T) {
-	r, mockUserRepo := setupLoginTest()
-
-	hashedPw, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
-	mockUserRepo.On("FindByEmail", "test@example.com").Return(&model.User{
-		Email:    "test@example.com",
-		Password: string(hashedPw),
-		Name:     "Test User",
+	r, _, ports := setupAuthHandler()
+	ports.Users.On("FindByEmail", mock.Anything, "test@example.com").Return(&model.User{
+		ID: 1, Email: "test@example.com", Password: hashedPassword("password123"), Name: "Test User",
 	}, nil)
 
-	body, _ := json.Marshal(map[string]string{
-		"email":    "test@example.com",
-		"password": "password123",
+	w := doRequest(r, http.MethodPost, "/auth/login", map[string]string{
+		"email": "test@example.com", "password": "password123",
 	})
-	req := httptest.NewRequest("POST", "/api/v1/auth/login", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
+	assertStatus(t, w, http.StatusOK)
 
-	r.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-
-	// Set-Cookieヘッダーの確認
-	cookies := w.Result().Cookies()
-	var tokenCookie *http.Cookie
-	for _, c := range cookies {
-		if c.Name == "token" {
-			tokenCookie = c
-			break
-		}
+	cookie := tokenCookie(w.Result())
+	if assert.NotNil(t, cookie, "token Cookie がセットされるべき") {
+		assert.True(t, cookie.HttpOnly, "httpOnly であるべき")
+		assert.Equal(t, "/", cookie.Path)
+		assert.Positive(t, cookie.MaxAge)
 	}
-	if assert.NotNil(t, tokenCookie, "token Cookieがセットされるべき") {
-		assert.True(t, tokenCookie.HttpOnly, "httpOnly属性がtrueであるべき")
-		assert.Equal(t, "/", tokenCookie.Path, "Pathが/であるべき")
-		assert.True(t, tokenCookie.MaxAge > 0, "MaxAgeが正の値であるべき")
-	}
+	assert.Contains(t, w.Body.String(), `"user"`)
+	ports.Users.AssertExpectations(t)
 }
 
-// TestLogin_ResponseHasUser はログイン成功時のレスポンスにuserが含まれることをテストする。
-func TestLogin_ResponseHasUser(t *testing.T) {
-	r, mockUserRepo := setupLoginTest()
-
-	hashedPw, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
-	mockUserRepo.On("FindByEmail", "test@example.com").Return(&model.User{
-		Email:    "test@example.com",
-		Password: string(hashedPw),
-		Name:     "Test User",
+// パスワードが違えば 401。
+func TestLogin_WrongPassword(t *testing.T) {
+	r, _, ports := setupAuthHandler()
+	ports.Users.On("FindByEmail", mock.Anything, "test@example.com").Return(&model.User{
+		ID: 1, Email: "test@example.com", Password: hashedPassword("password123"),
 	}, nil)
 
-	body, _ := json.Marshal(map[string]string{
-		"email":    "test@example.com",
-		"password": "password123",
+	w := doRequest(r, http.MethodPost, "/auth/login", map[string]string{
+		"email": "test@example.com", "password": "wrong-password",
 	})
-	req := httptest.NewRequest("POST", "/api/v1/auth/login", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-
-	r.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-
-	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
-	assert.Contains(t, resp, "user", "レスポンスにuserフィールドが含まれるべき")
-}
-
-// TestRegister_SetsCookie は登録成功時にSet-Cookieヘッダーがセットされることをテストする。
-func TestRegister_SetsCookie(t *testing.T) {
-	r, mockUserRepo := setupLoginTest()
-
-	mockUserRepo.On("FindByEmail", "new@example.com").Return(nil, assert.AnError)
-	mockUserRepo.On("FindByUsername", "newuser").Return(nil, assert.AnError)
-	mockUserRepo.On("Create", mock.AnythingOfType("*model.User")).Return(nil)
-
-	body, _ := json.Marshal(map[string]string{
-		"name":             "NewUser",
-		"username":         "newuser",
-		"email":            "new@example.com",
-		"password":         "password123",
-		"confirm_password": "password123",
-	})
-	req := httptest.NewRequest("POST", "/api/v1/auth/register", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-
-	r.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusCreated, w.Code)
-
-	// Set-Cookieヘッダーの確認
-	cookies := w.Result().Cookies()
-	var tokenCookie *http.Cookie
-	for _, c := range cookies {
-		if c.Name == "token" {
-			tokenCookie = c
-			break
-		}
-	}
-	if assert.NotNil(t, tokenCookie, "token Cookieがセットされるべき") {
-		assert.True(t, tokenCookie.HttpOnly, "httpOnly属性がtrueであるべき")
-	}
-}
-
-// TestLogout_ClearsCookie はログアウト時にCookieがクリアされることをテストする。
-func TestLogout_ClearsCookie(t *testing.T) {
-	r, _ := setupLoginTest()
-
-	req := httptest.NewRequest("POST", "/api/v1/auth/logout", nil)
-	w := httptest.NewRecorder()
-
-	r.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-
-	// Set-Cookieヘッダーでtoken Cookieがクリアされることを確認
-	cookies := w.Result().Cookies()
-	var tokenCookie *http.Cookie
-	for _, c := range cookies {
-		if c.Name == "token" {
-			tokenCookie = c
-			break
-		}
-	}
-	if assert.NotNil(t, tokenCookie, "token Cookieが設定されるべき（削除用）") {
-		assert.True(t, tokenCookie.MaxAge < 0, "MaxAgeが負の値であるべき（Cookie削除）")
-	}
-}
-
-// TestLogout_ReturnsOK はログアウト成功時に200レスポンスを返すことをテストする。
-func TestLogout_ReturnsOK(t *testing.T) {
-	r, _ := setupLoginTest()
-
-	req := httptest.NewRequest("POST", "/api/v1/auth/logout", nil)
-	w := httptest.NewRecorder()
-
-	r.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-
-	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
-	assert.Contains(t, resp, "message")
-}
-
-// TestMe_Success は正常なユーザー情報取得をテストする。
-func TestMe_Success(t *testing.T) {
-	r, mockUserRepo := setupLoginTest()
-
-	mockUser := &model.User{
-		Name:  "Test User",
-		Email: "test@example.com",
-	}
-	mockUser.ID = 1
-
-	mockUserRepo.On("FindByID", uint(1)).Return(mockUser, nil)
-
-	req := httptest.NewRequest("GET", "/api/v1/auth/me", nil)
-	w := httptest.NewRecorder()
-
-	// userIDをcontextにセット（middlewareの代わり）
-	ctx := gin.CreateTestContextOnly(w, r)
-	ctx.Set("userID", uint(1))
-	ctx.Request = req
-
-	r.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-}
-
-// TestMe_UserNotFound はユーザーが見つからない場合をテストする。
-func TestMe_UserNotFound(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockUserRepo := new(MockUserRepository)
-	mockPwResetRepo := new(MockPasswordResetRepository)
-	authService := service.NewAuthService(mockUserRepo, mockPwResetRepo, testJWTSecret)
-	authHandler := NewAuthHandler(authService, AuthGitHubUseCases{})
-
-	mockUserRepo.On("FindByID", uint(999)).Return(nil, service.ErrNotFound)
-
-	// 独自のルーター（ミドルウェアなし）を作成
-	r := gin.New()
-	r.GET("/api/v1/auth/me", func(c *gin.Context) {
-		c.Set("userID", uint(999))
-		authHandler.Me(c)
-	})
-
-	req := httptest.NewRequest("GET", "/api/v1/auth/me", nil)
-	w := httptest.NewRecorder()
-
-	r.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusNotFound, w.Code)
-}
-
-// TestDeleteAccount_Success は正常なアカウント削除をテストする。
-func TestDeleteAccount_Success(t *testing.T) {
-	r, mockUserRepo := setupLoginTest()
-
-	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
-	mockUser := &model.User{
-		Name:     "Test User",
-		Email:    "test@example.com",
-		Password: string(hashedPassword),
-	}
-	mockUser.ID = 1
-
-	mockUserRepo.On("FindByID", uint(1)).Return(mockUser, nil)
-	mockUserRepo.On("DeleteWithRelatedData", uint(1)).Return(nil)
-
-	body, _ := json.Marshal(map[string]string{
-		"password": "password123",
-	})
-	req := httptest.NewRequest("DELETE", "/api/v1/auth/account", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-
-	r.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
-	assert.Contains(t, resp, "message")
-}
-
-// TestDeleteAccount_WrongPassword はパスワード不一致をテストする。
-func TestDeleteAccount_WrongPassword(t *testing.T) {
-	r, mockUserRepo := setupLoginTest()
-
-	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
-	mockUser := &model.User{
-		Name:     "Test User",
-		Email:    "test@example.com",
-		Password: string(hashedPassword),
-	}
-	mockUser.ID = 1
-
-	mockUserRepo.On("FindByID", uint(1)).Return(mockUser, nil)
-
-	body, _ := json.Marshal(map[string]string{
-		"password": "wrongpassword",
-	})
-	req := httptest.NewRequest("DELETE", "/api/v1/auth/account", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-
-	r.ServeHTTP(w, req)
-
-	// パスワード不一致の場合、service層でErrForbiddenが返され、respondErrorで403に変換される
-	assert.Equal(t, http.StatusForbidden, w.Code)
-}
-
-// TestRequestPasswordReset_Success は正常なパスワードリセット要求をテストする。
-func TestRequestPasswordReset_Success(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockUserRepo := new(MockUserRepository)
-	mockPwResetRepo := new(MockPasswordResetRepository)
-	authService := service.NewAuthService(mockUserRepo, mockPwResetRepo, testJWTSecret)
-	authHandler := NewAuthHandler(authService, AuthGitHubUseCases{})
-
-	mockUser := &model.User{
-		Name:  "Test User",
-		Email: "test@example.com",
-	}
-	mockUser.ID = 1
-
-	mockUserRepo.On("FindByEmail", "test@example.com").Return(mockUser, nil)
-	mockPwResetRepo.On("InvalidateUserTokens", uint(1)).Return(nil)
-	mockPwResetRepo.On("Create", mock.AnythingOfType("*model.PasswordResetToken")).Return(nil)
-
-	// 独自のルーターを作成
-	r := gin.New()
-	r.POST("/api/v1/auth/password-reset", authHandler.RequestPasswordReset)
-
-	body, _ := json.Marshal(map[string]string{
-		"email": "test@example.com",
-	})
-	req := httptest.NewRequest("POST", "/api/v1/auth/password-reset", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-
-	r.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
-	assert.Contains(t, resp, "message")
-}
-
-// TestResetPassword_ValidationError はバリデーションエラーをテストする。
-func TestResetPassword_ValidationError(t *testing.T) {
-	r, _ := setupLoginTest()
-
-	// new_passwordが短すぎる（min=6）
-	body, _ := json.Marshal(map[string]string{
-		"token":        "valid-token",
-		"new_password": "short",
-	})
-	req := httptest.NewRequest("POST", "/api/v1/auth/password-reset/confirm", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-
-	r.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusBadRequest, w.Code)
-}
-
-// ---------- モックベースのAuth Handlerテスト ----------
-
-// TestAuthGitHubLogin_ReturnsURL はGitHub OAuthログインURLの生成をテストする。
-func TestAuthGitHubLogin_ReturnsURL(t *testing.T) {
-	h, authSvc, ghPorts := setupAuthHandlerMock()
-	authSvc.On("GenerateLoginState").Return("test-state", nil)
-	ghPorts.Client.On("LoginAuthorizeURL", "test-state").Return("https://github.com/login/oauth/authorize?state=test-state")
-
-	r := gin.New()
-	r.GET("/auth/github", h.GitHubLogin)
-	w := doRequest(r, "GET", "/auth/github", nil)
-
-	assertStatus(t, w, http.StatusOK)
-	body := parseJSON(t, w)
-	assert.NotEmpty(t, body["url"])
-	authSvc.AssertExpectations(t)
-	ghPorts.Client.AssertExpectations(t)
-}
-
-// TestAuthGitHubLogin_StateError はstate生成エラーをテストする。
-func TestAuthGitHubLogin_StateError(t *testing.T) {
-	h, authSvc, _ := setupAuthHandlerMock()
-	authSvc.On("GenerateLoginState").Return("", service.ErrBadRequest)
-
-	r := gin.New()
-	r.GET("/auth/github", h.GitHubLogin)
-	w := doRequest(r, "GET", "/auth/github", nil)
-
-	assertStatus(t, w, http.StatusBadRequest)
-	authSvc.AssertExpectations(t)
-}
-
-// TestAuthMeMock_Success はモック版のMe成功テスト。
-func TestAuthMeMock_Success(t *testing.T) {
-	h, authSvc, _ := setupAuthHandlerMock()
-	user := &model.User{Name: "Test User", Email: "test@example.com"}
-	authSvc.On("GetMe", uint(1)).Return(user, nil)
-
-	r := newRouter(1)
-	r.GET("/me", h.Me)
-	w := doRequest(r, "GET", "/me", nil)
-
-	assertStatus(t, w, http.StatusOK)
-	authSvc.AssertExpectations(t)
-}
-
-// TestAuthMeMock_NotFound はモック版のMeユーザー未発見テスト。
-func TestAuthMeMock_NotFound(t *testing.T) {
-	h, authSvc, _ := setupAuthHandlerMock()
-	authSvc.On("GetMe", uint(1)).Return(nil, service.ErrNotFound)
-
-	r := newRouter(1)
-	r.GET("/me", h.Me)
-	w := doRequest(r, "GET", "/me", nil)
-
-	assertStatus(t, w, http.StatusNotFound)
-	authSvc.AssertExpectations(t)
-}
-
-// TestAuthLoginMock_Success はモック版のLogin成功テスト。
-func TestAuthLoginMock_Success(t *testing.T) {
-	h, authSvc, _ := setupAuthHandlerMock()
-	resp := &service.AuthResponse{
-		Token: "test-token",
-		User:  model.User{Name: "Test User", Email: "test@example.com"},
-	}
-	authSvc.On("Login", mock.Anything).Return(resp, nil)
-
-	r := gin.New()
-	r.POST("/login", h.Login)
-	w := doRequest(r, "POST", "/login", map[string]string{
-		"email":    "test@example.com",
-		"password": "password123",
-	})
-
-	assertStatus(t, w, http.StatusOK)
-	authSvc.AssertExpectations(t)
-}
-
-// TestAuthLoginMock_Unauthorized はモック版のログイン失敗テスト。
-func TestAuthLoginMock_Unauthorized(t *testing.T) {
-	h, authSvc, _ := setupAuthHandlerMock()
-	authSvc.On("Login", mock.Anything).Return(nil, service.ErrUnauthorized)
-
-	r := gin.New()
-	r.POST("/login", h.Login)
-	w := doRequest(r, "POST", "/login", map[string]string{
-		"email":    "test@example.com",
-		"password": "wrong",
-	})
-
 	assertStatus(t, w, http.StatusUnauthorized)
-	authSvc.AssertExpectations(t)
+	assert.Nil(t, tokenCookie(w.Result()))
 }
 
-// TestAuthDeleteAccountMock_Success はモック版のアカウント削除成功テスト。
-func TestAuthDeleteAccountMock_Success(t *testing.T) {
-	h, authSvc, _ := setupAuthHandlerMock()
-	authSvc.On("DeleteAccount", uint(1), "password123").Return(nil)
+// 未登録のメールアドレスも 401（存在有無を漏らさない）。
+func TestLogin_UserNotFound(t *testing.T) {
+	r, _, ports := setupAuthHandler()
+	ports.Users.On("FindByEmail", mock.Anything, "unknown@example.com").Return(nil, nil)
 
-	r := newRouter(1)
-	r.DELETE("/account", h.DeleteAccount)
-	w := doRequest(r, "DELETE", "/account", map[string]string{
-		"password": "password123",
+	w := doRequest(r, http.MethodPost, "/auth/login", map[string]string{
+		"email": "unknown@example.com", "password": "password123",
 	})
-
-	assertStatus(t, w, http.StatusOK)
-	authSvc.AssertExpectations(t)
+	assertStatus(t, w, http.StatusUnauthorized)
+	ports.Users.AssertExpectations(t)
 }
 
-// TestResetPasswordMock_Success はパスワードリセット成功テスト。
-func TestResetPasswordMock_Success(t *testing.T) {
-	h, authSvc, _ := setupAuthHandlerMock()
-	authSvc.On("ResetPassword", "valid-token", "newpassword123").Return(nil)
+// ---------- 登録 ----------
 
-	r := gin.New()
-	r.POST("/password-reset/confirm", h.ResetPassword)
-	w := doRequest(r, "POST", "/password-reset/confirm", map[string]string{
-		"token":        "valid-token",
-		"new_password": "newpassword123",
+func TestRegister_SetsCookie(t *testing.T) {
+	r, _, ports := setupAuthHandler()
+	ports.Users.On("FindByEmail", mock.Anything, "new@example.com").Return(nil, nil)
+	ports.Users.On("FindByUsername", mock.Anything, "newuser").Return(nil, nil)
+	ports.Users.On("Create", mock.Anything, mock.MatchedBy(func(u *model.User) bool {
+		// パスワードはハッシュ化して保存する
+		return u.Email == "new@example.com" && u.Password != "password123" && u.Password != ""
+	})).Return(nil)
+
+	w := doRequest(r, http.MethodPost, "/auth/register", map[string]string{
+		"name": "NewUser", "username": "newuser", "email": "new@example.com",
+		"password": "password123", "confirm_password": "password123",
 	})
-
-	assertStatus(t, w, http.StatusOK)
-	authSvc.AssertExpectations(t)
-}
-
-// TestResetPasswordMock_ServiceError はパスワードリセットのサービスエラーテスト。
-func TestResetPasswordMock_ServiceError(t *testing.T) {
-	h, authSvc, _ := setupAuthHandlerMock()
-	authSvc.On("ResetPassword", "expired-token", "newpassword123").Return(service.ErrBadRequest)
-
-	r := gin.New()
-	r.POST("/password-reset/confirm", h.ResetPassword)
-	w := doRequest(r, "POST", "/password-reset/confirm", map[string]string{
-		"token":        "expired-token",
-		"new_password": "newpassword123",
-	})
-
-	assertStatus(t, w, http.StatusBadRequest)
-	authSvc.AssertExpectations(t)
-}
-
-// TestRequestPasswordResetMock_ServiceError はパスワードリセット要求のサービスエラーテスト。
-func TestRequestPasswordResetMock_ServiceError(t *testing.T) {
-	h, authSvc, _ := setupAuthHandlerMock()
-	authSvc.On("RequestPasswordReset", "notfound@example.com").Return("", service.ErrNotFound)
-
-	r := gin.New()
-	r.POST("/password-reset", h.RequestPasswordReset)
-	w := doRequest(r, "POST", "/password-reset", map[string]string{
-		"email": "notfound@example.com",
-	})
-
-	assertStatus(t, w, http.StatusNotFound)
-	authSvc.AssertExpectations(t)
-}
-
-// TestRegisterMock_Success はモック版の登録成功テスト。
-func TestRegisterMock_Success(t *testing.T) {
-	h, authSvc, _ := setupAuthHandlerMock()
-	resp := &service.AuthResponse{
-		Token: "test-token",
-		User:  model.User{Name: "New User", Email: "new@example.com"},
-	}
-	authSvc.On("Register", mock.Anything).Return(resp, nil)
-
-	r := gin.New()
-	r.POST("/register", h.Register)
-	w := doRequest(r, "POST", "/register", map[string]string{
-		"name":             "New User",
-		"username":         "newuser",
-		"email":            "new@example.com",
-		"password":         "password123",
-		"confirm_password": "password123",
-	})
-
 	assertStatus(t, w, http.StatusCreated)
-	authSvc.AssertExpectations(t)
+
+	cookie := tokenCookie(w.Result())
+	if assert.NotNil(t, cookie) {
+		assert.True(t, cookie.HttpOnly)
+	}
+	ports.Users.AssertExpectations(t)
 }
 
-// TestRegisterMock_ServiceError はモック版の登録サービスエラーテスト。
-func TestRegisterMock_ServiceError(t *testing.T) {
-	h, authSvc, _ := setupAuthHandlerMock()
-	authSvc.On("Register", mock.Anything).Return(nil, service.ErrBadRequest)
+// メールアドレスが登録済みなら 409。
+func TestRegister_DuplicateEmail(t *testing.T) {
+	r, _, ports := setupAuthHandler()
+	ports.Users.On("FindByEmail", mock.Anything, "dup@example.com").Return(&model.User{ID: 2}, nil)
 
-	r := gin.New()
-	r.POST("/register", h.Register)
-	w := doRequest(r, "POST", "/register", map[string]string{
-		"name":             "New User",
-		"username":         "newuser",
-		"email":            "new@example.com",
-		"password":         "password123",
-		"confirm_password": "password123",
+	w := doRequest(r, http.MethodPost, "/auth/register", map[string]string{
+		"name": "Dup", "username": "dupuser", "email": "dup@example.com",
+		"password": "password123", "confirm_password": "password123",
 	})
-
-	assertStatus(t, w, http.StatusBadRequest)
-	authSvc.AssertExpectations(t)
+	assertStatus(t, w, http.StatusConflict)
+	ports.Users.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 }
 
-// TestRegisterMock_InvalidBody は不正なリクエストボディのテスト。
-func TestRegisterMock_InvalidBody(t *testing.T) {
-	h, _, _ := setupAuthHandlerMock()
+// ユーザー名が使用済みなら 409。
+func TestRegister_DuplicateUsername(t *testing.T) {
+	r, _, ports := setupAuthHandler()
+	ports.Users.On("FindByEmail", mock.Anything, "new@example.com").Return(nil, nil)
+	ports.Users.On("FindByUsername", mock.Anything, "taken").Return(&model.User{ID: 3}, nil)
 
-	r := gin.New()
-	r.POST("/register", h.Register)
-	w := doRequest(r, "POST", "/register", map[string]string{
-		"email": "invalid",
+	w := doRequest(r, http.MethodPost, "/auth/register", map[string]string{
+		"name": "New", "username": "taken", "email": "new@example.com",
+		"password": "password123", "confirm_password": "password123",
 	})
-
-	assertStatus(t, w, http.StatusBadRequest)
+	assertStatus(t, w, http.StatusConflict)
+	ports.Users.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 }
 
-// TestGitHubLoginCallback_Success はGitHubコールバック成功テスト。
-func TestGitHubLoginCallback_Success(t *testing.T) {
-	h, authSvc, ghPorts := setupAuthHandlerMock()
+func TestRegister_InvalidBody(t *testing.T) {
+	r, _, ports := setupAuthHandler()
 
-	authSvc.On("ValidateLoginState", "valid-state").Return(nil)
-	ghPorts.Client.On("ExchangeCode", mock.Anything, "valid-code").Return("access-token", nil)
-	ghPorts.Client.On("GetUser", mock.Anything, "access-token").Return(&model.GitHubUserInfo{
-		ID:    12345,
-		Login: "testuser",
-		Email: "test@example.com",
-	}, nil)
-	authSvc.On("GitHubLogin", mock.Anything, "access-token").Return(&service.AuthResponse{
-		Token: "jwt-token",
-		User:  model.User{Name: "Test User"},
-	}, nil)
-	// SyncUserDataはgoroutineで呼ばれるためMaybeで登録
-	ghPorts.Users.On("FindByID", mock.Anything, mock.Anything).Return(nil, nil).Maybe()
+	w := doRequestRaw(r, http.MethodPost, "/auth/register", "{invalid}")
+	assertStatus(t, w, http.StatusBadRequest)
+	ports.Users.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
+}
 
-	r := gin.New()
-	r.GET("/callback", h.GitHubLoginCallback)
-	w := doRequest(r, "GET", "/callback?code=valid-code&state=valid-state", nil)
+func TestRegister_CreateError(t *testing.T) {
+	r, _, ports := setupAuthHandler()
+	ports.Users.On("FindByEmail", mock.Anything, "new@example.com").Return(nil, nil)
+	ports.Users.On("FindByUsername", mock.Anything, "newuser").Return(nil, nil)
+	ports.Users.On("Create", mock.Anything, mock.Anything).Return(errors.New("db error"))
 
+	w := doRequest(r, http.MethodPost, "/auth/register", map[string]string{
+		"name": "NewUser", "username": "newuser", "email": "new@example.com",
+		"password": "password123", "confirm_password": "password123",
+	})
+	assertStatus(t, w, http.StatusInternalServerError)
+}
+
+// ---------- ログアウト ----------
+
+func TestLogout_ClearsCookie(t *testing.T) {
+	r, _, _ := setupAuthHandler()
+
+	w := doRequest(r, http.MethodPost, "/auth/logout", nil)
 	assertStatus(t, w, http.StatusOK)
-	authSvc.AssertExpectations(t)
+
+	cookie := tokenCookie(w.Result())
+	if assert.NotNil(t, cookie, "削除用の token Cookie が設定されるべき") {
+		assert.Negative(t, cookie.MaxAge, "MaxAge が負で Cookie を削除する")
+	}
+	assert.Contains(t, w.Body.String(), "message")
 }
 
-// TestGitHubLoginCallback_MissingParams はcode/state欠落テスト。
+// ---------- Me ----------
+
+func TestMe_Success(t *testing.T) {
+	r, _, ports := setupAuthHandler()
+	ports.Users.On("FindByID", mock.Anything, uint(1)).
+		Return(&model.User{ID: 1, Name: "Test User", Email: "test@example.com"}, nil)
+
+	w := doRequest(r, http.MethodGet, "/auth/me", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Contains(t, w.Body.String(), "test@example.com")
+	ports.Users.AssertExpectations(t)
+}
+
+// ユーザーが存在しない場合は移行前と同じく内部エラーになる。
+func TestMe_UserNotFound(t *testing.T) {
+	r, _, ports := setupAuthHandler()
+	ports.Users.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
+
+	w := doRequest(r, http.MethodGet, "/auth/me", nil)
+	assertStatus(t, w, http.StatusInternalServerError)
+	ports.Users.AssertExpectations(t)
+}
+
+// ---------- 退会 ----------
+
+func TestDeleteAccount_Success(t *testing.T) {
+	r, _, ports := setupAuthHandler()
+	ports.Users.On("FindByID", mock.Anything, uint(1)).
+		Return(&model.User{ID: 1, Password: hashedPassword("password123")}, nil)
+	ports.Users.On("DeleteWithRelatedData", mock.Anything, uint(1)).Return(nil)
+
+	w := doRequest(r, http.MethodDelete, "/auth/account", map[string]string{"password": "password123"})
+	assertStatus(t, w, http.StatusOK)
+	ports.Users.AssertExpectations(t)
+}
+
+func TestDeleteAccount_WrongPassword(t *testing.T) {
+	r, _, ports := setupAuthHandler()
+	ports.Users.On("FindByID", mock.Anything, uint(1)).
+		Return(&model.User{ID: 1, Password: hashedPassword("password123")}, nil)
+
+	w := doRequest(r, http.MethodDelete, "/auth/account", map[string]string{"password": "wrong"})
+	assertStatus(t, w, http.StatusForbidden)
+	ports.Users.AssertNotCalled(t, "DeleteWithRelatedData", mock.Anything, mock.Anything)
+}
+
+// パスワード未入力は DTO の binding で弾かれる（usecase まで届かない）。
+// GitHub のみで登録したユーザーのパスワード検証スキップは usecase テストで検証する。
+func TestDeleteAccount_EmptyPassword(t *testing.T) {
+	r, _, ports := setupAuthHandler()
+
+	w := doRequest(r, http.MethodDelete, "/auth/account", map[string]string{"password": ""})
+	assertStatus(t, w, http.StatusBadRequest)
+	ports.Users.AssertNotCalled(t, "DeleteWithRelatedData", mock.Anything, mock.Anything)
+}
+
+func TestDeleteAccount_UserNotFound(t *testing.T) {
+	r, _, ports := setupAuthHandler()
+	ports.Users.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
+
+	w := doRequest(r, http.MethodDelete, "/auth/account", map[string]string{"password": "password123"})
+	assertStatus(t, w, http.StatusNotFound)
+}
+
+// ---------- パスワードリセット ----------
+
+func TestRequestPasswordReset_Success(t *testing.T) {
+	r, _, ports := setupAuthHandler()
+	ports.Users.On("FindByEmail", mock.Anything, "test@example.com").Return(&model.User{ID: 1}, nil)
+	ports.Tokens.On("InvalidateUserTokens", mock.Anything, uint(1)).Return(nil)
+	ports.Tokens.On("Create", mock.Anything, mock.MatchedBy(func(t *model.PasswordResetToken) bool {
+		// 平文ではなくハッシュを保存する（SHA-256 の 64 桁）
+		return t.UserID == 1 && len(t.Token) == 64 && t.ExpiresAt.After(t.CreatedAt)
+	})).Return(nil)
+
+	w := doRequest(r, http.MethodPost, "/auth/password-reset", map[string]string{"email": "test@example.com"})
+	assertStatus(t, w, http.StatusOK)
+	ports.Tokens.AssertExpectations(t)
+}
+
+// 未登録のメールアドレスでも 200 を返し、存在有無を漏らさない。
+func TestRequestPasswordReset_UnknownEmail(t *testing.T) {
+	r, _, ports := setupAuthHandler()
+	ports.Users.On("FindByEmail", mock.Anything, "unknown@example.com").Return(nil, nil)
+
+	w := doRequest(r, http.MethodPost, "/auth/password-reset", map[string]string{"email": "unknown@example.com"})
+	assertStatus(t, w, http.StatusOK)
+	ports.Tokens.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
+}
+
+func TestResetPassword_Success(t *testing.T) {
+	r, _, ports := setupAuthHandler()
+	ports.Tokens.On("FindByToken", mock.Anything, mock.AnythingOfType("string")).
+		Return(&model.PasswordResetToken{ID: 5, UserID: 1, ExpiresAt: futureTime()}, nil)
+	ports.Users.On("UpdatePassword", mock.Anything, uint(1), mock.MatchedBy(func(hashed string) bool {
+		return hashed != "newpassword123"
+	})).Return(nil)
+	ports.Tokens.On("MarkAsUsed", mock.Anything, uint(5)).Return(nil)
+
+	w := doRequest(r, http.MethodPost, "/auth/password-reset/confirm", map[string]string{
+		"token": "raw-token", "new_password": "newpassword123",
+	})
+	assertStatus(t, w, http.StatusOK)
+	ports.Users.AssertExpectations(t)
+	ports.Tokens.AssertExpectations(t)
+}
+
+// トークンが見つからなければ 400。
+func TestResetPassword_InvalidToken(t *testing.T) {
+	r, _, ports := setupAuthHandler()
+	ports.Tokens.On("FindByToken", mock.Anything, mock.AnythingOfType("string")).Return(nil, nil)
+
+	w := doRequest(r, http.MethodPost, "/auth/password-reset/confirm", map[string]string{
+		"token": "bad-token", "new_password": "newpassword123",
+	})
+	assertStatus(t, w, http.StatusBadRequest)
+	ports.Users.AssertNotCalled(t, "UpdatePassword", mock.Anything, mock.Anything, mock.Anything)
+}
+
+// 期限切れのトークンは 400。
+func TestResetPassword_ExpiredToken(t *testing.T) {
+	r, _, ports := setupAuthHandler()
+	ports.Tokens.On("FindByToken", mock.Anything, mock.AnythingOfType("string")).
+		Return(&model.PasswordResetToken{ID: 5, UserID: 1, ExpiresAt: pastTime()}, nil)
+
+	w := doRequest(r, http.MethodPost, "/auth/password-reset/confirm", map[string]string{
+		"token": "raw-token", "new_password": "newpassword123",
+	})
+	assertStatus(t, w, http.StatusBadRequest)
+	ports.Users.AssertNotCalled(t, "UpdatePassword", mock.Anything, mock.Anything, mock.Anything)
+}
+
+func TestResetPassword_ValidationError(t *testing.T) {
+	r, _, ports := setupAuthHandler()
+
+	w := doRequest(r, http.MethodPost, "/auth/password-reset/confirm", map[string]string{
+		"token": "raw-token", "new_password": "short",
+	})
+	assertStatus(t, w, http.StatusBadRequest)
+	ports.Users.AssertNotCalled(t, "UpdatePassword", mock.Anything, mock.Anything, mock.Anything)
+}
+
+// ---------- GitHub ログイン ----------
+
+func TestAuthGitHubLogin_ReturnsURL(t *testing.T) {
+	r, _, ports := setupAuthHandler()
+	ports.GitHub.Client.On("LoginAuthorizeURL", mock.AnythingOfType("string")).
+		Return("https://github.com/login/oauth/authorize?scope=user:email")
+
+	w := doRequest(r, http.MethodGet, "/auth/github", nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.Contains(t, w.Body.String(), "github.com/login/oauth/authorize")
+	ports.GitHub.Client.AssertExpectations(t)
+}
+
 func TestGitHubLoginCallback_MissingParams(t *testing.T) {
-	h, _, _ := setupAuthHandlerMock()
+	r, _, ports := setupAuthHandler()
 
-	r := gin.New()
-	r.GET("/callback", h.GitHubLoginCallback)
-
-	// code欠落
-	w := doRequest(r, "GET", "/callback?state=some-state", nil)
+	w := doRequest(r, http.MethodGet, "/auth/github/callback", nil)
 	assertStatus(t, w, http.StatusBadRequest)
-
-	// state欠落
-	w = doRequest(r, "GET", "/callback?code=some-code", nil)
-	assertStatus(t, w, http.StatusBadRequest)
-
-	// 両方欠落
-	w = doRequest(r, "GET", "/callback", nil)
-	assertStatus(t, w, http.StatusBadRequest)
+	ports.GitHub.Client.AssertNotCalled(t, "ExchangeCode", mock.Anything, mock.Anything)
 }
 
-// TestGitHubLoginCallback_InvalidState はstate検証失敗テスト。
 func TestGitHubLoginCallback_InvalidState(t *testing.T) {
-	h, authSvc, _ := setupAuthHandlerMock()
-	authSvc.On("ValidateLoginState", "invalid-state").Return(service.ErrBadRequest)
+	r, _, ports := setupAuthHandler()
 
-	r := gin.New()
-	r.GET("/callback", h.GitHubLoginCallback)
-	w := doRequest(r, "GET", "/callback?code=some-code&state=invalid-state", nil)
-
-	assertStatus(t, w, http.StatusBadRequest)
-	authSvc.AssertExpectations(t)
+	w := doRequest(r, http.MethodGet, "/auth/github/callback?code=valid-code&state=invalid-state", nil)
+	assertStatus(t, w, http.StatusUnauthorized)
+	ports.GitHub.Client.AssertNotCalled(t, "ExchangeCode", mock.Anything, mock.Anything)
 }
 
-// TestGitHubLoginCallback_ExchangeCodeError はコード交換エラーテスト。
+// state を発行してからコールバックを通し、既存ユーザーとしてログインできることを確認する。
+func TestGitHubLoginCallback_Success(t *testing.T) {
+	r, _, ports := setupAuthHandler()
+	state, err := usecase.NewGitHubLoginStateUseCase(testJWTSecret).Generate()
+	assert.NoError(t, err)
+
+	ports.GitHub.Client.On("ExchangeCode", mock.Anything, "valid-code").Return("access-token", nil)
+	ports.GitHub.Client.On("GetUser", mock.Anything, "access-token").
+		Return(&model.GitHubUserInfo{ID: 42, Login: "dev", Email: "dev@example.com"}, nil)
+	ports.Users.On("FindByGitHubID", mock.Anything, int64(42)).Return(&model.User{ID: 1, Email: "dev@example.com"}, nil)
+	ports.Users.On("Update", mock.Anything, mock.MatchedBy(func(u *model.User) bool {
+		return u.GitHubToken == "access-token" && u.GitHubUsername == "dev"
+	})).Return(nil)
+	// ログイン後のデータ同期はバックグラウンドで走るため、呼ばれても呼ばれなくてもよい
+	ports.GitHub.Users.On("FindByID", mock.Anything, mock.Anything).Return(nil, nil).Maybe()
+
+	w := doRequest(r, http.MethodGet, "/auth/github/callback?code=valid-code&state="+state, nil)
+	assertStatus(t, w, http.StatusOK)
+	assert.NotNil(t, tokenCookie(w.Result()))
+	ports.Users.AssertExpectations(t)
+}
+
 func TestGitHubLoginCallback_ExchangeCodeError(t *testing.T) {
-	h, authSvc, ghPorts := setupAuthHandlerMock()
-	authSvc.On("ValidateLoginState", "valid-state").Return(nil)
-	ghPorts.Client.On("ExchangeCode", mock.Anything, "bad-code").Return("", assert.AnError)
+	r, _, ports := setupAuthHandler()
+	state, _ := usecase.NewGitHubLoginStateUseCase(testJWTSecret).Generate()
 
-	r := gin.New()
-	r.GET("/callback", h.GitHubLoginCallback)
-	w := doRequest(r, "GET", "/callback?code=bad-code&state=valid-state", nil)
+	ports.GitHub.Client.On("ExchangeCode", mock.Anything, "bad-code").Return("", errors.New("api error"))
 
+	w := doRequest(r, http.MethodGet, "/auth/github/callback?code=bad-code&state="+state, nil)
 	assertStatus(t, w, http.StatusInternalServerError)
-	authSvc.AssertExpectations(t)
-	ghPorts.Client.AssertExpectations(t)
+	ports.Users.AssertNotCalled(t, "FindByGitHubID", mock.Anything, mock.Anything)
 }
 
-// TestGitHubLoginCallback_GetUserError はGitHubユーザー取得エラーテスト。
 func TestGitHubLoginCallback_GetUserError(t *testing.T) {
-	h, authSvc, ghPorts := setupAuthHandlerMock()
-	authSvc.On("ValidateLoginState", "valid-state").Return(nil)
-	ghPorts.Client.On("ExchangeCode", mock.Anything, "valid-code").Return("access-token", nil)
-	ghPorts.Client.On("GetUser", mock.Anything, "access-token").Return(nil, assert.AnError)
+	r, _, ports := setupAuthHandler()
+	state, _ := usecase.NewGitHubLoginStateUseCase(testJWTSecret).Generate()
 
-	r := gin.New()
-	r.GET("/callback", h.GitHubLoginCallback)
-	w := doRequest(r, "GET", "/callback?code=valid-code&state=valid-state", nil)
+	ports.GitHub.Client.On("ExchangeCode", mock.Anything, "valid-code").Return("access-token", nil)
+	ports.GitHub.Client.On("GetUser", mock.Anything, "access-token").Return(nil, errors.New("api error"))
 
+	w := doRequest(r, http.MethodGet, "/auth/github/callback?code=valid-code&state="+state, nil)
 	assertStatus(t, w, http.StatusInternalServerError)
-	authSvc.AssertExpectations(t)
-	ghPorts.Client.AssertExpectations(t)
+	ports.Users.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 }
 
-// TestGitHubLoginCallback_LoginError はGitHubログインエラーテスト。
-func TestGitHubLoginCallback_LoginError(t *testing.T) {
-	h, authSvc, ghPorts := setupAuthHandlerMock()
-	authSvc.On("ValidateLoginState", "valid-state").Return(nil)
-	ghPorts.Client.On("ExchangeCode", mock.Anything, "valid-code").Return("access-token", nil)
-	ghPorts.Client.On("GetUser", mock.Anything, "access-token").Return(&model.GitHubUserInfo{
-		ID:    12345,
-		Login: "testuser",
-		Email: "test@example.com",
-	}, nil)
-	authSvc.On("GitHubLogin", mock.Anything, "access-token").Return(nil, assert.AnError)
+// 既存ユーザーがいなければ新規作成してログインする。
+func TestGitHubLoginCallback_CreatesUser(t *testing.T) {
+	r, _, ports := setupAuthHandler()
+	state, _ := usecase.NewGitHubLoginStateUseCase(testJWTSecret).Generate()
 
-	r := gin.New()
-	r.GET("/callback", h.GitHubLoginCallback)
-	w := doRequest(r, "GET", "/callback?code=valid-code&state=valid-state", nil)
+	ports.GitHub.Client.On("ExchangeCode", mock.Anything, "valid-code").Return("access-token", nil)
+	ports.GitHub.Client.On("GetUser", mock.Anything, "access-token").
+		Return(&model.GitHubUserInfo{ID: 42, Login: "newdev"}, nil)
+	ports.Users.On("FindByGitHubID", mock.Anything, int64(42)).Return(nil, nil)
+	ports.Users.On("FindByUsername", mock.Anything, "newdev").Return(nil, nil)
+	ports.Users.On("Create", mock.Anything, mock.MatchedBy(func(u *model.User) bool {
+		// メールアドレスが無い場合はプレースホルダを使う
+		return u.Username == "newdev" && u.Email == "newdev@github.local" && u.GitHubConnected
+	})).Return(nil)
+	ports.GitHub.Users.On("FindByID", mock.Anything, mock.Anything).Return(nil, nil).Maybe()
 
-	assertStatus(t, w, http.StatusInternalServerError)
-	authSvc.AssertExpectations(t)
-	ghPorts.Client.AssertExpectations(t)
+	w := doRequest(r, http.MethodGet, "/auth/github/callback?code=valid-code&state="+state, nil)
+	assertStatus(t, w, http.StatusOK)
+	ports.Users.AssertExpectations(t)
+}
+
+// ユーザー名が使用済みなら連番を付けて作成する。
+func TestGitHubLoginCallback_UniqueUsername(t *testing.T) {
+	r, _, ports := setupAuthHandler()
+	state, _ := usecase.NewGitHubLoginStateUseCase(testJWTSecret).Generate()
+
+	ports.GitHub.Client.On("ExchangeCode", mock.Anything, "valid-code").Return("access-token", nil)
+	ports.GitHub.Client.On("GetUser", mock.Anything, "access-token").
+		Return(&model.GitHubUserInfo{ID: 42, Login: "dev"}, nil)
+	ports.Users.On("FindByGitHubID", mock.Anything, int64(42)).Return(nil, nil)
+	ports.Users.On("FindByUsername", mock.Anything, "dev").Return(&model.User{ID: 9}, nil)
+	ports.Users.On("FindByUsername", mock.Anything, "dev2").Return(nil, nil)
+	ports.Users.On("Create", mock.Anything, mock.MatchedBy(func(u *model.User) bool {
+		return u.Username == "dev2"
+	})).Return(nil)
+	ports.GitHub.Users.On("FindByID", mock.Anything, mock.Anything).Return(nil, nil).Maybe()
+
+	w := doRequest(r, http.MethodGet, "/auth/github/callback?code=valid-code&state="+state, nil)
+	assertStatus(t, w, http.StatusOK)
+	ports.Users.AssertExpectations(t)
+}
+
+// futureTime は未来の時刻を返す（有効なトークン用）。
+func futureTime() time.Time {
+	return time.Now().Add(1 * time.Hour)
+}
+
+// pastTime は過去の時刻を返す（期限切れトークン用）。
+func pastTime() time.Time {
+	return time.Now().Add(-1 * time.Hour)
 }

@@ -102,9 +102,9 @@ type Container struct {
 	NotificationSettingsHandler  *handler.NotificationSettingsHandler
 
 	// ミドルウェア・コールバック用
-	AuthService      *service.AuthService
-	Hub              *service.Hub
-	GroupMessageRepo *repository.GroupMessageRepository
+	ValidateAuthToken *usecase.ValidateAuthTokenUseCase
+	Hub               *service.Hub
+	GroupMessageRepo  *repository.GroupMessageRepository
 }
 
 // NewContainer はDIコンテナを構築する。
@@ -112,15 +112,12 @@ type Container struct {
 func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container {
 	c := &Container{Hub: hub}
 
-	// リポジトリ
-	userRepo := repository.NewUserRepository(db)
 	// follow はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	followRepo := persistence.NewFollowRepository(db)
 	// ダイレクトメッセージはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	messagePort := persistence.NewMessageRepository(db)
 	// ランキングはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	rankingRepo := persistence.NewRankingRepository(db)
-	passwordResetRepo := repository.NewPasswordResetRepository(db)
 	// Zenn 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence と adapter/external。
 	zennPort := persistence.NewZennRepository(db)
 	zennClient := external.NewZennClient()
@@ -181,8 +178,22 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 	c.GroupMessageRepo = groupMessageRepo
 
 	// 共通サービス
-	authService := service.NewAuthService(userRepo, passwordResetRepo, cfg.JWTSecret)
-	c.AuthService = authService
+	// 認証はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
+	authUserPort := persistence.NewAuthUserRepository(db)
+	passwordResetPort := persistence.NewPasswordResetTokenRepository(db)
+	validateAuthToken := usecase.NewValidateAuthTokenUseCase(cfg.JWTSecret)
+	oauthState := usecase.NewOAuthStateUseCase(cfg.JWTSecret)
+	authUseCases := handler.AuthUseCases{
+		Register:             usecase.NewRegisterUserUseCase(authUserPort, cfg.JWTSecret),
+		Login:                usecase.NewLoginUseCase(authUserPort, cfg.JWTSecret),
+		GitHubLogin:          usecase.NewGitHubLoginUseCase(authUserPort, cfg.JWTSecret),
+		LoginState:           usecase.NewGitHubLoginStateUseCase(cfg.JWTSecret),
+		GetMe:                usecase.NewGetMeUseCase(authUserPort),
+		RequestPasswordReset: usecase.NewRequestPasswordResetUseCase(authUserPort, passwordResetPort),
+		ResetPassword:        usecase.NewResetPasswordUseCase(authUserPort, passwordResetPort),
+		DeleteAccount:        usecase.NewDeleteAccountUseCase(authUserPort),
+	}
+	c.ValidateAuthToken = validateAuthToken
 
 	// ユーザー情報はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	// 旧 userRepo は認証・GitHub・Zenn・Qiita・AtCoder・YouTube・メンションがまだ使うため残している。
@@ -277,7 +288,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 
 	// ハンドラ
 	origins := cfg.CORSOrigins
-	c.AuthHandler = handler.NewAuthHandler(authService, authGitHubUseCases)
+	c.AuthHandler = handler.NewAuthHandler(authUseCases, authGitHubUseCases)
 	c.UserHandler = handler.NewUserHandler(
 		usecase.NewListUsersUseCase(userPort),
 		usecase.NewGetUserUseCase(userPort),
@@ -291,7 +302,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewListFollowersUseCase(followRepo),
 		usecase.NewListFollowingUseCase(followRepo),
 	)
-	c.GitHubHandler = handler.NewGitHubHandler(githubUseCases, authService)
+	c.GitHubHandler = handler.NewGitHubHandler(githubUseCases, oauthState)
 	// 投稿スライスはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	postPort := persistence.NewPostRepository(db)
 	postReactionPort := persistence.NewPostReactionRepository(db)
@@ -373,7 +384,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		usecase.NewSendMessageUseCase(messagePort, persistence.NewNotificationCreator(db)),
 		usecase.NewMarkMessagesAsReadUseCase(messagePort),
 	)
-	c.WebSocketHandler = handler.NewWebSocketHandler(hub, authService, parseOrigins(origins))
+	c.WebSocketHandler = handler.NewWebSocketHandler(hub, validateAuthToken, parseOrigins(origins))
 	uploadHandler, err := handler.NewUploadHandler()
 	if err != nil {
 		log.Fatalf("アップロードハンドラの初期化に失敗: %v", err)
@@ -877,7 +888,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *service.Hub) *Container 
 		CurrentlyPlaying: usecase.NewGetSpotifyCurrentlyPlayingUseCase(userPort, spotifyClient),
 		RecentlyPlayed:   usecase.NewGetSpotifyRecentlyPlayedUseCase(userPort, spotifyClient),
 	}
-	c.SpotifyHandler = handler.NewSpotifyHandler(spotifyUseCases, authService)
+	c.SpotifyHandler = handler.NewSpotifyHandler(spotifyUseCases, oauthState)
 
 	// YouTube 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence と adapter/external。
 	// APIキー未設定のときは検索クライアントを nil のままにし、利用不可（503）として扱う。

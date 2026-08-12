@@ -28,6 +28,14 @@ var _ repository.UserRepository = (*userRepository)(nil)
 // 最小 port としても使えることを保証する（おすすめユーザーの算出はこちらに依存する）。
 var _ repository.UserSkillsReader = (*userRepository)(nil)
 
+// 認証が必要とする操作（作成・削除・パスワード更新）も同じ実装で満たす。
+var _ repository.AuthUserRepository = (*userRepository)(nil)
+
+// NewAuthUserRepository は AuthUserRepository の GORM 実装を返す。
+func NewAuthUserRepository(db *gorm.DB) repository.AuthUserRepository {
+	return &userRepository{db: db}
+}
+
 // FindAll は全ユーザーを取得する。
 func (r *userRepository) FindAll(ctx context.Context) ([]model.User, error) {
 	var users []model.User
@@ -72,4 +80,78 @@ func (r *userRepository) Search(ctx context.Context, query string) ([]model.User
 // Update はユーザー情報を更新する。
 func (r *userRepository) Update(ctx context.Context, user *model.User) error {
 	return r.db.WithContext(ctx).Save(user).Error
+}
+
+// FindByEmail はメールアドレスでユーザーを取得する。不在の場合は (nil, nil) を返す。
+func (r *userRepository) FindByEmail(ctx context.Context, email string) (*model.User, error) {
+	var user model.User
+	if err := r.db.WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &user, nil
+}
+
+// FindByGitHubID は GitHub の ID でユーザーを取得する。不在の場合は (nil, nil) を返す。
+func (r *userRepository) FindByGitHubID(ctx context.Context, githubID int64) (*model.User, error) {
+	var user model.User
+	if err := r.db.WithContext(ctx).Where("git_hub_id = ?", githubID).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &user, nil
+}
+
+// Create はユーザーを作成する。
+func (r *userRepository) Create(ctx context.Context, user *model.User) error {
+	return r.db.WithContext(ctx).Create(user).Error
+}
+
+// UpdatePassword はパスワードハッシュだけを更新する。
+func (r *userRepository) UpdatePassword(ctx context.Context, userID uint, hashedPassword string) error {
+	return r.db.WithContext(ctx).Model(&model.User{}).
+		Where("id = ?", userID).Update("password", hashedPassword).Error
+}
+
+// DeleteWithRelatedData はユーザーと関連データをトランザクション内で削除する。
+// 通知・メッセージ・コメント・いいね・投稿・フォロー・GitHub 連携データ・
+// パスワードリセットトークンを削除してから、最後にユーザー本体を削除する。
+func (r *userRepository) DeleteWithRelatedData(ctx context.Context, id uint) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("user_id = ? OR actor_id = ?", id, id).Delete(&model.Notification{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("sender_id = ? OR receiver_id = ?", id, id).Delete(&model.Message{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("user_id = ?", id).Delete(&model.Comment{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("user_id = ?", id).Delete(&model.Like{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("user_id = ?", id).Delete(&model.Post{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("follower_id = ? OR followee_id = ?", id, id).Delete(&model.Follow{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("user_id = ?", id).Delete(&model.GitHubContribution{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("user_id = ?", id).Delete(&model.GitHubLanguageStat{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("user_id = ?", id).Delete(&model.GitHubRepository{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("user_id = ?", id).Delete(&model.PasswordResetToken{}).Error; err != nil {
+			return err
+		}
+		return tx.Delete(&model.User{}, id).Error
+	})
 }

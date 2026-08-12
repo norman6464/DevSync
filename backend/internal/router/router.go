@@ -110,7 +110,7 @@ func Setup(db *gorm.DB, cfg *config.Config, hub *service.Hub) *gin.Engine {
 
 	// 認証必須ルート（100リクエスト/60秒）
 	protected := api.Group("")
-	protected.Use(middleware.AuthRequired(c.AuthService))
+	protected.Use(middleware.AuthRequired(c.ValidateAuthToken))
 	protected.Use(middleware.RateLimit(apiRateLimitStore, 100, 60))
 	{
 		protected.GET("/auth/me", c.AuthHandler.Me)
