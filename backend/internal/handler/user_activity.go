@@ -18,7 +18,7 @@ func NewUserActivityHandler(getTimeline *usecase.GetActivityTimelineUseCase) *Us
 
 // GetTimeline はユーザーのアクティビティタイムラインを取得する。
 func (h *UserActivityHandler) GetTimeline(c *gin.Context) {
-	userID, ok := parseID(c, "userId")
+	userID, ok := parseID(c, "id")
 	if !ok {
 		return
 	}

@@ -38,7 +38,7 @@ func TestUserActivityHandler_GetTimeline_Success(t *testing.T) {
 	)
 
 	r := newRouter(1)
-	r.GET("/users/:userId/activity", h.GetTimeline)
+	r.GET("/users/:id/activity", h.GetTimeline)
 
 	w := doRequest(r, "GET", "/users/10/activity", nil)
 	assertStatus(t, w, 200)
@@ -59,7 +59,7 @@ func TestUserActivityHandler_GetTimeline_WithTypeFilter(t *testing.T) {
 	)
 
 	r := newRouter(1)
-	r.GET("/users/:userId/activity", h.GetTimeline)
+	r.GET("/users/:id/activity", h.GetTimeline)
 
 	w := doRequest(r, "GET", "/users/10/activity?type=post_created", nil)
 	assertStatus(t, w, 200)
@@ -70,7 +70,7 @@ func TestUserActivityHandler_GetTimeline_InvalidUserID(t *testing.T) {
 	h, _ := setupUserActivityHandler()
 
 	r := newRouter(1)
-	r.GET("/users/:userId/activity", h.GetTimeline)
+	r.GET("/users/:id/activity", h.GetTimeline)
 
 	w := doRequest(r, "GET", "/users/abc/activity", nil)
 	assertStatus(t, w, 400)
@@ -84,7 +84,7 @@ func TestUserActivityHandler_GetTimeline_ServiceError(t *testing.T) {
 	)
 
 	r := newRouter(1)
-	r.GET("/users/:userId/activity", h.GetTimeline)
+	r.GET("/users/:id/activity", h.GetTimeline)
 
 	w := doRequest(r, "GET", "/users/10/activity", nil)
 	assertStatus(t, w, 404)
@@ -99,7 +99,7 @@ func TestUserActivityHandler_GetTimeline_Empty(t *testing.T) {
 	)
 
 	r := newRouter(1)
-	r.GET("/users/:userId/activity", h.GetTimeline)
+	r.GET("/users/:id/activity", h.GetTimeline)
 
 	w := doRequest(r, "GET", "/users/10/activity", nil)
 	assertStatus(t, w, 200)

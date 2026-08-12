@@ -20,9 +20,12 @@ import (
 // Setup はGinルーターを構築し、全エンドポイントを登録して返す。
 // DIコンテナを利用して依存関係を解決し、ルーティングのみに集中する。
 func Setup(db *gorm.DB, cfg *config.Config, hub *ws.Hub) *gin.Engine {
-	// DIコンテナ構築
-	c := di.NewContainer(db, cfg, hub)
+	return SetupWithContainer(di.NewContainer(db, cfg, hub), cfg)
+}
 
+// SetupWithContainer は構築済みのDIコンテナからルーターを組み立てる。
+// ルート定義だけを DB 無しで検証できるようにするために分けている。
+func SetupWithContainer(c *di.Container, cfg *config.Config) *gin.Engine {
 	r := gin.Default()
 
 	// 信頼するプロキシを設定（X-Forwarded-For偽装によるレート制限回避を防止）
@@ -166,7 +169,7 @@ func registerUserRoutes(g *gin.RouterGroup, c *di.Container) {
 		users.DELETE("/:id/follow", c.FollowHandler.Unfollow)
 		users.GET("/:id/posts", c.PostHandler.GetUserPosts)
 		users.GET("/me/profile-completeness", c.UserHandler.GetProfileCompleteness)
-		users.GET("/:userId/activity", c.UserActivityHandler.GetTimeline)
+		users.GET("/:id/activity", c.UserActivityHandler.GetTimeline)
 	}
 }
 
@@ -446,8 +449,8 @@ func registerProjectRoutes(g *gin.RouterGroup, c *di.Container) {
 		projects.GET("/archived", c.ProjectHandler.GetArchived)
 
 		// マイルストーン
-		projects.POST("/:projectId/milestones", c.ProjectMilestoneHandler.Create)
-		projects.GET("/:projectId/milestones", c.ProjectMilestoneHandler.GetByProjectID)
+		projects.POST("/:id/milestones", c.ProjectMilestoneHandler.Create)
+		projects.GET("/:id/milestones", c.ProjectMilestoneHandler.GetByProjectID)
 		projects.PUT("/milestones/:milestoneId", c.ProjectMilestoneHandler.Update)
 		projects.DELETE("/milestones/:milestoneId", c.ProjectMilestoneHandler.Delete)
 	}
@@ -475,7 +478,7 @@ func registerResourceRoutes(g *gin.RouterGroup, c *di.Container) {
 		// リソース進捗
 		resources.PUT("/progress", c.ResourceProgressHandler.Upsert)
 		resources.GET("/progress", c.ResourceProgressHandler.GetMyProgress)
-		resources.GET("/:resourceId/progress", c.ResourceProgressHandler.GetByResource)
+		resources.GET("/:id/progress", c.ResourceProgressHandler.GetByResource)
 
 		// リソースレビュー
 		resources.POST("/:id/reviews", c.ResourceReviewHandler.Create)

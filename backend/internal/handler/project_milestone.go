@@ -30,7 +30,7 @@ func NewProjectMilestoneHandler(
 // Create はマイルストーンを作成する。
 func (h *ProjectMilestoneHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
-	projectID, ok := parseID(c, "projectId")
+	projectID, ok := parseID(c, "id")
 	if !ok {
 		return
 	}
@@ -66,7 +66,7 @@ func (h *ProjectMilestoneHandler) Create(c *gin.Context) {
 
 // GetByProjectID はプロジェクトのマイルストーン一覧を取得する。
 func (h *ProjectMilestoneHandler) GetByProjectID(c *gin.Context) {
-	projectID, ok := parseID(c, "projectId")
+	projectID, ok := parseID(c, "id")
 	if !ok {
 		return
 	}
