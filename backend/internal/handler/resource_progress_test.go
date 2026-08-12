@@ -105,7 +105,7 @@ func TestResourceProgressHandler_GetByResource_Success(t *testing.T) {
 	}, nil)
 
 	r := newRouter(1)
-	r.GET("/resources/:resourceId/progress", h.GetByResource)
+	r.GET("/resources/:id/progress", h.GetByResource)
 
 	w := doRequest(r, "GET", "/resources/10/progress", nil)
 	assertStatus(t, w, 200)
@@ -117,7 +117,7 @@ func TestResourceProgressHandler_GetByResource_NotFound(t *testing.T) {
 	progress.On("FindByUserAndResource", mock.Anything, uint(1), uint(999)).Return((*model.ResourceProgress)(nil), domain.ErrNotFound)
 
 	r := newRouter(1)
-	r.GET("/resources/:resourceId/progress", h.GetByResource)
+	r.GET("/resources/:id/progress", h.GetByResource)
 
 	w := doRequest(r, "GET", "/resources/999/progress", nil)
 	assertStatus(t, w, 404)

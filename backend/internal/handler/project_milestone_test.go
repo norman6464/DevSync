@@ -82,7 +82,7 @@ func TestProjectMilestoneHandler_Create_Success(t *testing.T) {
 	})).Return(nil)
 
 	r := newRouter(1)
-	r.POST("/projects/:projectId/milestones", h.Create)
+	r.POST("/projects/:id/milestones", h.Create)
 
 	w := doRequest(r, "POST", "/projects/10/milestones", map[string]interface{}{
 		"title":       "v1.0リリース",
@@ -101,7 +101,7 @@ func TestProjectMilestoneHandler_Create_Forbidden(t *testing.T) {
 	projects.On("FindByID", mock.Anything, uint(10)).Return(other, nil)
 
 	r := newRouter(1)
-	r.POST("/projects/:projectId/milestones", h.Create)
+	r.POST("/projects/:id/milestones", h.Create)
 
 	w := doRequest(r, "POST", "/projects/10/milestones", map[string]interface{}{"title": "t"})
 	assertStatus(t, w, http.StatusForbidden)
@@ -114,7 +114,7 @@ func TestProjectMilestoneHandler_Create_ProjectNotFound(t *testing.T) {
 	projects.On("FindByID", mock.Anything, uint(10)).Return(nil, nil)
 
 	r := newRouter(1)
-	r.POST("/projects/:projectId/milestones", h.Create)
+	r.POST("/projects/:id/milestones", h.Create)
 
 	w := doRequest(r, "POST", "/projects/10/milestones", map[string]interface{}{"title": "t"})
 	assertStatus(t, w, http.StatusNotFound)
@@ -132,7 +132,7 @@ func TestProjectMilestoneHandler_Create_InvalidTitle(t *testing.T) {
 			projects.On("FindByID", mock.Anything, uint(10)).Return(ownedProject(10), nil)
 
 			r := newRouter(1)
-			r.POST("/projects/:projectId/milestones", h.Create)
+			r.POST("/projects/:id/milestones", h.Create)
 
 			w := doRequest(r, "POST", "/projects/10/milestones", map[string]interface{}{"title": title})
 			assertStatus(t, w, http.StatusBadRequest)
@@ -145,7 +145,7 @@ func TestProjectMilestoneHandler_Create_InvalidJSON(t *testing.T) {
 	h, _, _ := setupMilestoneHandler()
 
 	r := newRouter(1)
-	r.POST("/projects/:projectId/milestones", h.Create)
+	r.POST("/projects/:id/milestones", h.Create)
 
 	w := doRequestRaw(r, "POST", "/projects/10/milestones", "bad json")
 	assertStatus(t, w, http.StatusBadRequest)
@@ -156,7 +156,7 @@ func TestProjectMilestoneHandler_Create_InvalidDueDate(t *testing.T) {
 	h, milestones, _ := setupMilestoneHandler()
 
 	r := newRouter(1)
-	r.POST("/projects/:projectId/milestones", h.Create)
+	r.POST("/projects/:id/milestones", h.Create)
 
 	w := doRequest(r, "POST", "/projects/10/milestones", map[string]interface{}{
 		"title": "t", "due_date": "2026/01/01",
@@ -173,7 +173,7 @@ func TestProjectMilestoneHandler_GetByProjectID_Success(t *testing.T) {
 		Return([]model.ProjectMilestone{{ProjectID: 10, Title: "m1"}}, nil)
 
 	r := newRouter(1)
-	r.GET("/projects/:projectId/milestones", h.GetByProjectID)
+	r.GET("/projects/:id/milestones", h.GetByProjectID)
 
 	w := doRequest(r, "GET", "/projects/10/milestones", nil)
 	assertStatus(t, w, http.StatusOK)
@@ -186,7 +186,7 @@ func TestProjectMilestoneHandler_GetByProjectID_RepoError(t *testing.T) {
 		Return([]model.ProjectMilestone(nil), errors.New("db error"))
 
 	r := newRouter(1)
-	r.GET("/projects/:projectId/milestones", h.GetByProjectID)
+	r.GET("/projects/:id/milestones", h.GetByProjectID)
 
 	w := doRequest(r, "GET", "/projects/10/milestones", nil)
 	assertStatus(t, w, http.StatusInternalServerError)
@@ -355,7 +355,7 @@ func TestProjectMilestoneHandler_Forbidden_Message(t *testing.T) {
 	projects.On("FindByID", mock.Anything, uint(10)).Return(other, nil)
 
 	r := newRouter(1)
-	r.POST("/projects/:projectId/milestones", h.Create)
+	r.POST("/projects/:id/milestones", h.Create)
 
 	w := doRequest(r, "POST", "/projects/10/milestones", map[string]interface{}{"title": "t"})
 	body := parseJSON(t, w)

@@ -43,7 +43,7 @@ func (h *ResourceProgressHandler) Upsert(c *gin.Context) {
 // GetByResource は指定リソースの進捗を取得する。
 func (h *ResourceProgressHandler) GetByResource(c *gin.Context) {
 	userID := c.GetUint("userID")
-	resourceID, ok := parseID(c, "resourceId")
+	resourceID, ok := parseID(c, "id")
 	if !ok {
 		return
 	}
