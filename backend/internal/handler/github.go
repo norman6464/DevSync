@@ -4,19 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// GitHubServiceInterface はGitHubサービスの抽象インターフェース。
-type GitHubServiceInterface interface {
-	GetOAuthURL(state string) string
-	ConnectGitHub(userID uint, code, state string) error
-	GetContributions(userID uint) ([]model.GitHubContribution, error)
-	GetLanguages(userID uint) ([]model.GitHubLanguageStat, error)
-	GetRepos(userID uint) ([]model.GitHubRepository, error)
-	SyncUserData(userID uint) error
-	DisconnectGitHub(userID uint) error
-}
 
 // GitHubAuthServiceInterface はGitHubHandler用の認証サービスの抽象インターフェース。
 type GitHubAuthServiceInterface interface {
@@ -24,22 +13,27 @@ type GitHubAuthServiceInterface interface {
 	ValidateOAuthState(state string) (uint, error)
 }
 
+// GitHubUseCases は GitHubHandler が依存する GitHub 連携の usecase をまとめる。
+type GitHubUseCases struct {
+	OAuthURL      *usecase.GetGitHubOAuthURLUseCase
+	Connect       *usecase.ConnectGitHubUseCase
+	Disconnect    *usecase.DisconnectGitHubUseCase
+	Sync          *usecase.SyncGitHubDataUseCase
+	Contributions *usecase.GetGitHubContributionsUseCase
+	Languages     *usecase.GetGitHubLanguagesUseCase
+	Repos         *usecase.GetGitHubReposUseCase
+}
+
 // GitHubHandler はGitHub連携関連のHTTPハンドラ。
 // GitHub OAuth認証・データ同期・コントリビューション取得を処理する。
 type GitHubHandler struct {
-	githubService GitHubServiceInterface
-	authService   GitHubAuthServiceInterface
+	uc          GitHubUseCases
+	authService GitHubAuthServiceInterface
 }
 
 // NewGitHubHandler は新しいGitHubHandlerインスタンスを生成する。
-func NewGitHubHandler(
-	githubService GitHubServiceInterface,
-	authService GitHubAuthServiceInterface,
-) *GitHubHandler {
-	return &GitHubHandler{
-		githubService: githubService,
-		authService:   authService,
-	}
+func NewGitHubHandler(uc GitHubUseCases, authService GitHubAuthServiceInterface) *GitHubHandler {
+	return &GitHubHandler{uc: uc, authService: authService}
 }
 
 // Connect はGitHub OAuth認証のURLを生成して返す。
@@ -50,7 +44,7 @@ func (h *GitHubHandler) Connect(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	url := h.githubService.GetOAuthURL(state)
+	url := h.uc.OAuthURL.Execute(state)
 	respondOK(c, dto.URLResponse{URL: url})
 }
 
@@ -70,7 +64,7 @@ func (h *GitHubHandler) Callback(c *gin.Context) {
 		return
 	}
 
-	if err := h.githubService.ConnectGitHub(userID, code, state); err != nil {
+	if err := h.uc.Connect.Execute(c.Request.Context(), userID, code); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -85,7 +79,7 @@ func (h *GitHubHandler) GetContributions(c *gin.Context) {
 		return
 	}
 
-	contributions, err := h.githubService.GetContributions(userID)
+	contributions, err := h.uc.Contributions.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -100,7 +94,7 @@ func (h *GitHubHandler) GetLanguages(c *gin.Context) {
 		return
 	}
 
-	stats, err := h.githubService.GetLanguages(userID)
+	stats, err := h.uc.Languages.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -115,7 +109,7 @@ func (h *GitHubHandler) GetRepos(c *gin.Context) {
 		return
 	}
 
-	repos, err := h.githubService.GetRepos(userID)
+	repos, err := h.uc.Repos.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -127,7 +121,7 @@ func (h *GitHubHandler) GetRepos(c *gin.Context) {
 func (h *GitHubHandler) Sync(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	if err := h.githubService.SyncUserData(userID); err != nil {
+	if err := h.uc.Sync.Execute(c.Request.Context(), userID); err != nil {
 		respondError(c, err)
 		return
 	}
@@ -139,7 +133,7 @@ func (h *GitHubHandler) Sync(c *gin.Context) {
 func (h *GitHubHandler) Disconnect(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	if err := h.githubService.DisconnectGitHub(userID); err != nil {
+	if err := h.uc.Disconnect.Execute(c.Request.Context(), userID); err != nil {
 		respondError(c, err)
 		return
 	}

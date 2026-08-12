@@ -972,7 +972,7 @@ func (m *MockAuthService) GenerateLoginState() (string, error) {
 func (m *MockAuthService) ValidateLoginState(state string) error {
 	return m.Called(state).Error(0)
 }
-func (m *MockAuthService) GitHubLogin(ghUser *service.GitHubUserInfo, accessToken string) (*service.AuthResponse, error) {
+func (m *MockAuthService) GitHubLogin(ghUser *model.GitHubUserInfo, accessToken string) (*service.AuthResponse, error) {
 	args := m.Called(ghUser, accessToken)
 	if r := args.Get(0); r != nil {
 		return r.(*service.AuthResponse), args.Error(1)
@@ -997,61 +997,27 @@ func (m *MockAuthService) DeleteAccount(userID uint, password string) error {
 	return m.Called(userID, password).Error(0)
 }
 
-// MockAuthGitHubService は AuthGitHubServiceInterface のモック実装。
-type MockAuthGitHubService struct{ mock.Mock }
-
-func (m *MockAuthGitHubService) GetLoginOAuthURL(state string) string {
-	return m.Called(state).String(0)
-}
-func (m *MockAuthGitHubService) ExchangeCode(code string) (string, error) {
-	args := m.Called(code)
-	return args.String(0), args.Error(1)
-}
-func (m *MockAuthGitHubService) GetGitHubUser(token string) (*service.GitHubUserInfo, error) {
-	args := m.Called(token)
-	if u := args.Get(0); u != nil {
-		return u.(*service.GitHubUserInfo), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockAuthGitHubService) SyncUserData(userID uint) error {
-	return m.Called(userID).Error(0)
-}
-
-// setupAuthHandler はAuthHandlerテスト用のセットアップを行う。
-func setupAuthHandlerMock() (*AuthHandler, *MockAuthService, *MockAuthGitHubService) {
+// setupAuthHandlerMock はAuthHandlerテスト用のセットアップを行う。
+// GitHub 連携は DIP へ移行済みのため、本物の usecase と port モックを注入する。
+func setupAuthHandlerMock() (*AuthHandler, *MockAuthService, *githubPorts) {
 	authSvc := new(MockAuthService)
-	ghSvc := new(MockAuthGitHubService)
-	h := NewAuthHandler(authSvc, ghSvc)
-	return h, authSvc, ghSvc
+	ports := newGitHubPorts()
+	h := NewAuthHandler(authSvc, AuthGitHubUseCases{
+		LoginURL:     usecase.NewGetGitHubLoginURLUseCase(ports.Client),
+		ExchangeCode: usecase.NewExchangeGitHubCodeUseCase(ports.Client),
+		GetUser:      usecase.NewGetGitHubUserUseCase(ports.Client),
+		Sync:         usecase.NewSyncGitHubDataUseCase(ports.Users, ports.Repo, ports.Client),
+	})
+	return h, authSvc, ports
 }
 
-// MockGHService は GitHubServiceInterface のモック実装。
-type MockGHService struct{ mock.Mock }
-
-func (m *MockGHService) GetOAuthURL(state string) string {
-	return m.Called(state).String(0)
-}
-func (m *MockGHService) ConnectGitHub(userID uint, code, state string) error {
-	return m.Called(userID, code, state).Error(0)
-}
-func (m *MockGHService) GetContributions(userID uint) ([]model.GitHubContribution, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.GitHubContribution), args.Error(1)
-}
-func (m *MockGHService) GetLanguages(userID uint) ([]model.GitHubLanguageStat, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.GitHubLanguageStat), args.Error(1)
-}
-func (m *MockGHService) GetRepos(userID uint) ([]model.GitHubRepository, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.GitHubRepository), args.Error(1)
-}
-func (m *MockGHService) SyncUserData(userID uint) error {
-	return m.Called(userID).Error(0)
-}
-func (m *MockGHService) DisconnectGitHub(userID uint) error {
-	return m.Called(userID).Error(0)
+// newGitHubPorts は GitHub 連携の port モック一式を生成する。
+func newGitHubPorts() *githubPorts {
+	return &githubPorts{
+		Users:  new(mockUserPort),
+		Repo:   new(mockGitHubRepo),
+		Client: new(mockGitHubAPIClient),
+	}
 }
 
 // MockGHAuthService は GitHubAuthServiceInterface のモック実装。
@@ -1067,11 +1033,21 @@ func (m *MockGHAuthService) ValidateOAuthState(state string) (uint, error) {
 }
 
 // setupGitHubHandlerMock はGitHubHandlerテスト用のセットアップを行う。
-func setupGitHubHandlerMock() (*GitHubHandler, *MockGHService, *MockGHAuthService) {
-	ghSvc := new(MockGHService)
+// GitHub 連携は DIP へ移行済みのため、本物の usecase と port モックを注入する。
+func setupGitHubHandlerMock() (*GitHubHandler, *githubPorts, *MockGHAuthService) {
+	ports := newGitHubPorts()
 	authSvc := new(MockGHAuthService)
-	h := NewGitHubHandler(ghSvc, authSvc)
-	return h, ghSvc, authSvc
+	sync := usecase.NewSyncGitHubDataUseCase(ports.Users, ports.Repo, ports.Client)
+	h := NewGitHubHandler(GitHubUseCases{
+		OAuthURL:      usecase.NewGetGitHubOAuthURLUseCase(ports.Client),
+		Connect:       usecase.NewConnectGitHubUseCase(ports.Users, ports.Client, sync),
+		Disconnect:    usecase.NewDisconnectGitHubUseCase(ports.Users, ports.Repo),
+		Sync:          sync,
+		Contributions: usecase.NewGetGitHubContributionsUseCase(ports.Repo),
+		Languages:     usecase.NewGetGitHubLanguagesUseCase(ports.Repo),
+		Repos:         usecase.NewGetGitHubReposUseCase(ports.Repo),
+	}, authSvc)
+	return h, ports, authSvc
 }
 
 // ---------- CodeSnippetHandler モック ----------
