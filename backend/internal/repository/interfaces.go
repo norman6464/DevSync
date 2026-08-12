@@ -195,14 +195,6 @@ type QiitaRepositoryInterface interface {
 	DeleteUserArticles(userID uint) error
 }
 
-// ZennRepositoryInterface はZenn連携データ操作の契約を定義する。
-type ZennRepositoryInterface interface {
-	UpsertArticles(userID uint, articles []model.ZennArticle) error
-	GetArticles(userID uint) ([]model.ZennArticle, error)
-	GetStats(userID uint) (*model.ZennStats, error)
-	DeleteUserArticles(userID uint) error
-}
-
 // PasswordResetRepositoryInterface はパスワードリセットトークンデータ操作の契約を定義する。
 type PasswordResetRepositoryInterface interface {
 	Create(token *model.PasswordResetToken) error

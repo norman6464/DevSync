@@ -1017,44 +1017,31 @@ func (m *MockQiitaService) GetStats(userID uint) (*model.QiitaStats, error) {
 }
 
 // setupQiitaHandler はQiitaHandlerテスト用のセットアップを行う。
+// Qiita は未移行のため、ctx を受け取れない旧サービスを DI と同じ形で橋渡しする。
 func setupQiitaHandler() (*ArticlePlatformHandler[model.QiitaArticle, model.QiitaStats], *MockQiitaService) {
 	svc := new(MockQiitaService)
-	h := NewArticlePlatformHandler[model.QiitaArticle, model.QiitaStats](svc, "Qiita")
+	h := NewArticlePlatformHandler("Qiita", ArticlePlatformOps[model.QiitaArticle, model.QiitaStats]{
+		Connect: func(_ context.Context, userID uint, username string) (int, error) {
+			return svc.Connect(userID, username)
+		},
+		Disconnect: func(_ context.Context, userID uint) error {
+			return svc.Disconnect(userID)
+		},
+		Sync: func(_ context.Context, userID uint) (int, error) {
+			return svc.Sync(userID)
+		},
+		GetArticles: func(_ context.Context, userID uint) ([]model.QiitaArticle, error) {
+			return svc.GetArticles(userID)
+		},
+		GetStats: func(_ context.Context, userID uint) (*model.QiitaStats, error) {
+			return svc.GetStats(userID)
+		},
+	})
 	return h, svc
 }
 
-// MockZennService は ZennServiceInterface のモック実装。
-type MockZennService struct{ mock.Mock }
-
-func (m *MockZennService) Connect(userID uint, username string) (int, error) {
-	args := m.Called(userID, username)
-	return args.Int(0), args.Error(1)
-}
-func (m *MockZennService) Disconnect(userID uint) error {
-	return m.Called(userID).Error(0)
-}
-func (m *MockZennService) Sync(userID uint) (int, error) {
-	args := m.Called(userID)
-	return args.Int(0), args.Error(1)
-}
-func (m *MockZennService) GetArticles(userID uint) ([]model.ZennArticle, error) {
-	args := m.Called(userID)
-	return args.Get(0).([]model.ZennArticle), args.Error(1)
-}
-func (m *MockZennService) GetStats(userID uint) (*model.ZennStats, error) {
-	args := m.Called(userID)
-	if s := args.Get(0); s != nil {
-		return s.(*model.ZennStats), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-// setupZennHandler はZennHandlerテスト用のセットアップを行う。
-func setupZennHandler() (*ArticlePlatformHandler[model.ZennArticle, model.ZennStats], *MockZennService) {
-	svc := new(MockZennService)
-	h := NewArticlePlatformHandler[model.ZennArticle, model.ZennStats](svc, "Zenn")
-	return h, svc
-}
+// Zenn は DIP へ移行済み。テストは zenn_test.go で
+// 「本物の usecase + port モック」を組み立てる。
 
 // AtCoder は DIP へ移行済み。テストは atcoder_test.go で
 // 「本物の usecase + port モック」を組み立てる。
