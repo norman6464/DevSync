@@ -832,30 +832,8 @@ func setupFollowHandler() (*FollowHandler, *mockFollowRepo) {
 
 // RankingHandler のテスト用モックは ranking_test.go（DIP 版・port モック）に置く。
 
-// MockLevelService は LevelServiceInterface のモック実装。
-type MockLevelService struct{ mock.Mock }
-
-func (m *MockLevelService) GetLevelInfo(userID uint) (*model.LevelInfo, error) {
-	args := m.Called(userID)
-	if l := args.Get(0); l != nil {
-		return l.(*model.LevelInfo), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *MockLevelService) GetXPBreakdown(userID uint) (*model.XPBreakdown, error) {
-	args := m.Called(userID)
-	if x := args.Get(0); x != nil {
-		return x.(*model.XPBreakdown), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-
-// setupLevelHandler はLevelHandlerテスト用のセットアップを行う。
-func setupLevelHandler() (*LevelHandler, *MockLevelService) {
-	svc := new(MockLevelService)
-	h := NewLevelHandler(svc)
-	return h, svc
-}
+// Level は DIP へ移行済み。テストは level_test.go で
+// 「本物の usecase + port モック」を組み立てる。
 
 // ActivityReportHandler のテスト用モックは activity_report_test.go（DIP 版・port モック）に置く。
 
