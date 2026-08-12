@@ -3,12 +3,12 @@ package handler
 import (
 	"context"
 	"errors"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"net/http"
 	"testing"
 	"time"
 
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -154,7 +154,7 @@ func TestSpotifyCallback_ExchangeError(t *testing.T) {
 	h, ports, authSvc := setupSpotifyHandler()
 	state, err := authSvc.Generate(1)
 	require.NoError(t, err)
-	ports.Client.On("ExchangeCode", mock.Anything, "test-code").Return(nil, service.ErrBadRequest)
+	ports.Client.On("ExchangeCode", mock.Anything, "test-code").Return(nil, domain.ErrBadRequest)
 
 	r := newRouter(1)
 	r.GET("/spotify/callback", h.Callback)

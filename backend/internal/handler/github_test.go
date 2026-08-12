@@ -2,12 +2,12 @@ package handler
 
 import (
 	"errors"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"net/http"
 	"testing"
 	"time"
 
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -71,7 +71,7 @@ func TestGitHubCallback_ExchangeError(t *testing.T) {
 	h, ports, authSvc := setupGitHubHandlerMock()
 	state, err := authSvc.Generate(1)
 	require.NoError(t, err)
-	ports.Client.On("ExchangeCode", mock.Anything, "test-code").Return("", service.ErrBadRequest)
+	ports.Client.On("ExchangeCode", mock.Anything, "test-code").Return("", domain.ErrBadRequest)
 
 	r := newRouter(1)
 	r.GET("/github/callback", h.Callback)
@@ -169,7 +169,7 @@ func TestGitHubGetContributions_Empty(t *testing.T) {
 
 func TestGitHubGetContributions_RepositoryError(t *testing.T) {
 	h, ports, _ := setupGitHubHandlerMock()
-	ports.Repo.On("GetContributions", mock.Anything, uint(1)).Return(nil, service.ErrNotFound)
+	ports.Repo.On("GetContributions", mock.Anything, uint(1)).Return(nil, domain.ErrNotFound)
 
 	r := newRouter(1)
 	r.GET("/github/:userId/contributions", h.GetContributions)

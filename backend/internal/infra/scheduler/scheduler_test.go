@@ -1,4 +1,4 @@
-package service
+package scheduler
 
 import (
 	"context"
@@ -20,8 +20,8 @@ func newTestScheduler() (*Scheduler, *MockCronScheduler, *MockWeeklyReportSender
 	return s, cronMock, senderMock
 }
 
-func TestNewScheduler(t *testing.T) {
-	s := NewScheduler(nil)
+func TestNew(t *testing.T) {
+	s := New(nil)
 	assert.NotNil(t, s)
 	assert.NotNil(t, s.cron)
 }
