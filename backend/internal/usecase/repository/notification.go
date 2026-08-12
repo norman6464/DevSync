@@ -23,3 +23,9 @@ type NotificationReader interface {
 	// Delete は本人の通知 1 件を削除する。
 	Delete(ctx context.Context, id, userID uint) error
 }
+
+// NotificationCreator は通知を 1 件作成するための最小の契約。
+// バッジ獲得など、他スライスからの通知作成はこの契約で受ける。
+type NotificationCreator interface {
+	Create(ctx context.Context, notification *model.Notification) error
+}

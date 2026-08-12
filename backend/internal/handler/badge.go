@@ -4,24 +4,22 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/dto"
-	"github.com/norman6464/devsync/backend/internal/service"
+	"github.com/norman6464/devsync/backend/internal/usecase"
 )
-
-// BadgeServiceInterface はBadgeHandlerが依存するサービスメソッドを定義する。
-type BadgeServiceInterface interface {
-	GetUserBadges(userID uint) ([]service.BadgeResult, error)
-	NotifyBadgeEarned(userID uint, badgeID string) error
-}
 
 // BadgeHandler はバッジ関連のHTTPハンドラ。
 // ユーザーバッジの取得・バッジ獲得通知の作成を処理する。
 type BadgeHandler struct {
-	service BadgeServiceInterface
+	getBadges *usecase.GetUserBadgesUseCase
+	notify    *usecase.NotifyBadgeEarnedUseCase
 }
 
 // NewBadgeHandler は新しいBadgeHandlerインスタンスを生成する。
-func NewBadgeHandler(s BadgeServiceInterface) *BadgeHandler {
-	return &BadgeHandler{service: s}
+func NewBadgeHandler(
+	getBadges *usecase.GetUserBadgesUseCase,
+	notify *usecase.NotifyBadgeEarnedUseCase,
+) *BadgeHandler {
+	return &BadgeHandler{getBadges: getBadges, notify: notify}
 }
 
 // GetUserBadges は指定ユーザーの全バッジを獲得状況付きで返す。
@@ -31,7 +29,7 @@ func (h *BadgeHandler) GetUserBadges(c *gin.Context) {
 		return
 	}
 
-	badges, err := h.service.GetUserBadges(userID)
+	badges, err := h.getBadges.Execute(c.Request.Context(), userID)
 	if err != nil {
 		respondError(c, err)
 		return
@@ -49,7 +47,7 @@ func (h *BadgeHandler) NotifyBadgeEarned(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.NotifyBadgeEarned(userID, input.BadgeID); err != nil {
+	if err := h.notify.Execute(c.Request.Context(), userID, input.BadgeID); err != nil {
 		respondError(c, err)
 		return
 	}

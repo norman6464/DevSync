@@ -18,8 +18,20 @@ func NewNotificationRepository(db *gorm.DB) repository.NotificationReader {
 	return &notificationRepository{db: db}
 }
 
+// NewNotificationCreator は NotificationCreator の GORM 実装を返す。
+// 通知の作成だけを必要とする利用者（バッジ獲得など）はこちらを受け取る。
+func NewNotificationCreator(db *gorm.DB) repository.NotificationCreator {
+	return &notificationRepository{db: db}
+}
+
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
 var _ repository.NotificationReader = (*notificationRepository)(nil)
+var _ repository.NotificationCreator = (*notificationRepository)(nil)
+
+// Create は通知を 1 件保存する。
+func (r *notificationRepository) Create(ctx context.Context, notification *model.Notification) error {
+	return r.db.WithContext(ctx).Create(notification).Error
+}
 
 // FindByUserID は指定ユーザーの通知を作成日時の降順で取得する。
 // 通知の表示に必要な関連（実行者・投稿・質問）を Preload する。

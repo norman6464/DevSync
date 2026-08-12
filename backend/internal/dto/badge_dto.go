@@ -1,10 +1,10 @@
 package dto
 
-import "github.com/norman6464/devsync/backend/internal/service"
+import "github.com/norman6464/devsync/backend/internal/model"
 
 // BadgesResponse はバッジ一覧レスポンス
 type BadgesResponse struct {
-	Badges []service.BadgeResult `json:"badges"`
+	Badges []model.BadgeResult `json:"badges"`
 }
 
 // NotifyBadgeEarnedRequest はバッジ獲得通知リクエスト。
