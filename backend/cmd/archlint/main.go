@@ -1,0 +1,345 @@
+// Command archlint はクリーンアーキテクチャの依存方向ルールを静的に検証する。
+// go/parser で各ファイルの import を解析し、層をまたぐ禁止依存を検出する。
+//
+// 依存方向:
+//
+//	handler → usecase → usecase/repository(port) ← adapter/persistence・adapter/external
+//	                                                infra
+//
+// 使い方:
+//
+//	go run ./cmd/archlint           # backend/ 直下で実行（カレントを module root とみなす）
+//	go run ./cmd/archlint <root>    # 別ディレクトリを指定
+//
+// 違反があれば `path:line: メッセージ` 形式で出力し exit code 1 を返す。
+//
+// 配線（internal/di・internal/router）は各層を組み立てる場所なので検証対象外。
+//
+// 抑制:
+//   - import 行末に `//archlint:allow` を付けるとその 1 行を無視する
+//   - ファイル先頭コメントに `//archlint:ignore-file` を含めるとそのファイル全体を無視する
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
+	"io"
+	"os"
+	"path/filepath"
+	"sort"
+	"strings"
+)
+
+// 層・依存先の分類キー。import path / ファイルパスの両方をこの値に正規化して照合する。
+const (
+	layerDomain      = "domain"
+	layerModel       = "model"
+	layerDTO         = "dto"
+	layerUsecase     = "usecase"
+	layerUsecaseRepo = "usecase/repository"
+	layerHandler     = "handler"
+	layerAdapter     = "adapter"
+	layerInfra       = "infra"
+
+	targetGin     = "gin"
+	targetNetHTTP = "net/http"
+	targetGORM    = "gorm"
+)
+
+// rules は「ソース層 → 禁止する依存先 → 違反メッセージ」。ここに無い組み合わせは許容。
+var rules = map[string]map[string]string{
+	layerDomain: {
+		layerHandler:     "domain は handler を import できません（domain は他層に依存しない）",
+		layerUsecase:     "domain は usecase を import できません（domain は他層に依存しない）",
+		layerUsecaseRepo: "domain は usecase/repository を import できません（domain は他層に依存しない）",
+		layerAdapter:     "domain は adapter を import できません（domain は他層に依存しない）",
+		layerInfra:       "domain は infra を import できません（domain は他層に依存しない）",
+		layerDTO:         "domain は dto を import できません（API の入出力形式に依存しない）",
+		targetGin:        "domain は gin を import できません",
+		targetNetHTTP:    "domain は net/http を import できません",
+	},
+	layerModel: {
+		layerHandler:     "model は handler を import できません（エンティティは他層に依存しない）",
+		layerUsecase:     "model は usecase を import できません（エンティティは他層に依存しない）",
+		layerUsecaseRepo: "model は usecase/repository を import できません（エンティティは他層に依存しない）",
+		layerAdapter:     "model は adapter を import できません（エンティティは他層に依存しない）",
+		layerInfra:       "model は infra を import できません（エンティティは他層に依存しない）",
+		layerDTO:         "model は dto を import できません（API の入出力形式に依存しない）",
+		targetGin:        "model は gin を import できません",
+		targetNetHTTP:    "model は net/http を import できません",
+	},
+	layerDTO: {
+		layerHandler:     "dto は handler を import できません",
+		layerUsecase:     "dto は usecase を import できません",
+		layerUsecaseRepo: "dto は usecase/repository を import できません",
+		layerAdapter:     "dto は adapter を import できません",
+		layerInfra:       "dto は infra を import できません",
+		targetGin:        "dto は gin を import できません（入出力の構造体定義に HTTP 実装を持ち込まない）",
+	},
+	layerUsecaseRepo: {
+		layerHandler:  "usecase/repository(port) は handler を import できません",
+		layerUsecase:  "usecase/repository(port) は usecase 本体を import できません（port は model / domain のみに依存）",
+		layerAdapter:  "usecase/repository(port) は adapter を import できません（DIP 違反: 実装に依存しない）",
+		layerInfra:    "usecase/repository(port) は infra を import できません",
+		layerDTO:      "usecase/repository(port) は dto を import できません",
+		targetGin:     "usecase/repository(port) は gin を import できません",
+		targetNetHTTP: "usecase/repository(port) は net/http を import できません",
+		targetGORM:    "usecase/repository(port) は gorm を import できません（永続化の実装詳細を port に持ち込まない）",
+	},
+	layerUsecase: {
+		layerHandler:  "usecase は handler を import できません（依存方向違反）",
+		layerAdapter:  "usecase は adapter を import できません（port = usecase/repository に依存すること: DIP）",
+		layerInfra:    "usecase は infra を import できません（外部との接続は port 経由にする）",
+		layerDTO:      "usecase は dto を import できません（HTTP の入出力形式に依存しない）",
+		targetGin:     "usecase は gin を import できません（*gin.Context など HTTP 層の型を参照しない）",
+		targetNetHTTP: "usecase は net/http を import できません（HTTP 層の型を参照しない）",
+	},
+	layerAdapter: {
+		layerHandler: "adapter は handler を import できません",
+		layerUsecase: "adapter は usecase 本体を import できません（依存先は port = usecase/repository だけ）",
+		layerDTO:     "adapter は dto を import できません",
+		targetGin:    "adapter は gin を import できません",
+	},
+	layerInfra: {
+		layerHandler:     "infra は handler を import できません",
+		layerUsecase:     "infra は usecase を import できません",
+		layerUsecaseRepo: "infra は usecase/repository を import できません（必要な契約は infra 側で宣言する）",
+		layerAdapter:     "infra は adapter を import できません",
+		layerDTO:         "infra は dto を import できません",
+		targetGin:        "infra は gin を import できません",
+	},
+	layerHandler: {
+		layerAdapter:     "handler は adapter を直接 import できません（usecase 経由にする。配線は di / router で行う）",
+		layerUsecaseRepo: "handler は usecase/repository(port) を import できません（usecase 経由にする）",
+		targetGORM:       "handler は gorm を import できません（DB 操作は usecase → port 経由）",
+	},
+}
+
+// violation は 1 件の依存方向違反。
+type violation struct {
+	file string
+	line int
+	imp  string
+	msg  string
+}
+
+// importRef は解析済みの 1 つの import。
+type importRef struct {
+	path       string
+	line       int
+	target     string // 分類済みの依存先キー（rules の照合に使う）
+	suppressed bool   // //archlint:allow が付いていれば true
+}
+
+func main() {
+	os.Exit(runCLI(os.Args[1:], os.Stdout, os.Stderr))
+}
+
+// runCLI は CLI 本体。exit code を返す（0=OK / 1=違反あり / 2=実行エラー）。
+// os.Exit を呼ばないことで end-to-end テストを可能にする。
+func runCLI(args []string, stdout, stderr io.Writer) int {
+	root := "."
+	if len(args) > 0 {
+		root = args[0]
+	}
+
+	modulePath, err := readModulePath(filepath.Join(root, "go.mod"))
+	if err != nil {
+		fmt.Fprintf(stderr, "archlint: go.mod を読めません: %v\n", err)
+		return 2
+	}
+	internalPrefix := modulePath + "/internal/"
+	internalRoot := filepath.Join(root, "internal")
+
+	violations, err := run(internalRoot, internalPrefix)
+	if err != nil {
+		fmt.Fprintf(stderr, "archlint: %v\n", err)
+		return 2
+	}
+
+	if len(violations) == 0 {
+		fmt.Fprintln(stdout, "archlint: OK — クリーンアーキテクチャ依存方向ルール違反なし")
+		return 0
+	}
+
+	sort.Slice(violations, func(i, j int) bool {
+		if violations[i].file != violations[j].file {
+			return violations[i].file < violations[j].file
+		}
+		return violations[i].line < violations[j].line
+	})
+	for _, v := range violations {
+		fmt.Fprintf(stdout, "%s:%d: %s（import %q）\n", v.file, v.line, v.msg, v.imp)
+	}
+	fmt.Fprintf(stderr, "\narchlint: %d 件の依存方向違反が見つかりました\n", len(violations))
+	return 1
+}
+
+// run は internalRoot 配下の本番 .go を走査し、依存方向違反を集める。
+func run(internalRoot, internalPrefix string) ([]violation, error) {
+	var out []violation
+	err := filepath.WalkDir(internalRoot, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() || !strings.HasSuffix(path, ".go") || strings.HasSuffix(path, "_test.go") {
+			return nil
+		}
+		relDir, err := filepath.Rel(internalRoot, filepath.Dir(path))
+		if err != nil {
+			return err
+		}
+		src := classifyRel(filepath.ToSlash(relDir))
+		if _, ok := rules[src]; !ok {
+			return nil // 配線（di / router）などルール対象外の層はスキップ
+		}
+
+		imports, ignoreFile, err := parseImports(path, internalPrefix)
+		if err != nil {
+			return fmt.Errorf("%s: %w", path, err)
+		}
+		if ignoreFile {
+			return nil
+		}
+		out = append(out, violationsFor(src, path, imports)...)
+		return nil
+	})
+	return out, err
+}
+
+// violationsFor は 1 ファイル分の import 列からルール違反を抽出する（純粋関数: テスト容易）。
+func violationsFor(src, fullpath string, imports []importRef) []violation {
+	forbidden := rules[src]
+	var vs []violation
+	for _, imp := range imports {
+		if imp.suppressed || imp.target == "" {
+			continue
+		}
+		if msg, bad := forbidden[imp.target]; bad {
+			vs = append(vs, violation{file: fullpath, line: imp.line, imp: imp.path, msg: msg})
+		}
+	}
+	return vs
+}
+
+// parseImports は import 文だけを解析し、各 import を分類して返す。
+// ファイル先頭コメントに archlint:ignore-file があれば ignoreFile=true。
+func parseImports(path, internalPrefix string) (imports []importRef, ignoreFile bool, err error) {
+	fset := token.NewFileSet()
+	// ImportsOnly は import の trailing コメント関連付けを欠落させるため使わない（抑制判定に必要）。
+	f, err := parser.ParseFile(fset, path, nil, parser.ParseComments)
+	if err != nil {
+		return nil, false, err
+	}
+
+	// ignore-file は「ファイル先頭（package 宣言より前）」のコメントだけを対象にする。
+	// 途中コメントでルールを回避できないようにするため。
+	for _, cg := range f.Comments {
+		if cg.End() > f.Package {
+			break // f.Comments は位置順。package 宣言以降は対象外。
+		}
+		if commentContains(cg, "archlint:ignore-file") {
+			return nil, true, nil
+		}
+	}
+
+	for _, spec := range f.Imports {
+		p := strings.Trim(spec.Path.Value, `"`)
+		ref := importRef{
+			path:   p,
+			line:   fset.Position(spec.Path.Pos()).Line,
+			target: classifyImport(p, internalPrefix),
+		}
+		if commentContains(spec.Comment, "archlint:allow") || commentContains(spec.Doc, "archlint:allow") {
+			ref.suppressed = true
+		}
+		imports = append(imports, ref)
+	}
+	return imports, false, nil
+}
+
+// commentContains はコメント群の「生テキスト」に needle が含まれるかを返す。
+// CommentGroup.Text() は //archlint:xxx を go ディレクティブ扱いで除去するため、
+// 各 Comment.Text（// を含む生文字列）を直接走査する。
+func commentContains(cg *ast.CommentGroup, needle string) bool {
+	if cg == nil {
+		return false
+	}
+	for _, c := range cg.List {
+		if strings.Contains(c.Text, needle) {
+			return true
+		}
+	}
+	return false
+}
+
+// classifyImport は import path を rules 照合用キーに正規化する。対象外は "" を返す。
+func classifyImport(importPath, internalPrefix string) string {
+	switch {
+	case importPath == targetNetHTTP:
+		return targetNetHTTP
+	case importPath == "github.com/gin-gonic/gin" || strings.HasPrefix(importPath, "github.com/gin-gonic/gin/"):
+		return targetGin
+	case importPath == "gorm.io/gorm" || strings.HasPrefix(importPath, "gorm.io/"):
+		return targetGORM
+	case strings.HasPrefix(importPath, internalPrefix):
+		return classifyRel(strings.TrimPrefix(importPath, internalPrefix))
+	default:
+		return ""
+	}
+}
+
+// classifyRel は internal/ からの相対パス（import / ファイル共通）を層キーに分類する。
+// usecase/repository は usecase より先に判定する（前方一致の順序に依存するため）。
+func classifyRel(rel string) string {
+	switch {
+	case matches(rel, layerUsecaseRepo):
+		return layerUsecaseRepo
+	case matches(rel, layerUsecase):
+		return layerUsecase
+	case matches(rel, layerDomain):
+		return layerDomain
+	case matches(rel, layerModel):
+		return layerModel
+	case matches(rel, layerDTO):
+		return layerDTO
+	case matches(rel, layerHandler):
+		return layerHandler
+	case matches(rel, layerAdapter):
+		return layerAdapter
+	case matches(rel, layerInfra):
+		return layerInfra
+	default:
+		return ""
+	}
+}
+
+// matches は rel が layer 自身か、その配下かを判定する。
+func matches(rel, layer string) bool {
+	return rel == layer || strings.HasPrefix(rel, layer+"/")
+}
+
+// readModulePath は go.mod の先頭 module 行から module path を取り出す。
+func readModulePath(goModPath string) (string, error) {
+	f, err := os.Open(goModPath)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	sc := bufio.NewScanner(f)
+	for sc.Scan() {
+		// タブ区切り・複数スペースでも読めるよう Fields でトークン化する。
+		fields := strings.Fields(sc.Text())
+		if len(fields) >= 2 && fields[0] == "module" {
+			return fields[1], nil
+		}
+	}
+	if err := sc.Err(); err != nil {
+		return "", err
+	}
+	return "", fmt.Errorf("module 行が見つかりません")
+}
