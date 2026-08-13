@@ -11,7 +11,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/service"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -194,18 +193,18 @@ func TestBindJSON_MissingRequired(t *testing.T) {
 
 // --- respondError ---
 
-func TestRespondError_MapsServiceErrors(t *testing.T) {
+func TestRespondError_MapsDomainErrors(t *testing.T) {
 	tests := []struct {
 		err      error
 		wantCode int
 	}{
-		{service.ErrNotFound, http.StatusNotFound},
-		{service.ErrForbidden, http.StatusForbidden},
-		{service.ErrBadRequest, http.StatusBadRequest},
-		{service.ErrUnauthorized, http.StatusUnauthorized},
-		{service.ErrConflict, http.StatusConflict},
-		{service.ErrRateLimitExceeded, http.StatusTooManyRequests},
-		{service.ErrLLMNotConfigured, http.StatusServiceUnavailable},
+		{domain.ErrNotFound, http.StatusNotFound},
+		{domain.ErrForbidden, http.StatusForbidden},
+		{domain.ErrBadRequest, http.StatusBadRequest},
+		{domain.ErrUnauthorized, http.StatusUnauthorized},
+		{domain.ErrConflict, http.StatusConflict},
+		{domain.ErrRateLimitExceeded, http.StatusTooManyRequests},
+		{domain.ErrServiceUnavailable, http.StatusServiceUnavailable},
 		{fmt.Errorf("unknown error"), http.StatusInternalServerError},
 	}
 
@@ -228,7 +227,7 @@ func TestRespondError_MapsServiceErrors(t *testing.T) {
 }
 
 func TestRespondError_WrappedError(t *testing.T) {
-	wrapped := fmt.Errorf("user 123: %w", service.ErrNotFound)
+	wrapped := fmt.Errorf("user 123: %w", domain.ErrNotFound)
 	w := httptest.NewRecorder()
 	_, r := gin.CreateTestContext(w)
 	r.GET("/test", func(c *gin.Context) {

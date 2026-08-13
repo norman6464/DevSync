@@ -24,8 +24,16 @@ jobs:
         run: go mod download
         working-directory: ./backend
 
+      - name: ビルドを確認
+        run: go build ./...
+        working-directory: ./backend
+
+      - name: go vet を実行
+        run: go vet ./...
+        working-directory: ./backend
+
       - name: ユニットテストを実行
-        run: go test ./internal/service/... -v -cover -coverprofile=coverage.out
+        run: go test ./... -cover -coverprofile=coverage.out
         working-directory: ./backend
 
       - name: カバレッジレポートをアップロード

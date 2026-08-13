@@ -1,4 +1,6 @@
-package service
+// Package scheduler は cron による定期実行を担う。
+// 何を実行するかは呼び出し側から注入し、ここでは実行の仕組みだけを持つ。
+package scheduler
 
 import (
 	"context"
@@ -20,15 +22,15 @@ type WeeklyReportSender interface {
 	Execute(ctx context.Context) error
 }
 
-// Scheduler はcronベースの定期実行サービス。
+// Scheduler は cron ベースの定期実行。
 // ウィークリーレポートメールなどの定期タスクをスケジュール実行する。
 type Scheduler struct {
 	cron     CronScheduler
 	emailSvc WeeklyReportSender
 }
 
-// NewScheduler は新しいSchedulerインスタンスを生成する。
-func NewScheduler(weeklyReport WeeklyReportSender) *Scheduler {
+// New は新しい Scheduler インスタンスを生成する。
+func New(weeklyReport WeeklyReportSender) *Scheduler {
 	return &Scheduler{
 		cron:     cron.New(),
 		emailSvc: weeklyReport,

@@ -10,9 +10,9 @@ import (
 	"github.com/norman6464/devsync/backend/internal/adapter/persistence"
 	"github.com/norman6464/devsync/backend/internal/config"
 	"github.com/norman6464/devsync/backend/internal/handler"
+	"github.com/norman6464/devsync/backend/internal/infra/scheduler"
 	"github.com/norman6464/devsync/backend/internal/infra/ws"
 	"github.com/norman6464/devsync/backend/internal/model"
-	"github.com/norman6464/devsync/backend/internal/service"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 	usecaserepo "github.com/norman6464/devsync/backend/internal/usecase/repository"
 	"gorm.io/gorm"
@@ -276,8 +276,8 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *ws.Hub) *Container {
 			activityReportRepo,
 			usecase.NewSendWeeklyReportUseCase(external.NewSMTPEmailSender(cfg), cfg.AppURL),
 		)
-		scheduler := service.NewScheduler(sendWeeklyReports)
-		go scheduler.Start()
+		weeklyScheduler := scheduler.New(sendWeeklyReports)
+		go weeklyScheduler.Start()
 	} else {
 		log.Println("SMTP未設定。ウィークリーレポートメールのスケジューラは無効です。")
 	}

@@ -1,12 +1,12 @@
 package handler
 
 import (
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"
-	"github.com/norman6464/devsync/backend/internal/service"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
@@ -130,7 +130,7 @@ func (h *AuthHandler) GitHubLoginCallback(c *gin.Context) {
 	state := c.Query("state")
 
 	if code == "" || state == "" || len(code) > oauthCodeMaxLen || len(state) > oauthCodeMaxLen {
-		respondError(c, service.ErrBadRequest)
+		respondError(c, domain.ErrBadRequest)
 		return
 	}
 
