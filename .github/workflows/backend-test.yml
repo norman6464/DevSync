@@ -32,6 +32,10 @@ jobs:
         run: go vet ./...
         working-directory: ./backend
 
+      - name: 依存方向をチェック（archlint）
+        run: go run ./cmd/archlint .
+        working-directory: ./backend
+
       - name: ユニットテストを実行
         run: go test ./... -cover -coverprofile=coverage.out
         working-directory: ./backend

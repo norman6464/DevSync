@@ -36,16 +36,21 @@
 
 ---
 
-## 3. クリーンアーキテクチャへの移行（進行中）
+## 3. クリーンアーキテクチャ（移行完了）
 
-DevSync は現状レイヤード構成（`service` → `repository`、interface は `repository` 側で宣言）。
-これを FreStyle と同じ**クリーンアーキテクチャ（依存性逆転・DIP）**へ段階移行する。
+DevSync は旧レイヤード構成（`service` → `repository`、interface は `repository` 側で宣言）から
+FreStyle と同じ**クリーンアーキテクチャ（依存性逆転・DIP）**へ移行済み。`internal/service` と
+`internal/repository` は撤去済みで、**新規コードをこの構造から外さない**ことがこの節の目的。
 
-### 目標構造（FreStyle 準拠）
+### 構造
 
 ```
-handler → usecase → usecase/repository(port) ← adapter/persistence(実装)
+handler → usecase → usecase/repository(port) ← adapter/persistence（DB 実装）
+                                               adapter/external（外部 API 実装）
+                                               infra（ws / scheduler など実行基盤）
 ```
+
+配線は `internal/di`（コンテナ）と `internal/router`（ルーティング）が担う。この 2 つだけが全層を参照してよい。
 
 - **依存性逆転（DIP）**: interface（port）は**使う側の `usecase/repository/` で宣言**し、実装は `adapter/persistence/` に置く。依存の向きは usecase ← persistence
 - **1 usecase = 1 責務**: `struct` + `NewXxxUseCase` コンストラクタ + `Execute(ctx, ...)`。複数操作を 1 つに詰め込まない
@@ -53,13 +58,30 @@ handler → usecase → usecase/repository(port) ← adapter/persistence(実装)
 - **port 充足の保証**: 実装ファイルに `var _ repository.XxxRepository = (*xxxRepository)(nil)` を置き、メソッド追加漏れをビルドで検出する
 - **テスト**: usecase は testify/mock（port モック）、handler は「本物の usecase + port モック」で組む（handler は usecase を具象型で受け取る）
 
-### 移行の進め方（ストラングラー）
+### 依存方向の機械チェック（archlint）
 
-- **1 スライスずつ**移行し、その都度 `go build` / `go vet` / `go test ./...` が緑であることを確認して PR にする
-- **振る舞いを変えない**（既存の HTTP 挙動・レスポンスは同一に保つ）。純粋な構造変更に限定する
-- 移行済みスライス: **follow**（パイロット・PR #2345）
-- 外部連携を持つスライス（`github` / `atcoder` / `ai_*` / `email`）は切り出しやすいが、認証（`auth`）は Cognito 統合と二重作業になるため後回し
-- **全スライスの移行が完了した後**に、層依存を機械検出する自作 linter（FreStyle の `archlint` 等）を CI に導入する
+層をまたぐ禁止依存は `backend/cmd/archlint` が静的に検出する。CI（`backend-test.yml`）で実行され、違反があればビルドを落とす。
+
+```
+cd backend && go run ./cmd/archlint .
+```
+
+- `domain` / `model` / `dto` は他の内部パッケージ・gin・net/http を import しない
+- `usecase/repository`(port) は実装（`adapter`）や `gorm` を import しない（DIP の要）
+- `usecase` は `handler` / `adapter` / `infra` / `dto` / gin / net/http を import しない
+- `adapter` は `handler` / `usecase` 本体 / `dto` / gin を import しない（依存先は port だけ）
+- `infra` は `handler` / `usecase` / `usecase/repository` / `adapter` / `dto` / gin を import しない
+- `handler` は `adapter` / `usecase/repository` / `gorm` を import しない（usecase 経由にする）
+
+やむを得ず外す場合は import 行末の `//archlint:allow`（1 行）かファイル先頭の `//archlint:ignore-file`（ファイル全体）を使い、**理由をコメントに書く**。抑制は残さないのが原則で、入れたら解消するチケットを起票する。
+
+### 新しいスライスを足すときの型
+
+- port は**使う側**（`usecase/repository/`）で宣言し、実装は `adapter/persistence`（DB）か `adapter/external`（外部 API）に置く
+- 実装ファイルに `var _ repository.XxxRepository = (*xxxRepository)(nil)` を置き、メソッド追加漏れをビルドで検出する
+- 不在は `(nil, nil)` に正規化する（`gorm.ErrRecordNotFound` を adapter で吸収し、usecase 側で意味づけする）
+- 非同期に走らせる処理はリクエスト ctx で打ち切られないよう `context.WithoutCancel` を使う
+- `go build` / `go vet` / `go test ./...` / `go run ./cmd/archlint .` が緑であることを確認して PR にする
 
 ### モデルの扱い
 

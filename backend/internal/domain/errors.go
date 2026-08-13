@@ -4,7 +4,9 @@ package domain
 import (
 	"errors"
 	"fmt"
-	"net/http"
+	// DomainError.HTTPStatus がステータス定数を使うための例外。
+	// この対応表は本来 handler 側に置くべきで、移設は別途対応する。
+	"net/http" //archlint:allow
 )
 
 // ErrorCode represents application-specific error codes.
@@ -25,9 +27,9 @@ const (
 	ErrCodeBadRequest ErrorCode = "BAD_REQUEST"
 
 	// System errors
-	ErrCodeInternal          ErrorCode = "INTERNAL_ERROR"
-	ErrCodeDatabase          ErrorCode = "DATABASE_ERROR"
-	ErrCodeRateLimitExceeded ErrorCode = "RATE_LIMIT_EXCEEDED"
+	ErrCodeInternal           ErrorCode = "INTERNAL_ERROR"
+	ErrCodeDatabase           ErrorCode = "DATABASE_ERROR"
+	ErrCodeRateLimitExceeded  ErrorCode = "RATE_LIMIT_EXCEEDED"
 	ErrCodeServiceUnavailable ErrorCode = "SERVICE_UNAVAILABLE"
 )
 
