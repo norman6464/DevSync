@@ -89,7 +89,11 @@ func (r *userRepository) FindByEmail(ctx context.Context, email string) (*model.
 }
 
 // FindByGitHubID は GitHub の ID でユーザーを取得する。不在の場合は (nil, nil) を返す。
+// 0 は「GitHub 未連携」を表す値で特定のユーザーを指さないため、常に不在として扱う。
 func (r *userRepository) FindByGitHubID(ctx context.Context, githubID int64) (*model.User, error) {
+	if githubID == 0 {
+		return nil, nil
+	}
 	var user model.User
 	return firstUser(r.db.WithContext(ctx).Where("git_hub_id = ?", githubID).First(&user), &user)
 }

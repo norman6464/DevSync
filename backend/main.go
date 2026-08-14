@@ -8,6 +8,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/norman6464/devsync/backend/internal/adapter/persistence"
 	"github.com/norman6464/devsync/backend/internal/config"
+	"github.com/norman6464/devsync/backend/internal/infra/dbschema"
 	"github.com/norman6464/devsync/backend/internal/infra/ws"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/router"
@@ -136,6 +137,11 @@ func main() {
 		&model.WidgetSettings{},
 	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
+	}
+
+	// GORM のタグで表現できないインデックス（git_hub_id の部分ユニーク）を補正する
+	if err := dbschema.EnsureUserIndexes(db); err != nil {
+		log.Fatalf("failed to ensure user indexes: %v", err)
 	}
 
 	// 既存ユーザーのオンボーディング完了フラグを初期化
