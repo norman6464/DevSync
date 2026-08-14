@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"github.com/norman6464/devsync/backend/internal/adapter/external"
+	"github.com/norman6464/devsync/backend/internal/adapter/notify"
 	"github.com/norman6464/devsync/backend/internal/adapter/persistence"
 	"github.com/norman6464/devsync/backend/internal/config"
 	"github.com/norman6464/devsync/backend/internal/handler"
@@ -172,6 +173,11 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *ws.Hub) *Container {
 	// 投稿シリーズはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	postSeriesRepo := persistence.NewPostSeriesRepository(db)
 
+	// 通知は保存したうえで受信者へ WebSocket 配信する。
+	// 配信の有無で作成側の呼び出しは変わらないよう、port をラップして注入する。
+	notificationCreator := notificationCreatorWith(db, hub)
+	followerNotifier := followerNotifierWith(db, hub)
+
 	// 共通サービス
 	// 認証はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	authUserPort := persistence.NewAuthUserRepository(db)
@@ -306,7 +312,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *ws.Hub) *Container {
 	postCommentPort := persistence.NewPostCommentRepository(db)
 	postBookmarkPort := persistence.NewPostBookmarkRepository(db)
 	postLikePort := persistence.NewPostLikeRepository(db)
-	notifyFollowers := usecase.NewNotifyFollowersUseCase(persistence.NewFollowerNotifier(db))
+	notifyFollowers := usecase.NewNotifyFollowersUseCase(followerNotifier)
 	c.PostHandler = handler.NewPostHandler(handler.PostUseCases{
 		Create:         usecase.NewCreatePostUseCase(postPort, notifyFollowers),
 		Get:            usecase.NewGetPostUseCase(postPort),
@@ -377,7 +383,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *ws.Hub) *Container {
 	c.MessageHandler = handler.NewMessageHandler(
 		usecase.NewListConversationsUseCase(messagePort),
 		usecase.NewGetConversationUseCase(messagePort),
-		usecase.NewSendMessageUseCase(messagePort, persistence.NewNotificationCreator(db)),
+		usecase.NewSendMessageUseCase(messagePort, notificationCreator),
 		usecase.NewMarkMessagesAsReadUseCase(messagePort),
 	)
 	c.WebSocketHandler = handler.NewWebSocketHandler(hub, validateAuthToken, parseOrigins(origins))
@@ -551,7 +557,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *ws.Hub) *Container {
 	)
 	c.BadgeHandler = handler.NewBadgeHandler(
 		usecase.NewGetUserBadgesUseCase(badgePort),
-		usecase.NewNotifyBadgeEarnedUseCase(persistence.NewNotificationCreator(db)),
+		usecase.NewNotifyBadgeEarnedUseCase(notificationCreator),
 	)
 	c.LearningLogHandler = handler.NewLearningLogHandler(
 		createLearningLog,
@@ -1086,4 +1092,24 @@ func seedTemplateRoadmaps(db *gorm.DB, seed *usecase.SeedRoadmapTemplatesUseCase
 	if err := seed.Execute(context.Background(), user.ID); err != nil {
 		log.Printf("テンプレートシード失敗: %v", err)
 	}
+}
+
+// notificationCreatorWith は通知作成の port を組み立てる。
+// hub があれば保存後の配信を上乗せする。
+func notificationCreatorWith(db *gorm.DB, hub *ws.Hub) usecaserepo.NotificationCreator {
+	creator := persistence.NewNotificationCreator(db)
+	if hub == nil {
+		return creator
+	}
+	return notify.NewBroadcastingCreator(creator, hub)
+}
+
+// followerNotifierWith はフォロワー一括通知の port を組み立てる。
+// hub があれば保存後の配信を上乗せする。
+func followerNotifierWith(db *gorm.DB, hub *ws.Hub) usecaserepo.FollowerNotifier {
+	notifier := persistence.NewFollowerNotifier(db)
+	if hub == nil {
+		return notifier
+	}
+	return notify.NewBroadcastingFollowerNotifier(notifier, hub)
 }

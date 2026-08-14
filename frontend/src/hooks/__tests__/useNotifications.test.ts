@@ -5,6 +5,7 @@ import {
   getNotifications, getUnreadCount, markAsRead, markAllAsRead,
   deleteNotification as deleteNotificationApi,
 } from '../../api/notifications';
+import { useChatStore } from '../../store/chatStore';
 
 vi.mock('../../api/notifications', () => ({
   getNotifications: vi.fn(),
@@ -150,5 +151,30 @@ describe('useNotifications', () => {
 
     expect(result.current.notifications).toEqual([]);
     expect(result.current.total).toBe(0);
+  });
+
+  // WebSocket で通知が届いたら、ポーリングを待たずに未読数と一覧を取り直す。
+  it('通知のシグナルで未読数と一覧を取り直すこと', async () => {
+    useChatStore.setState({ notificationSignal: 0 });
+    const { result } = renderHook(() => useNotifications());
+
+    await vi.waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+    const unreadCallsBefore = vi.mocked(getUnreadCount).mock.calls.length;
+    const listCallsBefore = vi.mocked(getNotifications).mock.calls.length;
+
+    vi.mocked(getUnreadCount).mockResolvedValue({ data: { count: 4 } });
+    await act(async () => {
+      useChatStore.setState({ notificationSignal: 1 });
+    });
+
+    await vi.waitFor(() => {
+      expect(vi.mocked(getUnreadCount).mock.calls.length).toBeGreaterThan(unreadCallsBefore);
+      expect(vi.mocked(getNotifications).mock.calls.length).toBeGreaterThan(listCallsBefore);
+    });
+    await vi.waitFor(() => {
+      expect(result.current.unreadCount).toBe(4);
+    });
   });
 });
