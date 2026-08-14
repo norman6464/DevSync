@@ -138,16 +138,29 @@ func TestCreateNoteFolderUseCase_Execute(t *testing.T) {
 }
 
 func TestGetNoteFolderUseCase_Execute(t *testing.T) {
-	t.Run("所有権を検証せずに返す", func(t *testing.T) {
+	t.Run("所有者本人には返す", func(t *testing.T) {
+		repo := new(mockNoteFolderRepo)
+		repo.On("FindByID", mock.Anything, uint(1)).
+			Return(&model.NoteFolder{ID: 1, UserID: 1, Name: "自分のフォルダ"}, nil)
+		uc := usecase.NewGetNoteFolderUseCase(repo)
+
+		got, err := uc.Execute(context.Background(), 1, 1)
+
+		assert.NoError(t, err)
+		assert.Equal(t, uint(1), got.UserID)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("他ユーザーのフォルダは Forbidden", func(t *testing.T) {
 		repo := new(mockNoteFolderRepo)
 		repo.On("FindByID", mock.Anything, uint(1)).
 			Return(&model.NoteFolder{ID: 1, UserID: 999, Name: "他人のフォルダ"}, nil)
 		uc := usecase.NewGetNoteFolderUseCase(repo)
 
-		got, err := uc.Execute(context.Background(), 1)
+		got, err := uc.Execute(context.Background(), 1, 1)
 
-		assert.NoError(t, err)
-		assert.Equal(t, uint(999), got.UserID)
+		assert.Nil(t, got, "フォルダの中身を返さない")
+		assertDomainCode(t, err, domain.ErrCodeForbidden)
 		repo.AssertExpectations(t)
 	})
 
@@ -157,7 +170,7 @@ func TestGetNoteFolderUseCase_Execute(t *testing.T) {
 		repo.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
 		uc := usecase.NewGetNoteFolderUseCase(repo)
 
-		_, err := uc.Execute(context.Background(), 1)
+		_, err := uc.Execute(context.Background(), 1, 1)
 
 		assert.Error(t, err)
 		var de *domain.DomainError
@@ -170,7 +183,7 @@ func TestGetNoteFolderUseCase_Execute(t *testing.T) {
 		repo.On("FindByID", mock.Anything, uint(1)).Return(nil, errors.New("db error"))
 		uc := usecase.NewGetNoteFolderUseCase(repo)
 
-		_, err := uc.Execute(context.Background(), 1)
+		_, err := uc.Execute(context.Background(), 1, 1)
 
 		assert.Error(t, err)
 		repo.AssertExpectations(t)
@@ -204,16 +217,65 @@ func TestListNoteFoldersUseCase_Execute(t *testing.T) {
 }
 
 func TestListChildNoteFoldersUseCase_Execute(t *testing.T) {
-	repo := new(mockNoteFolderRepo)
-	repo.On("FindByParentID", mock.Anything, uint(5)).
-		Return([]model.NoteFolder{{ID: 6, UserID: 1}}, nil)
-	uc := usecase.NewListChildNoteFoldersUseCase(repo)
+	t.Run("自分のフォルダの子を返す", func(t *testing.T) {
+		repo := new(mockNoteFolderRepo)
+		repo.On("FindByID", mock.Anything, uint(5)).
+			Return(&model.NoteFolder{ID: 5, UserID: 1}, nil)
+		repo.On("FindByParentID", mock.Anything, uint(5)).
+			Return([]model.NoteFolder{{ID: 6, UserID: 1}}, nil)
+		uc := usecase.NewListChildNoteFoldersUseCase(repo)
 
-	got, err := uc.Execute(context.Background(), 5)
+		got, err := uc.Execute(context.Background(), 5, 1)
 
-	assert.NoError(t, err)
-	assert.Len(t, got, 1)
-	repo.AssertExpectations(t)
+		assert.NoError(t, err)
+		assert.Len(t, got, 1)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("他ユーザーのフォルダの子は辿れない", func(t *testing.T) {
+		repo := new(mockNoteFolderRepo)
+		repo.On("FindByID", mock.Anything, uint(5)).
+			Return(&model.NoteFolder{ID: 5, UserID: 999}, nil)
+		uc := usecase.NewListChildNoteFoldersUseCase(repo)
+
+		got, err := uc.Execute(context.Background(), 5, 1)
+
+		assert.Nil(t, got)
+		assertDomainCode(t, err, domain.ErrCodeForbidden)
+		repo.AssertNotCalled(t, "FindByParentID", mock.Anything, mock.Anything)
+	})
+
+	// 親の検証が無かった頃に他ユーザーのフォルダが子として紛れ込み得るため、
+	// 返す前に持ち主で絞る。
+	t.Run("持ち主の違う子は除外する", func(t *testing.T) {
+		repo := new(mockNoteFolderRepo)
+		repo.On("FindByID", mock.Anything, uint(5)).
+			Return(&model.NoteFolder{ID: 5, UserID: 1}, nil)
+		repo.On("FindByParentID", mock.Anything, uint(5)).
+			Return([]model.NoteFolder{{ID: 6, UserID: 1}, {ID: 7, UserID: 999}}, nil)
+		uc := usecase.NewListChildNoteFoldersUseCase(repo)
+
+		got, err := uc.Execute(context.Background(), 5, 1)
+
+		assert.NoError(t, err)
+		assert.Len(t, got, 1)
+		assert.Equal(t, uint(6), got[0].ID)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("DB 障害を伝播する", func(t *testing.T) {
+		repo := new(mockNoteFolderRepo)
+		repo.On("FindByID", mock.Anything, uint(5)).
+			Return(&model.NoteFolder{ID: 5, UserID: 1}, nil)
+		repo.On("FindByParentID", mock.Anything, uint(5)).
+			Return([]model.NoteFolder(nil), errors.New("db error"))
+		uc := usecase.NewListChildNoteFoldersUseCase(repo)
+
+		_, err := uc.Execute(context.Background(), 5, 1)
+
+		assert.Error(t, err)
+		repo.AssertExpectations(t)
+	})
 }
 
 func TestListRootNoteFoldersUseCase_Execute(t *testing.T) {

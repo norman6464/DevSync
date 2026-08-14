@@ -139,6 +139,7 @@ func TestNoteFolderHandler_GetByID(t *testing.T) {
 }
 
 // 所有権を検証しないため、他ユーザーのフォルダも取得できる（移行前の挙動を維持している）。
+// TestNoteFolderHandler_GetByID_OtherUsersFolder は他ユーザーのフォルダを取得できないことを確認する。
 func TestNoteFolderHandler_GetByID_OtherUsersFolder(t *testing.T) {
 	h, repo := newTestNoteFolderHandler()
 	r := newRouter(1)
@@ -148,7 +149,8 @@ func TestNoteFolderHandler_GetByID_OtherUsersFolder(t *testing.T) {
 		Return(&model.NoteFolder{ID: 1, UserID: 999, Name: "他人のフォルダ"}, nil)
 
 	w := doRequest(r, "GET", "/folders/1", nil)
-	assertStatus(t, w, http.StatusOK)
+	assertStatus(t, w, http.StatusForbidden)
+	assert.NotContains(t, w.Body.String(), "他人のフォルダ", "フォルダ名を漏らさない")
 	repo.AssertExpectations(t)
 }
 
@@ -188,11 +190,28 @@ func TestNoteFolderHandler_GetChildren(t *testing.T) {
 		{ID: 2, UserID: 1, Name: "子フォルダ1", ParentID: &parentID},
 		{ID: 3, UserID: 1, Name: "子フォルダ2", ParentID: &parentID},
 	}
+	repo.On("FindByID", mock.Anything, uint(1)).
+		Return(&model.NoteFolder{ID: 1, UserID: 1, Name: "親フォルダ"}, nil)
 	repo.On("FindByParentID", mock.Anything, uint(1)).Return(children, nil)
 
 	w := doRequest(r, "GET", "/folders/1/children", nil)
 	assertStatus(t, w, http.StatusOK)
 	repo.AssertExpectations(t)
+}
+
+// TestNoteFolderHandler_GetChildren_OtherUsersFolder は他ユーザーのフォルダの
+// 子一覧を辿れないことを確認する。
+func TestNoteFolderHandler_GetChildren_OtherUsersFolder(t *testing.T) {
+	h, repo := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.GET("/folders/:id/children", h.GetChildren)
+
+	repo.On("FindByID", mock.Anything, uint(1)).
+		Return(&model.NoteFolder{ID: 1, UserID: 999, Name: "他人のフォルダ"}, nil)
+
+	w := doRequest(r, "GET", "/folders/1/children", nil)
+	assertStatus(t, w, http.StatusForbidden)
+	repo.AssertNotCalled(t, "FindByParentID", mock.Anything, mock.Anything)
 }
 
 // ============================================================
@@ -407,6 +426,8 @@ func TestNoteFolderHandler_GetChildren_RepoError(t *testing.T) {
 	r := newRouter(1)
 	r.GET("/folders/:id/children", h.GetChildren)
 
+	repo.On("FindByID", mock.Anything, uint(1)).
+		Return(&model.NoteFolder{ID: 1, UserID: 1, Name: "親フォルダ"}, nil)
 	repo.On("FindByParentID", mock.Anything, uint(1)).
 		Return([]model.NoteFolder(nil), errors.New("db error"))
 

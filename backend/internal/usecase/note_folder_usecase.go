@@ -56,17 +56,9 @@ func NewGetNoteFolderUseCase(folders repository.NoteFolderRepository) *GetNoteFo
 	return &GetNoteFolderUseCase{folders: folders}
 }
 
-// Execute はフォルダを返す。所有権は検証しない（移行前の挙動を維持している）。
-func (uc *GetNoteFolderUseCase) Execute(ctx context.Context, id uint) (*model.NoteFolder, error) {
-	folder, err := uc.folders.FindByID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	if folder == nil {
-		// 不在は DomainError にせず 500 のままにする（移行前の挙動を維持している）。
-		return nil, errOwnedEntityNotFound
-	}
-	return folder, nil
+// Execute は所有者本人のフォルダだけを返す。他ユーザーのフォルダには 403 を返す。
+func (uc *GetNoteFolderUseCase) Execute(ctx context.Context, id, userID uint) (*model.NoteFolder, error) {
+	return ensureOwner(ctx, uc.folders.FindByID, id, userID, noteFolderOwnerOf)
 }
 
 // ListNoteFoldersUseCase は指定ユーザーのフォルダ一覧をページネーション付きで取得する。
@@ -97,9 +89,28 @@ func NewListChildNoteFoldersUseCase(folders repository.NoteFolderRepository) *Li
 	return &ListChildNoteFoldersUseCase{folders: folders}
 }
 
-// Execute は子フォルダ一覧を返す。所有権は検証しない（移行前の挙動を維持している）。
-func (uc *ListChildNoteFoldersUseCase) Execute(ctx context.Context, parentID uint) ([]model.NoteFolder, error) {
-	return uc.folders.FindByParentID(ctx, parentID)
+// Execute は所有者本人の子フォルダ一覧を返す。親が他ユーザーのものなら 403 を返す。
+//
+// 親の所有者を確認したうえで、返す子も本人のものだけに絞る。
+// 親の検証が無かった頃に他ユーザーのフォルダを親に付け替えられたため、
+// 既存データには持ち主の違う子が混ざり得る。
+func (uc *ListChildNoteFoldersUseCase) Execute(ctx context.Context, parentID, userID uint) ([]model.NoteFolder, error) {
+	if _, err := ensureOwner(ctx, uc.folders.FindByID, parentID, userID, noteFolderOwnerOf); err != nil {
+		return nil, err
+	}
+
+	children, err := uc.folders.FindByParentID(ctx, parentID)
+	if err != nil {
+		return nil, err
+	}
+
+	owned := make([]model.NoteFolder, 0, len(children))
+	for _, child := range children {
+		if child.UserID == userID {
+			owned = append(owned, child)
+		}
+	}
+	return owned, nil
 }
 
 // ListRootNoteFoldersUseCase は指定ユーザーのルートフォルダ（親なし）を取得する。
