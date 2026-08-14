@@ -396,6 +396,7 @@ func TestUpdateNoteFolderUseCase_Execute(t *testing.T) {
 	t.Run("子孫を親にすると BadRequest（保存しない）", func(t *testing.T) {
 		repo := new(mockNoteFolderRepo)
 		repo.On("FindByID", mock.Anything, uint(1)).Return(ownedNoteFolder(), nil)
+		repo.On("FindByID", mock.Anything, uint(3)).Return(&model.NoteFolder{ID: 3, UserID: 1}, nil)
 		repo.On("FindByParentID", mock.Anything, uint(1)).
 			Return([]model.NoteFolder{{ID: 2, UserID: 1}}, nil)
 		repo.On("FindByParentID", mock.Anything, uint(2)).
@@ -411,10 +412,63 @@ func TestUpdateNoteFolderUseCase_Execute(t *testing.T) {
 		repo.AssertNotCalled(t, "Update")
 	})
 
+	t.Run("他ユーザーのフォルダを親にすると Forbidden（保存しない）", func(t *testing.T) {
+		repo := new(mockNoteFolderRepo)
+		repo.On("FindByID", mock.Anything, uint(1)).Return(ownedNoteFolder(), nil)
+		repo.On("FindByID", mock.Anything, uint(7)).
+			Return(&model.NoteFolder{ID: 7, UserID: 999, Name: "他人のフォルダ"}, nil)
+		uc := usecase.NewUpdateNoteFolderUseCase(repo)
+		othersFolder := uint(7)
+
+		_, err := uc.Execute(context.Background(), usecase.UpdateNoteFolderInput{
+			ID: 1, UserID: 1, ParentID: &othersFolder,
+		})
+
+		assertDomainCode(t, err, domain.ErrCodeForbidden)
+		repo.AssertNotCalled(t, "Update")
+		repo.AssertNotCalled(t, "FindByParentID", mock.Anything, mock.Anything)
+	})
+
+	t.Run("存在しない親は BadRequest（保存しない）", func(t *testing.T) {
+		repo := new(mockNoteFolderRepo)
+		repo.On("FindByID", mock.Anything, uint(1)).Return(ownedNoteFolder(), nil)
+		repo.On("FindByID", mock.Anything, uint(404)).Return(nil, nil)
+		uc := usecase.NewUpdateNoteFolderUseCase(repo)
+		missing := uint(404)
+
+		_, err := uc.Execute(context.Background(), usecase.UpdateNoteFolderInput{
+			ID: 1, UserID: 1, ParentID: &missing,
+		})
+
+		assertDomainCode(t, err, domain.ErrCodeBadRequest)
+		repo.AssertNotCalled(t, "Update")
+	})
+
+	t.Run("自分のフォルダへの移動は成功する", func(t *testing.T) {
+		repo := new(mockNoteFolderRepo)
+		repo.On("FindByID", mock.Anything, uint(1)).Return(ownedNoteFolder(), nil)
+		repo.On("FindByID", mock.Anything, uint(8)).Return(&model.NoteFolder{ID: 8, UserID: 1}, nil)
+		repo.On("FindByParentID", mock.Anything, uint(1)).Return([]model.NoteFolder(nil), nil)
+		repo.On("Update", mock.Anything, mock.MatchedBy(func(f *model.NoteFolder) bool {
+			return f.ParentID != nil && *f.ParentID == 8
+		})).Return(nil)
+		uc := usecase.NewUpdateNoteFolderUseCase(repo)
+		newParent := uint(8)
+
+		got, err := uc.Execute(context.Background(), usecase.UpdateNoteFolderInput{
+			ID: 1, UserID: 1, ParentID: &newParent,
+		})
+
+		assert.NoError(t, err)
+		assert.Equal(t, uint(8), *got.ParentID)
+		repo.AssertExpectations(t)
+	})
+
 	// 既に閉路を含むデータでも停止する（以前は無限再帰でプロセスごと落ちていた）。
 	t.Run("閉路のあるデータでも停止する", func(t *testing.T) {
 		repo := new(mockNoteFolderRepo)
 		repo.On("FindByID", mock.Anything, uint(1)).Return(ownedNoteFolder(), nil)
+		repo.On("FindByID", mock.Anything, uint(9)).Return(&model.NoteFolder{ID: 9, UserID: 1}, nil)
 		// 1 -> 2 -> 1 の閉路
 		repo.On("FindByParentID", mock.Anything, uint(1)).
 			Return([]model.NoteFolder{{ID: 2, UserID: 1}}, nil)
@@ -436,6 +490,7 @@ func TestUpdateNoteFolderUseCase_Execute(t *testing.T) {
 	t.Run("閉路があっても同じフォルダを二度辿らない", func(t *testing.T) {
 		repo := new(mockNoteFolderRepo)
 		repo.On("FindByID", mock.Anything, uint(1)).Return(ownedNoteFolder(), nil)
+		repo.On("FindByID", mock.Anything, uint(9)).Return(&model.NoteFolder{ID: 9, UserID: 1}, nil)
 		repo.On("FindByParentID", mock.Anything, uint(1)).
 			Return([]model.NoteFolder{{ID: 2, UserID: 1}}, nil).Once()
 		repo.On("FindByParentID", mock.Anything, uint(2)).
@@ -456,6 +511,7 @@ func TestUpdateNoteFolderUseCase_Execute(t *testing.T) {
 	t.Run("子孫でない親は設定できる", func(t *testing.T) {
 		repo := new(mockNoteFolderRepo)
 		repo.On("FindByID", mock.Anything, uint(1)).Return(ownedNoteFolder(), nil)
+		repo.On("FindByID", mock.Anything, uint(9)).Return(&model.NoteFolder{ID: 9, UserID: 1}, nil)
 		repo.On("FindByParentID", mock.Anything, uint(1)).Return([]model.NoteFolder{}, nil)
 		repo.On("Update", mock.Anything, mock.MatchedBy(func(f *model.NoteFolder) bool {
 			return f.ParentID != nil && *f.ParentID == 9
@@ -474,6 +530,7 @@ func TestUpdateNoteFolderUseCase_Execute(t *testing.T) {
 	t.Run("子孫探索の DB 障害を伝播する（保存しない）", func(t *testing.T) {
 		repo := new(mockNoteFolderRepo)
 		repo.On("FindByID", mock.Anything, uint(1)).Return(ownedNoteFolder(), nil)
+		repo.On("FindByID", mock.Anything, uint(9)).Return(&model.NoteFolder{ID: 9, UserID: 1}, nil)
 		repo.On("FindByParentID", mock.Anything, uint(1)).
 			Return([]model.NoteFolder(nil), errors.New("db error"))
 		uc := usecase.NewUpdateNoteFolderUseCase(repo)

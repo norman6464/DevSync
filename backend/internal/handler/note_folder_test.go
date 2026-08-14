@@ -287,10 +287,40 @@ func TestNoteFolderHandler_Update_Cycle(t *testing.T) {
 	r.PUT("/folders/:id", h.Update)
 
 	repo.On("FindByID", mock.Anything, uint(1)).Return(ownedFolder(), nil)
+	repo.On("FindByID", mock.Anything, uint(2)).Return(&model.NoteFolder{ID: 2, UserID: 1, Name: "子"}, nil)
 	repo.On("FindByParentID", mock.Anything, uint(1)).
 		Return([]model.NoteFolder{{ID: 2, UserID: 1, Name: "子"}}, nil)
 
 	w := doRequest(r, "PUT", "/folders/1", map[string]interface{}{"parent_id": 2})
+	assertStatus(t, w, http.StatusBadRequest)
+	repo.AssertNotCalled(t, "Update")
+}
+
+// 他ユーザーのフォルダを親に指定した更新は 403 を返し、保存しない。
+func TestNoteFolderHandler_Update_OtherUsersParent(t *testing.T) {
+	h, repo := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.PUT("/folders/:id", h.Update)
+
+	repo.On("FindByID", mock.Anything, uint(1)).Return(ownedFolder(), nil)
+	repo.On("FindByID", mock.Anything, uint(7)).
+		Return(&model.NoteFolder{ID: 7, UserID: 999, Name: "他人のフォルダ"}, nil)
+
+	w := doRequest(r, "PUT", "/folders/1", map[string]interface{}{"parent_id": 7})
+	assertStatus(t, w, http.StatusForbidden)
+	repo.AssertNotCalled(t, "Update")
+}
+
+// 存在しない親フォルダの指定は 500 ではなく 400 を返す。
+func TestNoteFolderHandler_Update_MissingParent(t *testing.T) {
+	h, repo := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.PUT("/folders/:id", h.Update)
+
+	repo.On("FindByID", mock.Anything, uint(1)).Return(ownedFolder(), nil)
+	repo.On("FindByID", mock.Anything, uint(404)).Return(nil, nil)
+
+	w := doRequest(r, "PUT", "/folders/1", map[string]interface{}{"parent_id": 404})
 	assertStatus(t, w, http.StatusBadRequest)
 	repo.AssertNotCalled(t, "Update")
 }
