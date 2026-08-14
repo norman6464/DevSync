@@ -186,6 +186,19 @@ func (uc *UpdateNoteFolderUseCase) Execute(ctx context.Context, in UpdateNoteFol
 		if *in.ParentID == in.ID {
 			return nil, domain.NewError(domain.ErrCodeBadRequest, "フォルダを自分自身の子にすることはできません", nil)
 		}
+		// 移動先の親も本人のものでなければ拒否する。
+		// 検証しないと自分のフォルダを他ユーザーのツリーへ差し込め、相手の子一覧に
+		// 自分のフォルダ名が現れる。
+		parent, err := uc.folders.FindByID(ctx, *in.ParentID)
+		if err != nil {
+			return nil, err
+		}
+		if parent == nil {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, "指定した親フォルダが見つかりません", nil)
+		}
+		if parent.UserID != in.UserID {
+			return nil, domain.ErrForbidden
+		}
 		// 自分の子孫を親に設定すると木構造が閉路になるため拒否する。
 		isDesc, err := uc.isDescendant(ctx, in.ID, *in.ParentID)
 		if err != nil {
