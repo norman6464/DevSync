@@ -63,10 +63,11 @@ func (h *NoteFolderHandler) Create(c *gin.Context) {
 	respondCreated(c, folder)
 }
 
-// GetByID は指定IDのフォルダを取得する。
+// GetByID は指定IDのフォルダを取得する。所有者本人のみ取得できる。
 func (h *NoteFolderHandler) GetByID(c *gin.Context) {
+	userID := c.GetUint("userID")
 	handleGetByIDPublic(c, func(id uint) (*model.NoteFolder, error) {
-		return h.get.Execute(c.Request.Context(), id)
+		return h.get.Execute(c.Request.Context(), id, userID)
 	})
 }
 
@@ -95,7 +96,7 @@ func (h *NoteFolderHandler) GetChildren(c *gin.Context) {
 		return
 	}
 
-	children, err := h.listChild.Execute(c.Request.Context(), parentID)
+	children, err := h.listChild.Execute(c.Request.Context(), parentID, c.GetUint("userID"))
 	if err != nil {
 		respondError(c, err)
 		return
