@@ -2,16 +2,10 @@ import { create } from 'zustand';
 import type { Message, Conversation } from '../types/message';
 import type { ChatRoom, GroupMessage } from '../types/chat';
 
-interface WSGroupMessage {
-  type: 'group_message';
-  sender_id: number;
-  room_id: number;
-  content: string;
-  sender_name: string;
-}
-
 interface ChatState {
   socket: WebSocket | null;
+  /** 通知を受け取るたびに増える。購読側は変化を合図に未読数と一覧を取り直す。 */
+  notificationSignal: number;
   conversations: Conversation[];
   activeMessages: Message[];
   connected: boolean;
@@ -35,6 +29,7 @@ let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
 export const useChatStore = create<ChatState>((set, get) => ({
   socket: null,
+  notificationSignal: 0,
   conversations: [],
   activeMessages: [],
   connected: false,
@@ -71,6 +66,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
         return;
       }
       const msg = data as Record<string, unknown>;
+      if (msg.type === 'notification') {
+        // 描画に必要な情報（実行者名など）はサーバーから取り直すため、ここでは合図だけ送る
+        set((s) => ({ notificationSignal: s.notificationSignal + 1 }));
+        return;
+      }
       if (msg.type === 'group_message') {
         if (
           typeof msg.sender_id !== 'number' ||
@@ -115,6 +115,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
     const { socket } = get();
     if (socket) {
+      // 明示的に切るときは再接続させない（onclose の再接続予約を外してから閉じる）
+      socket.onclose = null;
       socket.close();
     }
     set({ socket: null, connected: false });

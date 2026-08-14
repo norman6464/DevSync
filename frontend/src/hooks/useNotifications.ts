@@ -1,11 +1,17 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   getNotifications, getUnreadCount, markAsRead, markAllAsRead,
   deleteNotification as deleteNotificationApi,
 } from '../api/notifications';
 import type { Notification, NotificationType } from '../types/notification';
+import { useChatStore } from '../store/chatStore';
 
 export function useNotifications() {
+  // WebSocket で通知が届くたびに増える。これを合図に取り直す。
+  const notificationSignal = useChatStore((state) => state.notificationSignal);
+  // マウント時点の値を基準にする。すでに通知を受け取った後にマウントされた場合でも、
+  // 初回取得と重ねて取り直さないようにするため。
+  const signalAtMount = useRef(notificationSignal);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [total, setTotal] = useState(0);
@@ -26,7 +32,7 @@ export function useNotifications() {
     fetchUnreadCount();
     const interval = setInterval(fetchUnreadCount, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [notificationSignal]);
 
   const fetchNotifications = useCallback(async (p?: number, type?: NotificationType | '') => {
     setLoading(true);
@@ -85,6 +91,14 @@ export function useNotifications() {
   useEffect(() => {
     fetchNotifications(page, filterType);
   }, [page, filterType]);
+
+  // 届いた通知を一覧にも反映する。マウント後に届いた分だけを対象にする。
+  useEffect(() => {
+    if (notificationSignal === signalAtMount.current) return;
+    fetchNotifications(page, filterType);
+    // fetchNotifications は page / filterType が変わるたびに作り直されるため依存に含めない
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [notificationSignal]);
 
   return {
     notifications,
