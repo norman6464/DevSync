@@ -115,6 +115,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
     const { socket } = get();
     if (socket) {
+      // 明示的に切るときは再接続させない（onclose の再接続予約を外してから閉じる）
+      socket.onclose = null;
       socket.close();
     }
     set({ socket: null, connected: false });

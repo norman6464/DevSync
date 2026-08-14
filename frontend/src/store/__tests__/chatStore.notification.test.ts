@@ -74,4 +74,16 @@ describe('chatStore の通知メッセージ', () => {
 
     expect(useChatStore.getState().notificationSignal).toBe(0);
   });
+
+  // 明示的に切断したときは再接続を予約しない（Layout のアンマウント時に走る）。
+  it('切断すると再接続の予約をしない', () => {
+    const ws = FakeWebSocket.last!;
+
+    useChatStore.getState().disconnect();
+
+    expect(ws.close).toHaveBeenCalled();
+    expect(ws.onclose).toBeNull();
+    expect(useChatStore.getState().socket).toBeNull();
+    expect(useChatStore.getState().connected).toBe(false);
+  });
 });
