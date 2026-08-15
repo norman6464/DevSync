@@ -299,7 +299,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *ws.Hub) *Container {
 		usecase.NewGetProfileCompletenessUseCase(userPort),
 	)
 	c.FollowHandler = handler.NewFollowHandler(
-		usecase.NewFollowUserUseCase(followRepo),
+		usecase.NewFollowUserUseCase(followRepo, notificationCreator),
 		usecase.NewUnfollowUserUseCase(followRepo),
 		usecase.NewListFollowersUseCase(followRepo),
 		usecase.NewListFollowingUseCase(followRepo),
