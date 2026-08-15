@@ -37,11 +37,14 @@ describe('GoalTemplatesModal', () => {
 
   it('カテゴリフィルターが表示される', () => {
     render(<GoalTemplatesModal {...defaultProps} />);
-    expect(screen.getByText('すべて')).toBeInTheDocument();
-    expect(screen.getByText('言語')).toBeInTheDocument();
-    expect(screen.getByText('フレームワーク')).toBeInTheDocument();
-    expect(screen.getByText('スキル')).toBeInTheDocument();
-    expect(screen.getByText('プロジェクト')).toBeInTheDocument();
+    // カテゴリ名はテンプレートカードのバッジにも出るため、
+    // アクセシブルネーム完全一致の role クエリでフィルターボタンだけを特定する
+    expect(screen.getByRole('button', { name: 'すべて' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '言語' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'フレームワーク' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'スキル' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'プロジェクト' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'その他' })).toBeInTheDocument();
   });
 
   it('テンプレートカードが表示される', () => {
@@ -105,8 +108,8 @@ describe('GoalTemplatesModal', () => {
   it('カテゴリフィルター選択で表示が絞り込まれる', () => {
     render(<GoalTemplatesModal {...defaultProps} />);
 
-    // 「言語」フィルターをクリック
-    const languageFilter = screen.getByText('言語');
+    // 「言語」フィルターをクリック（カードのバッジと区別するため role + 完全一致で特定）
+    const languageFilter = screen.getByRole('button', { name: '言語' });
     fireEvent.click(languageFilter);
 
     // 言語カテゴリのテンプレートが表示される

@@ -40,9 +40,9 @@ describe('RecentNotificationsWidget', () => {
     expect(screen.getByText('通知はありません')).toBeInTheDocument();
   });
 
-  it('ヘッダーに「最新の通知」が表示される', () => {
+  it('ヘッダーに「最近の通知」が表示される', () => {
     renderWidget();
-    expect(screen.getByText('最新の通知')).toBeInTheDocument();
+    expect(screen.getByText('最近の通知')).toBeInTheDocument();
   });
 
   it('「すべて見る」リンクが/notificationsに遷移する', () => {

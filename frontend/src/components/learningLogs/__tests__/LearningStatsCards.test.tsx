@@ -63,17 +63,17 @@ describe('LearningStatsCards', () => {
 
   it('タイトルが表示される', async () => {
     renderWithRouter(<LearningStatsCards />);
-    expect(screen.getByText(/学習統計/)).toBeInTheDocument();
+    // 見出し「学習統計」はロード完了後にのみ描画される
+    expect(await screen.findByText('学習統計')).toBeInTheDocument();
   });
 
   it('総学習時間が表示される', async () => {
     renderWithRouter(<LearningStatsCards />);
 
-    await waitFor(() => {
-      // 120 + 60 + 90 = 270分 = 4.5時間
-      expect(screen.getByText(/4\.5|270/)).toBeInTheDocument();
-      expect(screen.getByText(/総学習時間/)).toBeInTheDocument();
-    });
+    expect(await screen.findByText('総学習時間')).toBeInTheDocument();
+    // 120 + 60 + 90 = 270分 = 4.5時間（カードは時間と分の両方を表示する）
+    expect(screen.getByText('4.5')).toBeInTheDocument();
+    expect(screen.getByText('270分')).toBeInTheDocument();
   });
 
   it('学習ログ数が表示される', async () => {
@@ -88,20 +88,20 @@ describe('LearningStatsCards', () => {
   it('平均学習時間が表示される', async () => {
     renderWithRouter(<LearningStatsCards />);
 
-    await waitFor(() => {
-      // (120 + 60 + 90) / 3 = 90分 = 1.5時間
-      expect(screen.getByText(/1\.5|90/)).toBeInTheDocument();
-      expect(screen.getByText(/平均学習時間/)).toBeInTheDocument();
-    });
+    expect(await screen.findByText('平均学習時間')).toBeInTheDocument();
+    // (120 + 60 + 90) / 3 = 90分 = 1.5時間（カードは時間と分/回の両方を表示する）
+    expect(screen.getByText('1.5')).toBeInTheDocument();
+    expect(screen.getByText('90分/回')).toBeInTheDocument();
   });
 
   it('カテゴリ別統計が表示される', async () => {
     renderWithRouter(<LearningStatsCards />);
 
-    await waitFor(() => {
-      expect(screen.getByText(/カテゴリ別/)).toBeInTheDocument();
-      expect(screen.getByText(/コーディング|読書|コース/)).toBeInTheDocument();
-    });
+    expect(await screen.findByText('カテゴリ別学習時間')).toBeInTheDocument();
+    // 3 カテゴリすべてのラベルが表示される
+    expect(screen.getByText('コーディング')).toBeInTheDocument();
+    expect(screen.getByText('読書')).toBeInTheDocument();
+    expect(screen.getByText('コース')).toBeInTheDocument();
   });
 
   it('各カテゴリの学習時間が表示される', async () => {
@@ -133,9 +133,11 @@ describe('LearningStatsCards', () => {
 
     renderWithRouter(<LearningStatsCards />);
 
-    await waitFor(() => {
-      expect(screen.getByText('0')).toBeInTheDocument();
-    });
+    expect(
+      await screen.findByText('まだ学習ログがありません')
+    ).toBeInTheDocument();
+    // 総学習時間・学習ログ数・平均学習時間の 3 カードがいずれも 0 を表示する
+    expect(screen.getAllByText('0')).toHaveLength(3);
   });
 
   it('カードが複数表示される', async () => {

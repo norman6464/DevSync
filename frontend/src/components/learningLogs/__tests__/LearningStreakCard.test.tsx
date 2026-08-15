@@ -44,7 +44,10 @@ describe('LearningStreakCard', () => {
 
   it('タイトルが表示される', async () => {
     renderWithRouter(<LearningStreakCard />);
-    expect(screen.getByText(/学習ストリーク/)).toBeInTheDocument();
+    // ローディング完了後に見出しが描画される
+    expect(
+      await screen.findByRole('heading', { name: '学習ストリーク' })
+    ).toBeInTheDocument();
   });
 
   it('現在のストリークが表示される', async () => {
@@ -158,10 +161,11 @@ describe('LearningStreakCard', () => {
 
     renderWithRouter(<LearningStreakCard />);
 
-    await waitFor(() => {
-      // 30日以上のストリークには特別な色やバッジが表示される
-      expect(screen.getByText('30')).toBeInTheDocument();
-    });
+    // 30日以上のストリークには特別なレベルバッジとマイルストーンメッセージが表示される
+    expect(await screen.findByText('上級者')).toBeInTheDocument();
+    expect(screen.getByText('30日達成！習慣化できています')).toBeInTheDocument();
+    // 「30」は現在のストリークと最長記録の 2 箇所に表示される
+    expect(screen.getAllByText('30')).toHaveLength(2);
   });
 
   it('直近30日のカレンダーが表示される', async () => {

@@ -8,7 +8,7 @@ describe('SearchBar', () => {
     const mockOnChange = vi.fn();
     render(<SearchBar value="" onChange={mockOnChange} onSearch={mockOnSearch} />);
 
-    const input = screen.getByPlaceholderText(/search/i);
+    const input = screen.getByPlaceholderText('キーワードを入力...');
     expect(input).toBeInTheDocument();
   });
 
@@ -17,7 +17,7 @@ describe('SearchBar', () => {
     const mockOnChange = vi.fn();
     render(<SearchBar value="" onChange={mockOnChange} onSearch={mockOnSearch} />);
 
-    const input = screen.getByPlaceholderText(/search/i);
+    const input = screen.getByPlaceholderText('キーワードを入力...');
     fireEvent.change(input, { target: { value: 'test query' } });
 
     expect(mockOnChange).toHaveBeenCalledWith('test query');

@@ -1,4 +1,4 @@
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useAutoSave } from '../useAutoSave';
 
@@ -30,9 +30,7 @@ describe('useAutoSave', () => {
       vi.advanceTimersByTime(3000);
     });
 
-    await waitFor(() => {
-      expect(result.current.saveStatus).toBe('saved');
-    });
+    expect(result.current.saveStatus).toBe('saved');
 
     // LocalStorageに保存されていることを確認
     const saved = localStorage.getItem('test_draft');
@@ -63,9 +61,7 @@ describe('useAutoSave', () => {
     });
 
     // 保存処理が実行される
-    await waitFor(() => {
-      expect(result.current.saveStatus).toBe('saved');
-    });
+    expect(result.current.saveStatus).toBe('saved');
   });
 
   it('clearSaved でデータがクリアされる', () => {
@@ -142,8 +138,6 @@ describe('useAutoSave', () => {
       vi.advanceTimersByTime(1000);
     });
 
-    await waitFor(() => {
-      expect(result.current.lastSaved).toBeInstanceOf(Date);
-    });
+    expect(result.current.lastSaved).toBeInstanceOf(Date);
   });
 });
