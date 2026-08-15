@@ -15,8 +15,9 @@ import (
 // mockMentionRepo は usecase/repository.MentionRepository のモック。
 type mockMentionRepo struct{ mock.Mock }
 
-func (m *mockMentionRepo) Create(ctx context.Context, mention *model.Mention) error {
-	return m.Called(ctx, mention).Error(0)
+func (m *mockMentionRepo) Create(ctx context.Context, mention *model.Mention) (bool, error) {
+	args := m.Called(ctx, mention)
+	return args.Bool(0), args.Error(1)
 }
 
 func (m *mockMentionRepo) FindByUserID(ctx context.Context, userID uint, page, limit int) ([]model.Mention, error) {
@@ -105,7 +106,7 @@ func TestProcessMentionsUseCase(t *testing.T) {
 		mentions.On("FindByPostID", mock.Anything, postID).Return([]model.Mention(nil), nil)
 		mentions.On("Create", mock.Anything, mock.MatchedBy(func(m *model.Mention) bool {
 			return m.UserID == 2 && m.ActorID == 1 && m.PostID != nil && *m.PostID == postID
-		})).Return(nil)
+		})).Return(true, nil)
 		notifications.On("Create", mock.Anything, mock.MatchedBy(func(n *model.Notification) bool {
 			return n.UserID == 2 && n.ActorID == 1 && n.Type == model.NotificationTypeMention &&
 				n.PostID != nil && *n.PostID == postID
@@ -140,7 +141,7 @@ func TestProcessMentionsUseCase(t *testing.T) {
 		mentions.On("FindByPostID", mock.Anything, postID).Return([]model.Mention(nil), nil)
 		users.On("FindByUsername", mock.Anything, "broken").Return(nil, errors.New("db error"))
 		users.On("FindByUsername", mock.Anything, "alice").Return(&model.User{ID: 2}, nil)
-		mentions.On("Create", mock.Anything, mock.Anything).Return(nil)
+		mentions.On("Create", mock.Anything, mock.Anything).Return(true, nil)
 		notifications.On("Create", mock.Anything, mock.Anything).Return(nil)
 
 		require.NoError(t, uc.Execute(context.Background(), usecase.ProcessMentionsInput{ActorID: 1, Text: "@broken と @alice", PostID: &postID, NotifyPostID: &postID}))
@@ -182,7 +183,7 @@ func TestProcessMentionsUseCase(t *testing.T) {
 		mentions.On("FindByCommentID", mock.Anything, commentID).Return([]model.Mention(nil), nil)
 		mentions.On("Create", mock.Anything, mock.MatchedBy(func(m *model.Mention) bool {
 			return m.CommentID != nil && *m.CommentID == commentID && m.PostID == nil
-		})).Return(nil)
+		})).Return(true, nil)
 		notifications.On("Create", mock.Anything, mock.MatchedBy(func(n *model.Notification) bool {
 			return n.PostID != nil && *n.PostID == postID
 		})).Return(nil)
@@ -206,7 +207,7 @@ func TestProcessMentionsUseCase(t *testing.T) {
 			Return([]model.Mention{{ID: 1, UserID: 2, PostID: &postID}}, nil)
 		mentions.On("Create", mock.Anything, mock.MatchedBy(func(m *model.Mention) bool {
 			return m.UserID == 3
-		})).Return(nil)
+		})).Return(true, nil)
 		notifications.On("Create", mock.Anything, mock.MatchedBy(func(n *model.Notification) bool {
 			return n.UserID == 3
 		})).Return(nil)
@@ -227,7 +228,7 @@ func TestProcessMentionsUseCase(t *testing.T) {
 
 		users.On("FindByUsername", mock.Anything, "alice").Return(&model.User{ID: 2}, nil)
 		mentions.On("FindByPostID", mock.Anything, postID).Return([]model.Mention(nil), nil)
-		mentions.On("Create", mock.Anything, mock.Anything).Return(nil)
+		mentions.On("Create", mock.Anything, mock.Anything).Return(true, nil)
 		notifications.On("Create", mock.Anything, mock.Anything).Return(nil)
 
 		require.NoError(t, uc.Execute(context.Background(), usecase.ProcessMentionsInput{
@@ -235,6 +236,24 @@ func TestProcessMentionsUseCase(t *testing.T) {
 		}))
 
 		mentions.AssertNumberOfCalls(t, "Create", 1)
+	})
+
+	// 同時実行で先に作られていた場合、DB の索引が二重作成を弾く。通知も送らない。
+	t.Run("DB が重複を弾いたら通知しない", func(t *testing.T) {
+		mentions := new(mockMentionRepo)
+		users := new(mockUsernameLookup)
+		notifications := new(mockNotificationCreatorPort)
+		uc := usecase.NewProcessMentionsUseCase(mentions, users, notifications)
+
+		users.On("FindByUsername", mock.Anything, "alice").Return(&model.User{ID: 2}, nil)
+		mentions.On("FindByPostID", mock.Anything, postID).Return([]model.Mention(nil), nil)
+		mentions.On("Create", mock.Anything, mock.Anything).Return(false, nil)
+
+		require.NoError(t, uc.Execute(context.Background(), usecase.ProcessMentionsInput{
+			ActorID: 1, Text: "@alice", PostID: &postID, NotifyPostID: &postID,
+		}))
+
+		notifications.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 	})
 
 	t.Run("メンションの保存に失敗したらエラーを返す", func(t *testing.T) {
@@ -246,7 +265,7 @@ func TestProcessMentionsUseCase(t *testing.T) {
 		createErr := errors.New("db error")
 		users.On("FindByUsername", mock.Anything, "alice").Return(&model.User{ID: 2}, nil)
 		mentions.On("FindByPostID", mock.Anything, postID).Return([]model.Mention(nil), nil)
-		mentions.On("Create", mock.Anything, mock.Anything).Return(createErr)
+		mentions.On("Create", mock.Anything, mock.Anything).Return(false, createErr)
 
 		assert.ErrorIs(t, uc.Execute(context.Background(), usecase.ProcessMentionsInput{ActorID: 1, Text: "@alice", PostID: &postID, NotifyPostID: &postID}), createErr)
 		notifications.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
@@ -260,7 +279,7 @@ func TestProcessMentionsUseCase(t *testing.T) {
 
 		users.On("FindByUsername", mock.Anything, "alice").Return(&model.User{ID: 2}, nil)
 		mentions.On("FindByPostID", mock.Anything, postID).Return([]model.Mention(nil), nil)
-		mentions.On("Create", mock.Anything, mock.Anything).Return(nil)
+		mentions.On("Create", mock.Anything, mock.Anything).Return(true, nil)
 		notifications.On("Create", mock.Anything, mock.Anything).Return(errors.New("db error"))
 
 		require.NoError(t, uc.Execute(context.Background(), usecase.ProcessMentionsInput{ActorID: 1, Text: "@alice", PostID: &postID, NotifyPostID: &postID}))

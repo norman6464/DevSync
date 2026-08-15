@@ -8,7 +8,10 @@ import (
 
 // MentionRepository はメンションの永続化に対する、usecase 側が要求する契約。
 type MentionRepository interface {
-	Create(ctx context.Context, mention *model.Mention) error
+	// Create はメンションを作成する。同じ相手が同じ投稿・コメントで既にメンション
+	// されている場合は何もせず、作成したかどうかを返す。
+	// 同時実行でも二重に作らないよう、判定は DB のユニーク索引に委ねる。
+	Create(ctx context.Context, mention *model.Mention) (bool, error)
 	// FindByUserID は指定ユーザー宛のメンションを新しい順にページネーションして返す。
 	FindByUserID(ctx context.Context, userID uint, page, limit int) ([]model.Mention, error)
 	// FindByPostID は指定投稿に紐づくメンションを返す。

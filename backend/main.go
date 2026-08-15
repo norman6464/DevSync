@@ -143,6 +143,9 @@ func main() {
 	if err := dbschema.EnsureUserIndexes(db); err != nil {
 		log.Fatalf("failed to ensure user indexes: %v", err)
 	}
+	if err := dbschema.EnsureMentionIndexes(db); err != nil {
+		log.Fatalf("failed to ensure mention indexes: %v", err)
+	}
 
 	// 既存ユーザーのオンボーディング完了フラグを初期化
 	db.Model(&model.User{}).Where("onboarding_completed = ?", false).Update("onboarding_completed", true)

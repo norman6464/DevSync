@@ -55,6 +55,47 @@ func EnsureUserIndexes(db *gorm.DB) error {
 	})
 }
 
+// EnsureMentionIndexes はメンションの重複を DB 側で防ぐ索引を作る。
+//
+// 同じ投稿・コメントで同じ相手を二重にメンションしないことは、アプリ側の
+// 「既存を読んでから作る」だけでは同時実行をすり抜ける。投稿本文由来
+// （comment_id が無い）とコメント由来（comment_id がある）で別々に一意にする。
+//
+// 索引を作る前に既存の重複を 1 件へ寄せる（重複が残っていると索引が作れない）。
+func EnsureMentionIndexes(db *gorm.DB) error {
+	return db.Transaction(func(tx *gorm.DB) error {
+		dedupe := []string{
+			`DELETE FROM mentions a USING mentions b
+			 WHERE a.id > b.id AND a.user_id = b.user_id
+			   AND a.post_id IS NOT DISTINCT FROM b.post_id
+			   AND a.comment_id IS NULL AND b.comment_id IS NULL
+			   AND a.post_id IS NOT NULL`,
+			`DELETE FROM mentions a USING mentions b
+			 WHERE a.id > b.id AND a.user_id = b.user_id
+			   AND a.comment_id IS NOT DISTINCT FROM b.comment_id
+			   AND a.comment_id IS NOT NULL`,
+		}
+		for _, stmt := range dedupe {
+			if err := tx.Exec(stmt).Error; err != nil {
+				return err
+			}
+		}
+
+		indexes := []string{
+			`CREATE UNIQUE INDEX IF NOT EXISTS idx_mentions_post_user
+			 ON mentions (post_id, user_id) WHERE post_id IS NOT NULL AND comment_id IS NULL`,
+			`CREATE UNIQUE INDEX IF NOT EXISTS idx_mentions_comment_user
+			 ON mentions (comment_id, user_id) WHERE comment_id IS NOT NULL`,
+		}
+		for _, stmt := range indexes {
+			if err := tx.Exec(stmt).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
 // isExpectedUserGitHubIndex は pg_indexes の定義が意図した形かを判定する。
 // ユニークであること・git_hub_id を対象にしていること・未連携を除く述語を
 // 持つことの 3 点を確認する。

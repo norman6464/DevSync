@@ -81,13 +81,18 @@ func (uc *ProcessMentionsUseCase) Execute(ctx context.Context, in ProcessMention
 		}
 		mentioned[user.ID] = true
 
-		if err := uc.mentions.Create(ctx, &model.Mention{
+		created, err := uc.mentions.Create(ctx, &model.Mention{
 			UserID:    user.ID,
 			ActorID:   in.ActorID,
 			PostID:    in.PostID,
 			CommentID: in.CommentID,
-		}); err != nil {
+		})
+		if err != nil {
 			return err
+		}
+		// 同時実行で先を越された場合は通知も送らない（DB の索引が二重作成を防ぐ）
+		if !created {
+			continue
 		}
 
 		_ = uc.notifications.Create(ctx, &model.Notification{

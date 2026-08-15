@@ -6,6 +6,7 @@ import (
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // mentionRepository は [repository.MentionRepository] の GORM 実装。
@@ -22,8 +23,12 @@ func NewMentionRepository(db *gorm.DB) repository.MentionRepository {
 var _ repository.MentionRepository = (*mentionRepository)(nil)
 
 // Create はメンションを保存する。
-func (r *mentionRepository) Create(ctx context.Context, mention *model.Mention) error {
-	return r.db.WithContext(ctx).Create(mention).Error
+func (r *mentionRepository) Create(ctx context.Context, mention *model.Mention) (bool, error) {
+	tx := r.db.WithContext(ctx).Clauses(clause.OnConflict{DoNothing: true}).Create(mention)
+	if tx.Error != nil {
+		return false, tx.Error
+	}
+	return tx.RowsAffected > 0, nil
 }
 
 // FindByUserID は指定ユーザー宛のメンションを作成日時の降順で取得する。

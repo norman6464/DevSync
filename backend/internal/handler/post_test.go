@@ -58,7 +58,7 @@ func TestPostCreate_ProcessesMentions(t *testing.T) {
 	ports.Mentions.On("FindByPostID", mock.Anything, uint(42)).Return([]model.Mention(nil), nil)
 	ports.Mentions.On("Create", mock.Anything, mock.MatchedBy(func(m *model.Mention) bool {
 		return m.UserID == 2 && m.ActorID == 1 && m.PostID != nil && *m.PostID == 42
-	})).Return(nil)
+	})).Return(true, nil)
 	ports.Notifications.On("Create", mock.Anything, mock.MatchedBy(func(n *model.Notification) bool {
 		return n.UserID == 2 && n.Type == model.NotificationTypeMention && n.PostID != nil && *n.PostID == 42
 	})).Return(nil)
@@ -86,7 +86,7 @@ func TestPostCreate_MentionFailureDoesNotFailPost(t *testing.T) {
 		Return(&model.Post{ID: 42}, nil).Maybe()
 	ports.Usernames.On("FindByUsername", mock.Anything, "alice").Return(&model.User{ID: 2}, nil)
 	ports.Mentions.On("FindByPostID", mock.Anything, uint(42)).Return([]model.Mention(nil), nil)
-	ports.Mentions.On("Create", mock.Anything, mock.Anything).Return(errors.New("db error"))
+	ports.Mentions.On("Create", mock.Anything, mock.Anything).Return(false, errors.New("db error"))
 
 	w := doRequest(r, http.MethodPost, "/posts", map[string]string{
 		"title": "Test Post", "content": "@alice",

@@ -93,7 +93,7 @@ func TestPostCreateComment_ProcessesMentions(t *testing.T) {
 	ports.Mentions.On("Create", mock.Anything, mock.MatchedBy(func(m *model.Mention) bool {
 		// 記録はコメントに紐づける（投稿本文のメンションと混ざらないようにする）
 		return m.UserID == 2 && m.CommentID != nil && *m.CommentID == 30 && m.PostID == nil
-	})).Return(nil)
+	})).Return(true, nil)
 	ports.Notifications.On("Create", mock.Anything, mock.MatchedBy(func(n *model.Notification) bool {
 		// 通知からは元の投稿へ辿れる
 		return n.UserID == 2 && n.Type == model.NotificationTypeMention && n.PostID != nil && *n.PostID == 5
