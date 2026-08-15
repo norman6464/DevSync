@@ -7,7 +7,7 @@ describe('SearchTabs', () => {
     const mockOnChange = vi.fn();
     render(<SearchTabs activeTab="users" onTabChange={mockOnChange} counts={{ users: 10, posts: 5, circles: 3 }} />);
 
-    const usersTab = screen.getByText(/users/i);
+    const usersTab = screen.getByText('ユーザー');
     expect(usersTab.parentElement).toHaveClass('border-blue-500');
   });
 
@@ -15,7 +15,7 @@ describe('SearchTabs', () => {
     const mockOnChange = vi.fn();
     render(<SearchTabs activeTab="users" onTabChange={mockOnChange} counts={{ users: 10, posts: 5, circles: 3 }} />);
 
-    const postsTab = screen.getByText(/posts/i);
+    const postsTab = screen.getByText('投稿');
     fireEvent.click(postsTab);
 
     expect(mockOnChange).toHaveBeenCalledWith('posts');

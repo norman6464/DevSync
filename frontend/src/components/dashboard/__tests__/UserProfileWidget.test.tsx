@@ -74,13 +74,13 @@ describe('UserProfileWidget', () => {
   it('GitHub未連携時にGitHub連携リンクが表示される', () => {
     useAuthStore.setState({ user: makeUser({ github_connected: false }), isAuthenticated: true });
     renderWidget();
-    expect(screen.getByText('GitHubを連携して始めましょう')).toBeInTheDocument();
+    expect(screen.getByText('GitHub と連携する')).toBeInTheDocument();
   });
 
   it('GitHub連携済み時にGitHub連携リンクが表示されない', () => {
     useAuthStore.setState({ user: makeUser({ github_connected: true }), isAuthenticated: true });
     renderWidget();
-    expect(screen.queryByText('GitHubを連携して始めましょう')).not.toBeInTheDocument();
+    expect(screen.queryByText('GitHub と連携する')).not.toBeInTheDocument();
   });
 
   it('GitHubユーザー名がある場合に表示される', () => {

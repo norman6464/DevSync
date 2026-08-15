@@ -36,10 +36,12 @@ describe('NoteTemplatesModal', () => {
 
   it('カテゴリフィルターが表示される', () => {
     render(<NoteTemplatesModal {...defaultProps} />);
-    expect(screen.getByText('すべて')).toBeInTheDocument();
-    expect(screen.getByText('学習ノート')).toBeInTheDocument();
-    expect(screen.getByText('プロジェクト')).toBeInTheDocument();
-    expect(screen.getByText('復習')).toBeInTheDocument();
+    // カテゴリ名はカード内のラベルにも出るため、accessible name が
+    // カテゴリ名と完全一致するフィルターボタンに絞って確認する
+    expect(screen.getByRole('button', { name: 'すべて' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '学習ノート' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'プロジェクト' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '復習' })).toBeInTheDocument();
   });
 
   it('テンプレートカードが表示される', () => {
@@ -53,9 +55,9 @@ describe('NoteTemplatesModal', () => {
   it('テンプレートの説明が表示される', () => {
     render(<NoteTemplatesModal {...defaultProps} />);
 
-    // 説明文の一部を確認
-    const descriptions = screen.getAllByText(/コード/);
-    expect(descriptions.length).toBeGreaterThan(0);
+    // カードの説明欄にはテンプレートのタグ文字列が表示される
+    expect(screen.getByText('#学習,#コーディング')).toBeInTheDocument();
+    expect(screen.getByText('#読書,#書籍')).toBeInTheDocument();
   });
 
   it('テンプレート選択時にonSelectが呼ばれる', () => {
@@ -96,7 +98,7 @@ describe('NoteTemplatesModal', () => {
     render(<NoteTemplatesModal {...defaultProps} />);
 
     // 「学習ノート」フィルターをクリック
-    const learningFilter = screen.getByText('学習ノート');
+    const learningFilter = screen.getByRole('button', { name: '学習ノート' });
     fireEvent.click(learningFilter);
 
     // 学習ノートカテゴリのテンプレートが表示される
@@ -136,7 +138,7 @@ describe('NoteTemplatesModal', () => {
   it('フィルター選択時にスタイルが変更される', () => {
     render(<NoteTemplatesModal {...defaultProps} />);
 
-    const learningFilter = screen.getByText('学習ノート');
+    const learningFilter = screen.getByRole('button', { name: '学習ノート' });
 
     // クリック前のスタイルを確認
     expect(learningFilter).not.toHaveClass('text-blue-400');

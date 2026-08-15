@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import PomodoroTimer from '../PomodoroTimer';
 
 vi.useFakeTimers();
@@ -50,6 +50,11 @@ describe('PomodoroTimer', () => {
 
     const startButton = screen.getByText('開始');
     fireEvent.click(startButton);
+
+    // 1 秒経過してから止める（未経過のまま止めるとラベルは「開始」に戻る仕様）
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
 
     const pauseButton = screen.getByText('一時停止');
     fireEvent.click(pauseButton);
@@ -108,7 +113,7 @@ describe('PomodoroTimer', () => {
     expect(icons.length).toBeGreaterThan(0);
   });
 
-  it('タイマー終了時にコールバックが呼ばれる', async () => {
+  it('タイマー終了時にコールバックが呼ばれる', () => {
     const onComplete = vi.fn();
     render(<PomodoroTimer onComplete={onComplete} />);
 
@@ -120,9 +125,7 @@ describe('PomodoroTimer', () => {
       vi.advanceTimersByTime(1500 * 1000);
     });
 
-    await waitFor(() => {
-      expect(onComplete).toHaveBeenCalledWith(25);
-    });
+    expect(onComplete).toHaveBeenCalledWith(25);
   });
 
   it('作業中はタイマーが青色で表示される', () => {

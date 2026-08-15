@@ -43,13 +43,13 @@ describe('GoalsProgressWidget', () => {
 
   it('アクティブゴールが0件の場合は空メッセージが表示される', () => {
     renderWidget({ activeGoals: [] });
-    expect(screen.getByText('進行中の目標がありません')).toBeInTheDocument();
-    expect(screen.getByText('目標を作成する')).toBeInTheDocument();
+    expect(screen.getByText('進行中の目標はありません')).toBeInTheDocument();
+    expect(screen.getByText('目標を作成')).toBeInTheDocument();
   });
 
-  it('ヘッダーに「学習目標の進捗」が表示される', () => {
+  it('ヘッダーに「学習ゴール進捗」が表示される', () => {
     renderWidget();
-    expect(screen.getByText('学習目標の進捗')).toBeInTheDocument();
+    expect(screen.getByText('学習ゴール進捗')).toBeInTheDocument();
   });
 
   it('「すべて見る」リンクが/goalsに遷移する', () => {
