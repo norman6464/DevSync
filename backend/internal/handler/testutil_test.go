@@ -865,14 +865,23 @@ func (m *mockFollowRepo) GetFollowing(ctx context.Context, userID uint, limit, o
 // setupFollowHandler は FollowHandler テスト用のセットアップを行う。
 // 本物の usecase を組み、port(mockFollowRepo)の呼び出しを検証する。
 func setupFollowHandler() (*FollowHandler, *mockFollowRepo) {
+	h, repo, _ := setupFollowHandlerWithNotifications()
+	return h, repo
+}
+
+// setupFollowHandlerWithNotifications は通知 port も検証したいテスト用のセットアップ。
+func setupFollowHandlerWithNotifications() (*FollowHandler, *mockFollowRepo, *mockNotificationCreator) {
 	repo := new(mockFollowRepo)
+	notifications := new(mockNotificationCreator)
+	// フォロー成功時の通知は成否に影響しないため、既定では受け流す
+	notifications.On("Create", mock.Anything, mock.Anything).Return(nil).Maybe()
 	h := NewFollowHandler(
-		usecase.NewFollowUserUseCase(repo),
+		usecase.NewFollowUserUseCase(repo, notifications),
 		usecase.NewUnfollowUserUseCase(repo),
 		usecase.NewListFollowersUseCase(repo),
 		usecase.NewListFollowingUseCase(repo),
 	)
-	return h, repo
+	return h, repo, notifications
 }
 
 // Notification（参照・既読・削除）は DIP へ移行済み。テストは notification_test.go で

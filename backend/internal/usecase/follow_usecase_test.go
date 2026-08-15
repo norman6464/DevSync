@@ -36,36 +36,57 @@ func (m *mockFollowRepo) GetFollowing(ctx context.Context, userID uint, limit, o
 }
 
 func TestFollowUserUseCase_Execute(t *testing.T) {
-	t.Run("正常にフォローできる", func(t *testing.T) {
+	t.Run("フォローすると相手に通知を作る", func(t *testing.T) {
 		repo := new(mockFollowRepo)
+		notifications := new(mockNotificationCreatorPort)
 		repo.On("Follow", mock.Anything, uint(1), uint(2)).Return(nil)
-		uc := usecase.NewFollowUserUseCase(repo)
+		notifications.On("Create", mock.Anything, mock.MatchedBy(func(n *model.Notification) bool {
+			// 受信者はフォローされた側、実行者はフォローした側
+			return n.UserID == 2 && n.ActorID == 1 && n.Type == model.NotificationTypeFollow
+		})).Return(nil)
+		uc := usecase.NewFollowUserUseCase(repo, notifications)
 
 		err := uc.Execute(context.Background(), 1, 2)
 
 		assert.NoError(t, err)
 		repo.AssertExpectations(t)
+		notifications.AssertExpectations(t)
 	})
 
 	t.Run("自分自身をフォローするとリポジトリを呼ばずエラーを返す", func(t *testing.T) {
 		repo := new(mockFollowRepo)
-		uc := usecase.NewFollowUserUseCase(repo)
+		notifications := new(mockNotificationCreatorPort)
+		uc := usecase.NewFollowUserUseCase(repo, notifications)
 
 		err := uc.Execute(context.Background(), 1, 1)
 
 		assert.ErrorIs(t, err, domain.ErrBadRequest)
 		repo.AssertNotCalled(t, "Follow")
+		notifications.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 	})
 
-	t.Run("リポジトリエラーを伝播する", func(t *testing.T) {
+	t.Run("フォローに失敗したら通知しない", func(t *testing.T) {
 		repo := new(mockFollowRepo)
+		notifications := new(mockNotificationCreatorPort)
 		repo.On("Follow", mock.Anything, uint(1), uint(2)).Return(errors.New("db error"))
-		uc := usecase.NewFollowUserUseCase(repo)
+		uc := usecase.NewFollowUserUseCase(repo, notifications)
 
 		err := uc.Execute(context.Background(), 1, 2)
 
 		assert.Error(t, err)
-		repo.AssertExpectations(t)
+		notifications.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
+	})
+
+	// 通知はフォローの付随処理なので、失敗してもフォロー自体は成立させる。
+	t.Run("通知の失敗はフォローの成否に影響しない", func(t *testing.T) {
+		repo := new(mockFollowRepo)
+		notifications := new(mockNotificationCreatorPort)
+		repo.On("Follow", mock.Anything, uint(1), uint(2)).Return(nil)
+		notifications.On("Create", mock.Anything, mock.Anything).Return(errors.New("db error"))
+		uc := usecase.NewFollowUserUseCase(repo, notifications)
+
+		assert.NoError(t, uc.Execute(context.Background(), 1, 2))
+		notifications.AssertExpectations(t)
 	})
 }
 
