@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import GoalCard from '../GoalCard';
 import type { LearningGoal } from '../../../api/goals';
 
-const baseGoal = {
+const baseGoal: LearningGoal = {
   id: 1,
   user_id: 1,
   title: 'TypeScriptを学ぶ',
@@ -11,11 +11,13 @@ const baseGoal = {
   category: 'language',
   target_date: null,
   progress: 50,
+  target_hours: 0,
   status: 'active',
+  is_public: false,
   created_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-01-01T00:00:00Z',
   completed_at: null,
-} as LearningGoal;
+};
 
 const defaultProps = {
   goal: baseGoal,

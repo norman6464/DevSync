@@ -85,7 +85,7 @@ describe('useQuestions', () => {
 
     let created: unknown;
     await act(async () => {
-      created = await result.current.createQuestion({ title: '新質問', body: 'test', tags: [] as unknown as string });
+      created = await result.current.createQuestion({ title: '新質問', body: 'test', tags: '[]' });
     });
 
     expect(created).toEqual(newQuestion);
@@ -104,7 +104,7 @@ describe('useQuestions', () => {
 
     let created: unknown;
     await act(async () => {
-      created = await result.current.createQuestion({ title: 'テスト', body: 'test', tags: [] as unknown as string });
+      created = await result.current.createQuestion({ title: 'テスト', body: 'test', tags: '[]' });
     });
 
     expect(created).toBeNull();

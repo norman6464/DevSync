@@ -10,7 +10,7 @@ import ConfirmDialog from '../common/ConfirmDialog';
 
 interface CircleSettingsTabProps {
   circle: StudyCircle;
-  onAddMember: (userId: number) => Promise<void>;
+  onAddMember: (userId: number) => Promise<unknown>;
   onRemoveMember: (userId: number) => void;
 }
 

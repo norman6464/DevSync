@@ -129,7 +129,7 @@ export default function StudyCircleDetailPage() {
       {tab === 'settings' && isOwner && (
         <CircleSettingsTab
           circle={circle}
-          onAddMember={addMember as unknown as (userId: number) => Promise<void>}
+          onAddMember={addMember}
           onRemoveMember={removeMember}
         />
       )}

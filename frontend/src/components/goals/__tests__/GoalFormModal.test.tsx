@@ -11,7 +11,7 @@ const defaultProps = {
   setTitle: vi.fn(),
   description: '',
   setDescription: vi.fn(),
-  category: 'programming' as unknown as GoalCategory,
+  category: 'language' as GoalCategory,
   setCategory: vi.fn(),
   targetDate: '',
   setTargetDate: vi.fn(),
