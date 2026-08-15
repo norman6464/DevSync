@@ -127,7 +127,7 @@ export default function ProjectForm({ project, repos = [], onSubmit, onCancel, l
 
       {/* Tech Stack */}
       <TagInput
-        tags={techStack}
+        value={techStack}
         onChange={setTechStack}
         label={t('projects.techStack')}
         placeholder={t('projects.techStackPlaceholder')}

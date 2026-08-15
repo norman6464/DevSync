@@ -1,12 +1,14 @@
 import { useState, KeyboardEvent } from 'react';
 import { X } from 'lucide-react';
 
-interface TagInputProps {
+export interface TagInputProps {
   value: string[];
   onChange: (value: string[]) => void;
   label?: string;
   placeholder?: string;
   maxTags?: number;
+  /** タグ 1 件あたりの入力文字数上限。 */
+  maxLength?: number;
   disabled?: boolean;
   className?: string;
 }
@@ -17,6 +19,7 @@ export default function TagInput({
   label,
   placeholder = 'タグを入力...',
   maxTags,
+  maxLength,
   disabled = false,
   className = '',
 }: TagInputProps) {
@@ -65,6 +68,7 @@ export default function TagInput({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
+          maxLength={maxLength}
           placeholder={value.length === 0 ? placeholder : ''}
           disabled={disabled || isMaxReached}
           className="flex-1 min-w-[80px] bg-transparent text-sm text-gray-200 placeholder-gray-500 focus:outline-none disabled:opacity-50"
