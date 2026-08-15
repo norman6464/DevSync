@@ -29,7 +29,7 @@ export default function RoadmapStepList({
     return (
       <EmptyState
         icon={List}
-        message={t('roadmaps.noSteps')}
+        title={t('roadmaps.noSteps')}
         actionLabel={isOwner ? t('roadmaps.addFirstStep') : undefined}
         onAction={isOwner ? onAddStep : undefined}
       />

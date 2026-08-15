@@ -168,7 +168,7 @@ export default function RoadmapsPage() {
       {roadmaps.length === 0 ? (
         <EmptyState
           icon={MapPin}
-          message={t('roadmaps.noRoadmaps')}
+          title={t('roadmaps.noRoadmaps')}
           actionLabel={t('roadmaps.createFirst')}
           onAction={() => setShowForm(true)}
         />

@@ -145,7 +145,7 @@ export default function BookReviewsPage() {
       ) : reviews.length === 0 ? (
         <EmptyState
           icon={BookOpen}
-          message={t('bookReviews.noReviews')}
+          title={t('bookReviews.noReviews')}
           actionLabel={t('bookReviews.addFirstReview')}
           onAction={() => setShowForm(true)}
         />

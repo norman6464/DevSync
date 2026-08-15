@@ -1,4 +1,5 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import { Inbox, FileText, Users, Search, FolderOpen } from 'lucide-react';
 
 const iconMap = {
@@ -15,10 +16,11 @@ const iconSizeMap = {
   lg: 'w-16 h-16',
 };
 
-interface EmptyStateProps {
+export interface EmptyStateProps {
   title: string;
   description?: string;
-  icon?: keyof typeof iconMap;
+  /** 定義済みキーのほか、ページ固有のアイコンは lucide のコンポーネントを直接渡せる。 */
+  icon?: keyof typeof iconMap | LucideIcon;
   iconSize?: 'sm' | 'md' | 'lg';
   actionLabel?: string;
   onAction?: () => void;
@@ -36,7 +38,7 @@ export default function EmptyState({
   className = '',
   children,
 }: EmptyStateProps) {
-  const IconComponent = icon ? iconMap[icon] : null;
+  const IconComponent = typeof icon === 'string' ? iconMap[icon] : (icon ?? null);
 
   return (
     <div className={`flex flex-col items-center justify-center py-12 text-center ${className}`.trim()}>
