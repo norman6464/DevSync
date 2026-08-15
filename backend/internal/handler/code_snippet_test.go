@@ -62,8 +62,14 @@ func (m *mockCodeSnippetRepo) GetComments(ctx context.Context, snippetID uint) (
 	return c, args.Error(1)
 }
 
-func (m *mockCodeSnippetRepo) DeleteComment(ctx context.Context, id, userID uint) error {
-	return m.Called(ctx, id, userID).Error(0)
+func (m *mockCodeSnippetRepo) FindCommentByID(ctx context.Context, id uint) (*model.SnippetComment, error) {
+	args := m.Called(ctx, id)
+	c, _ := args.Get(0).(*model.SnippetComment)
+	return c, args.Error(1)
+}
+
+func (m *mockCodeSnippetRepo) DeleteComment(ctx context.Context, id uint) error {
+	return m.Called(ctx, id).Error(0)
 }
 
 func (m *mockCodeSnippetRepo) IncrementForkCount(ctx context.Context, id uint) error {

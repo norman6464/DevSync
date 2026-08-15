@@ -265,6 +265,36 @@ func TestCopyRoadmapUseCase_Execute(t *testing.T) {
 		_, err := uc.Execute(context.Background(), 5, 1)
 		assert.NoError(t, err)
 	})
+
+	// 存在確認との間に削除された場合、adapter は (nil, nil) を返す。nil を成功として返さない。
+	t.Run("複製結果が nil なら不在として扱う", func(t *testing.T) {
+		repo := new(mockRoadmapRepo)
+		repo.On("FindByID", mock.Anything, uint(5)).
+			Return(&model.Roadmap{ID: 5, UserID: 1, IsPublic: true}, nil)
+		repo.On("CopyRoadmap", mock.Anything, uint(5), uint(1)).Return((*model.Roadmap)(nil), nil)
+		uc := usecase.NewCopyRoadmapUseCase(repo)
+
+		got, err := uc.Execute(context.Background(), 5, 1)
+
+		assert.Nil(t, got)
+		require.Error(t, err)
+		assert.Nil(t, domain.GetDomainError(err), "既存の不在と同じく handler で 500 になる")
+	})
+}
+
+// テンプレート複製も同じ経路を通るため、nil を成功として返さないことを固定する。
+func TestCreateRoadmapFromTemplateUseCase_CopyVanished(t *testing.T) {
+	repo := new(mockRoadmapRepo)
+	repo.On("FindByID", mock.Anything, uint(5)).
+		Return(&model.Roadmap{ID: 5, UserID: 2, IsTemplate: true, IsPublic: true}, nil)
+	repo.On("CopyRoadmap", mock.Anything, uint(5), uint(1)).Return((*model.Roadmap)(nil), nil)
+	uc := usecase.NewCreateRoadmapFromTemplateUseCase(repo)
+
+	got, err := uc.Execute(context.Background(), 5, 1)
+
+	assert.Nil(t, got)
+	require.Error(t, err)
+	assert.Nil(t, domain.GetDomainError(err))
 }
 
 func TestCreateRoadmapFromTemplateUseCase_Execute(t *testing.T) {

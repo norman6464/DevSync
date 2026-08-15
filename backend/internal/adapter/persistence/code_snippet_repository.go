@@ -106,16 +106,29 @@ func (r *codeSnippetRepository) GetComments(ctx context.Context, snippetID uint)
 	return comments, err
 }
 
-// DeleteComment は所有者のインラインコメントを削除し、スニペットのコメント数を減算する。
-// 所有者でない場合は gorm.ErrRecordNotFound を返す（移行前の挙動を維持している）。
-func (r *codeSnippetRepository) DeleteComment(ctx context.Context, id, userID uint) error {
+// FindCommentByID は指定 ID のインラインコメントを取得する。不在の場合は (nil, nil) を返す。
+func (r *codeSnippetRepository) FindCommentByID(ctx context.Context, id uint) (*model.SnippetComment, error) {
+	var comment model.SnippetComment
+	if err := r.db.WithContext(ctx).First(&comment, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &comment, nil
+}
+
+// DeleteComment はインラインコメントを削除し、スニペットのコメント数を減算する。
+// 所有権の判定は usecase 側で済んでいる前提。既に無ければ何もしない（冪等）。
+func (r *codeSnippetRepository) DeleteComment(ctx context.Context, id uint) error {
 	db := r.db.WithContext(ctx)
 	var comment model.SnippetComment
-	if err := db.First(&comment, id).Error; err != nil {
-		return err
+	err := db.First(&comment, id).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil
 	}
-	if comment.UserID != userID {
-		return gorm.ErrRecordNotFound
+	if err != nil {
+		return err
 	}
 	db.Model(&model.CodeSnippet{}).Where("id = ?", comment.SnippetID).
 		UpdateColumn("comment_count", gorm.Expr("GREATEST(comment_count - 1, 0)"))

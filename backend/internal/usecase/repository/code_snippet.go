@@ -20,7 +20,11 @@ type CodeSnippetRepository interface {
 
 	CreateComment(ctx context.Context, comment *model.SnippetComment) error
 	GetComments(ctx context.Context, snippetID uint) ([]model.SnippetComment, error)
-	DeleteComment(ctx context.Context, id, userID uint) error
+	// FindCommentByID は指定 ID のインラインコメントを返す。不在の場合は (nil, nil) を返す。
+	FindCommentByID(ctx context.Context, id uint) (*model.SnippetComment, error)
+	// DeleteComment はインラインコメントを削除し、スニペットのコメント数を減算する。
+	// 所有権の判定は usecase 側で行う。既に無ければ何もしない（冪等）。
+	DeleteComment(ctx context.Context, id uint) error
 
 	IncrementForkCount(ctx context.Context, id uint) error
 

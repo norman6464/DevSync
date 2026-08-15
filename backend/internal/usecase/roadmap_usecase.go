@@ -251,7 +251,21 @@ func (uc *CopyRoadmapUseCase) Execute(ctx context.Context, roadmapID, userID uin
 	if !original.IsPublic && original.UserID != userID {
 		return nil, domain.ErrForbidden
 	}
-	return uc.roadmaps.CopyRoadmap(ctx, roadmapID, userID)
+
+	return copyRoadmapOrNotFound(ctx, uc.roadmaps, roadmapID, userID)
+}
+
+// copyRoadmapOrNotFound は複製を実行し、複製元が存在確認との間に消えていた場合は
+// 不在として扱う（nil を成功として返さない）。
+func copyRoadmapOrNotFound(ctx context.Context, roadmaps repository.RoadmapRepository, originalID, userID uint) (*model.Roadmap, error) {
+	copied, err := roadmaps.CopyRoadmap(ctx, originalID, userID)
+	if err != nil {
+		return nil, err
+	}
+	if copied == nil {
+		return nil, errRoadmapNotFound
+	}
+	return copied, nil
 }
 
 // ListRoadmapTemplatesUseCase はテンプレート一覧を取得する。
@@ -291,7 +305,7 @@ func (uc *CreateRoadmapFromTemplateUseCase) Execute(ctx context.Context, templat
 	if !template.IsTemplate {
 		return nil, domain.ErrBadRequest
 	}
-	return uc.roadmaps.CopyRoadmap(ctx, templateID, userID)
+	return copyRoadmapOrNotFound(ctx, uc.roadmaps, templateID, userID)
 }
 
 // CreateRoadmapStepUseCase はロードマップにステップを追加する。

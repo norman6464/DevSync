@@ -25,7 +25,12 @@ func NewCreateResourceReviewUseCase(
 
 // Execute はリソースの存在確認・評価値/コメント検証・重複チェックを行いレビューを作成する。
 func (uc *CreateResourceReviewUseCase) Execute(ctx context.Context, review *model.ResourceReview) error {
-	if _, err := uc.resources.FindByID(ctx, review.ResourceID); err != nil {
+	// 不在（nil）と DB 障害（err）を区別する。障害を 404 に変換すると原因が隠れる。
+	resource, err := uc.resources.FindByID(ctx, review.ResourceID)
+	if err != nil {
+		return err
+	}
+	if resource == nil {
 		return domain.ErrNotFound
 	}
 
@@ -38,7 +43,11 @@ func (uc *CreateResourceReviewUseCase) Execute(ctx context.Context, review *mode
 		return err
 	}
 
-	existing, _ := uc.reviews.FindByUserAndResource(ctx, review.UserID, review.ResourceID)
+	// 重複チェックの DB 障害を握り潰すと、障害時に重複作成を許してしまう。
+	existing, err := uc.reviews.FindByUserAndResource(ctx, review.UserID, review.ResourceID)
+	if err != nil {
+		return err
+	}
 	if existing != nil {
 		return domain.ErrConflict
 	}
