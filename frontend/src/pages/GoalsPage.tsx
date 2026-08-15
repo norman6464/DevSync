@@ -142,7 +142,7 @@ export default function GoalsPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-md">
           <EmptyState
             icon={Target}
-            message={t('goals.noGoals')}
+            title={t('goals.noGoals')}
             actionLabel={t('goals.createFirst')}
             onAction={() => setShowForm(true)}
           />

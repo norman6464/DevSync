@@ -130,7 +130,7 @@ export default function QAPage() {
       ) : questions.length === 0 ? (
         <EmptyState
           icon={HelpCircle}
-          message={t('qa.noQuestions')}
+          title={t('qa.noQuestions')}
           actionLabel={t('qa.askFirstQuestion')}
           onAction={() => setShowForm(true)}
         />

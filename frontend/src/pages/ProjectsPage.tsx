@@ -136,17 +136,17 @@ export default function ProjectsPage() {
         searchQuery ? (
           <EmptyState
             icon={FolderOpen}
-            message={t('projects.noSearchResults')}
+            title={t('projects.noSearchResults')}
           />
         ) : tab === 'archived' ? (
           <EmptyState
             icon={Archive}
-            message={t('projects.noSearchResults')}
+            title={t('projects.noSearchResults')}
           />
         ) : (
           <EmptyState
             icon={FolderOpen}
-            message={t('projects.noProjects')}
+            title={t('projects.noProjects')}
             actionLabel={t('projects.addFirstProject')}
             onAction={() => setShowForm(true)}
           />

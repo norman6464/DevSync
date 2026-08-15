@@ -30,7 +30,7 @@ export default function YouTubePage() {
       <div className="max-w-6xl mx-auto px-4 py-8">
         <EmptyState
           icon={Youtube}
-          message={t('youtube.unavailable')}
+          title={t('youtube.unavailable')}
         />
       </div>
     );
@@ -104,7 +104,7 @@ export default function YouTubePage() {
       ) : videos.length === 0 ? (
         <EmptyState
           icon={Youtube}
-          message={tab === 'recommend' ? t('youtube.noRecommendations') : t('youtube.noResults')}
+          title={tab === 'recommend' ? t('youtube.noRecommendations') : t('youtube.noResults')}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

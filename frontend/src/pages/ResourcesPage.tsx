@@ -128,7 +128,7 @@ export default function ResourcesPage() {
       ) : resources.length === 0 ? (
         <EmptyState
           icon={BookOpen}
-          message={
+          title={
             tab === 'saved' ? t('resources.noSavedResources') :
             tab === 'mine' ? t('resources.noMyResources') :
             t('resources.noResources')

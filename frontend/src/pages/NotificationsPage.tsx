@@ -66,7 +66,7 @@ export default function NotificationsPage() {
       ) : filteredNotifications.length === 0 ? (
         <EmptyState
           icon={Bell}
-          message={t('notifications.empty')}
+          title={t('notifications.empty')}
         />
       ) : (
         <>

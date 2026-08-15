@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { Youtube } from 'lucide-react';
 import EmptyState from '../EmptyState';
 
 describe('EmptyState', () => {
@@ -21,6 +22,13 @@ describe('EmptyState', () => {
 
     const icon = container.querySelector('.lucide-inbox');
     expect(icon).toBeInTheDocument();
+  });
+
+  // ページ固有のアイコン（定義済みキーに無いもの）はコンポーネントを直接渡す。
+  it('lucide のコンポーネントを直接渡してもアイコンが表示される', () => {
+    const { container } = render(<EmptyState title="空" icon={Youtube} />);
+
+    expect(container.querySelector('.lucide-youtube')).toBeInTheDocument();
   });
 
   it('アクションボタンが表示される', () => {
