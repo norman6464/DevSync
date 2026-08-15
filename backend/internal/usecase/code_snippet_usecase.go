@@ -246,9 +246,13 @@ func NewDeleteSnippetCommentUseCase(snippets repository.CodeSnippetRepository) *
 	return &DeleteSnippetCommentUseCase{snippets: snippets}
 }
 
-// Execute はコメントを削除する。所有権の判定は adapter 側で行う（移行前の挙動を維持している）。
+// Execute は所有権を検証したうえでコメントを削除する。
 func (uc *DeleteSnippetCommentUseCase) Execute(ctx context.Context, id, userID uint) error {
-	return uc.snippets.DeleteComment(ctx, id, userID)
+	if _, err := ensureOwner(ctx, uc.snippets.FindCommentByID, id, userID,
+		func(c *model.SnippetComment) uint { return c.UserID }); err != nil {
+		return err
+	}
+	return uc.snippets.DeleteComment(ctx, id)
 }
 
 // ForkCodeSnippetUseCase は既存スニペットを自分の投稿へコピーする。

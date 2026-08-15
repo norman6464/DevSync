@@ -251,7 +251,16 @@ func (uc *CopyRoadmapUseCase) Execute(ctx context.Context, roadmapID, userID uin
 	if !original.IsPublic && original.UserID != userID {
 		return nil, domain.ErrForbidden
 	}
-	return uc.roadmaps.CopyRoadmap(ctx, roadmapID, userID)
+
+	copied, err := uc.roadmaps.CopyRoadmap(ctx, roadmapID, userID)
+	if err != nil {
+		return nil, err
+	}
+	if copied == nil {
+		// 存在確認との間に削除された場合。不在として扱う。
+		return nil, errRoadmapNotFound
+	}
+	return copied, nil
 }
 
 // ListRoadmapTemplatesUseCase はテンプレート一覧を取得する。

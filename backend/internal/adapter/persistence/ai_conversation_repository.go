@@ -79,16 +79,20 @@ func (r *aiConversationRepository) CountTodayMessages(ctx context.Context, userI
 }
 
 // DeleteConversation は本人の会話をメッセージごと削除する。
+// 所有権の判定は usecase 側で済んでいる前提で、本人の会話だけを対象にする。
+// 既に無ければ何もしない（冪等）。エラーは DB 障害だけを表す。
 func (r *aiConversationRepository) DeleteConversation(ctx context.Context, id, userID uint) error {
+	db := r.db.WithContext(ctx)
 	var conv model.AIConversation
-	if err := r.db.WithContext(ctx).First(&conv, id).Error; err != nil {
+	err := db.Where("id = ? AND user_id = ?", id, userID).First(&conv).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil
+	}
+	if err != nil {
 		return err
 	}
-	if conv.UserID != userID {
-		return gorm.ErrRecordNotFound
-	}
-	if err := r.db.WithContext(ctx).Where("conversation_id = ?", id).Delete(&model.AIMessage{}).Error; err != nil {
+	if err := db.Where("conversation_id = ?", id).Delete(&model.AIMessage{}).Error; err != nil {
 		return err
 	}
-	return r.db.WithContext(ctx).Delete(&conv).Error
+	return db.Delete(&conv).Error
 }

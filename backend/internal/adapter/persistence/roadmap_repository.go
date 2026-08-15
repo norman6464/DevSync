@@ -131,7 +131,8 @@ func (r *roadmapRepository) CopyRoadmap(ctx context.Context, originalID, newUser
 		return nil, err
 	}
 	if original == nil {
-		return nil, gorm.ErrRecordNotFound
+		// 不在は (nil, nil)。エラーは DB 障害だけを表す。
+		return nil, nil
 	}
 
 	db := r.db.WithContext(ctx)

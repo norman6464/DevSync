@@ -1,6 +1,8 @@
 package persistence
 
 import (
+	"errors"
+
 	"context"
 
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -25,10 +27,13 @@ func (r *resourceReviewRepository) Create(ctx context.Context, review *model.Res
 	return r.db.WithContext(ctx).Create(review).Error
 }
 
-// FindByID は指定 ID のレビューをユーザー情報付きで取得する。
+// FindByID は指定 ID のレビューをユーザー情報付きで取得する。不在の場合は (nil, nil) を返す。
 func (r *resourceReviewRepository) FindByID(ctx context.Context, id uint) (*model.ResourceReview, error) {
 	var review model.ResourceReview
 	if err := r.db.WithContext(ctx).Preload("User").First(&review, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return &review, nil
@@ -52,12 +57,15 @@ func (r *resourceReviewRepository) FindByResourceID(ctx context.Context, resourc
 	return reviews, total, err
 }
 
-// FindByUserAndResource は指定ユーザーの指定リソースへのレビューを取得する。
+// FindByUserAndResource は指定ユーザーの指定リソースへのレビューを取得する。不在の場合は (nil, nil) を返す。
 func (r *resourceReviewRepository) FindByUserAndResource(ctx context.Context, userID, resourceID uint) (*model.ResourceReview, error) {
 	var review model.ResourceReview
 	if err := r.db.WithContext(ctx).
 		Where("user_id = ? AND resource_id = ?", userID, resourceID).
 		First(&review).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return &review, nil

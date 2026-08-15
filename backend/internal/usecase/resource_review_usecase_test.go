@@ -54,7 +54,7 @@ func TestCreateResourceReviewUseCase_Execute(t *testing.T) {
 		reviews := new(mockResourceReviewRepo)
 		resources := new(mockLearningResourceReader)
 		resources.On("FindByID", mock.Anything, uint(10)).Return(&model.LearningResource{}, nil)
-		reviews.On("FindByUserAndResource", mock.Anything, uint(1), uint(10)).Return((*model.ResourceReview)(nil), errors.New("not found"))
+		reviews.On("FindByUserAndResource", mock.Anything, uint(1), uint(10)).Return((*model.ResourceReview)(nil), nil)
 		reviews.On("Create", mock.Anything, mock.AnythingOfType("*model.ResourceReview")).Return(nil)
 		uc := usecase.NewCreateResourceReviewUseCase(reviews, resources)
 
@@ -67,12 +67,43 @@ func TestCreateResourceReviewUseCase_Execute(t *testing.T) {
 	t.Run("存在しないリソースは ErrNotFound", func(t *testing.T) {
 		reviews := new(mockResourceReviewRepo)
 		resources := new(mockLearningResourceReader)
-		resources.On("FindByID", mock.Anything, uint(99)).Return((*model.LearningResource)(nil), errors.New("not found"))
+		resources.On("FindByID", mock.Anything, uint(99)).Return((*model.LearningResource)(nil), nil)
 		uc := usecase.NewCreateResourceReviewUseCase(reviews, resources)
 
 		err := uc.Execute(context.Background(), &model.ResourceReview{UserID: 1, ResourceID: 99, Rating: 4})
 
 		assert.ErrorIs(t, err, domain.ErrNotFound)
+		reviews.AssertNotCalled(t, "Create")
+	})
+
+	// 存在確認の失敗は「リソースが無い」こととは別で、404 に変換すると障害が隠れる。
+	t.Run("存在確認の DB 障害は 404 にせず伝播する", func(t *testing.T) {
+		reviews := new(mockResourceReviewRepo)
+		resources := new(mockLearningResourceReader)
+		dbErr := errors.New("db down")
+		resources.On("FindByID", mock.Anything, uint(10)).Return((*model.LearningResource)(nil), dbErr)
+		uc := usecase.NewCreateResourceReviewUseCase(reviews, resources)
+
+		err := uc.Execute(context.Background(), &model.ResourceReview{UserID: 1, ResourceID: 10, Rating: 4})
+
+		assert.ErrorIs(t, err, dbErr)
+		assert.NotErrorIs(t, err, domain.ErrNotFound, "障害を 404 に変換しない")
+		reviews.AssertNotCalled(t, "Create")
+	})
+
+	// 重複チェックが失敗したまま作成すると、障害時に二重レビューを許してしまう。
+	t.Run("重複チェックの DB 障害では作成しない", func(t *testing.T) {
+		reviews := new(mockResourceReviewRepo)
+		resources := new(mockLearningResourceReader)
+		dbErr := errors.New("db down")
+		resources.On("FindByID", mock.Anything, uint(10)).Return(&model.LearningResource{}, nil)
+		reviews.On("FindByUserAndResource", mock.Anything, uint(1), uint(10)).
+			Return((*model.ResourceReview)(nil), dbErr)
+		uc := usecase.NewCreateResourceReviewUseCase(reviews, resources)
+
+		err := uc.Execute(context.Background(), &model.ResourceReview{UserID: 1, ResourceID: 10, Rating: 4})
+
+		assert.ErrorIs(t, err, dbErr)
 		reviews.AssertNotCalled(t, "Create")
 	})
 

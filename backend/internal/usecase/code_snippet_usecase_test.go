@@ -11,6 +11,7 @@ import (
 	"github.com/norman6464/devsync/backend/internal/usecase"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 // mockCodeSnippetRepo は usecase/repository.CodeSnippetRepository のモック。
@@ -62,8 +63,14 @@ func (m *mockCodeSnippetRepo) GetComments(ctx context.Context, snippetID uint) (
 	return c, args.Error(1)
 }
 
-func (m *mockCodeSnippetRepo) DeleteComment(ctx context.Context, id, userID uint) error {
-	return m.Called(ctx, id, userID).Error(0)
+func (m *mockCodeSnippetRepo) FindCommentByID(ctx context.Context, id uint) (*model.SnippetComment, error) {
+	args := m.Called(ctx, id)
+	c, _ := args.Get(0).(*model.SnippetComment)
+	return c, args.Error(1)
+}
+
+func (m *mockCodeSnippetRepo) DeleteComment(ctx context.Context, id uint) error {
+	return m.Called(ctx, id).Error(0)
 }
 
 func (m *mockCodeSnippetRepo) IncrementForkCount(ctx context.Context, id uint) error {
@@ -152,9 +159,9 @@ func TestCreateCodeSnippetUseCase_Execute(t *testing.T) {
 
 	t.Run("入力が不正なら投稿も読まない", func(t *testing.T) {
 		cases := map[string]*model.CodeSnippet{
-			"言語が空":           {PostID: 5, Language: "", Code: "x"},
-			"コードが空":          {PostID: 5, Language: "go", Code: ""},
-			"言語が 101 文字":     {PostID: 5, Language: strings.Repeat("a", 101), Code: "x"},
+			"言語が空":          {PostID: 5, Language: "", Code: "x"},
+			"コードが空":         {PostID: 5, Language: "go", Code: ""},
+			"言語が 101 文字":    {PostID: 5, Language: strings.Repeat("a", 101), Code: "x"},
 			"ファイル名が 201 文字": {PostID: 5, Language: "go", Code: "x", FileName: strings.Repeat("a", 201)},
 		}
 		for name, in := range cases {
@@ -444,4 +451,50 @@ func TestCountCodeSnippetsUseCase_Execute(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, int64(7), got)
 	snippets.AssertExpectations(t)
+}
+
+func TestDeleteSnippetCommentUseCase_Execute(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("所有者はコメントを削除できる", func(t *testing.T) {
+		snippets := new(mockCodeSnippetRepo)
+		snippets.On("FindCommentByID", mock.Anything, uint(3)).
+			Return(&model.SnippetComment{ID: 3, UserID: 1}, nil)
+		snippets.On("DeleteComment", mock.Anything, uint(3)).Return(nil)
+		uc := usecase.NewDeleteSnippetCommentUseCase(snippets)
+
+		require.NoError(t, uc.Execute(ctx, 3, 1))
+		snippets.AssertExpectations(t)
+	})
+
+	t.Run("他ユーザーのコメントは Forbidden（削除しない）", func(t *testing.T) {
+		snippets := new(mockCodeSnippetRepo)
+		snippets.On("FindCommentByID", mock.Anything, uint(3)).
+			Return(&model.SnippetComment{ID: 3, UserID: 999}, nil)
+		uc := usecase.NewDeleteSnippetCommentUseCase(snippets)
+
+		err := uc.Execute(ctx, 3, 1)
+
+		assert.ErrorIs(t, err, domain.ErrForbidden)
+		snippets.AssertNotCalled(t, "DeleteComment", mock.Anything, mock.Anything)
+	})
+
+	t.Run("不在なら削除しない", func(t *testing.T) {
+		snippets := new(mockCodeSnippetRepo)
+		snippets.On("FindCommentByID", mock.Anything, uint(3)).Return((*model.SnippetComment)(nil), nil)
+		uc := usecase.NewDeleteSnippetCommentUseCase(snippets)
+
+		assert.Error(t, uc.Execute(ctx, 3, 1))
+		snippets.AssertNotCalled(t, "DeleteComment", mock.Anything, mock.Anything)
+	})
+
+	t.Run("取得の DB 障害は伝播する（削除しない）", func(t *testing.T) {
+		snippets := new(mockCodeSnippetRepo)
+		dbErr := errors.New("db down")
+		snippets.On("FindCommentByID", mock.Anything, uint(3)).Return((*model.SnippetComment)(nil), dbErr)
+		uc := usecase.NewDeleteSnippetCommentUseCase(snippets)
+
+		assert.ErrorIs(t, uc.Execute(ctx, 3, 1), dbErr)
+		snippets.AssertNotCalled(t, "DeleteComment", mock.Anything, mock.Anything)
+	})
 }

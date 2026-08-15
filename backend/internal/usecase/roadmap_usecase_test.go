@@ -265,6 +265,20 @@ func TestCopyRoadmapUseCase_Execute(t *testing.T) {
 		_, err := uc.Execute(context.Background(), 5, 1)
 		assert.NoError(t, err)
 	})
+
+	// 存在確認との間に削除された場合、adapter は (nil, nil) を返す。nil を成功として返さない。
+	t.Run("複製結果が nil なら不在として扱う", func(t *testing.T) {
+		repo := new(mockRoadmapRepo)
+		repo.On("FindByID", mock.Anything, uint(5)).
+			Return(&model.Roadmap{ID: 5, UserID: 1, IsPublic: true}, nil)
+		repo.On("CopyRoadmap", mock.Anything, uint(5), uint(1)).Return((*model.Roadmap)(nil), nil)
+		uc := usecase.NewCopyRoadmapUseCase(repo)
+
+		got, err := uc.Execute(context.Background(), 5, 1)
+
+		assert.Nil(t, got)
+		assert.Error(t, err)
+	})
 }
 
 func TestCreateRoadmapFromTemplateUseCase_Execute(t *testing.T) {

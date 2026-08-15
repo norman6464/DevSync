@@ -69,7 +69,7 @@ func TestResourceReview_Create_Success(t *testing.T) {
 	h, reviews, resources := setupResourceReviewHandler()
 	resources.On("FindByID", mock.Anything, uint(10)).Return(&model.LearningResource{}, nil)
 	reviews.On("FindByUserAndResource", mock.Anything, uint(1), uint(10)).
-		Return((*model.ResourceReview)(nil), errors.New("not found"))
+		Return((*model.ResourceReview)(nil), nil)
 	reviews.On("Create", mock.Anything, mock.AnythingOfType("*model.ResourceReview")).Return(nil)
 
 	r := newRouter(1)
@@ -113,7 +113,7 @@ func TestResourceReview_Create_ServiceError(t *testing.T) {
 	h, reviews, resources := setupResourceReviewHandler()
 	resources.On("FindByID", mock.Anything, uint(10)).Return(&model.LearningResource{}, nil)
 	reviews.On("FindByUserAndResource", mock.Anything, uint(1), uint(10)).
-		Return((*model.ResourceReview)(nil), errors.New("not found"))
+		Return((*model.ResourceReview)(nil), nil)
 	reviews.On("Create", mock.Anything, mock.AnythingOfType("*model.ResourceReview")).
 		Return(errors.New("db error"))
 
