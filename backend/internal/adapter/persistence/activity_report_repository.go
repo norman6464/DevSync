@@ -142,9 +142,12 @@ func (r *activityReportRepository) getDailyActivity(ctx context.Context, userID 
 		}
 
 		// 当日のGitHubコントリビューション数を取得
+		// date は timestamptz なので、文字列の日付と等値比較すると DB セッションの
+		// タイムゾーンで 0 時に解釈され、書き込み側のローカル 0 時とずれて一致しない。
+		// 投稿・コメントと同じく、その日の 0 時以上・翌日 0 時未満の範囲で数える。
 		var contributions int64
 		db.Model(&model.GitHubContribution{}).
-			Where("user_id = ? AND date = ?", userID, dateStr).
+			Where("user_id = ? AND date >= ? AND date < ?", userID, d, nextDay).
 			Select("COALESCE(SUM(count), 0)").
 			Scan(&contributions)
 		activity.Contributions = int(contributions)
