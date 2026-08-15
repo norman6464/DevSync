@@ -40,6 +40,8 @@ export default function Avatar({
 }: AvatarProps) {
   const shape = rounded ? 'rounded-full' : 'rounded-lg';
   const initial = name ? name.charAt(0) : null;
+  // alt="" は装飾画像を意味するので、名前で上書きせずそのまま通す。
+  const altText = alt ?? name ?? '';
 
   return (
     <div className={`relative inline-flex ${className}`.trim()}>
@@ -47,7 +49,7 @@ export default function Avatar({
         className={`${sizeClasses[size]} ${shape} bg-gray-700 flex items-center justify-center overflow-hidden`}
       >
         {avatarUrl ? (
-          <img src={avatarUrl} alt={alt || name || ''} className="w-full h-full object-cover" />
+          <img src={avatarUrl} alt={altText} className="w-full h-full object-cover" />
         ) : initial ? (
           <span className="font-medium text-gray-200">{initial}</span>
         ) : (

@@ -22,6 +22,12 @@ describe('Avatar', () => {
     expect(screen.getByRole('img')).toHaveAttribute('alt', '田中太郎');
   });
 
+  // alt="" は「装飾画像なので読み上げない」という指定。名前で上書きしてはいけない。
+  it('空の alt を渡したら名前で上書きしない', () => {
+    const { container } = render(<Avatar avatarUrl="/avatar.jpg" alt="" name="田中太郎" />);
+    expect(container.querySelector('img')).toHaveAttribute('alt', '');
+  });
+
   it('xsサイズが適用される', () => {
     const { container } = render(<Avatar name="T" size="xs" />);
     expect(container.querySelector('.w-6')).toBeInTheDocument();
