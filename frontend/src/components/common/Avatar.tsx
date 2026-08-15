@@ -1,23 +1,28 @@
 import { User } from 'lucide-react';
 
-interface AvatarProps {
-  src?: string;
+export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+
+export interface AvatarProps {
+  /** 画像 URL。ProfileCard と揃えた名前で受ける。 */
+  avatarUrl?: string;
   alt?: string;
   name?: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: AvatarSize;
   online?: boolean;
   rounded?: boolean;
   className?: string;
 }
 
-const sizeClasses = {
+const sizeClasses: Record<AvatarSize, string> = {
+  xs: 'w-6 h-6 text-[10px]',
   sm: 'w-8 h-8 text-xs',
   md: 'w-10 h-10 text-sm',
   lg: 'w-12 h-12 text-base',
   xl: 'w-16 h-16 text-lg',
 };
 
-const iconSizes = {
+const iconSizes: Record<AvatarSize, string> = {
+  xs: 'w-3 h-3',
   sm: 'w-4 h-4',
   md: 'w-5 h-5',
   lg: 'w-6 h-6',
@@ -25,7 +30,7 @@ const iconSizes = {
 };
 
 export default function Avatar({
-  src,
+  avatarUrl,
   alt,
   name,
   size = 'md',
@@ -41,8 +46,8 @@ export default function Avatar({
       <div
         className={`${sizeClasses[size]} ${shape} bg-gray-700 flex items-center justify-center overflow-hidden`}
       >
-        {src ? (
-          <img src={src} alt={alt || name || ''} className="w-full h-full object-cover" />
+        {avatarUrl ? (
+          <img src={avatarUrl} alt={alt || name || ''} className="w-full h-full object-cover" />
         ) : initial ? (
           <span className="font-medium text-gray-200">{initial}</span>
         ) : (
