@@ -60,6 +60,12 @@ describe('NotificationItem', () => {
     expect(screen.getByText('Test Userさんがあなたをフォローしました')).toBeInTheDocument();
   });
 
+  it('メンション通知のメッセージを表示する', () => {
+    const notification = makeNotification({ type: 'mention' });
+    wrap(<NotificationItem notification={notification} {...defaultProps} />);
+    expect(screen.getByText('Test Userさんがあなたをメンションしました')).toBeInTheDocument();
+  });
+
   it('未読通知に青いドットが表示される', () => {
     const notification = makeNotification({ read: false });
     const { container } = wrap(<NotificationItem notification={notification} {...defaultProps} />);

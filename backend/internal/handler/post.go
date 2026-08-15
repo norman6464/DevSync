@@ -43,6 +43,9 @@ type PostUseCases struct {
 	GetReactions   *usecase.GetPostReactionsUseCase
 	ReactionsBatch *usecase.GetPostReactionsBatchUseCase
 
+	ProcessMentions       *usecase.ProcessMentionsUseCase
+	DeleteCommentMentions *usecase.DeleteCommentMentionsUseCase
+
 	CreateComment *usecase.CreatePostCommentUseCase
 	ListComments  *usecase.ListPostCommentsUseCase
 	ListReplies   *usecase.ListCommentRepliesUseCase
@@ -123,7 +126,37 @@ func (h *PostHandler) Create(c *gin.Context) {
 		_ = h.autoTags.Execute(c.Request.Context(), created.ID, userID, input.Content)
 	}
 
+	h.processPostMentions(c, userID, created.ID, input.Content)
+
 	respondCreated(c, created)
+}
+
+// processPostMentions は投稿本文のメンションを記録して相手に通知する。
+// メンションの成否は投稿の成否と切り離す（本文は既に保存済みのため）。
+func (h *PostHandler) processPostMentions(c *gin.Context, actorID, postID uint, content string) {
+	if h.uc.ProcessMentions == nil || content == "" {
+		return
+	}
+	_ = h.uc.ProcessMentions.Execute(c.Request.Context(), usecase.ProcessMentionsInput{
+		ActorID:      actorID,
+		Text:         content,
+		PostID:       &postID,
+		NotifyPostID: &postID,
+	})
+}
+
+// processCommentMentions はコメント本文のメンションを記録して相手に通知する。
+// 記録はコメントに紐づけ、通知からは元の投稿へ辿れるようにする。
+func (h *PostHandler) processCommentMentions(c *gin.Context, actorID, commentID, postID uint, content string) {
+	if h.uc.ProcessMentions == nil || content == "" {
+		return
+	}
+	_ = h.uc.ProcessMentions.Execute(c.Request.Context(), usecase.ProcessMentionsInput{
+		ActorID:      actorID,
+		Text:         content,
+		CommentID:    &commentID,
+		NotifyPostID: &postID,
+	})
 }
 
 // GetAll は投稿一覧をページネーション付きで返す。
@@ -188,6 +221,10 @@ func (h *PostHandler) Update(c *gin.Context) {
 	// コンテンツ更新時にハッシュタグを自動再抽出
 	if h.autoTags != nil && input.Content != "" {
 		_ = h.autoTags.Execute(c.Request.Context(), id, userID, input.Content)
+	}
+
+	if input.Content != "" {
+		h.processPostMentions(c, userID, id, input.Content)
 	}
 
 	respondOK(c, post)
@@ -340,6 +377,9 @@ func (h *PostHandler) CreateComment(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
+
+	h.processCommentMentions(c, userID, comment.ID, id, input.Content)
+
 	respondCreated(c, comment)
 }
 
@@ -376,6 +416,9 @@ func (h *PostHandler) EditComment(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
+
+	h.processCommentMentions(c, userID, commentID, comment.PostID, input.Content)
+
 	respondOK(c, comment)
 }
 
@@ -391,6 +434,12 @@ func (h *PostHandler) DeleteComment(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
+
+	// コメントが消えたら、そのコメントを指すメンションも残さない
+	if h.uc.DeleteCommentMentions != nil {
+		_ = h.uc.DeleteCommentMentions.Execute(c.Request.Context(), commentID)
+	}
+
 	respondDeleted(c)
 }
 

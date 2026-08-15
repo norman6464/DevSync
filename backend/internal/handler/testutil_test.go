@@ -402,52 +402,69 @@ func (m *mockRoadmapRepo) ReorderSteps(ctx context.Context, roadmapID uint, step
 
 // postHandlerPorts は PostHandler に注入した port モックをまとめる。
 type postHandlerPorts struct {
-	Posts        *mockPostPort
-	Likes        *mockPostLikePort
-	Followers    *mockFollowerNotifierPort
-	Snippets     *mockCodeSnippetRepo
-	SnippetPosts *mockPostReader
-	Reactions    *mockPostReactionPort
-	Authors      *mockPostAuthorPort
-	Comments     *mockPostCommentPort
-	Bookmarks    *mockPostBookmarkPort
+	Posts         *mockPostPort
+	Likes         *mockPostLikePort
+	Followers     *mockFollowerNotifierPort
+	Snippets      *mockCodeSnippetRepo
+	SnippetPosts  *mockPostReader
+	Reactions     *mockPostReactionPort
+	Authors       *mockPostAuthorPort
+	Comments      *mockPostCommentPort
+	Bookmarks     *mockPostBookmarkPort
+	Mentions      *mockMentionPort
+	Usernames     *mockUsernameLookupPort
+	Notifications *mockNotificationCreator
+}
+
+// mockUsernameLookupPort は usecase/repository.UsernameLookup のモック。
+type mockUsernameLookupPort struct{ mock.Mock }
+
+func (m *mockUsernameLookupPort) FindByUsername(ctx context.Context, username string) (*model.User, error) {
+	args := m.Called(ctx, username)
+	u, _ := args.Get(0).(*model.User)
+	return u, args.Error(1)
 }
 
 // setupPostHandler は PostHandler テスト用のセットアップを行う。
 // 投稿スライスは DIP へ移行済みのため、本物の usecase に port モックを注入する。
 func setupPostHandler() (*PostHandler, *postHandlerPorts) {
 	ports := &postHandlerPorts{
-		Posts:        new(mockPostPort),
-		Likes:        new(mockPostLikePort),
-		Followers:    new(mockFollowerNotifierPort),
-		Snippets:     new(mockCodeSnippetRepo),
-		SnippetPosts: new(mockPostReader),
-		Reactions:    new(mockPostReactionPort),
-		Authors:      new(mockPostAuthorPort),
-		Comments:     new(mockPostCommentPort),
-		Bookmarks:    new(mockPostBookmarkPort),
+		Posts:         new(mockPostPort),
+		Likes:         new(mockPostLikePort),
+		Followers:     new(mockFollowerNotifierPort),
+		Snippets:      new(mockCodeSnippetRepo),
+		SnippetPosts:  new(mockPostReader),
+		Reactions:     new(mockPostReactionPort),
+		Authors:       new(mockPostAuthorPort),
+		Comments:      new(mockPostCommentPort),
+		Bookmarks:     new(mockPostBookmarkPort),
+		Mentions:      new(mockMentionPort),
+		Usernames:     new(mockUsernameLookupPort),
+		Notifications: new(mockNotificationCreator),
 	}
 
 	notifyFollowers := usecase.NewNotifyFollowersUseCase(ports.Followers)
 	h := NewPostHandler(PostUseCases{
-		Create:         usecase.NewCreatePostUseCase(ports.Posts, notifyFollowers),
-		Get:            usecase.NewGetPostUseCase(ports.Posts),
-		List:           usecase.NewListPostsUseCase(ports.Posts),
-		Count:          usecase.NewCountPostsUseCase(ports.Posts),
-		ListByUser:     usecase.NewListUserPostsUseCase(ports.Posts),
-		ListDrafts:     usecase.NewListDraftPostsUseCase(ports.Posts),
-		ListScheduled:  usecase.NewListScheduledPostsUseCase(ports.Posts),
-		Timeline:       usecase.NewGetTimelineUseCase(ports.Posts),
-		Update:         usecase.NewUpdatePostUseCase(ports.Posts),
-		Delete:         usecase.NewDeletePostUseCase(ports.Posts),
-		Publish:        usecase.NewPublishPostUseCase(ports.Posts, notifyFollowers),
-		Unpublish:      usecase.NewUnpublishPostUseCase(ports.Posts),
-		Schedule:       usecase.NewSchedulePostPublishUseCase(ports.Posts),
-		CancelSchedule: usecase.NewCancelPostScheduleUseCase(ports.Posts),
-		AutoSaveDraft:  usecase.NewAutoSaveDraftUseCase(ports.Posts),
-		CountByUser:    usecase.NewCountUserPostsUseCase(ports.Posts),
-		CountDrafts:    usecase.NewCountUserDraftsUseCase(ports.Posts),
-		CountScheduled: usecase.NewCountUserScheduledPostsUseCase(ports.Posts),
+		ProcessMentions:       usecase.NewProcessMentionsUseCase(ports.Mentions, ports.Usernames, ports.Notifications),
+		DeleteCommentMentions: usecase.NewDeleteCommentMentionsUseCase(ports.Mentions),
+		Create:                usecase.NewCreatePostUseCase(ports.Posts, notifyFollowers),
+		Get:                   usecase.NewGetPostUseCase(ports.Posts),
+		List:                  usecase.NewListPostsUseCase(ports.Posts),
+		Count:                 usecase.NewCountPostsUseCase(ports.Posts),
+		ListByUser:            usecase.NewListUserPostsUseCase(ports.Posts),
+		ListDrafts:            usecase.NewListDraftPostsUseCase(ports.Posts),
+		ListScheduled:         usecase.NewListScheduledPostsUseCase(ports.Posts),
+		Timeline:              usecase.NewGetTimelineUseCase(ports.Posts),
+		Update:                usecase.NewUpdatePostUseCase(ports.Posts),
+		Delete:                usecase.NewDeletePostUseCase(ports.Posts),
+		Publish:               usecase.NewPublishPostUseCase(ports.Posts, notifyFollowers),
+		Unpublish:             usecase.NewUnpublishPostUseCase(ports.Posts),
+		Schedule:              usecase.NewSchedulePostPublishUseCase(ports.Posts),
+		CancelSchedule:        usecase.NewCancelPostScheduleUseCase(ports.Posts),
+		AutoSaveDraft:         usecase.NewAutoSaveDraftUseCase(ports.Posts),
+		CountByUser:           usecase.NewCountUserPostsUseCase(ports.Posts),
+		CountDrafts:           usecase.NewCountUserDraftsUseCase(ports.Posts),
+		CountScheduled:        usecase.NewCountUserScheduledPostsUseCase(ports.Posts),
 
 		Like:     usecase.NewLikePostUseCase(ports.Likes, ports.Authors),
 		Unlike:   usecase.NewUnlikePostUseCase(ports.Likes, ports.Authors),

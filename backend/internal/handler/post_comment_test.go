@@ -79,6 +79,33 @@ func TestPostCreateComment_Success(t *testing.T) {
 	comments.AssertExpectations(t)
 }
 
+// コメント本文の @username からメンションを記録し、通知から元の投稿へ辿れるようにする。
+func TestPostCreateComment_ProcessesMentions(t *testing.T) {
+	h, ports := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts/:id/comments", h.CreateComment)
+
+	ports.Comments.On("Create", mock.Anything, mock.Anything).Return(nil).Run(func(args mock.Arguments) {
+		args.Get(1).(*model.Comment).ID = 30
+	})
+	ports.Usernames.On("FindByUsername", mock.Anything, "alice").Return(&model.User{ID: 2}, nil)
+	ports.Mentions.On("FindByCommentID", mock.Anything, uint(30)).Return([]model.Mention(nil), nil)
+	ports.Mentions.On("Create", mock.Anything, mock.MatchedBy(func(m *model.Mention) bool {
+		// 記録はコメントに紐づける（投稿本文のメンションと混ざらないようにする）
+		return m.UserID == 2 && m.CommentID != nil && *m.CommentID == 30 && m.PostID == nil
+	})).Return(true, nil)
+	ports.Notifications.On("Create", mock.Anything, mock.MatchedBy(func(n *model.Notification) bool {
+		// 通知からは元の投稿へ辿れる
+		return n.UserID == 2 && n.Type == model.NotificationTypeMention && n.PostID != nil && *n.PostID == 5
+	})).Return(nil)
+
+	w := doRequest(r, http.MethodPost, "/posts/5/comments", map[string]string{"content": "@alice これどう思う"})
+
+	assertStatus(t, w, http.StatusCreated)
+	ports.Mentions.AssertExpectations(t)
+	ports.Notifications.AssertExpectations(t)
+}
+
 // 前後の空白は保存前に取り除かれる。
 func TestPostCreateComment_TrimsContent(t *testing.T) {
 	h, comments := setupPostHandlerWithCommentPort()
@@ -356,16 +383,20 @@ func TestPostEditComment_InvalidID(t *testing.T) {
 // ---------- DeleteComment ----------
 
 func TestPostDeleteComment_Success(t *testing.T) {
-	h, comments := setupPostHandlerWithCommentPort()
+	h, ports := setupPostHandler()
+	comments := ports.Comments
 	r := newRouter(1)
 	r.DELETE("/posts/:id/comments/:commentId", h.DeleteComment)
 
 	comments.On("FindCommentByID", mock.Anything, uint(3)).Return(&model.Comment{ID: 3, UserID: 1}, nil)
 	comments.On("Delete", mock.Anything, uint(3)).Return(nil)
+	// コメントが消えたら、そのコメントを指すメンションも消す
+	ports.Mentions.On("DeleteByCommentID", mock.Anything, uint(3)).Return(nil)
 
 	w := doRequest(r, http.MethodDelete, "/posts/5/comments/3", nil)
 	assertStatus(t, w, http.StatusOK)
 	comments.AssertExpectations(t)
+	ports.Mentions.AssertExpectations(t)
 }
 
 func TestPostDeleteComment_Forbidden(t *testing.T) {

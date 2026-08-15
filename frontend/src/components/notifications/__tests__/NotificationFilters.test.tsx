@@ -10,16 +10,24 @@ describe('NotificationFilters', () => {
     onToggleUnreadOnly: vi.fn(),
   };
 
-  it('全8つのフィルターボタンを表示する', () => {
+  it('全9つのフィルターボタンを表示する', () => {
     render(<NotificationFilters {...defaultProps} />);
     expect(screen.getByText('すべて')).toBeInTheDocument();
     expect(screen.getByText('投稿')).toBeInTheDocument();
     expect(screen.getByText('いいね')).toBeInTheDocument();
     expect(screen.getByText('コメント')).toBeInTheDocument();
+    expect(screen.getByText('メンション')).toBeInTheDocument();
     expect(screen.getByText('フォロー')).toBeInTheDocument();
     expect(screen.getByText('メッセージ')).toBeInTheDocument();
     expect(screen.getByText('Q&A回答')).toBeInTheDocument();
     expect(screen.getByText('バッジ')).toBeInTheDocument();
+  });
+
+  it('メンションフィルターのクリックで種別が渡される', () => {
+    const setFilterType = vi.fn();
+    render(<NotificationFilters {...defaultProps} setFilterType={setFilterType} />);
+    fireEvent.click(screen.getByText('メンション'));
+    expect(setFilterType).toHaveBeenCalledWith('mention');
   });
 
   it('フィルターボタンクリック時にsetFilterTypeが呼ばれる', () => {

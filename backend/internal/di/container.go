@@ -313,25 +313,30 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *ws.Hub) *Container {
 	postBookmarkPort := persistence.NewPostBookmarkRepository(db)
 	postLikePort := persistence.NewPostLikeRepository(db)
 	notifyFollowers := usecase.NewNotifyFollowersUseCase(followerNotifier)
+	// メンションは投稿・コメントの本文から解決するため、投稿スライスから呼ぶ。
+	mentionPort := persistence.NewMentionRepository(db)
+	processMentions := usecase.NewProcessMentionsUseCase(mentionPort, persistence.NewUserRepository(db), notificationCreator)
 	c.PostHandler = handler.NewPostHandler(handler.PostUseCases{
-		Create:         usecase.NewCreatePostUseCase(postPort, notifyFollowers),
-		Get:            usecase.NewGetPostUseCase(postPort),
-		List:           usecase.NewListPostsUseCase(postPort),
-		Count:          usecase.NewCountPostsUseCase(postPort),
-		ListByUser:     usecase.NewListUserPostsUseCase(postPort),
-		ListDrafts:     usecase.NewListDraftPostsUseCase(postPort),
-		ListScheduled:  usecase.NewListScheduledPostsUseCase(postPort),
-		Timeline:       usecase.NewGetTimelineUseCase(postPort),
-		Update:         usecase.NewUpdatePostUseCase(postPort),
-		Delete:         usecase.NewDeletePostUseCase(postPort),
-		Publish:        usecase.NewPublishPostUseCase(postPort, notifyFollowers),
-		Unpublish:      usecase.NewUnpublishPostUseCase(postPort),
-		Schedule:       usecase.NewSchedulePostPublishUseCase(postPort),
-		CancelSchedule: usecase.NewCancelPostScheduleUseCase(postPort),
-		AutoSaveDraft:  usecase.NewAutoSaveDraftUseCase(postPort),
-		CountByUser:    usecase.NewCountUserPostsUseCase(postPort),
-		CountDrafts:    usecase.NewCountUserDraftsUseCase(postPort),
-		CountScheduled: usecase.NewCountUserScheduledPostsUseCase(postPort),
+		ProcessMentions:       processMentions,
+		DeleteCommentMentions: usecase.NewDeleteCommentMentionsUseCase(mentionPort),
+		Create:                usecase.NewCreatePostUseCase(postPort, notifyFollowers),
+		Get:                   usecase.NewGetPostUseCase(postPort),
+		List:                  usecase.NewListPostsUseCase(postPort),
+		Count:                 usecase.NewCountPostsUseCase(postPort),
+		ListByUser:            usecase.NewListUserPostsUseCase(postPort),
+		ListDrafts:            usecase.NewListDraftPostsUseCase(postPort),
+		ListScheduled:         usecase.NewListScheduledPostsUseCase(postPort),
+		Timeline:              usecase.NewGetTimelineUseCase(postPort),
+		Update:                usecase.NewUpdatePostUseCase(postPort),
+		Delete:                usecase.NewDeletePostUseCase(postPort),
+		Publish:               usecase.NewPublishPostUseCase(postPort, notifyFollowers),
+		Unpublish:             usecase.NewUnpublishPostUseCase(postPort),
+		Schedule:              usecase.NewSchedulePostPublishUseCase(postPort),
+		CancelSchedule:        usecase.NewCancelPostScheduleUseCase(postPort),
+		AutoSaveDraft:         usecase.NewAutoSaveDraftUseCase(postPort),
+		CountByUser:           usecase.NewCountUserPostsUseCase(postPort),
+		CountDrafts:           usecase.NewCountUserDraftsUseCase(postPort),
+		CountScheduled:        usecase.NewCountUserScheduledPostsUseCase(postPort),
 
 		Like:     usecase.NewLikePostUseCase(postLikePort, postAuthorPort),
 		Unlike:   usecase.NewUnlikePostUseCase(postLikePort, postAuthorPort),
@@ -764,7 +769,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *ws.Hub) *Container {
 	)
 
 	// メンションはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	mentionPort := persistence.NewMentionRepository(db)
+	// 記録側（投稿・コメント作成時の処理）は投稿スライスの配線でつないでいる。
 	c.MentionHandler = handler.NewMentionHandler(
 		usecase.NewListUserMentionsUseCase(mentionPort),
 		usecase.NewListPostMentionsUseCase(mentionPort),

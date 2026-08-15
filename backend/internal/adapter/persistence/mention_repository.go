@@ -6,6 +6,7 @@ import (
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // mentionRepository は [repository.MentionRepository] の GORM 実装。
@@ -22,8 +23,12 @@ func NewMentionRepository(db *gorm.DB) repository.MentionRepository {
 var _ repository.MentionRepository = (*mentionRepository)(nil)
 
 // Create はメンションを保存する。
-func (r *mentionRepository) Create(ctx context.Context, mention *model.Mention) error {
-	return r.db.WithContext(ctx).Create(mention).Error
+func (r *mentionRepository) Create(ctx context.Context, mention *model.Mention) (bool, error) {
+	tx := r.db.WithContext(ctx).Clauses(clause.OnConflict{DoNothing: true}).Create(mention)
+	if tx.Error != nil {
+		return false, tx.Error
+	}
+	return tx.RowsAffected > 0, nil
 }
 
 // FindByUserID は指定ユーザー宛のメンションを作成日時の降順で取得する。
@@ -44,6 +49,16 @@ func (r *mentionRepository) FindByPostID(ctx context.Context, postID uint) ([]mo
 	var mentions []model.Mention
 	err := r.db.WithContext(ctx).
 		Where("post_id = ?", postID).
+		Preload("User").Preload("Actor").
+		Find(&mentions).Error
+	return mentions, err
+}
+
+// FindByCommentID は指定コメントに紐づくメンションを取得する。
+func (r *mentionRepository) FindByCommentID(ctx context.Context, commentID uint) ([]model.Mention, error) {
+	var mentions []model.Mention
+	err := r.db.WithContext(ctx).
+		Where("comment_id = ?", commentID).
 		Preload("User").Preload("Actor").
 		Find(&mentions).Error
 	return mentions, err

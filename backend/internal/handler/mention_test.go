@@ -15,8 +15,9 @@ import (
 // mockMentionPort は usecase/repository.MentionRepository のモック。
 type mockMentionPort struct{ mock.Mock }
 
-func (m *mockMentionPort) Create(ctx context.Context, mention *model.Mention) error {
-	return m.Called(ctx, mention).Error(0)
+func (m *mockMentionPort) Create(ctx context.Context, mention *model.Mention) (bool, error) {
+	args := m.Called(ctx, mention)
+	return args.Bool(0), args.Error(1)
 }
 func (m *mockMentionPort) FindByUserID(ctx context.Context, userID uint, page, limit int) ([]model.Mention, error) {
 	args := m.Called(ctx, userID, page, limit)
@@ -25,6 +26,12 @@ func (m *mockMentionPort) FindByUserID(ctx context.Context, userID uint, page, l
 }
 func (m *mockMentionPort) FindByPostID(ctx context.Context, postID uint) ([]model.Mention, error) {
 	args := m.Called(ctx, postID)
+	ms, _ := args.Get(0).([]model.Mention)
+	return ms, args.Error(1)
+}
+
+func (m *mockMentionPort) FindByCommentID(ctx context.Context, commentID uint) ([]model.Mention, error) {
+	args := m.Called(ctx, commentID)
 	ms, _ := args.Get(0).([]model.Mention)
 	return ms, args.Error(1)
 }

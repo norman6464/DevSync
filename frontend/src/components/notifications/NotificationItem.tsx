@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Trash2, Heart, MessageCircle, UserPlus, Mail, FileText, Award, HelpCircle, type LucideIcon } from 'lucide-react';
+import { Trash2, Heart, MessageCircle, AtSign, UserPlus, Mail, FileText, Award, HelpCircle, type LucideIcon } from 'lucide-react';
 import type { Notification } from '../../types/notification';
 
 function getTypeIcon(type: Notification['type']): { icon: LucideIcon; color: string } {
@@ -9,6 +9,8 @@ function getTypeIcon(type: Notification['type']): { icon: LucideIcon; color: str
       return { icon: Heart, color: 'text-pink-400' };
     case 'comment':
       return { icon: MessageCircle, color: 'text-blue-400' };
+    case 'mention':
+      return { icon: AtSign, color: 'text-cyan-400' };
     case 'follow':
       return { icon: UserPlus, color: 'text-purple-400' };
     case 'message':
@@ -31,6 +33,7 @@ export function getNotificationLink(notification: Notification): string {
     case 'post':
     case 'like':
     case 'comment':
+    case 'mention':
       return notification.post_id ? `/posts/${notification.post_id}` : '/';
     case 'follow':
       return `/profile/${notification.actor.username}`;
@@ -55,6 +58,8 @@ export function getNotificationMessage(notification: Notification, t: (key: stri
       return t('notifications.newLike', { name: notification.actor.name });
     case 'comment':
       return t('notifications.newComment', { name: notification.actor.name });
+    case 'mention':
+      return t('notifications.newMention', { name: notification.actor.name });
     case 'follow':
       return t('notifications.newFollow', { name: notification.actor.name });
     case 'answer':
