@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Calendar, List, Star, ArrowDownWideNarrow, Clock } from 'lucide-react';
 import type { LogCategory } from '../../types/learningLog';
-import { CATEGORIES } from './LogCard';
+import { LOG_CATEGORIES } from '../../constants/learningLogs';
 
 type SortBy = 'latest' | 'oldest' | 'duration_desc' | 'duration_asc';
 
@@ -94,7 +94,7 @@ export default function LogFiltersBar({
           >
             {t('learningLogs.filterAll')}
           </button>
-          {CATEGORIES.map(({ value, label, Icon }) => (
+          {LOG_CATEGORIES.map(({ value, label, Icon }) => (
             <button
               key={value}
               onClick={() => onFilterCategory(value)}

@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LogCategory } from '../../types/learningLog';
 import type { LearningLog } from '../../types/learningLog';
-import { CATEGORIES } from './LogCard';
+import { LOG_CATEGORIES } from '../../constants/learningLogs';
 import { Modal } from '../common';
 import { inputClass, buttonSecondaryClass, labelClass } from '../../constants/styles';
 import { MAX_LENGTH } from '../../utils/formValidation';
@@ -85,7 +85,7 @@ export default function LogFormModal({
               onChange={handleCategoryChange}
               className={inputClass}
             >
-              {CATEGORIES.map((cat) => (
+              {LOG_CATEGORIES.map((cat) => (
                 <option key={cat.value} value={cat.value}>
                   {t(cat.label)}
                 </option>
