@@ -72,4 +72,10 @@ describe('TagInput', () => {
     const { container } = render(<TagInput value={[]} onChange={() => {}} className="custom-class" />);
     expect(container.querySelector('.custom-class')).toBeInTheDocument();
   });
+
+  it('maxLength が入力欄に適用される', () => {
+    render(<TagInput value={[]} onChange={() => {}} maxLength={50} />);
+
+    expect(screen.getByRole('textbox')).toHaveAttribute('maxlength', '50');
+  });
 });

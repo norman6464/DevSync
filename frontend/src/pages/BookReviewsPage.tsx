@@ -169,8 +169,7 @@ export default function BookReviewsPage() {
 
           <Pagination
             currentPage={page}
-            totalItems={total}
-            itemsPerPage={limit}
+            totalPages={Math.ceil(total / limit)}
             onPageChange={setPage}
           />
         </>

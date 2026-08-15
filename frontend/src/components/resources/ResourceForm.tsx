@@ -142,13 +142,11 @@ export default function ResourceForm({ resource, onSubmit, onCancel, loading }: 
 
       {/* Tags */}
       <TagInput
-        tags={tags}
+        value={tags}
         onChange={setTags}
         label={t('resources.tags')}
-        id="resource-tags"
         placeholder={t('resources.tagsPlaceholder')}
         maxLength={50}
-        prefix="#"
       />
 
       {/* Image URL */}
