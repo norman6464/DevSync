@@ -1977,9 +1977,5 @@
     "unlikeFailed": "取消点赞失败",
     "saveFailed": "保存失败",
     "unsaveFailed": "取消保存失败"
-  },
-  "studyCircles": {
-    "members": "成员",
-    "full": "已满员"
   }
 }

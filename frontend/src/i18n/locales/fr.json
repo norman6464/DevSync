@@ -1976,9 +1976,5 @@
     "unlikeFailed": "Impossible de retirer votre j'aime",
     "saveFailed": "Impossible d'enregistrer cette ressource",
     "unsaveFailed": "Impossible de retirer des éléments enregistrés"
-  },
-  "studyCircles": {
-    "members": "membres",
-    "full": "Complet"
   }
 }

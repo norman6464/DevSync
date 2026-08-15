@@ -47,22 +47,42 @@ function sourceFiles(dir: string): string[] {
   return out;
 }
 
-/**
- * ソース中の `t('some.key')` を集める。
- * `t('prefix.' + variable)` のような動的キーは静的に解決できないため対象外。
- */
+function record(found: Map<string, string[]>, key: string, file: string): void {
+  const rel = path.relative(SRC_DIR, file);
+  const sites = found.get(key);
+  if (sites) sites.push(rel);
+  else found.set(key, [rel]);
+}
+
+/** ソース中の `t('some.key')` を集める。 */
 function usedKeys(): Map<string, string[]> {
   const pattern = /\bt\(\s*(['"])([a-zA-Z0-9_.-]+)\1/g;
   const found = new Map<string, string[]>();
   for (const file of sourceFiles(SRC_DIR)) {
     const text = fs.readFileSync(file, 'utf-8');
     for (const match of text.matchAll(pattern)) {
+      // `t('prefix.' + variable)` は動的キーなので静的には解決できない。
       if (text.slice(match.index + match[0].length).trimStart().startsWith('+')) continue;
-      const key = match[2];
-      const rel = path.relative(SRC_DIR, file);
-      const sites = found.get(key);
-      if (sites) sites.push(rel);
-      else found.set(key, [rel]);
+      record(found, match[2], file);
+    }
+  }
+  return found;
+}
+
+/**
+ * `` t(`resources.difficulty.${x}`) `` のような動的キーから、差し込みの手前までの
+ * 静的な接頭辞を集める。キーは 1 つのセグメントに解決されるので、
+ * 検証対象は「接頭辞の直下にある葉」に限る。
+ */
+function usedKeyPrefixes(): Map<string, string[]> {
+  const pattern = /\bt\(\s*`([^`]*)`/g;
+  const found = new Map<string, string[]>();
+  for (const file of sourceFiles(SRC_DIR)) {
+    const text = fs.readFileSync(file, 'utf-8');
+    for (const match of text.matchAll(pattern)) {
+      const placeholder = match[1].indexOf('${');
+      if (placeholder <= 0) continue;
+      record(found, match[1].slice(0, placeholder), file);
     }
   }
   return found;
@@ -87,6 +107,34 @@ describe('翻訳キー', () => {
       }
     }
     expect(missing).toEqual([]);
+  });
+
+  // 動的キーは値が実データ（ステータス・カテゴリ等）で決まるため、どの変種が来ても
+  // 引けるように「接頭辞の直下にある葉」が全言語でそろっている必要がある。
+  it('動的キーの変種がすべての言語にそろっている', () => {
+    const problems: string[] = [];
+    for (const [prefix, sites] of usedKeyPrefixes()) {
+      const perLocale = new Map(
+        localeNames.map((name) => [
+          name,
+          new Set(
+            Object.keys(locales[name]).filter(
+              (key) => key.startsWith(prefix) && !key.slice(prefix.length).includes('.'),
+            ),
+          ),
+        ]),
+      );
+      const union = new Set(localeNames.flatMap((name) => [...perLocale.get(name)!]));
+      if (union.size === 0) {
+        problems.push(`${prefix}* — どの言語にも該当キーが無い（使用箇所: ${sites.join(', ')}）`);
+        continue;
+      }
+      for (const name of localeNames) {
+        const absent = [...union].filter((key) => !perLocale.get(name)!.has(key)).sort();
+        if (absent.length > 0) problems.push(`${prefix}* — ${name} に不足: ${absent.join(', ')}`);
+      }
+    }
+    expect(problems).toEqual([]);
   });
 
   it('コードが参照するキーの値が空文字になっていない', () => {

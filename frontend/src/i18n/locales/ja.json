@@ -691,7 +691,11 @@
     "isPublic": "公開中",
     "isPrivate": "非公開",
     "publicGoalsList": "みんなの目標",
-    "loadPublicGoalsFailed": "公開目標の取得に失敗しました"
+    "loadPublicGoalsFailed": "公開目標の取得に失敗しました",
+    "activities": "アクティビティ",
+    "profile": "プロフィール",
+    "recommendations": "おすすめ",
+    "timeline": "タイムライン"
   },
   "learningLogs": {
     "title": "学習ログ",
@@ -1418,7 +1422,11 @@
     "sort": {
       "newest": "新しい順",
       "members": "メンバー数順"
-    }
+    },
+    "activities": "アクティビティ",
+    "profile": "プロフィール",
+    "recommendations": "おすすめ",
+    "timeline": "タイムライン"
   },
   "notes": {
     "title": "学習ノート",
@@ -1861,9 +1869,5 @@
     "unlikeFailed": "いいねの取り消しに失敗しました",
     "saveFailed": "保存に失敗しました",
     "unsaveFailed": "保存の取り消しに失敗しました"
-  },
-  "studyCircles": {
-    "members": "メンバー",
-    "full": "満員"
   }
 }

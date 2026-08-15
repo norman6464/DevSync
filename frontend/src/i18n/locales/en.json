@@ -1976,9 +1976,5 @@
     "unlikeFailed": "Could not remove your like",
     "saveFailed": "Could not save this resource",
     "unsaveFailed": "Could not remove this resource from saved"
-  },
-  "studyCircles": {
-    "members": "members",
-    "full": "Full"
   }
 }

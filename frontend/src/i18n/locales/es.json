@@ -1976,9 +1976,5 @@
     "unlikeFailed": "No se pudo quitar el me gusta",
     "saveFailed": "No se pudo guardar",
     "unsaveFailed": "No se pudo quitar de guardados"
-  },
-  "studyCircles": {
-    "members": "miembros",
-    "full": "Completo"
   }
 }
