@@ -42,6 +42,59 @@ func TestPostCreate_Success(t *testing.T) {
 	ports.Posts.AssertExpectations(t)
 }
 
+// 本文の @username からメンションを記録し、相手に通知する。
+func TestPostCreate_ProcessesMentions(t *testing.T) {
+	h, ports := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts", h.Create)
+
+	allowFollowerNotification(ports)
+	ports.Posts.On("Create", mock.Anything, mock.Anything).Return(nil).Run(func(args mock.Arguments) {
+		args.Get(1).(*model.Post).ID = 42
+	})
+	ports.Posts.On("FindByID", mock.Anything, mock.AnythingOfType("uint")).
+		Return(&model.Post{ID: 42}, nil).Maybe()
+	ports.Usernames.On("FindByUsername", mock.Anything, "alice").Return(&model.User{ID: 2}, nil)
+	ports.Mentions.On("FindByPostID", mock.Anything, uint(42)).Return([]model.Mention(nil), nil)
+	ports.Mentions.On("Create", mock.Anything, mock.MatchedBy(func(m *model.Mention) bool {
+		return m.UserID == 2 && m.ActorID == 1 && m.PostID != nil && *m.PostID == 42
+	})).Return(nil)
+	ports.Notifications.On("Create", mock.Anything, mock.MatchedBy(func(n *model.Notification) bool {
+		return n.UserID == 2 && n.Type == model.NotificationTypeMention && n.PostID != nil && *n.PostID == 42
+	})).Return(nil)
+
+	w := doRequest(r, http.MethodPost, "/posts", map[string]string{
+		"title": "Test Post", "content": "レビューお願いします @alice",
+	})
+
+	assertStatus(t, w, http.StatusCreated)
+	ports.Mentions.AssertExpectations(t)
+	ports.Notifications.AssertExpectations(t)
+}
+
+// メンションの記録に失敗しても投稿の作成は成功として返す。
+func TestPostCreate_MentionFailureDoesNotFailPost(t *testing.T) {
+	h, ports := setupPostHandler()
+	r := newRouter(1)
+	r.POST("/posts", h.Create)
+
+	allowFollowerNotification(ports)
+	ports.Posts.On("Create", mock.Anything, mock.Anything).Return(nil).Run(func(args mock.Arguments) {
+		args.Get(1).(*model.Post).ID = 42
+	})
+	ports.Posts.On("FindByID", mock.Anything, mock.AnythingOfType("uint")).
+		Return(&model.Post{ID: 42}, nil).Maybe()
+	ports.Usernames.On("FindByUsername", mock.Anything, "alice").Return(&model.User{ID: 2}, nil)
+	ports.Mentions.On("FindByPostID", mock.Anything, uint(42)).Return([]model.Mention(nil), nil)
+	ports.Mentions.On("Create", mock.Anything, mock.Anything).Return(errors.New("db error"))
+
+	w := doRequest(r, http.MethodPost, "/posts", map[string]string{
+		"title": "Test Post", "content": "@alice",
+	})
+
+	assertStatus(t, w, http.StatusCreated)
+}
+
 // 作成後の再取得に失敗しても、作成した投稿をそのまま返す。
 func TestPostCreate_RefetchFails(t *testing.T) {
 	h, ports := setupPostHandler()

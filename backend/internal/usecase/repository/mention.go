@@ -13,6 +13,8 @@ type MentionRepository interface {
 	FindByUserID(ctx context.Context, userID uint, page, limit int) ([]model.Mention, error)
 	// FindByPostID は指定投稿に紐づくメンションを返す。
 	FindByPostID(ctx context.Context, postID uint) ([]model.Mention, error)
+	// FindByCommentID は指定コメントに紐づくメンションを返す。
+	FindByCommentID(ctx context.Context, commentID uint) ([]model.Mention, error)
 	// DeleteByPostID は指定投稿に紐づくメンションをすべて削除する。
 	DeleteByPostID(ctx context.Context, postID uint) error
 	// DeleteByCommentID は指定コメントに紐づくメンションをすべて削除する。

@@ -49,6 +49,16 @@ func (r *mentionRepository) FindByPostID(ctx context.Context, postID uint) ([]mo
 	return mentions, err
 }
 
+// FindByCommentID は指定コメントに紐づくメンションを取得する。
+func (r *mentionRepository) FindByCommentID(ctx context.Context, commentID uint) ([]model.Mention, error) {
+	var mentions []model.Mention
+	err := r.db.WithContext(ctx).
+		Where("comment_id = ?", commentID).
+		Preload("User").Preload("Actor").
+		Find(&mentions).Error
+	return mentions, err
+}
+
 // DeleteByPostID は指定投稿に紐づくメンションをすべて削除する。
 func (r *mentionRepository) DeleteByPostID(ctx context.Context, postID uint) error {
 	return r.db.WithContext(ctx).Where("post_id = ?", postID).Delete(&model.Mention{}).Error

@@ -57,6 +57,17 @@ describe('getNotificationLink', () => {
     const n = { ...baseNotification, type: 'badge' as const };
     expect(getNotificationLink(n)).toBe('/profile/alice');
   });
+
+  it('メンション通知は投稿へ遷移する', () => {
+    const n = { type: 'mention', post_id: 9 } as never;
+    expect(getNotificationLink(n)).toBe('/posts/9');
+  });
+
+  it('メンション通知に投稿がなければルートへ遷移する', () => {
+    const n = { type: 'mention' } as never;
+    expect(getNotificationLink(n)).toBe('/');
+  });
+
 });
 
 describe('getNotificationMessage', () => {

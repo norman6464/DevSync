@@ -1,7 +1,7 @@
 import type { User } from './user';
 import type { Post } from './post';
 
-export type NotificationType = 'post' | 'message' | 'like' | 'comment' | 'follow' | 'answer' | 'badge';
+export type NotificationType = 'post' | 'message' | 'like' | 'comment' | 'mention' | 'follow' | 'answer' | 'badge';
 
 export interface Notification {
   id: number;

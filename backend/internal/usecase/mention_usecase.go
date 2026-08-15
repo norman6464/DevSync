@@ -28,6 +28,17 @@ func ParseMentions(text string) []string {
 	return usernames
 }
 
+// ProcessMentionsInput はメンション処理の入力。
+// PostID / CommentID はメンションの記録先で、どちらか一方を指定する。
+// NotifyPostID は通知から辿らせる投稿。コメント由来のメンションでも投稿へ飛ばすために使う。
+type ProcessMentionsInput struct {
+	ActorID      uint
+	Text         string
+	PostID       *uint
+	CommentID    *uint
+	NotifyPostID *uint
+}
+
 // ProcessMentionsUseCase はテキスト中のメンションを解決し、記録と通知を行う。
 type ProcessMentionsUseCase struct {
 	mentions      repository.MentionRepository
@@ -46,36 +57,70 @@ func NewProcessMentionsUseCase(
 
 // Execute は @username を解決してメンションを作成し、相手へ通知する。
 // 存在しないユーザーと自分自身へのメンションはスキップし、通知の失敗は無視する。
-func (uc *ProcessMentionsUseCase) Execute(ctx context.Context, actorID uint, text string, postID, commentID *uint) error {
-	for _, username := range ParseMentions(text) {
+//
+// 同じ投稿・コメントで既にメンション済みのユーザーは作り直さない。
+// 本文を編集するたびに同じ相手へ通知が飛ぶのを避けるため、追加された分だけを対象にする。
+func (uc *ProcessMentionsUseCase) Execute(ctx context.Context, in ProcessMentionsInput) error {
+	usernames := ParseMentions(in.Text)
+	if len(usernames) == 0 {
+		return nil
+	}
+
+	mentioned, err := uc.alreadyMentioned(ctx, in)
+	if err != nil {
+		return err
+	}
+
+	for _, username := range usernames {
 		user, err := uc.users.FindByUsername(ctx, username)
 		if err != nil || user == nil {
 			continue
 		}
-		if user.ID == actorID {
+		if user.ID == in.ActorID || mentioned[user.ID] {
 			continue
 		}
+		mentioned[user.ID] = true
 
 		if err := uc.mentions.Create(ctx, &model.Mention{
 			UserID:    user.ID,
-			ActorID:   actorID,
-			PostID:    postID,
-			CommentID: commentID,
+			ActorID:   in.ActorID,
+			PostID:    in.PostID,
+			CommentID: in.CommentID,
 		}); err != nil {
 			return err
 		}
 
-		notification := &model.Notification{
+		_ = uc.notifications.Create(ctx, &model.Notification{
 			UserID:  user.ID,
-			ActorID: actorID,
+			ActorID: in.ActorID,
 			Type:    model.NotificationTypeMention,
-		}
-		if postID != nil {
-			notification.PostID = postID
-		}
-		_ = uc.notifications.Create(ctx, notification)
+			PostID:  in.NotifyPostID,
+		})
 	}
 	return nil
+}
+
+// alreadyMentioned は同じ記録先で既にメンション済みのユーザー ID を返す。
+func (uc *ProcessMentionsUseCase) alreadyMentioned(ctx context.Context, in ProcessMentionsInput) (map[uint]bool, error) {
+	var existing []model.Mention
+	var err error
+	switch {
+	case in.CommentID != nil:
+		existing, err = uc.mentions.FindByCommentID(ctx, *in.CommentID)
+	case in.PostID != nil:
+		existing, err = uc.mentions.FindByPostID(ctx, *in.PostID)
+	default:
+		return map[uint]bool{}, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	mentioned := make(map[uint]bool, len(existing))
+	for _, m := range existing {
+		mentioned[m.UserID] = true
+	}
+	return mentioned, nil
 }
 
 // ListUserMentionsUseCase は指定ユーザー宛のメンション一覧を返す。

@@ -28,6 +28,12 @@ func (m *mockMentionPort) FindByPostID(ctx context.Context, postID uint) ([]mode
 	ms, _ := args.Get(0).([]model.Mention)
 	return ms, args.Error(1)
 }
+
+func (m *mockMentionPort) FindByCommentID(ctx context.Context, commentID uint) ([]model.Mention, error) {
+	args := m.Called(ctx, commentID)
+	ms, _ := args.Get(0).([]model.Mention)
+	return ms, args.Error(1)
+}
 func (m *mockMentionPort) DeleteByPostID(ctx context.Context, postID uint) error {
 	return m.Called(ctx, postID).Error(0)
 }

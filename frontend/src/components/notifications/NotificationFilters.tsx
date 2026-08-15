@@ -7,6 +7,7 @@ const FILTER_TYPES: { key: NotificationType | ''; labelKey: string }[] = [
   { key: 'post', labelKey: 'notifications.filterPost' },
   { key: 'like', labelKey: 'notifications.filterLike' },
   { key: 'comment', labelKey: 'notifications.filterComment' },
+  { key: 'mention', labelKey: 'notifications.filterMention' },
   { key: 'follow', labelKey: 'notifications.filterFollow' },
   { key: 'message', labelKey: 'notifications.filterMessage' },
   { key: 'answer', labelKey: 'notifications.filterAnswer' },
