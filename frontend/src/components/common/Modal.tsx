@@ -1,10 +1,14 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useId } from 'react';
 import { X } from 'lucide-react';
 
-interface ModalProps {
+export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children: ReactNode;
+  /** 渡すと見出しを描画する。Modal.Header を自分で組む場合は省略する。 */
+  title?: ReactNode;
+  /** コンテンツの最大幅を表す Tailwind のクラス。 */
+  maxWidth?: string;
 }
 
 interface ModalHeaderProps {
@@ -21,9 +25,12 @@ interface ModalFooterProps {
 
 interface ModalTitleProps {
   children: ReactNode;
+  id?: string;
 }
 
-function Modal({ isOpen, onClose, children }: ModalProps) {
+function Modal({ isOpen, onClose, children, title, maxWidth = 'max-w-lg' }: ModalProps) {
+  const titleId = useId();
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -43,7 +50,12 @@ function Modal({ isOpen, onClose, children }: ModalProps) {
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
 
       {/* モーダルコンテンツ */}
-      <div className="relative bg-gray-900 border border-gray-800 rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? titleId : undefined}
+        className={`relative bg-gray-900 border border-gray-800 rounded-lg shadow-xl ${maxWidth} w-full max-h-[90vh] overflow-y-auto`}
+      >
         {/* 閉じるボタン */}
         <button
           onClick={onClose}
@@ -53,7 +65,12 @@ function Modal({ isOpen, onClose, children }: ModalProps) {
           <X className="w-5 h-5" />
         </button>
 
-        {children}
+        {title != null && (
+          <ModalHeader>
+            <ModalTitle id={titleId}>{title}</ModalTitle>
+          </ModalHeader>
+        )}
+        {title != null ? <ModalBody>{children}</ModalBody> : children}
       </div>
     </div>
   );
@@ -75,8 +92,12 @@ function ModalFooter({ children }: ModalFooterProps) {
   );
 }
 
-function ModalTitle({ children }: ModalTitleProps) {
-  return <h2 className="text-xl font-semibold text-white">{children}</h2>;
+function ModalTitle({ children, id }: ModalTitleProps) {
+  return (
+    <h2 id={id} className="text-xl font-semibold text-white">
+      {children}
+    </h2>
+  );
 }
 
 Modal.Header = ModalHeader;

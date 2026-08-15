@@ -168,6 +168,60 @@ describe('Modal', () => {
     expect(title).toHaveClass('font-semibold');
   });
 
+  // 呼び出し側の多くは Modal.Header を組まず title を渡す。
+  // 受け取らないと「何のダイアログか分からない」状態になる。
+  it('title を渡すと見出しとして表示される', () => {
+    render(
+      <Modal isOpen={true} onClose={mockOnClose} title="目標を編集">
+        <p>コンテンツ</p>
+      </Modal>,
+    );
+
+    expect(screen.getByRole('heading', { name: '目標を編集' })).toBeInTheDocument();
+    expect(screen.getByText('コンテンツ')).toBeInTheDocument();
+  });
+
+  it('title は支援技術にダイアログ名として伝わる', () => {
+    render(
+      <Modal isOpen={true} onClose={mockOnClose} title="目標を編集">
+        <p>コンテンツ</p>
+      </Modal>,
+    );
+
+    expect(screen.getByRole('dialog', { name: '目標を編集' })).toBeInTheDocument();
+  });
+
+  it('title を渡さなければ見出しを描画しない', () => {
+    render(
+      <Modal isOpen={true} onClose={mockOnClose}>
+        <Modal.Body>コンテンツ</Modal.Body>
+      </Modal>,
+    );
+
+    expect(screen.queryByRole('heading')).not.toBeInTheDocument();
+  });
+
+  it('maxWidth がコンテンツの幅に反映される', () => {
+    const { container } = render(
+      <Modal isOpen={true} onClose={mockOnClose} maxWidth="max-w-2xl">
+        <p>コンテンツ</p>
+      </Modal>,
+    );
+
+    expect(container.querySelector('.max-w-2xl')).toBeInTheDocument();
+    expect(container.querySelector('.max-w-lg')).toBeNull();
+  });
+
+  it('maxWidth を省略すると既定の幅になる', () => {
+    const { container } = render(
+      <Modal isOpen={true} onClose={mockOnClose}>
+        <Modal.Body>コンテンツ</Modal.Body>
+      </Modal>,
+    );
+
+    expect(container.querySelector('.max-w-lg')).toBeInTheDocument();
+  });
+
   it('複数のモーダルが独立して動作する', () => {
     const mockOnClose2 = vi.fn();
 
