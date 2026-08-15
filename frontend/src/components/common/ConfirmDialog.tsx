@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useId } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
 
 const variantClasses = {
@@ -7,14 +8,14 @@ const variantClasses = {
   danger: 'bg-red-600 hover:bg-red-700',
 };
 
-interface ConfirmDialogProps {
+export interface ConfirmDialogProps {
   isOpen: boolean;
   title: string;
   message: string;
   onConfirm: () => void;
   onCancel: () => void;
-  confirmLabel?: string;
-  cancelLabel?: string;
+  confirmText?: string;
+  cancelText?: string;
   variant?: 'info' | 'warning' | 'danger';
   loading?: boolean;
 }
@@ -25,11 +26,14 @@ export default function ConfirmDialog({
   message,
   onConfirm,
   onCancel,
-  confirmLabel = '確認',
-  cancelLabel = 'キャンセル',
+  confirmText,
+  cancelText,
   variant = 'info',
   loading = false,
 }: ConfirmDialogProps) {
+  const { t } = useTranslation();
+  const titleId = useId();
+  const messageId = useId();
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -45,16 +49,26 @@ export default function ConfirmDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60" onClick={onCancel} />
-      <div className="relative bg-gray-900 border border-gray-700 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-        <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
-        <p className="text-sm text-gray-400 mb-6">{message}</p>
+      <div
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={messageId}
+        className="relative bg-gray-900 border border-gray-700 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl"
+      >
+        <h3 id={titleId} className="text-lg font-semibold text-white mb-2">
+          {title}
+        </h3>
+        <p id={messageId} className="text-sm text-gray-400 mb-6">
+          {message}
+        </p>
         <div className="flex justify-end gap-3">
           <button
             type="button"
             onClick={onCancel}
             className="px-4 py-2 text-sm text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
           >
-            {cancelLabel}
+            {cancelText ?? t('common.cancel')}
           </button>
           <button
             type="button"
@@ -63,7 +77,7 @@ export default function ConfirmDialog({
             className={`px-4 py-2 text-sm text-white rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 ${variantClasses[variant]}`}
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-            {confirmLabel}
+            {confirmText ?? t('common.confirm')}
           </button>
         </div>
       </div>

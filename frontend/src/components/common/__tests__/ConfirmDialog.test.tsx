@@ -17,7 +17,7 @@ describe('ConfirmDialog', () => {
   });
 
   it('確認ボタンが表示される', () => {
-    render(<ConfirmDialog isOpen title="削除の確認" message="削除？" onConfirm={() => {}} onCancel={() => {}} confirmLabel="実行" />);
+    render(<ConfirmDialog isOpen title="削除の確認" message="削除？" onConfirm={() => {}} onCancel={() => {}} confirmText="実行" />);
 
     expect(screen.getByText('実行')).toBeInTheDocument();
   });
@@ -31,7 +31,7 @@ describe('ConfirmDialog', () => {
   it('確認ボタンクリックでコールバック呼ばれる', async () => {
     const onConfirm = vi.fn();
     const user = userEvent.setup();
-    render(<ConfirmDialog isOpen title="確認" message="削除？" onConfirm={onConfirm} onCancel={() => {}} confirmLabel="削除する" />);
+    render(<ConfirmDialog isOpen title="確認" message="削除？" onConfirm={onConfirm} onCancel={() => {}} confirmText="削除する" />);
 
     await user.click(screen.getByText('削除する'));
 
@@ -72,7 +72,7 @@ describe('ConfirmDialog', () => {
 
   it('ローディング中はボタンが無効', () => {
     render(
-      <ConfirmDialog isOpen title="確認" message="削除？" onConfirm={() => {}} onCancel={() => {}} loading confirmLabel="OK" />
+      <ConfirmDialog isOpen title="確認" message="削除？" onConfirm={() => {}} onCancel={() => {}} loading confirmText="OK" />
     );
 
     const buttons = screen.getAllByRole('button');
@@ -82,7 +82,7 @@ describe('ConfirmDialog', () => {
 
   it('カスタム確認ラベルが使用される', () => {
     render(
-      <ConfirmDialog isOpen title="確認" message="削除？" onConfirm={() => {}} onCancel={() => {}} confirmLabel="削除する" />
+      <ConfirmDialog isOpen title="確認" message="削除？" onConfirm={() => {}} onCancel={() => {}} confirmText="削除する" />
     );
 
     expect(screen.getByText('削除する')).toBeInTheDocument();
