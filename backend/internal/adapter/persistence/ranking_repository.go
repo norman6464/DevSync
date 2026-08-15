@@ -64,13 +64,16 @@ func (r *rankingRepository) LanguageRanking(ctx context.Context, language, perio
 // 各種アクティビティから獲得したXPの合計で降順ソートし、上位50件を返す。
 func (r *rankingRepository) LevelRanking(ctx context.Context) ([]model.RankingEntry, error) {
 	var entries []model.RankingEntry
+	// score は SELECT の別名なので WHERE / HAVING からは参照できない（PostgreSQL の仕様）。
+	// 内側で合算してから外側で絞り込む。
 	err := r.db.WithContext(ctx).Raw(`
+		SELECT * FROM (
 		SELECT u.id as user_id, u.username, u.name, u.avatar_url,
 			COALESCE(ll.xp, 0) + COALESCE(p.xp, 0) + COALESCE(gh.xp, 0) +
 			COALESCE(g.xp, 0) + COALESCE(c.xp, 0) + COALESCE(lk.xp, 0) as score
 		FROM users u
 		LEFT JOIN (
-			SELECT user_id, COUNT(*) * 10 + COALESCE(SUM(duration), 0) / 2 as xp
+			SELECT user_id, COUNT(*) * 10 + COALESCE(SUM(duration), 0)::bigint / 2 as xp
 			FROM learning_logs GROUP BY user_id
 		) ll ON ll.user_id = u.id
 		LEFT JOIN (
@@ -90,10 +93,11 @@ func (r *rankingRepository) LevelRanking(ctx context.Context) ([]model.RankingEn
 			FROM comments GROUP BY user_id
 		) c ON c.user_id = u.id
 		LEFT JOIN (
-			SELECT user_id, COALESCE(SUM(like_count), 0) * 3 as xp
+			SELECT user_id, COALESCE(SUM(like_count), 0)::bigint * 3 as xp
 			FROM posts GROUP BY user_id
 		) lk ON lk.user_id = u.id
-		HAVING score > 0
+		) ranked
+		WHERE score > 0
 		ORDER BY score DESC
 		LIMIT 50
 	`).Scan(&entries).Error
