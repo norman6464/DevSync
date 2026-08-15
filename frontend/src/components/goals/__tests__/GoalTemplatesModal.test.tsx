@@ -1,15 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import GoalTemplatesModal from '../GoalTemplatesModal';
-import type { GoalCategory } from '../../../api/goals';
-
-interface GoalTemplate {
-  id: string;
-  title: string;
-  description: string;
-  category: GoalCategory;
-  estimatedDays: number;
-}
 
 const mockOnSelect = vi.fn();
 const mockOnClose = vi.fn();

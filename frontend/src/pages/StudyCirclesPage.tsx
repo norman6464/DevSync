@@ -11,7 +11,7 @@ import { emptyStateClass } from '../constants/styles';
 export default function StudyCirclesPage() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
-  const { circles, loading, saving, createCircle, deleteCircle } = useStudyCircles();
+  const { circles, loading, saving, createCircle } = useStudyCircles();
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ name: '', topic: '', description: '', max_members: 5 });
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'completed'>('all');

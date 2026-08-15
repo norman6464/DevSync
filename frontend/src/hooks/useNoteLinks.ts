@@ -6,7 +6,6 @@ import {
   getNoteBacklinks,
   createNoteLink,
   deleteNoteLink,
-  type NoteLink,
   type CreateNoteLinkRequest,
 } from '../api/noteLinks';
 import { useAsyncData } from './useAsyncData';

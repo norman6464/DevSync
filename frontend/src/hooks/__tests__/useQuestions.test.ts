@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useQuestions } from '../useQuestions';
-import { getQuestions, searchQuestions, createQuestion, updateQuestion, deleteQuestion } from '../../api/qa';
+import { getQuestions, createQuestion, deleteQuestion } from '../../api/qa';
+import type { Question } from '../../types/qa';
 import toast from 'react-hot-toast';
 
 vi.mock('../../api/qa', () => ({
@@ -21,7 +22,7 @@ const mockQuestions = [
   { id: 2, title: 'React Hooks', body: '...', tags: '["React"]', vote_count: 1, answer_count: 0, is_solved: false, created_at: '2026-01-02', updated_at: '2026-01-02' },
   { id: 3, title: 'Docker入門', body: '...', tags: '["Docker"]', vote_count: 5, answer_count: 3, is_solved: false, created_at: '2026-01-03', updated_at: '2026-01-03' },
   { id: 4, title: 'TypeScript型', body: '...', tags: '["TypeScript"]', vote_count: 0, answer_count: 1, is_solved: true, created_at: '2026-01-04', updated_at: '2026-01-04' },
-];
+] as Question[];
 
 describe('useQuestions', () => {
   beforeEach(() => {
@@ -73,7 +74,7 @@ describe('useQuestions', () => {
   });
 
   it('質問作成が成功すること', async () => {
-    const newQuestion = { id: 10, title: '新質問', body: 'test', tags: '[]', vote_count: 0, answer_count: 0, is_solved: false, created_at: '2026-02-01', updated_at: '2026-02-01' };
+    const newQuestion = { id: 10, title: '新質問', body: 'test', tags: '[]', vote_count: 0, answer_count: 0, is_solved: false, created_at: '2026-02-01', updated_at: '2026-02-01' } as Question;
     vi.mocked(createQuestion).mockResolvedValue(newQuestion);
 
     const { result } = renderHook(() => useQuestions());
@@ -84,7 +85,7 @@ describe('useQuestions', () => {
 
     let created: unknown;
     await act(async () => {
-      created = await result.current.createQuestion({ title: '新質問', body: 'test', tags: [] });
+      created = await result.current.createQuestion({ title: '新質問', body: 'test', tags: [] as unknown as string });
     });
 
     expect(created).toEqual(newQuestion);
@@ -103,7 +104,7 @@ describe('useQuestions', () => {
 
     let created: unknown;
     await act(async () => {
-      created = await result.current.createQuestion({ title: 'テスト', body: 'test', tags: [] });
+      created = await result.current.createQuestion({ title: 'テスト', body: 'test', tags: [] as unknown as string });
     });
 
     expect(created).toBeNull();

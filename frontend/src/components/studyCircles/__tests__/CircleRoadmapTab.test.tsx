@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import CircleRoadmapTab from '../CircleRoadmapTab';
 import type { StudyCircle, StudyCircleMemberProgress } from '../../../types/studyCircle';
+import type { User } from '../../../types/user';
 
 const mockCircle: StudyCircle = {
   id: 1,
@@ -26,7 +27,7 @@ const mockProgress: StudyCircleMemberProgress[] = [
   { id: 1, circle_id: 1, step_id: 1, user_id: 1, is_completed: true, completed_at: '2026-02-18T10:00:00Z' },
 ];
 
-const mockUser = { id: 1, name: 'Alice', username: 'alice', email: 'a@e.com', bio: '', avatar_url: '', github_username: '', created_at: '', updated_at: '' };
+const mockUser = { id: 1, name: 'Alice', username: 'alice', email: 'a@e.com', bio: '', avatar_url: '', github_username: '', created_at: '', updated_at: '' } as User;
 
 describe('CircleRoadmapTab', () => {
   const defaultProps = {

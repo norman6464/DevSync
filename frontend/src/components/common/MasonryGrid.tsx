@@ -1,4 +1,4 @@
-import { ReactNode, Children } from 'react';
+import { type ReactNode, Children } from 'react';
 
 interface MasonryGridProps {
   children: ReactNode;

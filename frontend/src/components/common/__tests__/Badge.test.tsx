@@ -65,7 +65,7 @@ describe('Badge', () => {
   });
 
   it('アイコン付きバッジが表示される', () => {
-    const { container } = render(
+    render(
       <Badge icon={<span data-testid="icon">★</span>}>アイコン</Badge>
     );
 

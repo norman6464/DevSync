@@ -20,8 +20,8 @@ const makeTemplate = (overrides: Partial<Roadmap> = {}): Roadmap => ({
   updated_at: '2026-01-01T00:00:00Z',
   completed_at: null,
   steps: [
-    { id: 1, roadmap_id: 1, title: 'ステップ1', description: '説明1', order_index: 0, is_completed: false, resource_url: '', created_at: '', updated_at: '' },
-    { id: 2, roadmap_id: 1, title: 'ステップ2', description: '', order_index: 1, is_completed: false, resource_url: '', created_at: '', updated_at: '' },
+    { id: 1, roadmap_id: 1, title: 'ステップ1', description: '説明1', order_index: 0, is_completed: false, completed_at: null, resource_url: '', created_at: '', updated_at: '' },
+    { id: 2, roadmap_id: 1, title: 'ステップ2', description: '', order_index: 1, is_completed: false, completed_at: null, resource_url: '', created_at: '', updated_at: '' },
   ],
   ...overrides,
 });
@@ -29,7 +29,7 @@ const makeTemplate = (overrides: Partial<Roadmap> = {}): Roadmap => ({
 const defaultProps = {
   templates: [makeTemplate()],
   showTemplates: false,
-  expandedTemplate: null,
+  expandedTemplate: null as number | null,
   creating: false,
   toggleTemplates: vi.fn(),
   toggleExpandedTemplate: vi.fn(),

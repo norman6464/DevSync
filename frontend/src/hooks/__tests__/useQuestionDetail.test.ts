@@ -4,14 +4,11 @@ import { useQuestionDetail } from '../useQuestionDetail';
 import {
   getQuestionById,
   createAnswer,
-  updateAnswer,
-  deleteAnswer,
   setBestAnswer,
   voteQuestion,
-  removeQuestionVote,
   voteAnswer,
-  removeAnswerVote,
 } from '../../api/qa';
+import type { Question, Answer } from '../../types/qa';
 import client from '../../api/client';
 
 vi.mock('../../api/qa', () => ({
@@ -38,7 +35,7 @@ const mockQuestion = {
   id: 1, title: 'テスト質問', body: '質問内容', user_id: 1,
   vote_count: 3, answer_count: 2, is_solved: false,
   created_at: '2026-02-19', updated_at: '2026-02-19',
-};
+} as Question;
 const mockAnswers = [
   { id: 10, body: '回答1', user_id: 2, is_best: false },
   { id: 11, body: '回答2', user_id: 3, is_best: false },
@@ -76,7 +73,7 @@ describe('useQuestionDetail', () => {
     vi.mocked(getQuestionById).mockResolvedValue({ question: mockQuestion, user_vote: 0 });
     vi.mocked(client.get).mockResolvedValue({ data: mockAnswers });
 
-    const newAnswer = { id: 12, body: '新しい回答', user_id: 1, is_best: false };
+    const newAnswer = { id: 12, body: '新しい回答', user_id: 1, is_best: false } as Answer;
     vi.mocked(createAnswer).mockResolvedValue(newAnswer);
 
     const { result } = renderHook(() => useQuestionDetail('1'));
@@ -116,7 +113,7 @@ describe('useQuestionDetail', () => {
   it('質問投票が正しく動作すること', async () => {
     vi.mocked(getQuestionById).mockResolvedValue({ question: mockQuestion, user_vote: 0 });
     vi.mocked(client.get).mockResolvedValue({ data: [] });
-    vi.mocked(voteQuestion).mockResolvedValue({});
+    vi.mocked(voteQuestion).mockResolvedValue({} as unknown as void);
 
     const { result } = renderHook(() => useQuestionDetail('1'));
 
@@ -134,7 +131,7 @@ describe('useQuestionDetail', () => {
   it('ベストアンサー設定が正しく動作すること', async () => {
     vi.mocked(getQuestionById).mockResolvedValue({ question: mockQuestion, user_vote: 0 });
     vi.mocked(client.get).mockResolvedValue({ data: mockAnswers });
-    vi.mocked(setBestAnswer).mockResolvedValue({});
+    vi.mocked(setBestAnswer).mockResolvedValue({} as unknown as void);
 
     const { result } = renderHook(() => useQuestionDetail('1'));
 
@@ -152,7 +149,7 @@ describe('useQuestionDetail', () => {
   it('回答投票が正しく動作すること', async () => {
     vi.mocked(getQuestionById).mockResolvedValue({ question: mockQuestion, user_vote: 0 });
     vi.mocked(client.get).mockResolvedValue({ data: mockAnswers });
-    vi.mocked(voteAnswer).mockResolvedValue({});
+    vi.mocked(voteAnswer).mockResolvedValue({} as unknown as void);
 
     const { result } = renderHook(() => useQuestionDetail('1'));
 

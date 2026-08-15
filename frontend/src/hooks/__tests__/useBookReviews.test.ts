@@ -32,7 +32,7 @@ const makeReview = (overrides: Partial<BookReview> = {}): BookReview => ({
   created_at: '2026-02-10T00:00:00Z',
   updated_at: '2026-02-10T00:00:00Z',
   ...overrides,
-});
+} as BookReview);
 
 const mockReviews: BookReview[] = [
   makeReview({ id: 1, rating: 5, status: 'completed', created_at: '2026-02-01T00:00:00Z' }),

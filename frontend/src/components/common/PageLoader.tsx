@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import LoadingSpinner from './LoadingSpinner';
 
 interface PageLoaderProps {
   message?: string;

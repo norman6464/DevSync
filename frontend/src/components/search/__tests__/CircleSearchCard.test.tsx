@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import CircleSearchCard from '../CircleSearchCard';
 import type { StudyCircle } from '../../../types/studyCircle';
 
-const mockCircle: StudyCircle = {
+const mockCircle = {
   id: 1,
   name: 'React Study Group',
   topic: 'React & TypeScript',
@@ -14,7 +14,7 @@ const mockCircle: StudyCircle = {
   owner_id: 1,
   created_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-01-01T00:00:00Z',
-};
+} as StudyCircle & { member_count?: number };
 
 const renderWithRouter = (ui: React.ReactElement) =>
   render(<MemoryRouter>{ui}</MemoryRouter>);

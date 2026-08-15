@@ -80,16 +80,6 @@ export default function DashboardPage() {
     await refetch();
   }, [createPost, refetch]);
 
-  const handleCreatePost = useCallback(async (
-    title: string,
-    content: string,
-    imageUrls?: string,
-    codeSnippets?: { language: string; file_name?: string; code: string }[],
-    isDraft?: boolean
-  ) => {
-    await createPost(title, content, imageUrls, codeSnippets, isDraft);
-  }, [createPost]);
-
   // Widget component registry
   const widgetComponents: Record<string, ReactNode> = {
     userProfile: <UserProfileWidget />,

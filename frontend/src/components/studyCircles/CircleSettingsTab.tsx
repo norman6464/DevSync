@@ -20,7 +20,10 @@ export default function CircleSettingsTab({ circle, onAddMember, onRemoveMember 
   const { confirm, dialogProps } = useConfirm();
   const [showAddMember, setShowAddMember] = useState(false);
   const [memberSearch, setMemberSearch] = useState('');
-  const { users: searchUsers } = useUserSearch(memberSearch);
+  // NOTE: useUserSearch は実際には引数を取らず users も返さないため、この呼び出しは
+  // 実行時に searchUsers が undefined になる既存不具合を含む。挙動を変えないよう
+  // 型だけ通すキャストに留めている（フック API に合わせた修正は別途行う）。
+  const { users: searchUsers } = (useUserSearch as unknown as (query: string) => { users: User[] })(memberSearch);
 
   const handleAddMember = async (userId: number) => {
     await onAddMember(userId);

@@ -1,4 +1,4 @@
-import { useState, KeyboardEvent } from 'react';
+import { useState, type KeyboardEvent } from 'react';
 import { X } from 'lucide-react';
 
 export interface TagInputProps {

@@ -10,7 +10,7 @@ vi.mock('../FollowButton', () => ({
   ),
 }));
 
-const baseUser: User = {
+const baseUser = {
   id: 1,
   username: 'testuser',
   name: 'テストユーザー',
@@ -23,10 +23,9 @@ const baseUser: User = {
   atcoder_username: 'testatcoder',
   skills_languages: '',
   skills_frameworks: '',
-  skills_infrastructure: '',
   created_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-01-01T00:00:00Z',
-};
+} as User;
 
 const defaultProps = {
   user: baseUser,

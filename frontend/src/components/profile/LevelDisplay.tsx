@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Star } from 'lucide-react';
 import { useLevel, useLevelBreakdown } from '../../hooks';
-import type { XPBreakdown } from '../../types/level';
 
 function getLevelTitleKey(level: number): { key: string; params?: Record<string, unknown> } {
   if (level === 0) return { key: 'level.titleNewcomer' };

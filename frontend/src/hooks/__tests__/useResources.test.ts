@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useResources } from '../useResources';
 import { getPublicResources, createResource, deleteResource, likeResource, saveResource } from '../../api/resources';
+import type { LearningResource } from '../../types/resource';
 import toast from 'react-hot-toast';
 
 vi.mock('../../api/resources', () => ({
@@ -30,7 +31,7 @@ const mockResources = [
   { id: 1, title: 'Go入門', category: 'book', difficulty: 'beginner', like_count: 3, save_count: 1, is_public: true, created_at: '2026-01-01', updated_at: '2026-01-01' },
   { id: 2, title: 'React動画', category: 'video', difficulty: 'intermediate', like_count: 5, save_count: 2, is_public: true, created_at: '2026-01-02', updated_at: '2026-01-02' },
   { id: 3, title: 'Docker記事', category: 'article', difficulty: 'advanced', like_count: 1, save_count: 0, is_public: true, created_at: '2026-01-03', updated_at: '2026-01-03' },
-];
+] as LearningResource[];
 
 describe('useResources', () => {
   beforeEach(() => {

@@ -1,4 +1,4 @@
-import { useState, useRef, ReactNode, ReactElement } from 'react';
+import { useState, useRef, type ReactNode, type ReactElement } from 'react';
 
 interface PopoverProps {
   trigger: ReactElement;

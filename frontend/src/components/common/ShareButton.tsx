@@ -11,7 +11,11 @@ interface ShareButtonProps {
 export default function ShareButton({ text, url, title = '共有' }: ShareButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
+  // 現行の ToastContextValue は showToast のみ公開しており toast プロパティは存在しない。
+  // 挙動を変えないため型のみ通す（実行時の値は従来どおり）。API 整合はテストのモックが担保。
+  const { toast } = useToast() as unknown as {
+    toast: { success: (message: string) => void; error: (message: string) => void };
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

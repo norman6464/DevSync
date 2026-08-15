@@ -5,7 +5,6 @@ import { useAuthStore } from '../store/authStore';
 import { useAsyncData } from '../hooks/useAsyncData';
 import { getUserBadges } from '../api/badges';
 import { PageLoader } from '../components/common';
-import type { BadgeResult } from '../types/badge';
 
 type BadgeCategory = 'all' | 'learning' | 'streak' | 'community';
 

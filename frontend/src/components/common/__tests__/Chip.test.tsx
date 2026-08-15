@@ -42,7 +42,7 @@ describe('Chip', () => {
   });
 
   it('アイコンが表示される', () => {
-    const { container } = render(<Chip label="React" icon={<span data-testid="icon">★</span>} />);
+    render(<Chip label="React" icon={<span data-testid="icon">★</span>} />);
     expect(screen.getByTestId('icon')).toBeInTheDocument();
   });
 

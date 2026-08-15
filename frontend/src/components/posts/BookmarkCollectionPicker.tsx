@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FolderPlus, Plus, Check, X } from 'lucide-react';
+import { Plus, Check, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useBookmarkCollections } from '../../hooks/useBookmarkCollections';
 import { addPostToCollection, removePostFromCollection } from '../../api/bookmarkCollections';

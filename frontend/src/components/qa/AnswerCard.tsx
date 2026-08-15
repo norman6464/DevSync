@@ -26,7 +26,6 @@ export default function AnswerCard({
   onDelete,
   onSetBest,
   onVote,
-  onRemoveVote,
 }: AnswerCardProps) {
   const { t } = useTranslation();
   const [voting, setVoting] = useState(false);

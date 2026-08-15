@@ -114,7 +114,7 @@ describe('Tooltip', () => {
   });
 
   it('ツールチップに背景色がある', async () => {
-    const { container } = render(
+    render(
       <Tooltip content="テキスト">
         <button>ホバー</button>
       </Tooltip>
@@ -130,7 +130,7 @@ describe('Tooltip', () => {
   });
 
   it('ツールチップに白いテキストがある', async () => {
-    const { container } = render(
+    render(
       <Tooltip content="テキスト">
         <button>ホバー</button>
       </Tooltip>
@@ -146,7 +146,7 @@ describe('Tooltip', () => {
   });
 
   it('ツールチップに角丸がある', async () => {
-    const { container } = render(
+    render(
       <Tooltip content="テキスト">
         <button>ホバー</button>
       </Tooltip>
@@ -162,7 +162,7 @@ describe('Tooltip', () => {
   });
 
   it('ツールチップにパディングがある', async () => {
-    const { container } = render(
+    render(
       <Tooltip content="テキスト">
         <button>ホバー</button>
       </Tooltip>

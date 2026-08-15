@@ -43,7 +43,7 @@ export default function PostDetailPage() {
   const handleOpenEdit = useCallback(() => setEditingPost(true), []);
   const handleCloseEdit = useCallback(() => setEditingPost(false), []);
 
-  const handleEditSubmit = useCallback(async (title: string, content: string, imageUrls: string[]) => {
+  const handleEditSubmit = useCallback(async (title: string, content: string, imageUrls?: string) => {
     const result = await updatePost(title, content, imageUrls);
     if (result) setEditingPost(false);
   }, [updatePost]);

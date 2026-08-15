@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
+import type { AxiosResponse } from 'axios';
+import type { Notification } from '../../types/notification';
 import { useNotifications } from '../useNotifications';
 import {
   getNotifications, getUnreadCount, markAsRead, markAllAsRead,
@@ -24,10 +26,10 @@ describe('useNotifications', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllMocks();
-    vi.mocked(getUnreadCount).mockResolvedValue({ data: { count: 3 } });
+    vi.mocked(getUnreadCount).mockResolvedValue({ data: { count: 3 } } as AxiosResponse<{ count: number }>);
     vi.mocked(getNotifications).mockResolvedValue({
       data: { notifications: mockNotifications, total: 2 },
-    });
+    } as unknown as AxiosResponse<{ notifications: Notification[]; total: number }>);
   });
 
   afterEach(() => {
@@ -49,7 +51,7 @@ describe('useNotifications', () => {
   });
 
   it('markAsReadで既読化とunreadCount減少', async () => {
-    vi.mocked(markAsRead).mockResolvedValue({});
+    vi.mocked(markAsRead).mockResolvedValue({} as AxiosResponse);
 
     const { result } = renderHook(() => useNotifications());
 
@@ -67,7 +69,7 @@ describe('useNotifications', () => {
   });
 
   it('markAllAsReadで全既読化とunreadCount=0', async () => {
-    vi.mocked(markAllAsRead).mockResolvedValue({});
+    vi.mocked(markAllAsRead).mockResolvedValue({} as AxiosResponse);
 
     const { result } = renderHook(() => useNotifications());
 
@@ -85,7 +87,7 @@ describe('useNotifications', () => {
   });
 
   it('未読通知の削除でunreadCountも減少すること', async () => {
-    vi.mocked(deleteNotificationApi).mockResolvedValue({});
+    vi.mocked(deleteNotificationApi).mockResolvedValue({} as AxiosResponse);
 
     const { result } = renderHook(() => useNotifications());
 
@@ -105,7 +107,7 @@ describe('useNotifications', () => {
   });
 
   it('既読通知の削除ではunreadCountは変わらないこと', async () => {
-    vi.mocked(deleteNotificationApi).mockResolvedValue({});
+    vi.mocked(deleteNotificationApi).mockResolvedValue({} as AxiosResponse);
 
     const { result } = renderHook(() => useNotifications());
 
@@ -141,7 +143,7 @@ describe('useNotifications', () => {
   it('nullデータの場合はデフォルト値が使われること', async () => {
     vi.mocked(getNotifications).mockResolvedValue({
       data: { notifications: null, total: null },
-    });
+    } as unknown as AxiosResponse<{ notifications: Notification[]; total: number }>);
 
     const { result } = renderHook(() => useNotifications());
 
@@ -164,7 +166,7 @@ describe('useNotifications', () => {
     const unreadCallsBefore = vi.mocked(getUnreadCount).mock.calls.length;
     const listCallsBefore = vi.mocked(getNotifications).mock.calls.length;
 
-    vi.mocked(getUnreadCount).mockResolvedValue({ data: { count: 4 } });
+    vi.mocked(getUnreadCount).mockResolvedValue({ data: { count: 4 } } as AxiosResponse<{ count: number }>);
     await act(async () => {
       useChatStore.setState({ notificationSignal: 1 });
     });

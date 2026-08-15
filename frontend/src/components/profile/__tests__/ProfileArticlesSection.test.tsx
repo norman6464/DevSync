@@ -16,7 +16,6 @@ const makeZennArticle = (overrides: Partial<ZennArticle> = {}): ZennArticle => (
   liked_count: 10,
   comments_count: 3,
   published_at: '2025-01-01',
-  created_at: '2025-01-01',
   updated_at: '2025-01-01',
   ...overrides,
 });
@@ -32,7 +31,6 @@ const makeQiitaArticle = (overrides: Partial<QiitaArticle> = {}): QiitaArticle =
   tags: 'Go,Backend',
   published_at: '2025-01-01',
   updated_at: '2025-01-01',
-  created_at: '2025-01-01',
   ...overrides,
 });
 

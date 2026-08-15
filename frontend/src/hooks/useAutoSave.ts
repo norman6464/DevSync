@@ -31,7 +31,7 @@ export function useAutoSave<T>({
 }: UseAutoSaveOptions<T>): UseAutoSaveReturn<T> {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevDataRef = useRef<T | null>(null);
 
   // 保存処理

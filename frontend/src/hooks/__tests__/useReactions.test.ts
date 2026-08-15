@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useReactions } from '../useReactions';
 import * as postsApi from '../../api/posts';
+import type { AxiosResponse } from 'axios';
 
 vi.mock('../../api/posts', () => ({
   getReactions: vi.fn(),
@@ -9,13 +10,14 @@ vi.mock('../../api/posts', () => ({
   removeReaction: vi.fn(),
 }));
 
-const mockAxiosResponse = (data: unknown) => ({
-  data,
-  status: 200,
-  statusText: 'OK',
-  headers: {},
-  config: {} as never,
-});
+const mockAxiosResponse = <T>(data: T) =>
+  ({
+    data,
+    status: 200,
+    statusText: 'OK',
+    headers: {},
+    config: {} as never,
+  }) as unknown as AxiosResponse<T>;
 
 describe('useReactions', () => {
   beforeEach(() => {

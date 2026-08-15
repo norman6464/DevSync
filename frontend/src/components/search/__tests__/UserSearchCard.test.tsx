@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import UserSearchCard from '../UserSearchCard';
 import type { User } from '../../../types/user';
 
-const mockUser: User = {
+const mockUser = {
   id: 1,
   name: 'Test User',
   username: 'testuser',
@@ -14,7 +14,7 @@ const mockUser: User = {
   github_username: '',
   created_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-01-01T00:00:00Z',
-};
+} as User;
 
 const renderWithRouter = (ui: React.ReactElement) =>
   render(<MemoryRouter>{ui}</MemoryRouter>);

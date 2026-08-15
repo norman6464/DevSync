@@ -29,7 +29,7 @@ const mockLogs = [
 describe('useLearningLogs', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(getMyLogs).mockResolvedValue({ data: mockLogs });
+    vi.mocked(getMyLogs).mockResolvedValue({ data: mockLogs } as never);
     vi.stubGlobal('confirm', () => true);
   });
 

@@ -3,13 +3,14 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import RecentNotificationsWidget from '../RecentNotificationsWidget';
 import type { Notification } from '../../../types/notification';
+import type { User } from '../../../types/user';
 
 const makeNotification = (overrides: Partial<Notification> = {}): Notification => ({
   id: 1,
   user_id: 1,
   type: 'like',
   actor_id: 2,
-  actor: { id: 2, name: 'テストユーザー', username: 'test', email: 'test@example.com', avatar_url: '', bio: '', github_username: '', github_connected: false, created_at: '', updated_at: '' },
+  actor: { id: 2, name: 'テストユーザー', username: 'test', email: 'test@example.com', avatar_url: '', bio: '', github_username: '', github_connected: false, created_at: '', updated_at: '' } as User,
   read: false,
   created_at: new Date().toISOString(),
   ...overrides,
@@ -52,7 +53,7 @@ describe('RecentNotificationsWidget', () => {
   });
 
   it('通知テキストが表示される（likeタイプ）', () => {
-    const notifications = [makeNotification({ id: 1, type: 'like', actor: { id: 2, name: '田中太郎', username: 'tanaka', email: '', avatar_url: '', bio: '', github_username: '', github_connected: false, created_at: '', updated_at: '' } })];
+    const notifications = [makeNotification({ id: 1, type: 'like', actor: { id: 2, name: '田中太郎', username: 'tanaka', email: '', avatar_url: '', bio: '', github_username: '', github_connected: false, created_at: '', updated_at: '' } as User })];
     renderWidget({ notifications });
     expect(screen.getByText(/田中太郎/)).toBeInTheDocument();
   });
@@ -75,7 +76,7 @@ describe('RecentNotificationsWidget', () => {
     const notifications = Array.from({ length: 7 }, (_, i) =>
       makeNotification({
         id: i + 1,
-        actor: { id: i + 2, name: `ユーザー${i + 1}`, username: `user${i}`, email: '', avatar_url: '', bio: '', github_username: '', github_connected: false, created_at: '', updated_at: '' },
+        actor: { id: i + 2, name: `ユーザー${i + 1}`, username: `user${i}`, email: '', avatar_url: '', bio: '', github_username: '', github_connected: false, created_at: '', updated_at: '' } as User,
       })
     );
     renderWidget({ notifications });

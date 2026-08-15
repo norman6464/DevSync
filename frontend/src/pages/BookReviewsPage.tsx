@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BookOpen, Star } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import type { BookReview, ReviewStatus } from '../types/bookReview';
+import type { BookReview } from '../types/bookReview';
 import { useBookReviews, useConfirm } from '../hooks';
 import BookReviewCard from '../components/bookReviews/BookReviewCard';
 import BookReviewForm from '../components/bookReviews/BookReviewForm';

@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { generatePortfolioHTML, downloadPortfolio } from '../portfolioGenerator';
 import type { PortfolioData } from '../portfolioGenerator';
 import type { User } from '../../types/user';
+import type { LearningGoal } from '../../api/goals';
 
 const baseUser: User = {
   id: 1,
@@ -37,7 +38,7 @@ const baseData: PortfolioData = {
     { id: 1, github_repo_id: 100, name: 'my-project', full_name: 'testuser/my-project', description: 'A cool project', language: 'TypeScript', stars: 10, forks: 2, is_private: false },
   ],
   goals: [
-    { id: 1, user_id: 1, title: 'Learn Rust', description: '', category: 'language', status: 'active', progress: 60, target_date: '2026-06-01', created_at: '2026-01-01', updated_at: '2026-01-01' },
+    { id: 1, user_id: 1, title: 'Learn Rust', description: '', category: 'language', status: 'active', progress: 60, target_date: '2026-06-01', created_at: '2026-01-01', updated_at: '2026-01-01' } as LearningGoal,
   ],
   totalContributions: 500,
   followerCount: 20,
@@ -128,7 +129,7 @@ describe('portfolioGenerator', () => {
       const data: PortfolioData = {
         ...baseData,
         goals: [
-          { id: 1, user_id: 1, title: 'Over 100', description: '', category: 'language', status: 'active', progress: 150, target_date: '', created_at: '', updated_at: '' },
+          { id: 1, user_id: 1, title: 'Over 100', description: '', category: 'language', status: 'active', progress: 150, target_date: '', created_at: '', updated_at: '' } as LearningGoal,
         ],
       };
       const html = generatePortfolioHTML(data, 'minimal');

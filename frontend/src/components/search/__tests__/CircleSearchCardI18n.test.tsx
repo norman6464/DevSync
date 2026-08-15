@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import CircleSearchCard from '../CircleSearchCard';
 import type { StudyCircle } from '../../../types/studyCircle';
 
-const makeCircle = (overrides: Partial<StudyCircle> = {}): StudyCircle =>
+const makeCircle = (overrides: Partial<StudyCircle> & { member_count?: number } = {}): StudyCircle =>
   ({
     id: 1,
     name: 'React 学習会',
