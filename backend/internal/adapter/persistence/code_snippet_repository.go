@@ -68,9 +68,11 @@ func (r *codeSnippetRepository) Search(ctx context.Context, query string, limit,
 		return nil, 0, err
 	}
 
+	// CodeSnippet は投稿者の ID しか持たず User の関連を張っていないため、
+	// Preload すると GORM が unsupported relations で失敗する。
 	var snippets []model.CodeSnippet
 	err := db.Where(cond, like, like, like).
-		Preload("User").Order("created_at DESC").
+		Order("created_at DESC").
 		Limit(limit).Offset(offset).Find(&snippets).Error
 	return snippets, total, err
 }
