@@ -53,7 +53,12 @@
     "contributionsInLastYear": "지난 1년간 {{count}}개의 기여",
     "dateContributions": "{{date}}: {{count}}개의 기여",
     "dateLogs": "{{date}}: {{count}}개의 로그",
-    "createFromTemplate": "템플릿에서 생성"
+    "createFromTemplate": "템플릿에서 생성",
+    "likes": "좋아요",
+    "comments": "댓글",
+    "view": "보기",
+    "backToHome": "홈으로 돌아가기",
+    "dismiss": "닫기"
   },
   "nav": {
     "dashboard": "대시보드",
@@ -113,7 +118,30 @@
     "goalProgressTargetHours": "목표 시간",
     "goalProgressActualTime": "실적 시간",
     "goalProgressPercentage": "달성률",
-    "goalProgressNoTarget": "목표 시간이 설정되지 않았습니다"
+    "goalProgressNoTarget": "목표 시간이 설정되지 않았습니다",
+    "timeline": "타임라인",
+    "following": "팔로잉",
+    "allPosts": "전체 게시물",
+    "noPostsFollowing": "팔로우 중인 사용자의 게시물이 아직 없습니다",
+    "noPostsAll": "아직 게시물이 없습니다",
+    "findPeople": "사용자 찾기",
+    "editPost": "게시물 편집",
+    "confirmDeletePost": "이 게시물을 삭제하시겠습니까?",
+    "quickStats": "요약 통계",
+    "goalsCompleted": "달성한 목표",
+    "goalsInProgress": "진행 중인 목표",
+    "goalsProgress": "학습 목표 진행률",
+    "viewAll": "전체 보기",
+    "noActiveGoals": "진행 중인 목표가 없습니다",
+    "createGoal": "목표 만들기",
+    "active": "진행 중",
+    "completed": "완료",
+    "avgProgress": "평균 진행률",
+    "moreGoals": "외 {{count}}개의 목표",
+    "recentNotifications": "최근 알림",
+    "noNotifications": "알림이 없습니다",
+    "yourProfile": "내 프로필",
+    "connectGitHub": "GitHub 연동하기"
   },
   "series": {
     "title": "게시물 시리즈",
@@ -209,7 +237,23 @@
     "sortOldest": "오래된순",
     "sortTitle": "제목순",
     "loadReactionsBatch": "리액션 일괄 로드",
-    "loadReactionsBatchError": "리액션 일괄 로드에 실패했습니다"
+    "loadReactionsBatchError": "리액션 일괄 로드에 실패했습니다",
+    "draft": "임시저장",
+    "drafts": "임시저장",
+    "noDrafts": "임시저장된 글이 없습니다",
+    "lastEdited": "마지막 편집",
+    "publish": "공개",
+    "confirmPublish": "이 임시저장 글을 공개하시겠습니까?",
+    "published": "공개했습니다",
+    "publishFailed": "공개에 실패했습니다",
+    "confirmDelete": "이 게시물을 삭제하시겠습니까?",
+    "deleted": "삭제했습니다",
+    "deleteFailed": "삭제에 실패했습니다",
+    "saving": "저장 중...",
+    "savedJustNow": "방금 저장되었습니다",
+    "savedMinutesAgo": "{{minutes}}분 전에 저장됨",
+    "restorePrompt": "저장된 임시글이 있습니다. 복원하시겠습니까?",
+    "restore": "복원"
   },
   "follow": {
     "noFollowers": "아직 팔로워가 없습니다",
@@ -334,7 +378,9 @@
     "atcoderUsernamePlaceholder": "AtCoder 사용자명 입력",
     "spotify": "Spotify",
     "spotifyDescription": "Spotify를 연동하여 현재 재생 중인 곡을 프로필에 표시합니다.",
-    "setTheme": "{{theme}} 테마로 설정"
+    "setTheme": "{{theme}} 테마로 설정",
+    "bioPlaceholder": "자기소개를 입력하세요",
+    "githubDescription": "GitHub를 연동하면 기여 내역이 자동으로 기록됩니다"
   },
   "explore": {
     "title": "개발자 찾기",
@@ -481,7 +527,21 @@
     "goalAchieverDesc": "학습 목표를 5개 달성했습니다",
     "goalMaster": "목표 마스터",
     "goalMasterDesc": "학습 목표를 20개 달성했습니다",
-    "badgeEarned": "{{name}}을(를) 획득했습니다!"
+    "badgeEarned": "{{name}}을(를) 획득했습니다!",
+    "title": "배지 컬렉션",
+    "subtitle": "획득한 배지와 다음 목표를 확인해 보세요",
+    "progress": "컬렉션 진행률",
+    "earned": "개 획득",
+    "earned_section": "획득한 배지",
+    "unearned_section": "미획득 배지",
+    "no_badges": "이 카테고리에는 배지가 없습니다",
+    "category_contribution": "기여",
+    "category_streak": "연속 기록",
+    "category_post": "게시물",
+    "category_engagement": "반응",
+    "category_social": "소셜",
+    "category_qa": "Q&A",
+    "category_goal": "목표"
   },
   "time": {
     "justNow": "방금",
@@ -566,7 +626,10 @@
     "forbidden": "접근이 금지되었습니다",
     "serverError": "서버 오류",
     "networkError": "네트워크 오류",
-    "tryAgain": "다시 시도해주세요"
+    "tryAgain": "다시 시도해주세요",
+    "pageNotFound": "페이지를 찾을 수 없습니다",
+    "pageNotFoundDesc": "찾으시는 페이지가 이동되었거나 삭제되었을 수 있습니다.",
+    "helpfulLinks": "자주 찾는 페이지"
   },
   "goals": {
     "title": "학습 목표",
@@ -1244,7 +1307,8 @@
     "tryQAMsg": "질문과 답변을 통해 학습을 심화하세요.",
     "deleteConversation": "대화 삭제",
     "deleteConfirm": "이 대화를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
-    "deleted": "대화가 삭제되었습니다"
+    "deleted": "대화가 삭제되었습니다",
+    "messagesCount": "개의 메시지"
   },
   "pomodoro": {
     "timer": "포모도로 타이머",
@@ -1511,7 +1575,14 @@
     "exportMarkdown": "Markdown으로 내보내기",
     "exportSuccess": "노트를 내보냈습니다",
     "exportError": "내보내기에 실패했습니다",
-    "favoritesOnly": "즐겨찾기만"
+    "favoritesOnly": "즐겨찾기만",
+    "archived": "노트를 보관했습니다",
+    "unarchived": "노트 보관을 해제했습니다",
+    "duplicated": "노트를 복제했습니다",
+    "folderCreated": "폴더를 만들었습니다",
+    "folderUpdated": "폴더를 수정했습니다",
+    "folderDeleted": "폴더를 삭제했습니다",
+    "confirmDeleteFolder": "이 폴더를 삭제하시겠습니까?"
   },
   "githubCallback": {
     "missingOAuthParams": "OAuth 매개변수가 없습니다",
@@ -1888,5 +1959,23 @@
     "noReviews": "아직 리뷰가 없습니다",
     "reviewCount": "리뷰 {{count}}개",
     "averageRating": "평균 평점"
+  },
+  "noteTemplates": {
+    "created": "템플릿을 만들었습니다",
+    "updated": "템플릿을 수정했습니다",
+    "deleted": "템플릿을 삭제했습니다",
+    "confirmDelete": "이 템플릿을 삭제하시겠습니까?",
+    "noteCreated": "템플릿으로 노트를 만들었습니다"
+  },
+  "noteLinks": {
+    "created": "링크를 만들었습니다",
+    "deleted": "링크를 삭제했습니다",
+    "confirmDelete": "이 링크를 삭제하시겠습니까?"
+  },
+  "resource": {
+    "likeFailed": "좋아요에 실패했습니다",
+    "unlikeFailed": "좋아요 취소에 실패했습니다",
+    "saveFailed": "저장에 실패했습니다",
+    "unsaveFailed": "저장 취소에 실패했습니다"
   }
 }

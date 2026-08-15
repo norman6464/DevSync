@@ -29,13 +29,13 @@ export default function CircleSearchCard({ circle }: CircleSearchCardProps) {
             <h3 className="font-semibold text-white">{circle.name}</h3>
             {circle.status && (
               <span className={`${badgeBaseClass} ${statusColor[circle.status] || statusColor.active}`}>
-                {t(`studyCircles.${circle.status}`)}
+                {t(`studyCircle.${circle.status}`)}
               </span>
             )}
             {isFull && (
               <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-xs rounded bg-red-400/10 text-red-400 font-medium">
                 <Users className="w-3 h-3" />
-                {t('studyCircles.full')}
+                {t('studyCircle.full')}
               </span>
             )}
           </div>
@@ -46,7 +46,7 @@ export default function CircleSearchCard({ circle }: CircleSearchCardProps) {
           <div className="text-sm text-gray-400">
             {circle.member_count || 0} / {circle.max_members || '\u221E'}
           </div>
-          <div className="text-xs text-gray-500 mt-1">{t('studyCircles.members')}</div>
+          <div className="text-xs text-gray-500 mt-1">{t('studyCircle.members')}</div>
         </div>
       </div>
     </Link>

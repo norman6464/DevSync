@@ -53,7 +53,12 @@
     "contributionsInLastYear": "{{count}} contribuciones en el último año",
     "dateContributions": "{{date}}: {{count}} contribuciones",
     "dateLogs": "{{date}}: {{count}} registros",
-    "createFromTemplate": "Crear desde plantilla"
+    "createFromTemplate": "Crear desde plantilla",
+    "likes": "me gusta",
+    "comments": "comentarios",
+    "view": "Ver",
+    "backToHome": "Volver al inicio",
+    "dismiss": "Descartar"
   },
   "nav": {
     "dashboard": "Panel",
@@ -113,7 +118,30 @@
     "goalProgressTargetHours": "Horas objetivo",
     "goalProgressActualTime": "Tiempo real",
     "goalProgressPercentage": "Tasa de logro",
-    "goalProgressNoTarget": "Horas objetivo no establecidas"
+    "goalProgressNoTarget": "Horas objetivo no establecidas",
+    "timeline": "Cronología",
+    "following": "Siguiendo",
+    "allPosts": "Todas las publicaciones",
+    "noPostsFollowing": "Aún no hay publicaciones de las personas que sigues",
+    "noPostsAll": "Aún no hay publicaciones",
+    "findPeople": "Buscar personas",
+    "editPost": "Editar publicación",
+    "confirmDeletePost": "¿Eliminar esta publicación?",
+    "quickStats": "Estadísticas rápidas",
+    "goalsCompleted": "Objetivos completados",
+    "goalsInProgress": "Objetivos en curso",
+    "goalsProgress": "Progreso de objetivos",
+    "viewAll": "Ver todo",
+    "noActiveGoals": "No hay objetivos activos",
+    "createGoal": "Crear un objetivo",
+    "active": "Activos",
+    "completed": "Completados",
+    "avgProgress": "Progreso medio",
+    "moreGoals": "{{count}} objetivos más",
+    "recentNotifications": "Notificaciones recientes",
+    "noNotifications": "No hay notificaciones",
+    "yourProfile": "Tu perfil",
+    "connectGitHub": "Conectar GitHub"
   },
   "series": {
     "title": "Series de publicaciones",
@@ -209,7 +237,23 @@
     "sortOldest": "Más antiguo",
     "sortTitle": "Por título",
     "loadReactionsBatch": "Cargar reacciones en lote",
-    "loadReactionsBatchError": "Error al cargar reacciones en lote"
+    "loadReactionsBatchError": "Error al cargar reacciones en lote",
+    "draft": "Borrador",
+    "drafts": "Borradores",
+    "noDrafts": "No hay borradores",
+    "lastEdited": "Última edición",
+    "publish": "Publicar",
+    "confirmPublish": "¿Publicar este borrador?",
+    "published": "Publicado",
+    "publishFailed": "No se pudo publicar",
+    "confirmDelete": "¿Eliminar esta publicación?",
+    "deleted": "Eliminado",
+    "deleteFailed": "No se pudo eliminar",
+    "saving": "Guardando...",
+    "savedJustNow": "Guardado hace un momento",
+    "savedMinutesAgo": "Guardado hace {{minutes}} minutos",
+    "restorePrompt": "Se encontró un borrador guardado. ¿Restaurarlo?",
+    "restore": "Restaurar"
   },
   "follow": {
     "noFollowers": "Aún no hay seguidores",
@@ -334,7 +378,9 @@
     "atcoderUsernamePlaceholder": "Ingresa tu usuario de AtCoder",
     "spotify": "Spotify",
     "spotifyDescription": "Conecta Spotify para mostrar la canción que estás escuchando en tu perfil.",
-    "setTheme": "Establecer tema {{theme}}"
+    "setTheme": "Establecer tema {{theme}}",
+    "bioPlaceholder": "Cuéntanos sobre ti",
+    "githubDescription": "Conecta GitHub para registrar tus contribuciones automáticamente"
   },
   "explore": {
     "title": "Descubrir Desarrolladores",
@@ -480,7 +526,21 @@
     "goalAchieverDesc": "Completaste 5 metas de aprendizaje",
     "goalMaster": "Maestro de Metas",
     "goalMasterDesc": "Completaste 20 metas de aprendizaje",
-    "badgeEarned": "¡Obtuviste {{name}}!"
+    "badgeEarned": "¡Obtuviste {{name}}!",
+    "title": "Colección de insignias",
+    "subtitle": "Consulta las insignias que has ganado y tu próximo objetivo",
+    "progress": "Progreso de la colección",
+    "earned": "insignias ganadas",
+    "earned_section": "Insignias ganadas",
+    "unearned_section": "Insignias pendientes",
+    "no_badges": "No hay insignias en esta categoría",
+    "category_contribution": "Contribución",
+    "category_streak": "Racha",
+    "category_post": "Publicaciones",
+    "category_engagement": "Interacción",
+    "category_social": "Social",
+    "category_qa": "Preguntas",
+    "category_goal": "Objetivos"
   },
   "time": {
     "justNow": "ahora mismo",
@@ -565,7 +625,10 @@
     "forbidden": "Prohibido",
     "serverError": "Error del servidor",
     "networkError": "Error de red",
-    "tryAgain": "Por favor, inténtalo de nuevo"
+    "tryAgain": "Por favor, inténtalo de nuevo",
+    "pageNotFound": "Página no encontrada",
+    "pageNotFoundDesc": "La página que buscas puede haberse movido o eliminado.",
+    "helpfulLinks": "Páginas populares"
   },
   "goals": {
     "title": "Objetivos de Aprendizaje",
@@ -1243,7 +1306,8 @@
     "tryQAMsg": "Profundiza tu aprendizaje haciendo y respondiendo preguntas.",
     "deleteConversation": "Eliminar conversación",
     "deleteConfirm": "¿Estás seguro de que quieres eliminar esta conversación? Esta acción no se puede deshacer.",
-    "deleted": "Conversación eliminada"
+    "deleted": "Conversación eliminada",
+    "messagesCount": "mensajes"
   },
   "pomodoro": {
     "timer": "Temporizador Pomodoro",
@@ -1510,7 +1574,14 @@
     "exportMarkdown": "Exportar como Markdown",
     "exportSuccess": "Nota exportada con éxito",
     "exportError": "Error al exportar la nota",
-    "favoritesOnly": "Solo favoritos"
+    "favoritesOnly": "Solo favoritos",
+    "archived": "Nota archivada",
+    "unarchived": "Nota desarchivada",
+    "duplicated": "Nota duplicada",
+    "folderCreated": "Carpeta creada",
+    "folderUpdated": "Carpeta actualizada",
+    "folderDeleted": "Carpeta eliminada",
+    "confirmDeleteFolder": "¿Eliminar esta carpeta?"
   },
   "githubCallback": {
     "missingOAuthParams": "Faltan parámetros OAuth",
@@ -1887,5 +1958,23 @@
     "noReviews": "Aún no hay reseñas",
     "reviewCount": "{{count}} reseñas",
     "averageRating": "Valoración media"
+  },
+  "noteTemplates": {
+    "created": "Plantilla creada",
+    "updated": "Plantilla actualizada",
+    "deleted": "Plantilla eliminada",
+    "confirmDelete": "¿Eliminar esta plantilla?",
+    "noteCreated": "Nota creada a partir de la plantilla"
+  },
+  "noteLinks": {
+    "created": "Enlace creado",
+    "deleted": "Enlace eliminado",
+    "confirmDelete": "¿Eliminar este enlace?"
+  },
+  "resource": {
+    "likeFailed": "No se pudo dar me gusta",
+    "unlikeFailed": "No se pudo quitar el me gusta",
+    "saveFailed": "No se pudo guardar",
+    "unsaveFailed": "No se pudo quitar de guardados"
   }
 }

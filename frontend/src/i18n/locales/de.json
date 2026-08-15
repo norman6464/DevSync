@@ -53,7 +53,12 @@
     "contributionsInLastYear": "{{count}} Beiträge im letzten Jahr",
     "dateContributions": "{{date}}: {{count}} Beiträge",
     "dateLogs": "{{date}}: {{count}} Einträge",
-    "createFromTemplate": "Aus Vorlage erstellen"
+    "createFromTemplate": "Aus Vorlage erstellen",
+    "likes": "Likes",
+    "comments": "Kommentare",
+    "view": "Ansehen",
+    "backToHome": "Zurück zur Startseite",
+    "dismiss": "Schließen"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -113,7 +118,30 @@
     "goalProgressTargetHours": "Zielstunden",
     "goalProgressActualTime": "Tatsächliche Zeit",
     "goalProgressPercentage": "Erfolgsquote",
-    "goalProgressNoTarget": "Zielstunden nicht festgelegt"
+    "goalProgressNoTarget": "Zielstunden nicht festgelegt",
+    "timeline": "Timeline",
+    "following": "Folge ich",
+    "allPosts": "Alle Beiträge",
+    "noPostsFollowing": "Noch keine Beiträge von Personen, denen du folgst",
+    "noPostsAll": "Noch keine Beiträge",
+    "findPeople": "Personen finden",
+    "editPost": "Beitrag bearbeiten",
+    "confirmDeletePost": "Diesen Beitrag löschen?",
+    "quickStats": "Kurzstatistik",
+    "goalsCompleted": "Erreichte Ziele",
+    "goalsInProgress": "Laufende Ziele",
+    "goalsProgress": "Zielfortschritt",
+    "viewAll": "Alle ansehen",
+    "noActiveGoals": "Keine aktiven Ziele",
+    "createGoal": "Ziel erstellen",
+    "active": "Aktiv",
+    "completed": "Abgeschlossen",
+    "avgProgress": "Ø Fortschritt",
+    "moreGoals": "{{count}} weitere Ziele",
+    "recentNotifications": "Neueste Benachrichtigungen",
+    "noNotifications": "Keine Benachrichtigungen",
+    "yourProfile": "Dein Profil",
+    "connectGitHub": "GitHub verbinden"
   },
   "series": {
     "title": "Beitragsserien",
@@ -209,7 +237,23 @@
     "sortOldest": "Älteste",
     "sortTitle": "Nach Titel",
     "loadReactionsBatch": "Reaktionen stapelweise laden",
-    "loadReactionsBatchError": "Fehler beim stapelweisen Laden der Reaktionen"
+    "loadReactionsBatchError": "Fehler beim stapelweisen Laden der Reaktionen",
+    "draft": "Entwurf",
+    "drafts": "Entwürfe",
+    "noDrafts": "Keine Entwürfe",
+    "lastEdited": "Zuletzt bearbeitet",
+    "publish": "Veröffentlichen",
+    "confirmPublish": "Diesen Entwurf veröffentlichen?",
+    "published": "Veröffentlicht",
+    "publishFailed": "Veröffentlichen fehlgeschlagen",
+    "confirmDelete": "Diesen Beitrag löschen?",
+    "deleted": "Gelöscht",
+    "deleteFailed": "Löschen fehlgeschlagen",
+    "saving": "Wird gespeichert...",
+    "savedJustNow": "Gerade gespeichert",
+    "savedMinutesAgo": "Vor {{minutes}} Minuten gespeichert",
+    "restorePrompt": "Ein gespeicherter Entwurf wurde gefunden. Wiederherstellen?",
+    "restore": "Wiederherstellen"
   },
   "follow": {
     "noFollowers": "Noch keine Follower",
@@ -260,7 +304,8 @@
     "competitiveProgramming": "Wettbewerbsprogrammierung",
     "paizaRankLabel": "paiza Rang {{rank}}",
     "followFailed": "Fehler beim Folgen",
-    "unfollowFailed": "Fehler beim Entfolgen"
+    "unfollowFailed": "Fehler beim Entfolgen",
+    "joined": "Dabei seit"
   },
   "settings": {
     "title": "Einstellungen",
@@ -333,7 +378,9 @@
     "atcoderUsernamePlaceholder": "AtCoder-Benutzername eingeben",
     "spotify": "Spotify",
     "spotifyDescription": "Verbinde Spotify, um den aktuell gespielten Song in deinem Profil anzuzeigen.",
-    "setTheme": "{{theme}}-Design einstellen"
+    "setTheme": "{{theme}}-Design einstellen",
+    "bioPlaceholder": "Erzähl etwas über dich",
+    "githubDescription": "Verbinde GitHub, um deine Beiträge automatisch zu erfassen"
   },
   "explore": {
     "title": "Entwickler entdecken",
@@ -479,7 +526,21 @@
     "goalAchieverDesc": "5 Lernziele erreicht",
     "goalMaster": "Ziel-Meister",
     "goalMasterDesc": "20 Lernziele erreicht",
-    "badgeEarned": "{{name}} erhalten!"
+    "badgeEarned": "{{name}} erhalten!",
+    "title": "Abzeichensammlung",
+    "subtitle": "Sieh dir deine Abzeichen und dein nächstes Ziel an",
+    "progress": "Sammlungsfortschritt",
+    "earned": "Abzeichen erhalten",
+    "earned_section": "Erhaltene Abzeichen",
+    "unearned_section": "Noch nicht erhalten",
+    "no_badges": "Keine Abzeichen in dieser Kategorie",
+    "category_contribution": "Beiträge",
+    "category_streak": "Serie",
+    "category_post": "Beiträge",
+    "category_engagement": "Resonanz",
+    "category_social": "Sozial",
+    "category_qa": "Fragen & Antworten",
+    "category_goal": "Ziele"
   },
   "time": {
     "justNow": "gerade eben",
@@ -564,7 +625,10 @@
     "forbidden": "Verboten",
     "serverError": "Serverfehler",
     "networkError": "Netzwerkfehler",
-    "tryAgain": "Bitte erneut versuchen"
+    "tryAgain": "Bitte erneut versuchen",
+    "pageNotFound": "Seite nicht gefunden",
+    "pageNotFoundDesc": "Die gesuchte Seite wurde möglicherweise verschoben oder gelöscht.",
+    "helpfulLinks": "Häufig besuchte Seiten"
   },
   "goals": {
     "title": "Lernziele",
@@ -1242,7 +1306,8 @@
     "tryQAMsg": "Vertiefen Sie Ihr Lernen durch Fragen und Antworten.",
     "deleteConversation": "Gespräch löschen",
     "deleteConfirm": "Möchten Sie dieses Gespräch wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "deleted": "Gespräch gelöscht"
+    "deleted": "Gespräch gelöscht",
+    "messagesCount": "Nachrichten"
   },
   "pomodoro": {
     "timer": "Pomodoro-Timer",
@@ -1509,7 +1574,14 @@
     "exportMarkdown": "Als Markdown exportieren",
     "exportSuccess": "Notiz erfolgreich exportiert",
     "exportError": "Export fehlgeschlagen",
-    "favoritesOnly": "Nur Favoriten"
+    "favoritesOnly": "Nur Favoriten",
+    "archived": "Notiz archiviert",
+    "unarchived": "Notiz wiederhergestellt",
+    "duplicated": "Notiz dupliziert",
+    "folderCreated": "Ordner erstellt",
+    "folderUpdated": "Ordner aktualisiert",
+    "folderDeleted": "Ordner gelöscht",
+    "confirmDeleteFolder": "Diesen Ordner löschen?"
   },
   "githubCallback": {
     "missingOAuthParams": "Fehlende OAuth-Parameter",
@@ -1886,5 +1958,23 @@
     "noReviews": "Noch keine Bewertungen",
     "reviewCount": "{{count}} Bewertungen",
     "averageRating": "Durchschnittsbewertung"
+  },
+  "noteTemplates": {
+    "created": "Vorlage erstellt",
+    "updated": "Vorlage aktualisiert",
+    "deleted": "Vorlage gelöscht",
+    "confirmDelete": "Diese Vorlage löschen?",
+    "noteCreated": "Notiz aus Vorlage erstellt"
+  },
+  "noteLinks": {
+    "created": "Link erstellt",
+    "deleted": "Link gelöscht",
+    "confirmDelete": "Diesen Link löschen?"
+  },
+  "resource": {
+    "likeFailed": "Like fehlgeschlagen",
+    "unlikeFailed": "Like konnte nicht entfernt werden",
+    "saveFailed": "Speichern fehlgeschlagen",
+    "unsaveFailed": "Aus Gespeichertem entfernen fehlgeschlagen"
   }
 }

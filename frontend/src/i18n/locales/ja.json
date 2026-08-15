@@ -54,7 +54,11 @@
     "contributionsInLastYear": "過去1年間に{{count}}コントリビューション",
     "dateContributions": "{{date}}: {{count}}コントリビューション",
     "dateLogs": "{{date}}: {{count}}件のログ",
-    "createFromTemplate": "テンプレートから作成"
+    "createFromTemplate": "テンプレートから作成",
+    "likes": "いいね",
+    "comments": "コメント",
+    "view": "表示",
+    "backToHome": "ホームに戻る"
   },
   "nav": {
     "dashboard": "ダッシュボード",
@@ -114,7 +118,30 @@
     "goalProgressTargetHours": "目標時間",
     "goalProgressActualTime": "実績時間",
     "goalProgressPercentage": "達成率",
-    "goalProgressNoTarget": "目標時間が未設定です"
+    "goalProgressNoTarget": "目標時間が未設定です",
+    "timeline": "タイムライン",
+    "following": "フォロー中",
+    "allPosts": "すべての投稿",
+    "noPostsFollowing": "フォロー中のユーザーの投稿がまだありません",
+    "noPostsAll": "投稿がまだありません",
+    "findPeople": "ユーザーを探す",
+    "editPost": "投稿を編集",
+    "confirmDeletePost": "この投稿を削除しますか？",
+    "quickStats": "クイック統計",
+    "goalsCompleted": "達成した目標",
+    "goalsInProgress": "進行中の目標",
+    "goalsProgress": "学習ゴール進捗",
+    "viewAll": "すべて見る",
+    "noActiveGoals": "進行中の目標はありません",
+    "createGoal": "目標を作成",
+    "active": "進行中",
+    "completed": "達成",
+    "avgProgress": "平均進捗",
+    "moreGoals": "他 {{count}} 件の目標",
+    "recentNotifications": "最近の通知",
+    "noNotifications": "通知はありません",
+    "yourProfile": "あなたのプロフィール",
+    "connectGitHub": "GitHub と連携する"
   },
   "series": {
     "title": "投稿シリーズ",
@@ -347,7 +374,9 @@
     "atcoderUsernamePlaceholder": "AtCoderのユーザー名を入力",
     "spotify": "Spotify",
     "spotifyDescription": "Spotifyを連携して、現在再生中の曲をプロフィールに表示します。",
-    "setTheme": "{{theme}}テーマに設定"
+    "setTheme": "{{theme}}テーマに設定",
+    "bioPlaceholder": "自己紹介を入力してください",
+    "githubDescription": "GitHub と連携すると、コントリビューションが自動で記録されます"
   },
   "explore": {
     "title": "開発者を見つける",
@@ -478,7 +507,21 @@
     "goalAchieverDesc": "学習目標を5個達成した",
     "goalMaster": "目標マスター",
     "goalMasterDesc": "学習目標を20個達成した",
-    "badgeEarned": "{{name}}を獲得しました！"
+    "badgeEarned": "{{name}}を獲得しました！",
+    "title": "バッジコレクション",
+    "subtitle": "獲得したバッジと目標を確認しよう",
+    "progress": "コレクション進捗",
+    "earned": "バッジ獲得",
+    "earned_section": "獲得済みバッジ",
+    "unearned_section": "未獲得バッジ",
+    "no_badges": "このカテゴリにバッジはありません",
+    "category_contribution": "コントリビューション",
+    "category_streak": "ストリーク",
+    "category_post": "投稿",
+    "category_engagement": "反応",
+    "category_social": "つながり",
+    "category_qa": "Q&A",
+    "category_goal": "目標"
   },
   "time": {
     "justNow": "たった今",
@@ -558,7 +601,10 @@
     "forbidden": "アクセスが拒否されました",
     "serverError": "サーバーエラー",
     "networkError": "ネットワークエラー",
-    "tryAgain": "もう一度お試しください"
+    "tryAgain": "もう一度お試しください",
+    "pageNotFound": "ページが見つかりません",
+    "pageNotFoundDesc": "お探しのページは存在しないか、移動または削除された可能性があります。",
+    "helpfulLinks": "よく見られるページ"
   },
   "goals": {
     "title": "学習目標",
@@ -645,7 +691,11 @@
     "isPublic": "公開中",
     "isPrivate": "非公開",
     "publicGoalsList": "みんなの目標",
-    "loadPublicGoalsFailed": "公開目標の取得に失敗しました"
+    "loadPublicGoalsFailed": "公開目標の取得に失敗しました",
+    "activities": "アクティビティ",
+    "profile": "プロフィール",
+    "recommendations": "おすすめ",
+    "timeline": "タイムライン"
   },
   "learningLogs": {
     "title": "学習ログ",
@@ -1179,7 +1229,8 @@
     "tryQAMsg": "質問や回答を通じて、学びを深めましょう。",
     "deleteConversation": "会話を削除",
     "deleteConfirm": "この会話を削除しますか？この操作は元に戻せません。",
-    "deleted": "会話を削除しました"
+    "deleted": "会話を削除しました",
+    "messagesCount": "件のメッセージ"
   },
   "pomodoro": {
     "timer": "ポモドーロタイマー",
@@ -1371,7 +1422,11 @@
     "sort": {
       "newest": "新しい順",
       "members": "メンバー数順"
-    }
+    },
+    "activities": "アクティビティ",
+    "profile": "プロフィール",
+    "recommendations": "おすすめ",
+    "timeline": "タイムライン"
   },
   "notes": {
     "title": "学習ノート",
@@ -1412,7 +1467,14 @@
     "exportMarkdown": "Markdownエクスポート",
     "exportSuccess": "ノートをエクスポートしました",
     "exportError": "エクスポートに失敗しました",
-    "favoritesOnly": "お気に入りのみ"
+    "favoritesOnly": "お気に入りのみ",
+    "archived": "ノートをアーカイブしました",
+    "unarchived": "ノートのアーカイブを解除しました",
+    "duplicated": "ノートを複製しました",
+    "folderCreated": "フォルダを作成しました",
+    "folderUpdated": "フォルダを更新しました",
+    "folderDeleted": "フォルダを削除しました",
+    "confirmDeleteFolder": "このフォルダを削除しますか？"
   },
   "githubCallback": {
     "missingOAuthParams": "OAuthパラメータが不足しています",
@@ -1789,5 +1851,23 @@
     "noReviews": "まだレビューはありません",
     "reviewCount": "{{count}}件のレビュー",
     "averageRating": "平均評価"
+  },
+  "noteTemplates": {
+    "created": "テンプレートを作成しました",
+    "updated": "テンプレートを更新しました",
+    "deleted": "テンプレートを削除しました",
+    "confirmDelete": "このテンプレートを削除しますか？",
+    "noteCreated": "テンプレートからノートを作成しました"
+  },
+  "noteLinks": {
+    "created": "リンクを作成しました",
+    "deleted": "リンクを削除しました",
+    "confirmDelete": "このリンクを削除しますか？"
+  },
+  "resource": {
+    "likeFailed": "いいねに失敗しました",
+    "unlikeFailed": "いいねの取り消しに失敗しました",
+    "saveFailed": "保存に失敗しました",
+    "unsaveFailed": "保存の取り消しに失敗しました"
   }
 }

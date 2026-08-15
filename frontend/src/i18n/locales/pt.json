@@ -53,7 +53,12 @@
     "contributionsInLastYear": "{{count}} contribuições no último ano",
     "dateContributions": "{{date}}: {{count}} contribuições",
     "dateLogs": "{{date}}: {{count}} registros",
-    "createFromTemplate": "Criar a partir de modelo"
+    "createFromTemplate": "Criar a partir de modelo",
+    "likes": "curtidas",
+    "comments": "comentários",
+    "view": "Ver",
+    "backToHome": "Voltar ao início",
+    "dismiss": "Dispensar"
   },
   "nav": {
     "dashboard": "Painel",
@@ -113,7 +118,30 @@
     "goalProgressTargetHours": "Horas alvo",
     "goalProgressActualTime": "Tempo real",
     "goalProgressPercentage": "Taxa de conclusão",
-    "goalProgressNoTarget": "Horas alvo não definidas"
+    "goalProgressNoTarget": "Horas alvo não definidas",
+    "timeline": "Linha do tempo",
+    "following": "Seguindo",
+    "allPosts": "Todas as publicações",
+    "noPostsFollowing": "Ainda não há publicações de quem você segue",
+    "noPostsAll": "Ainda não há publicações",
+    "findPeople": "Encontrar pessoas",
+    "editPost": "Editar publicação",
+    "confirmDeletePost": "Excluir esta publicação?",
+    "quickStats": "Estatísticas rápidas",
+    "goalsCompleted": "Metas concluídas",
+    "goalsInProgress": "Metas em andamento",
+    "goalsProgress": "Progresso das metas",
+    "viewAll": "Ver tudo",
+    "noActiveGoals": "Nenhuma meta ativa",
+    "createGoal": "Criar meta",
+    "active": "Ativas",
+    "completed": "Concluídas",
+    "avgProgress": "Progresso médio",
+    "moreGoals": "mais {{count}} metas",
+    "recentNotifications": "Notificações recentes",
+    "noNotifications": "Nenhuma notificação",
+    "yourProfile": "Seu perfil",
+    "connectGitHub": "Conectar o GitHub"
   },
   "series": {
     "title": "Séries de publicações",
@@ -209,7 +237,23 @@
     "sortOldest": "Mais antigo",
     "sortTitle": "Por título",
     "loadReactionsBatch": "Carregar reações em lote",
-    "loadReactionsBatchError": "Falha ao carregar reações em lote"
+    "loadReactionsBatchError": "Falha ao carregar reações em lote",
+    "draft": "Rascunho",
+    "drafts": "Rascunhos",
+    "noDrafts": "Nenhum rascunho",
+    "lastEdited": "Última edição",
+    "publish": "Publicar",
+    "confirmPublish": "Publicar este rascunho?",
+    "published": "Publicado",
+    "publishFailed": "Não foi possível publicar",
+    "confirmDelete": "Excluir esta publicação?",
+    "deleted": "Excluído",
+    "deleteFailed": "Não foi possível excluir",
+    "saving": "Salvando...",
+    "savedJustNow": "Salvo agora mesmo",
+    "savedMinutesAgo": "Salvo há {{minutes}} minutos",
+    "restorePrompt": "Um rascunho salvo foi encontrado. Restaurar?",
+    "restore": "Restaurar"
   },
   "follow": {
     "noFollowers": "Ainda sem seguidores",
@@ -219,7 +263,7 @@
   "profile": {
     "followers": "seguidores",
     "following": "seguindo",
-    "joined": "Ingressou",
+    "joined": "Entrou em",
     "follow": "Seguir",
     "unfollow": "Deixar de seguir",
     "editProfile": "Editar perfil",
@@ -334,7 +378,9 @@
     "atcoderUsernamePlaceholder": "Digite seu nome de usuário AtCoder",
     "spotify": "Spotify",
     "spotifyDescription": "Conecte o Spotify para exibir a música que está ouvindo no seu perfil.",
-    "setTheme": "Definir tema {{theme}}"
+    "setTheme": "Definir tema {{theme}}",
+    "bioPlaceholder": "Fale um pouco sobre você",
+    "githubDescription": "Conecte o GitHub para registrar suas contribuições automaticamente"
   },
   "explore": {
     "title": "Descobrir Desenvolvedores",
@@ -480,7 +526,21 @@
     "goalAchieverDesc": "Completou 5 metas de aprendizagem",
     "goalMaster": "Mestre de Metas",
     "goalMasterDesc": "Completou 20 metas de aprendizagem",
-    "badgeEarned": "Você ganhou {{name}}!"
+    "badgeEarned": "Você ganhou {{name}}!",
+    "title": "Coleção de emblemas",
+    "subtitle": "Veja os emblemas conquistados e o próximo objetivo",
+    "progress": "Progresso da coleção",
+    "earned": "emblemas conquistados",
+    "earned_section": "Emblemas conquistados",
+    "unearned_section": "Emblemas pendentes",
+    "no_badges": "Nenhum emblema nesta categoria",
+    "category_contribution": "Contribuição",
+    "category_streak": "Sequência",
+    "category_post": "Publicações",
+    "category_engagement": "Interação",
+    "category_social": "Social",
+    "category_qa": "Perguntas",
+    "category_goal": "Metas"
   },
   "time": {
     "justNow": "agora mesmo",
@@ -565,7 +625,10 @@
     "forbidden": "Proibido",
     "serverError": "Erro do servidor",
     "networkError": "Erro de rede",
-    "tryAgain": "Por favor, tente novamente"
+    "tryAgain": "Por favor, tente novamente",
+    "pageNotFound": "Página não encontrada",
+    "pageNotFoundDesc": "A página que você procura pode ter sido movida ou excluída.",
+    "helpfulLinks": "Páginas populares"
   },
   "goals": {
     "title": "Metas de Aprendizado",
@@ -1243,7 +1306,8 @@
     "tryQAMsg": "Aprofunde seu aprendizado fazendo e respondendo perguntas.",
     "deleteConversation": "Excluir conversa",
     "deleteConfirm": "Tem certeza de que deseja excluir esta conversa? Esta ação não pode ser desfeita.",
-    "deleted": "Conversa excluída"
+    "deleted": "Conversa excluída",
+    "messagesCount": "mensagens"
   },
   "pomodoro": {
     "timer": "Temporizador Pomodoro",
@@ -1510,7 +1574,14 @@
     "exportMarkdown": "Exportar como Markdown",
     "exportSuccess": "Nota exportada com sucesso",
     "exportError": "Falha ao exportar nota",
-    "favoritesOnly": "Apenas favoritos"
+    "favoritesOnly": "Apenas favoritos",
+    "archived": "Nota arquivada",
+    "unarchived": "Nota desarquivada",
+    "duplicated": "Nota duplicada",
+    "folderCreated": "Pasta criada",
+    "folderUpdated": "Pasta atualizada",
+    "folderDeleted": "Pasta excluída",
+    "confirmDeleteFolder": "Excluir esta pasta?"
   },
   "githubCallback": {
     "missingOAuthParams": "Parâmetros OAuth ausentes",
@@ -1887,5 +1958,23 @@
     "noReviews": "Nenhuma avaliação ainda",
     "reviewCount": "{{count}} avaliações",
     "averageRating": "Nota média"
+  },
+  "noteTemplates": {
+    "created": "Modelo criado",
+    "updated": "Modelo atualizado",
+    "deleted": "Modelo excluído",
+    "confirmDelete": "Excluir este modelo?",
+    "noteCreated": "Nota criada a partir do modelo"
+  },
+  "noteLinks": {
+    "created": "Link criado",
+    "deleted": "Link excluído",
+    "confirmDelete": "Excluir este link?"
+  },
+  "resource": {
+    "likeFailed": "Não foi possível curtir",
+    "unlikeFailed": "Não foi possível remover a curtida",
+    "saveFailed": "Não foi possível salvar",
+    "unsaveFailed": "Não foi possível remover dos salvos"
   }
 }
