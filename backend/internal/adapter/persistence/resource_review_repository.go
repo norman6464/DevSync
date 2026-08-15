@@ -5,6 +5,7 @@ import (
 
 	"context"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
 	"gorm.io/gorm"
@@ -23,8 +24,15 @@ func NewResourceReviewRepository(db *gorm.DB) repository.ResourceReviewRepositor
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
 var _ repository.ResourceReviewRepository = (*resourceReviewRepository)(nil)
 
+// Create はレビューを保存する。複合ユニーク索引（user_id, resource_id）に
+// 衝突した場合は domain.ErrConflict を返す。usecase の重複チェックは同時実行を
+// すり抜けるため、最後の砦は DB の制約に委ねる。
 func (r *resourceReviewRepository) Create(ctx context.Context, review *model.ResourceReview) error {
-	return r.db.WithContext(ctx).Create(review).Error
+	err := r.db.WithContext(ctx).Create(review).Error
+	if isUniqueViolation(err) {
+		return domain.ErrConflict
+	}
+	return err
 }
 
 // FindByID は指定 ID のレビューをユーザー情報付きで取得する。不在の場合は (nil, nil) を返す。
