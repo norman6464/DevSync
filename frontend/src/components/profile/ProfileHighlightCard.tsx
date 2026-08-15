@@ -1,12 +1,18 @@
 import { useTranslation } from 'react-i18next';
-import { Trophy, Flame, TrendingUp } from 'lucide-react';
-import { Post, Badge } from '../../types';
+import { Trophy, Flame, TrendingUp, Medal } from 'lucide-react';
+import type { Post } from '../../types/post';
+import type { BadgeResult } from '../../types/badge';
 import { Link } from 'react-router-dom';
 
 interface ProfileHighlightCardProps {
   posts: Post[];
-  badges: Badge[];
+  badges: BadgeResult[];
   streakDays: number;
+}
+
+/** 投稿の反応の多さ（いいね + コメント）。 */
+function reactionScore(post: Post): number {
+  return (post.like_count || 0) + (post.comment_count || 0);
 }
 
 export default function ProfileHighlightCard({ posts, badges, streakDays }: ProfileHighlightCardProps) {
@@ -14,13 +20,12 @@ export default function ProfileHighlightCard({ posts, badges, streakDays }: Prof
 
   // 最も反応が多い投稿を取得（いいね+コメント数）
   const topPost = posts.reduce<Post | null>((best, post) => {
-    const score = (post.likes_count || 0) + (post.comments_count || 0);
-    const bestScore = best ? (best.likes_count || 0) + (best.comments_count || 0) : 0;
-    return score > bestScore ? post : best;
+    if (!best) return post;
+    return reactionScore(post) > reactionScore(best) ? post : best;
   }, null);
 
-  // 最新バッジを取得
-  const latestBadge = badges[0]; // バッジは新しい順にソートされていると仮定
+  // 最新バッジを取得（獲得済みのみ。一覧は新しい順に並んでいる前提）
+  const latestBadge = badges.find((badge) => badge.earned);
 
   // ハイライトが何もない場合は表示しない
   if (!topPost && !latestBadge && streakDays === 0) {
@@ -48,7 +53,7 @@ export default function ProfileHighlightCard({ posts, badges, streakDays }: Prof
                 {topPost.title}
               </Link>
               <p className="text-xs text-gray-500 mt-1">
-                {topPost.likes_count || 0} {t('common.likes')} · {topPost.comments_count || 0} {t('common.comments')}
+                {topPost.like_count || 0} {t('common.likes')} · {topPost.comment_count || 0} {t('common.comments')}
               </p>
             </div>
           </div>
@@ -57,7 +62,7 @@ export default function ProfileHighlightCard({ posts, badges, streakDays }: Prof
         {/* 最新バッジ */}
         {latestBadge && (
           <div className="flex items-start gap-3 p-3 bg-gray-800/50 rounded-lg">
-            <span className="text-2xl shrink-0" aria-hidden="true">{latestBadge.icon}</span>
+            <Medal className="w-4 h-4 text-yellow-400 mt-1 shrink-0" aria-hidden="true" />
             <div className="flex-1 min-w-0">
               <p className="text-xs text-gray-400 mb-1">{t('profile.highlights.latestBadge')}</p>
               <p className="text-sm text-gray-200 font-medium">{latestBadge.name}</p>
