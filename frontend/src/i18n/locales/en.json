@@ -53,7 +53,12 @@
     "contributionsInLastYear": "{{count}} contributions in the last year",
     "dateContributions": "{{date}}: {{count}} contributions",
     "dateLogs": "{{date}}: {{count}} logs",
-    "createFromTemplate": "Create from Template"
+    "createFromTemplate": "Create from Template",
+    "likes": "likes",
+    "comments": "comments",
+    "view": "View",
+    "backToHome": "Back to home",
+    "dismiss": "Dismiss"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -113,7 +118,30 @@
     "goalProgressTargetHours": "Target Hours",
     "goalProgressActualTime": "Actual Time",
     "goalProgressPercentage": "Completion Rate",
-    "goalProgressNoTarget": "Target hours not set"
+    "goalProgressNoTarget": "Target hours not set",
+    "timeline": "Timeline",
+    "following": "Following",
+    "allPosts": "All posts",
+    "noPostsFollowing": "No posts from people you follow yet",
+    "noPostsAll": "No posts yet",
+    "findPeople": "Find people",
+    "editPost": "Edit post",
+    "confirmDeletePost": "Delete this post?",
+    "quickStats": "Quick stats",
+    "goalsCompleted": "Goals completed",
+    "goalsInProgress": "Goals in progress",
+    "goalsProgress": "Goal progress",
+    "viewAll": "View all",
+    "noActiveGoals": "No active goals",
+    "createGoal": "Create a goal",
+    "active": "Active",
+    "completed": "Completed",
+    "avgProgress": "Avg. progress",
+    "moreGoals": "{{count}} more goals",
+    "recentNotifications": "Recent notifications",
+    "noNotifications": "No notifications",
+    "yourProfile": "Your profile",
+    "connectGitHub": "Connect GitHub"
   },
   "series": {
     "title": "Post Series",
@@ -209,7 +237,23 @@
     "sortOldest": "Oldest",
     "sortTitle": "By Title",
     "loadReactionsBatch": "Load reactions in batch",
-    "loadReactionsBatchError": "Failed to load reactions in batch"
+    "loadReactionsBatchError": "Failed to load reactions in batch",
+    "draft": "Draft",
+    "drafts": "Drafts",
+    "noDrafts": "No drafts",
+    "lastEdited": "Last edited",
+    "publish": "Publish",
+    "confirmPublish": "Publish this draft?",
+    "published": "Published",
+    "publishFailed": "Could not publish",
+    "confirmDelete": "Delete this post?",
+    "deleted": "Deleted",
+    "deleteFailed": "Could not delete",
+    "saving": "Saving...",
+    "savedJustNow": "Saved just now",
+    "savedMinutesAgo": "Saved {{minutes}} minutes ago",
+    "restorePrompt": "A saved draft was found. Restore it?",
+    "restore": "Restore"
   },
   "follow": {
     "noFollowers": "No followers yet",
@@ -334,7 +378,9 @@
     "atcoderUsernamePlaceholder": "Enter your AtCoder username",
     "spotify": "Spotify",
     "spotifyDescription": "Connect Spotify to display currently playing tracks on your profile.",
-    "setTheme": "Set {{theme}} theme"
+    "setTheme": "Set {{theme}} theme",
+    "bioPlaceholder": "Tell others about yourself",
+    "githubDescription": "Connect GitHub to record your contributions automatically"
   },
   "explore": {
     "title": "Discover Developers",
@@ -480,7 +526,21 @@
     "goalAchieverDesc": "Completed 5 learning goals",
     "goalMaster": "Goal Master",
     "goalMasterDesc": "Completed 20 learning goals",
-    "badgeEarned": "You earned {{name}}!"
+    "badgeEarned": "You earned {{name}}!",
+    "title": "Badge collection",
+    "subtitle": "See the badges you have earned and what to aim for next",
+    "progress": "Collection progress",
+    "earned": "badges earned",
+    "earned_section": "Earned badges",
+    "unearned_section": "Locked badges",
+    "no_badges": "No badges in this category",
+    "category_contribution": "Contribution",
+    "category_streak": "Streak",
+    "category_post": "Posts",
+    "category_engagement": "Engagement",
+    "category_social": "Social",
+    "category_qa": "Q&A",
+    "category_goal": "Goals"
   },
   "time": {
     "justNow": "just now",
@@ -565,7 +625,10 @@
     "forbidden": "Forbidden",
     "serverError": "Server error",
     "networkError": "Network error",
-    "tryAgain": "Please try again"
+    "tryAgain": "Please try again",
+    "pageNotFound": "Page not found",
+    "pageNotFoundDesc": "The page you are looking for may have been moved or deleted.",
+    "helpfulLinks": "Popular pages"
   },
   "goals": {
     "title": "Learning Goals",
@@ -1243,7 +1306,8 @@
     "tryQAMsg": "Deepen your learning by asking and answering questions.",
     "deleteConversation": "Delete conversation",
     "deleteConfirm": "Are you sure you want to delete this conversation? This action cannot be undone.",
-    "deleted": "Conversation deleted"
+    "deleted": "Conversation deleted",
+    "messagesCount": "messages"
   },
   "pomodoro": {
     "timer": "Pomodoro Timer",
@@ -1510,7 +1574,14 @@
     "exportMarkdown": "Export as Markdown",
     "exportSuccess": "Note exported successfully",
     "exportError": "Failed to export note",
-    "favoritesOnly": "Favorites only"
+    "favoritesOnly": "Favorites only",
+    "archived": "Note archived",
+    "unarchived": "Note unarchived",
+    "duplicated": "Note duplicated",
+    "folderCreated": "Folder created",
+    "folderUpdated": "Folder updated",
+    "folderDeleted": "Folder deleted",
+    "confirmDeleteFolder": "Delete this folder?"
   },
   "githubCallback": {
     "missingOAuthParams": "Missing OAuth parameters",
@@ -1887,5 +1958,27 @@
     "noReviews": "No reviews yet",
     "reviewCount": "{{count}} reviews",
     "averageRating": "Average Rating"
+  },
+  "noteTemplates": {
+    "created": "Template created",
+    "updated": "Template updated",
+    "deleted": "Template deleted",
+    "confirmDelete": "Delete this template?",
+    "noteCreated": "Note created from template"
+  },
+  "noteLinks": {
+    "created": "Link created",
+    "deleted": "Link deleted",
+    "confirmDelete": "Delete this link?"
+  },
+  "resource": {
+    "likeFailed": "Could not like this resource",
+    "unlikeFailed": "Could not remove your like",
+    "saveFailed": "Could not save this resource",
+    "unsaveFailed": "Could not remove this resource from saved"
+  },
+  "studyCircles": {
+    "members": "members",
+    "full": "Full"
   }
 }

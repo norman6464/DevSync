@@ -53,7 +53,12 @@
     "contributionsInLastYear": "过去一年 {{count}} 次贡献",
     "dateContributions": "{{date}}: {{count}} 次贡献",
     "dateLogs": "{{date}}: {{count}} 条日志",
-    "createFromTemplate": "从模板创建"
+    "createFromTemplate": "从模板创建",
+    "likes": "点赞",
+    "comments": "条评论",
+    "view": "查看",
+    "backToHome": "返回首页",
+    "dismiss": "关闭"
   },
   "nav": {
     "dashboard": "仪表板",
@@ -113,7 +118,30 @@
     "goalProgressTargetHours": "目标时间",
     "goalProgressActualTime": "实际时间",
     "goalProgressPercentage": "完成率",
-    "goalProgressNoTarget": "未设置目标时间"
+    "goalProgressNoTarget": "未设置目标时间",
+    "timeline": "时间线",
+    "following": "关注中",
+    "allPosts": "全部投稿",
+    "noPostsFollowing": "你关注的用户还没有发布投稿",
+    "noPostsAll": "还没有投稿",
+    "findPeople": "寻找用户",
+    "editPost": "编辑投稿",
+    "confirmDeletePost": "要删除这条投稿吗？",
+    "quickStats": "快速统计",
+    "goalsCompleted": "已完成目标",
+    "goalsInProgress": "进行中的目标",
+    "goalsProgress": "学习目标进度",
+    "viewAll": "查看全部",
+    "noActiveGoals": "没有进行中的目标",
+    "createGoal": "创建目标",
+    "active": "进行中",
+    "completed": "已完成",
+    "avgProgress": "平均进度",
+    "moreGoals": "还有 {{count}} 个目标",
+    "recentNotifications": "最近的通知",
+    "noNotifications": "没有通知",
+    "yourProfile": "你的个人资料",
+    "connectGitHub": "连接 GitHub"
   },
   "series": {
     "title": "帖子系列",
@@ -209,7 +237,23 @@
     "sortOldest": "最旧",
     "sortTitle": "按标题",
     "loadReactionsBatch": "批量加载反应",
-    "loadReactionsBatchError": "批量加载反应失败"
+    "loadReactionsBatchError": "批量加载反应失败",
+    "draft": "草稿",
+    "drafts": "草稿",
+    "noDrafts": "没有草稿",
+    "lastEdited": "最后编辑",
+    "publish": "发布",
+    "confirmPublish": "要发布这篇草稿吗？",
+    "published": "已发布",
+    "publishFailed": "发布失败",
+    "confirmDelete": "要删除这条投稿吗？",
+    "deleted": "已删除",
+    "deleteFailed": "删除失败",
+    "saving": "保存中...",
+    "savedJustNow": "刚刚已保存",
+    "savedMinutesAgo": "{{minutes}} 分钟前已保存",
+    "restorePrompt": "发现已保存的草稿，要恢复吗？",
+    "restore": "恢复"
   },
   "follow": {
     "noFollowers": "暂无粉丝",
@@ -260,7 +304,8 @@
     "competitiveProgramming": "竞技编程",
     "paizaRankLabel": "paiza 等级 {{rank}}",
     "followFailed": "关注失败",
-    "unfollowFailed": "取消关注失败"
+    "unfollowFailed": "取消关注失败",
+    "joined": "加入时间"
   },
   "settings": {
     "title": "设置",
@@ -333,7 +378,9 @@
     "atcoderUsernamePlaceholder": "输入AtCoder用户名",
     "spotify": "Spotify",
     "spotifyDescription": "连接Spotify，在个人资料中显示正在播放的歌曲。",
-    "setTheme": "设置{{theme}}主题"
+    "setTheme": "设置{{theme}}主题",
+    "bioPlaceholder": "介绍一下你自己",
+    "githubDescription": "连接 GitHub 后会自动记录你的贡献"
   },
   "explore": {
     "title": "发现开发者",
@@ -480,7 +527,21 @@
     "goalAchieverDesc": "完成了5个学习目标",
     "goalMaster": "目标大师",
     "goalMasterDesc": "完成了20个学习目标",
-    "badgeEarned": "获得了{{name}}！"
+    "badgeEarned": "获得了{{name}}！",
+    "title": "徽章收藏",
+    "subtitle": "查看已获得的徽章和下一个目标",
+    "progress": "收藏进度",
+    "earned": "枚已获得",
+    "earned_section": "已获得的徽章",
+    "unearned_section": "未获得的徽章",
+    "no_badges": "该分类下没有徽章",
+    "category_contribution": "贡献",
+    "category_streak": "连续记录",
+    "category_post": "投稿",
+    "category_engagement": "互动",
+    "category_social": "社交",
+    "category_qa": "问答",
+    "category_goal": "目标"
   },
   "time": {
     "justNow": "刚刚",
@@ -565,7 +626,10 @@
     "forbidden": "禁止访问",
     "serverError": "服务器错误",
     "networkError": "网络错误",
-    "tryAgain": "请重试"
+    "tryAgain": "请重试",
+    "pageNotFound": "找不到页面",
+    "pageNotFoundDesc": "你访问的页面可能已被移动或删除。",
+    "helpfulLinks": "常用页面"
   },
   "goals": {
     "title": "学习目标",
@@ -1243,7 +1307,8 @@
     "tryQAMsg": "通过提问和回答来深化学习。",
     "deleteConversation": "删除对话",
     "deleteConfirm": "确定要删除这个对话吗？此操作无法撤销。",
-    "deleted": "对话已删除"
+    "deleted": "对话已删除",
+    "messagesCount": "条消息"
   },
   "pomodoro": {
     "timer": "番茄钟",
@@ -1510,7 +1575,14 @@
     "exportMarkdown": "导出为Markdown",
     "exportSuccess": "笔记导出成功",
     "exportError": "导出失败",
-    "favoritesOnly": "仅收藏"
+    "favoritesOnly": "仅收藏",
+    "archived": "已归档笔记",
+    "unarchived": "已取消归档笔记",
+    "duplicated": "已复制笔记",
+    "folderCreated": "已创建文件夹",
+    "folderUpdated": "已更新文件夹",
+    "folderDeleted": "已删除文件夹",
+    "confirmDeleteFolder": "要删除这个文件夹吗？"
   },
   "githubCallback": {
     "missingOAuthParams": "缺少OAuth参数",
@@ -1887,5 +1959,27 @@
     "noReviews": "暂无评价",
     "reviewCount": "{{count}}条评价",
     "averageRating": "平均评分"
+  },
+  "noteTemplates": {
+    "created": "已创建模板",
+    "updated": "已更新模板",
+    "deleted": "已删除模板",
+    "confirmDelete": "要删除这个模板吗？",
+    "noteCreated": "已根据模板创建笔记"
+  },
+  "noteLinks": {
+    "created": "已创建链接",
+    "deleted": "已删除链接",
+    "confirmDelete": "要删除这个链接吗？"
+  },
+  "resource": {
+    "likeFailed": "点赞失败",
+    "unlikeFailed": "取消点赞失败",
+    "saveFailed": "保存失败",
+    "unsaveFailed": "取消保存失败"
+  },
+  "studyCircles": {
+    "members": "成员",
+    "full": "已满员"
   }
 }

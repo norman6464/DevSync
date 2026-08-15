@@ -53,7 +53,12 @@
     "contributionsInLastYear": "{{count}} contributions au cours de l'année écoulée",
     "dateContributions": "{{date}} : {{count}} contributions",
     "dateLogs": "{{date}} : {{count}} entrées",
-    "createFromTemplate": "Créer depuis un modèle"
+    "createFromTemplate": "Créer depuis un modèle",
+    "likes": "j'aime",
+    "comments": "commentaires",
+    "view": "Afficher",
+    "backToHome": "Retour à l'accueil",
+    "dismiss": "Ignorer"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -113,7 +118,30 @@
     "goalProgressTargetHours": "Heures cibles",
     "goalProgressActualTime": "Temps réel",
     "goalProgressPercentage": "Taux de réalisation",
-    "goalProgressNoTarget": "Heures cibles non définies"
+    "goalProgressNoTarget": "Heures cibles non définies",
+    "timeline": "Fil",
+    "following": "Abonnements",
+    "allPosts": "Toutes les publications",
+    "noPostsFollowing": "Aucune publication des personnes que vous suivez pour l'instant",
+    "noPostsAll": "Aucune publication pour le moment",
+    "findPeople": "Trouver des personnes",
+    "editPost": "Modifier la publication",
+    "confirmDeletePost": "Supprimer cette publication ?",
+    "quickStats": "Statistiques rapides",
+    "goalsCompleted": "Objectifs atteints",
+    "goalsInProgress": "Objectifs en cours",
+    "goalsProgress": "Progression des objectifs",
+    "viewAll": "Tout voir",
+    "noActiveGoals": "Aucun objectif en cours",
+    "createGoal": "Créer un objectif",
+    "active": "En cours",
+    "completed": "Terminés",
+    "avgProgress": "Progression moy.",
+    "moreGoals": "{{count}} autres objectifs",
+    "recentNotifications": "Notifications récentes",
+    "noNotifications": "Aucune notification",
+    "yourProfile": "Votre profil",
+    "connectGitHub": "Connecter GitHub"
   },
   "series": {
     "title": "Séries de publications",
@@ -209,7 +237,23 @@
     "sortOldest": "Plus ancien",
     "sortTitle": "Par titre",
     "loadReactionsBatch": "Charger les réactions en lot",
-    "loadReactionsBatchError": "Échec du chargement des réactions en lot"
+    "loadReactionsBatchError": "Échec du chargement des réactions en lot",
+    "draft": "Brouillon",
+    "drafts": "Brouillons",
+    "noDrafts": "Aucun brouillon",
+    "lastEdited": "Dernière modification",
+    "publish": "Publier",
+    "confirmPublish": "Publier ce brouillon ?",
+    "published": "Publié",
+    "publishFailed": "La publication a échoué",
+    "confirmDelete": "Supprimer cette publication ?",
+    "deleted": "Supprimé",
+    "deleteFailed": "La suppression a échoué",
+    "saving": "Enregistrement...",
+    "savedJustNow": "Enregistré à l'instant",
+    "savedMinutesAgo": "Enregistré il y a {{minutes}} minutes",
+    "restorePrompt": "Un brouillon enregistré a été trouvé. Le restaurer ?",
+    "restore": "Restaurer"
   },
   "follow": {
     "noFollowers": "Pas encore d'abonnés",
@@ -219,7 +263,7 @@
   "profile": {
     "followers": "abonnés",
     "following": "abonnements",
-    "joined": "Rejoint",
+    "joined": "Inscrit le",
     "follow": "Suivre",
     "unfollow": "Ne plus suivre",
     "editProfile": "Modifier le profil",
@@ -334,7 +378,9 @@
     "atcoderUsernamePlaceholder": "Entrez votre nom d'utilisateur AtCoder",
     "spotify": "Spotify",
     "spotifyDescription": "Connectez Spotify pour afficher la musique en cours de lecture sur votre profil.",
-    "setTheme": "Définir le thème {{theme}}"
+    "setTheme": "Définir le thème {{theme}}",
+    "bioPlaceholder": "Parlez un peu de vous",
+    "githubDescription": "Connectez GitHub pour enregistrer automatiquement vos contributions"
   },
   "explore": {
     "title": "Découvrir des Développeurs",
@@ -480,7 +526,21 @@
     "goalAchieverDesc": "A atteint 5 objectifs d'apprentissage",
     "goalMaster": "Maître des Objectifs",
     "goalMasterDesc": "A atteint 20 objectifs d'apprentissage",
-    "badgeEarned": "{{name}} obtenu !"
+    "badgeEarned": "{{name}} obtenu !",
+    "title": "Collection de badges",
+    "subtitle": "Consultez les badges obtenus et votre prochain objectif",
+    "progress": "Progression de la collection",
+    "earned": "badges obtenus",
+    "earned_section": "Badges obtenus",
+    "unearned_section": "Badges à obtenir",
+    "no_badges": "Aucun badge dans cette catégorie",
+    "category_contribution": "Contribution",
+    "category_streak": "Série",
+    "category_post": "Publications",
+    "category_engagement": "Engagement",
+    "category_social": "Social",
+    "category_qa": "Questions",
+    "category_goal": "Objectifs"
   },
   "time": {
     "justNow": "à l'instant",
@@ -565,7 +625,10 @@
     "forbidden": "Interdit",
     "serverError": "Erreur serveur",
     "networkError": "Erreur réseau",
-    "tryAgain": "Veuillez réessayer"
+    "tryAgain": "Veuillez réessayer",
+    "pageNotFound": "Page introuvable",
+    "pageNotFoundDesc": "La page que vous cherchez a peut-être été déplacée ou supprimée.",
+    "helpfulLinks": "Pages fréquentes"
   },
   "goals": {
     "title": "Objectifs d'apprentissage",
@@ -1243,7 +1306,8 @@
     "tryQAMsg": "Approfondissez vos connaissances en posant et répondant à des questions.",
     "deleteConversation": "Supprimer la conversation",
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette conversation ? Cette action est irréversible.",
-    "deleted": "Conversation supprimée"
+    "deleted": "Conversation supprimée",
+    "messagesCount": "messages"
   },
   "pomodoro": {
     "timer": "Minuteur Pomodoro",
@@ -1510,7 +1574,14 @@
     "exportMarkdown": "Exporter en Markdown",
     "exportSuccess": "Note exportée avec succès",
     "exportError": "Échec de l exportation",
-    "favoritesOnly": "Favoris uniquement"
+    "favoritesOnly": "Favoris uniquement",
+    "archived": "Note archivée",
+    "unarchived": "Note désarchivée",
+    "duplicated": "Note dupliquée",
+    "folderCreated": "Dossier créé",
+    "folderUpdated": "Dossier mis à jour",
+    "folderDeleted": "Dossier supprimé",
+    "confirmDeleteFolder": "Supprimer ce dossier ?"
   },
   "githubCallback": {
     "missingOAuthParams": "Paramètres OAuth manquants",
@@ -1887,5 +1958,27 @@
     "noReviews": "Aucun avis pour le moment",
     "reviewCount": "{{count}} avis",
     "averageRating": "Note moyenne"
+  },
+  "noteTemplates": {
+    "created": "Modèle créé",
+    "updated": "Modèle mis à jour",
+    "deleted": "Modèle supprimé",
+    "confirmDelete": "Supprimer ce modèle ?",
+    "noteCreated": "Note créée à partir du modèle"
+  },
+  "noteLinks": {
+    "created": "Lien créé",
+    "deleted": "Lien supprimé",
+    "confirmDelete": "Supprimer ce lien ?"
+  },
+  "resource": {
+    "likeFailed": "Impossible d'aimer cette ressource",
+    "unlikeFailed": "Impossible de retirer votre j'aime",
+    "saveFailed": "Impossible d'enregistrer cette ressource",
+    "unsaveFailed": "Impossible de retirer des éléments enregistrés"
+  },
+  "studyCircles": {
+    "members": "membres",
+    "full": "Complet"
   }
 }

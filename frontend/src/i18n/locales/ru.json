@@ -53,7 +53,12 @@
     "contributionsInLastYear": "{{count}} вкладов за последний год",
     "dateContributions": "{{date}}: {{count}} вкладов",
     "dateLogs": "{{date}}: {{count}} записей",
-    "createFromTemplate": "Создать из шаблона"
+    "createFromTemplate": "Создать из шаблона",
+    "likes": "лайков",
+    "comments": "комментариев",
+    "view": "Просмотр",
+    "backToHome": "На главную",
+    "dismiss": "Закрыть"
   },
   "nav": {
     "dashboard": "Панель",
@@ -113,7 +118,30 @@
     "goalProgressTargetHours": "Целевые часы",
     "goalProgressActualTime": "Фактическое время",
     "goalProgressPercentage": "Процент выполнения",
-    "goalProgressNoTarget": "Целевые часы не установлены"
+    "goalProgressNoTarget": "Целевые часы не установлены",
+    "timeline": "Лента",
+    "following": "Подписки",
+    "allPosts": "Все публикации",
+    "noPostsFollowing": "Пока нет публикаций от тех, на кого вы подписаны",
+    "noPostsAll": "Пока нет публикаций",
+    "findPeople": "Найти людей",
+    "editPost": "Редактировать публикацию",
+    "confirmDeletePost": "Удалить эту публикацию?",
+    "quickStats": "Краткая статистика",
+    "goalsCompleted": "Достигнутые цели",
+    "goalsInProgress": "Цели в работе",
+    "goalsProgress": "Прогресс по целям",
+    "viewAll": "Смотреть все",
+    "noActiveGoals": "Нет активных целей",
+    "createGoal": "Создать цель",
+    "active": "Активные",
+    "completed": "Завершено",
+    "avgProgress": "Средний прогресс",
+    "moreGoals": "ещё {{count}} целей",
+    "recentNotifications": "Последние уведомления",
+    "noNotifications": "Нет уведомлений",
+    "yourProfile": "Ваш профиль",
+    "connectGitHub": "Подключить GitHub"
   },
   "series": {
     "title": "Серии публикаций",
@@ -209,7 +237,23 @@
     "sortOldest": "Старые",
     "sortTitle": "По названию",
     "loadReactionsBatch": "Загрузить реакции пакетом",
-    "loadReactionsBatchError": "Не удалось загрузить реакции пакетом"
+    "loadReactionsBatchError": "Не удалось загрузить реакции пакетом",
+    "draft": "Черновик",
+    "drafts": "Черновики",
+    "noDrafts": "Нет черновиков",
+    "lastEdited": "Последнее изменение",
+    "publish": "Опубликовать",
+    "confirmPublish": "Опубликовать этот черновик?",
+    "published": "Опубликовано",
+    "publishFailed": "Не удалось опубликовать",
+    "confirmDelete": "Удалить эту публикацию?",
+    "deleted": "Удалено",
+    "deleteFailed": "Не удалось удалить",
+    "saving": "Сохранение...",
+    "savedJustNow": "Сохранено только что",
+    "savedMinutesAgo": "Сохранено {{minutes}} мин. назад",
+    "restorePrompt": "Найден сохранённый черновик. Восстановить?",
+    "restore": "Восстановить"
   },
   "follow": {
     "noFollowers": "Пока нет подписчиков",
@@ -260,7 +304,8 @@
     "competitiveProgramming": "Спортивное программирование",
     "paizaRankLabel": "paiza Ранг {{rank}}",
     "followFailed": "Не удалось подписаться",
-    "unfollowFailed": "Не удалось отписаться"
+    "unfollowFailed": "Не удалось отписаться",
+    "joined": "Регистрация"
   },
   "settings": {
     "title": "Настройки",
@@ -333,7 +378,9 @@
     "atcoderUsernamePlaceholder": "Введите имя пользователя AtCoder",
     "spotify": "Spotify",
     "spotifyDescription": "Подключите Spotify, чтобы отображать текущий трек в профиле.",
-    "setTheme": "Установить тему {{theme}}"
+    "setTheme": "Установить тему {{theme}}",
+    "bioPlaceholder": "Расскажите о себе",
+    "githubDescription": "Подключите GitHub, чтобы вклад записывался автоматически"
   },
   "explore": {
     "title": "Найти разработчиков",
@@ -479,7 +526,21 @@
     "goalAchieverDesc": "Достигнуто 5 учебных целей",
     "goalMaster": "Мастер целей",
     "goalMasterDesc": "Достигнуто 20 учебных целей",
-    "badgeEarned": "Получен {{name}}!"
+    "badgeEarned": "Получен {{name}}!",
+    "title": "Коллекция значков",
+    "subtitle": "Посмотрите полученные значки и следующую цель",
+    "progress": "Прогресс коллекции",
+    "earned": "значков получено",
+    "earned_section": "Полученные значки",
+    "unearned_section": "Ещё не получены",
+    "no_badges": "В этой категории нет значков",
+    "category_contribution": "Вклад",
+    "category_streak": "Серия",
+    "category_post": "Публикации",
+    "category_engagement": "Вовлечённость",
+    "category_social": "Общение",
+    "category_qa": "Вопросы",
+    "category_goal": "Цели"
   },
   "time": {
     "justNow": "только что",
@@ -564,7 +625,10 @@
     "forbidden": "Запрещено",
     "serverError": "Ошибка сервера",
     "networkError": "Ошибка сети",
-    "tryAgain": "Пожалуйста, попробуйте снова"
+    "tryAgain": "Пожалуйста, попробуйте снова",
+    "pageNotFound": "Страница не найдена",
+    "pageNotFoundDesc": "Страница, которую вы ищете, могла быть перемещена или удалена.",
+    "helpfulLinks": "Популярные страницы"
   },
   "goals": {
     "title": "Цели обучения",
@@ -1242,7 +1306,8 @@
     "tryQAMsg": "Углубите обучение, задавая вопросы и отвечая на них.",
     "deleteConversation": "Удалить разговор",
     "deleteConfirm": "Вы уверены, что хотите удалить этот разговор? Это действие нельзя отменить.",
-    "deleted": "Разговор удалён"
+    "deleted": "Разговор удалён",
+    "messagesCount": "сообщений"
   },
   "pomodoro": {
     "timer": "Таймер Помодоро",
@@ -1509,7 +1574,14 @@
     "exportMarkdown": "Экспорт в Markdown",
     "exportSuccess": "Заметка экспортирована",
     "exportError": "Не удалось экспортировать",
-    "favoritesOnly": "Только избранные"
+    "favoritesOnly": "Только избранные",
+    "archived": "Заметка архивирована",
+    "unarchived": "Заметка возвращена из архива",
+    "duplicated": "Заметка продублирована",
+    "folderCreated": "Папка создана",
+    "folderUpdated": "Папка обновлена",
+    "folderDeleted": "Папка удалена",
+    "confirmDeleteFolder": "Удалить эту папку?"
   },
   "githubCallback": {
     "missingOAuthParams": "Отсутствуют параметры OAuth",
@@ -1886,5 +1958,27 @@
     "noReviews": "Отзывов пока нет",
     "reviewCount": "{{count}} отзывов",
     "averageRating": "Средняя оценка"
+  },
+  "noteTemplates": {
+    "created": "Шаблон создан",
+    "updated": "Шаблон обновлён",
+    "deleted": "Шаблон удалён",
+    "confirmDelete": "Удалить этот шаблон?",
+    "noteCreated": "Заметка создана по шаблону"
+  },
+  "noteLinks": {
+    "created": "Ссылка создана",
+    "deleted": "Ссылка удалена",
+    "confirmDelete": "Удалить эту ссылку?"
+  },
+  "resource": {
+    "likeFailed": "Не удалось поставить лайк",
+    "unlikeFailed": "Не удалось убрать лайк",
+    "saveFailed": "Не удалось сохранить",
+    "unsaveFailed": "Не удалось убрать из сохранённых"
+  },
+  "studyCircles": {
+    "members": "участников",
+    "full": "Мест нет"
   }
 }

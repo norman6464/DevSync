@@ -53,7 +53,12 @@
     "contributionsInLastYear": "過去一年 {{count}} 次貢獻",
     "dateContributions": "{{date}}: {{count}} 次貢獻",
     "dateLogs": "{{date}}: {{count}} 條日誌",
-    "createFromTemplate": "從範本建立"
+    "createFromTemplate": "從範本建立",
+    "likes": "讚",
+    "comments": "則留言",
+    "view": "檢視",
+    "backToHome": "返回首頁",
+    "dismiss": "關閉"
   },
   "nav": {
     "dashboard": "儀表板",
@@ -113,7 +118,30 @@
     "goalProgressTargetHours": "目標時間",
     "goalProgressActualTime": "實際時間",
     "goalProgressPercentage": "完成率",
-    "goalProgressNoTarget": "未設定目標時間"
+    "goalProgressNoTarget": "未設定目標時間",
+    "timeline": "時間軸",
+    "following": "追蹤中",
+    "allPosts": "全部貼文",
+    "noPostsFollowing": "你追蹤的使用者尚未發布貼文",
+    "noPostsAll": "尚未有貼文",
+    "findPeople": "尋找使用者",
+    "editPost": "編輯貼文",
+    "confirmDeletePost": "要刪除這則貼文嗎？",
+    "quickStats": "快速統計",
+    "goalsCompleted": "已完成目標",
+    "goalsInProgress": "進行中的目標",
+    "goalsProgress": "學習目標進度",
+    "viewAll": "檢視全部",
+    "noActiveGoals": "沒有進行中的目標",
+    "createGoal": "建立目標",
+    "active": "進行中",
+    "completed": "已完成",
+    "avgProgress": "平均進度",
+    "moreGoals": "還有 {{count}} 個目標",
+    "recentNotifications": "最近的通知",
+    "noNotifications": "沒有通知",
+    "yourProfile": "你的個人檔案",
+    "connectGitHub": "連結 GitHub"
   },
   "series": {
     "title": "貼文系列",
@@ -209,7 +237,23 @@
     "sortOldest": "最舊",
     "sortTitle": "按標題",
     "loadReactionsBatch": "批次載入反應",
-    "loadReactionsBatchError": "批次載入反應失敗"
+    "loadReactionsBatchError": "批次載入反應失敗",
+    "draft": "草稿",
+    "drafts": "草稿",
+    "noDrafts": "沒有草稿",
+    "lastEdited": "最後編輯",
+    "publish": "發布",
+    "confirmPublish": "要發布這篇草稿嗎？",
+    "published": "已發布",
+    "publishFailed": "發布失敗",
+    "confirmDelete": "要刪除這則貼文嗎？",
+    "deleted": "已刪除",
+    "deleteFailed": "刪除失敗",
+    "saving": "儲存中...",
+    "savedJustNow": "剛剛已儲存",
+    "savedMinutesAgo": "{{minutes}} 分鐘前已儲存",
+    "restorePrompt": "發現已儲存的草稿，要還原嗎？",
+    "restore": "還原"
   },
   "follow": {
     "noFollowers": "尚無追蹤者",
@@ -334,7 +378,9 @@
     "atcoderUsernamePlaceholder": "輸入AtCoder使用者名稱",
     "spotify": "Spotify",
     "spotifyDescription": "連接Spotify，在個人資料中顯示正在播放的歌曲。",
-    "setTheme": "設置{{theme}}主題"
+    "setTheme": "設置{{theme}}主題",
+    "bioPlaceholder": "介紹一下你自己",
+    "githubDescription": "連結 GitHub 後會自動記錄你的貢獻"
   },
   "explore": {
     "title": "探索開發者",
@@ -481,7 +527,21 @@
     "goalAchieverDesc": "完成了5個學習目標",
     "goalMaster": "目標大師",
     "goalMasterDesc": "完成了20個學習目標",
-    "badgeEarned": "獲得了{{name}}！"
+    "badgeEarned": "獲得了{{name}}！",
+    "title": "徽章收藏",
+    "subtitle": "查看已獲得的徽章與下一個目標",
+    "progress": "收藏進度",
+    "earned": "枚已獲得",
+    "earned_section": "已獲得的徽章",
+    "unearned_section": "未獲得的徽章",
+    "no_badges": "此分類下沒有徽章",
+    "category_contribution": "貢獻",
+    "category_streak": "連續紀錄",
+    "category_post": "貼文",
+    "category_engagement": "互動",
+    "category_social": "社交",
+    "category_qa": "問答",
+    "category_goal": "目標"
   },
   "time": {
     "justNow": "剛剛",
@@ -566,7 +626,10 @@
     "forbidden": "禁止存取",
     "serverError": "伺服器錯誤",
     "networkError": "網路錯誤",
-    "tryAgain": "請重試"
+    "tryAgain": "請重試",
+    "pageNotFound": "找不到頁面",
+    "pageNotFoundDesc": "你造訪的頁面可能已被移動或刪除。",
+    "helpfulLinks": "常用頁面"
   },
   "goals": {
     "title": "學習目標",
@@ -1244,7 +1307,8 @@
     "tryQAMsg": "透過提問和回答來深化學習。",
     "deleteConversation": "刪除對話",
     "deleteConfirm": "確定要刪除這個對話嗎？此操作無法撤銷。",
-    "deleted": "對話已刪除"
+    "deleted": "對話已刪除",
+    "messagesCount": "則訊息"
   },
   "pomodoro": {
     "timer": "番茄鐘",
@@ -1511,7 +1575,14 @@
     "exportMarkdown": "匯出為Markdown",
     "exportSuccess": "筆記匯出成功",
     "exportError": "匯出失敗",
-    "favoritesOnly": "僅收藏"
+    "favoritesOnly": "僅收藏",
+    "archived": "已封存筆記",
+    "unarchived": "已取消封存筆記",
+    "duplicated": "已複製筆記",
+    "folderCreated": "已建立資料夾",
+    "folderUpdated": "已更新資料夾",
+    "folderDeleted": "已刪除資料夾",
+    "confirmDeleteFolder": "要刪除這個資料夾嗎？"
   },
   "githubCallback": {
     "missingOAuthParams": "缺少OAuth參數",
@@ -1888,5 +1959,27 @@
     "noReviews": "尚無評價",
     "reviewCount": "{{count}}則評價",
     "averageRating": "平均評分"
+  },
+  "noteTemplates": {
+    "created": "已建立範本",
+    "updated": "已更新範本",
+    "deleted": "已刪除範本",
+    "confirmDelete": "要刪除這個範本嗎？",
+    "noteCreated": "已依範本建立筆記"
+  },
+  "noteLinks": {
+    "created": "已建立連結",
+    "deleted": "已刪除連結",
+    "confirmDelete": "要刪除這個連結嗎？"
+  },
+  "resource": {
+    "likeFailed": "按讚失敗",
+    "unlikeFailed": "取消按讚失敗",
+    "saveFailed": "儲存失敗",
+    "unsaveFailed": "取消儲存失敗"
+  },
+  "studyCircles": {
+    "members": "成員",
+    "full": "已額滿"
   }
 }
