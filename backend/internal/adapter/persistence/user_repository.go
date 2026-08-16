@@ -110,17 +110,55 @@ func (r *userRepository) UpdatePassword(ctx context.Context, userID uint, hashed
 }
 
 // DeleteWithRelatedData はユーザーと関連データをトランザクション内で削除する。
-// 通知・メッセージ・コメント・いいね・投稿・フォロー・GitHub 連携データ・
-// パスワードリセットトークンを削除してから、最後にユーザー本体を削除する。
+// 退会ユーザーの投稿に紐づく従属データ（他ユーザーのコメント・いいね等を含む）→
+// 通知・メッセージ・本人のコメント・いいね・投稿・フォロー・GitHub 連携データ・
+// パスワードリセットトークンの順に削除してから、最後にユーザー本体を削除する。
 func (r *userRepository) DeleteWithRelatedData(ctx context.Context, id uint) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.Where("user_id = ? OR actor_id = ?", id, id).Delete(&model.Notification{}).Error; err != nil {
+		// 退会ユーザーの投稿に紐づく従属データを先に消す。user_id 条件だけでは
+		// 他ユーザーが付けたコメント・いいね等が削除済み投稿を参照したまま残る。
+		// 対象テーブルは postRepository.Delete と同じ集合を退会者の全投稿へ広げたもの。
+		postIDs := tx.Model(&model.Post{}).Select("id").Where("user_id = ?", id)
+
+		// コメントに従属する行（コメントいいね・コメント由来のメンション）を先に消す。
+		// 投稿配下のコメントに加え、退会者が他の投稿に書いたコメントの従属行も対象にする。
+		commentIDs := tx.Model(&model.Comment{}).Select("id").
+			Where("post_id IN (?) OR user_id = ?", postIDs, id)
+		if err := tx.Where("comment_id IN (?)", commentIDs).Delete(&model.CommentLike{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("comment_id IN (?)", commentIDs).Delete(&model.Mention{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("post_id IN (?) OR user_id = ?", postIDs, id).Delete(&model.Comment{}).Error; err != nil {
+			return err
+		}
+
+		// スニペットに従属する行を先に消す
+		snippetIDs := tx.Model(&model.CodeSnippet{}).Select("id").Where("post_id IN (?)", postIDs)
+		if err := tx.Where("snippet_id IN (?)", snippetIDs).Delete(&model.SnippetComment{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("post_id IN (?)", postIDs).Delete(&model.CodeSnippet{}).Error; err != nil {
+			return err
+		}
+
+		// 投稿を直接参照する行を消す（本人分は user_id でも消し、他ユーザー分は post_id で消す）
+		for _, target := range []interface{}{
+			&model.Like{}, &model.Reaction{}, &model.Bookmark{},
+			&model.BookmarkCollectionItem{}, &model.PostSeriesItem{}, &model.PostCollectionItem{},
+			&model.PostTag{}, &model.PostPin{}, &model.PostView{},
+			&model.Mention{},
+		} {
+			if err := tx.Where("post_id IN (?)", postIDs).Delete(target).Error; err != nil {
+				return err
+			}
+		}
+
+		if err := tx.Where("user_id = ? OR actor_id = ? OR post_id IN (?)", id, id, postIDs).Delete(&model.Notification{}).Error; err != nil {
 			return err
 		}
 		if err := tx.Where("sender_id = ? OR receiver_id = ?", id, id).Delete(&model.Message{}).Error; err != nil {
-			return err
-		}
-		if err := tx.Where("user_id = ?", id).Delete(&model.Comment{}).Error; err != nil {
 			return err
 		}
 		if err := tx.Where("user_id = ?", id).Delete(&model.Like{}).Error; err != nil {
