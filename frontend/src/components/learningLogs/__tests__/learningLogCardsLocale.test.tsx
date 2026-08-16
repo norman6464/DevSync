@@ -11,7 +11,7 @@ vi.mock('../../../store/authStore', () => ({
   useAuthStore: vi.fn((selector: (s: { user: { id: 1 } }) => unknown) => selector({ user: { id: 1 } })),
 }));
 vi.mock('../../../hooks/useStreakFreeze', () => ({
-  useStreakFreeze: () => ({ freezeStatus: null, useFreeze: vi.fn() }),
+  useStreakFreeze: () => ({ freezeStatus: null, applyFreeze: vi.fn() }),
 }));
 
 const log: LearningLog = {

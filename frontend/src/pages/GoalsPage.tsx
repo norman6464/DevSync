@@ -12,6 +12,7 @@ import GoalFormModal from '../components/goals/GoalFormModal';
 import GoalTemplatesModal from '../components/goals/GoalTemplatesModal';
 import { inputClass, buttonSecondaryClass } from '../constants/styles';
 import type { GoalTemplate } from '../constants/goalTemplates';
+import { isPastDate } from '../utils/timeFormat';
 
 export default function GoalsPage() {
   const { t } = useTranslation();
@@ -32,7 +33,7 @@ export default function GoalsPage() {
 
   const overdueGoals = activeGoals.filter((g) => {
     if (!g.target_date) return false;
-    return new Date(g.target_date).getTime() < Date.now();
+    return isPastDate(g.target_date);
   });
 
   const isFiltered = filterStatus !== 'all' || filterCategory !== 'all' || searchQuery.trim() !== '';

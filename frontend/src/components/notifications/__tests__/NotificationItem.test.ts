@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { getNotificationLink, getNotificationMessage } from '../NotificationItem';
+import { getNotificationLink, getNotificationMessage } from '../notificationHelpers';
 import type { Notification } from '../../../types/notification';
 
 const baseNotification: Notification = {

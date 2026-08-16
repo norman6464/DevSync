@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Bell } from 'lucide-react';
 import { useNotifications } from '../../hooks';
 import Avatar from '../common/Avatar';
-import { getNotificationLink, getNotificationMessage } from './NotificationItem';
+import { getNotificationLink, getNotificationMessage } from './notificationHelpers';
 import { formatDistanceToNow } from '../../utils/timeFormat';
 import { linkSmallClass } from '../../constants/styles';
 

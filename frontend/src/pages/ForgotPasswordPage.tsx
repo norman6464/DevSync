@@ -19,7 +19,7 @@ export default function ForgotPasswordPage() {
     try {
       await requestPasswordReset(email);
       setSuccess(true);
-    } catch (err) {
+    } catch {
       setError(t('accountManagement.resetRequestFailed'));
     } finally {
       setLoading(false);

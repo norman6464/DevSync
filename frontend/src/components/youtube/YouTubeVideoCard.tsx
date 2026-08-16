@@ -4,6 +4,7 @@ import type { YouTubeVideo } from '../../types/youtube';
 import { cardClass } from '../../constants/styles';
 import { sanitizeUrl } from '../../utils/url';
 import { formatDate } from '../../utils/timeFormat';
+import { isWithinLast } from '../../utils/timeFormat';
 
 interface YouTubeVideoCardProps {
   video: YouTubeVideo;
@@ -13,7 +14,7 @@ export default function YouTubeVideoCard({ video }: YouTubeVideoCardProps) {
   const { t } = useTranslation();
   const videoURL = `https://www.youtube.com/watch?v=${encodeURIComponent(video.video_id)}`;
   const channelURL = `https://www.youtube.com/channel/${encodeURIComponent(video.channel_id)}`;
-  const isNew = Date.now() - new Date(video.published_at).getTime() < 7 * 24 * 60 * 60 * 1000;
+  const isNew = isWithinLast(video.published_at, 7 * 24 * 60 * 60 * 1000);
 
   return (
     <div className={cardClass}>

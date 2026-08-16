@@ -23,37 +23,32 @@ export default function GitHubCallbackPage() {
   const navigate = useNavigate();
   const loadUser = useAuthStore((s) => s.loadUser);
   const handleGitHubCallback = useAuthStore((s) => s.handleGitHubCallback);
-  const [error, setError] = useState('');
-  const [mode, setMode] = useState<'connect' | 'login' | ''>('');
+  const [asyncError, setAsyncError] = useState('');
   const hasProcessed = useRef(false);
+
+  // mode とパラメータ不足エラーは URL から一意に決まる派生値（effect で state に写さない）
+  const code = searchParams.get('code');
+  const state = searchParams.get('state');
+  const mode: 'connect' | 'login' = state && parseStatePurpose(state) === 'github_login' ? 'login' : 'connect';
+  const error = asyncError || (!code || !state ? t('githubCallback.missingOAuthParams') : '');
 
   useEffect(() => {
     // 二重実行を防ぐ
     if (hasProcessed.current) return;
     hasProcessed.current = true;
 
-    const code = searchParams.get('code');
-    const state = searchParams.get('state');
+    if (!code || !state) return;
 
-    if (!code || !state) {
-      setError(t('githubCallback.missingOAuthParams'));
-      return;
-    }
-
-    const purpose = parseStatePurpose(state);
-
-    if (purpose === 'github_login') {
-      setMode('login');
+    if (parseStatePurpose(state) === 'github_login') {
       handleGitHubCallback(code, state)
         .then(() => {
           toast.success(t('githubCallback.loginSuccess'));
           navigate('/');
         })
         .catch(() => {
-          setError(t('githubCallback.loginFailed'));
+          setAsyncError(t('githubCallback.loginFailed'));
         });
     } else {
-      setMode('connect');
       gitHubCallback(code, state)
         .then(async () => {
           await loadUser();
@@ -67,10 +62,10 @@ export default function GitHubCallbackPage() {
           }
         })
         .catch(() => {
-          setError(t('githubCallback.connectFailed'));
+          setAsyncError(t('githubCallback.connectFailed'));
         });
     }
-  }, [searchParams, navigate, loadUser, handleGitHubCallback, t]);
+  }, [code, state, navigate, loadUser, handleGitHubCallback, t]);
 
   if (error) {
     const backPath = mode === 'login' ? '/login' : '/settings';

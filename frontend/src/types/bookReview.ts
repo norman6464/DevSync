@@ -30,4 +30,4 @@ export interface CreateBookReviewRequest {
   total_pages?: number;
 }
 
-export interface UpdateBookReviewRequest extends Partial<CreateBookReviewRequest> {}
+export type UpdateBookReviewRequest = Partial<CreateBookReviewRequest>;

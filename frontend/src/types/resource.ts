@@ -32,7 +32,7 @@ export interface CreateResourceRequest {
   is_public?: boolean;
 }
 
-export interface UpdateResourceRequest extends Partial<CreateResourceRequest> {}
+export type UpdateResourceRequest = Partial<CreateResourceRequest>;
 
 export interface ResourceWithStatus extends LearningResource {
   has_liked?: boolean;

@@ -33,6 +33,7 @@ export function usePomodoroTimer(options: UsePomodoroTimerOptions = {}) {
   const targetTimeRef = useRef<number>(0);
   const onFocusCompleteRef = useRef(onFocusComplete);
   const soundEnabledRef = useRef(soundEnabled);
+  const phaseRef = useRef(phase);
 
   // refを最新の値に同期
   useEffect(() => {
@@ -42,6 +43,10 @@ export function usePomodoroTimer(options: UsePomodoroTimerOptions = {}) {
   useEffect(() => {
     soundEnabledRef.current = soundEnabled;
   }, [soundEnabled]);
+
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
 
   /** フェーズ完了処理 */
   const handlePhaseComplete = useCallback((currentPhase: PomodoroPhase) => {
@@ -67,6 +72,11 @@ export function usePomodoroTimer(options: UsePomodoroTimerOptions = {}) {
     }
   }, [completedCycles]);
 
+  const handlePhaseCompleteRef = useRef(handlePhaseComplete);
+  useEffect(() => {
+    handlePhaseCompleteRef.current = handlePhaseComplete;
+  }, [handlePhaseComplete]);
+
   /** インターバルの開始 */
   const startInterval = useCallback(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
@@ -75,22 +85,13 @@ export function usePomodoroTimer(options: UsePomodoroTimerOptions = {}) {
       const remaining = Math.max(0, Math.ceil((targetTimeRef.current - Date.now()) / 1000));
       setTimeLeft(remaining);
 
-      if (remaining <= 0) {
-        // setPhaseの最新値を取得するためにstateコールバックを使用
-        setPhase((currentPhase) => {
-          // handlePhaseCompleteはここで直接実行せず、effectで処理
-          return currentPhase;
-        });
+      // フェーズ完了はイベント（tick）起点で処理する。effect 経由で行うと
+      // 「effect 内の同期 setState」になり、余計な再レンダーの連鎖も生む。
+      if (remaining <= 0 && phaseRef.current !== 'idle') {
+        handlePhaseCompleteRef.current(phaseRef.current);
       }
     }, 250);
   }, []);
-
-  /** timeLeftが0になったらフェーズ完了 */
-  useEffect(() => {
-    if (timeLeft <= 0 && isRunning && phase !== 'idle') {
-      handlePhaseComplete(phase);
-    }
-  }, [timeLeft, isRunning, phase, handlePhaseComplete]);
 
   /** クリーンアップ */
   useEffect(() => {

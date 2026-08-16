@@ -36,6 +36,10 @@ jobs:
       - name: 型チェック（tsc -b）
         run: npx tsc -b --force
 
+      # exhaustive-deps の既存 warning 19 件は別途対応のため、エラーのみで落とす
+      - name: Lint（eslint）
+        run: npx eslint .
+
       - name: テストを実行
         run: npx vitest run
 

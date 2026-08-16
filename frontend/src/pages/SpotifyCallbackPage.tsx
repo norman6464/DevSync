@@ -11,20 +11,19 @@ export default function SpotifyCallbackPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const loadUser = useAuthStore((s) => s.loadUser);
-  const [error, setError] = useState('');
+  const [asyncError, setError] = useState('');
   const hasProcessed = useRef(false);
+
+  // パラメータ不足エラーは URL から一意に決まる派生値（effect で state に写さない）
+  const code = searchParams.get('code');
+  const state = searchParams.get('state');
+  const error = asyncError || (!code || !state ? t('spotifyCallback.missingParams') : '');
 
   useEffect(() => {
     if (hasProcessed.current) return;
     hasProcessed.current = true;
 
-    const code = searchParams.get('code');
-    const state = searchParams.get('state');
-
-    if (!code || !state) {
-      setError(t('spotifyCallback.missingParams'));
-      return;
-    }
+    if (!code || !state) return;
 
     spotifyCallback(code, state)
       .then(async () => {
@@ -35,7 +34,7 @@ export default function SpotifyCallbackPage() {
       .catch(() => {
         setError(t('spotifyCallback.connectFailed'));
       });
-  }, [searchParams, navigate, loadUser, t]);
+  }, [code, state, navigate, loadUser, t]);
 
   if (error) {
     return (

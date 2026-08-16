@@ -26,9 +26,16 @@ export default function CommandPalette({
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // 開いた瞬間に検索欄をリセットする。effect で setState すると余計な再レンダーが
+  // 入るため、公式の「render 中に前回値と比較して調整する」パターンで行う。
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (prevOpen !== open) {
+    setPrevOpen(open);
+    if (open) setQuery('');
+  }
+
   useEffect(() => {
     if (open) {
-      setQuery('');
       setTimeout(() => inputRef.current?.focus(), 0);
     }
   }, [open]);

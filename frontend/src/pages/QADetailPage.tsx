@@ -31,10 +31,18 @@ export default function QADetailPage() {
   const isQuestionOwner = user?.id === question?.user_id;
 
   const handleUpvote = useCallback(() => {
-    userVote === 1 ? removeQuestionVote() : voteQuestion(1);
+    if (userVote === 1) {
+      removeQuestionVote();
+    } else {
+      voteQuestion(1);
+    }
   }, [userVote, removeQuestionVote, voteQuestion]);
   const handleDownvote = useCallback(() => {
-    userVote === -1 ? removeQuestionVote() : voteQuestion(-1);
+    if (userVote === -1) {
+      removeQuestionVote();
+    } else {
+      voteQuestion(-1);
+    }
   }, [userVote, removeQuestionVote, voteQuestion]);
   const handleCancelEdit = useCallback(() => setEditingAnswer(null), []);
   const handleCreateAnswer = useCallback(async (body: string) => {

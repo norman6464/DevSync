@@ -32,7 +32,7 @@ export interface CreateQuestionRequest {
   tags?: string;
 }
 
-export interface UpdateQuestionRequest extends Partial<CreateQuestionRequest> {}
+export type UpdateQuestionRequest = Partial<CreateQuestionRequest>;
 
 export interface CreateAnswerRequest {
   body: string;

@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { type GoalCategory } from '../../api/goals';
 import { Modal } from '../common';
-import { CATEGORIES } from './GoalCard';
+import { CATEGORIES } from './goalCategories';
 import { inputClass, buttonSecondaryClass, labelClass } from '../../constants/styles';
 import { MAX_LENGTH } from '../../utils/formValidation';
 import { CharCount } from '../common';

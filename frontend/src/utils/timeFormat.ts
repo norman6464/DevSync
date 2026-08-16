@@ -19,3 +19,21 @@ export function formatDistanceToNow(dateString: string): string {
   if (diffHours < 24) return t('time.hoursAgo', { count: diffHours });
   return t('time.daysAgo', { count: diffDays });
 }
+
+/** dateString から windowMs 以内しか経過していないか（NEW バッジ等の判定用）。 */
+export function isWithinLast(dateString: string, windowMs: number): boolean {
+  return Date.now() - new Date(dateString).getTime() < windowMs;
+}
+
+/** dateString が現在時刻より過去か（期限超過の判定用）。 */
+export function isPastDate(dateString: string): boolean {
+  return new Date(dateString).getTime() < Date.now();
+}
+
+/** 開始日〜終了日（未設定なら現在まで）の日数。開始日が無ければ null。 */
+export function calcDurationDays(startDate: string | null | undefined, endDate: string | null | undefined): number | null {
+  if (!startDate) return null;
+  const start = new Date(startDate).getTime();
+  const end = endDate ? new Date(endDate).getTime() : Date.now();
+  return Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
+}

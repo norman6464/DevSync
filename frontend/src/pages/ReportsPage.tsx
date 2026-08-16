@@ -29,12 +29,13 @@ export default function ReportsPage() {
   const handleSetWeekly = useCallback(() => setPeriod('weekly'), [setPeriod]);
   const handleSetMonthly = useCallback(() => setPeriod('monthly'), [setPeriod]);
 
+  const dailyContributions = report?.daily_contributions;
   const maxContribution = useMemo(
     () =>
-      report?.daily_contributions
-        ? Math.max(...report.daily_contributions.map((d) => d.contributions), 1)
+      dailyContributions
+        ? Math.max(...dailyContributions.map((d) => d.contributions), 1)
         : 1,
-    [report?.daily_contributions]
+    [dailyContributions]
   );
 
   if (loading) {

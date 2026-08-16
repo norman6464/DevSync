@@ -52,10 +52,14 @@ export default function PomodoroTimer({
     };
   }, [isRunning, mode, workMinutes, breakMinutes, onComplete]);
 
-  useEffect(() => {
+  // モード・時間設定の変更でタイマーをリセットする。effect で setState すると
+  // 余計な再レンダーが入るため、公式の「render 中に前回値と比較して調整する」パターンで行う。
+  const [prevConfig, setPrevConfig] = useState({ mode, workMinutes, breakMinutes });
+  if (prevConfig.mode !== mode || prevConfig.workMinutes !== workMinutes || prevConfig.breakMinutes !== breakMinutes) {
+    setPrevConfig({ mode, workMinutes, breakMinutes });
     setTimeLeft(mode === 'work' ? workMinutes * 60 : breakMinutes * 60);
     setIsRunning(false);
-  }, [mode, workMinutes, breakMinutes]);
+  }
 
   const handleStart = () => {
     setIsRunning(true);

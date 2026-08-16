@@ -36,10 +36,10 @@ describe('LearningStreakCard', () => {
     vi.clearAllMocks();
     vi.mocked(learningLogsApi.getStreakInfo).mockResolvedValue({
       data: mockStreakInfo,
-    } as any);
+    } as Awaited<ReturnType<typeof learningLogsApi.getStreakInfo>>);
     vi.mocked(learningLogsApi.getCalendarData).mockResolvedValue({
       data: mockCalendarData,
-    } as any);
+    } as Awaited<ReturnType<typeof learningLogsApi.getCalendarData>>);
   });
 
   it('タイトルが表示される', async () => {
@@ -85,7 +85,7 @@ describe('LearningStreakCard', () => {
         total_days: 0,
         last_log_date: '',
       },
-    } as any);
+    } as Awaited<ReturnType<typeof learningLogsApi.getStreakInfo>>);
 
     renderWithRouter(<LearningStreakCard />);
 
@@ -136,10 +136,10 @@ describe('LearningStreakCard', () => {
 
   it('ローディング状態が表示される', () => {
     vi.mocked(learningLogsApi.getStreakInfo).mockImplementation(
-      () => new Promise(() => {}) as any
+      () => new Promise(() => {}) as ReturnType<typeof learningLogsApi.getStreakInfo>
     );
     vi.mocked(learningLogsApi.getCalendarData).mockImplementation(
-      () => new Promise(() => {}) as any
+      () => new Promise(() => {}) as ReturnType<typeof learningLogsApi.getCalendarData>
     );
 
     const { container } = renderWithRouter(<LearningStreakCard />);
@@ -157,7 +157,7 @@ describe('LearningStreakCard', () => {
         total_days: 100,
         last_log_date: '2026-02-22T00:00:00Z',
       },
-    } as any);
+    } as Awaited<ReturnType<typeof learningLogsApi.getStreakInfo>>);
 
     renderWithRouter(<LearningStreakCard />);
 
