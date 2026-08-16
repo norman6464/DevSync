@@ -191,6 +191,18 @@ func TestFindPostsByTagUseCase_Execute(t *testing.T) {
 		tags.AssertExpectations(t)
 	})
 
+	t.Run("空・50文字超の検索語は検証エラーで検索しない", func(t *testing.T) {
+		tags := new(mockPostTagRepo)
+		uc := usecase.NewFindPostsByTagUseCase(tags)
+
+		for _, q := range []string{"", "   ", strings.Repeat("a", 51)} {
+			_, _, err := uc.Execute(context.Background(), q, 20, 0)
+			assert.Error(t, err, "q=%q", q)
+			assert.True(t, domain.IsDomainError(err), "q=%q は DomainError（400系）: %v", q, err)
+		}
+		tags.AssertNotCalled(t, "FindPostsByTag", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+	})
+
 	// タグは保存時に小文字化・トリムされるため、検索語も同じ規則で正規化しないと一致しない。
 	t.Run("大文字・前後空白の検索語を正規化してから検索する", func(t *testing.T) {
 		tags := new(mockPostTagRepo)
