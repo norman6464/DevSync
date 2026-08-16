@@ -320,7 +320,7 @@ func calculateCheckinStreak(dates []string) int {
 func (r *studyCircleRepository) Search(ctx context.Context, query string, limit, offset int) ([]model.StudyCircle, int64, error) {
 	pattern := escapeLikePattern(query)
 	scope := r.db.WithContext(ctx).Model(&model.StudyCircle{}).
-		Where("name LIKE ? OR topic LIKE ? OR description LIKE ?", pattern, pattern, pattern)
+		Where("name ILIKE ? OR topic ILIKE ? OR description ILIKE ?", pattern, pattern, pattern)
 
 	var total int64
 	if err := scope.Session(&gorm.Session{}).Count(&total).Error; err != nil {
