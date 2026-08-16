@@ -44,6 +44,26 @@ func preMigrateUsername(db *gorm.DB) {
 		)`)
 }
 
+// preMigrateDedupeForUniqueIndexes は AutoMigrate が複合ユニーク索引を作る前に既存の重複行を除去する。
+// 重複が残っていると索引の作成に失敗して起動できないため。最小 id の行を正とし、それ以外を削除する。
+func preMigrateDedupeForUniqueIndexes(db *gorm.DB) {
+	targets := []struct{ table, dedupe string }{
+		// idx_bookmark_collection_post (collection_id, post_id)
+		{"bookmark_collection_items", `DELETE FROM bookmark_collection_items a USING bookmark_collection_items b
+			WHERE a.collection_id = b.collection_id AND a.post_id = b.post_id AND a.id > b.id`},
+		// idx_streak_freeze_user_date (user_id, used_date)
+		{"streak_freezes", `DELETE FROM streak_freezes a USING streak_freezes b
+			WHERE a.user_id = b.user_id AND a.used_date = b.used_date AND a.id > b.id`},
+	}
+	for _, t := range targets {
+		var exists bool
+		db.Raw(`SELECT to_regclass(?) IS NOT NULL`, t.table).Scan(&exists)
+		if exists {
+			db.Exec(t.dedupe)
+		}
+	}
+}
+
 func main() {
 	// .envファイルから環境変数を読み込み（存在しなくてもエラーにしない）
 	_ = godotenv.Load()
@@ -58,6 +78,9 @@ func main() {
 
 	// usernameカラムのプレマイグレーション: NOT NULL制約を追加する前に既存行にデフォルト値を設定
 	preMigrateUsername(db)
+
+	// 複合ユニーク索引の作成前に既存の重複行を除去（残っていると索引作成が失敗するため）
+	preMigrateDedupeForUniqueIndexes(db)
 
 	// 全モデルのAutoMigrationを実行
 	if err := db.AutoMigrate(
