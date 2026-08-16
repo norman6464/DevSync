@@ -40,23 +40,23 @@ export default function LearningStreakCard() {
   // ストリークレベル判定
   const streakLevel = useMemo(() => {
     if (currentStreak === 0) return { label: '-', color: 'text-gray-500' };
-    if (currentStreak < 7) return { label: '初心者', color: 'text-green-400' };
-    if (currentStreak < 30) return { label: '中級者', color: 'text-blue-400' };
-    if (currentStreak < 100) return { label: '上級者', color: 'text-purple-400' };
-    return { label: 'マスター', color: 'text-yellow-400' };
-  }, [currentStreak]);
+    if (currentStreak < 7) return { label: t('streak.levelBeginner'), color: 'text-green-400' };
+    if (currentStreak < 30) return { label: t('streak.levelIntermediate'), color: 'text-blue-400' };
+    if (currentStreak < 100) return { label: t('streak.levelAdvanced'), color: 'text-purple-400' };
+    return { label: t('streak.levelMaster'), color: 'text-yellow-400' };
+  }, [currentStreak, t]);
 
   // マイルストーンメッセージ
   const milestoneMessage = useMemo(() => {
-    if (currentStreak === 0) return '今日から始めよう！';
-    if (currentStreak === 1) return '初日達成！この調子で続けよう';
-    if (currentStreak === 7) return '7日達成！素晴らしい継続力です';
-    if (currentStreak === 30) return '30日達成！習慣化できています';
-    if (currentStreak === 100) return '100日達成！あなたはマスターです';
-    if (currentStreak % 7 === 0) return `${currentStreak}日達成！素晴らしい！`;
+    if (currentStreak === 0) return t('streak.noStreak');
+    if (currentStreak === 1) return t('streak.milestoneFirstDay');
+    if (currentStreak === 7) return t('streak.milestone7');
+    if (currentStreak === 30) return t('streak.milestone30');
+    if (currentStreak === 100) return t('streak.milestone100');
+    if (currentStreak % 7 === 0) return t('streak.milestoneWeekly', { count: currentStreak });
     const nextMilestone = currentStreak < 7 ? 7 : currentStreak < 30 ? 30 : currentStreak < 100 ? 100 : (Math.floor(currentStreak / 100) + 1) * 100;
-    return `次は${nextMilestone}日を目指そう！`;
-  }, [currentStreak]);
+    return t('streak.milestoneNext', { count: nextMilestone });
+  }, [currentStreak, t]);
 
   // 直近30日のカレンダーデータ生成
   const last30Days = useMemo(() => {
@@ -110,7 +110,7 @@ export default function LearningStreakCard() {
       <div className="flex items-center justify-between">
         <h3 className="flex items-center gap-2 text-lg font-semibold text-white">
           <Flame className={`w-5 h-5 ${currentStreak > 0 ? 'text-orange-400' : 'text-gray-500'}`} />
-          学習ストリーク
+          {t('streak.title')}
         </h3>
         <div className={`px-3 py-1 rounded-full text-xs font-medium ${streakLevel.color} bg-gray-800`}>
           {streakLevel.label}
@@ -122,7 +122,7 @@ export default function LearningStreakCard() {
         <div className="flex items-center justify-center gap-3 mb-2">
           <span className="text-5xl font-bold text-white">{currentStreak}</span>
           <div className="text-left">
-            <div className="text-sm text-gray-400">日連続</div>
+            <div className="text-sm text-gray-400">{t('streak.daysConsecutive')}</div>
             <div className="text-xs text-gray-500">{milestoneMessage}</div>
           </div>
         </div>
@@ -133,19 +133,19 @@ export default function LearningStreakCard() {
         <div className="bg-gray-800/50 rounded-lg p-3 text-center">
           <Trophy className="w-4 h-4 text-yellow-400 mx-auto mb-1" />
           <div className="text-xl font-bold text-white">{longestStreak}</div>
-          <div className="text-xs text-gray-500">最長記録</div>
+          <div className="text-xs text-gray-500">{t('streak.longestStreak')}</div>
         </div>
         <div className="bg-gray-800/50 rounded-lg p-3 text-center">
           <Calendar className="w-4 h-4 text-blue-400 mx-auto mb-1" />
           <div className="text-xl font-bold text-white">{totalDays}</div>
-          <div className="text-xs text-gray-500">総学習日数</div>
+          <div className="text-xs text-gray-500">{t('streak.totalDays')}</div>
         </div>
         <div className="bg-gray-800/50 rounded-lg p-3 text-center">
           <TrendingUp className="w-4 h-4 text-green-400 mx-auto mb-1" />
           <div className="text-xl font-bold text-white">
             {last30Days.filter((d) => d.count > 0).length}
           </div>
-          <div className="text-xs text-gray-500">今月の学習日</div>
+          <div className="text-xs text-gray-500">{t('streak.monthlyDays')}</div>
         </div>
       </div>
 
@@ -187,7 +187,7 @@ export default function LearningStreakCard() {
 
       {/* Calendar Grid */}
       <div>
-        <h4 className="text-xs font-medium text-gray-400 mb-2">直近30日の学習記録</h4>
+        <h4 className="text-xs font-medium text-gray-400 mb-2">{t('streak.last30Days')}</h4>
         <div
           data-testid="streak-calendar"
           className="grid grid-cols-10 gap-1.5"
@@ -198,12 +198,12 @@ export default function LearningStreakCard() {
               data-date={day.date}
               data-count={day.count}
               className={`aspect-square rounded ${getCountColor(day.count)} transition-colors hover:ring-2 hover:ring-blue-400`}
-              title={`${day.date}: ${day.count}件の学習ログ`}
+              title={t('streak.calendarTooltip', { date: day.date, count: day.count })}
             />
           ))}
         </div>
         <div className="flex items-center justify-end gap-2 mt-2 text-xs text-gray-500">
-          <span>少</span>
+          <span>{t('streak.legendLess')}</span>
           <div className="flex gap-1">
             <div className="w-3 h-3 rounded bg-gray-800" />
             <div className="w-3 h-3 rounded bg-green-700" />
@@ -211,7 +211,7 @@ export default function LearningStreakCard() {
             <div className="w-3 h-3 rounded bg-blue-500" />
             <div className="w-3 h-3 rounded bg-orange-500" />
           </div>
-          <span>多</span>
+          <span>{t('streak.legendMore')}</span>
         </div>
       </div>
     </div>

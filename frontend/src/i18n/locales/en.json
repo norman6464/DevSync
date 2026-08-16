@@ -777,7 +777,17 @@
     "streakAchieved": "Streak!",
     "logCount": "Total Logs",
     "favorites": "Favorites",
-    "toggleFavorite": "Toggle Favorite"
+    "toggleFavorite": "Toggle Favorite",
+    "statsTitle": "Learning stats",
+    "totalDuration": "Total study time",
+    "avgDuration": "Average study time",
+    "categoryDuration": "Study time by category",
+    "hoursUnit": "h",
+    "countUnit": "entries",
+    "minutesPerLog": "{{minutes}} min per entry",
+    "noLogsHint": "Record your learning to see your stats",
+    "statsNoLogs": "No learning logs yet",
+    "statsLogCount": "Log entries"
   },
   "learningLog": {
     "batchCreate": "Batch Create",
@@ -1232,7 +1242,22 @@
     "freezeAlreadyUsed": "Already used today",
     "freezeConfirm": "Use today's streak freeze?",
     "freezeButton": "Use Freeze",
-    "freezeCount": "{{used}}/{{max}} used"
+    "freezeCount": "{{used}}/{{max}} used",
+    "levelBeginner": "Beginner",
+    "levelIntermediate": "Intermediate",
+    "levelAdvanced": "Advanced",
+    "levelMaster": "Master",
+    "milestoneFirstDay": "Day one done! Keep it going",
+    "milestone7": "7 days! Great consistency",
+    "milestone30": "30 days! It has become a habit",
+    "milestone100": "100 days! You are a master",
+    "milestoneWeekly": "{{count}} days! Amazing!",
+    "milestoneNext": "Next goal: {{count}} days!",
+    "monthlyDays": "Days this month",
+    "last30Days": "Last 30 days",
+    "calendarTooltip": "{{date}}: {{count}} log entries",
+    "legendLess": "Less",
+    "legendMore": "More"
   },
   "dailyChallenge": {
     "title": "Daily Challenge",

@@ -778,7 +778,17 @@
     "streakAchieved": "연속 달성",
     "logCount": "로그 수",
     "favorites": "즐겨찾기",
-    "toggleFavorite": "즐겨찾기 전환"
+    "toggleFavorite": "즐겨찾기 전환",
+    "statsTitle": "학습 통계",
+    "totalDuration": "총 학습 시간",
+    "avgDuration": "평균 학습 시간",
+    "categoryDuration": "카테고리별 학습 시간",
+    "hoursUnit": "시간",
+    "countUnit": "건",
+    "minutesPerLog": "회당 {{minutes}}분",
+    "noLogsHint": "학습을 기록하고 통계를 확인해 보세요",
+    "statsNoLogs": "아직 학습 로그가 없습니다",
+    "statsLogCount": "학습 로그 수"
   },
   "learningLog": {
     "batchCreate": "일괄 등록",
@@ -1233,7 +1243,22 @@
     "freezeAlreadyUsed": "오늘은 이미 사용했습니다",
     "freezeConfirm": "오늘의 스트릭 프리즈를 사용하시겠습니까?",
     "freezeButton": "프리즈 사용",
-    "freezeCount": "{{used}}/{{max}} 사용됨"
+    "freezeCount": "{{used}}/{{max}} 사용됨",
+    "levelBeginner": "초보자",
+    "levelIntermediate": "중급자",
+    "levelAdvanced": "상급자",
+    "levelMaster": "마스터",
+    "milestoneFirstDay": "첫날 달성! 이 기세로 계속해요",
+    "milestone7": "7일 달성! 훌륭한 꾸준함이에요",
+    "milestone30": "30일 달성! 습관이 되었어요",
+    "milestone100": "100일 달성! 당신은 마스터예요",
+    "milestoneWeekly": "{{count}}일 달성! 대단해요!",
+    "milestoneNext": "다음은 {{count}}일에 도전!",
+    "monthlyDays": "이번 달 학습일",
+    "last30Days": "최근 30일 학습 기록",
+    "calendarTooltip": "{{date}}: 학습 로그 {{count}}건",
+    "legendLess": "적음",
+    "legendMore": "많음"
   },
   "dailyChallenge": {
     "title": "오늘의 챌린지",

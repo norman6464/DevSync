@@ -777,7 +777,17 @@
     "streakAchieved": "Serie!",
     "logCount": "Gesamteinträge",
     "favorites": "Favoriten",
-    "toggleFavorite": "Favorit umschalten"
+    "toggleFavorite": "Favorit umschalten",
+    "statsTitle": "Lernstatistik",
+    "totalDuration": "Gesamtlernzeit",
+    "avgDuration": "Ø Lernzeit",
+    "categoryDuration": "Lernzeit nach Kategorie",
+    "hoursUnit": "Std.",
+    "countUnit": "Einträge",
+    "minutesPerLog": "{{minutes}} Min. pro Eintrag",
+    "noLogsHint": "Erfasse dein Lernen, um Statistiken zu sehen",
+    "statsNoLogs": "Noch keine Lerneinträge",
+    "statsLogCount": "Lerneinträge"
   },
   "learningLog": {
     "batchCreate": "Stapelerstellung",
@@ -1232,7 +1242,22 @@
     "freezeAlreadyUsed": "Heute bereits verwendet",
     "freezeConfirm": "Streak-Freeze für heute verwenden?",
     "freezeButton": "Freeze verwenden",
-    "freezeCount": "{{used}}/{{max}} verwendet"
+    "freezeCount": "{{used}}/{{max}} verwendet",
+    "levelBeginner": "Anfänger",
+    "levelIntermediate": "Fortgeschritten",
+    "levelAdvanced": "Profi",
+    "levelMaster": "Meister",
+    "milestoneFirstDay": "Erster Tag geschafft! Weiter so",
+    "milestone7": "7 Tage! Starke Beständigkeit",
+    "milestone30": "30 Tage! Es ist zur Gewohnheit geworden",
+    "milestone100": "100 Tage! Du bist ein Meister",
+    "milestoneWeekly": "{{count}} Tage! Großartig!",
+    "milestoneNext": "Nächstes Ziel: {{count}} Tage!",
+    "monthlyDays": "Tage diesen Monat",
+    "last30Days": "Letzte 30 Tage",
+    "calendarTooltip": "{{date}}: {{count}} Einträge",
+    "legendLess": "Wenig",
+    "legendMore": "Viel"
   },
   "dailyChallenge": {
     "title": "Tägliche Herausforderung",
