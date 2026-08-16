@@ -18,8 +18,7 @@ func TestStudyCircleCreate_Success(t *testing.T) {
 	r := newRouter(1)
 	r.POST("/study-circles", h.Create)
 
-	repo.On("Create", mock.Anything, mock.AnythingOfType("*model.StudyCircle")).Return(nil)
-	repo.On("AddMember", mock.Anything, mock.AnythingOfType("uint"), mock.AnythingOfType("uint"), model.StudyCircleRoleOwner).Return(nil)
+	repo.On("CreateWithOwner", mock.Anything, mock.AnythingOfType("*model.StudyCircle")).Return(nil)
 
 	w := doRequest(r, http.MethodPost, "/study-circles", map[string]interface{}{
 		"name": "React学習会", "topic": "React入門",

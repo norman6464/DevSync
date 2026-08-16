@@ -25,9 +25,22 @@ func NewStudyCircleRepository(db *gorm.DB) repository.StudyCircleRepository {
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
 var _ repository.StudyCircleRepository = (*studyCircleRepository)(nil)
 
-// Create はサークルをDBに保存する。
-func (r *studyCircleRepository) Create(ctx context.Context, circle *model.StudyCircle) error {
-	return r.db.WithContext(ctx).Create(circle).Error
+// CreateWithOwner はサークル行の作成とオーナーのメンバー登録を 1 トランザクションで保存する。
+func (r *studyCircleRepository) CreateWithOwner(ctx context.Context, circle *model.StudyCircle) error {
+	// サークル行だけ残るとメンバー条件の各操作にオーナー本人すら入れなくなるため、
+	// オーナーのメンバー登録までを 1 トランザクションで確定する。
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(circle).Error; err != nil {
+			return err
+		}
+		member := model.StudyCircleMember{
+			CircleID: circle.ID,
+			UserID:   circle.OwnerID,
+			Role:     model.StudyCircleRoleOwner,
+			JoinedAt: time.Now(),
+		}
+		return tx.Create(&member).Error
+	})
 }
 
 // FindByID はIDでサークルを取得する。Owner, Steps, Members をプリロードする。

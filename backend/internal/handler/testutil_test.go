@@ -649,7 +649,7 @@ func fmtPath(format string, args ...interface{}) string {
 // mockStudyCircleRepo は usecase/repository.StudyCircleRepository のモック（ctx 付き）。
 type mockStudyCircleRepo struct{ mock.Mock }
 
-func (m *mockStudyCircleRepo) Create(ctx context.Context, circle *model.StudyCircle) error {
+func (m *mockStudyCircleRepo) CreateWithOwner(ctx context.Context, circle *model.StudyCircle) error {
 	return m.Called(ctx, circle).Error(0)
 }
 func (m *mockStudyCircleRepo) FindByID(ctx context.Context, id uint) (*model.StudyCircle, error) {

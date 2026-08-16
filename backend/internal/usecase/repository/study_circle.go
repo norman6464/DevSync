@@ -10,7 +10,9 @@ import (
 // サークル CRUD・メンバー管理・ステップ管理・進捗・チェックイン・ストリークランキングを提供する。
 type StudyCircleRepository interface {
 	// サークル CRUD
-	Create(ctx context.Context, circle *model.StudyCircle) error
+	// CreateWithOwner はサークル行の作成とオーナーのメンバー登録を不可分に行う。
+	// オーナー登録に失敗した場合はサークル行も残さない。
+	CreateWithOwner(ctx context.Context, circle *model.StudyCircle) error
 	// FindByID は指定 ID のサークルを返す。
 	// 不在の場合は「不在」を表す (nil, nil) を返し、DB 障害だけを error として返す。
 	FindByID(ctx context.Context, id uint) (*model.StudyCircle, error)

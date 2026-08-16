@@ -95,11 +95,7 @@ func (uc *CreateStudyCircleUseCase) Execute(ctx context.Context, circle *model.S
 	}
 	circle.Status = model.StudyCircleStatusActive
 
-	if err := uc.circles.Create(ctx, circle); err != nil {
-		return err
-	}
-
-	if err := uc.circles.AddMember(ctx, circle.ID, circle.OwnerID, model.StudyCircleRoleOwner); err != nil {
+	if err := uc.circles.CreateWithOwner(ctx, circle); err != nil {
 		return err
 	}
 
