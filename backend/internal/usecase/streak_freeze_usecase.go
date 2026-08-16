@@ -21,35 +21,27 @@ func NewUseStreakFreezeUseCase(freezes repository.StreakFreezeRepository) *UseSt
 }
 
 // Execute は当日の重複と月次上限を検査したうえでフリーズを記録する。
+// 判定と作成は repository 側で不可分に行われ、同時実行でも重複・上限超過は起きない。
 func (uc *UseStreakFreezeUseCase) Execute(ctx context.Context, userID uint) error {
 	now := time.Now()
-	today := now.Format("2006-01-02")
 
-	// 今日既に使用済みか
-	used, err := uc.freezes.HasFreezeOnDate(ctx, userID, today)
+	outcome, err := uc.freezes.CreateWithinLimits(ctx, &model.StreakFreeze{
+		UserID:   userID,
+		UsedDate: now.Format("2006-01-02"),
+		Month:    int(now.Month()),
+		Year:     now.Year(),
+	}, model.MaxFreezesPerMonth)
 	if err != nil {
 		return err
 	}
-	if used {
+	switch outcome {
+	case repository.FreezeUseDuplicateDay:
 		return domain.NewError(domain.ErrCodeConflict, "今日は既にフリーズを使用済みです", nil)
-	}
-
-	// 今月の使用回数チェック
-	freezes, err := uc.freezes.GetByUserIDAndMonth(ctx, userID, now.Year(), int(now.Month()))
-	if err != nil {
-		return err
-	}
-	if len(freezes) >= model.MaxFreezesPerMonth {
+	case repository.FreezeUseMonthlyLimitReached:
 		return domain.NewError(domain.ErrCodeBadRequest,
 			fmt.Sprintf("今月のフリーズ回数上限（%d回）に達しています", model.MaxFreezesPerMonth), nil)
 	}
-
-	return uc.freezes.Create(ctx, &model.StreakFreeze{
-		UserID:   userID,
-		UsedDate: today,
-		Month:    int(now.Month()),
-		Year:     now.Year(),
-	})
+	return nil
 }
 
 // GetStreakFreezeStatusUseCase は今月のフリーズ使用状況を取得する。
