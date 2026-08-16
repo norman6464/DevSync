@@ -271,15 +271,14 @@ func (uc *AddStudyCircleMemberUseCase) Execute(ctx context.Context, circleID, us
 		return domain.ErrNotFound
 	}
 
-	count, err := uc.circles.GetMemberCount(ctx, circleID)
+	added, err := uc.circles.AddMemberWithinLimit(ctx, circleID, targetUserID, model.StudyCircleRoleMember)
 	if err != nil {
 		return err
 	}
-	if count >= circle.MaxMembers {
+	if !added {
 		return domain.NewError(domain.ErrCodeBadRequest, "メンバー上限に達しました", nil)
 	}
-
-	return uc.circles.AddMember(ctx, circleID, targetUserID, model.StudyCircleRoleMember)
+	return nil
 }
 
 // UpdateStudyCircleMemberRoleUseCase はメンバーの役割を更新する。

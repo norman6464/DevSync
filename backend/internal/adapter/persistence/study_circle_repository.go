@@ -135,6 +135,40 @@ func (r *studyCircleRepository) AddMember(ctx context.Context, circleID, userID 
 	return r.db.WithContext(ctx).Create(&member).Error
 }
 
+// AddMemberWithinLimit はサークル行をロックして現在人数を数え、上限未満のときだけ
+// 同一トランザクションでメンバーを追加する。上限到達時は (false, nil) を返す。
+func (r *studyCircleRepository) AddMemberWithinLimit(ctx context.Context, circleID, userID uint, role model.StudyCircleMemberRole) (bool, error) {
+	added := false
+	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// 「数える → 追加する」を同時実行しても上限を超えないよう、
+		// サークル行の行ロックで直列化してから人数を確定する。
+		var circle model.StudyCircle
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&circle, circleID).Error; err != nil {
+			return err
+		}
+		var count int64
+		if err := tx.Model(&model.StudyCircleMember{}).
+			Where("circle_id = ?", circleID).Count(&count).Error; err != nil {
+			return err
+		}
+		if count >= int64(circle.MaxMembers) {
+			return nil
+		}
+		member := model.StudyCircleMember{
+			CircleID: circleID,
+			UserID:   userID,
+			Role:     role,
+			JoinedAt: time.Now(),
+		}
+		if err := tx.Create(&member).Error; err != nil {
+			return err
+		}
+		added = true
+		return nil
+	})
+	return added, err
+}
+
 // RemoveMember はメンバーを削除する。
 func (r *studyCircleRepository) RemoveMember(ctx context.Context, circleID, userID uint) error {
 	return r.db.WithContext(ctx).
@@ -163,14 +197,6 @@ func (r *studyCircleRepository) IsMember(ctx context.Context, circleID, userID u
 		Where("circle_id = ? AND user_id = ?", circleID, userID).
 		Count(&count).Error
 	return count > 0, err
-}
-
-// GetMemberCount はメンバー数を返す。
-func (r *studyCircleRepository) GetMemberCount(ctx context.Context, circleID uint) (int, error) {
-	var count int64
-	err := r.db.WithContext(ctx).Model(&model.StudyCircleMember{}).
-		Where("circle_id = ?", circleID).Count(&count).Error
-	return int(count), err
 }
 
 // CountByUserID は指定ユーザーが参加しているスタディサークル総数を返す。
