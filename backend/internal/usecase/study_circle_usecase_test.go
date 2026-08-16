@@ -456,6 +456,32 @@ func TestStudyCircleStepUseCases(t *testing.T) {
 		assert.Equal(t, uint(10), step.CircleID)
 	})
 
+	t.Run("参考URLが2000文字を超えるとリポジトリを呼ばず検証エラー", func(t *testing.T) {
+		repo := new(mockStudyCircleRepo)
+		uc := usecase.NewCreateStudyCircleStepUseCase(repo)
+
+		step := &model.StudyCircleStep{Title: "1章", ResourceURL: "https://example.com/" + strings.Repeat("a", 2000)}
+		err := uc.Execute(context.Background(), 10, 1, step)
+
+		assert.Error(t, err)
+		assert.True(t, domain.IsDomainError(err), "DomainError（400系）として返す: %v", err)
+		repo.AssertNotCalled(t, "CreateStep", mock.Anything, mock.Anything)
+	})
+
+	t.Run("2000文字ちょうどの参考URLでステップを作成できる", func(t *testing.T) {
+		repo := new(mockStudyCircleRepo)
+		repo.On("FindByID", mock.Anything, uint(10)).Return(ownedCircle, nil)
+		repo.On("CreateStep", mock.Anything, mock.AnythingOfType("*model.StudyCircleStep")).Return(nil)
+		uc := usecase.NewCreateStudyCircleStepUseCase(repo)
+
+		url2000 := "https://example.com/" + strings.Repeat("a", 2000-len("https://example.com/"))
+		step := &model.StudyCircleStep{Title: "1章", ResourceURL: url2000}
+		err := uc.Execute(context.Background(), 10, 1, step)
+
+		assert.NoError(t, err)
+		repo.AssertExpectations(t)
+	})
+
 	t.Run("別サークルのステップ ID は 404", func(t *testing.T) {
 		repo := new(mockStudyCircleRepo)
 		repo.On("FindByID", mock.Anything, uint(10)).Return(ownedCircle, nil)
