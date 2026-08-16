@@ -119,14 +119,11 @@ func (h *LearningGoalHandler) Update(c *gin.Context) {
 			updates.TargetDate = &targetDate
 		}
 	}
-	if req.Progress != nil {
-		updates.Progress = *req.Progress
-	}
 	if req.Status != nil {
 		updates.Status = model.GoalStatus(*req.Status)
 	}
 
-	goal, err := h.update.Execute(c.Request.Context(), goalID, userID, updates)
+	goal, err := h.update.Execute(c.Request.Context(), goalID, userID, updates, req.Progress)
 	if err != nil {
 		respondError(c, err)
 		return

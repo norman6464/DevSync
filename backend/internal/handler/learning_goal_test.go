@@ -163,6 +163,82 @@ func TestLearningGoalUpdate_Success(t *testing.T) {
 	assertStatus(t, w, http.StatusOK)
 }
 
+// 進捗を送らない更新で、既存の進捗が 0 にリセットされないことを固定する。
+func TestLearningGoalUpdate_TitleOnlyKeepsProgress(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.PUT("/goals/:id", h.Update)
+
+	goal := &model.LearningGoal{}
+	goal.ID = 10
+	goal.UserID = 1
+	goal.Title = "Old Title"
+	goal.Progress = 50
+	goal.Status = model.GoalStatusActive
+
+	repo.On("FindByID", mock.Anything, uint(10)).Return(goal, nil)
+	repo.On("Update", mock.Anything, mock.MatchedBy(func(g *model.LearningGoal) bool {
+		return g.Progress == 50 && g.Title == "タイトルだけ変更"
+	})).Return(nil)
+
+	w := doRequest(r, http.MethodPut, "/goals/10", map[string]interface{}{
+		"title": "タイトルだけ変更",
+	})
+
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
+}
+
+// 明示的な 0 指定は「未指定」と区別され、0 が反映される。
+func TestLearningGoalUpdate_ExplicitZeroProgress(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.PUT("/goals/:id", h.Update)
+
+	goal := &model.LearningGoal{}
+	goal.ID = 10
+	goal.UserID = 1
+	goal.Progress = 50
+	goal.Status = model.GoalStatusActive
+
+	repo.On("FindByID", mock.Anything, uint(10)).Return(goal, nil)
+	repo.On("Update", mock.Anything, mock.MatchedBy(func(g *model.LearningGoal) bool {
+		return g.Progress == 0
+	})).Return(nil)
+
+	w := doRequest(r, http.MethodPut, "/goals/10", map[string]interface{}{
+		"progress": 0,
+	})
+
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
+}
+
+// 進捗 100 指定時の自動完了は従来どおり動く。
+func TestLearningGoalUpdate_ProgressHundredCompletes(t *testing.T) {
+	h, repo := setupLearningGoalHandler()
+	r := newRouter(1)
+	r.PUT("/goals/:id", h.Update)
+
+	goal := &model.LearningGoal{}
+	goal.ID = 10
+	goal.UserID = 1
+	goal.Progress = 50
+	goal.Status = model.GoalStatusActive
+
+	repo.On("FindByID", mock.Anything, uint(10)).Return(goal, nil)
+	repo.On("Update", mock.Anything, mock.MatchedBy(func(g *model.LearningGoal) bool {
+		return g.Progress == 100 && g.Status == model.GoalStatusCompleted && g.CompletedAt != nil
+	})).Return(nil)
+
+	w := doRequest(r, http.MethodPut, "/goals/10", map[string]interface{}{
+		"progress": 100,
+	})
+
+	assertStatus(t, w, http.StatusOK)
+	repo.AssertExpectations(t)
+}
+
 func TestLearningGoalUpdate_Forbidden(t *testing.T) {
 	h, repo := setupLearningGoalHandler()
 	r := newRouter(1)
