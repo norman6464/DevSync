@@ -9,6 +9,7 @@ import (
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
+	"github.com/norman6464/devsync/backend/internal/usecase/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -16,8 +17,9 @@ import (
 // mockStreakFreezeRepo は usecase/repository.StreakFreezeRepository のモック。
 type mockStreakFreezeRepo struct{ mock.Mock }
 
-func (m *mockStreakFreezeRepo) Create(ctx context.Context, freeze *model.StreakFreeze) error {
-	return m.Called(ctx, freeze).Error(0)
+func (m *mockStreakFreezeRepo) CreateWithinLimits(ctx context.Context, freeze *model.StreakFreeze, maxPerMonth int) (repository.FreezeUseOutcome, error) {
+	args := m.Called(ctx, freeze, maxPerMonth)
+	return args.Get(0).(repository.FreezeUseOutcome), args.Error(1)
 }
 
 func (m *mockStreakFreezeRepo) GetByUserIDAndMonth(ctx context.Context, userID uint, year, month int) ([]model.StreakFreeze, error) {
@@ -54,59 +56,46 @@ func TestUseStreakFreezeUseCase_Execute(t *testing.T) {
 
 	t.Run("未使用かつ上限未満なら記録する", func(t *testing.T) {
 		repo := new(mockStreakFreezeRepo)
-		repo.On("HasFreezeOnDate", mock.Anything, uint(1), today).Return(false, nil)
-		repo.On("GetByUserIDAndMonth", mock.Anything, uint(1), year, month).Return([]model.StreakFreeze{}, nil)
-		repo.On("Create", mock.Anything, mock.MatchedBy(func(f *model.StreakFreeze) bool {
+		repo.On("CreateWithinLimits", mock.Anything, mock.MatchedBy(func(f *model.StreakFreeze) bool {
 			return f.UserID == 1 && f.UsedDate == today && f.Year == year && f.Month == month
-		})).Return(nil)
+		}), model.MaxFreezesPerMonth).Return(repository.FreezeUseCreated, nil)
 		uc := usecase.NewUseStreakFreezeUseCase(repo)
 
 		assert.NoError(t, uc.Execute(context.Background(), 1))
 		repo.AssertExpectations(t)
 	})
 
-	t.Run("当日使用済みは Conflict（月次確認も作成もしない）", func(t *testing.T) {
+	t.Run("当日使用済みは Conflict", func(t *testing.T) {
 		repo := new(mockStreakFreezeRepo)
-		repo.On("HasFreezeOnDate", mock.Anything, uint(1), today).Return(true, nil)
+		repo.On("CreateWithinLimits", mock.Anything, mock.Anything, model.MaxFreezesPerMonth).
+			Return(repository.FreezeUseDuplicateDay, nil)
 		uc := usecase.NewUseStreakFreezeUseCase(repo)
 
-		assertDomainCode(t, uc.Execute(context.Background(), 1), domain.ErrCodeConflict)
-		repo.AssertNotCalled(t, "GetByUserIDAndMonth")
-		repo.AssertNotCalled(t, "Create")
-		repo.AssertExpectations(t)
+		err := uc.Execute(context.Background(), 1)
+
+		assertDomainCode(t, err, domain.ErrCodeConflict)
+		var de *domain.DomainError
+		if assert.ErrorAs(t, err, &de) {
+			assert.Equal(t, "今日は既にフリーズを使用済みです", de.Message)
+		}
 	})
 
-	t.Run("月次上限に達していれば BadRequest（作成しない）", func(t *testing.T) {
+	t.Run("月次上限に達していれば BadRequest", func(t *testing.T) {
 		repo := new(mockStreakFreezeRepo)
-		repo.On("HasFreezeOnDate", mock.Anything, uint(1), today).Return(false, nil)
-		repo.On("GetByUserIDAndMonth", mock.Anything, uint(1), year, month).
-			Return(make([]model.StreakFreeze, model.MaxFreezesPerMonth), nil)
+		repo.On("CreateWithinLimits", mock.Anything, mock.Anything, model.MaxFreezesPerMonth).
+			Return(repository.FreezeUseMonthlyLimitReached, nil)
 		uc := usecase.NewUseStreakFreezeUseCase(repo)
 
 		assertDomainCode(t, uc.Execute(context.Background(), 1), domain.ErrCodeBadRequest)
-		repo.AssertNotCalled(t, "Create")
-		repo.AssertExpectations(t)
 	})
 
-	t.Run("当日確認の DB 障害を伝播する（月次確認もしない）", func(t *testing.T) {
+	t.Run("DB 障害を伝播する", func(t *testing.T) {
 		repo := new(mockStreakFreezeRepo)
-		repo.On("HasFreezeOnDate", mock.Anything, uint(1), today).Return(false, errors.New("db error"))
+		repo.On("CreateWithinLimits", mock.Anything, mock.Anything, model.MaxFreezesPerMonth).
+			Return(repository.FreezeUseCreated, errors.New("db error"))
 		uc := usecase.NewUseStreakFreezeUseCase(repo)
 
 		assert.Error(t, uc.Execute(context.Background(), 1))
-		repo.AssertNotCalled(t, "GetByUserIDAndMonth")
-		repo.AssertNotCalled(t, "Create")
-	})
-
-	t.Run("月次取得の DB 障害を伝播する（作成しない）", func(t *testing.T) {
-		repo := new(mockStreakFreezeRepo)
-		repo.On("HasFreezeOnDate", mock.Anything, uint(1), today).Return(false, nil)
-		repo.On("GetByUserIDAndMonth", mock.Anything, uint(1), year, month).
-			Return([]model.StreakFreeze(nil), errors.New("db error"))
-		uc := usecase.NewUseStreakFreezeUseCase(repo)
-
-		assert.Error(t, uc.Execute(context.Background(), 1))
-		repo.AssertNotCalled(t, "Create")
 	})
 }
 

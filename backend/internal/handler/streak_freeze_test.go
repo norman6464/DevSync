@@ -11,14 +11,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
+	"github.com/norman6464/devsync/backend/internal/usecase/repository"
 	"github.com/stretchr/testify/mock"
 )
 
 // mockStreakFreezeRepo は usecase/repository.StreakFreezeRepository のモック（ctx 付き）。
 type mockStreakFreezeRepo struct{ mock.Mock }
 
-func (m *mockStreakFreezeRepo) Create(ctx context.Context, freeze *model.StreakFreeze) error {
-	return m.Called(ctx, freeze).Error(0)
+func (m *mockStreakFreezeRepo) CreateWithinLimits(ctx context.Context, freeze *model.StreakFreeze, maxPerMonth int) (repository.FreezeUseOutcome, error) {
+	args := m.Called(ctx, freeze, maxPerMonth)
+	return args.Get(0).(repository.FreezeUseOutcome), args.Error(1)
 }
 
 func (m *mockStreakFreezeRepo) GetByUserIDAndMonth(ctx context.Context, userID uint, year, month int) ([]model.StreakFreeze, error) {
@@ -56,11 +58,9 @@ func TestStreakFreeze_UseFreeze_Success(t *testing.T) {
 	h, repo := setupStreakFreezeHandler()
 	today, year, month := nowParts()
 
-	repo.On("HasFreezeOnDate", mock.Anything, uint(1), today).Return(false, nil)
-	repo.On("GetByUserIDAndMonth", mock.Anything, uint(1), year, month).Return([]model.StreakFreeze{}, nil)
-	repo.On("Create", mock.Anything, mock.MatchedBy(func(f *model.StreakFreeze) bool {
+	repo.On("CreateWithinLimits", mock.Anything, mock.MatchedBy(func(f *model.StreakFreeze) bool {
 		return f.UserID == 1 && f.UsedDate == today && f.Year == year && f.Month == month
-	})).Return(nil)
+	}), model.MaxFreezesPerMonth).Return(repository.FreezeUseCreated, nil)
 
 	r := gin.New()
 	r.POST("/streak-freezes", authMiddleware(1), h.UseFreeze)
@@ -73,12 +73,12 @@ func TestStreakFreeze_UseFreeze_Success(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
-// 当日すでに使用済みなら 409 を返し、月次上限の確認も作成もしない。
+// 当日すでに使用済みなら 409 を返す。
 func TestStreakFreeze_UseFreeze_AlreadyUsed(t *testing.T) {
 	h, repo := setupStreakFreezeHandler()
-	today, _, _ := nowParts()
 
-	repo.On("HasFreezeOnDate", mock.Anything, uint(1), today).Return(true, nil)
+	repo.On("CreateWithinLimits", mock.Anything, mock.Anything, model.MaxFreezesPerMonth).
+		Return(repository.FreezeUseDuplicateDay, nil)
 
 	r := gin.New()
 	r.POST("/streak-freezes", authMiddleware(1), h.UseFreeze)
@@ -88,19 +88,15 @@ func TestStreakFreeze_UseFreeze_AlreadyUsed(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assertStatus(t, w, http.StatusConflict)
-	repo.AssertNotCalled(t, "GetByUserIDAndMonth")
-	repo.AssertNotCalled(t, "Create")
 	repo.AssertExpectations(t)
 }
 
-// 今月の上限に達していれば 400 を返し、作成しない。
+// 今月の上限に達していれば 400 を返す。
 func TestStreakFreeze_UseFreeze_MonthlyLimit(t *testing.T) {
 	h, repo := setupStreakFreezeHandler()
-	today, year, month := nowParts()
 
-	full := make([]model.StreakFreeze, model.MaxFreezesPerMonth)
-	repo.On("HasFreezeOnDate", mock.Anything, uint(1), today).Return(false, nil)
-	repo.On("GetByUserIDAndMonth", mock.Anything, uint(1), year, month).Return(full, nil)
+	repo.On("CreateWithinLimits", mock.Anything, mock.Anything, model.MaxFreezesPerMonth).
+		Return(repository.FreezeUseMonthlyLimitReached, nil)
 
 	r := gin.New()
 	r.POST("/streak-freezes", authMiddleware(1), h.UseFreeze)
@@ -110,15 +106,14 @@ func TestStreakFreeze_UseFreeze_MonthlyLimit(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assertStatus(t, w, http.StatusBadRequest)
-	repo.AssertNotCalled(t, "Create")
 	repo.AssertExpectations(t)
 }
 
 func TestStreakFreeze_UseFreeze_ServiceInternalError(t *testing.T) {
 	h, repo := setupStreakFreezeHandler()
-	today, _, _ := nowParts()
 
-	repo.On("HasFreezeOnDate", mock.Anything, uint(1), today).Return(false, errors.New("db error"))
+	repo.On("CreateWithinLimits", mock.Anything, mock.Anything, model.MaxFreezesPerMonth).
+		Return(repository.FreezeUseCreated, errors.New("db error"))
 
 	r := gin.New()
 	r.POST("/streak-freezes", authMiddleware(1), h.UseFreeze)
@@ -128,7 +123,6 @@ func TestStreakFreeze_UseFreeze_ServiceInternalError(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assertStatus(t, w, http.StatusInternalServerError)
-	repo.AssertNotCalled(t, "Create")
 }
 
 // ============================================================
