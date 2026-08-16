@@ -88,14 +88,13 @@ func (r *badgeRepository) calculateGitHubStreak(ctx context.Context, userID uint
 	})
 
 	streak := 0
-	today := time.Now().UTC().Truncate(24 * time.Hour)
+	today := normalizeToCalendarDay(time.Now())
 
 	for _, c := range contributions {
-		cDate := c.Date.UTC().Truncate(24 * time.Hour)
+		cDate := normalizeToCalendarDay(c.Date)
+		// 期待日の当日または前日（開始が昨日でも連続とみなす従来仕様）
 		expectedDate := today.AddDate(0, 0, -streak)
-		diff := expectedDate.Sub(cDate)
-
-		if diff >= 0 && diff < 48*time.Hour {
+		if cDate.Equal(expectedDate) || cDate.Equal(expectedDate.AddDate(0, 0, -1)) {
 			streak++
 		} else {
 			break
@@ -124,18 +123,17 @@ func (r *badgeRepository) calculateLearningLogStreak(ctx context.Context, userID
 		return dates[i].Date.After(dates[j].Date)
 	})
 
-	today := time.Now().UTC().Truncate(24 * time.Hour)
-	firstDate := dates[0].Date.UTC().Truncate(24 * time.Hour)
-	if today.Sub(firstDate) >= 48*time.Hour {
+	today := normalizeToCalendarDay(time.Now())
+	firstDate := normalizeToCalendarDay(dates[0].Date)
+	if !isTodayOrYesterday(firstDate, today) {
 		return 0, nil
 	}
 
 	streak := 1
 	for i := 1; i < len(dates); i++ {
-		prev := dates[i-1].Date.UTC().Truncate(24 * time.Hour)
-		curr := dates[i].Date.UTC().Truncate(24 * time.Hour)
-		diff := prev.Sub(curr)
-		if diff >= 24*time.Hour && diff < 48*time.Hour {
+		prev := normalizeToCalendarDay(dates[i-1].Date)
+		curr := normalizeToCalendarDay(dates[i].Date)
+		if isNextCalendarDay(prev, curr) {
 			streak++
 		} else {
 			break

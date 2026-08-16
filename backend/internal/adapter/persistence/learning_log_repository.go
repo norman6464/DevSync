@@ -182,16 +182,11 @@ func calcStreakInfo(dates []time.Time, now time.Time) *model.StreakInfo {
 	sort.Slice(dates, func(i, j int) bool { return dates[i].After(dates[j]) })
 	info.LastLogDate = dates[0].Format("2006-01-02")
 
-	// 「1 日ぶんの間隔」かどうかを判定する（同日の重複は間隔 0 で連続とみなさない）。
-	isConsecutive := func(newer, older time.Time) bool {
-		diff := newer.UTC().Truncate(24*time.Hour).Sub(older.UTC().Truncate(24 * time.Hour))
-		return diff >= 24*time.Hour && diff < 48*time.Hour
-	}
-
-	if now.UTC().Truncate(24*time.Hour).Sub(dates[0].UTC().Truncate(24*time.Hour)) < 48*time.Hour {
+	if isTodayOrYesterday(normalizeToCalendarDay(dates[0]), normalizeToCalendarDay(now)) {
 		info.CurrentStreak = 1
 		for i := 1; i < len(dates); i++ {
-			if !isConsecutive(dates[i-1], dates[i]) {
+			// 同日の重複は「翌暦日」にならないため連続とみなさない。
+			if !isNextCalendarDay(normalizeToCalendarDay(dates[i-1]), normalizeToCalendarDay(dates[i])) {
 				break
 			}
 			info.CurrentStreak++
@@ -200,7 +195,7 @@ func calcStreakInfo(dates []time.Time, now time.Time) *model.StreakInfo {
 
 	longest, streak := 1, 1
 	for i := 1; i < len(dates); i++ {
-		if isConsecutive(dates[i-1], dates[i]) {
+		if isNextCalendarDay(normalizeToCalendarDay(dates[i-1]), normalizeToCalendarDay(dates[i])) {
 			streak++
 			if streak > longest {
 				longest = streak
