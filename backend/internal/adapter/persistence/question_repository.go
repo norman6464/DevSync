@@ -143,49 +143,52 @@ func (r *questionRepository) CountByUserID(ctx context.Context, userID uint) (in
 }
 
 // Vote は質問に投票する。既に投票済みなら値を更新し、質問の投票数も差分だけ増減させる。
+// Vote は投票行の作成・更新と vote_count の増減を同一トランザクションで行う。
+// 片方だけが反映されて投票行と vote_count がずれた状態を残さない。
 func (r *questionRepository) Vote(ctx context.Context, userID, questionID uint, value int) error {
-	db := r.db.WithContext(ctx)
-
-	var existing model.QuestionVote
-	err := db.Where("user_id = ? AND question_id = ?", userID, questionID).First(&existing).Error
-	switch {
-	case err == nil:
-		diff := value - existing.Value
-		existing.Value = value
-		if err := db.Save(&existing).Error; err != nil {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var existing model.QuestionVote
+		err := tx.Where("user_id = ? AND question_id = ?", userID, questionID).First(&existing).Error
+		switch {
+		case err == nil:
+			diff := value - existing.Value
+			existing.Value = value
+			if err := tx.Save(&existing).Error; err != nil {
+				return err
+			}
+			return tx.Model(&model.Question{}).Where("id = ?", questionID).
+				UpdateColumn("vote_count", gorm.Expr("vote_count + ?", diff)).Error
+		case errors.Is(err, gorm.ErrRecordNotFound):
+			vote := &model.QuestionVote{UserID: userID, QuestionID: questionID, Value: value}
+			if err := tx.Create(vote).Error; err != nil {
+				return err
+			}
+			return tx.Model(&model.Question{}).Where("id = ?", questionID).
+				UpdateColumn("vote_count", gorm.Expr("vote_count + ?", value)).Error
+		default:
 			return err
 		}
-		return db.Model(&model.Question{}).Where("id = ?", questionID).
-			UpdateColumn("vote_count", gorm.Expr("vote_count + ?", diff)).Error
-	case errors.Is(err, gorm.ErrRecordNotFound):
-		vote := &model.QuestionVote{UserID: userID, QuestionID: questionID, Value: value}
-		if err := db.Create(vote).Error; err != nil {
-			return err
-		}
-		return db.Model(&model.Question{}).Where("id = ?", questionID).
-			UpdateColumn("vote_count", gorm.Expr("vote_count + ?", value)).Error
-	default:
-		return err
-	}
+	})
 }
 
 // RemoveVote は投票を取り消し、質問の投票数から元の値を差し引く。
 // RemoveVote は投票を取り消す。未投票の場合は何もせず成功する（冪等）。
+// 削除と vote_count の減算は同一トランザクションで行い、ずれを残さない。
 func (r *questionRepository) RemoveVote(ctx context.Context, userID, questionID uint) error {
-	db := r.db.WithContext(ctx)
-
-	var existing model.QuestionVote
-	if err := db.Where("user_id = ? AND question_id = ?", userID, questionID).First(&existing).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var existing model.QuestionVote
+		if err := tx.Where("user_id = ? AND question_id = ?", userID, questionID).First(&existing).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil
+			}
+			return err
 		}
-		return err
-	}
-	if err := db.Delete(&existing).Error; err != nil {
-		return err
-	}
-	return db.Model(&model.Question{}).Where("id = ?", questionID).
-		UpdateColumn("vote_count", gorm.Expr("vote_count - ?", existing.Value)).Error
+		if err := tx.Delete(&existing).Error; err != nil {
+			return err
+		}
+		return tx.Model(&model.Question{}).Where("id = ?", questionID).
+			UpdateColumn("vote_count", gorm.Expr("vote_count - ?", existing.Value)).Error
+	})
 }
 
 // GetUserVote は指定ユーザーの投票値を返す。未投票の場合は 0 を返す。
