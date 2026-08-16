@@ -18,7 +18,7 @@ import (
 // mockStudyCircleRepo は usecase/repository.StudyCircleRepository のモック。
 type mockStudyCircleRepo struct{ mock.Mock }
 
-func (m *mockStudyCircleRepo) Create(ctx context.Context, circle *model.StudyCircle) error {
+func (m *mockStudyCircleRepo) CreateWithOwner(ctx context.Context, circle *model.StudyCircle) error {
 	return m.Called(ctx, circle).Error(0)
 }
 func (m *mockStudyCircleRepo) FindByID(ctx context.Context, id uint) (*model.StudyCircle, error) {
@@ -126,10 +126,9 @@ func assertStudyCircleStatus(t *testing.T, err error, want int) {
 }
 
 func TestCreateStudyCircleUseCase_Execute(t *testing.T) {
-	t.Run("オーナーをメンバーに追加し、招待メンバーも追加する", func(t *testing.T) {
+	t.Run("オーナー込みで作成し、招待メンバーも追加する", func(t *testing.T) {
 		repo := new(mockStudyCircleRepo)
-		repo.On("Create", mock.Anything, mock.AnythingOfType("*model.StudyCircle")).Return(nil)
-		repo.On("AddMember", mock.Anything, uint(0), uint(1), model.StudyCircleRoleOwner).Return(nil)
+		repo.On("CreateWithOwner", mock.Anything, mock.AnythingOfType("*model.StudyCircle")).Return(nil)
 		repo.On("AddMember", mock.Anything, uint(0), uint(2), model.StudyCircleRoleMember).Return(nil)
 		uc := usecase.NewCreateStudyCircleUseCase(repo)
 
@@ -142,8 +141,8 @@ func TestCreateStudyCircleUseCase_Execute(t *testing.T) {
 		assert.Equal(t, 5, circle.MaxMembers, "範囲外の上限は 5 に補正される")
 		assert.Equal(t, model.StudyCircleStatusActive, circle.Status)
 		repo.AssertExpectations(t)
-		// オーナー自身は member_ids に含まれていても二重追加しない。
-		repo.AssertNumberOfCalls(t, "AddMember", 2)
+		// オーナー自身は member_ids に含まれていても二重追加しない（オーナー登録は CreateWithOwner 側）。
+		repo.AssertNumberOfCalls(t, "AddMember", 1)
 	})
 
 	t.Run("名前が空なら 400 で作成しない", func(t *testing.T) {
@@ -153,7 +152,7 @@ func TestCreateStudyCircleUseCase_Execute(t *testing.T) {
 		err := uc.Execute(context.Background(), &model.StudyCircle{Name: "   ", Topic: "x"}, nil)
 
 		assertStudyCircleStatus(t, err, http.StatusBadRequest)
-		repo.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
+		repo.AssertNotCalled(t, "CreateWithOwner", mock.Anything, mock.Anything)
 	})
 
 	t.Run("説明が 1000 文字を超えたら 400", func(t *testing.T) {
@@ -169,8 +168,7 @@ func TestCreateStudyCircleUseCase_Execute(t *testing.T) {
 
 	t.Run("招待メンバーの追加に失敗しても全体は成功する", func(t *testing.T) {
 		repo := new(mockStudyCircleRepo)
-		repo.On("Create", mock.Anything, mock.Anything).Return(nil)
-		repo.On("AddMember", mock.Anything, uint(0), uint(1), model.StudyCircleRoleOwner).Return(nil)
+		repo.On("CreateWithOwner", mock.Anything, mock.Anything).Return(nil)
 		repo.On("AddMember", mock.Anything, uint(0), uint(9), model.StudyCircleRoleMember).
 			Return(errors.New("db error"))
 		uc := usecase.NewCreateStudyCircleUseCase(repo)
@@ -180,16 +178,15 @@ func TestCreateStudyCircleUseCase_Execute(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
-	t.Run("オーナーのメンバー登録に失敗したらエラーを返す", func(t *testing.T) {
+	t.Run("オーナー込みの作成に失敗したらエラーを返し、招待メンバーを追加しない", func(t *testing.T) {
 		repo := new(mockStudyCircleRepo)
-		repo.On("Create", mock.Anything, mock.Anything).Return(nil)
-		repo.On("AddMember", mock.Anything, uint(0), uint(1), model.StudyCircleRoleOwner).
-			Return(errors.New("db error"))
+		repo.On("CreateWithOwner", mock.Anything, mock.Anything).Return(errors.New("db error"))
 		uc := usecase.NewCreateStudyCircleUseCase(repo)
 
-		err := uc.Execute(context.Background(), &model.StudyCircle{Name: "x", Topic: "y", OwnerID: 1}, nil)
+		err := uc.Execute(context.Background(), &model.StudyCircle{Name: "x", Topic: "y", OwnerID: 1}, []uint{9})
 
 		assert.Error(t, err)
+		repo.AssertNotCalled(t, "AddMember", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 	})
 }
 
