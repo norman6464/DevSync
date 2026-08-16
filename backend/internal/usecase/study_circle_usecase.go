@@ -353,6 +353,9 @@ func NewCreateStudyCircleStepUseCase(circles repository.StudyCircleRepository) *
 
 // Execute はステップを追加する。オーナーのみ。
 func (uc *CreateStudyCircleStepUseCase) Execute(ctx context.Context, circleID, userID uint, step *model.StudyCircleStep) error {
+	if err := domain.ValidateStringLength(step.ResourceURL, 0, 2000, "参考URL"); err != nil {
+		return err
+	}
 	if _, err := findOwnedStudyCircle(ctx, uc.circles, circleID, userID); err != nil {
 		return err
 	}

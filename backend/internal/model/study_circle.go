@@ -53,7 +53,7 @@ type StudyCircleStep struct {
 	Title       string    `json:"title" gorm:"size:200;not null"`
 	Description string    `json:"description" gorm:"type:text"`
 	OrderIndex  int       `json:"order_index" gorm:"default:0"`
-	ResourceURL string    `json:"resource_url" gorm:"size:500"`
+	ResourceURL string    `json:"resource_url" gorm:"size:2000"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
@@ -76,7 +76,7 @@ type StudyCircleCheckin struct {
 	UserID    uint      `json:"user_id" gorm:"not null;uniqueIndex:idx_checkin_unique"`
 	User      *User     `json:"user,omitempty" gorm:"foreignKey:UserID"`
 	Date      string    `json:"date" gorm:"size:10;not null;uniqueIndex:idx_checkin_unique"`
-	Content   string    `json:"content" gorm:"size:500;not null"`
+	Content   string    `json:"content" gorm:"type:text;not null"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
