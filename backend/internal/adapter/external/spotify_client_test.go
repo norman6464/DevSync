@@ -34,7 +34,7 @@ func TestSpotifyRequestToken(t *testing.T) {
 	t.Run("200 でトークンが返れば成功する", func(t *testing.T) {
 		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			w.Write([]byte(`{"access_token":"at","refresh_token":"rt","expires_in":3600}`))
+			_, _ = w.Write([]byte(`{"access_token":"at","refresh_token":"rt","expires_in":3600}`))
 		}))
 		defer srv.Close()
 
@@ -49,7 +49,7 @@ func TestSpotifyRequestToken(t *testing.T) {
 		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte(`{"error":"invalid_grant","error_description":"Authorization code expired"}`))
+			_, _ = w.Write([]byte(`{"error":"invalid_grant","error_description":"Authorization code expired"}`))
 		}))
 		defer srv.Close()
 
@@ -81,7 +81,7 @@ func TestSpotifyRequestToken(t *testing.T) {
 	t.Run("200 でもトークンが空なら ServiceUnavailable（従来どおり）", func(t *testing.T) {
 		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			w.Write([]byte(`{}`))
+			_, _ = w.Write([]byte(`{}`))
 		}))
 		defer srv.Close()
 
