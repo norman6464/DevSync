@@ -53,9 +53,15 @@ func (r *answerRepository) Update(ctx context.Context, answer *model.Answer) err
 }
 
 // Delete は回答の論理削除と質問の回答数の減算（0 未満にはしない）を
-// 同一トランザクションで行う。
+// 同一トランザクションで行う。SetBestAnswer とロック順序（質問 → 回答）を
+// 揃えるため、先に質問行を FOR UPDATE でロックしてデッドロックを防ぐ。
 func (r *answerRepository) Delete(ctx context.Context, answer *model.Answer) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var question model.Question
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+			First(&question, answer.QuestionID).Error; err != nil {
+			return err
+		}
 		if err := tx.Delete(answer).Error; err != nil {
 			return err
 		}
@@ -114,8 +120,14 @@ func (r *answerRepository) SetBestAnswer(ctx context.Context, questionID, answer
 
 // Vote は投票行の作成・更新と vote_count の増減を同一トランザクションで行う。
 // 既に投票済みなら値を更新し、回答の投票数も差分だけ増減させる。
+// 差分計算が並行実行で古い値を読まないよう、先に回答行をロックして直列化する。
 func (r *answerRepository) Vote(ctx context.Context, userID, answerID uint, value int) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var answer model.Answer
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+			First(&answer, answerID).Error; err != nil {
+			return err
+		}
 		var existing model.AnswerVote
 		err := tx.Where("user_id = ? AND answer_id = ?", userID, answerID).First(&existing).Error
 		switch {
@@ -141,8 +153,14 @@ func (r *answerRepository) Vote(ctx context.Context, userID, answerID uint, valu
 }
 
 // RemoveVote は投票の削除と vote_count の減算を同一トランザクションで行う。
+// Vote と同じく回答行を先にロックし、並行する投票変更との差分ずれを防ぐ。
 func (r *answerRepository) RemoveVote(ctx context.Context, userID, answerID uint) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var answer model.Answer
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+			First(&answer, answerID).Error; err != nil {
+			return err
+		}
 		var existing model.AnswerVote
 		if err := tx.Where("user_id = ? AND answer_id = ?", userID, answerID).First(&existing).Error; err != nil {
 			return err
