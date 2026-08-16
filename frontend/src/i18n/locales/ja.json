@@ -748,7 +748,17 @@
     "streakAchieved": "連続達成",
     "logCount": "ログ件数",
     "favorites": "お気に入り",
-    "toggleFavorite": "お気に入り切替"
+    "toggleFavorite": "お気に入り切替",
+    "statsTitle": "学習統計",
+    "totalDuration": "総学習時間",
+    "avgDuration": "平均学習時間",
+    "categoryDuration": "カテゴリ別学習時間",
+    "hoursUnit": "時間",
+    "countUnit": "件",
+    "minutesPerLog": "{{minutes}}分/回",
+    "noLogsHint": "学習ログを記録して統計を確認しましょう",
+    "statsNoLogs": "まだ学習ログがありません",
+    "statsLogCount": "学習ログ数"
   },
   "learningLog": {
     "batchCreate": "一括登録",
@@ -1165,7 +1175,22 @@
     "freezeAlreadyUsed": "今日は既に使用済みです",
     "freezeConfirm": "今日のストリークフリーズを使用しますか？",
     "freezeButton": "フリーズを使う",
-    "freezeCount": "{{used}}/{{max}}使用済み"
+    "freezeCount": "{{used}}/{{max}}使用済み",
+    "levelBeginner": "初心者",
+    "levelIntermediate": "中級者",
+    "levelAdvanced": "上級者",
+    "levelMaster": "マスター",
+    "milestoneFirstDay": "初日達成！この調子で続けよう",
+    "milestone7": "7日達成！素晴らしい継続力です",
+    "milestone30": "30日達成！習慣化できています",
+    "milestone100": "100日達成！あなたはマスターです",
+    "milestoneWeekly": "{{count}}日達成！素晴らしい！",
+    "milestoneNext": "次は{{count}}日を目指そう！",
+    "monthlyDays": "今月の学習日",
+    "last30Days": "直近30日の学習記録",
+    "calendarTooltip": "{{date}}: {{count}}件の学習ログ",
+    "legendLess": "少",
+    "legendMore": "多"
   },
   "dailyChallenge": {
     "title": "デイリーチャレンジ",

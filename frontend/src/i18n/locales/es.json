@@ -777,7 +777,17 @@
     "streakAchieved": "¡Racha!",
     "logCount": "Total de registros",
     "favorites": "Favoritos",
-    "toggleFavorite": "Alternar favorito"
+    "toggleFavorite": "Alternar favorito",
+    "statsTitle": "Estadísticas de estudio",
+    "totalDuration": "Tiempo total de estudio",
+    "avgDuration": "Tiempo medio de estudio",
+    "categoryDuration": "Tiempo de estudio por categoría",
+    "hoursUnit": "h",
+    "countUnit": "registros",
+    "minutesPerLog": "{{minutes}} min por registro",
+    "noLogsHint": "Registra tu estudio para ver tus estadísticas",
+    "statsNoLogs": "Aún no hay registros de estudio",
+    "statsLogCount": "Registros de estudio"
   },
   "learningLog": {
     "batchCreate": "Creación por lotes",
@@ -1232,7 +1242,22 @@
     "freezeAlreadyUsed": "Ya se usó hoy",
     "freezeConfirm": "¿Usar la congelación de racha de hoy?",
     "freezeButton": "Usar congelación",
-    "freezeCount": "{{used}}/{{max}} usadas"
+    "freezeCount": "{{used}}/{{max}} usadas",
+    "levelBeginner": "Principiante",
+    "levelIntermediate": "Intermedio",
+    "levelAdvanced": "Avanzado",
+    "levelMaster": "Maestro",
+    "milestoneFirstDay": "¡Primer día logrado! Sigue así",
+    "milestone7": "¡7 días! Gran constancia",
+    "milestone30": "¡30 días! Ya es un hábito",
+    "milestone100": "¡100 días! Eres un maestro",
+    "milestoneWeekly": "¡{{count}} días! ¡Increíble!",
+    "milestoneNext": "Próxima meta: ¡{{count}} días!",
+    "monthlyDays": "Días este mes",
+    "last30Days": "Últimos 30 días",
+    "calendarTooltip": "{{date}}: {{count}} registros",
+    "legendLess": "Menos",
+    "legendMore": "Más"
   },
   "dailyChallenge": {
     "title": "Desafío Diario",

@@ -777,7 +777,17 @@
     "streakAchieved": "Серия!",
     "logCount": "Всего записей",
     "favorites": "Избранное",
-    "toggleFavorite": "Переключить избранное"
+    "toggleFavorite": "Переключить избранное",
+    "statsTitle": "Статистика обучения",
+    "totalDuration": "Общее время обучения",
+    "avgDuration": "Среднее время обучения",
+    "categoryDuration": "Время обучения по категориям",
+    "hoursUnit": "ч",
+    "countUnit": "записей",
+    "minutesPerLog": "{{minutes}} мин. за запись",
+    "noLogsHint": "Записывайте обучение, чтобы видеть статистику",
+    "statsNoLogs": "Записей об обучении пока нет",
+    "statsLogCount": "Записей об обучении"
   },
   "learningLog": {
     "batchCreate": "Пакетное создание",
@@ -1232,7 +1242,22 @@
     "freezeAlreadyUsed": "Уже использовано сегодня",
     "freezeConfirm": "Использовать заморозку серии сегодня?",
     "freezeButton": "Использовать заморозку",
-    "freezeCount": "{{used}}/{{max}} использовано"
+    "freezeCount": "{{used}}/{{max}} использовано",
+    "levelBeginner": "Новичок",
+    "levelIntermediate": "Средний уровень",
+    "levelAdvanced": "Продвинутый",
+    "levelMaster": "Мастер",
+    "milestoneFirstDay": "Первый день пройден! Так держать",
+    "milestone7": "7 дней! Отличное постоянство",
+    "milestone30": "30 дней! Это стало привычкой",
+    "milestone100": "100 дней! Вы мастер",
+    "milestoneWeekly": "{{count}} дней! Потрясающе!",
+    "milestoneNext": "Следующая цель: {{count}} дней!",
+    "monthlyDays": "Дней в этом месяце",
+    "last30Days": "Последние 30 дней",
+    "calendarTooltip": "{{date}}: {{count}} записей",
+    "legendLess": "Меньше",
+    "legendMore": "Больше"
   },
   "dailyChallenge": {
     "title": "Ежедневный Вызов",

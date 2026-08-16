@@ -68,12 +68,12 @@ describe('LearningStreakCard', () => {
     });
   });
 
-  it('総学習日数が表示される', async () => {
+  it('合計学習日数が表示される', async () => {
     renderWithRouter(<LearningStreakCard />);
 
     await waitFor(() => {
       expect(screen.getByText('45')).toBeInTheDocument();
-      expect(screen.getByText(/総学習日数/)).toBeInTheDocument();
+      expect(screen.getByText(/合計学習日数/)).toBeInTheDocument();
     });
   });
 
@@ -90,7 +90,7 @@ describe('LearningStreakCard', () => {
     renderWithRouter(<LearningStreakCard />);
 
     await waitFor(() => {
-      expect(screen.getByText(/今日から始めよう/)).toBeInTheDocument();
+      expect(screen.getByText(/今日から学習を始めよう/)).toBeInTheDocument();
     });
   });
 

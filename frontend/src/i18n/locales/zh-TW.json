@@ -778,7 +778,17 @@
     "streakAchieved": "連續達成",
     "logCount": "日誌數量",
     "favorites": "收藏",
-    "toggleFavorite": "切換收藏"
+    "toggleFavorite": "切換收藏",
+    "statsTitle": "學習統計",
+    "totalDuration": "總學習時間",
+    "avgDuration": "平均學習時間",
+    "categoryDuration": "依類別的學習時間",
+    "hoursUnit": "小時",
+    "countUnit": "筆",
+    "minutesPerLog": "{{minutes}} 分鐘/次",
+    "noLogsHint": "記錄學習內容以查看統計",
+    "statsNoLogs": "尚未有學習紀錄",
+    "statsLogCount": "學習紀錄數"
   },
   "learningLog": {
     "batchCreate": "批量建立",
@@ -1233,7 +1243,22 @@
     "freezeAlreadyUsed": "今天已使用",
     "freezeConfirm": "使用今天的連續凍結嗎？",
     "freezeButton": "使用凍結",
-    "freezeCount": "已使用{{used}}/{{max}}"
+    "freezeCount": "已使用{{used}}/{{max}}",
+    "levelBeginner": "初學者",
+    "levelIntermediate": "中級",
+    "levelAdvanced": "高級",
+    "levelMaster": "大師",
+    "milestoneFirstDay": "完成第一天！繼續保持",
+    "milestone7": "達成 7 天！堅持得很棒",
+    "milestone30": "達成 30 天！已經養成習慣",
+    "milestone100": "達成 100 天！你是大師",
+    "milestoneWeekly": "達成 {{count}} 天！太棒了！",
+    "milestoneNext": "下一個目標：{{count}} 天！",
+    "monthlyDays": "本月學習天數",
+    "last30Days": "最近 30 天的學習紀錄",
+    "calendarTooltip": "{{date}}：{{count}} 筆學習紀錄",
+    "legendLess": "少",
+    "legendMore": "多"
   },
   "dailyChallenge": {
     "title": "每日挑戰",

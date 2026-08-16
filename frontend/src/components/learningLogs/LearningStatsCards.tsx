@@ -81,7 +81,7 @@ export default function LearningStatsCards() {
     <div className="space-y-4">
       <h3 className="text-sm font-medium text-white flex items-center gap-2">
         <TrendingUp className="w-4 h-4 text-blue-400" />
-        学習統計
+        {t('learningLogs.statsTitle')}
       </h3>
 
       {/* Main Stats Grid */}
@@ -90,14 +90,14 @@ export default function LearningStatsCards() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
             <Clock className="w-4 h-4 text-blue-400" />
-            <span className="text-xs text-gray-400">総学習時間</span>
+            <span className="text-xs text-gray-400">{t('learningLogs.totalDuration')}</span>
           </div>
           <div className="text-2xl font-bold text-white">
             {stats.totalHours}
-            <span className="text-sm text-gray-400 ml-1">時間</span>
+            <span className="text-sm text-gray-400 ml-1">{t('learningLogs.hoursUnit')}</span>
           </div>
           <div className="text-xs text-gray-500 mt-1">
-            {stats.totalDuration}分
+            {t('learningLogs.durationMinutes', { minutes: stats.totalDuration })}
           </div>
         </div>
 
@@ -105,11 +105,11 @@ export default function LearningStatsCards() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
             <BookOpen className="w-4 h-4 text-green-400" />
-            <span className="text-xs text-gray-400">学習ログ数</span>
+            <span className="text-xs text-gray-400">{t('learningLogs.statsLogCount')}</span>
           </div>
           <div className="text-2xl font-bold text-white">
             {stats.totalLogs}
-            <span className="text-sm text-gray-400 ml-1">件</span>
+            <span className="text-sm text-gray-400 ml-1">{t('learningLogs.countUnit')}</span>
           </div>
         </div>
 
@@ -117,14 +117,14 @@ export default function LearningStatsCards() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="w-4 h-4 text-purple-400" />
-            <span className="text-xs text-gray-400">平均学習時間</span>
+            <span className="text-xs text-gray-400">{t('learningLogs.avgDuration')}</span>
           </div>
           <div className="text-2xl font-bold text-white">
             {stats.avgHours}
-            <span className="text-sm text-gray-400 ml-1">時間</span>
+            <span className="text-sm text-gray-400 ml-1">{t('learningLogs.hoursUnit')}</span>
           </div>
           <div className="text-xs text-gray-500 mt-1">
-            {stats.avgDuration}分/回
+            {t('learningLogs.minutesPerLog', { minutes: stats.avgDuration })}
           </div>
         </div>
       </div>
@@ -134,7 +134,7 @@ export default function LearningStatsCards() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-4">
             <PieChart className="w-4 h-4 text-orange-400" />
-            <span className="text-sm font-medium text-white">カテゴリ別学習時間</span>
+            <span className="text-sm font-medium text-white">{t('learningLogs.categoryDuration')}</span>
           </div>
 
           <div className="space-y-3">
@@ -175,10 +175,10 @@ export default function LearningStatsCards() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-8 text-center">
           <BookOpen className="w-12 h-12 mx-auto mb-3 text-gray-700" />
           <p className="text-gray-400 text-sm">
-            まだ学習ログがありません
+            {t('learningLogs.statsNoLogs')}
           </p>
           <p className="text-gray-500 text-xs mt-1">
-            学習ログを記録して統計を確認しましょう
+            {t('learningLogs.noLogsHint')}
           </p>
         </div>
       )}

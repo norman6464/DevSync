@@ -777,7 +777,17 @@
     "streakAchieved": "Série !",
     "logCount": "Total des entrées",
     "favorites": "Favoris",
-    "toggleFavorite": "Basculer le favori"
+    "toggleFavorite": "Basculer le favori",
+    "statsTitle": "Statistiques d'étude",
+    "totalDuration": "Temps d'étude total",
+    "avgDuration": "Temps d'étude moyen",
+    "categoryDuration": "Temps d'étude par catégorie",
+    "hoursUnit": "h",
+    "countUnit": "entrées",
+    "minutesPerLog": "{{minutes}} min par entrée",
+    "noLogsHint": "Enregistrez vos études pour voir vos statistiques",
+    "statsNoLogs": "Pas encore d'entrées de journal",
+    "statsLogCount": "Entrées de journal"
   },
   "learningLog": {
     "batchCreate": "Création par lot",
@@ -1232,7 +1242,22 @@
     "freezeAlreadyUsed": "Déjà utilisé aujourd'hui",
     "freezeConfirm": "Utiliser le gel de série aujourd'hui ?",
     "freezeButton": "Utiliser le gel",
-    "freezeCount": "{{used}}/{{max}} utilisé(s)"
+    "freezeCount": "{{used}}/{{max}} utilisé(s)",
+    "levelBeginner": "Débutant",
+    "levelIntermediate": "Intermédiaire",
+    "levelAdvanced": "Avancé",
+    "levelMaster": "Maître",
+    "milestoneFirstDay": "Premier jour réussi ! Continuez",
+    "milestone7": "7 jours ! Belle régularité",
+    "milestone30": "30 jours ! C'est devenu une habitude",
+    "milestone100": "100 jours ! Vous êtes un maître",
+    "milestoneWeekly": "{{count}} jours ! Formidable !",
+    "milestoneNext": "Prochain objectif : {{count}} jours !",
+    "monthlyDays": "Jours ce mois-ci",
+    "last30Days": "30 derniers jours",
+    "calendarTooltip": "{{date}} : {{count}} entrées",
+    "legendLess": "Moins",
+    "legendMore": "Plus"
   },
   "dailyChallenge": {
     "title": "Défi Quotidien",
