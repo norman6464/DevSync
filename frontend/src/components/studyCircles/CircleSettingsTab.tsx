@@ -19,11 +19,17 @@ export default function CircleSettingsTab({ circle, onAddMember, onRemoveMember 
   const navigate = useNavigate();
   const { confirm, dialogProps } = useConfirm();
   const [showAddMember, setShowAddMember] = useState(false);
-  const [memberSearch, setMemberSearch] = useState('');
-  // NOTE: useUserSearch は実際には引数を取らず users も返さないため、この呼び出しは
-  // 実行時に searchUsers が undefined になる既存不具合を含む。挙動を変えないよう
-  // 型だけ通すキャストに留めている（フック API に合わせた修正は別途行う）。
-  const { users: searchUsers } = (useUserSearch as unknown as (query: string) => { users: User[] })(memberSearch);
+  const { query: memberSearch, setQuery: setMemberSearch, filteredUsers, handleSearch } = useUserSearch();
+
+  // 入力のたびに検索し、絞り込んだ候補を出す
+  const handleSearchChange = (value: string) => {
+    setMemberSearch(value);
+    if (value.trim()) {
+      void handleSearch(value);
+    }
+  };
+
+  const searchUsers = memberSearch.trim() ? filteredUsers : [];
 
   const handleAddMember = async (userId: number) => {
     await onAddMember(userId);
@@ -52,7 +58,7 @@ export default function CircleSettingsTab({ circle, onAddMember, onRemoveMember 
             <input
               type="text"
               value={memberSearch}
-              onChange={(e) => setMemberSearch(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               placeholder={t('studyCircle.searchUsers')}
               maxLength={50}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500 mb-2"
