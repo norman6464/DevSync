@@ -694,9 +694,9 @@ func (m *mockStudyCircleRepo) IsMember(ctx context.Context, circleID, userID uin
 	args := m.Called(ctx, circleID, userID)
 	return args.Bool(0), args.Error(1)
 }
-func (m *mockStudyCircleRepo) GetMemberCount(ctx context.Context, circleID uint) (int, error) {
-	args := m.Called(ctx, circleID)
-	return args.Int(0), args.Error(1)
+func (m *mockStudyCircleRepo) AddMemberWithinLimit(ctx context.Context, circleID, userID uint, role model.StudyCircleMemberRole) (bool, error) {
+	args := m.Called(ctx, circleID, userID, role)
+	return args.Bool(0), args.Error(1)
 }
 func (m *mockStudyCircleRepo) UpdateMemberRole(ctx context.Context, circleID, userID uint, role model.StudyCircleMemberRole) error {
 	return m.Called(ctx, circleID, userID, role).Error(0)

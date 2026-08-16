@@ -214,8 +214,7 @@ func TestStudyCircleAddMember_Success(t *testing.T) {
 	repo.On("IsMember", mock.Anything, uint(10), uint(1)).Return(true, nil)
 	repo.On("IsMember", mock.Anything, uint(10), uint(5)).Return(false, nil)
 	repo.On("FindByID", mock.Anything, uint(10)).Return(&model.StudyCircle{MaxMembers: 5, OwnerID: 1}, nil)
-	repo.On("GetMemberCount", mock.Anything, uint(10)).Return(3, nil)
-	repo.On("AddMember", mock.Anything, uint(10), uint(5), model.StudyCircleRoleMember).Return(nil)
+	repo.On("AddMemberWithinLimit", mock.Anything, uint(10), uint(5), model.StudyCircleRoleMember).Return(true, nil)
 
 	w := doRequest(r, http.MethodPost, "/study-circles/10/members", map[string]uint{
 		"user_id": 5,
@@ -231,7 +230,7 @@ func TestStudyCircleAddMember_LimitReached(t *testing.T) {
 	repo.On("IsMember", mock.Anything, uint(10), uint(1)).Return(true, nil)
 	repo.On("IsMember", mock.Anything, uint(10), uint(5)).Return(false, nil)
 	repo.On("FindByID", mock.Anything, uint(10)).Return(&model.StudyCircle{MaxMembers: 5, OwnerID: 1}, nil)
-	repo.On("GetMemberCount", mock.Anything, uint(10)).Return(5, nil)
+	repo.On("AddMemberWithinLimit", mock.Anything, uint(10), uint(5), model.StudyCircleRoleMember).Return(false, nil)
 
 	w := doRequest(r, http.MethodPost, "/study-circles/10/members", map[string]uint{
 		"user_id": 5,

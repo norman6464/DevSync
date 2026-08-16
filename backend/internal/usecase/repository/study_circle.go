@@ -26,10 +26,12 @@ type StudyCircleRepository interface {
 
 	// メンバー管理
 	AddMember(ctx context.Context, circleID, userID uint, role model.StudyCircleMemberRole) error
+	// AddMemberWithinLimit はサークルの人数上限チェックとメンバー追加を不可分に行う。
+	// 上限到達で追加しなかった場合は (false, nil) を返す。同時実行でも上限を超えない。
+	AddMemberWithinLimit(ctx context.Context, circleID, userID uint, role model.StudyCircleMemberRole) (bool, error)
 	RemoveMember(ctx context.Context, circleID, userID uint) error
 	GetMembers(ctx context.Context, circleID uint) ([]model.StudyCircleMember, error)
 	IsMember(ctx context.Context, circleID, userID uint) (bool, error)
-	GetMemberCount(ctx context.Context, circleID uint) (int, error)
 	UpdateMemberRole(ctx context.Context, circleID, userID uint, role model.StudyCircleMemberRole) error
 	CountByUserID(ctx context.Context, userID uint) (int64, error)
 

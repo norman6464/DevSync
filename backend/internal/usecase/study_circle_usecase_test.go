@@ -62,9 +62,9 @@ func (m *mockStudyCircleRepo) IsMember(ctx context.Context, circleID, userID uin
 	args := m.Called(ctx, circleID, userID)
 	return args.Bool(0), args.Error(1)
 }
-func (m *mockStudyCircleRepo) GetMemberCount(ctx context.Context, circleID uint) (int, error) {
-	args := m.Called(ctx, circleID)
-	return args.Int(0), args.Error(1)
+func (m *mockStudyCircleRepo) AddMemberWithinLimit(ctx context.Context, circleID, userID uint, role model.StudyCircleMemberRole) (bool, error) {
+	args := m.Called(ctx, circleID, userID, role)
+	return args.Bool(0), args.Error(1)
 }
 func (m *mockStudyCircleRepo) UpdateMemberRole(ctx context.Context, circleID, userID uint, role model.StudyCircleMemberRole) error {
 	return m.Called(ctx, circleID, userID, role).Error(0)
@@ -326,19 +326,32 @@ func TestAddStudyCircleMemberUseCase_Execute(t *testing.T) {
 		assertStudyCircleStatus(t, err, http.StatusBadRequest)
 	})
 
+	t.Run("追加できたら成功", func(t *testing.T) {
+		repo := new(mockStudyCircleRepo)
+		repo.On("IsMember", mock.Anything, uint(10), uint(1)).Return(true, nil)
+		repo.On("IsMember", mock.Anything, uint(10), uint(5)).Return(false, nil)
+		repo.On("FindByID", mock.Anything, uint(10)).Return(&model.StudyCircle{MaxMembers: 3}, nil)
+		repo.On("AddMemberWithinLimit", mock.Anything, uint(10), uint(5), model.StudyCircleRoleMember).Return(true, nil)
+		uc := usecase.NewAddStudyCircleMemberUseCase(repo)
+
+		err := uc.Execute(context.Background(), 10, 1, 5)
+
+		assert.NoError(t, err)
+		repo.AssertExpectations(t)
+	})
+
 	t.Run("上限到達なら専用メッセージで 400", func(t *testing.T) {
 		repo := new(mockStudyCircleRepo)
 		repo.On("IsMember", mock.Anything, uint(10), uint(1)).Return(true, nil)
 		repo.On("IsMember", mock.Anything, uint(10), uint(5)).Return(false, nil)
 		repo.On("FindByID", mock.Anything, uint(10)).Return(&model.StudyCircle{MaxMembers: 3}, nil)
-		repo.On("GetMemberCount", mock.Anything, uint(10)).Return(3, nil)
+		repo.On("AddMemberWithinLimit", mock.Anything, uint(10), uint(5), model.StudyCircleRoleMember).Return(false, nil)
 		uc := usecase.NewAddStudyCircleMemberUseCase(repo)
 
 		err := uc.Execute(context.Background(), 10, 1, 5)
 
 		assertStudyCircleStatus(t, err, http.StatusBadRequest)
 		assert.Equal(t, "メンバー上限に達しました", domain.GetDomainError(err).Message)
-		repo.AssertNotCalled(t, "AddMember", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 	})
 
 	t.Run("サークルが不在なら 404", func(t *testing.T) {
