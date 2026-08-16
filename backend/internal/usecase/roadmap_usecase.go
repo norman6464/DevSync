@@ -524,6 +524,8 @@ func (uc *SeedRoadmapTemplatesUseCase) Execute(ctx context.Context, userID uint)
 	}
 
 	for _, tmpl := range presetRoadmapTemplates {
+		// StepCount は CreateStep が 1 件ごとに加算するため 0 で作る
+		// （実数をセットすると加算と重なって 2 倍になり、進捗が 100% に届かなくなる）。
 		roadmap := &model.Roadmap{
 			UserID:      userID,
 			Title:       tmpl.Title,
@@ -531,7 +533,6 @@ func (uc *SeedRoadmapTemplatesUseCase) Execute(ctx context.Context, userID uint)
 			Category:    tmpl.Category,
 			IsPublic:    true,
 			IsTemplate:  true,
-			StepCount:   len(tmpl.Steps),
 			Status:      model.RoadmapStatusActive,
 		}
 		if err := uc.roadmaps.Create(ctx, roadmap); err != nil {

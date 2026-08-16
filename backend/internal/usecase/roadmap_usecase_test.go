@@ -439,7 +439,11 @@ func TestSeedRoadmapTemplatesUseCase_Execute(t *testing.T) {
 	t.Run("テンプレートが無ければ全件を作る", func(t *testing.T) {
 		repo := new(mockRoadmapRepo)
 		repo.On("GetTemplates", mock.Anything).Return([]model.Roadmap{}, nil)
-		repo.On("Create", mock.Anything, mock.AnythingOfType("*model.Roadmap")).Return(nil)
+		// CreateStep が 1 件ごとに step_count を加算するため、Roadmap は 0 で作られる
+		// （実数をセットすると二重加算で 2 倍になる）。
+		repo.On("Create", mock.Anything, mock.MatchedBy(func(r *model.Roadmap) bool {
+			return r.StepCount == 0
+		})).Return(nil)
 		repo.On("CreateStep", mock.Anything, mock.AnythingOfType("*model.RoadmapStep")).Return(nil)
 		uc := usecase.NewSeedRoadmapTemplatesUseCase(repo)
 
