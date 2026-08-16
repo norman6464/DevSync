@@ -262,10 +262,18 @@ func NewDeleteNoteFolderUseCase(folders repository.NoteFolderRepository) *Delete
 	return &DeleteNoteFolderUseCase{folders: folders}
 }
 
-// Execute はフォルダを削除する。
+// Execute はフォルダを削除する。子フォルダを持つ場合は削除せず、原因の分かる 409 を返す
+// （無条件に削除すると parent_id の自己参照外部キー制約違反が 500 になるため）。
 func (uc *DeleteNoteFolderUseCase) Execute(ctx context.Context, id, userID uint) error {
 	if _, err := ensureOwner(ctx, uc.folders.FindByID, id, userID, noteFolderOwnerOf); err != nil {
 		return err
+	}
+	children, err := uc.folders.FindByParentID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if len(children) > 0 {
+		return domain.NewError(domain.ErrCodeConflict, "子フォルダがあるため削除できません。先に子フォルダを削除または移動してください", nil)
 	}
 	return uc.folders.Delete(ctx, id)
 }

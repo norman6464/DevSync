@@ -555,14 +555,44 @@ func TestUpdateNoteFolderUseCase_Execute(t *testing.T) {
 }
 
 func TestDeleteNoteFolderUseCase_Execute(t *testing.T) {
-	t.Run("所有者なら削除する", func(t *testing.T) {
+	t.Run("所有者で子フォルダが無ければ削除する", func(t *testing.T) {
 		repo := new(mockNoteFolderRepo)
 		repo.On("FindByID", mock.Anything, uint(1)).Return(ownedNoteFolder(), nil)
+		repo.On("FindByParentID", mock.Anything, uint(1)).Return([]model.NoteFolder{}, nil)
 		repo.On("Delete", mock.Anything, uint(1)).Return(nil)
 		uc := usecase.NewDeleteNoteFolderUseCase(repo)
 
 		assert.NoError(t, uc.Execute(context.Background(), 1, 1))
 		repo.AssertExpectations(t)
+	})
+
+	// 無条件に削除すると自己参照外部キー制約違反で 500 になるため、409 で止める。
+	t.Run("子フォルダを持つ場合は 409 で削除しない", func(t *testing.T) {
+		repo := new(mockNoteFolderRepo)
+		repo.On("FindByID", mock.Anything, uint(1)).Return(ownedNoteFolder(), nil)
+		repo.On("FindByParentID", mock.Anything, uint(1)).
+			Return([]model.NoteFolder{{ID: 2, UserID: 1}}, nil)
+		uc := usecase.NewDeleteNoteFolderUseCase(repo)
+
+		err := uc.Execute(context.Background(), 1, 1)
+
+		assertDomainCode(t, err, domain.ErrCodeConflict)
+		var de *domain.DomainError
+		if assert.ErrorAs(t, err, &de) {
+			assert.Equal(t, "子フォルダがあるため削除できません。先に子フォルダを削除または移動してください", de.Message)
+		}
+		repo.AssertNotCalled(t, "Delete")
+	})
+
+	t.Run("子フォルダ取得の DB 障害を伝播する（削除しない）", func(t *testing.T) {
+		repo := new(mockNoteFolderRepo)
+		repo.On("FindByID", mock.Anything, uint(1)).Return(ownedNoteFolder(), nil)
+		repo.On("FindByParentID", mock.Anything, uint(1)).
+			Return([]model.NoteFolder(nil), errors.New("db error"))
+		uc := usecase.NewDeleteNoteFolderUseCase(repo)
+
+		assert.Error(t, uc.Execute(context.Background(), 1, 1))
+		repo.AssertNotCalled(t, "Delete")
 	})
 
 	t.Run("所有者以外は Forbidden（削除しない）", func(t *testing.T) {

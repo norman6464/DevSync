@@ -348,11 +348,27 @@ func TestNoteFolderHandler_Delete(t *testing.T) {
 	r.DELETE("/folders/:id", h.Delete)
 
 	repo.On("FindByID", mock.Anything, uint(1)).Return(ownedFolder(), nil)
+	repo.On("FindByParentID", mock.Anything, uint(1)).Return([]model.NoteFolder{}, nil)
 	repo.On("Delete", mock.Anything, uint(1)).Return(nil)
 
 	w := doRequest(r, "DELETE", "/folders/1", nil)
 	assertStatus(t, w, http.StatusOK)
 	repo.AssertExpectations(t)
+}
+
+// 子フォルダを持つフォルダの削除は 409 を返し、削除しない（従来は外部キー制約違反の 500）。
+func TestNoteFolderHandler_Delete_HasChildren(t *testing.T) {
+	h, repo := newTestNoteFolderHandler()
+	r := newRouter(1)
+	r.DELETE("/folders/:id", h.Delete)
+
+	repo.On("FindByID", mock.Anything, uint(1)).Return(ownedFolder(), nil)
+	repo.On("FindByParentID", mock.Anything, uint(1)).
+		Return([]model.NoteFolder{{ID: 2, UserID: 1}}, nil)
+
+	w := doRequest(r, "DELETE", "/folders/1", nil)
+	assertStatus(t, w, http.StatusConflict)
+	repo.AssertNotCalled(t, "Delete")
 }
 
 // 所有者以外の削除は 403 を返し、削除しない。
