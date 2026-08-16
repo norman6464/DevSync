@@ -74,6 +74,36 @@ func ownedReviewOf(id uint) *model.BookReview {
 }
 
 func TestCreateBookReviewUseCase_Execute(t *testing.T) {
+	t.Run("画像URLが2000文字を超えると検証エラーになる", func(t *testing.T) {
+		repo := new(mockBookReviewRepo)
+		uc := usecase.NewCreateBookReviewUseCase(repo)
+
+		err := uc.Execute(context.Background(), &model.BookReview{
+			Title: "書名", Rating: 4,
+			ImageURL: "https://example.com/" + strings.Repeat("a", 2000),
+		})
+
+		assert.Error(t, err)
+		assert.True(t, domain.IsDomainError(err), "DomainError（400系）として返す: %v", err)
+		repo.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
+	})
+
+	t.Run("2000文字ちょうどの画像URLは作成できる", func(t *testing.T) {
+		repo := new(mockBookReviewRepo)
+		imageURL := "https://example.com/" + strings.Repeat("a", 2000-len("https://example.com/"))
+		repo.On("Create", mock.Anything, mock.MatchedBy(func(r *model.BookReview) bool {
+			return r.ImageURL == imageURL
+		})).Return(nil)
+		uc := usecase.NewCreateBookReviewUseCase(repo)
+
+		err := uc.Execute(context.Background(), &model.BookReview{
+			Title: "書名", Rating: 4, ImageURL: imageURL,
+		})
+
+		assert.NoError(t, err)
+		repo.AssertExpectations(t)
+	})
+
 	t.Run("前後空白を除いて作成する", func(t *testing.T) {
 		repo := new(mockBookReviewRepo)
 		repo.On("Create", mock.Anything, mock.MatchedBy(func(r *model.BookReview) bool {
