@@ -87,18 +87,20 @@ func (uc *SendMessageUseCase) Execute(ctx context.Context, msg *model.Message) e
 		return err
 	}
 
-	// 受信者への通知は送信結果に影響させない（移行前と同じく非同期・エラーは無視）。
-	// リクエストの ctx はレスポンス送出時に打ち切られるため、キャンセルだけを外した ctx を渡す。
-	go uc.notifyReceiver(context.WithoutCancel(ctx), msg.SenderID, msg.ReceiverID)
+	// 受信者への通知は送信結果に影響させない（非同期・失敗はランナーがログへ残す）。
+	// 上限付きワーカーで実行し、ジョブにはリクエストと独立した期限付き ctx が渡る。
+	uc.notifyReceiver(msg.SenderID, msg.ReceiverID)
 
 	return nil
 }
 
-// notifyReceiver は受信者へメッセージ受信の通知を作成する。
-func (uc *SendMessageUseCase) notifyReceiver(ctx context.Context, senderID, receiverID uint) {
-	_ = uc.notifications.Create(ctx, &model.Notification{
-		UserID:  receiverID,
-		Type:    model.NotificationTypeMessage,
-		ActorID: senderID,
+// notifyReceiver は受信者へメッセージ受信の通知をバックグラウンドで作成する。
+func (uc *SendMessageUseCase) notifyReceiver(senderID, receiverID uint) {
+	defaultBackgroundRunner().Submit("message-notification", func(ctx context.Context) error {
+		return uc.notifications.Create(ctx, &model.Notification{
+			UserID:  receiverID,
+			Type:    model.NotificationTypeMessage,
+			ActorID: senderID,
+		})
 	})
 }

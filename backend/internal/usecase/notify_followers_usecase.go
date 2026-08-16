@@ -37,11 +37,11 @@ func (uc *NotifyFollowersUseCase) Execute(ctx context.Context, actorID, postID u
 }
 
 // Notify は通知作成をバックグラウンドで実行する。レスポンスを待たせないための入り口で、
-// 失敗しても呼び出し元の処理は継続する。リクエストの終了で打ち切られないよう ctx の
-// キャンセルは切り離す。
+// 失敗しても呼び出し元の処理は継続する（失敗はランナーがログへ残す）。
+// 上限付きワーカーで実行するため、通知量が処理能力を超えても goroutine と
+// DB 接続は積み上がらない。ジョブにはリクエストと独立した期限付き ctx が渡る。
 func (uc *NotifyFollowersUseCase) Notify(ctx context.Context, actorID, postID uint, notificationType model.NotificationType) {
-	detached := context.WithoutCancel(ctx)
-	go func() {
-		_ = uc.Execute(detached, actorID, postID, notificationType)
-	}()
+	defaultBackgroundRunner().Submit("notify-followers", func(jobCtx context.Context) error {
+		return uc.Execute(jobCtx, actorID, postID, notificationType)
+	})
 }
