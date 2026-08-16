@@ -3,7 +3,6 @@ package usecase_test
 import (
 	"context"
 	"errors"
-	"net/http"
 	"strings"
 	"testing"
 
@@ -82,13 +81,13 @@ func (m *mockLearningResourceRepo) HasSaved(ctx context.Context, userID, resourc
 	return args.Bool(0), args.Error(1)
 }
 
-// assertResourceStatus は err が期待の HTTP ステータスに対応する DomainError であることを検証する。
-func assertResourceStatus(t *testing.T, err error, want int) {
+// assertResourceCode は err が期待の HTTP ステータスに対応する DomainError であることを検証する。
+func assertResourceCode(t *testing.T, err error, want domain.ErrorCode) {
 	t.Helper()
 	require.Error(t, err)
 	domainErr := domain.GetDomainError(err)
 	require.NotNil(t, domainErr, "DomainError であること")
-	assert.Equal(t, want, domainErr.HTTPStatus())
+	assert.Equal(t, want, domainErr.Code)
 }
 
 // validResource は検証を通る学習リソースを返す。
@@ -115,7 +114,7 @@ func TestCreateLearningResourceUseCase_Execute(t *testing.T) {
 
 		r := validResource()
 		r.Title = ""
-		assertResourceStatus(t, uc.Execute(context.Background(), r), http.StatusBadRequest)
+		assertResourceCode(t, uc.Execute(context.Background(), r), domain.ErrCodeValidation)
 		repo.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 	})
 
@@ -125,7 +124,7 @@ func TestCreateLearningResourceUseCase_Execute(t *testing.T) {
 
 		r := validResource()
 		r.Tags = strings.Repeat("a", 1001)
-		assertResourceStatus(t, uc.Execute(context.Background(), r), http.StatusBadRequest)
+		assertResourceCode(t, uc.Execute(context.Background(), r), domain.ErrCodeValidation)
 	})
 }
 
@@ -158,7 +157,7 @@ func TestGetLearningResourceUseCase_Execute(t *testing.T) {
 		uc := usecase.NewGetLearningResourceUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), 1, 1)
-		assertResourceStatus(t, err, http.StatusForbidden)
+		assertResourceCode(t, err, domain.ErrCodeForbidden)
 	})
 
 	t.Run("不在は DomainError ではないエラー（handler で 500）", func(t *testing.T) {
@@ -212,7 +211,7 @@ func TestListLearningResourcesByDifficultyUseCase_Execute(t *testing.T) {
 		uc := usecase.NewListLearningResourcesByDifficultyUseCase(repo)
 
 		_, _, err := uc.Execute(context.Background(), "expert", 20, 0)
-		assertResourceStatus(t, err, http.StatusBadRequest)
+		assertResourceCode(t, err, domain.ErrCodeBadRequest)
 		assert.Equal(t, "無効な難易度です", domain.GetDomainError(err).Message)
 		repo.AssertNotCalled(t, "FindByDifficulty", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 	})
@@ -274,7 +273,7 @@ func TestUpdateLearningResourceUseCase_Execute(t *testing.T) {
 		uc := usecase.NewUpdateLearningResourceUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), 1, 1, &model.LearningResource{Title: "新題"})
-		assertResourceStatus(t, err, http.StatusForbidden)
+		assertResourceCode(t, err, domain.ErrCodeForbidden)
 		repo.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
 	})
 
@@ -286,7 +285,7 @@ func TestUpdateLearningResourceUseCase_Execute(t *testing.T) {
 		_, err := uc.Execute(context.Background(), 1, 1, &model.LearningResource{
 			Tags: strings.Repeat("a", 1001),
 		})
-		assertResourceStatus(t, err, http.StatusBadRequest)
+		assertResourceCode(t, err, domain.ErrCodeValidation)
 		repo.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
 	})
 
@@ -298,7 +297,7 @@ func TestUpdateLearningResourceUseCase_Execute(t *testing.T) {
 		_, err := uc.Execute(context.Background(), 1, 1, &model.LearningResource{
 			ImageURL: strings.Repeat("a", 2001),
 		})
-		assertResourceStatus(t, err, http.StatusBadRequest)
+		assertResourceCode(t, err, domain.ErrCodeValidation)
 	})
 }
 
@@ -321,7 +320,7 @@ func TestLearningResourceLikeAndSave(t *testing.T) {
 		repo.On("FindByID", mock.Anything, uint(1)).Return(mine, nil)
 		uc := usecase.NewLikeLearningResourceUseCase(repo)
 
-		assertResourceStatus(t, uc.Execute(context.Background(), 1, 1), http.StatusForbidden)
+		assertResourceCode(t, uc.Execute(context.Background(), 1, 1), domain.ErrCodeForbidden)
 		repo.AssertNotCalled(t, "Like", mock.Anything, mock.Anything, mock.Anything)
 	})
 
@@ -330,7 +329,7 @@ func TestLearningResourceLikeAndSave(t *testing.T) {
 		repo.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
 		uc := usecase.NewLikeLearningResourceUseCase(repo)
 
-		assertResourceStatus(t, uc.Execute(context.Background(), 1, 1), http.StatusNotFound)
+		assertResourceCode(t, uc.Execute(context.Background(), 1, 1), domain.ErrCodeNotFound)
 	})
 
 	t.Run("取得の DB 障害も 404 に潰れる", func(t *testing.T) {
@@ -338,7 +337,7 @@ func TestLearningResourceLikeAndSave(t *testing.T) {
 		repo.On("FindByID", mock.Anything, uint(1)).Return(nil, errors.New("db error"))
 		uc := usecase.NewLikeLearningResourceUseCase(repo)
 
-		assertResourceStatus(t, uc.Execute(context.Background(), 1, 1), http.StatusNotFound)
+		assertResourceCode(t, uc.Execute(context.Background(), 1, 1), domain.ErrCodeNotFound)
 	})
 
 	t.Run("いいね取消も自分のリソースなら 403", func(t *testing.T) {
@@ -346,7 +345,7 @@ func TestLearningResourceLikeAndSave(t *testing.T) {
 		repo.On("FindByID", mock.Anything, uint(1)).Return(mine, nil)
 		uc := usecase.NewUnlikeLearningResourceUseCase(repo)
 
-		assertResourceStatus(t, uc.Execute(context.Background(), 1, 1), http.StatusForbidden)
+		assertResourceCode(t, uc.Execute(context.Background(), 1, 1), domain.ErrCodeForbidden)
 	})
 
 	t.Run("自分のリソースの保存は 403", func(t *testing.T) {
@@ -354,7 +353,7 @@ func TestLearningResourceLikeAndSave(t *testing.T) {
 		repo.On("FindByID", mock.Anything, uint(1)).Return(mine, nil)
 		uc := usecase.NewSaveLearningResourceUseCase(repo)
 
-		assertResourceStatus(t, uc.Execute(context.Background(), 1, 1), http.StatusForbidden)
+		assertResourceCode(t, uc.Execute(context.Background(), 1, 1), domain.ErrCodeForbidden)
 		repo.AssertNotCalled(t, "Save", mock.Anything, mock.Anything, mock.Anything)
 	})
 
@@ -373,7 +372,7 @@ func TestLearningResourceLikeAndSave(t *testing.T) {
 		repo.On("FindByID", mock.Anything, uint(1)).Return(mine, nil)
 		uc := usecase.NewUnsaveLearningResourceUseCase(repo)
 
-		assertResourceStatus(t, uc.Execute(context.Background(), 1, 1), http.StatusForbidden)
+		assertResourceCode(t, uc.Execute(context.Background(), 1, 1), domain.ErrCodeForbidden)
 	})
 }
 
@@ -438,7 +437,7 @@ func TestLearningResourcePassThroughUseCases(t *testing.T) {
 		repo.On("FindByID", mock.Anything, uint(1)).
 			Return(&model.LearningResource{ID: 1, UserID: 99}, nil)
 		_, err := usecase.NewUpdateLearningResourceVisibilityUseCase(repo).Execute(ctx, 1, 1, true)
-		assertResourceStatus(t, err, http.StatusForbidden)
+		assertResourceCode(t, err, domain.ErrCodeForbidden)
 	})
 
 	t.Run("削除は所有者のみ", func(t *testing.T) {

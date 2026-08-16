@@ -3,7 +3,6 @@ package usecase_test
 import (
 	"context"
 	"errors"
-	"net/http"
 	"strings"
 	"testing"
 
@@ -87,13 +86,13 @@ func (m *mockQuestionRepo) FindBookmarkedByUserID(ctx context.Context, userID ui
 	return q, args.Get(1).(int64), args.Error(2)
 }
 
-// assertQuestionStatus は err が期待の HTTP ステータスに対応する DomainError であることを検証する。
-func assertQuestionStatus(t *testing.T, err error, want int) {
+// assertQuestionCode は err が期待の HTTP ステータスに対応する DomainError であることを検証する。
+func assertQuestionCode(t *testing.T, err error, want domain.ErrorCode) {
 	t.Helper()
 	require.Error(t, err)
 	domainErr := domain.GetDomainError(err)
 	require.NotNil(t, domainErr, "DomainError であること")
-	assert.Equal(t, want, domainErr.HTTPStatus())
+	assert.Equal(t, want, domainErr.Code)
 }
 
 // assertPlainError は err が DomainError ではない（handler で 500 になる）ことを検証する。
@@ -121,7 +120,7 @@ func TestCreateQuestionUseCase_Execute(t *testing.T) {
 
 		err := uc.Execute(context.Background(), &model.Question{Title: "  ", Body: "本文"})
 
-		assertQuestionStatus(t, err, http.StatusBadRequest)
+		assertQuestionCode(t, err, domain.ErrCodeValidation)
 		repo.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 	})
 
@@ -133,7 +132,7 @@ func TestCreateQuestionUseCase_Execute(t *testing.T) {
 			Title: strings.Repeat("あ", 501), Body: "本文",
 		})
 
-		assertQuestionStatus(t, err, http.StatusBadRequest)
+		assertQuestionCode(t, err, domain.ErrCodeValidation)
 	})
 
 	t.Run("タグが 301 文字なら 400", func(t *testing.T) {
@@ -144,7 +143,7 @@ func TestCreateQuestionUseCase_Execute(t *testing.T) {
 			Title: "題", Body: "本文", Tags: strings.Repeat("a", 301),
 		})
 
-		assertQuestionStatus(t, err, http.StatusBadRequest)
+		assertQuestionCode(t, err, domain.ErrCodeValidation)
 	})
 }
 
@@ -221,7 +220,7 @@ func TestUpdateQuestionUseCase_Execute(t *testing.T) {
 
 		_, err := uc.Execute(context.Background(), 5, 1, "新題", "", "")
 
-		assertQuestionStatus(t, err, http.StatusForbidden)
+		assertQuestionCode(t, err, domain.ErrCodeForbidden)
 		repo.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
 	})
 
@@ -242,7 +241,7 @@ func TestUpdateQuestionUseCase_Execute(t *testing.T) {
 
 		_, err := uc.Execute(context.Background(), 5, 1, strings.Repeat("あ", 501), "", "")
 
-		assertQuestionStatus(t, err, http.StatusBadRequest)
+		assertQuestionCode(t, err, domain.ErrCodeValidation)
 		repo.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
 	})
 }
@@ -263,7 +262,7 @@ func TestDeleteQuestionUseCase_Execute(t *testing.T) {
 		repo.On("FindByID", mock.Anything, uint(5)).Return(&model.Question{ID: 5, UserID: 99}, nil)
 		uc := usecase.NewDeleteQuestionUseCase(repo)
 
-		assertQuestionStatus(t, uc.Execute(context.Background(), 5, 1), http.StatusForbidden)
+		assertQuestionCode(t, uc.Execute(context.Background(), 5, 1), domain.ErrCodeForbidden)
 		repo.AssertNotCalled(t, "Delete", mock.Anything, mock.Anything)
 	})
 }
@@ -283,7 +282,7 @@ func TestVoteQuestionUseCase_Execute(t *testing.T) {
 		repo := new(mockQuestionRepo)
 		uc := usecase.NewVoteQuestionUseCase(repo)
 
-		assertQuestionStatus(t, uc.Execute(context.Background(), 1, 5, 0), http.StatusBadRequest)
+		assertQuestionCode(t, uc.Execute(context.Background(), 1, 5, 0), domain.ErrCodeValidation)
 		repo.AssertNotCalled(t, "FindByID", mock.Anything, mock.Anything)
 	})
 
@@ -292,7 +291,7 @@ func TestVoteQuestionUseCase_Execute(t *testing.T) {
 		repo.On("FindByID", mock.Anything, uint(5)).Return(&model.Question{ID: 5, UserID: 1}, nil)
 		uc := usecase.NewVoteQuestionUseCase(repo)
 
-		assertQuestionStatus(t, uc.Execute(context.Background(), 1, 5, 1), http.StatusForbidden)
+		assertQuestionCode(t, uc.Execute(context.Background(), 1, 5, 1), domain.ErrCodeForbidden)
 		repo.AssertNotCalled(t, "Vote", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 	})
 
@@ -301,7 +300,7 @@ func TestVoteQuestionUseCase_Execute(t *testing.T) {
 		repo.On("FindByID", mock.Anything, uint(5)).Return(nil, nil)
 		uc := usecase.NewVoteQuestionUseCase(repo)
 
-		assertQuestionStatus(t, uc.Execute(context.Background(), 1, 5, 1), http.StatusNotFound)
+		assertQuestionCode(t, uc.Execute(context.Background(), 1, 5, 1), domain.ErrCodeNotFound)
 	})
 
 	t.Run("取得の DB 障害も 404 に潰れる", func(t *testing.T) {
@@ -309,7 +308,7 @@ func TestVoteQuestionUseCase_Execute(t *testing.T) {
 		repo.On("FindByID", mock.Anything, uint(5)).Return(nil, errors.New("db error"))
 		uc := usecase.NewVoteQuestionUseCase(repo)
 
-		assertQuestionStatus(t, uc.Execute(context.Background(), 1, 5, 1), http.StatusNotFound)
+		assertQuestionCode(t, uc.Execute(context.Background(), 1, 5, 1), domain.ErrCodeNotFound)
 	})
 }
 
@@ -329,7 +328,7 @@ func TestRemoveQuestionVoteUseCase_Execute(t *testing.T) {
 		repo.On("FindByID", mock.Anything, uint(5)).Return(&model.Question{ID: 5, UserID: 1}, nil)
 		uc := usecase.NewRemoveQuestionVoteUseCase(repo)
 
-		assertQuestionStatus(t, uc.Execute(context.Background(), 1, 5), http.StatusForbidden)
+		assertQuestionCode(t, uc.Execute(context.Background(), 1, 5), domain.ErrCodeForbidden)
 	})
 }
 
@@ -351,7 +350,7 @@ func TestBookmarkQuestionUseCase_Execute(t *testing.T) {
 		repo.On("HasBookmarked", mock.Anything, uint(1), uint(5)).Return(true, nil)
 		uc := usecase.NewBookmarkQuestionUseCase(repo)
 
-		assertQuestionStatus(t, uc.Execute(context.Background(), 1, 5), http.StatusConflict)
+		assertQuestionCode(t, uc.Execute(context.Background(), 1, 5), domain.ErrCodeConflict)
 		repo.AssertNotCalled(t, "Bookmark", mock.Anything, mock.Anything, mock.Anything)
 	})
 
@@ -360,7 +359,7 @@ func TestBookmarkQuestionUseCase_Execute(t *testing.T) {
 		repo.On("FindByID", mock.Anything, uint(5)).Return(nil, nil)
 		uc := usecase.NewBookmarkQuestionUseCase(repo)
 
-		assertQuestionStatus(t, uc.Execute(context.Background(), 1, 5), http.StatusNotFound)
+		assertQuestionCode(t, uc.Execute(context.Background(), 1, 5), domain.ErrCodeNotFound)
 	})
 
 	t.Run("自分の質問でもブックマークできる", func(t *testing.T) {

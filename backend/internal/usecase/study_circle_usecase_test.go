@@ -3,7 +3,6 @@ package usecase_test
 import (
 	"context"
 	"errors"
-	"net/http"
 	"strings"
 	"testing"
 
@@ -116,13 +115,13 @@ func (m *mockStudyCircleRepo) GetStreakRanking(ctx context.Context, circleID uin
 	return r, args.Error(1)
 }
 
-// assertStudyCircleStatus は err が期待の HTTP ステータスに対応する DomainError であることを検証する。
-func assertStudyCircleStatus(t *testing.T, err error, want int) {
+// assertStudyCircleCode は err が期待の HTTP ステータスに対応する DomainError であることを検証する。
+func assertStudyCircleCode(t *testing.T, err error, want domain.ErrorCode) {
 	t.Helper()
 	require.Error(t, err)
 	domainErr := domain.GetDomainError(err)
 	require.NotNil(t, domainErr, "DomainError であること")
-	assert.Equal(t, want, domainErr.HTTPStatus())
+	assert.Equal(t, want, domainErr.Code)
 }
 
 func TestCreateStudyCircleUseCase_Execute(t *testing.T) {
@@ -151,7 +150,7 @@ func TestCreateStudyCircleUseCase_Execute(t *testing.T) {
 
 		err := uc.Execute(context.Background(), &model.StudyCircle{Name: "   ", Topic: "x"}, nil)
 
-		assertStudyCircleStatus(t, err, http.StatusBadRequest)
+		assertStudyCircleCode(t, err, domain.ErrCodeValidation)
 		repo.AssertNotCalled(t, "CreateWithOwner", mock.Anything, mock.Anything)
 	})
 
@@ -163,7 +162,7 @@ func TestCreateStudyCircleUseCase_Execute(t *testing.T) {
 			Name: "x", Topic: "y", Description: strings.Repeat("あ", 1001),
 		}, nil)
 
-		assertStudyCircleStatus(t, err, http.StatusBadRequest)
+		assertStudyCircleCode(t, err, domain.ErrCodeValidation)
 	})
 
 	t.Run("招待メンバーの追加に失敗しても全体は成功する", func(t *testing.T) {
@@ -197,7 +196,7 @@ func TestListStudyCirclesByStatusUseCase_Execute(t *testing.T) {
 
 		_, err := uc.Execute(context.Background(), 1, "unknown")
 
-		assertStudyCircleStatus(t, err, http.StatusBadRequest)
+		assertStudyCircleCode(t, err, domain.ErrCodeBadRequest)
 		repo.AssertNotCalled(t, "GetByStatus", mock.Anything, mock.Anything, mock.Anything)
 	})
 
@@ -223,7 +222,7 @@ func TestGetStudyCircleUseCase_Execute(t *testing.T) {
 
 		_, err := uc.Execute(context.Background(), 10, 1)
 
-		assertStudyCircleStatus(t, err, http.StatusNotFound)
+		assertStudyCircleCode(t, err, domain.ErrCodeNotFound)
 	})
 
 	t.Run("非メンバーは 403", func(t *testing.T) {
@@ -234,7 +233,7 @@ func TestGetStudyCircleUseCase_Execute(t *testing.T) {
 
 		_, err := uc.Execute(context.Background(), 10, 1)
 
-		assertStudyCircleStatus(t, err, http.StatusForbidden)
+		assertStudyCircleCode(t, err, domain.ErrCodeForbidden)
 	})
 
 	t.Run("メンバー判定の DB 障害はそのまま伝播する", func(t *testing.T) {
@@ -278,7 +277,7 @@ func TestUpdateStudyCircleUseCase_Execute(t *testing.T) {
 		name := "新名"
 		_, err := uc.Execute(context.Background(), 10, 1, &name, nil, nil)
 
-		assertStudyCircleStatus(t, err, http.StatusForbidden)
+		assertStudyCircleCode(t, err, domain.ErrCodeForbidden)
 	})
 
 	t.Run("取得の DB 障害も 404 に潰れる", func(t *testing.T) {
@@ -288,7 +287,7 @@ func TestUpdateStudyCircleUseCase_Execute(t *testing.T) {
 
 		_, err := uc.Execute(context.Background(), 10, 1, nil, nil, nil)
 
-		assertStudyCircleStatus(t, err, http.StatusNotFound)
+		assertStudyCircleCode(t, err, domain.ErrCodeNotFound)
 	})
 
 	t.Run("空トピックは 400", func(t *testing.T) {
@@ -299,7 +298,7 @@ func TestUpdateStudyCircleUseCase_Execute(t *testing.T) {
 		topic := "   "
 		_, err := uc.Execute(context.Background(), 10, 1, nil, &topic, nil)
 
-		assertStudyCircleStatus(t, err, http.StatusBadRequest)
+		assertStudyCircleCode(t, err, domain.ErrCodeValidation)
 		repo.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
 	})
 }
@@ -312,7 +311,7 @@ func TestAddStudyCircleMemberUseCase_Execute(t *testing.T) {
 
 		err := uc.Execute(context.Background(), 10, 1, 5)
 
-		assertStudyCircleStatus(t, err, http.StatusForbidden)
+		assertStudyCircleCode(t, err, domain.ErrCodeForbidden)
 	})
 
 	t.Run("既にメンバーなら 400", func(t *testing.T) {
@@ -323,7 +322,7 @@ func TestAddStudyCircleMemberUseCase_Execute(t *testing.T) {
 
 		err := uc.Execute(context.Background(), 10, 1, 5)
 
-		assertStudyCircleStatus(t, err, http.StatusBadRequest)
+		assertStudyCircleCode(t, err, domain.ErrCodeBadRequest)
 	})
 
 	t.Run("追加できたら成功", func(t *testing.T) {
@@ -350,7 +349,7 @@ func TestAddStudyCircleMemberUseCase_Execute(t *testing.T) {
 
 		err := uc.Execute(context.Background(), 10, 1, 5)
 
-		assertStudyCircleStatus(t, err, http.StatusBadRequest)
+		assertStudyCircleCode(t, err, domain.ErrCodeBadRequest)
 		assert.Equal(t, "メンバー上限に達しました", domain.GetDomainError(err).Message)
 	})
 
@@ -363,7 +362,7 @@ func TestAddStudyCircleMemberUseCase_Execute(t *testing.T) {
 
 		err := uc.Execute(context.Background(), 10, 1, 5)
 
-		assertStudyCircleStatus(t, err, http.StatusNotFound)
+		assertStudyCircleCode(t, err, domain.ErrCodeNotFound)
 	})
 }
 
@@ -374,7 +373,7 @@ func TestUpdateStudyCircleMemberRoleUseCase_Execute(t *testing.T) {
 
 		err := uc.Execute(context.Background(), 10, 1, 5, "admin")
 
-		assertStudyCircleStatus(t, err, http.StatusBadRequest)
+		assertStudyCircleCode(t, err, domain.ErrCodeBadRequest)
 		repo.AssertNotCalled(t, "FindByID", mock.Anything, mock.Anything)
 	})
 
@@ -385,7 +384,7 @@ func TestUpdateStudyCircleMemberRoleUseCase_Execute(t *testing.T) {
 
 		err := uc.Execute(context.Background(), 10, 1, 1, "member")
 
-		assertStudyCircleStatus(t, err, http.StatusBadRequest)
+		assertStudyCircleCode(t, err, domain.ErrCodeBadRequest)
 		assert.Equal(t, "オーナー自身の役割は変更できません", domain.GetDomainError(err).Message)
 	})
 
@@ -397,7 +396,7 @@ func TestUpdateStudyCircleMemberRoleUseCase_Execute(t *testing.T) {
 
 		err := uc.Execute(context.Background(), 10, 1, 5, "owner")
 
-		assertStudyCircleStatus(t, err, http.StatusNotFound)
+		assertStudyCircleCode(t, err, domain.ErrCodeNotFound)
 		assert.Equal(t, "指定されたユーザーはメンバーではありません", domain.GetDomainError(err).Message)
 	})
 
@@ -435,7 +434,7 @@ func TestRemoveStudyCircleMemberUseCase_Execute(t *testing.T) {
 
 		err := uc.Execute(context.Background(), 10, 1, 5)
 
-		assertStudyCircleStatus(t, err, http.StatusForbidden)
+		assertStudyCircleCode(t, err, domain.ErrCodeForbidden)
 		repo.AssertNotCalled(t, "RemoveMember", mock.Anything, mock.Anything, mock.Anything)
 	})
 
@@ -446,7 +445,7 @@ func TestRemoveStudyCircleMemberUseCase_Execute(t *testing.T) {
 
 		err := uc.Execute(context.Background(), 10, 1, 1)
 
-		assertStudyCircleStatus(t, err, http.StatusNotFound)
+		assertStudyCircleCode(t, err, domain.ErrCodeNotFound)
 	})
 }
 
@@ -501,7 +500,7 @@ func TestStudyCircleStepUseCases(t *testing.T) {
 
 		err := uc.Execute(context.Background(), 10, 1, 5)
 
-		assertStudyCircleStatus(t, err, http.StatusNotFound)
+		assertStudyCircleCode(t, err, domain.ErrCodeNotFound)
 		repo.AssertNotCalled(t, "DeleteStep", mock.Anything, mock.Anything)
 	})
 
@@ -531,7 +530,7 @@ func TestStudyCircleStepUseCases(t *testing.T) {
 		title := ""
 		_, err := uc.Execute(context.Background(), 10, 1, 5, &title, nil)
 
-		assertStudyCircleStatus(t, err, http.StatusBadRequest)
+		assertStudyCircleCode(t, err, domain.ErrCodeValidation)
 	})
 
 	t.Run("並べ替えはオーナー以外 403", func(t *testing.T) {
@@ -541,7 +540,7 @@ func TestStudyCircleStepUseCases(t *testing.T) {
 
 		err := uc.Execute(context.Background(), 10, 1, []model.StepOrder{{StepID: 1, OrderIndex: 0}})
 
-		assertStudyCircleStatus(t, err, http.StatusForbidden)
+		assertStudyCircleCode(t, err, domain.ErrCodeForbidden)
 	})
 }
 
@@ -573,7 +572,7 @@ func TestUpdateStudyCircleProgressUseCase_Execute(t *testing.T) {
 
 		err := uc.Execute(context.Background(), 10, 1, 3, true)
 
-		assertStudyCircleStatus(t, err, http.StatusForbidden)
+		assertStudyCircleCode(t, err, domain.ErrCodeForbidden)
 	})
 }
 
@@ -586,7 +585,7 @@ func TestCreateStudyCircleCheckinUseCase_Execute(t *testing.T) {
 
 		_, err := uc.Execute(context.Background(), 10, 1, "今日やったこと")
 
-		assertStudyCircleStatus(t, err, http.StatusConflict)
+		assertStudyCircleCode(t, err, domain.ErrCodeConflict)
 	})
 
 	t.Run("空の内容は 400 でメンバー判定もしない", func(t *testing.T) {
@@ -595,7 +594,7 @@ func TestCreateStudyCircleCheckinUseCase_Execute(t *testing.T) {
 
 		_, err := uc.Execute(context.Background(), 10, 1, "   ")
 
-		assertStudyCircleStatus(t, err, http.StatusBadRequest)
+		assertStudyCircleCode(t, err, domain.ErrCodeValidation)
 		repo.AssertNotCalled(t, "IsMember", mock.Anything, mock.Anything, mock.Anything)
 	})
 
@@ -642,7 +641,7 @@ func TestStudyCircleMemberOnlyReads(t *testing.T) {
 			repo := new(mockStudyCircleRepo)
 			repo.On("IsMember", mock.Anything, uint(10), uint(1)).Return(false, nil)
 
-			assertStudyCircleStatus(t, tc.call(repo), http.StatusForbidden)
+			assertStudyCircleCode(t, tc.call(repo), domain.ErrCodeForbidden)
 		})
 	}
 }

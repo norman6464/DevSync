@@ -159,13 +159,38 @@ func bindJSON[T any](c *gin.Context) *T {
 	return &req
 }
 
+// httpStatusForCode はドメインのエラーコードを HTTP ステータスへ対応づける。
+// 配信プロトコル（HTTP）の知識は handler 層の責務のため、対応表はここに置く。
+func httpStatusForCode(code domain.ErrorCode) int {
+	switch code {
+	case domain.ErrCodeUnauthorized:
+		return http.StatusUnauthorized
+	case domain.ErrCodeForbidden:
+		return http.StatusForbidden
+	case domain.ErrCodeNotFound:
+		return http.StatusNotFound
+	case domain.ErrCodeAlreadyExists, domain.ErrCodeConflict:
+		return http.StatusConflict
+	case domain.ErrCodeValidation, domain.ErrCodeBadRequest:
+		return http.StatusBadRequest
+	case domain.ErrCodeRateLimitExceeded:
+		return http.StatusTooManyRequests
+	case domain.ErrCodeServiceUnavailable:
+		return http.StatusServiceUnavailable
+	case domain.ErrCodeDatabase, domain.ErrCodeInternal:
+		return http.StatusInternalServerError
+	default:
+		return http.StatusInternalServerError
+	}
+}
+
 // respondError はサービス層のエラーを適切なHTTPステータスコードに変換してレスポンスを返す。
 // DomainError を使用して統一的なエラーハンドリングを実現する。
 func respondError(c *gin.Context, err error) {
 	// DomainError の場合
 	if domainErr := domain.GetDomainError(err); domainErr != nil {
 		response := domain.NewErrorResponse(domainErr.Message, string(domainErr.Code), nil)
-		c.JSON(domainErr.HTTPStatus(), response)
+		c.JSON(httpStatusForCode(domainErr.Code), response)
 		return
 	}
 

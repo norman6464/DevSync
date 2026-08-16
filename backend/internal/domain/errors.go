@@ -4,9 +4,6 @@ package domain
 import (
 	"errors"
 	"fmt"
-	// DomainError.HTTPStatus がステータス定数を使うための例外。
-	// この対応表は本来 handler 側に置くべきで、移設は別途対応する。
-	"net/http" //archlint:allow
 )
 
 // ErrorCode represents application-specific error codes.
@@ -60,30 +57,6 @@ func (e *DomainError) Is(target error) bool {
 		return false
 	}
 	return e.Code == t.Code
-}
-
-// HTTPStatus returns the appropriate HTTP status code for the error.
-func (e *DomainError) HTTPStatus() int {
-	switch e.Code {
-	case ErrCodeUnauthorized:
-		return http.StatusUnauthorized
-	case ErrCodeForbidden:
-		return http.StatusForbidden
-	case ErrCodeNotFound:
-		return http.StatusNotFound
-	case ErrCodeAlreadyExists, ErrCodeConflict:
-		return http.StatusConflict
-	case ErrCodeValidation, ErrCodeBadRequest:
-		return http.StatusBadRequest
-	case ErrCodeRateLimitExceeded:
-		return http.StatusTooManyRequests
-	case ErrCodeServiceUnavailable:
-		return http.StatusServiceUnavailable
-	case ErrCodeDatabase, ErrCodeInternal:
-		return http.StatusInternalServerError
-	default:
-		return http.StatusInternalServerError
-	}
 }
 
 // NewError creates a new DomainError.
