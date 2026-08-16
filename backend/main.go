@@ -64,6 +64,25 @@ func preMigrateDedupeForUniqueIndexes(db *gorm.DB) {
 	}
 }
 
+// fixRoadmapStepCounts はテンプレート初期登録の二重加算で誤った step_count を
+// roadmap_steps の実数へ補正し、補正した行だけ progress と自動完了を再計算する。
+// 正しい行には触れない冪等な補正のため、毎起動で実行してよい。
+func fixRoadmapStepCounts(db *gorm.DB) {
+	// PostgreSQL は 1 文内で同一行を 2 回更新できないため、進捗と自動完了も同じ UPDATE で行う。
+	db.Exec(`WITH actual AS (
+		SELECT roadmap_id, count(*) AS cnt FROM roadmap_steps GROUP BY roadmap_id
+	)
+	UPDATE roadmaps r
+	SET step_count = a.cnt,
+	    progress = CASE WHEN a.cnt > 0 THEN LEAST(r.completed_step_count * 100 / a.cnt, 100) ELSE 0 END,
+	    status = CASE WHEN a.cnt > 0 AND r.completed_step_count >= a.cnt AND r.status = 'active'
+	                  THEN 'completed' ELSE r.status END,
+	    completed_at = CASE WHEN a.cnt > 0 AND r.completed_step_count >= a.cnt AND r.status = 'active'
+	                        THEN COALESCE(r.completed_at, now()) ELSE r.completed_at END
+	FROM actual a
+	WHERE r.id = a.roadmap_id AND r.step_count <> a.cnt`)
+}
+
 func main() {
 	// .envファイルから環境変数を読み込み（存在しなくてもエラーにしない）
 	_ = godotenv.Load()
@@ -169,6 +188,9 @@ func main() {
 	if err := dbschema.EnsureMentionIndexes(db); err != nil {
 		log.Fatalf("failed to ensure mention indexes: %v", err)
 	}
+
+	// テンプレート初期登録の二重加算で誤った step_count と進捗を補正する
+	fixRoadmapStepCounts(db)
 
 	// 既存ユーザーのオンボーディング完了フラグを初期化
 	db.Model(&model.User{}).Where("onboarding_completed = ?", false).Update("onboarding_completed", true)
