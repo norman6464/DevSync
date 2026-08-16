@@ -194,6 +194,8 @@ func TestBindJSON_MissingRequired(t *testing.T) {
 // --- respondError ---
 
 func TestRespondError_MapsDomainErrors(t *testing.T) {
+	// エラーコード → HTTP ステータスの対応表は handler の責務（httpStatusForCode）。
+	// 全コードの対応をここで固定する（domain 側にはもう HTTP の知識を置かない）。
 	tests := []struct {
 		err      error
 		wantCode int
@@ -201,10 +203,15 @@ func TestRespondError_MapsDomainErrors(t *testing.T) {
 		{domain.ErrNotFound, http.StatusNotFound},
 		{domain.ErrForbidden, http.StatusForbidden},
 		{domain.ErrBadRequest, http.StatusBadRequest},
+		{domain.ErrValidation, http.StatusBadRequest},
 		{domain.ErrUnauthorized, http.StatusUnauthorized},
 		{domain.ErrConflict, http.StatusConflict},
+		{domain.ErrAlreadyExists, http.StatusConflict},
 		{domain.ErrRateLimitExceeded, http.StatusTooManyRequests},
 		{domain.ErrServiceUnavailable, http.StatusServiceUnavailable},
+		{domain.ErrDatabase, http.StatusInternalServerError},
+		{domain.ErrInternal, http.StatusInternalServerError},
+		{domain.NewError(domain.ErrorCode("UNKNOWN"), "未知のコード", nil), http.StatusInternalServerError},
 		{fmt.Errorf("unknown error"), http.StatusInternalServerError},
 	}
 

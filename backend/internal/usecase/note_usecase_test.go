@@ -3,7 +3,6 @@ package usecase_test
 import (
 	"context"
 	"errors"
-	"net/http"
 	"testing"
 	"time"
 
@@ -79,13 +78,13 @@ func (m *mockNoteRepo) CountArchivedByUserID(ctx context.Context, userID uint) (
 	return args.Get(0).(int64), args.Error(1)
 }
 
-// assertNoteStatus は err が期待の HTTP ステータスに対応する DomainError であることを検証する。
-func assertNoteStatus(t *testing.T, err error, want int) {
+// assertNoteCode は err が期待の HTTP ステータスに対応する DomainError であることを検証する。
+func assertNoteCode(t *testing.T, err error, want domain.ErrorCode) {
 	t.Helper()
 	require.Error(t, err)
 	domainErr := domain.GetDomainError(err)
 	require.NotNil(t, domainErr, "DomainError であること")
-	assert.Equal(t, want, domainErr.HTTPStatus())
+	assert.Equal(t, want, domainErr.Code)
 }
 
 // ownedNoteFixture は所有者 1 のノートを返す。
@@ -107,7 +106,7 @@ func TestCreateNoteUseCase_Execute(t *testing.T) {
 		repo := new(mockNoteRepo)
 		uc := usecase.NewCreateNoteUseCase(repo)
 
-		assertNoteStatus(t, uc.Execute(context.Background(), &model.Note{Content: "本文"}), http.StatusBadRequest)
+		assertNoteCode(t, uc.Execute(context.Background(), &model.Note{Content: "本文"}), domain.ErrCodeValidation)
 		repo.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 	})
 }
@@ -129,7 +128,7 @@ func TestGetNoteUseCase_Execute(t *testing.T) {
 		uc := usecase.NewGetNoteUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), 1, 1)
-		assertNoteStatus(t, err, http.StatusForbidden)
+		assertNoteCode(t, err, domain.ErrCodeForbidden)
 	})
 
 	t.Run("不在は 404 を返す", func(t *testing.T) {
@@ -171,7 +170,7 @@ func TestUpdateNoteUseCase_Execute(t *testing.T) {
 		uc := usecase.NewUpdateNoteUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), 1, 1, "   ", "", "", nil)
-		assertNoteStatus(t, err, http.StatusBadRequest)
+		assertNoteCode(t, err, domain.ErrCodeBadRequest)
 		assert.Equal(t, "タイトルは空白のみにできません", domain.GetDomainError(err).Message)
 		repo.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
 	})
@@ -182,7 +181,7 @@ func TestUpdateNoteUseCase_Execute(t *testing.T) {
 		uc := usecase.NewUpdateNoteUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), 1, 1, "", "   ", "", nil)
-		assertNoteStatus(t, err, http.StatusBadRequest)
+		assertNoteCode(t, err, domain.ErrCodeBadRequest)
 		assert.Equal(t, "本文は空白のみにできません", domain.GetDomainError(err).Message)
 	})
 
@@ -205,7 +204,7 @@ func TestUpdateNoteUseCase_Execute(t *testing.T) {
 		uc := usecase.NewUpdateNoteUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), 1, 1, "新題", "", "", nil)
-		assertNoteStatus(t, err, http.StatusForbidden)
+		assertNoteCode(t, err, domain.ErrCodeForbidden)
 		repo.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
 	})
 }
@@ -237,7 +236,7 @@ func TestNoteOwnershipGuardedUseCases(t *testing.T) {
 			repo := new(mockNoteRepo)
 			repo.On("FindByID", mock.Anything, uint(1)).Return(others, nil)
 
-			assertNoteStatus(t, tc.call(repo), http.StatusForbidden)
+			assertNoteCode(t, tc.call(repo), domain.ErrCodeForbidden)
 			repo.AssertNotCalled(t, tc.skip, mock.Anything, mock.Anything)
 		})
 	}
@@ -270,7 +269,7 @@ func TestDuplicateNoteUseCase_Execute(t *testing.T) {
 		uc := usecase.NewDuplicateNoteUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), 1, 1)
-		assertNoteStatus(t, err, http.StatusForbidden)
+		assertNoteCode(t, err, domain.ErrCodeForbidden)
 		repo.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 	})
 }
@@ -311,7 +310,7 @@ func TestExportNoteMarkdownUseCase_Execute(t *testing.T) {
 		uc := usecase.NewExportNoteMarkdownUseCase(repo)
 
 		_, _, err := uc.Execute(context.Background(), 1, 1)
-		assertNoteStatus(t, err, http.StatusForbidden)
+		assertNoteCode(t, err, domain.ErrCodeForbidden)
 	})
 }
 

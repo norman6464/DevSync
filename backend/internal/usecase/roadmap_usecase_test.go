@@ -3,7 +3,6 @@ package usecase_test
 import (
 	"context"
 	"errors"
-	"net/http"
 	"strings"
 	"testing"
 
@@ -79,13 +78,13 @@ func (m *mockRoadmapRepo) ReorderSteps(ctx context.Context, roadmapID uint, step
 	return m.Called(ctx, roadmapID, stepOrders).Error(0)
 }
 
-// assertRoadmapStatus は err が期待の HTTP ステータスに対応する DomainError であることを検証する。
-func assertRoadmapStatus(t *testing.T, err error, want int) {
+// assertRoadmapCode は err が期待の HTTP ステータスに対応する DomainError であることを検証する。
+func assertRoadmapCode(t *testing.T, err error, want domain.ErrorCode) {
 	t.Helper()
 	require.Error(t, err)
 	domainErr := domain.GetDomainError(err)
 	require.NotNil(t, domainErr, "DomainError であること")
-	assert.Equal(t, want, domainErr.HTTPStatus())
+	assert.Equal(t, want, domainErr.Code)
 }
 
 func TestCreateRoadmapUseCase_Execute(t *testing.T) {
@@ -104,7 +103,7 @@ func TestCreateRoadmapUseCase_Execute(t *testing.T) {
 		repo := new(mockRoadmapRepo)
 		uc := usecase.NewCreateRoadmapUseCase(repo)
 
-		assertRoadmapStatus(t, uc.Execute(context.Background(), &model.Roadmap{Title: "  "}), http.StatusBadRequest)
+		assertRoadmapCode(t, uc.Execute(context.Background(), &model.Roadmap{Title: "  "}), domain.ErrCodeValidation)
 		repo.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 	})
 
@@ -115,7 +114,7 @@ func TestCreateRoadmapUseCase_Execute(t *testing.T) {
 		err := uc.Execute(context.Background(), &model.Roadmap{
 			Title: "題", Description: strings.Repeat("あ", 1001),
 		})
-		assertRoadmapStatus(t, err, http.StatusBadRequest)
+		assertRoadmapCode(t, err, domain.ErrCodeValidation)
 	})
 }
 
@@ -145,7 +144,7 @@ func TestGetRoadmapUseCase_Execute(t *testing.T) {
 		uc := usecase.NewGetRoadmapUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), 1, 1)
-		assertRoadmapStatus(t, err, http.StatusForbidden)
+		assertRoadmapCode(t, err, domain.ErrCodeForbidden)
 	})
 
 	t.Run("不在は DomainError ではないエラー（handler で 500）", func(t *testing.T) {
@@ -165,7 +164,7 @@ func TestListRoadmapsByStatusUseCase_Execute(t *testing.T) {
 		uc := usecase.NewListRoadmapsByStatusUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), 1, "unknown")
-		assertRoadmapStatus(t, err, http.StatusBadRequest)
+		assertRoadmapCode(t, err, domain.ErrCodeBadRequest)
 		assert.Equal(t, "無効なステータスです", domain.GetDomainError(err).Message)
 		repo.AssertNotCalled(t, "GetByStatus", mock.Anything, mock.Anything, mock.Anything)
 	})
@@ -220,7 +219,7 @@ func TestUpdateRoadmapUseCase_Execute(t *testing.T) {
 		uc := usecase.NewUpdateRoadmapUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), 1, 1, &model.Roadmap{Title: "新題"})
-		assertRoadmapStatus(t, err, http.StatusForbidden)
+		assertRoadmapCode(t, err, domain.ErrCodeForbidden)
 		repo.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
 	})
 
@@ -230,7 +229,7 @@ func TestUpdateRoadmapUseCase_Execute(t *testing.T) {
 		uc := usecase.NewUpdateRoadmapUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), 1, 1, &model.Roadmap{Title: strings.Repeat("あ", 201)})
-		assertRoadmapStatus(t, err, http.StatusBadRequest)
+		assertRoadmapCode(t, err, domain.ErrCodeValidation)
 	})
 }
 
@@ -252,7 +251,7 @@ func TestCopyRoadmapUseCase_Execute(t *testing.T) {
 		uc := usecase.NewCopyRoadmapUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), 5, 1)
-		assertRoadmapStatus(t, err, http.StatusForbidden)
+		assertRoadmapCode(t, err, domain.ErrCodeForbidden)
 		repo.AssertNotCalled(t, "CopyRoadmap", mock.Anything, mock.Anything, mock.Anything)
 	})
 
@@ -314,7 +313,7 @@ func TestCreateRoadmapFromTemplateUseCase_Execute(t *testing.T) {
 		uc := usecase.NewCreateRoadmapFromTemplateUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), 5, 1)
-		assertRoadmapStatus(t, err, http.StatusBadRequest)
+		assertRoadmapCode(t, err, domain.ErrCodeBadRequest)
 		repo.AssertNotCalled(t, "CopyRoadmap", mock.Anything, mock.Anything, mock.Anything)
 	})
 }
@@ -339,7 +338,7 @@ func TestRoadmapStepUseCases(t *testing.T) {
 		repo.On("FindStepByID", mock.Anything, uint(2)).Return(&model.RoadmapStep{ID: 2, RoadmapID: 77}, nil)
 		uc := usecase.NewDeleteRoadmapStepUseCase(repo)
 
-		assertRoadmapStatus(t, uc.Execute(context.Background(), 1, 2, 1), http.StatusBadRequest)
+		assertRoadmapCode(t, uc.Execute(context.Background(), 1, 2, 1), domain.ErrCodeBadRequest)
 		repo.AssertNotCalled(t, "DeleteStep", mock.Anything, mock.Anything)
 	})
 
@@ -381,7 +380,7 @@ func TestRoadmapStepUseCases(t *testing.T) {
 		uc := usecase.NewReorderRoadmapStepsUseCase(repo)
 
 		err := uc.Execute(context.Background(), 1, 1, []model.StepOrder{{StepID: 2, OrderIndex: 0}})
-		assertRoadmapStatus(t, err, http.StatusForbidden)
+		assertRoadmapCode(t, err, domain.ErrCodeForbidden)
 	})
 }
 
@@ -411,7 +410,7 @@ func TestBatchCompleteRoadmapStepsUseCase_Execute(t *testing.T) {
 		uc := usecase.NewBatchCompleteRoadmapStepsUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), 1, 1, []uint{2, 9})
-		assertRoadmapStatus(t, err, http.StatusBadRequest)
+		assertRoadmapCode(t, err, domain.ErrCodeBadRequest)
 		// 中断前に処理した分の更新は残る（移行前からの挙動）。
 		repo.AssertNumberOfCalls(t, "UpdateStep", 1)
 	})
@@ -422,7 +421,7 @@ func TestBatchCompleteRoadmapStepsUseCase_Execute(t *testing.T) {
 		uc := usecase.NewBatchCompleteRoadmapStepsUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), 1, 1, []uint{2})
-		assertRoadmapStatus(t, err, http.StatusForbidden)
+		assertRoadmapCode(t, err, domain.ErrCodeForbidden)
 	})
 }
 
@@ -503,7 +502,7 @@ func TestRoadmapPassThroughUseCases(t *testing.T) {
 		repo := new(mockRoadmapRepo)
 		repo.On("FindByID", mock.Anything, uint(1)).Return(&model.Roadmap{ID: 1, UserID: 99}, nil)
 		_, err := usecase.NewUpdateRoadmapVisibilityUseCase(repo).Execute(ctx, 1, 1, true)
-		assertRoadmapStatus(t, err, http.StatusForbidden)
+		assertRoadmapCode(t, err, domain.ErrCodeForbidden)
 	})
 
 	t.Run("削除は所有者のみ", func(t *testing.T) {

@@ -3,7 +3,6 @@ package usecase_test
 import (
 	"context"
 	"errors"
-	"net/http"
 	"strings"
 	"testing"
 
@@ -61,13 +60,13 @@ func (m *mockQuestionReader) FindByID(ctx context.Context, id uint) (*model.Ques
 	return q, args.Error(1)
 }
 
-// assertAnswerStatus は err が期待の HTTP ステータスに対応する DomainError であることを検証する。
-func assertAnswerStatus(t *testing.T, err error, want int) {
+// assertAnswerCode は err が期待の HTTP ステータスに対応する DomainError であることを検証する。
+func assertAnswerCode(t *testing.T, err error, want domain.ErrorCode) {
 	t.Helper()
 	require.Error(t, err)
 	domainErr := domain.GetDomainError(err)
 	require.NotNil(t, domainErr, "DomainError であること")
-	assert.Equal(t, want, domainErr.HTTPStatus())
+	assert.Equal(t, want, domainErr.Code)
 }
 
 func TestCreateAnswerUseCase_Execute(t *testing.T) {
@@ -93,7 +92,7 @@ func TestCreateAnswerUseCase_Execute(t *testing.T) {
 
 		err := uc.Execute(context.Background(), &model.Answer{QuestionID: 3, Body: "   "})
 
-		assertAnswerStatus(t, err, http.StatusBadRequest)
+		assertAnswerCode(t, err, domain.ErrCodeValidation)
 		questions.AssertNotCalled(t, "FindByID", mock.Anything, mock.Anything)
 		answers.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 	})
@@ -107,7 +106,7 @@ func TestCreateAnswerUseCase_Execute(t *testing.T) {
 			QuestionID: 3, Body: strings.Repeat("あ", 10001),
 		})
 
-		assertAnswerStatus(t, err, http.StatusBadRequest)
+		assertAnswerCode(t, err, domain.ErrCodeValidation)
 	})
 
 	t.Run("質問が不在なら 404 で作成しない", func(t *testing.T) {
@@ -118,7 +117,7 @@ func TestCreateAnswerUseCase_Execute(t *testing.T) {
 
 		err := uc.Execute(context.Background(), &model.Answer{QuestionID: 3, Body: "回答"})
 
-		assertAnswerStatus(t, err, http.StatusNotFound)
+		assertAnswerCode(t, err, domain.ErrCodeNotFound)
 		answers.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 	})
 
@@ -130,7 +129,7 @@ func TestCreateAnswerUseCase_Execute(t *testing.T) {
 
 		err := uc.Execute(context.Background(), &model.Answer{QuestionID: 3, Body: "回答"})
 
-		assertAnswerStatus(t, err, http.StatusNotFound)
+		assertAnswerCode(t, err, domain.ErrCodeNotFound)
 	})
 }
 
@@ -156,7 +155,7 @@ func TestUpdateAnswerUseCase_Execute(t *testing.T) {
 
 		_, err := uc.Execute(context.Background(), 10, 1, "新本文")
 
-		assertAnswerStatus(t, err, http.StatusForbidden)
+		assertAnswerCode(t, err, domain.ErrCodeForbidden)
 		answers.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
 	})
 
@@ -178,7 +177,7 @@ func TestUpdateAnswerUseCase_Execute(t *testing.T) {
 
 		_, err := uc.Execute(context.Background(), 10, 1, "   ")
 
-		assertAnswerStatus(t, err, http.StatusBadRequest)
+		assertAnswerCode(t, err, domain.ErrCodeValidation)
 		answers.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
 	})
 }
@@ -200,7 +199,7 @@ func TestDeleteAnswerUseCase_Execute(t *testing.T) {
 		answers.On("FindByID", mock.Anything, uint(10)).Return(&model.Answer{ID: 10, UserID: 99}, nil)
 		uc := usecase.NewDeleteAnswerUseCase(answers)
 
-		assertAnswerStatus(t, uc.Execute(context.Background(), 10, 1), http.StatusForbidden)
+		assertAnswerCode(t, uc.Execute(context.Background(), 10, 1), domain.ErrCodeForbidden)
 		answers.AssertNotCalled(t, "Delete", mock.Anything, mock.Anything)
 	})
 }
@@ -224,7 +223,7 @@ func TestSetBestAnswerUseCase_Execute(t *testing.T) {
 		questions.On("FindByID", mock.Anything, uint(3)).Return(nil, nil)
 		uc := usecase.NewSetBestAnswerUseCase(answers, questions)
 
-		assertAnswerStatus(t, uc.Execute(context.Background(), 3, 10, 1), http.StatusNotFound)
+		assertAnswerCode(t, uc.Execute(context.Background(), 3, 10, 1), domain.ErrCodeNotFound)
 		answers.AssertNotCalled(t, "FindByID", mock.Anything, mock.Anything)
 	})
 
@@ -234,7 +233,7 @@ func TestSetBestAnswerUseCase_Execute(t *testing.T) {
 		questions.On("FindByID", mock.Anything, uint(3)).Return(&model.Question{ID: 3, UserID: 99}, nil)
 		uc := usecase.NewSetBestAnswerUseCase(answers, questions)
 
-		assertAnswerStatus(t, uc.Execute(context.Background(), 3, 10, 1), http.StatusForbidden)
+		assertAnswerCode(t, uc.Execute(context.Background(), 3, 10, 1), domain.ErrCodeForbidden)
 	})
 
 	t.Run("回答が不在なら 404", func(t *testing.T) {
@@ -244,7 +243,7 @@ func TestSetBestAnswerUseCase_Execute(t *testing.T) {
 		answers.On("FindByID", mock.Anything, uint(10)).Return(nil, nil)
 		uc := usecase.NewSetBestAnswerUseCase(answers, questions)
 
-		assertAnswerStatus(t, uc.Execute(context.Background(), 3, 10, 1), http.StatusNotFound)
+		assertAnswerCode(t, uc.Execute(context.Background(), 3, 10, 1), domain.ErrCodeNotFound)
 	})
 
 	t.Run("別の質問の回答なら 400", func(t *testing.T) {
@@ -254,7 +253,7 @@ func TestSetBestAnswerUseCase_Execute(t *testing.T) {
 		answers.On("FindByID", mock.Anything, uint(10)).Return(&model.Answer{ID: 10, QuestionID: 77}, nil)
 		uc := usecase.NewSetBestAnswerUseCase(answers, questions)
 
-		assertAnswerStatus(t, uc.Execute(context.Background(), 3, 10, 1), http.StatusBadRequest)
+		assertAnswerCode(t, uc.Execute(context.Background(), 3, 10, 1), domain.ErrCodeBadRequest)
 		answers.AssertNotCalled(t, "SetBestAnswer", mock.Anything, mock.Anything, mock.Anything)
 	})
 }
@@ -274,7 +273,7 @@ func TestVoteAnswerUseCase_Execute(t *testing.T) {
 		answers := new(mockAnswerRepo)
 		uc := usecase.NewVoteAnswerUseCase(answers)
 
-		assertAnswerStatus(t, uc.Execute(context.Background(), 1, 10, 2), http.StatusBadRequest)
+		assertAnswerCode(t, uc.Execute(context.Background(), 1, 10, 2), domain.ErrCodeValidation)
 		answers.AssertNotCalled(t, "FindByID", mock.Anything, mock.Anything)
 	})
 
@@ -283,7 +282,7 @@ func TestVoteAnswerUseCase_Execute(t *testing.T) {
 		answers.On("FindByID", mock.Anything, uint(10)).Return(&model.Answer{ID: 10, UserID: 1}, nil)
 		uc := usecase.NewVoteAnswerUseCase(answers)
 
-		assertAnswerStatus(t, uc.Execute(context.Background(), 1, 10, 1), http.StatusForbidden)
+		assertAnswerCode(t, uc.Execute(context.Background(), 1, 10, 1), domain.ErrCodeForbidden)
 		answers.AssertNotCalled(t, "Vote", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 	})
 
@@ -292,7 +291,7 @@ func TestVoteAnswerUseCase_Execute(t *testing.T) {
 		answers.On("FindByID", mock.Anything, uint(10)).Return(nil, nil)
 		uc := usecase.NewVoteAnswerUseCase(answers)
 
-		assertAnswerStatus(t, uc.Execute(context.Background(), 1, 10, 1), http.StatusNotFound)
+		assertAnswerCode(t, uc.Execute(context.Background(), 1, 10, 1), domain.ErrCodeNotFound)
 	})
 }
 
@@ -312,7 +311,7 @@ func TestRemoveAnswerVoteUseCase_Execute(t *testing.T) {
 		answers.On("FindByID", mock.Anything, uint(10)).Return(&model.Answer{ID: 10, UserID: 1}, nil)
 		uc := usecase.NewRemoveAnswerVoteUseCase(answers)
 
-		assertAnswerStatus(t, uc.Execute(context.Background(), 1, 10), http.StatusForbidden)
+		assertAnswerCode(t, uc.Execute(context.Background(), 1, 10), domain.ErrCodeForbidden)
 	})
 }
 
@@ -323,7 +322,7 @@ func TestListAnswersByVoteRangeUseCase_Execute(t *testing.T) {
 
 		_, err := uc.Execute(context.Background(), 3, 10, 5)
 
-		assertAnswerStatus(t, err, http.StatusBadRequest)
+		assertAnswerCode(t, err, domain.ErrCodeBadRequest)
 		assert.Equal(t, "投票範囲が無効です", domain.GetDomainError(err).Message)
 		answers.AssertNotCalled(t, "FindByVoteRange", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 	})
