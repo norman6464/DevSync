@@ -142,20 +142,15 @@ func calcAnalyticsStreaks(dates []time.Time, now time.Time) (current, longest in
 		return 0, 0
 	}
 
-	normalize := func(t time.Time) time.Time { return t.Truncate(24 * time.Hour) }
-	isNextDay := func(newer, older time.Time) bool {
-		return int(newer.Sub(older).Hours()/24) == 1
-	}
+	today := normalizeToCalendarDay(now)
+	first := normalizeToCalendarDay(dates[0])
 
-	today := normalize(now)
-	first := normalize(dates[0])
-
-	if first.Equal(today) || first.Equal(today.AddDate(0, 0, -1)) {
+	if isTodayOrYesterday(first, today) {
 		current = 1
 		prev := first
 		for i := 1; i < len(dates); i++ {
-			curr := normalize(dates[i])
-			if !isNextDay(prev, curr) {
+			curr := normalizeToCalendarDay(dates[i])
+			if !isNextCalendarDay(prev, curr) {
 				break
 			}
 			current++
@@ -165,10 +160,10 @@ func calcAnalyticsStreaks(dates []time.Time, now time.Time) (current, longest in
 
 	longest = 1
 	streak := 1
-	prev := normalize(dates[0])
+	prev := normalizeToCalendarDay(dates[0])
 	for i := 1; i < len(dates); i++ {
-		curr := normalize(dates[i])
-		if isNextDay(prev, curr) {
+		curr := normalizeToCalendarDay(dates[i])
+		if isNextCalendarDay(prev, curr) {
 			streak++
 		} else {
 			if streak > longest {

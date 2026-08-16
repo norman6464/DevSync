@@ -71,23 +71,22 @@ func (r *levelRepository) calculateLearningLogStreak(ctx context.Context, userID
 		return 0, nil
 	}
 
-	today := time.Now().UTC().Truncate(24 * time.Hour)
+	today := normalizeToCalendarDay(time.Now())
 	streak := 0
 
 	for i, d := range dates {
-		dDate := d.Date.UTC().Truncate(24 * time.Hour)
+		dDate := normalizeToCalendarDay(d.Date)
 		if i == 0 {
 			// 最新の日付が今日か昨日でなければストリークは 0
-			if today.Sub(dDate) >= 48*time.Hour {
+			if !isTodayOrYesterday(dDate, today) {
 				return 0, nil
 			}
 			streak = 1
 			continue
 		}
 
-		prevDate := dates[i-1].Date.UTC().Truncate(24 * time.Hour)
-		diff := prevDate.Sub(dDate)
-		if diff >= 24*time.Hour && diff < 48*time.Hour {
+		prevDate := normalizeToCalendarDay(dates[i-1].Date)
+		if isNextCalendarDay(prevDate, dDate) {
 			streak++
 		} else {
 			break
