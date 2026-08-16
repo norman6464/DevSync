@@ -259,13 +259,28 @@ func (r *studyCircleRepository) GetStreakRanking(ctx context.Context, circleID u
 		return nil, err
 	}
 
+	// メンバーごとに 1 クエリずつ発行すると N+1 になるため、サークル分のチェックインを
+	// 1 回で引いてメモリ上で user_id ごとにまとめる。date の降順は calculateCheckinStreak の前提。
+	var checkins []struct {
+		UserID uint
+		Date   string
+	}
+	if err := db.Model(&model.StudyCircleCheckin{}).
+		Select("user_id", "date").
+		Where("circle_id = ?", circleID).
+		Order("date DESC").
+		Scan(&checkins).Error; err != nil {
+		return nil, err
+	}
+
+	datesByUser := make(map[uint][]string, len(members))
+	for _, checkin := range checkins {
+		datesByUser[checkin.UserID] = append(datesByUser[checkin.UserID], checkin.Date)
+	}
+
 	var results []model.CircleMemberStreak
 	for _, member := range members {
-		var dates []string
-		db.Model(&model.StudyCircleCheckin{}).
-			Where("circle_id = ? AND user_id = ?", circleID, member.UserID).
-			Order("date DESC").
-			Pluck("date", &dates)
+		dates := datesByUser[member.UserID]
 
 		userName := ""
 		avatarURL := ""
