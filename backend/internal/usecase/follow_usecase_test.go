@@ -65,6 +65,18 @@ func TestFollowUserUseCase_Execute(t *testing.T) {
 		notifications.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 	})
 
+	t.Run("重複フォローは ErrConflict を伝播し通知しない", func(t *testing.T) {
+		repo := new(mockFollowRepo)
+		notifications := new(mockNotificationCreatorPort)
+		repo.On("Follow", mock.Anything, uint(1), uint(2)).Return(domain.ErrConflict)
+		uc := usecase.NewFollowUserUseCase(repo, notifications)
+
+		err := uc.Execute(context.Background(), 1, 2)
+
+		assert.ErrorIs(t, err, domain.ErrConflict)
+		notifications.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
+	})
+
 	t.Run("フォローに失敗したら通知しない", func(t *testing.T) {
 		repo := new(mockFollowRepo)
 		notifications := new(mockNotificationCreatorPort)

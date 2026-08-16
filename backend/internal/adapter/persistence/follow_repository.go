@@ -4,6 +4,7 @@ package persistence
 import (
 	"context"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
 	"gorm.io/gorm"
@@ -22,9 +23,16 @@ func NewFollowRepository(db *gorm.DB) repository.FollowRepository {
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
 var _ repository.FollowRepository = (*followRepository)(nil)
 
+// Follow はフォロー関係を保存する。複合ユニーク索引（follower_id, followee_id）に
+// 衝突した場合は domain.ErrConflict を返す。重複フォローの最終防衛は DB の制約に委ね、
+// 生の制約違反を 500 として漏らさない。
 func (r *followRepository) Follow(ctx context.Context, followerID, followeeID uint) error {
 	follow := &model.Follow{FollowerID: followerID, FolloweeID: followeeID}
-	return r.db.WithContext(ctx).Create(follow).Error
+	err := r.db.WithContext(ctx).Create(follow).Error
+	if isUniqueViolation(err) {
+		return domain.ErrConflict
+	}
+	return err
 }
 
 func (r *followRepository) Unfollow(ctx context.Context, followerID, followeeID uint) error {
