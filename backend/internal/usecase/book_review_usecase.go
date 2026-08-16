@@ -42,6 +42,9 @@ func (uc *CreateBookReviewUseCase) Execute(ctx context.Context, review *model.Bo
 	if err := domain.ValidateStringLength(review.Review, 0, 10000, "レビュー本文"); err != nil {
 		return err
 	}
+	if err := domain.ValidateStringLength(strings.TrimSpace(review.ImageURL), 0, 2000, "画像URL"); err != nil {
+		return err
+	}
 	if review.TotalPages < 0 || review.TotalPages > maxBookTotalPages {
 		return domain.NewError(domain.ErrCodeValidation, "総ページ数は0〜99999の範囲で指定してください", nil)
 	}
@@ -50,6 +53,7 @@ func (uc *CreateBookReviewUseCase) Execute(ctx context.Context, review *model.Bo
 	review.Author = strings.TrimSpace(review.Author)
 	review.ISBN = strings.TrimSpace(review.ISBN)
 	review.Review = strings.TrimSpace(review.Review)
+	review.ImageURL = strings.TrimSpace(review.ImageURL)
 
 	return uc.reviews.Create(ctx, review)
 }
