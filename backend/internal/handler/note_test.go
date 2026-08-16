@@ -204,7 +204,7 @@ func TestNoteHandler_GetByID_MissingReturnsInternalError(t *testing.T) {
 	repo.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodGet, "/notes/1", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 }
 
 // ============================================================

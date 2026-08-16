@@ -152,7 +152,7 @@ func (uc *RecommendYouTubeVideosUseCase) Execute(ctx context.Context, userID uin
 		return nil, nil, err
 	}
 	if user == nil {
-		return nil, nil, errOwnedEntityNotFound
+		return nil, nil, domain.ErrNotFound
 	}
 
 	// スキル文字列の分解はレコメンドスライスと同じものを使う。

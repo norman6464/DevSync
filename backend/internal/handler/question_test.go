@@ -140,7 +140,7 @@ func TestQuestionGetByID_MissingReturnsInternalError(t *testing.T) {
 	repo.On("FindByID", mock.Anything, uint(999)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodGet, "/questions/999", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 }
 
 func TestQuestionGetByID_InvalidID(t *testing.T) {
@@ -196,7 +196,7 @@ func TestQuestionUpdate_MissingReturnsInternalError(t *testing.T) {
 	repo.On("FindByID", mock.Anything, uint(5)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodPut, "/questions/5", map[string]string{"title": "X"})
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 }
 
 func TestQuestionUpdate_RepositoryError(t *testing.T) {

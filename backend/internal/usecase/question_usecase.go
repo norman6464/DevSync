@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"strings"
 
 	"github.com/norman6464/devsync/backend/internal/domain"
@@ -11,10 +10,6 @@ import (
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
 )
 
-// errQuestionNotFound は port が「不在」を表す nil を返したときに返すエラー。
-// DomainError ではないため handler では 500 になり、リポジトリの生エラーが
-// そのまま返っていた移行前の挙動と一致する。
-var errQuestionNotFound = errors.New("質問が見つかりません")
 
 // requireVotableQuestion は投票対象の質問を取得し、自分の質問でないことを検証する。
 // 不在の場合は 404、自分の質問なら 403 を返す。
@@ -88,15 +83,14 @@ func NewGetQuestionUseCase(questions repository.QuestionRepository) *GetQuestion
 	return &GetQuestionUseCase{questions: questions}
 }
 
-// Execute は指定 ID の質問を返す。不在の場合は DomainError ではないエラーを返す
-// （移行前と同じく 500 になる）。
+// Execute は指定 ID の質問を返す。不在（論理削除済み含む）は 404 を返す。
 func (uc *GetQuestionUseCase) Execute(ctx context.Context, id uint) (*model.Question, error) {
 	question, err := uc.questions.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 	if question == nil {
-		return nil, errQuestionNotFound
+		return nil, domain.ErrNotFound
 	}
 	return question, nil
 }

@@ -132,14 +132,13 @@ func TestGetNoteUseCase_Execute(t *testing.T) {
 		assertNoteStatus(t, err, http.StatusForbidden)
 	})
 
-	t.Run("不在は DomainError ではないエラー（handler で 500）", func(t *testing.T) {
+	t.Run("不在は 404 を返す", func(t *testing.T) {
 		repo := new(mockNoteRepo)
 		repo.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
 		uc := usecase.NewGetNoteUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), 1, 1)
-		require.Error(t, err)
-		assert.Nil(t, domain.GetDomainError(err))
+		assert.ErrorIs(t, err, domain.ErrNotFound)
 	})
 
 	t.Run("DB 障害はそのまま伝播する", func(t *testing.T) {
@@ -148,8 +147,7 @@ func TestGetNoteUseCase_Execute(t *testing.T) {
 		uc := usecase.NewGetNoteUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), 1, 1)
-		require.Error(t, err)
-		assert.Nil(t, domain.GetDomainError(err))
+		assert.ErrorContains(t, err, "db error")
 	})
 }
 

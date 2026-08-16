@@ -164,7 +164,7 @@ func TestBookReview_GetByID_NotFound(t *testing.T) {
 	r.GET("/book-reviews/:id", h.GetByID)
 	w := doRequest(r, http.MethodGet, "/book-reviews/1", nil)
 
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 }
 
 func TestBookReview_GetAll_Success(t *testing.T) {

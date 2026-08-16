@@ -165,16 +165,14 @@ func TestGetNoteFolderUseCase_Execute(t *testing.T) {
 	})
 
 	// 不在は DomainError にしない（handler で 500 のままにするため）。
-	t.Run("不在なら DomainError ではないエラーを返す", func(t *testing.T) {
+	t.Run("不在なら 404 を返す", func(t *testing.T) {
 		repo := new(mockNoteFolderRepo)
 		repo.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
 		uc := usecase.NewGetNoteFolderUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), 1, 1)
 
-		assert.Error(t, err)
-		var de *domain.DomainError
-		assert.False(t, errors.As(err, &de), "500 を維持するため DomainError にしない")
+		assert.ErrorIs(t, err, domain.ErrNotFound)
 		repo.AssertExpectations(t)
 	})
 
@@ -544,16 +542,14 @@ func TestUpdateNoteFolderUseCase_Execute(t *testing.T) {
 		repo.AssertNotCalled(t, "Update")
 	})
 
-	t.Run("不在なら DomainError ではないエラーを返す（保存しない）", func(t *testing.T) {
+	t.Run("不在なら 404 を返す（保存しない）", func(t *testing.T) {
 		repo := new(mockNoteFolderRepo)
 		repo.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
 		uc := usecase.NewUpdateNoteFolderUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), usecase.UpdateNoteFolderInput{ID: 1, UserID: 1})
 
-		assert.Error(t, err)
-		var de *domain.DomainError
-		assert.False(t, errors.As(err, &de))
+		assert.ErrorIs(t, err, domain.ErrNotFound)
 		repo.AssertNotCalled(t, "Update")
 	})
 }

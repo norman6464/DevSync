@@ -75,8 +75,7 @@ func (uc *GetBookReviewUseCase) Execute(ctx context.Context, id uint) (*model.Bo
 		return nil, err
 	}
 	if review == nil {
-		// 不在は DomainError にせず 500 のままにする（移行前の挙動を維持している）。
-		return nil, errOwnedEntityNotFound
+		return nil, domain.ErrNotFound
 	}
 	return review, nil
 }

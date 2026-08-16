@@ -182,15 +182,14 @@ func TestGetLearningLogTemplateUseCase_Execute(t *testing.T) {
 		assert.ErrorIs(t, err, domain.ErrForbidden)
 	})
 
-	t.Run("不在は DomainError ではないエラー（handler で 500）", func(t *testing.T) {
+	t.Run("不在は 404 を返す", func(t *testing.T) {
 		repo := new(mockLearningLogTemplateRepo)
 		repo.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
 		uc := usecase.NewGetLearningLogTemplateUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), 1, 5)
 
-		require.Error(t, err)
-		assert.Nil(t, domain.GetDomainError(err))
+		assert.ErrorIs(t, err, domain.ErrNotFound)
 	})
 
 	t.Run("DB 障害はそのまま伝播する", func(t *testing.T) {
@@ -435,15 +434,14 @@ func TestDeleteLearningLogTemplateUseCase_Execute(t *testing.T) {
 		repo.AssertNotCalled(t, "Delete", mock.Anything, mock.Anything)
 	})
 
-	t.Run("不在は DomainError ではないエラー（handler で 500）", func(t *testing.T) {
+	t.Run("不在は 404 を返す", func(t *testing.T) {
 		repo := new(mockLearningLogTemplateRepo)
 		repo.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
 		uc := usecase.NewDeleteLearningLogTemplateUseCase(repo)
 
 		err := uc.Execute(context.Background(), 1, 5)
 
-		require.Error(t, err)
-		assert.Nil(t, domain.GetDomainError(err))
+		assert.ErrorIs(t, err, domain.ErrNotFound)
 		repo.AssertNotCalled(t, "Delete", mock.Anything, mock.Anything)
 	})
 }
@@ -513,15 +511,14 @@ func TestCreateLearningLogFromTemplateUseCase_Execute(t *testing.T) {
 		logs.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 	})
 
-	t.Run("不在は DomainError ではないエラー（handler で 500）", func(t *testing.T) {
+	t.Run("不在は 404 を返す", func(t *testing.T) {
 		templates := new(mockLearningLogTemplateRepo)
 		logs := new(mockLearningLogRepo)
 		templates.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
 
 		_, err := newUseCase(templates, logs).Execute(context.Background(), 1, 5)
 
-		require.Error(t, err)
-		assert.Nil(t, domain.GetDomainError(err))
+		assert.ErrorIs(t, err, domain.ErrNotFound)
 		logs.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 	})
 

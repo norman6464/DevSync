@@ -443,15 +443,14 @@ func TestGetLearningLogUseCase_Execute(t *testing.T) {
 		assert.ErrorIs(t, err, domain.ErrForbidden)
 	})
 
-	t.Run("不在は DomainError ではないエラー（handler で 500）", func(t *testing.T) {
+	t.Run("不在は 404 を返す", func(t *testing.T) {
 		logs := new(mockLearningLogRepo)
 		logs.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
 		uc := usecase.NewGetLearningLogUseCase(logs)
 
 		_, err := uc.Execute(context.Background(), 1, 5)
 
-		require.Error(t, err)
-		assert.Nil(t, domain.GetDomainError(err))
+		assert.ErrorIs(t, err, domain.ErrNotFound)
 	})
 }
 

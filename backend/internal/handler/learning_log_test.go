@@ -396,7 +396,7 @@ func TestLearningLogHandler_GetByID_NotFoundIs500(t *testing.T) {
 	p.Logs.On("FindByID", mock.Anything, uint(99)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodGet, "/learning-logs/99", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 }
 
 func TestLearningLogHandler_GetMyLogs(t *testing.T) {
@@ -501,7 +501,7 @@ func TestLearningLogHandler_Update_NotFoundIs500(t *testing.T) {
 	p.Logs.On("FindByID", mock.Anything, uint(99)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodPut, "/learning-logs/99", map[string]interface{}{"title": "更新後"})
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 	p.Logs.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
 }
 

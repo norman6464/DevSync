@@ -249,7 +249,7 @@ func TestLearningLogTemplateHandler_GetByID_NotFoundIs500(t *testing.T) {
 	p.Templates.On("FindByID", mock.Anything, uint(99)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodGet, "/log-templates/99", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 }
 
 func TestLearningLogTemplateHandler_GetByID_InvalidID(t *testing.T) {
@@ -515,7 +515,7 @@ func TestLearningLogTemplateHandler_UseTemplate_NotFoundIs500(t *testing.T) {
 	p.Templates.On("FindByID", mock.Anything, uint(99)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodPost, "/log-templates/99/use", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 	p.Logs.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 }
 

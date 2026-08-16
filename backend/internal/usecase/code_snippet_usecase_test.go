@@ -479,15 +479,14 @@ func TestDeleteSnippetCommentUseCase_Execute(t *testing.T) {
 		snippets.AssertNotCalled(t, "DeleteComment", mock.Anything, mock.Anything)
 	})
 
-	t.Run("不在は DomainError ではないエラー（handler で 500 のまま・削除しない）", func(t *testing.T) {
+	t.Run("不在は 404 を返し削除しない", func(t *testing.T) {
 		snippets := new(mockCodeSnippetRepo)
 		snippets.On("FindCommentByID", mock.Anything, uint(3)).Return((*model.SnippetComment)(nil), nil)
 		uc := usecase.NewDeleteSnippetCommentUseCase(snippets)
 
 		err := uc.Execute(ctx, 3, 1)
 
-		require.Error(t, err)
-		assert.Nil(t, domain.GetDomainError(err), "既存スライスと同じく不在は 500 を維持する")
+		assert.ErrorIs(t, err, domain.ErrNotFound)
 		snippets.AssertNotCalled(t, "DeleteComment", mock.Anything, mock.Anything)
 	})
 

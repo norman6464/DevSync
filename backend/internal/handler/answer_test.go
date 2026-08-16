@@ -165,7 +165,7 @@ func TestAnswerUpdate_MissingReturnsInternalError(t *testing.T) {
 	w := doRequest(r, http.MethodPut, "/questions/1/answers/999", map[string]interface{}{
 		"body": "存在しない",
 	})
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 }
 
 func TestAnswerUpdate_InvalidID(t *testing.T) {
@@ -217,7 +217,7 @@ func TestAnswerDelete_MissingReturnsInternalError(t *testing.T) {
 	ports.Answers.On("FindByID", mock.Anything, uint(999)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodDelete, "/questions/1/answers/999", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 }
 
 // ============================================================

@@ -382,7 +382,7 @@ func TestNoteFolderHandler_GetByID_NotFound(t *testing.T) {
 	repo.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
 
 	w := doRequest(r, "GET", "/folders/1", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 	repo.AssertExpectations(t)
 }
 
@@ -394,7 +394,7 @@ func TestNoteFolderHandler_Update_NotFound(t *testing.T) {
 	repo.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
 
 	w := doRequest(r, "PUT", "/folders/1", map[string]interface{}{"name": "変更"})
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 	repo.AssertNotCalled(t, "Update")
 }
 
@@ -406,7 +406,7 @@ func TestNoteFolderHandler_Delete_NotFound(t *testing.T) {
 	repo.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
 
 	w := doRequest(r, "DELETE", "/folders/1", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 	repo.AssertNotCalled(t, "Delete")
 }
 
