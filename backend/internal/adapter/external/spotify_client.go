@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -32,6 +33,8 @@ type spotifyClient struct {
 	clientSecret string
 	redirectURL  string
 	httpClient   *http.Client
+	// tokenURL はトークンエンドポイント。テストで fake サーバーへ差し替えるためフィールドで持つ。
+	tokenURL string
 }
 
 // NewSpotifyClient は SpotifyAPIClient の HTTP 実装を返す。
@@ -41,6 +44,7 @@ func NewSpotifyClient(clientID, clientSecret, redirectURL string) repository.Spo
 		clientSecret: clientSecret,
 		redirectURL:  redirectURL,
 		httpClient:   &http.Client{Timeout: spotifyRequestTimeout},
+		tokenURL:     spotifyTokenURL,
 	}
 }
 
@@ -77,9 +81,11 @@ func (c *spotifyClient) RefreshAccessToken(ctx context.Context, refreshToken str
 	return c.requestToken(ctx, form, "Spotifyトークン更新エラー")
 }
 
-// requestToken はトークンエンドポイントを呼び出す。トークンが空ならエラーにする。
+// requestToken はトークンエンドポイントを呼び出す。
+// クライアント側起因の失敗（4xx: invalid_grant / invalid_client 等）は 400 系、
+// Spotify 側の障害（5xx）やネットワーク障害は 503 として返す。
 func (c *spotifyClient) requestToken(ctx context.Context, form url.Values, errMessage string) (*model.SpotifyToken, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, spotifyTokenURL, strings.NewReader(form.Encode()))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.tokenURL, strings.NewReader(form.Encode()))
 	if err != nil {
 		return nil, err
 	}
@@ -88,9 +94,25 @@ func (c *spotifyClient) requestToken(ctx context.Context, form url.Values, errMe
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, domain.NewError(domain.ErrCodeServiceUnavailable, errMessage, err)
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		// 原因調査のため Spotify のエラー内容をログへ残す（トークン本体はログに出さない）。
+		var apiErr struct {
+			Error            string `json:"error"`
+			ErrorDescription string `json:"error_description"`
+		}
+		_ = json.NewDecoder(resp.Body).Decode(&apiErr)
+		log.Printf("[WARN] Spotify トークンエンドポイントが %d を返却: error=%q error_description=%q",
+			resp.StatusCode, apiErr.Error, apiErr.ErrorDescription)
+
+		if resp.StatusCode >= 400 && resp.StatusCode < 500 {
+			return nil, domain.NewError(domain.ErrCodeBadRequest, errMessage, nil)
+		}
+		return nil, domain.NewError(domain.ErrCodeServiceUnavailable, errMessage, nil)
+	}
 
 	var token model.SpotifyToken
 	if err := json.NewDecoder(resp.Body).Decode(&token); err != nil {
