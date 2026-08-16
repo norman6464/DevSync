@@ -6,6 +6,7 @@ import (
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // bookmarkCollectionRepository は [repository.BookmarkCollectionRepository] の GORM 実装。
@@ -62,9 +63,18 @@ func (r *bookmarkCollectionRepository) Delete(ctx context.Context, id uint) erro
 	return tx.Commit().Error
 }
 
-// AddPost はコレクションに投稿を追加する。
-func (r *bookmarkCollectionRepository) AddPost(ctx context.Context, item *model.BookmarkCollectionItem) error {
-	return r.db.WithContext(ctx).Create(item).Error
+// AddPost はコレクションに投稿を追加する。(collection_id, post_id) の一意制約に任せて
+// ON CONFLICT DO NOTHING で挿入し、既に入っていた場合は (false, nil) を返す。
+// 「存在確認 → 挿入」の 2 クエリと違い、同時実行でも重複行は作られない。
+func (r *bookmarkCollectionRepository) AddPost(ctx context.Context, item *model.BookmarkCollectionItem) (bool, error) {
+	res := r.db.WithContext(ctx).Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "collection_id"}, {Name: "post_id"}},
+		DoNothing: true,
+	}).Create(item)
+	if res.Error != nil {
+		return false, res.Error
+	}
+	return res.RowsAffected > 0, nil
 }
 
 // RemovePost はコレクションから投稿を削除する。
@@ -93,15 +103,6 @@ func (r *bookmarkCollectionRepository) GetPosts(ctx context.Context, collectionI
 		posts = append(posts, item.Post)
 	}
 	return posts, total, nil
-}
-
-// HasPost はコレクションに指定投稿が含まれているかを返す。
-func (r *bookmarkCollectionRepository) HasPost(ctx context.Context, collectionID, postID uint) (bool, error) {
-	var count int64
-	err := r.db.WithContext(ctx).Model(&model.BookmarkCollectionItem{}).
-		Where("collection_id = ? AND post_id = ?", collectionID, postID).
-		Count(&count).Error
-	return count > 0, err
 }
 
 // CountByUserID は指定ユーザーのコレクション総数を返す。

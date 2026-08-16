@@ -13,9 +13,10 @@ type BookmarkCollectionRepository interface {
 	FindByUserID(ctx context.Context, userID uint) ([]model.BookmarkCollection, error)
 	Update(ctx context.Context, collection *model.BookmarkCollection) error
 	Delete(ctx context.Context, id uint) error
-	AddPost(ctx context.Context, item *model.BookmarkCollectionItem) error
+	// AddPost はコレクションへ投稿を原子的に追加する。
+	// 既に同じ投稿が入っている場合は追加せず (false, nil) を返す（同時実行でも重複しない）。
+	AddPost(ctx context.Context, item *model.BookmarkCollectionItem) (bool, error)
 	RemovePost(ctx context.Context, collectionID, postID uint) error
 	GetPosts(ctx context.Context, collectionID uint, limit, offset int) ([]model.Post, int64, error)
-	HasPost(ctx context.Context, collectionID, postID uint) (bool, error)
 	CountByUserID(ctx context.Context, userID uint) (int64, error)
 }

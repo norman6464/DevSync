@@ -130,18 +130,17 @@ func (uc *AddPostToBookmarkCollectionUseCase) Execute(ctx context.Context, colle
 		return err
 	}
 
-	exists, err := uc.collections.HasPost(ctx, collectionID, postID)
-	if err != nil {
-		return err
-	}
-	if exists {
-		return domain.NewError(domain.ErrCodeConflict, "この投稿は既にコレクションに追加されています", nil)
-	}
-
-	return uc.collections.AddPost(ctx, &model.BookmarkCollectionItem{
+	added, err := uc.collections.AddPost(ctx, &model.BookmarkCollectionItem{
 		CollectionID: collectionID,
 		PostID:       postID,
 	})
+	if err != nil {
+		return err
+	}
+	if !added {
+		return domain.NewError(domain.ErrCodeConflict, "この投稿は既にコレクションに追加されています", nil)
+	}
+	return nil
 }
 
 // RemovePostFromBookmarkCollectionUseCase はコレクションから投稿を取り除く。

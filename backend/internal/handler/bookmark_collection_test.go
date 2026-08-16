@@ -41,8 +41,9 @@ func (m *mockBookmarkCollectionRepo) Delete(ctx context.Context, id uint) error 
 	return m.Called(ctx, id).Error(0)
 }
 
-func (m *mockBookmarkCollectionRepo) AddPost(ctx context.Context, item *model.BookmarkCollectionItem) error {
-	return m.Called(ctx, item).Error(0)
+func (m *mockBookmarkCollectionRepo) AddPost(ctx context.Context, item *model.BookmarkCollectionItem) (bool, error) {
+	args := m.Called(ctx, item)
+	return args.Bool(0), args.Error(1)
 }
 
 func (m *mockBookmarkCollectionRepo) RemovePost(ctx context.Context, collectionID, postID uint) error {
@@ -53,11 +54,6 @@ func (m *mockBookmarkCollectionRepo) GetPosts(ctx context.Context, collectionID 
 	args := m.Called(ctx, collectionID, limit, offset)
 	p, _ := args.Get(0).([]model.Post)
 	return p, args.Get(1).(int64), args.Error(2)
-}
-
-func (m *mockBookmarkCollectionRepo) HasPost(ctx context.Context, collectionID, postID uint) (bool, error) {
-	args := m.Called(ctx, collectionID, postID)
-	return args.Bool(0), args.Error(1)
 }
 
 func (m *mockBookmarkCollectionRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
@@ -194,8 +190,7 @@ func TestBookmarkCollection_AddPost_Success(t *testing.T) {
 	h := newBookmarkCollectionHandlerWithRepo(mockSvc)
 
 	mockSvc.On("FindByID", mock.Anything, uint(1)).Return(ownedBookmarkCollection(), nil)
-	mockSvc.On("HasPost", mock.Anything, uint(1), uint(10)).Return(false, nil)
-	mockSvc.On("AddPost", mock.Anything, mock.AnythingOfType("*model.BookmarkCollectionItem")).Return(nil)
+	mockSvc.On("AddPost", mock.Anything, mock.AnythingOfType("*model.BookmarkCollectionItem")).Return(true, nil)
 
 	r := gin.New()
 	r.POST("/bookmark-collections/:id/posts/:postId", authMiddleware(1), h.AddPost)
@@ -212,7 +207,7 @@ func TestBookmarkCollection_AddPost_Conflict(t *testing.T) {
 	h := newBookmarkCollectionHandlerWithRepo(mockSvc)
 
 	mockSvc.On("FindByID", mock.Anything, uint(1)).Return(ownedBookmarkCollection(), nil)
-	mockSvc.On("HasPost", mock.Anything, uint(1), uint(10)).Return(true, nil)
+	mockSvc.On("AddPost", mock.Anything, mock.AnythingOfType("*model.BookmarkCollectionItem")).Return(false, nil)
 
 	r := gin.New()
 	r.POST("/bookmark-collections/:id/posts/:postId", authMiddleware(1), h.AddPost)

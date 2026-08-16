@@ -39,8 +39,9 @@ func (m *mockBookmarkCollectionRepo) Delete(ctx context.Context, id uint) error 
 	return m.Called(ctx, id).Error(0)
 }
 
-func (m *mockBookmarkCollectionRepo) AddPost(ctx context.Context, item *model.BookmarkCollectionItem) error {
-	return m.Called(ctx, item).Error(0)
+func (m *mockBookmarkCollectionRepo) AddPost(ctx context.Context, item *model.BookmarkCollectionItem) (bool, error) {
+	args := m.Called(ctx, item)
+	return args.Bool(0), args.Error(1)
 }
 
 func (m *mockBookmarkCollectionRepo) RemovePost(ctx context.Context, collectionID, postID uint) error {
@@ -51,11 +52,6 @@ func (m *mockBookmarkCollectionRepo) GetPosts(ctx context.Context, collectionID 
 	args := m.Called(ctx, collectionID, limit, offset)
 	p, _ := args.Get(0).([]model.Post)
 	return p, args.Get(1).(int64), args.Error(2)
-}
-
-func (m *mockBookmarkCollectionRepo) HasPost(ctx context.Context, collectionID, postID uint) (bool, error) {
-	args := m.Called(ctx, collectionID, postID)
-	return args.Bool(0), args.Error(1)
 }
 
 func (m *mockBookmarkCollectionRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
@@ -163,10 +159,9 @@ func TestAddPostToBookmarkCollectionUseCase_Execute(t *testing.T) {
 	t.Run("未追加なら追加する", func(t *testing.T) {
 		repo := new(mockBookmarkCollectionRepo)
 		repo.On("FindByID", mock.Anything, uint(5)).Return(&model.BookmarkCollection{UserID: 1}, nil)
-		repo.On("HasPost", mock.Anything, uint(5), uint(10)).Return(false, nil)
 		repo.On("AddPost", mock.Anything, mock.MatchedBy(func(i *model.BookmarkCollectionItem) bool {
 			return i.CollectionID == 5 && i.PostID == 10
-		})).Return(nil)
+		})).Return(true, nil)
 		uc := usecase.NewAddPostToBookmarkCollectionUseCase(repo)
 
 		assert.NoError(t, uc.Execute(context.Background(), 5, 10, 1))
@@ -174,10 +169,10 @@ func TestAddPostToBookmarkCollectionUseCase_Execute(t *testing.T) {
 	})
 
 	// post_collection は 400 だが、こちらは 409（Conflict）で異なる
-	t.Run("追加済みなら Conflict（追加しない）", func(t *testing.T) {
+	t.Run("追加済みなら Conflict", func(t *testing.T) {
 		repo := new(mockBookmarkCollectionRepo)
 		repo.On("FindByID", mock.Anything, uint(5)).Return(&model.BookmarkCollection{UserID: 1}, nil)
-		repo.On("HasPost", mock.Anything, uint(5), uint(10)).Return(true, nil)
+		repo.On("AddPost", mock.Anything, mock.Anything).Return(false, nil)
 		uc := usecase.NewAddPostToBookmarkCollectionUseCase(repo)
 
 		err := uc.Execute(context.Background(), 5, 10, 1)
@@ -186,18 +181,17 @@ func TestAddPostToBookmarkCollectionUseCase_Execute(t *testing.T) {
 		var de *domain.DomainError
 		if assert.ErrorAs(t, err, &de) {
 			assert.Equal(t, domain.ErrCodeConflict, de.Code)
+			assert.Equal(t, "この投稿は既にコレクションに追加されています", de.Message)
 		}
-		repo.AssertNotCalled(t, "AddPost")
 		repo.AssertExpectations(t)
 	})
 
-	t.Run("他人のコレクションは 403（存在確認もしない）", func(t *testing.T) {
+	t.Run("他人のコレクションは 403（追加しない）", func(t *testing.T) {
 		repo := new(mockBookmarkCollectionRepo)
 		repo.On("FindByID", mock.Anything, uint(5)).Return(&model.BookmarkCollection{UserID: 99}, nil)
 		uc := usecase.NewAddPostToBookmarkCollectionUseCase(repo)
 
 		assertForbidden(t, uc.Execute(context.Background(), 5, 10, 1))
-		repo.AssertNotCalled(t, "HasPost")
 		repo.AssertNotCalled(t, "AddPost")
 		repo.AssertExpectations(t)
 	})
