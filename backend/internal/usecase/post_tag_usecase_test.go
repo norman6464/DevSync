@@ -177,17 +177,45 @@ func TestGetPostTagsUseCase_Execute(t *testing.T) {
 }
 
 func TestFindPostsByTagUseCase_Execute(t *testing.T) {
-	tags := new(mockPostTagRepo)
-	tags.On("FindPostsByTag", mock.Anything, "go", 20, 0).
-		Return([]model.Post{{Title: "t"}}, int64(1), nil)
-	uc := usecase.NewFindPostsByTagUseCase(tags)
+	t.Run("タグに紐づく投稿と総件数を返す", func(t *testing.T) {
+		tags := new(mockPostTagRepo)
+		tags.On("FindPostsByTag", mock.Anything, "go", 20, 0).
+			Return([]model.Post{{Title: "t"}}, int64(1), nil)
+		uc := usecase.NewFindPostsByTagUseCase(tags)
 
-	got, total, err := uc.Execute(context.Background(), "go", 20, 0)
+		got, total, err := uc.Execute(context.Background(), "go", 20, 0)
 
-	assert.NoError(t, err)
-	assert.Len(t, got, 1)
-	assert.Equal(t, int64(1), total)
-	tags.AssertExpectations(t)
+		assert.NoError(t, err)
+		assert.Len(t, got, 1)
+		assert.Equal(t, int64(1), total)
+		tags.AssertExpectations(t)
+	})
+
+	t.Run("空・50文字超の検索語は検証エラーで検索しない", func(t *testing.T) {
+		tags := new(mockPostTagRepo)
+		uc := usecase.NewFindPostsByTagUseCase(tags)
+
+		for _, q := range []string{"", "   ", strings.Repeat("a", 51)} {
+			_, _, err := uc.Execute(context.Background(), q, 20, 0)
+			assert.Error(t, err, "q=%q", q)
+			assert.True(t, domain.IsDomainError(err), "q=%q は DomainError（400系）: %v", q, err)
+		}
+		tags.AssertNotCalled(t, "FindPostsByTag", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+	})
+
+	// タグは保存時に小文字化・トリムされるため、検索語も同じ規則で正規化しないと一致しない。
+	t.Run("大文字・前後空白の検索語を正規化してから検索する", func(t *testing.T) {
+		tags := new(mockPostTagRepo)
+		tags.On("FindPostsByTag", mock.Anything, "golang", 20, 0).
+			Return([]model.Post{{Title: "t"}}, int64(1), nil)
+		uc := usecase.NewFindPostsByTagUseCase(tags)
+
+		_, total, err := uc.Execute(context.Background(), "  GoLang  ", 20, 0)
+
+		assert.NoError(t, err)
+		assert.Equal(t, int64(1), total)
+		tags.AssertExpectations(t)
+	})
 }
 
 func TestGetPopularTagsUseCase_Execute(t *testing.T) {
