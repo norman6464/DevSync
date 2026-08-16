@@ -5,4 +5,3 @@ export interface BadgeResult {
   category: string;
   earned: boolean;
 }
-const broken: number = 'これは型エラー';
