@@ -52,7 +52,7 @@ describe('BadgeCollectionPage', () => {
     vi.clearAllMocks();
     vi.mocked(badgesApi.getUserBadges).mockResolvedValue({
       data: { badges: mockBadges },
-    } as any);
+    } as Awaited<ReturnType<typeof badgesApi.getUserBadges>>);
   });
 
   it('ページタイトルが表示される', async () => {
@@ -103,11 +103,19 @@ describe('BadgeCollectionPage', () => {
 
     await screen.findByText('初投稿');
 
-    // フィルタータブが表示される
-    expect(screen.getByRole('button', { name: 'すべて' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '学習' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'ストリーク' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'コミュニティ' })).toBeInTheDocument();
+    // タブはバックエンドが返す実カテゴリに対応している
+    for (const label of [
+      'すべて',
+      'コントリビューション',
+      'ストリーク',
+      '投稿',
+      '反応',
+      'つながり',
+      'Q&A',
+      '目標',
+    ]) {
+      expect(screen.getByRole('button', { name: label })).toBeInTheDocument();
+    }
 
     // ストリークタブで絞り込むと streak カテゴリのバッジだけが表示される
     await user.click(screen.getByRole('button', { name: 'ストリーク' }));
@@ -115,6 +123,17 @@ describe('BadgeCollectionPage', () => {
     expect(screen.queryByText('初投稿')).not.toBeInTheDocument();
     expect(screen.queryByText('投稿10件')).not.toBeInTheDocument();
     expect(screen.queryByText('フォロワー100人')).not.toBeInTheDocument();
+
+    // 投稿タブは post カテゴリの 2 件（旧タブ構成では到達できなかった）
+    await user.click(screen.getByRole('button', { name: '投稿' }));
+    expect(screen.getByText('初投稿')).toBeInTheDocument();
+    expect(screen.getByText('投稿10件')).toBeInTheDocument();
+    expect(screen.queryByText('7日連続')).not.toBeInTheDocument();
+
+    // つながりタブは social カテゴリの 1 件
+    await user.click(screen.getByRole('button', { name: 'つながり' }));
+    expect(screen.getByText('フォロワー100人')).toBeInTheDocument();
+    expect(screen.queryByText('初投稿')).not.toBeInTheDocument();
 
     // すべて に戻すと全バッジが再表示される
     await user.click(screen.getByRole('button', { name: 'すべて' }));
@@ -136,7 +155,7 @@ describe('BadgeCollectionPage', () => {
 
   it('ローディング状態が表示される', () => {
     vi.mocked(badgesApi.getUserBadges).mockImplementation(
-      () => new Promise(() => {}) as any
+      () => new Promise<never>(() => {})
     );
 
     renderWithRouter(<BadgeCollectionPage />);
