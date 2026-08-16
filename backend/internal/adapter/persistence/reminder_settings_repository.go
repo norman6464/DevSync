@@ -7,6 +7,7 @@ import (
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // デフォルト設定の初期値。未登録ユーザーが初めて設定を開いたときに作られる。
@@ -47,8 +48,18 @@ func (r *reminderSettingsRepository) GetOrCreateDefault(ctx context.Context, use
 		EnableWeb:        true,
 		EnableEmail:      false,
 	}
-	if err := r.db.WithContext(ctx).Create(defaultSettings).Error; err != nil {
-		return nil, err
+	// 同一ユーザーの初回取得が同時に走ると複数リクエストが「不在」と判定するため、
+	// user_id の一意制約に任せて ON CONFLICT DO NOTHING で挿入し、
+	// 競合に負けた側は先に作られた行を読み直して返す（失敗させない）。
+	res := r.db.WithContext(ctx).Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "user_id"}},
+		DoNothing: true,
+	}).Create(defaultSettings)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return r.FindByUserID(ctx, userID)
 	}
 	return defaultSettings, nil
 }
