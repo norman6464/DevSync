@@ -70,7 +70,8 @@ func (r *postTagRepository) FindPostsByTag(ctx context.Context, tag string, limi
 	}
 
 	if len(postTags) == 0 {
-		return []model.Post{}, 0, nil
+		// 範囲外の offset でも算出済みの総件数を返す（ページネーション表示を壊さない）。
+		return []model.Post{}, count, nil
 	}
 
 	postIDs := make([]uint, len(postTags))

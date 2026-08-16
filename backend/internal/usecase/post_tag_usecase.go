@@ -91,8 +91,9 @@ func NewFindPostsByTagUseCase(tags repository.PostTagRepository) *FindPostsByTag
 }
 
 // Execute はタグに紐づく投稿と総件数を返す。
+// タグは保存時に正規化されているため、検索語にも同じ規則を適用して突き合わせる。
 func (uc *FindPostsByTagUseCase) Execute(ctx context.Context, tag string, limit, offset int) ([]model.Post, int64, error) {
-	return uc.tags.FindPostsByTag(ctx, tag, limit, offset)
+	return uc.tags.FindPostsByTag(ctx, domain.NormalizeTag(tag), limit, offset)
 }
 
 // GetPopularTagsUseCase は人気タグ一覧を取得する。

@@ -54,12 +54,18 @@ func ExtractHashtags(content string) []string {
 	return tags
 }
 
+// NormalizeTag は単一のタグを保存時と同じ規則で正規化する（小文字変換・トリム）。
+// 検索語にも同じ規則を適用し、保存済みタグと突き合わせられるようにする。
+func NormalizeTag(tag string) string {
+	return strings.ToLower(strings.TrimSpace(tag))
+}
+
 // NormalizeTags はタグを正規化する（小文字変換・トリム・空文字除外・重複除外）。
 func NormalizeTags(tags []string) []string {
 	seen := make(map[string]bool)
 	var result []string
 	for _, tag := range tags {
-		t := strings.ToLower(strings.TrimSpace(tag))
+		t := NormalizeTag(tag)
 		if t == "" || seen[t] {
 			continue
 		}
