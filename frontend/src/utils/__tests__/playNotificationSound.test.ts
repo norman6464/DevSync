@@ -1,10 +1,28 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-function createMockAudioContext() {
-  const oscillators: ReturnType<typeof createMockOscillator>[] = [];
-  const gainNodes: ReturnType<typeof createMockGainNode>[] = [];
+type MockFn = ReturnType<typeof vi.fn>;
 
-  function createMockOscillator() {
+interface MockOscillator {
+  connect: MockFn;
+  type: OscillatorType;
+  frequency: { setValueAtTime: MockFn };
+  start: MockFn;
+  stop: MockFn;
+}
+
+interface MockGainNode {
+  connect: MockFn;
+  gain: {
+    setValueAtTime: MockFn;
+    linearRampToValueAtTime: MockFn;
+  };
+}
+
+function createMockAudioContext() {
+  const oscillators: MockOscillator[] = [];
+  const gainNodes: MockGainNode[] = [];
+
+  function createMockOscillator(): MockOscillator {
     const osc = {
       connect: vi.fn(),
       type: '' as OscillatorType,
@@ -16,7 +34,7 @@ function createMockAudioContext() {
     return osc;
   }
 
-  function createMockGainNode() {
+  function createMockGainNode(): MockGainNode {
     const gain = {
       connect: vi.fn(),
       gain: {

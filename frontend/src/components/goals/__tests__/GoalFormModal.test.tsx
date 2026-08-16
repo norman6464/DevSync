@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import GoalFormModal from '../GoalFormModal';
+import type { GoalCategory } from '../../../api/goals';
 
 const defaultProps = {
   isOpen: true,
@@ -10,7 +11,7 @@ const defaultProps = {
   setTitle: vi.fn(),
   description: '',
   setDescription: vi.fn(),
-  category: 'programming' as const,
+  category: 'language' as GoalCategory,
   setCategory: vi.fn(),
   targetDate: '',
   setTargetDate: vi.fn(),

@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, Sparkles, Clock } from 'lucide-react';
 import type { GoalCategory } from '../../api/goals';
-import { GOAL_TEMPLATES, GOAL_CATEGORIES, type GoalTemplate, getTemplatesByCategory } from '../../constants/goalTemplates';
-import { buttonPrimaryClass, buttonSecondaryClass } from '../../constants/styles';
+import { GOAL_CATEGORIES, type GoalTemplate, getTemplatesByCategory } from '../../constants/goalTemplates';
+import { buttonSecondaryClass } from '../../constants/styles';
 
 interface GoalTemplatesModalProps {
   isOpen: boolean;
@@ -12,7 +12,8 @@ interface GoalTemplatesModalProps {
 }
 
 export default function GoalTemplatesModal({ isOpen, onSelect, onClose }: GoalTemplatesModalProps) {
-  const { t } = useTranslation();
+  // t は未使用だが、i18n の購読（言語切替時の再レンダー・サスペンド挙動）を維持するため呼び出しは残す
+  useTranslation();
   const [selectedCategory, setSelectedCategory] = useState<GoalCategory | 'all'>('all');
 
   const filteredTemplates = getTemplatesByCategory(selectedCategory);

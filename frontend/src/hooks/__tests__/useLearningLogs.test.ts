@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useLearningLogs, useStreak, useWeeklyDuration, useLearningLogCalendar } from '../useLearningLogs';
+import type { LearningLog } from '../../types/learningLog';
 import { getMyLogs, createLog, deleteLog, favoriteLog, unfavoriteLog, getStreakInfo, getWeeklyDuration, getCalendarData } from '../../api/learningLogs';
 import toast from 'react-hot-toast';
 
@@ -20,16 +21,30 @@ vi.mock('react-hot-toast', () => ({
   default: { error: vi.fn(), success: vi.fn() },
 }));
 
-const mockLogs = [
-  { id: 1, title: 'Go学習', content: '...', category: 'language', duration: 60, is_favorite: false, created_at: '2026-01-01' },
-  { id: 2, title: 'React学習', content: '...', category: 'framework', duration: 90, is_favorite: true, created_at: '2026-01-02' },
-  { id: 3, title: 'Docker入門', content: '...', category: 'skill', duration: 45, is_favorite: false, created_at: '2026-01-03' },
+const makeLog = (overrides: Partial<LearningLog>): LearningLog => ({
+  id: 0,
+  user_id: 1,
+  title: '',
+  content: '...',
+  category: 'coding',
+  duration: 0,
+  source: 'manual',
+  is_favorite: false,
+  created_at: '2026-01-01',
+  updated_at: '2026-01-01',
+  ...overrides,
+});
+
+const mockLogs: LearningLog[] = [
+  makeLog({ id: 1, title: 'Go学習', category: 'coding', duration: 60 }),
+  makeLog({ id: 2, title: 'React学習', category: 'reading', duration: 90, is_favorite: true, created_at: '2026-01-02' }),
+  makeLog({ id: 3, title: 'Docker入門', category: 'course', duration: 45, created_at: '2026-01-03' }),
 ];
 
 describe('useLearningLogs', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(getMyLogs).mockResolvedValue({ data: mockLogs });
+    vi.mocked(getMyLogs).mockResolvedValue({ data: mockLogs } as Awaited<ReturnType<typeof getMyLogs>>);
     vi.stubGlobal('confirm', () => true);
   });
 

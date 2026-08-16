@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
+import type { AxiosResponse } from 'axios';
 import { useCircleSearch } from '../useCircleSearch';
 import { searchCircles } from '../../api/studyCircles';
 import type { StudyCircle } from '../../types/studyCircle';
@@ -8,10 +9,10 @@ vi.mock('../../api/studyCircles', () => ({
   searchCircles: vi.fn(),
 }));
 
-const mockCircles: StudyCircle[] = [
+const mockCircles = [
   { id: 1, name: 'React勉強会', description: 'Reactを学ぶ', owner_id: 1, max_members: 10, is_public: true, created_at: '', updated_at: '' },
   { id: 2, name: 'Go勉強会', description: 'Goを学ぶ', owner_id: 2, max_members: 5, is_public: true, created_at: '', updated_at: '' },
-];
+] as unknown as StudyCircle[];
 
 describe('useCircleSearch', () => {
   beforeEach(() => {
@@ -35,7 +36,7 @@ describe('useCircleSearch', () => {
   });
 
   it('空文字をsetQueryするとresultsとsearchedがリセットされる', async () => {
-    vi.mocked(searchCircles).mockResolvedValue({ data: mockCircles });
+    vi.mocked(searchCircles).mockResolvedValue({ data: mockCircles } as AxiosResponse<StudyCircle[]>);
     const { result } = renderHook(() => useCircleSearch());
 
     await act(async () => {
@@ -51,7 +52,7 @@ describe('useCircleSearch', () => {
   });
 
   it('handleSearchで検索結果が取得される', async () => {
-    vi.mocked(searchCircles).mockResolvedValue({ data: mockCircles });
+    vi.mocked(searchCircles).mockResolvedValue({ data: mockCircles } as AxiosResponse<StudyCircle[]>);
     const { result } = renderHook(() => useCircleSearch());
 
     await act(async () => {
@@ -65,7 +66,7 @@ describe('useCircleSearch', () => {
   });
 
   it('handleSearchで引数なしの場合はquery状態を使用する', async () => {
-    vi.mocked(searchCircles).mockResolvedValue({ data: mockCircles });
+    vi.mocked(searchCircles).mockResolvedValue({ data: mockCircles } as AxiosResponse<StudyCircle[]>);
     const { result } = renderHook(() => useCircleSearch());
 
     act(() => {
@@ -106,7 +107,7 @@ describe('useCircleSearch', () => {
   });
 
   it('APIレスポンスのdataがnullの場合は空配列になる', async () => {
-    vi.mocked(searchCircles).mockResolvedValue({ data: null });
+    vi.mocked(searchCircles).mockResolvedValue({ data: null } as unknown as AxiosResponse<StudyCircle[]>);
     const { result } = renderHook(() => useCircleSearch());
 
     await act(async () => {
@@ -118,7 +119,7 @@ describe('useCircleSearch', () => {
   });
 
   it('検索中はloadingがtrueになる', async () => {
-    let resolvePromise: (value: { data: StudyCircle[] }) => void;
+    let resolvePromise: (value: AxiosResponse<StudyCircle[]>) => void;
     vi.mocked(searchCircles).mockImplementation(
       () => new Promise((resolve) => { resolvePromise = resolve; })
     );
@@ -133,7 +134,7 @@ describe('useCircleSearch', () => {
     expect(result.current.loading).toBe(true);
 
     await act(async () => {
-      resolvePromise!({ data: mockCircles });
+      resolvePromise!({ data: mockCircles } as AxiosResponse<StudyCircle[]>);
       await searchPromise;
     });
 

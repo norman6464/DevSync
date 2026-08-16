@@ -10,7 +10,7 @@ const makeStep = (overrides = {}) => ({
   resource_url: 'https://react.dev',
   is_completed: false,
   completed_at: null,
-  order: 1,
+  order_index: 1,
   created_at: '2025-01-01',
   updated_at: '2025-01-01',
   ...overrides,
@@ -102,7 +102,7 @@ describe('RoadmapStepList', () => {
     renderList({
       steps: [
         makeStep({ id: 1, title: 'ステップ1' }),
-        makeStep({ id: 2, title: 'ステップ2', order: 2 }),
+        makeStep({ id: 2, title: 'ステップ2', order_index: 2 }),
       ],
     });
     expect(screen.getByText('ステップ1')).toBeInTheDocument();

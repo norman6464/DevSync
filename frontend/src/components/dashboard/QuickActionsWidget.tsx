@@ -90,7 +90,8 @@ const QUICK_ACTIONS: QuickAction[] = [
 ];
 
 export default function QuickActionsWidget() {
-  const { t } = useTranslation();
+  // t は未使用だが、i18n の購読（言語切替時の再レンダー・サスペンド挙動）を維持するため呼び出しは残す
+  useTranslation();
 
   return (
     <div className={panelClass}>

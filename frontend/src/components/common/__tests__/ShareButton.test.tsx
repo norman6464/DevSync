@@ -15,12 +15,12 @@ vi.mock('../../../contexts/ToastContext', () => ({
 
 // window.openのモック
 const mockWindowOpen = vi.fn();
-global.window.open = mockWindowOpen;
+globalThis.window.open = mockWindowOpen;
 
 describe('ShareButton', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    global.window.open = mockWindowOpen;
+    globalThis.window.open = mockWindowOpen;
   });
 
   it('シェアボタンが表示される', () => {

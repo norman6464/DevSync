@@ -17,7 +17,7 @@ const makeGoal = (overrides: Partial<LearningGoal> = {}): LearningGoal => ({
   updated_at: '2026-02-19T00:00:00Z',
   completed_at: null,
   ...overrides,
-});
+} as LearningGoal);
 
 const renderWidget = (props: Partial<React.ComponentProps<typeof GoalsProgressWidget>> = {}) => {
   const defaultProps = {

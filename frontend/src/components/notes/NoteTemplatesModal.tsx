@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, Sparkles, FileText } from 'lucide-react';
-import { NOTE_TEMPLATES, NOTE_CATEGORIES, type NoteTemplate, type NoteCategory, getTemplatesByCategory } from '../../constants/noteTemplates';
+import { NOTE_CATEGORIES, type NoteTemplate, type NoteCategory, getTemplatesByCategory } from '../../constants/noteTemplates';
 import { buttonSecondaryClass } from '../../constants/styles';
 
 interface NoteTemplatesModalProps {
@@ -11,7 +11,8 @@ interface NoteTemplatesModalProps {
 }
 
 export default function NoteTemplatesModal({ isOpen, onSelect, onClose }: NoteTemplatesModalProps) {
-  const { t } = useTranslation();
+  // t は未使用だが、i18n の購読（言語切替時の再レンダー・サスペンド挙動）を維持するため呼び出しは残す
+  useTranslation();
   const [selectedCategory, setSelectedCategory] = useState<NoteCategory | 'all'>('all');
 
   const filteredTemplates = getTemplatesByCategory(selectedCategory);

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import type { AxiosResponse } from 'axios';
 import type { User, AuthResponse } from '../../types/user';
 
 // authApi モック
@@ -44,7 +45,7 @@ const mockUser: User = {
   updated_at: '2026-01-01T00:00:00Z',
 };
 
-const mockAuthResponse = { data: { user: mockUser } as AuthResponse };
+const mockAuthResponse = { data: { user: mockUser } as AuthResponse } as AxiosResponse<AuthResponse>;
 
 describe('authStore', () => {
   beforeEach(() => {
@@ -114,7 +115,7 @@ describe('authStore', () => {
   describe('loginWithGitHub', () => {
     it('有効なURLの場合にリダイレクトする', async () => {
       const githubUrl = 'https://github.com/login/oauth/authorize?client_id=xxx';
-      vi.mocked(authApi.getGitHubLoginURL).mockResolvedValue({ data: { url: githubUrl } });
+      vi.mocked(authApi.getGitHubLoginURL).mockResolvedValue({ data: { url: githubUrl } } as AxiosResponse<{ url: string }>);
       vi.mocked(isHttpUrl).mockReturnValue(true);
 
       // window.location.hrefへの代入をキャプチャ
@@ -138,7 +139,7 @@ describe('authStore', () => {
     });
 
     it('無効なURLの場合にエラーをスローする', async () => {
-      vi.mocked(authApi.getGitHubLoginURL).mockResolvedValue({ data: { url: 'javascript:alert(1)' } });
+      vi.mocked(authApi.getGitHubLoginURL).mockResolvedValue({ data: { url: 'javascript:alert(1)' } } as AxiosResponse<{ url: string }>);
       vi.mocked(isHttpUrl).mockReturnValue(false);
 
       await expect(useAuthStore.getState().loginWithGitHub()).rejects.toThrow('Invalid OAuth URL');
@@ -171,7 +172,7 @@ describe('authStore', () => {
   describe('logout', () => {
     it('ログアウト成功時に状態をクリアする', async () => {
       useAuthStore.setState({ user: mockUser, isAuthenticated: true });
-      vi.mocked(authApi.logout).mockResolvedValue({ data: { message: 'ok' } });
+      vi.mocked(authApi.logout).mockResolvedValue({ data: { message: 'ok' } } as AxiosResponse<{ message: string }>);
 
       await useAuthStore.getState().logout();
 
@@ -198,7 +199,7 @@ describe('authStore', () => {
 
   describe('loadUser', () => {
     it('ユーザー読み込み成功時に状態を設定する', async () => {
-      vi.mocked(authApi.getMe).mockResolvedValue({ data: mockUser });
+      vi.mocked(authApi.getMe).mockResolvedValue({ data: mockUser } as AxiosResponse<User>);
 
       await useAuthStore.getState().loadUser();
 
@@ -209,7 +210,7 @@ describe('authStore', () => {
     });
 
     it('読み込み中はloadingがtrueになる', async () => {
-      let resolvePromise: (value: { data: User }) => void;
+      let resolvePromise: (value: AxiosResponse<User>) => void;
       vi.mocked(authApi.getMe).mockImplementation(
         () => new Promise((resolve) => { resolvePromise = resolve; }),
       );
@@ -217,7 +218,7 @@ describe('authStore', () => {
       const loadPromise = useAuthStore.getState().loadUser();
       expect(useAuthStore.getState().loading).toBe(true);
 
-      resolvePromise!({ data: mockUser });
+      resolvePromise!({ data: mockUser } as AxiosResponse<User>);
       await loadPromise;
       expect(useAuthStore.getState().loading).toBe(false);
     });

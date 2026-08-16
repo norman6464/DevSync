@@ -45,7 +45,7 @@ export function useBadgeNotifier(badges: BadgeResult[]) {
     if (newBadges.length > 0) {
       // Show toast for each new badge
       newBadges.forEach((badge) => {
-        showToast(t('badges.badgeEarned', { name: t(badge.name) }), 'success');
+        showToast(t('badges.badgeEarned', { name: t(badge.name) }));
         // Notify backend
         notifyBadgeEarned(badge.id).catch(() => {});
       });

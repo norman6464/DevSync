@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
+import type { AxiosResponse } from 'axios';
 import { usePostSearch } from '../usePostSearch';
 import { searchPosts } from '../../api/posts';
 import type { PostSearchResponse } from '../../api/posts';
@@ -45,7 +46,7 @@ describe('usePostSearch', () => {
   });
 
   it('空文字でsetQueryするとresultsとtotalがリセットされること', async () => {
-    vi.mocked(searchPosts).mockResolvedValue({ data: mockResponse });
+    vi.mocked(searchPosts).mockResolvedValue({ data: mockResponse } as AxiosResponse<PostSearchResponse>);
 
     const { result } = renderHook(() => usePostSearch());
 
@@ -69,7 +70,7 @@ describe('usePostSearch', () => {
   });
 
   it('handleSearch成功時にresultsとtotalが設定されること', async () => {
-    vi.mocked(searchPosts).mockResolvedValue({ data: mockResponse });
+    vi.mocked(searchPosts).mockResolvedValue({ data: mockResponse } as AxiosResponse<PostSearchResponse>);
 
     const { result } = renderHook(() => usePostSearch());
 
@@ -122,7 +123,7 @@ describe('usePostSearch', () => {
   });
 
   it('nullデータの場合はデフォルト値が使われること', async () => {
-    vi.mocked(searchPosts).mockResolvedValue({ data: null });
+    vi.mocked(searchPosts).mockResolvedValue({ data: null } as unknown as AxiosResponse<PostSearchResponse>);
 
     const { result } = renderHook(() => usePostSearch());
 

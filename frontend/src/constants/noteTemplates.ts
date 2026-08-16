@@ -1,4 +1,4 @@
-import { Code, BookOpen, Lightbulb, FolderOpen, Calendar, type LucideIcon } from 'lucide-react';
+import { BookOpen, Lightbulb, FolderOpen, Calendar, type LucideIcon } from 'lucide-react';
 
 export type NoteCategory = '学習ノート' | 'プロジェクト' | '復習' | 'その他';
 

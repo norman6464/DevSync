@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { inputClass, buttonPrimaryClass } from '../../constants/styles';
-import { User } from '../../types/user';
+import type { User } from '../../types/user';
 import IntegrationUsernameCard from './IntegrationUsernameCard';
 
 interface OnboardingIntegrationsStepProps {

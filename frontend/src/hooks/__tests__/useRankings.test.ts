@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useRankings } from '../useRankings';
 import { getContributionRanking, getLanguageRanking, getLevelRanking, getAvailableLanguages } from '../../api/rankings';
+import type { AxiosResponse } from 'axios';
+import type { RankingEntry } from '../../types/ranking';
 
 vi.mock('../../api/rankings', () => ({
   getContributionRanking: vi.fn(),
@@ -19,10 +21,10 @@ const mockRankings = [
 describe('useRankings', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(getAvailableLanguages).mockResolvedValue({ data: ['Go', 'Python', 'Rust'] });
-    vi.mocked(getContributionRanking).mockResolvedValue({ data: mockRankings });
-    vi.mocked(getLanguageRanking).mockResolvedValue({ data: mockRankings });
-    vi.mocked(getLevelRanking).mockResolvedValue({ data: mockRankings });
+    vi.mocked(getAvailableLanguages).mockResolvedValue({ data: ['Go', 'Python', 'Rust'] } as unknown as AxiosResponse<string[]>);
+    vi.mocked(getContributionRanking).mockResolvedValue({ data: mockRankings } as unknown as AxiosResponse<RankingEntry[]>);
+    vi.mocked(getLanguageRanking).mockResolvedValue({ data: mockRankings } as unknown as AxiosResponse<RankingEntry[]>);
+    vi.mocked(getLevelRanking).mockResolvedValue({ data: mockRankings } as unknown as AxiosResponse<RankingEntry[]>);
   });
 
   it('初期状態でcontributionsタブ・weekly期間でランキングが取得されること', async () => {
@@ -97,7 +99,7 @@ describe('useRankings', () => {
   });
 
   it('利用可能言語APIが空の場合デフォルト言語が使われること', async () => {
-    vi.mocked(getAvailableLanguages).mockResolvedValue({ data: [] });
+    vi.mocked(getAvailableLanguages).mockResolvedValue({ data: [] } as unknown as AxiosResponse<string[]>);
 
     const { result } = renderHook(() => useRankings());
 

@@ -12,7 +12,6 @@ import {
   getArchivedNotes,
   searchNotes,
   duplicateNote,
-  type Note,
   type CreateNoteRequest,
   type UpdateNoteRequest,
 } from '../api/notes';

@@ -3,13 +3,13 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import PostSearchCard from '../PostSearchCard';
 import type { Post } from '../../../types/post';
+import type { User } from '../../../types/user';
 
-const mockPost: Post = {
+const mockPost = {
   id: 1,
   user_id: 1,
   title: 'Test Post Title',
   content: 'This is the post content for testing.',
-  status: 'published',
   like_count: 5,
   comment_count: 3,
   view_count: 100,
@@ -25,8 +25,8 @@ const mockPost: Post = {
     github_username: '',
     created_at: '2026-01-01T00:00:00Z',
     updated_at: '2026-01-01T00:00:00Z',
-  },
-};
+  } as User,
+} as Post;
 
 const renderWithRouter = (ui: React.ReactElement) =>
   render(<MemoryRouter>{ui}</MemoryRouter>);

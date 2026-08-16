@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
+import type { AxiosResponse } from 'axios';
 import { useGoals } from '../useGoals';
-import { getMyGoals, createGoal, updateGoal, deleteGoal, duplicateGoal } from '../../api/goals';
+import { getMyGoals, createGoal, updateGoal, deleteGoal, duplicateGoal, type LearningGoal, type GoalCategory } from '../../api/goals';
 import toast from 'react-hot-toast';
 
 vi.mock('../../api/goals', () => ({
@@ -26,7 +27,7 @@ const mockGoals = [
 describe('useGoals', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(getMyGoals).mockResolvedValue({ data: mockGoals });
+    vi.mocked(getMyGoals).mockResolvedValue({ data: mockGoals } as unknown as AxiosResponse<LearningGoal[]>);
   });
 
   it('目標がステータス別に正しく分類されること', async () => {
@@ -44,7 +45,7 @@ describe('useGoals', () => {
 
   it('目標作成が成功すること', async () => {
     const newGoal = { id: 10, title: '新目標', status: 'active', category: 'programming', progress: 0 };
-    vi.mocked(createGoal).mockResolvedValue({ data: newGoal });
+    vi.mocked(createGoal).mockResolvedValue({ data: newGoal } as unknown as AxiosResponse<LearningGoal>);
 
     const { result } = renderHook(() => useGoals());
 
@@ -54,7 +55,7 @@ describe('useGoals', () => {
 
     let created: unknown;
     await act(async () => {
-      created = await result.current.createGoal({ title: '新目標', description: '', category: 'programming' });
+      created = await result.current.createGoal({ title: '新目標', description: '', category: 'programming' as unknown as GoalCategory });
     });
 
     expect(created).toEqual(newGoal);
@@ -63,7 +64,7 @@ describe('useGoals', () => {
 
   it('目標更新でprogress=100の場合に完了トーストが表示されること', async () => {
     const updated = { ...mockGoals[0], progress: 100, status: 'completed' };
-    vi.mocked(updateGoal).mockResolvedValue({ data: updated });
+    vi.mocked(updateGoal).mockResolvedValue({ data: updated } as unknown as AxiosResponse<LearningGoal>);
 
     const { result } = renderHook(() => useGoals());
 
@@ -79,7 +80,7 @@ describe('useGoals', () => {
   });
 
   it('目標削除が成功すること', async () => {
-    vi.mocked(deleteGoal).mockResolvedValue(undefined);
+    vi.mocked(deleteGoal).mockResolvedValue(undefined as unknown as AxiosResponse);
 
     const { result } = renderHook(() => useGoals());
 
@@ -98,7 +99,7 @@ describe('useGoals', () => {
 
   it('目標複製が成功すること', async () => {
     const duplicated = { id: 20, title: 'Go習得 (コピー)', status: 'active', category: 'programming', progress: 0 };
-    vi.mocked(duplicateGoal).mockResolvedValue({ data: duplicated });
+    vi.mocked(duplicateGoal).mockResolvedValue({ data: duplicated } as unknown as AxiosResponse<LearningGoal>);
 
     const { result } = renderHook(() => useGoals());
 
@@ -126,7 +127,7 @@ describe('useGoals', () => {
 
     let created: unknown;
     await act(async () => {
-      created = await result.current.createGoal({ title: 'テスト', description: '', category: 'programming' });
+      created = await result.current.createGoal({ title: 'テスト', description: '', category: 'programming' as unknown as GoalCategory });
     });
 
     expect(created).toBeNull();

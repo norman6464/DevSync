@@ -14,9 +14,18 @@ vi.mock('../../api/badges', () => ({
   notifyBadgeEarned: vi.fn().mockResolvedValue({}),
 }));
 
-const badge1 = { id: 'b1', name: 'badges.firstPost', earned: true, earned_at: '2026-02-19' } as BadgeResult;
-const badge2 = { id: 'b2', name: 'badges.tenPosts', earned: true, earned_at: '2026-02-19' } as BadgeResult;
-const badge3 = { id: 'b3', name: 'badges.hundredPosts', earned: false } as BadgeResult;
+const makeBadge = (overrides: Partial<BadgeResult>): BadgeResult => ({
+  id: 'b0',
+  name: 'badges.firstPost',
+  description: '',
+  category: 'post',
+  earned: false,
+  ...overrides,
+});
+
+const badge1 = makeBadge({ id: 'b1', name: 'badges.firstPost', earned: true });
+const badge2 = makeBadge({ id: 'b2', name: 'badges.tenPosts', earned: true });
+const badge3 = makeBadge({ id: 'b3', name: 'badges.hundredPosts', earned: false });
 
 // localStorage mock
 const store: Record<string, string> = {};

@@ -8,12 +8,14 @@ const defaultProps = {
   showFavoritesOnly: false,
   sortBy: 'latest' as const,
   filterDate: null as string | null,
+  filterDateRange: null as number | null,
   onViewList: vi.fn(),
   onViewCalendar: vi.fn(),
   onToggleFavorites: vi.fn(),
   onFilterCategory: vi.fn(),
   onSortBy: vi.fn(),
   onClearFilterDate: vi.fn(),
+  onFilterDateRange: vi.fn(),
 };
 
 const renderBar = (props = {}) =>

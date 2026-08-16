@@ -134,7 +134,7 @@ describe('Card', () => {
   });
 
   it('フッターにボーダーがある', () => {
-    const { container } = render(
+    render(
       <Card>
         <Card.Body>ボディ</Card.Body>
         <Card.Footer>フッター</Card.Footer>

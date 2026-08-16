@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
+import type { AxiosResponse } from 'axios';
+import type { ViewCount } from '../../types/post';
 import { useViewCount, useMostViewed, useRecordView } from '../usePostViews';
 import { recordView, getViewCount, getMostViewed } from '../../api/postViews';
 import toast from 'react-hot-toast';
@@ -24,7 +26,7 @@ describe('useViewCount', () => {
   });
 
   it('postIdが指定されている場合に閲覧数を取得する', async () => {
-    vi.mocked(getViewCount).mockResolvedValue({ data: { post_id: 1, view_count: 42 } });
+    vi.mocked(getViewCount).mockResolvedValue({ data: { post_id: 1, view_count: 42 } } as AxiosResponse<{ post_id: number; view_count: number }>);
 
     const { result } = renderHook(() => useViewCount(1));
 
@@ -48,7 +50,7 @@ describe('useViewCount', () => {
   });
 
   it('APIレスポンスのdataがnullの場合は0を返す', async () => {
-    vi.mocked(getViewCount).mockResolvedValue({ data: null });
+    vi.mocked(getViewCount).mockResolvedValue({ data: null } as unknown as AxiosResponse<{ post_id: number; view_count: number }>);
 
     const { result } = renderHook(() => useViewCount(1));
 
@@ -70,7 +72,7 @@ describe('useMostViewed', () => {
       { post_id: 1, view_count: 100 },
       { post_id: 2, view_count: 50 },
     ];
-    vi.mocked(getMostViewed).mockResolvedValue({ data: mockData });
+    vi.mocked(getMostViewed).mockResolvedValue({ data: mockData } as unknown as AxiosResponse<ViewCount[]>);
 
     const { result } = renderHook(() => useMostViewed());
 
@@ -83,7 +85,7 @@ describe('useMostViewed', () => {
   });
 
   it('APIレスポンスのdataがnullの場合は空配列を返す', async () => {
-    vi.mocked(getMostViewed).mockResolvedValue({ data: null });
+    vi.mocked(getMostViewed).mockResolvedValue({ data: null } as unknown as AxiosResponse<ViewCount[]>);
 
     const { result } = renderHook(() => useMostViewed());
 
@@ -101,7 +103,7 @@ describe('useRecordView', () => {
   });
 
   it('閲覧を正常に記録する', async () => {
-    vi.mocked(recordView).mockResolvedValue({});
+    vi.mocked(recordView).mockResolvedValue({} as AxiosResponse);
 
     const { result } = renderHook(() => useRecordView());
 

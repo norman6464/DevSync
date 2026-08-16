@@ -3,10 +3,10 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import Modal from '../Modal';
 
 describe('Modal', () => {
-  let mockOnClose: ReturnType<typeof vi.fn>;
+  let mockOnClose: ReturnType<typeof vi.fn<() => void>>;
 
   beforeEach(() => {
-    mockOnClose = vi.fn();
+    mockOnClose = vi.fn<() => void>();
   });
 
   it('モーダルが表示される', () => {

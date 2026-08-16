@@ -7,6 +7,7 @@ import {
   getComparison,
 } from '../../api/reports';
 import type { ActivityReport, ReportComparison } from '../../api/reports';
+import type { AxiosResponse } from 'axios';
 
 vi.mock('../../api/reports', () => ({
   getMyWeeklyReport: vi.fn(),
@@ -53,8 +54,8 @@ describe('useReport', () => {
   });
 
   it('初期状態ではweeklyレポートを取得する', async () => {
-    vi.mocked(getMyWeeklyReport).mockResolvedValue({ data: mockReport });
-    vi.mocked(getComparison).mockResolvedValue({ data: mockComparison });
+    vi.mocked(getMyWeeklyReport).mockResolvedValue({ data: mockReport } as unknown as AxiosResponse<ActivityReport>);
+    vi.mocked(getComparison).mockResolvedValue({ data: mockComparison } as unknown as AxiosResponse<ReportComparison>);
 
     const { result } = renderHook(() => useReport());
 
@@ -71,9 +72,9 @@ describe('useReport', () => {
   });
 
   it('periodをmonthlyに切り替えるとmonthlyレポートを取得する', async () => {
-    vi.mocked(getMyWeeklyReport).mockResolvedValue({ data: mockReport });
-    vi.mocked(getMyMonthlyReport).mockResolvedValue({ data: { ...mockReport, period: 'monthly' } });
-    vi.mocked(getComparison).mockResolvedValue({ data: mockComparison });
+    vi.mocked(getMyWeeklyReport).mockResolvedValue({ data: mockReport } as unknown as AxiosResponse<ActivityReport>);
+    vi.mocked(getMyMonthlyReport).mockResolvedValue({ data: { ...mockReport, period: 'monthly' } } as unknown as AxiosResponse<ActivityReport>);
+    vi.mocked(getComparison).mockResolvedValue({ data: mockComparison } as unknown as AxiosResponse<ReportComparison>);
 
     const { result } = renderHook(() => useReport());
 
@@ -93,8 +94,8 @@ describe('useReport', () => {
   });
 
   it('データがnullの場合はデフォルト値を返す', async () => {
-    vi.mocked(getMyWeeklyReport).mockResolvedValue({ data: null });
-    vi.mocked(getComparison).mockResolvedValue({ data: null });
+    vi.mocked(getMyWeeklyReport).mockResolvedValue({ data: null } as unknown as AxiosResponse<ActivityReport>);
+    vi.mocked(getComparison).mockResolvedValue({ data: null } as unknown as AxiosResponse<ReportComparison>);
 
     const { result } = renderHook(() => useReport());
 
@@ -107,9 +108,9 @@ describe('useReport', () => {
   });
 
   it('setPeriodでperiod状態が更新される', async () => {
-    vi.mocked(getMyWeeklyReport).mockResolvedValue({ data: mockReport });
-    vi.mocked(getMyMonthlyReport).mockResolvedValue({ data: mockReport });
-    vi.mocked(getComparison).mockResolvedValue({ data: mockComparison });
+    vi.mocked(getMyWeeklyReport).mockResolvedValue({ data: mockReport } as unknown as AxiosResponse<ActivityReport>);
+    vi.mocked(getMyMonthlyReport).mockResolvedValue({ data: mockReport } as unknown as AxiosResponse<ActivityReport>);
+    vi.mocked(getComparison).mockResolvedValue({ data: mockComparison } as unknown as AxiosResponse<ReportComparison>);
 
     const { result } = renderHook(() => useReport());
 
