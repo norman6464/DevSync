@@ -6,6 +6,7 @@ import Avatar from '../common/Avatar';
 import { cardPaddedClass, iconButtonClass, deleteIconButtonClass } from '../../constants/styles';
 import { parseJsonArray } from '../../utils/json';
 import { formatDate } from '../../utils/timeFormat';
+import { isWithinLast } from '../../utils/timeFormat';
 
 interface QuestionCardProps {
   question: Question;
@@ -18,7 +19,7 @@ export default function QuestionCard({ question, isOwner = false, onEdit, onDele
   const { t } = useTranslation();
 
   const tags = parseJsonArray(question.tags);
-  const isNew = Date.now() - new Date(question.created_at).getTime() < 24 * 60 * 60 * 1000;
+  const isNew = isWithinLast(question.created_at, 24 * 60 * 60 * 1000);
 
   const statusBorderClass = question.is_solved
     ? 'border-l-4 border-l-green-500'

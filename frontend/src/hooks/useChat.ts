@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useChatStore } from '../store/chatStore';
@@ -24,7 +24,6 @@ export function useChat() {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(
     userId ? parseInt(userId) : null
   );
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [showCreateRoom, setShowCreateRoom] = useState(false);
   const [showRoomSettings, setShowRoomSettings] = useState(false);
@@ -34,6 +33,12 @@ export function useChat() {
       connect();
     }
   }, [socket, connect]);
+
+  const loadChatRooms = () => {
+    getChatRooms()
+      .then(({ data }) => setChatRooms(data || []))
+      .catch((e) => console.warn('Failed to load chat rooms:', e));
+  };
 
   useEffect(() => {
     if (!currentUser) return;
@@ -49,23 +54,22 @@ export function useChat() {
     loadChatRooms();
   }, [currentUser]);
 
-  const loadChatRooms = () => {
-    getChatRooms()
-      .then(({ data }) => setChatRooms(data || []))
-      .catch((e) => console.warn('Failed to load chat rooms:', e));
-  };
-
   useEffect(() => {
     if (selectedUserId) {
       getMessages(selectedUserId)
         .then(({ data }) => setActiveMessages(data || []))
         .catch(() => setActiveMessages([]));
 
-      const convUser = conversations.find((c) => c.user.id === selectedUserId)?.user;
-      const followUser = followingUsers.find((u) => u.id === selectedUserId);
-      setSelectedUser(convUser || followUser || null);
     }
-  }, [selectedUserId, setActiveMessages, conversations, followingUsers]);
+  }, [selectedUserId, setActiveMessages]);
+
+  // 選択中ユーザーは selectedUserId と一覧から一意に決まる派生値
+  const selectedUser = useMemo(() => {
+    if (!selectedUserId) return null;
+    const convUser = conversations.find((c) => c.user.id === selectedUserId)?.user;
+    const followUser = followingUsers.find((u) => u.id === selectedUserId);
+    return convUser || followUser || null;
+  }, [selectedUserId, conversations, followingUsers]);
 
   useEffect(() => {
     if (activeRoomId) {

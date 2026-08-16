@@ -6,7 +6,7 @@ import type { BadgeResult } from '../../types/badge';
 
 const mockShowToast = vi.fn();
 
-vi.mock('../../contexts/ToastContext', () => ({
+vi.mock('../../contexts/toast', () => ({
   useToast: () => ({ showToast: mockShowToast }),
 }));
 

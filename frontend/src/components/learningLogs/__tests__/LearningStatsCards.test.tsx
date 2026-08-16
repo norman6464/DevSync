@@ -58,7 +58,7 @@ describe('LearningStatsCards', () => {
     vi.clearAllMocks();
     vi.mocked(learningLogsApi.getMyLogs).mockResolvedValue({
       data: mockLearningLogs,
-    } as any);
+    } as Awaited<ReturnType<typeof learningLogsApi.getMyLogs>>);
   });
 
   it('タイトルが表示される', async () => {
@@ -116,7 +116,7 @@ describe('LearningStatsCards', () => {
 
   it('ローディング状態が表示される', () => {
     vi.mocked(learningLogsApi.getMyLogs).mockImplementation(
-      () => new Promise(() => {}) as any
+      () => new Promise(() => {}) as ReturnType<typeof learningLogsApi.getMyLogs>
     );
 
     const { container } = renderWithRouter(<LearningStatsCards />);
@@ -129,7 +129,7 @@ describe('LearningStatsCards', () => {
   it('学習ログがゼロの場合の表示', async () => {
     vi.mocked(learningLogsApi.getMyLogs).mockResolvedValue({
       data: [],
-    } as any);
+    } as unknown as Awaited<ReturnType<typeof learningLogsApi.getMyLogs>>);
 
     renderWithRouter(<LearningStatsCards />);
 

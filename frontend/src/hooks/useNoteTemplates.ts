@@ -7,7 +7,7 @@ import {
   createNoteTemplate,
   updateNoteTemplate,
   deleteNoteTemplate,
-  useNoteTemplate as useTemplateAPI,
+  useNoteTemplate as applyTemplateAPI,
   type NoteTemplate,
   type CreateNoteTemplateRequest,
   type UpdateNoteTemplateRequest,
@@ -81,7 +81,7 @@ export function useNoteTemplates() {
 
   const handleUseTemplate = useCallback(async (id: number) => {
     try {
-      const { data: note } = await useTemplateAPI(id);
+      const { data: note } = await applyTemplateAPI(id);
       toast.success(t('noteTemplates.noteCreated', { defaultValue: 'テンプレートからノートを作成しました' }));
       return note;
     } catch {

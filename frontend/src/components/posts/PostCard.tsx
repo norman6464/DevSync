@@ -8,6 +8,7 @@ import { cardDarkClass, iconButtonClass, deleteIconButtonClass } from '../../con
 import { parseJsonArray } from '../../utils/json';
 import PostCardContent from './PostCardContent';
 import PostCardActions from './PostCardActions';
+import { isWithinLast } from '../../utils/timeFormat';
 
 interface PostCardProps {
   post: Post;
@@ -21,7 +22,7 @@ export default function PostCard({ post, isOwner = false, onEdit, onDelete, onUp
   const { t } = useTranslation();
 
   const imageUrls = parseJsonArray(post.image_urls);
-  const isNew = Date.now() - new Date(post.created_at).getTime() < 24 * 60 * 60 * 1000;
+  const isNew = isWithinLast(post.created_at, 24 * 60 * 60 * 1000);
 
   return (
     <div className={cardDarkClass}>

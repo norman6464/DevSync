@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { useState, useCallback, type ReactNode } from 'react';
+import { ToastContext } from './toast';
 
 interface Toast {
   id: number;
@@ -6,12 +7,6 @@ interface Toast {
   icon?: string;
   color?: string;
 }
-
-interface ToastContextValue {
-  showToast: (message: string, options?: { icon?: string; color?: string }) => void;
-}
-
-const ToastContext = createContext<ToastContextValue | null>(null);
 
 let nextId = 0;
 
@@ -65,8 +60,3 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useToast() {
-  const ctx = useContext(ToastContext);
-  if (!ctx) throw new Error('useToast must be used within ToastProvider');
-  return ctx;
-}

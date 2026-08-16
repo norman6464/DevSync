@@ -36,7 +36,7 @@ export default function ResetPasswordPage() {
       await resetPassword(token, password);
       setSuccess(true);
       setTimeout(() => navigate('/login'), 3000);
-    } catch (err) {
+    } catch {
       setError(t('accountManagement.resetFailed'));
     } finally {
       setLoading(false);

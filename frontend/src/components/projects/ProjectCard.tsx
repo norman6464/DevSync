@@ -5,6 +5,7 @@ import { cardClass, iconButtonClass, deleteIconButtonClass, badgeBaseClass } fro
 import { parseJsonArray } from '../../utils/json';
 import { sanitizeUrl } from '../../utils/url';
 import { formatDate } from '../../utils/timeFormat';
+import { calcDurationDays } from '../../utils/timeFormat';
 
 interface ProjectCardProps {
   project: Project;
@@ -20,12 +21,7 @@ export default function ProjectCard({ project, onEdit, onDelete, onArchive, onUn
 
   const techStack = parseJsonArray(project.tech_stack);
 
-  const durationDays = (() => {
-    if (!project.start_date) return null;
-    const start = new Date(project.start_date).getTime();
-    const end = project.end_date ? new Date(project.end_date).getTime() : Date.now();
-    return Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
-  })();
+  const durationDays = calcDurationDays(project.start_date, project.end_date);
 
   return (
     <div className={cardClass}>

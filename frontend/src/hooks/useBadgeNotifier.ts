@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../contexts/toast';
 import { notifyBadgeEarned } from '../api/badges';
 import type { BadgeResult } from '../types/badge';
 

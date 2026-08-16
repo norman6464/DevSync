@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -74,11 +74,14 @@ export default function Header() {
 
   const isMoreActive = moreItems.some((item) => location.pathname === item.path);
 
-  // Close menus on route change
-  useEffect(() => {
+  // ルート遷移でメニューを閉じる。effect で setState すると余計な再レンダーが
+  // 入るため、公式の「render 中に前回値と比較して調整する」パターンで行う。
+  const [prevPathname, setPrevPathname] = useState(location.pathname);
+  if (prevPathname !== location.pathname) {
+    setPrevPathname(location.pathname);
     setMobileOpen(false);
     setMoreOpen(false);
-  }, [location.pathname]);
+  }
 
   const closeMobile = useCallback(() => setMobileOpen(false), []);
   const closeMore = useCallback(() => setMoreOpen(false), []);

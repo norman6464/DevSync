@@ -1,17 +1,10 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Monitor, Rocket, Target, FolderOpen, FileText, Copy, Pencil, Trash2, CheckCircle2, Pause, Play, type LucideIcon } from 'lucide-react';
+import { Copy, Pencil, Trash2, CheckCircle2, Pause, Play } from 'lucide-react';
 import { type GoalCategory, type GoalStatus, type LearningGoal } from '../../api/goals';
 import { formatDate } from '../../utils/timeFormat';
 import { badgeBaseClass, editIconButtonClass, deleteIconButtonLargeClass, starIconButtonClass } from '../../constants/styles';
-
-export const CATEGORIES: { value: GoalCategory; label: string; icon: string; Icon: LucideIcon }[] = [
-  { value: 'language', label: 'goals.categoryLanguage', icon: '💻', Icon: Monitor },
-  { value: 'framework', label: 'goals.categoryFramework', icon: '🚀', Icon: Rocket },
-  { value: 'skill', label: 'goals.categorySkill', icon: '🎯', Icon: Target },
-  { value: 'project', label: 'goals.categoryProject', icon: '📁', Icon: FolderOpen },
-  { value: 'other', label: 'goals.categoryOther', icon: '📝', Icon: FileText },
-];
+import { CATEGORIES } from './goalCategories';
 
 const getCategoryInfo = (cat: GoalCategory) => {
   return CATEGORIES.find((c) => c.value === cat) || CATEGORIES[4];

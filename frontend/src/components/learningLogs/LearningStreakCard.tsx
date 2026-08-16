@@ -29,7 +29,7 @@ export default function LearningStreakCard() {
     { initialData: [] as CalendarEntry[], deps: [user?.id], enabled: !!user }
   );
 
-  const { freezeStatus, useFreeze } = useStreakFreeze();
+  const { freezeStatus, applyFreeze } = useStreakFreeze();
 
   const loading = streakLoading || calendarLoading;
 
@@ -165,7 +165,7 @@ export default function LearningStreakCard() {
             <button
               onClick={() => {
                 if (confirm(t('streak.freezeConfirm'))) {
-                  useFreeze();
+                  applyFreeze();
                 }
               }}
               disabled={!freezeStatus.can_use_today}

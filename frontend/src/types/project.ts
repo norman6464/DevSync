@@ -36,4 +36,4 @@ export interface CreateProjectRequest {
   github_repo_id?: number;
 }
 
-export interface UpdateProjectRequest extends Partial<CreateProjectRequest> {}
+export type UpdateProjectRequest = Partial<CreateProjectRequest>;

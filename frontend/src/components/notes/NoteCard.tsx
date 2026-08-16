@@ -4,6 +4,7 @@ import { Star, Edit, Trash2, FileText, BookOpen, Sparkles } from 'lucide-react';
 import type { Note } from '../../api/notes';
 import { formatDistanceToNow } from '../../utils/timeFormat';
 import { linkSmallClass } from '../../constants/styles';
+import { isWithinLast } from '../../utils/timeFormat';
 
 interface NoteCardProps {
   note: Note;
@@ -16,7 +17,7 @@ export default function NoteCard({ note, onToggleFavorite, onEdit, onDelete }: N
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const isLong = note.content.length > 100;
-  const isNew = Date.now() - new Date(note.created_at).getTime() < 24 * 60 * 60 * 1000;
+  const isNew = isWithinLast(note.created_at, 24 * 60 * 60 * 1000);
 
   return (
     <div className="p-6 bg-gray-800 border border-gray-700 rounded-md hover:border-gray-600 transition-colors">

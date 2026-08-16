@@ -5,6 +5,7 @@ import type { User } from '../../types/user';
 import Avatar from '../common/Avatar';
 import FollowButton from '../profile/FollowButton';
 import { parseJsonArray } from '../../utils/json';
+import { isWithinLast } from '../../utils/timeFormat';
 
 interface UserSearchCardProps {
   user: User;
@@ -14,7 +15,7 @@ interface UserSearchCardProps {
 export default function UserSearchCard({ user, currentUserId }: UserSearchCardProps) {
   const { t } = useTranslation();
   const skills = parseJsonArray(user.skills_languages);
-  const isNew = Date.now() - new Date(user.created_at).getTime() < 7 * 24 * 60 * 60 * 1000;
+  const isNew = isWithinLast(user.created_at, 7 * 24 * 60 * 60 * 1000);
 
   return (
     <div className="bg-gray-900 border border-gray-800 rounded-md p-5 hover:border-gray-700 transition-colors">

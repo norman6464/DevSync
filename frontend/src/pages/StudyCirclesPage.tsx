@@ -18,7 +18,7 @@ export default function StudyCirclesPage() {
   const [sortBy, setSortBy] = useState<'newest' | 'members'>('newest');
 
   const filteredCircles = useMemo(() => {
-    let filtered = statusFilter === 'all'
+    const filtered = statusFilter === 'all'
       ? circles
       : circles.filter((c) => c.status === statusFilter);
     return [...filtered].sort((a, b) => {

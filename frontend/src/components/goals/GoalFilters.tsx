@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Filter, ArrowUpDown } from 'lucide-react';
 import { type GoalCategory } from '../../api/goals';
-import { CATEGORIES } from './GoalCard';
+import { CATEGORIES } from './goalCategories';
 
 interface GoalFiltersProps {
   filterStatus: 'all' | 'active' | 'paused' | 'completed';

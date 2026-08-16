@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { getUser, getUserByUsername, getFollowers, getFollowing } from '../api/users';
 import type { User } from '../types/user';
@@ -13,13 +12,8 @@ export function useFollowList(usernameOrId: string | undefined) {
   const userId = isId ? parseInt(usernameOrId) : 0;
   const username = !isId ? usernameOrId : '';
 
-  const initialTab: Tab = location.pathname.endsWith('/following') ? 'following' : 'followers';
-  const [tab, setTab] = useState<Tab>(initialTab);
-
-  useEffect(() => {
-    const newTab: Tab = location.pathname.endsWith('/following') ? 'following' : 'followers';
-    setTab(newTab);
-  }, [location.pathname]);
+  // tab は URL から一意に決まる派生値（state に持つと effect での同期が必要になる）
+  const tab: Tab = location.pathname.endsWith('/following') ? 'following' : 'followers';
 
   const { data: profileUser, loading: profileLoading } = useAsyncData(
     async () => {
