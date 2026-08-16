@@ -381,6 +381,16 @@ func TestRequestPasswordReset_UnknownEmail(t *testing.T) {
 	ports.Tokens.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 }
 
+// 検索の失敗（DB 障害）は成功に見せず 500 を返す（従来は 200 で障害が埋もれていた）。
+func TestRequestPasswordReset_SearchFailure(t *testing.T) {
+	r, _, ports := setupAuthHandler()
+	ports.Users.On("FindByEmail", mock.Anything, "test@example.com").Return(nil, errors.New("db down"))
+
+	w := doRequest(r, http.MethodPost, "/auth/password-reset", map[string]string{"email": "test@example.com"})
+	assertStatus(t, w, http.StatusInternalServerError)
+	ports.Tokens.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
+}
+
 func TestResetPassword_Success(t *testing.T) {
 	r, _, ports := setupAuthHandler()
 	ports.Tokens.On("FindByToken", mock.Anything, mock.AnythingOfType("string")).
