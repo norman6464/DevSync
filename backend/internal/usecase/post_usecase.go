@@ -300,6 +300,9 @@ func (uc *PublishPostUseCase) Execute(ctx context.Context, id, userID uint) (*mo
 	}
 
 	post.IsDraft = false
+	// 公開した時点で公開予約は役目を終える。残すと下書きへ戻したときに予約が復活し、
+	// 予約一覧・件数に再び現れてしまう。
+	post.ScheduledAt = nil
 	if err := uc.posts.Update(ctx, post); err != nil {
 		return nil, err
 	}

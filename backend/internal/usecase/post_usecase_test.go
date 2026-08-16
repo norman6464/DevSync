@@ -421,6 +421,24 @@ func TestPublishPostUseCase(t *testing.T) {
 		}, time.Second, 10*time.Millisecond)
 	})
 
+	// 予約を残すと下書きへ戻したときに予約一覧へ復活するため、公開時に解除する。
+	t.Run("予約済みの下書きを公開すると公開予約が解除される", func(t *testing.T) {
+		posts := new(mockPostRepo)
+		uc := usecase.NewPublishPostUseCase(posts, usecase.NewNotifyFollowersUseCase(&fakeFollowerNotifier{}))
+
+		scheduled := time.Now().Add(24 * time.Hour)
+		posts.On("FindByID", mock.Anything, uint(1)).
+			Return(&model.Post{ID: 1, UserID: 1, IsDraft: true, ScheduledAt: &scheduled}, nil)
+		posts.On("Update", mock.Anything, mock.MatchedBy(func(p *model.Post) bool {
+			return !p.IsDraft && p.ScheduledAt == nil
+		})).Return(nil)
+
+		got, err := uc.Execute(context.Background(), 1, 1)
+		require.NoError(t, err)
+		assert.Nil(t, got.ScheduledAt)
+		posts.AssertExpectations(t)
+	})
+
 	t.Run("公開済みは 400", func(t *testing.T) {
 		posts := new(mockPostRepo)
 		uc := usecase.NewPublishPostUseCase(posts, usecase.NewNotifyFollowersUseCase(&fakeFollowerNotifier{}))
