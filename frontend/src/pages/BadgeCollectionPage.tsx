@@ -1,18 +1,31 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Trophy, Award, Zap, Users } from 'lucide-react';
+import { Trophy, Award, GitCommit, Zap, FileText, Heart, Users, HelpCircle, Target } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useAsyncData } from '../hooks/useAsyncData';
 import { getUserBadges } from '../api/badges';
 import { PageLoader } from '../components/common';
 
-type BadgeCategory = 'all' | 'learning' | 'streak' | 'community';
+type BadgeCategory =
+  | 'all'
+  | 'contribution'
+  | 'streak'
+  | 'post'
+  | 'engagement'
+  | 'social'
+  | 'qa'
+  | 'goal';
 
+// バックエンドの badge_usecase が返す実カテゴリに対応させる
 const CATEGORY_CONFIG = {
-  all: { label: 'すべて', Icon: Trophy },
-  learning: { label: '学習', Icon: Award },
-  streak: { label: 'ストリーク', Icon: Zap },
-  community: { label: 'コミュニティ', Icon: Users },
+  all: { labelKey: 'common.all', Icon: Trophy },
+  contribution: { labelKey: 'badges.category_contribution', Icon: GitCommit },
+  streak: { labelKey: 'badges.category_streak', Icon: Zap },
+  post: { labelKey: 'badges.category_post', Icon: FileText },
+  engagement: { labelKey: 'badges.category_engagement', Icon: Heart },
+  social: { labelKey: 'badges.category_social', Icon: Users },
+  qa: { labelKey: 'badges.category_qa', Icon: HelpCircle },
+  goal: { labelKey: 'badges.category_goal', Icon: Target },
 };
 
 export default function BadgeCollectionPage() {
@@ -81,7 +94,7 @@ export default function BadgeCollectionPage() {
       {/* Category Filters */}
       <div className="flex gap-2 flex-wrap">
         {(Object.keys(CATEGORY_CONFIG) as BadgeCategory[]).map((category) => {
-          const { label, Icon } = CATEGORY_CONFIG[category];
+          const { labelKey, Icon } = CATEGORY_CONFIG[category];
           const isSelected = selectedCategory === category;
 
           return (
@@ -95,7 +108,7 @@ export default function BadgeCollectionPage() {
               }`}
             >
               <Icon className="w-4 h-4" />
-              {label}
+              {t(labelKey)}
             </button>
           );
         })}
