@@ -94,7 +94,7 @@ func TestReminderSettings_GetSettings_ServiceError(t *testing.T) {
 
 func TestReminderSettings_UpdateSettings_Success(t *testing.T) {
 	h, repo := setupReminderSettingsHandler()
-	repo.On("FindByUserID", mock.Anything, uint(1)).Return(storedReminderSettings(), nil)
+	repo.On("GetOrCreateDefault", mock.Anything, uint(1)).Return(storedReminderSettings(), nil)
 	repo.On("Save", mock.Anything, mock.MatchedBy(func(s *model.ReminderSettings) bool {
 		return s.Frequency == model.ReminderFrequencyWeekly && s.Enabled
 	})).Return(nil)
@@ -126,7 +126,7 @@ func TestReminderSettings_UpdateSettings_InvalidJSON(t *testing.T) {
 
 func TestReminderSettings_UpdateSettings_ServiceError(t *testing.T) {
 	h, repo := setupReminderSettingsHandler()
-	repo.On("FindByUserID", mock.Anything, uint(1)).Return(storedReminderSettings(), nil)
+	repo.On("GetOrCreateDefault", mock.Anything, uint(1)).Return(storedReminderSettings(), nil)
 	repo.On("Save", mock.Anything, mock.Anything).Return(errors.New("update failed"))
 
 	r := newRouter(1)
@@ -142,7 +142,7 @@ func TestReminderSettings_UpdateSettings_ServiceError(t *testing.T) {
 // 未知の頻度は 400 を返し、保存しない。
 func TestReminderSettings_UpdateSettings_ValidationError(t *testing.T) {
 	h, repo := setupReminderSettingsHandler()
-	repo.On("FindByUserID", mock.Anything, uint(1)).Return(storedReminderSettings(), nil)
+	repo.On("GetOrCreateDefault", mock.Anything, uint(1)).Return(storedReminderSettings(), nil)
 
 	r := newRouter(1)
 	r.PUT("/reminder-settings", h.UpdateSettings)
@@ -158,7 +158,7 @@ func TestReminderSettings_UpdateSettings_ValidationError(t *testing.T) {
 // 通知時間の形式違反は 400 を返し、保存しない。
 func TestReminderSettings_UpdateSettings_InvalidNotificationTime(t *testing.T) {
 	h, repo := setupReminderSettingsHandler()
-	repo.On("FindByUserID", mock.Anything, uint(1)).Return(storedReminderSettings(), nil)
+	repo.On("GetOrCreateDefault", mock.Anything, uint(1)).Return(storedReminderSettings(), nil)
 
 	r := newRouter(1)
 	r.PUT("/reminder-settings", h.UpdateSettings)
@@ -174,7 +174,7 @@ func TestReminderSettings_UpdateSettings_InvalidNotificationTime(t *testing.T) {
 // 非活動日数の上限超過は 400 を返し、保存しない。
 func TestReminderSettings_UpdateSettings_InactiveDaysTooLarge(t *testing.T) {
 	h, repo := setupReminderSettingsHandler()
-	repo.On("FindByUserID", mock.Anything, uint(1)).Return(storedReminderSettings(), nil)
+	repo.On("GetOrCreateDefault", mock.Anything, uint(1)).Return(storedReminderSettings(), nil)
 
 	r := newRouter(1)
 	r.PUT("/reminder-settings", h.UpdateSettings)
@@ -187,10 +187,13 @@ func TestReminderSettings_UpdateSettings_InactiveDaysTooLarge(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
-// 設定が未登録のまま更新された場合は 500 を返す（移行前の挙動を維持している）。
-func TestReminderSettings_UpdateSettings_NotFound(t *testing.T) {
+// 設定が未登録のまま更新されてもデフォルト設定を作成して反映する（従来は 500 だった）。
+func TestReminderSettings_UpdateSettings_FirstTime(t *testing.T) {
 	h, repo := setupReminderSettingsHandler()
-	repo.On("FindByUserID", mock.Anything, uint(1)).Return(nil, nil)
+	repo.On("GetOrCreateDefault", mock.Anything, uint(1)).Return(storedReminderSettings(), nil)
+	repo.On("Save", mock.Anything, mock.MatchedBy(func(s *model.ReminderSettings) bool {
+		return s.Enabled
+	})).Return(nil)
 
 	r := newRouter(1)
 	r.PUT("/reminder-settings", h.UpdateSettings)
@@ -198,7 +201,6 @@ func TestReminderSettings_UpdateSettings_NotFound(t *testing.T) {
 	w := doRequest(r, http.MethodPut, "/reminder-settings", map[string]interface{}{
 		"enabled": true,
 	})
-	assertStatus(t, w, http.StatusInternalServerError)
-	repo.AssertNotCalled(t, "Save")
+	assertStatus(t, w, http.StatusOK)
 	repo.AssertExpectations(t)
 }

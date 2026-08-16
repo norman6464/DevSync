@@ -84,7 +84,7 @@ func TestGetReminderSettingsUseCase_Execute(t *testing.T) {
 func TestUpdateReminderSettingsUseCase_Execute(t *testing.T) {
 	t.Run("指定された項目を反映して保存する", func(t *testing.T) {
 		repo := new(mockReminderSettingsRepo)
-		repo.On("FindByUserID", mock.Anything, uint(1)).Return(existingReminderSettings(), nil)
+		repo.On("GetOrCreateDefault", mock.Anything, uint(1)).Return(existingReminderSettings(), nil)
 		repo.On("Save", mock.Anything, mock.MatchedBy(func(s *model.ReminderSettings) bool {
 			return s.ID == 10 &&
 				s.Frequency == model.ReminderFrequencyWeekly &&
@@ -114,7 +114,7 @@ func TestUpdateReminderSettingsUseCase_Execute(t *testing.T) {
 	// 文字列と数値は「空文字 / 0 なら据え置き」。真偽値は常に上書きされる。
 	t.Run("空文字と 0 は既存値を保つが真偽値は常に上書きする", func(t *testing.T) {
 		repo := new(mockReminderSettingsRepo)
-		repo.On("FindByUserID", mock.Anything, uint(1)).Return(existingReminderSettings(), nil)
+		repo.On("GetOrCreateDefault", mock.Anything, uint(1)).Return(existingReminderSettings(), nil)
 		repo.On("Save", mock.Anything, mock.MatchedBy(func(s *model.ReminderSettings) bool {
 			return s.Frequency == model.ReminderFrequencyDaily &&
 				s.NotificationTime == "09:00" &&
@@ -147,7 +147,7 @@ func TestUpdateReminderSettingsUseCase_Execute(t *testing.T) {
 		for _, tc := range cases {
 			t.Run(tc.name, func(t *testing.T) {
 				repo := new(mockReminderSettingsRepo)
-				repo.On("FindByUserID", mock.Anything, uint(1)).Return(existingReminderSettings(), nil)
+				repo.On("GetOrCreateDefault", mock.Anything, uint(1)).Return(existingReminderSettings(), nil)
 				uc := usecase.NewUpdateReminderSettingsUseCase(repo)
 
 				_, err := uc.Execute(context.Background(), tc.in)
@@ -165,7 +165,7 @@ func TestUpdateReminderSettingsUseCase_Execute(t *testing.T) {
 	// 境界値: 上限ちょうどは許可される。
 	t.Run("非活動日数の上限ちょうどは許可する", func(t *testing.T) {
 		repo := new(mockReminderSettingsRepo)
-		repo.On("FindByUserID", mock.Anything, uint(1)).Return(existingReminderSettings(), nil)
+		repo.On("GetOrCreateDefault", mock.Anything, uint(1)).Return(existingReminderSettings(), nil)
 		repo.On("Save", mock.Anything, mock.MatchedBy(func(s *model.ReminderSettings) bool {
 			return s.InactiveDays == 30
 		})).Return(nil)
@@ -177,22 +177,28 @@ func TestUpdateReminderSettingsUseCase_Execute(t *testing.T) {
 		repo.AssertExpectations(t)
 	})
 
-	t.Run("設定が未登録なら DomainError ではないエラーを返す（保存しない）", func(t *testing.T) {
+	// 取得 API を経ずに更新だけが呼ばれても失敗しない（従来はレコード不在で 500 だった）。
+	t.Run("未登録ならデフォルト作成に委譲してから反映して保存する", func(t *testing.T) {
 		repo := new(mockReminderSettingsRepo)
-		repo.On("FindByUserID", mock.Anything, uint(1)).Return(nil, nil)
+		created := existingReminderSettings()
+		repo.On("GetOrCreateDefault", mock.Anything, uint(1)).Return(created, nil)
+		repo.On("Save", mock.Anything, mock.MatchedBy(func(s *model.ReminderSettings) bool {
+			return s.ID == 10 && s.Enabled && s.EnableWeb && s.EnableEmail
+		})).Return(nil)
 		uc := usecase.NewUpdateReminderSettingsUseCase(repo)
 
-		_, err := uc.Execute(context.Background(), usecase.UpdateReminderSettingsInput{UserID: 1})
+		got, err := uc.Execute(context.Background(), usecase.UpdateReminderSettingsInput{
+			UserID: 1, Enabled: true, EnableWeb: true, EnableEmail: true,
+		})
 
-		assert.Error(t, err)
-		var de *domain.DomainError
-		assert.False(t, errors.As(err, &de), "500 を維持するため DomainError にしない")
-		repo.AssertNotCalled(t, "Save")
+		assert.NoError(t, err)
+		assert.True(t, got.EnableEmail)
+		repo.AssertExpectations(t)
 	})
 
 	t.Run("取得時の DB 障害を伝播する（保存しない）", func(t *testing.T) {
 		repo := new(mockReminderSettingsRepo)
-		repo.On("FindByUserID", mock.Anything, uint(1)).Return(nil, errors.New("db error"))
+		repo.On("GetOrCreateDefault", mock.Anything, uint(1)).Return(nil, errors.New("db error"))
 		uc := usecase.NewUpdateReminderSettingsUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), usecase.UpdateReminderSettingsInput{UserID: 1})
@@ -203,7 +209,7 @@ func TestUpdateReminderSettingsUseCase_Execute(t *testing.T) {
 
 	t.Run("保存時の DB 障害を伝播する", func(t *testing.T) {
 		repo := new(mockReminderSettingsRepo)
-		repo.On("FindByUserID", mock.Anything, uint(1)).Return(existingReminderSettings(), nil)
+		repo.On("GetOrCreateDefault", mock.Anything, uint(1)).Return(existingReminderSettings(), nil)
 		repo.On("Save", mock.Anything, mock.Anything).Return(errors.New("db error"))
 		uc := usecase.NewUpdateReminderSettingsUseCase(repo)
 
@@ -220,7 +226,7 @@ func TestUpdateReminderSettingsUseCase_Execute(t *testing.T) {
 		_, err := uc.Execute(context.Background(), usecase.UpdateReminderSettingsInput{})
 
 		assertDomainCode(t, err, domain.ErrCodeBadRequest)
-		repo.AssertNotCalled(t, "FindByUserID")
+		repo.AssertNotCalled(t, "GetOrCreateDefault")
 		repo.AssertNotCalled(t, "Save")
 	})
 }

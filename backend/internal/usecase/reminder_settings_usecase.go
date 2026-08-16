@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"regexp"
 
 	"github.com/norman6464/devsync/backend/internal/domain"
@@ -68,13 +67,11 @@ func (uc *UpdateReminderSettingsUseCase) Execute(ctx context.Context, in UpdateR
 		return nil, err
 	}
 
-	settings, err := uc.settings.FindByUserID(ctx, in.UserID)
+	// 取得 API を経ずに更新だけが呼ばれても失敗しないよう、
+	// 未登録ならデフォルト設定を作ってから入力を反映する（全体更新なので画面の挙動と整合する）。
+	settings, err := uc.settings.GetOrCreateDefault(ctx, in.UserID)
 	if err != nil {
 		return nil, err
-	}
-	if settings == nil {
-		// 未登録のまま更新された場合は 500 を返す（移行前の挙動を維持している）。
-		return nil, errors.New("リマインダー設定が見つかりません")
 	}
 
 	if in.Frequency != "" {
