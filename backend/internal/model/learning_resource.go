@@ -44,7 +44,7 @@ type LearningResource struct {
 	Difficulty  ResourceDifficulty `json:"difficulty" gorm:"size:50"`
 	Tags        string             `json:"tags" gorm:"type:text"`          // JSON配列形式のタグ
 	ImageURL    string             `json:"image_url" gorm:"size:500"`
-	IsPublic    bool               `json:"is_public" gorm:"default:true"` // 他ユーザーに公開するか
+	IsPublic    bool               `json:"is_public"` // 他ユーザーに公開するか
 	LikeCount   int                `json:"like_count" gorm:"default:0"`
 	SaveCount   int                `json:"save_count" gorm:"default:0"`
 	CreatedAt   time.Time          `json:"created_at"`
