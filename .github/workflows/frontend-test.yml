@@ -10,6 +10,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    env:
+      # 時刻表示のテストがローカルタイムを前提にしている（CI 既定の UTC だと落ちる）
+      TZ: Asia/Tokyo
+
     defaults:
       run:
         working-directory: ./frontend
