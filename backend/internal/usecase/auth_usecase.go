@@ -7,7 +7,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -474,9 +473,9 @@ func NewRequestPasswordResetUseCase(
 func (uc *RequestPasswordResetUseCase) Execute(ctx context.Context, email string) (string, error) {
 	user, err := uc.users.FindByEmail(ctx, email)
 	if err != nil {
-		// アカウントの有無を漏らさないため成功扱いのままにするが、障害が埋もれないようログに残す
-		log.Printf("パスワードリセット: ユーザー検索に失敗しました: %v", err)
-		return "", nil
+		// 検索の失敗はアカウント個別の事情ではないため、成功に見せず 500 を返す
+		// （エラーにしてもメールアドレスの存在有無は漏れない）。「未登録」の成功扱いとは別物。
+		return "", domain.NewError(domain.ErrCodeInternal, "パスワードリセットの処理に失敗しました", err)
 	}
 	if user == nil {
 		return "", nil

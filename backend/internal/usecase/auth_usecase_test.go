@@ -445,13 +445,17 @@ func TestPasswordResetUseCases(t *testing.T) {
 		tokens.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 	})
 
-	t.Run("検索に失敗しても存在有無を漏らさずトークンも作らない", func(t *testing.T) {
+	// 検索の失敗はアカウント個別の事情ではないため成功に見せない（利用者が「送信された」と誤解しない）。
+	t.Run("検索に失敗したら 500 を返しトークンも作らない", func(t *testing.T) {
 		users := new(mockAuthUsers)
 		tokens := new(mockResetTokens)
 		users.On("FindByEmail", mock.Anything, "a@example.com").Return(nil, errors.New("db down"))
 
 		plain, err := usecase.NewRequestPasswordResetUseCase(users, tokens).Execute(ctx, "a@example.com")
-		require.NoError(t, err, "アカウントの有無を漏らさないため成功扱いにする")
+		require.Error(t, err)
+		var de *domain.DomainError
+		require.ErrorAs(t, err, &de)
+		assert.Equal(t, domain.ErrCodeInternal, de.Code)
 		assert.Empty(t, plain)
 		tokens.AssertNotCalled(t, "InvalidateUserTokens", mock.Anything, mock.Anything)
 		tokens.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
