@@ -161,14 +161,14 @@ func TestGetQuestionUseCase_Execute(t *testing.T) {
 		assert.Equal(t, expected, got)
 	})
 
-	t.Run("不在は DomainError ではないエラー（handler で 500）", func(t *testing.T) {
+	t.Run("不在は 404 を返す", func(t *testing.T) {
 		repo := new(mockQuestionRepo)
 		repo.On("FindByID", mock.Anything, uint(5)).Return(nil, nil)
 		uc := usecase.NewGetQuestionUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), 5)
 
-		assertPlainError(t, err)
+		assert.ErrorIs(t, err, domain.ErrNotFound)
 	})
 
 	t.Run("DB 障害はそのまま伝播する", func(t *testing.T) {
@@ -178,7 +178,7 @@ func TestGetQuestionUseCase_Execute(t *testing.T) {
 
 		_, err := uc.Execute(context.Background(), 5)
 
-		assertPlainError(t, err)
+		assert.ErrorContains(t, err, "db error")
 	})
 }
 
@@ -225,14 +225,14 @@ func TestUpdateQuestionUseCase_Execute(t *testing.T) {
 		repo.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
 	})
 
-	t.Run("不在は DomainError ではないエラー（handler で 500）", func(t *testing.T) {
+	t.Run("不在は 404 を返す", func(t *testing.T) {
 		repo := new(mockQuestionRepo)
 		repo.On("FindByID", mock.Anything, uint(5)).Return(nil, nil)
 		uc := usecase.NewUpdateQuestionUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), 5, 1, "新題", "", "")
 
-		assertPlainError(t, err)
+		assert.ErrorIs(t, err, domain.ErrNotFound)
 	})
 
 	t.Run("タイトルが 501 文字なら 400", func(t *testing.T) {

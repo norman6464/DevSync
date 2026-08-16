@@ -208,8 +208,7 @@ func TestGetChatRoomUseCase(t *testing.T) {
 		repo.On("FindByID", mock.Anything, uint(10)).Return(nil, nil)
 
 		_, err := uc.Execute(context.Background(), 10, 1)
-		require.Error(t, err)
-		assert.Nil(t, domain.GetDomainError(err))
+		assert.ErrorIs(t, err, domain.ErrNotFound)
 	})
 }
 

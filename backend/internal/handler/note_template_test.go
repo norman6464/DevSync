@@ -236,7 +236,7 @@ func TestNoteTemplateHandler_GetByID_NotFoundIs500(t *testing.T) {
 	p.Templates.On("FindByID", mock.Anything, uint(99)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodGet, "/note-templates/99", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 	p.Templates.AssertExpectations(t)
 }
 
@@ -394,7 +394,7 @@ func TestNoteTemplateHandler_Update_NotFoundIs500(t *testing.T) {
 	p.Templates.On("FindByID", mock.Anything, uint(99)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodPut, "/note-templates/99", map[string]interface{}{"name": "変更"})
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 	p.Templates.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
 }
 
@@ -460,7 +460,7 @@ func TestNoteTemplateHandler_Delete_NotFoundIs500(t *testing.T) {
 	p.Templates.On("FindByID", mock.Anything, uint(99)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodDelete, "/note-templates/99", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 	p.Templates.AssertNotCalled(t, "Delete", mock.Anything, mock.Anything)
 }
 
@@ -533,7 +533,7 @@ func TestNoteTemplateHandler_UseTemplate_NotFoundIs500(t *testing.T) {
 	p.Templates.On("FindByID", mock.Anything, uint(99)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodPost, "/note-templates/99/use", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 	p.Notes.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 }
 

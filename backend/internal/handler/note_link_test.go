@@ -251,7 +251,7 @@ func TestNoteLinkGetLinkStats_NotFound(t *testing.T) {
 	r.GET("/notes/:id/link-stats", h.GetLinkStats)
 	w := doRequest(r, "GET", "/notes/1/link-stats", nil)
 
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 	links.AssertNotCalled(t, "CountBySourceNoteID")
 }
 

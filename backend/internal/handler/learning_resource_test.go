@@ -211,7 +211,7 @@ func TestResourceUpdate_MissingReturnsInternalError(t *testing.T) {
 	repo.On("FindByID", mock.Anything, uint(10)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodPut, "/resources/10", map[string]string{"title": "X"})
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 }
 
 // ---------- Delete ----------

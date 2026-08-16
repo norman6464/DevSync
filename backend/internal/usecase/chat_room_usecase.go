@@ -133,7 +133,7 @@ func (uc *GetChatRoomUseCase) Execute(ctx context.Context, roomID, userID uint) 
 		return nil, err
 	}
 	if room == nil {
-		return nil, errOwnedEntityNotFound
+		return nil, domain.ErrNotFound
 	}
 	return room, nil
 }
@@ -253,7 +253,7 @@ func (uc *RemoveChatRoomMemberUseCase) Execute(ctx context.Context, roomID, user
 		return err
 	}
 	if room == nil {
-		return errOwnedEntityNotFound
+		return domain.ErrNotFound
 	}
 	if room.OwnerID == targetUserID {
 		return domain.ErrBadRequest

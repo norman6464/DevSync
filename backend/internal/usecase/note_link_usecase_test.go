@@ -228,16 +228,14 @@ func TestGetNoteLinkStatsUseCase_Execute(t *testing.T) {
 	})
 
 	// 作成・削除は 404 だが、統計だけは DomainError にならず 500 になる（移行前の挙動）。
-	t.Run("ノートが不在なら DomainError ではないエラーを返す", func(t *testing.T) {
+	t.Run("ノートが不在なら 404 を返す", func(t *testing.T) {
 		links, notes := new(mockNoteLinkRepo), new(mockNoteReader)
 		notes.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
 		uc := usecase.NewGetNoteLinkStatsUseCase(links, notes)
 
 		_, err := uc.Execute(context.Background(), 1, 1)
 
-		assert.Error(t, err)
-		var de *domain.DomainError
-		assert.False(t, errors.As(err, &de), "500 を維持するため DomainError にしない")
+		assert.ErrorIs(t, err, domain.ErrNotFound)
 		links.AssertNotCalled(t, "CountBySourceNoteID")
 	})
 

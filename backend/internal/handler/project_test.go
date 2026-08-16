@@ -217,7 +217,7 @@ func TestProjectHandler_GetByID_NotFoundIs500(t *testing.T) {
 	repo.On("FindByID", mock.Anything, uint(99)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodGet, "/projects/99", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 }
 
 func TestProjectHandler_GetByID_InvalidID(t *testing.T) {
@@ -634,7 +634,7 @@ func TestProjectHandler_Delete_NotFoundIs500(t *testing.T) {
 	repo.On("FindByID", mock.Anything, uint(99)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodDelete, "/projects/99", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 	repo.AssertNotCalled(t, "Delete", mock.Anything, mock.Anything)
 }
 

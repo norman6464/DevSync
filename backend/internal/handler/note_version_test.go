@@ -94,7 +94,7 @@ func TestNoteVersion_GetVersions_NoteNotFound(t *testing.T) {
 	r.GET("/notes/:id/versions", h.GetVersions)
 	w := doRequest(r, "GET", "/notes/1/versions", nil)
 
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 	versions.AssertNotCalled(t, "FindByNoteID")
 }
 

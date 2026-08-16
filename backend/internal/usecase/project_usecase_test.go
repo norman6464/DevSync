@@ -170,15 +170,14 @@ func TestGetProjectUseCase_Execute(t *testing.T) {
 		assert.ErrorIs(t, err, domain.ErrForbidden)
 	})
 
-	t.Run("不在は DomainError ではないエラー（handler で 500）", func(t *testing.T) {
+	t.Run("不在は 404 を返す", func(t *testing.T) {
 		repo := new(mockProjectRepo)
 		repo.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
 		uc := usecase.NewGetProjectUseCase(repo)
 
 		_, err := uc.Execute(context.Background(), 1, 5)
 
-		require.Error(t, err)
-		assert.Nil(t, domain.GetDomainError(err))
+		assert.ErrorIs(t, err, domain.ErrNotFound)
 	})
 }
 
@@ -476,15 +475,14 @@ func TestDeleteProjectUseCase_Execute(t *testing.T) {
 		repo.AssertNotCalled(t, "Delete", mock.Anything, mock.Anything)
 	})
 
-	t.Run("不在は DomainError ではないエラー（handler で 500）", func(t *testing.T) {
+	t.Run("不在は 404 を返す", func(t *testing.T) {
 		repo := new(mockProjectRepo)
 		repo.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
 		uc := usecase.NewDeleteProjectUseCase(repo)
 
 		err := uc.Execute(context.Background(), 1, 5)
 
-		require.Error(t, err)
-		assert.Nil(t, domain.GetDomainError(err))
+		assert.ErrorIs(t, err, domain.ErrNotFound)
 		repo.AssertNotCalled(t, "Delete", mock.Anything, mock.Anything)
 	})
 }

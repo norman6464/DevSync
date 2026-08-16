@@ -301,7 +301,7 @@ func TestYouTubeRecommend_UserNotFound(t *testing.T) {
 	users.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodGet, "/youtube/recommend", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 	videos.AssertNotCalled(t, "FindCachedSearch", mock.Anything, mock.Anything, mock.Anything)
 	users.AssertExpectations(t)
 }

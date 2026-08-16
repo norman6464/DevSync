@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -12,11 +11,6 @@ import (
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
 )
-
-// errPostNotFound は投稿が存在しないときに返すエラー。
-// DomainError ではないため handler では 500 になり、不在を素の DB エラーとして扱っていた
-// 移行前の挙動と一致する。
-var errPostNotFound = errors.New("投稿が見つかりません")
 
 // EstimateReadTime はコンテンツの文字数から推定読了時間（分）を計算する純粋関数。
 // 日本語基準で約 500 文字 / 分として計算し、最低 1 分を返す。
@@ -83,7 +77,7 @@ func (uc *GetPostUseCase) Execute(ctx context.Context, id uint) (*model.Post, er
 		return nil, err
 	}
 	if post == nil {
-		return nil, errPostNotFound
+		return nil, domain.ErrNotFound
 	}
 	return post, nil
 }
@@ -510,10 +504,7 @@ func (uc *HasLikedPostUseCase) Execute(ctx context.Context, userID, postID uint)
 }
 
 // ensurePostOwner は投稿を取得し、userID が投稿者であることを検証する。
+// 不在は 404、他人の投稿は 403 を返す。
 func ensurePostOwner(ctx context.Context, posts repository.PostRepository, id, userID uint) (*model.Post, error) {
-	post, err := ensureOwner(ctx, posts.FindByID, id, userID, func(p *model.Post) uint { return p.UserID })
-	if errors.Is(err, errOwnedEntityNotFound) {
-		return nil, errPostNotFound
-	}
-	return post, err
+	return ensureOwner(ctx, posts.FindByID, id, userID, func(p *model.Post) uint { return p.UserID })
 }

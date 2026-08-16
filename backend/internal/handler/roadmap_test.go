@@ -177,7 +177,7 @@ func TestRoadmapUpdate_MissingReturnsInternalError(t *testing.T) {
 	ports.Roadmaps.On("FindByID", mock.Anything, uint(10)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodPut, "/roadmaps/10", map[string]string{"title": "X"})
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 }
 
 // ---------- Delete ----------

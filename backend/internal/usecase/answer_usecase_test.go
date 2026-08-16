@@ -160,15 +160,14 @@ func TestUpdateAnswerUseCase_Execute(t *testing.T) {
 		answers.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
 	})
 
-	t.Run("不在は DomainError ではないエラー（handler で 500）", func(t *testing.T) {
+	t.Run("不在は 404 を返す", func(t *testing.T) {
 		answers := new(mockAnswerRepo)
 		answers.On("FindByID", mock.Anything, uint(10)).Return(nil, nil)
 		uc := usecase.NewUpdateAnswerUseCase(answers)
 
 		_, err := uc.Execute(context.Background(), 10, 1, "新本文")
 
-		require.Error(t, err)
-		assert.Nil(t, domain.GetDomainError(err))
+		assert.ErrorIs(t, err, domain.ErrNotFound)
 	})
 
 	t.Run("空本文は 400 で保存しない", func(t *testing.T) {

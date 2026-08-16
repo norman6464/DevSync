@@ -170,11 +170,15 @@ func (r *questionRepository) Vote(ctx context.Context, userID, questionID uint, 
 }
 
 // RemoveVote は投票を取り消し、質問の投票数から元の値を差し引く。
+// RemoveVote は投票を取り消す。未投票の場合は何もせず成功する（冪等）。
 func (r *questionRepository) RemoveVote(ctx context.Context, userID, questionID uint) error {
 	db := r.db.WithContext(ctx)
 
 	var existing model.QuestionVote
 	if err := db.Where("user_id = ? AND question_id = ?", userID, questionID).First(&existing).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil
+		}
 		return err
 	}
 	if err := db.Delete(&existing).Error; err != nil {

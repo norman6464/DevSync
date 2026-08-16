@@ -259,13 +259,12 @@ func TestGetPostUseCase(t *testing.T) {
 		assert.Equal(t, uint(1), got.ID)
 	})
 
-	t.Run("存在しなければ DomainError ではないエラーを返す", func(t *testing.T) {
+	t.Run("存在しなければ 404 を返す", func(t *testing.T) {
 		posts := new(mockPostRepo)
 		posts.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
 
 		_, err := usecase.NewGetPostUseCase(posts).Execute(context.Background(), 1)
-		require.Error(t, err)
-		assert.Nil(t, domain.GetDomainError(err))
+		assert.ErrorIs(t, err, domain.ErrNotFound)
 	})
 
 	t.Run("取得エラーはそのまま返す", func(t *testing.T) {
@@ -371,13 +370,12 @@ func TestUpdatePostUseCase(t *testing.T) {
 		posts.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
 	})
 
-	t.Run("存在しなければ DomainError ではないエラーを返す", func(t *testing.T) {
+	t.Run("存在しなければ 404 を返す", func(t *testing.T) {
 		posts := new(mockPostRepo)
 		posts.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
 
 		_, err := usecase.NewUpdatePostUseCase(posts).Execute(context.Background(), 1, 1, "新", "", "")
-		require.Error(t, err)
-		assert.Nil(t, domain.GetDomainError(err))
+		assert.ErrorIs(t, err, domain.ErrNotFound)
 	})
 }
 

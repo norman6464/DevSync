@@ -364,7 +364,7 @@ func TestChatRoomGetByID_RoomNotFound(t *testing.T) {
 	rooms.On("FindByID", mock.Anything, uint(10)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodGet, "/rooms/10", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 }
 
 func TestChatRoomGetByID_InvalidID(t *testing.T) {
@@ -439,7 +439,7 @@ func TestChatRoomUpdate_NotFound(t *testing.T) {
 	rooms.On("FindByID", mock.Anything, uint(10)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodPut, "/rooms/10", map[string]string{"name": "X"})
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 }
 
 func TestChatRoomUpdate_NameTooLong(t *testing.T) {
@@ -511,7 +511,7 @@ func TestChatRoomDelete_NotFound(t *testing.T) {
 	rooms.On("FindByID", mock.Anything, uint(10)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodDelete, "/rooms/10", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 	rooms.AssertNotCalled(t, "Delete", mock.Anything, mock.Anything)
 }
 
@@ -681,7 +681,7 @@ func TestChatRoomRemoveMember_RoomNotFound(t *testing.T) {
 	rooms.On("FindByID", mock.Anything, uint(10)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodDelete, "/rooms/10/members/5", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 }
 
 // ---------- GetMessages ----------

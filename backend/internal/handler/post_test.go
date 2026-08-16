@@ -264,7 +264,7 @@ func TestPostGetByID_NotFound(t *testing.T) {
 	ports.Posts.On("FindByID", mock.Anything, uint(999)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodGet, "/posts/999", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 	ports.Posts.AssertExpectations(t)
 }
 
@@ -340,7 +340,7 @@ func TestPostUpdate_NotFound(t *testing.T) {
 	ports.Posts.On("FindByID", mock.Anything, uint(10)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodPut, "/posts/10", map[string]string{"title": "X"})
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 	ports.Posts.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
 }
 
@@ -427,7 +427,7 @@ func TestPostDelete_NotFound(t *testing.T) {
 	ports.Posts.On("FindByID", mock.Anything, uint(10)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodDelete, "/posts/10", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 	ports.Posts.AssertNotCalled(t, "Delete", mock.Anything, mock.Anything)
 }
 
@@ -678,7 +678,7 @@ func TestPostPublish_NotFound(t *testing.T) {
 	ports.Posts.On("FindByID", mock.Anything, uint(999)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodPut, "/posts/999/publish", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 }
 
 func TestPostUnpublish_Success(t *testing.T) {
@@ -716,7 +716,7 @@ func TestPostUnpublish_NotFound(t *testing.T) {
 	ports.Posts.On("FindByID", mock.Anything, uint(999)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodPut, "/posts/999/unpublish", nil)
-	assertStatus(t, w, http.StatusInternalServerError)
+	assertStatus(t, w, http.StatusNotFound)
 }
 
 func TestPostUnpublish_Forbidden(t *testing.T) {
