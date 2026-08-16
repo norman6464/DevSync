@@ -242,8 +242,9 @@ func NewUpdateLearningGoalUseCase(goals repository.LearningGoalRepository) *Upda
 }
 
 // Execute は所有権を検証したうえで目標を部分更新する。
+// progress は未指定（nil）と明示的な 0 を区別するためポインタで受け取る。
 // 進捗が 100 に達した場合はステータスを完了へ自動遷移させる。
-func (uc *UpdateLearningGoalUseCase) Execute(ctx context.Context, id, userID uint, updates *model.LearningGoal) (*model.LearningGoal, error) {
+func (uc *UpdateLearningGoalUseCase) Execute(ctx context.Context, id, userID uint, updates *model.LearningGoal, progress *int) (*model.LearningGoal, error) {
 	goal, err := ensureOwner(ctx, uc.goals.FindByID, id, userID, learningGoalOwnerOf)
 	if err != nil {
 		return nil, err
@@ -267,15 +268,17 @@ func (uc *UpdateLearningGoalUseCase) Execute(ctx context.Context, id, userID uin
 	if updates.TargetDate != nil {
 		goal.TargetDate = updates.TargetDate
 	}
-	// 0 以上なら常に反映する（未指定の 0 も書き込まれる。移行前の挙動を維持している）。
-	if updates.Progress >= 0 {
-		progress := updates.Progress
-		if progress > 100 {
-			progress = 100
+	if progress != nil {
+		p := *progress
+		if p < 0 {
+			p = 0
 		}
-		goal.Progress = progress
+		if p > 100 {
+			p = 100
+		}
+		goal.Progress = p
 
-		if progress == 100 && goal.Status == model.GoalStatusActive {
+		if p == 100 && goal.Status == model.GoalStatusActive {
 			goal.Status = model.GoalStatusCompleted
 			now := time.Now()
 			goal.CompletedAt = &now
@@ -467,7 +470,8 @@ func NewBatchUpdateGoalProgressUseCase(update *UpdateLearningGoalUseCase) *Batch
 func (uc *BatchUpdateGoalProgressUseCase) Execute(ctx context.Context, userID uint, updates []GoalProgressUpdate) ([]model.LearningGoal, error) {
 	var results []model.LearningGoal
 	for _, u := range updates {
-		goal, err := uc.update.Execute(ctx, u.GoalID, userID, &model.LearningGoal{Progress: u.Progress})
+		progress := u.Progress
+		goal, err := uc.update.Execute(ctx, u.GoalID, userID, &model.LearningGoal{}, &progress)
 		if err != nil {
 			return nil, err
 		}
