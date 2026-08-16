@@ -20,9 +20,10 @@ export function formatDistanceToNow(dateString: string): string {
   return t('time.daysAgo', { count: diffDays });
 }
 
-/** dateString から windowMs 以内しか経過していないか（NEW バッジ等の判定用）。 */
+/** dateString から windowMs 以内しか経過していないか（NEW バッジ等の判定用）。未来の時刻は対象外。 */
 export function isWithinLast(dateString: string, windowMs: number): boolean {
-  return Date.now() - new Date(dateString).getTime() < windowMs;
+  const elapsed = Date.now() - new Date(dateString).getTime();
+  return elapsed >= 0 && elapsed < windowMs;
 }
 
 /** dateString が現在時刻より過去か（期限超過の判定用）。 */
