@@ -6,9 +6,11 @@ import (
 	"context"
 	"log"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/norman6464/devsync/backend/internal/adapter/external"
 	"github.com/norman6464/devsync/backend/internal/adapter/notify"
 	"github.com/norman6464/devsync/backend/internal/adapter/persistence"
+	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/config"
 	"github.com/norman6464/devsync/backend/internal/handler"
 	"github.com/norman6464/devsync/backend/internal/infra/scheduler"
@@ -109,7 +111,8 @@ type Container struct {
 
 // NewContainer はDIコンテナを構築する。
 // リポジトリ→サービス→ハンドラの順で依存関係を解決する。
-func NewContainer(db *gorm.DB, cfg *config.Config, hub *ws.Hub) *Container {
+// sqlPool は sqlc(pgx) へ移行済みのリポジトリ用の接続。GORMからの移行が完了するまで db と併存する。
+func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Container {
 	c := &Container{Hub: hub}
 
 	// follow はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
@@ -942,8 +945,8 @@ func NewContainer(db *gorm.DB, cfg *config.Config, hub *ws.Hub) *Container {
 		usecase.NewUpdateWeeklyChallengeProgressUseCase(weeklyChallengeRepo),
 	)
 
-	// 投稿テンプレートはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	postTemplateRepo := persistence.NewPostTemplateRepository(db)
+	// 投稿テンプレートはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence（sqlc/pgx）。
+	postTemplateRepo := persistence.NewPostTemplateRepository(sqlcgen.New(sqlPool))
 	c.PostTemplateHandler = handler.NewPostTemplateHandler(
 		usecase.NewCreatePostTemplateUseCase(postTemplateRepo),
 		usecase.NewGetPostTemplateUseCase(postTemplateRepo),

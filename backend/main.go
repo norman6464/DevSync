@@ -4,8 +4,10 @@
 package main
 
 import (
+	"context"
 	"log"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/norman6464/devsync/backend/internal/adapter/persistence"
 	"github.com/norman6464/devsync/backend/internal/config"
@@ -48,6 +50,13 @@ func main() {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 
+	// sqlc(pgx)へ移行済みのリポジトリ用コネクションプール。GORMからの移行が完了するまで db と併存する。
+	sqlPool, err := pgxpool.New(context.Background(), cfg.DSN())
+	if err != nil {
+		log.Fatalf("failed to connect to database (pgx): %v", err)
+	}
+	defer sqlPool.Close()
+
 	// テンプレート初期登録の二重加算で誤った step_count と進捗を補正する
 	fixRoadmapStepCounts(db)
 
@@ -59,7 +68,7 @@ func main() {
 	go hub.Run()
 
 	// ルーターを構築しサーバーを起動
-	r := router.Setup(db, cfg, hub)
+	r := router.Setup(db, sqlPool, cfg, hub)
 
 	log.Printf("Server starting on :%s", cfg.Port)
 	if err := r.Run(":" + cfg.Port); err != nil {

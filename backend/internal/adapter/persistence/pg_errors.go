@@ -3,6 +3,7 @@ package persistence
 import (
 	"errors"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
@@ -15,4 +16,11 @@ const pgUniqueViolationCode = "23505"
 func isUniqueViolation(err error) bool {
 	var pgErr *pgconn.PgError
 	return errors.As(err, &pgErr) && pgErr.Code == pgUniqueViolationCode
+}
+
+// isNoRows はエラーが「該当行なし」かを判定する（sqlc/pgx実装向け）。
+// 不在は (nil, nil) に正規化する規約のため、sqlc移行済みリポジトリはこれで
+// pgx.ErrNoRows を吸収してから usecase 側へ返す。
+func isNoRows(err error) bool {
+	return errors.Is(err, pgx.ErrNoRows)
 }
