@@ -16,6 +16,9 @@ type Querier interface {
 	DeletePostTemplate(ctx context.Context, id int64) error
 	GetPasswordResetTokenByToken(ctx context.Context, token string) (PasswordResetToken, error)
 	GetPostTemplateByID(ctx context.Context, id int64) (PostTemplate, error)
+	// projects は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
+	// deleted_at IS NULL を明示する（Unscoped() されていない全クエリと同じ挙動）。
+	GetProjectStats(ctx context.Context, userID int64) (GetProjectStatsRow, error)
 	GetWeeklyChallengeByUserAndWeek(ctx context.Context, arg GetWeeklyChallengeByUserAndWeekParams) (WeeklyChallenge, error)
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
 	ListPostTemplatesByUserID(ctx context.Context, arg ListPostTemplatesByUserIDParams) ([]PostTemplate, error)
