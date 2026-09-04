@@ -54,6 +54,10 @@ type Querier interface {
 	CreatePostTemplate(ctx context.Context, arg CreatePostTemplateParams) (PostTemplate, error)
 	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
 	DeletePostTemplate(ctx context.Context, id int64) error
+	// book_reviews は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
+	// deleted_at IS NULL を明示する。レビュー0件でもCOALESCEにより全項目0を返す
+	// （GORM実装のtotal_reviews==0での早期returnと同じ結果になる）。
+	GetBookReviewStats(ctx context.Context, userID int64) (GetBookReviewStatsRow, error)
 	GetPasswordResetTokenByToken(ctx context.Context, token string) (PasswordResetToken, error)
 	GetPostTemplateByID(ctx context.Context, id int64) (PostTemplate, error)
 	// projects は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて

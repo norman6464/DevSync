@@ -803,7 +803,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// 書籍レビュー統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	bookReviewStatsRepo := persistence.NewBookReviewStatsRepository(db)
+	bookReviewStatsRepo := persistence.NewBookReviewStatsRepository(sqlcgen.New(sqlPool))
 	c.BookReviewStatsHandler = handler.NewBookReviewStatsHandler(
 		usecase.NewGetBookReviewStatsUseCase(bookReviewStatsRepo),
 	)
