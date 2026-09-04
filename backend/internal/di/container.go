@@ -851,7 +851,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// コメント統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	commentStatsRepo := persistence.NewCommentStatsRepository(db)
+	commentStatsRepo := persistence.NewCommentStatsRepository(sqlcgen.New(sqlPool))
 	c.CommentStatsHandler = handler.NewCommentStatsHandler(
 		usecase.NewGetCommentStatsUseCase(commentStatsRepo),
 	)
