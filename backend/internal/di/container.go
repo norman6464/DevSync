@@ -882,7 +882,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// ブックマーク統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	bookmarkStatsRepo := persistence.NewBookmarkStatsRepository(db)
+	bookmarkStatsRepo := persistence.NewBookmarkStatsRepository(sqlcgen.New(sqlPool))
 	c.BookmarkStatsHandler = handler.NewBookmarkStatsHandler(
 		usecase.NewGetBookmarkStatsUseCase(bookmarkStatsRepo),
 	)
