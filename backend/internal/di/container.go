@@ -863,7 +863,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// メッセージ統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	messageStatsRepo := persistence.NewMessageStatsRepository(db)
+	messageStatsRepo := persistence.NewMessageStatsRepository(sqlcgen.New(sqlPool))
 	c.MessageStatsHandler = handler.NewMessageStatsHandler(
 		usecase.NewGetMessageStatsUseCase(messageStatsRepo),
 	)
