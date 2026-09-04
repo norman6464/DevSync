@@ -184,7 +184,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	// 共通サービス
 	// 認証はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	authUserPort := persistence.NewAuthUserRepository(db)
-	passwordResetPort := persistence.NewPasswordResetTokenRepository(db)
+	passwordResetPort := persistence.NewPasswordResetTokenRepository(sqlcgen.New(sqlPool))
 	validateAuthToken := usecase.NewValidateAuthTokenUseCase(cfg.JWTSecret)
 	githubOAuthState := usecase.NewOAuthStateUseCase(cfg.JWTSecret, usecase.OAuthProviderGitHub)
 	spotifyOAuthState := usecase.NewOAuthStateUseCase(cfg.JWTSecret, usecase.OAuthProviderSpotify)

@@ -39,6 +39,11 @@ func toTimestamptz(t *time.Time) pgtype.Timestamptz {
 	return pgtype.Timestamptz{Time: *t, Valid: true}
 }
 
+// toTimestamptzNotNull は model の time.Time（NOT NULL カラム）をタイムスタンプへ変換する。
+func toTimestamptzNotNull(t time.Time) pgtype.Timestamptz {
+	return pgtype.Timestamptz{Time: t, Valid: true}
+}
+
 // fromTimestamptz はNULL許容タイムスタンプを model の *time.Time へ変換する（NULLはnil）。
 func fromTimestamptz(t pgtype.Timestamptz) *time.Time {
 	if !t.Valid {
