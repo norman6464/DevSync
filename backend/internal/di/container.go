@@ -785,7 +785,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// ノート統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	noteStatsRepo := persistence.NewNoteStatsRepository(db)
+	noteStatsRepo := persistence.NewNoteStatsRepository(sqlcgen.New(sqlPool))
 	c.NoteStatsHandler = handler.NewNoteStatsHandler(
 		usecase.NewGetNoteStatsUseCase(noteStatsRepo),
 	)
