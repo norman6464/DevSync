@@ -4,20 +4,20 @@ import (
 	"context"
 	"time"
 
+	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
-	"gorm.io/gorm"
 )
 
-// learningLogStatsRepository は [repository.LearningLogStatsRepository] の GORM 実装。
+// learningLogStatsRepository は [repository.LearningLogStatsRepository] の sqlc(pgx) 実装。
 type learningLogStatsRepository struct {
-	db *gorm.DB
+	q *sqlcgen.Queries
 }
 
-// NewLearningLogStatsRepository は LearningLogStatsRepository の GORM 実装を返す。
-func NewLearningLogStatsRepository(db *gorm.DB) repository.LearningLogStatsRepository {
-	return &learningLogStatsRepository{db: db}
+// NewLearningLogStatsRepository は LearningLogStatsRepository の sqlc(pgx) 実装を返す。
+func NewLearningLogStatsRepository(q *sqlcgen.Queries) repository.LearningLogStatsRepository {
+	return &learningLogStatsRepository{q: q}
 }
 
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
@@ -25,29 +25,34 @@ var _ repository.LearningLogStatsRepository = (*learningLogStatsRepository)(nil)
 
 // GetLearningLogStats は指定ユーザーの学習ログ集計統計を返す。
 func (r *learningLogStatsRepository) GetLearningLogStats(ctx context.Context, userID uint) (*model.LearningLogStats, error) {
-	db := r.db.WithContext(ctx)
-	var stats model.LearningLogStats
-
-	// 総ログ数
-	if err := db.Model(&model.LearningLog{}).Where("user_id = ?", userID).Count(&stats.TotalLogs).Error; err != nil {
+	total, err := r.q.CountLearningLogsByUser(ctx, int64(userID))
+	if err != nil {
 		return nil, err
 	}
 
-	// 総学習時間（分単位）
-	if err := db.Model(&model.LearningLog{}).Where("user_id = ?", userID).Select("COALESCE(SUM(duration), 0)").Scan(&stats.TotalDuration).Error; err != nil {
+	duration, err := r.q.SumLearningLogDurationByUser(ctx, int64(userID))
+	if err != nil {
 		return nil, err
 	}
 
-	// カテゴリ数
-	if err := db.Model(&model.LearningLog{}).Where("user_id = ?", userID).Select("COUNT(DISTINCT category)").Scan(&stats.CategoryCount).Error; err != nil {
+	categories, err := r.q.CountLearningLogCategoriesByUser(ctx, int64(userID))
+	if err != nil {
 		return nil, err
 	}
 
-	// 今月のログ数
-	monthStart := domain.StartOfMonth(time.Now())
-	if err := db.Model(&model.LearningLog{}).Where("user_id = ? AND created_at >= ?", userID, monthStart).Count(&stats.LogsThisMonth).Error; err != nil {
+	startOfMonth := domain.StartOfMonth(time.Now())
+	thisMonth, err := r.q.CountLearningLogsByUserSince(ctx, sqlcgen.CountLearningLogsByUserSinceParams{
+		UserID:    int64(userID),
+		CreatedAt: toTimestamptzNotNull(startOfMonth),
+	})
+	if err != nil {
 		return nil, err
 	}
 
-	return &stats, nil
+	return &model.LearningLogStats{
+		TotalLogs:     total,
+		TotalDuration: duration,
+		CategoryCount: categories,
+		LogsThisMonth: thisMonth,
+	}, nil
 }

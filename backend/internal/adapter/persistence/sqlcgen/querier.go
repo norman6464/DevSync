@@ -17,6 +17,9 @@ type Querier interface {
 	CountConversationsByUser(ctx context.Context, senderID int64) (int64, error)
 	CountFollowersByUser(ctx context.Context, followeeID int64) (int64, error)
 	CountFollowingByUser(ctx context.Context, followerID int64) (int64, error)
+	CountLearningLogCategoriesByUser(ctx context.Context, userID int64) (int64, error)
+	CountLearningLogsByUser(ctx context.Context, userID int64) (int64, error)
+	CountLearningLogsByUserSince(ctx context.Context, arg CountLearningLogsByUserSinceParams) (int64, error)
 	CountMentionsMadeByUser(ctx context.Context, actorID int64) (int64, error)
 	CountMentionsReceivedByUser(ctx context.Context, userID int64) (int64, error)
 	CountMentionsReceivedByUserSince(ctx context.Context, arg CountMentionsReceivedByUserSinceParams) (int64, error)
@@ -42,6 +45,7 @@ type Querier interface {
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
 	ListPostTemplatesByUserID(ctx context.Context, arg ListPostTemplatesByUserIDParams) ([]PostTemplate, error)
 	MarkPasswordResetTokenAsUsed(ctx context.Context, id int64) error
+	SumLearningLogDurationByUser(ctx context.Context, userID int64) (int64, error)
 	UpdatePostTemplate(ctx context.Context, arg UpdatePostTemplateParams) (PostTemplate, error)
 	UpdateWeeklyChallenge(ctx context.Context, arg UpdateWeeklyChallengeParams) (WeeklyChallenge, error)
 }
