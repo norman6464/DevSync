@@ -9,6 +9,9 @@ import (
 )
 
 type Querier interface {
+	CountBookmarksMadeByUser(ctx context.Context, userID int64) (int64, error)
+	CountBookmarksMadeByUserSince(ctx context.Context, arg CountBookmarksMadeByUserSinceParams) (int64, error)
+	CountBookmarksReceivedByUser(ctx context.Context, userID int64) (int64, error)
 	CountPostTemplatesByUserID(ctx context.Context, userID int64) (int64, error)
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) (PasswordResetToken, error)
 	CreatePostTemplate(ctx context.Context, arg CreatePostTemplateParams) (PostTemplate, error)
