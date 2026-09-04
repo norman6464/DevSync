@@ -875,7 +875,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// リアクション統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	reactionStatsRepo := persistence.NewReactionStatsRepository(db)
+	reactionStatsRepo := persistence.NewReactionStatsRepository(sqlcgen.New(sqlPool))
 	c.ReactionStatsHandler = handler.NewReactionStatsHandler(
 		usecase.NewGetReactionStatsUseCase(reactionStatsRepo),
 		usecase.NewGetReactionSummaryUseCase(reactionStatsRepo),
