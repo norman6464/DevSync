@@ -9,7 +9,9 @@ import (
 )
 
 type Querier interface {
+	CountAnswersByUser(ctx context.Context, userID int64) (int64, error)
 	CountArchivedNotesByUser(ctx context.Context, userID int64) (int64, error)
+	CountBestAnswersByUser(ctx context.Context, userID int64) (int64, error)
 	CountBookmarksMadeByUser(ctx context.Context, userID int64) (int64, error)
 	CountBookmarksMadeByUserSince(ctx context.Context, arg CountBookmarksMadeByUserSinceParams) (int64, error)
 	CountBookmarksReceivedByUser(ctx context.Context, userID int64) (int64, error)
@@ -34,6 +36,9 @@ type Querier interface {
 	CountNotificationsByUser(ctx context.Context, userID int64) (int64, error)
 	CountNotificationsByUserSince(ctx context.Context, arg CountNotificationsByUserSinceParams) (int64, error)
 	CountPostTemplatesByUserID(ctx context.Context, userID int64) (int64, error)
+	// questions/answers は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに
+	// 合わせて deleted_at IS NULL を明示する（Unscoped() されていない全クエリと同じ挙動）。
+	CountQuestionsByUser(ctx context.Context, userID int64) (int64, error)
 	CountRepliesByUser(ctx context.Context, userID int64) (int64, error)
 	CountRoadmapsByUser(ctx context.Context, userID int64) (int64, error)
 	CountRoadmapsByUserAndStatus(ctx context.Context, arg CountRoadmapsByUserAndStatusParams) (int64, error)
@@ -52,7 +57,9 @@ type Querier interface {
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
 	ListPostTemplatesByUserID(ctx context.Context, arg ListPostTemplatesByUserIDParams) ([]PostTemplate, error)
 	MarkPasswordResetTokenAsUsed(ctx context.Context, id int64) error
+	SumAnswerVotesByUser(ctx context.Context, userID int64) (int64, error)
 	SumLearningLogDurationByUser(ctx context.Context, userID int64) (int64, error)
+	SumQuestionVotesByUser(ctx context.Context, userID int64) (int64, error)
 	SumRoadmapCompletedStepCountByUser(ctx context.Context, userID int64) (int64, error)
 	SumRoadmapStepCountByUser(ctx context.Context, userID int64) (int64, error)
 	UpdatePostTemplate(ctx context.Context, arg UpdatePostTemplateParams) (PostTemplate, error)
