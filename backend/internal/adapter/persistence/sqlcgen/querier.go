@@ -35,6 +35,8 @@ type Querier interface {
 	CountNotificationsByUserSince(ctx context.Context, arg CountNotificationsByUserSinceParams) (int64, error)
 	CountPostTemplatesByUserID(ctx context.Context, userID int64) (int64, error)
 	CountRepliesByUser(ctx context.Context, userID int64) (int64, error)
+	CountRoadmapsByUser(ctx context.Context, userID int64) (int64, error)
+	CountRoadmapsByUserAndStatus(ctx context.Context, arg CountRoadmapsByUserAndStatusParams) (int64, error)
 	CountTopLevelCommentsByUser(ctx context.Context, userID int64) (int64, error)
 	CountUnreadNotificationsByUser(ctx context.Context, userID int64) (int64, error)
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) (PasswordResetToken, error)
@@ -51,6 +53,8 @@ type Querier interface {
 	ListPostTemplatesByUserID(ctx context.Context, arg ListPostTemplatesByUserIDParams) ([]PostTemplate, error)
 	MarkPasswordResetTokenAsUsed(ctx context.Context, id int64) error
 	SumLearningLogDurationByUser(ctx context.Context, userID int64) (int64, error)
+	SumRoadmapCompletedStepCountByUser(ctx context.Context, userID int64) (int64, error)
+	SumRoadmapStepCountByUser(ctx context.Context, userID int64) (int64, error)
 	UpdatePostTemplate(ctx context.Context, arg UpdatePostTemplateParams) (PostTemplate, error)
 	UpdateWeeklyChallenge(ctx context.Context, arg UpdateWeeklyChallengeParams) (WeeklyChallenge, error)
 }

@@ -542,7 +542,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 		usecase.NewBatchCompleteRoadmapStepsUseCase(roadmapPort),
 		usecase.NewDeleteRoadmapStepUseCase(roadmapPort),
 		usecase.NewReorderRoadmapStepsUseCase(roadmapPort),
-		usecase.NewGetRoadmapStatsUseCase(persistence.NewRoadmapStatsRepository(db)),
+		usecase.NewGetRoadmapStatsUseCase(persistence.NewRoadmapStatsRepository(sqlcgen.New(sqlPool))),
 		usecase.NewCountRoadmapsUseCase(roadmapPort),
 	)
 	c.ChatRoomHandler = handler.NewChatRoomHandler(
@@ -839,7 +839,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// ロードマップ統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	roadmapStatsRepo := persistence.NewRoadmapStatsRepository(db)
+	roadmapStatsRepo := persistence.NewRoadmapStatsRepository(sqlcgen.New(sqlPool))
 	c.RoadmapStatsHandler = handler.NewRoadmapStatsHandler(
 		usecase.NewGetRoadmapStatsUseCase(roadmapStatsRepo),
 	)
