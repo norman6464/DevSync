@@ -3,19 +3,19 @@ package persistence
 import (
 	"context"
 
+	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
-	"gorm.io/gorm"
 )
 
-// studyCircleStatsRepository は [repository.StudyCircleStatsRepository] の GORM 実装。
+// studyCircleStatsRepository は [repository.StudyCircleStatsRepository] の sqlc(pgx) 実装。
 type studyCircleStatsRepository struct {
-	db *gorm.DB
+	q *sqlcgen.Queries
 }
 
-// NewStudyCircleStatsRepository は StudyCircleStatsRepository の GORM 実装を返す。
-func NewStudyCircleStatsRepository(db *gorm.DB) repository.StudyCircleStatsRepository {
-	return &studyCircleStatsRepository{db: db}
+// NewStudyCircleStatsRepository は StudyCircleStatsRepository の sqlc(pgx) 実装を返す。
+func NewStudyCircleStatsRepository(q *sqlcgen.Queries) repository.StudyCircleStatsRepository {
+	return &studyCircleStatsRepository{q: q}
 }
 
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
@@ -23,28 +23,30 @@ var _ repository.StudyCircleStatsRepository = (*studyCircleStatsRepository)(nil)
 
 // GetCircleStats は指定サークルの集計統計を返す。
 func (r *studyCircleStatsRepository) GetCircleStats(ctx context.Context, circleID uint) (*model.StudyCircleStats, error) {
-	db := r.db.WithContext(ctx)
-	var stats model.StudyCircleStats
-
-	// メンバー数
-	if err := db.Model(&model.StudyCircleMember{}).Where("circle_id = ?", circleID).Count(&stats.MemberCount).Error; err != nil {
+	members, err := r.q.CountStudyCircleMembersByCircle(ctx, int64(circleID))
+	if err != nil {
 		return nil, err
 	}
 
-	// チェックイン数
-	if err := db.Model(&model.StudyCircleCheckin{}).Where("circle_id = ?", circleID).Count(&stats.CheckinCount).Error; err != nil {
+	checkins, err := r.q.CountStudyCircleCheckinsByCircle(ctx, int64(circleID))
+	if err != nil {
 		return nil, err
 	}
 
-	// ステップ総数
-	if err := db.Model(&model.StudyCircleStep{}).Where("circle_id = ?", circleID).Count(&stats.TotalSteps).Error; err != nil {
+	steps, err := r.q.CountStudyCircleStepsByCircle(ctx, int64(circleID))
+	if err != nil {
 		return nil, err
 	}
 
-	// 完了済みステップ数（メンバー別進捗の完了エントリ数）
-	if err := db.Model(&model.StudyCircleMemberProgress{}).Where("circle_id = ? AND is_completed = ?", circleID, true).Count(&stats.CompletedSteps).Error; err != nil {
+	completedSteps, err := r.q.CountStudyCircleCompletedStepsByCircle(ctx, int64(circleID))
+	if err != nil {
 		return nil, err
 	}
 
-	return &stats, nil
+	return &model.StudyCircleStats{
+		MemberCount:    members,
+		CheckinCount:   checkins,
+		TotalSteps:     steps,
+		CompletedSteps: completedSteps,
+	}, nil
 }
