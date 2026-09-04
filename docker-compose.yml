@@ -10,6 +10,8 @@ services:
       - "5432:5432"
     # postgres 18+ イメージは major version 別サブディレクトリで管理するため
     # マウント先はデータディレクトリ本体ではなく親の /var/lib/postgresql にする。
+    # 15系のデータが入った postgres_data ボリュームはこのレイアウトのまま起動できない
+    # （pg_upgradeは対象外。ローカルの使い捨てデータのため `docker compose down -v` で作り直す）。
     volumes:
       - postgres_data:/var/lib/postgresql
     healthcheck:
@@ -35,7 +37,8 @@ services:
   # db/schema/*.hcl（Atlas宣言的スキーマ）を db へ適用してから終了する一回限りのジョブ。
   # backend はこれの成功を待って起動する。
   db-migrate:
-    image: arigaio/atlas:latest
+    # CI（ariga/setup-atlas）と同じバージョンに固定し、latestタグによる予期せぬ挙動変化を避ける。
+    image: arigaio/atlas:1.3.3
     container_name: devsync-db-migrate
     volumes:
       - ./backend/db/schema:/db/schema:ro
