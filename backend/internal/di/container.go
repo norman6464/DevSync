@@ -845,7 +845,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// 学習ログ統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	learningLogStatsRepo := persistence.NewLearningLogStatsRepository(db)
+	learningLogStatsRepo := persistence.NewLearningLogStatsRepository(sqlcgen.New(sqlPool))
 	c.LearningLogStatsHandler = handler.NewLearningLogStatsHandler(
 		usecase.NewGetLearningLogStatsUseCase(learningLogStatsRepo),
 	)
