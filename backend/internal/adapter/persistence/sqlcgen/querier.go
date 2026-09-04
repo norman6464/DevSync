@@ -11,10 +11,13 @@ import (
 type Querier interface {
 	CountPostTemplatesByUserID(ctx context.Context, userID int64) (int64, error)
 	CreatePostTemplate(ctx context.Context, arg CreatePostTemplateParams) (PostTemplate, error)
+	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
 	DeletePostTemplate(ctx context.Context, id int64) error
 	GetPostTemplateByID(ctx context.Context, id int64) (PostTemplate, error)
+	GetWeeklyChallengeByUserAndWeek(ctx context.Context, arg GetWeeklyChallengeByUserAndWeekParams) (WeeklyChallenge, error)
 	ListPostTemplatesByUserID(ctx context.Context, arg ListPostTemplatesByUserIDParams) ([]PostTemplate, error)
 	UpdatePostTemplate(ctx context.Context, arg UpdatePostTemplateParams) (PostTemplate, error)
+	UpdateWeeklyChallenge(ctx context.Context, arg UpdateWeeklyChallengeParams) (WeeklyChallenge, error)
 }
 
 var _ Querier = (*Queries)(nil)

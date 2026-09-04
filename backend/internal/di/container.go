@@ -939,7 +939,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// ウィークリーチャレンジはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	weeklyChallengeRepo := persistence.NewWeeklyChallengeRepository(db)
+	weeklyChallengeRepo := persistence.NewWeeklyChallengeRepository(sqlcgen.New(sqlPool))
 	c.WeeklyChallengeHandler = handler.NewWeeklyChallengeHandler(
 		usecase.NewGetCurrentWeeklyChallengeUseCase(weeklyChallengeRepo),
 		usecase.NewUpdateWeeklyChallengeProgressUseCase(weeklyChallengeRepo),
