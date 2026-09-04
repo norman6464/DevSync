@@ -1,0 +1,15 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    # db/schema/*.hcl（Atlas の正）から `make db-schema-sql` で書き出したSQL。
+    # 手書きしない生成物のため .gitignore 済み。sqlc はHCLを直接読めないための橋渡し。
+    # (db/schema.sql という名前は手書きの旧スキーマ文書と衝突するため使わない)
+    schema: "db/schema_generated.sql"
+    queries: "db/queries"
+    gen:
+      go:
+        package: "sqlcgen"
+        out: "internal/adapter/persistence/sqlcgen"
+        sql_package: "pgx/v5"
+        emit_json_tags: false
+        emit_interface: true
