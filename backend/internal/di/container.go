@@ -815,7 +815,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// コードスニペット統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	codeSnippetStatsRepo := persistence.NewCodeSnippetStatsRepository(db)
+	codeSnippetStatsRepo := persistence.NewCodeSnippetStatsRepository(sqlcgen.New(sqlPool))
 	c.CodeSnippetStatsHandler = handler.NewCodeSnippetStatsHandler(
 		usecase.NewGetCodeSnippetStatsUseCase(codeSnippetStatsRepo),
 	)
