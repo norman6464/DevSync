@@ -15,6 +15,8 @@ type Querier interface {
 	CountBookmarksMadeByUser(ctx context.Context, userID int64) (int64, error)
 	CountBookmarksMadeByUserSince(ctx context.Context, arg CountBookmarksMadeByUserSinceParams) (int64, error)
 	CountBookmarksReceivedByUser(ctx context.Context, userID int64) (int64, error)
+	CountCodeSnippetLanguagesByUser(ctx context.Context, userID int64) (int64, error)
+	CountCodeSnippetsByUser(ctx context.Context, userID int64) (int64, error)
 	CountCommentsByUserSince(ctx context.Context, arg CountCommentsByUserSinceParams) (int64, error)
 	CountCommentsReceivedByUser(ctx context.Context, userID int64) (int64, error)
 	CountConversationsByUser(ctx context.Context, senderID int64) (int64, error)
@@ -58,6 +60,7 @@ type Querier interface {
 	ListPostTemplatesByUserID(ctx context.Context, arg ListPostTemplatesByUserIDParams) ([]PostTemplate, error)
 	MarkPasswordResetTokenAsUsed(ctx context.Context, id int64) error
 	SumAnswerVotesByUser(ctx context.Context, userID int64) (int64, error)
+	SumCodeSnippetCommentCountByUser(ctx context.Context, userID int64) (int64, error)
 	SumLearningLogDurationByUser(ctx context.Context, userID int64) (int64, error)
 	SumQuestionVotesByUser(ctx context.Context, userID int64) (int64, error)
 	SumRoadmapCompletedStepCountByUser(ctx context.Context, userID int64) (int64, error)
