@@ -26,6 +26,10 @@ type Querier interface {
 	CountLearningLogCategoriesByUser(ctx context.Context, userID int64) (int64, error)
 	CountLearningLogsByUser(ctx context.Context, userID int64) (int64, error)
 	CountLearningLogsByUserSince(ctx context.Context, arg CountLearningLogsByUserSinceParams) (int64, error)
+	CountLearningResourceCategoriesByUser(ctx context.Context, userID int64) (int64, error)
+	// learning_resources は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに
+	// 合わせて deleted_at IS NULL を明示する（Unscoped() されていない全クエリと同じ挙動）。
+	CountLearningResourcesByUser(ctx context.Context, userID int64) (int64, error)
 	CountMentionsMadeByUser(ctx context.Context, actorID int64) (int64, error)
 	CountMentionsReceivedByUser(ctx context.Context, userID int64) (int64, error)
 	CountMentionsReceivedByUserSince(ctx context.Context, arg CountMentionsReceivedByUserSinceParams) (int64, error)
@@ -62,6 +66,8 @@ type Querier interface {
 	SumAnswerVotesByUser(ctx context.Context, userID int64) (int64, error)
 	SumCodeSnippetCommentCountByUser(ctx context.Context, userID int64) (int64, error)
 	SumLearningLogDurationByUser(ctx context.Context, userID int64) (int64, error)
+	SumLearningResourceLikeCountByUser(ctx context.Context, userID int64) (int64, error)
+	SumLearningResourceSaveCountByUser(ctx context.Context, userID int64) (int64, error)
 	SumQuestionVotesByUser(ctx context.Context, userID int64) (int64, error)
 	SumRoadmapCompletedStepCountByUser(ctx context.Context, userID int64) (int64, error)
 	SumRoadmapStepCountByUser(ctx context.Context, userID int64) (int64, error)
