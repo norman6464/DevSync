@@ -87,7 +87,7 @@ func (q *Queries) GetPostTemplateByID(ctx context.Context, id int64) (PostTempla
 const listPostTemplatesByUserID = `-- name: ListPostTemplatesByUserID :many
 SELECT id, user_id, name, title_template, content_template, created_at, updated_at FROM post_templates
 WHERE user_id = $1
-ORDER BY created_at DESC
+ORDER BY created_at DESC, id DESC
 LIMIT $2 OFFSET $3
 `
 

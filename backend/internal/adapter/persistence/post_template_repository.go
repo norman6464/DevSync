@@ -70,8 +70,8 @@ func (r *postTemplateRepository) FindByID(ctx context.Context, id uint) (*model.
 func (r *postTemplateRepository) FindByUserID(ctx context.Context, userID uint, limit, offset int) ([]model.PostTemplate, int64, error) {
 	rows, err := r.q.ListPostTemplatesByUserID(ctx, sqlcgen.ListPostTemplatesByUserIDParams{
 		UserID: int64(userID),
-		Limit:  int32(limit),
-		Offset: int32(offset),
+		Limit:  int32Param(limit),
+		Offset: int32Param(offset),
 	})
 	if err != nil {
 		return nil, 0, err

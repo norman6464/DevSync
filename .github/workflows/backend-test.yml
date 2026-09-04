@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+# GITHUB_TOKEN はリポジトリの読み取りのみで足りる（チェックアウトとキャッシュ利用のみ）。
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -36,12 +40,12 @@ jobs:
           cache-dependency-path: backend/go.sum
 
       - name: Atlas をセットアップ
-        uses: ariga/setup-atlas@v0
+        uses: ariga/setup-atlas@2f3c785c89a15e1c0d07bcae3900fb5feb969eea # v0
         with:
           version: "v1.3.3"
 
       - name: sqlc をセットアップ
-        uses: sqlc-dev/setup-sqlc@v5
+        uses: sqlc-dev/setup-sqlc@bac53b7fb28c039a6c7f5736fd1e89744021bdd6 # v5
         with:
           sqlc-version: "1.31.1"
 
