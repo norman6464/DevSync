@@ -857,7 +857,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// 通知統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	notificationStatsRepo := persistence.NewNotificationStatsRepository(db)
+	notificationStatsRepo := persistence.NewNotificationStatsRepository(sqlcgen.New(sqlPool))
 	c.NotificationStatsHandler = handler.NewNotificationStatsHandler(
 		usecase.NewGetNotificationStatsUseCase(notificationStatsRepo),
 	)
