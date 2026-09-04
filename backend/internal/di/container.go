@@ -869,7 +869,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// メンション統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	mentionStatsRepo := persistence.NewMentionStatsRepository(db)
+	mentionStatsRepo := persistence.NewMentionStatsRepository(sqlcgen.New(sqlPool))
 	c.MentionStatsHandler = handler.NewMentionStatsHandler(
 		usecase.NewGetMentionStatsUseCase(mentionStatsRepo),
 	)

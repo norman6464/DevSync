@@ -4,20 +4,20 @@ import (
 	"context"
 	"time"
 
+	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
-	"gorm.io/gorm"
 )
 
-// mentionStatsRepository は [repository.MentionStatsRepository] の GORM 実装。
+// mentionStatsRepository は [repository.MentionStatsRepository] の sqlc(pgx) 実装。
 type mentionStatsRepository struct {
-	db *gorm.DB
+	q *sqlcgen.Queries
 }
 
-// NewMentionStatsRepository は MentionStatsRepository の GORM 実装を返す。
-func NewMentionStatsRepository(db *gorm.DB) repository.MentionStatsRepository {
-	return &mentionStatsRepository{db: db}
+// NewMentionStatsRepository は MentionStatsRepository の sqlc(pgx) 実装を返す。
+func NewMentionStatsRepository(q *sqlcgen.Queries) repository.MentionStatsRepository {
+	return &mentionStatsRepository{q: q}
 }
 
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
@@ -25,24 +25,28 @@ var _ repository.MentionStatsRepository = (*mentionStatsRepository)(nil)
 
 // GetMentionStats は指定ユーザーのメンション集計統計を返す。
 func (r *mentionStatsRepository) GetMentionStats(ctx context.Context, userID uint) (*model.MentionStats, error) {
-	db := r.db.WithContext(ctx)
-	var stats model.MentionStats
-
-	// メンションされた回数
-	if err := db.Model(&model.Mention{}).Where("user_id = ?", userID).Count(&stats.MentionsReceived).Error; err != nil {
+	received, err := r.q.CountMentionsReceivedByUser(ctx, int64(userID))
+	if err != nil {
 		return nil, err
 	}
 
-	// メンションした回数
-	if err := db.Model(&model.Mention{}).Where("actor_id = ?", userID).Count(&stats.MentionsMade).Error; err != nil {
+	made, err := r.q.CountMentionsMadeByUser(ctx, int64(userID))
+	if err != nil {
 		return nil, err
 	}
 
-	// 今月メンションされた回数
 	startOfMonth := domain.StartOfMonth(time.Now())
-	if err := db.Model(&model.Mention{}).Where("user_id = ? AND created_at >= ?", userID, startOfMonth).Count(&stats.MentionsThisMonth).Error; err != nil {
+	thisMonth, err := r.q.CountMentionsReceivedByUserSince(ctx, sqlcgen.CountMentionsReceivedByUserSinceParams{
+		UserID:    int64(userID),
+		CreatedAt: toTimestamptzNotNull(startOfMonth),
+	})
+	if err != nil {
 		return nil, err
 	}
 
-	return &stats, nil
+	return &model.MentionStats{
+		MentionsReceived:  received,
+		MentionsMade:      made,
+		MentionsThisMonth: thisMonth,
+	}, nil
 }
