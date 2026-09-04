@@ -10,6 +10,21 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:18.4-alpine
+        env:
+          POSTGRES_USER: devsync
+          POSTGRES_PASSWORD: devsync
+          POSTGRES_DB: devsync
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U devsync"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: リポジトリをチェックアウト
         uses: actions/checkout@v4
@@ -19,6 +34,11 @@ jobs:
         with:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
+
+      - name: Atlas をセットアップ
+        uses: ariga/setup-atlas@v0
+        with:
+          version: "v1.3.3"
 
       - name: 依存関係をダウンロード
         run: go mod download
@@ -35,6 +55,12 @@ jobs:
       - name: 依存方向をチェック（archlint）
         run: go run ./cmd/archlint .
         working-directory: ./backend
+
+      - name: db/schema/*.hcl が素のDBへエラーなく適用できるか検証
+        run: atlas schema apply --env local --auto-approve
+        working-directory: ./backend
+        env:
+          ATLAS_DB_URL: postgres://devsync:devsync@localhost:5432/devsync?sslmode=disable
 
       - name: ユニットテストを実行
         run: go test ./... -cover -coverprofile=coverage.out

@@ -17,6 +17,9 @@ backend/tmp/
 backend/*.out
 backend/coverage*.html
 
+# sqlc: db/schema/*.hcl（Atlas管理）から生成する橋渡し用SQL。手編集しない生成物。
+backend/db/schema_generated.sql
+
 # Frontend
 frontend/node_modules/
 frontend/dist/
