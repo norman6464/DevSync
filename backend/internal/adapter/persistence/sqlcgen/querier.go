@@ -15,6 +15,8 @@ type Querier interface {
 	CountCommentsByUserSince(ctx context.Context, arg CountCommentsByUserSinceParams) (int64, error)
 	CountCommentsReceivedByUser(ctx context.Context, userID int64) (int64, error)
 	CountConversationsByUser(ctx context.Context, senderID int64) (int64, error)
+	CountFollowersByUser(ctx context.Context, followeeID int64) (int64, error)
+	CountFollowingByUser(ctx context.Context, followerID int64) (int64, error)
 	CountMentionsMadeByUser(ctx context.Context, actorID int64) (int64, error)
 	CountMentionsReceivedByUser(ctx context.Context, userID int64) (int64, error)
 	CountMentionsReceivedByUserSince(ctx context.Context, arg CountMentionsReceivedByUserSinceParams) (int64, error)

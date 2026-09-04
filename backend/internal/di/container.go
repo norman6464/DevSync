@@ -833,7 +833,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// フォロー統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	followStatsRepo := persistence.NewFollowStatsRepository(db)
+	followStatsRepo := persistence.NewFollowStatsRepository(sqlcgen.New(sqlPool))
 	c.FollowStatsHandler = handler.NewFollowStatsHandler(
 		usecase.NewGetFollowStatsUseCase(followStatsRepo),
 	)
