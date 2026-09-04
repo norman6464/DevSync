@@ -40,6 +40,11 @@ jobs:
         with:
           version: "v1.3.3"
 
+      - name: sqlc をセットアップ
+        uses: sqlc-dev/setup-sqlc@v5
+        with:
+          sqlc-version: "1.31.1"
+
       - name: 依存関係をダウンロード
         run: go mod download
         working-directory: ./backend
@@ -61,6 +66,13 @@ jobs:
         working-directory: ./backend
         env:
           ATLAS_DB_URL: postgres://devsync:devsync@localhost:5432/devsync?sslmode=disable
+
+      - name: sqlc生成コードが db/queries と db/schema から再生成しても変わらないか検証
+        run: |
+          make db-schema-sql
+          sqlc generate
+          git diff --exit-code -- internal/adapter/persistence/sqlcgen
+        working-directory: ./backend
 
       - name: ユニットテストを実行
         run: go test ./... -cover -coverprofile=coverage.out

@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/norman6464/devsync/backend/internal/config"
 	"github.com/norman6464/devsync/backend/internal/di"
 	"github.com/norman6464/devsync/backend/internal/handler"
@@ -19,8 +20,9 @@ import (
 
 // Setup はGinルーターを構築し、全エンドポイントを登録して返す。
 // DIコンテナを利用して依存関係を解決し、ルーティングのみに集中する。
-func Setup(db *gorm.DB, cfg *config.Config, hub *ws.Hub) *gin.Engine {
-	return SetupWithContainer(di.NewContainer(db, cfg, hub), cfg)
+// sqlPool は sqlc(pgx) へ移行済みのリポジトリ用の接続。GORMからの移行が完了するまで db と併存する。
+func Setup(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *gin.Engine {
+	return SetupWithContainer(di.NewContainer(db, sqlPool, cfg, hub), cfg)
 }
 
 // SetupWithContainer は構築済みのDIコンテナからルーターを組み立てる。
