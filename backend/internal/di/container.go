@@ -139,7 +139,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	// 質問はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	questionPort := persistence.NewQuestionRepository(db)
 	// 回答はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	answerPort := persistence.NewAnswerRepository(db)
+	answerPort := persistence.NewAnswerRepository(sqlPool)
 	// ロードマップはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	// 旧 roadmapRepo は aiAdviceService がまだ使うため残している。
 	roadmapPort := persistence.NewRoadmapRepository(db)
