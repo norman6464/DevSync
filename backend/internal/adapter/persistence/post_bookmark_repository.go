@@ -3,47 +3,72 @@ package persistence
 import (
 	"context"
 
+	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
-	"gorm.io/gorm"
 )
 
-// postBookmarkRepository は [repository.PostBookmarkRepository] の GORM 実装。
+// postBookmarkRepository は [repository.PostBookmarkRepository] の sqlc(pgx) 実装。
 type postBookmarkRepository struct {
-	db *gorm.DB
+	q *sqlcgen.Queries
 }
 
-// NewPostBookmarkRepository は PostBookmarkRepository の GORM 実装を返す。
-func NewPostBookmarkRepository(db *gorm.DB) repository.PostBookmarkRepository {
-	return &postBookmarkRepository{db: db}
+// NewPostBookmarkRepository は PostBookmarkRepository の sqlc(pgx) 実装を返す。
+func NewPostBookmarkRepository(q *sqlcgen.Queries) repository.PostBookmarkRepository {
+	return &postBookmarkRepository{q: q}
 }
 
 var _ repository.PostBookmarkRepository = (*postBookmarkRepository)(nil)
 
+// toModelCodeSnippet は sqlc の生成行を model.CodeSnippet へ変換する。
+func toModelCodeSnippet(row sqlcgen.CodeSnippet) model.CodeSnippet {
+	return model.CodeSnippet{
+		ID:           uint(row.ID),
+		PostID:       uint(row.PostID),
+		UserID:       uint(row.UserID),
+		Language:     row.Language,
+		FileName:     fromStringPtr(row.FileName),
+		Code:         row.Code,
+		CommentCount: int(fromInt64PtrValue(row.CommentCount)),
+		ForkedFromID: fromInt64PtrToUintPtr(row.ForkedFromID),
+		ForkCount:    int(fromInt64PtrValue(row.ForkCount)),
+		CreatedAt:    timeValue(fromTimestamptz(row.CreatedAt)),
+		UpdatedAt:    timeValue(fromTimestamptz(row.UpdatedAt)),
+	}
+}
+
 // Bookmark は投稿をブックマークし、投稿の bookmark_count を加算する。
+// 移行前の GORM 実装と同じくトランザクションでは括らない（元実装も2つの独立した操作だったため）。
 func (r *postBookmarkRepository) Bookmark(ctx context.Context, userID, postID uint) error {
-	if err := r.db.WithContext(ctx).Create(&model.Bookmark{UserID: userID, PostID: postID}).Error; err != nil {
+	if err := r.q.CreateBookmark(ctx, sqlcgen.CreateBookmarkParams{
+		UserID: int64(userID),
+		PostID: int64(postID),
+	}); err != nil {
 		return err
 	}
-	return r.db.WithContext(ctx).Model(&model.Post{}).Where("id = ?", postID).
-		UpdateColumn("bookmark_count", gorm.Expr("bookmark_count + 1")).Error
+	return r.q.IncrementPostBookmarkCount(ctx, int64(postID))
 }
 
 // Unbookmark はブックマークを解除し、実際に削除できたときだけ bookmark_count をデクリメントする。
+// 移行前の GORM 実装と同じく、デクリメント自体のエラーは呼び出し元へ返さない。
 func (r *postBookmarkRepository) Unbookmark(ctx context.Context, userID, postID uint) error {
-	result := r.db.WithContext(ctx).Where("user_id = ? AND post_id = ?", userID, postID).Delete(&model.Bookmark{})
-	if result.RowsAffected > 0 {
-		r.db.WithContext(ctx).Model(&model.Post{}).Where("id = ?", postID).
-			UpdateColumn("bookmark_count", gorm.Expr("GREATEST(bookmark_count - 1, 0)"))
+	rowsAffected, err := r.q.DeleteBookmark(ctx, sqlcgen.DeleteBookmarkParams{
+		UserID: int64(userID),
+		PostID: int64(postID),
+	})
+	if rowsAffected > 0 {
+		_ = r.q.DecrementPostBookmarkCount(ctx, int64(postID))
 	}
-	return result.Error
+	return err
 }
 
 // HasBookmarked は指定ユーザーが投稿をブックマーク済みかを返す。
 func (r *postBookmarkRepository) HasBookmarked(ctx context.Context, userID, postID uint) (bool, error) {
-	var count int64
-	if err := r.db.WithContext(ctx).Model(&model.Bookmark{}).
-		Where("user_id = ? AND post_id = ?", userID, postID).Count(&count).Error; err != nil {
+	count, err := r.q.CountBookmarkByUserAndPost(ctx, sqlcgen.CountBookmarkByUserAndPostParams{
+		UserID: int64(userID),
+		PostID: int64(postID),
+	})
+	if err != nil {
 		return false, err
 	}
 	return count > 0, nil
@@ -51,27 +76,49 @@ func (r *postBookmarkRepository) HasBookmarked(ctx context.Context, userID, post
 
 // FindBookmarkedByUserID は指定ユーザーのブックマーク済み投稿をページネーション付きで取得する。
 func (r *postBookmarkRepository) FindBookmarkedByUserID(ctx context.Context, userID uint, page, limit int) ([]model.Post, int64, error) {
-	var posts []model.Post
-	var total int64
 	offset := (page - 1) * limit
 
-	subQuery := r.db.WithContext(ctx).Model(&model.Bookmark{}).Select("post_id").Where("user_id = ?", userID)
-
-	if err := r.db.WithContext(ctx).Model(&model.Post{}).Where("id IN (?)", subQuery).Count(&total).Error; err != nil {
+	total, err := r.q.CountBookmarksMadeByUser(ctx, int64(userID))
+	if err != nil {
 		return nil, 0, err
 	}
 
-	err := r.db.WithContext(ctx).Preload("User").Preload("CodeSnippets").
-		Where("id IN (?)", subQuery).
-		Order("created_at DESC").
-		Offset(offset).Limit(limit).
-		Find(&posts).Error
-	return posts, total, err
+	rows, err := r.q.ListBookmarkedPostsByUser(ctx, sqlcgen.ListBookmarkedPostsByUserParams{
+		UserID: int64(userID),
+		Limit:  int32Param(limit),
+		Offset: int32Param(offset),
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+
+	posts := make([]model.Post, len(rows))
+	postIDs := make([]int64, len(rows))
+	for i, row := range rows {
+		posts[i] = toModelPost(row.Post)
+		posts[i].User = toModelUser(row.User)
+		postIDs[i] = row.Post.ID
+	}
+
+	if len(postIDs) > 0 {
+		snippetRows, err := r.q.ListCodeSnippetsByPostIDs(ctx, postIDs)
+		if err != nil {
+			return nil, 0, err
+		}
+		snippetsByPostID := make(map[uint][]model.CodeSnippet)
+		for _, row := range snippetRows {
+			postID := uint(row.PostID)
+			snippetsByPostID[postID] = append(snippetsByPostID[postID], toModelCodeSnippet(row))
+		}
+		for i := range posts {
+			posts[i].CodeSnippets = snippetsByPostID[posts[i].ID]
+		}
+	}
+
+	return posts, total, nil
 }
 
 // CountBookmarkedByUserID は指定ユーザーのブックマーク件数を返す。
 func (r *postBookmarkRepository) CountBookmarkedByUserID(ctx context.Context, userID uint) (int64, error) {
-	var count int64
-	err := r.db.WithContext(ctx).Model(&model.Bookmark{}).Where("user_id = ?", userID).Count(&count).Error
-	return count, err
+	return r.q.CountBookmarksMadeByUser(ctx, int64(userID))
 }

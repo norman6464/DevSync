@@ -22,6 +22,7 @@ type Querier interface {
 	CountAnswersByUserIncludingDeleted(ctx context.Context, userID int64) (int64, error)
 	CountArchivedNotesByUser(ctx context.Context, userID int64) (int64, error)
 	CountBestAnswersByUser(ctx context.Context, userID int64) (int64, error)
+	CountBookmarkByUserAndPost(ctx context.Context, arg CountBookmarkByUserAndPostParams) (int64, error)
 	CountBookmarksMadeByUser(ctx context.Context, userID int64) (int64, error)
 	CountBookmarksMadeByUserSince(ctx context.Context, arg CountBookmarksMadeByUserSinceParams) (int64, error)
 	CountBookmarksReceivedByUser(ctx context.Context, userID int64) (int64, error)
@@ -86,6 +87,7 @@ type Querier interface {
 	CountUnreadNotificationsByUser(ctx context.Context, userID int64) (int64, error)
 	CountUserActivitiesByUser(ctx context.Context, userID int64) (int64, error)
 	CountUserActivitiesByUserAndType(ctx context.Context, arg CountUserActivitiesByUserAndTypeParams) (int64, error)
+	CreateBookmark(ctx context.Context, arg CreateBookmarkParams) error
 	CreateCommentLike(ctx context.Context, arg CreateCommentLikeParams) error
 	// 同時に複数リクエストが「不在」と判定してもuser_idの一意制約とDO NOTHINGで
 	// 競合を無害化する。競合で挿入されなかった場合は0行が返る（エラーにはしない）。
@@ -110,6 +112,8 @@ type Querier interface {
 	CreateStreakFreeze(ctx context.Context, arg CreateStreakFreezeParams) (StreakFreeze, error)
 	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
 	DecrementCommentLikeCount(ctx context.Context, id int64) error
+	DecrementPostBookmarkCount(ctx context.Context, id int64) error
+	DeleteBookmark(ctx context.Context, arg DeleteBookmarkParams) (int64, error)
 	DeleteCommentLike(ctx context.Context, arg DeleteCommentLikeParams) error
 	DeleteFollow(ctx context.Context, arg DeleteFollowParams) error
 	DeleteMentionsByCommentID(ctx context.Context, commentID *int64) error
@@ -151,10 +155,16 @@ type Querier interface {
 	GetWidgetSettingsByUserID(ctx context.Context, userID int64) (WidgetSetting, error)
 	HasStreakFreezeOnDate(ctx context.Context, arg HasStreakFreezeOnDateParams) (bool, error)
 	IncrementCommentLikeCount(ctx context.Context, id int64) error
+	IncrementPostBookmarkCount(ctx context.Context, id int64) error
 	IncrementPostViewCount(ctx context.Context, id int64) error
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
 	ListArchivedNotesByUser(ctx context.Context, arg ListArchivedNotesByUserParams) ([]ListArchivedNotesByUserRow, error)
+	// GORMのPreload("User")に相当（CodeSnippetsは別クエリで取得しGo側で結合する）。
+	// user_id/post_idともにNOT NULLのためINNER JOINでよい。
+	ListBookmarkedPostsByUser(ctx context.Context, arg ListBookmarkedPostsByUserParams) ([]ListBookmarkedPostsByUserRow, error)
 	ListChatRoomMemberUserIDs(ctx context.Context, chatRoomID int64) ([]int64, error)
+	// GORMのPreload("CodeSnippets")に相当。1対多のため投稿IDのまとめ取りとGo側でのグルーピングで再現する。
+	ListCodeSnippetsByPostIDs(ctx context.Context, dollar_1 []int64) ([]CodeSnippet, error)
 	ListFavoriteNotesByUser(ctx context.Context, arg ListFavoriteNotesByUserParams) ([]ListFavoriteNotesByUserRow, error)
 	// 件数は follow_stats.sql の CountFollowersByUser を再利用する。
 	ListFollowers(ctx context.Context, arg ListFollowersParams) ([]User, error)
