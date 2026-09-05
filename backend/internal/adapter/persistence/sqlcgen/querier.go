@@ -63,6 +63,7 @@ type Querier interface {
 	CountLearningLogsByUser(ctx context.Context, userID int64) (int64, error)
 	CountLearningLogsByUserSince(ctx context.Context, arg CountLearningLogsByUserSinceParams) (int64, error)
 	CountLearningResourceCategoriesByUser(ctx context.Context, userID int64) (int64, error)
+	CountLearningResourcesByDifficulty(ctx context.Context, difficulty *string) (int64, error)
 	// learning_resources は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに
 	// 合わせて deleted_at IS NULL を明示する（Unscoped() されていない全クエリと同じ挙動）。
 	CountLearningResourcesByUser(ctx context.Context, userID int64) (int64, error)
@@ -104,6 +105,7 @@ type Querier interface {
 	CountProjectsByUser(ctx context.Context, userID int64) (int64, error)
 	CountPublicLearningGoals(ctx context.Context) (int64, error)
 	CountPublicLearningGoalsByUser(ctx context.Context, userID int64) (int64, error)
+	CountPublicLearningResources(ctx context.Context, arg CountPublicLearningResourcesParams) (int64, error)
 	CountPublicPosts(ctx context.Context) (int64, error)
 	CountPublishedPostsByUser(ctx context.Context, userID int64) (int64, error)
 	// questions/answers は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに
@@ -112,13 +114,17 @@ type Querier interface {
 	CountReactionsReceivedByUser(ctx context.Context, userID int64) (int64, error)
 	CountReactionsReceivedByUserSince(ctx context.Context, arg CountReactionsReceivedByUserSinceParams) (int64, error)
 	CountRepliesByUser(ctx context.Context, userID int64) (int64, error)
+	CountResourceLike(ctx context.Context, arg CountResourceLikeParams) (int64, error)
 	CountResourceProgressByUser(ctx context.Context, arg CountResourceProgressByUserParams) (int64, error)
 	CountResourceReviewsByResource(ctx context.Context, resourceID int64) (int64, error)
+	CountResourceSave(ctx context.Context, arg CountResourceSaveParams) (int64, error)
 	CountRoadmapsByUser(ctx context.Context, userID int64) (int64, error)
 	CountRoadmapsByUserAndStatus(ctx context.Context, arg CountRoadmapsByUserAndStatusParams) (int64, error)
+	CountSavedLearningResources(ctx context.Context, userID int64) (int64, error)
 	CountScheduledPostsByUser(ctx context.Context, userID int64) (int64, error)
 	CountSearchBookReviews(ctx context.Context, title string) (int64, error)
 	CountSearchCodeSnippets(ctx context.Context, language string) (int64, error)
+	CountSearchLearningResources(ctx context.Context, title string) (int64, error)
 	CountSearchNotes(ctx context.Context, arg CountSearchNotesParams) (int64, error)
 	CountSearchProjects(ctx context.Context, title string) (int64, error)
 	CountSnippetFavorite(ctx context.Context, arg CountSnippetFavoriteParams) (int64, error)
@@ -135,6 +141,9 @@ type Querier interface {
 	CountUnreadNotificationsByUser(ctx context.Context, userID int64) (int64, error)
 	CountUserActivitiesByUser(ctx context.Context, userID int64) (int64, error)
 	CountUserActivitiesByUserAndType(ctx context.Context, arg CountUserActivitiesByUserAndTypeParams) (int64, error)
+	// FindByUserID の総数取得専用。include_private=falseなら公開分のみで数える
+	// （全件カウントはlearning_resource_stats.sqlの既存クエリCountLearningResourcesByUserを使う）。
+	CountUserVisibleLearningResources(ctx context.Context, arg CountUserVisibleLearningResourcesParams) (int64, error)
 	CreateAIAdvice(ctx context.Context, arg CreateAIAdviceParams) (AiAdvice, error)
 	CreateAIConversation(ctx context.Context, arg CreateAIConversationParams) (AiConversation, error)
 	CreateAIMessage(ctx context.Context, arg CreateAIMessageParams) (AiMessage, error)
@@ -157,6 +166,7 @@ type Querier interface {
 	CreateGroupMessage(ctx context.Context, arg CreateGroupMessageParams) (GroupMessage, error)
 	CreateLearningGoal(ctx context.Context, arg CreateLearningGoalParams) (LearningGoal, error)
 	CreateLearningLogTemplate(ctx context.Context, arg CreateLearningLogTemplateParams) (LearningLogTemplate, error)
+	CreateLearningResource(ctx context.Context, arg CreateLearningResourceParams) (LearningResource, error)
 	// GORMの clause.OnConflict{DoNothing: true} に相当。衝突時は RETURNING 行が無くなるため
 	// pgx.ErrNoRows を「作成されなかった」判定に使う。
 	CreateMention(ctx context.Context, arg CreateMentionParams) (Mention, error)
@@ -185,7 +195,9 @@ type Querier interface {
 	CreateProject(ctx context.Context, arg CreateProjectParams) (Project, error)
 	CreateProjectMilestone(ctx context.Context, arg CreateProjectMilestoneParams) (ProjectMilestone, error)
 	CreateReaction(ctx context.Context, arg CreateReactionParams) error
+	CreateResourceLike(ctx context.Context, arg CreateResourceLikeParams) error
 	CreateResourceReview(ctx context.Context, arg CreateResourceReviewParams) (ResourceReview, error)
+	CreateResourceSave(ctx context.Context, arg CreateResourceSaveParams) error
 	CreateSnippetComment(ctx context.Context, arg CreateSnippetCommentParams) (SnippetComment, error)
 	CreateSnippetFavorite(ctx context.Context, arg CreateSnippetFavoriteParams) error
 	CreateStreakFreeze(ctx context.Context, arg CreateStreakFreezeParams) (StreakFreeze, error)
@@ -198,6 +210,12 @@ type Querier interface {
 	DecrementPostLikeCount(ctx context.Context, id int64) error
 	// 0未満にはしない（GORMのGREATEST(answer_count - 1, 0)に相当）。
 	DecrementQuestionAnswerCountFloored(ctx context.Context, id int64) error
+	// 0未満にはしない（GORMのGREATEST(like_count - 1, 0)に相当）。deleted_at IS NULLの理由は
+	// IncrementResourceLikeCountと同じ。
+	DecrementResourceLikeCountFloored(ctx context.Context, id int64) error
+	// 0未満にはしない（GORMのGREATEST(save_count - 1, 0)に相当）。deleted_at IS NULLの理由は
+	// IncrementResourceLikeCountと同じ。
+	DecrementResourceSaveCountFloored(ctx context.Context, id int64) error
 	// 0未満にはしない（GORMのGREATEST(comment_count - 1, 0)に相当）。
 	DecrementSnippetCommentCountFloored(ctx context.Context, id int64) error
 	DeleteAIAdvicesByUser(ctx context.Context, userID int64) error
@@ -235,6 +253,8 @@ type Querier interface {
 	DeleteGroupMessagesByRoom(ctx context.Context, chatRoomID int64) error
 	DeleteLearningGoal(ctx context.Context, id int64) error
 	DeleteLearningLogTemplate(ctx context.Context, id int64) error
+	// GORMのDelete（論理削除）に相当。
+	DeleteLearningResource(ctx context.Context, id int64) error
 	DeleteLikesByPost(ctx context.Context, postID int64) error
 	DeleteLikesByUser(ctx context.Context, userID int64) error
 	DeleteLikesByUserPosts(ctx context.Context, userID int64) error
@@ -287,7 +307,9 @@ type Querier interface {
 	DeleteReaction(ctx context.Context, arg DeleteReactionParams) error
 	DeleteReactionsByPost(ctx context.Context, postID int64) error
 	DeleteReactionsByUserPosts(ctx context.Context, userID int64) error
+	DeleteResourceLike(ctx context.Context, arg DeleteResourceLikeParams) error
 	DeleteResourceReview(ctx context.Context, id int64) error
+	DeleteResourceSave(ctx context.Context, arg DeleteResourceSaveParams) error
 	DeleteSnippetCommentByID(ctx context.Context, id int64) error
 	DeleteSnippetCommentsByPostSnippets(ctx context.Context, postID int64) error
 	DeleteSnippetCommentsByUserPostSnippets(ctx context.Context, userID int64) error
@@ -340,6 +362,8 @@ type Querier interface {
 	GetLearningLogTemplateByID(ctx context.Context, id int64) (LearningLogTemplate, error)
 	// learning_resources は GORM の論理削除（deleted_at）付きモデルのため deleted_at IS NULL を明示する。
 	GetLearningResourceByID(ctx context.Context, id int64) (LearningResource, error)
+	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
+	GetLearningResourceWithUserByID(ctx context.Context, id int64) (GetLearningResourceWithUserByIDRow, error)
 	GetLearningWeeklyTrends(ctx context.Context, arg GetLearningWeeklyTrendsParams) ([]GetLearningWeeklyTrendsRow, error)
 	// ユーザーのXP合計に基づくレベルランキング。上位50件を返す。
 	// scoreはSELECTの別名なのでWHERE/HAVINGからは参照できない（PostgreSQLの仕様）ため、
@@ -409,6 +433,12 @@ type Querier interface {
 	IncrementPostLikeCount(ctx context.Context, id int64) error
 	IncrementPostViewCount(ctx context.Context, id int64) error
 	IncrementQuestionAnswerCount(ctx context.Context, id int64) error
+	// deleted_at IS NULLを明示（GORMは論理削除モデルへのUPDATEにも自動でこのスコープを付与するため、
+	// Like/Unlikeがトランザクションで括られていない今の実装では、この条件がないと
+	// 削除確定後に届いた更新が論理削除済みの行を書き換えてしまう）。
+	IncrementResourceLikeCount(ctx context.Context, id int64) error
+	// deleted_at IS NULLを明示する理由はIncrementResourceLikeCountと同じ。
+	IncrementResourceSaveCount(ctx context.Context, id int64) error
 	IncrementSnippetCommentCount(ctx context.Context, id int64) error
 	IncrementSnippetForkCount(ctx context.Context, id int64) error
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
@@ -483,6 +513,10 @@ type Querier interface {
 	// 学習ログの連続記録日数（ストリーク）算出に使う、記録のある日付一覧（新しい順）。
 	ListLearningLogDatesByUser(ctx context.Context, userID int64) ([]pgtype.Date, error)
 	ListLearningLogTemplatesByUser(ctx context.Context, userID int64) ([]LearningLogTemplate, error)
+	ListLearningResourcesByDifficultyWithUser(ctx context.Context, arg ListLearningResourcesByDifficultyWithUserParams) ([]ListLearningResourcesByDifficultyWithUserRow, error)
+	// Userは含めない（移行前からの挙動。一覧系の中でこれだけPreloadしない）。
+	// include_privateがfalseのときだけis_public=trueで絞り込む。
+	ListLearningResourcesByUser(ctx context.Context, arg ListLearningResourcesByUserParams) ([]LearningResource, error)
 	ListMentionsByCommentID(ctx context.Context, commentID *int64) ([]ListMentionsByCommentIDRow, error)
 	// GORMのPreload("User").Preload("Actor")に相当。user_id/actor_idともにNOT NULLのためINNER JOINでよい。
 	ListMentionsByPostID(ctx context.Context, postID *int64) ([]ListMentionsByPostIDRow, error)
@@ -523,6 +557,8 @@ type Querier interface {
 	ListProjectsByUserWithRepo(ctx context.Context, arg ListProjectsByUserWithRepoParams) ([]ListProjectsByUserWithRepoRow, error)
 	ListPublicLearningGoals(ctx context.Context, arg ListPublicLearningGoalsParams) ([]LearningGoal, error)
 	ListPublicLearningGoalsByUser(ctx context.Context, arg ListPublicLearningGoalsByUserParams) ([]LearningGoal, error)
+	// GORMのPreload("User")に相当。categoryとdifficultyは空文字なら絞り込まない。
+	ListPublicLearningResourcesWithUser(ctx context.Context, arg ListPublicLearningResourcesWithUserParams) ([]ListPublicLearningResourcesWithUserRow, error)
 	ListPublicPostCollectionsByUser(ctx context.Context, userID int64) ([]PostCollection, error)
 	// GORMのPreload("User")に相当（CodeSnippetsは別途post_bookmark.sqlのListCodeSnippetsByPostIDsで取得する）。
 	// user_idはNOT NULLのためINNER JOINでよい。
@@ -541,6 +577,7 @@ type Querier interface {
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	ListResourceReviewsByResource(ctx context.Context, arg ListResourceReviewsByResourceParams) ([]ListResourceReviewsByResourceRow, error)
 	ListRootNoteFoldersByUser(ctx context.Context, userID int64) ([]NoteFolder, error)
+	ListSavedLearningResourcesWithUser(ctx context.Context, arg ListSavedLearningResourcesWithUserParams) ([]ListSavedLearningResourcesWithUserRow, error)
 	ListScheduledPostsByUserWithUser(ctx context.Context, userID int64) ([]ListScheduledPostsByUserWithUserRow, error)
 	ListStreakFreezesByUserAndMonth(ctx context.Context, arg ListStreakFreezesByUserAndMonthParams) ([]StreakFreeze, error)
 	// フォロー中ユーザーと自分自身の公開済み投稿（移行前のGo実装のサブクエリをそのまま踏襲）。
@@ -584,6 +621,7 @@ type Querier interface {
 	// CodeSnippet は投稿者の ID しか持たず User の関連を張っていないため、Preload しない
 	// （移行前のGORM実装のコメントの通り、Preloadするとunsupported relationsで失敗する）。
 	SearchCodeSnippets(ctx context.Context, arg SearchCodeSnippetsParams) ([]CodeSnippet, error)
+	SearchLearningResourcesWithUser(ctx context.Context, arg SearchLearningResourcesWithUserParams) ([]SearchLearningResourcesWithUserRow, error)
 	SearchNotes(ctx context.Context, arg SearchNotesParams) ([]SearchNotesRow, error)
 	// GORMのPreload("User")に相当（CodeSnippetsは別クエリで取得しGo側で結合する）。
 	// ソート順はGoの動的Order()呼び出しの代わりに、sort_byごとのCASE式で切り替える
@@ -627,6 +665,9 @@ type Querier interface {
 	UpdateLearningGoal(ctx context.Context, arg UpdateLearningGoalParams) (LearningGoal, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateLearningLogTemplate(ctx context.Context, arg UpdateLearningLogTemplateParams) (LearningLogTemplate, error)
+	// GORMのSave（全カラム上書き）に相当。learning_resourcesは論理削除があるため、
+	// GORMが自動付与するdeleted_at IS NULLスコープをUPDATEにも明示する。
+	UpdateLearningResource(ctx context.Context, arg UpdateLearningResourceParams) (LearningResource, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateNote(ctx context.Context, arg UpdateNoteParams) (Note, error)
 	UpdateNoteFolder(ctx context.Context, arg UpdateNoteFolderParams) (NoteFolder, error)
