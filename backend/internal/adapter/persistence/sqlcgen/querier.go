@@ -59,6 +59,9 @@ type Querier interface {
 	CountUnreadNotificationsByUser(ctx context.Context, userID int64) (int64, error)
 	CountUserActivitiesByUser(ctx context.Context, userID int64) (int64, error)
 	CountUserActivitiesByUserAndType(ctx context.Context, arg CountUserActivitiesByUserAndTypeParams) (int64, error)
+	// 同時に複数リクエストが「不在」と判定してもuser_idの一意制約とDO NOTHINGで
+	// 競合を無害化する。競合で挿入されなかった場合は0行が返る（エラーにはしない）。
+	CreateDefaultReminderSettings(ctx context.Context, arg CreateDefaultReminderSettingsParams) ([]ReminderSetting, error)
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) (PasswordResetToken, error)
 	CreatePostTemplate(ctx context.Context, arg CreatePostTemplateParams) (PostTemplate, error)
 	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
@@ -73,6 +76,7 @@ type Querier interface {
 	// projects は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
 	// deleted_at IS NULL を明示する（Unscoped() されていない全クエリと同じ挙動）。
 	GetProjectStats(ctx context.Context, userID int64) (GetProjectStatsRow, error)
+	GetReminderSettingsByUserID(ctx context.Context, userID int64) (ReminderSetting, error)
 	GetTopReactedPostsByUser(ctx context.Context, arg GetTopReactedPostsByUserParams) ([]GetTopReactedPostsByUserRow, error)
 	GetWeeklyChallengeByUserAndWeek(ctx context.Context, arg GetWeeklyChallengeByUserAndWeekParams) (WeeklyChallenge, error)
 	GetWidgetSettingsByUserID(ctx context.Context, userID int64) (WidgetSetting, error)
@@ -90,6 +94,7 @@ type Querier interface {
 	SumRoadmapCompletedStepCountByUser(ctx context.Context, userID int64) (int64, error)
 	SumRoadmapStepCountByUser(ctx context.Context, userID int64) (int64, error)
 	UpdatePostTemplate(ctx context.Context, arg UpdatePostTemplateParams) (PostTemplate, error)
+	UpdateReminderSettings(ctx context.Context, arg UpdateReminderSettingsParams) (ReminderSetting, error)
 	UpdateWeeklyChallenge(ctx context.Context, arg UpdateWeeklyChallengeParams) (WeeklyChallenge, error)
 	UpsertWidgetSettings(ctx context.Context, arg UpsertWidgetSettingsParams) error
 }

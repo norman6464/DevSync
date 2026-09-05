@@ -1016,7 +1016,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// リマインダー設定はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	reminderSettingsRepo := persistence.NewReminderSettingsRepository(db)
+	reminderSettingsRepo := persistence.NewReminderSettingsRepository(sqlcgen.New(sqlPool))
 	c.ReminderSettingsHandler = handler.NewReminderSettingsHandler(
 		usecase.NewGetReminderSettingsUseCase(reminderSettingsRepo),
 		usecase.NewUpdateReminderSettingsUseCase(reminderSettingsRepo),
