@@ -1,6 +1,6 @@
 // Atlas プロジェクト設定。宣言的スキーマ管理（atlas schema apply）専用。
-// バージョン管理された migrate diff は使わず、db/schema/*.hcl を desired state として
-// 実DBへ直接差分適用する。
+// バージョン管理された migrate diff は使わず、internal/infra/database/schema/*.hcl を
+// desired state として実DBへ直接差分適用する。
 
 variable "db_url" {
   type    = string
@@ -8,7 +8,7 @@ variable "db_url" {
 }
 
 env "local" {
-  src = "file://db/schema"
+  src = "file://internal/infra/database/schema"
   url = var.db_url
 
   // 差分計算のための使い捨てDB。ローカルのDockerでコンテナを都度立ち上げる。

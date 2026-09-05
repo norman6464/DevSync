@@ -65,13 +65,13 @@ jobs:
         run: go run ./cmd/archlint .
         working-directory: ./backend
 
-      - name: db/schema/*.hcl が素のDBへエラーなく適用できるか検証
+      - name: internal/infra/database/schema/*.hcl が素のDBへエラーなく適用できるか検証
         run: atlas schema apply --env local --auto-approve
         working-directory: ./backend
         env:
           ATLAS_DB_URL: postgres://devsync:devsync@localhost:5432/devsync?sslmode=disable
 
-      - name: sqlc生成コードが db/queries と db/schema から再生成しても変わらないか検証
+      - name: sqlc生成コードが queries と schema から再生成しても変わらないか検証
         run: |
           make db-schema-sql
           sqlc generate

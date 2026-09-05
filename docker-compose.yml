@@ -34,14 +34,14 @@ services:
       timeout: 5s
       retries: 5
 
-  # db/schema/*.hcl（Atlas宣言的スキーマ）を db へ適用してから終了する一回限りのジョブ。
+  # internal/infra/database/schema/*.hcl（Atlas宣言的スキーマ）を db へ適用してから終了する一回限りのジョブ。
   # backend はこれの成功を待って起動する。
   db-migrate:
     # CI（ariga/setup-atlas）と同じバージョンに固定し、latestタグによる予期せぬ挙動変化を避ける。
     image: arigaio/atlas:1.3.3
     container_name: devsync-db-migrate
     volumes:
-      - ./backend/db/schema:/db/schema:ro
+      - ./backend/internal/infra/database/schema:/db/schema:ro
     command:
       - schema
       - apply
