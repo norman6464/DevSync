@@ -34,7 +34,7 @@ func TestParseID_Valid(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Equal(t, float64(42), resp["id"])
 }
 
@@ -50,7 +50,7 @@ func TestParseID_Invalid(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Contains(t, resp["error"], "idが不正です")
 }
 
@@ -82,7 +82,7 @@ func TestParsePagination_Defaults(t *testing.T) {
 	r.ServeHTTP(w, c.Request)
 
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Equal(t, float64(1), resp["page"])
 	assert.Equal(t, float64(20), resp["limit"])
 }
@@ -98,7 +98,7 @@ func TestParsePagination_Custom(t *testing.T) {
 	r.ServeHTTP(w, c.Request)
 
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Equal(t, float64(3), resp["page"])
 	assert.Equal(t, float64(50), resp["limit"])
 }
@@ -114,7 +114,7 @@ func TestParsePagination_ClampNegative(t *testing.T) {
 	r.ServeHTTP(w, c.Request)
 
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Equal(t, float64(1), resp["page"])
 	assert.Equal(t, float64(20), resp["limit"])
 }
@@ -130,7 +130,7 @@ func TestParsePagination_ClampMax(t *testing.T) {
 	r.ServeHTTP(w, c.Request)
 
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Equal(t, float64(100), resp["limit"])
 }
 
@@ -157,7 +157,7 @@ func TestBindJSON_Valid(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 	var resp testRequest
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Equal(t, "hello", resp.Name)
 	assert.Equal(t, 42, resp.Value)
 }
@@ -227,7 +227,7 @@ func TestRespondError_MapsDomainErrors(t *testing.T) {
 
 			assert.Equal(t, tt.wantCode, w.Code)
 			var resp map[string]interface{}
-			json.Unmarshal(w.Body.Bytes(), &resp)
+			assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 			assert.Contains(t, resp, "error")
 		})
 	}
@@ -274,7 +274,7 @@ func TestRespondError_DomainError(t *testing.T) {
 
 			assert.Equal(t, tt.wantCode, w.Code)
 			var resp map[string]interface{}
-			json.Unmarshal(w.Body.Bytes(), &resp)
+			assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 			assert.Contains(t, resp, "error")
 			assert.Contains(t, resp, "code")
 			assert.Equal(t, string(tt.wantErrCode), resp["code"])
@@ -294,7 +294,7 @@ func TestRespondError_CustomDomainError(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Equal(t, "カスタムバリデーションエラー", resp["error"])
 	assert.Equal(t, string(domain.ErrCodeValidation), resp["code"])
 }
@@ -311,7 +311,7 @@ func TestRespondError_NonDomainError(t *testing.T) {
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Contains(t, resp, "error")
 }
 
@@ -328,7 +328,7 @@ func TestRespondOK(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Equal(t, "value", resp["key"])
 }
 
@@ -355,7 +355,7 @@ func TestRespondDeleted(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Equal(t, "deleted", resp["message"])
 }
 
@@ -372,7 +372,7 @@ func TestRespondBadRequest(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Equal(t, "invalid input", resp["error"])
 	assert.Equal(t, string(domain.ErrCodeValidation), resp["code"])
 }
@@ -388,7 +388,7 @@ func TestRespondForbidden(t *testing.T) {
 
 	assert.Equal(t, http.StatusForbidden, w.Code)
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Equal(t, "access denied", resp["error"])
 	assert.Equal(t, string(domain.ErrCodeForbidden), resp["code"])
 }
@@ -404,7 +404,7 @@ func TestRespondNotFound(t *testing.T) {
 
 	assert.Equal(t, http.StatusNotFound, w.Code)
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Equal(t, "resource not found", resp["error"])
 	assert.Equal(t, string(domain.ErrCodeNotFound), resp["code"])
 }
@@ -420,7 +420,7 @@ func TestRespondUnauthorized(t *testing.T) {
 
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Equal(t, "authentication required", resp["error"])
 	assert.Equal(t, string(domain.ErrCodeUnauthorized), resp["code"])
 }
@@ -436,7 +436,7 @@ func TestRespondInternalError(t *testing.T) {
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Equal(t, "internal server error", resp["error"])
 	assert.Equal(t, string(domain.ErrCodeInternal), resp["code"])
 }
@@ -455,7 +455,7 @@ func TestRespondPaginated(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Equal(t, float64(25), resp["total"])
 	assert.Equal(t, float64(2), resp["page"])
 	assert.Equal(t, float64(10), resp["limit"])
@@ -475,7 +475,7 @@ func TestRespondPaginated_Empty(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Equal(t, float64(0), resp["total"])
 	// total_pagesはomitemptyのため0の場合はJSONに含まれない
 	assert.Nil(t, resp["total_pages"])
@@ -504,7 +504,7 @@ func TestHandleDelete_Success(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Equal(t, "deleted", resp["message"])
 }
 
@@ -591,7 +591,7 @@ func TestHandleGetByID_Success(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 	var resp testResource
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Equal(t, uint(42), resp.ID)
 	assert.Equal(t, "テストリソース", resp.Name)
 }
@@ -672,7 +672,7 @@ func TestHandleGetByIDPublic_Success(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 	var resp testResource
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Equal(t, uint(10), resp.ID)
 	assert.Equal(t, "公開リソース", resp.Name)
 }
@@ -735,7 +735,7 @@ func TestHandleToggleAction_Success(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Equal(t, "liked", resp["message"])
 }
 

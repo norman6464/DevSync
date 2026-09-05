@@ -284,10 +284,11 @@ func (uc *ChatWithAIUseCase) Execute(ctx context.Context, userID uint, message s
 	}
 
 	// 保存後の状態で返す。取得できない場合は今回のやり取りを手元で足して返す。
+	// 会話の保存自体は既に成功しているため、再取得の失敗だけで全体を失敗にはしない。
 	refreshed, err := uc.conversations.FindConversationByID(ctx, conv.ID)
 	if err != nil || refreshed == nil {
 		conv.Messages = append(conv.Messages, *userMsg, *assistantMsg)
-		return conv, nil
+		return conv, nil //nolint:nilerr // 再取得失敗時は手元の値へ意図的にフォールバックする
 	}
 	return refreshed, nil
 }

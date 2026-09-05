@@ -50,7 +50,7 @@ func TestStudyCircleGetMyCircles_Success(t *testing.T) {
 	assertStatus(t, w, http.StatusOK)
 
 	var resp map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	circles := resp["circles"].([]interface{})
 	assert.Len(t, circles, 2)
 	assert.Equal(t, float64(2), resp["total"])

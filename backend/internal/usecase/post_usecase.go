@@ -53,9 +53,10 @@ func (uc *CreatePostUseCase) Execute(ctx context.Context, post *model.Post) (*mo
 		uc.followers.Notify(ctx, post.UserID, post.ID, model.NotificationTypePost)
 	}
 
+	// 作成自体は既に成功しているため、再取得の失敗だけで全体を失敗にはしない。
 	created, err := uc.posts.FindByID(ctx, post.ID)
 	if err != nil || created == nil {
-		return post, nil
+		return post, nil //nolint:nilerr // 再取得失敗時は手元の値へ意図的にフォールバックする
 	}
 	return created, nil
 }

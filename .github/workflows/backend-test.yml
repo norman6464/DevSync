@@ -87,6 +87,16 @@ jobs:
         run: go vet ./...
         working-directory: ./backend
 
+      # golangci-lint(v2)で複数linterを一括実行する。設定は backend/.golangci.yml。
+      # defaultのerrcheck/govet/ineffassign/staticcheck/unusedに加え、
+      # errorlint・bodyclose・gosec・misspell・unconvert・nilerr・contextcheck・
+      # wastedassignを有効化している。
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.12.2
+          working-directory: backend
+
       # govulncheckはGo公式の脆弱性スキャナ。実際に呼んでいるコードパスに該当する
       # 既知CVEだけを報告する。stdlibのCVEはGoのパッチ追随次第で頻出するため、
       # CIを止めずに「可視化」目的の非ブロッキング（continue-on-error）にする。

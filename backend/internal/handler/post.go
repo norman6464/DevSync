@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -113,7 +114,9 @@ func (h *PostHandler) Create(c *gin.Context) {
 				FileName: s.FileName,
 				Code:     s.Code,
 			}
-			h.uc.CreateSnippet.Execute(c.Request.Context(), snippet)
+			if _, err := h.uc.CreateSnippet.Execute(c.Request.Context(), snippet); err != nil {
+				log.Printf("[ERROR] コードスニペット作成に失敗しました (post_id=%d): %v", created.ID, err)
+			}
 		}
 		// スニペット付きで再取得
 		if updated, err := h.uc.Get.Execute(c.Request.Context(), created.ID); err == nil {

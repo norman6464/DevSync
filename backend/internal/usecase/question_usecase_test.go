@@ -111,13 +111,6 @@ func assertQuestionCode(t *testing.T, err error, want domain.ErrorCode) {
 	assert.Equal(t, want, domainErr.Code)
 }
 
-// assertPlainError は err が DomainError ではない（handler で 500 になる）ことを検証する。
-func assertPlainError(t *testing.T, err error) {
-	t.Helper()
-	require.Error(t, err)
-	assert.Nil(t, domain.GetDomainError(err), "DomainError ではないこと")
-}
-
 func TestCreateQuestionUseCase_Execute(t *testing.T) {
 	t.Run("検証を通れば作成する", func(t *testing.T) {
 		repo := new(mockQuestionRepo)

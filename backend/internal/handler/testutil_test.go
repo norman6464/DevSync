@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -714,11 +713,6 @@ func newRouter(userID uint) *gin.Engine {
 	r := gin.New()
 	r.Use(authMiddleware(userID))
 	return r
-}
-
-// fmtPath はURLパスをフォーマットする。
-func fmtPath(format string, args ...interface{}) string {
-	return fmt.Sprintf(format, args...)
 }
 
 // mockStudyCircleRepo は usecase/repository.StudyCircleRepository のモック（ctx 付き）。

@@ -38,7 +38,7 @@ func (s *smtpEmailSender) Send(ctx context.Context, to, subject, htmlBody string
 
 	var msg bytes.Buffer
 	for k, v := range headers {
-		msg.WriteString(fmt.Sprintf("%s: %s\r\n", k, v))
+		fmt.Fprintf(&msg, "%s: %s\r\n", k, v)
 	}
 	msg.WriteString("\r\n")
 	msg.WriteString(htmlBody)

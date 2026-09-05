@@ -25,7 +25,7 @@ func (uc *GetWidgetSettingsUseCase) Execute(ctx context.Context, userID uint) (*
 	settings, err := uc.settings.FindByUserID(ctx, userID)
 	if err != nil {
 		// レコード未登録の場合はデフォルト設定を返す
-		return &model.WidgetSettings{
+		return &model.WidgetSettings{ //nolint:nilerr // 未登録も含めあらゆるエラーをデフォルト設定へフォールバックする契約（repository側にも明記）
 			UserID:   userID,
 			Settings: defaultWidgetSettings,
 		}, nil

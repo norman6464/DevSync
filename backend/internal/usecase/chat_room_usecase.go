@@ -91,9 +91,10 @@ func (uc *CreateChatRoomUseCase) Execute(ctx context.Context, in CreateChatRoomI
 		}
 	}
 
+	// 作成自体は既に成功しているため、再取得の失敗だけで全体を失敗にはしない。
 	created, err := uc.rooms.FindByID(ctx, room.ID)
 	if err != nil || created == nil {
-		return room, nil
+		return room, nil //nolint:nilerr // 再取得失敗時は手元の値へ意図的にフォールバックする
 	}
 	return created, nil
 }
