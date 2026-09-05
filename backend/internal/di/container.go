@@ -973,7 +973,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	// リソース進捗サービス
 	// リソース進捗はクリーンアーキテクチャ（DIP）へ移行済み。リソース存在確認は最小 port LearningResourceReader を再利用。
 	resourceProgressRepo := persistence.NewResourceProgressRepository(db)
-	resourceProgressResourceReader := persistence.NewLearningResourceReader(db)
+	resourceProgressResourceReader := persistence.NewLearningResourceReader(sqlcgen.New(sqlPool))
 	c.ResourceProgressHandler = handler.NewResourceProgressHandler(
 		usecase.NewUpsertResourceProgressUseCase(resourceProgressRepo, resourceProgressResourceReader),
 		usecase.NewGetResourceProgressUseCase(resourceProgressRepo),
@@ -1000,7 +1000,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 
 	// リソースレビューはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	resourceReviewRepo := persistence.NewResourceReviewRepository(db)
-	learningResourceReader := persistence.NewLearningResourceReader(db)
+	learningResourceReader := persistence.NewLearningResourceReader(sqlcgen.New(sqlPool))
 	c.ResourceReviewHandler = handler.NewResourceReviewHandler(
 		usecase.NewCreateResourceReviewUseCase(resourceReviewRepo, learningResourceReader),
 		usecase.NewListResourceReviewsUseCase(resourceReviewRepo),
