@@ -3,21 +3,22 @@ package persistence
 import (
 	"context"
 
+	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
 	"gorm.io/gorm"
 )
 
 // postCommentRepository は [repository.PostCommentRepository] の GORM 実装。
-// 単体取得は commentReader を埋め込んで再利用する。
+// 単体取得は sqlc(pgx) 実装へ移行済みの commentReader を埋め込んで再利用する。
 type postCommentRepository struct {
 	repository.CommentReader
 	db *gorm.DB
 }
 
 // NewPostCommentRepository は PostCommentRepository の GORM 実装を返す。
-func NewPostCommentRepository(db *gorm.DB) repository.PostCommentRepository {
-	return &postCommentRepository{CommentReader: NewCommentReader(db), db: db}
+func NewPostCommentRepository(db *gorm.DB, q *sqlcgen.Queries) repository.PostCommentRepository {
+	return &postCommentRepository{CommentReader: NewCommentReader(q), db: db}
 }
 
 var _ repository.PostCommentRepository = (*postCommentRepository)(nil)
