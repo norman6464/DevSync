@@ -6,62 +6,109 @@ import (
 	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
-	"gorm.io/gorm"
 )
 
-// postCommentRepository は [repository.PostCommentRepository] の GORM 実装。
-// 単体取得は sqlc(pgx) 実装へ移行済みの commentReader を埋め込んで再利用する。
+// postCommentRepository は [repository.PostCommentRepository] の sqlc(pgx) 実装。
+// 単体取得は sqlc(pgx) 実装の commentReader を埋め込んで再利用する。
 type postCommentRepository struct {
 	repository.CommentReader
-	db *gorm.DB
+	q *sqlcgen.Queries
 }
 
-// NewPostCommentRepository は PostCommentRepository の GORM 実装を返す。
-func NewPostCommentRepository(db *gorm.DB, q *sqlcgen.Queries) repository.PostCommentRepository {
-	return &postCommentRepository{CommentReader: NewCommentReader(q), db: db}
+// NewPostCommentRepository は PostCommentRepository の sqlc(pgx) 実装を返す。
+func NewPostCommentRepository(q *sqlcgen.Queries) repository.PostCommentRepository {
+	return &postCommentRepository{CommentReader: NewCommentReader(q), q: q}
 }
 
 var _ repository.PostCommentRepository = (*postCommentRepository)(nil)
 
 // Create はコメントを作成し、投稿の comment_count を加算する。
 func (r *postCommentRepository) Create(ctx context.Context, comment *model.Comment) error {
-	if err := r.db.WithContext(ctx).Create(comment).Error; err != nil {
+	row, err := r.q.CreatePostComment(ctx, sqlcgen.CreatePostCommentParams{
+		UserID:   int64(comment.UserID),
+		PostID:   int64(comment.PostID),
+		ParentID: toInt64PtrFromUintPtr(comment.ParentID),
+		Content:  comment.Content,
+	})
+	if err != nil {
 		return err
 	}
-	return r.db.WithContext(ctx).Model(&model.Post{}).Where("id = ?", comment.PostID).
-		UpdateColumn("comment_count", gorm.Expr("comment_count + 1")).Error
+	*comment = toModelComment(row)
+	return r.q.IncrementPostCommentCount(ctx, int64(comment.PostID))
 }
 
 // Update はコメントを更新する。
 func (r *postCommentRepository) Update(ctx context.Context, comment *model.Comment) error {
-	return r.db.WithContext(ctx).Save(comment).Error
+	isHidden := comment.IsHidden
+	row, err := r.q.UpdatePostComment(ctx, sqlcgen.UpdatePostCommentParams{
+		ID:       int64(comment.ID),
+		Content:  comment.Content,
+		IsHidden: &isHidden,
+	})
+	if err != nil {
+		return err
+	}
+	*comment = toModelComment(row)
+	return nil
 }
 
 // Delete はコメントを削除し、投稿の comment_count をデクリメントする。
 // 所有権チェックは usecase 層で実施済みであること。
 func (r *postCommentRepository) Delete(ctx context.Context, id uint) error {
-	var comment model.Comment
-	if err := r.db.WithContext(ctx).First(&comment, id).Error; err != nil {
+	row, err := r.q.GetCommentByID(ctx, int64(id))
+	if err != nil {
 		return err
 	}
-	r.db.WithContext(ctx).Model(&model.Post{}).Where("id = ?", comment.PostID).
-		UpdateColumn("comment_count", gorm.Expr("GREATEST(comment_count - 1, 0)"))
-	return r.db.WithContext(ctx).Delete(&comment).Error
+	comment := toModelComment(row)
+	// 移行前の GORM 実装と同じく、カウンタ減算自体のエラーは呼び出し元へ返さない。
+	_ = r.q.DecrementPostCommentCount(ctx, int64(comment.PostID))
+	return r.q.DeletePostComment(ctx, int64(id))
 }
 
 // ListByPostID は指定投稿のトップレベルコメントをユーザー情報・返信付きで取得する（古い順）。
 func (r *postCommentRepository) ListByPostID(ctx context.Context, postID uint) ([]model.Comment, error) {
-	var comments []model.Comment
-	err := r.db.WithContext(ctx).Preload("User").Preload("Replies").Preload("Replies.User").
-		Where("post_id = ? AND parent_id IS NULL", postID).
-		Order("created_at ASC").Find(&comments).Error
-	return comments, err
+	rows, err := r.q.ListTopLevelCommentsByPost(ctx, int64(postID))
+	if err != nil {
+		return nil, err
+	}
+	comments := make([]model.Comment, len(rows))
+	parentIDs := make([]int64, len(rows))
+	for i, row := range rows {
+		comments[i] = toModelComment(row.Comment)
+		comments[i].User = toModelUser(row.User)
+		parentIDs[i] = row.Comment.ID
+	}
+
+	if len(parentIDs) > 0 {
+		replyRows, err := r.q.ListCommentRepliesByParentIDs(ctx, parentIDs)
+		if err != nil {
+			return nil, err
+		}
+		repliesByParentID := make(map[uint][]model.Comment)
+		for _, row := range replyRows {
+			reply := toModelComment(row.Comment)
+			reply.User = toModelUser(row.User)
+			parentID := *reply.ParentID
+			repliesByParentID[parentID] = append(repliesByParentID[parentID], reply)
+		}
+		for i := range comments {
+			comments[i].Replies = repliesByParentID[comments[i].ID]
+		}
+	}
+
+	return comments, nil
 }
 
 // ListReplies は指定コメントへの返信をユーザー情報付きで取得する（古い順）。
 func (r *postCommentRepository) ListReplies(ctx context.Context, parentID uint) ([]model.Comment, error) {
-	var replies []model.Comment
-	err := r.db.WithContext(ctx).Preload("User").
-		Where("parent_id = ?", parentID).Order("created_at ASC").Find(&replies).Error
-	return replies, err
+	rows, err := r.q.ListCommentRepliesByParentIDs(ctx, []int64{int64(parentID)})
+	if err != nil {
+		return nil, err
+	}
+	replies := make([]model.Comment, len(rows))
+	for i, row := range rows {
+		replies[i] = toModelComment(row.Comment)
+		replies[i].User = toModelUser(row.User)
+	}
+	return replies, nil
 }
