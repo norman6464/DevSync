@@ -11,7 +11,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/norman6464/devsync/backend/internal/adapter/persistence"
 	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
-	"github.com/norman6464/devsync/backend/internal/config"
+	"github.com/norman6464/devsync/backend/internal/infra/config"
 	"github.com/norman6464/devsync/backend/internal/infra/ws"
 	"github.com/norman6464/devsync/backend/internal/router"
 )
