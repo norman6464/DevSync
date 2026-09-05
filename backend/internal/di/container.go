@@ -155,7 +155,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	// 学習分析はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	analyticsPort := persistence.NewLearningAnalyticsRepository(db)
 	// バッジはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	badgePort := persistence.NewBadgeRepository(db)
+	badgePort := persistence.NewBadgeRepository(sqlcgen.New(sqlPool))
 	// レコメンドはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	recommendationRepo := persistence.NewRecommendationRepository(db)
 
