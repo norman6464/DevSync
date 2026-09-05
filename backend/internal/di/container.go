@@ -241,7 +241,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	createNote := usecase.NewCreateNoteUseCase(notePort)
 	// 学習ログはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	// 旧 learningLogRepo は learning_dashboard と AI アドバイスがまだ使うため残している。
-	learningLogPort := persistence.NewLearningLogRepository(db)
+	learningLogPort := persistence.NewLearningLogRepository(sqlPool)
 	createLearningLog := usecase.NewCreateLearningLogUseCase(learningLogPort, learningGoalPort)
 
 	// テンプレートロードマップの初期登録
