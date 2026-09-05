@@ -17,12 +17,14 @@ type Querier interface {
 	// note_stats.sql の CountNotesByUser はアーカイブ済みも含めた全件数のため名前を分けている。
 	CountActiveNotesByUser(ctx context.Context, userID int64) (int64, error)
 	CountAllBookReviews(ctx context.Context) (int64, error)
+	CountAllProjects(ctx context.Context) (int64, error)
 	CountAnswersByUser(ctx context.Context, userID int64) (int64, error)
 	// qa_stats.sql の CountAnswersByUser は deleted_at IS NULL で絞るが、
 	// こちらは既存の GORM Raw SQL 実装（db.Raw、GORMのsoft-deleteスコープ非適用）と
 	// 挙動を変えないため、論理削除された回答も含めてカウントする。
 	CountAnswersByUserIncludingDeleted(ctx context.Context, userID int64) (int64, error)
 	CountArchivedNotesByUser(ctx context.Context, userID int64) (int64, error)
+	CountArchivedProjectsByUser(ctx context.Context, userID int64) (int64, error)
 	CountBestAnswersByUser(ctx context.Context, userID int64) (int64, error)
 	CountBookReviewsByUser(ctx context.Context, userID int64) (int64, error)
 	CountBookmarkByUserAndPost(ctx context.Context, arg CountBookmarkByUserAndPostParams) (int64, error)
@@ -90,6 +92,8 @@ type Querier interface {
 	// タグはAND条件（全タグが付与されている投稿のみ）。空配列なら絞り込みなし
 	// （cardinality(タグ配列)=0のときCOUNT(...)側も0になり両辺が一致するため自然に通る）。
 	CountPostsWithFilter(ctx context.Context, arg CountPostsWithFilterParams) (int64, error)
+	// 件数は FindByUserID の総数取得と CountByUserID(単体メソッド) の両方から利用する。
+	CountProjectsByUser(ctx context.Context, userID int64) (int64, error)
 	CountPublishedPostsByUser(ctx context.Context, userID int64) (int64, error)
 	// questions/answers は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに
 	// 合わせて deleted_at IS NULL を明示する（Unscoped() されていない全クエリと同じ挙動）。
@@ -103,6 +107,7 @@ type Querier interface {
 	CountRoadmapsByUserAndStatus(ctx context.Context, arg CountRoadmapsByUserAndStatusParams) (int64, error)
 	CountSearchBookReviews(ctx context.Context, title string) (int64, error)
 	CountSearchNotes(ctx context.Context, arg CountSearchNotesParams) (int64, error)
+	CountSearchProjects(ctx context.Context, title string) (int64, error)
 	CountStreakFreezesInMonth(ctx context.Context, arg CountStreakFreezesInMonthParams) (int64, error)
 	CountStreakFreezesOnDate(ctx context.Context, arg CountStreakFreezesOnDateParams) (int64, error)
 	CountStudyCircleCheckinsByCircle(ctx context.Context, circleID int64) (int64, error)
@@ -158,6 +163,7 @@ type Querier interface {
 	// GORMの clause.OnConflict{DoNothing: true} に相当。実際に挿入できた行数を返し、
 	// 呼び出し側で「既に閲覧済みだったか」を判定する。
 	CreatePostView(ctx context.Context, arg CreatePostViewParams) (int64, error)
+	CreateProject(ctx context.Context, arg CreateProjectParams) (Project, error)
 	CreateProjectMilestone(ctx context.Context, arg CreateProjectMilestoneParams) (ProjectMilestone, error)
 	CreateReaction(ctx context.Context, arg CreateReactionParams) error
 	CreateResourceReview(ctx context.Context, arg CreateResourceReviewParams) (ResourceReview, error)
@@ -205,6 +211,8 @@ type Querier interface {
 	DeletePostSeriesItemsBySeriesID(ctx context.Context, seriesID int64) error
 	DeletePostTagsByPostID(ctx context.Context, postID int64) error
 	DeletePostTemplate(ctx context.Context, id int64) error
+	// GORMのDelete（論理削除）に相当。
+	DeleteProject(ctx context.Context, id int64) error
 	DeleteProjectMilestone(ctx context.Context, id int64) error
 	DeleteQiitaArticlesByUser(ctx context.Context, userID int64) error
 	DeleteReaction(ctx context.Context, arg DeleteReactionParams) error
@@ -314,7 +322,12 @@ type Querier interface {
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	ListAllBookReviewsWithUser(ctx context.Context, arg ListAllBookReviewsWithUserParams) ([]ListAllBookReviewsWithUserRow, error)
 	ListAllGitHubContributionsByUser(ctx context.Context, userID int64) ([]GitHubContribution, error)
+	// GORMのPreload("User").Preload("GithubRepo")に相当（移行前のFindAllと同じ挙動）。
+	// user_idはNOT NULLのためINNER JOINでよい。
+	ListAllProjectsWithUserAndRepo(ctx context.Context, arg ListAllProjectsWithUserAndRepoParams) ([]ListAllProjectsWithUserAndRepoRow, error)
 	ListArchivedNotesByUser(ctx context.Context, arg ListArchivedNotesByUserParams) ([]ListArchivedNotesByUserRow, error)
+	// GithubRepoのみPreloadする（Userは含めない。移行前のFindArchivedByUserIDと同じ挙動）。
+	ListArchivedProjectsByUserWithRepo(ctx context.Context, arg ListArchivedProjectsByUserWithRepoParams) ([]ListArchivedProjectsByUserWithRepoRow, error)
 	// ランキング対象となるプログラミング言語の一覧をアルファベット順で返す。
 	ListAvailableLanguages(ctx context.Context) ([]string, error)
 	ListBookReviewsByRating(ctx context.Context, arg ListBookReviewsByRatingParams) ([]BookReview, error)
@@ -342,6 +355,8 @@ type Querier interface {
 	// 会話相手ごとの最新メッセージと未読件数を取得する（移行前のGORM Raw SQLをそのまま踏襲）。
 	ListConversationSummaries(ctx context.Context, receiverID int64) ([]ListConversationSummariesRow, error)
 	ListFavoriteNotesByUser(ctx context.Context, arg ListFavoriteNotesByUserParams) ([]ListFavoriteNotesByUserRow, error)
+	// GithubRepoのみPreloadする（移行前のFindFeaturedByUserIDと同じ挙動）。
+	ListFeaturedProjectsByUserWithRepo(ctx context.Context, userID int64) ([]ListFeaturedProjectsByUserWithRepoRow, error)
 	// 指定ユーザーがフォローしているユーザーのIDを返す。
 	ListFolloweeIDs(ctx context.Context, followerID int64) ([]int64, error)
 	// 件数は follow_stats.sql の CountFollowersByUser を再利用する。
@@ -391,6 +406,10 @@ type Querier interface {
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	ListPostsByIDs(ctx context.Context, dollar_1 []int64) ([]ListPostsByIDsRow, error)
 	ListProjectMilestonesByProject(ctx context.Context, projectID int64) ([]ProjectMilestone, error)
+	// GithubRepoのみPreloadする（Userは含めない。移行前のFindByUserIDと同じ挙動）。
+	// github_repo_idはNULL許容のためLEFT JOIN。git_hub_repositoriesはsqlc.embedを使わず
+	// 個別カラム選択にすることでJOINコンテキストのNULL許容性を正しく推論させる。
+	ListProjectsByUserWithRepo(ctx context.Context, arg ListProjectsByUserWithRepoParams) ([]ListProjectsByUserWithRepoRow, error)
 	ListPublicPostCollectionsByUser(ctx context.Context, userID int64) ([]PostCollection, error)
 	ListQiitaArticlesByUser(ctx context.Context, userID int64) ([]QiitaArticle, error)
 	ListReactionCountsByPost(ctx context.Context, postID int64) ([]ListReactionCountsByPostRow, error)
@@ -435,6 +454,9 @@ type Querier interface {
 	// ソート順はGoの動的Order()呼び出しの代わりに、sort_byごとのCASE式で切り替える
 	// （sort_byはクエリ全体で単一の値のため、行ごとにNULLになったり値になったりはしない）。
 	SearchPostsWithFilter(ctx context.Context, arg SearchPostsWithFilterParams) ([]SearchPostsWithFilterRow, error)
+	// GORMのPreload("User").Preload("GithubRepo")に相当（移行前のSearchと同じ挙動）。
+	SearchProjectsWithUserAndRepo(ctx context.Context, arg SearchProjectsWithUserAndRepoParams) ([]SearchProjectsWithUserAndRepoRow, error)
+	SetProjectArchived(ctx context.Context, arg SetProjectArchivedParams) error
 	SumAnswerVotesByUser(ctx context.Context, userID int64) (int64, error)
 	SumCodeSnippetCommentCountByUser(ctx context.Context, userID int64) (int64, error)
 	SumGitHubContributionsByUser(ctx context.Context, userID int64) (int64, error)
@@ -472,6 +494,9 @@ type Querier interface {
 	// GORMのSave（全カラム上書き）に相当。
 	UpdatePostSeries(ctx context.Context, arg UpdatePostSeriesParams) (PostSeries, error)
 	UpdatePostTemplate(ctx context.Context, arg UpdatePostTemplateParams) (PostTemplate, error)
+	// GORMのSave（全カラム上書き）に相当。projectsは論理削除があるため、GORMが自動付与する
+	// deleted_at IS NULLスコープをUPDATEにも明示する。
+	UpdateProject(ctx context.Context, arg UpdateProjectParams) (Project, error)
 	UpdateProjectMilestone(ctx context.Context, arg UpdateProjectMilestoneParams) (ProjectMilestone, error)
 	UpdateReminderSettings(ctx context.Context, arg UpdateReminderSettingsParams) (ReminderSetting, error)
 	// GORMのSave（全カラム上書き）に相当。
