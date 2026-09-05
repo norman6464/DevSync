@@ -18,7 +18,6 @@ import (
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 	usecaserepo "github.com/norman6464/devsync/backend/internal/usecase/repository"
-	"gorm.io/gorm"
 )
 
 // Container はDI（依存性注入）コンテナ。
@@ -111,8 +110,7 @@ type Container struct {
 
 // NewContainer はDIコンテナを構築する。
 // リポジトリ→サービス→ハンドラの順で依存関係を解決する。
-// sqlPool は sqlc(pgx) へ移行済みのリポジトリ用の接続。GORMからの移行が完了するまで db と併存する。
-func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Container {
+func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Container {
 	c := &Container{Hub: hub}
 
 	// follow はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
@@ -245,7 +243,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	createLearningLog := usecase.NewCreateLearningLogUseCase(learningLogPort, learningGoalPort)
 
 	// テンプレートロードマップの初期登録
-	go seedTemplateRoadmaps(db, usecase.NewSeedRoadmapTemplatesUseCase(roadmapPort))
+	go seedTemplateRoadmaps(authUserPort, usecase.NewSeedRoadmapTemplatesUseCase(roadmapPort))
 
 	// AI 機能はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、
 	// 実装は adapter/persistence（永続化）と adapter/external（OpenAI）。
@@ -1080,24 +1078,28 @@ func trimSpace(s string) string {
 }
 
 // seedTemplateRoadmaps はシステムユーザーを取得/作成し、テンプレートロードマップを登録する。
-func seedTemplateRoadmaps(db *gorm.DB, seed *usecase.SeedRoadmapTemplatesUseCase) {
+func seedTemplateRoadmaps(authUserPort usecaserepo.AuthUserRepository, seed *usecase.SeedRoadmapTemplatesUseCase) {
 	const systemEmail = "system@devsync.local"
-	var user model.User
-	err := db.Where("email = ?", systemEmail).First(&user).Error
+	ctx := context.Background()
+	user, err := authUserPort.FindByEmail(ctx, systemEmail)
 	if err != nil {
-		user = model.User{
+		log.Printf("テンプレートシード用システムユーザー取得失敗: %v", err)
+		return
+	}
+	if user == nil {
+		user = &model.User{
 			Name:           "DevSync System",
 			Email:          systemEmail,
 			Username:       "__system__",
 			GitHubID:       -1,
 			GitHubUsername: "__system__",
 		}
-		if err := db.Create(&user).Error; err != nil {
+		if err := authUserPort.Create(ctx, user); err != nil {
 			log.Printf("テンプレートシード用システムユーザー作成失敗: %v", err)
 			return
 		}
 	}
-	if err := seed.Execute(context.Background(), user.ID); err != nil {
+	if err := seed.Execute(ctx, user.ID); err != nil {
 		log.Printf("テンプレートシード失敗: %v", err)
 	}
 }

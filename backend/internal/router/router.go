@@ -15,14 +15,12 @@ import (
 	"github.com/norman6464/devsync/backend/internal/handler"
 	"github.com/norman6464/devsync/backend/internal/infra/ws"
 	"github.com/norman6464/devsync/backend/internal/middleware"
-	"gorm.io/gorm"
 )
 
 // Setup はGinルーターを構築し、全エンドポイントを登録して返す。
 // DIコンテナを利用して依存関係を解決し、ルーティングのみに集中する。
-// sqlPool は sqlc(pgx) へ移行済みのリポジトリ用の接続。GORMからの移行が完了するまで db と併存する。
-func Setup(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *gin.Engine {
-	return SetupWithContainer(di.NewContainer(db, sqlPool, cfg, hub), cfg)
+func Setup(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *gin.Engine {
+	return SetupWithContainer(di.NewContainer(sqlPool, cfg, hub), cfg)
 }
 
 // SetupWithContainer は構築済みのDIコンテナからルーターを組み立てる。

@@ -2,8 +2,6 @@ package model
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 // Project はユーザーのプロジェクトショーケース情報を表す。
@@ -25,7 +23,6 @@ type Project struct {
 	IsArchived   bool              `json:"is_archived" gorm:"default:false"`       // アーカイブフラグ
 	GithubRepoID *uint             `json:"github_repo_id"`                         // GitHubRepository との紐付けID
 	GithubRepo   *GitHubRepository `json:"github_repo,omitempty" gorm:"foreignKey:GithubRepoID"`
-	CreatedAt    time.Time         `json:"created_at"`
-	UpdatedAt    time.Time         `json:"updated_at"`
-	DeletedAt    gorm.DeletedAt    `json:"-" gorm:"index"` // 論理削除用
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }
