@@ -258,7 +258,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 		log.Println("OpenAI APIキー未設定。ルールベース推薦のみ有効です。")
 	}
 	aiAdvicePort := persistence.NewAIAdviceRepository(sqlPool)
-	aiConversationPort := persistence.NewAIConversationRepository(db)
+	aiConversationPort := persistence.NewAIConversationRepository(sqlPool)
 	generateAIAdvice := usecase.NewGenerateAIAdviceUseCase(
 		learningLogPort, learningGoalPort, roadmapPort,
 		githubPort, learningResourcePort, userPort,
