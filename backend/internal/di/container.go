@@ -963,7 +963,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// カテゴリ別週間学習目標はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	weeklyGoalRepo := persistence.NewWeeklyGoalRepository(db)
+	weeklyGoalRepo := persistence.NewWeeklyGoalRepository(sqlcgen.New(sqlPool))
 	c.WeeklyGoalHandler = handler.NewWeeklyGoalHandler(
 		usecase.NewSetWeeklyGoalUseCase(weeklyGoalRepo),
 		usecase.NewListWeeklyGoalsUseCase(weeklyGoalRepo),

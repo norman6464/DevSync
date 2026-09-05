@@ -4,43 +4,65 @@ import (
 	"context"
 	"time"
 
+	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
-// weeklyGoalRepository は [repository.WeeklyGoalRepository] の GORM 実装。
+// weeklyGoalRepository は [repository.WeeklyGoalRepository] の sqlc(pgx) 実装。
 type weeklyGoalRepository struct {
-	db *gorm.DB
+	q *sqlcgen.Queries
 }
 
-// NewWeeklyGoalRepository は WeeklyGoalRepository の GORM 実装を返す。
-func NewWeeklyGoalRepository(db *gorm.DB) repository.WeeklyGoalRepository {
-	return &weeklyGoalRepository{db: db}
+// NewWeeklyGoalRepository は WeeklyGoalRepository の sqlc(pgx) 実装を返す。
+func NewWeeklyGoalRepository(q *sqlcgen.Queries) repository.WeeklyGoalRepository {
+	return &weeklyGoalRepository{q: q}
 }
 
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
 var _ repository.WeeklyGoalRepository = (*weeklyGoalRepository)(nil)
 
+// toModelWeeklyGoal は sqlc の生成行を model.WeeklyGoal へ変換する。
+func toModelWeeklyGoal(row sqlcgen.WeeklyGoal) model.WeeklyGoal {
+	return model.WeeklyGoal{
+		ID:            uint(row.ID),
+		UserID:        uint(row.UserID),
+		Category:      model.LogCategory(row.Category),
+		TargetMinutes: int(row.TargetMinutes),
+		CreatedAt:     row.CreatedAt.Time,
+		UpdatedAt:     row.UpdatedAt.Time,
+	}
+}
+
 // Upsert は WeeklyGoal を作成または更新する（user_id + category でユニーク）。
 func (r *weeklyGoalRepository) Upsert(ctx context.Context, goal *model.WeeklyGoal) error {
-	return r.db.WithContext(ctx).Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "user_id"}, {Name: "category"}},
-		DoUpdates: clause.AssignmentColumns([]string{"target_minutes", "updated_at"}),
-	}).Create(goal).Error
+	row, err := r.q.UpsertWeeklyGoal(ctx, sqlcgen.UpsertWeeklyGoalParams{
+		UserID:        int64(goal.UserID),
+		Category:      string(goal.Category),
+		TargetMinutes: int64(goal.TargetMinutes),
+	})
+	if err != nil {
+		return err
+	}
+	*goal = toModelWeeklyGoal(row)
+	return nil
 }
 
 // GetByUserID は指定ユーザーの全カテゴリ週間目標を取得する。
 func (r *weeklyGoalRepository) GetByUserID(ctx context.Context, userID uint) ([]model.WeeklyGoal, error) {
-	var goals []model.WeeklyGoal
-	err := r.db.WithContext(ctx).Where("user_id = ?", userID).Order("category ASC").Find(&goals).Error
-	return goals, err
+	rows, err := r.q.ListWeeklyGoalsByUser(ctx, int64(userID))
+	if err != nil {
+		return nil, err
+	}
+	goals := make([]model.WeeklyGoal, len(rows))
+	for i, row := range rows {
+		goals[i] = toModelWeeklyGoal(row)
+	}
+	return goals, nil
 }
 
 // SumDurationByUserCategoryThisWeek は指定ユーザー・カテゴリの今週の学習時間合計（分）を返す。
 func (r *weeklyGoalRepository) SumDurationByUserCategoryThisWeek(ctx context.Context, userID uint, category string) (int, error) {
-	var total int
 	now := time.Now()
 	weekday := int(now.Weekday())
 	if weekday == 0 {
@@ -48,9 +70,13 @@ func (r *weeklyGoalRepository) SumDurationByUserCategoryThisWeek(ctx context.Con
 	}
 	startOfWeek := now.AddDate(0, 0, -(weekday - 1)).Truncate(24 * time.Hour)
 
-	err := r.db.WithContext(ctx).Model(&model.LearningLog{}).
-		Where("user_id = ? AND category = ? AND created_at >= ?", userID, category, startOfWeek).
-		Select("COALESCE(SUM(duration), 0)").
-		Scan(&total).Error
-	return total, err
+	total, err := r.q.SumLearningLogDurationByUserCategorySince(ctx, sqlcgen.SumLearningLogDurationByUserCategorySinceParams{
+		UserID:    int64(userID),
+		Category:  &category,
+		CreatedAt: toTimestamptzNotNull(startOfWeek),
+	})
+	if err != nil {
+		return 0, err
+	}
+	return int(total), nil
 }
