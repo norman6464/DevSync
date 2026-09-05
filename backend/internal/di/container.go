@@ -174,7 +174,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	noteLinkRepo := persistence.NewNoteLinkRepository(sqlcgen.New(sqlPool))
 	noteReader := persistence.NewNoteReader(sqlcgen.New(sqlPool))
 	// 投稿シリーズはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	postSeriesRepo := persistence.NewPostSeriesRepository(db)
+	postSeriesRepo := persistence.NewPostSeriesRepository(sqlcgen.New(sqlPool))
 
 	// 通知は保存したうえで受信者へ WebSocket 配信する。
 	// 配信の有無で作成側の呼び出しは変わらないよう、port をラップして注入する。
