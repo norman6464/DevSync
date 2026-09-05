@@ -9,7 +9,10 @@ import (
 )
 
 type Querier interface {
+	ArchiveNote(ctx context.Context, id int64) error
 	ClearNoteTemplateDefaultFlag(ctx context.Context, userID int64) error
+	// note_stats.sql の CountNotesByUser はアーカイブ済みも含めた全件数のため名前を分けている。
+	CountActiveNotesByUser(ctx context.Context, userID int64) (int64, error)
 	CountAnswersByUser(ctx context.Context, userID int64) (int64, error)
 	CountArchivedNotesByUser(ctx context.Context, userID int64) (int64, error)
 	CountBestAnswersByUser(ctx context.Context, userID int64) (int64, error)
@@ -58,6 +61,7 @@ type Querier interface {
 	CountRepliesByUser(ctx context.Context, userID int64) (int64, error)
 	CountRoadmapsByUser(ctx context.Context, userID int64) (int64, error)
 	CountRoadmapsByUserAndStatus(ctx context.Context, arg CountRoadmapsByUserAndStatusParams) (int64, error)
+	CountSearchNotes(ctx context.Context, arg CountSearchNotesParams) (int64, error)
 	CountStreakFreezesInMonth(ctx context.Context, arg CountStreakFreezesInMonthParams) (int64, error)
 	CountStreakFreezesOnDate(ctx context.Context, arg CountStreakFreezesOnDateParams) (int64, error)
 	CountStudyCircleCheckinsByCircle(ctx context.Context, circleID int64) (int64, error)
@@ -73,6 +77,7 @@ type Querier interface {
 	// 同時に複数リクエストが「不在」と判定してもuser_idの一意制約とDO NOTHINGで
 	// 競合を無害化する。競合で挿入されなかった場合は0行が返る（エラーにはしない）。
 	CreateDefaultReminderSettings(ctx context.Context, arg CreateDefaultReminderSettingsParams) ([]ReminderSetting, error)
+	CreateNote(ctx context.Context, arg CreateNoteParams) (Note, error)
 	CreateNoteFolder(ctx context.Context, arg CreateNoteFolderParams) (NoteFolder, error)
 	CreateNoteLink(ctx context.Context, arg CreateNoteLinkParams) error
 	CreateNoteTemplate(ctx context.Context, arg CreateNoteTemplateParams) (NoteTemplate, error)
@@ -85,6 +90,7 @@ type Querier interface {
 	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
 	DecrementCommentLikeCount(ctx context.Context, id int64) error
 	DeleteCommentLike(ctx context.Context, arg DeleteCommentLikeParams) error
+	DeleteNote(ctx context.Context, id int64) error
 	DeleteNoteFolder(ctx context.Context, id int64) error
 	DeleteNoteLink(ctx context.Context, arg DeleteNoteLinkParams) error
 	DeleteNoteTemplate(ctx context.Context, id int64) error
@@ -97,6 +103,12 @@ type Querier interface {
 	GetDefaultNoteTemplateByUser(ctx context.Context, userID int64) (NoteTemplate, error)
 	GetEmojiBreakdownByUser(ctx context.Context, userID int64) ([]GetEmojiBreakdownByUserRow, error)
 	GetLatestNoteVersionNumber(ctx context.Context, noteID int64) (int64, error)
+	// GORMのPreload("User").Preload("Folder")に相当。
+	// folder_idはNULL許容のためLEFT JOIN。note_foldersはsqlc.embedを使わず個別カラム選択にすることで、
+	// sqlcのJOIN文脈依存のnull推論（LEFT JOIN側は全カラムがnullableになる）を効かせる。
+	// sqlc.embedは対象テーブル自身のスキーマ上のnull許容性をそのまま使うため、LEFT JOINで欠落しうる
+	// 行に対しては非NULL型（例: NoteFolder.ID int64）のままとなりスキャン時にエラーとなる。
+	GetNoteByID(ctx context.Context, id int64) (GetNoteByIDRow, error)
 	GetNoteFolderByID(ctx context.Context, id int64) (NoteFolder, error)
 	GetNoteTemplateByID(ctx context.Context, id int64) (NoteTemplate, error)
 	GetNoteVersionByID(ctx context.Context, id int64) (NoteVersion, error)
@@ -114,6 +126,8 @@ type Querier interface {
 	HasStreakFreezeOnDate(ctx context.Context, arg HasStreakFreezeOnDateParams) (bool, error)
 	IncrementCommentLikeCount(ctx context.Context, id int64) error
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
+	ListArchivedNotesByUser(ctx context.Context, arg ListArchivedNotesByUserParams) ([]ListArchivedNotesByUserRow, error)
+	ListFavoriteNotesByUser(ctx context.Context, arg ListFavoriteNotesByUserParams) ([]ListFavoriteNotesByUserRow, error)
 	ListNoteFoldersByParent(ctx context.Context, parentID *int64) ([]NoteFolder, error)
 	ListNoteFoldersByUser(ctx context.Context, arg ListNoteFoldersByUserParams) ([]NoteFolder, error)
 	// GORMのPreload("TargetNote")に相当。リンク先ノートをsqlc.embedで一緒に取得する。
@@ -122,6 +136,9 @@ type Querier interface {
 	ListNoteLinksByTarget(ctx context.Context, targetNoteID int64) ([]ListNoteLinksByTargetRow, error)
 	ListNoteTemplatesByUser(ctx context.Context, userID int64) ([]NoteTemplate, error)
 	ListNoteVersionsByNote(ctx context.Context, arg ListNoteVersionsByNoteParams) ([]NoteVersion, error)
+	ListNotesByFolder(ctx context.Context, arg ListNotesByFolderParams) ([]Note, error)
+	// GORMのPreload("Folder")に相当。folder_idはNULL許容のためLEFT JOIN（理由は GetNoteByID と同じ）。
+	ListNotesByUser(ctx context.Context, arg ListNotesByUserParams) ([]ListNotesByUserRow, error)
 	ListPostTemplatesByUserID(ctx context.Context, arg ListPostTemplatesByUserIDParams) ([]PostTemplate, error)
 	ListProjectMilestonesByProject(ctx context.Context, projectID int64) ([]ProjectMilestone, error)
 	ListRootNoteFoldersByUser(ctx context.Context, userID int64) ([]NoteFolder, error)
@@ -132,6 +149,7 @@ type Querier interface {
 	// 同一ユーザーの CreateWithinLimits 同時実行を直列化するための行ロック（GORMの clause.Locking{Strength: "UPDATE"} に相当）。
 	LockUserForStreakFreeze(ctx context.Context, id int64) error
 	MarkPasswordResetTokenAsUsed(ctx context.Context, id int64) error
+	SearchNotes(ctx context.Context, arg SearchNotesParams) ([]SearchNotesRow, error)
 	SumAnswerVotesByUser(ctx context.Context, userID int64) (int64, error)
 	SumCodeSnippetCommentCountByUser(ctx context.Context, userID int64) (int64, error)
 	SumLearningLogDurationByUser(ctx context.Context, userID int64) (int64, error)
@@ -141,6 +159,10 @@ type Querier interface {
 	SumQuestionVotesByUser(ctx context.Context, userID int64) (int64, error)
 	SumRoadmapCompletedStepCountByUser(ctx context.Context, userID int64) (int64, error)
 	SumRoadmapStepCountByUser(ctx context.Context, userID int64) (int64, error)
+	ToggleNoteFavorite(ctx context.Context, id int64) error
+	UnarchiveNote(ctx context.Context, id int64) error
+	// GORMのSave（全カラム上書き）に相当。
+	UpdateNote(ctx context.Context, arg UpdateNoteParams) (Note, error)
 	UpdateNoteFolder(ctx context.Context, arg UpdateNoteFolderParams) (NoteFolder, error)
 	UpdateNoteTemplate(ctx context.Context, arg UpdateNoteTemplateParams) (NoteTemplate, error)
 	UpdateNotificationSettings(ctx context.Context, arg UpdateNotificationSettingsParams) (NotificationSetting, error)

@@ -163,7 +163,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	studyCirclePort := persistence.NewStudyCircleRepository(db)
 	searchStudyCircles := usecase.NewSearchStudyCirclesUseCase(studyCirclePort)
 	// ノートはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	notePort := persistence.NewNoteRepository(db)
+	notePort := persistence.NewNoteRepository(sqlcgen.New(sqlPool))
 	// ノートフォルダはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	noteFolderRepo := persistence.NewNoteFolderRepository(sqlcgen.New(sqlPool))
 	// ノートテンプレートはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
@@ -172,7 +172,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	learningLogTemplateRepo := persistence.NewLearningLogTemplateRepository(db)
 	// ノート間リンクはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	noteLinkRepo := persistence.NewNoteLinkRepository(sqlcgen.New(sqlPool))
-	noteReader := persistence.NewNoteReader(db)
+	noteReader := persistence.NewNoteReader(sqlcgen.New(sqlPool))
 	// 投稿シリーズはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	postSeriesRepo := persistence.NewPostSeriesRepository(db)
 
@@ -663,7 +663,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 	// ノートのバージョン履歴はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	noteVersionRepo := persistence.NewNoteVersionRepository(sqlcgen.New(sqlPool))
-	noteUpdater := persistence.NewNoteUpdater(db)
+	noteUpdater := persistence.NewNoteUpdater(sqlcgen.New(sqlPool))
 	c.NoteVersionHandler = handler.NewNoteVersionHandler(
 		usecase.NewListNoteVersionsUseCase(noteVersionRepo, noteReader),
 		usecase.NewGetNoteVersionUseCase(noteVersionRepo, noteReader),
