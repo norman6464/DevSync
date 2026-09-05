@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/config"
+	"github.com/norman6464/devsync/backend/internal/infra/config"
 	"github.com/norman6464/devsync/backend/internal/di"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

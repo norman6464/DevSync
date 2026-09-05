@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/smtp"
 
-	"github.com/norman6464/devsync/backend/internal/config"
+	"github.com/norman6464/devsync/backend/internal/infra/config"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
 )
 
