@@ -4,20 +4,23 @@ import (
 	"context"
 	"time"
 
+	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
-	"gorm.io/gorm"
 )
 
-// activityReportRepository は [repository.ActivityReportRepository] の GORM 実装。
+// topLanguagesLimit はトップ言語一覧の最大件数。
+const topLanguagesLimit = 5
+
+// activityReportRepository は [repository.ActivityReportRepository] の sqlc(pgx) 実装。
 // GitHub コントリビューション、投稿、コメント、学習目標など複数テーブルからデータを集約する。
 type activityReportRepository struct {
-	db *gorm.DB
+	q *sqlcgen.Queries
 }
 
-// NewActivityReportRepository は ActivityReportRepository の GORM 実装を返す。
-func NewActivityReportRepository(db *gorm.DB) repository.ActivityReportRepository {
-	return &activityReportRepository{db: db}
+// NewActivityReportRepository は ActivityReportRepository の sqlc(pgx) 実装を返す。
+func NewActivityReportRepository(q *sqlcgen.Queries) repository.ActivityReportRepository {
+	return &activityReportRepository{q: q}
 }
 
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
@@ -46,7 +49,6 @@ func (r *activityReportRepository) GetMonthlyReport(ctx context.Context, userID 
 // generateReport は指定期間のアクティビティレポートを各テーブルから集約して生成する。
 // コントリビューション、投稿、コメント、いいね、学習目標、フォロワー、メッセージを集計する。
 func (r *activityReportRepository) generateReport(ctx context.Context, userID uint, period model.ReportPeriod, startDate, endDate time.Time) (*model.ActivityReport, error) {
-	db := r.db.WithContext(ctx)
 	report := &model.ActivityReport{
 		Period:    period,
 		StartDate: startDate,
@@ -54,88 +56,113 @@ func (r *activityReportRepository) generateReport(ctx context.Context, userID ui
 		UserID:    userID,
 	}
 
+	start := toTimestamptzNotNull(startDate)
+	end := toTimestamptzNotNull(endDate)
+
 	// 期間内のGitHubコントリビューション合計を取得
-	var totalContributions int64
-	db.Model(&model.GitHubContribution{}).
-		Where("user_id = ? AND date >= ? AND date < ?", userID, startDate, endDate).
-		Select("COALESCE(SUM(count), 0)").
-		Scan(&totalContributions)
+	totalContributions, err := r.q.SumContributionsInRange(ctx, sqlcgen.SumContributionsInRangeParams{
+		UserID: int64(userID), Date: start, Date_2: end,
+	})
+	if err != nil {
+		return nil, err
+	}
 	report.TotalContributions = int(totalContributions)
 
 	// 期間内の投稿数を取得
-	var postsCreated int64
-	db.Model(&model.Post{}).
-		Where("user_id = ? AND created_at >= ? AND created_at < ?", userID, startDate, endDate).
-		Count(&postsCreated)
+	postsCreated, err := r.q.CountPostsInRange(ctx, sqlcgen.CountPostsInRangeParams{
+		UserID: int64(userID), CreatedAt: start, CreatedAt_2: end,
+	})
+	if err != nil {
+		return nil, err
+	}
 	report.PostsCreated = int(postsCreated)
 
 	// 期間内のコメント数を取得
-	var commentsCreated int64
-	db.Model(&model.Comment{}).
-		Where("user_id = ? AND created_at >= ? AND created_at < ?", userID, startDate, endDate).
-		Count(&commentsCreated)
+	commentsCreated, err := r.q.CountCommentsInRange(ctx, sqlcgen.CountCommentsInRangeParams{
+		UserID: int64(userID), CreatedAt: start, CreatedAt_2: end,
+	})
+	if err != nil {
+		return nil, err
+	}
 	report.CommentsCreated = int(commentsCreated)
 
 	// 期間内にユーザーの投稿が受け取ったいいね数を取得
-	var likesReceived int64
-	db.Model(&model.Like{}).
-		Joins("JOIN posts ON likes.post_id = posts.id").
-		Where("posts.user_id = ? AND likes.created_at >= ? AND likes.created_at < ?", userID, startDate, endDate).
-		Count(&likesReceived)
+	likesReceived, err := r.q.CountLikesReceivedInRange(ctx, sqlcgen.CountLikesReceivedInRangeParams{
+		UserID: int64(userID), CreatedAt: start, CreatedAt_2: end,
+	})
+	if err != nil {
+		return nil, err
+	}
 	report.LikesReceived = int(likesReceived)
 
 	// 期間内に完了した学習目標数を取得
-	var goalsCompleted int64
-	db.Model(&model.LearningGoal{}).
-		Where("user_id = ? AND status = ? AND completed_at >= ? AND completed_at < ?", userID, model.GoalStatusCompleted, startDate, endDate).
-		Count(&goalsCompleted)
+	goalsCompleted, err := r.q.CountCompletedGoalsInRange(ctx, sqlcgen.CountCompletedGoalsInRangeParams{
+		UserID: int64(userID), CompletedAt: start, CompletedAt_2: end,
+	})
+	if err != nil {
+		return nil, err
+	}
 	report.GoalsCompleted = int(goalsCompleted)
 
 	// アクティブな学習目標の平均進捗率を取得
-	var avgProgress float64
-	db.Model(&model.LearningGoal{}).
-		Where("user_id = ? AND status = ?", userID, model.GoalStatusActive).
-		Select("COALESCE(AVG(progress), 0)").
-		Scan(&avgProgress)
+	avgProgress, err := r.q.GetAverageActiveProgressByUser(ctx, int64(userID))
+	if err != nil {
+		return nil, err
+	}
 	report.GoalsProgress = int(avgProgress)
 
 	// 期間内の新規フォロワー数を取得
-	var newFollowers int64
-	db.Model(&model.Follow{}).
-		Where("followee_id = ? AND created_at >= ? AND created_at < ?", userID, startDate, endDate).
-		Count(&newFollowers)
+	newFollowers, err := r.q.CountNewFollowersInRange(ctx, sqlcgen.CountNewFollowersInRangeParams{
+		FolloweeID: int64(userID), CreatedAt: start, CreatedAt_2: end,
+	})
+	if err != nil {
+		return nil, err
+	}
 	report.NewFollowers = int(newFollowers)
 
 	// 期間内の送受信メッセージ数を合算して取得
-	var messagesSent int64
-	var messagesReceived int64
-	db.Model(&model.Message{}).
-		Where("sender_id = ? AND created_at >= ? AND created_at < ?", userID, startDate, endDate).
-		Count(&messagesSent)
-	db.Model(&model.Message{}).
-		Where("receiver_id = ? AND created_at >= ? AND created_at < ?", userID, startDate, endDate).
-		Count(&messagesReceived)
+	messagesSent, err := r.q.CountMessagesSentInRange(ctx, sqlcgen.CountMessagesSentInRangeParams{
+		SenderID: int64(userID), CreatedAt: start, CreatedAt_2: end,
+	})
+	if err != nil {
+		return nil, err
+	}
+	messagesReceived, err := r.q.CountMessagesReceivedInRange(ctx, sqlcgen.CountMessagesReceivedInRangeParams{
+		ReceiverID: int64(userID), CreatedAt: start, CreatedAt_2: end,
+	})
+	if err != nil {
+		return nil, err
+	}
 	report.MessagesExchanged = int(messagesSent + messagesReceived)
 
 	// 日別のアクティビティデータを生成
-	report.DailyContributions = r.getDailyActivity(ctx, userID, startDate, endDate)
+	dailyContributions, err := r.getDailyActivity(ctx, userID, startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+	report.DailyContributions = dailyContributions
 
 	// 使用言語トップ5を取得
-	report.TopLanguages = r.getTopLanguages(ctx, userID)
+	topLanguages, err := r.getTopLanguages(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	report.TopLanguages = topLanguages
 
 	return report, nil
 }
 
 // getDailyActivity は指定期間の日別アクティビティ（コントリビューション・投稿・コメント）を取得する。
 // 期間内の全日付に対してデータを生成し、データがない日は0として返す。
-func (r *activityReportRepository) getDailyActivity(ctx context.Context, userID uint, startDate, endDate time.Time) []model.DailyActivity {
-	db := r.db.WithContext(ctx)
+func (r *activityReportRepository) getDailyActivity(ctx context.Context, userID uint, startDate, endDate time.Time) ([]model.DailyActivity, error) {
 	var activities []model.DailyActivity
 
 	// 期間内の全日付をループして各日のデータを収集
 	for d := startDate; d.Before(endDate); d = d.AddDate(0, 0, 1) {
 		dateStr := d.Format("2006-01-02")
 		nextDay := d.AddDate(0, 0, 1)
+		dStart := toTimestamptzNotNull(d)
+		dEnd := toTimestamptzNotNull(nextDay)
 
 		activity := model.DailyActivity{
 			Date: dateStr,
@@ -145,46 +172,57 @@ func (r *activityReportRepository) getDailyActivity(ctx context.Context, userID 
 		// date は timestamptz なので、文字列の日付と等値比較すると DB セッションの
 		// タイムゾーンで 0 時に解釈され、書き込み側のローカル 0 時とずれて一致しない。
 		// 投稿・コメントと同じく、その日の 0 時以上・翌日 0 時未満の範囲で数える。
-		var contributions int64
-		db.Model(&model.GitHubContribution{}).
-			Where("user_id = ? AND date >= ? AND date < ?", userID, d, nextDay).
-			Select("COALESCE(SUM(count), 0)").
-			Scan(&contributions)
+		contributions, err := r.q.SumContributionsInRange(ctx, sqlcgen.SumContributionsInRangeParams{
+			UserID: int64(userID), Date: dStart, Date_2: dEnd,
+		})
+		if err != nil {
+			return nil, err
+		}
 		activity.Contributions = int(contributions)
 
 		// 当日の投稿数を取得
-		var posts int64
-		db.Model(&model.Post{}).
-			Where("user_id = ? AND created_at >= ? AND created_at < ?", userID, d, nextDay).
-			Count(&posts)
+		posts, err := r.q.CountPostsInRange(ctx, sqlcgen.CountPostsInRangeParams{
+			UserID: int64(userID), CreatedAt: dStart, CreatedAt_2: dEnd,
+		})
+		if err != nil {
+			return nil, err
+		}
 		activity.Posts = int(posts)
 
 		// 当日のコメント数を取得
-		var comments int64
-		db.Model(&model.Comment{}).
-			Where("user_id = ? AND created_at >= ? AND created_at < ?", userID, d, nextDay).
-			Count(&comments)
+		comments, err := r.q.CountCommentsInRange(ctx, sqlcgen.CountCommentsInRangeParams{
+			UserID: int64(userID), CreatedAt: dStart, CreatedAt_2: dEnd,
+		})
+		if err != nil {
+			return nil, err
+		}
 		activity.Comments = int(comments)
 
 		activities = append(activities, activity)
 	}
 
-	return activities
+	return activities, nil
 }
 
 // getTopLanguages はユーザーのGitHub言語統計から上位5言語を取得する。
 // バイト数の降順でソートされる。
-func (r *activityReportRepository) getTopLanguages(ctx context.Context, userID uint) []model.LanguageActivity {
-	var languages []model.LanguageActivity
-
-	r.db.WithContext(ctx).Model(&model.GitHubLanguageStat{}).
-		Where("user_id = ?", userID).
-		Select("language, bytes, repo_count as repos").
-		Order("bytes DESC").
-		Limit(5).
-		Scan(&languages)
-
-	return languages
+func (r *activityReportRepository) getTopLanguages(ctx context.Context, userID uint) ([]model.LanguageActivity, error) {
+	rows, err := r.q.ListGitHubLanguageStatsByUser(ctx, int64(userID))
+	if err != nil {
+		return nil, err
+	}
+	if len(rows) > topLanguagesLimit {
+		rows = rows[:topLanguagesLimit]
+	}
+	languages := make([]model.LanguageActivity, len(rows))
+	for i, row := range rows {
+		languages[i] = model.LanguageActivity{
+			Language: row.Language,
+			Bytes:    row.Bytes,
+			Repos:    int(row.RepoCount),
+		}
+	}
+	return languages, nil
 }
 
 // GetComparison は現在の期間と前の期間を比較し、各指標の差分とトレンドを算出する。
