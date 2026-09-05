@@ -66,6 +66,7 @@ type Querier interface {
 	CountNotesByUser(ctx context.Context, userID int64) (int64, error)
 	CountNotesByUserSince(ctx context.Context, arg CountNotesByUserSinceParams) (int64, error)
 	CountNotificationsByUser(ctx context.Context, userID int64) (int64, error)
+	CountNotificationsByUserID(ctx context.Context, arg CountNotificationsByUserIDParams) (int64, error)
 	CountNotificationsByUserSince(ctx context.Context, arg CountNotificationsByUserSinceParams) (int64, error)
 	CountPostCollectionItemsByCollectionAndPost(ctx context.Context, arg CountPostCollectionItemsByCollectionAndPostParams) (int64, error)
 	CountPostCollectionsByUser(ctx context.Context, userID int64) (int64, error)
@@ -105,6 +106,7 @@ type Querier interface {
 	CountTodayAIMessagesByUser(ctx context.Context, arg CountTodayAIMessagesByUserParams) (int64, error)
 	CountTopLevelCommentsByUser(ctx context.Context, userID int64) (int64, error)
 	CountUniqueReactorsByUser(ctx context.Context, userID int64) (int64, error)
+	CountUnreadNotifications(ctx context.Context, userID int64) (int64, error)
 	CountUnreadNotificationsByUser(ctx context.Context, userID int64) (int64, error)
 	CountUserActivitiesByUser(ctx context.Context, userID int64) (int64, error)
 	CountUserActivitiesByUserAndType(ctx context.Context, arg CountUserActivitiesByUserAndTypeParams) (int64, error)
@@ -132,6 +134,7 @@ type Querier interface {
 	CreateNoteLink(ctx context.Context, arg CreateNoteLinkParams) error
 	CreateNoteTemplate(ctx context.Context, arg CreateNoteTemplateParams) (NoteTemplate, error)
 	CreateNoteVersion(ctx context.Context, arg CreateNoteVersionParams) (NoteVersion, error)
+	CreateNotification(ctx context.Context, arg CreateNotificationParams) (Notification, error)
 	CreateNotificationSettings(ctx context.Context, arg CreateNotificationSettingsParams) (NotificationSetting, error)
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) (PasswordResetToken, error)
 	CreatePostCollection(ctx context.Context, arg CreatePostCollectionParams) (PostCollection, error)
@@ -175,6 +178,7 @@ type Querier interface {
 	DeleteNoteFolder(ctx context.Context, id int64) error
 	DeleteNoteLink(ctx context.Context, arg DeleteNoteLinkParams) error
 	DeleteNoteTemplate(ctx context.Context, id int64) error
+	DeleteNotification(ctx context.Context, arg DeleteNotificationParams) error
 	DeletePostCollection(ctx context.Context, id int64) error
 	DeletePostCollectionItem(ctx context.Context, arg DeletePostCollectionItemParams) error
 	DeletePostCollectionItemsByCollectionID(ctx context.Context, collectionID int64) error
@@ -192,6 +196,14 @@ type Querier interface {
 	DeleteResourceReview(ctx context.Context, id int64) error
 	DeleteSpotifyRecentTracksByUser(ctx context.Context, userID int64) error
 	DeleteZennArticlesByUser(ctx context.Context, userID int64) error
+	// 指定ユーザーをフォローしているユーザーのIDを返す。
+	FindFollowerIDsByFollowee(ctx context.Context, followeeID int64) ([]int64, error)
+	// GORMのPreload("Actor").Preload("Post").Preload("Question")に相当。
+	// actor_idはNOT NULLのためINNER JOINでよいが、post_id/question_idはNULL許容のためLEFT JOIN。
+	// LEFT JOIN側のpost/questionはsqlc.embedを使わず個別カラム選択にすることで、
+	// テーブル自体のスキーマではなくJOINコンテキストからNULL許容性を正しく推論させる。
+	// questionsは論理削除があるため、削除済みはJOIN条件で除外する（GORM Preloadの自動スコープ相当）。
+	FindNotificationsByUserID(ctx context.Context, arg FindNotificationsByUserIDParams) ([]FindNotificationsByUserIDRow, error)
 	GetAIConversationByID(ctx context.Context, id int64) (AiConversation, error)
 	GetAIConversationByIDAndUser(ctx context.Context, arg GetAIConversationByIDAndUserParams) (AiConversation, error)
 	// book_reviews は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
@@ -372,7 +384,9 @@ type Querier interface {
 	// 同一ユーザーの CreateWithinLimits 同時実行を直列化するための行ロック（GORMの clause.Locking{Strength: "UPDATE"} に相当）。
 	LockUserForStreakFreeze(ctx context.Context, id int64) error
 	MarkAIAdviceAsRead(ctx context.Context, arg MarkAIAdviceAsReadParams) (int64, error)
+	MarkAllNotificationsAsRead(ctx context.Context, userID int64) error
 	MarkMessagesAsRead(ctx context.Context, arg MarkMessagesAsReadParams) error
+	MarkNotificationAsRead(ctx context.Context, arg MarkNotificationAsReadParams) error
 	MarkPasswordResetTokenAsUsed(ctx context.Context, id int64) error
 	SearchNotes(ctx context.Context, arg SearchNotesParams) ([]SearchNotesRow, error)
 	// GORMのPreload("User")に相当（CodeSnippetsは別クエリで取得しGo側で結合する）。
