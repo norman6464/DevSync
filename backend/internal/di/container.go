@@ -312,7 +312,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	postPort := persistence.NewPostRepository(db)
 	postReactionPort := persistence.NewPostReactionRepository(db)
 	postAuthorPort := persistence.NewPostAuthorReader(db)
-	postCommentPort := persistence.NewPostCommentRepository(db)
+	postCommentPort := persistence.NewPostCommentRepository(db, sqlcgen.New(sqlPool))
 	postBookmarkPort := persistence.NewPostBookmarkRepository(db)
 	postLikePort := persistence.NewPostLikeRepository(db)
 	notifyFollowers := usecase.NewNotifyFollowersUseCase(followerNotifier)
@@ -756,7 +756,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 
 	// comment_like はクリーンアーキテクチャ(DIP)へ移行済み。
 	commentLikeRepo := persistence.NewCommentLikeRepository(sqlPool)
-	commentReader := persistence.NewCommentReader(db)
+	commentReader := persistence.NewCommentReader(sqlcgen.New(sqlPool))
 	c.CommentLikeHandler = handler.NewCommentLikeHandler(
 		usecase.NewLikeCommentUseCase(commentLikeRepo, commentReader),
 		usecase.NewUnlikeCommentUseCase(commentLikeRepo, commentReader),
