@@ -3,20 +3,23 @@ package persistence
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
-// postViewRepository は [repository.PostViewRepository] の GORM 実装。
+// postViewRepository は [repository.PostViewRepository] の sqlc(pgx) 実装。
+// RecordViewIfAbsent は記録とカウンタ更新を1トランザクションで行うため、
+// Queries だけでなくトランザクションを開始できる *pgxpool.Pool を直接保持する。
 type postViewRepository struct {
-	db *gorm.DB
+	pool *pgxpool.Pool
+	q    *sqlcgen.Queries
 }
 
-// NewPostViewRepository は PostViewRepository の GORM 実装を返す。
-func NewPostViewRepository(db *gorm.DB) repository.PostViewRepository {
-	return &postViewRepository{db: db}
+// NewPostViewRepository は PostViewRepository の sqlc(pgx) 実装を返す。
+func NewPostViewRepository(pool *pgxpool.Pool) repository.PostViewRepository {
+	return &postViewRepository{pool: pool, q: sqlcgen.New(pool)}
 }
 
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
@@ -26,36 +29,44 @@ var _ repository.PostViewRepository = (*postViewRepository)(nil)
 // 未閲覧のときだけ閲覧を記録し、実際に挿入できた場合のみ view_count を加算する。
 // 記録と加算を単一トランザクションで行い、並行リクエストによる二重記録・二重加算・重複エラーを防ぐ。
 func (r *postViewRepository) RecordViewIfAbsent(ctx context.Context, view *model.PostView) (bool, error) {
-	var inserted bool
-	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		res := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(view)
-		if res.Error != nil {
-			return res.Error
-		}
-		if res.RowsAffected == 0 {
-			// 既に閲覧済み（競合）→ 何もしない。
-			return nil
-		}
-		inserted = true
-		return tx.Model(&model.Post{}).Where("id = ?", view.PostID).
-			UpdateColumn("view_count", gorm.Expr("view_count + 1")).Error
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return false, err
+	}
+	defer tx.Rollback(ctx)
+
+	q := r.q.WithTx(tx)
+	rowsAffected, err := q.CreatePostView(ctx, sqlcgen.CreatePostViewParams{
+		UserID: int64(view.UserID),
+		PostID: int64(view.PostID),
 	})
-	return inserted, err
+	if err != nil {
+		return false, err
+	}
+	if rowsAffected == 0 {
+		// 既に閲覧済み（競合）→ 何もしない。
+		return false, tx.Commit(ctx)
+	}
+	if err := q.IncrementPostViewCount(ctx, int64(view.PostID)); err != nil {
+		return false, err
+	}
+	return true, tx.Commit(ctx)
 }
 
+// GetViewCount は投稿の閲覧数を返す。
 func (r *postViewRepository) GetViewCount(ctx context.Context, postID uint) (int64, error) {
-	var count int64
-	err := r.db.WithContext(ctx).Model(&model.PostView{}).Where("post_id = ?", postID).Count(&count).Error
-	return count, err
+	return r.q.CountPostViewsByPost(ctx, int64(postID))
 }
 
+// GetMostViewed は閲覧数上位の投稿を返す。
 func (r *postViewRepository) GetMostViewed(ctx context.Context, limit int) ([]model.ViewCount, error) {
-	var results []model.ViewCount
-	err := r.db.WithContext(ctx).Model(&model.PostView{}).
-		Select("post_id, COUNT(*) as count").
-		Group("post_id").
-		Order("count DESC").
-		Limit(limit).
-		Find(&results).Error
-	return results, err
+	rows, err := r.q.ListMostViewedPosts(ctx, int32Param(limit))
+	if err != nil {
+		return nil, err
+	}
+	results := make([]model.ViewCount, len(rows))
+	for i, row := range rows {
+		results[i] = model.ViewCount{PostID: uint(row.PostID), Count: int(row.ViewCount)}
+	}
+	return results, nil
 }
