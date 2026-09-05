@@ -972,7 +972,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 
 	// リソース進捗サービス
 	// リソース進捗はクリーンアーキテクチャ（DIP）へ移行済み。リソース存在確認は最小 port LearningResourceReader を再利用。
-	resourceProgressRepo := persistence.NewResourceProgressRepository(db)
+	resourceProgressRepo := persistence.NewResourceProgressRepository(sqlcgen.New(sqlPool))
 	resourceProgressResourceReader := persistence.NewLearningResourceReader(sqlcgen.New(sqlPool))
 	c.ResourceProgressHandler = handler.NewResourceProgressHandler(
 		usecase.NewUpsertResourceProgressUseCase(resourceProgressRepo, resourceProgressResourceReader),
