@@ -148,6 +148,7 @@ type Querier interface {
 	DeletePostTagsByPostID(ctx context.Context, postID int64) error
 	DeletePostTemplate(ctx context.Context, id int64) error
 	DeleteProjectMilestone(ctx context.Context, id int64) error
+	DeleteQiitaArticlesByUser(ctx context.Context, userID int64) error
 	DeleteReaction(ctx context.Context, arg DeleteReactionParams) error
 	DeleteSpotifyRecentTracksByUser(ctx context.Context, userID int64) error
 	// book_reviews は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
@@ -187,6 +188,7 @@ type Querier interface {
 	// （sqlc.embedは対象テーブル自身のスキーマ上のnull許容性をそのまま使ってしまい、
 	// LEFT JOINで欠落しうる行を表現できないため）。
 	GetProjectWithUserAndRepoByID(ctx context.Context, id int64) (GetProjectWithUserAndRepoByIDRow, error)
+	GetQiitaStatsByUser(ctx context.Context, userID int64) (GetQiitaStatsByUserRow, error)
 	GetReminderSettingsByUserID(ctx context.Context, userID int64) (ReminderSetting, error)
 	GetResourceProgressByUserAndResource(ctx context.Context, arg GetResourceProgressByUserAndResourceParams) (ResourceProgress, error)
 	GetTopReactedPostsByUser(ctx context.Context, arg GetTopReactedPostsByUserParams) ([]GetTopReactedPostsByUserRow, error)
@@ -255,6 +257,7 @@ type Querier interface {
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	ListPostsByIDs(ctx context.Context, dollar_1 []int64) ([]ListPostsByIDsRow, error)
 	ListProjectMilestonesByProject(ctx context.Context, projectID int64) ([]ProjectMilestone, error)
+	ListQiitaArticlesByUser(ctx context.Context, userID int64) ([]QiitaArticle, error)
 	ListReactionCountsByPost(ctx context.Context, postID int64) ([]ListReactionCountsByPostRow, error)
 	ListReactionCountsByPosts(ctx context.Context, dollar_1 []int64) ([]ListReactionCountsByPostsRow, error)
 	// GORMのPreload("Resource")に相当。resourceは論理削除（deleted_at）付きモデルのため、
@@ -310,6 +313,7 @@ type Querier interface {
 	UpdateProjectMilestone(ctx context.Context, arg UpdateProjectMilestoneParams) (ProjectMilestone, error)
 	UpdateReminderSettings(ctx context.Context, arg UpdateReminderSettingsParams) (ReminderSetting, error)
 	UpdateWeeklyChallenge(ctx context.Context, arg UpdateWeeklyChallengeParams) (WeeklyChallenge, error)
+	UpsertQiitaArticle(ctx context.Context, arg UpsertQiitaArticleParams) (QiitaArticle, error)
 	UpsertResourceProgress(ctx context.Context, arg UpsertResourceProgressParams) (ResourceProgress, error)
 	UpsertWeeklyGoal(ctx context.Context, arg UpsertWeeklyGoalParams) (WeeklyGoal, error)
 	UpsertWidgetSettings(ctx context.Context, arg UpsertWidgetSettingsParams) error
