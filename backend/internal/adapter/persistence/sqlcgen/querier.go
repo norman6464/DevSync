@@ -65,6 +65,8 @@ type Querier interface {
 	CountNotesByUserSince(ctx context.Context, arg CountNotesByUserSinceParams) (int64, error)
 	CountNotificationsByUser(ctx context.Context, userID int64) (int64, error)
 	CountNotificationsByUserSince(ctx context.Context, arg CountNotificationsByUserSinceParams) (int64, error)
+	CountPostCollectionItemsByCollectionAndPost(ctx context.Context, arg CountPostCollectionItemsByCollectionAndPostParams) (int64, error)
+	CountPostCollectionsByUser(ctx context.Context, userID int64) (int64, error)
 	CountPostLikeByUserAndPost(ctx context.Context, arg CountPostLikeByUserAndPostParams) (int64, error)
 	CountPostPinsByUser(ctx context.Context, userID int64) (int64, error)
 	CountPostPinsByUserAndPost(ctx context.Context, arg CountPostPinsByUserAndPostParams) (int64, error)
@@ -126,6 +128,8 @@ type Querier interface {
 	CreateNoteVersion(ctx context.Context, arg CreateNoteVersionParams) (NoteVersion, error)
 	CreateNotificationSettings(ctx context.Context, arg CreateNotificationSettingsParams) (NotificationSetting, error)
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) (PasswordResetToken, error)
+	CreatePostCollection(ctx context.Context, arg CreatePostCollectionParams) (PostCollection, error)
+	CreatePostCollectionItem(ctx context.Context, arg CreatePostCollectionItemParams) (PostCollectionItem, error)
 	CreatePostComment(ctx context.Context, arg CreatePostCommentParams) (Comment, error)
 	CreatePostLike(ctx context.Context, arg CreatePostLikeParams) error
 	CreatePostPin(ctx context.Context, arg CreatePostPinParams) error
@@ -162,6 +166,9 @@ type Querier interface {
 	DeleteNoteFolder(ctx context.Context, id int64) error
 	DeleteNoteLink(ctx context.Context, arg DeleteNoteLinkParams) error
 	DeleteNoteTemplate(ctx context.Context, id int64) error
+	DeletePostCollection(ctx context.Context, id int64) error
+	DeletePostCollectionItem(ctx context.Context, arg DeletePostCollectionItemParams) error
+	DeletePostCollectionItemsByCollectionID(ctx context.Context, collectionID int64) error
 	DeletePostComment(ctx context.Context, id int64) error
 	DeletePostLike(ctx context.Context, arg DeletePostLikeParams) (int64, error)
 	DeletePostPin(ctx context.Context, arg DeletePostPinParams) error
@@ -202,6 +209,8 @@ type Querier interface {
 	GetNotificationSettingsByUserID(ctx context.Context, userID int64) (NotificationSetting, error)
 	GetPasswordResetTokenByToken(ctx context.Context, token string) (PasswordResetToken, error)
 	GetPostAuthorID(ctx context.Context, id int64) (int64, error)
+	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
+	GetPostCollectionWithUserByID(ctx context.Context, id int64) (GetPostCollectionWithUserByIDRow, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	GetPostSeriesWithUserByID(ctx context.Context, id int64) (GetPostSeriesWithUserByIDRow, error)
 	GetPostTemplateByID(ctx context.Context, id int64) (PostTemplate, error)
@@ -295,6 +304,9 @@ type Querier interface {
 	// GORMのPreload("Folder")に相当。folder_idはNULL許容のためLEFT JOIN（理由は GetNoteByID と同じ）。
 	ListNotesByUser(ctx context.Context, arg ListNotesByUserParams) ([]ListNotesByUserRow, error)
 	ListPopularTags(ctx context.Context, limit int32) ([]ListPopularTagsRow, error)
+	// GORMのPreload("Post").Preload("Post.User")に相当。post_idはNOT NULLのためINNER JOINでよい。
+	ListPostCollectionItemsWithPostByCollectionID(ctx context.Context, collectionID int64) ([]ListPostCollectionItemsWithPostByCollectionIDRow, error)
+	ListPostCollectionsByUser(ctx context.Context, arg ListPostCollectionsByUserParams) ([]PostCollection, error)
 	// ページングはpost_tags.id順で決め、実データ（Post本体）は別クエリでcreated_at順に取得する
 	// （移行前のGORM実装と同じ2段構え）。
 	ListPostIDsByTag(ctx context.Context, arg ListPostIDsByTagParams) ([]int64, error)
@@ -308,6 +320,7 @@ type Querier interface {
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	ListPostsByIDs(ctx context.Context, dollar_1 []int64) ([]ListPostsByIDsRow, error)
 	ListProjectMilestonesByProject(ctx context.Context, projectID int64) ([]ProjectMilestone, error)
+	ListPublicPostCollectionsByUser(ctx context.Context, userID int64) ([]PostCollection, error)
 	ListQiitaArticlesByUser(ctx context.Context, userID int64) ([]QiitaArticle, error)
 	ListReactionCountsByPost(ctx context.Context, postID int64) ([]ListReactionCountsByPostRow, error)
 	ListReactionCountsByPosts(ctx context.Context, dollar_1 []int64) ([]ListReactionCountsByPostsRow, error)
@@ -363,6 +376,8 @@ type Querier interface {
 	UpdateNoteFolder(ctx context.Context, arg UpdateNoteFolderParams) (NoteFolder, error)
 	UpdateNoteTemplate(ctx context.Context, arg UpdateNoteTemplateParams) (NoteTemplate, error)
 	UpdateNotificationSettings(ctx context.Context, arg UpdateNotificationSettingsParams) (NotificationSetting, error)
+	// GORMのSave（全カラム上書き）に相当。
+	UpdatePostCollection(ctx context.Context, arg UpdatePostCollectionParams) (PostCollection, error)
 	// GORMのSave（全カラム上書き）に相当。呼び出し側は必ずDBから読み込んだcommentの
 	// content/is_hiddenだけを変更してから呼ぶため、この2カラムの書き戻しで等価になる。
 	UpdatePostComment(ctx context.Context, arg UpdatePostCommentParams) (Comment, error)

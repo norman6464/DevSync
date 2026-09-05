@@ -719,7 +719,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// 投稿コレクションはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	postCollectionRepo := persistence.NewPostCollectionRepository(db)
+	postCollectionRepo := persistence.NewPostCollectionRepository(sqlcgen.New(sqlPool))
 	c.PostCollectionHandler = handler.NewPostCollectionHandler(
 		usecase.NewCreatePostCollectionUseCase(postCollectionRepo),
 		usecase.NewGetPostCollectionUseCase(postCollectionRepo),
