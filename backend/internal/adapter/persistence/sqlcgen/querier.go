@@ -39,6 +39,7 @@ type Querier interface {
 	CountMessagesSentByUser(ctx context.Context, senderID int64) (int64, error)
 	CountMessagesSentByUserSince(ctx context.Context, arg CountMessagesSentByUserSinceParams) (int64, error)
 	CountNoteFoldersByUser(ctx context.Context, userID int64) (int64, error)
+	CountNoteVersionsByNote(ctx context.Context, noteID int64) (int64, error)
 	CountNotesByUser(ctx context.Context, userID int64) (int64, error)
 	CountNotesByUserSince(ctx context.Context, arg CountNotesByUserSinceParams) (int64, error)
 	CountNotificationsByUser(ctx context.Context, userID int64) (int64, error)
@@ -65,6 +66,7 @@ type Querier interface {
 	// 同時に複数リクエストが「不在」と判定してもuser_idの一意制約とDO NOTHINGで
 	// 競合を無害化する。競合で挿入されなかった場合は0行が返る（エラーにはしない）。
 	CreateDefaultReminderSettings(ctx context.Context, arg CreateDefaultReminderSettingsParams) ([]ReminderSetting, error)
+	CreateNoteVersion(ctx context.Context, arg CreateNoteVersionParams) (NoteVersion, error)
 	CreateNotificationSettings(ctx context.Context, arg CreateNotificationSettingsParams) (NotificationSetting, error)
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) (PasswordResetToken, error)
 	CreatePostTemplate(ctx context.Context, arg CreatePostTemplateParams) (PostTemplate, error)
@@ -79,6 +81,8 @@ type Querier interface {
 	// （GORM実装のtotal_reviews==0での早期returnと同じ結果になる）。
 	GetBookReviewStats(ctx context.Context, userID int64) (GetBookReviewStatsRow, error)
 	GetEmojiBreakdownByUser(ctx context.Context, userID int64) ([]GetEmojiBreakdownByUserRow, error)
+	GetLatestNoteVersionNumber(ctx context.Context, noteID int64) (int64, error)
+	GetNoteVersionByID(ctx context.Context, id int64) (NoteVersion, error)
 	GetNotificationSettingsByUserID(ctx context.Context, userID int64) (NotificationSetting, error)
 	GetPasswordResetTokenByToken(ctx context.Context, token string) (PasswordResetToken, error)
 	GetPostTemplateByID(ctx context.Context, id int64) (PostTemplate, error)
@@ -92,6 +96,7 @@ type Querier interface {
 	GetWidgetSettingsByUserID(ctx context.Context, userID int64) (WidgetSetting, error)
 	IncrementCommentLikeCount(ctx context.Context, id int64) error
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
+	ListNoteVersionsByNote(ctx context.Context, arg ListNoteVersionsByNoteParams) ([]NoteVersion, error)
 	ListPostTemplatesByUserID(ctx context.Context, arg ListPostTemplatesByUserIDParams) ([]PostTemplate, error)
 	ListProjectMilestonesByProject(ctx context.Context, projectID int64) ([]ProjectMilestone, error)
 	ListUserActivitiesByUser(ctx context.Context, arg ListUserActivitiesByUserParams) ([]UserActivity, error)

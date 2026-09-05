@@ -662,7 +662,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 		usecase.NewDuplicateNoteUseCase(notePort),
 	)
 	// ノートのバージョン履歴はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	noteVersionRepo := persistence.NewNoteVersionRepository(db)
+	noteVersionRepo := persistence.NewNoteVersionRepository(sqlcgen.New(sqlPool))
 	noteUpdater := persistence.NewNoteUpdater(db)
 	c.NoteVersionHandler = handler.NewNoteVersionHandler(
 		usecase.NewListNoteVersionsUseCase(noteVersionRepo, noteReader),
