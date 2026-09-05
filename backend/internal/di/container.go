@@ -956,7 +956,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// ウィジェット設定はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	widgetSettingsRepo := persistence.NewWidgetSettingsRepository(db)
+	widgetSettingsRepo := persistence.NewWidgetSettingsRepository(sqlcgen.New(sqlPool))
 	c.WidgetSettingsHandler = handler.NewWidgetSettingsHandler(
 		usecase.NewGetWidgetSettingsUseCase(widgetSettingsRepo),
 		usecase.NewUpdateWidgetSettingsUseCase(widgetSettingsRepo),
