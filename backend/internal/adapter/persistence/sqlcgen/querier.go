@@ -62,6 +62,8 @@ type Querier interface {
 	CountRoadmapsByUser(ctx context.Context, userID int64) (int64, error)
 	CountRoadmapsByUserAndStatus(ctx context.Context, arg CountRoadmapsByUserAndStatusParams) (int64, error)
 	CountSearchNotes(ctx context.Context, arg CountSearchNotesParams) (int64, error)
+	CountStreakFreezesInMonth(ctx context.Context, arg CountStreakFreezesInMonthParams) (int64, error)
+	CountStreakFreezesOnDate(ctx context.Context, arg CountStreakFreezesOnDateParams) (int64, error)
 	CountStudyCircleCheckinsByCircle(ctx context.Context, circleID int64) (int64, error)
 	CountStudyCircleCompletedStepsByCircle(ctx context.Context, circleID int64) (int64, error)
 	CountStudyCircleMembersByCircle(ctx context.Context, circleID int64) (int64, error)
@@ -84,6 +86,7 @@ type Querier interface {
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) (PasswordResetToken, error)
 	CreatePostTemplate(ctx context.Context, arg CreatePostTemplateParams) (PostTemplate, error)
 	CreateProjectMilestone(ctx context.Context, arg CreateProjectMilestoneParams) (ProjectMilestone, error)
+	CreateStreakFreeze(ctx context.Context, arg CreateStreakFreezeParams) (StreakFreeze, error)
 	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
 	DecrementCommentLikeCount(ctx context.Context, id int64) error
 	DeleteCommentLike(ctx context.Context, arg DeleteCommentLikeParams) error
@@ -120,6 +123,7 @@ type Querier interface {
 	GetTopReactedPostsByUser(ctx context.Context, arg GetTopReactedPostsByUserParams) ([]GetTopReactedPostsByUserRow, error)
 	GetWeeklyChallengeByUserAndWeek(ctx context.Context, arg GetWeeklyChallengeByUserAndWeekParams) (WeeklyChallenge, error)
 	GetWidgetSettingsByUserID(ctx context.Context, userID int64) (WidgetSetting, error)
+	HasStreakFreezeOnDate(ctx context.Context, arg HasStreakFreezeOnDateParams) (bool, error)
 	IncrementCommentLikeCount(ctx context.Context, id int64) error
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
 	ListArchivedNotesByUser(ctx context.Context, arg ListArchivedNotesByUserParams) ([]ListArchivedNotesByUserRow, error)
@@ -138,9 +142,12 @@ type Querier interface {
 	ListPostTemplatesByUserID(ctx context.Context, arg ListPostTemplatesByUserIDParams) ([]PostTemplate, error)
 	ListProjectMilestonesByProject(ctx context.Context, projectID int64) ([]ProjectMilestone, error)
 	ListRootNoteFoldersByUser(ctx context.Context, userID int64) ([]NoteFolder, error)
+	ListStreakFreezesByUserAndMonth(ctx context.Context, arg ListStreakFreezesByUserAndMonthParams) ([]StreakFreeze, error)
 	ListUserActivitiesByUser(ctx context.Context, arg ListUserActivitiesByUserParams) ([]UserActivity, error)
 	ListUserActivitiesByUserAndType(ctx context.Context, arg ListUserActivitiesByUserAndTypeParams) ([]UserActivity, error)
 	ListWeeklyGoalsByUser(ctx context.Context, userID int64) ([]WeeklyGoal, error)
+	// 同一ユーザーの CreateWithinLimits 同時実行を直列化するための行ロック（GORMの clause.Locking{Strength: "UPDATE"} に相当）。
+	LockUserForStreakFreeze(ctx context.Context, id int64) error
 	MarkPasswordResetTokenAsUsed(ctx context.Context, id int64) error
 	SearchNotes(ctx context.Context, arg SearchNotesParams) ([]SearchNotesRow, error)
 	SumAnswerVotesByUser(ctx context.Context, userID int64) (int64, error)
