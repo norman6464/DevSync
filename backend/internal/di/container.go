@@ -145,7 +145,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	roadmapPort := persistence.NewRoadmapRepository(db)
 	// チャットルームはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	chatRoomPort := persistence.NewChatRoomRepository(db)
-	chatRoomMessagePort := persistence.NewChatRoomMessageRepository(db)
+	chatRoomMessagePort := persistence.NewChatRoomMessageRepository(sqlcgen.New(sqlPool))
 	// コードスニペットはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	codeSnippetRepo := persistence.NewCodeSnippetRepository(db)
 	codeSnippetPostReader := persistence.NewPostReader(sqlcgen.New(sqlPool))
