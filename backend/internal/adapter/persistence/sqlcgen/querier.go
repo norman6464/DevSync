@@ -102,6 +102,7 @@ type Querier interface {
 	// 競合を無害化する。競合で挿入されなかった場合は0行が返る（エラーにはしない）。
 	CreateDefaultReminderSettings(ctx context.Context, arg CreateDefaultReminderSettingsParams) ([]ReminderSetting, error)
 	CreateFollow(ctx context.Context, arg CreateFollowParams) error
+	CreateGroupMessage(ctx context.Context, arg CreateGroupMessageParams) (GroupMessage, error)
 	// GORMの clause.OnConflict{DoNothing: true} に相当。衝突時は RETURNING 行が無くなるため
 	// pgx.ErrNoRows を「作成されなかった」判定に使う。
 	CreateMention(ctx context.Context, arg CreateMentionParams) (Mention, error)
@@ -181,6 +182,7 @@ type Querier interface {
 	GetProjectWithUserAndRepoByID(ctx context.Context, id int64) (GetProjectWithUserAndRepoByIDRow, error)
 	GetReminderSettingsByUserID(ctx context.Context, userID int64) (ReminderSetting, error)
 	GetTopReactedPostsByUser(ctx context.Context, arg GetTopReactedPostsByUserParams) ([]GetTopReactedPostsByUserRow, error)
+	GetUserByIDForChatSender(ctx context.Context, id int64) (User, error)
 	GetWeeklyChallengeByUserAndWeek(ctx context.Context, arg GetWeeklyChallengeByUserAndWeekParams) (WeeklyChallenge, error)
 	GetWidgetSettingsByUserID(ctx context.Context, userID int64) (WidgetSetting, error)
 	HasStreakFreezeOnDate(ctx context.Context, arg HasStreakFreezeOnDateParams) (bool, error)
@@ -203,6 +205,8 @@ type Querier interface {
 	ListFollowing(ctx context.Context, arg ListFollowingParams) ([]User, error)
 	// GitHub連続コントリビューション日数の算出に使う（countが正の日のみ、新しい順）。
 	ListGitHubContributionsByUser(ctx context.Context, userID int64) ([]ListGitHubContributionsByUserRow, error)
+	// GORMのPreload("Sender")に相当。sender_idはNOT NULLのためINNER JOINでよい。
+	ListGroupMessagesByRoom(ctx context.Context, arg ListGroupMessagesByRoomParams) ([]ListGroupMessagesByRoomRow, error)
 	// 学習ログの連続記録日数（ストリーク）算出に使う、記録のある日付一覧（新しい順）。
 	ListLearningLogDatesByUser(ctx context.Context, userID int64) ([]pgtype.Date, error)
 	ListMentionsByCommentID(ctx context.Context, commentID *int64) ([]ListMentionsByCommentIDRow, error)
