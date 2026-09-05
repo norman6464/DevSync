@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/norman6464/devsync/backend/internal/adapter/persistence"
+	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/config"
 	"github.com/norman6464/devsync/backend/internal/infra/ws"
 	"github.com/norman6464/devsync/backend/internal/model"
@@ -64,7 +65,7 @@ func main() {
 	db.Model(&model.User{}).Where("onboarding_completed = ?", false).Update("onboarding_completed", true)
 
 	// WebSocket Hubをバックグラウンドで起動
-	hub := ws.NewHub(persistence.NewRoomMemberLookup(db))
+	hub := ws.NewHub(persistence.NewRoomMemberLookup(sqlcgen.New(sqlPool)))
 	go hub.Run()
 
 	// ルーターを構築しサーバーを起動

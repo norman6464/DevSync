@@ -144,6 +144,7 @@ type Querier interface {
 	IncrementCommentLikeCount(ctx context.Context, id int64) error
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
 	ListArchivedNotesByUser(ctx context.Context, arg ListArchivedNotesByUserParams) ([]ListArchivedNotesByUserRow, error)
+	ListChatRoomMemberUserIDs(ctx context.Context, chatRoomID int64) ([]int64, error)
 	ListFavoriteNotesByUser(ctx context.Context, arg ListFavoriteNotesByUserParams) ([]ListFavoriteNotesByUserRow, error)
 	// 件数は follow_stats.sql の CountFollowersByUser を再利用する。
 	ListFollowers(ctx context.Context, arg ListFollowersParams) ([]User, error)
