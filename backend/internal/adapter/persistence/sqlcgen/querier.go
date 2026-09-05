@@ -14,6 +14,7 @@ type Querier interface {
 	ArchiveNote(ctx context.Context, id int64) error
 	ClearLearningLogTemplateDefaultFlag(ctx context.Context, userID int64) error
 	ClearNoteTemplateDefaultFlag(ctx context.Context, userID int64) error
+	CountActiveLearningGoalsByUser(ctx context.Context, userID int64) (int64, error)
 	// note_stats.sql の CountNotesByUser はアーカイブ済みも含めた全件数のため名前を分けている。
 	CountActiveNotesByUser(ctx context.Context, userID int64) (int64, error)
 	CountAllBookReviews(ctx context.Context) (int64, error)
@@ -50,6 +51,8 @@ type Querier interface {
 	CountFollowersByUser(ctx context.Context, followeeID int64) (int64, error)
 	CountFollowingByUser(ctx context.Context, followerID int64) (int64, error)
 	CountGitHubContributionDaysByUser(ctx context.Context, userID int64) (int64, error)
+	// 件数は GetByUserID の総数取得と CountByUserID(単体メソッド) の両方から利用する。
+	CountLearningGoalsByUser(ctx context.Context, userID int64) (int64, error)
 	CountLearningLogCategoriesByUser(ctx context.Context, userID int64) (int64, error)
 	CountLearningLogTemplatesByUser(ctx context.Context, userID int64) (int64, error)
 	CountLearningLogsByUser(ctx context.Context, userID int64) (int64, error)
@@ -94,6 +97,8 @@ type Querier interface {
 	CountPostsWithFilter(ctx context.Context, arg CountPostsWithFilterParams) (int64, error)
 	// 件数は FindByUserID の総数取得と CountByUserID(単体メソッド) の両方から利用する。
 	CountProjectsByUser(ctx context.Context, userID int64) (int64, error)
+	CountPublicLearningGoals(ctx context.Context) (int64, error)
+	CountPublicLearningGoalsByUser(ctx context.Context, userID int64) (int64, error)
 	CountPublishedPostsByUser(ctx context.Context, userID int64) (int64, error)
 	// questions/answers は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに
 	// 合わせて deleted_at IS NULL を明示する（Unscoped() されていない全クエリと同じ挙動）。
@@ -138,6 +143,7 @@ type Querier interface {
 	CreateDefaultReminderSettings(ctx context.Context, arg CreateDefaultReminderSettingsParams) ([]ReminderSetting, error)
 	CreateFollow(ctx context.Context, arg CreateFollowParams) error
 	CreateGroupMessage(ctx context.Context, arg CreateGroupMessageParams) (GroupMessage, error)
+	CreateLearningGoal(ctx context.Context, arg CreateLearningGoalParams) (LearningGoal, error)
 	CreateLearningLogTemplate(ctx context.Context, arg CreateLearningLogTemplateParams) (LearningLogTemplate, error)
 	// GORMの clause.OnConflict{DoNothing: true} に相当。衝突時は RETURNING 行が無くなるため
 	// pgx.ErrNoRows を「作成されなかった」判定に使う。
@@ -192,6 +198,7 @@ type Querier interface {
 	DeleteGitHubLanguageStatsByUser(ctx context.Context, userID int64) error
 	DeleteGitHubReposByUser(ctx context.Context, userID int64) error
 	DeleteGroupMessagesByRoom(ctx context.Context, chatRoomID int64) error
+	DeleteLearningGoal(ctx context.Context, id int64) error
 	DeleteLearningLogTemplate(ctx context.Context, id int64) error
 	DeleteMentionsByCommentID(ctx context.Context, commentID *int64) error
 	DeleteMentionsByPostID(ctx context.Context, postID *int64) error
@@ -229,6 +236,7 @@ type Querier interface {
 	FindNotificationsByUserID(ctx context.Context, arg FindNotificationsByUserIDParams) ([]FindNotificationsByUserIDRow, error)
 	GetAIConversationByID(ctx context.Context, id int64) (AiConversation, error)
 	GetAIConversationByIDAndUser(ctx context.Context, arg GetAIConversationByIDAndUserParams) (AiConversation, error)
+	GetAverageActiveProgressByUser(ctx context.Context, userID int64) (float64, error)
 	// book_reviews は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
 	// deleted_at IS NULL を明示する。レビュー0件でもCOALESCEにより全項目0を返す
 	// （GORM実装のtotal_reviews==0での早期returnと同じ結果になる）。
@@ -249,6 +257,7 @@ type Querier interface {
 	// 指定プログラミング言語のバイト数ランキング。上位50件を返す。
 	GetLanguageRanking(ctx context.Context, language string) ([]GetLanguageRankingRow, error)
 	GetLatestNoteVersionNumber(ctx context.Context, noteID int64) (int64, error)
+	GetLearningGoalByID(ctx context.Context, id int64) (LearningGoal, error)
 	GetLearningLogTemplateByID(ctx context.Context, id int64) (LearningLogTemplate, error)
 	// learning_resources は GORM の論理削除（deleted_at）付きモデルのため deleted_at IS NULL を明示する。
 	GetLearningResourceByID(ctx context.Context, id int64) (LearningResource, error)
@@ -319,6 +328,7 @@ type Querier interface {
 	ListAIMessagesByConversationIDOrderedByCreatedAt(ctx context.Context, conversationID int64) ([]AiMessage, error)
 	// GORMのPreload("Messages")（順序未指定）に相当。まとめ取得用でid昇順（挿入順相当）とする。
 	ListAIMessagesByConversationIDs(ctx context.Context, dollar_1 []int64) ([]AiMessage, error)
+	ListActiveLearningGoalsByUser(ctx context.Context, userID int64) ([]LearningGoal, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	ListAllBookReviewsWithUser(ctx context.Context, arg ListAllBookReviewsWithUserParams) ([]ListAllBookReviewsWithUserRow, error)
 	ListAllGitHubContributionsByUser(ctx context.Context, userID int64) ([]GitHubContribution, error)
@@ -369,6 +379,9 @@ type Querier interface {
 	ListGitHubReposByUser(ctx context.Context, userID int64) ([]GitHubRepository, error)
 	// GORMのPreload("Sender")に相当。sender_idはNOT NULLのためINNER JOINでよい。
 	ListGroupMessagesByRoom(ctx context.Context, arg ListGroupMessagesByRoomParams) ([]ListGroupMessagesByRoomRow, error)
+	ListLearningGoalsByCategory(ctx context.Context, arg ListLearningGoalsByCategoryParams) ([]LearningGoal, error)
+	ListLearningGoalsByStatus(ctx context.Context, arg ListLearningGoalsByStatusParams) ([]LearningGoal, error)
+	ListLearningGoalsByUser(ctx context.Context, arg ListLearningGoalsByUserParams) ([]LearningGoal, error)
 	// 学習ログの連続記録日数（ストリーク）算出に使う、記録のある日付一覧（新しい順）。
 	ListLearningLogDatesByUser(ctx context.Context, userID int64) ([]pgtype.Date, error)
 	ListLearningLogTemplatesByUser(ctx context.Context, userID int64) ([]LearningLogTemplate, error)
@@ -410,6 +423,8 @@ type Querier interface {
 	// github_repo_idはNULL許容のためLEFT JOIN。git_hub_repositoriesはsqlc.embedを使わず
 	// 個別カラム選択にすることでJOINコンテキストのNULL許容性を正しく推論させる。
 	ListProjectsByUserWithRepo(ctx context.Context, arg ListProjectsByUserWithRepoParams) ([]ListProjectsByUserWithRepoRow, error)
+	ListPublicLearningGoals(ctx context.Context, arg ListPublicLearningGoalsParams) ([]LearningGoal, error)
+	ListPublicLearningGoalsByUser(ctx context.Context, arg ListPublicLearningGoalsByUserParams) ([]LearningGoal, error)
 	ListPublicPostCollectionsByUser(ctx context.Context, userID int64) ([]PostCollection, error)
 	ListQiitaArticlesByUser(ctx context.Context, userID int64) ([]QiitaArticle, error)
 	ListReactionCountsByPost(ctx context.Context, postID int64) ([]ListReactionCountsByPostRow, error)
@@ -478,6 +493,8 @@ type Querier interface {
 	UpdateBookmarkCollection(ctx context.Context, arg UpdateBookmarkCollectionParams) (BookmarkCollection, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateChatRoom(ctx context.Context, arg UpdateChatRoomParams) (ChatRoom, error)
+	// GORMのSave（全カラム上書き）に相当。
+	UpdateLearningGoal(ctx context.Context, arg UpdateLearningGoalParams) (LearningGoal, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateLearningLogTemplate(ctx context.Context, arg UpdateLearningLogTemplateParams) (LearningLogTemplate, error)
 	// GORMのSave（全カラム上書き）に相当。

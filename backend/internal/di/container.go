@@ -234,7 +234,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	syncQiita := usecase.NewSyncQiitaUseCase(userPort, qiitaPort, qiitaClient)
 	// 学習目標はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	// 旧 learningGoalRepo は recommendation / learning_dashboard がまだ使うため残している。
-	learningGoalPort := persistence.NewLearningGoalRepository(db)
+	learningGoalPort := persistence.NewLearningGoalRepository(sqlcgen.New(sqlPool))
 	updateLearningGoal := usecase.NewUpdateLearningGoalUseCase(learningGoalPort)
 	// AtCoder 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、HTTP 実装は adapter/external。
 	atcoderClient := external.NewAtCoderClient()
