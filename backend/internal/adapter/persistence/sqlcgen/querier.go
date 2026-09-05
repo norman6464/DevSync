@@ -75,6 +75,7 @@ type Querier interface {
 	GetProjectStats(ctx context.Context, userID int64) (GetProjectStatsRow, error)
 	GetTopReactedPostsByUser(ctx context.Context, arg GetTopReactedPostsByUserParams) ([]GetTopReactedPostsByUserRow, error)
 	GetWeeklyChallengeByUserAndWeek(ctx context.Context, arg GetWeeklyChallengeByUserAndWeekParams) (WeeklyChallenge, error)
+	GetWidgetSettingsByUserID(ctx context.Context, userID int64) (WidgetSetting, error)
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
 	ListPostTemplatesByUserID(ctx context.Context, arg ListPostTemplatesByUserIDParams) ([]PostTemplate, error)
 	ListUserActivitiesByUser(ctx context.Context, arg ListUserActivitiesByUserParams) ([]UserActivity, error)
@@ -90,6 +91,7 @@ type Querier interface {
 	SumRoadmapStepCountByUser(ctx context.Context, userID int64) (int64, error)
 	UpdatePostTemplate(ctx context.Context, arg UpdatePostTemplateParams) (PostTemplate, error)
 	UpdateWeeklyChallenge(ctx context.Context, arg UpdateWeeklyChallengeParams) (WeeklyChallenge, error)
+	UpsertWidgetSettings(ctx context.Context, arg UpsertWidgetSettingsParams) error
 }
 
 var _ Querier = (*Queries)(nil)
