@@ -779,7 +779,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// ユーザーダッシュボード統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	userDashboardRepo := persistence.NewUserDashboardRepository(db)
+	userDashboardRepo := persistence.NewUserDashboardRepository(sqlcgen.New(sqlPool))
 	c.UserDashboardHandler = handler.NewUserDashboardHandler(
 		usecase.NewGetUserDashboardStatsUseCase(userDashboardRepo),
 	)

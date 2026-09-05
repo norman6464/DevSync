@@ -68,6 +68,7 @@ type Querier interface {
 	CountPostPinsByUserAndPost(ctx context.Context, arg CountPostPinsByUserAndPostParams) (int64, error)
 	CountPostTemplatesByUserID(ctx context.Context, userID int64) (int64, error)
 	CountPostViewsByPost(ctx context.Context, postID int64) (int64, error)
+	CountPostViewsReceivedByUser(ctx context.Context, userID int64) (int64, error)
 	// 下書きは除外する。
 	CountPostsByTag(ctx context.Context, tag string) (int64, error)
 	CountPostsByUser(ctx context.Context, userID int64) (int64, error)
