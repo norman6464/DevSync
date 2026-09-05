@@ -125,7 +125,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	zennPort := persistence.NewZennRepository(db)
 	zennClient := external.NewZennClient()
 	// Qiita 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence と adapter/external。
-	qiitaPort := persistence.NewQiitaRepository(db)
+	qiitaPort := persistence.NewQiitaRepository(sqlPool)
 	qiitaClient := external.NewQiitaClient()
 	// アクティビティレポートはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	activityReportRepo := persistence.NewActivityReportRepository(db)
