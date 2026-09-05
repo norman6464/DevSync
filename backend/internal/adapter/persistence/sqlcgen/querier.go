@@ -82,6 +82,7 @@ type Querier interface {
 	CountReactionsReceivedByUser(ctx context.Context, userID int64) (int64, error)
 	CountReactionsReceivedByUserSince(ctx context.Context, arg CountReactionsReceivedByUserSinceParams) (int64, error)
 	CountRepliesByUser(ctx context.Context, userID int64) (int64, error)
+	CountResourceProgressByUser(ctx context.Context, arg CountResourceProgressByUserParams) (int64, error)
 	CountRoadmapsByUser(ctx context.Context, userID int64) (int64, error)
 	CountRoadmapsByUserAndStatus(ctx context.Context, arg CountRoadmapsByUserAndStatusParams) (int64, error)
 	CountSearchNotes(ctx context.Context, arg CountSearchNotesParams) (int64, error)
@@ -181,6 +182,7 @@ type Querier interface {
 	// LEFT JOINで欠落しうる行を表現できないため）。
 	GetProjectWithUserAndRepoByID(ctx context.Context, id int64) (GetProjectWithUserAndRepoByIDRow, error)
 	GetReminderSettingsByUserID(ctx context.Context, userID int64) (ReminderSetting, error)
+	GetResourceProgressByUserAndResource(ctx context.Context, arg GetResourceProgressByUserAndResourceParams) (ResourceProgress, error)
 	GetTopReactedPostsByUser(ctx context.Context, arg GetTopReactedPostsByUserParams) ([]GetTopReactedPostsByUserRow, error)
 	GetUserByIDForChatSender(ctx context.Context, id int64) (User, error)
 	GetWeeklyChallengeByUserAndWeek(ctx context.Context, arg GetWeeklyChallengeByUserAndWeekParams) (WeeklyChallenge, error)
@@ -239,6 +241,12 @@ type Querier interface {
 	ListProjectMilestonesByProject(ctx context.Context, projectID int64) ([]ProjectMilestone, error)
 	ListReactionCountsByPost(ctx context.Context, postID int64) ([]ListReactionCountsByPostRow, error)
 	ListReactionCountsByPosts(ctx context.Context, dollar_1 []int64) ([]ListReactionCountsByPostsRow, error)
+	// GORMのPreload("Resource")に相当。resourceは論理削除（deleted_at）付きモデルのため、
+	// ソフトデリート済みリソースはJOIN条件で除外しResourceがnilになるようLEFT JOINにする
+	// （resource_idの列自体はNOT NULLだが、論理削除の有無でJOINの成否が変わるため）。
+	// id を第2ソートキーにして、updated_at 同値の行でもページングが安定するようにする
+	// （移行前のGORM実装と同じ）。
+	ListResourceProgressByUser(ctx context.Context, arg ListResourceProgressByUserParams) ([]ListResourceProgressByUserRow, error)
 	ListRootNoteFoldersByUser(ctx context.Context, userID int64) ([]NoteFolder, error)
 	ListStreakFreezesByUserAndMonth(ctx context.Context, arg ListStreakFreezesByUserAndMonthParams) ([]StreakFreeze, error)
 	ListUserActivitiesByUser(ctx context.Context, arg ListUserActivitiesByUserParams) ([]UserActivity, error)
@@ -278,6 +286,7 @@ type Querier interface {
 	UpdateProjectMilestone(ctx context.Context, arg UpdateProjectMilestoneParams) (ProjectMilestone, error)
 	UpdateReminderSettings(ctx context.Context, arg UpdateReminderSettingsParams) (ReminderSetting, error)
 	UpdateWeeklyChallenge(ctx context.Context, arg UpdateWeeklyChallengeParams) (WeeklyChallenge, error)
+	UpsertResourceProgress(ctx context.Context, arg UpsertResourceProgressParams) (ResourceProgress, error)
 	UpsertWeeklyGoal(ctx context.Context, arg UpsertWeeklyGoalParams) (WeeklyGoal, error)
 	UpsertWidgetSettings(ctx context.Context, arg UpsertWidgetSettingsParams) error
 }

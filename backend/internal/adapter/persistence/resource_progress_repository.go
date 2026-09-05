@@ -3,60 +3,118 @@ package persistence
 import (
 	"context"
 
+	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
-// resourceProgressRepository は [repository.ResourceProgressRepository] の GORM 実装。
+// resourceProgressRepository は [repository.ResourceProgressRepository] の sqlc(pgx) 実装。
 type resourceProgressRepository struct {
-	db *gorm.DB
+	q *sqlcgen.Queries
 }
 
-// NewResourceProgressRepository は ResourceProgressRepository の GORM 実装を返す。
-func NewResourceProgressRepository(db *gorm.DB) repository.ResourceProgressRepository {
-	return &resourceProgressRepository{db: db}
+// NewResourceProgressRepository は ResourceProgressRepository の sqlc(pgx) 実装を返す。
+func NewResourceProgressRepository(q *sqlcgen.Queries) repository.ResourceProgressRepository {
+	return &resourceProgressRepository{q: q}
 }
 
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
 var _ repository.ResourceProgressRepository = (*resourceProgressRepository)(nil)
 
+// toModelResourceProgress は sqlc の生成行を model.ResourceProgress へ変換する（Resource は含まない）。
+func toModelResourceProgress(row sqlcgen.ResourceProgress) model.ResourceProgress {
+	return model.ResourceProgress{
+		ID:                uint(row.ID),
+		UserID:            uint(row.UserID),
+		ResourceID:        uint(row.ResourceID),
+		Status:            model.ResourceProgressStatus(fromStringPtr(row.Status)),
+		CompletionPercent: int(fromInt64PtrValue(row.CompletionPercent)),
+		Note:              fromStringPtr(row.Note),
+		StartedAt:         fromTimestamptz(row.StartedAt),
+		CompletedAt:       fromTimestamptz(row.CompletedAt),
+		CreatedAt:         timeValue(fromTimestamptz(row.CreatedAt)),
+		UpdatedAt:         timeValue(fromTimestamptz(row.UpdatedAt)),
+	}
+}
+
 // Upsert は (user_id, resource_id) をキーに進捗を作成または更新する。
 func (r *resourceProgressRepository) Upsert(ctx context.Context, progress *model.ResourceProgress) error {
-	return r.db.WithContext(ctx).Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "user_id"}, {Name: "resource_id"}},
-		DoUpdates: clause.AssignmentColumns([]string{"status", "completion_percent", "note", "started_at", "completed_at", "updated_at"}),
-	}).Create(progress).Error
+	status := string(progress.Status)
+	row, err := r.q.UpsertResourceProgress(ctx, sqlcgen.UpsertResourceProgressParams{
+		UserID:            int64(progress.UserID),
+		ResourceID:        int64(progress.ResourceID),
+		Status:            &status,
+		CompletionPercent: toInt64Ptr(progress.CompletionPercent),
+		Note:              &progress.Note,
+		StartedAt:         toTimestamptz(progress.StartedAt),
+		CompletedAt:       toTimestamptz(progress.CompletedAt),
+	})
+	if err != nil {
+		return err
+	}
+	*progress = toModelResourceProgress(row)
+	return nil
 }
 
 // FindByUserAndResource は指定ユーザー・リソースの進捗を取得する。
 func (r *resourceProgressRepository) FindByUserAndResource(ctx context.Context, userID, resourceID uint) (*model.ResourceProgress, error) {
-	var progress model.ResourceProgress
-	if err := r.db.WithContext(ctx).Where("user_id = ? AND resource_id = ?", userID, resourceID).First(&progress).Error; err != nil {
+	row, err := r.q.GetResourceProgressByUserAndResource(ctx, sqlcgen.GetResourceProgressByUserAndResourceParams{
+		UserID:     int64(userID),
+		ResourceID: int64(resourceID),
+	})
+	if err != nil {
 		return nil, err
 	}
+	progress := toModelResourceProgress(row)
 	return &progress, nil
 }
 
 // FindByUserID は指定ユーザーの進捗一覧を取得する。status が空でなければ絞り込む。
 func (r *resourceProgressRepository) FindByUserID(ctx context.Context, userID uint, status string, limit, offset int) ([]model.ResourceProgress, int64, error) {
-	var progresses []model.ResourceProgress
-	var total int64
-
-	query := r.db.WithContext(ctx).Where("user_id = ?", userID)
+	var statusFilter *string
 	if status != "" {
-		query = query.Where("status = ?", status)
+		statusFilter = &status
 	}
 
-	if err := query.Model(&model.ResourceProgress{}).Count(&total).Error; err != nil {
+	total, err := r.q.CountResourceProgressByUser(ctx, sqlcgen.CountResourceProgressByUserParams{
+		UserID: int64(userID),
+		Status: statusFilter,
+	})
+	if err != nil {
 		return nil, 0, err
 	}
 
-	// updated_at 同値の行でもページングが安定するよう id を第 2 ソートキーにして順序を決定的にする。
-	if err := query.Preload("Resource").Order("updated_at DESC").Order("id DESC").Limit(limit).Offset(offset).Find(&progresses).Error; err != nil {
+	rows, err := r.q.ListResourceProgressByUser(ctx, sqlcgen.ListResourceProgressByUserParams{
+		UserID: int64(userID),
+		Limit:  int32Param(limit),
+		Offset: int32Param(offset),
+		Status: statusFilter,
+	})
+	if err != nil {
 		return nil, 0, err
 	}
 
+	progresses := make([]model.ResourceProgress, len(rows))
+	for i, row := range rows {
+		progresses[i] = toModelResourceProgress(row.ResourceProgress)
+		if row.ResourceID2 != nil {
+			progresses[i].Resource = &model.LearningResource{
+				ID:          uint(*row.ResourceID2),
+				UserID:      uint(fromInt64PtrValue(row.ResourceUserID)),
+				Title:       fromStringPtr(row.ResourceTitle),
+				Description: fromStringPtr(row.ResourceDescription),
+				URL:         fromStringPtr(row.ResourceUrl),
+				Category:    model.ResourceCategory(fromStringPtr(row.ResourceCategory)),
+				Difficulty:  model.ResourceDifficulty(fromStringPtr(row.ResourceDifficulty)),
+				Tags:        fromStringPtr(row.ResourceTags),
+				ImageURL:    fromStringPtr(row.ResourceImageUrl),
+				IsPublic:    fromBoolPtr(row.ResourceIsPublic),
+				LikeCount:   int(fromInt64PtrValue(row.ResourceLikeCount)),
+				SaveCount:   int(fromInt64PtrValue(row.ResourceSaveCount)),
+				CreatedAt:   timeValue(fromTimestamptz(row.ResourceCreatedAt)),
+				UpdatedAt:   timeValue(fromTimestamptz(row.ResourceUpdatedAt)),
+			}
+		}
+	}
 	return progresses, total, nil
 }
