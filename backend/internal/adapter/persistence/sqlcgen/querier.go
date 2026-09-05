@@ -68,6 +68,7 @@ type Querier interface {
 	// 同時に複数リクエストが「不在」と判定してもuser_idの一意制約とDO NOTHINGで
 	// 競合を無害化する。競合で挿入されなかった場合は0行が返る（エラーにはしない）。
 	CreateDefaultReminderSettings(ctx context.Context, arg CreateDefaultReminderSettingsParams) ([]ReminderSetting, error)
+	CreateNoteFolder(ctx context.Context, arg CreateNoteFolderParams) (NoteFolder, error)
 	CreateNoteTemplate(ctx context.Context, arg CreateNoteTemplateParams) (NoteTemplate, error)
 	CreateNoteVersion(ctx context.Context, arg CreateNoteVersionParams) (NoteVersion, error)
 	CreateNotificationSettings(ctx context.Context, arg CreateNotificationSettingsParams) (NotificationSetting, error)
@@ -77,6 +78,7 @@ type Querier interface {
 	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
 	DecrementCommentLikeCount(ctx context.Context, id int64) error
 	DeleteCommentLike(ctx context.Context, arg DeleteCommentLikeParams) error
+	DeleteNoteFolder(ctx context.Context, id int64) error
 	DeleteNoteTemplate(ctx context.Context, id int64) error
 	DeletePostTemplate(ctx context.Context, id int64) error
 	DeleteProjectMilestone(ctx context.Context, id int64) error
@@ -87,6 +89,7 @@ type Querier interface {
 	GetDefaultNoteTemplateByUser(ctx context.Context, userID int64) (NoteTemplate, error)
 	GetEmojiBreakdownByUser(ctx context.Context, userID int64) ([]GetEmojiBreakdownByUserRow, error)
 	GetLatestNoteVersionNumber(ctx context.Context, noteID int64) (int64, error)
+	GetNoteFolderByID(ctx context.Context, id int64) (NoteFolder, error)
 	GetNoteTemplateByID(ctx context.Context, id int64) (NoteTemplate, error)
 	GetNoteVersionByID(ctx context.Context, id int64) (NoteVersion, error)
 	GetNotificationSettingsByUserID(ctx context.Context, userID int64) (NotificationSetting, error)
@@ -102,10 +105,13 @@ type Querier interface {
 	GetWidgetSettingsByUserID(ctx context.Context, userID int64) (WidgetSetting, error)
 	IncrementCommentLikeCount(ctx context.Context, id int64) error
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
+	ListNoteFoldersByParent(ctx context.Context, parentID *int64) ([]NoteFolder, error)
+	ListNoteFoldersByUser(ctx context.Context, arg ListNoteFoldersByUserParams) ([]NoteFolder, error)
 	ListNoteTemplatesByUser(ctx context.Context, userID int64) ([]NoteTemplate, error)
 	ListNoteVersionsByNote(ctx context.Context, arg ListNoteVersionsByNoteParams) ([]NoteVersion, error)
 	ListPostTemplatesByUserID(ctx context.Context, arg ListPostTemplatesByUserIDParams) ([]PostTemplate, error)
 	ListProjectMilestonesByProject(ctx context.Context, projectID int64) ([]ProjectMilestone, error)
+	ListRootNoteFoldersByUser(ctx context.Context, userID int64) ([]NoteFolder, error)
 	ListUserActivitiesByUser(ctx context.Context, arg ListUserActivitiesByUserParams) ([]UserActivity, error)
 	ListUserActivitiesByUserAndType(ctx context.Context, arg ListUserActivitiesByUserAndTypeParams) ([]UserActivity, error)
 	ListWeeklyGoalsByUser(ctx context.Context, userID int64) ([]WeeklyGoal, error)
@@ -119,6 +125,7 @@ type Querier interface {
 	SumQuestionVotesByUser(ctx context.Context, userID int64) (int64, error)
 	SumRoadmapCompletedStepCountByUser(ctx context.Context, userID int64) (int64, error)
 	SumRoadmapStepCountByUser(ctx context.Context, userID int64) (int64, error)
+	UpdateNoteFolder(ctx context.Context, arg UpdateNoteFolderParams) (NoteFolder, error)
 	UpdateNoteTemplate(ctx context.Context, arg UpdateNoteTemplateParams) (NoteTemplate, error)
 	UpdateNotificationSettings(ctx context.Context, arg UpdateNotificationSettingsParams) (NotificationSetting, error)
 	UpdatePostTemplate(ctx context.Context, arg UpdatePostTemplateParams) (PostTemplate, error)
