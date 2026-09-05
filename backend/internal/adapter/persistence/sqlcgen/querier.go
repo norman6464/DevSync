@@ -183,6 +183,7 @@ type Querier interface {
 	CreateReaction(ctx context.Context, arg CreateReactionParams) error
 	CreateResourceReview(ctx context.Context, arg CreateResourceReviewParams) (ResourceReview, error)
 	CreateStreakFreeze(ctx context.Context, arg CreateStreakFreezeParams) (StreakFreeze, error)
+	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
 	CreateYouTubeSearchCache(ctx context.Context, arg CreateYouTubeSearchCacheParams) (YouTubeSearchCach, error)
 	DecrementCommentLikeCount(ctx context.Context, id int64) error
@@ -202,15 +203,23 @@ type Querier interface {
 	DeleteBookmarkCollectionItem(ctx context.Context, arg DeleteBookmarkCollectionItemParams) error
 	DeleteBookmarkCollectionItemsByCollectionID(ctx context.Context, collectionID int64) error
 	DeleteBookmarkCollectionItemsByPost(ctx context.Context, postID int64) error
+	DeleteBookmarkCollectionItemsByUserPosts(ctx context.Context, userID int64) error
 	DeleteBookmarksByPost(ctx context.Context, postID int64) error
+	DeleteBookmarksByUserPosts(ctx context.Context, userID int64) error
 	DeleteChatRoom(ctx context.Context, id int64) error
 	DeleteChatRoomMember(ctx context.Context, arg DeleteChatRoomMemberParams) error
 	DeleteChatRoomMembersByRoom(ctx context.Context, chatRoomID int64) error
 	DeleteCodeSnippetsByPost(ctx context.Context, postID int64) error
+	DeleteCodeSnippetsByUserPosts(ctx context.Context, userID int64) error
 	DeleteCommentLike(ctx context.Context, arg DeleteCommentLikeParams) error
 	DeleteCommentLikesByPostComments(ctx context.Context, postID int64) error
+	// 退会者の投稿配下のコメント、および退会者自身が他の投稿へ書いたコメントの
+	// 従属行（コメントいいね）をまとめて消す。
+	DeleteCommentLikesByUserCommentsSet(ctx context.Context, userID int64) error
 	DeleteCommentsByPost(ctx context.Context, postID int64) error
+	DeleteCommentsByUserPostsAndSelf(ctx context.Context, userID int64) error
 	DeleteFollow(ctx context.Context, arg DeleteFollowParams) error
+	DeleteFollowsByUser(ctx context.Context, followerID int64) error
 	DeleteGitHubContributionsByUser(ctx context.Context, userID int64) error
 	DeleteGitHubLanguageStatsByUser(ctx context.Context, userID int64) error
 	DeleteGitHubReposByUser(ctx context.Context, userID int64) error
@@ -218,45 +227,64 @@ type Querier interface {
 	DeleteLearningGoal(ctx context.Context, id int64) error
 	DeleteLearningLogTemplate(ctx context.Context, id int64) error
 	DeleteLikesByPost(ctx context.Context, postID int64) error
+	DeleteLikesByUser(ctx context.Context, userID int64) error
+	DeleteLikesByUserPosts(ctx context.Context, userID int64) error
 	DeleteMentionsByCommentID(ctx context.Context, commentID *int64) error
 	DeleteMentionsByPost(ctx context.Context, postID *int64) error
 	// mentions自身もpost_id列を持つため、サブクエリのcommentsを明示的にエイリアス修飾しないと
 	// post_idの参照先が曖昧になる（PostgreSQLの相関サブクエリの解決規則による）。
 	DeleteMentionsByPostComments(ctx context.Context, postID int64) error
 	DeleteMentionsByPostID(ctx context.Context, postID *int64) error
+	// mentions自身もpost_id列を持つため、サブクエリのcommentsを明示的にエイリアス修飾しないと
+	// post_idの参照先が曖昧になる（PostgreSQLの相関サブクエリの解決規則による）。
+	DeleteMentionsByUserCommentsSet(ctx context.Context, userID int64) error
+	DeleteMentionsByUserPosts(ctx context.Context, userID int64) error
+	DeleteMessagesByUser(ctx context.Context, senderID int64) error
 	DeleteNote(ctx context.Context, id int64) error
 	DeleteNoteFolder(ctx context.Context, id int64) error
 	DeleteNoteLink(ctx context.Context, arg DeleteNoteLinkParams) error
 	DeleteNoteTemplate(ctx context.Context, id int64) error
 	DeleteNotification(ctx context.Context, arg DeleteNotificationParams) error
 	DeleteNotificationsByPost(ctx context.Context, postID *int64) error
+	DeleteNotificationsForUserDeletion(ctx context.Context, userID int64) error
+	DeletePasswordResetTokensByUser(ctx context.Context, userID int64) error
 	DeletePost(ctx context.Context, id int64) error
 	DeletePostCollection(ctx context.Context, id int64) error
 	DeletePostCollectionItem(ctx context.Context, arg DeletePostCollectionItemParams) error
 	DeletePostCollectionItemsByCollectionID(ctx context.Context, collectionID int64) error
 	DeletePostCollectionItemsByPost(ctx context.Context, postID int64) error
+	DeletePostCollectionItemsByUserPosts(ctx context.Context, userID int64) error
 	DeletePostComment(ctx context.Context, id int64) error
 	DeletePostLike(ctx context.Context, arg DeletePostLikeParams) (int64, error)
 	DeletePostPin(ctx context.Context, arg DeletePostPinParams) error
 	DeletePostPinsByPost(ctx context.Context, postID int64) error
+	DeletePostPinsByUserPosts(ctx context.Context, userID int64) error
 	DeletePostSeries(ctx context.Context, id int64) error
 	DeletePostSeriesItem(ctx context.Context, arg DeletePostSeriesItemParams) error
 	DeletePostSeriesItemsByPost(ctx context.Context, postID int64) error
 	DeletePostSeriesItemsBySeriesID(ctx context.Context, seriesID int64) error
+	DeletePostSeriesItemsByUserPosts(ctx context.Context, userID int64) error
 	DeletePostTagsByPost(ctx context.Context, postID int64) error
 	DeletePostTagsByPostID(ctx context.Context, postID int64) error
+	DeletePostTagsByUserPosts(ctx context.Context, userID int64) error
 	DeletePostTemplate(ctx context.Context, id int64) error
 	DeletePostViewsByPost(ctx context.Context, postID int64) error
+	DeletePostViewsByUserPosts(ctx context.Context, userID int64) error
+	DeletePostsByUser(ctx context.Context, userID int64) error
 	// GORMのDelete（論理削除）に相当。
 	DeleteProject(ctx context.Context, id int64) error
 	DeleteProjectMilestone(ctx context.Context, id int64) error
 	DeleteQiitaArticlesByUser(ctx context.Context, userID int64) error
 	DeleteReaction(ctx context.Context, arg DeleteReactionParams) error
 	DeleteReactionsByPost(ctx context.Context, postID int64) error
+	DeleteReactionsByUserPosts(ctx context.Context, userID int64) error
 	DeleteResourceReview(ctx context.Context, id int64) error
 	DeleteSnippetCommentsByPostSnippets(ctx context.Context, postID int64) error
+	DeleteSnippetCommentsByUserPostSnippets(ctx context.Context, userID int64) error
 	DeleteSpotifyRecentTracksByUser(ctx context.Context, userID int64) error
+	DeleteUser(ctx context.Context, id int64) error
 	DeleteZennArticlesByUser(ctx context.Context, userID int64) error
+	FindAllUsers(ctx context.Context) ([]User, error)
 	// 指定ユーザーをフォローしているユーザーのIDを返す。
 	FindFollowerIDsByFollowee(ctx context.Context, followeeID int64) ([]int64, error)
 	// GORMのPreload("Actor").Preload("Post").Preload("Question")に相当。
@@ -346,7 +374,11 @@ type Querier interface {
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	GetResourceReviewWithUserByID(ctx context.Context, id int64) (GetResourceReviewWithUserByIDRow, error)
 	GetTopReactedPostsByUser(ctx context.Context, arg GetTopReactedPostsByUserParams) ([]GetTopReactedPostsByUserRow, error)
+	GetUserByEmail(ctx context.Context, email string) (User, error)
+	GetUserByGitHubID(ctx context.Context, gitHubID *int64) (User, error)
+	GetUserByID(ctx context.Context, id int64) (User, error)
 	GetUserByIDForChatSender(ctx context.Context, id int64) (User, error)
+	GetUserByUsername(ctx context.Context, username string) (User, error)
 	GetWeeklyChallengeByUserAndWeek(ctx context.Context, arg GetWeeklyChallengeByUserAndWeekParams) (WeeklyChallenge, error)
 	GetWidgetSettingsByUserID(ctx context.Context, userID int64) (WidgetSetting, error)
 	// FindCachedSearchはクエリを小文字化して検索する（移行前のGORM実装と同じ）。
@@ -537,6 +569,7 @@ type Querier interface {
 	SearchPostsWithFilter(ctx context.Context, arg SearchPostsWithFilterParams) ([]SearchPostsWithFilterRow, error)
 	// GORMのPreload("User").Preload("GithubRepo")に相当（移行前のSearchと同じ挙動）。
 	SearchProjectsWithUserAndRepo(ctx context.Context, arg SearchProjectsWithUserAndRepoParams) ([]SearchProjectsWithUserAndRepoRow, error)
+	SearchUsers(ctx context.Context, arg SearchUsersParams) ([]User, error)
 	SetAnswerBest(ctx context.Context, id int64) error
 	SetProjectArchived(ctx context.Context, arg SetProjectArchivedParams) error
 	SetQuestionSolved(ctx context.Context, id int64) error
@@ -593,6 +626,9 @@ type Querier interface {
 	UpdateReminderSettings(ctx context.Context, arg UpdateReminderSettingsParams) (ReminderSetting, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateResourceReview(ctx context.Context, arg UpdateResourceReviewParams) (ResourceReview, error)
+	// GORMのSave（全カラム上書き）に相当。
+	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
+	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	UpdateWeeklyChallenge(ctx context.Context, arg UpdateWeeklyChallengeParams) (WeeklyChallenge, error)
 	UpdateYouTubeSearchCache(ctx context.Context, arg UpdateYouTubeSearchCacheParams) (YouTubeSearchCach, error)
 	UpsertGitHubContribution(ctx context.Context, arg UpsertGitHubContributionParams) (GitHubContribution, error)

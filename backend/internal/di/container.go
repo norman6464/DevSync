@@ -183,7 +183,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 
 	// 共通サービス
 	// 認証はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	authUserPort := persistence.NewAuthUserRepository(db)
+	authUserPort := persistence.NewAuthUserRepository(sqlPool)
 	passwordResetPort := persistence.NewPasswordResetTokenRepository(sqlcgen.New(sqlPool))
 	validateAuthToken := usecase.NewValidateAuthTokenUseCase(cfg.JWTSecret)
 	githubOAuthState := usecase.NewOAuthStateUseCase(cfg.JWTSecret, usecase.OAuthProviderGitHub)
@@ -202,7 +202,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 
 	// ユーザー情報はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	// 旧 userRepo は認証・GitHub・Zenn・Qiita・AtCoder・YouTube・メンションがまだ使うため残している。
-	userPort := persistence.NewUserRepository(db)
+	userPort := persistence.NewUserRepository(sqlPool)
 
 	// ドメインサービス
 	// GitHub 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、
@@ -318,7 +318,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	notifyFollowers := usecase.NewNotifyFollowersUseCase(followerNotifier)
 	// メンションは投稿・コメントの本文から解決するため、投稿スライスから呼ぶ。
 	mentionPort := persistence.NewMentionRepository(sqlcgen.New(sqlPool))
-	processMentions := usecase.NewProcessMentionsUseCase(mentionPort, persistence.NewUserRepository(db), notificationCreator)
+	processMentions := usecase.NewProcessMentionsUseCase(mentionPort, persistence.NewUserRepository(sqlPool), notificationCreator)
 	c.PostHandler = handler.NewPostHandler(handler.PostUseCases{
 		ProcessMentions:       processMentions,
 		DeleteCommentMentions: usecase.NewDeleteCommentMentionsUseCase(mentionPort),
