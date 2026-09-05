@@ -17,6 +17,24 @@ func fromStringPtr(p *string) string {
 	return *p
 }
 
+// toInt64PtrFromUintPtr は model の *uint（NULL許容な外部キー等）を *int64 へ変換する。
+func toInt64PtrFromUintPtr(p *uint) *int64 {
+	if p == nil {
+		return nil
+	}
+	v := int64(*p)
+	return &v
+}
+
+// fromInt64PtrToUintPtr は *int64 を model の *uint へ変換する（NULLはnil）。
+func fromInt64PtrToUintPtr(p *int64) *uint {
+	if p == nil {
+		return nil
+	}
+	v := uint(*p)
+	return &v
+}
+
 // toInt64Ptr は model の int をNULL許容カラム用の *int64 へ変換する。
 func toInt64Ptr(n int) *int64 {
 	v := int64(n)
