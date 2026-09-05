@@ -791,7 +791,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// スタディサークル統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	studyCircleStatsRepo := persistence.NewStudyCircleStatsRepository(db)
+	studyCircleStatsRepo := persistence.NewStudyCircleStatsRepository(sqlcgen.New(sqlPool))
 	c.StudyCircleStatsHandler = handler.NewStudyCircleStatsHandler(
 		usecase.NewGetStudyCircleStatsUseCase(studyCircleStatsRepo),
 	)
