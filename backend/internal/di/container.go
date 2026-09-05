@@ -312,7 +312,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	postPort := persistence.NewPostRepository(db)
 	postReactionPort := persistence.NewPostReactionRepository(sqlcgen.New(sqlPool))
 	postAuthorPort := persistence.NewPostAuthorReader(sqlcgen.New(sqlPool))
-	postCommentPort := persistence.NewPostCommentRepository(db, sqlcgen.New(sqlPool))
+	postCommentPort := persistence.NewPostCommentRepository(sqlcgen.New(sqlPool))
 	postBookmarkPort := persistence.NewPostBookmarkRepository(sqlcgen.New(sqlPool))
 	postLikePort := persistence.NewPostLikeRepository(sqlcgen.New(sqlPool))
 	notifyFollowers := usecase.NewNotifyFollowersUseCase(followerNotifier)

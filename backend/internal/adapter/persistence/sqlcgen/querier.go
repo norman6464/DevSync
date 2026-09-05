@@ -115,6 +115,7 @@ type Querier interface {
 	CreateNoteVersion(ctx context.Context, arg CreateNoteVersionParams) (NoteVersion, error)
 	CreateNotificationSettings(ctx context.Context, arg CreateNotificationSettingsParams) (NotificationSetting, error)
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) (PasswordResetToken, error)
+	CreatePostComment(ctx context.Context, arg CreatePostCommentParams) (Comment, error)
 	CreatePostLike(ctx context.Context, arg CreatePostLikeParams) error
 	CreatePostPin(ctx context.Context, arg CreatePostPinParams) error
 	CreatePostTag(ctx context.Context, arg CreatePostTagParams) error
@@ -128,6 +129,7 @@ type Querier interface {
 	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
 	DecrementCommentLikeCount(ctx context.Context, id int64) error
 	DecrementPostBookmarkCount(ctx context.Context, id int64) error
+	DecrementPostCommentCount(ctx context.Context, id int64) error
 	DecrementPostLikeCount(ctx context.Context, id int64) error
 	DeleteBookmark(ctx context.Context, arg DeleteBookmarkParams) (int64, error)
 	DeleteCommentLike(ctx context.Context, arg DeleteCommentLikeParams) error
@@ -138,6 +140,7 @@ type Querier interface {
 	DeleteNoteFolder(ctx context.Context, id int64) error
 	DeleteNoteLink(ctx context.Context, arg DeleteNoteLinkParams) error
 	DeleteNoteTemplate(ctx context.Context, id int64) error
+	DeletePostComment(ctx context.Context, id int64) error
 	DeletePostLike(ctx context.Context, arg DeletePostLikeParams) (int64, error)
 	DeletePostPin(ctx context.Context, arg DeletePostPinParams) error
 	DeletePostTagsByPostID(ctx context.Context, postID int64) error
@@ -191,6 +194,7 @@ type Querier interface {
 	HasStreakFreezeOnDate(ctx context.Context, arg HasStreakFreezeOnDateParams) (bool, error)
 	IncrementCommentLikeCount(ctx context.Context, id int64) error
 	IncrementPostBookmarkCount(ctx context.Context, id int64) error
+	IncrementPostCommentCount(ctx context.Context, id int64) error
 	IncrementPostLikeCount(ctx context.Context, id int64) error
 	IncrementPostViewCount(ctx context.Context, id int64) error
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
@@ -201,6 +205,9 @@ type Querier interface {
 	ListChatRoomMemberUserIDs(ctx context.Context, chatRoomID int64) ([]int64, error)
 	// GORMのPreload("CodeSnippets")に相当。1対多のため投稿IDのまとめ取りとGo側でのグルーピングで再現する。
 	ListCodeSnippetsByPostIDs(ctx context.Context, dollar_1 []int64) ([]CodeSnippet, error)
+	// GORMのPreload("User")に相当（返信の取得）。ListReplies単体呼び出しと
+	// ListByPostIDのバッチ取得の両方で、親IDの配列（1件でも複数件でも）として再利用する。
+	ListCommentRepliesByParentIDs(ctx context.Context, parentIds []int64) ([]ListCommentRepliesByParentIDsRow, error)
 	// GORMのPreload("Sender").Preload("Receiver")に相当。
 	// sender_id/receiver_idともにNOT NULLのためINNER JOINでよい。
 	ListConversationMessages(ctx context.Context, arg ListConversationMessagesParams) ([]ListConversationMessagesRow, error)
@@ -255,6 +262,8 @@ type Querier interface {
 	ListResourceProgressByUser(ctx context.Context, arg ListResourceProgressByUserParams) ([]ListResourceProgressByUserRow, error)
 	ListRootNoteFoldersByUser(ctx context.Context, userID int64) ([]NoteFolder, error)
 	ListStreakFreezesByUserAndMonth(ctx context.Context, arg ListStreakFreezesByUserAndMonthParams) ([]StreakFreeze, error)
+	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
+	ListTopLevelCommentsByPost(ctx context.Context, postID int64) ([]ListTopLevelCommentsByPostRow, error)
 	ListUserActivitiesByUser(ctx context.Context, arg ListUserActivitiesByUserParams) ([]UserActivity, error)
 	ListUserActivitiesByUserAndType(ctx context.Context, arg ListUserActivitiesByUserAndTypeParams) ([]UserActivity, error)
 	ListUserReactionEmojisByPost(ctx context.Context, arg ListUserReactionEmojisByPostParams) ([]string, error)
@@ -288,6 +297,9 @@ type Querier interface {
 	UpdateNoteFolder(ctx context.Context, arg UpdateNoteFolderParams) (NoteFolder, error)
 	UpdateNoteTemplate(ctx context.Context, arg UpdateNoteTemplateParams) (NoteTemplate, error)
 	UpdateNotificationSettings(ctx context.Context, arg UpdateNotificationSettingsParams) (NotificationSetting, error)
+	// GORMのSave（全カラム上書き）に相当。呼び出し側は必ずDBから読み込んだcommentの
+	// content/is_hiddenだけを変更してから呼ぶため、この2カラムの書き戻しで等価になる。
+	UpdatePostComment(ctx context.Context, arg UpdatePostCommentParams) (Comment, error)
 	UpdatePostPinOrder(ctx context.Context, arg UpdatePostPinOrderParams) error
 	UpdatePostTemplate(ctx context.Context, arg UpdatePostTemplateParams) (PostTemplate, error)
 	UpdateProjectMilestone(ctx context.Context, arg UpdateProjectMilestoneParams) (ProjectMilestone, error)
