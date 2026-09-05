@@ -18,13 +18,16 @@ type mockCommentLikeRepo struct{ mock.Mock }
 func (m *mockCommentLikeRepo) Like(ctx context.Context, userID, commentID uint) error {
 	return m.Called(ctx, userID, commentID).Error(0)
 }
+
 func (m *mockCommentLikeRepo) Unlike(ctx context.Context, userID, commentID uint) error {
 	return m.Called(ctx, userID, commentID).Error(0)
 }
+
 func (m *mockCommentLikeRepo) HasLiked(ctx context.Context, userID, commentID uint) (bool, error) {
 	args := m.Called(ctx, userID, commentID)
 	return args.Bool(0), args.Error(1)
 }
+
 func (m *mockCommentLikeRepo) CountByCommentID(ctx context.Context, commentID uint) (int64, error) {
 	args := m.Called(ctx, commentID)
 	return args.Get(0).(int64), args.Error(1)

@@ -40,11 +40,11 @@ type Roadmap struct {
 	Title              string          `json:"title" gorm:"not null;size:200"`
 	Description        string          `json:"description" gorm:"type:text"`
 	Category           RoadmapCategory `json:"category" gorm:"default:'other'"`
-	IsPublic           bool            `json:"is_public" gorm:"default:false;index"`        // 公開フラグ
-	IsTemplate         bool            `json:"is_template" gorm:"default:false;index"`      // テンプレートフラグ
-	StepCount          int             `json:"step_count" gorm:"default:0"`                  // 全ステップ数
-	CompletedStepCount int             `json:"completed_step_count" gorm:"default:0"`        // 完了済みステップ数
-	Progress           int             `json:"progress" gorm:"default:0"`                    // 進捗率（0〜100、自動計算）
+	IsPublic           bool            `json:"is_public" gorm:"default:false;index"`   // 公開フラグ
+	IsTemplate         bool            `json:"is_template" gorm:"default:false;index"` // テンプレートフラグ
+	StepCount          int             `json:"step_count" gorm:"default:0"`            // 全ステップ数
+	CompletedStepCount int             `json:"completed_step_count" gorm:"default:0"`  // 完了済みステップ数
+	Progress           int             `json:"progress" gorm:"default:0"`              // 進捗率（0〜100、自動計算）
 	Status             RoadmapStatus   `json:"status" gorm:"default:'active'"`
 	CreatedAt          time.Time       `json:"created_at"`
 	UpdatedAt          time.Time       `json:"updated_at"`
@@ -58,13 +58,13 @@ type Roadmap struct {
 // OrderIndex で表示順序を管理し、IsCompleted で完了状態を追跡する。
 type RoadmapStep struct {
 	ID          uint       `json:"id" gorm:"primaryKey"`
-	RoadmapID   uint       `json:"roadmap_id" gorm:"not null;index"`           // 所属するロードマップのID
+	RoadmapID   uint       `json:"roadmap_id" gorm:"not null;index"` // 所属するロードマップのID
 	Title       string     `json:"title" gorm:"not null;size:200"`
 	Description string     `json:"description" gorm:"type:text"`
-	OrderIndex  int        `json:"order_index" gorm:"not null;default:0"`      // 表示順序（0始まり）
-	IsCompleted bool       `json:"is_completed" gorm:"default:false"`          // 完了フラグ
-	CompletedAt *time.Time `json:"completed_at"`                               // 完了日時
-	ResourceURL string     `json:"resource_url" gorm:"size:500"`               // 参考リソースのURL
+	OrderIndex  int        `json:"order_index" gorm:"not null;default:0"` // 表示順序（0始まり）
+	IsCompleted bool       `json:"is_completed" gorm:"default:false"`     // 完了フラグ
+	CompletedAt *time.Time `json:"completed_at"`                          // 完了日時
+	ResourceURL string     `json:"resource_url" gorm:"size:500"`          // 参考リソースのURL
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
 }

@@ -19,30 +19,37 @@ type mockLearningLogTemplateRepo struct{ mock.Mock }
 func (m *mockLearningLogTemplateRepo) Create(ctx context.Context, template *model.LearningLogTemplate) error {
 	return m.Called(ctx, template).Error(0)
 }
+
 func (m *mockLearningLogTemplateRepo) Update(ctx context.Context, template *model.LearningLogTemplate) error {
 	return m.Called(ctx, template).Error(0)
 }
+
 func (m *mockLearningLogTemplateRepo) Delete(ctx context.Context, id uint) error {
 	return m.Called(ctx, id).Error(0)
 }
+
 func (m *mockLearningLogTemplateRepo) FindByID(ctx context.Context, id uint) (*model.LearningLogTemplate, error) {
 	args := m.Called(ctx, id)
 	t, _ := args.Get(0).(*model.LearningLogTemplate)
 	return t, args.Error(1)
 }
+
 func (m *mockLearningLogTemplateRepo) FindByUserID(ctx context.Context, userID uint) ([]model.LearningLogTemplate, error) {
 	args := m.Called(ctx, userID)
 	t, _ := args.Get(0).([]model.LearningLogTemplate)
 	return t, args.Error(1)
 }
+
 func (m *mockLearningLogTemplateRepo) FindDefaultByUserID(ctx context.Context, userID uint) (*model.LearningLogTemplate, error) {
 	args := m.Called(ctx, userID)
 	t, _ := args.Get(0).(*model.LearningLogTemplate)
 	return t, args.Error(1)
 }
+
 func (m *mockLearningLogTemplateRepo) ClearDefaultFlag(ctx context.Context, userID uint) error {
 	return m.Called(ctx, userID).Error(0)
 }
+
 func (m *mockLearningLogTemplateRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)

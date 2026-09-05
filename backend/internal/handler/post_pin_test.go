@@ -18,22 +18,27 @@ type mockPostPinRepo struct{ mock.Mock }
 func (m *mockPostPinRepo) Pin(ctx context.Context, pin *model.PostPin) error {
 	return m.Called(ctx, pin).Error(0)
 }
+
 func (m *mockPostPinRepo) Unpin(ctx context.Context, userID, postID uint) error {
 	return m.Called(ctx, userID, postID).Error(0)
 }
+
 func (m *mockPostPinRepo) GetByUserID(ctx context.Context, userID uint) ([]model.PostPin, error) {
 	args := m.Called(ctx, userID)
 	pins, _ := args.Get(0).([]model.PostPin)
 	return pins, args.Error(1)
 }
+
 func (m *mockPostPinRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)
 }
+
 func (m *mockPostPinRepo) IsPinned(ctx context.Context, userID, postID uint) (bool, error) {
 	args := m.Called(ctx, userID, postID)
 	return args.Bool(0), args.Error(1)
 }
+
 func (m *mockPostPinRepo) UpdateOrder(ctx context.Context, userID uint, postIDs []uint) error {
 	return m.Called(ctx, userID, postIDs).Error(0)
 }

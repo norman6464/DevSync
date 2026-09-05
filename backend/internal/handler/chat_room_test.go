@@ -23,6 +23,7 @@ type mockChatRoomPort struct{ mock.Mock }
 func (m *mockChatRoomPort) Create(ctx context.Context, room *model.ChatRoom) error {
 	return m.Called(ctx, room).Error(0)
 }
+
 func (m *mockChatRoomPort) FindByID(ctx context.Context, id uint) (*model.ChatRoom, error) {
 	args := m.Called(ctx, id)
 	if r := args.Get(0); r != nil {
@@ -30,30 +31,38 @@ func (m *mockChatRoomPort) FindByID(ctx context.Context, id uint) (*model.ChatRo
 	}
 	return nil, args.Error(1)
 }
+
 func (m *mockChatRoomPort) FindByUserID(ctx context.Context, userID uint, limit, offset int) ([]model.ChatRoom, int64, error) {
 	args := m.Called(ctx, userID, limit, offset)
 	return args.Get(0).([]model.ChatRoom), args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockChatRoomPort) Update(ctx context.Context, room *model.ChatRoom) error {
 	return m.Called(ctx, room).Error(0)
 }
+
 func (m *mockChatRoomPort) Delete(ctx context.Context, roomID uint) error {
 	return m.Called(ctx, roomID).Error(0)
 }
+
 func (m *mockChatRoomPort) AddMember(ctx context.Context, roomID, userID uint) error {
 	return m.Called(ctx, roomID, userID).Error(0)
 }
+
 func (m *mockChatRoomPort) RemoveMember(ctx context.Context, roomID, userID uint) error {
 	return m.Called(ctx, roomID, userID).Error(0)
 }
+
 func (m *mockChatRoomPort) GetMembers(ctx context.Context, roomID uint) ([]model.ChatRoomMember, error) {
 	args := m.Called(ctx, roomID)
 	return args.Get(0).([]model.ChatRoomMember), args.Error(1)
 }
+
 func (m *mockChatRoomPort) IsMember(ctx context.Context, roomID, userID uint) (bool, error) {
 	args := m.Called(ctx, roomID, userID)
 	return args.Bool(0), args.Error(1)
 }
+
 func (m *mockChatRoomPort) CountByUserID(ctx context.Context, userID uint) (int64, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)
@@ -65,10 +74,12 @@ type mockChatRoomMessagePort struct{ mock.Mock }
 func (m *mockChatRoomMessagePort) Create(ctx context.Context, msg *model.GroupMessage) error {
 	return m.Called(ctx, msg).Error(0)
 }
+
 func (m *mockChatRoomMessagePort) FindByRoomID(ctx context.Context, roomID uint, page, limit int) ([]model.GroupMessage, error) {
 	args := m.Called(ctx, roomID, page, limit)
 	return args.Get(0).([]model.GroupMessage), args.Error(1)
 }
+
 func (m *mockChatRoomMessagePort) FindSender(ctx context.Context, senderID uint) (*model.User, error) {
 	args := m.Called(ctx, senderID)
 	if u := args.Get(0); u != nil {

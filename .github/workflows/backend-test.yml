@@ -68,6 +68,21 @@ jobs:
         run: go build ./...
         working-directory: ./backend
 
+      # gofumptはgofmtの上位互換で、空行・連続宣言の整列など「人が迷う整形」も
+      # 機械的に統一する。1ファイルでも未整形なら失敗させ、ローカルでは
+      # `gofumpt -w .` で直してもらう運用にする。
+      - name: gofumpt チェック
+        run: |
+          go install mvdan.cc/gofumpt@v0.10.0
+          unformatted=$("$(go env GOPATH)/bin/gofumpt" -l .)
+          if [ -n "$unformatted" ]; then
+            echo "::error::以下のファイルがgofumpt未整形です:"
+            echo "$unformatted"
+            echo "backend/ で 'gofumpt -w .' を実行してコミットしてください。"
+            exit 1
+          fi
+        working-directory: ./backend
+
       - name: go vet を実行
         run: go vet ./...
         working-directory: ./backend

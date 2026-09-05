@@ -20,16 +20,19 @@ func (m *mockLearningAnalyticsRepo) GetHeatmapData(ctx context.Context, userID u
 	e, _ := args.Get(0).([]model.HeatmapEntry)
 	return e, args.Error(1)
 }
+
 func (m *mockLearningAnalyticsRepo) GetCategoryBreakdown(ctx context.Context, userID uint) ([]model.CategoryBreakdown, error) {
 	args := m.Called(ctx, userID)
 	c, _ := args.Get(0).([]model.CategoryBreakdown)
 	return c, args.Error(1)
 }
+
 func (m *mockLearningAnalyticsRepo) GetWeeklyTrends(ctx context.Context, userID uint, weeks int) ([]model.WeeklyTrend, error) {
 	args := m.Called(ctx, userID, weeks)
 	t, _ := args.Get(0).([]model.WeeklyTrend)
 	return t, args.Error(1)
 }
+
 func (m *mockLearningAnalyticsRepo) GetProductivityStats(ctx context.Context, userID uint) (*model.ProductivityStats, error) {
 	args := m.Called(ctx, userID)
 	s, _ := args.Get(0).(*model.ProductivityStats)

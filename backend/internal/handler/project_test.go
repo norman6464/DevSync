@@ -18,49 +18,60 @@ type mockProjectRepo struct{ mock.Mock }
 func (m *mockProjectRepo) Create(ctx context.Context, project *model.Project) error {
 	return m.Called(ctx, project).Error(0)
 }
+
 func (m *mockProjectRepo) Update(ctx context.Context, project *model.Project) error {
 	return m.Called(ctx, project).Error(0)
 }
+
 func (m *mockProjectRepo) Delete(ctx context.Context, id uint) error {
 	return m.Called(ctx, id).Error(0)
 }
+
 func (m *mockProjectRepo) FindByID(ctx context.Context, id uint) (*model.Project, error) {
 	args := m.Called(ctx, id)
 	p, _ := args.Get(0).(*model.Project)
 	return p, args.Error(1)
 }
+
 func (m *mockProjectRepo) FindByUserID(ctx context.Context, userID uint, limit, offset int) ([]model.Project, int64, error) {
 	args := m.Called(ctx, userID, limit, offset)
 	p, _ := args.Get(0).([]model.Project)
 	return p, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockProjectRepo) FindFeaturedByUserID(ctx context.Context, userID uint) ([]model.Project, error) {
 	args := m.Called(ctx, userID)
 	p, _ := args.Get(0).([]model.Project)
 	return p, args.Error(1)
 }
+
 func (m *mockProjectRepo) FindArchivedByUserID(ctx context.Context, userID uint, limit, offset int) ([]model.Project, int64, error) {
 	args := m.Called(ctx, userID, limit, offset)
 	p, _ := args.Get(0).([]model.Project)
 	return p, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockProjectRepo) FindAll(ctx context.Context, limit, offset int) ([]model.Project, int64, error) {
 	args := m.Called(ctx, limit, offset)
 	p, _ := args.Get(0).([]model.Project)
 	return p, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockProjectRepo) Search(ctx context.Context, query string, limit, offset int) ([]model.Project, int64, error) {
 	args := m.Called(ctx, query, limit, offset)
 	p, _ := args.Get(0).([]model.Project)
 	return p, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockProjectRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)
 }
+
 func (m *mockProjectRepo) Archive(ctx context.Context, id uint) error {
 	return m.Called(ctx, id).Error(0)
 }
+
 func (m *mockProjectRepo) Unarchive(ctx context.Context, id uint) error {
 	return m.Called(ctx, id).Error(0)
 }

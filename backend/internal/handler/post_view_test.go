@@ -19,10 +19,12 @@ func (m *mockPostViewRepo) RecordViewIfAbsent(ctx context.Context, view *model.P
 	args := m.Called(ctx, view)
 	return args.Bool(0), args.Error(1)
 }
+
 func (m *mockPostViewRepo) GetViewCount(ctx context.Context, postID uint) (int64, error) {
 	args := m.Called(ctx, postID)
 	return args.Get(0).(int64), args.Error(1)
 }
+
 func (m *mockPostViewRepo) GetMostViewed(ctx context.Context, limit int) ([]model.ViewCount, error) {
 	args := m.Called(ctx, limit)
 	vc, _ := args.Get(0).([]model.ViewCount)

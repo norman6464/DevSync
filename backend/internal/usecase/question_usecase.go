@@ -10,7 +10,6 @@ import (
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
 )
 
-
 // requireVotableQuestion は投票対象の質問を取得し、自分の質問でないことを検証する。
 // 不在の場合は 404、自分の質問なら 403 を返す。
 func requireVotableQuestion(ctx context.Context, questions repository.QuestionRepository, userID, questionID uint) error {

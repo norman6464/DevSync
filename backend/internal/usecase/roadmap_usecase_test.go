@@ -20,60 +20,74 @@ type mockRoadmapRepo struct{ mock.Mock }
 func (m *mockRoadmapRepo) Create(ctx context.Context, r *model.Roadmap) error {
 	return m.Called(ctx, r).Error(0)
 }
+
 func (m *mockRoadmapRepo) Update(ctx context.Context, r *model.Roadmap) error {
 	return m.Called(ctx, r).Error(0)
 }
+
 func (m *mockRoadmapRepo) Delete(ctx context.Context, id uint) error {
 	return m.Called(ctx, id).Error(0)
 }
+
 func (m *mockRoadmapRepo) FindByID(ctx context.Context, id uint) (*model.Roadmap, error) {
 	args := m.Called(ctx, id)
 	r, _ := args.Get(0).(*model.Roadmap)
 	return r, args.Error(1)
 }
+
 func (m *mockRoadmapRepo) GetByUserID(ctx context.Context, userID uint, limit, offset int) ([]model.Roadmap, int64, error) {
 	args := m.Called(ctx, userID, limit, offset)
 	r, _ := args.Get(0).([]model.Roadmap)
 	return r, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockRoadmapRepo) GetByStatus(ctx context.Context, userID uint, status string) ([]model.Roadmap, error) {
 	args := m.Called(ctx, userID, status)
 	r, _ := args.Get(0).([]model.Roadmap)
 	return r, args.Error(1)
 }
+
 func (m *mockRoadmapRepo) GetPublicRoadmaps(ctx context.Context, limit, offset int) ([]model.Roadmap, int64, error) {
 	args := m.Called(ctx, limit, offset)
 	r, _ := args.Get(0).([]model.Roadmap)
 	return r, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockRoadmapRepo) GetTemplates(ctx context.Context) ([]model.Roadmap, error) {
 	args := m.Called(ctx)
 	r, _ := args.Get(0).([]model.Roadmap)
 	return r, args.Error(1)
 }
+
 func (m *mockRoadmapRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)
 }
+
 func (m *mockRoadmapRepo) CopyRoadmap(ctx context.Context, originalID, newUserID uint) (*model.Roadmap, error) {
 	args := m.Called(ctx, originalID, newUserID)
 	r, _ := args.Get(0).(*model.Roadmap)
 	return r, args.Error(1)
 }
+
 func (m *mockRoadmapRepo) CreateStep(ctx context.Context, step *model.RoadmapStep) error {
 	return m.Called(ctx, step).Error(0)
 }
+
 func (m *mockRoadmapRepo) UpdateStep(ctx context.Context, step *model.RoadmapStep) error {
 	return m.Called(ctx, step).Error(0)
 }
+
 func (m *mockRoadmapRepo) DeleteStep(ctx context.Context, stepID uint) error {
 	return m.Called(ctx, stepID).Error(0)
 }
+
 func (m *mockRoadmapRepo) FindStepByID(ctx context.Context, stepID uint) (*model.RoadmapStep, error) {
 	args := m.Called(ctx, stepID)
 	s, _ := args.Get(0).(*model.RoadmapStep)
 	return s, args.Error(1)
 }
+
 func (m *mockRoadmapRepo) ReorderSteps(ctx context.Context, roadmapID uint, stepOrders []model.StepOrder) error {
 	return m.Called(ctx, roadmapID, stepOrders).Error(0)
 }

@@ -36,9 +36,11 @@ func NewFollowerNotifier(pool *pgxpool.Pool) repository.FollowerNotifier {
 }
 
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
-var _ repository.NotificationReader = (*notificationRepository)(nil)
-var _ repository.NotificationCreator = (*notificationRepository)(nil)
-var _ repository.FollowerNotifier = (*notificationRepository)(nil)
+var (
+	_ repository.NotificationReader  = (*notificationRepository)(nil)
+	_ repository.NotificationCreator = (*notificationRepository)(nil)
+	_ repository.FollowerNotifier    = (*notificationRepository)(nil)
+)
 
 // nilIfEmpty は空文字列を nil に変換する。notification_type のような
 // 「空文字列なら絞り込みなし」の任意フィルタを sqlc.narg に渡す際に使う。

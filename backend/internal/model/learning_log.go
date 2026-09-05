@@ -40,17 +40,17 @@ var ValidSources = map[LogSource]bool{
 
 // LearningLog は日々の学習記録を表す。
 type LearningLog struct {
-	ID        uint        `json:"id" gorm:"primaryKey"`
-	UserID    uint        `json:"user_id" gorm:"not null;index"`
-	Title     string      `json:"title" gorm:"not null"`
-	Content   string      `json:"content" gorm:"type:text;not null"`
-	Category  LogCategory `json:"category" gorm:"default:'other'"`
-	Duration  int         `json:"duration" gorm:"default:0"`      // 学習時間（分単位）
-	GoalID     *uint     `json:"goal_id,omitempty" gorm:"index"`  // 紐付けゴール（任意）
-	Source     LogSource `json:"source" gorm:"default:'manual'"` // 記録元（manual/pomodoro）
-	IsFavorite bool      `json:"is_favorite" gorm:"default:false"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
+	ID         uint        `json:"id" gorm:"primaryKey"`
+	UserID     uint        `json:"user_id" gorm:"not null;index"`
+	Title      string      `json:"title" gorm:"not null"`
+	Content    string      `json:"content" gorm:"type:text;not null"`
+	Category   LogCategory `json:"category" gorm:"default:'other'"`
+	Duration   int         `json:"duration" gorm:"default:0"`      // 学習時間（分単位）
+	GoalID     *uint       `json:"goal_id,omitempty" gorm:"index"` // 紐付けゴール（任意）
+	Source     LogSource   `json:"source" gorm:"default:'manual'"` // 記録元（manual/pomodoro）
+	IsFavorite bool        `json:"is_favorite" gorm:"default:false"`
+	CreatedAt  time.Time   `json:"created_at"`
+	UpdatedAt  time.Time   `json:"updated_at"`
 }
 
 // MonthlySummary は月別学習サマリーを表す。

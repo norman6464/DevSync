@@ -20,62 +20,77 @@ type mockLearningResourceRepo struct{ mock.Mock }
 func (m *mockLearningResourceRepo) Create(ctx context.Context, r *model.LearningResource) error {
 	return m.Called(ctx, r).Error(0)
 }
+
 func (m *mockLearningResourceRepo) Update(ctx context.Context, r *model.LearningResource) error {
 	return m.Called(ctx, r).Error(0)
 }
+
 func (m *mockLearningResourceRepo) Delete(ctx context.Context, id uint) error {
 	return m.Called(ctx, id).Error(0)
 }
+
 func (m *mockLearningResourceRepo) FindByID(ctx context.Context, id uint) (*model.LearningResource, error) {
 	args := m.Called(ctx, id)
 	r, _ := args.Get(0).(*model.LearningResource)
 	return r, args.Error(1)
 }
+
 func (m *mockLearningResourceRepo) FindByUserID(ctx context.Context, userID uint, includePrivate bool, limit, offset int) ([]model.LearningResource, int64, error) {
 	args := m.Called(ctx, userID, includePrivate, limit, offset)
 	r, _ := args.Get(0).([]model.LearningResource)
 	return r, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockLearningResourceRepo) FindPublic(ctx context.Context, limit, offset int, category, difficulty string) ([]model.LearningResource, int64, error) {
 	args := m.Called(ctx, limit, offset, category, difficulty)
 	r, _ := args.Get(0).([]model.LearningResource)
 	return r, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockLearningResourceRepo) FindByDifficulty(ctx context.Context, difficulty string, limit, offset int) ([]model.LearningResource, int64, error) {
 	args := m.Called(ctx, difficulty, limit, offset)
 	r, _ := args.Get(0).([]model.LearningResource)
 	return r, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockLearningResourceRepo) Search(ctx context.Context, query string, limit, offset int) ([]model.LearningResource, int64, error) {
 	args := m.Called(ctx, query, limit, offset)
 	r, _ := args.Get(0).([]model.LearningResource)
 	return r, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockLearningResourceRepo) FindSavedByUserID(ctx context.Context, userID uint, limit, offset int) ([]model.LearningResource, int64, error) {
 	args := m.Called(ctx, userID, limit, offset)
 	r, _ := args.Get(0).([]model.LearningResource)
 	return r, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockLearningResourceRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)
 }
+
 func (m *mockLearningResourceRepo) Like(ctx context.Context, userID, resourceID uint) error {
 	return m.Called(ctx, userID, resourceID).Error(0)
 }
+
 func (m *mockLearningResourceRepo) Unlike(ctx context.Context, userID, resourceID uint) error {
 	return m.Called(ctx, userID, resourceID).Error(0)
 }
+
 func (m *mockLearningResourceRepo) HasLiked(ctx context.Context, userID, resourceID uint) (bool, error) {
 	args := m.Called(ctx, userID, resourceID)
 	return args.Bool(0), args.Error(1)
 }
+
 func (m *mockLearningResourceRepo) Save(ctx context.Context, userID, resourceID uint) error {
 	return m.Called(ctx, userID, resourceID).Error(0)
 }
+
 func (m *mockLearningResourceRepo) Unsave(ctx context.Context, userID, resourceID uint) error {
 	return m.Called(ctx, userID, resourceID).Error(0)
 }
+
 func (m *mockLearningResourceRepo) HasSaved(ctx context.Context, userID, resourceID uint) (bool, error) {
 	args := m.Called(ctx, userID, resourceID)
 	return args.Bool(0), args.Error(1)

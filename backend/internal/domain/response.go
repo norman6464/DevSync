@@ -8,8 +8,8 @@ type SuccessResponse struct {
 
 // ErrorResponse はエラーレスポンスの統一構造体。
 type ErrorResponse struct {
-	Error string      `json:"error"`
-	Code  string      `json:"code,omitempty"`
+	Error   string      `json:"error"`
+	Code    string      `json:"code,omitempty"`
 	Details interface{} `json:"details,omitempty"`
 }
 

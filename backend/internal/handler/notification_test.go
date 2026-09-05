@@ -21,20 +21,25 @@ func (m *mockNotificationPort) FindByUserID(ctx context.Context, userID uint, pa
 	n, _ := args.Get(0).([]model.Notification)
 	return n, args.Error(1)
 }
+
 func (m *mockNotificationPort) CountByUserID(ctx context.Context, userID uint, notificationType string) (int64, error) {
 	args := m.Called(ctx, userID, notificationType)
 	return args.Get(0).(int64), args.Error(1)
 }
+
 func (m *mockNotificationPort) CountUnread(ctx context.Context, userID uint) (int64, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)
 }
+
 func (m *mockNotificationPort) MarkAsRead(ctx context.Context, id, userID uint) error {
 	return m.Called(ctx, id, userID).Error(0)
 }
+
 func (m *mockNotificationPort) MarkAllAsRead(ctx context.Context, userID uint) error {
 	return m.Called(ctx, userID).Error(0)
 }
+
 func (m *mockNotificationPort) Delete(ctx context.Context, id, userID uint) error {
 	return m.Called(ctx, id, userID).Error(0)
 }

@@ -19,11 +19,13 @@ type mockResourceProgressRepo struct{ mock.Mock }
 func (m *mockResourceProgressRepo) Upsert(ctx context.Context, progress *model.ResourceProgress) error {
 	return m.Called(ctx, progress).Error(0)
 }
+
 func (m *mockResourceProgressRepo) FindByUserAndResource(ctx context.Context, userID, resourceID uint) (*model.ResourceProgress, error) {
 	args := m.Called(ctx, userID, resourceID)
 	p, _ := args.Get(0).(*model.ResourceProgress)
 	return p, args.Error(1)
 }
+
 func (m *mockResourceProgressRepo) FindByUserID(ctx context.Context, userID uint, status string, limit, offset int) ([]model.ResourceProgress, int64, error) {
 	args := m.Called(ctx, userID, status, limit, offset)
 	list, _ := args.Get(0).([]model.ResourceProgress)

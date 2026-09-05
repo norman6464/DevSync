@@ -19,16 +19,19 @@ type mockQiitaArticlePort struct{ mock.Mock }
 func (m *mockQiitaArticlePort) UpsertArticles(ctx context.Context, userID uint, articles []model.QiitaArticle) error {
 	return m.Called(ctx, userID, articles).Error(0)
 }
+
 func (m *mockQiitaArticlePort) GetArticles(ctx context.Context, userID uint) ([]model.QiitaArticle, error) {
 	args := m.Called(ctx, userID)
 	a, _ := args.Get(0).([]model.QiitaArticle)
 	return a, args.Error(1)
 }
+
 func (m *mockQiitaArticlePort) GetStats(ctx context.Context, userID uint) (*model.QiitaStats, error) {
 	args := m.Called(ctx, userID)
 	s, _ := args.Get(0).(*model.QiitaStats)
 	return s, args.Error(1)
 }
+
 func (m *mockQiitaArticlePort) DeleteUserArticles(ctx context.Context, userID uint) error {
 	return m.Called(ctx, userID).Error(0)
 }
@@ -41,6 +44,7 @@ func (m *mockQiitaFetcher) FetchArticles(ctx context.Context, username string) (
 	a, _ := args.Get(0).([]model.QiitaArticle)
 	return a, args.Error(1)
 }
+
 func (m *mockQiitaFetcher) UserExists(ctx context.Context, username string) (bool, error) {
 	args := m.Called(ctx, username)
 	return args.Bool(0), args.Error(1)

@@ -162,7 +162,8 @@ func CalculateProductivityScore(stats *model.ProductivityStats) *model.Productiv
 	score.GoalRate = percentageOf(stats.CompletedGoals, stats.TotalGoals)
 	score.StreakConsistency = percentageOf(stats.TotalLogDays, stats.TotalDaysInRange)
 	score.OverallScore = roundToTwoDecimals(
-		score.PomodoroRate*0.3 + score.GoalRate*0.4 + score.StreakConsistency*0.3)
+		score.PomodoroRate*0.3 + score.GoalRate*0.4 + score.StreakConsistency*0.3,
+	)
 
 	return score
 }

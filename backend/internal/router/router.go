@@ -10,11 +10,11 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/norman6464/devsync/backend/internal/infra/config"
 	"github.com/norman6464/devsync/backend/internal/di"
 	"github.com/norman6464/devsync/backend/internal/handler"
-	"github.com/norman6464/devsync/backend/internal/infra/ws"
 	"github.com/norman6464/devsync/backend/internal/handler/middleware"
+	"github.com/norman6464/devsync/backend/internal/infra/config"
+	"github.com/norman6464/devsync/backend/internal/infra/ws"
 )
 
 // Setup はGinルーターを構築し、全エンドポイントを登録して返す。

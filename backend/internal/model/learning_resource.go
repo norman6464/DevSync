@@ -40,13 +40,13 @@ type LearningResource struct {
 	URL         string             `json:"url" gorm:"size:500"`
 	Category    ResourceCategory   `json:"category" gorm:"size:50;not null"`
 	Difficulty  ResourceDifficulty `json:"difficulty" gorm:"size:50"`
-	Tags        string             `json:"tags" gorm:"type:text"`          // JSON配列形式のタグ
+	Tags        string             `json:"tags" gorm:"type:text"` // JSON配列形式のタグ
 	ImageURL    string             `json:"image_url" gorm:"size:500"`
 	IsPublic    bool               `json:"is_public"` // 他ユーザーに公開するか
 	LikeCount   int                `json:"like_count" gorm:"default:0"`
 	SaveCount   int                `json:"save_count" gorm:"default:0"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	CreatedAt   time.Time          `json:"created_at"`
+	UpdatedAt   time.Time          `json:"updated_at"`
 }
 
 // ResourceLike は学習リソースへの「いいね」を記録する。
@@ -72,8 +72,8 @@ type ResourceReview struct {
 	UserID     uint      `json:"user_id" gorm:"not null;uniqueIndex:idx_resource_review"`
 	User       User      `json:"user,omitempty" gorm:"foreignKey:UserID"`
 	ResourceID uint      `json:"resource_id" gorm:"not null;uniqueIndex:idx_resource_review;index"`
-	Rating     int       `json:"rating" gorm:"not null"`       // 1-5の評価
-	Comment    string    `json:"comment" gorm:"type:text"`     // レビューコメント
+	Rating     int       `json:"rating" gorm:"not null"`   // 1-5の評価
+	Comment    string    `json:"comment" gorm:"type:text"` // レビューコメント
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 }

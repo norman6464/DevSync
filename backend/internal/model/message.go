@@ -15,7 +15,7 @@ type ConversationSummary struct {
 // Message はユーザー間のダイレクトメッセージを表す。
 type Message struct {
 	ID         uint      `json:"id" gorm:"primaryKey"`
-	SenderID   uint      `json:"sender_id" gorm:"not null;index"`   // 送信者のユーザーID
+	SenderID   uint      `json:"sender_id" gorm:"not null;index"` // 送信者のユーザーID
 	Sender     User      `json:"sender" gorm:"foreignKey:SenderID"`
 	ReceiverID uint      `json:"receiver_id" gorm:"not null;index"` // 受信者のユーザーID
 	Receiver   User      `json:"receiver" gorm:"foreignKey:ReceiverID"`

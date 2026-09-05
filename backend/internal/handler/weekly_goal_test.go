@@ -17,11 +17,13 @@ type mockWeeklyGoalRepo struct{ mock.Mock }
 func (m *mockWeeklyGoalRepo) Upsert(ctx context.Context, goal *model.WeeklyGoal) error {
 	return m.Called(ctx, goal).Error(0)
 }
+
 func (m *mockWeeklyGoalRepo) GetByUserID(ctx context.Context, userID uint) ([]model.WeeklyGoal, error) {
 	args := m.Called(ctx, userID)
 	goals, _ := args.Get(0).([]model.WeeklyGoal)
 	return goals, args.Error(1)
 }
+
 func (m *mockWeeklyGoalRepo) SumDurationByUserCategoryThisWeek(ctx context.Context, userID uint, category string) (int, error) {
 	args := m.Called(ctx, userID, category)
 	return args.Int(0), args.Error(1)

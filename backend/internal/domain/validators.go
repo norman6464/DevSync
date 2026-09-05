@@ -174,11 +174,11 @@ func ValidateURL(rawURL string) error {
 
 // cloudMetadataHosts はクラウドメタデータサービスのホスト名一覧。
 var cloudMetadataHosts = map[string]bool{
-	"metadata.google.internal":        true,
-	"metadata.google.internal.":       true,
-	"instance-data":                   true,
-	"169.254.169.254":                 true,
-	"fd00:ec2::254":                   true,
+	"metadata.google.internal":  true,
+	"metadata.google.internal.": true,
+	"instance-data":             true,
+	"169.254.169.254":           true,
+	"fd00:ec2::254":             true,
 }
 
 // isBlockedHost はSSRF対策として内部ネットワークのホストを検出する。

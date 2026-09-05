@@ -52,4 +52,3 @@ type TagsResponse struct {
 type PinsResponse struct {
 	Pins interface{} `json:"pins"`
 }
-

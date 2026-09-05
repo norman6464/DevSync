@@ -19,16 +19,19 @@ type mockZennArticlePort struct{ mock.Mock }
 func (m *mockZennArticlePort) UpsertArticles(ctx context.Context, userID uint, articles []model.ZennArticle) error {
 	return m.Called(ctx, userID, articles).Error(0)
 }
+
 func (m *mockZennArticlePort) GetArticles(ctx context.Context, userID uint) ([]model.ZennArticle, error) {
 	args := m.Called(ctx, userID)
 	a, _ := args.Get(0).([]model.ZennArticle)
 	return a, args.Error(1)
 }
+
 func (m *mockZennArticlePort) GetStats(ctx context.Context, userID uint) (*model.ZennStats, error) {
 	args := m.Called(ctx, userID)
 	s, _ := args.Get(0).(*model.ZennStats)
 	return s, args.Error(1)
 }
+
 func (m *mockZennArticlePort) DeleteUserArticles(ctx context.Context, userID uint) error {
 	return m.Called(ctx, userID).Error(0)
 }
@@ -41,6 +44,7 @@ func (m *mockZennFetcher) FetchArticles(ctx context.Context, username string) ([
 	a, _ := args.Get(0).([]model.ZennArticle)
 	return a, args.Error(1)
 }
+
 func (m *mockZennFetcher) UserExists(ctx context.Context, username string) (bool, error) {
 	args := m.Called(ctx, username)
 	return args.Bool(0), args.Error(1)

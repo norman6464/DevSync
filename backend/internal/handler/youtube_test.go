@@ -21,16 +21,19 @@ type mockYouTubeVideoPort struct{ mock.Mock }
 func (m *mockYouTubeVideoPort) UpsertVideos(ctx context.Context, videos []model.YouTubeVideo) error {
 	return m.Called(ctx, videos).Error(0)
 }
+
 func (m *mockYouTubeVideoPort) FindByVideoIDs(ctx context.Context, videoIDs []string) ([]model.YouTubeVideo, error) {
 	args := m.Called(ctx, videoIDs)
 	v, _ := args.Get(0).([]model.YouTubeVideo)
 	return v, args.Error(1)
 }
+
 func (m *mockYouTubeVideoPort) FindCachedSearch(ctx context.Context, query, language string) (*model.YouTubeSearchCache, error) {
 	args := m.Called(ctx, query, language)
 	c, _ := args.Get(0).(*model.YouTubeSearchCache)
 	return c, args.Error(1)
 }
+
 func (m *mockYouTubeVideoPort) SaveSearchCache(ctx context.Context, cache *model.YouTubeSearchCache) error {
 	return m.Called(ctx, cache).Error(0)
 }

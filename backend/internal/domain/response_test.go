@@ -27,12 +27,12 @@ func TestNewErrorResponse(t *testing.T) {
 
 func TestNewPaginatedResponse(t *testing.T) {
 	tests := []struct {
-		name       string
-		data       interface{}
-		total      int64
-		page       int
-		limit      int
-		wantPages  int
+		name      string
+		data      interface{}
+		total     int64
+		page      int
+		limit     int
+		wantPages int
 	}{
 		{
 			name:      "10件中10件を1ページで取得",

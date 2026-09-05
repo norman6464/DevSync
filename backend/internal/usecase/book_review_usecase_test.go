@@ -194,8 +194,8 @@ func TestUpdateBookReviewUseCase_Execute(t *testing.T) {
 func TestListBookReviewsByRatingUseCase_Execute(t *testing.T) {
 	t.Run("評価範囲が不正なら BadRequest（DB を触らない）", func(t *testing.T) {
 		cases := map[string][2]int{
-			"最小が 0":    {0, 5},
-			"最大が 6":    {1, 6},
+			"最小が 0":   {0, 5},
+			"最大が 6":   {1, 6},
 			"最小 > 最大": {4, 2},
 		}
 		for name, rng := range cases {

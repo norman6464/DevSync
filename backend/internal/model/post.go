@@ -4,22 +4,22 @@ import "time"
 
 // Post はユーザーの投稿（学習報告など）を表す。
 type Post struct {
-	ID           uint      `json:"id" gorm:"primaryKey"`
-	UserID       uint      `json:"user_id" gorm:"not null;index"`
-	User         User      `json:"user" gorm:"foreignKey:UserID"`
-	Title        string    `json:"title" gorm:"not null"`
-	Content      string    `json:"content" gorm:"type:text;not null"`
-	ImageURLs    string    `json:"image_urls" gorm:"type:text"` // カンマ区切りの画像URL
-	IsDraft      bool      `json:"is_draft" gorm:"default:false;index"` // 下書きフラグ
-	LikeCount         int            `json:"like_count" gorm:"default:0"`
-	CommentCount      int            `json:"comment_count" gorm:"default:0"`
-	BookmarkCount     int            `json:"bookmark_count" gorm:"default:0"`
-	ViewCount         int            `json:"view_count" gorm:"default:0"`
-	EstimatedReadTime int            `json:"estimated_read_time" gorm:"default:0"`
-	ScheduledAt       *time.Time     `json:"scheduled_at,omitempty" gorm:"index"`
-	CodeSnippets      []CodeSnippet  `json:"code_snippets,omitempty" gorm:"foreignKey:PostID"`
-	CreatedAt    time.Time      `json:"created_at"`
-	UpdatedAt    time.Time      `json:"updated_at"`
+	ID                uint          `json:"id" gorm:"primaryKey"`
+	UserID            uint          `json:"user_id" gorm:"not null;index"`
+	User              User          `json:"user" gorm:"foreignKey:UserID"`
+	Title             string        `json:"title" gorm:"not null"`
+	Content           string        `json:"content" gorm:"type:text;not null"`
+	ImageURLs         string        `json:"image_urls" gorm:"type:text"`         // カンマ区切りの画像URL
+	IsDraft           bool          `json:"is_draft" gorm:"default:false;index"` // 下書きフラグ
+	LikeCount         int           `json:"like_count" gorm:"default:0"`
+	CommentCount      int           `json:"comment_count" gorm:"default:0"`
+	BookmarkCount     int           `json:"bookmark_count" gorm:"default:0"`
+	ViewCount         int           `json:"view_count" gorm:"default:0"`
+	EstimatedReadTime int           `json:"estimated_read_time" gorm:"default:0"`
+	ScheduledAt       *time.Time    `json:"scheduled_at,omitempty" gorm:"index"`
+	CodeSnippets      []CodeSnippet `json:"code_snippets,omitempty" gorm:"foreignKey:PostID"`
+	CreatedAt         time.Time     `json:"created_at"`
+	UpdatedAt         time.Time     `json:"updated_at"`
 }
 
 // Like は投稿への「いいね」を記録する。
@@ -163,17 +163,17 @@ type ViewCount struct {
 // Comment は投稿へのコメントを表す。
 // ParentID が設定されている場合は返信コメント（スレッド）。
 type Comment struct {
-	ID        uint       `json:"id" gorm:"primaryKey"`
-	UserID    uint       `json:"user_id" gorm:"not null;index"`
-	User      User       `json:"user" gorm:"foreignKey:UserID"`
-	PostID    uint       `json:"post_id" gorm:"not null;index"`
-	ParentID  *uint      `json:"parent_id,omitempty" gorm:"index"`
-	Content   string     `json:"content" gorm:"type:text;not null"`
-	LikeCount int        `json:"like_count" gorm:"default:0"`
-	IsHidden  bool       `json:"is_hidden" gorm:"default:false"`
-	Replies   []Comment  `json:"replies,omitempty" gorm:"foreignKey:ParentID"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
+	ID        uint      `json:"id" gorm:"primaryKey"`
+	UserID    uint      `json:"user_id" gorm:"not null;index"`
+	User      User      `json:"user" gorm:"foreignKey:UserID"`
+	PostID    uint      `json:"post_id" gorm:"not null;index"`
+	ParentID  *uint     `json:"parent_id,omitempty" gorm:"index"`
+	Content   string    `json:"content" gorm:"type:text;not null"`
+	LikeCount int       `json:"like_count" gorm:"default:0"`
+	IsHidden  bool      `json:"is_hidden" gorm:"default:false"`
+	Replies   []Comment `json:"replies,omitempty" gorm:"foreignKey:ParentID"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // CommentLike はコメントへの「いいね」を記録する。

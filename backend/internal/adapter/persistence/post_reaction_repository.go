@@ -25,8 +25,10 @@ func NewPostAuthorReader(q *sqlcgen.Queries) repository.PostAuthorReader {
 }
 
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
-var _ repository.PostReactionRepository = (*postReactionRepository)(nil)
-var _ repository.PostAuthorReader = (*postReactionRepository)(nil)
+var (
+	_ repository.PostReactionRepository = (*postReactionRepository)(nil)
+	_ repository.PostAuthorReader       = (*postReactionRepository)(nil)
+)
 
 // toUint64Slice は []uint を sqlc の ANY($1) パラメータ用に []int64 へ変換する。
 func toInt64Slice(ids []uint) []int64 {

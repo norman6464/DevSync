@@ -22,77 +22,94 @@ type mockLearningLogRepo struct{ mock.Mock }
 func (m *mockLearningLogRepo) Create(ctx context.Context, log *model.LearningLog) error {
 	return m.Called(ctx, log).Error(0)
 }
+
 func (m *mockLearningLogRepo) CreateBatch(ctx context.Context, logs []model.LearningLog) error {
 	return m.Called(ctx, logs).Error(0)
 }
+
 func (m *mockLearningLogRepo) Update(ctx context.Context, log *model.LearningLog) error {
 	return m.Called(ctx, log).Error(0)
 }
+
 func (m *mockLearningLogRepo) Delete(ctx context.Context, id, userID uint) error {
 	return m.Called(ctx, id, userID).Error(0)
 }
+
 func (m *mockLearningLogRepo) FindByID(ctx context.Context, id uint) (*model.LearningLog, error) {
 	args := m.Called(ctx, id)
 	l, _ := args.Get(0).(*model.LearningLog)
 	return l, args.Error(1)
 }
+
 func (m *mockLearningLogRepo) GetByUserID(ctx context.Context, userID uint, limit, offset int) ([]model.LearningLog, int64, error) {
 	args := m.Called(ctx, userID, limit, offset)
 	l, _ := args.Get(0).([]model.LearningLog)
 	return l, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockLearningLogRepo) GetByCategory(ctx context.Context, userID uint, category string) ([]model.LearningLog, error) {
 	args := m.Called(ctx, userID, category)
 	l, _ := args.Get(0).([]model.LearningLog)
 	return l, args.Error(1)
 }
+
 func (m *mockLearningLogRepo) GetBySource(ctx context.Context, userID uint, source string) ([]model.LearningLog, error) {
 	args := m.Called(ctx, userID, source)
 	l, _ := args.Get(0).([]model.LearningLog)
 	return l, args.Error(1)
 }
+
 func (m *mockLearningLogRepo) GetByPeriod(ctx context.Context, userID uint, days int) ([]model.LearningLog, error) {
 	args := m.Called(ctx, userID, days)
 	l, _ := args.Get(0).([]model.LearningLog)
 	return l, args.Error(1)
 }
+
 func (m *mockLearningLogRepo) GetFavorites(ctx context.Context, userID uint, limit, offset int) ([]model.LearningLog, int64, error) {
 	args := m.Called(ctx, userID, limit, offset)
 	l, _ := args.Get(0).([]model.LearningLog)
 	return l, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockLearningLogRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)
 }
+
 func (m *mockLearningLogRepo) SumDurationByPeriod(ctx context.Context, userID uint, days int) (int, error) {
 	args := m.Called(ctx, userID, days)
 	return args.Int(0), args.Error(1)
 }
+
 func (m *mockLearningLogRepo) SumDurationByGoalID(ctx context.Context, goalID uint) (int, error) {
 	args := m.Called(ctx, goalID)
 	return args.Int(0), args.Error(1)
 }
+
 func (m *mockLearningLogRepo) GetByGoalID(ctx context.Context, goalID uint, limit, offset int) ([]model.LearningLog, int64, error) {
 	args := m.Called(ctx, goalID, limit, offset)
 	l, _ := args.Get(0).([]model.LearningLog)
 	return l, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockLearningLogRepo) GetStreakInfo(ctx context.Context, userID uint) (*model.StreakInfo, error) {
 	args := m.Called(ctx, userID)
 	s, _ := args.Get(0).(*model.StreakInfo)
 	return s, args.Error(1)
 }
+
 func (m *mockLearningLogRepo) GetCalendarData(ctx context.Context, userID uint) ([]model.CalendarEntry, error) {
 	args := m.Called(ctx, userID)
 	e, _ := args.Get(0).([]model.CalendarEntry)
 	return e, args.Error(1)
 }
+
 func (m *mockLearningLogRepo) GetRecentCategories(ctx context.Context, userID uint, limit int) ([]string, error) {
 	args := m.Called(ctx, userID, limit)
 	c, _ := args.Get(0).([]string)
 	return c, args.Error(1)
 }
+
 func (m *mockLearningLogRepo) GetMonthlySummary(ctx context.Context, userID uint, months int) ([]model.MonthlySummary, error) {
 	args := m.Called(ctx, userID, months)
 	s, _ := args.Get(0).([]model.MonthlySummary)
@@ -107,6 +124,7 @@ func (m *mockLearningGoalLinker) FindByID(ctx context.Context, id uint) (*model.
 	g, _ := args.Get(0).(*model.LearningGoal)
 	return g, args.Error(1)
 }
+
 func (m *mockLearningGoalLinker) Update(ctx context.Context, goal *model.LearningGoal) error {
 	return m.Called(ctx, goal).Error(0)
 }

@@ -6,9 +6,9 @@ import "time"
 // OwnerID はルーム作成者を示し、ルームの管理権限を持つ。
 type ChatRoom struct {
 	ID          uint      `json:"id" gorm:"primaryKey"`
-	Name        string    `json:"name" gorm:"size:100;not null"`   // ルーム名
-	Description string    `json:"description" gorm:"size:500"`     // ルームの説明
-	OwnerID     uint      `json:"owner_id" gorm:"not null;index"`  // ルーム作成者のユーザーID
+	Name        string    `json:"name" gorm:"size:100;not null"`  // ルーム名
+	Description string    `json:"description" gorm:"size:500"`    // ルームの説明
+	OwnerID     uint      `json:"owner_id" gorm:"not null;index"` // ルーム作成者のユーザーID
 	Owner       *User     `json:"owner,omitempty" gorm:"foreignKey:OwnerID"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`

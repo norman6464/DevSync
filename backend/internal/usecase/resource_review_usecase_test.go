@@ -18,24 +18,29 @@ type mockResourceReviewRepo struct{ mock.Mock }
 func (m *mockResourceReviewRepo) Create(ctx context.Context, review *model.ResourceReview) error {
 	return m.Called(ctx, review).Error(0)
 }
+
 func (m *mockResourceReviewRepo) FindByID(ctx context.Context, id uint) (*model.ResourceReview, error) {
 	args := m.Called(ctx, id)
 	r, _ := args.Get(0).(*model.ResourceReview)
 	return r, args.Error(1)
 }
+
 func (m *mockResourceReviewRepo) FindByResourceID(ctx context.Context, resourceID uint, limit, offset int) ([]model.ResourceReview, int64, error) {
 	args := m.Called(ctx, resourceID, limit, offset)
 	reviews, _ := args.Get(0).([]model.ResourceReview)
 	return reviews, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockResourceReviewRepo) FindByUserAndResource(ctx context.Context, userID, resourceID uint) (*model.ResourceReview, error) {
 	args := m.Called(ctx, userID, resourceID)
 	r, _ := args.Get(0).(*model.ResourceReview)
 	return r, args.Error(1)
 }
+
 func (m *mockResourceReviewRepo) Update(ctx context.Context, review *model.ResourceReview) error {
 	return m.Called(ctx, review).Error(0)
 }
+
 func (m *mockResourceReviewRepo) Delete(ctx context.Context, id uint) error {
 	return m.Called(ctx, id).Error(0)
 }
