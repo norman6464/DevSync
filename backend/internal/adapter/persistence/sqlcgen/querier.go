@@ -11,7 +11,9 @@ import (
 )
 
 type Querier interface {
+	AdjustAnswerVoteCount(ctx context.Context, arg AdjustAnswerVoteCountParams) error
 	ArchiveNote(ctx context.Context, id int64) error
+	ClearBestAnswer(ctx context.Context, questionID int64) error
 	ClearLearningLogTemplateDefaultFlag(ctx context.Context, userID int64) error
 	ClearNoteTemplateDefaultFlag(ctx context.Context, userID int64) error
 	CountActiveLearningGoalsByUser(ctx context.Context, userID int64) (int64, error)
@@ -129,6 +131,8 @@ type Querier interface {
 	CreateAIAdvice(ctx context.Context, arg CreateAIAdviceParams) (AiAdvice, error)
 	CreateAIConversation(ctx context.Context, arg CreateAIConversationParams) (AiConversation, error)
 	CreateAIMessage(ctx context.Context, arg CreateAIMessageParams) (AiMessage, error)
+	CreateAnswer(ctx context.Context, arg CreateAnswerParams) (Answer, error)
+	CreateAnswerVote(ctx context.Context, arg CreateAnswerVoteParams) (AnswerVote, error)
 	CreateBookReview(ctx context.Context, arg CreateBookReviewParams) (BookReview, error)
 	CreateBookmark(ctx context.Context, arg CreateBookmarkParams) error
 	CreateBookmarkCollection(ctx context.Context, arg CreateBookmarkCollectionParams) (BookmarkCollection, error)
@@ -180,9 +184,12 @@ type Querier interface {
 	DecrementPostBookmarkCount(ctx context.Context, id int64) error
 	DecrementPostCommentCount(ctx context.Context, id int64) error
 	DecrementPostLikeCount(ctx context.Context, id int64) error
+	// 0未満にはしない（GORMのGREATEST(answer_count - 1, 0)に相当）。
+	DecrementQuestionAnswerCountFloored(ctx context.Context, id int64) error
 	DeleteAIAdvicesByUser(ctx context.Context, userID int64) error
 	DeleteAIConversation(ctx context.Context, id int64) error
 	DeleteAIMessagesByConversationID(ctx context.Context, conversationID int64) error
+	DeleteAnswerVote(ctx context.Context, arg DeleteAnswerVoteParams) error
 	// GORMのDelete（論理削除）に相当。
 	DeleteBookReview(ctx context.Context, id int64) error
 	DeleteBookmark(ctx context.Context, arg DeleteBookmarkParams) (int64, error)
@@ -236,6 +243,10 @@ type Querier interface {
 	FindNotificationsByUserID(ctx context.Context, arg FindNotificationsByUserIDParams) ([]FindNotificationsByUserIDRow, error)
 	GetAIConversationByID(ctx context.Context, id int64) (AiConversation, error)
 	GetAIConversationByIDAndUser(ctx context.Context, arg GetAIConversationByIDAndUserParams) (AiConversation, error)
+	GetAnswerVoteByUserAndAnswer(ctx context.Context, arg GetAnswerVoteByUserAndAnswerParams) (AnswerVote, error)
+	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
+	// answersは論理削除があるため、削除済みは除外する（GORM Firstの自動スコープ相当）。
+	GetAnswerWithUserByID(ctx context.Context, id int64) (GetAnswerWithUserByIDRow, error)
 	GetAverageActiveProgressByUser(ctx context.Context, userID int64) (float64, error)
 	// book_reviews は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
 	// deleted_at IS NULL を明示する。レビュー0件でもCOALESCEにより全項目0を返す
@@ -321,6 +332,7 @@ type Querier interface {
 	IncrementPostCommentCount(ctx context.Context, id int64) error
 	IncrementPostLikeCount(ctx context.Context, id int64) error
 	IncrementPostViewCount(ctx context.Context, id int64) error
+	IncrementQuestionAnswerCount(ctx context.Context, id int64) error
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
 	ListAIAdvicesByUser(ctx context.Context, arg ListAIAdvicesByUserParams) ([]AiAdvice, error)
 	ListAIConversationsByUser(ctx context.Context, arg ListAIConversationsByUserParams) ([]AiConversation, error)
@@ -335,6 +347,10 @@ type Querier interface {
 	// GORMのPreload("User").Preload("GithubRepo")に相当（移行前のFindAllと同じ挙動）。
 	// user_idはNOT NULLのためINNER JOINでよい。
 	ListAllProjectsWithUserAndRepo(ctx context.Context, arg ListAllProjectsWithUserAndRepoParams) ([]ListAllProjectsWithUserAndRepoRow, error)
+	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
+	ListAnswersByQuestionID(ctx context.Context, questionID int64) ([]ListAnswersByQuestionIDRow, error)
+	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
+	ListAnswersByVoteRange(ctx context.Context, arg ListAnswersByVoteRangeParams) ([]ListAnswersByVoteRangeRow, error)
 	ListArchivedNotesByUser(ctx context.Context, arg ListArchivedNotesByUserParams) ([]ListArchivedNotesByUserRow, error)
 	// GithubRepoのみPreloadする（Userは含めない。移行前のFindArchivedByUserIDと同じ挙動）。
 	ListArchivedProjectsByUserWithRepo(ctx context.Context, arg ListArchivedProjectsByUserWithRepoParams) ([]ListArchivedProjectsByUserWithRepoRow, error)
@@ -455,6 +471,14 @@ type Querier interface {
 	ListWeeklyGoalsByUser(ctx context.Context, userID int64) ([]WeeklyGoal, error)
 	ListYouTubeVideosByIDs(ctx context.Context, dollar_1 []string) ([]YouTubeVideo, error)
 	ListZennArticlesByUser(ctx context.Context, userID int64) ([]ZennArticle, error)
+	// Vote/RemoveVoteでの差分計算が並行実行で古い値を読まないようにするための行ロック
+	// （GORMの clause.Locking{Strength: "UPDATE"} に相当）。回答が存在しない/削除済みなら
+	// pgx.ErrNoRows を返し、呼び出し側のトランザクションを失敗させる。
+	LockAnswerForVoteChange(ctx context.Context, id int64) (int64, error)
+	// Delete/SetBestAnswerでのロック順序（質問→回答）をGORM実装と揃えるための行ロック
+	// （GORMの clause.Locking{Strength: "UPDATE"} に相当）。質問が存在しない/削除済みなら
+	// pgx.ErrNoRows を返し、呼び出し側のトランザクションを失敗させる。
+	LockQuestionForAnswerChange(ctx context.Context, id int64) (int64, error)
 	// 同一ユーザーの CreateWithinLimits 同時実行を直列化するための行ロック（GORMの clause.Locking{Strength: "UPDATE"} に相当）。
 	LockUserForStreakFreeze(ctx context.Context, id int64) error
 	MarkAIAdviceAsRead(ctx context.Context, arg MarkAIAdviceAsReadParams) (int64, error)
@@ -471,7 +495,10 @@ type Querier interface {
 	SearchPostsWithFilter(ctx context.Context, arg SearchPostsWithFilterParams) ([]SearchPostsWithFilterRow, error)
 	// GORMのPreload("User").Preload("GithubRepo")に相当（移行前のSearchと同じ挙動）。
 	SearchProjectsWithUserAndRepo(ctx context.Context, arg SearchProjectsWithUserAndRepoParams) ([]SearchProjectsWithUserAndRepoRow, error)
+	SetAnswerBest(ctx context.Context, id int64) error
 	SetProjectArchived(ctx context.Context, arg SetProjectArchivedParams) error
+	SetQuestionSolved(ctx context.Context, id int64) error
+	SoftDeleteAnswer(ctx context.Context, id int64) error
 	SumAnswerVotesByUser(ctx context.Context, userID int64) (int64, error)
 	SumCodeSnippetCommentCountByUser(ctx context.Context, userID int64) (int64, error)
 	SumGitHubContributionsByUser(ctx context.Context, userID int64) (int64, error)
@@ -487,6 +514,10 @@ type Querier interface {
 	ToggleNoteFavorite(ctx context.Context, id int64) error
 	TouchAIConversation(ctx context.Context, arg TouchAIConversationParams) error
 	UnarchiveNote(ctx context.Context, id int64) error
+	// GORMのSave（全カラム上書き）に相当。answersは論理削除があるため、GORMが自動付与する
+	// deleted_at IS NULLスコープをUPDATEにも明示する。
+	UpdateAnswer(ctx context.Context, arg UpdateAnswerParams) (Answer, error)
+	UpdateAnswerVoteValue(ctx context.Context, arg UpdateAnswerVoteValueParams) error
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateBookReview(ctx context.Context, arg UpdateBookReviewParams) (BookReview, error)
 	// GORMのSave（全カラム上書き）に相当。
