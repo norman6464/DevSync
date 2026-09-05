@@ -68,10 +68,12 @@ type Querier interface {
 	CreateNotificationSettings(ctx context.Context, arg CreateNotificationSettingsParams) (NotificationSetting, error)
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) (PasswordResetToken, error)
 	CreatePostTemplate(ctx context.Context, arg CreatePostTemplateParams) (PostTemplate, error)
+	CreateProjectMilestone(ctx context.Context, arg CreateProjectMilestoneParams) (ProjectMilestone, error)
 	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
 	DecrementCommentLikeCount(ctx context.Context, id int64) error
 	DeleteCommentLike(ctx context.Context, arg DeleteCommentLikeParams) error
 	DeletePostTemplate(ctx context.Context, id int64) error
+	DeleteProjectMilestone(ctx context.Context, id int64) error
 	// book_reviews は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
 	// deleted_at IS NULL を明示する。レビュー0件でもCOALESCEにより全項目0を返す
 	// （GORM実装のtotal_reviews==0での早期returnと同じ結果になる）。
@@ -80,6 +82,7 @@ type Querier interface {
 	GetNotificationSettingsByUserID(ctx context.Context, userID int64) (NotificationSetting, error)
 	GetPasswordResetTokenByToken(ctx context.Context, token string) (PasswordResetToken, error)
 	GetPostTemplateByID(ctx context.Context, id int64) (PostTemplate, error)
+	GetProjectMilestoneByID(ctx context.Context, id int64) (ProjectMilestone, error)
 	// projects は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
 	// deleted_at IS NULL を明示する（Unscoped() されていない全クエリと同じ挙動）。
 	GetProjectStats(ctx context.Context, userID int64) (GetProjectStatsRow, error)
@@ -90,6 +93,7 @@ type Querier interface {
 	IncrementCommentLikeCount(ctx context.Context, id int64) error
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
 	ListPostTemplatesByUserID(ctx context.Context, arg ListPostTemplatesByUserIDParams) ([]PostTemplate, error)
+	ListProjectMilestonesByProject(ctx context.Context, projectID int64) ([]ProjectMilestone, error)
 	ListUserActivitiesByUser(ctx context.Context, arg ListUserActivitiesByUserParams) ([]UserActivity, error)
 	ListUserActivitiesByUserAndType(ctx context.Context, arg ListUserActivitiesByUserAndTypeParams) ([]UserActivity, error)
 	ListWeeklyGoalsByUser(ctx context.Context, userID int64) ([]WeeklyGoal, error)
@@ -105,6 +109,7 @@ type Querier interface {
 	SumRoadmapStepCountByUser(ctx context.Context, userID int64) (int64, error)
 	UpdateNotificationSettings(ctx context.Context, arg UpdateNotificationSettingsParams) (NotificationSetting, error)
 	UpdatePostTemplate(ctx context.Context, arg UpdatePostTemplateParams) (PostTemplate, error)
+	UpdateProjectMilestone(ctx context.Context, arg UpdateProjectMilestoneParams) (ProjectMilestone, error)
 	UpdateReminderSettings(ctx context.Context, arg UpdateReminderSettingsParams) (ReminderSetting, error)
 	UpdateWeeklyChallenge(ctx context.Context, arg UpdateWeeklyChallengeParams) (WeeklyChallenge, error)
 	UpsertWeeklyGoal(ctx context.Context, arg UpsertWeeklyGoalParams) (WeeklyGoal, error)
