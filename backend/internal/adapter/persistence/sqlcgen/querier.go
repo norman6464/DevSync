@@ -149,6 +149,8 @@ type Querier interface {
 	GetDefaultNoteTemplateByUser(ctx context.Context, userID int64) (NoteTemplate, error)
 	GetEmojiBreakdownByUser(ctx context.Context, userID int64) ([]GetEmojiBreakdownByUserRow, error)
 	GetLatestNoteVersionNumber(ctx context.Context, noteID int64) (int64, error)
+	// learning_resources は GORM の論理削除（deleted_at）付きモデルのため deleted_at IS NULL を明示する。
+	GetLearningResourceByID(ctx context.Context, id int64) (LearningResource, error)
 	// GORMのPreload("User").Preload("Folder")に相当。
 	// folder_idはNULL許容のためLEFT JOIN。note_foldersはsqlc.embedを使わず個別カラム選択にすることで、
 	// sqlcのJOIN文脈依存のnull推論（LEFT JOIN側は全カラムがnullableになる）を効かせる。
