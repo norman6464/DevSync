@@ -13,6 +13,7 @@ import (
 type Querier interface {
 	AdjustAnswerVoteCount(ctx context.Context, arg AdjustAnswerVoteCountParams) error
 	AdjustQuestionVoteCount(ctx context.Context, arg AdjustQuestionVoteCountParams) error
+	AdjustRoadmapCompletedStepCount(ctx context.Context, arg AdjustRoadmapCompletedStepCountParams) error
 	ArchiveNote(ctx context.Context, id int64) error
 	ClearBestAnswer(ctx context.Context, questionID int64) error
 	ClearLearningLogTemplateDefaultFlag(ctx context.Context, userID int64) error
@@ -120,6 +121,7 @@ type Querier interface {
 	CountPublicLearningGoalsByUser(ctx context.Context, userID int64) (int64, error)
 	CountPublicLearningResources(ctx context.Context, arg CountPublicLearningResourcesParams) (int64, error)
 	CountPublicPosts(ctx context.Context) (int64, error)
+	CountPublicRoadmaps(ctx context.Context) (int64, error)
 	CountPublishedPostsByUser(ctx context.Context, userID int64) (int64, error)
 	CountQuestionBookmark(ctx context.Context, arg CountQuestionBookmarkParams) (int64, error)
 	CountQuestions(ctx context.Context, arg CountQuestionsParams) (int64, error)
@@ -220,6 +222,8 @@ type Querier interface {
 	CreateResourceLike(ctx context.Context, arg CreateResourceLikeParams) error
 	CreateResourceReview(ctx context.Context, arg CreateResourceReviewParams) (ResourceReview, error)
 	CreateResourceSave(ctx context.Context, arg CreateResourceSaveParams) error
+	CreateRoadmap(ctx context.Context, arg CreateRoadmapParams) (Roadmap, error)
+	CreateRoadmapStep(ctx context.Context, arg CreateRoadmapStepParams) (RoadmapStep, error)
 	CreateSnippetComment(ctx context.Context, arg CreateSnippetCommentParams) (SnippetComment, error)
 	CreateSnippetFavorite(ctx context.Context, arg CreateSnippetFavoriteParams) error
 	CreateStreakFreeze(ctx context.Context, arg CreateStreakFreezeParams) (StreakFreeze, error)
@@ -238,6 +242,7 @@ type Querier interface {
 	// 0未満にはしない（GORMのGREATEST(save_count - 1, 0)に相当）。deleted_at IS NULLの理由は
 	// IncrementResourceLikeCountと同じ。
 	DecrementResourceSaveCountFloored(ctx context.Context, id int64) error
+	DecrementRoadmapStepCount(ctx context.Context, id int64) error
 	// 0未満にはしない（GORMのGREATEST(comment_count - 1, 0)に相当）。
 	DecrementSnippetCommentCountFloored(ctx context.Context, id int64) error
 	DeleteAIAdvicesByUser(ctx context.Context, userID int64) error
@@ -338,6 +343,9 @@ type Querier interface {
 	DeleteResourceLike(ctx context.Context, arg DeleteResourceLikeParams) error
 	DeleteResourceReview(ctx context.Context, id int64) error
 	DeleteResourceSave(ctx context.Context, arg DeleteResourceSaveParams) error
+	// roadmap_stepsはFKのON DELETE CASCADEでDBが自動的に削除する。
+	DeleteRoadmap(ctx context.Context, id int64) error
+	DeleteRoadmapStep(ctx context.Context, id int64) error
 	DeleteSnippetCommentByID(ctx context.Context, id int64) error
 	DeleteSnippetCommentsByPostSnippets(ctx context.Context, postID int64) error
 	DeleteSnippetCommentsByUserPostSnippets(ctx context.Context, userID int64) error
@@ -443,6 +451,10 @@ type Querier interface {
 	GetResourceReviewByUserAndResource(ctx context.Context, arg GetResourceReviewByUserAndResourceParams) (ResourceReview, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	GetResourceReviewWithUserByID(ctx context.Context, id int64) (GetResourceReviewWithUserByIDRow, error)
+	GetRoadmapByID(ctx context.Context, id int64) (Roadmap, error)
+	GetRoadmapStepByID(ctx context.Context, id int64) (RoadmapStep, error)
+	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
+	GetRoadmapWithUserByID(ctx context.Context, id int64) (GetRoadmapWithUserByIDRow, error)
 	GetSnippetCommentByID(ctx context.Context, id int64) (SnippetComment, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	GetSnippetCommentsWithUser(ctx context.Context, snippetID int64) ([]GetSnippetCommentsWithUserRow, error)
@@ -472,6 +484,7 @@ type Querier interface {
 	IncrementResourceLikeCount(ctx context.Context, id int64) error
 	// deleted_at IS NULLを明示する理由はIncrementResourceLikeCountと同じ。
 	IncrementResourceSaveCount(ctx context.Context, id int64) error
+	IncrementRoadmapStepCount(ctx context.Context, id int64) error
 	IncrementSnippetCommentCount(ctx context.Context, id int64) error
 	IncrementSnippetForkCount(ctx context.Context, id int64) error
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
@@ -607,6 +620,8 @@ type Querier interface {
 	// user_idはNOT NULLのためINNER JOINでよい。
 	ListPublicPostsWithUser(ctx context.Context, arg ListPublicPostsWithUserParams) ([]ListPublicPostsWithUserRow, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
+	ListPublicRoadmapsWithUser(ctx context.Context, arg ListPublicRoadmapsWithUserParams) ([]ListPublicRoadmapsWithUserRow, error)
+	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	ListPublishedPostsByUserWithUser(ctx context.Context, arg ListPublishedPostsByUserWithUserParams) ([]ListPublishedPostsByUserWithUserRow, error)
 	ListQiitaArticlesByUser(ctx context.Context, userID int64) ([]QiitaArticle, error)
 	// Userは含めない（移行前からの挙動。一覧系の中でこれだけPreloadしない）。
@@ -626,11 +641,18 @@ type Querier interface {
 	ListResourceProgressByUser(ctx context.Context, arg ListResourceProgressByUserParams) ([]ListResourceProgressByUserRow, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	ListResourceReviewsByResource(ctx context.Context, arg ListResourceReviewsByResourceParams) ([]ListResourceReviewsByResourceRow, error)
+	// GORMのPreload("Steps", order_index ASC)に相当。単一ロードマップのステップ一覧。
+	ListRoadmapStepsByRoadmap(ctx context.Context, roadmapID int64) ([]RoadmapStep, error)
+	// GetTemplatesなど複数ロードマップ分のステップをまとめ取りし、Go側でグルーピングする。
+	ListRoadmapStepsByRoadmapIDs(ctx context.Context, dollar_1 []int64) ([]RoadmapStep, error)
+	ListRoadmapsByStatus(ctx context.Context, arg ListRoadmapsByStatusParams) ([]Roadmap, error)
+	ListRoadmapsByUser(ctx context.Context, arg ListRoadmapsByUserParams) ([]Roadmap, error)
 	ListRootNoteFoldersByUser(ctx context.Context, userID int64) ([]NoteFolder, error)
 	ListSavedLearningResourcesWithUser(ctx context.Context, arg ListSavedLearningResourcesWithUserParams) ([]ListSavedLearningResourcesWithUserRow, error)
 	ListScheduledPostsByUserWithUser(ctx context.Context, userID int64) ([]ListScheduledPostsByUserWithUserRow, error)
 	ListSolvedQuestionsWithUser(ctx context.Context, arg ListSolvedQuestionsWithUserParams) ([]ListSolvedQuestionsWithUserRow, error)
 	ListStreakFreezesByUserAndMonth(ctx context.Context, arg ListStreakFreezesByUserAndMonthParams) ([]StreakFreeze, error)
+	ListTemplateRoadmaps(ctx context.Context) ([]Roadmap, error)
 	// フォロー中ユーザーと自分自身の公開済み投稿（移行前のGo実装のサブクエリをそのまま踏襲）。
 	ListTimelinePostsWithUser(ctx context.Context, arg ListTimelinePostsWithUserParams) ([]ListTimelinePostsWithUserRow, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
@@ -668,6 +690,7 @@ type Querier interface {
 	MarkMessagesAsRead(ctx context.Context, arg MarkMessagesAsReadParams) error
 	MarkNotificationAsRead(ctx context.Context, arg MarkNotificationAsReadParams) error
 	MarkPasswordResetTokenAsUsed(ctx context.Context, id int64) error
+	ReorderRoadmapStep(ctx context.Context, arg ReorderRoadmapStepParams) error
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	SearchBookReviews(ctx context.Context, arg SearchBookReviewsParams) ([]SearchBookReviewsRow, error)
 	// CodeSnippet は投稿者の ID しか持たず User の関連を張っていないため、Preload しない
@@ -754,6 +777,15 @@ type Querier interface {
 	UpdateReminderSettings(ctx context.Context, arg UpdateReminderSettingsParams) (ReminderSetting, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateResourceReview(ctx context.Context, arg UpdateResourceReviewParams) (ResourceReview, error)
+	// GORMのSave（全カラム上書き）に相当。
+	UpdateRoadmap(ctx context.Context, arg UpdateRoadmapParams) (Roadmap, error)
+	UpdateRoadmapProgress(ctx context.Context, arg UpdateRoadmapProgressParams) error
+	// 進捗100%到達での自動完了（GORMのUpdates({"progress":...,"status":"completed","completed_at":now()})に相当）。
+	UpdateRoadmapProgressCompleted(ctx context.Context, arg UpdateRoadmapProgressCompletedParams) error
+	// 100%未満へ戻ったときのアクティブ復帰（GORMのUpdates({"progress":...,"status":"active","completed_at":nil})に相当）。
+	UpdateRoadmapProgressReactivated(ctx context.Context, arg UpdateRoadmapProgressReactivatedParams) error
+	// GORMのSave（全カラム上書き）に相当。
+	UpdateRoadmapStep(ctx context.Context, arg UpdateRoadmapStepParams) (RoadmapStep, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
