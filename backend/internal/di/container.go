@@ -208,7 +208,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	// GitHub 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、
 	// 実装は adapter/persistence（永続化）と adapter/external（GitHub API）。
 	// 旧 githubRepo は ai_chat / ai_rule_engine がまだ使うため残している。
-	githubPort := persistence.NewGitHubRepository(db)
+	githubPort := persistence.NewGitHubRepository(sqlPool)
 	githubClient := external.NewGitHubClient(cfg.GitHubClientID, cfg.GitHubClientSecret, cfg.GitHubRedirectURL)
 	syncGitHubData := usecase.NewSyncGitHubDataUseCase(userPort, githubPort, githubClient)
 	githubUseCases := handler.GitHubUseCases{
