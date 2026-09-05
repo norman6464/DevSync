@@ -797,7 +797,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// 投稿統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	postStatsRepo := persistence.NewPostStatsRepository(db)
+	postStatsRepo := persistence.NewPostStatsRepository(sqlcgen.New(sqlPool))
 	c.PostStatsHandler = handler.NewPostStatsHandler(
 		usecase.NewGetPostStatsUseCase(postStatsRepo),
 	)

@@ -4,20 +4,20 @@ import (
 	"context"
 	"time"
 
+	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
-	"gorm.io/gorm"
 )
 
-// postStatsRepository は [repository.PostStatsRepository] の GORM 実装。
+// postStatsRepository は [repository.PostStatsRepository] の sqlc(pgx) 実装。
 type postStatsRepository struct {
-	db *gorm.DB
+	q *sqlcgen.Queries
 }
 
-// NewPostStatsRepository は PostStatsRepository の GORM 実装を返す。
-func NewPostStatsRepository(db *gorm.DB) repository.PostStatsRepository {
-	return &postStatsRepository{db: db}
+// NewPostStatsRepository は PostStatsRepository の sqlc(pgx) 実装を返す。
+func NewPostStatsRepository(q *sqlcgen.Queries) repository.PostStatsRepository {
+	return &postStatsRepository{q: q}
 }
 
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
@@ -25,47 +25,48 @@ var _ repository.PostStatsRepository = (*postStatsRepository)(nil)
 
 // GetPostStats は指定ユーザーの投稿集計統計を返す。
 func (r *postStatsRepository) GetPostStats(ctx context.Context, userID uint) (*model.PostStats, error) {
-	db := r.db.WithContext(ctx)
+	uid := int64(userID)
 	var stats model.PostStats
 
-	// 総投稿数
-	if err := db.Model(&model.Post{}).Where("user_id = ?", userID).Count(&stats.TotalPosts).Error; err != nil {
+	totalPosts, err := r.q.CountPostsByUser(ctx, uid)
+	if err != nil {
 		return nil, err
 	}
+	stats.TotalPosts = totalPosts
 
-	// 公開済み投稿数
-	if err := db.Model(&model.Post{}).Where("user_id = ? AND is_draft = ?", userID, false).Count(&stats.PublishedPosts).Error; err != nil {
+	publishedPosts, err := r.q.CountPublishedPostsByUser(ctx, uid)
+	if err != nil {
 		return nil, err
 	}
+	stats.PublishedPosts = publishedPosts
 
-	// 下書き投稿数
-	if err := db.Model(&model.Post{}).Where("user_id = ? AND is_draft = ?", userID, true).Count(&stats.DraftPosts).Error; err != nil {
+	draftPosts, err := r.q.CountDraftPostsByUser(ctx, uid)
+	if err != nil {
 		return nil, err
 	}
+	stats.DraftPosts = draftPosts
 
-	// 受け取ったいいね総数
-	var totalLikes *int64
-	if err := db.Model(&model.Post{}).Where("user_id = ?", userID).Select("SUM(like_count)").Scan(&totalLikes).Error; err != nil {
+	totalLikes, err := r.q.SumPostLikesReceivedByUser(ctx, uid)
+	if err != nil {
 		return nil, err
 	}
-	if totalLikes != nil {
-		stats.TotalLikesReceived = *totalLikes
-	}
+	stats.TotalLikesReceived = totalLikes
 
-	// 受け取ったコメント総数
-	var totalComments *int64
-	if err := db.Model(&model.Post{}).Where("user_id = ?", userID).Select("SUM(comment_count)").Scan(&totalComments).Error; err != nil {
+	totalComments, err := r.q.SumPostCommentsReceivedByUser(ctx, uid)
+	if err != nil {
 		return nil, err
 	}
-	if totalComments != nil {
-		stats.TotalComments = *totalComments
-	}
+	stats.TotalComments = totalComments
 
-	// 今月の投稿数
 	monthStart := domain.StartOfMonth(time.Now())
-	if err := db.Model(&model.Post{}).Where("user_id = ? AND created_at >= ?", userID, monthStart).Count(&stats.PostsThisMonth).Error; err != nil {
+	postsThisMonth, err := r.q.CountPostsByUserSince(ctx, sqlcgen.CountPostsByUserSinceParams{
+		UserID:    uid,
+		CreatedAt: toTimestamptzNotNull(monthStart),
+	})
+	if err != nil {
 		return nil, err
 	}
+	stats.PostsThisMonth = postsThisMonth
 
 	return &stats, nil
 }

@@ -35,6 +35,7 @@ type Querier interface {
 	CountCommentsReceivedByUser(ctx context.Context, userID int64) (int64, error)
 	CountCompletedLearningGoalsByUser(ctx context.Context, arg CountCompletedLearningGoalsByUserParams) (int64, error)
 	CountConversationsByUser(ctx context.Context, senderID int64) (int64, error)
+	CountDraftPostsByUser(ctx context.Context, userID int64) (int64, error)
 	CountFavoriteNotesByUser(ctx context.Context, userID int64) (int64, error)
 	CountFollowersByUser(ctx context.Context, followeeID int64) (int64, error)
 	CountFollowingByUser(ctx context.Context, followerID int64) (int64, error)
@@ -67,6 +68,8 @@ type Querier interface {
 	CountPostTemplatesByUserID(ctx context.Context, userID int64) (int64, error)
 	CountPostViewsByPost(ctx context.Context, postID int64) (int64, error)
 	CountPostsByUser(ctx context.Context, userID int64) (int64, error)
+	CountPostsByUserSince(ctx context.Context, arg CountPostsByUserSinceParams) (int64, error)
+	CountPublishedPostsByUser(ctx context.Context, userID int64) (int64, error)
 	// questions/answers は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに
 	// 合わせて deleted_at IS NULL を明示する（Unscoped() されていない全クエリと同じ挙動）。
 	CountQuestionsByUser(ctx context.Context, userID int64) (int64, error)
@@ -211,6 +214,7 @@ type Querier interface {
 	SumLearningLogDurationByUserCategorySince(ctx context.Context, arg SumLearningLogDurationByUserCategorySinceParams) (int64, error)
 	SumLearningResourceLikeCountByUser(ctx context.Context, userID int64) (int64, error)
 	SumLearningResourceSaveCountByUser(ctx context.Context, userID int64) (int64, error)
+	SumPostCommentsReceivedByUser(ctx context.Context, userID int64) (int64, error)
 	SumPostLikesReceivedByUser(ctx context.Context, userID int64) (int64, error)
 	SumQuestionVotesByUser(ctx context.Context, userID int64) (int64, error)
 	SumRoadmapCompletedStepCountByUser(ctx context.Context, userID int64) (int64, error)
