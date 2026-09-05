@@ -63,6 +63,7 @@ type Querier interface {
 	CountNotesByUserSince(ctx context.Context, arg CountNotesByUserSinceParams) (int64, error)
 	CountNotificationsByUser(ctx context.Context, userID int64) (int64, error)
 	CountNotificationsByUserSince(ctx context.Context, arg CountNotificationsByUserSinceParams) (int64, error)
+	CountPostLikeByUserAndPost(ctx context.Context, arg CountPostLikeByUserAndPostParams) (int64, error)
 	CountPostPinsByUser(ctx context.Context, userID int64) (int64, error)
 	CountPostPinsByUserAndPost(ctx context.Context, arg CountPostPinsByUserAndPostParams) (int64, error)
 	CountPostTemplatesByUserID(ctx context.Context, userID int64) (int64, error)
@@ -108,6 +109,7 @@ type Querier interface {
 	CreateNoteVersion(ctx context.Context, arg CreateNoteVersionParams) (NoteVersion, error)
 	CreateNotificationSettings(ctx context.Context, arg CreateNotificationSettingsParams) (NotificationSetting, error)
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) (PasswordResetToken, error)
+	CreatePostLike(ctx context.Context, arg CreatePostLikeParams) error
 	CreatePostPin(ctx context.Context, arg CreatePostPinParams) error
 	CreatePostTag(ctx context.Context, arg CreatePostTagParams) error
 	CreatePostTemplate(ctx context.Context, arg CreatePostTemplateParams) (PostTemplate, error)
@@ -119,6 +121,7 @@ type Querier interface {
 	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
 	DecrementCommentLikeCount(ctx context.Context, id int64) error
 	DecrementPostBookmarkCount(ctx context.Context, id int64) error
+	DecrementPostLikeCount(ctx context.Context, id int64) error
 	DeleteBookmark(ctx context.Context, arg DeleteBookmarkParams) (int64, error)
 	DeleteCommentLike(ctx context.Context, arg DeleteCommentLikeParams) error
 	DeleteFollow(ctx context.Context, arg DeleteFollowParams) error
@@ -128,6 +131,7 @@ type Querier interface {
 	DeleteNoteFolder(ctx context.Context, id int64) error
 	DeleteNoteLink(ctx context.Context, arg DeleteNoteLinkParams) error
 	DeleteNoteTemplate(ctx context.Context, id int64) error
+	DeletePostLike(ctx context.Context, arg DeletePostLikeParams) (int64, error)
 	DeletePostPin(ctx context.Context, arg DeletePostPinParams) error
 	DeletePostTagsByPostID(ctx context.Context, postID int64) error
 	DeletePostTemplate(ctx context.Context, id int64) error
@@ -163,6 +167,7 @@ type Querier interface {
 	HasStreakFreezeOnDate(ctx context.Context, arg HasStreakFreezeOnDateParams) (bool, error)
 	IncrementCommentLikeCount(ctx context.Context, id int64) error
 	IncrementPostBookmarkCount(ctx context.Context, id int64) error
+	IncrementPostLikeCount(ctx context.Context, id int64) error
 	IncrementPostViewCount(ctx context.Context, id int64) error
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
 	ListArchivedNotesByUser(ctx context.Context, arg ListArchivedNotesByUserParams) ([]ListArchivedNotesByUserRow, error)
