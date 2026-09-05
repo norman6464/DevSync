@@ -6,11 +6,11 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"gorm.io/gorm"
 )
 
 // ---------- GetComments ----------
@@ -218,7 +218,7 @@ func TestPostCreateReply_ParentNotFound(t *testing.T) {
 	r := newRouter(1)
 	r.POST("/posts/:id/comments", h.CreateComment)
 
-	comments.On("FindCommentByID", mock.Anything, uint(99)).Return(nil, gorm.ErrRecordNotFound)
+	comments.On("FindCommentByID", mock.Anything, uint(99)).Return(nil, pgx.ErrNoRows)
 
 	w := doRequest(r, http.MethodPost, "/posts/5/comments", map[string]interface{}{
 		"content":   "Reply",
@@ -350,7 +350,7 @@ func TestPostEditComment_NotFound(t *testing.T) {
 	r := newRouter(1)
 	r.PUT("/posts/:id/comments/:commentId", h.EditComment)
 
-	comments.On("FindCommentByID", mock.Anything, uint(3)).Return(nil, gorm.ErrRecordNotFound)
+	comments.On("FindCommentByID", mock.Anything, uint(3)).Return(nil, pgx.ErrNoRows)
 
 	w := doRequest(r, http.MethodPut, "/posts/5/comments/3", map[string]string{"content": "new content"})
 	assertStatus(t, w, http.StatusInternalServerError)

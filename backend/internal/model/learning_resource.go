@@ -2,8 +2,6 @@ package model
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 // ResourceCategory は学習リソースの分類を表す型。
@@ -47,9 +45,8 @@ type LearningResource struct {
 	IsPublic    bool               `json:"is_public"` // 他ユーザーに公開するか
 	LikeCount   int                `json:"like_count" gorm:"default:0"`
 	SaveCount   int                `json:"save_count" gorm:"default:0"`
-	CreatedAt   time.Time          `json:"created_at"`
-	UpdatedAt   time.Time          `json:"updated_at"`
-	DeletedAt   gorm.DeletedAt     `json:"-" gorm:"index"` // 論理削除用
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 // ResourceLike は学習リソースへの「いいね」を記録する。

@@ -13,18 +13,15 @@ import (
 	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/config"
 	"github.com/norman6464/devsync/backend/internal/infra/ws"
-	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/router"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
 // fixRoadmapStepCounts はテンプレート初期登録の二重加算で誤った step_count を
 // roadmap_steps の実数へ補正し、補正した行だけ progress と自動完了を再計算する。
 // 正しい行には触れない冪等な補正のため、毎起動で実行してよい。
-func fixRoadmapStepCounts(db *gorm.DB) {
+func fixRoadmapStepCounts(ctx context.Context, pool *pgxpool.Pool) {
 	// PostgreSQL は 1 文内で同一行を 2 回更新できないため、進捗と自動完了も同じ UPDATE で行う。
-	db.Exec(`WITH actual AS (
+	if _, err := pool.Exec(ctx, `WITH actual AS (
 		SELECT roadmap_id, count(*) AS cnt FROM roadmap_steps GROUP BY roadmap_id
 	)
 	UPDATE roadmaps r
@@ -35,7 +32,9 @@ func fixRoadmapStepCounts(db *gorm.DB) {
 	    completed_at = CASE WHEN a.cnt > 0 AND r.completed_step_count >= a.cnt AND r.status = 'active'
 	                        THEN COALESCE(r.completed_at, now()) ELSE r.completed_at END
 	FROM actual a
-	WHERE r.id = a.roadmap_id AND r.step_count <> a.cnt`)
+	WHERE r.id = a.roadmap_id AND r.step_count <> a.cnt`); err != nil {
+		log.Printf("roadmap step_count 補正失敗: %v", err)
+	}
 }
 
 func main() {
@@ -43,33 +42,30 @@ func main() {
 	_ = godotenv.Load()
 
 	cfg := config.Load()
+	ctx := context.Background()
 
 	// PostgreSQLに接続。スキーマ（テーブル・索引・外部キー）は Atlas の宣言的管理に一本化しており、
 	// db/schema/*.hcl が正。デプロイ/ローカル起動前に `make -C backend db-schema-apply` を実行する。
-	db, err := gorm.Open(postgres.Open(cfg.DSN()), &gorm.Config{})
-	if err != nil {
-		log.Fatalf("failed to connect to database: %v", err)
-	}
-
-	// sqlc(pgx)へ移行済みのリポジトリ用コネクションプール。GORMからの移行が完了するまで db と併存する。
-	sqlPool, err := pgxpool.New(context.Background(), cfg.DSN())
+	sqlPool, err := pgxpool.New(ctx, cfg.DSN())
 	if err != nil {
 		log.Fatalf("failed to connect to database (pgx): %v", err)
 	}
 	defer sqlPool.Close()
 
 	// テンプレート初期登録の二重加算で誤った step_count と進捗を補正する
-	fixRoadmapStepCounts(db)
+	fixRoadmapStepCounts(ctx, sqlPool)
 
 	// 既存ユーザーのオンボーディング完了フラグを初期化
-	db.Model(&model.User{}).Where("onboarding_completed = ?", false).Update("onboarding_completed", true)
+	if _, err := sqlPool.Exec(ctx, `UPDATE users SET onboarding_completed = true WHERE onboarding_completed = false`); err != nil {
+		log.Printf("オンボーディング完了フラグ初期化失敗: %v", err)
+	}
 
 	// WebSocket Hubをバックグラウンドで起動
 	hub := ws.NewHub(persistence.NewRoomMemberLookup(sqlcgen.New(sqlPool)))
 	go hub.Run()
 
 	// ルーターを構築しサーバーを起動
-	r := router.Setup(db, sqlPool, cfg, hub)
+	r := router.Setup(sqlPool, cfg, hub)
 
 	log.Printf("Server starting on :%s", cfg.Port)
 	if err := r.Run(":" + cfg.Port); err != nil {

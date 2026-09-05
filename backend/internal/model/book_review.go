@@ -2,8 +2,6 @@ package model
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 // ReviewStatus は書籍レビューの読書状態を表す型。
@@ -38,7 +36,6 @@ type BookReview struct {
 	ImageURL   string         `json:"image_url" gorm:"size:2000"`               // 書籍カバー画像URL
 	Status     ReviewStatus   `json:"status" gorm:"default:'not_started'"`     // 読書状態
 	IsArchived bool           `json:"is_archived" gorm:"default:false"`        // アーカイブ済みフラグ
-	CreatedAt  time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"` // 論理削除用
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

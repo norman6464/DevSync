@@ -6,13 +6,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"gorm.io/gorm"
 )
 
 // mockPostCommentRepo は usecase/repository.PostCommentRepository のモック。
@@ -97,7 +97,7 @@ func TestCreatePostCommentUseCase(t *testing.T) {
 	t.Run("親コメントが無ければ 404 相当のエラー", func(t *testing.T) {
 		comments := new(mockPostCommentRepo)
 		parentID := uint(99)
-		comments.On("FindCommentByID", mock.Anything, parentID).Return(nil, gorm.ErrRecordNotFound)
+		comments.On("FindCommentByID", mock.Anything, parentID).Return(nil, pgx.ErrNoRows)
 
 		_, err := usecase.NewCreatePostCommentUseCase(comments).Execute(context.Background(), 1, 5, "reply", &parentID)
 		var domainErr *domain.DomainError
@@ -190,10 +190,10 @@ func TestEditPostCommentUseCase(t *testing.T) {
 
 	t.Run("取得エラーはそのまま返す", func(t *testing.T) {
 		comments := new(mockPostCommentRepo)
-		comments.On("FindCommentByID", mock.Anything, uint(3)).Return(nil, gorm.ErrRecordNotFound)
+		comments.On("FindCommentByID", mock.Anything, uint(3)).Return(nil, pgx.ErrNoRows)
 
 		_, err := usecase.NewEditPostCommentUseCase(comments).Execute(context.Background(), 3, 1, "new")
-		assert.ErrorIs(t, err, gorm.ErrRecordNotFound)
+		assert.ErrorIs(t, err, pgx.ErrNoRows)
 	})
 
 	t.Run("本文の検証は所有権チェックの後に行う", func(t *testing.T) {
