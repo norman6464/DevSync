@@ -31,6 +31,9 @@ type Querier interface {
 	CountBookmarksMadeByUser(ctx context.Context, userID int64) (int64, error)
 	CountBookmarksMadeByUserSince(ctx context.Context, arg CountBookmarksMadeByUserSinceParams) (int64, error)
 	CountBookmarksReceivedByUser(ctx context.Context, userID int64) (int64, error)
+	CountChatRoomMembership(ctx context.Context, arg CountChatRoomMembershipParams) (int64, error)
+	// 件数は ListChatRoomsByUser の総数取得と CountByUserID(単体メソッド) の両方から利用する。
+	CountChatRoomsByUser(ctx context.Context, userID int64) (int64, error)
 	CountCodeSnippetLanguagesByUser(ctx context.Context, userID int64) (int64, error)
 	CountCodeSnippetsByUser(ctx context.Context, userID int64) (int64, error)
 	CountCommentLikesByComment(ctx context.Context, commentID int64) (int64, error)
@@ -122,6 +125,8 @@ type Querier interface {
 	// (collection_id, post_id) の一意制約に任せてON CONFLICT DO NOTHINGで挿入し、
 	// 実際に挿入できた行数を返す（呼び出し側で「既に入っていたか」を判定する）。
 	CreateBookmarkCollectionItem(ctx context.Context, arg CreateBookmarkCollectionItemParams) (int64, error)
+	CreateChatRoom(ctx context.Context, arg CreateChatRoomParams) (ChatRoom, error)
+	CreateChatRoomMember(ctx context.Context, arg CreateChatRoomMemberParams) error
 	CreateCommentLike(ctx context.Context, arg CreateCommentLikeParams) error
 	// 同時に複数リクエストが「不在」と判定してもuser_idの一意制約とDO NOTHINGで
 	// 競合を無害化する。競合で挿入されなかった場合は0行が返る（エラーにはしない）。
@@ -172,11 +177,15 @@ type Querier interface {
 	DeleteBookmarkCollection(ctx context.Context, id int64) error
 	DeleteBookmarkCollectionItem(ctx context.Context, arg DeleteBookmarkCollectionItemParams) error
 	DeleteBookmarkCollectionItemsByCollectionID(ctx context.Context, collectionID int64) error
+	DeleteChatRoom(ctx context.Context, id int64) error
+	DeleteChatRoomMember(ctx context.Context, arg DeleteChatRoomMemberParams) error
+	DeleteChatRoomMembersByRoom(ctx context.Context, chatRoomID int64) error
 	DeleteCommentLike(ctx context.Context, arg DeleteCommentLikeParams) error
 	DeleteFollow(ctx context.Context, arg DeleteFollowParams) error
 	DeleteGitHubContributionsByUser(ctx context.Context, userID int64) error
 	DeleteGitHubLanguageStatsByUser(ctx context.Context, userID int64) error
 	DeleteGitHubReposByUser(ctx context.Context, userID int64) error
+	DeleteGroupMessagesByRoom(ctx context.Context, chatRoomID int64) error
 	DeleteLearningLogTemplate(ctx context.Context, id int64) error
 	DeleteMentionsByCommentID(ctx context.Context, commentID *int64) error
 	DeleteMentionsByPostID(ctx context.Context, postID *int64) error
@@ -220,6 +229,8 @@ type Querier interface {
 	// book_reviewsは論理削除があるため、削除済みは除外する（GORM Firstの自動スコープ相当）。
 	GetBookReviewWithUserByID(ctx context.Context, id int64) (GetBookReviewWithUserByIDRow, error)
 	GetBookmarkCollectionByID(ctx context.Context, id int64) (BookmarkCollection, error)
+	// GORMのPreload("Owner")に相当。owner_idはNOT NULLのためINNER JOINでよい。
+	GetChatRoomWithOwnerByID(ctx context.Context, id int64) (GetChatRoomWithOwnerByIDRow, error)
 	GetCommentByID(ctx context.Context, id int64) (Comment, error)
 	// 指定期間（weekly/monthly）のGitHubコントリビューションランキング。
 	// コントリビューション数の合計で降順ソートし、上位50件を返す。
@@ -312,6 +323,10 @@ type Querier interface {
 	// user_id/post_idともにNOT NULLのためINNER JOINでよい。
 	ListBookmarkedPostsByUser(ctx context.Context, arg ListBookmarkedPostsByUserParams) ([]ListBookmarkedPostsByUserRow, error)
 	ListChatRoomMemberUserIDs(ctx context.Context, chatRoomID int64) ([]int64, error)
+	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
+	ListChatRoomMembersWithUser(ctx context.Context, chatRoomID int64) ([]ListChatRoomMembersWithUserRow, error)
+	// GORMのPreload("Owner")に相当。owner_idはNOT NULLのためINNER JOINでよい。
+	ListChatRoomsByUser(ctx context.Context, arg ListChatRoomsByUserParams) ([]ListChatRoomsByUserRow, error)
 	// GORMのPreload("CodeSnippets")に相当。1対多のため投稿IDのまとめ取りとGo側でのグルーピングで再現する。
 	ListCodeSnippetsByPostIDs(ctx context.Context, dollar_1 []int64) ([]CodeSnippet, error)
 	// GORMのPreload("User")に相当（返信の取得）。ListReplies単体呼び出しと
@@ -427,6 +442,8 @@ type Querier interface {
 	UpdateBookReview(ctx context.Context, arg UpdateBookReviewParams) (BookReview, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateBookmarkCollection(ctx context.Context, arg UpdateBookmarkCollectionParams) (BookmarkCollection, error)
+	// GORMのSave（全カラム上書き）に相当。
+	UpdateChatRoom(ctx context.Context, arg UpdateChatRoomParams) (ChatRoom, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateLearningLogTemplate(ctx context.Context, arg UpdateLearningLogTemplateParams) (LearningLogTemplate, error)
 	// GORMのSave（全カラム上書き）に相当。
