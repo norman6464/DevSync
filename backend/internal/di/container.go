@@ -137,7 +137,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	// 書籍レビューはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	bookReviewRepo := persistence.NewBookReviewRepository(sqlcgen.New(sqlPool))
 	// 質問はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	questionPort := persistence.NewQuestionRepository(db)
+	questionPort := persistence.NewQuestionRepository(sqlPool)
 	// 回答はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	answerPort := persistence.NewAnswerRepository(sqlPool)
 	// ロードマップはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。

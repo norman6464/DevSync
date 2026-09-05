@@ -12,6 +12,7 @@ import (
 
 type Querier interface {
 	AdjustAnswerVoteCount(ctx context.Context, arg AdjustAnswerVoteCountParams) error
+	AdjustQuestionVoteCount(ctx context.Context, arg AdjustQuestionVoteCountParams) error
 	ArchiveNote(ctx context.Context, id int64) error
 	ClearBestAnswer(ctx context.Context, questionID int64) error
 	ClearLearningLogTemplateDefaultFlag(ctx context.Context, userID int64) error
@@ -33,6 +34,7 @@ type Querier interface {
 	CountBookmarkByUserAndPost(ctx context.Context, arg CountBookmarkByUserAndPostParams) (int64, error)
 	CountBookmarkCollectionItemsByCollection(ctx context.Context, collectionID int64) (int64, error)
 	CountBookmarkCollectionsByUser(ctx context.Context, userID int64) (int64, error)
+	CountBookmarkedQuestions(ctx context.Context, userID int64) (int64, error)
 	CountBookmarksMadeByUser(ctx context.Context, userID int64) (int64, error)
 	CountBookmarksMadeByUserSince(ctx context.Context, arg CountBookmarksMadeByUserSinceParams) (int64, error)
 	CountBookmarksReceivedByUser(ctx context.Context, userID int64) (int64, error)
@@ -108,6 +110,8 @@ type Querier interface {
 	CountPublicLearningResources(ctx context.Context, arg CountPublicLearningResourcesParams) (int64, error)
 	CountPublicPosts(ctx context.Context) (int64, error)
 	CountPublishedPostsByUser(ctx context.Context, userID int64) (int64, error)
+	CountQuestionBookmark(ctx context.Context, arg CountQuestionBookmarkParams) (int64, error)
+	CountQuestions(ctx context.Context, arg CountQuestionsParams) (int64, error)
 	// questions/answers は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに
 	// 合わせて deleted_at IS NULL を明示する（Unscoped() されていない全クエリと同じ挙動）。
 	CountQuestionsByUser(ctx context.Context, userID int64) (int64, error)
@@ -127,7 +131,9 @@ type Querier interface {
 	CountSearchLearningResources(ctx context.Context, title string) (int64, error)
 	CountSearchNotes(ctx context.Context, arg CountSearchNotesParams) (int64, error)
 	CountSearchProjects(ctx context.Context, title string) (int64, error)
+	CountSearchQuestions(ctx context.Context, title string) (int64, error)
 	CountSnippetFavorite(ctx context.Context, arg CountSnippetFavoriteParams) (int64, error)
+	CountSolvedQuestions(ctx context.Context) (int64, error)
 	CountStreakFreezesInMonth(ctx context.Context, arg CountStreakFreezesInMonthParams) (int64, error)
 	CountStreakFreezesOnDate(ctx context.Context, arg CountStreakFreezesOnDateParams) (int64, error)
 	CountStudyCircleCheckinsByCircle(ctx context.Context, circleID int64) (int64, error)
@@ -136,6 +142,7 @@ type Querier interface {
 	CountStudyCircleStepsByCircle(ctx context.Context, circleID int64) (int64, error)
 	CountTodayAIMessagesByUser(ctx context.Context, arg CountTodayAIMessagesByUserParams) (int64, error)
 	CountTopLevelCommentsByUser(ctx context.Context, userID int64) (int64, error)
+	CountUnansweredQuestions(ctx context.Context) (int64, error)
 	CountUniqueReactorsByUser(ctx context.Context, userID int64) (int64, error)
 	CountUnreadNotifications(ctx context.Context, userID int64) (int64, error)
 	CountUnreadNotificationsByUser(ctx context.Context, userID int64) (int64, error)
@@ -194,6 +201,9 @@ type Querier interface {
 	CreatePostView(ctx context.Context, arg CreatePostViewParams) (int64, error)
 	CreateProject(ctx context.Context, arg CreateProjectParams) (Project, error)
 	CreateProjectMilestone(ctx context.Context, arg CreateProjectMilestoneParams) (ProjectMilestone, error)
+	CreateQuestion(ctx context.Context, arg CreateQuestionParams) (Question, error)
+	CreateQuestionBookmark(ctx context.Context, arg CreateQuestionBookmarkParams) error
+	CreateQuestionVote(ctx context.Context, arg CreateQuestionVoteParams) (QuestionVote, error)
 	CreateReaction(ctx context.Context, arg CreateReactionParams) error
 	CreateResourceLike(ctx context.Context, arg CreateResourceLikeParams) error
 	CreateResourceReview(ctx context.Context, arg CreateResourceReviewParams) (ResourceReview, error)
@@ -304,6 +314,10 @@ type Querier interface {
 	DeleteProject(ctx context.Context, id int64) error
 	DeleteProjectMilestone(ctx context.Context, id int64) error
 	DeleteQiitaArticlesByUser(ctx context.Context, userID int64) error
+	// GORMのDelete（論理削除）に相当。
+	DeleteQuestion(ctx context.Context, id int64) error
+	DeleteQuestionBookmark(ctx context.Context, arg DeleteQuestionBookmarkParams) error
+	DeleteQuestionVote(ctx context.Context, arg DeleteQuestionVoteParams) error
 	DeleteReaction(ctx context.Context, arg DeleteReactionParams) error
 	DeleteReactionsByPost(ctx context.Context, postID int64) error
 	DeleteReactionsByUserPosts(ctx context.Context, userID int64) error
@@ -401,6 +415,10 @@ type Querier interface {
 	// LEFT JOINで欠落しうる行を表現できないため）。
 	GetProjectWithUserAndRepoByID(ctx context.Context, id int64) (GetProjectWithUserAndRepoByIDRow, error)
 	GetQiitaStatsByUser(ctx context.Context, userID int64) (GetQiitaStatsByUserRow, error)
+	GetQuestionVoteByUserAndQuestion(ctx context.Context, arg GetQuestionVoteByUserAndQuestionParams) (QuestionVote, error)
+	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
+	// questionsは論理削除があるため、削除済みは除外する（GORM Firstの自動スコープ相当）。
+	GetQuestionWithUserByID(ctx context.Context, id int64) (GetQuestionWithUserByIDRow, error)
 	// スキルの部分一致で候補を絞り込む。パターンは呼び出し側で "%" + escapeLikeChars(skill) + "%" として
 	// 組み立て済みのものを配列で渡す（元のGo実装のエスケープ・ワイルドカード付与をそのまま踏襲するため）。
 	// 自分自身とフォロー済みのユーザーは候補から除く。
@@ -473,6 +491,7 @@ type Querier interface {
 	// GORMのPreload("User")に相当（CodeSnippetsは別クエリで取得しGo側で結合する）。
 	// user_id/post_idともにNOT NULLのためINNER JOINでよい。
 	ListBookmarkedPostsByUser(ctx context.Context, arg ListBookmarkedPostsByUserParams) ([]ListBookmarkedPostsByUserRow, error)
+	ListBookmarkedQuestionsWithUser(ctx context.Context, arg ListBookmarkedQuestionsWithUserParams) ([]ListBookmarkedQuestionsWithUserRow, error)
 	ListChatRoomMemberUserIDs(ctx context.Context, chatRoomID int64) ([]int64, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	ListChatRoomMembersWithUser(ctx context.Context, chatRoomID int64) ([]ListChatRoomMembersWithUserRow, error)
@@ -566,6 +585,12 @@ type Querier interface {
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	ListPublishedPostsByUserWithUser(ctx context.Context, arg ListPublishedPostsByUserWithUserParams) ([]ListPublishedPostsByUserWithUserRow, error)
 	ListQiitaArticlesByUser(ctx context.Context, userID int64) ([]QiitaArticle, error)
+	// Userは含めない（移行前からの挙動。一覧系の中でこれだけPreloadしない）。
+	ListQuestionsByUser(ctx context.Context, arg ListQuestionsByUserParams) ([]Question, error)
+	// GORMのPreload("User")に相当。tag_patternは呼び出し側で "%\"" + escapeLikeChars(tag) + "\"%"
+	// として組み立て済みのものを渡す（元のGo実装のエスケープ・引用符付与をそのまま踏襲するため）。
+	// sortが"unanswered"のときだけanswer_count=0で絞り込み、"votes"のときだけ投票数降順にする。
+	ListQuestionsWithUser(ctx context.Context, arg ListQuestionsWithUserParams) ([]ListQuestionsWithUserRow, error)
 	ListReactionCountsByPost(ctx context.Context, postID int64) ([]ListReactionCountsByPostRow, error)
 	ListReactionCountsByPosts(ctx context.Context, dollar_1 []int64) ([]ListReactionCountsByPostsRow, error)
 	// GORMのPreload("Resource")に相当。resourceは論理削除（deleted_at）付きモデルのため、
@@ -579,6 +604,7 @@ type Querier interface {
 	ListRootNoteFoldersByUser(ctx context.Context, userID int64) ([]NoteFolder, error)
 	ListSavedLearningResourcesWithUser(ctx context.Context, arg ListSavedLearningResourcesWithUserParams) ([]ListSavedLearningResourcesWithUserRow, error)
 	ListScheduledPostsByUserWithUser(ctx context.Context, userID int64) ([]ListScheduledPostsByUserWithUserRow, error)
+	ListSolvedQuestionsWithUser(ctx context.Context, arg ListSolvedQuestionsWithUserParams) ([]ListSolvedQuestionsWithUserRow, error)
 	ListStreakFreezesByUserAndMonth(ctx context.Context, arg ListStreakFreezesByUserAndMonthParams) ([]StreakFreeze, error)
 	// フォロー中ユーザーと自分自身の公開済み投稿（移行前のGo実装のサブクエリをそのまま踏襲）。
 	ListTimelinePostsWithUser(ctx context.Context, arg ListTimelinePostsWithUserParams) ([]ListTimelinePostsWithUserRow, error)
@@ -590,6 +616,7 @@ type Querier interface {
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	// learning_resourcesは論理削除があるため、削除済みは除外する。
 	ListTrendingResources(ctx context.Context, arg ListTrendingResourcesParams) ([]ListTrendingResourcesRow, error)
+	ListUnansweredQuestionsWithUser(ctx context.Context, arg ListUnansweredQuestionsWithUserParams) ([]ListUnansweredQuestionsWithUserRow, error)
 	ListUnreadAIAdvicesByUser(ctx context.Context, userID int64) ([]AiAdvice, error)
 	ListUserActivitiesByUser(ctx context.Context, arg ListUserActivitiesByUserParams) ([]UserActivity, error)
 	ListUserActivitiesByUserAndType(ctx context.Context, arg ListUserActivitiesByUserAndTypeParams) ([]UserActivity, error)
@@ -629,6 +656,7 @@ type Querier interface {
 	SearchPostsWithFilter(ctx context.Context, arg SearchPostsWithFilterParams) ([]SearchPostsWithFilterRow, error)
 	// GORMのPreload("User").Preload("GithubRepo")に相当（移行前のSearchと同じ挙動）。
 	SearchProjectsWithUserAndRepo(ctx context.Context, arg SearchProjectsWithUserAndRepoParams) ([]SearchProjectsWithUserAndRepoRow, error)
+	SearchQuestionsWithUser(ctx context.Context, arg SearchQuestionsWithUserParams) ([]SearchQuestionsWithUserRow, error)
 	SearchUsers(ctx context.Context, arg SearchUsersParams) ([]User, error)
 	SetAnswerBest(ctx context.Context, id int64) error
 	SetProjectArchived(ctx context.Context, arg SetProjectArchivedParams) error
@@ -688,6 +716,10 @@ type Querier interface {
 	// deleted_at IS NULLスコープをUPDATEにも明示する。
 	UpdateProject(ctx context.Context, arg UpdateProjectParams) (Project, error)
 	UpdateProjectMilestone(ctx context.Context, arg UpdateProjectMilestoneParams) (ProjectMilestone, error)
+	// GORMのSave（全カラム上書き）に相当。questionsは論理削除があるため、GORMが自動付与する
+	// deleted_at IS NULLスコープをUPDATEにも明示する。
+	UpdateQuestion(ctx context.Context, arg UpdateQuestionParams) (Question, error)
+	UpdateQuestionVoteValue(ctx context.Context, arg UpdateQuestionVoteValueParams) error
 	UpdateReminderSettings(ctx context.Context, arg UpdateReminderSettingsParams) (ReminderSetting, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateResourceReview(ctx context.Context, arg UpdateResourceReviewParams) (ResourceReview, error)
