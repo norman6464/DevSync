@@ -117,6 +117,7 @@ type Querier interface {
 	// 呼び出し側で「既に閲覧済みだったか」を判定する。
 	CreatePostView(ctx context.Context, arg CreatePostViewParams) (int64, error)
 	CreateProjectMilestone(ctx context.Context, arg CreateProjectMilestoneParams) (ProjectMilestone, error)
+	CreateReaction(ctx context.Context, arg CreateReactionParams) error
 	CreateStreakFreeze(ctx context.Context, arg CreateStreakFreezeParams) (StreakFreeze, error)
 	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
 	DecrementCommentLikeCount(ctx context.Context, id int64) error
@@ -136,6 +137,7 @@ type Querier interface {
 	DeletePostTagsByPostID(ctx context.Context, postID int64) error
 	DeletePostTemplate(ctx context.Context, id int64) error
 	DeleteProjectMilestone(ctx context.Context, id int64) error
+	DeleteReaction(ctx context.Context, arg DeleteReactionParams) error
 	// book_reviews は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
 	// deleted_at IS NULL を明示する。レビュー0件でもCOALESCEにより全項目0を返す
 	// （GORM実装のtotal_reviews==0での早期returnと同じ結果になる）。
@@ -155,6 +157,7 @@ type Querier interface {
 	GetNoteVersionByID(ctx context.Context, id int64) (NoteVersion, error)
 	GetNotificationSettingsByUserID(ctx context.Context, userID int64) (NotificationSetting, error)
 	GetPasswordResetTokenByToken(ctx context.Context, token string) (PasswordResetToken, error)
+	GetPostAuthorID(ctx context.Context, id int64) (int64, error)
 	GetPostTemplateByID(ctx context.Context, id int64) (PostTemplate, error)
 	GetProjectMilestoneByID(ctx context.Context, id int64) (ProjectMilestone, error)
 	// projects は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
@@ -214,10 +217,14 @@ type Querier interface {
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	ListPostsByIDs(ctx context.Context, dollar_1 []int64) ([]ListPostsByIDsRow, error)
 	ListProjectMilestonesByProject(ctx context.Context, projectID int64) ([]ProjectMilestone, error)
+	ListReactionCountsByPost(ctx context.Context, postID int64) ([]ListReactionCountsByPostRow, error)
+	ListReactionCountsByPosts(ctx context.Context, dollar_1 []int64) ([]ListReactionCountsByPostsRow, error)
 	ListRootNoteFoldersByUser(ctx context.Context, userID int64) ([]NoteFolder, error)
 	ListStreakFreezesByUserAndMonth(ctx context.Context, arg ListStreakFreezesByUserAndMonthParams) ([]StreakFreeze, error)
 	ListUserActivitiesByUser(ctx context.Context, arg ListUserActivitiesByUserParams) ([]UserActivity, error)
 	ListUserActivitiesByUserAndType(ctx context.Context, arg ListUserActivitiesByUserAndTypeParams) ([]UserActivity, error)
+	ListUserReactionEmojisByPost(ctx context.Context, arg ListUserReactionEmojisByPostParams) ([]string, error)
+	ListUserReactionsByPosts(ctx context.Context, arg ListUserReactionsByPostsParams) ([]ListUserReactionsByPostsRow, error)
 	ListWeeklyGoalsByUser(ctx context.Context, userID int64) ([]WeeklyGoal, error)
 	// 同一ユーザーの CreateWithinLimits 同時実行を直列化するための行ロック（GORMの clause.Locking{Strength: "UPDATE"} に相当）。
 	LockUserForStreakFreeze(ctx context.Context, id int64) error
