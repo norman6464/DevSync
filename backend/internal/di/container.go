@@ -309,7 +309,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 	c.GitHubHandler = handler.NewGitHubHandler(githubUseCases, githubOAuthState)
 	// 投稿スライスはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	postPort := persistence.NewPostRepository(db)
+	postPort := persistence.NewPostRepository(sqlPool)
 	postReactionPort := persistence.NewPostReactionRepository(sqlcgen.New(sqlPool))
 	postAuthorPort := persistence.NewPostAuthorReader(sqlcgen.New(sqlPool))
 	postCommentPort := persistence.NewPostCommentRepository(sqlcgen.New(sqlPool))
