@@ -62,6 +62,7 @@ type Querier interface {
 	CountNotificationsByUser(ctx context.Context, userID int64) (int64, error)
 	CountNotificationsByUserSince(ctx context.Context, arg CountNotificationsByUserSinceParams) (int64, error)
 	CountPostTemplatesByUserID(ctx context.Context, userID int64) (int64, error)
+	CountPostViewsByPost(ctx context.Context, postID int64) (int64, error)
 	CountPostsByUser(ctx context.Context, userID int64) (int64, error)
 	// questions/answers は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに
 	// 合わせて deleted_at IS NULL を明示する（Unscoped() されていない全クエリと同じ挙動）。
@@ -99,6 +100,9 @@ type Querier interface {
 	CreateNotificationSettings(ctx context.Context, arg CreateNotificationSettingsParams) (NotificationSetting, error)
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) (PasswordResetToken, error)
 	CreatePostTemplate(ctx context.Context, arg CreatePostTemplateParams) (PostTemplate, error)
+	// GORMの clause.OnConflict{DoNothing: true} に相当。実際に挿入できた行数を返し、
+	// 呼び出し側で「既に閲覧済みだったか」を判定する。
+	CreatePostView(ctx context.Context, arg CreatePostViewParams) (int64, error)
 	CreateProjectMilestone(ctx context.Context, arg CreateProjectMilestoneParams) (ProjectMilestone, error)
 	CreateStreakFreeze(ctx context.Context, arg CreateStreakFreezeParams) (StreakFreeze, error)
 	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
@@ -143,6 +147,7 @@ type Querier interface {
 	GetWidgetSettingsByUserID(ctx context.Context, userID int64) (WidgetSetting, error)
 	HasStreakFreezeOnDate(ctx context.Context, arg HasStreakFreezeOnDateParams) (bool, error)
 	IncrementCommentLikeCount(ctx context.Context, id int64) error
+	IncrementPostViewCount(ctx context.Context, id int64) error
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
 	ListArchivedNotesByUser(ctx context.Context, arg ListArchivedNotesByUserParams) ([]ListArchivedNotesByUserRow, error)
 	ListChatRoomMemberUserIDs(ctx context.Context, chatRoomID int64) ([]int64, error)
@@ -160,6 +165,7 @@ type Querier interface {
 	ListMentionsByPostID(ctx context.Context, postID *int64) ([]ListMentionsByPostIDRow, error)
 	// GORMのPreload("Actor")に相当。actor_idはNOT NULLのためINNER JOINでよい。
 	ListMentionsByUser(ctx context.Context, arg ListMentionsByUserParams) ([]ListMentionsByUserRow, error)
+	ListMostViewedPosts(ctx context.Context, limit int32) ([]ListMostViewedPostsRow, error)
 	ListNoteFoldersByParent(ctx context.Context, parentID *int64) ([]NoteFolder, error)
 	ListNoteFoldersByUser(ctx context.Context, arg ListNoteFoldersByUserParams) ([]NoteFolder, error)
 	// GORMのPreload("TargetNote")に相当。リンク先ノートをsqlc.embedで一緒に取得する。

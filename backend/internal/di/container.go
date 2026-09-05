@@ -764,7 +764,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// 投稿閲覧数はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	postViewRepo := persistence.NewPostViewRepository(db)
+	postViewRepo := persistence.NewPostViewRepository(sqlPool)
 	c.PostViewHandler = handler.NewPostViewHandler(
 		usecase.NewRecordPostViewUseCase(postViewRepo),
 		usecase.NewGetPostViewCountUseCase(postViewRepo),
