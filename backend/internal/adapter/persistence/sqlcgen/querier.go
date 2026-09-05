@@ -56,7 +56,9 @@ type Querier interface {
 	// 件数は GetByUserID の総数取得と CountByUserID(単体メソッド) の両方から利用する。
 	CountLearningGoalsByUser(ctx context.Context, userID int64) (int64, error)
 	CountLearningLogCategoriesByUser(ctx context.Context, userID int64) (int64, error)
+	CountLearningLogDaysSince(ctx context.Context, arg CountLearningLogDaysSinceParams) (int64, error)
 	CountLearningLogTemplatesByUser(ctx context.Context, userID int64) (int64, error)
+	CountLearningLogsBySourceSince(ctx context.Context, arg CountLearningLogsBySourceSinceParams) (int64, error)
 	CountLearningLogsByUser(ctx context.Context, userID int64) (int64, error)
 	CountLearningLogsByUserSince(ctx context.Context, arg CountLearningLogsByUserSinceParams) (int64, error)
 	CountLearningResourceCategoriesByUser(ctx context.Context, userID int64) (int64, error)
@@ -268,10 +270,14 @@ type Querier interface {
 	// 指定プログラミング言語のバイト数ランキング。上位50件を返す。
 	GetLanguageRanking(ctx context.Context, language string) ([]GetLanguageRankingRow, error)
 	GetLatestNoteVersionNumber(ctx context.Context, noteID int64) (int64, error)
+	// 割合はusecase側で計算するため、ここでは合計時間とログ件数のみを返す。
+	GetLearningCategoryBreakdown(ctx context.Context, userID int64) ([]GetLearningCategoryBreakdownRow, error)
 	GetLearningGoalByID(ctx context.Context, id int64) (LearningGoal, error)
+	GetLearningHeatmapData(ctx context.Context, userID int64) ([]GetLearningHeatmapDataRow, error)
 	GetLearningLogTemplateByID(ctx context.Context, id int64) (LearningLogTemplate, error)
 	// learning_resources は GORM の論理削除（deleted_at）付きモデルのため deleted_at IS NULL を明示する。
 	GetLearningResourceByID(ctx context.Context, id int64) (LearningResource, error)
+	GetLearningWeeklyTrends(ctx context.Context, arg GetLearningWeeklyTrendsParams) ([]GetLearningWeeklyTrendsRow, error)
 	// ユーザーのXP合計に基づくレベルランキング。上位50件を返す。
 	// scoreはSELECTの別名なのでWHERE/HAVINGからは参照できない（PostgreSQLの仕様）ため、
 	// 内側で合算してから外側で絞り込む。
@@ -380,6 +386,8 @@ type Querier interface {
 	ListConversationMessages(ctx context.Context, arg ListConversationMessagesParams) ([]ListConversationMessagesRow, error)
 	// 会話相手ごとの最新メッセージと未読件数を取得する（移行前のGORM Raw SQLをそのまま踏襲）。
 	ListConversationSummaries(ctx context.Context, receiverID int64) ([]ListConversationSummariesRow, error)
+	// ストリーク（現在・最長連続日数）の算出に使う、学習記録がある日付の一覧（新しい順）。
+	ListDistinctLearningLogDates(ctx context.Context, userID int64) ([]pgtype.Date, error)
 	ListFavoriteNotesByUser(ctx context.Context, arg ListFavoriteNotesByUserParams) ([]ListFavoriteNotesByUserRow, error)
 	// GithubRepoのみPreloadする（移行前のFindFeaturedByUserIDと同じ挙動）。
 	ListFeaturedProjectsByUserWithRepo(ctx context.Context, userID int64) ([]ListFeaturedProjectsByUserWithRepoRow, error)
