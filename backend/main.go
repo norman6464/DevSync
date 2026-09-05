@@ -1,6 +1,6 @@
 // Package main はDevSyncバックエンドアプリケーションのエントリーポイント。
 // DB接続・WebSocket Hub起動・HTTPサーバー起動を行う。
-// スキーマ管理は Atlas（db/schema/*.hcl の宣言的適用）に委譲しており、ここでは行わない。
+// スキーマ管理は Atlas（internal/infra/database/schema/*.hcl の宣言的適用）に委譲しており、ここでは行わない。
 package main
 
 import (
@@ -45,7 +45,7 @@ func main() {
 	ctx := context.Background()
 
 	// PostgreSQLに接続。スキーマ（テーブル・索引・外部キー）は Atlas の宣言的管理に一本化しており、
-	// db/schema/*.hcl が正。デプロイ/ローカル起動前に `make -C backend db-schema-apply` を実行する。
+	// internal/infra/database/schema/*.hcl が正。デプロイ/ローカル起動前に `make -C backend db-schema-apply` を実行する。
 	sqlPool, err := pgxpool.New(ctx, cfg.DSN())
 	if err != nil {
 		log.Fatalf("failed to connect to database (pgx): %v", err)
