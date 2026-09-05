@@ -16,6 +16,7 @@ type Querier interface {
 	ClearNoteTemplateDefaultFlag(ctx context.Context, userID int64) error
 	// note_stats.sql の CountNotesByUser はアーカイブ済みも含めた全件数のため名前を分けている。
 	CountActiveNotesByUser(ctx context.Context, userID int64) (int64, error)
+	CountAllBookReviews(ctx context.Context) (int64, error)
 	CountAnswersByUser(ctx context.Context, userID int64) (int64, error)
 	// qa_stats.sql の CountAnswersByUser は deleted_at IS NULL で絞るが、
 	// こちらは既存の GORM Raw SQL 実装（db.Raw、GORMのsoft-deleteスコープ非適用）と
@@ -23,6 +24,7 @@ type Querier interface {
 	CountAnswersByUserIncludingDeleted(ctx context.Context, userID int64) (int64, error)
 	CountArchivedNotesByUser(ctx context.Context, userID int64) (int64, error)
 	CountBestAnswersByUser(ctx context.Context, userID int64) (int64, error)
+	CountBookReviewsByUser(ctx context.Context, userID int64) (int64, error)
 	CountBookmarkByUserAndPost(ctx context.Context, arg CountBookmarkByUserAndPostParams) (int64, error)
 	CountBookmarkCollectionItemsByCollection(ctx context.Context, collectionID int64) (int64, error)
 	CountBookmarkCollectionsByUser(ctx context.Context, userID int64) (int64, error)
@@ -96,6 +98,7 @@ type Querier interface {
 	CountResourceReviewsByResource(ctx context.Context, resourceID int64) (int64, error)
 	CountRoadmapsByUser(ctx context.Context, userID int64) (int64, error)
 	CountRoadmapsByUserAndStatus(ctx context.Context, arg CountRoadmapsByUserAndStatusParams) (int64, error)
+	CountSearchBookReviews(ctx context.Context, title string) (int64, error)
 	CountSearchNotes(ctx context.Context, arg CountSearchNotesParams) (int64, error)
 	CountStreakFreezesInMonth(ctx context.Context, arg CountStreakFreezesInMonthParams) (int64, error)
 	CountStreakFreezesOnDate(ctx context.Context, arg CountStreakFreezesOnDateParams) (int64, error)
@@ -113,6 +116,7 @@ type Querier interface {
 	CreateAIAdvice(ctx context.Context, arg CreateAIAdviceParams) (AiAdvice, error)
 	CreateAIConversation(ctx context.Context, arg CreateAIConversationParams) (AiConversation, error)
 	CreateAIMessage(ctx context.Context, arg CreateAIMessageParams) (AiMessage, error)
+	CreateBookReview(ctx context.Context, arg CreateBookReviewParams) (BookReview, error)
 	CreateBookmark(ctx context.Context, arg CreateBookmarkParams) error
 	CreateBookmarkCollection(ctx context.Context, arg CreateBookmarkCollectionParams) (BookmarkCollection, error)
 	// (collection_id, post_id) の一意制約に任せてON CONFLICT DO NOTHINGで挿入し、
@@ -162,6 +166,8 @@ type Querier interface {
 	DeleteAIAdvicesByUser(ctx context.Context, userID int64) error
 	DeleteAIConversation(ctx context.Context, id int64) error
 	DeleteAIMessagesByConversationID(ctx context.Context, conversationID int64) error
+	// GORMのDelete（論理削除）に相当。
+	DeleteBookReview(ctx context.Context, id int64) error
 	DeleteBookmark(ctx context.Context, arg DeleteBookmarkParams) (int64, error)
 	DeleteBookmarkCollection(ctx context.Context, id int64) error
 	DeleteBookmarkCollectionItem(ctx context.Context, arg DeleteBookmarkCollectionItemParams) error
@@ -210,6 +216,9 @@ type Querier interface {
 	// deleted_at IS NULL を明示する。レビュー0件でもCOALESCEにより全項目0を返す
 	// （GORM実装のtotal_reviews==0での早期returnと同じ結果になる）。
 	GetBookReviewStats(ctx context.Context, userID int64) (GetBookReviewStatsRow, error)
+	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
+	// book_reviewsは論理削除があるため、削除済みは除外する（GORM Firstの自動スコープ相当）。
+	GetBookReviewWithUserByID(ctx context.Context, id int64) (GetBookReviewWithUserByIDRow, error)
 	GetBookmarkCollectionByID(ctx context.Context, id int64) (BookmarkCollection, error)
 	GetCommentByID(ctx context.Context, id int64) (Comment, error)
 	// 指定期間（weekly/monthly）のGitHubコントリビューションランキング。
@@ -287,10 +296,14 @@ type Querier interface {
 	ListAIMessagesByConversationIDOrderedByCreatedAt(ctx context.Context, conversationID int64) ([]AiMessage, error)
 	// GORMのPreload("Messages")（順序未指定）に相当。まとめ取得用でid昇順（挿入順相当）とする。
 	ListAIMessagesByConversationIDs(ctx context.Context, dollar_1 []int64) ([]AiMessage, error)
+	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
+	ListAllBookReviewsWithUser(ctx context.Context, arg ListAllBookReviewsWithUserParams) ([]ListAllBookReviewsWithUserRow, error)
 	ListAllGitHubContributionsByUser(ctx context.Context, userID int64) ([]GitHubContribution, error)
 	ListArchivedNotesByUser(ctx context.Context, arg ListArchivedNotesByUserParams) ([]ListArchivedNotesByUserRow, error)
 	// ランキング対象となるプログラミング言語の一覧をアルファベット順で返す。
 	ListAvailableLanguages(ctx context.Context) ([]string, error)
+	ListBookReviewsByRating(ctx context.Context, arg ListBookReviewsByRatingParams) ([]BookReview, error)
+	ListBookReviewsByUser(ctx context.Context, arg ListBookReviewsByUserParams) ([]BookReview, error)
 	// GORMのPreload("Post")に相当（Post.Userは移行前もPreloadされていないため含めない）。
 	// post_idはNOT NULLのためINNER JOINでよい。
 	ListBookmarkCollectionItemsWithPostByCollection(ctx context.Context, arg ListBookmarkCollectionItemsWithPostByCollectionParams) ([]ListBookmarkCollectionItemsWithPostByCollectionRow, error)
@@ -388,6 +401,8 @@ type Querier interface {
 	MarkMessagesAsRead(ctx context.Context, arg MarkMessagesAsReadParams) error
 	MarkNotificationAsRead(ctx context.Context, arg MarkNotificationAsReadParams) error
 	MarkPasswordResetTokenAsUsed(ctx context.Context, id int64) error
+	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
+	SearchBookReviews(ctx context.Context, arg SearchBookReviewsParams) ([]SearchBookReviewsRow, error)
 	SearchNotes(ctx context.Context, arg SearchNotesParams) ([]SearchNotesRow, error)
 	// GORMのPreload("User")に相当（CodeSnippetsは別クエリで取得しGo側で結合する）。
 	// ソート順はGoの動的Order()呼び出しの代わりに、sort_byごとのCASE式で切り替える
@@ -408,6 +423,8 @@ type Querier interface {
 	ToggleNoteFavorite(ctx context.Context, id int64) error
 	TouchAIConversation(ctx context.Context, arg TouchAIConversationParams) error
 	UnarchiveNote(ctx context.Context, id int64) error
+	// GORMのSave（全カラム上書き）に相当。
+	UpdateBookReview(ctx context.Context, arg UpdateBookReviewParams) (BookReview, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateBookmarkCollection(ctx context.Context, arg UpdateBookmarkCollectionParams) (BookmarkCollection, error)
 	// GORMのSave（全カラム上書き）に相当。
