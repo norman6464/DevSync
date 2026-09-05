@@ -67,6 +67,8 @@ type Querier interface {
 	CountPostPinsByUserAndPost(ctx context.Context, arg CountPostPinsByUserAndPostParams) (int64, error)
 	CountPostTemplatesByUserID(ctx context.Context, userID int64) (int64, error)
 	CountPostViewsByPost(ctx context.Context, postID int64) (int64, error)
+	// 下書きは除外する。
+	CountPostsByTag(ctx context.Context, tag string) (int64, error)
 	CountPostsByUser(ctx context.Context, userID int64) (int64, error)
 	CountPostsByUserSince(ctx context.Context, arg CountPostsByUserSinceParams) (int64, error)
 	CountPublishedPostsByUser(ctx context.Context, userID int64) (int64, error)
@@ -107,6 +109,7 @@ type Querier interface {
 	CreateNotificationSettings(ctx context.Context, arg CreateNotificationSettingsParams) (NotificationSetting, error)
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) (PasswordResetToken, error)
 	CreatePostPin(ctx context.Context, arg CreatePostPinParams) error
+	CreatePostTag(ctx context.Context, arg CreatePostTagParams) error
 	CreatePostTemplate(ctx context.Context, arg CreatePostTemplateParams) (PostTemplate, error)
 	// GORMの clause.OnConflict{DoNothing: true} に相当。実際に挿入できた行数を返し、
 	// 呼び出し側で「既に閲覧済みだったか」を判定する。
@@ -126,6 +129,7 @@ type Querier interface {
 	DeleteNoteLink(ctx context.Context, arg DeleteNoteLinkParams) error
 	DeleteNoteTemplate(ctx context.Context, id int64) error
 	DeletePostPin(ctx context.Context, arg DeletePostPinParams) error
+	DeletePostTagsByPostID(ctx context.Context, postID int64) error
 	DeletePostTemplate(ctx context.Context, id int64) error
 	DeleteProjectMilestone(ctx context.Context, id int64) error
 	// book_reviews は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
@@ -194,9 +198,16 @@ type Querier interface {
 	ListNotesByFolder(ctx context.Context, arg ListNotesByFolderParams) ([]Note, error)
 	// GORMのPreload("Folder")に相当。folder_idはNULL許容のためLEFT JOIN（理由は GetNoteByID と同じ）。
 	ListNotesByUser(ctx context.Context, arg ListNotesByUserParams) ([]ListNotesByUserRow, error)
+	ListPopularTags(ctx context.Context, limit int32) ([]ListPopularTagsRow, error)
+	// ページングはpost_tags.id順で決め、実データ（Post本体）は別クエリでcreated_at順に取得する
+	// （移行前のGORM実装と同じ2段構え）。
+	ListPostIDsByTag(ctx context.Context, arg ListPostIDsByTagParams) ([]int64, error)
 	// GORMのPreload("Post").Preload("Post.User")に相当。user_id/post_idともにNOT NULLのためINNER JOINでよい。
 	ListPostPinsByUser(ctx context.Context, userID int64) ([]ListPostPinsByUserRow, error)
+	ListPostTagsByPostID(ctx context.Context, postID int64) ([]string, error)
 	ListPostTemplatesByUserID(ctx context.Context, arg ListPostTemplatesByUserIDParams) ([]PostTemplate, error)
+	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
+	ListPostsByIDs(ctx context.Context, dollar_1 []int64) ([]ListPostsByIDsRow, error)
 	ListProjectMilestonesByProject(ctx context.Context, projectID int64) ([]ProjectMilestone, error)
 	ListRootNoteFoldersByUser(ctx context.Context, userID int64) ([]NoteFolder, error)
 	ListStreakFreezesByUserAndMonth(ctx context.Context, arg ListStreakFreezesByUserAndMonthParams) ([]StreakFreeze, error)
