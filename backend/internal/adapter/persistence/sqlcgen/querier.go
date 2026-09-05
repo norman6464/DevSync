@@ -78,6 +78,9 @@ type Querier interface {
 	// 競合を無害化する。競合で挿入されなかった場合は0行が返る（エラーにはしない）。
 	CreateDefaultReminderSettings(ctx context.Context, arg CreateDefaultReminderSettingsParams) ([]ReminderSetting, error)
 	CreateFollow(ctx context.Context, arg CreateFollowParams) error
+	// GORMの clause.OnConflict{DoNothing: true} に相当。衝突時は RETURNING 行が無くなるため
+	// pgx.ErrNoRows を「作成されなかった」判定に使う。
+	CreateMention(ctx context.Context, arg CreateMentionParams) (Mention, error)
 	CreateNote(ctx context.Context, arg CreateNoteParams) (Note, error)
 	CreateNoteFolder(ctx context.Context, arg CreateNoteFolderParams) (NoteFolder, error)
 	CreateNoteLink(ctx context.Context, arg CreateNoteLinkParams) error
@@ -92,6 +95,8 @@ type Querier interface {
 	DecrementCommentLikeCount(ctx context.Context, id int64) error
 	DeleteCommentLike(ctx context.Context, arg DeleteCommentLikeParams) error
 	DeleteFollow(ctx context.Context, arg DeleteFollowParams) error
+	DeleteMentionsByCommentID(ctx context.Context, commentID *int64) error
+	DeleteMentionsByPostID(ctx context.Context, postID *int64) error
 	DeleteNote(ctx context.Context, id int64) error
 	DeleteNoteFolder(ctx context.Context, id int64) error
 	DeleteNoteLink(ctx context.Context, arg DeleteNoteLinkParams) error
@@ -134,6 +139,11 @@ type Querier interface {
 	ListFollowers(ctx context.Context, arg ListFollowersParams) ([]User, error)
 	// 件数は follow_stats.sql の CountFollowingByUser を再利用する。
 	ListFollowing(ctx context.Context, arg ListFollowingParams) ([]User, error)
+	ListMentionsByCommentID(ctx context.Context, commentID *int64) ([]ListMentionsByCommentIDRow, error)
+	// GORMのPreload("User").Preload("Actor")に相当。user_id/actor_idともにNOT NULLのためINNER JOINでよい。
+	ListMentionsByPostID(ctx context.Context, postID *int64) ([]ListMentionsByPostIDRow, error)
+	// GORMのPreload("Actor")に相当。actor_idはNOT NULLのためINNER JOINでよい。
+	ListMentionsByUser(ctx context.Context, arg ListMentionsByUserParams) ([]ListMentionsByUserRow, error)
 	ListNoteFoldersByParent(ctx context.Context, parentID *int64) ([]NoteFolder, error)
 	ListNoteFoldersByUser(ctx context.Context, arg ListNoteFoldersByUserParams) ([]NoteFolder, error)
 	// GORMのPreload("TargetNote")に相当。リンク先ノートをsqlc.embedで一緒に取得する。
