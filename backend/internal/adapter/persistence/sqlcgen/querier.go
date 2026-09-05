@@ -17,6 +17,8 @@ type Querier interface {
 	CountBookmarksReceivedByUser(ctx context.Context, userID int64) (int64, error)
 	CountCodeSnippetLanguagesByUser(ctx context.Context, userID int64) (int64, error)
 	CountCodeSnippetsByUser(ctx context.Context, userID int64) (int64, error)
+	CountCommentLikesByComment(ctx context.Context, commentID int64) (int64, error)
+	CountCommentLikesByUserAndComment(ctx context.Context, arg CountCommentLikesByUserAndCommentParams) (int64, error)
 	CountCommentsByUserSince(ctx context.Context, arg CountCommentsByUserSinceParams) (int64, error)
 	CountCommentsReceivedByUser(ctx context.Context, userID int64) (int64, error)
 	CountConversationsByUser(ctx context.Context, senderID int64) (int64, error)
@@ -59,6 +61,7 @@ type Querier interface {
 	CountUnreadNotificationsByUser(ctx context.Context, userID int64) (int64, error)
 	CountUserActivitiesByUser(ctx context.Context, userID int64) (int64, error)
 	CountUserActivitiesByUserAndType(ctx context.Context, arg CountUserActivitiesByUserAndTypeParams) (int64, error)
+	CreateCommentLike(ctx context.Context, arg CreateCommentLikeParams) error
 	// 同時に複数リクエストが「不在」と判定してもuser_idの一意制約とDO NOTHINGで
 	// 競合を無害化する。競合で挿入されなかった場合は0行が返る（エラーにはしない）。
 	CreateDefaultReminderSettings(ctx context.Context, arg CreateDefaultReminderSettingsParams) ([]ReminderSetting, error)
@@ -66,6 +69,8 @@ type Querier interface {
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) (PasswordResetToken, error)
 	CreatePostTemplate(ctx context.Context, arg CreatePostTemplateParams) (PostTemplate, error)
 	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
+	DecrementCommentLikeCount(ctx context.Context, id int64) error
+	DeleteCommentLike(ctx context.Context, arg DeleteCommentLikeParams) error
 	DeletePostTemplate(ctx context.Context, id int64) error
 	// book_reviews は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
 	// deleted_at IS NULL を明示する。レビュー0件でもCOALESCEにより全項目0を返す
@@ -82,6 +87,7 @@ type Querier interface {
 	GetTopReactedPostsByUser(ctx context.Context, arg GetTopReactedPostsByUserParams) ([]GetTopReactedPostsByUserRow, error)
 	GetWeeklyChallengeByUserAndWeek(ctx context.Context, arg GetWeeklyChallengeByUserAndWeekParams) (WeeklyChallenge, error)
 	GetWidgetSettingsByUserID(ctx context.Context, userID int64) (WidgetSetting, error)
+	IncrementCommentLikeCount(ctx context.Context, id int64) error
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
 	ListPostTemplatesByUserID(ctx context.Context, arg ListPostTemplatesByUserIDParams) ([]PostTemplate, error)
 	ListUserActivitiesByUser(ctx context.Context, arg ListUserActivitiesByUserParams) ([]UserActivity, error)
