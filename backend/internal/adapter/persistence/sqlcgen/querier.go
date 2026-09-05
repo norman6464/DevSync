@@ -68,6 +68,8 @@ type Querier interface {
 	CountPostLikeByUserAndPost(ctx context.Context, arg CountPostLikeByUserAndPostParams) (int64, error)
 	CountPostPinsByUser(ctx context.Context, userID int64) (int64, error)
 	CountPostPinsByUserAndPost(ctx context.Context, arg CountPostPinsByUserAndPostParams) (int64, error)
+	CountPostSeriesByUser(ctx context.Context, userID int64) (int64, error)
+	CountPostSeriesItemsBySeriesAndPost(ctx context.Context, arg CountPostSeriesItemsBySeriesAndPostParams) (int64, error)
 	CountPostTemplatesByUserID(ctx context.Context, userID int64) (int64, error)
 	CountPostViewsByPost(ctx context.Context, postID int64) (int64, error)
 	CountPostViewsReceivedByUser(ctx context.Context, userID int64) (int64, error)
@@ -124,6 +126,8 @@ type Querier interface {
 	CreatePostComment(ctx context.Context, arg CreatePostCommentParams) (Comment, error)
 	CreatePostLike(ctx context.Context, arg CreatePostLikeParams) error
 	CreatePostPin(ctx context.Context, arg CreatePostPinParams) error
+	CreatePostSeries(ctx context.Context, arg CreatePostSeriesParams) (PostSeries, error)
+	CreatePostSeriesItem(ctx context.Context, arg CreatePostSeriesItemParams) (PostSeriesItem, error)
 	CreatePostTag(ctx context.Context, arg CreatePostTagParams) error
 	CreatePostTemplate(ctx context.Context, arg CreatePostTemplateParams) (PostTemplate, error)
 	// GORMの clause.OnConflict{DoNothing: true} に相当。実際に挿入できた行数を返し、
@@ -156,6 +160,9 @@ type Querier interface {
 	DeletePostComment(ctx context.Context, id int64) error
 	DeletePostLike(ctx context.Context, arg DeletePostLikeParams) (int64, error)
 	DeletePostPin(ctx context.Context, arg DeletePostPinParams) error
+	DeletePostSeries(ctx context.Context, id int64) error
+	DeletePostSeriesItem(ctx context.Context, arg DeletePostSeriesItemParams) error
+	DeletePostSeriesItemsBySeriesID(ctx context.Context, seriesID int64) error
 	DeletePostTagsByPostID(ctx context.Context, postID int64) error
 	DeletePostTemplate(ctx context.Context, id int64) error
 	DeleteProjectMilestone(ctx context.Context, id int64) error
@@ -188,6 +195,8 @@ type Querier interface {
 	GetNotificationSettingsByUserID(ctx context.Context, userID int64) (NotificationSetting, error)
 	GetPasswordResetTokenByToken(ctx context.Context, token string) (PasswordResetToken, error)
 	GetPostAuthorID(ctx context.Context, id int64) (int64, error)
+	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
+	GetPostSeriesWithUserByID(ctx context.Context, id int64) (GetPostSeriesWithUserByIDRow, error)
 	GetPostTemplateByID(ctx context.Context, id int64) (PostTemplate, error)
 	// GORMのPreload("User")に相当（CodeSnippetsはpost_bookmark.sqlのListCodeSnippetsByPostIDsで別途取得する）。
 	// user_idはNOT NULLのためINNER JOINでよい。
@@ -279,6 +288,9 @@ type Querier interface {
 	ListPostIDsByTag(ctx context.Context, arg ListPostIDsByTagParams) ([]int64, error)
 	// GORMのPreload("Post").Preload("Post.User")に相当。user_id/post_idともにNOT NULLのためINNER JOINでよい。
 	ListPostPinsByUser(ctx context.Context, userID int64) ([]ListPostPinsByUserRow, error)
+	ListPostSeriesByUser(ctx context.Context, arg ListPostSeriesByUserParams) ([]PostSeries, error)
+	// GORMのPreload("Post").Preload("Post.User")に相当。post_idはNOT NULLのためINNER JOINでよい。
+	ListPostSeriesItemsWithPostBySeriesID(ctx context.Context, seriesID int64) ([]ListPostSeriesItemsWithPostBySeriesIDRow, error)
 	ListPostTagsByPostID(ctx context.Context, postID int64) ([]string, error)
 	ListPostTemplatesByUserID(ctx context.Context, arg ListPostTemplatesByUserIDParams) ([]PostTemplate, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
@@ -342,6 +354,8 @@ type Querier interface {
 	// content/is_hiddenだけを変更してから呼ぶため、この2カラムの書き戻しで等価になる。
 	UpdatePostComment(ctx context.Context, arg UpdatePostCommentParams) (Comment, error)
 	UpdatePostPinOrder(ctx context.Context, arg UpdatePostPinOrderParams) error
+	// GORMのSave（全カラム上書き）に相当。
+	UpdatePostSeries(ctx context.Context, arg UpdatePostSeriesParams) (PostSeries, error)
 	UpdatePostTemplate(ctx context.Context, arg UpdatePostTemplateParams) (PostTemplate, error)
 	UpdateProjectMilestone(ctx context.Context, arg UpdateProjectMilestoneParams) (ProjectMilestone, error)
 	UpdateReminderSettings(ctx context.Context, arg UpdateReminderSettingsParams) (ReminderSetting, error)
