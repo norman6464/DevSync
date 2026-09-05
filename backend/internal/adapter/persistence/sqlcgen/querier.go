@@ -107,6 +107,7 @@ type Querier interface {
 	// GORMの clause.OnConflict{DoNothing: true} に相当。衝突時は RETURNING 行が無くなるため
 	// pgx.ErrNoRows を「作成されなかった」判定に使う。
 	CreateMention(ctx context.Context, arg CreateMentionParams) (Mention, error)
+	CreateMessage(ctx context.Context, arg CreateMessageParams) (Message, error)
 	CreateNote(ctx context.Context, arg CreateNoteParams) (Note, error)
 	CreateNoteFolder(ctx context.Context, arg CreateNoteFolderParams) (NoteFolder, error)
 	CreateNoteLink(ctx context.Context, arg CreateNoteLinkParams) error
@@ -200,6 +201,11 @@ type Querier interface {
 	ListChatRoomMemberUserIDs(ctx context.Context, chatRoomID int64) ([]int64, error)
 	// GORMのPreload("CodeSnippets")に相当。1対多のため投稿IDのまとめ取りとGo側でのグルーピングで再現する。
 	ListCodeSnippetsByPostIDs(ctx context.Context, dollar_1 []int64) ([]CodeSnippet, error)
+	// GORMのPreload("Sender").Preload("Receiver")に相当。
+	// sender_id/receiver_idともにNOT NULLのためINNER JOINでよい。
+	ListConversationMessages(ctx context.Context, arg ListConversationMessagesParams) ([]ListConversationMessagesRow, error)
+	// 会話相手ごとの最新メッセージと未読件数を取得する（移行前のGORM Raw SQLをそのまま踏襲）。
+	ListConversationSummaries(ctx context.Context, receiverID int64) ([]ListConversationSummariesRow, error)
 	ListFavoriteNotesByUser(ctx context.Context, arg ListFavoriteNotesByUserParams) ([]ListFavoriteNotesByUserRow, error)
 	// 件数は follow_stats.sql の CountFollowersByUser を再利用する。
 	ListFollowers(ctx context.Context, arg ListFollowersParams) ([]User, error)
@@ -256,6 +262,7 @@ type Querier interface {
 	ListWeeklyGoalsByUser(ctx context.Context, userID int64) ([]WeeklyGoal, error)
 	// 同一ユーザーの CreateWithinLimits 同時実行を直列化するための行ロック（GORMの clause.Locking{Strength: "UPDATE"} に相当）。
 	LockUserForStreakFreeze(ctx context.Context, id int64) error
+	MarkMessagesAsRead(ctx context.Context, arg MarkMessagesAsReadParams) error
 	MarkPasswordResetTokenAsUsed(ctx context.Context, id int64) error
 	SearchNotes(ctx context.Context, arg SearchNotesParams) ([]SearchNotesRow, error)
 	// GORMのPreload("User")に相当（CodeSnippetsは別クエリで取得しGo側で結合する）。
