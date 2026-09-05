@@ -3,19 +3,19 @@ package persistence
 import (
 	"context"
 
+	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
-	"gorm.io/gorm"
 )
 
-// userDashboardRepository は [repository.UserDashboardRepository] の GORM 実装。
+// userDashboardRepository は [repository.UserDashboardRepository] の sqlc(pgx) 実装。
 type userDashboardRepository struct {
-	db *gorm.DB
+	q *sqlcgen.Queries
 }
 
-// NewUserDashboardRepository は UserDashboardRepository の GORM 実装を返す。
-func NewUserDashboardRepository(db *gorm.DB) repository.UserDashboardRepository {
-	return &userDashboardRepository{db: db}
+// NewUserDashboardRepository は UserDashboardRepository の sqlc(pgx) 実装を返す。
+func NewUserDashboardRepository(q *sqlcgen.Queries) repository.UserDashboardRepository {
+	return &userDashboardRepository{q: q}
 }
 
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
@@ -24,53 +24,44 @@ var _ repository.UserDashboardRepository = (*userDashboardRepository)(nil)
 // GetDashboardStats は指定ユーザーのダッシュボード統計情報を集計して返す。
 // 投稿数・受信いいね数・受信コメント数・受信閲覧数・フォロワー数・フォロー数を返す。
 func (r *userDashboardRepository) GetDashboardStats(ctx context.Context, userID uint) (*model.UserDashboardStats, error) {
-	db := r.db.WithContext(ctx)
+	uid := int64(userID)
 	stats := &model.UserDashboardStats{}
 
-	// 投稿数（下書き除外）
-	if err := db.Model(&model.Post{}).
-		Where("user_id = ? AND is_draft = ?", userID, false).
-		Count(&stats.PostCount).Error; err != nil {
+	postCount, err := r.q.CountPublishedPostsByUser(ctx, uid)
+	if err != nil {
 		return nil, err
 	}
+	stats.PostCount = postCount
 
-	// 受信いいね数
-	if err := db.Model(&model.Post{}).
-		Select("COALESCE(SUM(like_count), 0)").
-		Where("user_id = ?", userID).
-		Scan(&stats.LikesReceived).Error; err != nil {
+	likesReceived, err := r.q.SumPostLikesReceivedByUser(ctx, uid)
+	if err != nil {
 		return nil, err
 	}
+	stats.LikesReceived = likesReceived
 
-	// 受信コメント数
-	if err := db.Model(&model.Post{}).
-		Select("COALESCE(SUM(comment_count), 0)").
-		Where("user_id = ?", userID).
-		Scan(&stats.CommentsReceived).Error; err != nil {
+	commentsReceived, err := r.q.SumPostCommentsReceivedByUser(ctx, uid)
+	if err != nil {
 		return nil, err
 	}
+	stats.CommentsReceived = commentsReceived
 
-	// 受信閲覧数
-	if err := db.Model(&model.PostView{}).
-		Joins("JOIN posts ON posts.id = post_views.post_id").
-		Where("posts.user_id = ?", userID).
-		Count(&stats.ViewsReceived).Error; err != nil {
+	viewsReceived, err := r.q.CountPostViewsReceivedByUser(ctx, uid)
+	if err != nil {
 		return nil, err
 	}
+	stats.ViewsReceived = viewsReceived
 
-	// フォロワー数
-	if err := db.Model(&model.Follow{}).
-		Where("followee_id = ?", userID).
-		Count(&stats.FollowerCount).Error; err != nil {
+	followerCount, err := r.q.CountFollowersByUser(ctx, uid)
+	if err != nil {
 		return nil, err
 	}
+	stats.FollowerCount = followerCount
 
-	// フォロー数
-	if err := db.Model(&model.Follow{}).
-		Where("follower_id = ?", userID).
-		Count(&stats.FollowingCount).Error; err != nil {
+	followingCount, err := r.q.CountFollowingByUser(ctx, uid)
+	if err != nil {
 		return nil, err
 	}
+	stats.FollowingCount = followingCount
 
 	return stats, nil
 }
