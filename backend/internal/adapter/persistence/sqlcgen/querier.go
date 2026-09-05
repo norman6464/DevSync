@@ -140,6 +140,9 @@ type Querier interface {
 	DeleteBookmark(ctx context.Context, arg DeleteBookmarkParams) (int64, error)
 	DeleteCommentLike(ctx context.Context, arg DeleteCommentLikeParams) error
 	DeleteFollow(ctx context.Context, arg DeleteFollowParams) error
+	DeleteGitHubContributionsByUser(ctx context.Context, userID int64) error
+	DeleteGitHubLanguageStatsByUser(ctx context.Context, userID int64) error
+	DeleteGitHubReposByUser(ctx context.Context, userID int64) error
 	DeleteMentionsByCommentID(ctx context.Context, commentID *int64) error
 	DeleteMentionsByPostID(ctx context.Context, postID *int64) error
 	DeleteNote(ctx context.Context, id int64) error
@@ -217,6 +220,7 @@ type Querier interface {
 	IncrementPostViewCount(ctx context.Context, id int64) error
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
 	ListAIAdvicesByUser(ctx context.Context, arg ListAIAdvicesByUserParams) ([]AiAdvice, error)
+	ListAllGitHubContributionsByUser(ctx context.Context, userID int64) ([]GitHubContribution, error)
 	ListArchivedNotesByUser(ctx context.Context, arg ListArchivedNotesByUserParams) ([]ListArchivedNotesByUserRow, error)
 	// GORMのPreload("User")に相当（CodeSnippetsは別クエリで取得しGo側で結合する）。
 	// user_id/post_idともにNOT NULLのためINNER JOINでよい。
@@ -239,6 +243,8 @@ type Querier interface {
 	ListFollowing(ctx context.Context, arg ListFollowingParams) ([]User, error)
 	// GitHub連続コントリビューション日数の算出に使う（countが正の日のみ、新しい順）。
 	ListGitHubContributionsByUser(ctx context.Context, userID int64) ([]ListGitHubContributionsByUserRow, error)
+	ListGitHubLanguageStatsByUser(ctx context.Context, userID int64) ([]GitHubLanguageStat, error)
+	ListGitHubReposByUser(ctx context.Context, userID int64) ([]GitHubRepository, error)
 	// GORMのPreload("Sender")に相当。sender_idはNOT NULLのためINNER JOINでよい。
 	ListGroupMessagesByRoom(ctx context.Context, arg ListGroupMessagesByRoomParams) ([]ListGroupMessagesByRoomRow, error)
 	// 学習ログの連続記録日数（ストリーク）算出に使う、記録のある日付一覧（新しい順）。
@@ -334,6 +340,9 @@ type Querier interface {
 	UpdateResourceReview(ctx context.Context, arg UpdateResourceReviewParams) (ResourceReview, error)
 	UpdateWeeklyChallenge(ctx context.Context, arg UpdateWeeklyChallengeParams) (WeeklyChallenge, error)
 	UpdateYouTubeSearchCache(ctx context.Context, arg UpdateYouTubeSearchCacheParams) (YouTubeSearchCach, error)
+	UpsertGitHubContribution(ctx context.Context, arg UpsertGitHubContributionParams) (GitHubContribution, error)
+	UpsertGitHubLanguageStat(ctx context.Context, arg UpsertGitHubLanguageStatParams) (GitHubLanguageStat, error)
+	UpsertGitHubRepo(ctx context.Context, arg UpsertGitHubRepoParams) (GitHubRepository, error)
 	UpsertQiitaArticle(ctx context.Context, arg UpsertQiitaArticleParams) (QiitaArticle, error)
 	UpsertResourceProgress(ctx context.Context, arg UpsertResourceProgressParams) (ResourceProgress, error)
 	UpsertWeeklyGoal(ctx context.Context, arg UpsertWeeklyGoalParams) (WeeklyGoal, error)
