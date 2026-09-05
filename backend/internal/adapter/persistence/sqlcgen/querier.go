@@ -62,6 +62,7 @@ type Querier interface {
 	// 同時に複数リクエストが「不在」と判定してもuser_idの一意制約とDO NOTHINGで
 	// 競合を無害化する。競合で挿入されなかった場合は0行が返る（エラーにはしない）。
 	CreateDefaultReminderSettings(ctx context.Context, arg CreateDefaultReminderSettingsParams) ([]ReminderSetting, error)
+	CreateNotificationSettings(ctx context.Context, arg CreateNotificationSettingsParams) (NotificationSetting, error)
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) (PasswordResetToken, error)
 	CreatePostTemplate(ctx context.Context, arg CreatePostTemplateParams) (PostTemplate, error)
 	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
@@ -71,6 +72,7 @@ type Querier interface {
 	// （GORM実装のtotal_reviews==0での早期returnと同じ結果になる）。
 	GetBookReviewStats(ctx context.Context, userID int64) (GetBookReviewStatsRow, error)
 	GetEmojiBreakdownByUser(ctx context.Context, userID int64) ([]GetEmojiBreakdownByUserRow, error)
+	GetNotificationSettingsByUserID(ctx context.Context, userID int64) (NotificationSetting, error)
 	GetPasswordResetTokenByToken(ctx context.Context, token string) (PasswordResetToken, error)
 	GetPostTemplateByID(ctx context.Context, id int64) (PostTemplate, error)
 	// projects は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
@@ -93,6 +95,7 @@ type Querier interface {
 	SumQuestionVotesByUser(ctx context.Context, userID int64) (int64, error)
 	SumRoadmapCompletedStepCountByUser(ctx context.Context, userID int64) (int64, error)
 	SumRoadmapStepCountByUser(ctx context.Context, userID int64) (int64, error)
+	UpdateNotificationSettings(ctx context.Context, arg UpdateNotificationSettingsParams) (NotificationSetting, error)
 	UpdatePostTemplate(ctx context.Context, arg UpdatePostTemplateParams) (PostTemplate, error)
 	UpdateReminderSettings(ctx context.Context, arg UpdateReminderSettingsParams) (ReminderSetting, error)
 	UpdateWeeklyChallenge(ctx context.Context, arg UpdateWeeklyChallengeParams) (WeeklyChallenge, error)
