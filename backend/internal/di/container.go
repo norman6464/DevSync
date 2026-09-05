@@ -733,7 +733,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// 投稿タグはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	postTagRepo := persistence.NewPostTagRepository(db)
+	postTagRepo := persistence.NewPostTagRepository(sqlPool)
 	setPostTags := usecase.NewSetPostTagsUseCase(postTagRepo, persistence.NewPostReader(db))
 	c.PostTagHandler = handler.NewPostTagHandler(
 		setPostTags,
