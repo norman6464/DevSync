@@ -86,10 +86,12 @@ type Querier interface {
 	ListPostTemplatesByUserID(ctx context.Context, arg ListPostTemplatesByUserIDParams) ([]PostTemplate, error)
 	ListUserActivitiesByUser(ctx context.Context, arg ListUserActivitiesByUserParams) ([]UserActivity, error)
 	ListUserActivitiesByUserAndType(ctx context.Context, arg ListUserActivitiesByUserAndTypeParams) ([]UserActivity, error)
+	ListWeeklyGoalsByUser(ctx context.Context, userID int64) ([]WeeklyGoal, error)
 	MarkPasswordResetTokenAsUsed(ctx context.Context, id int64) error
 	SumAnswerVotesByUser(ctx context.Context, userID int64) (int64, error)
 	SumCodeSnippetCommentCountByUser(ctx context.Context, userID int64) (int64, error)
 	SumLearningLogDurationByUser(ctx context.Context, userID int64) (int64, error)
+	SumLearningLogDurationByUserCategorySince(ctx context.Context, arg SumLearningLogDurationByUserCategorySinceParams) (int64, error)
 	SumLearningResourceLikeCountByUser(ctx context.Context, userID int64) (int64, error)
 	SumLearningResourceSaveCountByUser(ctx context.Context, userID int64) (int64, error)
 	SumQuestionVotesByUser(ctx context.Context, userID int64) (int64, error)
@@ -99,6 +101,7 @@ type Querier interface {
 	UpdatePostTemplate(ctx context.Context, arg UpdatePostTemplateParams) (PostTemplate, error)
 	UpdateReminderSettings(ctx context.Context, arg UpdateReminderSettingsParams) (ReminderSetting, error)
 	UpdateWeeklyChallenge(ctx context.Context, arg UpdateWeeklyChallengeParams) (WeeklyChallenge, error)
+	UpsertWeeklyGoal(ctx context.Context, arg UpsertWeeklyGoalParams) (WeeklyGoal, error)
 	UpsertWidgetSettings(ctx context.Context, arg UpsertWidgetSettingsParams) error
 }
 
