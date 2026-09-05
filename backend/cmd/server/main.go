@@ -11,9 +11,9 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/norman6464/devsync/backend/internal/adapter/persistence"
 	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
+	"github.com/norman6464/devsync/backend/internal/handler"
 	"github.com/norman6464/devsync/backend/internal/infra/config"
 	"github.com/norman6464/devsync/backend/internal/infra/ws"
-	"github.com/norman6464/devsync/backend/internal/router"
 )
 
 // fixRoadmapStepCounts はテンプレート初期登録の二重加算で誤った step_count を
@@ -65,7 +65,7 @@ func main() {
 	go hub.Run()
 
 	// ルーターを構築しサーバーを起動
-	r := router.Setup(sqlPool, cfg, hub)
+	r := handler.NewRouter(sqlPool, cfg, hub)
 
 	log.Printf("Server starting on :%s", cfg.Port)
 	if err := r.Run(":" + cfg.Port); err != nil {

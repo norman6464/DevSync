@@ -1,6 +1,4 @@
-// Package router はDevSyncアプリケーションのルーティング設定を提供する。
-// DIコンテナからハンドラを受け取り、Ginルーターへのエンドポイント登録を行う。
-package router
+package handler
 
 import (
 	"log"
@@ -10,22 +8,19 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/norman6464/devsync/backend/internal/di"
-	"github.com/norman6464/devsync/backend/internal/handler"
 	"github.com/norman6464/devsync/backend/internal/handler/middleware"
 	"github.com/norman6464/devsync/backend/internal/infra/config"
 	"github.com/norman6464/devsync/backend/internal/infra/ws"
 )
 
-// Setup はGinルーターを構築し、全エンドポイントを登録して返す。
-// DIコンテナを利用して依存関係を解決し、ルーティングのみに集中する。
-func Setup(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *gin.Engine {
-	return SetupWithContainer(di.NewContainer(sqlPool, cfg, hub), cfg)
+// NewRouter はGinルーターを構築し、依存関係の解決と全エンドポイントの登録を行う。
+func NewRouter(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *gin.Engine {
+	return newRouterWithContainer(NewContainer(sqlPool, cfg, hub), cfg)
 }
 
-// SetupWithContainer は構築済みのDIコンテナからルーターを組み立てる。
-// ルート定義だけを DB 無しで検証できるようにするために分けている。
-func SetupWithContainer(c *di.Container, cfg *config.Config) *gin.Engine {
+// newRouterWithContainer は構築済みのコンテナからルーターを組み立てる。
+// ルート定義だけを DB 無しで検証できるようにするために分けている（router_test.go参照）。
+func newRouterWithContainer(c *Container, cfg *config.Config) *gin.Engine {
 	r := gin.Default()
 
 	// 信頼するプロキシを設定（X-Forwarded-For偽装によるレート制限回避を防止）
@@ -84,7 +79,7 @@ func SetupWithContainer(c *di.Container, cfg *config.Config) *gin.Engine {
 	r.Static("/uploads", "./uploads")
 
 	// パブリックルート
-	r.GET("/health", handler.HealthCheck)
+	r.GET("/health", HealthCheck)
 	r.GET("/ws", c.WebSocketHandler.HandleWebSocket)
 
 	api := r.Group("/api/v1")
@@ -156,7 +151,7 @@ func SetupWithContainer(c *di.Container, cfg *config.Config) *gin.Engine {
 	return r
 }
 
-func registerUserRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerUserRoutes(g *gin.RouterGroup, c *Container) {
 	users := g.Group("/users")
 	{
 		users.GET("", c.UserHandler.GetAll)
@@ -173,7 +168,7 @@ func registerUserRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerGitHubRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerGitHubRoutes(g *gin.RouterGroup, c *Container) {
 	github := g.Group("/github")
 	{
 		github.GET("/connect", c.GitHubHandler.Connect)
@@ -185,7 +180,7 @@ func registerGitHubRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerPostRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerPostRoutes(g *gin.RouterGroup, c *Container) {
 	posts := g.Group("/posts")
 	{
 		posts.POST("", c.PostHandler.Create)
@@ -227,7 +222,7 @@ func registerPostRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerPostSeriesRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerPostSeriesRoutes(g *gin.RouterGroup, c *Container) {
 	series := g.Group("/post-series")
 	{
 		series.POST("", c.PostSeriesHandler.Create)
@@ -243,7 +238,7 @@ func registerPostSeriesRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerPostCollectionRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerPostCollectionRoutes(g *gin.RouterGroup, c *Container) {
 	collections := g.Group("/post-collections")
 	{
 		collections.POST("", c.PostCollectionHandler.Create)
@@ -259,7 +254,7 @@ func registerPostCollectionRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerPostTagRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerPostTagRoutes(g *gin.RouterGroup, c *Container) {
 	tags := g.Group("/post-tags")
 	{
 		tags.PUT("/posts/:postId", c.PostTagHandler.SetTags)
@@ -269,7 +264,7 @@ func registerPostTagRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerPostPinRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerPostPinRoutes(g *gin.RouterGroup, c *Container) {
 	pins := g.Group("/post-pins")
 	{
 		pins.GET("/my/count", c.PostPinHandler.GetMyCount)
@@ -280,7 +275,7 @@ func registerPostPinRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerPostViewRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerPostViewRoutes(g *gin.RouterGroup, c *Container) {
 	views := g.Group("/post-views")
 	{
 		views.POST("/posts/:postId", c.PostViewHandler.RecordView)
@@ -289,7 +284,7 @@ func registerPostViewRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerSnippetRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerSnippetRoutes(g *gin.RouterGroup, c *Container) {
 	snippets := g.Group("/snippets")
 	{
 		snippets.GET("/my/count", c.CodeSnippetHandler.GetMyCount)
@@ -308,7 +303,7 @@ func registerSnippetRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerRankingRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerRankingRoutes(g *gin.RouterGroup, c *Container) {
 	rankings := g.Group("/rankings")
 	{
 		rankings.GET("/contributions", c.RankingHandler.ContributionRanking)
@@ -318,7 +313,7 @@ func registerRankingRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerMessageRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerMessageRoutes(g *gin.RouterGroup, c *Container) {
 	messages := g.Group("/messages")
 	{
 		messages.GET("", c.MessageHandler.GetConversations)
@@ -328,7 +323,7 @@ func registerMessageRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerUploadRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerUploadRoutes(g *gin.RouterGroup, c *Container) {
 	upload := g.Group("/upload")
 	upload.Use(middleware.BodyLimit(10 << 20)) // 10MB: ファイルアップロード用
 	{
@@ -337,7 +332,7 @@ func registerUploadRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerNotificationRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerNotificationRoutes(g *gin.RouterGroup, c *Container) {
 	notifications := g.Group("/notifications")
 	{
 		notifications.GET("", c.NotificationHandler.GetAll)
@@ -348,7 +343,7 @@ func registerNotificationRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerIntegrationRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerIntegrationRoutes(g *gin.RouterGroup, c *Container) {
 	// Zenn連携
 	zenn := g.Group("/zenn")
 	{
@@ -379,7 +374,7 @@ func registerIntegrationRoutes(g *gin.RouterGroup, c *di.Container) {
 }
 
 // registerLearningRoutes は学習関連のエンドポイントをまとめて登録する。
-func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerLearningRoutes(g *gin.RouterGroup, c *Container) {
 	registerGoalRoutes(g, c)
 	registerReportRoutes(g, c)
 	registerProjectRoutes(g, c)
@@ -393,7 +388,7 @@ func registerLearningRoutes(g *gin.RouterGroup, c *di.Container) {
 	registerWeeklyGoalRoutes(g, c)
 }
 
-func registerGoalRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerGoalRoutes(g *gin.RouterGroup, c *Container) {
 	goals := g.Group("/goals")
 	{
 		goals.POST("", c.LearningGoalHandler.Create)
@@ -420,7 +415,7 @@ func registerGoalRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerReportRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerReportRoutes(g *gin.RouterGroup, c *Container) {
 	reports := g.Group("/reports")
 	{
 		reports.GET("/weekly", c.ActivityReportHandler.GetMyWeeklyReport)
@@ -431,7 +426,7 @@ func registerReportRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerProjectRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerProjectRoutes(g *gin.RouterGroup, c *Container) {
 	projects := g.Group("/projects")
 	{
 		projects.POST("", c.ProjectHandler.Create)
@@ -456,7 +451,7 @@ func registerProjectRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerResourceRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerResourceRoutes(g *gin.RouterGroup, c *Container) {
 	resources := g.Group("/resources")
 	{
 		resources.POST("", c.LearningResourceHandler.Create)
@@ -488,7 +483,7 @@ func registerResourceRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerStreakFreezeRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerStreakFreezeRoutes(g *gin.RouterGroup, c *Container) {
 	streakFreezes := g.Group("/streak-freezes")
 	{
 		streakFreezes.POST("", c.StreakFreezeHandler.UseFreeze)
@@ -496,7 +491,7 @@ func registerStreakFreezeRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerLearningLogTemplateRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerLearningLogTemplateRoutes(g *gin.RouterGroup, c *Container) {
 	logTemplates := g.Group("/learning-log-templates")
 	{
 		logTemplates.POST("", c.LearningLogTemplateHandler.Create)
@@ -510,7 +505,7 @@ func registerLearningLogTemplateRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerLearningLogRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerLearningLogRoutes(g *gin.RouterGroup, c *Container) {
 	learningLogs := g.Group("/learning-logs")
 	{
 		learningLogs.POST("", c.LearningLogHandler.Create)
@@ -539,7 +534,7 @@ func registerLearningLogRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerNoteRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerNoteRoutes(g *gin.RouterGroup, c *Container) {
 	notes := g.Group("/notes")
 	{
 		notes.POST("", c.NoteHandler.Create)
@@ -593,12 +588,12 @@ func registerNoteRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerEmailPreferencesRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerEmailPreferencesRoutes(g *gin.RouterGroup, c *Container) {
 	g.GET("/email-preferences", c.EmailPreferencesHandler.GetPreferences)
 	g.PUT("/email-preferences", c.EmailPreferencesHandler.UpdatePreferences)
 }
 
-func registerCommunityRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerCommunityRoutes(g *gin.RouterGroup, c *Container) {
 	// Q&A
 	questions := g.Group("/questions")
 	{
@@ -702,7 +697,7 @@ func registerCommunityRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerAnalyticsRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerAnalyticsRoutes(g *gin.RouterGroup, c *Container) {
 	// 学習分析
 	analytics := g.Group("/analytics")
 	{
@@ -728,7 +723,7 @@ func registerAnalyticsRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerStudyCircleRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerStudyCircleRoutes(g *gin.RouterGroup, c *Container) {
 	circles := g.Group("/study-circles")
 	{
 		circles.POST("", c.StudyCircleHandler.Create)
@@ -755,7 +750,7 @@ func registerStudyCircleRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerRecommendationRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerRecommendationRoutes(g *gin.RouterGroup, c *Container) {
 	recommendations := g.Group("/recommendations")
 	{
 		recommendations.GET("/users", c.RecommendationHandler.GetRecommendedUsers)
@@ -764,7 +759,7 @@ func registerRecommendationRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerMentionRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerMentionRoutes(g *gin.RouterGroup, c *Container) {
 	mentions := g.Group("/mentions")
 	{
 		mentions.GET("", c.MentionHandler.GetMyMentions)
@@ -772,7 +767,7 @@ func registerMentionRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerSearchRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerSearchRoutes(g *gin.RouterGroup, c *Container) {
 	search := g.Group("/search")
 	{
 		search.GET("/posts", c.SearchHandler.SearchPosts)
@@ -780,7 +775,7 @@ func registerSearchRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerYouTubeRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerYouTubeRoutes(g *gin.RouterGroup, c *Container) {
 	youtube := g.Group("/youtube")
 	{
 		youtube.GET("/search", c.YouTubeHandler.Search)
@@ -789,7 +784,7 @@ func registerYouTubeRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerSpotifyRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerSpotifyRoutes(g *gin.RouterGroup, c *Container) {
 	spotify := g.Group("/spotify")
 	{
 		spotify.GET("/connect", c.SpotifyHandler.Connect)
@@ -799,7 +794,7 @@ func registerSpotifyRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerCommentLikeRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerCommentLikeRoutes(g *gin.RouterGroup, c *Container) {
 	comments := g.Group("/comments")
 	{
 		comments.POST("/:id/likes", c.CommentLikeHandler.Like)
@@ -810,7 +805,7 @@ func registerCommentLikeRoutes(g *gin.RouterGroup, c *di.Container) {
 
 // registerUserStatsRoutes はユーザー統計系のエンドポイントをまとめて登録する。
 // 全て /users/:id/xxx-stats の形式で統一されている。
-func registerUserStatsRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerUserStatsRoutes(g *gin.RouterGroup, c *Container) {
 	users := g.Group("/users")
 	{
 		users.GET("/:id/dashboard-stats", c.UserDashboardHandler.GetStats)
@@ -834,7 +829,7 @@ func registerUserStatsRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerBookmarkCollectionRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerBookmarkCollectionRoutes(g *gin.RouterGroup, c *Container) {
 	collections := g.Group("/bookmark-collections")
 	{
 		collections.POST("", c.BookmarkCollectionHandler.Create)
@@ -848,7 +843,7 @@ func registerBookmarkCollectionRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerWeeklyChallengeRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerWeeklyChallengeRoutes(g *gin.RouterGroup, c *Container) {
 	challenges := g.Group("/weekly-challenges")
 	{
 		challenges.GET("/current", c.WeeklyChallengeHandler.GetCurrent)
@@ -856,7 +851,7 @@ func registerWeeklyChallengeRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerWeeklyGoalRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerWeeklyGoalRoutes(g *gin.RouterGroup, c *Container) {
 	weeklyGoals := g.Group("/weekly-goals")
 	{
 		weeklyGoals.PUT("", c.WeeklyGoalHandler.SetGoal)
@@ -865,7 +860,7 @@ func registerWeeklyGoalRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerPostTemplateRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerPostTemplateRoutes(g *gin.RouterGroup, c *Container) {
 	templates := g.Group("/post-templates")
 	{
 		templates.POST("", c.PostTemplateHandler.Create)
@@ -876,7 +871,7 @@ func registerPostTemplateRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerWidgetSettingsRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerWidgetSettingsRoutes(g *gin.RouterGroup, c *Container) {
 	widgets := g.Group("/widget-settings")
 	{
 		widgets.GET("", c.WidgetSettingsHandler.GetSettings)
@@ -884,7 +879,7 @@ func registerWidgetSettingsRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerReminderSettingsRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerReminderSettingsRoutes(g *gin.RouterGroup, c *Container) {
 	reminders := g.Group("/reminder-settings")
 	{
 		reminders.GET("", c.ReminderSettingsHandler.GetSettings)
@@ -892,7 +887,7 @@ func registerReminderSettingsRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerNotificationSettingsRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerNotificationSettingsRoutes(g *gin.RouterGroup, c *Container) {
 	notifSettings := g.Group("/notification-settings")
 	{
 		notifSettings.GET("", c.NotificationSettingsHandler.GetSettings)
@@ -900,7 +895,7 @@ func registerNotificationSettingsRoutes(g *gin.RouterGroup, c *di.Container) {
 	}
 }
 
-func registerStudyCircleStatsRoutes(g *gin.RouterGroup, c *di.Container) {
+func registerStudyCircleStatsRoutes(g *gin.RouterGroup, c *Container) {
 	circles := g.Group("/study-circles")
 	{
 		circles.GET("/:id/stats", c.StudyCircleStatsHandler.GetStats)
