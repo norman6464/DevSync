@@ -1,25 +1,24 @@
-package router
+package handler
 
 import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/di"
 	"github.com/norman6464/devsync/backend/internal/infra/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-// TestSetupWithContainer_RegistersAllRoutes は全ルートの登録が通ることを確認する。
+// TestNewRouterWithContainer_RegistersAllRoutes は全ルートの登録が通ることを確認する。
 // gin は同じ位置のパスパラメータに別名を使うと登録時に panic するため、
 // このテストが無いと「起動しないサーバー」をマージできてしまう。
 // ハンドラーは呼ばないので、コンテナは空で良い。
-func TestSetupWithContainer_RegistersAllRoutes(t *testing.T) {
+func TestNewRouterWithContainer_RegistersAllRoutes(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	var r *gin.Engine
 	require.NotPanics(t, func() {
-		r = SetupWithContainer(&di.Container{}, &config.Config{CORSOrigins: "http://localhost:5173"})
+		r = newRouterWithContainer(&Container{}, &config.Config{CORSOrigins: "http://localhost:5173"})
 	}, "ルート登録で panic してはいけない（サーバーが起動できなくなる）")
 
 	require.NotNil(t, r)
@@ -45,12 +44,12 @@ func TestSetupWithContainer_RegistersAllRoutes(t *testing.T) {
 	}
 }
 
-// TestSetupWithContainer_NoConflictingParamNames は同じ階層のパスパラメータ名が
+// TestNewRouterWithContainer_NoConflictingParamNames は同じ階層のパスパラメータ名が
 // 揃っていることを確認する。gin の panic は最初の 1 件で止まるため、
 // 登録済みのルート全体を突き合わせて残りの衝突も検出する。
-func TestSetupWithContainer_NoConflictingParamNames(t *testing.T) {
+func TestNewRouterWithContainer_NoConflictingParamNames(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	r := SetupWithContainer(&di.Container{}, &config.Config{CORSOrigins: "http://localhost:5173"})
+	r := newRouterWithContainer(&Container{}, &config.Config{CORSOrigins: "http://localhost:5173"})
 
 	// 「その位置までのパス」→ 使われているパラメータ名
 	paramAt := make(map[string]string)

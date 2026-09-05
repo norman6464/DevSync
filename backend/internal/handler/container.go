@@ -1,6 +1,14 @@
-// Package di はDevSyncアプリケーションの依存性注入コンテナを提供する。
-// リポジトリ→サービス→ハンドラの依存関係を構築し、ルーターに公開する。
-package di
+// Package handler はDevSyncアプリケーションのHTTPハンドラを提供する。
+// container.go・router.go は依存関係の組み立てとルーティング登録を担う配線専用ファイル
+// （FreStyle同様、DIコンテナ・ルーターを独立パッケージに分けず handler 内に集約している）。
+//
+// archlint:ignore-file
+// このファイルは配線専用（旧 internal/di）のため、handler層の
+// 「adapter・usecase/repository(port)を直接importできない」制約から意図的に除外する。
+// 独立パッケージだった頃の internal/di・internal/router は元々検証対象外だったため、
+// FreStyle同様に配線をhandlerパッケージへ集約した後もその位置づけを維持する
+// （通常のhandlerファイル本体の制約は変えない）。
+package handler
 
 import (
 	"context"
@@ -11,7 +19,6 @@ import (
 	"github.com/norman6464/devsync/backend/internal/adapter/notify"
 	"github.com/norman6464/devsync/backend/internal/adapter/persistence"
 	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
-	"github.com/norman6464/devsync/backend/internal/handler"
 	"github.com/norman6464/devsync/backend/internal/infra/config"
 	"github.com/norman6464/devsync/backend/internal/infra/scheduler"
 	"github.com/norman6464/devsync/backend/internal/infra/ws"
@@ -24,84 +31,84 @@ import (
 // 全ハンドラとルーティングに必要な公開フィールドを保持する。
 type Container struct {
 	// ハンドラ
-	AuthHandler                  *handler.AuthHandler
-	UserHandler                  *handler.UserHandler
-	FollowHandler                *handler.FollowHandler
-	GitHubHandler                *handler.GitHubHandler
-	PostHandler                  *handler.PostHandler
-	CodeSnippetHandler           *handler.CodeSnippetHandler
-	RankingHandler               *handler.RankingHandler
-	MessageHandler               *handler.MessageHandler
-	WebSocketHandler             *handler.WebSocketHandler
-	UploadHandler                *handler.UploadHandler
-	NotificationHandler          *handler.NotificationHandler
-	ZennHandler                  *handler.ArticlePlatformHandler[model.ZennArticle, model.ZennStats]
-	QiitaHandler                 *handler.ArticlePlatformHandler[model.QiitaArticle, model.QiitaStats]
-	LearningGoalHandler          *handler.LearningGoalHandler
-	ActivityReportHandler        *handler.ActivityReportHandler
-	ProjectHandler               *handler.ProjectHandler
-	LearningResourceHandler      *handler.LearningResourceHandler
-	BookReviewHandler            *handler.BookReviewHandler
-	QuestionHandler              *handler.QuestionHandler
-	AnswerHandler                *handler.AnswerHandler
-	RoadmapHandler               *handler.RoadmapHandler
-	ChatRoomHandler              *handler.ChatRoomHandler
-	AtCoderHandler               *handler.AtCoderHandler
-	BadgeHandler                 *handler.BadgeHandler
-	LearningLogHandler           *handler.LearningLogHandler
-	AIAdviceHandler              *handler.AIAdviceHandler
-	EmailPreferencesHandler      *handler.EmailPreferencesHandler
-	LevelHandler                 *handler.LevelHandler
-	LearningAnalyticsHandler     *handler.LearningAnalyticsHandler
-	RecommendationHandler        *handler.RecommendationHandler
-	StudyCircleHandler           *handler.StudyCircleHandler
-	SearchHandler                *handler.SearchHandler
-	NoteHandler                  *handler.NoteHandler
-	NoteFolderHandler            *handler.NoteFolderHandler
-	NoteTemplateHandler          *handler.NoteTemplateHandler
-	NoteLinkHandler              *handler.NoteLinkHandler
-	PostSeriesHandler            *handler.PostSeriesHandler
-	PostCollectionHandler        *handler.PostCollectionHandler
-	PostTagHandler               *handler.PostTagHandler
-	PostPinHandler               *handler.PostPinHandler
-	PostViewHandler              *handler.PostViewHandler
-	CommentLikeHandler           *handler.CommentLikeHandler
-	MentionHandler               *handler.MentionHandler
-	UserDashboardHandler         *handler.UserDashboardHandler
-	NoteStatsHandler             *handler.NoteStatsHandler
-	StudyCircleStatsHandler      *handler.StudyCircleStatsHandler
-	PostStatsHandler             *handler.PostStatsHandler
-	BookReviewStatsHandler       *handler.BookReviewStatsHandler
-	QAStatsHandler               *handler.QAStatsHandler
-	CodeSnippetStatsHandler      *handler.CodeSnippetStatsHandler
-	LearningResourceStatsHandler *handler.LearningResourceStatsHandler
-	ProjectStatsHandler          *handler.ProjectStatsHandler
-	FollowStatsHandler           *handler.FollowStatsHandler
-	RoadmapStatsHandler          *handler.RoadmapStatsHandler
-	LearningLogStatsHandler      *handler.LearningLogStatsHandler
-	CommentStatsHandler          *handler.CommentStatsHandler
-	NotificationStatsHandler     *handler.NotificationStatsHandler
-	MessageStatsHandler          *handler.MessageStatsHandler
-	MentionStatsHandler          *handler.MentionStatsHandler
-	ReactionStatsHandler         *handler.ReactionStatsHandler
-	BookmarkStatsHandler         *handler.BookmarkStatsHandler
-	YouTubeHandler               *handler.YouTubeHandler
-	SpotifyHandler               *handler.SpotifyHandler
-	StreakFreezeHandler          *handler.StreakFreezeHandler
-	BookmarkCollectionHandler    *handler.BookmarkCollectionHandler
-	WeeklyChallengeHandler       *handler.WeeklyChallengeHandler
-	PostTemplateHandler          *handler.PostTemplateHandler
-	WidgetSettingsHandler        *handler.WidgetSettingsHandler
-	WeeklyGoalHandler            *handler.WeeklyGoalHandler
-	NoteVersionHandler           *handler.NoteVersionHandler
-	ResourceProgressHandler      *handler.ResourceProgressHandler
-	ProjectMilestoneHandler      *handler.ProjectMilestoneHandler
-	UserActivityHandler          *handler.UserActivityHandler
-	LearningLogTemplateHandler   *handler.LearningLogTemplateHandler
-	ResourceReviewHandler        *handler.ResourceReviewHandler
-	LearningDashboardHandler     *handler.LearningDashboardHandler
-	ReminderSettingsHandler      *handler.ReminderSettingsHandler
-	NotificationSettingsHandler  *handler.NotificationSettingsHandler
+	AuthHandler                  *AuthHandler
+	UserHandler                  *UserHandler
+	FollowHandler                *FollowHandler
+	GitHubHandler                *GitHubHandler
+	PostHandler                  *PostHandler
+	CodeSnippetHandler           *CodeSnippetHandler
+	RankingHandler               *RankingHandler
+	MessageHandler               *MessageHandler
+	WebSocketHandler             *WebSocketHandler
+	UploadHandler                *UploadHandler
+	NotificationHandler          *NotificationHandler
+	ZennHandler                  *ArticlePlatformHandler[model.ZennArticle, model.ZennStats]
+	QiitaHandler                 *ArticlePlatformHandler[model.QiitaArticle, model.QiitaStats]
+	LearningGoalHandler          *LearningGoalHandler
+	ActivityReportHandler        *ActivityReportHandler
+	ProjectHandler               *ProjectHandler
+	LearningResourceHandler      *LearningResourceHandler
+	BookReviewHandler            *BookReviewHandler
+	QuestionHandler              *QuestionHandler
+	AnswerHandler                *AnswerHandler
+	RoadmapHandler               *RoadmapHandler
+	ChatRoomHandler              *ChatRoomHandler
+	AtCoderHandler               *AtCoderHandler
+	BadgeHandler                 *BadgeHandler
+	LearningLogHandler           *LearningLogHandler
+	AIAdviceHandler              *AIAdviceHandler
+	EmailPreferencesHandler      *EmailPreferencesHandler
+	LevelHandler                 *LevelHandler
+	LearningAnalyticsHandler     *LearningAnalyticsHandler
+	RecommendationHandler        *RecommendationHandler
+	StudyCircleHandler           *StudyCircleHandler
+	SearchHandler                *SearchHandler
+	NoteHandler                  *NoteHandler
+	NoteFolderHandler            *NoteFolderHandler
+	NoteTemplateHandler          *NoteTemplateHandler
+	NoteLinkHandler              *NoteLinkHandler
+	PostSeriesHandler            *PostSeriesHandler
+	PostCollectionHandler        *PostCollectionHandler
+	PostTagHandler               *PostTagHandler
+	PostPinHandler               *PostPinHandler
+	PostViewHandler              *PostViewHandler
+	CommentLikeHandler           *CommentLikeHandler
+	MentionHandler               *MentionHandler
+	UserDashboardHandler         *UserDashboardHandler
+	NoteStatsHandler             *NoteStatsHandler
+	StudyCircleStatsHandler      *StudyCircleStatsHandler
+	PostStatsHandler             *PostStatsHandler
+	BookReviewStatsHandler       *BookReviewStatsHandler
+	QAStatsHandler               *QAStatsHandler
+	CodeSnippetStatsHandler      *CodeSnippetStatsHandler
+	LearningResourceStatsHandler *LearningResourceStatsHandler
+	ProjectStatsHandler          *ProjectStatsHandler
+	FollowStatsHandler           *FollowStatsHandler
+	RoadmapStatsHandler          *RoadmapStatsHandler
+	LearningLogStatsHandler      *LearningLogStatsHandler
+	CommentStatsHandler          *CommentStatsHandler
+	NotificationStatsHandler     *NotificationStatsHandler
+	MessageStatsHandler          *MessageStatsHandler
+	MentionStatsHandler          *MentionStatsHandler
+	ReactionStatsHandler         *ReactionStatsHandler
+	BookmarkStatsHandler         *BookmarkStatsHandler
+	YouTubeHandler               *YouTubeHandler
+	SpotifyHandler               *SpotifyHandler
+	StreakFreezeHandler          *StreakFreezeHandler
+	BookmarkCollectionHandler    *BookmarkCollectionHandler
+	WeeklyChallengeHandler       *WeeklyChallengeHandler
+	PostTemplateHandler          *PostTemplateHandler
+	WidgetSettingsHandler        *WidgetSettingsHandler
+	WeeklyGoalHandler            *WeeklyGoalHandler
+	NoteVersionHandler           *NoteVersionHandler
+	ResourceProgressHandler      *ResourceProgressHandler
+	ProjectMilestoneHandler      *ProjectMilestoneHandler
+	UserActivityHandler          *UserActivityHandler
+	LearningLogTemplateHandler   *LearningLogTemplateHandler
+	ResourceReviewHandler        *ResourceReviewHandler
+	LearningDashboardHandler     *LearningDashboardHandler
+	ReminderSettingsHandler      *ReminderSettingsHandler
+	NotificationSettingsHandler  *NotificationSettingsHandler
 
 	// ミドルウェア・コールバック用
 	ValidateAuthToken *usecase.ValidateAuthTokenUseCase
@@ -186,7 +193,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 	validateAuthToken := usecase.NewValidateAuthTokenUseCase(cfg.JWTSecret)
 	githubOAuthState := usecase.NewOAuthStateUseCase(cfg.JWTSecret, usecase.OAuthProviderGitHub)
 	spotifyOAuthState := usecase.NewOAuthStateUseCase(cfg.JWTSecret, usecase.OAuthProviderSpotify)
-	authUseCases := handler.AuthUseCases{
+	authUseCases := AuthUseCases{
 		Register:             usecase.NewRegisterUserUseCase(authUserPort, cfg.JWTSecret),
 		Login:                usecase.NewLoginUseCase(authUserPort, cfg.JWTSecret),
 		GitHubLogin:          usecase.NewGitHubLoginUseCase(authUserPort, cfg.JWTSecret),
@@ -209,7 +216,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 	githubPort := persistence.NewGitHubRepository(sqlPool)
 	githubClient := external.NewGitHubClient(cfg.GitHubClientID, cfg.GitHubClientSecret, cfg.GitHubRedirectURL)
 	syncGitHubData := usecase.NewSyncGitHubDataUseCase(userPort, githubPort, githubClient)
-	githubUseCases := handler.GitHubUseCases{
+	githubUseCases := GitHubUseCases{
 		OAuthURL:      usecase.NewGetGitHubOAuthURLUseCase(githubClient),
 		Connect:       usecase.NewConnectGitHubUseCase(userPort, githubClient, syncGitHubData),
 		Disconnect:    usecase.NewDisconnectGitHubUseCase(userPort, githubPort),
@@ -218,7 +225,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 		Languages:     usecase.NewGetGitHubLanguagesUseCase(githubPort),
 		Repos:         usecase.NewGetGitHubReposUseCase(githubPort),
 	}
-	authGitHubUseCases := handler.AuthGitHubUseCases{
+	authGitHubUseCases := AuthGitHubUseCases{
 		LoginURL:     usecase.NewGetGitHubLoginURLUseCase(githubClient),
 		ExchangeCode: usecase.NewExchangeGitHubCodeUseCase(githubClient),
 		GetUser:      usecase.NewGetGitHubUserUseCase(githubClient),
@@ -262,7 +269,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 		githubPort, learningResourcePort, userPort,
 	)
 	aiChatPrompt := usecase.NewBuildAIChatPromptUseCase(learningGoalPort, learningLogPort, roadmapPort, githubPort)
-	aiUseCases := handler.AIAdviceUseCases{
+	aiUseCases := AIAdviceUseCases{
 		Generate:           generateAIAdvice,
 		MarkAsRead:         usecase.NewMarkAIAdviceAsReadUseCase(aiAdvicePort),
 		Unread:             usecase.NewGetUnreadAIAdviceUseCase(aiAdvicePort),
@@ -291,21 +298,21 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 
 	// ハンドラ
 	origins := cfg.CORSOrigins
-	c.AuthHandler = handler.NewAuthHandler(authUseCases, authGitHubUseCases)
-	c.UserHandler = handler.NewUserHandler(
+	c.AuthHandler = NewAuthHandler(authUseCases, authGitHubUseCases)
+	c.UserHandler = NewUserHandler(
 		usecase.NewListUsersUseCase(userPort),
 		usecase.NewGetUserUseCase(userPort),
 		usecase.NewGetUserByUsernameUseCase(userPort),
 		usecase.NewUpdateUserProfileUseCase(userPort),
 		usecase.NewGetProfileCompletenessUseCase(userPort),
 	)
-	c.FollowHandler = handler.NewFollowHandler(
+	c.FollowHandler = NewFollowHandler(
 		usecase.NewFollowUserUseCase(followRepo, notificationCreator),
 		usecase.NewUnfollowUserUseCase(followRepo),
 		usecase.NewListFollowersUseCase(followRepo),
 		usecase.NewListFollowingUseCase(followRepo),
 	)
-	c.GitHubHandler = handler.NewGitHubHandler(githubUseCases, githubOAuthState)
+	c.GitHubHandler = NewGitHubHandler(githubUseCases, githubOAuthState)
 	// 投稿スライスはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	postPort := persistence.NewPostRepository(sqlPool)
 	postReactionPort := persistence.NewPostReactionRepository(sqlcgen.New(sqlPool))
@@ -317,7 +324,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 	// メンションは投稿・コメントの本文から解決するため、投稿スライスから呼ぶ。
 	mentionPort := persistence.NewMentionRepository(sqlcgen.New(sqlPool))
 	processMentions := usecase.NewProcessMentionsUseCase(mentionPort, persistence.NewUserRepository(sqlPool), notificationCreator)
-	c.PostHandler = handler.NewPostHandler(handler.PostUseCases{
+	c.PostHandler = NewPostHandler(PostUseCases{
 		ProcessMentions:       processMentions,
 		DeleteCommentMentions: usecase.NewDeleteCommentMentionsUseCase(mentionPort),
 		Create:                usecase.NewCreatePostUseCase(postPort, notifyFollowers),
@@ -364,7 +371,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 		ListBookmarks:  usecase.NewListBookmarkedPostsUseCase(postBookmarkPort),
 		CountBookmarks: usecase.NewCountBookmarkedPostsUseCase(postBookmarkPort),
 	})
-	c.CodeSnippetHandler = handler.NewCodeSnippetHandler(
+	c.CodeSnippetHandler = NewCodeSnippetHandler(
 		createCodeSnippet,
 		usecase.NewListCodeSnippetsByPostUseCase(codeSnippetRepo),
 		usecase.NewListCodeSnippetsByLanguageUseCase(codeSnippetRepo),
@@ -380,20 +387,20 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 		usecase.NewListFavoritedCodeSnippetsUseCase(codeSnippetRepo),
 		usecase.NewCountCodeSnippetsUseCase(codeSnippetRepo),
 	)
-	c.RankingHandler = handler.NewRankingHandler(
+	c.RankingHandler = NewRankingHandler(
 		usecase.NewGetContributionRankingUseCase(rankingRepo),
 		usecase.NewGetLanguageRankingUseCase(rankingRepo),
 		usecase.NewGetLevelRankingUseCase(rankingRepo),
 		usecase.NewListRankingLanguagesUseCase(rankingRepo),
 	)
-	c.MessageHandler = handler.NewMessageHandler(
+	c.MessageHandler = NewMessageHandler(
 		usecase.NewListConversationsUseCase(messagePort),
 		usecase.NewGetConversationUseCase(messagePort),
 		usecase.NewSendMessageUseCase(messagePort, notificationCreator),
 		usecase.NewMarkMessagesAsReadUseCase(messagePort),
 	)
-	c.WebSocketHandler = handler.NewWebSocketHandler(hub, validateAuthToken, parseOrigins(origins))
-	uploadHandler, err := handler.NewUploadHandler()
+	c.WebSocketHandler = NewWebSocketHandler(hub, validateAuthToken, parseOrigins(origins))
+	uploadHandler, err := NewUploadHandler()
 	if err != nil {
 		log.Fatalf("アップロードハンドラの初期化に失敗: %v", err)
 	}
@@ -401,28 +408,28 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 	// 通知の参照・既読・削除はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	// 通知の作成（WebSocket 配信を含む）は post / badge / level / mention / message がまだ service 経由で使うため残している。
 	notificationPort := persistence.NewNotificationRepository(sqlPool)
-	c.NotificationHandler = handler.NewNotificationHandler(
+	c.NotificationHandler = NewNotificationHandler(
 		usecase.NewListNotificationsUseCase(notificationPort),
 		usecase.NewCountUnreadNotificationsUseCase(notificationPort),
 		usecase.NewMarkNotificationAsReadUseCase(notificationPort),
 		usecase.NewMarkAllNotificationsAsReadUseCase(notificationPort),
 		usecase.NewDeleteNotificationUseCase(notificationPort),
 	)
-	c.ZennHandler = handler.NewArticlePlatformHandler("Zenn", handler.ArticlePlatformOps[model.ZennArticle, model.ZennStats]{
+	c.ZennHandler = NewArticlePlatformHandler("Zenn", ArticlePlatformOps[model.ZennArticle, model.ZennStats]{
 		Connect:     connectZenn.Execute,
 		Disconnect:  disconnectZenn.Execute,
 		Sync:        syncZenn.Execute,
 		GetArticles: usecase.NewListZennArticlesUseCase(zennPort).Execute,
 		GetStats:    usecase.NewGetZennStatsUseCase(zennPort).Execute,
 	})
-	c.QiitaHandler = handler.NewArticlePlatformHandler("Qiita", handler.ArticlePlatformOps[model.QiitaArticle, model.QiitaStats]{
+	c.QiitaHandler = NewArticlePlatformHandler("Qiita", ArticlePlatformOps[model.QiitaArticle, model.QiitaStats]{
 		Connect:     connectQiita.Execute,
 		Disconnect:  disconnectQiita.Execute,
 		Sync:        syncQiita.Execute,
 		GetArticles: usecase.NewListQiitaArticlesUseCase(qiitaPort).Execute,
 		GetStats:    usecase.NewGetQiitaStatsUseCase(qiitaPort).Execute,
 	})
-	c.LearningGoalHandler = handler.NewLearningGoalHandler(
+	c.LearningGoalHandler = NewLearningGoalHandler(
 		usecase.NewCreateLearningGoalUseCase(learningGoalPort),
 		usecase.NewGetLearningGoalUseCase(learningGoalPort),
 		usecase.NewListLearningGoalsUseCase(learningGoalPort),
@@ -441,12 +448,12 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 		usecase.NewBatchUpdateGoalProgressUseCase(updateLearningGoal),
 		usecase.NewGetGoalForecastUseCase(learningGoalPort),
 	)
-	c.ActivityReportHandler = handler.NewActivityReportHandler(
+	c.ActivityReportHandler = NewActivityReportHandler(
 		usecase.NewGetWeeklyActivityReportUseCase(activityReportRepo),
 		usecase.NewGetMonthlyActivityReportUseCase(activityReportRepo),
 		usecase.NewGetActivityReportComparisonUseCase(activityReportRepo),
 	)
-	c.ProjectHandler = handler.NewProjectHandler(
+	c.ProjectHandler = NewProjectHandler(
 		usecase.NewCreateProjectUseCase(projectRepo),
 		usecase.NewGetProjectUseCase(projectRepo),
 		usecase.NewListProjectsByUserUseCase(projectRepo),
@@ -461,7 +468,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 		usecase.NewDeleteProjectUseCase(projectRepo),
 		usecase.NewCountProjectsUseCase(projectRepo),
 	)
-	c.LearningResourceHandler = handler.NewLearningResourceHandler(
+	c.LearningResourceHandler = NewLearningResourceHandler(
 		usecase.NewCreateLearningResourceUseCase(learningResourcePort),
 		usecase.NewGetLearningResourceUseCase(learningResourcePort),
 		usecase.NewListLearningResourcesByUserUseCase(learningResourcePort),
@@ -480,7 +487,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 		usecase.NewListSavedLearningResourcesUseCase(learningResourcePort),
 		usecase.NewCountLearningResourcesUseCase(learningResourcePort),
 	)
-	c.BookReviewHandler = handler.NewBookReviewHandler(
+	c.BookReviewHandler = NewBookReviewHandler(
 		usecase.NewCreateBookReviewUseCase(bookReviewRepo),
 		usecase.NewGetBookReviewUseCase(bookReviewRepo),
 		usecase.NewListBookReviewsByUserUseCase(bookReviewRepo),
@@ -494,7 +501,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 		usecase.NewDeleteBookReviewUseCase(bookReviewRepo),
 		usecase.NewCountBookReviewsUseCase(bookReviewRepo),
 	)
-	c.QuestionHandler = handler.NewQuestionHandler(
+	c.QuestionHandler = NewQuestionHandler(
 		usecase.NewCreateQuestionUseCase(questionPort),
 		usecase.NewListQuestionsUseCase(questionPort),
 		usecase.NewSearchQuestionsUseCase(questionPort),
@@ -512,7 +519,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 		usecase.NewListBookmarkedQuestionsUseCase(questionPort),
 		usecase.NewCountQuestionsUseCase(questionPort),
 	)
-	c.AnswerHandler = handler.NewAnswerHandler(
+	c.AnswerHandler = NewAnswerHandler(
 		usecase.NewListAnswersUseCase(answerPort),
 		usecase.NewCreateAnswerUseCase(answerPort, questionPort),
 		usecase.NewUpdateAnswerUseCase(answerPort),
@@ -522,7 +529,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 		usecase.NewRemoveAnswerVoteUseCase(answerPort),
 		usecase.NewListAnswersByVoteRangeUseCase(answerPort),
 	)
-	c.RoadmapHandler = handler.NewRoadmapHandler(
+	c.RoadmapHandler = NewRoadmapHandler(
 		usecase.NewCreateRoadmapUseCase(roadmapPort),
 		usecase.NewGetRoadmapUseCase(roadmapPort),
 		usecase.NewListRoadmapsByUserUseCase(roadmapPort),
@@ -543,7 +550,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 		usecase.NewGetRoadmapStatsUseCase(persistence.NewRoadmapStatsRepository(sqlcgen.New(sqlPool))),
 		usecase.NewCountRoadmapsUseCase(roadmapPort),
 	)
-	c.ChatRoomHandler = handler.NewChatRoomHandler(
+	c.ChatRoomHandler = NewChatRoomHandler(
 		usecase.NewCreateChatRoomUseCase(chatRoomPort),
 		usecase.NewListMyChatRoomsUseCase(chatRoomPort),
 		usecase.NewGetChatRoomUseCase(chatRoomPort),
@@ -556,16 +563,16 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 		usecase.NewSendChatRoomMessageUseCase(chatRoomPort, chatRoomMessagePort, hub),
 		usecase.NewCountMyChatRoomsUseCase(chatRoomPort),
 	)
-	c.AtCoderHandler = handler.NewAtCoderHandler(
+	c.AtCoderHandler = NewAtCoderHandler(
 		usecase.NewGetAtCoderRatingUseCase(atcoderClient),
 		usecase.NewConnectAtCoderUseCase(userPort, atcoderClient),
 		usecase.NewDisconnectAtCoderUseCase(userPort),
 	)
-	c.BadgeHandler = handler.NewBadgeHandler(
+	c.BadgeHandler = NewBadgeHandler(
 		usecase.NewGetUserBadgesUseCase(badgePort),
 		usecase.NewNotifyBadgeEarnedUseCase(notificationCreator),
 	)
-	c.LearningLogHandler = handler.NewLearningLogHandler(
+	c.LearningLogHandler = NewLearningLogHandler(
 		createLearningLog,
 		usecase.NewBatchCreateLearningLogsUseCase(learningLogPort),
 		usecase.NewImportLearningLogsCSVUseCase(learningLogPort),
@@ -589,16 +596,16 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 		usecase.NewGetLearningLogMonthlySummaryUseCase(learningLogPort),
 		usecase.NewCountLearningLogsUseCase(learningLogPort),
 	)
-	c.AIAdviceHandler = handler.NewAIAdviceHandler(aiUseCases)
-	c.EmailPreferencesHandler = handler.NewEmailPreferencesHandler(
+	c.AIAdviceHandler = NewAIAdviceHandler(aiUseCases)
+	c.EmailPreferencesHandler = NewEmailPreferencesHandler(
 		usecase.NewGetEmailPreferencesUseCase(userPort),
 		usecase.NewUpdateEmailPreferencesUseCase(userPort),
 	)
-	c.LevelHandler = handler.NewLevelHandler(
+	c.LevelHandler = NewLevelHandler(
 		usecase.NewGetLevelInfoUseCase(levelPort),
 		usecase.NewGetXPBreakdownUseCase(levelPort),
 	)
-	c.LearningAnalyticsHandler = handler.NewLearningAnalyticsHandler(
+	c.LearningAnalyticsHandler = NewLearningAnalyticsHandler(
 		usecase.NewGetLearningHeatmapUseCase(analyticsPort),
 		usecase.NewGetCategoryBreakdownUseCase(analyticsPort),
 		usecase.NewGetWeeklyTrendsUseCase(analyticsPort),
@@ -606,12 +613,12 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 		usecase.NewGetProductivityScoreUseCase(analyticsPort),
 		usecase.NewGetLearningInsightsUseCase(analyticsPort),
 	)
-	c.RecommendationHandler = handler.NewRecommendationHandler(
+	c.RecommendationHandler = NewRecommendationHandler(
 		usecase.NewGetRecommendedUsersUseCase(recommendationRepo, userPort),
 		usecase.NewGetTrendingPostsUseCase(recommendationRepo),
 		usecase.NewGetTrendingResourcesUseCase(recommendationRepo),
 	)
-	c.StudyCircleHandler = handler.NewStudyCircleHandler(
+	c.StudyCircleHandler = NewStudyCircleHandler(
 		usecase.NewCreateStudyCircleUseCase(studyCirclePort),
 		usecase.NewListMyStudyCirclesUseCase(studyCirclePort),
 		usecase.NewListStudyCirclesByStatusUseCase(studyCirclePort),
@@ -635,11 +642,11 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 		usecase.NewCountStudyCirclesUseCase(studyCirclePort),
 	)
 	// 投稿検索はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	c.SearchHandler = handler.NewSearchHandler(
+	c.SearchHandler = NewSearchHandler(
 		usecase.NewSearchPostsUseCase(persistence.NewPostSearchRepository(sqlcgen.New(sqlPool))),
 		searchStudyCircles,
 	)
-	c.NoteHandler = handler.NewNoteHandler(
+	c.NoteHandler = NewNoteHandler(
 		createNote,
 		usecase.NewGetNoteUseCase(notePort),
 		usecase.NewListNotesUseCase(notePort),
@@ -662,12 +669,12 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 	// ノートのバージョン履歴はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	noteVersionRepo := persistence.NewNoteVersionRepository(sqlcgen.New(sqlPool))
 	noteUpdater := persistence.NewNoteUpdater(sqlcgen.New(sqlPool))
-	c.NoteVersionHandler = handler.NewNoteVersionHandler(
+	c.NoteVersionHandler = NewNoteVersionHandler(
 		usecase.NewListNoteVersionsUseCase(noteVersionRepo, noteReader),
 		usecase.NewGetNoteVersionUseCase(noteVersionRepo, noteReader),
 		usecase.NewRestoreNoteVersionUseCase(noteVersionRepo, noteReader, noteUpdater),
 	)
-	c.NoteFolderHandler = handler.NewNoteFolderHandler(
+	c.NoteFolderHandler = NewNoteFolderHandler(
 		usecase.NewCreateNoteFolderUseCase(noteFolderRepo),
 		usecase.NewGetNoteFolderUseCase(noteFolderRepo),
 		usecase.NewListNoteFoldersUseCase(noteFolderRepo),
@@ -677,7 +684,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 		usecase.NewCountNoteFoldersUseCase(noteFolderRepo),
 		usecase.NewDeleteNoteFolderUseCase(noteFolderRepo),
 	)
-	c.NoteTemplateHandler = handler.NewNoteTemplateHandler(
+	c.NoteTemplateHandler = NewNoteTemplateHandler(
 		usecase.NewCreateNoteTemplateUseCase(noteTemplateRepo),
 		usecase.NewGetNoteTemplateUseCase(noteTemplateRepo),
 		usecase.NewListNoteTemplatesUseCase(noteTemplateRepo),
@@ -687,7 +694,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 		usecase.NewCreateNoteFromTemplateUseCase(noteTemplateRepo, createNote),
 		usecase.NewCountNoteTemplatesUseCase(noteTemplateRepo),
 	)
-	c.LearningLogTemplateHandler = handler.NewLearningLogTemplateHandler(
+	c.LearningLogTemplateHandler = NewLearningLogTemplateHandler(
 		usecase.NewCreateLearningLogTemplateUseCase(learningLogTemplateRepo),
 		usecase.NewGetLearningLogTemplateUseCase(learningLogTemplateRepo),
 		usecase.NewListLearningLogTemplatesUseCase(learningLogTemplateRepo),
@@ -697,14 +704,14 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 		usecase.NewCreateLearningLogFromTemplateUseCase(learningLogTemplateRepo, createLearningLog),
 		usecase.NewCountLearningLogTemplatesUseCase(learningLogTemplateRepo),
 	)
-	c.NoteLinkHandler = handler.NewNoteLinkHandler(
+	c.NoteLinkHandler = NewNoteLinkHandler(
 		usecase.NewCreateNoteLinkUseCase(noteLinkRepo, noteReader),
 		usecase.NewListNoteLinksUseCase(noteLinkRepo),
 		usecase.NewListNoteBacklinksUseCase(noteLinkRepo),
 		usecase.NewGetNoteLinkStatsUseCase(noteLinkRepo, noteReader),
 		usecase.NewDeleteNoteLinkUseCase(noteLinkRepo, noteReader),
 	)
-	c.PostSeriesHandler = handler.NewPostSeriesHandler(
+	c.PostSeriesHandler = NewPostSeriesHandler(
 		usecase.NewCreatePostSeriesUseCase(postSeriesRepo),
 		usecase.NewGetPostSeriesUseCase(postSeriesRepo),
 		usecase.NewListPostSeriesUseCase(postSeriesRepo),
@@ -718,7 +725,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 
 	// 投稿コレクションはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	postCollectionRepo := persistence.NewPostCollectionRepository(sqlcgen.New(sqlPool))
-	c.PostCollectionHandler = handler.NewPostCollectionHandler(
+	c.PostCollectionHandler = NewPostCollectionHandler(
 		usecase.NewCreatePostCollectionUseCase(postCollectionRepo),
 		usecase.NewGetPostCollectionUseCase(postCollectionRepo),
 		usecase.NewListPostCollectionsForViewerUseCase(postCollectionRepo),
@@ -733,7 +740,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 	// 投稿タグはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	postTagRepo := persistence.NewPostTagRepository(sqlPool)
 	setPostTags := usecase.NewSetPostTagsUseCase(postTagRepo, persistence.NewPostReader(sqlcgen.New(sqlPool)))
-	c.PostTagHandler = handler.NewPostTagHandler(
+	c.PostTagHandler = NewPostTagHandler(
 		setPostTags,
 		usecase.NewGetPostTagsUseCase(postTagRepo),
 		usecase.NewFindPostsByTagUseCase(postTagRepo),
@@ -744,7 +751,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 	// post_pin はクリーンアーキテクチャ(DIP)へ移行済み。
 	postPinRepo := persistence.NewPostPinRepository(sqlPool)
 	postReader := persistence.NewPostReader(sqlcgen.New(sqlPool))
-	c.PostPinHandler = handler.NewPostPinHandler(
+	c.PostPinHandler = NewPostPinHandler(
 		usecase.NewPinPostUseCase(postPinRepo, postReader),
 		usecase.NewUnpinPostUseCase(postPinRepo),
 		usecase.NewListPinnedPostsUseCase(postPinRepo),
@@ -755,7 +762,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 	// comment_like はクリーンアーキテクチャ(DIP)へ移行済み。
 	commentLikeRepo := persistence.NewCommentLikeRepository(sqlPool)
 	commentReader := persistence.NewCommentReader(sqlcgen.New(sqlPool))
-	c.CommentLikeHandler = handler.NewCommentLikeHandler(
+	c.CommentLikeHandler = NewCommentLikeHandler(
 		usecase.NewLikeCommentUseCase(commentLikeRepo, commentReader),
 		usecase.NewUnlikeCommentUseCase(commentLikeRepo, commentReader),
 		usecase.NewGetCommentLikeStatusUseCase(commentLikeRepo, commentReader),
@@ -763,7 +770,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 
 	// 投稿閲覧数はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	postViewRepo := persistence.NewPostViewRepository(sqlPool)
-	c.PostViewHandler = handler.NewPostViewHandler(
+	c.PostViewHandler = NewPostViewHandler(
 		usecase.NewRecordPostViewUseCase(postViewRepo),
 		usecase.NewGetPostViewCountUseCase(postViewRepo),
 		usecase.NewGetMostViewedPostsUseCase(postViewRepo),
@@ -771,117 +778,117 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 
 	// メンションはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	// 記録側（投稿・コメント作成時の処理）は投稿スライスの配線でつないでいる。
-	c.MentionHandler = handler.NewMentionHandler(
+	c.MentionHandler = NewMentionHandler(
 		usecase.NewListUserMentionsUseCase(mentionPort),
 		usecase.NewListPostMentionsUseCase(mentionPort),
 	)
 
 	// ユーザーダッシュボード統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	userDashboardRepo := persistence.NewUserDashboardRepository(sqlcgen.New(sqlPool))
-	c.UserDashboardHandler = handler.NewUserDashboardHandler(
+	c.UserDashboardHandler = NewUserDashboardHandler(
 		usecase.NewGetUserDashboardStatsUseCase(userDashboardRepo),
 	)
 
 	// ノート統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	noteStatsRepo := persistence.NewNoteStatsRepository(sqlcgen.New(sqlPool))
-	c.NoteStatsHandler = handler.NewNoteStatsHandler(
+	c.NoteStatsHandler = NewNoteStatsHandler(
 		usecase.NewGetNoteStatsUseCase(noteStatsRepo),
 	)
 
 	// スタディサークル統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	studyCircleStatsRepo := persistence.NewStudyCircleStatsRepository(sqlcgen.New(sqlPool))
-	c.StudyCircleStatsHandler = handler.NewStudyCircleStatsHandler(
+	c.StudyCircleStatsHandler = NewStudyCircleStatsHandler(
 		usecase.NewGetStudyCircleStatsUseCase(studyCircleStatsRepo),
 	)
 
 	// 投稿統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	postStatsRepo := persistence.NewPostStatsRepository(sqlcgen.New(sqlPool))
-	c.PostStatsHandler = handler.NewPostStatsHandler(
+	c.PostStatsHandler = NewPostStatsHandler(
 		usecase.NewGetPostStatsUseCase(postStatsRepo),
 	)
 
 	// 書籍レビュー統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	bookReviewStatsRepo := persistence.NewBookReviewStatsRepository(sqlcgen.New(sqlPool))
-	c.BookReviewStatsHandler = handler.NewBookReviewStatsHandler(
+	c.BookReviewStatsHandler = NewBookReviewStatsHandler(
 		usecase.NewGetBookReviewStatsUseCase(bookReviewStatsRepo),
 	)
 
 	// Q&A 統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	qaStatsRepo := persistence.NewQAStatsRepository(sqlcgen.New(sqlPool))
-	c.QAStatsHandler = handler.NewQAStatsHandler(
+	c.QAStatsHandler = NewQAStatsHandler(
 		usecase.NewGetQAStatsUseCase(qaStatsRepo),
 	)
 
 	// コードスニペット統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	codeSnippetStatsRepo := persistence.NewCodeSnippetStatsRepository(sqlcgen.New(sqlPool))
-	c.CodeSnippetStatsHandler = handler.NewCodeSnippetStatsHandler(
+	c.CodeSnippetStatsHandler = NewCodeSnippetStatsHandler(
 		usecase.NewGetCodeSnippetStatsUseCase(codeSnippetStatsRepo),
 	)
 
 	// 学習リソース統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	learningResourceStatsRepo := persistence.NewLearningResourceStatsRepository(sqlcgen.New(sqlPool))
-	c.LearningResourceStatsHandler = handler.NewLearningResourceStatsHandler(
+	c.LearningResourceStatsHandler = NewLearningResourceStatsHandler(
 		usecase.NewGetLearningResourceStatsUseCase(learningResourceStatsRepo),
 	)
 
 	// プロジェクト統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	projectStatsRepo := persistence.NewProjectStatsRepository(sqlcgen.New(sqlPool))
-	c.ProjectStatsHandler = handler.NewProjectStatsHandler(
+	c.ProjectStatsHandler = NewProjectStatsHandler(
 		usecase.NewGetProjectStatsUseCase(projectStatsRepo),
 	)
 
 	// フォロー統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	followStatsRepo := persistence.NewFollowStatsRepository(sqlcgen.New(sqlPool))
-	c.FollowStatsHandler = handler.NewFollowStatsHandler(
+	c.FollowStatsHandler = NewFollowStatsHandler(
 		usecase.NewGetFollowStatsUseCase(followStatsRepo),
 	)
 
 	// ロードマップ統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	roadmapStatsRepo := persistence.NewRoadmapStatsRepository(sqlcgen.New(sqlPool))
-	c.RoadmapStatsHandler = handler.NewRoadmapStatsHandler(
+	c.RoadmapStatsHandler = NewRoadmapStatsHandler(
 		usecase.NewGetRoadmapStatsUseCase(roadmapStatsRepo),
 	)
 
 	// 学習ログ統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	learningLogStatsRepo := persistence.NewLearningLogStatsRepository(sqlcgen.New(sqlPool))
-	c.LearningLogStatsHandler = handler.NewLearningLogStatsHandler(
+	c.LearningLogStatsHandler = NewLearningLogStatsHandler(
 		usecase.NewGetLearningLogStatsUseCase(learningLogStatsRepo),
 	)
 
 	// コメント統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	commentStatsRepo := persistence.NewCommentStatsRepository(sqlcgen.New(sqlPool))
-	c.CommentStatsHandler = handler.NewCommentStatsHandler(
+	c.CommentStatsHandler = NewCommentStatsHandler(
 		usecase.NewGetCommentStatsUseCase(commentStatsRepo),
 	)
 
 	// 通知統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	notificationStatsRepo := persistence.NewNotificationStatsRepository(sqlcgen.New(sqlPool))
-	c.NotificationStatsHandler = handler.NewNotificationStatsHandler(
+	c.NotificationStatsHandler = NewNotificationStatsHandler(
 		usecase.NewGetNotificationStatsUseCase(notificationStatsRepo),
 	)
 
 	// メッセージ統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	messageStatsRepo := persistence.NewMessageStatsRepository(sqlcgen.New(sqlPool))
-	c.MessageStatsHandler = handler.NewMessageStatsHandler(
+	c.MessageStatsHandler = NewMessageStatsHandler(
 		usecase.NewGetMessageStatsUseCase(messageStatsRepo),
 	)
 
 	// メンション統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	mentionStatsRepo := persistence.NewMentionStatsRepository(sqlcgen.New(sqlPool))
-	c.MentionStatsHandler = handler.NewMentionStatsHandler(
+	c.MentionStatsHandler = NewMentionStatsHandler(
 		usecase.NewGetMentionStatsUseCase(mentionStatsRepo),
 	)
 
 	// リアクション統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	reactionStatsRepo := persistence.NewReactionStatsRepository(sqlcgen.New(sqlPool))
-	c.ReactionStatsHandler = handler.NewReactionStatsHandler(
+	c.ReactionStatsHandler = NewReactionStatsHandler(
 		usecase.NewGetReactionStatsUseCase(reactionStatsRepo),
 		usecase.NewGetReactionSummaryUseCase(reactionStatsRepo),
 	)
 
 	// ブックマーク統計はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	bookmarkStatsRepo := persistence.NewBookmarkStatsRepository(sqlcgen.New(sqlPool))
-	c.BookmarkStatsHandler = handler.NewBookmarkStatsHandler(
+	c.BookmarkStatsHandler = NewBookmarkStatsHandler(
 		usecase.NewGetBookmarkStatsUseCase(bookmarkStatsRepo),
 	)
 
@@ -889,14 +896,14 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 	// 実装は adapter/persistence（永続化）と adapter/external（Spotify API）。
 	spotifyPort := persistence.NewSpotifyRepository(sqlcgen.New(sqlPool))
 	spotifyClient := external.NewSpotifyClient(cfg.SpotifyClientID, cfg.SpotifyClientSecret, cfg.SpotifyRedirectURL)
-	spotifyUseCases := handler.SpotifyUseCases{
+	spotifyUseCases := SpotifyUseCases{
 		OAuthURL:         usecase.NewGetSpotifyOAuthURLUseCase(spotifyClient),
 		Connect:          usecase.NewConnectSpotifyUseCase(userPort, spotifyClient),
 		Disconnect:       usecase.NewDisconnectSpotifyUseCase(userPort, spotifyPort),
 		CurrentlyPlaying: usecase.NewGetSpotifyCurrentlyPlayingUseCase(userPort, spotifyClient),
 		RecentlyPlayed:   usecase.NewGetSpotifyRecentlyPlayedUseCase(userPort, spotifyClient),
 	}
-	c.SpotifyHandler = handler.NewSpotifyHandler(spotifyUseCases, spotifyOAuthState)
+	c.SpotifyHandler = NewSpotifyHandler(spotifyUseCases, spotifyOAuthState)
 
 	// YouTube 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence と adapter/external。
 	// APIキー未設定のときは検索クライアントを nil のままにし、利用不可（503）として扱う。
@@ -908,7 +915,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 	} else {
 		log.Println("YouTube APIキー未設定。YouTube動画検索機能は無効です。")
 	}
-	c.YouTubeHandler = handler.NewYouTubeHandler(
+	c.YouTubeHandler = NewYouTubeHandler(
 		usecase.NewSearchYouTubeVideosUseCase(youtubeVideoPort, youtubeSearcher),
 		usecase.NewRecommendYouTubeVideosUseCase(userPort, youtubeVideoPort, youtubeSearcher),
 		usecase.NewCheckYouTubeAvailabilityUseCase(youtubeSearcher),
@@ -917,7 +924,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 	// ストリークフリーズサービス
 	// ストリークフリーズはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	streakFreezeRepo := persistence.NewStreakFreezeRepository(sqlPool)
-	c.StreakFreezeHandler = handler.NewStreakFreezeHandler(
+	c.StreakFreezeHandler = NewStreakFreezeHandler(
 		usecase.NewUseStreakFreezeUseCase(streakFreezeRepo),
 		usecase.NewGetStreakFreezeStatusUseCase(streakFreezeRepo),
 	)
@@ -925,7 +932,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 	// ブックマークコレクションサービス
 	// ブックマークコレクションはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	bookmarkCollectionRepo := persistence.NewBookmarkCollectionRepository(sqlcgen.New(sqlPool))
-	c.BookmarkCollectionHandler = handler.NewBookmarkCollectionHandler(
+	c.BookmarkCollectionHandler = NewBookmarkCollectionHandler(
 		usecase.NewCreateBookmarkCollectionUseCase(bookmarkCollectionRepo),
 		usecase.NewListBookmarkCollectionsUseCase(bookmarkCollectionRepo),
 		usecase.NewUpdateBookmarkCollectionUseCase(bookmarkCollectionRepo),
@@ -938,14 +945,14 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 
 	// ウィークリーチャレンジはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	weeklyChallengeRepo := persistence.NewWeeklyChallengeRepository(sqlcgen.New(sqlPool))
-	c.WeeklyChallengeHandler = handler.NewWeeklyChallengeHandler(
+	c.WeeklyChallengeHandler = NewWeeklyChallengeHandler(
 		usecase.NewGetCurrentWeeklyChallengeUseCase(weeklyChallengeRepo),
 		usecase.NewUpdateWeeklyChallengeProgressUseCase(weeklyChallengeRepo),
 	)
 
 	// 投稿テンプレートはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence（sqlc/pgx）。
 	postTemplateRepo := persistence.NewPostTemplateRepository(sqlcgen.New(sqlPool))
-	c.PostTemplateHandler = handler.NewPostTemplateHandler(
+	c.PostTemplateHandler = NewPostTemplateHandler(
 		usecase.NewCreatePostTemplateUseCase(postTemplateRepo),
 		usecase.NewGetPostTemplateUseCase(postTemplateRepo),
 		usecase.NewListPostTemplatesUseCase(postTemplateRepo),
@@ -955,14 +962,14 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 
 	// ウィジェット設定はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	widgetSettingsRepo := persistence.NewWidgetSettingsRepository(sqlcgen.New(sqlPool))
-	c.WidgetSettingsHandler = handler.NewWidgetSettingsHandler(
+	c.WidgetSettingsHandler = NewWidgetSettingsHandler(
 		usecase.NewGetWidgetSettingsUseCase(widgetSettingsRepo),
 		usecase.NewUpdateWidgetSettingsUseCase(widgetSettingsRepo),
 	)
 
 	// カテゴリ別週間学習目標はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	weeklyGoalRepo := persistence.NewWeeklyGoalRepository(sqlcgen.New(sqlPool))
-	c.WeeklyGoalHandler = handler.NewWeeklyGoalHandler(
+	c.WeeklyGoalHandler = NewWeeklyGoalHandler(
 		usecase.NewSetWeeklyGoalUseCase(weeklyGoalRepo),
 		usecase.NewListWeeklyGoalsUseCase(weeklyGoalRepo),
 		usecase.NewGetWeeklyGoalProgressUseCase(weeklyGoalRepo),
@@ -972,7 +979,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 	// リソース進捗はクリーンアーキテクチャ（DIP）へ移行済み。リソース存在確認は最小 port LearningResourceReader を再利用。
 	resourceProgressRepo := persistence.NewResourceProgressRepository(sqlcgen.New(sqlPool))
 	resourceProgressResourceReader := persistence.NewLearningResourceReader(sqlcgen.New(sqlPool))
-	c.ResourceProgressHandler = handler.NewResourceProgressHandler(
+	c.ResourceProgressHandler = NewResourceProgressHandler(
 		usecase.NewUpsertResourceProgressUseCase(resourceProgressRepo, resourceProgressResourceReader),
 		usecase.NewGetResourceProgressUseCase(resourceProgressRepo),
 		usecase.NewListResourceProgressUseCase(resourceProgressRepo),
@@ -982,7 +989,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 	// プロジェクトマイルストーンはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	projectMilestoneRepo := persistence.NewProjectMilestoneRepository(sqlcgen.New(sqlPool))
 	projectReader := persistence.NewProjectReader(sqlcgen.New(sqlPool))
-	c.ProjectMilestoneHandler = handler.NewProjectMilestoneHandler(
+	c.ProjectMilestoneHandler = NewProjectMilestoneHandler(
 		usecase.NewCreateProjectMilestoneUseCase(projectMilestoneRepo, projectReader),
 		usecase.NewListProjectMilestonesUseCase(projectMilestoneRepo),
 		usecase.NewUpdateProjectMilestoneUseCase(projectMilestoneRepo, projectReader),
@@ -992,14 +999,14 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 	// ユーザーアクティビティサービス
 	// ユーザーアクティビティはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	userActivityRepo := persistence.NewUserActivityRepository(sqlcgen.New(sqlPool))
-	c.UserActivityHandler = handler.NewUserActivityHandler(
+	c.UserActivityHandler = NewUserActivityHandler(
 		usecase.NewGetActivityTimelineUseCase(userActivityRepo),
 	)
 
 	// リソースレビューはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	resourceReviewRepo := persistence.NewResourceReviewRepository(sqlcgen.New(sqlPool))
 	learningResourceReader := persistence.NewLearningResourceReader(sqlcgen.New(sqlPool))
-	c.ResourceReviewHandler = handler.NewResourceReviewHandler(
+	c.ResourceReviewHandler = NewResourceReviewHandler(
 		usecase.NewCreateResourceReviewUseCase(resourceReviewRepo, learningResourceReader),
 		usecase.NewListResourceReviewsUseCase(resourceReviewRepo),
 		usecase.NewUpdateResourceReviewUseCase(resourceReviewRepo),
@@ -1009,13 +1016,13 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 	// 学習ダッシュボード統合サマリーサービス
 	// 学習ダッシュボードはクリーンアーキテクチャ（DIP）へ移行済み。
 	// 学習ログ・目標・分析の移行済み実装を、それぞれ最小 port として受け取る。
-	c.LearningDashboardHandler = handler.NewLearningDashboardHandler(
+	c.LearningDashboardHandler = NewLearningDashboardHandler(
 		usecase.NewGetLearningDashboardSummaryUseCase(learningLogPort, learningGoalPort, analyticsPort),
 	)
 
 	// リマインダー設定はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	reminderSettingsRepo := persistence.NewReminderSettingsRepository(sqlcgen.New(sqlPool))
-	c.ReminderSettingsHandler = handler.NewReminderSettingsHandler(
+	c.ReminderSettingsHandler = NewReminderSettingsHandler(
 		usecase.NewGetReminderSettingsUseCase(reminderSettingsRepo),
 		usecase.NewUpdateReminderSettingsUseCase(reminderSettingsRepo),
 	)
@@ -1023,7 +1030,7 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 	// 通知設定サービス
 	// 通知設定はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	notificationSettingsRepo := persistence.NewNotificationSettingsRepository(sqlcgen.New(sqlPool))
-	c.NotificationSettingsHandler = handler.NewNotificationSettingsHandler(
+	c.NotificationSettingsHandler = NewNotificationSettingsHandler(
 		usecase.NewGetNotificationSettingsUseCase(notificationSettingsRepo),
 		usecase.NewUpdateNotificationSettingsUseCase(notificationSettingsRepo),
 	)
