@@ -97,6 +97,7 @@ type Querier interface {
 	CountUnreadNotificationsByUser(ctx context.Context, userID int64) (int64, error)
 	CountUserActivitiesByUser(ctx context.Context, userID int64) (int64, error)
 	CountUserActivitiesByUserAndType(ctx context.Context, arg CountUserActivitiesByUserAndTypeParams) (int64, error)
+	CreateAIAdvice(ctx context.Context, arg CreateAIAdviceParams) (AiAdvice, error)
 	CreateBookmark(ctx context.Context, arg CreateBookmarkParams) error
 	CreateCommentLike(ctx context.Context, arg CreateCommentLikeParams) error
 	// 同時に複数リクエストが「不在」と判定してもuser_idの一意制約とDO NOTHINGで
@@ -131,6 +132,7 @@ type Querier interface {
 	DecrementPostBookmarkCount(ctx context.Context, id int64) error
 	DecrementPostCommentCount(ctx context.Context, id int64) error
 	DecrementPostLikeCount(ctx context.Context, id int64) error
+	DeleteAIAdvicesByUser(ctx context.Context, userID int64) error
 	DeleteBookmark(ctx context.Context, arg DeleteBookmarkParams) (int64, error)
 	DeleteCommentLike(ctx context.Context, arg DeleteCommentLikeParams) error
 	DeleteFollow(ctx context.Context, arg DeleteFollowParams) error
@@ -198,6 +200,7 @@ type Querier interface {
 	IncrementPostLikeCount(ctx context.Context, id int64) error
 	IncrementPostViewCount(ctx context.Context, id int64) error
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
+	ListAIAdvicesByUser(ctx context.Context, arg ListAIAdvicesByUserParams) ([]AiAdvice, error)
 	ListArchivedNotesByUser(ctx context.Context, arg ListArchivedNotesByUserParams) ([]ListArchivedNotesByUserRow, error)
 	// GORMのPreload("User")に相当（CodeSnippetsは別クエリで取得しGo側で結合する）。
 	// user_id/post_idともにNOT NULLのためINNER JOINでよい。
@@ -264,6 +267,7 @@ type Querier interface {
 	ListStreakFreezesByUserAndMonth(ctx context.Context, arg ListStreakFreezesByUserAndMonthParams) ([]StreakFreeze, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	ListTopLevelCommentsByPost(ctx context.Context, postID int64) ([]ListTopLevelCommentsByPostRow, error)
+	ListUnreadAIAdvicesByUser(ctx context.Context, userID int64) ([]AiAdvice, error)
 	ListUserActivitiesByUser(ctx context.Context, arg ListUserActivitiesByUserParams) ([]UserActivity, error)
 	ListUserActivitiesByUserAndType(ctx context.Context, arg ListUserActivitiesByUserAndTypeParams) ([]UserActivity, error)
 	ListUserReactionEmojisByPost(ctx context.Context, arg ListUserReactionEmojisByPostParams) ([]string, error)
@@ -271,6 +275,7 @@ type Querier interface {
 	ListWeeklyGoalsByUser(ctx context.Context, userID int64) ([]WeeklyGoal, error)
 	// 同一ユーザーの CreateWithinLimits 同時実行を直列化するための行ロック（GORMの clause.Locking{Strength: "UPDATE"} に相当）。
 	LockUserForStreakFreeze(ctx context.Context, id int64) error
+	MarkAIAdviceAsRead(ctx context.Context, arg MarkAIAdviceAsReadParams) (int64, error)
 	MarkMessagesAsRead(ctx context.Context, arg MarkMessagesAsReadParams) error
 	MarkPasswordResetTokenAsUsed(ctx context.Context, id int64) error
 	SearchNotes(ctx context.Context, arg SearchNotesParams) ([]SearchNotesRow, error)
