@@ -983,7 +983,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	// プロジェクトマイルストーンサービス
 	// プロジェクトマイルストーンはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	projectMilestoneRepo := persistence.NewProjectMilestoneRepository(sqlcgen.New(sqlPool))
-	projectReader := persistence.NewProjectReader(db)
+	projectReader := persistence.NewProjectReader(sqlcgen.New(sqlPool))
 	c.ProjectMilestoneHandler = handler.NewProjectMilestoneHandler(
 		usecase.NewCreateProjectMilestoneUseCase(projectMilestoneRepo, projectReader),
 		usecase.NewListProjectMilestonesUseCase(projectMilestoneRepo),

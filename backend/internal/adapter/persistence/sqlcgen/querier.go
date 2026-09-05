@@ -169,6 +169,13 @@ type Querier interface {
 	// projects は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
 	// deleted_at IS NULL を明示する（Unscoped() されていない全クエリと同じ挙動）。
 	GetProjectStats(ctx context.Context, userID int64) (GetProjectStatsRow, error)
+	// GORMのPreload("User").Preload("GithubRepo")に相当。
+	// projectsはGORMの論理削除（deleted_at）付きモデルのためdeleted_at IS NULLを明示する。
+	// github_repo_idはNULL許容のためLEFT JOIN。git_hub_repositoriesはsqlc.embedを使わず
+	// 個別カラム選択にすることで、sqlcのJOIN文脈依存のnull推論を効かせる
+	// （sqlc.embedは対象テーブル自身のスキーマ上のnull許容性をそのまま使ってしまい、
+	// LEFT JOINで欠落しうる行を表現できないため）。
+	GetProjectWithUserAndRepoByID(ctx context.Context, id int64) (GetProjectWithUserAndRepoByIDRow, error)
 	GetReminderSettingsByUserID(ctx context.Context, userID int64) (ReminderSetting, error)
 	GetTopReactedPostsByUser(ctx context.Context, arg GetTopReactedPostsByUserParams) ([]GetTopReactedPostsByUserRow, error)
 	GetWeeklyChallengeByUserAndWeek(ctx context.Context, arg GetWeeklyChallengeByUserAndWeekParams) (WeeklyChallenge, error)
