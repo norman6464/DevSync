@@ -18,59 +18,73 @@ type mockNoteRepo struct{ mock.Mock }
 func (m *mockNoteRepo) Create(ctx context.Context, note *model.Note) error {
 	return m.Called(ctx, note).Error(0)
 }
+
 func (m *mockNoteRepo) Update(ctx context.Context, note *model.Note) error {
 	return m.Called(ctx, note).Error(0)
 }
+
 func (m *mockNoteRepo) Delete(ctx context.Context, id uint) error {
 	return m.Called(ctx, id).Error(0)
 }
+
 func (m *mockNoteRepo) FindByID(ctx context.Context, id uint) (*model.Note, error) {
 	args := m.Called(ctx, id)
 	n, _ := args.Get(0).(*model.Note)
 	return n, args.Error(1)
 }
+
 func (m *mockNoteRepo) FindByUserID(ctx context.Context, userID uint, page, limit int) ([]model.Note, error) {
 	args := m.Called(ctx, userID, page, limit)
 	n, _ := args.Get(0).([]model.Note)
 	return n, args.Error(1)
 }
+
 func (m *mockNoteRepo) FindByFolderID(ctx context.Context, folderID, userID uint) ([]model.Note, error) {
 	args := m.Called(ctx, folderID, userID)
 	n, _ := args.Get(0).([]model.Note)
 	return n, args.Error(1)
 }
+
 func (m *mockNoteRepo) Search(ctx context.Context, userID uint, query string, limit, offset int) ([]model.Note, int64, error) {
 	args := m.Called(ctx, userID, query, limit, offset)
 	n, _ := args.Get(0).([]model.Note)
 	return n, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockNoteRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)
 }
+
 func (m *mockNoteRepo) ToggleFavorite(ctx context.Context, id uint) error {
 	return m.Called(ctx, id).Error(0)
 }
+
 func (m *mockNoteRepo) FindFavorites(ctx context.Context, userID uint, page, limit int) ([]model.Note, error) {
 	args := m.Called(ctx, userID, page, limit)
 	n, _ := args.Get(0).([]model.Note)
 	return n, args.Error(1)
 }
+
 func (m *mockNoteRepo) CountFavoritesByUserID(ctx context.Context, userID uint) (int64, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)
 }
+
 func (m *mockNoteRepo) Archive(ctx context.Context, id uint) error {
 	return m.Called(ctx, id).Error(0)
 }
+
 func (m *mockNoteRepo) Unarchive(ctx context.Context, id uint) error {
 	return m.Called(ctx, id).Error(0)
 }
+
 func (m *mockNoteRepo) FindArchived(ctx context.Context, userID uint, page, limit int) ([]model.Note, error) {
 	args := m.Called(ctx, userID, page, limit)
 	n, _ := args.Get(0).([]model.Note)
 	return n, args.Error(1)
 }
+
 func (m *mockNoteRepo) CountArchivedByUserID(ctx context.Context, userID uint) (int64, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)

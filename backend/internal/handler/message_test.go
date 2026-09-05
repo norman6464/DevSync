@@ -21,16 +21,19 @@ type mockMessagePort struct{ mock.Mock }
 func (m *mockMessagePort) Create(ctx context.Context, msg *model.Message) error {
 	return m.Called(ctx, msg).Error(0)
 }
+
 func (m *mockMessagePort) GetConversation(ctx context.Context, userID, otherUserID uint, page, limit int) ([]model.Message, error) {
 	args := m.Called(ctx, userID, otherUserID, page, limit)
 	msgs, _ := args.Get(0).([]model.Message)
 	return msgs, args.Error(1)
 }
+
 func (m *mockMessagePort) GetConversations(ctx context.Context, userID uint) ([]model.ConversationSummary, error) {
 	args := m.Called(ctx, userID)
 	c, _ := args.Get(0).([]model.ConversationSummary)
 	return c, args.Error(1)
 }
+
 func (m *mockMessagePort) MarkAsRead(ctx context.Context, senderID, receiverID uint) error {
 	return m.Called(ctx, senderID, receiverID).Error(0)
 }

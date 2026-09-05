@@ -20,33 +20,41 @@ type mockAnswerRepo struct{ mock.Mock }
 func (m *mockAnswerRepo) Create(ctx context.Context, answer *model.Answer) error {
 	return m.Called(ctx, answer).Error(0)
 }
+
 func (m *mockAnswerRepo) FindByID(ctx context.Context, id uint) (*model.Answer, error) {
 	args := m.Called(ctx, id)
 	a, _ := args.Get(0).(*model.Answer)
 	return a, args.Error(1)
 }
+
 func (m *mockAnswerRepo) Update(ctx context.Context, answer *model.Answer) error {
 	return m.Called(ctx, answer).Error(0)
 }
+
 func (m *mockAnswerRepo) Delete(ctx context.Context, answer *model.Answer) error {
 	return m.Called(ctx, answer).Error(0)
 }
+
 func (m *mockAnswerRepo) FindByQuestionID(ctx context.Context, questionID uint) ([]model.Answer, error) {
 	args := m.Called(ctx, questionID)
 	a, _ := args.Get(0).([]model.Answer)
 	return a, args.Error(1)
 }
+
 func (m *mockAnswerRepo) FindByVoteRange(ctx context.Context, questionID uint, minVote, maxVote int) ([]model.Answer, error) {
 	args := m.Called(ctx, questionID, minVote, maxVote)
 	a, _ := args.Get(0).([]model.Answer)
 	return a, args.Error(1)
 }
+
 func (m *mockAnswerRepo) SetBestAnswer(ctx context.Context, questionID, answerID uint) error {
 	return m.Called(ctx, questionID, answerID).Error(0)
 }
+
 func (m *mockAnswerRepo) Vote(ctx context.Context, userID, answerID uint, value int) error {
 	return m.Called(ctx, userID, answerID, value).Error(0)
 }
+
 func (m *mockAnswerRepo) RemoveVote(ctx context.Context, userID, answerID uint) error {
 	return m.Called(ctx, userID, answerID).Error(0)
 }

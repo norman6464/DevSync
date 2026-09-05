@@ -61,6 +61,7 @@ func (m *MockPostRepository) Create(post *model.Post) error {
 	args := m.Called(post)
 	return args.Error(0)
 }
+
 func (m *MockPostRepository) FindByID(id uint) (*model.Post, error) {
 	args := m.Called(id)
 	if p := args.Get(0); p != nil {
@@ -68,79 +69,100 @@ func (m *MockPostRepository) FindByID(id uint) (*model.Post, error) {
 	}
 	return nil, args.Error(1)
 }
+
 func (m *MockPostRepository) FindAll(page, limit int) ([]model.Post, error) {
 	args := m.Called(page, limit)
 	return args.Get(0).([]model.Post), args.Error(1)
 }
+
 func (m *MockPostRepository) CountAll() (int64, error) {
 	args := m.Called()
 	return args.Get(0).(int64), args.Error(1)
 }
+
 func (m *MockPostRepository) FindByUserID(userID uint, limit, offset int) ([]model.Post, int64, error) {
 	args := m.Called(userID, limit, offset)
 	return args.Get(0).([]model.Post), args.Get(1).(int64), args.Error(2)
 }
+
 func (m *MockPostRepository) Timeline(userID uint, page, limit int) ([]model.Post, error) {
 	args := m.Called(userID, page, limit)
 	return args.Get(0).([]model.Post), args.Error(1)
 }
+
 func (m *MockPostRepository) Update(post *model.Post) error {
 	return m.Called(post).Error(0)
 }
+
 func (m *MockPostRepository) Delete(id uint) error {
 	return m.Called(id).Error(0)
 }
+
 func (m *MockPostRepository) Like(userID, postID uint) error {
 	return m.Called(userID, postID).Error(0)
 }
+
 func (m *MockPostRepository) Unlike(userID, postID uint) error {
 	return m.Called(userID, postID).Error(0)
 }
+
 func (m *MockPostRepository) HasLiked(userID, postID uint) bool {
 	return m.Called(userID, postID).Bool(0)
 }
+
 func (m *MockPostRepository) AddReaction(userID, postID uint, emoji string) error {
 	return m.Called(userID, postID, emoji).Error(0)
 }
+
 func (m *MockPostRepository) RemoveReaction(userID, postID uint, emoji string) error {
 	return m.Called(userID, postID, emoji).Error(0)
 }
+
 func (m *MockPostRepository) GetReactionsByPostID(postID uint) ([]model.ReactionCount, error) {
 	args := m.Called(postID)
 	return args.Get(0).([]model.ReactionCount), args.Error(1)
 }
+
 func (m *MockPostRepository) GetUserReactions(userID, postID uint) ([]string, error) {
 	args := m.Called(userID, postID)
 	return args.Get(0).([]string), args.Error(1)
 }
+
 func (m *MockPostRepository) GetReactionsBatch(postIDs []uint) (map[uint][]model.ReactionCount, error) {
 	args := m.Called(postIDs)
 	return args.Get(0).(map[uint][]model.ReactionCount), args.Error(1)
 }
+
 func (m *MockPostRepository) GetUserReactionsBatch(userID uint, postIDs []uint) (map[uint][]string, error) {
 	args := m.Called(userID, postIDs)
 	return args.Get(0).(map[uint][]string), args.Error(1)
 }
+
 func (m *MockPostRepository) Search(query string, limit, offset int) (interface{}, int64, error) {
 	args := m.Called(query, limit, offset)
 	return args.Get(0), args.Get(1).(int64), args.Error(2)
 }
+
 func (m *MockPostRepository) FindDraftsByUserID(userID uint) ([]model.Post, error) {
 	args := m.Called(userID)
 	return args.Get(0).([]model.Post), args.Error(1)
 }
+
 func (m *MockPostRepository) FindScheduledByUserID(userID uint) ([]model.Post, error) {
 	args := m.Called(userID)
 	return args.Get(0).([]model.Post), args.Error(1)
 }
+
 func (m *MockPostRepository) CountByUserID(userID uint) (int64, error) {
 	args := m.Called(userID)
 	return args.Get(0).(int64), args.Error(1)
 }
+
 func (m *MockPostRepository) CountDraftsByUserID(userID uint) (int64, error) {
 	args := m.Called(userID)
 	return args.Get(0).(int64), args.Error(1)
 }
+
 func (m *MockPostRepository) CountScheduledByUserID(userID uint) (int64, error) {
 	args := m.Called(userID)
 	return args.Get(0).(int64), args.Error(1)
@@ -152,30 +174,38 @@ type MockNotificationRepository struct{ mock.Mock }
 func (m *MockNotificationRepository) Create(n *model.Notification) error {
 	return m.Called(n).Error(0)
 }
+
 func (m *MockNotificationRepository) CreateBatch(n []*model.Notification) error {
 	return m.Called(n).Error(0)
 }
+
 func (m *MockNotificationRepository) FindByUserID(userID uint, page, limit int, t string) ([]model.Notification, error) {
 	args := m.Called(userID, page, limit, t)
 	return args.Get(0).([]model.Notification), args.Error(1)
 }
+
 func (m *MockNotificationRepository) CountByUserID(userID uint, t string) (int64, error) {
 	args := m.Called(userID, t)
 	return args.Get(0).(int64), args.Error(1)
 }
+
 func (m *MockNotificationRepository) CountUnread(userID uint) (int64, error) {
 	args := m.Called(userID)
 	return args.Get(0).(int64), args.Error(1)
 }
+
 func (m *MockNotificationRepository) MarkAsRead(id, userID uint) error {
 	return m.Called(id, userID).Error(0)
 }
+
 func (m *MockNotificationRepository) MarkAllAsRead(userID uint) error {
 	return m.Called(userID).Error(0)
 }
+
 func (m *MockNotificationRepository) Delete(id, userID uint) error {
 	return m.Called(id, userID).Error(0)
 }
+
 func (m *MockNotificationRepository) GetFollowerIDs(userID uint) ([]uint, error) {
 	args := m.Called(userID)
 	return args.Get(0).([]uint), args.Error(1)
@@ -189,6 +219,7 @@ type mockQuestionRepo struct{ mock.Mock }
 func (m *mockQuestionRepo) Create(ctx context.Context, q *model.Question) error {
 	return m.Called(ctx, q).Error(0)
 }
+
 func (m *mockQuestionRepo) FindByID(ctx context.Context, id uint) (*model.Question, error) {
 	args := m.Called(ctx, id)
 	if q := args.Get(0); q != nil {
@@ -196,56 +227,71 @@ func (m *mockQuestionRepo) FindByID(ctx context.Context, id uint) (*model.Questi
 	}
 	return nil, args.Error(1)
 }
+
 func (m *mockQuestionRepo) Update(ctx context.Context, q *model.Question) error {
 	return m.Called(ctx, q).Error(0)
 }
+
 func (m *mockQuestionRepo) Delete(ctx context.Context, id uint) error {
 	return m.Called(ctx, id).Error(0)
 }
+
 func (m *mockQuestionRepo) FindAll(ctx context.Context, limit, offset int, tag, sort string) ([]model.Question, int64, error) {
 	args := m.Called(ctx, limit, offset, tag, sort)
 	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockQuestionRepo) Search(ctx context.Context, q string, limit, offset int) ([]model.Question, int64, error) {
 	args := m.Called(ctx, q, limit, offset)
 	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockQuestionRepo) FindByUserID(ctx context.Context, userID uint, limit, offset int) ([]model.Question, int64, error) {
 	args := m.Called(ctx, userID, limit, offset)
 	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockQuestionRepo) FindSolved(ctx context.Context, limit, offset int) ([]model.Question, int64, error) {
 	args := m.Called(ctx, limit, offset)
 	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockQuestionRepo) FindUnanswered(ctx context.Context, limit, offset int) ([]model.Question, int64, error) {
 	args := m.Called(ctx, limit, offset)
 	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockQuestionRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)
 }
+
 func (m *mockQuestionRepo) Vote(ctx context.Context, userID, questionID uint, value int) error {
 	return m.Called(ctx, userID, questionID, value).Error(0)
 }
+
 func (m *mockQuestionRepo) RemoveVote(ctx context.Context, userID, questionID uint) error {
 	return m.Called(ctx, userID, questionID).Error(0)
 }
+
 func (m *mockQuestionRepo) GetUserVote(ctx context.Context, userID, questionID uint) (int, error) {
 	args := m.Called(ctx, userID, questionID)
 	return args.Int(0), args.Error(1)
 }
+
 func (m *mockQuestionRepo) Bookmark(ctx context.Context, userID, questionID uint) error {
 	return m.Called(ctx, userID, questionID).Error(0)
 }
+
 func (m *mockQuestionRepo) Unbookmark(ctx context.Context, userID, questionID uint) error {
 	return m.Called(ctx, userID, questionID).Error(0)
 }
+
 func (m *mockQuestionRepo) HasBookmarked(ctx context.Context, userID, questionID uint) (bool, error) {
 	args := m.Called(ctx, userID, questionID)
 	return args.Bool(0), args.Error(1)
 }
+
 func (m *mockQuestionRepo) FindBookmarkedByUserID(ctx context.Context, userID uint, limit, offset int) ([]model.Question, int64, error) {
 	args := m.Called(ctx, userID, limit, offset)
 	return args.Get(0).([]model.Question), args.Get(1).(int64), args.Error(2)
@@ -257,12 +303,15 @@ type mockLearningResourceRepo struct{ mock.Mock }
 func (m *mockLearningResourceRepo) Create(ctx context.Context, r *model.LearningResource) error {
 	return m.Called(ctx, r).Error(0)
 }
+
 func (m *mockLearningResourceRepo) Update(ctx context.Context, r *model.LearningResource) error {
 	return m.Called(ctx, r).Error(0)
 }
+
 func (m *mockLearningResourceRepo) Delete(ctx context.Context, id uint) error {
 	return m.Called(ctx, id).Error(0)
 }
+
 func (m *mockLearningResourceRepo) FindByID(ctx context.Context, id uint) (*model.LearningResource, error) {
 	args := m.Called(ctx, id)
 	if r := args.Get(0); r != nil {
@@ -270,51 +319,63 @@ func (m *mockLearningResourceRepo) FindByID(ctx context.Context, id uint) (*mode
 	}
 	return nil, args.Error(1)
 }
+
 func (m *mockLearningResourceRepo) FindByUserID(ctx context.Context, userID uint, includePrivate bool, limit, offset int) ([]model.LearningResource, int64, error) {
 	args := m.Called(ctx, userID, includePrivate, limit, offset)
 	r, _ := args.Get(0).([]model.LearningResource)
 	return r, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockLearningResourceRepo) FindPublic(ctx context.Context, limit, offset int, category, difficulty string) ([]model.LearningResource, int64, error) {
 	args := m.Called(ctx, limit, offset, category, difficulty)
 	r, _ := args.Get(0).([]model.LearningResource)
 	return r, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockLearningResourceRepo) FindByDifficulty(ctx context.Context, difficulty string, limit, offset int) ([]model.LearningResource, int64, error) {
 	args := m.Called(ctx, difficulty, limit, offset)
 	r, _ := args.Get(0).([]model.LearningResource)
 	return r, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockLearningResourceRepo) Search(ctx context.Context, query string, limit, offset int) ([]model.LearningResource, int64, error) {
 	args := m.Called(ctx, query, limit, offset)
 	r, _ := args.Get(0).([]model.LearningResource)
 	return r, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockLearningResourceRepo) FindSavedByUserID(ctx context.Context, userID uint, limit, offset int) ([]model.LearningResource, int64, error) {
 	args := m.Called(ctx, userID, limit, offset)
 	r, _ := args.Get(0).([]model.LearningResource)
 	return r, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockLearningResourceRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)
 }
+
 func (m *mockLearningResourceRepo) Like(ctx context.Context, userID, resourceID uint) error {
 	return m.Called(ctx, userID, resourceID).Error(0)
 }
+
 func (m *mockLearningResourceRepo) Unlike(ctx context.Context, userID, resourceID uint) error {
 	return m.Called(ctx, userID, resourceID).Error(0)
 }
+
 func (m *mockLearningResourceRepo) HasLiked(ctx context.Context, userID, resourceID uint) (bool, error) {
 	args := m.Called(ctx, userID, resourceID)
 	return args.Bool(0), args.Error(1)
 }
+
 func (m *mockLearningResourceRepo) Save(ctx context.Context, userID, resourceID uint) error {
 	return m.Called(ctx, userID, resourceID).Error(0)
 }
+
 func (m *mockLearningResourceRepo) Unsave(ctx context.Context, userID, resourceID uint) error {
 	return m.Called(ctx, userID, resourceID).Error(0)
 }
+
 func (m *mockLearningResourceRepo) HasSaved(ctx context.Context, userID, resourceID uint) (bool, error) {
 	args := m.Called(ctx, userID, resourceID)
 	return args.Bool(0), args.Error(1)
@@ -326,12 +387,15 @@ type mockRoadmapRepo struct{ mock.Mock }
 func (m *mockRoadmapRepo) Create(ctx context.Context, r *model.Roadmap) error {
 	return m.Called(ctx, r).Error(0)
 }
+
 func (m *mockRoadmapRepo) Update(ctx context.Context, r *model.Roadmap) error {
 	return m.Called(ctx, r).Error(0)
 }
+
 func (m *mockRoadmapRepo) Delete(ctx context.Context, id uint) error {
 	return m.Called(ctx, id).Error(0)
 }
+
 func (m *mockRoadmapRepo) FindByID(ctx context.Context, id uint) (*model.Roadmap, error) {
 	args := m.Called(ctx, id)
 	if r := args.Get(0); r != nil {
@@ -339,30 +403,36 @@ func (m *mockRoadmapRepo) FindByID(ctx context.Context, id uint) (*model.Roadmap
 	}
 	return nil, args.Error(1)
 }
+
 func (m *mockRoadmapRepo) GetByUserID(ctx context.Context, userID uint, limit, offset int) ([]model.Roadmap, int64, error) {
 	args := m.Called(ctx, userID, limit, offset)
 	r, _ := args.Get(0).([]model.Roadmap)
 	return r, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockRoadmapRepo) GetByStatus(ctx context.Context, userID uint, status string) ([]model.Roadmap, error) {
 	args := m.Called(ctx, userID, status)
 	r, _ := args.Get(0).([]model.Roadmap)
 	return r, args.Error(1)
 }
+
 func (m *mockRoadmapRepo) GetPublicRoadmaps(ctx context.Context, limit, offset int) ([]model.Roadmap, int64, error) {
 	args := m.Called(ctx, limit, offset)
 	r, _ := args.Get(0).([]model.Roadmap)
 	return r, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockRoadmapRepo) GetTemplates(ctx context.Context) ([]model.Roadmap, error) {
 	args := m.Called(ctx)
 	r, _ := args.Get(0).([]model.Roadmap)
 	return r, args.Error(1)
 }
+
 func (m *mockRoadmapRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)
 }
+
 func (m *mockRoadmapRepo) CopyRoadmap(ctx context.Context, originalID, newUserID uint) (*model.Roadmap, error) {
 	args := m.Called(ctx, originalID, newUserID)
 	if r := args.Get(0); r != nil {
@@ -370,15 +440,19 @@ func (m *mockRoadmapRepo) CopyRoadmap(ctx context.Context, originalID, newUserID
 	}
 	return nil, args.Error(1)
 }
+
 func (m *mockRoadmapRepo) CreateStep(ctx context.Context, step *model.RoadmapStep) error {
 	return m.Called(ctx, step).Error(0)
 }
+
 func (m *mockRoadmapRepo) UpdateStep(ctx context.Context, step *model.RoadmapStep) error {
 	return m.Called(ctx, step).Error(0)
 }
+
 func (m *mockRoadmapRepo) DeleteStep(ctx context.Context, stepID uint) error {
 	return m.Called(ctx, stepID).Error(0)
 }
+
 func (m *mockRoadmapRepo) FindStepByID(ctx context.Context, stepID uint) (*model.RoadmapStep, error) {
 	args := m.Called(ctx, stepID)
 	if s := args.Get(0); s != nil {
@@ -386,6 +460,7 @@ func (m *mockRoadmapRepo) FindStepByID(ctx context.Context, stepID uint) (*model
 	}
 	return nil, args.Error(1)
 }
+
 func (m *mockRoadmapRepo) ReorderSteps(ctx context.Context, roadmapID uint, stepOrders []model.StepOrder) error {
 	return m.Called(ctx, roadmapID, stepOrders).Error(0)
 }
@@ -652,6 +727,7 @@ type mockStudyCircleRepo struct{ mock.Mock }
 func (m *mockStudyCircleRepo) CreateWithOwner(ctx context.Context, circle *model.StudyCircle) error {
 	return m.Called(ctx, circle).Error(0)
 }
+
 func (m *mockStudyCircleRepo) FindByID(ctx context.Context, id uint) (*model.StudyCircle, error) {
 	args := m.Called(ctx, id)
 	if c := args.Get(0); c != nil {
@@ -659,20 +735,25 @@ func (m *mockStudyCircleRepo) FindByID(ctx context.Context, id uint) (*model.Stu
 	}
 	return nil, args.Error(1)
 }
+
 func (m *mockStudyCircleRepo) FindByUserID(ctx context.Context, userID uint, limit, offset int) ([]model.StudyCircle, int64, error) {
 	args := m.Called(ctx, userID, limit, offset)
 	return args.Get(0).([]model.StudyCircle), args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockStudyCircleRepo) Update(ctx context.Context, circle *model.StudyCircle) error {
 	return m.Called(ctx, circle).Error(0)
 }
+
 func (m *mockStudyCircleRepo) Delete(ctx context.Context, id uint) error {
 	return m.Called(ctx, id).Error(0)
 }
+
 func (m *mockStudyCircleRepo) GetByStatus(ctx context.Context, userID uint, status string) ([]model.StudyCircle, error) {
 	args := m.Called(ctx, userID, status)
 	return args.Get(0).([]model.StudyCircle), args.Error(1)
 }
+
 func (m *mockStudyCircleRepo) Search(ctx context.Context, query string, limit, offset int) ([]model.StudyCircle, int64, error) {
 	args := m.Called(ctx, query, limit, offset)
 	if v := args.Get(0); v != nil {
@@ -680,40 +761,51 @@ func (m *mockStudyCircleRepo) Search(ctx context.Context, query string, limit, o
 	}
 	return nil, args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockStudyCircleRepo) AddMember(ctx context.Context, circleID, userID uint, role model.StudyCircleMemberRole) error {
 	return m.Called(ctx, circleID, userID, role).Error(0)
 }
+
 func (m *mockStudyCircleRepo) RemoveMember(ctx context.Context, circleID, userID uint) error {
 	return m.Called(ctx, circleID, userID).Error(0)
 }
+
 func (m *mockStudyCircleRepo) GetMembers(ctx context.Context, circleID uint) ([]model.StudyCircleMember, error) {
 	args := m.Called(ctx, circleID)
 	return args.Get(0).([]model.StudyCircleMember), args.Error(1)
 }
+
 func (m *mockStudyCircleRepo) IsMember(ctx context.Context, circleID, userID uint) (bool, error) {
 	args := m.Called(ctx, circleID, userID)
 	return args.Bool(0), args.Error(1)
 }
+
 func (m *mockStudyCircleRepo) AddMemberWithinLimit(ctx context.Context, circleID, userID uint, role model.StudyCircleMemberRole) (bool, error) {
 	args := m.Called(ctx, circleID, userID, role)
 	return args.Bool(0), args.Error(1)
 }
+
 func (m *mockStudyCircleRepo) UpdateMemberRole(ctx context.Context, circleID, userID uint, role model.StudyCircleMemberRole) error {
 	return m.Called(ctx, circleID, userID, role).Error(0)
 }
+
 func (m *mockStudyCircleRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)
 }
+
 func (m *mockStudyCircleRepo) CreateStep(ctx context.Context, step *model.StudyCircleStep) error {
 	return m.Called(ctx, step).Error(0)
 }
+
 func (m *mockStudyCircleRepo) UpdateStep(ctx context.Context, step *model.StudyCircleStep) error {
 	return m.Called(ctx, step).Error(0)
 }
+
 func (m *mockStudyCircleRepo) DeleteStep(ctx context.Context, stepID uint) error {
 	return m.Called(ctx, stepID).Error(0)
 }
+
 func (m *mockStudyCircleRepo) FindStepByID(ctx context.Context, stepID uint) (*model.StudyCircleStep, error) {
 	args := m.Called(ctx, stepID)
 	if s := args.Get(0); s != nil {
@@ -721,27 +813,34 @@ func (m *mockStudyCircleRepo) FindStepByID(ctx context.Context, stepID uint) (*m
 	}
 	return nil, args.Error(1)
 }
+
 func (m *mockStudyCircleRepo) ReorderSteps(ctx context.Context, circleID uint, stepOrders []model.StepOrder) error {
 	return m.Called(ctx, circleID, stepOrders).Error(0)
 }
+
 func (m *mockStudyCircleRepo) UpsertProgress(ctx context.Context, progress *model.StudyCircleMemberProgress) error {
 	return m.Called(ctx, progress).Error(0)
 }
+
 func (m *mockStudyCircleRepo) GetProgress(ctx context.Context, circleID uint) ([]model.StudyCircleMemberProgress, error) {
 	args := m.Called(ctx, circleID)
 	return args.Get(0).([]model.StudyCircleMemberProgress), args.Error(1)
 }
+
 func (m *mockStudyCircleRepo) CreateCheckin(ctx context.Context, checkin *model.StudyCircleCheckin) error {
 	return m.Called(ctx, checkin).Error(0)
 }
+
 func (m *mockStudyCircleRepo) GetCheckins(ctx context.Context, circleID uint) ([]model.StudyCircleCheckin, error) {
 	args := m.Called(ctx, circleID)
 	return args.Get(0).([]model.StudyCircleCheckin), args.Error(1)
 }
+
 func (m *mockStudyCircleRepo) HasCheckedInToday(ctx context.Context, circleID, userID uint) (bool, error) {
 	args := m.Called(ctx, circleID, userID)
 	return args.Bool(0), args.Error(1)
 }
+
 func (m *mockStudyCircleRepo) GetStreakRanking(ctx context.Context, circleID uint) ([]model.CircleMemberStreak, error) {
 	args := m.Called(ctx, circleID)
 	return args.Get(0).([]model.CircleMemberStreak), args.Error(1)
@@ -786,6 +885,7 @@ type mockAnswerRepo struct{ mock.Mock }
 func (m *mockAnswerRepo) Create(ctx context.Context, answer *model.Answer) error {
 	return m.Called(ctx, answer).Error(0)
 }
+
 func (m *mockAnswerRepo) FindByID(ctx context.Context, id uint) (*model.Answer, error) {
 	args := m.Called(ctx, id)
 	if a := args.Get(0); a != nil {
@@ -793,28 +893,35 @@ func (m *mockAnswerRepo) FindByID(ctx context.Context, id uint) (*model.Answer, 
 	}
 	return nil, args.Error(1)
 }
+
 func (m *mockAnswerRepo) Update(ctx context.Context, answer *model.Answer) error {
 	return m.Called(ctx, answer).Error(0)
 }
+
 func (m *mockAnswerRepo) Delete(ctx context.Context, answer *model.Answer) error {
 	return m.Called(ctx, answer).Error(0)
 }
+
 func (m *mockAnswerRepo) FindByQuestionID(ctx context.Context, questionID uint) ([]model.Answer, error) {
 	args := m.Called(ctx, questionID)
 	a, _ := args.Get(0).([]model.Answer)
 	return a, args.Error(1)
 }
+
 func (m *mockAnswerRepo) FindByVoteRange(ctx context.Context, questionID uint, minVote, maxVote int) ([]model.Answer, error) {
 	args := m.Called(ctx, questionID, minVote, maxVote)
 	a, _ := args.Get(0).([]model.Answer)
 	return a, args.Error(1)
 }
+
 func (m *mockAnswerRepo) SetBestAnswer(ctx context.Context, questionID, answerID uint) error {
 	return m.Called(ctx, questionID, answerID).Error(0)
 }
+
 func (m *mockAnswerRepo) Vote(ctx context.Context, userID, answerID uint, value int) error {
 	return m.Called(ctx, userID, answerID, value).Error(0)
 }
+
 func (m *mockAnswerRepo) RemoveVote(ctx context.Context, userID, answerID uint) error {
 	return m.Called(ctx, userID, answerID).Error(0)
 }
@@ -850,13 +957,16 @@ type mockFollowRepo struct{ mock.Mock }
 func (m *mockFollowRepo) Follow(ctx context.Context, followerID, followeeID uint) error {
 	return m.Called(ctx, followerID, followeeID).Error(0)
 }
+
 func (m *mockFollowRepo) Unfollow(ctx context.Context, followerID, followeeID uint) error {
 	return m.Called(ctx, followerID, followeeID).Error(0)
 }
+
 func (m *mockFollowRepo) GetFollowers(ctx context.Context, userID uint, limit, offset int) ([]model.User, int64, error) {
 	args := m.Called(ctx, userID, limit, offset)
 	return args.Get(0).([]model.User), args.Get(1).(int64), args.Error(2)
 }
+
 func (m *mockFollowRepo) GetFollowing(ctx context.Context, userID uint, limit, offset int) ([]model.User, int64, error) {
 	args := m.Called(ctx, userID, limit, offset)
 	return args.Get(0).([]model.User), args.Get(1).(int64), args.Error(2)
@@ -1030,13 +1140,16 @@ type mockCommentLikeRepo struct{ mock.Mock }
 func (m *mockCommentLikeRepo) Like(ctx context.Context, userID, commentID uint) error {
 	return m.Called(ctx, userID, commentID).Error(0)
 }
+
 func (m *mockCommentLikeRepo) Unlike(ctx context.Context, userID, commentID uint) error {
 	return m.Called(ctx, userID, commentID).Error(0)
 }
+
 func (m *mockCommentLikeRepo) HasLiked(ctx context.Context, userID, commentID uint) (bool, error) {
 	args := m.Called(ctx, userID, commentID)
 	return args.Bool(0), args.Error(1)
 }
+
 func (m *mockCommentLikeRepo) CountByCommentID(ctx context.Context, commentID uint) (int64, error) {
 	args := m.Called(ctx, commentID)
 	return args.Get(0).(int64), args.Error(1)

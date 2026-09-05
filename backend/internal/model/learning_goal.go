@@ -32,14 +32,14 @@ type LearningGoal struct {
 	Title       string       `json:"title" gorm:"not null"`
 	Description string       `json:"description"`
 	Category    GoalCategory `json:"category" gorm:"default:'other'"`
-	TargetDate  *time.Time   `json:"target_date"`                       // 目標達成予定日
-	Progress    int          `json:"progress" gorm:"default:0"`         // 0〜100の達成率
-	TargetHours int          `json:"target_hours" gorm:"default:0"`     // 目標学習時間（時間単位、0=未設定）
+	TargetDate  *time.Time   `json:"target_date"`                   // 目標達成予定日
+	Progress    int          `json:"progress" gorm:"default:0"`     // 0〜100の達成率
+	TargetHours int          `json:"target_hours" gorm:"default:0"` // 目標学習時間（時間単位、0=未設定）
 	Status      GoalStatus   `json:"status" gorm:"default:'active'"`
 	IsPublic    bool         `json:"is_public" gorm:"default:false"`
 	CreatedAt   time.Time    `json:"created_at"`
 	UpdatedAt   time.Time    `json:"updated_at"`
-	CompletedAt *time.Time   `json:"completed_at"`                      // 完了日時（完了時に自動設定）
+	CompletedAt *time.Time   `json:"completed_at"` // 完了日時（完了時に自動設定）
 }
 
 // GoalDeadlineAlert はデッドラインが近い・超過した目標のアラート情報を表す。
@@ -51,24 +51,24 @@ type GoalDeadlineAlert struct {
 
 // GoalProgress は学習ゴールの実績時間 vs 目標時間の進捗情報を表す。
 type GoalProgress struct {
-	GoalID       uint `json:"goal_id"`
-	TargetHours  int  `json:"target_hours"`  // 目標時間（時間単位）
-	ActualMinutes int `json:"actual_minutes"` // 実績時間（分単位）
-	Percentage   int  `json:"percentage"`     // 進捗率（0-100）
+	GoalID        uint `json:"goal_id"`
+	TargetHours   int  `json:"target_hours"`   // 目標時間（時間単位）
+	ActualMinutes int  `json:"actual_minutes"` // 実績時間（分単位）
+	Percentage    int  `json:"percentage"`     // 進捗率（0-100）
 }
 
 // GoalForecast は目標達成予測情報を表す。
 type GoalForecast struct {
-	GoalID             uint    `json:"goal_id"`
-	Title              string  `json:"title"`
-	CurrentProgress    int     `json:"current_progress"`       // 現在の進捗率
-	TargetHours        int     `json:"target_hours"`           // 目標時間（時間）
-	ActualMinutes      int     `json:"actual_minutes"`         // 実績時間（分）
-	DailyAverageMinutes int   `json:"daily_average_minutes"`  // 日平均学習時間（分）
-	EstimatedDaysLeft  int     `json:"estimated_days_left"`    // 予測残日数（-1=予測不能）
-	DaysUntilDeadline  int     `json:"days_until_deadline"`    // デッドラインまでの残日数（-1=未設定）
-	OnTrack            bool    `json:"on_track"`               // 予定通りかどうか
-	Difficulty         string  `json:"difficulty"`             // 達成難易度: easy/medium/hard/unknown
+	GoalID              uint   `json:"goal_id"`
+	Title               string `json:"title"`
+	CurrentProgress     int    `json:"current_progress"`      // 現在の進捗率
+	TargetHours         int    `json:"target_hours"`          // 目標時間（時間）
+	ActualMinutes       int    `json:"actual_minutes"`        // 実績時間（分）
+	DailyAverageMinutes int    `json:"daily_average_minutes"` // 日平均学習時間（分）
+	EstimatedDaysLeft   int    `json:"estimated_days_left"`   // 予測残日数（-1=予測不能）
+	DaysUntilDeadline   int    `json:"days_until_deadline"`   // デッドラインまでの残日数（-1=未設定）
+	OnTrack             bool   `json:"on_track"`              // 予定通りかどうか
+	Difficulty          string `json:"difficulty"`            // 達成難易度: easy/medium/hard/unknown
 }
 
 // LearningGoalStats はユーザーの学習目標統計情報を表す。

@@ -22,21 +22,25 @@ func (m *mockUserRepo) FindAll(ctx context.Context) ([]model.User, error) {
 	u, _ := args.Get(0).([]model.User)
 	return u, args.Error(1)
 }
+
 func (m *mockUserRepo) FindByID(ctx context.Context, id uint) (*model.User, error) {
 	args := m.Called(ctx, id)
 	u, _ := args.Get(0).(*model.User)
 	return u, args.Error(1)
 }
+
 func (m *mockUserRepo) FindByUsername(ctx context.Context, username string) (*model.User, error) {
 	args := m.Called(ctx, username)
 	u, _ := args.Get(0).(*model.User)
 	return u, args.Error(1)
 }
+
 func (m *mockUserRepo) Search(ctx context.Context, query string) ([]model.User, error) {
 	args := m.Called(ctx, query)
 	u, _ := args.Get(0).([]model.User)
 	return u, args.Error(1)
 }
+
 func (m *mockUserRepo) Update(ctx context.Context, user *model.User) error {
 	return m.Called(ctx, user).Error(0)
 }

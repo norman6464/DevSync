@@ -19,11 +19,13 @@ func (m *mockMentionPort) Create(ctx context.Context, mention *model.Mention) (b
 	args := m.Called(ctx, mention)
 	return args.Bool(0), args.Error(1)
 }
+
 func (m *mockMentionPort) FindByUserID(ctx context.Context, userID uint, page, limit int) ([]model.Mention, error) {
 	args := m.Called(ctx, userID, page, limit)
 	ms, _ := args.Get(0).([]model.Mention)
 	return ms, args.Error(1)
 }
+
 func (m *mockMentionPort) FindByPostID(ctx context.Context, postID uint) ([]model.Mention, error) {
 	args := m.Called(ctx, postID)
 	ms, _ := args.Get(0).([]model.Mention)
@@ -35,9 +37,11 @@ func (m *mockMentionPort) FindByCommentID(ctx context.Context, commentID uint) (
 	ms, _ := args.Get(0).([]model.Mention)
 	return ms, args.Error(1)
 }
+
 func (m *mockMentionPort) DeleteByPostID(ctx context.Context, postID uint) error {
 	return m.Called(ctx, postID).Error(0)
 }
+
 func (m *mockMentionPort) DeleteByCommentID(ctx context.Context, commentID uint) error {
 	return m.Called(ctx, commentID).Error(0)
 }

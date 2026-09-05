@@ -20,6 +20,7 @@ func (m *mockLearningLogSummaryReader) GetStreakInfo(ctx context.Context, userID
 	s, _ := args.Get(0).(*model.StreakInfo)
 	return s, args.Error(1)
 }
+
 func (m *mockLearningLogSummaryReader) SumDurationByPeriod(ctx context.Context, userID uint, days int) (int, error) {
 	args := m.Called(ctx, userID, days)
 	return args.Int(0), args.Error(1)

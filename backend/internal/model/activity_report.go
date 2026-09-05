@@ -15,20 +15,20 @@ const (
 // DBテーブルには対応せず、各種データを集計して生成されるDTO。
 // DailyContributions に日別の内訳、TopLanguages に使用言語のランキングを格納する。
 type ActivityReport struct {
-	Period             ReportPeriod    `json:"period"`              // 集計期間（weekly/monthly）
-	StartDate          time.Time       `json:"start_date"`          // 集計開始日
-	EndDate            time.Time       `json:"end_date"`            // 集計終了日
-	UserID             uint            `json:"user_id"`
-	TotalContributions int             `json:"total_contributions"` // 総コントリビューション数
-	PostsCreated       int             `json:"posts_created"`       // 投稿数
-	CommentsCreated    int             `json:"comments_created"`    // コメント数
-	LikesReceived      int             `json:"likes_received"`      // 受け取ったいいね数
-	GoalsCompleted     int             `json:"goals_completed"`     // 完了した目標数
-	GoalsProgress      int             `json:"goals_progress"`      // アクティブ目標の平均進捗率
-	NewFollowers       int             `json:"new_followers"`       // 新規フォロワー数
-	MessagesExchanged  int             `json:"messages_exchanged"`  // メッセージ送受信数
-	DailyContributions []DailyActivity `json:"daily_contributions"` // 日別アクティビティの内訳（チャート用）
-	TopLanguages       []LanguageActivity `json:"top_languages"`    // 使用言語ランキング
+	Period             ReportPeriod       `json:"period"`     // 集計期間（weekly/monthly）
+	StartDate          time.Time          `json:"start_date"` // 集計開始日
+	EndDate            time.Time          `json:"end_date"`   // 集計終了日
+	UserID             uint               `json:"user_id"`
+	TotalContributions int                `json:"total_contributions"` // 総コントリビューション数
+	PostsCreated       int                `json:"posts_created"`       // 投稿数
+	CommentsCreated    int                `json:"comments_created"`    // コメント数
+	LikesReceived      int                `json:"likes_received"`      // 受け取ったいいね数
+	GoalsCompleted     int                `json:"goals_completed"`     // 完了した目標数
+	GoalsProgress      int                `json:"goals_progress"`      // アクティブ目標の平均進捗率
+	NewFollowers       int                `json:"new_followers"`       // 新規フォロワー数
+	MessagesExchanged  int                `json:"messages_exchanged"`  // メッセージ送受信数
+	DailyContributions []DailyActivity    `json:"daily_contributions"` // 日別アクティビティの内訳（チャート用）
+	TopLanguages       []LanguageActivity `json:"top_languages"`       // 使用言語ランキング
 }
 
 // DailyActivity は1日分のアクティビティ内訳を表す。

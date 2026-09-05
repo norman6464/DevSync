@@ -107,7 +107,8 @@ func TestBroadcastingCreator_Create(t *testing.T) {
 		sender := &fakeSender{}
 
 		require.NoError(t, NewBroadcastingCreator(inner, sender).Create(
-			context.Background(), &model.Notification{UserID: 1, Type: model.NotificationTypeBadge, ActorID: 1}))
+			context.Background(), &model.Notification{UserID: 1, Type: model.NotificationTypeBadge, ActorID: 1},
+		))
 
 		got := decode(t, sender.sent[0].payload)
 		assert.NotContains(t, got, "post_id")
@@ -136,7 +137,8 @@ func TestBroadcastingFollowerNotifier_CreateBatch(t *testing.T) {
 		sender := &fakeSender{}
 
 		err := NewBroadcastingFollowerNotifier(inner, sender).CreateBatch(
-			context.Background(), []*model.Notification{{UserID: 10}})
+			context.Background(), []*model.Notification{{UserID: 10}},
+		)
 
 		assert.Error(t, err)
 		assert.Empty(t, sender.sent)

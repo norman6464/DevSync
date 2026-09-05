@@ -20,7 +20,7 @@ type LevelInfo struct {
 	CurrentLevelXP  int     `json:"current_level_xp"` // 現在レベルの開始XP
 	NextLevelXP     int     `json:"next_level_xp"`    // 次レベルに必要な累計XP
 	ProgressXP      int     `json:"progress_xp"`      // 現在レベル内の進捗XP
-	ProgressPercent float64 `json:"progress_percent"`  // 現在レベル内の進捗率(0-100)
+	ProgressPercent float64 `json:"progress_percent"` // 現在レベル内の進捗率(0-100)
 }
 
 // XPBreakdown はXPの内訳をAPIレスポンス用に表す。

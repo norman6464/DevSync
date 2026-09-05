@@ -268,7 +268,7 @@ func TestNewUploadHandler_DirPermissions(t *testing.T) {
 	info, err := os.Stat(tmpDir + "/secure_uploads")
 	assert.NoError(t, err)
 	// ディレクトリは0750（rwxr-x---）であること
-	assert.Equal(t, os.FileMode(0750), info.Mode().Perm())
+	assert.Equal(t, os.FileMode(0o750), info.Mode().Perm())
 }
 
 func TestUploadImage_FilePermissions(t *testing.T) {
@@ -295,7 +295,7 @@ func TestUploadImage_FilePermissions(t *testing.T) {
 	info, err := os.Stat(files[0])
 	assert.NoError(t, err)
 	// ファイルは0640（rw-r-----）であること
-	assert.Equal(t, os.FileMode(0640), info.Mode().Perm())
+	assert.Equal(t, os.FileMode(0o640), info.Mode().Perm())
 }
 
 func TestUploadMultipleImages_FilePermissions(t *testing.T) {
@@ -324,6 +324,6 @@ func TestUploadMultipleImages_FilePermissions(t *testing.T) {
 	for _, f := range files {
 		info, err := os.Stat(f)
 		assert.NoError(t, err)
-		assert.Equal(t, os.FileMode(0640), info.Mode().Perm())
+		assert.Equal(t, os.FileMode(0o640), info.Mode().Perm())
 	}
 }

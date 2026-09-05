@@ -3,10 +3,11 @@ package handler
 import (
 	"context"
 	"errors"
-	"github.com/norman6464/devsync/backend/internal/domain"
 	"net/http"
 	"testing"
 	"time"
+
+	"github.com/norman6464/devsync/backend/internal/domain"
 
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"

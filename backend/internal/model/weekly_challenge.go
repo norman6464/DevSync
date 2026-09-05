@@ -6,10 +6,10 @@ import "time"
 type ChallengeType string
 
 const (
-	ChallengeDurationTotal  ChallengeType = "duration_total"  // 合計学習時間（分）
-	ChallengeStreakDays     ChallengeType = "streak_days"     // 連続学習日数
-	ChallengeCategoryCount  ChallengeType = "category_count"  // 異なるカテゴリ数
-	ChallengeLogCount       ChallengeType = "log_count"       // 学習ログ記録回数
+	ChallengeDurationTotal ChallengeType = "duration_total" // 合計学習時間（分）
+	ChallengeStreakDays    ChallengeType = "streak_days"    // 連続学習日数
+	ChallengeCategoryCount ChallengeType = "category_count" // 異なるカテゴリ数
+	ChallengeLogCount      ChallengeType = "log_count"      // 学習ログ記録回数
 )
 
 // WeeklyChallenge はウィークリーチャレンジを表す。

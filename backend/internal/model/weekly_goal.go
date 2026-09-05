@@ -14,8 +14,8 @@ type WeeklyGoal struct {
 
 // WeeklyGoalProgress はカテゴリ別の週間学習目標の達成状況を表す。
 type WeeklyGoalProgress struct {
-	Category       LogCategory `json:"category"`
-	TargetMinutes  int         `json:"target_minutes"`
-	ActualMinutes  int         `json:"actual_minutes"`
-	ProgressPercent int        `json:"progress_percent"` // 0〜100+
+	Category        LogCategory `json:"category"`
+	TargetMinutes   int         `json:"target_minutes"`
+	ActualMinutes   int         `json:"actual_minutes"`
+	ProgressPercent int         `json:"progress_percent"` // 0〜100+
 }

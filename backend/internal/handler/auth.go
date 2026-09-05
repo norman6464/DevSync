@@ -1,9 +1,10 @@
 package handler
 
 import (
-	"github.com/norman6464/devsync/backend/internal/domain"
 	"net/http"
 	"os"
+
+	"github.com/norman6464/devsync/backend/internal/domain"
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/dto"

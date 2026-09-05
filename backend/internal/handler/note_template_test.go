@@ -19,30 +19,37 @@ type mockNoteTemplateRepo struct{ mock.Mock }
 func (m *mockNoteTemplateRepo) Create(ctx context.Context, template *model.NoteTemplate) error {
 	return m.Called(ctx, template).Error(0)
 }
+
 func (m *mockNoteTemplateRepo) Update(ctx context.Context, template *model.NoteTemplate) error {
 	return m.Called(ctx, template).Error(0)
 }
+
 func (m *mockNoteTemplateRepo) Delete(ctx context.Context, id uint) error {
 	return m.Called(ctx, id).Error(0)
 }
+
 func (m *mockNoteTemplateRepo) FindByID(ctx context.Context, id uint) (*model.NoteTemplate, error) {
 	args := m.Called(ctx, id)
 	t, _ := args.Get(0).(*model.NoteTemplate)
 	return t, args.Error(1)
 }
+
 func (m *mockNoteTemplateRepo) FindByUserID(ctx context.Context, userID uint) ([]model.NoteTemplate, error) {
 	args := m.Called(ctx, userID)
 	t, _ := args.Get(0).([]model.NoteTemplate)
 	return t, args.Error(1)
 }
+
 func (m *mockNoteTemplateRepo) FindDefaultByUserID(ctx context.Context, userID uint) (*model.NoteTemplate, error) {
 	args := m.Called(ctx, userID)
 	t, _ := args.Get(0).(*model.NoteTemplate)
 	return t, args.Error(1)
 }
+
 func (m *mockNoteTemplateRepo) ClearDefaultFlag(ctx context.Context, userID uint) error {
 	return m.Called(ctx, userID).Error(0)
 }
+
 func (m *mockNoteTemplateRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)

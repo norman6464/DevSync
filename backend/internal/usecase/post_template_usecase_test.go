@@ -64,10 +64,10 @@ func TestCreatePostTemplateUseCase_Execute(t *testing.T) {
 	})
 
 	for name, in := range map[string]*model.PostTemplate{
-		"名前が空":                {Name: "", ContentTemplate: "本文"},
-		"名前が 100 文字超":         {Name: strings.Repeat("a", 101), ContentTemplate: "本文"},
-		"内容が空":                {Name: "名前", ContentTemplate: ""},
-		"内容が 50000 文字超":       {Name: "名前", ContentTemplate: strings.Repeat("a", 50001)},
+		"名前が空":          {Name: "", ContentTemplate: "本文"},
+		"名前が 100 文字超":   {Name: strings.Repeat("a", 101), ContentTemplate: "本文"},
+		"内容が空":          {Name: "名前", ContentTemplate: ""},
+		"内容が 50000 文字超": {Name: "名前", ContentTemplate: strings.Repeat("a", 50001)},
 		"タイトルテンプレートが 200 文字超": {Name: "名前", ContentTemplate: "本文", TitleTemplate: strings.Repeat("a", 201)},
 	} {
 		t.Run(name+"は 400（作成しない）", func(t *testing.T) {

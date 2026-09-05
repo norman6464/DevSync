@@ -21,11 +21,13 @@ func (m *mockRecommendationRepo) GetRecommendedUsers(ctx context.Context, userID
 	u, _ := args.Get(0).([]model.RecommendedUser)
 	return u, args.Error(1)
 }
+
 func (m *mockRecommendationRepo) GetTrendingPosts(ctx context.Context, limit, days int) ([]model.Post, error) {
 	args := m.Called(ctx, limit, days)
 	p, _ := args.Get(0).([]model.Post)
 	return p, args.Error(1)
 }
+
 func (m *mockRecommendationRepo) GetTrendingResources(ctx context.Context, limit, days int) ([]model.LearningResource, error) {
 	args := m.Called(ctx, limit, days)
 	r, _ := args.Get(0).([]model.LearningResource)

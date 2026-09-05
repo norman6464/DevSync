@@ -42,7 +42,7 @@ func TestNoteValidator_ValidateContent(t *testing.T) {
 		wantErr bool
 	}{
 		{"有効（通常のマークダウン）", "# 見出し\n\n本文です", false},
-		{"有効（空文字）", "", false}, // 本文は空でもOK
+		{"有効（空文字）", "", false},                           // 本文は空でもOK
 		{"無効（長すぎる）", string(make([]byte, 100001)), true}, // 100KB超
 	}
 
@@ -126,8 +126,8 @@ func TestNoteValidator_ValidateUpdateNote(t *testing.T) {
 	}{
 		{"有効（完全な更新）", "更新タイトル", "更新内容", "Go", false},
 		{"有効（タイトルのみ）", "更新タイトル", "", "", false}, // 部分更新OK
-		{"有効（本文のみ）", "", "更新内容", "", false},         // 部分更新OK
-		{"有効（タグのみ）", "", "", "React", false},          // 部分更新OK
+		{"有効（本文のみ）", "", "更新内容", "", false},     // 部分更新OK
+		{"有効（タグのみ）", "", "", "React", false},    // 部分更新OK
 		{"無効（タイトル長すぎ）", string(make([]byte, 201)), "", "", true},
 		{"無効（本文長すぎ）", "", string(make([]byte, 100001)), "", true},
 		{"無効（タグ長すぎ）", "", "", string(make([]byte, 501)), true},

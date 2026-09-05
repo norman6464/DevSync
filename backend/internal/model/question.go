@@ -10,12 +10,12 @@ type Question struct {
 	ID          uint      `json:"id" gorm:"primaryKey"`
 	UserID      uint      `json:"user_id" gorm:"not null;index"`
 	User        User      `json:"user,omitempty" gorm:"foreignKey:UserID"`
-	Title       string    `json:"title" gorm:"not null;size:500"`           // 質問タイトル
-	Body        string    `json:"body" gorm:"type:text;not null"`           // 質問本文
-	Tags        string    `json:"tags" gorm:"type:text"`                    // JSON配列形式のタグ
-	VoteCount   int       `json:"vote_count" gorm:"default:0"`              // 投票数（賛成−反対の合計）
-	AnswerCount int       `json:"answer_count" gorm:"default:0"`            // 回答数
-	IsSolved    bool      `json:"is_solved" gorm:"default:false"`           // ベストアンサーが選ばれたか
+	Title       string    `json:"title" gorm:"not null;size:500"` // 質問タイトル
+	Body        string    `json:"body" gorm:"type:text;not null"` // 質問本文
+	Tags        string    `json:"tags" gorm:"type:text"`          // JSON配列形式のタグ
+	VoteCount   int       `json:"vote_count" gorm:"default:0"`    // 投票数（賛成−反対の合計）
+	AnswerCount int       `json:"answer_count" gorm:"default:0"`  // 回答数
+	IsSolved    bool      `json:"is_solved" gorm:"default:false"` // ベストアンサーが選ばれたか
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }

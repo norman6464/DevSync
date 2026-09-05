@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	uploadDirPerm  os.FileMode = 0750 // rwxr-x---
-	uploadFilePerm os.FileMode = 0640 // rw-r-----
+	uploadDirPerm  os.FileMode = 0o750 // rwxr-x---
+	uploadFilePerm os.FileMode = 0o640 // rw-r-----
 )
 
 // allowedMIMETypes はアップロードを許可するMIMEタイプの一覧。

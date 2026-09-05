@@ -284,12 +284,12 @@ func TestValidateTags(t *testing.T) {
 
 func TestValidatePagination(t *testing.T) {
 	tests := []struct {
-		name         string
-		limit        int
-		offset       int
-		wantLimit    int
-		wantOffset   int
-		wantErr      bool
+		name       string
+		limit      int
+		offset     int
+		wantLimit  int
+		wantOffset int
+		wantErr    bool
 	}{
 		{"有効なページネーション", 10, 0, 10, 0, false},
 		{"limit最大値", 100, 0, 100, 0, false},
