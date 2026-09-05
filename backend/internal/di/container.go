@@ -999,7 +999,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// リソースレビューはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	resourceReviewRepo := persistence.NewResourceReviewRepository(db)
+	resourceReviewRepo := persistence.NewResourceReviewRepository(sqlcgen.New(sqlPool))
 	learningResourceReader := persistence.NewLearningResourceReader(sqlcgen.New(sqlPool))
 	c.ResourceReviewHandler = handler.NewResourceReviewHandler(
 		usecase.NewCreateResourceReviewUseCase(resourceReviewRepo, learningResourceReader),

@@ -84,6 +84,7 @@ type Querier interface {
 	CountReactionsReceivedByUserSince(ctx context.Context, arg CountReactionsReceivedByUserSinceParams) (int64, error)
 	CountRepliesByUser(ctx context.Context, userID int64) (int64, error)
 	CountResourceProgressByUser(ctx context.Context, arg CountResourceProgressByUserParams) (int64, error)
+	CountResourceReviewsByResource(ctx context.Context, resourceID int64) (int64, error)
 	CountRoadmapsByUser(ctx context.Context, userID int64) (int64, error)
 	CountRoadmapsByUserAndStatus(ctx context.Context, arg CountRoadmapsByUserAndStatusParams) (int64, error)
 	CountSearchNotes(ctx context.Context, arg CountSearchNotesParams) (int64, error)
@@ -127,6 +128,7 @@ type Querier interface {
 	CreatePostView(ctx context.Context, arg CreatePostViewParams) (int64, error)
 	CreateProjectMilestone(ctx context.Context, arg CreateProjectMilestoneParams) (ProjectMilestone, error)
 	CreateReaction(ctx context.Context, arg CreateReactionParams) error
+	CreateResourceReview(ctx context.Context, arg CreateResourceReviewParams) (ResourceReview, error)
 	CreateStreakFreeze(ctx context.Context, arg CreateStreakFreezeParams) (StreakFreeze, error)
 	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
 	CreateYouTubeSearchCache(ctx context.Context, arg CreateYouTubeSearchCacheParams) (YouTubeSearchCach, error)
@@ -152,6 +154,7 @@ type Querier interface {
 	DeleteProjectMilestone(ctx context.Context, id int64) error
 	DeleteQiitaArticlesByUser(ctx context.Context, userID int64) error
 	DeleteReaction(ctx context.Context, arg DeleteReactionParams) error
+	DeleteResourceReview(ctx context.Context, id int64) error
 	DeleteSpotifyRecentTracksByUser(ctx context.Context, userID int64) error
 	DeleteZennArticlesByUser(ctx context.Context, userID int64) error
 	// book_reviews は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
@@ -194,6 +197,9 @@ type Querier interface {
 	GetQiitaStatsByUser(ctx context.Context, userID int64) (GetQiitaStatsByUserRow, error)
 	GetReminderSettingsByUserID(ctx context.Context, userID int64) (ReminderSetting, error)
 	GetResourceProgressByUserAndResource(ctx context.Context, arg GetResourceProgressByUserAndResourceParams) (ResourceProgress, error)
+	GetResourceReviewByUserAndResource(ctx context.Context, arg GetResourceReviewByUserAndResourceParams) (ResourceReview, error)
+	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
+	GetResourceReviewWithUserByID(ctx context.Context, id int64) (GetResourceReviewWithUserByIDRow, error)
 	GetTopReactedPostsByUser(ctx context.Context, arg GetTopReactedPostsByUserParams) ([]GetTopReactedPostsByUserRow, error)
 	GetUserByIDForChatSender(ctx context.Context, id int64) (User, error)
 	GetWeeklyChallengeByUserAndWeek(ctx context.Context, arg GetWeeklyChallengeByUserAndWeekParams) (WeeklyChallenge, error)
@@ -274,6 +280,8 @@ type Querier interface {
 	// id を第2ソートキーにして、updated_at 同値の行でもページングが安定するようにする
 	// （移行前のGORM実装と同じ）。
 	ListResourceProgressByUser(ctx context.Context, arg ListResourceProgressByUserParams) ([]ListResourceProgressByUserRow, error)
+	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
+	ListResourceReviewsByResource(ctx context.Context, arg ListResourceReviewsByResourceParams) ([]ListResourceReviewsByResourceRow, error)
 	ListRootNoteFoldersByUser(ctx context.Context, userID int64) ([]NoteFolder, error)
 	ListStreakFreezesByUserAndMonth(ctx context.Context, arg ListStreakFreezesByUserAndMonthParams) ([]StreakFreeze, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
@@ -322,6 +330,8 @@ type Querier interface {
 	UpdatePostTemplate(ctx context.Context, arg UpdatePostTemplateParams) (PostTemplate, error)
 	UpdateProjectMilestone(ctx context.Context, arg UpdateProjectMilestoneParams) (ProjectMilestone, error)
 	UpdateReminderSettings(ctx context.Context, arg UpdateReminderSettingsParams) (ReminderSetting, error)
+	// GORMのSave（全カラム上書き）に相当。
+	UpdateResourceReview(ctx context.Context, arg UpdateResourceReviewParams) (ResourceReview, error)
 	UpdateWeeklyChallenge(ctx context.Context, arg UpdateWeeklyChallengeParams) (WeeklyChallenge, error)
 	UpdateYouTubeSearchCache(ctx context.Context, arg UpdateYouTubeSearchCacheParams) (YouTubeSearchCach, error)
 	UpsertQiitaArticle(ctx context.Context, arg UpsertQiitaArticleParams) (QiitaArticle, error)
