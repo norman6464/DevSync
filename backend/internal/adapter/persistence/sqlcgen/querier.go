@@ -72,6 +72,9 @@ type Querier interface {
 	CountPostsByTag(ctx context.Context, tag string) (int64, error)
 	CountPostsByUser(ctx context.Context, userID int64) (int64, error)
 	CountPostsByUserSince(ctx context.Context, arg CountPostsByUserSinceParams) (int64, error)
+	// タグはAND条件（全タグが付与されている投稿のみ）。空配列なら絞り込みなし
+	// （cardinality(タグ配列)=0のときCOUNT(...)側も0になり両辺が一致するため自然に通る）。
+	CountPostsWithFilter(ctx context.Context, arg CountPostsWithFilterParams) (int64, error)
 	CountPublishedPostsByUser(ctx context.Context, userID int64) (int64, error)
 	// questions/answers は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに
 	// 合わせて deleted_at IS NULL を明示する（Unscoped() されていない全クエリと同じ挙動）。
@@ -233,6 +236,10 @@ type Querier interface {
 	LockUserForStreakFreeze(ctx context.Context, id int64) error
 	MarkPasswordResetTokenAsUsed(ctx context.Context, id int64) error
 	SearchNotes(ctx context.Context, arg SearchNotesParams) ([]SearchNotesRow, error)
+	// GORMのPreload("User")に相当（CodeSnippetsは別クエリで取得しGo側で結合する）。
+	// ソート順はGoの動的Order()呼び出しの代わりに、sort_byごとのCASE式で切り替える
+	// （sort_byはクエリ全体で単一の値のため、行ごとにNULLになったり値になったりはしない）。
+	SearchPostsWithFilter(ctx context.Context, arg SearchPostsWithFilterParams) ([]SearchPostsWithFilterRow, error)
 	SumAnswerVotesByUser(ctx context.Context, userID int64) (int64, error)
 	SumCodeSnippetCommentCountByUser(ctx context.Context, userID int64) (int64, error)
 	SumGitHubContributionsByUser(ctx context.Context, userID int64) (int64, error)

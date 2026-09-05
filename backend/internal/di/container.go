@@ -638,7 +638,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 	// 投稿検索はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	c.SearchHandler = handler.NewSearchHandler(
-		usecase.NewSearchPostsUseCase(persistence.NewPostSearchRepository(db)),
+		usecase.NewSearchPostsUseCase(persistence.NewPostSearchRepository(sqlcgen.New(sqlPool))),
 		searchStudyCircles,
 	)
 	c.NoteHandler = handler.NewNoteHandler(
