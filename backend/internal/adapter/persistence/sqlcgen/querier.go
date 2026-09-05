@@ -57,6 +57,8 @@ type Querier interface {
 	CountTopLevelCommentsByUser(ctx context.Context, userID int64) (int64, error)
 	CountUniqueReactorsByUser(ctx context.Context, userID int64) (int64, error)
 	CountUnreadNotificationsByUser(ctx context.Context, userID int64) (int64, error)
+	CountUserActivitiesByUser(ctx context.Context, userID int64) (int64, error)
+	CountUserActivitiesByUserAndType(ctx context.Context, arg CountUserActivitiesByUserAndTypeParams) (int64, error)
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) (PasswordResetToken, error)
 	CreatePostTemplate(ctx context.Context, arg CreatePostTemplateParams) (PostTemplate, error)
 	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
@@ -75,6 +77,8 @@ type Querier interface {
 	GetWeeklyChallengeByUserAndWeek(ctx context.Context, arg GetWeeklyChallengeByUserAndWeekParams) (WeeklyChallenge, error)
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
 	ListPostTemplatesByUserID(ctx context.Context, arg ListPostTemplatesByUserIDParams) ([]PostTemplate, error)
+	ListUserActivitiesByUser(ctx context.Context, arg ListUserActivitiesByUserParams) ([]UserActivity, error)
+	ListUserActivitiesByUserAndType(ctx context.Context, arg ListUserActivitiesByUserAndTypeParams) ([]UserActivity, error)
 	MarkPasswordResetTokenAsUsed(ctx context.Context, id int64) error
 	SumAnswerVotesByUser(ctx context.Context, userID int64) (int64, error)
 	SumCodeSnippetCommentCountByUser(ctx context.Context, userID int64) (int64, error)

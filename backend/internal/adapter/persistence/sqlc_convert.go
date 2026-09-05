@@ -9,6 +9,14 @@ import (
 // GORM時代のmodelは非ポインタのstring/int/boolフィールドにNULL許容カラムを載せていたため、
 // sqlc(pgx)側のポインタ/pgtype表現との間で変換が繰り返し必要になる。ここに集約する。
 
+// fromStringPtr はNULL許容カラムの *string を model の string へ変換する（NULLは空文字）。
+func fromStringPtr(p *string) string {
+	if p == nil {
+		return ""
+	}
+	return *p
+}
+
 // toInt64Ptr は model の int をNULL許容カラム用の *int64 へ変換する。
 func toInt64Ptr(n int) *int64 {
 	v := int64(n)

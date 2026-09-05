@@ -993,7 +993,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 
 	// ユーザーアクティビティサービス
 	// ユーザーアクティビティはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	userActivityRepo := persistence.NewUserActivityRepository(db)
+	userActivityRepo := persistence.NewUserActivityRepository(sqlcgen.New(sqlPool))
 	c.UserActivityHandler = handler.NewUserActivityHandler(
 		usecase.NewGetActivityTimelineUseCase(userActivityRepo),
 	)
