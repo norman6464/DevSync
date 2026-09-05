@@ -141,6 +141,7 @@ type Querier interface {
 	DeletePostTemplate(ctx context.Context, id int64) error
 	DeleteProjectMilestone(ctx context.Context, id int64) error
 	DeleteReaction(ctx context.Context, arg DeleteReactionParams) error
+	DeleteSpotifyRecentTracksByUser(ctx context.Context, userID int64) error
 	// book_reviews は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
 	// deleted_at IS NULL を明示する。レビュー0件でもCOALESCEにより全項目0を返す
 	// （GORM実装のtotal_reviews==0での早期returnと同じ結果になる）。
