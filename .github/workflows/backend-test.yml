@@ -53,12 +53,33 @@ jobs:
         run: go mod download
         working-directory: ./backend
 
+      # go.mod / go.sum が tidy か検証する（未使用依存・取りこぼしをCIで検知）。
+      - name: go mod tidy が差分を生まないか検証
+        run: |
+          go mod tidy
+          if ! git diff --quiet go.mod go.sum; then
+            echo "::error::go.mod/go.sum is not tidy. Run 'go mod tidy' in backend/ and commit."
+            git diff go.mod go.sum
+            exit 1
+          fi
+        working-directory: ./backend
+
       - name: ビルドを確認
         run: go build ./...
         working-directory: ./backend
 
       - name: go vet を実行
         run: go vet ./...
+        working-directory: ./backend
+
+      # govulncheckはGo公式の脆弱性スキャナ。実際に呼んでいるコードパスに該当する
+      # 既知CVEだけを報告する。stdlibのCVEはGoのパッチ追随次第で頻出するため、
+      # CIを止めずに「可視化」目的の非ブロッキング（continue-on-error）にする。
+      - name: govulncheck（advisory）
+        continue-on-error: true
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@v1.1.4
+          "$(go env GOPATH)/bin/govulncheck" ./...
         working-directory: ./backend
 
       - name: 依存方向をチェック（archlint）
@@ -78,8 +99,9 @@ jobs:
           git diff --exit-code -- internal/adapter/persistence/sqlcgen
         working-directory: ./backend
 
-      - name: ユニットテストを実行
-        run: go test ./... -cover -coverprofile=coverage.out
+      # race detectorで並行コードのデータ競合をCIで検出する。
+      - name: ユニットテストを実行（race + カバレッジ）
+        run: go test -race ./... -cover -coverprofile=coverage.out
         working-directory: ./backend
 
       - name: カバレッジレポートをアップロード
@@ -88,3 +110,10 @@ jobs:
         with:
           name: coverage-report
           path: backend/coverage.out
+
+      - name: go build（trimpath + シンボル除去）
+        run: go build -trimpath -ldflags="-s -w" -o /tmp/devsync-backend ./cmd/server
+        working-directory: ./backend
+
+      - name: バイナリサイズを表示
+        run: ls -lh /tmp/devsync-backend
