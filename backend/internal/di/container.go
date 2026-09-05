@@ -171,7 +171,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	// 学習ログテンプレートはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	learningLogTemplateRepo := persistence.NewLearningLogTemplateRepository(db)
 	// ノート間リンクはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	noteLinkRepo := persistence.NewNoteLinkRepository(db)
+	noteLinkRepo := persistence.NewNoteLinkRepository(sqlcgen.New(sqlPool))
 	noteReader := persistence.NewNoteReader(db)
 	// 投稿シリーズはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	postSeriesRepo := persistence.NewPostSeriesRepository(db)

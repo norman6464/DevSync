@@ -40,6 +40,9 @@ type Querier interface {
 	CountMessagesSentByUser(ctx context.Context, senderID int64) (int64, error)
 	CountMessagesSentByUserSince(ctx context.Context, arg CountMessagesSentByUserSinceParams) (int64, error)
 	CountNoteFoldersByUser(ctx context.Context, userID int64) (int64, error)
+	CountNoteLinksBetween(ctx context.Context, arg CountNoteLinksBetweenParams) (int64, error)
+	CountNoteLinksBySource(ctx context.Context, sourceNoteID int64) (int64, error)
+	CountNoteLinksByTarget(ctx context.Context, targetNoteID int64) (int64, error)
 	CountNoteTemplatesByUser(ctx context.Context, userID int64) (int64, error)
 	CountNoteVersionsByNote(ctx context.Context, noteID int64) (int64, error)
 	CountNotesByUser(ctx context.Context, userID int64) (int64, error)
@@ -69,6 +72,7 @@ type Querier interface {
 	// 競合を無害化する。競合で挿入されなかった場合は0行が返る（エラーにはしない）。
 	CreateDefaultReminderSettings(ctx context.Context, arg CreateDefaultReminderSettingsParams) ([]ReminderSetting, error)
 	CreateNoteFolder(ctx context.Context, arg CreateNoteFolderParams) (NoteFolder, error)
+	CreateNoteLink(ctx context.Context, arg CreateNoteLinkParams) error
 	CreateNoteTemplate(ctx context.Context, arg CreateNoteTemplateParams) (NoteTemplate, error)
 	CreateNoteVersion(ctx context.Context, arg CreateNoteVersionParams) (NoteVersion, error)
 	CreateNotificationSettings(ctx context.Context, arg CreateNotificationSettingsParams) (NotificationSetting, error)
@@ -79,6 +83,7 @@ type Querier interface {
 	DecrementCommentLikeCount(ctx context.Context, id int64) error
 	DeleteCommentLike(ctx context.Context, arg DeleteCommentLikeParams) error
 	DeleteNoteFolder(ctx context.Context, id int64) error
+	DeleteNoteLink(ctx context.Context, arg DeleteNoteLinkParams) error
 	DeleteNoteTemplate(ctx context.Context, id int64) error
 	DeletePostTemplate(ctx context.Context, id int64) error
 	DeleteProjectMilestone(ctx context.Context, id int64) error
@@ -107,6 +112,10 @@ type Querier interface {
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
 	ListNoteFoldersByParent(ctx context.Context, parentID *int64) ([]NoteFolder, error)
 	ListNoteFoldersByUser(ctx context.Context, arg ListNoteFoldersByUserParams) ([]NoteFolder, error)
+	// GORMのPreload("TargetNote")に相当。リンク先ノートをsqlc.embedで一緒に取得する。
+	ListNoteLinksBySource(ctx context.Context, sourceNoteID int64) ([]ListNoteLinksBySourceRow, error)
+	// GORMのPreload("SourceNote")に相当。リンク元ノートをsqlc.embedで一緒に取得する。
+	ListNoteLinksByTarget(ctx context.Context, targetNoteID int64) ([]ListNoteLinksByTargetRow, error)
 	ListNoteTemplatesByUser(ctx context.Context, userID int64) ([]NoteTemplate, error)
 	ListNoteVersionsByNote(ctx context.Context, arg ListNoteVersionsByNoteParams) ([]NoteVersion, error)
 	ListPostTemplatesByUserID(ctx context.Context, arg ListPostTemplatesByUserIDParams) ([]PostTemplate, error)
