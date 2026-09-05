@@ -178,8 +178,8 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 
 	// 通知は保存したうえで受信者へ WebSocket 配信する。
 	// 配信の有無で作成側の呼び出しは変わらないよう、port をラップして注入する。
-	notificationCreator := notificationCreatorWith(db, hub)
-	followerNotifier := followerNotifierWith(db, hub)
+	notificationCreator := notificationCreatorWith(sqlPool, hub)
+	followerNotifier := followerNotifierWith(sqlPool, hub)
 
 	// 共通サービス
 	// 認証はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
@@ -402,7 +402,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	c.UploadHandler = uploadHandler
 	// 通知の参照・既読・削除はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	// 通知の作成（WebSocket 配信を含む）は post / badge / level / mention / message がまだ service 経由で使うため残している。
-	notificationPort := persistence.NewNotificationRepository(db)
+	notificationPort := persistence.NewNotificationRepository(sqlPool)
 	c.NotificationHandler = handler.NewNotificationHandler(
 		usecase.NewListNotificationsUseCase(notificationPort),
 		usecase.NewCountUnreadNotificationsUseCase(notificationPort),
@@ -1104,8 +1104,8 @@ func seedTemplateRoadmaps(db *gorm.DB, seed *usecase.SeedRoadmapTemplatesUseCase
 
 // notificationCreatorWith は通知作成の port を組み立てる。
 // hub があれば保存後の配信を上乗せする。
-func notificationCreatorWith(db *gorm.DB, hub *ws.Hub) usecaserepo.NotificationCreator {
-	creator := persistence.NewNotificationCreator(db)
+func notificationCreatorWith(sqlPool *pgxpool.Pool, hub *ws.Hub) usecaserepo.NotificationCreator {
+	creator := persistence.NewNotificationCreator(sqlPool)
 	if hub == nil {
 		return creator
 	}
@@ -1114,8 +1114,8 @@ func notificationCreatorWith(db *gorm.DB, hub *ws.Hub) usecaserepo.NotificationC
 
 // followerNotifierWith はフォロワー一括通知の port を組み立てる。
 // hub があれば保存後の配信を上乗せする。
-func followerNotifierWith(db *gorm.DB, hub *ws.Hub) usecaserepo.FollowerNotifier {
-	notifier := persistence.NewFollowerNotifier(db)
+func followerNotifierWith(sqlPool *pgxpool.Pool, hub *ws.Hub) usecaserepo.FollowerNotifier {
+	notifier := persistence.NewFollowerNotifier(sqlPool)
 	if hub == nil {
 		return notifier
 	}
