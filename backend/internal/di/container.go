@@ -148,7 +148,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	chatRoomMessagePort := persistence.NewChatRoomMessageRepository(db)
 	// コードスニペットはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	codeSnippetRepo := persistence.NewCodeSnippetRepository(db)
-	codeSnippetPostReader := persistence.NewPostReader(db)
+	codeSnippetPostReader := persistence.NewPostReader(sqlcgen.New(sqlPool))
 	createCodeSnippet := usecase.NewCreateCodeSnippetUseCase(codeSnippetRepo, codeSnippetPostReader)
 	// レベル / XP はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	levelPort := persistence.NewLevelRepository(sqlcgen.New(sqlPool))
@@ -734,7 +734,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 
 	// 投稿タグはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	postTagRepo := persistence.NewPostTagRepository(sqlPool)
-	setPostTags := usecase.NewSetPostTagsUseCase(postTagRepo, persistence.NewPostReader(db))
+	setPostTags := usecase.NewSetPostTagsUseCase(postTagRepo, persistence.NewPostReader(sqlcgen.New(sqlPool)))
 	c.PostTagHandler = handler.NewPostTagHandler(
 		setPostTags,
 		usecase.NewGetPostTagsUseCase(postTagRepo),
@@ -745,7 +745,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 
 	// post_pin はクリーンアーキテクチャ(DIP)へ移行済み。
 	postPinRepo := persistence.NewPostPinRepository(sqlPool)
-	postReader := persistence.NewPostReader(db)
+	postReader := persistence.NewPostReader(sqlcgen.New(sqlPool))
 	c.PostPinHandler = handler.NewPostPinHandler(
 		usecase.NewPinPostUseCase(postPinRepo, postReader),
 		usecase.NewUnpinPostUseCase(postPinRepo),
