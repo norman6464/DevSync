@@ -98,12 +98,15 @@ type Querier interface {
 	CountStudyCircleCompletedStepsByCircle(ctx context.Context, circleID int64) (int64, error)
 	CountStudyCircleMembersByCircle(ctx context.Context, circleID int64) (int64, error)
 	CountStudyCircleStepsByCircle(ctx context.Context, circleID int64) (int64, error)
+	CountTodayAIMessagesByUser(ctx context.Context, arg CountTodayAIMessagesByUserParams) (int64, error)
 	CountTopLevelCommentsByUser(ctx context.Context, userID int64) (int64, error)
 	CountUniqueReactorsByUser(ctx context.Context, userID int64) (int64, error)
 	CountUnreadNotificationsByUser(ctx context.Context, userID int64) (int64, error)
 	CountUserActivitiesByUser(ctx context.Context, userID int64) (int64, error)
 	CountUserActivitiesByUserAndType(ctx context.Context, arg CountUserActivitiesByUserAndTypeParams) (int64, error)
 	CreateAIAdvice(ctx context.Context, arg CreateAIAdviceParams) (AiAdvice, error)
+	CreateAIConversation(ctx context.Context, arg CreateAIConversationParams) (AiConversation, error)
+	CreateAIMessage(ctx context.Context, arg CreateAIMessageParams) (AiMessage, error)
 	CreateBookmark(ctx context.Context, arg CreateBookmarkParams) error
 	CreateCommentLike(ctx context.Context, arg CreateCommentLikeParams) error
 	// 同時に複数リクエストが「不在」と判定してもuser_idの一意制約とDO NOTHINGで
@@ -144,6 +147,8 @@ type Querier interface {
 	DecrementPostCommentCount(ctx context.Context, id int64) error
 	DecrementPostLikeCount(ctx context.Context, id int64) error
 	DeleteAIAdvicesByUser(ctx context.Context, userID int64) error
+	DeleteAIConversation(ctx context.Context, id int64) error
+	DeleteAIMessagesByConversationID(ctx context.Context, conversationID int64) error
 	DeleteBookmark(ctx context.Context, arg DeleteBookmarkParams) (int64, error)
 	DeleteCommentLike(ctx context.Context, arg DeleteCommentLikeParams) error
 	DeleteFollow(ctx context.Context, arg DeleteFollowParams) error
@@ -171,6 +176,8 @@ type Querier interface {
 	DeleteResourceReview(ctx context.Context, id int64) error
 	DeleteSpotifyRecentTracksByUser(ctx context.Context, userID int64) error
 	DeleteZennArticlesByUser(ctx context.Context, userID int64) error
+	GetAIConversationByID(ctx context.Context, id int64) (AiConversation, error)
+	GetAIConversationByIDAndUser(ctx context.Context, arg GetAIConversationByIDAndUserParams) (AiConversation, error)
 	// book_reviews は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
 	// deleted_at IS NULL を明示する。レビュー0件でもCOALESCEにより全項目0を返す
 	// （GORM実装のtotal_reviews==0での早期returnと同じ結果になる）。
@@ -235,6 +242,11 @@ type Querier interface {
 	IncrementPostViewCount(ctx context.Context, id int64) error
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
 	ListAIAdvicesByUser(ctx context.Context, arg ListAIAdvicesByUserParams) ([]AiAdvice, error)
+	ListAIConversationsByUser(ctx context.Context, arg ListAIConversationsByUserParams) ([]AiConversation, error)
+	// GORMのPreload("Messages", Order("created_at ASC"))に相当。
+	ListAIMessagesByConversationIDOrderedByCreatedAt(ctx context.Context, conversationID int64) ([]AiMessage, error)
+	// GORMのPreload("Messages")（順序未指定）に相当。まとめ取得用でid昇順（挿入順相当）とする。
+	ListAIMessagesByConversationIDs(ctx context.Context, dollar_1 []int64) ([]AiMessage, error)
 	ListAllGitHubContributionsByUser(ctx context.Context, userID int64) ([]GitHubContribution, error)
 	ListArchivedNotesByUser(ctx context.Context, arg ListArchivedNotesByUserParams) ([]ListArchivedNotesByUserRow, error)
 	// GORMのPreload("User")に相当（CodeSnippetsは別クエリで取得しGo側で結合する）。
@@ -342,6 +354,7 @@ type Querier interface {
 	SumRoadmapCompletedStepCountByUser(ctx context.Context, userID int64) (int64, error)
 	SumRoadmapStepCountByUser(ctx context.Context, userID int64) (int64, error)
 	ToggleNoteFavorite(ctx context.Context, id int64) error
+	TouchAIConversation(ctx context.Context, arg TouchAIConversationParams) error
 	UnarchiveNote(ctx context.Context, id int64) error
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateLearningLogTemplate(ctx context.Context, arg UpdateLearningLogTemplateParams) (LearningLogTemplate, error)
