@@ -144,7 +144,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	// 旧 roadmapRepo は aiAdviceService がまだ使うため残している。
 	roadmapPort := persistence.NewRoadmapRepository(db)
 	// チャットルームはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	chatRoomPort := persistence.NewChatRoomRepository(db)
+	chatRoomPort := persistence.NewChatRoomRepository(sqlPool)
 	chatRoomMessagePort := persistence.NewChatRoomMessageRepository(sqlcgen.New(sqlPool))
 	// コードスニペットはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	codeSnippetRepo := persistence.NewCodeSnippetRepository(db)
