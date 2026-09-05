@@ -151,6 +151,7 @@ type Querier interface {
 	DeleteQiitaArticlesByUser(ctx context.Context, userID int64) error
 	DeleteReaction(ctx context.Context, arg DeleteReactionParams) error
 	DeleteSpotifyRecentTracksByUser(ctx context.Context, userID int64) error
+	DeleteZennArticlesByUser(ctx context.Context, userID int64) error
 	// book_reviews は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
 	// deleted_at IS NULL を明示する。レビュー0件でもCOALESCEにより全項目0を返す
 	// （GORM実装のtotal_reviews==0での早期returnと同じ結果になる）。
@@ -195,6 +196,7 @@ type Querier interface {
 	GetUserByIDForChatSender(ctx context.Context, id int64) (User, error)
 	GetWeeklyChallengeByUserAndWeek(ctx context.Context, arg GetWeeklyChallengeByUserAndWeekParams) (WeeklyChallenge, error)
 	GetWidgetSettingsByUserID(ctx context.Context, userID int64) (WidgetSetting, error)
+	GetZennStatsByUser(ctx context.Context, userID int64) (GetZennStatsByUserRow, error)
 	HasStreakFreezeOnDate(ctx context.Context, arg HasStreakFreezeOnDateParams) (bool, error)
 	IncrementCommentLikeCount(ctx context.Context, id int64) error
 	IncrementPostBookmarkCount(ctx context.Context, id int64) error
@@ -276,6 +278,7 @@ type Querier interface {
 	ListUserReactionEmojisByPost(ctx context.Context, arg ListUserReactionEmojisByPostParams) ([]string, error)
 	ListUserReactionsByPosts(ctx context.Context, arg ListUserReactionsByPostsParams) ([]ListUserReactionsByPostsRow, error)
 	ListWeeklyGoalsByUser(ctx context.Context, userID int64) ([]WeeklyGoal, error)
+	ListZennArticlesByUser(ctx context.Context, userID int64) ([]ZennArticle, error)
 	// 同一ユーザーの CreateWithinLimits 同時実行を直列化するための行ロック（GORMの clause.Locking{Strength: "UPDATE"} に相当）。
 	LockUserForStreakFreeze(ctx context.Context, id int64) error
 	MarkAIAdviceAsRead(ctx context.Context, arg MarkAIAdviceAsReadParams) (int64, error)
@@ -317,6 +320,7 @@ type Querier interface {
 	UpsertResourceProgress(ctx context.Context, arg UpsertResourceProgressParams) (ResourceProgress, error)
 	UpsertWeeklyGoal(ctx context.Context, arg UpsertWeeklyGoalParams) (WeeklyGoal, error)
 	UpsertWidgetSettings(ctx context.Context, arg UpsertWidgetSettingsParams) error
+	UpsertZennArticle(ctx context.Context, arg UpsertZennArticleParams) (ZennArticle, error)
 }
 
 var _ Querier = (*Queries)(nil)
