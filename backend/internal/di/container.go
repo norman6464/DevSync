@@ -918,7 +918,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 
 	// ストリークフリーズサービス
 	// ストリークフリーズはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	streakFreezeRepo := persistence.NewStreakFreezeRepository(db)
+	streakFreezeRepo := persistence.NewStreakFreezeRepository(sqlPool)
 	c.StreakFreezeHandler = handler.NewStreakFreezeHandler(
 		usecase.NewUseStreakFreezeUseCase(streakFreezeRepo),
 		usecase.NewGetStreakFreezeStatusUseCase(streakFreezeRepo),
