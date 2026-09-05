@@ -12,6 +12,7 @@ import (
 
 type Querier interface {
 	ArchiveNote(ctx context.Context, id int64) error
+	ClearLearningLogTemplateDefaultFlag(ctx context.Context, userID int64) error
 	ClearNoteTemplateDefaultFlag(ctx context.Context, userID int64) error
 	// note_stats.sql の CountNotesByUser はアーカイブ済みも含めた全件数のため名前を分けている。
 	CountActiveNotesByUser(ctx context.Context, userID int64) (int64, error)
@@ -41,6 +42,7 @@ type Querier interface {
 	CountFollowingByUser(ctx context.Context, followerID int64) (int64, error)
 	CountGitHubContributionDaysByUser(ctx context.Context, userID int64) (int64, error)
 	CountLearningLogCategoriesByUser(ctx context.Context, userID int64) (int64, error)
+	CountLearningLogTemplatesByUser(ctx context.Context, userID int64) (int64, error)
 	CountLearningLogsByUser(ctx context.Context, userID int64) (int64, error)
 	CountLearningLogsByUserSince(ctx context.Context, arg CountLearningLogsByUserSinceParams) (int64, error)
 	CountLearningResourceCategoriesByUser(ctx context.Context, userID int64) (int64, error)
@@ -107,6 +109,7 @@ type Querier interface {
 	CreateDefaultReminderSettings(ctx context.Context, arg CreateDefaultReminderSettingsParams) ([]ReminderSetting, error)
 	CreateFollow(ctx context.Context, arg CreateFollowParams) error
 	CreateGroupMessage(ctx context.Context, arg CreateGroupMessageParams) (GroupMessage, error)
+	CreateLearningLogTemplate(ctx context.Context, arg CreateLearningLogTemplateParams) (LearningLogTemplate, error)
 	// GORMの clause.OnConflict{DoNothing: true} に相当。衝突時は RETURNING 行が無くなるため
 	// pgx.ErrNoRows を「作成されなかった」判定に使う。
 	CreateMention(ctx context.Context, arg CreateMentionParams) (Mention, error)
@@ -143,6 +146,7 @@ type Querier interface {
 	DeleteGitHubContributionsByUser(ctx context.Context, userID int64) error
 	DeleteGitHubLanguageStatsByUser(ctx context.Context, userID int64) error
 	DeleteGitHubReposByUser(ctx context.Context, userID int64) error
+	DeleteLearningLogTemplate(ctx context.Context, id int64) error
 	DeleteMentionsByCommentID(ctx context.Context, commentID *int64) error
 	DeleteMentionsByPostID(ctx context.Context, postID *int64) error
 	DeleteNote(ctx context.Context, id int64) error
@@ -165,9 +169,11 @@ type Querier interface {
 	// （GORM実装のtotal_reviews==0での早期returnと同じ結果になる）。
 	GetBookReviewStats(ctx context.Context, userID int64) (GetBookReviewStatsRow, error)
 	GetCommentByID(ctx context.Context, id int64) (Comment, error)
+	GetDefaultLearningLogTemplateByUser(ctx context.Context, userID int64) (LearningLogTemplate, error)
 	GetDefaultNoteTemplateByUser(ctx context.Context, userID int64) (NoteTemplate, error)
 	GetEmojiBreakdownByUser(ctx context.Context, userID int64) ([]GetEmojiBreakdownByUserRow, error)
 	GetLatestNoteVersionNumber(ctx context.Context, noteID int64) (int64, error)
+	GetLearningLogTemplateByID(ctx context.Context, id int64) (LearningLogTemplate, error)
 	// learning_resources は GORM の論理削除（deleted_at）付きモデルのため deleted_at IS NULL を明示する。
 	GetLearningResourceByID(ctx context.Context, id int64) (LearningResource, error)
 	// GORMのPreload("User").Preload("Folder")に相当。
@@ -249,6 +255,7 @@ type Querier interface {
 	ListGroupMessagesByRoom(ctx context.Context, arg ListGroupMessagesByRoomParams) ([]ListGroupMessagesByRoomRow, error)
 	// 学習ログの連続記録日数（ストリーク）算出に使う、記録のある日付一覧（新しい順）。
 	ListLearningLogDatesByUser(ctx context.Context, userID int64) ([]pgtype.Date, error)
+	ListLearningLogTemplatesByUser(ctx context.Context, userID int64) ([]LearningLogTemplate, error)
 	ListMentionsByCommentID(ctx context.Context, commentID *int64) ([]ListMentionsByCommentIDRow, error)
 	// GORMのPreload("User").Preload("Actor")に相当。user_id/actor_idともにNOT NULLのためINNER JOINでよい。
 	ListMentionsByPostID(ctx context.Context, postID *int64) ([]ListMentionsByPostIDRow, error)
@@ -324,6 +331,8 @@ type Querier interface {
 	SumRoadmapStepCountByUser(ctx context.Context, userID int64) (int64, error)
 	ToggleNoteFavorite(ctx context.Context, id int64) error
 	UnarchiveNote(ctx context.Context, id int64) error
+	// GORMのSave（全カラム上書き）に相当。
+	UpdateLearningLogTemplate(ctx context.Context, arg UpdateLearningLogTemplateParams) (LearningLogTemplate, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateNote(ctx context.Context, arg UpdateNoteParams) (Note, error)
 	UpdateNoteFolder(ctx context.Context, arg UpdateNoteFolderParams) (NoteFolder, error)
