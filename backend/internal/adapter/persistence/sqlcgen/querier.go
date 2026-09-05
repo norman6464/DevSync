@@ -145,14 +145,19 @@ type Querier interface {
 	CountSearchNotes(ctx context.Context, arg CountSearchNotesParams) (int64, error)
 	CountSearchProjects(ctx context.Context, title string) (int64, error)
 	CountSearchQuestions(ctx context.Context, title string) (int64, error)
+	CountSearchStudyCircles(ctx context.Context, name string) (int64, error)
 	CountSnippetFavorite(ctx context.Context, arg CountSnippetFavoriteParams) (int64, error)
 	CountSolvedQuestions(ctx context.Context) (int64, error)
 	CountStreakFreezesInMonth(ctx context.Context, arg CountStreakFreezesInMonthParams) (int64, error)
 	CountStreakFreezesOnDate(ctx context.Context, arg CountStreakFreezesOnDateParams) (int64, error)
 	CountStudyCircleCheckinsByCircle(ctx context.Context, circleID int64) (int64, error)
+	CountStudyCircleCheckinsToday(ctx context.Context, arg CountStudyCircleCheckinsTodayParams) (int64, error)
 	CountStudyCircleCompletedStepsByCircle(ctx context.Context, circleID int64) (int64, error)
 	CountStudyCircleMembersByCircle(ctx context.Context, circleID int64) (int64, error)
+	CountStudyCircleMembership(ctx context.Context, arg CountStudyCircleMembershipParams) (int64, error)
+	CountStudyCircleMembershipsByUser(ctx context.Context, userID int64) (int64, error)
 	CountStudyCircleStepsByCircle(ctx context.Context, circleID int64) (int64, error)
+	CountStudyCirclesByUserMembership(ctx context.Context, userID int64) (int64, error)
 	CountTodayAIMessagesByUser(ctx context.Context, arg CountTodayAIMessagesByUserParams) (int64, error)
 	CountTopLevelCommentsByUser(ctx context.Context, userID int64) (int64, error)
 	CountUnansweredQuestions(ctx context.Context) (int64, error)
@@ -227,6 +232,10 @@ type Querier interface {
 	CreateSnippetComment(ctx context.Context, arg CreateSnippetCommentParams) (SnippetComment, error)
 	CreateSnippetFavorite(ctx context.Context, arg CreateSnippetFavoriteParams) error
 	CreateStreakFreeze(ctx context.Context, arg CreateStreakFreezeParams) (StreakFreeze, error)
+	CreateStudyCircle(ctx context.Context, arg CreateStudyCircleParams) (StudyCircle, error)
+	CreateStudyCircleCheckin(ctx context.Context, arg CreateStudyCircleCheckinParams) (StudyCircleCheckin, error)
+	CreateStudyCircleMember(ctx context.Context, arg CreateStudyCircleMemberParams) error
+	CreateStudyCircleStep(ctx context.Context, arg CreateStudyCircleStepParams) (StudyCircleStep, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
 	CreateYouTubeSearchCache(ctx context.Context, arg CreateYouTubeSearchCacheParams) (YouTubeSearchCach, error)
@@ -351,6 +360,13 @@ type Querier interface {
 	DeleteSnippetCommentsByUserPostSnippets(ctx context.Context, userID int64) error
 	DeleteSnippetFavorite(ctx context.Context, arg DeleteSnippetFavoriteParams) error
 	DeleteSpotifyRecentTracksByUser(ctx context.Context, userID int64) error
+	DeleteStudyCircle(ctx context.Context, id int64) error
+	DeleteStudyCircleCheckinsByCircle(ctx context.Context, circleID int64) error
+	DeleteStudyCircleMember(ctx context.Context, arg DeleteStudyCircleMemberParams) error
+	DeleteStudyCircleMemberProgressByCircle(ctx context.Context, circleID int64) error
+	DeleteStudyCircleMembersByCircle(ctx context.Context, circleID int64) error
+	DeleteStudyCircleStep(ctx context.Context, id int64) error
+	DeleteStudyCircleStepsByCircle(ctx context.Context, circleID int64) error
 	DeleteUser(ctx context.Context, id int64) error
 	DeleteZennArticlesByUser(ctx context.Context, userID int64) error
 	FindAllUsers(ctx context.Context) ([]User, error)
@@ -458,6 +474,9 @@ type Querier interface {
 	GetSnippetCommentByID(ctx context.Context, id int64) (SnippetComment, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	GetSnippetCommentsWithUser(ctx context.Context, snippetID int64) ([]GetSnippetCommentsWithUserRow, error)
+	GetStudyCircleStepByID(ctx context.Context, id int64) (StudyCircleStep, error)
+	// GORMのPreload("Owner")に相当。owner_idはNOT NULLのためINNER JOINでよい。
+	GetStudyCircleWithOwnerByID(ctx context.Context, id int64) (GetStudyCircleWithOwnerByIDRow, error)
 	GetTopReactedPostsByUser(ctx context.Context, arg GetTopReactedPostsByUserParams) ([]GetTopReactedPostsByUserRow, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByGitHubID(ctx context.Context, gitHubID *int64) (User, error)
@@ -652,6 +671,21 @@ type Querier interface {
 	ListScheduledPostsByUserWithUser(ctx context.Context, userID int64) ([]ListScheduledPostsByUserWithUserRow, error)
 	ListSolvedQuestionsWithUser(ctx context.Context, arg ListSolvedQuestionsWithUserParams) ([]ListSolvedQuestionsWithUserRow, error)
 	ListStreakFreezesByUserAndMonth(ctx context.Context, arg ListStreakFreezesByUserAndMonthParams) ([]StreakFreeze, error)
+	// GetStreakRankingのN+1回避のため、サークル分のチェックインをまとめて取得し、
+	// Go側でuser_idごとにグルーピングする。dateの降順はcalculateCheckinStreakの前提。
+	ListStudyCircleCheckinDatesByCircle(ctx context.Context, circleID int64) ([]ListStudyCircleCheckinDatesByCircleRow, error)
+	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
+	ListStudyCircleCheckinsWithUser(ctx context.Context, circleID int64) ([]ListStudyCircleCheckinsWithUserRow, error)
+	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
+	ListStudyCircleMemberProgressWithUser(ctx context.Context, circleID int64) ([]ListStudyCircleMemberProgressWithUserRow, error)
+	// GORMのPreload("Members").Preload("Members.User")に相当。user_idはNOT NULLのためINNER JOINでよい。
+	ListStudyCircleMembersWithUserByCircle(ctx context.Context, circleID int64) ([]ListStudyCircleMembersWithUserByCircleRow, error)
+	// GORMのPreload("Steps", order_index ASC)に相当。
+	ListStudyCircleStepsByCircle(ctx context.Context, circleID int64) ([]StudyCircleStep, error)
+	// GORMのPreload("Owner").Preload("Members").Preload("Members.User")に相当。
+	ListStudyCirclesByUser(ctx context.Context, arg ListStudyCirclesByUserParams) ([]ListStudyCirclesByUserRow, error)
+	// GORMのPreload("Owner").Preload("Members").Preload("Members.User")に相当。
+	ListStudyCirclesByUserAndStatus(ctx context.Context, arg ListStudyCirclesByUserAndStatusParams) ([]ListStudyCirclesByUserAndStatusRow, error)
 	ListTemplateRoadmaps(ctx context.Context) ([]Roadmap, error)
 	// フォロー中ユーザーと自分自身の公開済み投稿（移行前のGo実装のサブクエリをそのまま踏襲）。
 	ListTimelinePostsWithUser(ctx context.Context, arg ListTimelinePostsWithUserParams) ([]ListTimelinePostsWithUserRow, error)
@@ -683,6 +717,9 @@ type Querier interface {
 	// （GORMの clause.Locking{Strength: "UPDATE"} に相当）。質問が存在しない/削除済みなら
 	// pgx.ErrNoRows を返し、呼び出し側のトランザクションを失敗させる。
 	LockQuestionForAnswerChange(ctx context.Context, id int64) (int64, error)
+	// 「数える→追加する」を同時実行しても上限を超えないようにするための行ロック
+	// （GORMの clause.Locking{Strength: "UPDATE"} に相当）。
+	LockStudyCircleForMemberLimit(ctx context.Context, id int64) (int64, error)
 	// 同一ユーザーの CreateWithinLimits 同時実行を直列化するための行ロック（GORMの clause.Locking{Strength: "UPDATE"} に相当）。
 	LockUserForStreakFreeze(ctx context.Context, id int64) error
 	MarkAIAdviceAsRead(ctx context.Context, arg MarkAIAdviceAsReadParams) (int64, error)
@@ -691,6 +728,7 @@ type Querier interface {
 	MarkNotificationAsRead(ctx context.Context, arg MarkNotificationAsReadParams) error
 	MarkPasswordResetTokenAsUsed(ctx context.Context, id int64) error
 	ReorderRoadmapStep(ctx context.Context, arg ReorderRoadmapStepParams) error
+	ReorderStudyCircleStep(ctx context.Context, arg ReorderStudyCircleStepParams) error
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	SearchBookReviews(ctx context.Context, arg SearchBookReviewsParams) ([]SearchBookReviewsRow, error)
 	// CodeSnippet は投稿者の ID しか持たず User の関連を張っていないため、Preload しない
@@ -705,6 +743,8 @@ type Querier interface {
 	// GORMのPreload("User").Preload("GithubRepo")に相当（移行前のSearchと同じ挙動）。
 	SearchProjectsWithUserAndRepo(ctx context.Context, arg SearchProjectsWithUserAndRepoParams) ([]SearchProjectsWithUserAndRepoRow, error)
 	SearchQuestionsWithUser(ctx context.Context, arg SearchQuestionsWithUserParams) ([]SearchQuestionsWithUserRow, error)
+	// GORMのPreload("Owner").Preload("Members").Preload("Members.User")に相当。
+	SearchStudyCircles(ctx context.Context, arg SearchStudyCirclesParams) ([]SearchStudyCirclesRow, error)
 	SearchUsers(ctx context.Context, arg SearchUsersParams) ([]User, error)
 	SetAnswerBest(ctx context.Context, id int64) error
 	SetProjectArchived(ctx context.Context, arg SetProjectArchivedParams) error
@@ -787,6 +827,11 @@ type Querier interface {
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateRoadmapStep(ctx context.Context, arg UpdateRoadmapStepParams) (RoadmapStep, error)
 	// GORMのSave（全カラム上書き）に相当。
+	UpdateStudyCircle(ctx context.Context, arg UpdateStudyCircleParams) (StudyCircle, error)
+	UpdateStudyCircleMemberRole(ctx context.Context, arg UpdateStudyCircleMemberRoleParams) error
+	// GORMのSave（全カラム上書き）に相当。
+	UpdateStudyCircleStep(ctx context.Context, arg UpdateStudyCircleStepParams) (StudyCircleStep, error)
+	// GORMのSave（全カラム上書き）に相当。
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	UpdateWeeklyChallenge(ctx context.Context, arg UpdateWeeklyChallengeParams) (WeeklyChallenge, error)
@@ -796,6 +841,7 @@ type Querier interface {
 	UpsertGitHubRepo(ctx context.Context, arg UpsertGitHubRepoParams) (GitHubRepository, error)
 	UpsertQiitaArticle(ctx context.Context, arg UpsertQiitaArticleParams) (QiitaArticle, error)
 	UpsertResourceProgress(ctx context.Context, arg UpsertResourceProgressParams) (ResourceProgress, error)
+	UpsertStudyCircleMemberProgress(ctx context.Context, arg UpsertStudyCircleMemberProgressParams) (StudyCircleMemberProgress, error)
 	UpsertWeeklyGoal(ctx context.Context, arg UpsertWeeklyGoalParams) (WeeklyGoal, error)
 	UpsertWidgetSettings(ctx context.Context, arg UpsertWidgetSettingsParams) error
 	UpsertYouTubeVideo(ctx context.Context, arg UpsertYouTubeVideoParams) (YouTubeVideo, error)

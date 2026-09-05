@@ -160,7 +160,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	recommendationRepo := persistence.NewRecommendationRepository(sqlcgen.New(sqlPool))
 
 	// スタディサークルはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	studyCirclePort := persistence.NewStudyCircleRepository(db)
+	studyCirclePort := persistence.NewStudyCircleRepository(sqlPool)
 	searchStudyCircles := usecase.NewSearchStudyCirclesUseCase(studyCirclePort)
 	// ノートはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	notePort := persistence.NewNoteRepository(sqlcgen.New(sqlPool))
