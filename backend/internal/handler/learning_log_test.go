@@ -1026,7 +1026,9 @@ func createCSVMultipartRequest(csvContent string) (*http.Request, error) {
 	if _, err := part.Write([]byte(csvContent)); err != nil {
 		return nil, err
 	}
-	writer.Close()
+	if err := writer.Close(); err != nil {
+		return nil, err
+	}
 
 	req, err := http.NewRequest("POST", "/logs/import", &buf)
 	if err != nil {

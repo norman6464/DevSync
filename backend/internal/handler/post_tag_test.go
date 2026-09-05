@@ -98,9 +98,7 @@ func TestPostTag_SetTags_TooMany(t *testing.T) {
 	posts.On("FindByID", mock.Anything, uint(5)).Return(ownedPost(5), nil)
 
 	many := make([]string, 0, 11)
-	for _, s := range []string{"a1", "b2", "c3", "d4", "e5", "f6", "g7", "h8", "i9", "j10", "k11"} {
-		many = append(many, s)
-	}
+	many = append(many, "a1", "b2", "c3", "d4", "e5", "f6", "g7", "h8", "i9", "j10", "k11")
 
 	r := newRouter(1)
 	r.PUT("/tags/posts/:postId", h.SetTags)

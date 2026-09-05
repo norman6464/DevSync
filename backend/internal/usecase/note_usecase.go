@@ -356,12 +356,12 @@ func (uc *ExportNoteMarkdownUseCase) Execute(ctx context.Context, id, userID uin
 	}
 
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("# %s\n\n", note.Title))
+	fmt.Fprintf(&b, "# %s\n\n", note.Title)
 	if note.Tags != "" {
-		b.WriteString(fmt.Sprintf("**Tags:** %s\n", note.Tags))
+		fmt.Fprintf(&b, "**Tags:** %s\n", note.Tags)
 	}
-	b.WriteString(fmt.Sprintf("**Created:** %s\n", note.CreatedAt.Format("2006-01-02 15:04")))
-	b.WriteString(fmt.Sprintf("**Updated:** %s\n", note.UpdatedAt.Format("2006-01-02 15:04")))
+	fmt.Fprintf(&b, "**Created:** %s\n", note.CreatedAt.Format("2006-01-02 15:04"))
+	fmt.Fprintf(&b, "**Updated:** %s\n", note.UpdatedAt.Format("2006-01-02 15:04"))
 	b.WriteString("\n---\n\n")
 	b.WriteString(note.Content)
 	b.WriteString("\n")

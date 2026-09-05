@@ -251,7 +251,7 @@ func (c *githubClient) FetchRepos(ctx context.Context, token string) ([]model.Gi
 			return nil, domain.NewError(domain.ErrCodeServiceUnavailable, "GitHubリポジトリ一覧の取得に失敗しました", err)
 		}
 		data, readErr := io.ReadAll(resp.Body)
-		resp.Body.Close()
+		_ = resp.Body.Close()
 		if readErr != nil {
 			return nil, domain.NewError(domain.ErrCodeServiceUnavailable, "GitHubリポジトリ一覧の取得に失敗しました", readErr)
 		}

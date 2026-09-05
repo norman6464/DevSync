@@ -52,8 +52,8 @@ func buildAIChatSystemPrompt(
 
 	// ストリーク情報
 	if streak != nil {
-		sb.WriteString(fmt.Sprintf("【学習ストリーク】現在 %d日連続 / 最長 %d日 / 合計 %d日\n",
-			streak.CurrentStreak, streak.LongestStreak, streak.TotalDays))
+		fmt.Fprintf(&sb, "【学習ストリーク】現在 %d日連続 / 最長 %d日 / 合計 %d日\n",
+			streak.CurrentStreak, streak.LongestStreak, streak.TotalDays)
 	}
 
 	// 学習目標
@@ -64,7 +64,7 @@ func buildAIChatSystemPrompt(
 			if g.Status == model.GoalStatusCompleted {
 				status = "完了"
 			}
-			sb.WriteString(fmt.Sprintf("- %s (%s, 進捗 %d%%)\n", g.Title, status, g.Progress))
+			fmt.Fprintf(&sb, "- %s (%s, 進捗 %d%%)\n", g.Title, status, g.Progress)
 		}
 	}
 
@@ -72,8 +72,8 @@ func buildAIChatSystemPrompt(
 	if len(roadmaps) > 0 {
 		sb.WriteString("【ロードマップ】\n")
 		for _, rm := range roadmaps {
-			sb.WriteString(fmt.Sprintf("- %s (進捗 %d%%, %d/%dステップ完了)\n",
-				rm.Title, rm.Progress, rm.CompletedStepCount, rm.StepCount))
+			fmt.Fprintf(&sb, "- %s (進捗 %d%%, %d/%dステップ完了)\n",
+				rm.Title, rm.Progress, rm.CompletedStepCount, rm.StepCount)
 		}
 	}
 
@@ -84,7 +84,7 @@ func buildAIChatSystemPrompt(
 			if i >= 5 {
 				break
 			}
-			sb.WriteString(fmt.Sprintf("- %s (%dリポジトリ)\n", ls.Language, ls.RepoCount))
+			fmt.Fprintf(&sb, "- %s (%dリポジトリ)\n", ls.Language, ls.RepoCount)
 		}
 	}
 

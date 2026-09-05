@@ -68,7 +68,7 @@ func (uc *CreateCodeSnippetUseCase) Execute(ctx context.Context, snippet *model.
 	// 作成後の再取得に失敗しても、作成した値をそのまま返す（移行前の挙動を維持している）。
 	created, err := uc.snippets.FindByID(ctx, snippet.ID)
 	if err != nil || created == nil {
-		return snippet, nil
+		return snippet, nil //nolint:nilerr // 再取得失敗時は手元の値へ意図的にフォールバックする
 	}
 	return created, nil
 }

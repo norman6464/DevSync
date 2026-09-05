@@ -1,0 +1,98 @@
+# golangci-lint v2 設定。FreStyle（姉妹プロダクト）の構成を踏襲する。
+# defaultで走るerrcheck / govet / ineffassign / staticcheck / unusedに加え、
+# 以下を追加で有効化する:
+#   - errorlint     : errors.Is/As と %w ラップを強制（エラーの文脈喪失を防ぐ）
+#   - bodyclose     : HTTP response body の Close 漏れ（リーク）検出
+#   - gosec         : セキュリティ静的解析（誤検知は下で正当に除外）
+#   - misspell      : コメント/識別子のスペルミス
+#   - unconvert     : 不要な型変換
+#   - nilerr        : err != nil なのに return nil する握り潰しバグの検出
+#   - contextcheck  : context の伝播漏れ検出
+#   - wastedassign  : 使われないまま上書きされる代入の検出
+#
+# formatters: gofumpt（gofmt の上位互換）。`gofumpt -w .` で自動整形、CIは未整形をfailにする。
+version: "2"
+
+formatters:
+  enable:
+    - gofumpt
+  exclusions:
+    generated: lax # 生成コード(sqlcgen 等 "Code generated ... DO NOT EDIT")は整形対象外
+
+linters:
+  enable:
+    - errorlint
+    - bodyclose
+    - gosec
+    - misspell
+    - unconvert
+    - nilerr
+    - contextcheck
+    - wastedassign
+  exclusions:
+    rules:
+      # persistence の id 境界は DB が bigint(int64)、domain が uint。sqlc から読み出した
+      # 値は bigint の採番シーケンス由来で常に非負なので、uint へ広げても値は変わらない。
+      # sqlc 生成コードへの移行で各 repository に現れるため path で括る。
+      - path: internal/adapter/persistence/
+        linters:
+          - gosec
+        text: 'G115'
+      # sqlc の Params 構造体はnull許容カラムをポインタで受け取る規約（emit_pointers_for_null_types）。
+      # ループ変数のフィールドへの `&x.Field` は、そのループの同一イテレーション内でDB呼び出しに
+      # 同期的に渡すだけで、イテレーションをまたいで保持・再利用しないため実害がない。
+      - path: internal/adapter/persistence/
+        linters:
+          - gosec
+        text: 'G601'
+      - path: internal/usecase/
+        linters:
+          - gosec
+        text: 'G601'
+      # OAuthのURL定数に"access_token"等の文字列が含まれるだけで、実際の資格情報を
+      # 埋め込んでいるわけではない誤検知。
+      - path: internal/adapter/external/(github|spotify)_client\.go
+        linters:
+          - gosec
+        text: 'G101'
+      # archlintはローカルのgo.modを読むだけの開発用CLIツールで、外部入力を扱わない。
+      - path: cmd/archlint/
+        linters:
+          - gosec
+        text: 'G304|G703'
+      # UPLOAD_DIRは環境変数（運用者が設定する信頼済み値）由来で、リクエスト由来ではない。
+      # 保存ファイル名自体はタイムスタンプ+UUIDで生成しており、リクエスト入力を使わない。
+      - path: internal/handler/upload\.go
+        linters:
+          - gosec
+        text: 'G703'
+      # 週替わりチャレンジのテンプレート抽選など、セキュリティに関係しない用途のmath/rand。
+      - path: internal/usecase/weekly_challenge_usecase\.go
+        linters:
+          - gosec
+        text: 'G404'
+      # テストのダミー認証情報・検証用途のパーミッション等はgosecの対象外とする。
+      - path: _test\.go
+        linters:
+          - gosec
+      # 週次レポートメールのスペイン語・ポルトガル語訳文。misspellの辞書は英語のみで、
+      # 正しいスペイン語/ポルトガル語綴りを英単語の誤記と誤検知するため除外する。
+      - path: internal/usecase/weekly_report_email_usecase\.go
+        linters:
+          - misspell
+      # defer Close() / Rollback() / CLIのfmt.Fprintは慣例的に戻り値を無視する。
+      # Rollback は Commit 成功後に呼ばれても pgx.ErrTxClosed を返すだけの無害なno-opのため。
+      - linters:
+          - errcheck
+        source: 'defer .*\.Close\(\)'
+      - linters:
+          - errcheck
+        source: 'defer .*\.Rollback\('
+      - linters:
+          - errcheck
+        source: 'fmt\.Fprint'
+
+# 同種・同 linter の指摘を省略せず全件報告する（CIで取りこぼさないため）。
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

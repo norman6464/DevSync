@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -32,7 +33,7 @@ var allowedMIMETypes = map[string]bool{
 func detectMIMEType(file io.ReadSeeker) (string, error) {
 	buf := make([]byte, 512)
 	n, err := file.Read(buf)
-	if err != nil && err != io.EOF {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return "", err
 	}
 	// 読み取り位置をリセット
@@ -200,7 +201,7 @@ func (h *UploadHandler) UploadMultipleImages(c *gin.Context) {
 			return
 		}
 		mimeType, err := detectMIMEType(src)
-		src.Close()
+		_ = src.Close()
 		if err != nil {
 			respondInternalError(c, "ファイルタイプの検出に失敗しました")
 			return

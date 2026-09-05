@@ -152,7 +152,7 @@ func (h *Hub) roomMembers(roomID uint) []uint {
 func (c *Client) ReadPump() {
 	defer func() {
 		c.Hub.Unregister(c)
-		c.Conn.Close()
+		_ = c.Conn.Close()
 	}()
 
 	for {

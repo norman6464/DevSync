@@ -41,8 +41,9 @@ func TestUploadImage_Success(t *testing.T) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	part, _ := writer.CreateFormFile("image", "test.png")
-	part.Write(minimalPNG)
-	writer.Close()
+	_, err := part.Write(minimalPNG)
+	assert.NoError(t, err)
+	assert.NoError(t, writer.Close())
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -61,7 +62,7 @@ func TestUploadImage_NoFile(t *testing.T) {
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
-	writer.Close()
+	assert.NoError(t, writer.Close())
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -80,8 +81,9 @@ func TestUploadImage_InvalidExtension(t *testing.T) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	part, _ := writer.CreateFormFile("image", "test.txt")
-	part.Write([]byte("not an image"))
-	writer.Close()
+	_, err := part.Write([]byte("not an image"))
+	assert.NoError(t, err)
+	assert.NoError(t, writer.Close())
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -101,8 +103,9 @@ func TestUploadImage_InvalidMIMEType(t *testing.T) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	part, _ := writer.CreateFormFile("image", "fake.png")
-	part.Write([]byte("this is not a real png file content"))
-	writer.Close()
+	_, err := part.Write([]byte("this is not a real png file content"))
+	assert.NoError(t, err)
+	assert.NoError(t, writer.Close())
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -124,9 +127,10 @@ func TestUploadMultipleImages_Success(t *testing.T) {
 	writer := multipart.NewWriter(body)
 	for i := 0; i < 2; i++ {
 		part, _ := writer.CreateFormFile("images", fmt.Sprintf("img%d.png", i))
-		part.Write(minimalPNG)
+		_, err := part.Write(minimalPNG)
+		assert.NoError(t, err)
 	}
-	writer.Close()
+	assert.NoError(t, writer.Close())
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -144,7 +148,7 @@ func TestUploadMultipleImages_NoFiles(t *testing.T) {
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
-	writer.Close()
+	assert.NoError(t, writer.Close())
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -163,9 +167,10 @@ func TestUploadMultipleImages_TooManyFiles(t *testing.T) {
 	writer := multipart.NewWriter(body)
 	for i := 0; i < 11; i++ {
 		part, _ := writer.CreateFormFile("images", fmt.Sprintf("img%d.png", i))
-		part.Write(minimalPNG)
+		_, err := part.Write(minimalPNG)
+		assert.NoError(t, err)
 	}
-	writer.Close()
+	assert.NoError(t, writer.Close())
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -184,10 +189,12 @@ func TestUploadMultipleImages_InvalidExtension(t *testing.T) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	part1, _ := writer.CreateFormFile("images", "valid.png")
-	part1.Write(minimalPNG)
+	_, err := part1.Write(minimalPNG)
+	assert.NoError(t, err)
 	part2, _ := writer.CreateFormFile("images", "invalid.txt")
-	part2.Write([]byte("not an image"))
-	writer.Close()
+	_, err = part2.Write([]byte("not an image"))
+	assert.NoError(t, err)
+	assert.NoError(t, writer.Close())
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -206,8 +213,9 @@ func TestUploadMultipleImages_InvalidMIMEType(t *testing.T) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	part, _ := writer.CreateFormFile("images", "fake.png")
-	part.Write([]byte("this is not a real png file content"))
-	writer.Close()
+	_, err := part.Write([]byte("this is not a real png file content"))
+	assert.NoError(t, err)
+	assert.NoError(t, writer.Close())
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -240,10 +248,10 @@ func TestDetectMIMEType_TextFile(t *testing.T) {
 
 func TestNewUploadHandler_DefaultDir(t *testing.T) {
 	orig := os.Getenv("UPLOAD_DIR")
-	defer os.Setenv("UPLOAD_DIR", orig)
+	defer func() { assert.NoError(t, os.Setenv("UPLOAD_DIR", orig)) }()
 
 	tmpDir := t.TempDir()
-	os.Setenv("UPLOAD_DIR", tmpDir+"/test_uploads")
+	assert.NoError(t, os.Setenv("UPLOAD_DIR", tmpDir+"/test_uploads"))
 
 	h, err := NewUploadHandler()
 	assert.NoError(t, err)
@@ -258,10 +266,10 @@ func TestNewUploadHandler_DefaultDir(t *testing.T) {
 
 func TestNewUploadHandler_DirPermissions(t *testing.T) {
 	orig := os.Getenv("UPLOAD_DIR")
-	defer os.Setenv("UPLOAD_DIR", orig)
+	defer func() { assert.NoError(t, os.Setenv("UPLOAD_DIR", orig)) }()
 
 	tmpDir := t.TempDir()
-	os.Setenv("UPLOAD_DIR", tmpDir+"/secure_uploads")
+	assert.NoError(t, os.Setenv("UPLOAD_DIR", tmpDir+"/secure_uploads"))
 
 	_, _ = NewUploadHandler()
 
@@ -277,8 +285,9 @@ func TestUploadImage_FilePermissions(t *testing.T) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	part, _ := writer.CreateFormFile("image", "test.png")
-	part.Write(minimalPNG)
-	writer.Close()
+	_, err := part.Write(minimalPNG)
+	assert.NoError(t, err)
+	assert.NoError(t, writer.Close())
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -305,9 +314,10 @@ func TestUploadMultipleImages_FilePermissions(t *testing.T) {
 	writer := multipart.NewWriter(body)
 	for i := 0; i < 2; i++ {
 		part, _ := writer.CreateFormFile("images", fmt.Sprintf("img%d.png", i))
-		part.Write(minimalPNG)
+		_, err := part.Write(minimalPNG)
+		assert.NoError(t, err)
 	}
-	writer.Close()
+	assert.NoError(t, writer.Close())
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
