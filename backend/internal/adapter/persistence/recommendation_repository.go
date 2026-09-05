@@ -4,19 +4,19 @@ import (
 	"context"
 	"strings"
 
+	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
-	"gorm.io/gorm"
 )
 
-// recommendationRepository は [repository.RecommendationRepository] の GORM 実装。
+// recommendationRepository は [repository.RecommendationRepository] の sqlc(pgx) 実装。
 type recommendationRepository struct {
-	db *gorm.DB
+	q *sqlcgen.Queries
 }
 
-// NewRecommendationRepository は RecommendationRepository の GORM 実装を返す。
-func NewRecommendationRepository(db *gorm.DB) repository.RecommendationRepository {
-	return &recommendationRepository{db: db}
+// NewRecommendationRepository は RecommendationRepository の sqlc(pgx) 実装を返す。
+func NewRecommendationRepository(q *sqlcgen.Queries) repository.RecommendationRepository {
+	return &recommendationRepository{q: q}
 }
 
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
@@ -25,27 +25,26 @@ var _ repository.RecommendationRepository = (*recommendationRepository)(nil)
 // GetRecommendedUsers はスキルの部分一致で候補を絞り込み、共通スキル数でスコアリングして返す。
 // 自分自身とフォロー済みのユーザーは候補から除く。
 func (r *recommendationRepository) GetRecommendedUsers(ctx context.Context, userID uint, skills []string, limit int) ([]model.RecommendedUser, error) {
-	db := r.db.WithContext(ctx)
-
-	var followingIDs []uint
-	db.Raw(`SELECT followee_id FROM follows WHERE follower_id = ?`, userID).Scan(&followingIDs)
-	excludeIDs := append(followingIDs, userID)
-
-	var conditions []string
-	var args []interface{}
-	for _, skill := range skills {
-		conditions = append(conditions, "skills_languages LIKE ? OR skills_frameworks LIKE ?")
-		pattern := "%" + escapeLikeChars(skill) + "%"
-		args = append(args, pattern, pattern)
-	}
-	if len(conditions) == 0 {
+	if len(skills) == 0 {
 		return []model.RecommendedUser{}, nil
 	}
 
-	args = append(args, excludeIDs)
-	var candidates []model.User
-	if err := db.Where("("+strings.Join(conditions, " OR ")+") AND id NOT IN ?", args...).
-		Find(&candidates).Error; err != nil {
+	followeeIDs, err := r.q.ListFolloweeIDs(ctx, int64(userID))
+	if err != nil {
+		return nil, err
+	}
+	excludeIDs := append(followeeIDs, int64(userID))
+
+	skillPatterns := make([]string, len(skills))
+	for i, skill := range skills {
+		skillPatterns[i] = "%" + escapeLikeChars(skill) + "%"
+	}
+
+	rows, err := r.q.GetRecommendedUserCandidates(ctx, sqlcgen.GetRecommendedUserCandidatesParams{
+		ExcludeIds:    excludeIDs,
+		SkillPatterns: skillPatterns,
+	})
+	if err != nil {
 		return nil, err
 	}
 
@@ -55,7 +54,8 @@ func (r *recommendationRepository) GetRecommendedUsers(ctx context.Context, user
 	}
 
 	var results []model.RecommendedUser
-	for _, candidate := range candidates {
+	for _, row := range rows {
+		candidate := toModelUser(row)
 		commonSkills := matchedSkills(candidate, skillSet)
 		if len(commonSkills) == 0 {
 			continue
@@ -111,25 +111,73 @@ func sortByMatchScore(results []model.RecommendedUser) {
 
 // GetTrendingPosts は直近 days 日の投稿を、いいね数 + コメント数の降順で返す。
 func (r *recommendationRepository) GetTrendingPosts(ctx context.Context, limit, days int) ([]model.Post, error) {
-	var posts []model.Post
-	err := r.db.WithContext(ctx).
-		Preload("User").
-		Preload("CodeSnippets").
-		Where("created_at > NOW() - INTERVAL '1 day' * ?", days).
-		Order("(like_count + comment_count) DESC").
-		Limit(limit).
-		Find(&posts).Error
-	return posts, err
+	rows, err := r.q.ListTrendingPosts(ctx, sqlcgen.ListTrendingPostsParams{
+		Days:  int32Param(days),
+		Limit: int32Param(limit),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	posts := make([]model.Post, len(rows))
+	postIDs := make([]int64, len(rows))
+	for i, row := range rows {
+		posts[i] = toModelPost(row.Post)
+		posts[i].User = toModelUser(row.User)
+		postIDs[i] = row.Post.ID
+	}
+
+	if len(postIDs) > 0 {
+		snippetRows, err := r.q.ListCodeSnippetsByPostIDs(ctx, postIDs)
+		if err != nil {
+			return nil, err
+		}
+		snippetsByPostID := make(map[uint][]model.CodeSnippet)
+		for _, row := range snippetRows {
+			postID := uint(row.PostID)
+			snippetsByPostID[postID] = append(snippetsByPostID[postID], toModelCodeSnippet(row))
+		}
+		for i := range posts {
+			posts[i].CodeSnippets = snippetsByPostID[posts[i].ID]
+		}
+	}
+
+	return posts, nil
+}
+
+func toModelLearningResource(row sqlcgen.LearningResource) model.LearningResource {
+	return model.LearningResource{
+		ID:          uint(row.ID),
+		UserID:      uint(row.UserID),
+		Title:       row.Title,
+		Description: fromStringPtr(row.Description),
+		URL:         fromStringPtr(row.Url),
+		Category:    model.ResourceCategory(row.Category),
+		Difficulty:  model.ResourceDifficulty(fromStringPtr(row.Difficulty)),
+		Tags:        fromStringPtr(row.Tags),
+		ImageURL:    fromStringPtr(row.ImageUrl),
+		IsPublic:    fromBoolPtr(row.IsPublic),
+		LikeCount:   int(fromInt64PtrValue(row.LikeCount)),
+		SaveCount:   int(fromInt64PtrValue(row.SaveCount)),
+		CreatedAt:   timeValue(fromTimestamptz(row.CreatedAt)),
+		UpdatedAt:   timeValue(fromTimestamptz(row.UpdatedAt)),
+	}
 }
 
 // GetTrendingResources は直近 days 日の公開リソースを、いいね数 + 保存数の降順で返す。
 func (r *recommendationRepository) GetTrendingResources(ctx context.Context, limit, days int) ([]model.LearningResource, error) {
-	var resources []model.LearningResource
-	err := r.db.WithContext(ctx).
-		Preload("User").
-		Where("is_public = ? AND created_at > NOW() - INTERVAL '1 day' * ?", true, days).
-		Order("(like_count + save_count) DESC").
-		Limit(limit).
-		Find(&resources).Error
-	return resources, err
+	rows, err := r.q.ListTrendingResources(ctx, sqlcgen.ListTrendingResourcesParams{
+		Days:  int32Param(days),
+		Limit: int32Param(limit),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	resources := make([]model.LearningResource, len(rows))
+	for i, row := range rows {
+		resources[i] = toModelLearningResource(row.LearningResource)
+		resources[i].User = toModelUser(row.User)
+	}
+	return resources, nil
 }

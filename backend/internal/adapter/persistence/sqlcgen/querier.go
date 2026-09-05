@@ -280,6 +280,10 @@ type Querier interface {
 	// LEFT JOINで欠落しうる行を表現できないため）。
 	GetProjectWithUserAndRepoByID(ctx context.Context, id int64) (GetProjectWithUserAndRepoByIDRow, error)
 	GetQiitaStatsByUser(ctx context.Context, userID int64) (GetQiitaStatsByUserRow, error)
+	// スキルの部分一致で候補を絞り込む。パターンは呼び出し側で "%" + escapeLikeChars(skill) + "%" として
+	// 組み立て済みのものを配列で渡す（元のGo実装のエスケープ・ワイルドカード付与をそのまま踏襲するため）。
+	// 自分自身とフォロー済みのユーザーは候補から除く。
+	GetRecommendedUserCandidates(ctx context.Context, arg GetRecommendedUserCandidatesParams) ([]User, error)
 	GetReminderSettingsByUserID(ctx context.Context, userID int64) (ReminderSetting, error)
 	GetResourceProgressByUserAndResource(ctx context.Context, arg GetResourceProgressByUserAndResourceParams) (ResourceProgress, error)
 	GetResourceReviewByUserAndResource(ctx context.Context, arg GetResourceReviewByUserAndResourceParams) (ResourceReview, error)
@@ -338,6 +342,8 @@ type Querier interface {
 	// 会話相手ごとの最新メッセージと未読件数を取得する（移行前のGORM Raw SQLをそのまま踏襲）。
 	ListConversationSummaries(ctx context.Context, receiverID int64) ([]ListConversationSummariesRow, error)
 	ListFavoriteNotesByUser(ctx context.Context, arg ListFavoriteNotesByUserParams) ([]ListFavoriteNotesByUserRow, error)
+	// 指定ユーザーがフォローしているユーザーのIDを返す。
+	ListFolloweeIDs(ctx context.Context, followerID int64) ([]int64, error)
 	// 件数は follow_stats.sql の CountFollowersByUser を再利用する。
 	ListFollowers(ctx context.Context, arg ListFollowersParams) ([]User, error)
 	// 件数は follow_stats.sql の CountFollowingByUser を再利用する。
@@ -401,6 +407,12 @@ type Querier interface {
 	ListStreakFreezesByUserAndMonth(ctx context.Context, arg ListStreakFreezesByUserAndMonthParams) ([]StreakFreeze, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	ListTopLevelCommentsByPost(ctx context.Context, postID int64) ([]ListTopLevelCommentsByPostRow, error)
+	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
+	// CodeSnippetsは別途 ListCodeSnippetsByPostIDs（post_bookmark.sql）で取得しGo側で付与する。
+	ListTrendingPosts(ctx context.Context, arg ListTrendingPostsParams) ([]ListTrendingPostsRow, error)
+	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
+	// learning_resourcesは論理削除があるため、削除済みは除外する。
+	ListTrendingResources(ctx context.Context, arg ListTrendingResourcesParams) ([]ListTrendingResourcesRow, error)
 	ListUnreadAIAdvicesByUser(ctx context.Context, userID int64) ([]AiAdvice, error)
 	ListUserActivitiesByUser(ctx context.Context, arg ListUserActivitiesByUserParams) ([]UserActivity, error)
 	ListUserActivitiesByUserAndType(ctx context.Context, arg ListUserActivitiesByUserAndTypeParams) ([]UserActivity, error)
