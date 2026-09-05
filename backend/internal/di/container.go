@@ -128,7 +128,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	qiitaPort := persistence.NewQiitaRepository(sqlPool)
 	qiitaClient := external.NewQiitaClient()
 	// アクティビティレポートはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	activityReportRepo := persistence.NewActivityReportRepository(db)
+	activityReportRepo := persistence.NewActivityReportRepository(sqlcgen.New(sqlPool))
 	// プロジェクトはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	projectRepo := persistence.NewProjectRepository(sqlcgen.New(sqlPool))
 	// 学習リソースはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。

@@ -47,7 +47,10 @@ type Querier interface {
 	CountCommentLikesByUserAndComment(ctx context.Context, arg CountCommentLikesByUserAndCommentParams) (int64, error)
 	CountCommentsByUser(ctx context.Context, userID int64) (int64, error)
 	CountCommentsByUserSince(ctx context.Context, arg CountCommentsByUserSinceParams) (int64, error)
+	// 期間の合計にも日別集計にも同じクエリを使う。
+	CountCommentsInRange(ctx context.Context, arg CountCommentsInRangeParams) (int64, error)
 	CountCommentsReceivedByUser(ctx context.Context, userID int64) (int64, error)
+	CountCompletedGoalsInRange(ctx context.Context, arg CountCompletedGoalsInRangeParams) (int64, error)
 	CountCompletedLearningGoalsByUser(ctx context.Context, arg CountCompletedLearningGoalsByUserParams) (int64, error)
 	CountConversationsByUser(ctx context.Context, senderID int64) (int64, error)
 	CountDraftPostsByUser(ctx context.Context, userID int64) (int64, error)
@@ -69,12 +72,16 @@ type Querier interface {
 	// learning_resources は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに
 	// 合わせて deleted_at IS NULL を明示する（Unscoped() されていない全クエリと同じ挙動）。
 	CountLearningResourcesByUser(ctx context.Context, userID int64) (int64, error)
+	CountLikesReceivedInRange(ctx context.Context, arg CountLikesReceivedInRangeParams) (int64, error)
 	CountMentionsMadeByUser(ctx context.Context, actorID int64) (int64, error)
 	CountMentionsReceivedByUser(ctx context.Context, userID int64) (int64, error)
 	CountMentionsReceivedByUserSince(ctx context.Context, arg CountMentionsReceivedByUserSinceParams) (int64, error)
 	CountMessagesReceivedByUser(ctx context.Context, receiverID int64) (int64, error)
+	CountMessagesReceivedInRange(ctx context.Context, arg CountMessagesReceivedInRangeParams) (int64, error)
 	CountMessagesSentByUser(ctx context.Context, senderID int64) (int64, error)
 	CountMessagesSentByUserSince(ctx context.Context, arg CountMessagesSentByUserSinceParams) (int64, error)
+	CountMessagesSentInRange(ctx context.Context, arg CountMessagesSentInRangeParams) (int64, error)
+	CountNewFollowersInRange(ctx context.Context, arg CountNewFollowersInRangeParams) (int64, error)
 	CountNoteFoldersByUser(ctx context.Context, userID int64) (int64, error)
 	CountNoteLinksBetween(ctx context.Context, arg CountNoteLinksBetweenParams) (int64, error)
 	CountNoteLinksBySource(ctx context.Context, sourceNoteID int64) (int64, error)
@@ -100,6 +107,8 @@ type Querier interface {
 	CountPostsByTag(ctx context.Context, tag string) (int64, error)
 	CountPostsByUser(ctx context.Context, userID int64) (int64, error)
 	CountPostsByUserSince(ctx context.Context, arg CountPostsByUserSinceParams) (int64, error)
+	// 期間の合計にも日別集計にも同じクエリを使う。
+	CountPostsInRange(ctx context.Context, arg CountPostsInRangeParams) (int64, error)
 	// タグはAND条件（全タグが付与されている投稿のみ）。空配列なら絞り込みなし
 	// （cardinality(タグ配列)=0のときCOUNT(...)側も0になり両辺が一致するため自然に通る）。
 	CountPostsWithFilter(ctx context.Context, arg CountPostsWithFilterParams) (int64, error)
@@ -664,6 +673,8 @@ type Querier interface {
 	SoftDeleteAnswer(ctx context.Context, id int64) error
 	SumAnswerVotesByUser(ctx context.Context, userID int64) (int64, error)
 	SumCodeSnippetCommentCountByUser(ctx context.Context, userID int64) (int64, error)
+	// 期間の合計にも日別集計（開始日=当日0時、終了日=翌日0時）にも同じクエリを使う。
+	SumContributionsInRange(ctx context.Context, arg SumContributionsInRangeParams) (int64, error)
 	SumGitHubContributionsByUser(ctx context.Context, userID int64) (int64, error)
 	SumLearningLogDurationByUser(ctx context.Context, userID int64) (int64, error)
 	SumLearningLogDurationByUserCategorySince(ctx context.Context, arg SumLearningLogDurationByUserCategorySinceParams) (int64, error)
