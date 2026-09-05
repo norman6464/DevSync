@@ -130,7 +130,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	// アクティビティレポートはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	activityReportRepo := persistence.NewActivityReportRepository(db)
 	// プロジェクトはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	projectRepo := persistence.NewProjectRepository(db)
+	projectRepo := persistence.NewProjectRepository(sqlcgen.New(sqlPool))
 	// 学習リソースはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	// 旧 learningResourceRepo は aiAdviceService がまだ使うため残している。
 	learningResourcePort := persistence.NewLearningResourceRepository(db)
