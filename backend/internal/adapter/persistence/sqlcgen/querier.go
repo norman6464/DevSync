@@ -77,6 +77,7 @@ type Querier interface {
 	// 同時に複数リクエストが「不在」と判定してもuser_idの一意制約とDO NOTHINGで
 	// 競合を無害化する。競合で挿入されなかった場合は0行が返る（エラーにはしない）。
 	CreateDefaultReminderSettings(ctx context.Context, arg CreateDefaultReminderSettingsParams) ([]ReminderSetting, error)
+	CreateFollow(ctx context.Context, arg CreateFollowParams) error
 	CreateNote(ctx context.Context, arg CreateNoteParams) (Note, error)
 	CreateNoteFolder(ctx context.Context, arg CreateNoteFolderParams) (NoteFolder, error)
 	CreateNoteLink(ctx context.Context, arg CreateNoteLinkParams) error
@@ -90,6 +91,7 @@ type Querier interface {
 	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
 	DecrementCommentLikeCount(ctx context.Context, id int64) error
 	DeleteCommentLike(ctx context.Context, arg DeleteCommentLikeParams) error
+	DeleteFollow(ctx context.Context, arg DeleteFollowParams) error
 	DeleteNote(ctx context.Context, id int64) error
 	DeleteNoteFolder(ctx context.Context, id int64) error
 	DeleteNoteLink(ctx context.Context, arg DeleteNoteLinkParams) error
@@ -128,6 +130,10 @@ type Querier interface {
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
 	ListArchivedNotesByUser(ctx context.Context, arg ListArchivedNotesByUserParams) ([]ListArchivedNotesByUserRow, error)
 	ListFavoriteNotesByUser(ctx context.Context, arg ListFavoriteNotesByUserParams) ([]ListFavoriteNotesByUserRow, error)
+	// 件数は follow_stats.sql の CountFollowersByUser を再利用する。
+	ListFollowers(ctx context.Context, arg ListFollowersParams) ([]User, error)
+	// 件数は follow_stats.sql の CountFollowingByUser を再利用する。
+	ListFollowing(ctx context.Context, arg ListFollowingParams) ([]User, error)
 	ListNoteFoldersByParent(ctx context.Context, parentID *int64) ([]NoteFolder, error)
 	ListNoteFoldersByUser(ctx context.Context, arg ListNoteFoldersByUserParams) ([]NoteFolder, error)
 	// GORMのPreload("TargetNote")に相当。リンク先ノートをsqlc.embedで一緒に取得する。

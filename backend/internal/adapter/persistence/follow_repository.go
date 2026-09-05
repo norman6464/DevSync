@@ -1,23 +1,23 @@
-// Package persistence は usecase/repository の port を GORM で実装する adapter 層。
+// Package persistence は usecase/repository の port を sqlc(pgx) で実装する adapter 層。
 package persistence
 
 import (
 	"context"
 
+	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
-	"gorm.io/gorm"
 )
 
-// followRepository は [repository.FollowRepository] の GORM 実装。
+// followRepository は [repository.FollowRepository] の sqlc(pgx) 実装。
 type followRepository struct {
-	db *gorm.DB
+	q *sqlcgen.Queries
 }
 
-// NewFollowRepository は FollowRepository の GORM 実装を返す。
-func NewFollowRepository(db *gorm.DB) repository.FollowRepository {
-	return &followRepository{db: db}
+// NewFollowRepository は FollowRepository の sqlc(pgx) 実装を返す。
+func NewFollowRepository(q *sqlcgen.Queries) repository.FollowRepository {
+	return &followRepository{q: q}
 }
 
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
@@ -27,8 +27,10 @@ var _ repository.FollowRepository = (*followRepository)(nil)
 // 衝突した場合は domain.ErrConflict を返す。重複フォローの最終防衛は DB の制約に委ね、
 // 生の制約違反を 500 として漏らさない。
 func (r *followRepository) Follow(ctx context.Context, followerID, followeeID uint) error {
-	follow := &model.Follow{FollowerID: followerID, FolloweeID: followeeID}
-	err := r.db.WithContext(ctx).Create(follow).Error
+	err := r.q.CreateFollow(ctx, sqlcgen.CreateFollowParams{
+		FollowerID: int64(followerID),
+		FolloweeID: int64(followeeID),
+	})
 	if isUniqueViolation(err) {
 		return domain.ErrConflict
 	}
@@ -36,37 +38,48 @@ func (r *followRepository) Follow(ctx context.Context, followerID, followeeID ui
 }
 
 func (r *followRepository) Unfollow(ctx context.Context, followerID, followeeID uint) error {
-	return r.db.WithContext(ctx).
-		Where("follower_id = ? AND followee_id = ?", followerID, followeeID).
-		Delete(&model.Follow{}).Error
+	return r.q.DeleteFollow(ctx, sqlcgen.DeleteFollowParams{
+		FollowerID: int64(followerID),
+		FolloweeID: int64(followeeID),
+	})
 }
 
 func (r *followRepository) GetFollowers(ctx context.Context, userID uint, limit, offset int) ([]model.User, int64, error) {
-	var users []model.User
-	var total int64
-	db := r.db.WithContext(ctx)
-	// COUNT クエリのエラーも捕捉して返す（失敗を total=0 で握り潰さない）。
-	if err := db.Raw(`SELECT COUNT(*) FROM follows WHERE followee_id = ?`, userID).Scan(&total).Error; err != nil {
+	total, err := r.q.CountFollowersByUser(ctx, int64(userID))
+	if err != nil {
 		return nil, 0, err
 	}
-	err := db.Raw(
-		`SELECT u.* FROM users u JOIN follows f ON f.follower_id = u.id WHERE f.followee_id = ? ORDER BY f.created_at DESC LIMIT ? OFFSET ?`,
-		userID, limit, offset,
-	).Scan(&users).Error
-	return users, total, err
+	rows, err := r.q.ListFollowers(ctx, sqlcgen.ListFollowersParams{
+		FolloweeID: int64(userID),
+		Limit:      int32Param(limit),
+		Offset:     int32Param(offset),
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+	users := make([]model.User, len(rows))
+	for i, row := range rows {
+		users[i] = toModelUser(row)
+	}
+	return users, total, nil
 }
 
 func (r *followRepository) GetFollowing(ctx context.Context, userID uint, limit, offset int) ([]model.User, int64, error) {
-	var users []model.User
-	var total int64
-	db := r.db.WithContext(ctx)
-	// COUNT クエリのエラーも捕捉して返す（失敗を total=0 で握り潰さない）。
-	if err := db.Raw(`SELECT COUNT(*) FROM follows WHERE follower_id = ?`, userID).Scan(&total).Error; err != nil {
+	total, err := r.q.CountFollowingByUser(ctx, int64(userID))
+	if err != nil {
 		return nil, 0, err
 	}
-	err := db.Raw(
-		`SELECT u.* FROM users u JOIN follows f ON f.followee_id = u.id WHERE f.follower_id = ? ORDER BY f.created_at DESC LIMIT ? OFFSET ?`,
-		userID, limit, offset,
-	).Scan(&users).Error
-	return users, total, err
+	rows, err := r.q.ListFollowing(ctx, sqlcgen.ListFollowingParams{
+		FollowerID: int64(userID),
+		Limit:      int32Param(limit),
+		Offset:     int32Param(offset),
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+	users := make([]model.User, len(rows))
+	for i, row := range rows {
+		users[i] = toModelUser(row)
+	}
+	return users, total, nil
 }
