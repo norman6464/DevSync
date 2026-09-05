@@ -1024,7 +1024,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 
 	// 通知設定サービス
 	// 通知設定はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	notificationSettingsRepo := persistence.NewNotificationSettingsRepository(db)
+	notificationSettingsRepo := persistence.NewNotificationSettingsRepository(sqlcgen.New(sqlPool))
 	c.NotificationSettingsHandler = handler.NewNotificationSettingsHandler(
 		usecase.NewGetNotificationSettingsUseCase(notificationSettingsRepo),
 		usecase.NewUpdateNotificationSettingsUseCase(notificationSettingsRepo),
