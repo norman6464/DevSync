@@ -2,21 +2,20 @@ package persistence
 
 import (
 	"context"
-	"errors"
 
+	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
-	"gorm.io/gorm"
 )
 
-// codeSnippetRepository は [repository.CodeSnippetRepository] の GORM 実装。
+// codeSnippetRepository は [repository.CodeSnippetRepository] の sqlc(pgx) 実装。
 type codeSnippetRepository struct {
-	db *gorm.DB
+	q *sqlcgen.Queries
 }
 
-// NewCodeSnippetRepository は CodeSnippetRepository の GORM 実装を返す。
-func NewCodeSnippetRepository(db *gorm.DB) repository.CodeSnippetRepository {
-	return &codeSnippetRepository{db: db}
+// NewCodeSnippetRepository は CodeSnippetRepository の sqlc(pgx) 実装を返す。
+func NewCodeSnippetRepository(q *sqlcgen.Queries) repository.CodeSnippetRepository {
+	return &codeSnippetRepository{q: q}
 }
 
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
@@ -24,169 +23,239 @@ var _ repository.CodeSnippetRepository = (*codeSnippetRepository)(nil)
 
 // Create は新しいコードスニペットを作成する。
 func (r *codeSnippetRepository) Create(ctx context.Context, snippet *model.CodeSnippet) error {
-	return r.db.WithContext(ctx).Create(snippet).Error
+	row, err := r.q.CreateCodeSnippet(ctx, sqlcgen.CreateCodeSnippetParams{
+		PostID:       int64(snippet.PostID),
+		UserID:       int64(snippet.UserID),
+		Language:     snippet.Language,
+		FileName:     &snippet.FileName,
+		Code:         snippet.Code,
+		CommentCount: toInt64Ptr(snippet.CommentCount),
+		ForkedFromID: toInt64PtrFromUintPtr(snippet.ForkedFromID),
+		ForkCount:    toInt64Ptr(snippet.ForkCount),
+	})
+	if err != nil {
+		return err
+	}
+	*snippet = toModelCodeSnippet(row)
+	return nil
 }
 
 // FindByID は指定 ID のスニペットを取得する。不在の場合は (nil, nil) を返す。
 func (r *codeSnippetRepository) FindByID(ctx context.Context, id uint) (*model.CodeSnippet, error) {
-	var snippet model.CodeSnippet
-	err := r.db.WithContext(ctx).First(&snippet, id).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	row, err := r.q.GetCodeSnippetByID(ctx, int64(id))
+	if isNoRows(err) {
 		return nil, nil
 	}
 	if err != nil {
 		return nil, err
 	}
+	snippet := toModelCodeSnippet(row)
 	return &snippet, nil
 }
 
 // FindByPostID は指定投稿のスニペット一覧を取得する。
 func (r *codeSnippetRepository) FindByPostID(ctx context.Context, postID uint) ([]model.CodeSnippet, error) {
-	var snippets []model.CodeSnippet
-	err := r.db.WithContext(ctx).Where("post_id = ?", postID).
-		Order("created_at ASC").Find(&snippets).Error
-	return snippets, err
+	rows, err := r.q.ListCodeSnippetsByPostIDs(ctx, []int64{int64(postID)})
+	if err != nil {
+		return nil, err
+	}
+	snippets := make([]model.CodeSnippet, len(rows))
+	for i, row := range rows {
+		snippets[i] = toModelCodeSnippet(row)
+	}
+	return snippets, nil
 }
 
 // FindByUserIDAndLanguage は指定ユーザーのスニペットを言語で絞り込んで取得する。
 func (r *codeSnippetRepository) FindByUserIDAndLanguage(ctx context.Context, userID uint, language string) ([]model.CodeSnippet, error) {
-	var snippets []model.CodeSnippet
-	err := r.db.WithContext(ctx).
-		Where("user_id = ? AND language = ?", userID, language).
-		Order("created_at DESC").Find(&snippets).Error
-	return snippets, err
+	rows, err := r.q.FindCodeSnippetsByUserAndLanguage(ctx, sqlcgen.FindCodeSnippetsByUserAndLanguageParams{
+		UserID:   int64(userID),
+		Language: language,
+	})
+	if err != nil {
+		return nil, err
+	}
+	snippets := make([]model.CodeSnippet, len(rows))
+	for i, row := range rows {
+		snippets[i] = toModelCodeSnippet(row)
+	}
+	return snippets, nil
 }
 
 // Search は言語・ファイル名・コード内容からスニペットをキーワード検索する。
+// CodeSnippet は投稿者の ID しか持たず User の関連を張っていないため、Preload しない
+// （移行前のGORM実装のコメントの通り、Preloadするとunsupported relationsで失敗する）。
 func (r *codeSnippetRepository) Search(ctx context.Context, query string, limit, offset int) ([]model.CodeSnippet, int64, error) {
-	db := r.db.WithContext(ctx)
 	like := escapeLikePattern(query)
-	const cond = "language ILIKE ? OR file_name ILIKE ? OR code ILIKE ?"
 
-	var total int64
-	if err := db.Model(&model.CodeSnippet{}).Where(cond, like, like, like).Count(&total).Error; err != nil {
+	total, err := r.q.CountSearchCodeSnippets(ctx, like)
+	if err != nil {
 		return nil, 0, err
 	}
 
-	// CodeSnippet は投稿者の ID しか持たず User の関連を張っていないため、
-	// Preload すると GORM が unsupported relations で失敗する。
-	var snippets []model.CodeSnippet
-	err := db.Where(cond, like, like, like).
-		Order("created_at DESC").
-		Limit(limit).Offset(offset).Find(&snippets).Error
-	return snippets, total, err
+	rows, err := r.q.SearchCodeSnippets(ctx, sqlcgen.SearchCodeSnippetsParams{
+		Language: like,
+		Limit:    int32Param(limit),
+		Offset:   int32Param(offset),
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+	snippets := make([]model.CodeSnippet, len(rows))
+	for i, row := range rows {
+		snippets[i] = toModelCodeSnippet(row)
+	}
+	return snippets, total, nil
 }
 
-// Update は既存のスニペットを更新する。
+// Update は既存のスニペットを更新する（GORMのSave＝全カラム上書きに相当）。
 func (r *codeSnippetRepository) Update(ctx context.Context, snippet *model.CodeSnippet) error {
-	return r.db.WithContext(ctx).Save(snippet).Error
+	row, err := r.q.UpdateCodeSnippet(ctx, sqlcgen.UpdateCodeSnippetParams{
+		ID:           int64(snippet.ID),
+		Language:     snippet.Language,
+		FileName:     &snippet.FileName,
+		Code:         snippet.Code,
+		CommentCount: toInt64Ptr(snippet.CommentCount),
+		ForkedFromID: toInt64PtrFromUintPtr(snippet.ForkedFromID),
+		ForkCount:    toInt64Ptr(snippet.ForkCount),
+	})
+	if err != nil {
+		return err
+	}
+	*snippet = toModelCodeSnippet(row)
+	return nil
 }
 
 // Delete はスニペットを削除する。
 func (r *codeSnippetRepository) Delete(ctx context.Context, id uint) error {
-	return r.db.WithContext(ctx).Delete(&model.CodeSnippet{}, id).Error
+	return r.q.DeleteCodeSnippetByID(ctx, int64(id))
+}
+
+func toModelSnippetComment(row sqlcgen.SnippetComment) model.SnippetComment {
+	return model.SnippetComment{
+		ID:         uint(row.ID),
+		SnippetID:  uint(row.SnippetID),
+		UserID:     uint(row.UserID),
+		LineNumber: int(row.LineNumber),
+		Content:    row.Content,
+		CreatedAt:  timeValue(fromTimestamptz(row.CreatedAt)),
+		UpdatedAt:  timeValue(fromTimestamptz(row.UpdatedAt)),
+	}
 }
 
 // CreateComment はインラインコメントを作成し、スニペットのコメント数を加算する。
+// 移行前の GORM 実装と同じくトランザクションでは括らない（元実装も2つの独立した操作だったため）。
 func (r *codeSnippetRepository) CreateComment(ctx context.Context, comment *model.SnippetComment) error {
-	db := r.db.WithContext(ctx)
-	if err := db.Create(comment).Error; err != nil {
+	row, err := r.q.CreateSnippetComment(ctx, sqlcgen.CreateSnippetCommentParams{
+		SnippetID:  int64(comment.SnippetID),
+		UserID:     int64(comment.UserID),
+		LineNumber: int64(comment.LineNumber),
+		Content:    comment.Content,
+	})
+	if err != nil {
 		return err
 	}
-	return db.Model(&model.CodeSnippet{}).Where("id = ?", comment.SnippetID).
-		UpdateColumn("comment_count", gorm.Expr("comment_count + 1")).Error
+	*comment = toModelSnippetComment(row)
+	return r.q.IncrementSnippetCommentCount(ctx, int64(comment.SnippetID))
 }
 
 // GetComments は指定スニペットのインラインコメントを行番号順で取得する。
 func (r *codeSnippetRepository) GetComments(ctx context.Context, snippetID uint) ([]model.SnippetComment, error) {
-	var comments []model.SnippetComment
-	err := r.db.WithContext(ctx).Preload("User").
-		Where("snippet_id = ?", snippetID).
-		Order("line_number ASC, created_at ASC").Find(&comments).Error
-	return comments, err
+	rows, err := r.q.GetSnippetCommentsWithUser(ctx, int64(snippetID))
+	if err != nil {
+		return nil, err
+	}
+	comments := make([]model.SnippetComment, len(rows))
+	for i, row := range rows {
+		comments[i] = toModelSnippetComment(row.SnippetComment)
+		comments[i].User = toModelUser(row.User)
+	}
+	return comments, nil
 }
 
 // FindCommentByID は指定 ID のインラインコメントを取得する。不在の場合は (nil, nil) を返す。
 func (r *codeSnippetRepository) FindCommentByID(ctx context.Context, id uint) (*model.SnippetComment, error) {
-	var comment model.SnippetComment
-	if err := r.db.WithContext(ctx).First(&comment, id).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
+	row, err := r.q.GetSnippetCommentByID(ctx, int64(id))
+	if isNoRows(err) {
+		return nil, nil
+	}
+	if err != nil {
 		return nil, err
 	}
+	comment := toModelSnippetComment(row)
 	return &comment, nil
 }
 
 // DeleteComment はインラインコメントを削除し、スニペットのコメント数を減算する。
 // 所有権の判定は usecase 側で済んでいる前提。既に無ければ何もしない（冪等）。
+// 移行前の GORM 実装と同じくトランザクションでは括らない（元実装も2つの独立した操作だったため）。
 func (r *codeSnippetRepository) DeleteComment(ctx context.Context, id uint) error {
-	db := r.db.WithContext(ctx)
-	var comment model.SnippetComment
-	err := db.First(&comment, id).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	row, err := r.q.GetSnippetCommentByID(ctx, int64(id))
+	if isNoRows(err) {
 		return nil
 	}
 	if err != nil {
 		return err
 	}
-	db.Model(&model.CodeSnippet{}).Where("id = ?", comment.SnippetID).
-		UpdateColumn("comment_count", gorm.Expr("GREATEST(comment_count - 1, 0)"))
-	return db.Delete(&comment).Error
+	if err := r.q.DecrementSnippetCommentCountFloored(ctx, row.SnippetID); err != nil {
+		return err
+	}
+	return r.q.DeleteSnippetCommentByID(ctx, int64(id))
 }
 
 // IncrementForkCount はスニペットのフォーク数を加算する。
 func (r *codeSnippetRepository) IncrementForkCount(ctx context.Context, id uint) error {
-	return r.db.WithContext(ctx).Model(&model.CodeSnippet{}).Where("id = ?", id).
-		UpdateColumn("fork_count", gorm.Expr("fork_count + 1")).Error
+	return r.q.IncrementSnippetForkCount(ctx, int64(id))
 }
 
 // Favorite はスニペットをお気に入りに追加する。
 func (r *codeSnippetRepository) Favorite(ctx context.Context, userID, snippetID uint) error {
-	return r.db.WithContext(ctx).Create(&model.CodeSnippetFavorite{
-		UserID:    userID,
-		SnippetID: snippetID,
-	}).Error
+	return r.q.CreateSnippetFavorite(ctx, sqlcgen.CreateSnippetFavoriteParams{
+		UserID:    int64(userID),
+		SnippetID: int64(snippetID),
+	})
 }
 
 // Unfavorite はスニペットのお気に入りを解除する。
 func (r *codeSnippetRepository) Unfavorite(ctx context.Context, userID, snippetID uint) error {
-	return r.db.WithContext(ctx).
-		Where("user_id = ? AND snippet_id = ?", userID, snippetID).
-		Delete(&model.CodeSnippetFavorite{}).Error
+	return r.q.DeleteSnippetFavorite(ctx, sqlcgen.DeleteSnippetFavoriteParams{
+		UserID:    int64(userID),
+		SnippetID: int64(snippetID),
+	})
 }
 
 // HasFavorited は指定ユーザーが指定スニペットをお気に入りしているかを返す。
 func (r *codeSnippetRepository) HasFavorited(ctx context.Context, userID, snippetID uint) (bool, error) {
-	var count int64
-	err := r.db.WithContext(ctx).Model(&model.CodeSnippetFavorite{}).
-		Where("user_id = ? AND snippet_id = ?", userID, snippetID).
-		Count(&count).Error
+	count, err := r.q.CountSnippetFavorite(ctx, sqlcgen.CountSnippetFavoriteParams{
+		UserID:    int64(userID),
+		SnippetID: int64(snippetID),
+	})
 	return count > 0, err
 }
 
 // FindFavoritedByUserID はお気に入りスニペットをページネーション付きで取得する。
 func (r *codeSnippetRepository) FindFavoritedByUserID(ctx context.Context, userID uint, limit, offset int) ([]model.CodeSnippet, int64, error) {
-	db := r.db.WithContext(ctx)
-	subQuery := db.Model(&model.CodeSnippetFavorite{}).
-		Select("snippet_id").Where("user_id = ?", userID)
-
-	var total int64
-	if err := db.Model(&model.CodeSnippet{}).Where("id IN (?)", subQuery).Count(&total).Error; err != nil {
+	total, err := r.q.CountFavoritedCodeSnippets(ctx, int64(userID))
+	if err != nil {
 		return nil, 0, err
 	}
 
-	var snippets []model.CodeSnippet
-	err := db.Model(&model.CodeSnippet{}).Where("id IN (?)", subQuery).
-		Order("created_at DESC").Limit(limit).Offset(offset).
-		Find(&snippets).Error
-	return snippets, total, err
+	rows, err := r.q.ListFavoritedCodeSnippets(ctx, sqlcgen.ListFavoritedCodeSnippetsParams{
+		UserID: int64(userID),
+		Limit:  int32Param(limit),
+		Offset: int32Param(offset),
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+	snippets := make([]model.CodeSnippet, len(rows))
+	for i, row := range rows {
+		snippets[i] = toModelCodeSnippet(row)
+	}
+	return snippets, total, nil
 }
 
 // CountByUserID は指定ユーザーのスニペット総数を返す。
 func (r *codeSnippetRepository) CountByUserID(ctx context.Context, userID uint) (int64, error) {
-	var count int64
-	err := r.db.WithContext(ctx).Model(&model.CodeSnippet{}).
-		Where("user_id = ?", userID).Count(&count).Error
-	return count, err
+	return r.q.CountCodeSnippetsByUser(ctx, int64(userID))
 }

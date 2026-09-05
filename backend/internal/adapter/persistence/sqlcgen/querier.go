@@ -50,6 +50,7 @@ type Querier interface {
 	CountConversationsByUser(ctx context.Context, senderID int64) (int64, error)
 	CountDraftPostsByUser(ctx context.Context, userID int64) (int64, error)
 	CountFavoriteNotesByUser(ctx context.Context, userID int64) (int64, error)
+	CountFavoritedCodeSnippets(ctx context.Context, userID int64) (int64, error)
 	CountFollowersByUser(ctx context.Context, followeeID int64) (int64, error)
 	CountFollowingByUser(ctx context.Context, followerID int64) (int64, error)
 	CountGitHubContributionDaysByUser(ctx context.Context, userID int64) (int64, error)
@@ -117,8 +118,10 @@ type Querier interface {
 	CountRoadmapsByUserAndStatus(ctx context.Context, arg CountRoadmapsByUserAndStatusParams) (int64, error)
 	CountScheduledPostsByUser(ctx context.Context, userID int64) (int64, error)
 	CountSearchBookReviews(ctx context.Context, title string) (int64, error)
+	CountSearchCodeSnippets(ctx context.Context, language string) (int64, error)
 	CountSearchNotes(ctx context.Context, arg CountSearchNotesParams) (int64, error)
 	CountSearchProjects(ctx context.Context, title string) (int64, error)
+	CountSnippetFavorite(ctx context.Context, arg CountSnippetFavoriteParams) (int64, error)
 	CountStreakFreezesInMonth(ctx context.Context, arg CountStreakFreezesInMonthParams) (int64, error)
 	CountStreakFreezesOnDate(ctx context.Context, arg CountStreakFreezesOnDateParams) (int64, error)
 	CountStudyCircleCheckinsByCircle(ctx context.Context, circleID int64) (int64, error)
@@ -145,6 +148,7 @@ type Querier interface {
 	CreateBookmarkCollectionItem(ctx context.Context, arg CreateBookmarkCollectionItemParams) (int64, error)
 	CreateChatRoom(ctx context.Context, arg CreateChatRoomParams) (ChatRoom, error)
 	CreateChatRoomMember(ctx context.Context, arg CreateChatRoomMemberParams) error
+	CreateCodeSnippet(ctx context.Context, arg CreateCodeSnippetParams) (CodeSnippet, error)
 	CreateCommentLike(ctx context.Context, arg CreateCommentLikeParams) error
 	// 同時に複数リクエストが「不在」と判定してもuser_idの一意制約とDO NOTHINGで
 	// 競合を無害化する。競合で挿入されなかった場合は0行が返る（エラーにはしない）。
@@ -182,6 +186,8 @@ type Querier interface {
 	CreateProjectMilestone(ctx context.Context, arg CreateProjectMilestoneParams) (ProjectMilestone, error)
 	CreateReaction(ctx context.Context, arg CreateReactionParams) error
 	CreateResourceReview(ctx context.Context, arg CreateResourceReviewParams) (ResourceReview, error)
+	CreateSnippetComment(ctx context.Context, arg CreateSnippetCommentParams) (SnippetComment, error)
+	CreateSnippetFavorite(ctx context.Context, arg CreateSnippetFavoriteParams) error
 	CreateStreakFreeze(ctx context.Context, arg CreateStreakFreezeParams) (StreakFreeze, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
@@ -192,6 +198,8 @@ type Querier interface {
 	DecrementPostLikeCount(ctx context.Context, id int64) error
 	// 0未満にはしない（GORMのGREATEST(answer_count - 1, 0)に相当）。
 	DecrementQuestionAnswerCountFloored(ctx context.Context, id int64) error
+	// 0未満にはしない（GORMのGREATEST(comment_count - 1, 0)に相当）。
+	DecrementSnippetCommentCountFloored(ctx context.Context, id int64) error
 	DeleteAIAdvicesByUser(ctx context.Context, userID int64) error
 	DeleteAIConversation(ctx context.Context, id int64) error
 	DeleteAIMessagesByConversationID(ctx context.Context, conversationID int64) error
@@ -209,6 +217,7 @@ type Querier interface {
 	DeleteChatRoom(ctx context.Context, id int64) error
 	DeleteChatRoomMember(ctx context.Context, arg DeleteChatRoomMemberParams) error
 	DeleteChatRoomMembersByRoom(ctx context.Context, chatRoomID int64) error
+	DeleteCodeSnippetByID(ctx context.Context, id int64) error
 	DeleteCodeSnippetsByPost(ctx context.Context, postID int64) error
 	DeleteCodeSnippetsByUserPosts(ctx context.Context, userID int64) error
 	DeleteCommentLike(ctx context.Context, arg DeleteCommentLikeParams) error
@@ -279,12 +288,15 @@ type Querier interface {
 	DeleteReactionsByPost(ctx context.Context, postID int64) error
 	DeleteReactionsByUserPosts(ctx context.Context, userID int64) error
 	DeleteResourceReview(ctx context.Context, id int64) error
+	DeleteSnippetCommentByID(ctx context.Context, id int64) error
 	DeleteSnippetCommentsByPostSnippets(ctx context.Context, postID int64) error
 	DeleteSnippetCommentsByUserPostSnippets(ctx context.Context, userID int64) error
+	DeleteSnippetFavorite(ctx context.Context, arg DeleteSnippetFavoriteParams) error
 	DeleteSpotifyRecentTracksByUser(ctx context.Context, userID int64) error
 	DeleteUser(ctx context.Context, id int64) error
 	DeleteZennArticlesByUser(ctx context.Context, userID int64) error
 	FindAllUsers(ctx context.Context) ([]User, error)
+	FindCodeSnippetsByUserAndLanguage(ctx context.Context, arg FindCodeSnippetsByUserAndLanguageParams) ([]CodeSnippet, error)
 	// 指定ユーザーをフォローしているユーザーのIDを返す。
 	FindFollowerIDsByFollowee(ctx context.Context, followeeID int64) ([]int64, error)
 	// GORMのPreload("Actor").Preload("Post").Preload("Question")に相当。
@@ -310,6 +322,7 @@ type Querier interface {
 	GetBookmarkCollectionByID(ctx context.Context, id int64) (BookmarkCollection, error)
 	// GORMのPreload("Owner")に相当。owner_idはNOT NULLのためINNER JOINでよい。
 	GetChatRoomWithOwnerByID(ctx context.Context, id int64) (GetChatRoomWithOwnerByIDRow, error)
+	GetCodeSnippetByID(ctx context.Context, id int64) (CodeSnippet, error)
 	GetCommentByID(ctx context.Context, id int64) (Comment, error)
 	// 指定期間（weekly/monthly）のGitHubコントリビューションランキング。
 	// コントリビューション数の合計で降順ソートし、上位50件を返す。
@@ -373,6 +386,9 @@ type Querier interface {
 	GetResourceReviewByUserAndResource(ctx context.Context, arg GetResourceReviewByUserAndResourceParams) (ResourceReview, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	GetResourceReviewWithUserByID(ctx context.Context, id int64) (GetResourceReviewWithUserByIDRow, error)
+	GetSnippetCommentByID(ctx context.Context, id int64) (SnippetComment, error)
+	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
+	GetSnippetCommentsWithUser(ctx context.Context, snippetID int64) ([]GetSnippetCommentsWithUserRow, error)
 	GetTopReactedPostsByUser(ctx context.Context, arg GetTopReactedPostsByUserParams) ([]GetTopReactedPostsByUserRow, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByGitHubID(ctx context.Context, gitHubID *int64) (User, error)
@@ -393,6 +409,8 @@ type Querier interface {
 	IncrementPostLikeCount(ctx context.Context, id int64) error
 	IncrementPostViewCount(ctx context.Context, id int64) error
 	IncrementQuestionAnswerCount(ctx context.Context, id int64) error
+	IncrementSnippetCommentCount(ctx context.Context, id int64) error
+	IncrementSnippetForkCount(ctx context.Context, id int64) error
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
 	ListAIAdvicesByUser(ctx context.Context, arg ListAIAdvicesByUserParams) ([]AiAdvice, error)
 	ListAIConversationsByUser(ctx context.Context, arg ListAIConversationsByUserParams) ([]AiConversation, error)
@@ -444,6 +462,7 @@ type Querier interface {
 	ListDistinctLearningLogDates(ctx context.Context, userID int64) ([]pgtype.Date, error)
 	ListDraftPostsByUserWithUser(ctx context.Context, userID int64) ([]ListDraftPostsByUserWithUserRow, error)
 	ListFavoriteNotesByUser(ctx context.Context, arg ListFavoriteNotesByUserParams) ([]ListFavoriteNotesByUserRow, error)
+	ListFavoritedCodeSnippets(ctx context.Context, arg ListFavoritedCodeSnippetsParams) ([]CodeSnippet, error)
 	// GithubRepoのみPreloadする（移行前のFindFeaturedByUserIDと同じ挙動）。
 	ListFeaturedProjectsByUserWithRepo(ctx context.Context, userID int64) ([]ListFeaturedProjectsByUserWithRepoRow, error)
 	// 指定ユーザーがフォローしているユーザーのIDを返す。
@@ -562,6 +581,9 @@ type Querier interface {
 	MarkPasswordResetTokenAsUsed(ctx context.Context, id int64) error
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	SearchBookReviews(ctx context.Context, arg SearchBookReviewsParams) ([]SearchBookReviewsRow, error)
+	// CodeSnippet は投稿者の ID しか持たず User の関連を張っていないため、Preload しない
+	// （移行前のGORM実装のコメントの通り、Preloadするとunsupported relationsで失敗する）。
+	SearchCodeSnippets(ctx context.Context, arg SearchCodeSnippetsParams) ([]CodeSnippet, error)
 	SearchNotes(ctx context.Context, arg SearchNotesParams) ([]SearchNotesRow, error)
 	// GORMのPreload("User")に相当（CodeSnippetsは別クエリで取得しGo側で結合する）。
 	// ソート順はGoの動的Order()呼び出しの代わりに、sort_byごとのCASE式で切り替える
@@ -599,6 +621,8 @@ type Querier interface {
 	UpdateBookmarkCollection(ctx context.Context, arg UpdateBookmarkCollectionParams) (BookmarkCollection, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateChatRoom(ctx context.Context, arg UpdateChatRoomParams) (ChatRoom, error)
+	// GORMのSave（全カラム上書き）に相当。
+	UpdateCodeSnippet(ctx context.Context, arg UpdateCodeSnippetParams) (CodeSnippet, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateLearningGoal(ctx context.Context, arg UpdateLearningGoalParams) (LearningGoal, error)
 	// GORMのSave（全カラム上書き）に相当。
