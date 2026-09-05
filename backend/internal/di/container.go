@@ -755,7 +755,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	)
 
 	// comment_like はクリーンアーキテクチャ(DIP)へ移行済み。
-	commentLikeRepo := persistence.NewCommentLikeRepository(db)
+	commentLikeRepo := persistence.NewCommentLikeRepository(sqlPool)
 	commentReader := persistence.NewCommentReader(db)
 	c.CommentLikeHandler = handler.NewCommentLikeHandler(
 		usecase.NewLikeCommentUseCase(commentLikeRepo, commentReader),
