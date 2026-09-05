@@ -902,7 +902,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 
 	// YouTube 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence と adapter/external。
 	// APIキー未設定のときは検索クライアントを nil のままにし、利用不可（503）として扱う。
-	youtubeVideoPort := persistence.NewYouTubeVideoRepository(db)
+	youtubeVideoPort := persistence.NewYouTubeVideoRepository(sqlPool)
 	var youtubeSearcher usecaserepo.YouTubeVideoSearcher
 	if cfg.YouTubeAPIKey != "" {
 		youtubeSearcher = external.NewYouTubeClient(cfg.YouTubeAPIKey)

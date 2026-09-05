@@ -128,6 +128,7 @@ type Querier interface {
 	CreateReaction(ctx context.Context, arg CreateReactionParams) error
 	CreateStreakFreeze(ctx context.Context, arg CreateStreakFreezeParams) (StreakFreeze, error)
 	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
+	CreateYouTubeSearchCache(ctx context.Context, arg CreateYouTubeSearchCacheParams) (YouTubeSearchCach, error)
 	DecrementCommentLikeCount(ctx context.Context, id int64) error
 	DecrementPostBookmarkCount(ctx context.Context, id int64) error
 	DecrementPostCommentCount(ctx context.Context, id int64) error
@@ -196,6 +197,10 @@ type Querier interface {
 	GetUserByIDForChatSender(ctx context.Context, id int64) (User, error)
 	GetWeeklyChallengeByUserAndWeek(ctx context.Context, arg GetWeeklyChallengeByUserAndWeekParams) (WeeklyChallenge, error)
 	GetWidgetSettingsByUserID(ctx context.Context, userID int64) (WidgetSetting, error)
+	// FindCachedSearchはクエリを小文字化して検索する（移行前のGORM実装と同じ）。
+	GetYouTubeSearchCache(ctx context.Context, arg GetYouTubeSearchCacheParams) (YouTubeSearchCach, error)
+	// SaveSearchCacheの既存確認用。移行前のGORM実装と同じく、こちらはクエリを小文字化しない。
+	GetYouTubeSearchCacheExact(ctx context.Context, arg GetYouTubeSearchCacheExactParams) (YouTubeSearchCach, error)
 	GetZennStatsByUser(ctx context.Context, userID int64) (GetZennStatsByUserRow, error)
 	HasStreakFreezeOnDate(ctx context.Context, arg HasStreakFreezeOnDateParams) (bool, error)
 	IncrementCommentLikeCount(ctx context.Context, id int64) error
@@ -278,6 +283,7 @@ type Querier interface {
 	ListUserReactionEmojisByPost(ctx context.Context, arg ListUserReactionEmojisByPostParams) ([]string, error)
 	ListUserReactionsByPosts(ctx context.Context, arg ListUserReactionsByPostsParams) ([]ListUserReactionsByPostsRow, error)
 	ListWeeklyGoalsByUser(ctx context.Context, userID int64) ([]WeeklyGoal, error)
+	ListYouTubeVideosByIDs(ctx context.Context, dollar_1 []string) ([]YouTubeVideo, error)
 	ListZennArticlesByUser(ctx context.Context, userID int64) ([]ZennArticle, error)
 	// 同一ユーザーの CreateWithinLimits 同時実行を直列化するための行ロック（GORMの clause.Locking{Strength: "UPDATE"} に相当）。
 	LockUserForStreakFreeze(ctx context.Context, id int64) error
@@ -316,10 +322,12 @@ type Querier interface {
 	UpdateProjectMilestone(ctx context.Context, arg UpdateProjectMilestoneParams) (ProjectMilestone, error)
 	UpdateReminderSettings(ctx context.Context, arg UpdateReminderSettingsParams) (ReminderSetting, error)
 	UpdateWeeklyChallenge(ctx context.Context, arg UpdateWeeklyChallengeParams) (WeeklyChallenge, error)
+	UpdateYouTubeSearchCache(ctx context.Context, arg UpdateYouTubeSearchCacheParams) (YouTubeSearchCach, error)
 	UpsertQiitaArticle(ctx context.Context, arg UpsertQiitaArticleParams) (QiitaArticle, error)
 	UpsertResourceProgress(ctx context.Context, arg UpsertResourceProgressParams) (ResourceProgress, error)
 	UpsertWeeklyGoal(ctx context.Context, arg UpsertWeeklyGoalParams) (WeeklyGoal, error)
 	UpsertWidgetSettings(ctx context.Context, arg UpsertWidgetSettingsParams) error
+	UpsertYouTubeVideo(ctx context.Context, arg UpsertYouTubeVideoParams) (YouTubeVideo, error)
 	UpsertZennArticle(ctx context.Context, arg UpsertZennArticleParams) (ZennArticle, error)
 }
 
