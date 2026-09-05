@@ -159,6 +159,9 @@ type Querier interface {
 	GetPasswordResetTokenByToken(ctx context.Context, token string) (PasswordResetToken, error)
 	GetPostAuthorID(ctx context.Context, id int64) (int64, error)
 	GetPostTemplateByID(ctx context.Context, id int64) (PostTemplate, error)
+	// GORMのPreload("User")に相当（CodeSnippetsはpost_bookmark.sqlのListCodeSnippetsByPostIDsで別途取得する）。
+	// user_idはNOT NULLのためINNER JOINでよい。
+	GetPostWithUserByID(ctx context.Context, id int64) (GetPostWithUserByIDRow, error)
 	GetProjectMilestoneByID(ctx context.Context, id int64) (ProjectMilestone, error)
 	// projects は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
 	// deleted_at IS NULL を明示する（Unscoped() されていない全クエリと同じ挙動）。
