@@ -926,7 +926,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 
 	// ブックマークコレクションサービス
 	// ブックマークコレクションはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	bookmarkCollectionRepo := persistence.NewBookmarkCollectionRepository(db)
+	bookmarkCollectionRepo := persistence.NewBookmarkCollectionRepository(sqlcgen.New(sqlPool))
 	c.BookmarkCollectionHandler = handler.NewBookmarkCollectionHandler(
 		usecase.NewCreateBookmarkCollectionUseCase(bookmarkCollectionRepo),
 		usecase.NewListBookmarkCollectionsUseCase(bookmarkCollectionRepo),
