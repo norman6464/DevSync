@@ -317,7 +317,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	postLikePort := persistence.NewPostLikeRepository(db)
 	notifyFollowers := usecase.NewNotifyFollowersUseCase(followerNotifier)
 	// メンションは投稿・コメントの本文から解決するため、投稿スライスから呼ぶ。
-	mentionPort := persistence.NewMentionRepository(db)
+	mentionPort := persistence.NewMentionRepository(sqlcgen.New(sqlPool))
 	processMentions := usecase.NewProcessMentionsUseCase(mentionPort, persistence.NewUserRepository(db), notificationCreator)
 	c.PostHandler = handler.NewPostHandler(handler.PostUseCases{
 		ProcessMentions:       processMentions,
