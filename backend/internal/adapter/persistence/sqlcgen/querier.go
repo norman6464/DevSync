@@ -61,6 +61,8 @@ type Querier interface {
 	CountNotesByUserSince(ctx context.Context, arg CountNotesByUserSinceParams) (int64, error)
 	CountNotificationsByUser(ctx context.Context, userID int64) (int64, error)
 	CountNotificationsByUserSince(ctx context.Context, arg CountNotificationsByUserSinceParams) (int64, error)
+	CountPostPinsByUser(ctx context.Context, userID int64) (int64, error)
+	CountPostPinsByUserAndPost(ctx context.Context, arg CountPostPinsByUserAndPostParams) (int64, error)
 	CountPostTemplatesByUserID(ctx context.Context, userID int64) (int64, error)
 	CountPostViewsByPost(ctx context.Context, postID int64) (int64, error)
 	CountPostsByUser(ctx context.Context, userID int64) (int64, error)
@@ -99,6 +101,7 @@ type Querier interface {
 	CreateNoteVersion(ctx context.Context, arg CreateNoteVersionParams) (NoteVersion, error)
 	CreateNotificationSettings(ctx context.Context, arg CreateNotificationSettingsParams) (NotificationSetting, error)
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) (PasswordResetToken, error)
+	CreatePostPin(ctx context.Context, arg CreatePostPinParams) error
 	CreatePostTemplate(ctx context.Context, arg CreatePostTemplateParams) (PostTemplate, error)
 	// GORMの clause.OnConflict{DoNothing: true} に相当。実際に挿入できた行数を返し、
 	// 呼び出し側で「既に閲覧済みだったか」を判定する。
@@ -115,6 +118,7 @@ type Querier interface {
 	DeleteNoteFolder(ctx context.Context, id int64) error
 	DeleteNoteLink(ctx context.Context, arg DeleteNoteLinkParams) error
 	DeleteNoteTemplate(ctx context.Context, id int64) error
+	DeletePostPin(ctx context.Context, arg DeletePostPinParams) error
 	DeletePostTemplate(ctx context.Context, id int64) error
 	DeleteProjectMilestone(ctx context.Context, id int64) error
 	// book_reviews は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
@@ -177,6 +181,8 @@ type Querier interface {
 	ListNotesByFolder(ctx context.Context, arg ListNotesByFolderParams) ([]Note, error)
 	// GORMのPreload("Folder")に相当。folder_idはNULL許容のためLEFT JOIN（理由は GetNoteByID と同じ）。
 	ListNotesByUser(ctx context.Context, arg ListNotesByUserParams) ([]ListNotesByUserRow, error)
+	// GORMのPreload("Post").Preload("Post.User")に相当。user_id/post_idともにNOT NULLのためINNER JOINでよい。
+	ListPostPinsByUser(ctx context.Context, userID int64) ([]ListPostPinsByUserRow, error)
 	ListPostTemplatesByUserID(ctx context.Context, arg ListPostTemplatesByUserIDParams) ([]PostTemplate, error)
 	ListProjectMilestonesByProject(ctx context.Context, projectID int64) ([]ProjectMilestone, error)
 	ListRootNoteFoldersByUser(ctx context.Context, userID int64) ([]NoteFolder, error)
@@ -206,6 +212,7 @@ type Querier interface {
 	UpdateNoteFolder(ctx context.Context, arg UpdateNoteFolderParams) (NoteFolder, error)
 	UpdateNoteTemplate(ctx context.Context, arg UpdateNoteTemplateParams) (NoteTemplate, error)
 	UpdateNotificationSettings(ctx context.Context, arg UpdateNotificationSettingsParams) (NotificationSetting, error)
+	UpdatePostPinOrder(ctx context.Context, arg UpdatePostPinOrderParams) error
 	UpdatePostTemplate(ctx context.Context, arg UpdatePostTemplateParams) (PostTemplate, error)
 	UpdateProjectMilestone(ctx context.Context, arg UpdateProjectMilestoneParams) (ProjectMilestone, error)
 	UpdateReminderSettings(ctx context.Context, arg UpdateReminderSettingsParams) (ReminderSetting, error)

@@ -744,7 +744,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	c.PostHandler.SetAutoTagsUseCase(usecase.NewSetAutoPostTagsUseCase(setPostTags))
 
 	// post_pin はクリーンアーキテクチャ(DIP)へ移行済み。
-	postPinRepo := persistence.NewPostPinRepository(db)
+	postPinRepo := persistence.NewPostPinRepository(sqlcgen.New(sqlPool))
 	postReader := persistence.NewPostReader(db)
 	c.PostPinHandler = handler.NewPostPinHandler(
 		usecase.NewPinPostUseCase(postPinRepo, postReader),
