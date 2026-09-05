@@ -118,7 +118,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	// follow はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	followRepo := persistence.NewFollowRepository(sqlcgen.New(sqlPool))
 	// ダイレクトメッセージはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	messagePort := persistence.NewMessageRepository(db)
+	messagePort := persistence.NewMessageRepository(sqlcgen.New(sqlPool))
 	// ランキングはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	rankingRepo := persistence.NewRankingRepository(db)
 	// Zenn 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence と adapter/external。

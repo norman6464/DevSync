@@ -3,64 +3,96 @@ package persistence
 import (
 	"context"
 
+	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
-	"gorm.io/gorm"
 )
 
-// messageRepository は [repository.MessageRepository] の GORM 実装。
+// messageRepository は [repository.MessageRepository] の sqlc(pgx) 実装。
 type messageRepository struct {
-	db *gorm.DB
+	q *sqlcgen.Queries
 }
 
-// NewMessageRepository は MessageRepository の GORM 実装を返す。
-func NewMessageRepository(db *gorm.DB) repository.MessageRepository {
-	return &messageRepository{db: db}
+// NewMessageRepository は MessageRepository の sqlc(pgx) 実装を返す。
+func NewMessageRepository(q *sqlcgen.Queries) repository.MessageRepository {
+	return &messageRepository{q: q}
 }
 
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
 var _ repository.MessageRepository = (*messageRepository)(nil)
 
+// toModelMessage は sqlc の生成行を model.Message へ変換する（関連の Sender/Receiver は含まない）。
+func toModelMessage(row sqlcgen.Message) model.Message {
+	return model.Message{
+		ID:         uint(row.ID),
+		SenderID:   uint(row.SenderID),
+		ReceiverID: uint(row.ReceiverID),
+		Content:    row.Content,
+		Read:       fromBoolPtr(row.Read),
+		CreatedAt:  timeValue(fromTimestamptz(row.CreatedAt)),
+	}
+}
+
 // Create はメッセージを保存する。
 func (r *messageRepository) Create(ctx context.Context, msg *model.Message) error {
-	return r.db.WithContext(ctx).Create(msg).Error
+	row, err := r.q.CreateMessage(ctx, sqlcgen.CreateMessageParams{
+		SenderID:   int64(msg.SenderID),
+		ReceiverID: int64(msg.ReceiverID),
+		Content:    msg.Content,
+	})
+	if err != nil {
+		return err
+	}
+	*msg = toModelMessage(row)
+	return nil
 }
 
 // GetConversation は 2 ユーザー間の会話を古い順に取得する。
 func (r *messageRepository) GetConversation(ctx context.Context, userID, otherUserID uint, page, limit int) ([]model.Message, error) {
-	var messages []model.Message
 	offset := (page - 1) * limit
-	err := r.db.WithContext(ctx).
-		Preload("Sender").Preload("Receiver").
-		Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)",
-			userID, otherUserID, otherUserID, userID).
-		Order("created_at ASC").
-		Offset(offset).Limit(limit).
-		Find(&messages).Error
-	return messages, err
+	rows, err := r.q.ListConversationMessages(ctx, sqlcgen.ListConversationMessagesParams{
+		SenderID:   int64(userID),
+		ReceiverID: int64(otherUserID),
+		Limit:      int32Param(limit),
+		Offset:     int32Param(offset),
+	})
+	if err != nil {
+		return nil, err
+	}
+	messages := make([]model.Message, len(rows))
+	for i, row := range rows {
+		messages[i] = toModelMessage(row.Message)
+		messages[i].Sender = toModelUser(row.User)
+		messages[i].Receiver = toModelUser(row.User_2)
+	}
+	return messages, nil
 }
 
 // GetConversations は会話相手ごとの最新メッセージと未読件数を取得する。
 func (r *messageRepository) GetConversations(ctx context.Context, userID uint) ([]model.ConversationSummary, error) {
-	var conversations []model.ConversationSummary
-	err := r.db.WithContext(ctx).Raw(`
-		SELECT DISTINCT ON (other_id) other_id as user_id, u.name, u.avatar_url, m.content as last_message, m.created_at as last_time,
-			(SELECT COUNT(*) FROM messages WHERE sender_id = other_id AND receiver_id = ? AND read = false) as unread_count
-		FROM (
-			SELECT CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END as other_id, id
-			FROM messages
-			WHERE sender_id = ? OR receiver_id = ?
-		) sub
-		JOIN messages m ON m.id = sub.id
-		JOIN users u ON u.id = sub.other_id
-		ORDER BY other_id, m.created_at DESC
-	`, userID, userID, userID, userID).Scan(&conversations).Error
-	return conversations, err
+	rows, err := r.q.ListConversationSummaries(ctx, int64(userID))
+	if err != nil {
+		return nil, err
+	}
+	conversations := make([]model.ConversationSummary, len(rows))
+	for i, row := range rows {
+		otherID, _ := row.UserID.(int64)
+		conversations[i] = model.ConversationSummary{
+			UserID:      uint(otherID),
+			Name:        row.Name,
+			AvatarURL:   fromStringPtr(row.AvatarUrl),
+			LastMessage: row.LastMessage,
+			LastTime:    row.LastTime,
+			UnreadCount: int(row.UnreadCount),
+		}
+	}
+	return conversations, nil
 }
 
 // MarkAsRead は指定送信者からの未読メッセージをすべて既読にする。
 func (r *messageRepository) MarkAsRead(ctx context.Context, senderID, receiverID uint) error {
-	return r.db.WithContext(ctx).Model(&model.Message{}).
-		Where("sender_id = ? AND receiver_id = ? AND read = false", senderID, receiverID).
-		Update("read", true).Error
+	return r.q.MarkMessagesAsRead(ctx, sqlcgen.MarkMessagesAsReadParams{
+		SenderID:   int64(senderID),
+		ReceiverID: int64(receiverID),
+	})
 }
