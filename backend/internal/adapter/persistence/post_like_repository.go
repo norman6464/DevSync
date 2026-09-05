@@ -3,47 +3,54 @@ package persistence
 import (
 	"context"
 
-	"github.com/norman6464/devsync/backend/internal/model"
+	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
-	"gorm.io/gorm"
 )
 
-// postLikeRepository は [repository.PostLikeRepository] の GORM 実装。
+// postLikeRepository は [repository.PostLikeRepository] の sqlc(pgx) 実装。
 type postLikeRepository struct {
-	db *gorm.DB
+	q *sqlcgen.Queries
 }
 
-// NewPostLikeRepository は PostLikeRepository の GORM 実装を返す。
-func NewPostLikeRepository(db *gorm.DB) repository.PostLikeRepository {
-	return &postLikeRepository{db: db}
+// NewPostLikeRepository は PostLikeRepository の sqlc(pgx) 実装を返す。
+func NewPostLikeRepository(q *sqlcgen.Queries) repository.PostLikeRepository {
+	return &postLikeRepository{q: q}
 }
 
 var _ repository.PostLikeRepository = (*postLikeRepository)(nil)
 
 // Like はいいねを追加し、投稿の like_count を加算する。
+// 移行前の GORM 実装と同じくトランザクションでは括らない（元実装も2つの独立した操作だったため）。
 func (r *postLikeRepository) Like(ctx context.Context, userID, postID uint) error {
-	if err := r.db.WithContext(ctx).Create(&model.Like{UserID: userID, PostID: postID}).Error; err != nil {
+	if err := r.q.CreatePostLike(ctx, sqlcgen.CreatePostLikeParams{
+		UserID: int64(userID),
+		PostID: int64(postID),
+	}); err != nil {
 		return err
 	}
-	return r.db.WithContext(ctx).Model(&model.Post{}).Where("id = ?", postID).
-		UpdateColumn("like_count", gorm.Expr("like_count + 1")).Error
+	return r.q.IncrementPostLikeCount(ctx, int64(postID))
 }
 
 // Unlike はいいねを取り消し、実際に削除できたときだけ like_count をデクリメントする。
+// 移行前の GORM 実装と同じく、デクリメント自体のエラーは呼び出し元へ返さない。
 func (r *postLikeRepository) Unlike(ctx context.Context, userID, postID uint) error {
-	result := r.db.WithContext(ctx).Where("user_id = ? AND post_id = ?", userID, postID).Delete(&model.Like{})
-	if result.RowsAffected > 0 {
-		r.db.WithContext(ctx).Model(&model.Post{}).Where("id = ?", postID).
-			UpdateColumn("like_count", gorm.Expr("GREATEST(like_count - 1, 0)"))
+	rowsAffected, err := r.q.DeletePostLike(ctx, sqlcgen.DeletePostLikeParams{
+		UserID: int64(userID),
+		PostID: int64(postID),
+	})
+	if rowsAffected > 0 {
+		_ = r.q.DecrementPostLikeCount(ctx, int64(postID))
 	}
-	return result.Error
+	return err
 }
 
 // HasLiked は指定ユーザーが投稿にいいね済みかを返す。
 func (r *postLikeRepository) HasLiked(ctx context.Context, userID, postID uint) (bool, error) {
-	var count int64
-	if err := r.db.WithContext(ctx).Model(&model.Like{}).
-		Where("user_id = ? AND post_id = ?", userID, postID).Count(&count).Error; err != nil {
+	count, err := r.q.CountPostLikeByUserAndPost(ctx, sqlcgen.CountPostLikeByUserAndPostParams{
+		UserID: int64(userID),
+		PostID: int64(postID),
+	})
+	if err != nil {
 		return false, err
 	}
 	return count > 0, nil
