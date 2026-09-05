@@ -3,43 +3,77 @@ package persistence
 import (
 	"context"
 
+	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
-	"gorm.io/gorm"
 )
 
-// userActivityRepository は [repository.UserActivityRepository] の GORM 実装。
+// userActivityRepository は [repository.UserActivityRepository] の sqlc(pgx) 実装。
 type userActivityRepository struct {
-	db *gorm.DB
+	q *sqlcgen.Queries
 }
 
-// NewUserActivityRepository は UserActivityRepository の GORM 実装を返す。
-func NewUserActivityRepository(db *gorm.DB) repository.UserActivityRepository {
-	return &userActivityRepository{db: db}
+// NewUserActivityRepository は UserActivityRepository の sqlc(pgx) 実装を返す。
+func NewUserActivityRepository(q *sqlcgen.Queries) repository.UserActivityRepository {
+	return &userActivityRepository{q: q}
 }
 
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
 var _ repository.UserActivityRepository = (*userActivityRepository)(nil)
 
+// toModelUserActivity は sqlc の生成行を model.UserActivity へ変換する。
+func toModelUserActivity(row sqlcgen.UserActivity) model.UserActivity {
+	return model.UserActivity{
+		ID:           uint(row.ID),
+		UserID:       uint(row.UserID),
+		ActivityType: model.ActivityType(row.ActivityType),
+		TargetType:   row.TargetType,
+		TargetID:     uint(row.TargetID),
+		Metadata:     fromStringPtr(row.Metadata),
+		CreatedAt:    row.CreatedAt.Time,
+	}
+}
+
 // FindByUserID は指定ユーザーのアクティビティを時系列（新しい順）で取得する。
 // activityType が空でなければ種別で絞り込む。
 // created_at が同値の行でもページングが安定するよう、id を第 2 ソートキーにして順序を決定的にする。
 func (r *userActivityRepository) FindByUserID(ctx context.Context, userID uint, activityType string, limit, offset int) ([]model.UserActivity, int64, error) {
-	var activities []model.UserActivity
+	var rows []sqlcgen.UserActivity
 	var total int64
+	var err error
 
-	query := r.db.WithContext(ctx).Where("user_id = ?", userID)
-	if activityType != "" {
-		query = query.Where("activity_type = ?", activityType)
+	if activityType == "" {
+		total, err = r.q.CountUserActivitiesByUser(ctx, int64(userID))
+		if err != nil {
+			return nil, 0, err
+		}
+		rows, err = r.q.ListUserActivitiesByUser(ctx, sqlcgen.ListUserActivitiesByUserParams{
+			UserID: int64(userID),
+			Limit:  int32Param(limit),
+			Offset: int32Param(offset),
+		})
+	} else {
+		total, err = r.q.CountUserActivitiesByUserAndType(ctx, sqlcgen.CountUserActivitiesByUserAndTypeParams{
+			UserID:       int64(userID),
+			ActivityType: activityType,
+		})
+		if err != nil {
+			return nil, 0, err
+		}
+		rows, err = r.q.ListUserActivitiesByUserAndType(ctx, sqlcgen.ListUserActivitiesByUserAndTypeParams{
+			UserID:       int64(userID),
+			ActivityType: activityType,
+			Limit:        int32Param(limit),
+			Offset:       int32Param(offset),
+		})
 	}
-
-	if err := query.Model(&model.UserActivity{}).Count(&total).Error; err != nil {
+	if err != nil {
 		return nil, 0, err
 	}
 
-	if err := query.Order("created_at DESC").Order("id DESC").Limit(limit).Offset(offset).Find(&activities).Error; err != nil {
-		return nil, 0, err
+	activities := make([]model.UserActivity, len(rows))
+	for i, row := range rows {
+		activities[i] = toModelUserActivity(row)
 	}
-
 	return activities, total, nil
 }
