@@ -5,20 +5,20 @@ import (
 	"sort"
 	"time"
 
+	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
-	"gorm.io/gorm"
 )
 
-// badgeRepository は [repository.BadgeStatsReader] の GORM 実装。
-// 複数テーブルから Raw SQL で各種カウントおよびストリークを算出する。
+// badgeRepository は [repository.BadgeStatsReader] の sqlc(pgx) 実装。
+// 複数テーブルから各種カウントおよびストリークを算出する。
 type badgeRepository struct {
-	db *gorm.DB
+	q *sqlcgen.Queries
 }
 
-// NewBadgeRepository は BadgeStatsReader の GORM 実装を返す。
-func NewBadgeRepository(db *gorm.DB) repository.BadgeStatsReader {
-	return &badgeRepository{db: db}
+// NewBadgeRepository は BadgeStatsReader の sqlc(pgx) 実装を返す。
+func NewBadgeRepository(q *sqlcgen.Queries) repository.BadgeStatsReader {
+	return &badgeRepository{q: q}
 }
 
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
@@ -27,36 +27,41 @@ var _ repository.BadgeStatsReader = (*badgeRepository)(nil)
 // GetBadgeStats はバッジ判定に必要な全統計を DB から集計する。
 // 個々の集計クエリのエラーは移行前と同じく無視し、ストリーク算出の失敗だけを error として返す。
 func (r *badgeRepository) GetBadgeStats(ctx context.Context, userID uint) (*model.BadgeStats, error) {
-	db := r.db.WithContext(ctx)
 	stats := &model.BadgeStats{}
+	uid := int64(userID)
 
-	// GitHubコントリビューション総数
-	db.Raw("SELECT COALESCE(SUM(count), 0) FROM git_hub_contributions WHERE user_id = ?", userID).Scan(&stats.TotalContributions)
+	if v, err := r.q.SumGitHubContributionsByUser(ctx, uid); err == nil {
+		stats.TotalContributions = int(v)
+	}
 
-	// GitHub連続コントリビューション日数
 	streak, err := r.calculateGitHubStreak(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 	stats.CurrentStreak = streak
 
-	// 投稿総数
-	db.Raw("SELECT COUNT(*) FROM posts WHERE user_id = ?", userID).Scan(&stats.TotalPosts)
-
-	// 受け取ったいいね総数
-	db.Raw("SELECT COALESCE(SUM(like_count), 0) FROM posts WHERE user_id = ?", userID).Scan(&stats.TotalLikesReceived)
-
-	// フォロワー数
-	db.Raw("SELECT COUNT(*) FROM follows WHERE followee_id = ?", userID).Scan(&stats.FollowerCount)
-
-	// フォロー中の数
-	db.Raw("SELECT COUNT(*) FROM follows WHERE follower_id = ?", userID).Scan(&stats.FollowingCount)
-
-	// Q&A回答数
-	db.Raw("SELECT COUNT(*) FROM answers WHERE user_id = ?", userID).Scan(&stats.QAAnswerCount)
-
-	// 完了した学習目標数
-	db.Raw("SELECT COUNT(*) FROM learning_goals WHERE user_id = ? AND status = ?", userID, "completed").Scan(&stats.CompletedGoals)
+	if v, err := r.q.CountPostsByUser(ctx, uid); err == nil {
+		stats.TotalPosts = int(v)
+	}
+	if v, err := r.q.SumPostLikesReceivedByUser(ctx, uid); err == nil {
+		stats.TotalLikesReceived = int(v)
+	}
+	if v, err := r.q.CountFollowersByUser(ctx, uid); err == nil {
+		stats.FollowerCount = int(v)
+	}
+	if v, err := r.q.CountFollowingByUser(ctx, uid); err == nil {
+		stats.FollowingCount = int(v)
+	}
+	if v, err := r.q.CountAnswersByUserIncludingDeleted(ctx, uid); err == nil {
+		stats.QAAnswerCount = int(v)
+	}
+	completedStatus := learningGoalCompletedStatus
+	if v, err := r.q.CountCompletedLearningGoalsByUser(ctx, sqlcgen.CountCompletedLearningGoalsByUserParams{
+		UserID: uid,
+		Status: &completedStatus,
+	}); err == nil {
+		stats.CompletedGoals = int(v)
+	}
 
 	// 学習ログ連続記録日数（失敗しても 0 のまま続行する）
 	if logStreak, err := r.calculateLearningLogStreak(ctx, userID); err == nil {
@@ -68,30 +73,23 @@ func (r *badgeRepository) GetBadgeStats(ctx context.Context, userID uint) (*mode
 
 // calculateGitHubStreak は GitHub コントリビューションの連続日数を算出する。
 func (r *badgeRepository) calculateGitHubStreak(ctx context.Context, userID uint) (int, error) {
-	type dateCount struct {
-		Date  time.Time
-		Count int
-	}
-	var contributions []dateCount
-	err := r.db.WithContext(ctx).
-		Raw("SELECT date, count FROM git_hub_contributions WHERE user_id = ? AND count > 0 ORDER BY date DESC", userID).
-		Scan(&contributions).Error
+	rows, err := r.q.ListGitHubContributionsByUser(ctx, int64(userID))
 	if err != nil {
 		return 0, err
 	}
-	if len(contributions) == 0 {
+	if len(rows) == 0 {
 		return 0, nil
 	}
 
-	sort.Slice(contributions, func(i, j int) bool {
-		return contributions[i].Date.After(contributions[j].Date)
+	sort.Slice(rows, func(i, j int) bool {
+		return rows[i].Date.Time.After(rows[j].Date.Time)
 	})
 
 	streak := 0
 	today := normalizeToCalendarDay(time.Now())
 
-	for _, c := range contributions {
-		cDate := normalizeToCalendarDay(c.Date)
+	for _, row := range rows {
+		cDate := normalizeToCalendarDay(row.Date.Time)
 		// 期待日の当日または前日（開始が昨日でも連続とみなす従来仕様）
 		expectedDate := today.AddDate(0, 0, -streak)
 		if cDate.Equal(expectedDate) || cDate.Equal(expectedDate.AddDate(0, 0, -1)) {
@@ -106,33 +104,28 @@ func (r *badgeRepository) calculateGitHubStreak(ctx context.Context, userID uint
 
 // calculateLearningLogStreak は学習ログの連続記録日数を算出する。
 func (r *badgeRepository) calculateLearningLogStreak(ctx context.Context, userID uint) (int, error) {
-	var dates []struct {
-		Date time.Time
-	}
-	err := r.db.WithContext(ctx).
-		Raw("SELECT DISTINCT DATE(created_at) as date FROM learning_logs WHERE user_id = ? ORDER BY date DESC", userID).
-		Scan(&dates).Error
+	rows, err := r.q.ListLearningLogDatesByUser(ctx, int64(userID))
 	if err != nil {
 		return 0, err
 	}
-	if len(dates) == 0 {
+	if len(rows) == 0 {
 		return 0, nil
 	}
 
-	sort.Slice(dates, func(i, j int) bool {
-		return dates[i].Date.After(dates[j].Date)
+	sort.Slice(rows, func(i, j int) bool {
+		return rows[i].Time.After(rows[j].Time)
 	})
 
 	today := normalizeToCalendarDay(time.Now())
-	firstDate := normalizeToCalendarDay(dates[0].Date)
+	firstDate := normalizeToCalendarDay(rows[0].Time)
 	if !isTodayOrYesterday(firstDate, today) {
 		return 0, nil
 	}
 
 	streak := 1
-	for i := 1; i < len(dates); i++ {
-		prev := normalizeToCalendarDay(dates[i-1].Date)
-		curr := normalizeToCalendarDay(dates[i].Date)
+	for i := 1; i < len(rows); i++ {
+		prev := normalizeToCalendarDay(rows[i-1].Time)
+		curr := normalizeToCalendarDay(rows[i].Time)
 		if isNextCalendarDay(prev, curr) {
 			streak++
 		} else {

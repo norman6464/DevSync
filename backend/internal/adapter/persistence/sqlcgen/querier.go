@@ -16,6 +16,10 @@ type Querier interface {
 	// note_stats.sql の CountNotesByUser はアーカイブ済みも含めた全件数のため名前を分けている。
 	CountActiveNotesByUser(ctx context.Context, userID int64) (int64, error)
 	CountAnswersByUser(ctx context.Context, userID int64) (int64, error)
+	// qa_stats.sql の CountAnswersByUser は deleted_at IS NULL で絞るが、
+	// こちらは既存の GORM Raw SQL 実装（db.Raw、GORMのsoft-deleteスコープ非適用）と
+	// 挙動を変えないため、論理削除された回答も含めてカウントする。
+	CountAnswersByUserIncludingDeleted(ctx context.Context, userID int64) (int64, error)
 	CountArchivedNotesByUser(ctx context.Context, userID int64) (int64, error)
 	CountBestAnswersByUser(ctx context.Context, userID int64) (int64, error)
 	CountBookmarksMadeByUser(ctx context.Context, userID int64) (int64, error)
@@ -145,6 +149,8 @@ type Querier interface {
 	ListFollowers(ctx context.Context, arg ListFollowersParams) ([]User, error)
 	// 件数は follow_stats.sql の CountFollowingByUser を再利用する。
 	ListFollowing(ctx context.Context, arg ListFollowingParams) ([]User, error)
+	// GitHub連続コントリビューション日数の算出に使う（countが正の日のみ、新しい順）。
+	ListGitHubContributionsByUser(ctx context.Context, userID int64) ([]ListGitHubContributionsByUserRow, error)
 	// 学習ログの連続記録日数（ストリーク）算出に使う、記録のある日付一覧（新しい順）。
 	ListLearningLogDatesByUser(ctx context.Context, userID int64) ([]pgtype.Date, error)
 	ListMentionsByCommentID(ctx context.Context, commentID *int64) ([]ListMentionsByCommentIDRow, error)
@@ -176,6 +182,7 @@ type Querier interface {
 	SearchNotes(ctx context.Context, arg SearchNotesParams) ([]SearchNotesRow, error)
 	SumAnswerVotesByUser(ctx context.Context, userID int64) (int64, error)
 	SumCodeSnippetCommentCountByUser(ctx context.Context, userID int64) (int64, error)
+	SumGitHubContributionsByUser(ctx context.Context, userID int64) (int64, error)
 	SumLearningLogDurationByUser(ctx context.Context, userID int64) (int64, error)
 	SumLearningLogDurationByUserCategorySince(ctx context.Context, arg SumLearningLogDurationByUserCategorySinceParams) (int64, error)
 	SumLearningResourceLikeCountByUser(ctx context.Context, userID int64) (int64, error)
