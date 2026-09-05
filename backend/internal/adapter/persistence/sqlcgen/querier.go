@@ -6,6 +6,8 @@ package sqlcgen
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
@@ -23,12 +25,15 @@ type Querier interface {
 	CountCodeSnippetsByUser(ctx context.Context, userID int64) (int64, error)
 	CountCommentLikesByComment(ctx context.Context, commentID int64) (int64, error)
 	CountCommentLikesByUserAndComment(ctx context.Context, arg CountCommentLikesByUserAndCommentParams) (int64, error)
+	CountCommentsByUser(ctx context.Context, userID int64) (int64, error)
 	CountCommentsByUserSince(ctx context.Context, arg CountCommentsByUserSinceParams) (int64, error)
 	CountCommentsReceivedByUser(ctx context.Context, userID int64) (int64, error)
+	CountCompletedLearningGoalsByUser(ctx context.Context, arg CountCompletedLearningGoalsByUserParams) (int64, error)
 	CountConversationsByUser(ctx context.Context, senderID int64) (int64, error)
 	CountFavoriteNotesByUser(ctx context.Context, userID int64) (int64, error)
 	CountFollowersByUser(ctx context.Context, followeeID int64) (int64, error)
 	CountFollowingByUser(ctx context.Context, followerID int64) (int64, error)
+	CountGitHubContributionDaysByUser(ctx context.Context, userID int64) (int64, error)
 	CountLearningLogCategoriesByUser(ctx context.Context, userID int64) (int64, error)
 	CountLearningLogsByUser(ctx context.Context, userID int64) (int64, error)
 	CountLearningLogsByUserSince(ctx context.Context, arg CountLearningLogsByUserSinceParams) (int64, error)
@@ -53,6 +58,7 @@ type Querier interface {
 	CountNotificationsByUser(ctx context.Context, userID int64) (int64, error)
 	CountNotificationsByUserSince(ctx context.Context, arg CountNotificationsByUserSinceParams) (int64, error)
 	CountPostTemplatesByUserID(ctx context.Context, userID int64) (int64, error)
+	CountPostsByUser(ctx context.Context, userID int64) (int64, error)
 	// questions/answers は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに
 	// 合わせて deleted_at IS NULL を明示する（Unscoped() されていない全クエリと同じ挙動）。
 	CountQuestionsByUser(ctx context.Context, userID int64) (int64, error)
@@ -139,6 +145,8 @@ type Querier interface {
 	ListFollowers(ctx context.Context, arg ListFollowersParams) ([]User, error)
 	// 件数は follow_stats.sql の CountFollowingByUser を再利用する。
 	ListFollowing(ctx context.Context, arg ListFollowingParams) ([]User, error)
+	// 学習ログの連続記録日数（ストリーク）算出に使う、記録のある日付一覧（新しい順）。
+	ListLearningLogDatesByUser(ctx context.Context, userID int64) ([]pgtype.Date, error)
 	ListMentionsByCommentID(ctx context.Context, commentID *int64) ([]ListMentionsByCommentIDRow, error)
 	// GORMのPreload("User").Preload("Actor")に相当。user_id/actor_idともにNOT NULLのためINNER JOINでよい。
 	ListMentionsByPostID(ctx context.Context, postID *int64) ([]ListMentionsByPostIDRow, error)
@@ -172,6 +180,7 @@ type Querier interface {
 	SumLearningLogDurationByUserCategorySince(ctx context.Context, arg SumLearningLogDurationByUserCategorySinceParams) (int64, error)
 	SumLearningResourceLikeCountByUser(ctx context.Context, userID int64) (int64, error)
 	SumLearningResourceSaveCountByUser(ctx context.Context, userID int64) (int64, error)
+	SumPostLikesReceivedByUser(ctx context.Context, userID int64) (int64, error)
 	SumQuestionVotesByUser(ctx context.Context, userID int64) (int64, error)
 	SumRoadmapCompletedStepCountByUser(ctx context.Context, userID int64) (int64, error)
 	SumRoadmapStepCountByUser(ctx context.Context, userID int64) (int64, error)

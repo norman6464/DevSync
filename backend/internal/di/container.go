@@ -151,7 +151,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	codeSnippetPostReader := persistence.NewPostReader(db)
 	createCodeSnippet := usecase.NewCreateCodeSnippetUseCase(codeSnippetRepo, codeSnippetPostReader)
 	// レベル / XP はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	levelPort := persistence.NewLevelRepository(db)
+	levelPort := persistence.NewLevelRepository(sqlcgen.New(sqlPool))
 	// 学習分析はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	analyticsPort := persistence.NewLearningAnalyticsRepository(db)
 	// バッジはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
