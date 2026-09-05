@@ -121,11 +121,17 @@ SELECT COUNT(*) FROM resource_likes
 WHERE resource_likes.user_id = $1 AND resource_likes.resource_id = $2;
 
 -- name: IncrementResourceLikeCount :exec
-UPDATE learning_resources SET like_count = like_count + 1 WHERE learning_resources.id = $1;
+-- deleted_at IS NULLを明示（GORMは論理削除モデルへのUPDATEにも自動でこのスコープを付与するため、
+-- Like/Unlikeがトランザクションで括られていない今の実装では、この条件がないと
+-- 削除確定後に届いた更新が論理削除済みの行を書き換えてしまう）。
+UPDATE learning_resources SET like_count = like_count + 1
+WHERE learning_resources.id = $1 AND learning_resources.deleted_at IS NULL;
 
 -- name: DecrementResourceLikeCountFloored :exec
--- 0未満にはしない（GORMのGREATEST(like_count - 1, 0)に相当）。
-UPDATE learning_resources SET like_count = GREATEST(like_count - 1, 0) WHERE learning_resources.id = $1;
+-- 0未満にはしない（GORMのGREATEST(like_count - 1, 0)に相当）。deleted_at IS NULLの理由は
+-- IncrementResourceLikeCountと同じ。
+UPDATE learning_resources SET like_count = GREATEST(like_count - 1, 0)
+WHERE learning_resources.id = $1 AND learning_resources.deleted_at IS NULL;
 
 -- name: CreateResourceSave :exec
 INSERT INTO resource_saves (user_id, resource_id, created_at) VALUES ($1, $2, now());
@@ -139,8 +145,12 @@ SELECT COUNT(*) FROM resource_saves
 WHERE resource_saves.user_id = $1 AND resource_saves.resource_id = $2;
 
 -- name: IncrementResourceSaveCount :exec
-UPDATE learning_resources SET save_count = save_count + 1 WHERE learning_resources.id = $1;
+-- deleted_at IS NULLを明示する理由はIncrementResourceLikeCountと同じ。
+UPDATE learning_resources SET save_count = save_count + 1
+WHERE learning_resources.id = $1 AND learning_resources.deleted_at IS NULL;
 
 -- name: DecrementResourceSaveCountFloored :exec
--- 0未満にはしない（GORMのGREATEST(save_count - 1, 0)に相当）。
-UPDATE learning_resources SET save_count = GREATEST(save_count - 1, 0) WHERE learning_resources.id = $1;
+-- 0未満にはしない（GORMのGREATEST(save_count - 1, 0)に相当）。deleted_at IS NULLの理由は
+-- IncrementResourceLikeCountと同じ。
+UPDATE learning_resources SET save_count = GREATEST(save_count - 1, 0)
+WHERE learning_resources.id = $1 AND learning_resources.deleted_at IS NULL;

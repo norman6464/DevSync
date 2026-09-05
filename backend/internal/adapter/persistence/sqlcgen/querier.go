@@ -210,9 +210,11 @@ type Querier interface {
 	DecrementPostLikeCount(ctx context.Context, id int64) error
 	// 0未満にはしない（GORMのGREATEST(answer_count - 1, 0)に相当）。
 	DecrementQuestionAnswerCountFloored(ctx context.Context, id int64) error
-	// 0未満にはしない（GORMのGREATEST(like_count - 1, 0)に相当）。
+	// 0未満にはしない（GORMのGREATEST(like_count - 1, 0)に相当）。deleted_at IS NULLの理由は
+	// IncrementResourceLikeCountと同じ。
 	DecrementResourceLikeCountFloored(ctx context.Context, id int64) error
-	// 0未満にはしない（GORMのGREATEST(save_count - 1, 0)に相当）。
+	// 0未満にはしない（GORMのGREATEST(save_count - 1, 0)に相当）。deleted_at IS NULLの理由は
+	// IncrementResourceLikeCountと同じ。
 	DecrementResourceSaveCountFloored(ctx context.Context, id int64) error
 	// 0未満にはしない（GORMのGREATEST(comment_count - 1, 0)に相当）。
 	DecrementSnippetCommentCountFloored(ctx context.Context, id int64) error
@@ -431,7 +433,11 @@ type Querier interface {
 	IncrementPostLikeCount(ctx context.Context, id int64) error
 	IncrementPostViewCount(ctx context.Context, id int64) error
 	IncrementQuestionAnswerCount(ctx context.Context, id int64) error
+	// deleted_at IS NULLを明示（GORMは論理削除モデルへのUPDATEにも自動でこのスコープを付与するため、
+	// Like/Unlikeがトランザクションで括られていない今の実装では、この条件がないと
+	// 削除確定後に届いた更新が論理削除済みの行を書き換えてしまう）。
 	IncrementResourceLikeCount(ctx context.Context, id int64) error
+	// deleted_at IS NULLを明示する理由はIncrementResourceLikeCountと同じ。
 	IncrementResourceSaveCount(ctx context.Context, id int64) error
 	IncrementSnippetCommentCount(ctx context.Context, id int64) error
 	IncrementSnippetForkCount(ctx context.Context, id int64) error

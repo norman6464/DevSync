@@ -212,20 +212,24 @@ func (q *Queries) CreateResourceSave(ctx context.Context, arg CreateResourceSave
 }
 
 const decrementResourceLikeCountFloored = `-- name: DecrementResourceLikeCountFloored :exec
-UPDATE learning_resources SET like_count = GREATEST(like_count - 1, 0) WHERE learning_resources.id = $1
+UPDATE learning_resources SET like_count = GREATEST(like_count - 1, 0)
+WHERE learning_resources.id = $1 AND learning_resources.deleted_at IS NULL
 `
 
-// 0未満にはしない（GORMのGREATEST(like_count - 1, 0)に相当）。
+// 0未満にはしない（GORMのGREATEST(like_count - 1, 0)に相当）。deleted_at IS NULLの理由は
+// IncrementResourceLikeCountと同じ。
 func (q *Queries) DecrementResourceLikeCountFloored(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, decrementResourceLikeCountFloored, id)
 	return err
 }
 
 const decrementResourceSaveCountFloored = `-- name: DecrementResourceSaveCountFloored :exec
-UPDATE learning_resources SET save_count = GREATEST(save_count - 1, 0) WHERE learning_resources.id = $1
+UPDATE learning_resources SET save_count = GREATEST(save_count - 1, 0)
+WHERE learning_resources.id = $1 AND learning_resources.deleted_at IS NULL
 `
 
-// 0未満にはしない（GORMのGREATEST(save_count - 1, 0)に相当）。
+// 0未満にはしない（GORMのGREATEST(save_count - 1, 0)に相当）。deleted_at IS NULLの理由は
+// IncrementResourceLikeCountと同じ。
 func (q *Queries) DecrementResourceSaveCountFloored(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, decrementResourceSaveCountFloored, id)
 	return err
@@ -334,18 +338,24 @@ func (q *Queries) GetLearningResourceWithUserByID(ctx context.Context, id int64)
 }
 
 const incrementResourceLikeCount = `-- name: IncrementResourceLikeCount :exec
-UPDATE learning_resources SET like_count = like_count + 1 WHERE learning_resources.id = $1
+UPDATE learning_resources SET like_count = like_count + 1
+WHERE learning_resources.id = $1 AND learning_resources.deleted_at IS NULL
 `
 
+// deleted_at IS NULLを明示（GORMは論理削除モデルへのUPDATEにも自動でこのスコープを付与するため、
+// Like/Unlikeがトランザクションで括られていない今の実装では、この条件がないと
+// 削除確定後に届いた更新が論理削除済みの行を書き換えてしまう）。
 func (q *Queries) IncrementResourceLikeCount(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, incrementResourceLikeCount, id)
 	return err
 }
 
 const incrementResourceSaveCount = `-- name: IncrementResourceSaveCount :exec
-UPDATE learning_resources SET save_count = save_count + 1 WHERE learning_resources.id = $1
+UPDATE learning_resources SET save_count = save_count + 1
+WHERE learning_resources.id = $1 AND learning_resources.deleted_at IS NULL
 `
 
+// deleted_at IS NULLを明示する理由はIncrementResourceLikeCountと同じ。
 func (q *Queries) IncrementResourceSaveCount(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, incrementResourceSaveCount, id)
 	return err
