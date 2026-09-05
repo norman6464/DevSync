@@ -200,13 +200,22 @@ type Querier interface {
 	GetBookReviewStats(ctx context.Context, userID int64) (GetBookReviewStatsRow, error)
 	GetBookmarkCollectionByID(ctx context.Context, id int64) (BookmarkCollection, error)
 	GetCommentByID(ctx context.Context, id int64) (Comment, error)
+	// 指定期間（weekly/monthly）のGitHubコントリビューションランキング。
+	// コントリビューション数の合計で降順ソートし、上位50件を返す。
+	GetContributionRanking(ctx context.Context, date pgtype.Timestamptz) ([]GetContributionRankingRow, error)
 	GetDefaultLearningLogTemplateByUser(ctx context.Context, userID int64) (LearningLogTemplate, error)
 	GetDefaultNoteTemplateByUser(ctx context.Context, userID int64) (NoteTemplate, error)
 	GetEmojiBreakdownByUser(ctx context.Context, userID int64) ([]GetEmojiBreakdownByUserRow, error)
+	// 指定プログラミング言語のバイト数ランキング。上位50件を返す。
+	GetLanguageRanking(ctx context.Context, language string) ([]GetLanguageRankingRow, error)
 	GetLatestNoteVersionNumber(ctx context.Context, noteID int64) (int64, error)
 	GetLearningLogTemplateByID(ctx context.Context, id int64) (LearningLogTemplate, error)
 	// learning_resources は GORM の論理削除（deleted_at）付きモデルのため deleted_at IS NULL を明示する。
 	GetLearningResourceByID(ctx context.Context, id int64) (LearningResource, error)
+	// ユーザーのXP合計に基づくレベルランキング。上位50件を返す。
+	// scoreはSELECTの別名なのでWHERE/HAVINGからは参照できない（PostgreSQLの仕様）ため、
+	// 内側で合算してから外側で絞り込む。
+	GetLevelRanking(ctx context.Context) ([]GetLevelRankingRow, error)
 	// GORMのPreload("User").Preload("Folder")に相当。
 	// folder_idはNULL許容のためLEFT JOIN。note_foldersはsqlc.embedを使わず個別カラム選択にすることで、
 	// sqlcのJOIN文脈依存のnull推論（LEFT JOIN側は全カラムがnullableになる）を効かせる。
@@ -268,6 +277,8 @@ type Querier interface {
 	ListAIMessagesByConversationIDs(ctx context.Context, dollar_1 []int64) ([]AiMessage, error)
 	ListAllGitHubContributionsByUser(ctx context.Context, userID int64) ([]GitHubContribution, error)
 	ListArchivedNotesByUser(ctx context.Context, arg ListArchivedNotesByUserParams) ([]ListArchivedNotesByUserRow, error)
+	// ランキング対象となるプログラミング言語の一覧をアルファベット順で返す。
+	ListAvailableLanguages(ctx context.Context) ([]string, error)
 	// GORMのPreload("Post")に相当（Post.Userは移行前もPreloadされていないため含めない）。
 	// post_idはNOT NULLのためINNER JOINでよい。
 	ListBookmarkCollectionItemsWithPostByCollection(ctx context.Context, arg ListBookmarkCollectionItemsWithPostByCollectionParams) ([]ListBookmarkCollectionItemsWithPostByCollectionRow, error)

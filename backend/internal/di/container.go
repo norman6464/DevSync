@@ -120,7 +120,7 @@ func NewContainer(db *gorm.DB, sqlPool *pgxpool.Pool, cfg *config.Config, hub *w
 	// ダイレクトメッセージはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	messagePort := persistence.NewMessageRepository(sqlcgen.New(sqlPool))
 	// ランキングはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	rankingRepo := persistence.NewRankingRepository(db)
+	rankingRepo := persistence.NewRankingRepository(sqlcgen.New(sqlPool))
 	// Zenn 連携はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence と adapter/external。
 	zennPort := persistence.NewZennRepository(sqlPool)
 	zennClient := external.NewZennClient()
