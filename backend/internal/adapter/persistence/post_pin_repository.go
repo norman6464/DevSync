@@ -3,19 +3,23 @@ package persistence
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
 )
 
 // postPinRepository は [repository.PostPinRepository] の sqlc(pgx) 実装。
+// UpdateOrder は複数件の更新を1トランザクションで行うため、
+// Queries だけでなくトランザクションを開始できる *pgxpool.Pool を直接保持する。
 type postPinRepository struct {
-	q *sqlcgen.Queries
+	pool *pgxpool.Pool
+	q    *sqlcgen.Queries
 }
 
 // NewPostPinRepository は PostPinRepository の sqlc(pgx) 実装を返す。
-func NewPostPinRepository(q *sqlcgen.Queries) repository.PostPinRepository {
-	return &postPinRepository{q: q}
+func NewPostPinRepository(pool *pgxpool.Pool) repository.PostPinRepository {
+	return &postPinRepository{pool: pool, q: sqlcgen.New(pool)}
 }
 
 var _ repository.PostPinRepository = (*postPinRepository)(nil)
@@ -88,9 +92,19 @@ func (r *postPinRepository) IsPinned(ctx context.Context, userID, postID uint) (
 	return count > 0, err
 }
 
+// UpdateOrder は複数件の pin_order 更新を1トランザクションで行う。
+// 途中で失敗した場合に一部だけ並び順が更新された不整合な状態を残さないため、
+// GORMのTransactionと同じくすべて成功したときだけコミットする。
 func (r *postPinRepository) UpdateOrder(ctx context.Context, userID uint, postIDs []uint) error {
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	q := r.q.WithTx(tx)
 	for i, postID := range postIDs {
-		if err := r.q.UpdatePostPinOrder(ctx, sqlcgen.UpdatePostPinOrderParams{
+		if err := q.UpdatePostPinOrder(ctx, sqlcgen.UpdatePostPinOrderParams{
 			UserID:   int64(userID),
 			PostID:   int64(postID),
 			PinOrder: int64(i),
@@ -98,5 +112,5 @@ func (r *postPinRepository) UpdateOrder(ctx context.Context, userID uint, postID
 			return err
 		}
 	}
-	return nil
+	return tx.Commit(ctx)
 }
