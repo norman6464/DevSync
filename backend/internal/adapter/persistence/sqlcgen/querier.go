@@ -24,6 +24,8 @@ type Querier interface {
 	CountArchivedNotesByUser(ctx context.Context, userID int64) (int64, error)
 	CountBestAnswersByUser(ctx context.Context, userID int64) (int64, error)
 	CountBookmarkByUserAndPost(ctx context.Context, arg CountBookmarkByUserAndPostParams) (int64, error)
+	CountBookmarkCollectionItemsByCollection(ctx context.Context, collectionID int64) (int64, error)
+	CountBookmarkCollectionsByUser(ctx context.Context, userID int64) (int64, error)
 	CountBookmarksMadeByUser(ctx context.Context, userID int64) (int64, error)
 	CountBookmarksMadeByUserSince(ctx context.Context, arg CountBookmarksMadeByUserSinceParams) (int64, error)
 	CountBookmarksReceivedByUser(ctx context.Context, userID int64) (int64, error)
@@ -110,6 +112,10 @@ type Querier interface {
 	CreateAIConversation(ctx context.Context, arg CreateAIConversationParams) (AiConversation, error)
 	CreateAIMessage(ctx context.Context, arg CreateAIMessageParams) (AiMessage, error)
 	CreateBookmark(ctx context.Context, arg CreateBookmarkParams) error
+	CreateBookmarkCollection(ctx context.Context, arg CreateBookmarkCollectionParams) (BookmarkCollection, error)
+	// (collection_id, post_id) の一意制約に任せてON CONFLICT DO NOTHINGで挿入し、
+	// 実際に挿入できた行数を返す（呼び出し側で「既に入っていたか」を判定する）。
+	CreateBookmarkCollectionItem(ctx context.Context, arg CreateBookmarkCollectionItemParams) (int64, error)
 	CreateCommentLike(ctx context.Context, arg CreateCommentLikeParams) error
 	// 同時に複数リクエストが「不在」と判定してもuser_idの一意制約とDO NOTHINGで
 	// 競合を無害化する。競合で挿入されなかった場合は0行が返る（エラーにはしない）。
@@ -154,6 +160,9 @@ type Querier interface {
 	DeleteAIConversation(ctx context.Context, id int64) error
 	DeleteAIMessagesByConversationID(ctx context.Context, conversationID int64) error
 	DeleteBookmark(ctx context.Context, arg DeleteBookmarkParams) (int64, error)
+	DeleteBookmarkCollection(ctx context.Context, id int64) error
+	DeleteBookmarkCollectionItem(ctx context.Context, arg DeleteBookmarkCollectionItemParams) error
+	DeleteBookmarkCollectionItemsByCollectionID(ctx context.Context, collectionID int64) error
 	DeleteCommentLike(ctx context.Context, arg DeleteCommentLikeParams) error
 	DeleteFollow(ctx context.Context, arg DeleteFollowParams) error
 	DeleteGitHubContributionsByUser(ctx context.Context, userID int64) error
@@ -189,6 +198,7 @@ type Querier interface {
 	// deleted_at IS NULL を明示する。レビュー0件でもCOALESCEにより全項目0を返す
 	// （GORM実装のtotal_reviews==0での早期returnと同じ結果になる）。
 	GetBookReviewStats(ctx context.Context, userID int64) (GetBookReviewStatsRow, error)
+	GetBookmarkCollectionByID(ctx context.Context, id int64) (BookmarkCollection, error)
 	GetCommentByID(ctx context.Context, id int64) (Comment, error)
 	GetDefaultLearningLogTemplateByUser(ctx context.Context, userID int64) (LearningLogTemplate, error)
 	GetDefaultNoteTemplateByUser(ctx context.Context, userID int64) (NoteTemplate, error)
@@ -258,6 +268,10 @@ type Querier interface {
 	ListAIMessagesByConversationIDs(ctx context.Context, dollar_1 []int64) ([]AiMessage, error)
 	ListAllGitHubContributionsByUser(ctx context.Context, userID int64) ([]GitHubContribution, error)
 	ListArchivedNotesByUser(ctx context.Context, arg ListArchivedNotesByUserParams) ([]ListArchivedNotesByUserRow, error)
+	// GORMのPreload("Post")に相当（Post.Userは移行前もPreloadされていないため含めない）。
+	// post_idはNOT NULLのためINNER JOINでよい。
+	ListBookmarkCollectionItemsWithPostByCollection(ctx context.Context, arg ListBookmarkCollectionItemsWithPostByCollectionParams) ([]ListBookmarkCollectionItemsWithPostByCollectionRow, error)
+	ListBookmarkCollectionsByUser(ctx context.Context, userID int64) ([]BookmarkCollection, error)
 	// GORMのPreload("User")に相当（CodeSnippetsは別クエリで取得しGo側で結合する）。
 	// user_id/post_idともにNOT NULLのためINNER JOINでよい。
 	ListBookmarkedPostsByUser(ctx context.Context, arg ListBookmarkedPostsByUserParams) ([]ListBookmarkedPostsByUserRow, error)
@@ -369,6 +383,8 @@ type Querier interface {
 	ToggleNoteFavorite(ctx context.Context, id int64) error
 	TouchAIConversation(ctx context.Context, arg TouchAIConversationParams) error
 	UnarchiveNote(ctx context.Context, id int64) error
+	// GORMのSave（全カラム上書き）に相当。
+	UpdateBookmarkCollection(ctx context.Context, arg UpdateBookmarkCollectionParams) (BookmarkCollection, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateLearningLogTemplate(ctx context.Context, arg UpdateLearningLogTemplateParams) (LearningLogTemplate, error)
 	// GORMのSave（全カラム上書き）に相当。
