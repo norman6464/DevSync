@@ -8,7 +8,7 @@ ATLAS_DB_URL ?= postgres://devsync:devsync@localhost:5432/devsync?sslmode=disabl
 
 SCHEMA_DIR := internal/infra/database/schema
 SCHEMA_HCL := $(SCHEMA_DIR)/schema.hcl
-SCHEMA_GEN_SQL := internal/infra/database/schema_generated.sql
+SCHEMA_GEN_SQL := $(SCHEMA_DIR)/schema.gen.sql
 
 # 差分計算のための使い捨てDB。ローカルのDockerでコンテナを都度立ち上げる。
 ATLAS_DEV_URL := docker://postgres/18.4/dev
@@ -41,10 +41,11 @@ db-schema-diff: ensure-atlas
 db-schema-lint: ensure-atlas
 	@"$(ATLAS)" schema lint --url "file://$(SCHEMA_HCL)" --dev-url "$(ATLAS_DEV_URL)"
 
-# schema.hcl を sqlc が読めるプレーンSQLへ書き出す
-# （sqlc は HCL を直接読めないための橋渡し）。生成物であり手編集しない。.gitignore 済み。
-# schema/ ディレクトリ自体に書き出すと、Atlas がそのディレクトリをHCLソースとして
-# 読む際にSQLファイルと衝突するため、1つ上の internal/infra/database/ 直下に出力する。
+# schema.hcl を sqlc が読めるプレーンSQLへ書き出す（sqlc は HCL を直接読めないための橋渡し）。
+# schema.hcl は単一ファイルなのでAtlasの読み込み先と衝突せず、schema/ 配下に共存できる。
+# schema.gen.sql は DO NOT EDIT な生成物だがコミット対象（internal/infra/database/schema.go が
+# go:embed してバイナリへ埋め込み、空DBへの起動時自己適用に使うため）。
+# CIはこのtargetを再実行し、git diffでdrift（手直し・生成し忘れ）を検査する。
 db-schema-sql: ensure-atlas
 	@"$(ATLAS)" schema inspect --url "file://$(SCHEMA_HCL)" --dev-url "$(ATLAS_DEV_URL)" --format '{{ sql . }}' > $(SCHEMA_GEN_SQL)
 
