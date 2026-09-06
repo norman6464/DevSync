@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
@@ -36,10 +35,20 @@ func NewLearningLogTemplateHandler(
 	}
 }
 
+// createLearningLogTemplateRequest は学習ログテンプレート作成リクエスト。
+type createLearningLogTemplateRequest struct {
+	Name            string `json:"name" binding:"required"`
+	DefaultTitle    string `json:"default_title"`
+	DefaultContent  string `json:"default_content"`
+	DefaultCategory string `json:"default_category"`
+	DefaultDuration int    `json:"default_duration"`
+	IsDefault       bool   `json:"is_default"`
+}
+
 // Create は新しいテンプレートを作成する。
 func (h *LearningLogTemplateHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
-	input := bindJSON[dto.CreateLearningLogTemplateRequest](c)
+	input := bindJSON[createLearningLogTemplateRequest](c)
 	if input == nil {
 		return
 	}
@@ -105,6 +114,16 @@ func (h *LearningLogTemplateHandler) GetDefault(c *gin.Context) {
 	respondOK(c, template)
 }
 
+// updateLearningLogTemplateRequest は学習ログテンプレート更新リクエスト。
+type updateLearningLogTemplateRequest struct {
+	Name            string `json:"name"`
+	DefaultTitle    string `json:"default_title"`
+	DefaultContent  string `json:"default_content"`
+	DefaultCategory string `json:"default_category"`
+	DefaultDuration *int   `json:"default_duration"`
+	IsDefault       *bool  `json:"is_default"`
+}
+
 // Update はテンプレートを更新する。
 func (h *LearningLogTemplateHandler) Update(c *gin.Context) {
 	id, ok := parseID(c, "id")
@@ -113,7 +132,7 @@ func (h *LearningLogTemplateHandler) Update(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.UpdateLearningLogTemplateRequest](c)
+	input := bindJSON[updateLearningLogTemplateRequest](c)
 	if input == nil {
 		return
 	}

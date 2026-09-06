@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/dto"
+	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
@@ -27,6 +27,13 @@ func NewProjectMilestoneHandler(
 	return &ProjectMilestoneHandler{create: create, list: list, update: update, remove: remove}
 }
 
+// createMilestoneRequest はマイルストーン作成のリクエストボディ。
+type createMilestoneRequest struct {
+	Title       string `json:"title" binding:"required,max=200"`
+	Description string `json:"description" binding:"omitempty,max=5000"`
+	DueDate     string `json:"due_date" binding:"omitempty,max=20"`
+}
+
 // Create はマイルストーンを作成する。
 func (h *ProjectMilestoneHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -35,7 +42,7 @@ func (h *ProjectMilestoneHandler) Create(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[dto.CreateMilestoneRequest](c)
+	req := bindJSON[createMilestoneRequest](c)
 	if req == nil {
 		return
 	}
@@ -64,6 +71,11 @@ func (h *ProjectMilestoneHandler) Create(c *gin.Context) {
 	respondCreated(c, domain.NewMessageResponse("マイルストーンを作成しました"))
 }
 
+// milestoneListResponse はマイルストーン一覧レスポンス。
+type milestoneListResponse struct {
+	Milestones []model.ProjectMilestone `json:"milestones"`
+}
+
 // GetByProjectID はプロジェクトのマイルストーン一覧を取得する。
 func (h *ProjectMilestoneHandler) GetByProjectID(c *gin.Context) {
 	projectID, ok := parseID(c, "id")
@@ -77,9 +89,17 @@ func (h *ProjectMilestoneHandler) GetByProjectID(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.MilestoneListResponse{
+	respondOK(c, milestoneListResponse{
 		Milestones: ensureSlice(milestones),
 	})
+}
+
+// updateMilestoneRequest はマイルストーン更新のリクエストボディ。
+type updateMilestoneRequest struct {
+	Title       string `json:"title" binding:"omitempty,max=200"`
+	Description string `json:"description" binding:"omitempty,max=5000"`
+	DueDate     string `json:"due_date" binding:"omitempty,max=20"`
+	Status      string `json:"status" binding:"omitempty"`
 }
 
 // Update はマイルストーンを更新する。
@@ -90,7 +110,7 @@ func (h *ProjectMilestoneHandler) Update(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[dto.UpdateMilestoneRequest](c)
+	req := bindJSON[updateMilestoneRequest](c)
 	if req == nil {
 		return
 	}

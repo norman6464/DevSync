@@ -1,26 +1,25 @@
-package dto_test
+package handler
 
 import (
 	"testing"
 
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSendMessageRequest_Validation(t *testing.T) {
+func TestConnectUsernameRequest_Validation(t *testing.T) {
 	tests := []struct {
 		name    string
-		request dto.SendMessageRequest
+		request connectUsernameRequest
 		wantErr bool
 	}{
 		{
 			name:    "有効なリクエスト",
-			request: dto.SendMessageRequest{Content: "こんにちは"},
+			request: connectUsernameRequest{Username: "testuser"},
 			wantErr: false,
 		},
 		{
-			name:    "コンテンツが空",
-			request: dto.SendMessageRequest{Content: ""},
+			name:    "ユーザー名が空",
+			request: connectUsernameRequest{Username: ""},
 			wantErr: true,
 		},
 	}

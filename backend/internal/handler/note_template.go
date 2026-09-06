@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
@@ -36,10 +35,20 @@ func NewNoteTemplateHandler(
 	}
 }
 
+// createNoteTemplateRequest はテンプレート作成リクエスト。
+type createNoteTemplateRequest struct {
+	Name            string `json:"name" binding:"required"`
+	Description     string `json:"description"`
+	DefaultTitle    string `json:"default_title"`
+	ContentTemplate string `json:"content_template" binding:"required"`
+	DefaultTags     string `json:"default_tags"`
+	IsDefault       bool   `json:"is_default"`
+}
+
 // Create は新しいテンプレートを作成する。
 func (h *NoteTemplateHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
-	input := bindJSON[dto.CreateNoteTemplateRequest](c)
+	input := bindJSON[createNoteTemplateRequest](c)
 	if input == nil {
 		return
 	}
@@ -105,6 +114,16 @@ func (h *NoteTemplateHandler) GetDefault(c *gin.Context) {
 	respondOK(c, template)
 }
 
+// updateNoteTemplateRequest はテンプレート更新リクエスト。
+type updateNoteTemplateRequest struct {
+	Name            string `json:"name"`
+	Description     string `json:"description"`
+	DefaultTitle    string `json:"default_title"`
+	ContentTemplate string `json:"content_template"`
+	DefaultTags     string `json:"default_tags"`
+	IsDefault       *bool  `json:"is_default"`
+}
+
 // Update はテンプレートを更新する。
 func (h *NoteTemplateHandler) Update(c *gin.Context) {
 	id, ok := parseID(c, "id")
@@ -113,7 +132,7 @@ func (h *NoteTemplateHandler) Update(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.UpdateNoteTemplateRequest](c)
+	input := bindJSON[updateNoteTemplateRequest](c)
 	if input == nil {
 		return
 	}

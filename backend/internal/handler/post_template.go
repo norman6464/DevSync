@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
@@ -33,11 +32,18 @@ func NewPostTemplateHandler(
 	}
 }
 
+// createPostTemplateRequest は投稿テンプレート作成リクエスト。
+type createPostTemplateRequest struct {
+	Name            string `json:"name" binding:"required,min=1,max=100"`
+	TitleTemplate   string `json:"title_template" binding:"omitempty,max=200"`
+	ContentTemplate string `json:"content_template" binding:"required,min=1,max=50000"`
+}
+
 // Create は新しい投稿テンプレートを作成する。
 func (h *PostTemplateHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.CreatePostTemplateRequest](c)
+	input := bindJSON[createPostTemplateRequest](c)
 	if input == nil {
 		return
 	}
@@ -57,6 +63,14 @@ func (h *PostTemplateHandler) Create(c *gin.Context) {
 	respondCreated(c, tmpl)
 }
 
+// postTemplateListResponse は投稿テンプレート一覧レスポンス（ページネーション付き）。
+type postTemplateListResponse struct {
+	Templates []model.PostTemplate `json:"templates"`
+	Total     int64                `json:"total"`
+	Limit     int                  `json:"limit"`
+	Offset    int                  `json:"offset"`
+}
+
 // GetMyTemplates は認証ユーザーの投稿テンプレート一覧を取得する。
 func (h *PostTemplateHandler) GetMyTemplates(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -68,7 +82,7 @@ func (h *PostTemplateHandler) GetMyTemplates(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.PostTemplateListResponse{
+	respondOK(c, postTemplateListResponse{
 		Templates: templates,
 		Total:     total,
 		Limit:     limit,
@@ -84,6 +98,13 @@ func (h *PostTemplateHandler) GetByID(c *gin.Context) {
 	})
 }
 
+// updatePostTemplateRequest は投稿テンプレート更新リクエスト。
+type updatePostTemplateRequest struct {
+	Name            *string `json:"name" binding:"omitempty,max=100"`
+	TitleTemplate   *string `json:"title_template" binding:"omitempty,max=200"`
+	ContentTemplate *string `json:"content_template" binding:"omitempty,max=50000"`
+}
+
 // Update は指定された投稿テンプレートを更新する。
 func (h *PostTemplateHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -92,7 +113,7 @@ func (h *PostTemplateHandler) Update(c *gin.Context) {
 		return
 	}
 
-	input := bindJSON[dto.UpdatePostTemplateRequest](c)
+	input := bindJSON[updatePostTemplateRequest](c)
 	if input == nil {
 		return
 	}

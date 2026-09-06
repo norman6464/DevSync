@@ -3,7 +3,7 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/dto"
+	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
@@ -29,6 +29,13 @@ func NewAIAdviceHandler(uc AIAdviceUseCases) *AIAdviceHandler {
 	return &AIAdviceHandler{uc: uc}
 }
 
+// aiAdviceResponse はAIアドバイス取得レスポンス。
+type aiAdviceResponse struct {
+	Advices            []model.AIAdvice `json:"advices"`
+	LLMAvailable       bool             `json:"llm_available"`
+	DailyChatRemaining int              `json:"daily_chat_remaining"`
+}
+
 // GetAdvice はルールベースアドバイスを取得する。
 // LLM利用可否と本日の残りチャット回数も返す。
 func (h *AIAdviceHandler) GetAdvice(c *gin.Context) {
@@ -50,7 +57,7 @@ func (h *AIAdviceHandler) GetAdvice(c *gin.Context) {
 		}
 	}
 
-	respondOK(c, dto.AIAdviceResponse{
+	respondOK(c, aiAdviceResponse{
 		Advices:            advices,
 		LLMAvailable:       llmAvailable,
 		DailyChatRemaining: remaining,
@@ -73,11 +80,17 @@ func (h *AIAdviceHandler) MarkAsRead(c *gin.Context) {
 	respondOK(c, domain.NewMessageResponse("marked as read"))
 }
 
+// aiChatRequest はLLMチャットリクエスト。
+type aiChatRequest struct {
+	Message        string `json:"message" binding:"required" validate:"required"`
+	ConversationID uint   `json:"conversation_id"`
+}
+
 // Chat はLLMとのチャットメッセージを送信する。
 func (h *AIAdviceHandler) Chat(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.AIChatRequest](c)
+	input := bindJSON[aiChatRequest](c)
 	if input == nil {
 		return
 	}

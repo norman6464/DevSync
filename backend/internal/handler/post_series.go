@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
@@ -45,11 +44,17 @@ func NewPostSeriesHandler(
 	}
 }
 
+// createPostSeriesRequest はシリーズ作成のリクエストボディ。
+type createPostSeriesRequest struct {
+	Title       string `json:"title" binding:"required,max=200"`
+	Description string `json:"description" binding:"omitempty,max=2000"`
+}
+
 // Create は新しい投稿シリーズを作成する。
 func (h *PostSeriesHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	req := bindJSON[dto.CreatePostSeriesRequest](c)
+	req := bindJSON[createPostSeriesRequest](c)
 	if req == nil {
 		return
 	}
@@ -133,6 +138,12 @@ func (h *PostSeriesHandler) GetMySeriesCount(c *gin.Context) {
 	respondOK(c, gin.H{"count": count})
 }
 
+// updatePostSeriesRequest はシリーズ更新のリクエストボディ。
+type updatePostSeriesRequest struct {
+	Title       string `json:"title" binding:"omitempty,max=200"`
+	Description string `json:"description" binding:"omitempty,max=2000"`
+}
+
 // Update は指定IDのシリーズを更新する。
 func (h *PostSeriesHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -141,7 +152,7 @@ func (h *PostSeriesHandler) Update(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[dto.UpdatePostSeriesRequest](c)
+	req := bindJSON[updatePostSeriesRequest](c)
 	if req == nil {
 		return
 	}
@@ -184,6 +195,12 @@ func (h *PostSeriesHandler) GetPosts(c *gin.Context) {
 	respondOK(c, ensureSlice(items))
 }
 
+// addPostToSeriesRequest はシリーズへの投稿追加リクエスト。
+type addPostToSeriesRequest struct {
+	PostID     uint `json:"post_id" binding:"required"`
+	OrderIndex int  `json:"order_index" binding:"omitempty,min=0"`
+}
+
 // AddPost はシリーズに投稿を追加する。
 func (h *PostSeriesHandler) AddPost(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -192,7 +209,7 @@ func (h *PostSeriesHandler) AddPost(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[dto.AddPostToSeriesRequest](c)
+	req := bindJSON[addPostToSeriesRequest](c)
 	if req == nil {
 		return
 	}

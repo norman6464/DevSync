@@ -3,7 +3,6 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
@@ -53,6 +52,13 @@ func NewCodeSnippetHandler(
 	}
 }
 
+// createCodeSnippetRequest はコードスニペット作成リクエスト。
+type createCodeSnippetRequest struct {
+	Language string `json:"language" binding:"required,max=100" validate:"required,max=100"`
+	FileName string `json:"file_name" binding:"omitempty,max=255"`
+	Code     string `json:"code" binding:"required,max=50000" validate:"required,max=50000"`
+}
+
 // Create は投稿にコードスニペットを追加する。
 func (h *CodeSnippetHandler) Create(c *gin.Context) {
 	postID, ok := parseID(c, "id")
@@ -61,7 +67,7 @@ func (h *CodeSnippetHandler) Create(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.CreateCodeSnippetRequest](c)
+	input := bindJSON[createCodeSnippetRequest](c)
 	if input == nil {
 		return
 	}
@@ -111,6 +117,13 @@ func (h *CodeSnippetHandler) GetByID(c *gin.Context) {
 	respondOK(c, ensureSlice(snippets))
 }
 
+// updateCodeSnippetRequest はコードスニペット更新リクエスト。
+type updateCodeSnippetRequest struct {
+	Language string `json:"language" binding:"omitempty,max=100"`
+	FileName string `json:"file_name" binding:"omitempty,max=255"`
+	Code     string `json:"code" binding:"omitempty,max=50000"`
+}
+
 // Update はスニペットを更新する。所有者のみ更新可能。
 func (h *CodeSnippetHandler) Update(c *gin.Context) {
 	id, ok := parseID(c, "id")
@@ -119,7 +132,7 @@ func (h *CodeSnippetHandler) Update(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.UpdateCodeSnippetRequest](c)
+	input := bindJSON[updateCodeSnippetRequest](c)
 	if input == nil {
 		return
 	}
@@ -157,6 +170,12 @@ func (h *CodeSnippetHandler) GetComments(c *gin.Context) {
 	respondOK(c, ensureSlice(comments))
 }
 
+// createSnippetCommentRequest はスニペットコメント作成リクエスト。
+type createSnippetCommentRequest struct {
+	LineNumber int    `json:"line_number" binding:"required" validate:"required"`
+	Content    string `json:"content" binding:"required,max=5000" validate:"required,max=5000"`
+}
+
 // CreateComment はスニペットにインラインコメントを作成する。
 func (h *CodeSnippetHandler) CreateComment(c *gin.Context) {
 	snippetID, ok := parseID(c, "id")
@@ -165,7 +184,7 @@ func (h *CodeSnippetHandler) CreateComment(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.CreateSnippetCommentRequest](c)
+	input := bindJSON[createSnippetCommentRequest](c)
 	if input == nil {
 		return
 	}
@@ -198,6 +217,11 @@ func (h *CodeSnippetHandler) DeleteComment(c *gin.Context) {
 	respondDeleted(c)
 }
 
+// forkSnippetRequest はスニペットフォークリクエスト。
+type forkSnippetRequest struct {
+	TargetPostID uint `json:"target_post_id" binding:"required"`
+}
+
 // Fork はスニペットをフォークして指定投稿にコピーする。
 func (h *CodeSnippetHandler) Fork(c *gin.Context) {
 	snippetID, ok := parseID(c, "id")
@@ -206,7 +230,7 @@ func (h *CodeSnippetHandler) Fork(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	req := bindJSON[dto.ForkSnippetRequest](c)
+	req := bindJSON[forkSnippetRequest](c)
 	if req == nil {
 		return
 	}
@@ -233,6 +257,14 @@ func (h *CodeSnippetHandler) GetByUserLanguage(c *gin.Context) {
 	respondOK(c, ensureSlice(snippets))
 }
 
+// codeSnippetListResponse はコードスニペット検索結果レスポンス。
+type codeSnippetListResponse struct {
+	Snippets []model.CodeSnippet `json:"snippets"`
+	Total    int64               `json:"total"`
+	Limit    int                 `json:"limit"`
+	Offset   int                 `json:"offset"`
+}
+
 // Search はコードスニペットをキーワード検索する。
 func (h *CodeSnippetHandler) Search(c *gin.Context) {
 	q, ok := parseSearchQuery(c)
@@ -248,7 +280,7 @@ func (h *CodeSnippetHandler) Search(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.CodeSnippetListResponse{
+	respondOK(c, codeSnippetListResponse{
 		Snippets: ensureSlice(snippets),
 		Total:    total,
 		Limit:    limit,
@@ -288,6 +320,12 @@ func (h *CodeSnippetHandler) Unfavorite(c *gin.Context) {
 	respondOK(c, domain.NewMessageResponse("お気に入りを解除しました"))
 }
 
+// codeSnippetFavoritesResponse はお気に入りスニペット一覧レスポンス。
+type codeSnippetFavoritesResponse struct {
+	Snippets []model.CodeSnippet `json:"snippets"`
+	Total    int64               `json:"total"`
+}
+
 // GetFavorites はお気に入りスニペット一覧を取得する。
 func (h *CodeSnippetHandler) GetFavorites(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -299,7 +337,7 @@ func (h *CodeSnippetHandler) GetFavorites(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.CodeSnippetFavoritesResponse{
+	respondOK(c, codeSnippetFavoritesResponse{
 		Snippets: ensureSlice(snippets),
 		Total:    total,
 	})

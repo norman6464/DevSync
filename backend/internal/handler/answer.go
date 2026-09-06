@@ -3,7 +3,6 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
@@ -54,6 +53,11 @@ func (h *AnswerHandler) GetByQuestionID(c *gin.Context) {
 	respondOK(c, ensureSlice(answers))
 }
 
+// createAnswerRequest は回答作成のリクエストボディ。
+type createAnswerRequest struct {
+	Body string `json:"body" binding:"required"`
+}
+
 // Create は質問に対して新しい回答を作成する。
 func (h *AnswerHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -62,7 +66,7 @@ func (h *AnswerHandler) Create(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[dto.CreateAnswerRequest](c)
+	req := bindJSON[createAnswerRequest](c)
 	if req == nil {
 		return
 	}
@@ -81,6 +85,11 @@ func (h *AnswerHandler) Create(c *gin.Context) {
 	respondCreated(c, answer)
 }
 
+// updateAnswerRequest は回答更新のリクエストボディ。
+type updateAnswerRequest struct {
+	Body string `json:"body" binding:"required"`
+}
+
 // Update は指定された回答を更新する。
 func (h *AnswerHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -89,7 +98,7 @@ func (h *AnswerHandler) Update(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[dto.UpdateAnswerRequest](c)
+	req := bindJSON[updateAnswerRequest](c)
 	if req == nil {
 		return
 	}
@@ -141,6 +150,11 @@ func (h *AnswerHandler) SetBestAnswer(c *gin.Context) {
 	respondOK(c, domain.NewMessageResponse("ベストアンサーを設定しました"))
 }
 
+// voteRequest は投票のリクエストボディ。質問・回答の投票で共通使用する。
+type voteRequest struct {
+	Value int `json:"value" binding:"required,oneof=1 -1" validate:"required,oneof=1 -1"`
+}
+
 // Vote は回答に投票する。
 func (h *AnswerHandler) Vote(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -149,7 +163,7 @@ func (h *AnswerHandler) Vote(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[dto.VoteRequest](c)
+	req := bindJSON[voteRequest](c)
 	if req == nil {
 		return
 	}

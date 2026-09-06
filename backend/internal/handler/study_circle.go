@@ -3,7 +3,6 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
@@ -68,9 +67,18 @@ func NewStudyCircleHandler(
 	}
 }
 
+// createStudyCircleRequest はスタディサークル作成リクエストのDTO。
+type createStudyCircleRequest struct {
+	Name        string `json:"name" binding:"required,max=200"`
+	Topic       string `json:"topic" binding:"required,max=200"`
+	Description string `json:"description" binding:"omitempty,max=2000"`
+	MaxMembers  int    `json:"max_members" binding:"omitempty,min=0,max=1000"`
+	MemberIDs   []uint `json:"member_ids" binding:"omitempty,max=100"`
+}
+
 // Create はサークルを作成する。
 func (h *StudyCircleHandler) Create(c *gin.Context) {
-	input := bindJSON[dto.CreateStudyCircleRequest](c)
+	input := bindJSON[createStudyCircleRequest](c)
 	if input == nil {
 		return
 	}
@@ -91,6 +99,14 @@ func (h *StudyCircleHandler) Create(c *gin.Context) {
 	respondCreated(c, circle)
 }
 
+// studyCircleListResponse はスタディサークル一覧レスポンス（ページネーション付き）。
+type studyCircleListResponse struct {
+	Circles []model.StudyCircle `json:"circles"`
+	Total   int64               `json:"total"`
+	Limit   int                 `json:"limit"`
+	Offset  int                 `json:"offset"`
+}
+
 // GetMyCircles は参加サークル一覧をページネーション付きで返す。
 func (h *StudyCircleHandler) GetMyCircles(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -100,7 +116,7 @@ func (h *StudyCircleHandler) GetMyCircles(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, dto.StudyCircleListResponse{
+	respondOK(c, studyCircleListResponse{
 		Circles: ensureSlice(circles),
 		Total:   total,
 		Limit:   limit,
@@ -115,13 +131,20 @@ func (h *StudyCircleHandler) GetByID(c *gin.Context) {
 	})
 }
 
+// updateStudyCircleRequest はスタディサークル更新リクエストのDTO。
+type updateStudyCircleRequest struct {
+	Name        *string `json:"name" binding:"omitempty,max=200"`
+	Topic       *string `json:"topic" binding:"omitempty,max=200"`
+	Description *string `json:"description" binding:"omitempty,max=2000"`
+}
+
 // Update はサークル情報を更新する。
 func (h *StudyCircleHandler) Update(c *gin.Context) {
 	id, ok := parseID(c, "id")
 	if !ok {
 		return
 	}
-	input := bindJSON[dto.UpdateStudyCircleRequest](c)
+	input := bindJSON[updateStudyCircleRequest](c)
 	if input == nil {
 		return
 	}
@@ -156,13 +179,18 @@ func (h *StudyCircleHandler) GetMembers(c *gin.Context) {
 	respondOK(c, ensureSlice(members))
 }
 
+// addStudyCircleMemberRequest はスタディサークルメンバー追加リクエストのDTO。
+type addStudyCircleMemberRequest struct {
+	UserID uint `json:"user_id" binding:"required"`
+}
+
 // AddMember はメンバーを追加する。
 func (h *StudyCircleHandler) AddMember(c *gin.Context) {
 	id, ok := parseID(c, "id")
 	if !ok {
 		return
 	}
-	input := bindJSON[dto.AddStudyCircleMemberRequest](c)
+	input := bindJSON[addStudyCircleMemberRequest](c)
 	if input == nil {
 		return
 	}
@@ -192,13 +220,21 @@ func (h *StudyCircleHandler) RemoveMember(c *gin.Context) {
 	respondOK(c, domain.NewMessageResponse("member removed"))
 }
 
+// createStudyCircleStepRequest はスタディサークルステップ作成リクエストのDTO。
+type createStudyCircleStepRequest struct {
+	Title       string `json:"title" binding:"required,max=200"`
+	Description string `json:"description" binding:"omitempty,max=2000"`
+	ResourceURL string `json:"resource_url" binding:"omitempty,max=2000"`
+	OrderIndex  int    `json:"order_index" binding:"omitempty,min=0"`
+}
+
 // CreateStep はステップを追加する。
 func (h *StudyCircleHandler) CreateStep(c *gin.Context) {
 	id, ok := parseID(c, "id")
 	if !ok {
 		return
 	}
-	input := bindJSON[dto.CreateStudyCircleStepRequest](c)
+	input := bindJSON[createStudyCircleStepRequest](c)
 	if input == nil {
 		return
 	}
@@ -217,6 +253,12 @@ func (h *StudyCircleHandler) CreateStep(c *gin.Context) {
 	respondCreated(c, step)
 }
 
+// updateStudyCircleStepRequest はスタディサークルステップ更新リクエストのDTO。
+type updateStudyCircleStepRequest struct {
+	Title       *string `json:"title" binding:"omitempty,max=200"`
+	Description *string `json:"description" binding:"omitempty,max=2000"`
+}
+
 // UpdateStep はステップを更新する。
 func (h *StudyCircleHandler) UpdateStep(c *gin.Context) {
 	id, ok := parseID(c, "id")
@@ -227,7 +269,7 @@ func (h *StudyCircleHandler) UpdateStep(c *gin.Context) {
 	if !ok {
 		return
 	}
-	input := bindJSON[dto.UpdateStudyCircleStepRequest](c)
+	input := bindJSON[updateStudyCircleStepRequest](c)
 	if input == nil {
 		return
 	}
@@ -258,13 +300,18 @@ func (h *StudyCircleHandler) DeleteStep(c *gin.Context) {
 	respondDeleted(c)
 }
 
+// reorderStudyCircleStepsRequest はスタディサークルステップ並べ替えリクエストのDTO。
+type reorderStudyCircleStepsRequest struct {
+	Orders []model.StepOrder `json:"orders" binding:"required"`
+}
+
 // ReorderSteps はステップの順序を変更する。
 func (h *StudyCircleHandler) ReorderSteps(c *gin.Context) {
 	id, ok := parseID(c, "id")
 	if !ok {
 		return
 	}
-	input := bindJSON[dto.ReorderStudyCircleStepsRequest](c)
+	input := bindJSON[reorderStudyCircleStepsRequest](c)
 	if input == nil {
 		return
 	}
@@ -274,6 +321,11 @@ func (h *StudyCircleHandler) ReorderSteps(c *gin.Context) {
 		return
 	}
 	respondOK(c, domain.NewMessageResponse("reordered"))
+}
+
+// updateStudyCircleProgressRequest はスタディサークル進捗更新リクエストのDTO。
+type updateStudyCircleProgressRequest struct {
+	IsCompleted bool `json:"is_completed"`
 }
 
 // UpdateProgress は自分のステップ進捗を更新する。
@@ -286,7 +338,7 @@ func (h *StudyCircleHandler) UpdateProgress(c *gin.Context) {
 	if !ok {
 		return
 	}
-	input := bindJSON[dto.UpdateStudyCircleProgressRequest](c)
+	input := bindJSON[updateStudyCircleProgressRequest](c)
 	if input == nil {
 		return
 	}
@@ -313,13 +365,18 @@ func (h *StudyCircleHandler) GetProgress(c *gin.Context) {
 	respondOK(c, progress)
 }
 
+// createStudyCircleCheckinRequest はスタディサークルチェックイン作成リクエストのDTO。
+type createStudyCircleCheckinRequest struct {
+	Content string `json:"content" binding:"required,max=5000"`
+}
+
 // CreateCheckin は日次チェックインを作成する。
 func (h *StudyCircleHandler) CreateCheckin(c *gin.Context) {
 	id, ok := parseID(c, "id")
 	if !ok {
 		return
 	}
-	input := bindJSON[dto.CreateStudyCircleCheckinRequest](c)
+	input := bindJSON[createStudyCircleCheckinRequest](c)
 	if input == nil {
 		return
 	}
@@ -417,7 +474,7 @@ func (h *StudyCircleHandler) Search(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.StudyCircleListResponse{
+	respondOK(c, studyCircleListResponse{
 		Circles: circles,
 		Total:   total,
 		Limit:   limit,

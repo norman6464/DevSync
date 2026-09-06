@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
@@ -45,11 +44,18 @@ func NewPostCollectionHandler(
 	}
 }
 
+// createPostCollectionRequest はコレクション作成のリクエストボディ。
+type createPostCollectionRequest struct {
+	Title       string `json:"title" binding:"required,max=200"`
+	Description string `json:"description" binding:"omitempty,max=2000"`
+	IsPublic    bool   `json:"is_public"`
+}
+
 // Create は新しい投稿コレクションを作成する。
 func (h *PostCollectionHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	req := bindJSON[dto.CreatePostCollectionRequest](c)
+	req := bindJSON[createPostCollectionRequest](c)
 	if req == nil {
 		return
 	}
@@ -86,6 +92,14 @@ func (h *PostCollectionHandler) GetByID(c *gin.Context) {
 	respondOK(c, collection)
 }
 
+// postCollectionListResponse はコレクション一覧レスポンス（ページネーション付き）。
+type postCollectionListResponse struct {
+	Collections []model.PostCollection `json:"collections"`
+	Total       int64                  `json:"total"`
+	Limit       int                    `json:"limit"`
+	Offset      int                    `json:"offset"`
+}
+
 // GetByUserID は指定ユーザーのコレクション一覧を取得する。
 // 表示権限の判定（自分=全件/他人=公開のみ）はService層に委譲する。
 func (h *PostCollectionHandler) GetByUserID(c *gin.Context) {
@@ -102,7 +116,7 @@ func (h *PostCollectionHandler) GetByUserID(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.PostCollectionListResponse{
+	respondOK(c, postCollectionListResponse{
 		Collections: ensureSlice(collections),
 		Total:       total,
 		Limit:       limit,
@@ -121,12 +135,19 @@ func (h *PostCollectionHandler) GetMyCollections(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.PostCollectionListResponse{
+	respondOK(c, postCollectionListResponse{
 		Collections: ensureSlice(collections),
 		Total:       total,
 		Limit:       limit,
 		Offset:      offset,
 	})
+}
+
+// updatePostCollectionRequest はコレクション更新のリクエストボディ。
+type updatePostCollectionRequest struct {
+	Title       string `json:"title" binding:"omitempty,max=200"`
+	Description string `json:"description" binding:"omitempty,max=2000"`
+	IsPublic    bool   `json:"is_public"`
 }
 
 // Update は指定IDのコレクションを更新する。
@@ -137,7 +158,7 @@ func (h *PostCollectionHandler) Update(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[dto.UpdatePostCollectionRequest](c)
+	req := bindJSON[updatePostCollectionRequest](c)
 	if req == nil {
 		return
 	}
@@ -183,6 +204,12 @@ func (h *PostCollectionHandler) GetPosts(c *gin.Context) {
 	respondOK(c, ensureSlice(items))
 }
 
+// addPostToCollectionRequest はコレクションへの投稿追加リクエスト。
+type addPostToCollectionRequest struct {
+	PostID uint   `json:"post_id" binding:"required"`
+	Note   string `json:"note" binding:"omitempty,max=1000"`
+}
+
 // AddPost はコレクションに投稿を追加する。
 func (h *PostCollectionHandler) AddPost(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -191,7 +218,7 @@ func (h *PostCollectionHandler) AddPost(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[dto.AddPostToCollectionRequest](c)
+	req := bindJSON[addPostToCollectionRequest](c)
 	if req == nil {
 		return
 	}

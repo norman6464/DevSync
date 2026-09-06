@@ -3,7 +3,6 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
@@ -42,6 +41,12 @@ func (h *PostViewHandler) RecordView(c *gin.Context) {
 	respondOK(c, domain.NewMessageResponse("記録しました"))
 }
 
+// viewCountResponse は閲覧数レスポンス
+type viewCountResponse struct {
+	PostID    uint  `json:"post_id"`
+	ViewCount int64 `json:"view_count"`
+}
+
 // GetViewCount は投稿の閲覧数を取得する。
 func (h *PostViewHandler) GetViewCount(c *gin.Context) {
 	postID, ok := parseID(c, "postId")
@@ -54,7 +59,7 @@ func (h *PostViewHandler) GetViewCount(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, dto.ViewCountResponse{PostID: postID, ViewCount: count})
+	respondOK(c, viewCountResponse{PostID: postID, ViewCount: count})
 }
 
 // GetMostViewed は閲覧数の多い投稿ランキングを取得する。

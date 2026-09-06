@@ -3,7 +3,6 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
@@ -43,11 +42,18 @@ func NewBookmarkCollectionHandler(
 	}
 }
 
+// bookmarkCollectionRequest はブックマークコレクション作成・更新リクエスト。
+type bookmarkCollectionRequest struct {
+	Name        string `json:"name" binding:"required,max=200"`
+	Description string `json:"description" binding:"omitempty,max=2000"`
+	Color       string `json:"color" binding:"omitempty,max=50"`
+}
+
 // Create は新しいブックマークコレクションを作成する。
 func (h *BookmarkCollectionHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.BookmarkCollectionRequest](c)
+	input := bindJSON[bookmarkCollectionRequest](c)
 	if input == nil {
 		return
 	}
@@ -88,7 +94,7 @@ func (h *BookmarkCollectionHandler) Update(c *gin.Context) {
 		return
 	}
 
-	input := bindJSON[dto.BookmarkCollectionRequest](c)
+	input := bindJSON[bookmarkCollectionRequest](c)
 	if input == nil {
 		return
 	}
@@ -162,6 +168,12 @@ func (h *BookmarkCollectionHandler) RemovePost(c *gin.Context) {
 	respondDeleted(c)
 }
 
+// bookmarkCollectionPostsResponse はコレクション内投稿一覧レスポンス。
+type bookmarkCollectionPostsResponse struct {
+	Posts []model.Post `json:"posts"`
+	Total int64        `json:"total"`
+}
+
 // GetPosts はコレクション内の投稿一覧を返す。
 func (h *BookmarkCollectionHandler) GetPosts(c *gin.Context) {
 	collectionID, ok := parseID(c, "id")
@@ -176,7 +188,7 @@ func (h *BookmarkCollectionHandler) GetPosts(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.BookmarkCollectionPostsResponse{
+	respondOK(c, bookmarkCollectionPostsResponse{
 		Posts: ensureSlice(posts),
 		Total: total,
 	})

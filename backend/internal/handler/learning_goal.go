@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
@@ -58,11 +57,19 @@ func NewLearningGoalHandler(
 	}
 }
 
+// createGoalRequest は学習目標作成のリクエストボディ。
+type createGoalRequest struct {
+	Title       string `json:"title" binding:"required,min=1,max=200" validate:"required,min=1,max=200"`
+	Description string `json:"description" binding:"omitempty,max=2000"`
+	Category    string `json:"category" binding:"omitempty,max=100"`
+	TargetDate  string `json:"target_date" binding:"omitempty,max=20"`
+}
+
 // Create は新しい学習目標を作成する。
 func (h *LearningGoalHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	req := bindJSON[dto.CreateGoalRequest](c)
+	req := bindJSON[createGoalRequest](c)
 	if req == nil {
 		return
 	}
@@ -89,6 +96,16 @@ func (h *LearningGoalHandler) Create(c *gin.Context) {
 	respondCreated(c, goal)
 }
 
+// updateGoalRequest は学習目標更新のリクエストボディ。
+type updateGoalRequest struct {
+	Title       *string `json:"title" binding:"omitempty,max=200"`
+	Description *string `json:"description" binding:"omitempty,max=2000"`
+	Category    *string `json:"category" binding:"omitempty,max=100"`
+	TargetDate  *string `json:"target_date" binding:"omitempty,max=20"`
+	Progress    *int    `json:"progress" binding:"omitempty,min=0,max=100"`
+	Status      *string `json:"status" binding:"omitempty,max=50"`
+}
+
 // Update は指定された学習目標を更新する。
 func (h *LearningGoalHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -97,7 +114,7 @@ func (h *LearningGoalHandler) Update(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[dto.UpdateGoalRequest](c)
+	req := bindJSON[updateGoalRequest](c)
 	if req == nil {
 		return
 	}
@@ -146,6 +163,14 @@ func (h *LearningGoalHandler) GetByID(c *gin.Context) {
 	})
 }
 
+// goalListResponse は学習目標一覧レスポンス。
+type goalListResponse struct {
+	Goals  []model.LearningGoal `json:"goals"`
+	Total  int64                `json:"total"`
+	Limit  int                  `json:"limit"`
+	Offset int                  `json:"offset"`
+}
+
 // GetByUserID は指定されたユーザーの学習目標一覧を取得する。
 func (h *LearningGoalHandler) GetByUserID(c *gin.Context) {
 	userID, ok := parseID(c, "userId")
@@ -160,7 +185,7 @@ func (h *LearningGoalHandler) GetByUserID(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.GoalListResponse{
+	respondOK(c, goalListResponse{
 		Goals:  goals,
 		Total:  total,
 		Limit:  limit,
@@ -179,7 +204,7 @@ func (h *LearningGoalHandler) GetMyGoals(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.GoalListResponse{
+	respondOK(c, goalListResponse{
 		Goals:  goals,
 		Total:  total,
 		Limit:  limit,
@@ -287,12 +312,18 @@ func (h *LearningGoalHandler) GetPublicGoals(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.GoalListResponse{
+	respondOK(c, goalListResponse{
 		Goals:  goals,
 		Total:  total,
 		Limit:  limit,
 		Offset: offset,
 	})
+}
+
+// goalProgressUpdate は個別の目標進捗更新データ。
+type goalProgressUpdate struct {
+	GoalID   uint `json:"goal_id" binding:"required"`
+	Progress int  `json:"progress" binding:"min=0,max=100"`
 }
 
 // GetPublicByUserID は指定ユーザーの公開済み学習目標一覧を返す。
@@ -309,7 +340,7 @@ func (h *LearningGoalHandler) GetPublicByUserID(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.GoalListResponse{
+	respondOK(c, goalListResponse{
 		Goals:  goals,
 		Total:  total,
 		Limit:  limit,
@@ -317,11 +348,16 @@ func (h *LearningGoalHandler) GetPublicByUserID(c *gin.Context) {
 	})
 }
 
+// batchUpdateProgressRequest は目標進捗一括更新のリクエストボディ。
+type batchUpdateProgressRequest struct {
+	Updates []goalProgressUpdate `json:"updates" binding:"required,min=1,max=50"`
+}
+
 // BatchUpdateProgress は複数の学習目標の進捗を一括更新する。
 func (h *LearningGoalHandler) BatchUpdateProgress(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	req := bindJSON[dto.BatchUpdateProgressRequest](c)
+	req := bindJSON[batchUpdateProgressRequest](c)
 	if req == nil {
 		return
 	}

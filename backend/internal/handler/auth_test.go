@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 	"github.com/stretchr/testify/assert"
@@ -567,4 +568,259 @@ func futureTime() time.Time {
 // pastTime は過去の時刻を返す（期限切れトークン用）。
 func pastTime() time.Time {
 	return time.Now().Add(-1 * time.Hour)
+}
+
+var validate *validator.Validate
+
+func init() {
+	validate = validator.New()
+}
+
+func TestRegisterRequest_Validation(t *testing.T) {
+	tests := []struct {
+		name    string
+		request registerRequest
+		wantErr bool
+	}{
+		{
+			name: "有効なリクエスト",
+			request: registerRequest{
+				Name:            "Test User",
+				Username:        "testuser",
+				Email:           "test@example.com",
+				Password:        "password123",
+				ConfirmPassword: "password123",
+			},
+			wantErr: false,
+		},
+		{
+			name: "名前が空",
+			request: registerRequest{
+				Name:            "",
+				Username:        "testuser",
+				Email:           "test@example.com",
+				Password:        "password123",
+				ConfirmPassword: "password123",
+			},
+			wantErr: true,
+		},
+		{
+			name: "ユーザー名が空",
+			request: registerRequest{
+				Name:            "Test User",
+				Username:        "",
+				Email:           "test@example.com",
+				Password:        "password123",
+				ConfirmPassword: "password123",
+			},
+			wantErr: true,
+		},
+		{
+			name: "無効なメールアドレス",
+			request: registerRequest{
+				Name:            "Test User",
+				Username:        "testuser",
+				Email:           "invalid-email",
+				Password:        "password123",
+				ConfirmPassword: "password123",
+			},
+			wantErr: true,
+		},
+		{
+			name: "パスワードが短すぎる",
+			request: registerRequest{
+				Name:            "Test User",
+				Username:        "testuser",
+				Email:           "test@example.com",
+				Password:        "short",
+				ConfirmPassword: "short",
+			},
+			wantErr: true,
+		},
+		{
+			name: "確認パスワードが空",
+			request: registerRequest{
+				Name:            "Test User",
+				Username:        "testuser",
+				Email:           "test@example.com",
+				Password:        "password123",
+				ConfirmPassword: "",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validate.Struct(tt.request)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestLoginRequest_Validation(t *testing.T) {
+	tests := []struct {
+		name    string
+		request loginRequest
+		wantErr bool
+	}{
+		{
+			name: "有効なリクエスト",
+			request: loginRequest{
+				Email:    "test@example.com",
+				Password: "password123",
+			},
+			wantErr: false,
+		},
+		{
+			name: "無効なメールアドレス",
+			request: loginRequest{
+				Email:    "invalid-email",
+				Password: "password123",
+			},
+			wantErr: true,
+		},
+		{
+			name: "パスワードが空",
+			request: loginRequest{
+				Email:    "test@example.com",
+				Password: "",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validate.Struct(tt.request)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestPasswordResetRequest_Validation(t *testing.T) {
+	tests := []struct {
+		name    string
+		request passwordResetRequest
+		wantErr bool
+	}{
+		{
+			name: "有効なリクエスト",
+			request: passwordResetRequest{
+				Email: "test@example.com",
+			},
+			wantErr: false,
+		},
+		{
+			name: "無効なメールアドレス",
+			request: passwordResetRequest{
+				Email: "invalid-email",
+			},
+			wantErr: true,
+		},
+		{
+			name: "メールアドレスが空",
+			request: passwordResetRequest{
+				Email: "",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validate.Struct(tt.request)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestResetPasswordRequest_Validation(t *testing.T) {
+	tests := []struct {
+		name    string
+		request resetPasswordRequest
+		wantErr bool
+	}{
+		{
+			name: "有効なリクエスト",
+			request: resetPasswordRequest{
+				Token:       "valid-token",
+				NewPassword: "newpassword123",
+			},
+			wantErr: false,
+		},
+		{
+			name: "トークンが空",
+			request: resetPasswordRequest{
+				Token:       "",
+				NewPassword: "newpassword123",
+			},
+			wantErr: true,
+		},
+		{
+			name: "新しいパスワードが短すぎる",
+			request: resetPasswordRequest{
+				Token:       "valid-token",
+				NewPassword: "short",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validate.Struct(tt.request)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestDeleteAccountRequest_Validation(t *testing.T) {
+	tests := []struct {
+		name    string
+		request deleteAccountRequest
+		wantErr bool
+	}{
+		{
+			name: "有効なリクエスト",
+			request: deleteAccountRequest{
+				Password: "password123",
+			},
+			wantErr: false,
+		},
+		{
+			name: "パスワードが空",
+			request: deleteAccountRequest{
+				Password: "",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validate.Struct(tt.request)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
 }

@@ -308,3 +308,33 @@ func TestMessageSendMessage_InvalidID(t *testing.T) {
 	assertStatus(t, w, http.StatusBadRequest)
 	messages.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 }
+
+func TestSendMessageRequest_Validation(t *testing.T) {
+	tests := []struct {
+		name    string
+		request sendMessageRequest
+		wantErr bool
+	}{
+		{
+			name:    "有効なリクエスト",
+			request: sendMessageRequest{Content: "こんにちは"},
+			wantErr: false,
+		},
+		{
+			name:    "コンテンツが空",
+			request: sendMessageRequest{Content: ""},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validate.Struct(tt.request)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}

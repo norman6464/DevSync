@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
@@ -57,11 +56,23 @@ func NewLearningResourceHandler(
 	}
 }
 
+// createResourceRequest は学習リソース作成のリクエストボディ。
+type createResourceRequest struct {
+	Title       string `json:"title" binding:"required,max=300"`
+	Description string `json:"description"`
+	URL         string `json:"url" binding:"omitempty,http_url,max=2000"`
+	Category    string `json:"category" binding:"required"`
+	Difficulty  string `json:"difficulty"`
+	Tags        string `json:"tags"`
+	ImageURL    string `json:"image_url" binding:"omitempty,http_url,max=2000"`
+	IsPublic    *bool  `json:"is_public"`
+}
+
 // Create は新しい学習リソースを作成する。
 func (h *LearningResourceHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	req := bindJSON[dto.CreateResourceRequest](c)
+	req := bindJSON[createResourceRequest](c)
 	if req == nil {
 		return
 	}
@@ -92,6 +103,13 @@ func (h *LearningResourceHandler) Create(c *gin.Context) {
 	respondCreated(c, resource)
 }
 
+// resourceDetailResponse は学習リソース詳細レスポンス（いいね・保存状態付き）。
+type resourceDetailResponse struct {
+	Resource model.LearningResource `json:"resource"`
+	HasLiked bool                   `json:"has_liked"`
+	HasSaved bool                   `json:"has_saved"`
+}
+
 // GetByID は指定されたIDの学習リソースを取得する。
 func (h *LearningResourceHandler) GetByID(c *gin.Context) {
 	id, ok := parseID(c, "id")
@@ -111,11 +129,19 @@ func (h *LearningResourceHandler) GetByID(c *gin.Context) {
 	hasLiked, _ := h.hasLiked.Execute(c.Request.Context(), userID, id)
 	hasSaved, _ := h.hasSaved.Execute(c.Request.Context(), userID, id)
 
-	respondOK(c, dto.ResourceDetailResponse{
+	respondOK(c, resourceDetailResponse{
 		Resource: *resource,
 		HasLiked: hasLiked,
 		HasSaved: hasSaved,
 	})
+}
+
+// resourceListResponse は学習リソース一覧レスポンス。
+type resourceListResponse struct {
+	Resources []model.LearningResource `json:"resources"`
+	Total     int64                    `json:"total"`
+	Limit     int                      `json:"limit"`
+	Offset    int                      `json:"offset"`
 }
 
 // GetByUserID は指定されたユーザーの学習リソース一覧をページネーション付きで取得する。
@@ -134,7 +160,7 @@ func (h *LearningResourceHandler) GetByUserID(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.ResourceListResponse{
+	respondOK(c, resourceListResponse{
 		Resources: resources,
 		Total:     total,
 		Limit:     limit,
@@ -153,7 +179,7 @@ func (h *LearningResourceHandler) GetMyResources(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.ResourceListResponse{
+	respondOK(c, resourceListResponse{
 		Resources: resources,
 		Total:     total,
 		Limit:     limit,
@@ -173,7 +199,7 @@ func (h *LearningResourceHandler) GetPublic(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.ResourceListResponse{
+	respondOK(c, resourceListResponse{
 		Resources: resources,
 		Total:     total,
 		Limit:     limit,
@@ -195,12 +221,24 @@ func (h *LearningResourceHandler) Search(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.ResourceListResponse{
+	respondOK(c, resourceListResponse{
 		Resources: resources,
 		Total:     total,
 		Limit:     limit,
 		Offset:    offset,
 	})
+}
+
+// updateResourceRequest は学習リソース更新のリクエストボディ。
+type updateResourceRequest struct {
+	Title       string `json:"title" binding:"max=300"`
+	Description string `json:"description"`
+	URL         string `json:"url" binding:"omitempty,http_url,max=2000"`
+	Category    string `json:"category"`
+	Difficulty  string `json:"difficulty"`
+	Tags        string `json:"tags"`
+	ImageURL    string `json:"image_url" binding:"omitempty,http_url,max=2000"`
+	IsPublic    *bool  `json:"is_public"`
 }
 
 // Update は指定された学習リソースを更新する。
@@ -211,7 +249,7 @@ func (h *LearningResourceHandler) Update(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[dto.UpdateResourceRequest](c)
+	req := bindJSON[updateResourceRequest](c)
 	if req == nil {
 		return
 	}
@@ -303,7 +341,7 @@ func (h *LearningResourceHandler) GetByDifficulty(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.ResourceListResponse{
+	respondOK(c, resourceListResponse{
 		Resources: resources,
 		Total:     total,
 		Limit:     limit,
@@ -322,7 +360,7 @@ func (h *LearningResourceHandler) GetSaved(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.ResourceListResponse{
+	respondOK(c, resourceListResponse{
 		Resources: resources,
 		Total:     total,
 		Limit:     limit,

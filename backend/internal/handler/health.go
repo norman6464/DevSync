@@ -4,11 +4,15 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/dto"
 )
+
+// statusResponse はステータスレスポンス
+type statusResponse struct {
+	Status string `json:"status"`
+}
 
 // HealthCheck はヘルスチェックエンドポイントのハンドラ。
 // サーバーの稼働状態を確認するために使用する。
 func HealthCheck(c *gin.Context) {
-	respondOK(c, dto.StatusResponse{Status: "ok"})
+	respondOK(c, statusResponse{Status: "ok"})
 }

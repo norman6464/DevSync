@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/dto"
+	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
@@ -22,11 +22,24 @@ func NewResourceProgressHandler(
 	return &ResourceProgressHandler{upsert: upsert, get: get, list: list}
 }
 
+// upsertResourceProgressRequest はリソース進捗のUPSERTリクエスト。
+type upsertResourceProgressRequest struct {
+	ResourceID        uint   `json:"resource_id" binding:"required"`
+	Status            string `json:"status" binding:"required"`
+	CompletionPercent int    `json:"completion_percent"`
+	Note              string `json:"note"`
+}
+
+// resourceProgressResponse はリソース進捗レスポンス。
+type resourceProgressResponse struct {
+	Progress model.ResourceProgress `json:"progress"`
+}
+
 // Upsert はリソース進捗を UPSERT（作成/更新）する。
 func (h *ResourceProgressHandler) Upsert(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	req := bindJSON[dto.UpsertResourceProgressRequest](c)
+	req := bindJSON[upsertResourceProgressRequest](c)
 	if req == nil {
 		return
 	}
@@ -37,7 +50,7 @@ func (h *ResourceProgressHandler) Upsert(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.ResourceProgressResponse{Progress: *result})
+	respondOK(c, resourceProgressResponse{Progress: *result})
 }
 
 // GetByResource は指定リソースの進捗を取得する。
@@ -54,7 +67,15 @@ func (h *ResourceProgressHandler) GetByResource(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.ResourceProgressResponse{Progress: *progress})
+	respondOK(c, resourceProgressResponse{Progress: *progress})
+}
+
+// resourceProgressListResponse はリソース進捗一覧レスポンス。
+type resourceProgressListResponse struct {
+	Progresses []model.ResourceProgress `json:"progresses"`
+	Total      int64                    `json:"total"`
+	Limit      int                      `json:"limit"`
+	Offset     int                      `json:"offset"`
 }
 
 // GetMyProgress は認証ユーザーの進捗一覧を取得する。
@@ -69,7 +90,7 @@ func (h *ResourceProgressHandler) GetMyProgress(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.ResourceProgressListResponse{
+	respondOK(c, resourceProgressListResponse{
 		Progresses: ensureSlice(progresses),
 		Total:      total,
 		Limit:      limit,

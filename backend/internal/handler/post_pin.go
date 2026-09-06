@@ -3,7 +3,6 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
@@ -63,6 +62,11 @@ func (h *PostPinHandler) Unpin(c *gin.Context) {
 	respondOK(c, domain.NewMessageResponse("ピン留めを解除しました"))
 }
 
+// pinsResponse はピン留め一覧レスポンス
+type pinsResponse struct {
+	Pins interface{} `json:"pins"`
+}
+
 // GetByUserID はユーザーのピン留め投稿を取得する。
 func (h *PostPinHandler) GetByUserID(c *gin.Context) {
 	userID, ok := parseID(c, "userId")
@@ -75,7 +79,7 @@ func (h *PostPinHandler) GetByUserID(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, dto.PinsResponse{Pins: pins})
+	respondOK(c, pinsResponse{Pins: pins})
 }
 
 // GetMyCount は認証ユーザー自身のピン留め投稿数を返す。
@@ -89,11 +93,16 @@ func (h *PostPinHandler) GetMyCount(c *gin.Context) {
 	respondOK(c, gin.H{"count": count})
 }
 
+// reorderPinsRequest はピン留め順序変更のリクエスト。
+type reorderPinsRequest struct {
+	PostIDs []uint `json:"post_ids" binding:"required,max=100"`
+}
+
 // Reorder はピン留めの表示順序を変更する。
 func (h *PostPinHandler) Reorder(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	req := bindJSON[dto.ReorderPinsRequest](c)
+	req := bindJSON[reorderPinsRequest](c)
 	if req == nil {
 		return
 	}

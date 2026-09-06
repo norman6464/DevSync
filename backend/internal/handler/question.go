@@ -3,7 +3,6 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
@@ -57,11 +56,18 @@ func NewQuestionHandler(
 	}
 }
 
+// createQuestionRequest は質問作成のリクエストボディ。
+type createQuestionRequest struct {
+	Title string `json:"title" binding:"required,min=1,max=500" validate:"required,min=1,max=500"`
+	Body  string `json:"body" binding:"required,min=1,max=50000" validate:"required,min=1,max=50000"`
+	Tags  string `json:"tags" binding:"omitempty,max=5000"`
+}
+
 // Create は新しい質問を作成する。
 func (h *QuestionHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	req := bindJSON[dto.CreateQuestionRequest](c)
+	req := bindJSON[createQuestionRequest](c)
 	if req == nil {
 		return
 	}
@@ -81,6 +87,14 @@ func (h *QuestionHandler) Create(c *gin.Context) {
 	respondCreated(c, question)
 }
 
+// questionListResponse は質問一覧レスポンス。
+type questionListResponse struct {
+	Questions []model.Question `json:"questions"`
+	Total     int64            `json:"total"`
+	Limit     int              `json:"limit"`
+	Offset    int              `json:"offset"`
+}
+
 // GetAll は質問一覧をページネーション・タグ・ソート付きで取得する。
 func (h *QuestionHandler) GetAll(c *gin.Context) {
 	limit, offset := parseLimitOffset(c)
@@ -93,7 +107,7 @@ func (h *QuestionHandler) GetAll(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.QuestionListResponse{
+	respondOK(c, questionListResponse{
 		Questions: questions,
 		Total:     total,
 		Limit:     limit,
@@ -116,12 +130,18 @@ func (h *QuestionHandler) Search(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.QuestionListResponse{
+	respondOK(c, questionListResponse{
 		Questions: questions,
 		Total:     total,
 		Limit:     limit,
 		Offset:    offset,
 	})
+}
+
+// questionDetailResponse は質問詳細レスポンス（ユーザー投票情報付き）。
+type questionDetailResponse struct {
+	Question model.Question `json:"question"`
+	UserVote int            `json:"user_vote"`
 }
 
 // GetByID は指定されたIDの質問を取得する。
@@ -140,7 +160,7 @@ func (h *QuestionHandler) GetByID(c *gin.Context) {
 
 	userVote, _ := h.userVote.Execute(c.Request.Context(), userID, id)
 
-	respondOK(c, dto.QuestionDetailResponse{
+	respondOK(c, questionDetailResponse{
 		Question: *question,
 		UserVote: userVote,
 	})
@@ -161,7 +181,7 @@ func (h *QuestionHandler) GetByUserID(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.QuestionListResponse{
+	respondOK(c, questionListResponse{
 		Questions: questions,
 		Total:     total,
 		Limit:     limit,
@@ -180,12 +200,19 @@ func (h *QuestionHandler) GetMyQuestions(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.QuestionListResponse{
+	respondOK(c, questionListResponse{
 		Questions: questions,
 		Total:     total,
 		Limit:     limit,
 		Offset:    offset,
 	})
+}
+
+// updateQuestionRequest は質問更新のリクエストボディ。
+type updateQuestionRequest struct {
+	Title string `json:"title" binding:"omitempty,min=1,max=500" validate:"omitempty,min=1,max=500"`
+	Body  string `json:"body" binding:"omitempty,min=1,max=50000"`
+	Tags  string `json:"tags" binding:"omitempty,max=5000"`
 }
 
 // Update は指定された質問を更新する。
@@ -196,7 +223,7 @@ func (h *QuestionHandler) Update(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[dto.UpdateQuestionRequest](c)
+	req := bindJSON[updateQuestionRequest](c)
 	if req == nil {
 		return
 	}
@@ -225,7 +252,7 @@ func (h *QuestionHandler) Vote(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[dto.VoteRequest](c)
+	req := bindJSON[voteRequest](c)
 	if req == nil {
 		return
 	}
@@ -248,7 +275,7 @@ func (h *QuestionHandler) GetSolved(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.QuestionListResponse{
+	respondOK(c, questionListResponse{
 		Questions: questions,
 		Total:     total,
 		Limit:     limit,
@@ -266,7 +293,7 @@ func (h *QuestionHandler) GetUnanswered(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.QuestionListResponse{
+	respondOK(c, questionListResponse{
 		Questions: questions,
 		Total:     total,
 		Limit:     limit,
@@ -333,7 +360,7 @@ func (h *QuestionHandler) GetBookmarks(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.QuestionListResponse{
+	respondOK(c, questionListResponse{
 		Questions: questions,
 		Total:     total,
 		Limit:     limit,
