@@ -35,7 +35,6 @@ func toModelPost(row sqlcgen.Post) model.Post {
 		IsDraft:           row.IsDraft,
 		LikeCount:         int(fromInt64PtrValue(row.LikeCount)),
 		CommentCount:      int(fromInt64PtrValue(row.CommentCount)),
-		BookmarkCount:     int(fromInt64PtrValue(row.BookmarkCount)),
 		ViewCount:         int(fromInt64PtrValue(row.ViewCount)),
 		EstimatedReadTime: int(fromInt64PtrValue(row.EstimatedReadTime)),
 		ScheduledAt:       fromTimestamptz(row.ScheduledAt),
@@ -64,15 +63,22 @@ func (r *postPinRepository) GetByUserID(ctx context.Context, userID uint) ([]mod
 	if err != nil {
 		return nil, err
 	}
+	posts := make([]model.Post, len(rows))
+	for i, row := range rows {
+		posts[i] = toModelPost(row.Post)
+		posts[i].User = toModelUser(row.User)
+	}
+	if err := attachBookmarkCountsToPosts(ctx, r.q, posts); err != nil {
+		return nil, err
+	}
+
 	pins := make([]model.PostPin, len(rows))
 	for i, row := range rows {
-		post := toModelPost(row.Post)
-		post.User = toModelUser(row.User)
 		pins[i] = model.PostPin{
 			ID:        uint(row.PostPin.ID),
 			UserID:    uint(row.PostPin.UserID),
 			PostID:    uint(row.PostPin.PostID),
-			Post:      post,
+			Post:      posts[i],
 			PinOrder:  int(row.PostPin.PinOrder),
 			CreatedAt: timeValue(fromTimestamptz(row.PostPin.CreatedAt)),
 		}

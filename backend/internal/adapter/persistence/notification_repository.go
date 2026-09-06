@@ -141,7 +141,7 @@ func attachNotificationPostAndQuestion(notification *model.Notification, row sql
 			IsDraft:           fromBoolPtr(row.PostIsDraft),
 			LikeCount:         int(fromInt64PtrValue(row.PostLikeCount)),
 			CommentCount:      int(fromInt64PtrValue(row.PostCommentCount)),
-			BookmarkCount:     int(fromInt64PtrValue(row.PostBookmarkCount)),
+			BookmarkCount:     int(row.PostBookmarkCount),
 			ViewCount:         int(fromInt64PtrValue(row.PostViewCount)),
 			EstimatedReadTime: int(fromInt64PtrValue(row.PostEstimatedReadTime)),
 			ScheduledAt:       fromTimestamptz(row.PostScheduledAt),

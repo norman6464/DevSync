@@ -25,6 +25,41 @@ func (q *Queries) CountBookmarkByUserAndPost(ctx context.Context, arg CountBookm
 	return count, err
 }
 
+const countBookmarksByPostIDs = `-- name: CountBookmarksByPostIDs :many
+SELECT post_id, COUNT(*)::bigint AS bookmark_count
+FROM bookmarks
+WHERE post_id = ANY($1::bigint[])
+GROUP BY post_id
+`
+
+type CountBookmarksByPostIDsRow struct {
+	PostID        int64
+	BookmarkCount int64
+}
+
+// post.bookmark_countはORDER BYに使われない表示専用の値だったため列として持たず、
+// 都度bookmarksからCOUNT(*)する。投稿IDのまとめ取りとGo側でのグルーピングで
+// ListCodeSnippetsByPostIDsと同じ形にする。ブックマーク0件の投稿はこの結果に現れない。
+func (q *Queries) CountBookmarksByPostIDs(ctx context.Context, dollar_1 []int64) ([]CountBookmarksByPostIDsRow, error) {
+	rows, err := q.db.Query(ctx, countBookmarksByPostIDs, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CountBookmarksByPostIDsRow
+	for rows.Next() {
+		var i CountBookmarksByPostIDsRow
+		if err := rows.Scan(&i.PostID, &i.BookmarkCount); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const createBookmark = `-- name: CreateBookmark :exec
 INSERT INTO bookmarks (user_id, post_id, created_at) VALUES ($1, $2, now())
 `
@@ -36,15 +71,6 @@ type CreateBookmarkParams struct {
 
 func (q *Queries) CreateBookmark(ctx context.Context, arg CreateBookmarkParams) error {
 	_, err := q.db.Exec(ctx, createBookmark, arg.UserID, arg.PostID)
-	return err
-}
-
-const decrementPostBookmarkCount = `-- name: DecrementPostBookmarkCount :exec
-UPDATE posts SET bookmark_count = GREATEST(bookmark_count - 1, 0) WHERE id = $1
-`
-
-func (q *Queries) DecrementPostBookmarkCount(ctx context.Context, id int64) error {
-	_, err := q.db.Exec(ctx, decrementPostBookmarkCount, id)
 	return err
 }
 
@@ -65,17 +91,8 @@ func (q *Queries) DeleteBookmark(ctx context.Context, arg DeleteBookmarkParams) 
 	return result.RowsAffected(), nil
 }
 
-const incrementPostBookmarkCount = `-- name: IncrementPostBookmarkCount :exec
-UPDATE posts SET bookmark_count = bookmark_count + 1 WHERE id = $1
-`
-
-func (q *Queries) IncrementPostBookmarkCount(ctx context.Context, id int64) error {
-	_, err := q.db.Exec(ctx, incrementPostBookmarkCount, id)
-	return err
-}
-
 const listBookmarkedPostsByUser = `-- name: ListBookmarkedPostsByUser :many
-SELECT posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.like_count, posts.comment_count, posts.bookmark_count, posts.view_count, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.like_count, posts.comment_count, posts.view_count, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM posts
 JOIN bookmarks ON bookmarks.post_id = posts.id
 JOIN users ON users.id = posts.user_id
@@ -115,7 +132,6 @@ func (q *Queries) ListBookmarkedPostsByUser(ctx context.Context, arg ListBookmar
 			&i.Post.IsDraft,
 			&i.Post.LikeCount,
 			&i.Post.CommentCount,
-			&i.Post.BookmarkCount,
 			&i.Post.ViewCount,
 			&i.Post.EstimatedReadTime,
 			&i.Post.ScheduledAt,

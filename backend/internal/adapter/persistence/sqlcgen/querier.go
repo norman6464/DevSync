@@ -52,6 +52,10 @@ type Querier interface {
 	CountBookmarkCollectionItemsByCollection(ctx context.Context, collectionID int64) (int64, error)
 	CountBookmarkCollectionsByUser(ctx context.Context, userID int64) (int64, error)
 	CountBookmarkedQuestions(ctx context.Context, userID int64) (int64, error)
+	// post.bookmark_countはORDER BYに使われない表示専用の値だったため列として持たず、
+	// 都度bookmarksからCOUNT(*)する。投稿IDのまとめ取りとGo側でのグルーピングで
+	// ListCodeSnippetsByPostIDsと同じ形にする。ブックマーク0件の投稿はこの結果に現れない。
+	CountBookmarksByPostIDs(ctx context.Context, dollar_1 []int64) ([]CountBookmarksByPostIDsRow, error)
 	CountBookmarksMadeByUser(ctx context.Context, userID int64) (int64, error)
 	CountBookmarksMadeByUserSince(ctx context.Context, arg CountBookmarksMadeByUserSinceParams) (int64, error)
 	CountBookmarksReceivedByUser(ctx context.Context, userID int64) (int64, error)
@@ -252,7 +256,6 @@ type Querier interface {
 	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
 	CreateYouTubeSearchCache(ctx context.Context, arg CreateYouTubeSearchCacheParams) (YouTubeSearchCach, error)
 	DecrementCommentLikeCount(ctx context.Context, id int64) error
-	DecrementPostBookmarkCount(ctx context.Context, id int64) error
 	DecrementPostCommentCount(ctx context.Context, id int64) error
 	DecrementPostLikeCount(ctx context.Context, id int64) error
 	// 0未満にはしない（GORMのGREATEST(answer_count - 1, 0)に相当）。
@@ -347,7 +350,6 @@ type Querier interface {
 	// actor_idはNOT NULLのためINNER JOINでよいが、post_id/question_idはNULL許容のためLEFT JOIN。
 	// LEFT JOIN側のpost/questionはsqlc.embedを使わず個別カラム選択にすることで、
 	// テーブル自体のスキーマではなくJOINコンテキストからNULL許容性を正しく推論させる。
-	// questionsは論理削除があるため、削除済みはJOIN条件で除外する（GORM Preloadの自動スコープ相当）。
 	FindNotificationsByUserID(ctx context.Context, arg FindNotificationsByUserIDParams) ([]FindNotificationsByUserIDRow, error)
 	GetAIConversationByID(ctx context.Context, id int64) (AiConversation, error)
 	GetAIConversationByIDAndUser(ctx context.Context, arg GetAIConversationByIDAndUserParams) (AiConversation, error)
@@ -454,7 +456,6 @@ type Querier interface {
 	GetZennStatsByUser(ctx context.Context, userID int64) (GetZennStatsByUserRow, error)
 	HasStreakFreezeOnDate(ctx context.Context, arg HasStreakFreezeOnDateParams) (bool, error)
 	IncrementCommentLikeCount(ctx context.Context, id int64) error
-	IncrementPostBookmarkCount(ctx context.Context, id int64) error
 	IncrementPostCommentCount(ctx context.Context, id int64) error
 	IncrementPostLikeCount(ctx context.Context, id int64) error
 	IncrementPostViewCount(ctx context.Context, id int64) error
