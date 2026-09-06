@@ -25,17 +25,17 @@ func (q *Queries) CountSearchStudyCircles(ctx context.Context, name string) (int
 
 const countStudyCircleCheckinsToday = `-- name: CountStudyCircleCheckinsToday :one
 SELECT COUNT(*) FROM study_circle_checkins
-WHERE circle_id = $1 AND user_id = $2 AND date = $3
+WHERE circle_id = $1 AND user_id = $2 AND checked_on = $3
 `
 
 type CountStudyCircleCheckinsTodayParams struct {
-	CircleID int64
-	UserID   int64
-	Date     string
+	CircleID  int64
+	UserID    int64
+	CheckedOn pgtype.Date
 }
 
 func (q *Queries) CountStudyCircleCheckinsToday(ctx context.Context, arg CountStudyCircleCheckinsTodayParams) (int64, error) {
-	row := q.db.QueryRow(ctx, countStudyCircleCheckinsToday, arg.CircleID, arg.UserID, arg.Date)
+	row := q.db.QueryRow(ctx, countStudyCircleCheckinsToday, arg.CircleID, arg.UserID, arg.CheckedOn)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -121,23 +121,23 @@ func (q *Queries) CreateStudyCircle(ctx context.Context, arg CreateStudyCirclePa
 }
 
 const createStudyCircleCheckin = `-- name: CreateStudyCircleCheckin :one
-INSERT INTO study_circle_checkins (circle_id, user_id, date, content, created_at)
+INSERT INTO study_circle_checkins (circle_id, user_id, checked_on, content, created_at)
 VALUES ($1, $2, $3, $4, now())
-RETURNING id, circle_id, user_id, date, content, created_at
+RETURNING id, circle_id, user_id, checked_on, content, created_at
 `
 
 type CreateStudyCircleCheckinParams struct {
-	CircleID int64
-	UserID   int64
-	Date     string
-	Content  string
+	CircleID  int64
+	UserID    int64
+	CheckedOn pgtype.Date
+	Content   string
 }
 
 func (q *Queries) CreateStudyCircleCheckin(ctx context.Context, arg CreateStudyCircleCheckinParams) (StudyCircleCheckin, error) {
 	row := q.db.QueryRow(ctx, createStudyCircleCheckin,
 		arg.CircleID,
 		arg.UserID,
-		arg.Date,
+		arg.CheckedOn,
 		arg.Content,
 	)
 	var i StudyCircleCheckin
@@ -145,7 +145,7 @@ func (q *Queries) CreateStudyCircleCheckin(ctx context.Context, arg CreateStudyC
 		&i.ID,
 		&i.CircleID,
 		&i.UserID,
-		&i.Date,
+		&i.CheckedOn,
 		&i.Content,
 		&i.CreatedAt,
 	)
@@ -355,18 +355,18 @@ func (q *Queries) GetStudyCircleWithOwnerByID(ctx context.Context, id int64) (Ge
 }
 
 const listStudyCircleCheckinDatesByCircle = `-- name: ListStudyCircleCheckinDatesByCircle :many
-SELECT user_id, date FROM study_circle_checkins
+SELECT user_id, checked_on FROM study_circle_checkins
 WHERE circle_id = $1
-ORDER BY date DESC
+ORDER BY checked_on DESC
 `
 
 type ListStudyCircleCheckinDatesByCircleRow struct {
-	UserID int64
-	Date   string
+	UserID    int64
+	CheckedOn pgtype.Date
 }
 
 // GetStreakRankingのN+1回避のため、サークル分のチェックインをまとめて取得し、
-// Go側でuser_idごとにグルーピングする。dateの降順はcalculateCheckinStreakの前提。
+// Go側でuser_idごとにグルーピングする。checked_onの降順はcalculateCheckinStreakの前提。
 func (q *Queries) ListStudyCircleCheckinDatesByCircle(ctx context.Context, circleID int64) ([]ListStudyCircleCheckinDatesByCircleRow, error) {
 	rows, err := q.db.Query(ctx, listStudyCircleCheckinDatesByCircle, circleID)
 	if err != nil {
@@ -376,7 +376,7 @@ func (q *Queries) ListStudyCircleCheckinDatesByCircle(ctx context.Context, circl
 	var items []ListStudyCircleCheckinDatesByCircleRow
 	for rows.Next() {
 		var i ListStudyCircleCheckinDatesByCircleRow
-		if err := rows.Scan(&i.UserID, &i.Date); err != nil {
+		if err := rows.Scan(&i.UserID, &i.CheckedOn); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -388,7 +388,7 @@ func (q *Queries) ListStudyCircleCheckinDatesByCircle(ctx context.Context, circl
 }
 
 const listStudyCircleCheckinsWithUser = `-- name: ListStudyCircleCheckinsWithUser :many
-SELECT study_circle_checkins.id, study_circle_checkins.circle_id, study_circle_checkins.user_id, study_circle_checkins.date, study_circle_checkins.content, study_circle_checkins.created_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT study_circle_checkins.id, study_circle_checkins.circle_id, study_circle_checkins.user_id, study_circle_checkins.checked_on, study_circle_checkins.content, study_circle_checkins.created_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM study_circle_checkins
 JOIN users ON users.id = study_circle_checkins.user_id
 WHERE study_circle_checkins.circle_id = $1
@@ -414,7 +414,7 @@ func (q *Queries) ListStudyCircleCheckinsWithUser(ctx context.Context, circleID 
 			&i.StudyCircleCheckin.ID,
 			&i.StudyCircleCheckin.CircleID,
 			&i.StudyCircleCheckin.UserID,
-			&i.StudyCircleCheckin.Date,
+			&i.StudyCircleCheckin.CheckedOn,
 			&i.StudyCircleCheckin.Content,
 			&i.StudyCircleCheckin.CreatedAt,
 			&i.User.ID,

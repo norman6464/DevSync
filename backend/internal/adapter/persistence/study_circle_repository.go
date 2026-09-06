@@ -81,7 +81,7 @@ func toModelStudyCircleCheckin(row sqlcgen.StudyCircleCheckin) model.StudyCircle
 		ID:        uint(row.ID),
 		CircleID:  uint(row.CircleID),
 		UserID:    uint(row.UserID),
-		Date:      row.Date,
+		Date:      fromDateToDateString(row.CheckedOn),
 		Content:   row.Content,
 		CreatedAt: timeValue(fromTimestamptz(row.CreatedAt)),
 	}
@@ -469,10 +469,10 @@ func (r *studyCircleRepository) GetProgress(ctx context.Context, circleID uint) 
 // CreateCheckin はチェックインをDBに保存する。
 func (r *studyCircleRepository) CreateCheckin(ctx context.Context, checkin *model.StudyCircleCheckin) error {
 	row, err := r.q.CreateStudyCircleCheckin(ctx, sqlcgen.CreateStudyCircleCheckinParams{
-		CircleID: int64(checkin.CircleID),
-		UserID:   int64(checkin.UserID),
-		Date:     checkin.Date,
-		Content:  checkin.Content,
+		CircleID:  int64(checkin.CircleID),
+		UserID:    int64(checkin.UserID),
+		CheckedOn: toDateFromDateString(checkin.Date),
+		Content:   checkin.Content,
 	})
 	if err != nil {
 		return err
@@ -498,11 +498,11 @@ func (r *studyCircleRepository) GetCheckins(ctx context.Context, circleID uint) 
 
 // HasCheckedInToday は今日すでにチェックイン済みかを返す。
 func (r *studyCircleRepository) HasCheckedInToday(ctx context.Context, circleID, userID uint) (bool, error) {
-	today := time.Now().Format("2006-01-02")
+	today := time.Now().Format(dateStringLayout)
 	count, err := r.q.CountStudyCircleCheckinsToday(ctx, sqlcgen.CountStudyCircleCheckinsTodayParams{
-		CircleID: int64(circleID),
-		UserID:   int64(userID),
-		Date:     today,
+		CircleID:  int64(circleID),
+		UserID:    int64(userID),
+		CheckedOn: toDateFromDateString(today),
 	})
 	return count > 0, err
 }
@@ -515,7 +515,7 @@ func (r *studyCircleRepository) GetStreakRanking(ctx context.Context, circleID u
 	}
 
 	// メンバーごとに 1 クエリずつ発行すると N+1 になるため、サークル分のチェックインを
-	// 1 回で引いてメモリ上で user_id ごとにまとめる。date の降順は calculateCheckinStreak の前提。
+	// 1 回で引いてメモリ上で user_id ごとにまとめる。checked_on の降順は calculateCheckinStreak の前提。
 	checkinRows, err := r.q.ListStudyCircleCheckinDatesByCircle(ctx, int64(circleID))
 	if err != nil {
 		return nil, err
@@ -524,7 +524,7 @@ func (r *studyCircleRepository) GetStreakRanking(ctx context.Context, circleID u
 	datesByUser := make(map[uint][]string, len(memberRows))
 	for _, checkin := range checkinRows {
 		userID := uint(checkin.UserID)
-		datesByUser[userID] = append(datesByUser[userID], checkin.Date)
+		datesByUser[userID] = append(datesByUser[userID], fromDateToDateString(checkin.CheckedOn))
 	}
 
 	var results []model.CircleMemberStreak

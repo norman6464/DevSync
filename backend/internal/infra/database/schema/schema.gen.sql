@@ -1153,7 +1153,7 @@ CREATE TABLE "public"."study_circle_checkins" (
   "id" bigserial NOT NULL,
   "circle_id" bigint NOT NULL,
   "user_id" bigint NOT NULL,
-  "date" character varying(10) NOT NULL,
+  "checked_on" date NOT NULL,
   "content" text NOT NULL,
   "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
@@ -1161,7 +1161,7 @@ CREATE TABLE "public"."study_circle_checkins" (
   CONSTRAINT "fk_study_circle_checkins_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
 -- Create index "uq_checkin_unique" to table: "study_circle_checkins"
-CREATE UNIQUE INDEX "uq_checkin_unique" ON "public"."study_circle_checkins" ("circle_id", "user_id", "date");
+CREATE UNIQUE INDEX "uq_checkin_unique" ON "public"."study_circle_checkins" ("circle_id", "user_id", "checked_on");
 -- Create "study_circle_steps" table
 CREATE TABLE "public"."study_circle_steps" (
   "id" bigserial NOT NULL,
