@@ -8,36 +8,34 @@ INSERT INTO book_reviews (
 
 -- name: GetBookReviewWithUserByID :one
 -- GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
--- book_reviewsは論理削除があるため、削除済みは除外する（GORM Firstの自動スコープ相当）。
 SELECT sqlc.embed(book_reviews), sqlc.embed(users)
 FROM book_reviews
 JOIN users ON users.id = book_reviews.user_id
-WHERE book_reviews.id = $1 AND book_reviews.deleted_at IS NULL;
+WHERE book_reviews.id = $1;
 
 -- name: ListBookReviewsByUser :many
 SELECT * FROM book_reviews
-WHERE user_id = $1 AND deleted_at IS NULL
+WHERE user_id = $1
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3;
 
 -- name: CountBookReviewsByUser :one
-SELECT COUNT(*) FROM book_reviews WHERE user_id = $1 AND deleted_at IS NULL;
+SELECT COUNT(*) FROM book_reviews WHERE user_id = $1;
 
 -- name: ListAllBookReviewsWithUser :many
 -- GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 SELECT sqlc.embed(book_reviews), sqlc.embed(users)
 FROM book_reviews
 JOIN users ON users.id = book_reviews.user_id
-WHERE book_reviews.deleted_at IS NULL
 ORDER BY book_reviews.created_at DESC
 LIMIT $1 OFFSET $2;
 
 -- name: CountAllBookReviews :one
-SELECT COUNT(*) FROM book_reviews WHERE deleted_at IS NULL;
+SELECT COUNT(*) FROM book_reviews;
 
 -- name: ListBookReviewsByRating :many
 SELECT * FROM book_reviews
-WHERE user_id = $1 AND rating >= $2 AND rating <= $3 AND deleted_at IS NULL
+WHERE user_id = $1 AND rating >= $2 AND rating <= $3
 ORDER BY created_at DESC;
 
 -- name: SearchBookReviews :many
@@ -46,13 +44,12 @@ SELECT sqlc.embed(book_reviews), sqlc.embed(users)
 FROM book_reviews
 JOIN users ON users.id = book_reviews.user_id
 WHERE (book_reviews.title ILIKE $1 OR book_reviews.author ILIKE $1 OR book_reviews.isbn ILIKE $1)
-    AND book_reviews.deleted_at IS NULL
 ORDER BY book_reviews.created_at DESC
 LIMIT $2 OFFSET $3;
 
 -- name: CountSearchBookReviews :one
 SELECT COUNT(*) FROM book_reviews
-WHERE (title ILIKE $1 OR author ILIKE $1 OR isbn ILIKE $1) AND deleted_at IS NULL;
+WHERE (title ILIKE $1 OR author ILIKE $1 OR isbn ILIKE $1);
 
 -- name: UpdateBookReview :one
 -- GORMのSave（全カラム上書き）に相当。
@@ -64,5 +61,4 @@ WHERE id = $1
 RETURNING *;
 
 -- name: DeleteBookReview :exec
--- GORMのDelete（論理削除）に相当。
-UPDATE book_reviews SET deleted_at = now() WHERE id = $1;
+DELETE FROM book_reviews WHERE id = $1;

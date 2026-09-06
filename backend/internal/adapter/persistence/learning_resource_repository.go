@@ -9,8 +9,6 @@ import (
 )
 
 // learningResourceRepository は [repository.LearningResourceRepository] の sqlc(pgx) 実装。
-// learning_resources は論理削除を使うため、全クエリで deleted_at IS NULL を明示する
-// （GORM が自動的に付与していたスコープ相当）。
 type learningResourceRepository struct {
 	q *sqlcgen.Queries
 }
@@ -65,7 +63,8 @@ func (r *learningResourceRepository) Update(ctx context.Context, resource *model
 	return nil
 }
 
-// Delete は学習リソースを削除する（論理削除）。
+// Delete は学習リソースを削除する。依存するいいね・保存等はFKのON DELETE CASCADEで
+// DBが自動的に削除する。
 func (r *learningResourceRepository) Delete(ctx context.Context, id uint) error {
 	return r.q.DeleteLearningResource(ctx, int64(id))
 }

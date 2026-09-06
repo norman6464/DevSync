@@ -10,7 +10,7 @@ import (
 )
 
 const countAllBookReviews = `-- name: CountAllBookReviews :one
-SELECT COUNT(*) FROM book_reviews WHERE deleted_at IS NULL
+SELECT COUNT(*) FROM book_reviews
 `
 
 func (q *Queries) CountAllBookReviews(ctx context.Context) (int64, error) {
@@ -21,7 +21,7 @@ func (q *Queries) CountAllBookReviews(ctx context.Context) (int64, error) {
 }
 
 const countBookReviewsByUser = `-- name: CountBookReviewsByUser :one
-SELECT COUNT(*) FROM book_reviews WHERE user_id = $1 AND deleted_at IS NULL
+SELECT COUNT(*) FROM book_reviews WHERE user_id = $1
 `
 
 func (q *Queries) CountBookReviewsByUser(ctx context.Context, userID int64) (int64, error) {
@@ -33,7 +33,7 @@ func (q *Queries) CountBookReviewsByUser(ctx context.Context, userID int64) (int
 
 const countSearchBookReviews = `-- name: CountSearchBookReviews :one
 SELECT COUNT(*) FROM book_reviews
-WHERE (title ILIKE $1 OR author ILIKE $1 OR isbn ILIKE $1) AND deleted_at IS NULL
+WHERE (title ILIKE $1 OR author ILIKE $1 OR isbn ILIKE $1)
 `
 
 func (q *Queries) CountSearchBookReviews(ctx context.Context, title string) (int64, error) {
@@ -49,7 +49,7 @@ INSERT INTO book_reviews (
     total_pages, current_page, image_url, status, is_archived, created_at, updated_at
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, now(), now()
-) RETURNING id, user_id, title, author, isbn, rating, review, total_pages, current_page, image_url, status, is_archived, created_at, updated_at, deleted_at
+) RETURNING id, user_id, title, author, isbn, rating, review, total_pages, current_page, image_url, status, is_archived, created_at, updated_at
 `
 
 type CreateBookReviewParams struct {
@@ -96,26 +96,24 @@ func (q *Queries) CreateBookReview(ctx context.Context, arg CreateBookReviewPara
 		&i.IsArchived,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.DeletedAt,
 	)
 	return i, err
 }
 
 const deleteBookReview = `-- name: DeleteBookReview :exec
-UPDATE book_reviews SET deleted_at = now() WHERE id = $1
+DELETE FROM book_reviews WHERE id = $1
 `
 
-// GORMのDelete（論理削除）に相当。
 func (q *Queries) DeleteBookReview(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, deleteBookReview, id)
 	return err
 }
 
 const getBookReviewWithUserByID = `-- name: GetBookReviewWithUserByID :one
-SELECT book_reviews.id, book_reviews.user_id, book_reviews.title, book_reviews.author, book_reviews.isbn, book_reviews.rating, book_reviews.review, book_reviews.total_pages, book_reviews.current_page, book_reviews.image_url, book_reviews.status, book_reviews.is_archived, book_reviews.created_at, book_reviews.updated_at, book_reviews.deleted_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT book_reviews.id, book_reviews.user_id, book_reviews.title, book_reviews.author, book_reviews.isbn, book_reviews.rating, book_reviews.review, book_reviews.total_pages, book_reviews.current_page, book_reviews.image_url, book_reviews.status, book_reviews.is_archived, book_reviews.created_at, book_reviews.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM book_reviews
 JOIN users ON users.id = book_reviews.user_id
-WHERE book_reviews.id = $1 AND book_reviews.deleted_at IS NULL
+WHERE book_reviews.id = $1
 `
 
 type GetBookReviewWithUserByIDRow struct {
@@ -124,7 +122,6 @@ type GetBookReviewWithUserByIDRow struct {
 }
 
 // GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
-// book_reviewsは論理削除があるため、削除済みは除外する（GORM Firstの自動スコープ相当）。
 func (q *Queries) GetBookReviewWithUserByID(ctx context.Context, id int64) (GetBookReviewWithUserByIDRow, error) {
 	row := q.db.QueryRow(ctx, getBookReviewWithUserByID, id)
 	var i GetBookReviewWithUserByIDRow
@@ -143,7 +140,6 @@ func (q *Queries) GetBookReviewWithUserByID(ctx context.Context, id int64) (GetB
 		&i.BookReview.IsArchived,
 		&i.BookReview.CreatedAt,
 		&i.BookReview.UpdatedAt,
-		&i.BookReview.DeletedAt,
 		&i.User.ID,
 		&i.User.Username,
 		&i.User.Name,
@@ -175,10 +171,9 @@ func (q *Queries) GetBookReviewWithUserByID(ctx context.Context, id int64) (GetB
 }
 
 const listAllBookReviewsWithUser = `-- name: ListAllBookReviewsWithUser :many
-SELECT book_reviews.id, book_reviews.user_id, book_reviews.title, book_reviews.author, book_reviews.isbn, book_reviews.rating, book_reviews.review, book_reviews.total_pages, book_reviews.current_page, book_reviews.image_url, book_reviews.status, book_reviews.is_archived, book_reviews.created_at, book_reviews.updated_at, book_reviews.deleted_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT book_reviews.id, book_reviews.user_id, book_reviews.title, book_reviews.author, book_reviews.isbn, book_reviews.rating, book_reviews.review, book_reviews.total_pages, book_reviews.current_page, book_reviews.image_url, book_reviews.status, book_reviews.is_archived, book_reviews.created_at, book_reviews.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM book_reviews
 JOIN users ON users.id = book_reviews.user_id
-WHERE book_reviews.deleted_at IS NULL
 ORDER BY book_reviews.created_at DESC
 LIMIT $1 OFFSET $2
 `
@@ -218,7 +213,6 @@ func (q *Queries) ListAllBookReviewsWithUser(ctx context.Context, arg ListAllBoo
 			&i.BookReview.IsArchived,
 			&i.BookReview.CreatedAt,
 			&i.BookReview.UpdatedAt,
-			&i.BookReview.DeletedAt,
 			&i.User.ID,
 			&i.User.Username,
 			&i.User.Name,
@@ -257,8 +251,8 @@ func (q *Queries) ListAllBookReviewsWithUser(ctx context.Context, arg ListAllBoo
 }
 
 const listBookReviewsByRating = `-- name: ListBookReviewsByRating :many
-SELECT id, user_id, title, author, isbn, rating, review, total_pages, current_page, image_url, status, is_archived, created_at, updated_at, deleted_at FROM book_reviews
-WHERE user_id = $1 AND rating >= $2 AND rating <= $3 AND deleted_at IS NULL
+SELECT id, user_id, title, author, isbn, rating, review, total_pages, current_page, image_url, status, is_archived, created_at, updated_at FROM book_reviews
+WHERE user_id = $1 AND rating >= $2 AND rating <= $3
 ORDER BY created_at DESC
 `
 
@@ -292,7 +286,6 @@ func (q *Queries) ListBookReviewsByRating(ctx context.Context, arg ListBookRevie
 			&i.IsArchived,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.DeletedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -305,8 +298,8 @@ func (q *Queries) ListBookReviewsByRating(ctx context.Context, arg ListBookRevie
 }
 
 const listBookReviewsByUser = `-- name: ListBookReviewsByUser :many
-SELECT id, user_id, title, author, isbn, rating, review, total_pages, current_page, image_url, status, is_archived, created_at, updated_at, deleted_at FROM book_reviews
-WHERE user_id = $1 AND deleted_at IS NULL
+SELECT id, user_id, title, author, isbn, rating, review, total_pages, current_page, image_url, status, is_archived, created_at, updated_at FROM book_reviews
+WHERE user_id = $1
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3
 `
@@ -341,7 +334,6 @@ func (q *Queries) ListBookReviewsByUser(ctx context.Context, arg ListBookReviews
 			&i.IsArchived,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.DeletedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -354,11 +346,10 @@ func (q *Queries) ListBookReviewsByUser(ctx context.Context, arg ListBookReviews
 }
 
 const searchBookReviews = `-- name: SearchBookReviews :many
-SELECT book_reviews.id, book_reviews.user_id, book_reviews.title, book_reviews.author, book_reviews.isbn, book_reviews.rating, book_reviews.review, book_reviews.total_pages, book_reviews.current_page, book_reviews.image_url, book_reviews.status, book_reviews.is_archived, book_reviews.created_at, book_reviews.updated_at, book_reviews.deleted_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT book_reviews.id, book_reviews.user_id, book_reviews.title, book_reviews.author, book_reviews.isbn, book_reviews.rating, book_reviews.review, book_reviews.total_pages, book_reviews.current_page, book_reviews.image_url, book_reviews.status, book_reviews.is_archived, book_reviews.created_at, book_reviews.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM book_reviews
 JOIN users ON users.id = book_reviews.user_id
 WHERE (book_reviews.title ILIKE $1 OR book_reviews.author ILIKE $1 OR book_reviews.isbn ILIKE $1)
-    AND book_reviews.deleted_at IS NULL
 ORDER BY book_reviews.created_at DESC
 LIMIT $2 OFFSET $3
 `
@@ -399,7 +390,6 @@ func (q *Queries) SearchBookReviews(ctx context.Context, arg SearchBookReviewsPa
 			&i.BookReview.IsArchived,
 			&i.BookReview.CreatedAt,
 			&i.BookReview.UpdatedAt,
-			&i.BookReview.DeletedAt,
 			&i.User.ID,
 			&i.User.Username,
 			&i.User.Name,
@@ -443,7 +433,7 @@ UPDATE book_reviews SET
     total_pages = $7, current_page = $8, image_url = $9, status = $10, is_archived = $11,
     updated_at = now()
 WHERE id = $1
-RETURNING id, user_id, title, author, isbn, rating, review, total_pages, current_page, image_url, status, is_archived, created_at, updated_at, deleted_at
+RETURNING id, user_id, title, author, isbn, rating, review, total_pages, current_page, image_url, status, is_archived, created_at, updated_at
 `
 
 type UpdateBookReviewParams struct {
@@ -491,7 +481,6 @@ func (q *Queries) UpdateBookReview(ctx context.Context, arg UpdateBookReviewPara
 		&i.IsArchived,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.DeletedAt,
 	)
 	return i, err
 }

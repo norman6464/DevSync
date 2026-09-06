@@ -82,7 +82,7 @@ func NewGetQuestionUseCase(questions repository.QuestionRepository) *GetQuestion
 	return &GetQuestionUseCase{questions: questions}
 }
 
-// Execute は指定 ID の質問を返す。不在（論理削除済み含む）は 404 を返す。
+// Execute は指定 ID の質問を返す。不在なら 404 を返す。
 func (uc *GetQuestionUseCase) Execute(ctx context.Context, id uint) (*model.Question, error) {
 	question, err := uc.questions.FindByID(ctx, id)
 	if err != nil {
@@ -178,7 +178,7 @@ func NewDeleteQuestionUseCase(questions repository.QuestionRepository) *DeleteQu
 	return &DeleteQuestionUseCase{questions: questions}
 }
 
-// Execute は質問を論理削除する。所有者のみ。
+// Execute は質問を削除する。所有者のみ。
 func (uc *DeleteQuestionUseCase) Execute(ctx context.Context, id, userID uint) error {
 	if _, err := ensureOwner(ctx, uc.questions.FindByID, id, userID,
 		func(q *model.Question) uint { return q.UserID }); err != nil {

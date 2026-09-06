@@ -12,34 +12,33 @@ UPDATE questions SET answer_count = GREATEST(answer_count - 1, 0) WHERE id = $1;
 
 -- name: GetAnswerWithUserByID :one
 -- GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
--- answersは論理削除があるため、削除済みは除外する（GORM Firstの自動スコープ相当）。
 SELECT sqlc.embed(answers), sqlc.embed(users)
 FROM answers
 JOIN users ON users.id = answers.user_id
-WHERE answers.id = $1 AND answers.deleted_at IS NULL;
+WHERE answers.id = $1;
 
 -- name: UpdateAnswer :one
--- GORMのSave（全カラム上書き）に相当。answersは論理削除があるため、GORMが自動付与する
--- deleted_at IS NULLスコープをUPDATEにも明示する。
+-- GORMのSave（全カラム上書き）に相当。
 UPDATE answers SET body = $2, vote_count = $3, is_best = $4, updated_at = now()
-WHERE id = $1 AND deleted_at IS NULL
+WHERE id = $1
 RETURNING *;
 
 -- name: LockQuestionForAnswerChange :one
 -- Delete/SetBestAnswerでのロック順序（質問→回答）をGORM実装と揃えるための行ロック
--- （GORMの clause.Locking{Strength: "UPDATE"} に相当）。質問が存在しない/削除済みなら
+-- （GORMの clause.Locking{Strength: "UPDATE"} に相当）。質問が存在しなければ
 -- pgx.ErrNoRows を返し、呼び出し側のトランザクションを失敗させる。
-SELECT id FROM questions WHERE id = $1 AND deleted_at IS NULL FOR UPDATE;
+SELECT id FROM questions WHERE id = $1 FOR UPDATE;
 
--- name: SoftDeleteAnswer :exec
-UPDATE answers SET deleted_at = now() WHERE id = $1;
+-- name: DeleteAnswer :exec
+-- 依存する投票等はFKのON DELETE CASCADEでDBが自動的に削除する。
+DELETE FROM answers WHERE id = $1;
 
 -- name: ListAnswersByQuestionID :many
 -- GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 SELECT sqlc.embed(answers), sqlc.embed(users)
 FROM answers
 JOIN users ON users.id = answers.user_id
-WHERE answers.question_id = $1 AND answers.deleted_at IS NULL
+WHERE answers.question_id = $1
 ORDER BY answers.is_best DESC, answers.vote_count DESC, answers.created_at ASC;
 
 -- name: ListAnswersByVoteRange :many
@@ -48,24 +47,23 @@ SELECT sqlc.embed(answers), sqlc.embed(users)
 FROM answers
 JOIN users ON users.id = answers.user_id
 WHERE answers.question_id = $1 AND answers.vote_count >= $2 AND answers.vote_count <= $3
-    AND answers.deleted_at IS NULL
 ORDER BY answers.vote_count DESC, answers.created_at ASC;
 
 -- name: ClearBestAnswer :exec
 UPDATE answers SET is_best = false
-WHERE question_id = $1 AND is_best = true AND deleted_at IS NULL;
+WHERE question_id = $1 AND is_best = true;
 
 -- name: SetAnswerBest :exec
-UPDATE answers SET is_best = true WHERE id = $1 AND deleted_at IS NULL;
+UPDATE answers SET is_best = true WHERE id = $1;
 
 -- name: SetQuestionSolved :exec
-UPDATE questions SET is_solved = true WHERE id = $1 AND deleted_at IS NULL;
+UPDATE questions SET is_solved = true WHERE id = $1;
 
 -- name: LockAnswerForVoteChange :one
 -- Vote/RemoveVoteでの差分計算が並行実行で古い値を読まないようにするための行ロック
--- （GORMの clause.Locking{Strength: "UPDATE"} に相当）。回答が存在しない/削除済みなら
+-- （GORMの clause.Locking{Strength: "UPDATE"} に相当）。回答が存在しなければ
 -- pgx.ErrNoRows を返し、呼び出し側のトランザクションを失敗させる。
-SELECT id FROM answers WHERE id = $1 AND deleted_at IS NULL FOR UPDATE;
+SELECT id FROM answers WHERE id = $1 FOR UPDATE;
 
 -- name: GetAnswerVoteByUserAndAnswer :one
 SELECT * FROM answer_votes WHERE user_id = $1 AND answer_id = $2;

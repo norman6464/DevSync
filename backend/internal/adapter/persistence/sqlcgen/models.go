@@ -49,7 +49,6 @@ type Answer struct {
 	IsBest     bool
 	CreatedAt  pgtype.Timestamptz
 	UpdatedAt  pgtype.Timestamptz
-	DeletedAt  pgtype.Timestamptz
 }
 
 type AnswerVote struct {
@@ -75,7 +74,6 @@ type BookReview struct {
 	IsArchived  bool
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz
-	DeletedAt   pgtype.Timestamptz
 }
 
 type Bookmark struct {
@@ -263,7 +261,6 @@ type LearningResource struct {
 	SaveCount   *int64
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz
-	DeletedAt   pgtype.Timestamptz
 }
 
 type Like struct {
@@ -479,7 +476,6 @@ type Project struct {
 	GithubRepoID *int64
 	CreatedAt    pgtype.Timestamptz
 	UpdatedAt    pgtype.Timestamptz
-	DeletedAt    pgtype.Timestamptz
 }
 
 type ProjectMilestone struct {
@@ -518,7 +514,6 @@ type Question struct {
 	IsSolved    bool
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz
-	DeletedAt   pgtype.Timestamptz
 }
 
 type QuestionBookmark struct {

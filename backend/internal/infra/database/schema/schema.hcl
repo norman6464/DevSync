@@ -251,10 +251,6 @@ table "answers" {
     null = false
     type = timestamptz
   }
-  column "deleted_at" {
-    null = true
-    type = timestamptz
-  }
   primary_key {
     columns = [column.id]
   }
@@ -263,9 +259,6 @@ table "answers" {
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
     on_delete   = CASCADE
-  }
-  index "idx_answers_deleted_at" {
-    columns = [column.deleted_at]
   }
   index "idx_answers_question_id" {
     columns = [column.question_id]
@@ -347,10 +340,6 @@ table "book_reviews" {
     null = false
     type = timestamptz
   }
-  column "deleted_at" {
-    null = true
-    type = timestamptz
-  }
   primary_key {
     columns = [column.id]
   }
@@ -359,9 +348,6 @@ table "book_reviews" {
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
     on_delete   = CASCADE
-  }
-  index "idx_book_reviews_deleted_at" {
-    columns = [column.deleted_at]
   }
   index "idx_book_reviews_user_id" {
     columns = [column.user_id]
@@ -1268,10 +1254,6 @@ table "learning_resources" {
     null = false
     type = timestamptz
   }
-  column "deleted_at" {
-    null = true
-    type = timestamptz
-  }
   primary_key {
     columns = [column.id]
   }
@@ -1280,9 +1262,6 @@ table "learning_resources" {
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
     on_delete   = CASCADE
-  }
-  index "idx_learning_resources_deleted_at" {
-    columns = [column.deleted_at]
   }
   index "idx_learning_resources_user_id" {
     columns = [column.user_id]
@@ -2815,10 +2794,6 @@ table "projects" {
     null = false
     type = timestamptz
   }
-  column "deleted_at" {
-    null = true
-    type = timestamptz
-  }
   primary_key {
     columns = [column.id]
   }
@@ -2833,9 +2808,6 @@ table "projects" {
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
     on_delete   = CASCADE
-  }
-  index "idx_projects_deleted_at" {
-    columns = [column.deleted_at]
   }
   index "idx_projects_user_id" {
     columns = [column.user_id]
@@ -3100,10 +3072,6 @@ table "questions" {
     null = false
     type = timestamptz
   }
-  column "deleted_at" {
-    null = true
-    type = timestamptz
-  }
   primary_key {
     columns = [column.id]
   }
@@ -3112,9 +3080,6 @@ table "questions" {
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
     on_delete   = CASCADE
-  }
-  index "idx_questions_deleted_at" {
-    columns = [column.deleted_at]
   }
   index "idx_questions_user_id" {
     columns = [column.user_id]

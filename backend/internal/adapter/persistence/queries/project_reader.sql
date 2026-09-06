@@ -1,6 +1,5 @@
 -- name: GetProjectWithUserAndRepoByID :one
 -- GORMのPreload("User").Preload("GithubRepo")に相当。
--- projectsはGORMの論理削除（deleted_at）付きモデルのためdeleted_at IS NULLを明示する。
 -- github_repo_idはNULL許容のためLEFT JOIN。git_hub_repositoriesはsqlc.embedを使わず
 -- 個別カラム選択にすることで、sqlcのJOIN文脈依存のnull推論を効かせる
 -- （sqlc.embedは対象テーブル自身のスキーマ上のnull許容性をそのまま使ってしまい、
@@ -20,4 +19,4 @@ SELECT sqlc.embed(projects), sqlc.embed(users),
 FROM projects
 JOIN users ON users.id = projects.user_id
 LEFT JOIN git_hub_repositories ghr ON ghr.id = projects.github_repo_id
-WHERE projects.id = $1 AND projects.deleted_at IS NULL;
+WHERE projects.id = $1;

@@ -91,7 +91,8 @@ func (r *questionRepository) Update(ctx context.Context, question *model.Questio
 	return nil
 }
 
-// Delete は質問を論理削除する。
+// Delete は質問を削除する。依存する回答・投票・ブックマーク等はFKのON DELETE CASCADEで
+// DBが自動的に削除する。
 func (r *questionRepository) Delete(ctx context.Context, id uint) error {
 	return r.q.DeleteQuestion(ctx, int64(id))
 }

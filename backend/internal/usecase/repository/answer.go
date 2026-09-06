@@ -14,7 +14,7 @@ type AnswerRepository interface {
 	// 不在の場合は「不在」を表す (nil, nil) を返し、DB 障害だけを error として返す。
 	FindByID(ctx context.Context, id uint) (*model.Answer, error)
 	Update(ctx context.Context, answer *model.Answer) error
-	// Delete は回答を論理削除し、質問の回答数を 1 減らす。
+	// Delete は回答を削除し、質問の回答数を 1 減らす。
 	Delete(ctx context.Context, answer *model.Answer) error
 
 	FindByQuestionID(ctx context.Context, questionID uint) ([]model.Answer, error)

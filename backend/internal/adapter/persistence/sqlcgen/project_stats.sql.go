@@ -16,7 +16,7 @@ SELECT
   count(*) FILTER (WHERE end_date IS NULL) AS ongoing_projects,
   count(*) FILTER (WHERE end_date IS NOT NULL) AS completed_projects
 FROM projects
-WHERE user_id = $1 AND deleted_at IS NULL
+WHERE user_id = $1
 `
 
 type GetProjectStatsRow struct {
@@ -26,8 +26,6 @@ type GetProjectStatsRow struct {
 	CompletedProjects int64
 }
 
-// projects は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
-// deleted_at IS NULL を明示する（Unscoped() されていない全クエリと同じ挙動）。
 func (q *Queries) GetProjectStats(ctx context.Context, userID int64) (GetProjectStatsRow, error) {
 	row := q.db.QueryRow(ctx, getProjectStats, userID)
 	var i GetProjectStatsRow

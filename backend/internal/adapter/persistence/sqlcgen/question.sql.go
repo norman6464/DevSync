@@ -28,7 +28,7 @@ const countBookmarkedQuestions = `-- name: CountBookmarkedQuestions :one
 SELECT COUNT(*) FROM questions
 WHERE questions.id IN (
     SELECT qb.question_id FROM question_bookmarks qb WHERE qb.user_id = $1
-) AND questions.deleted_at IS NULL
+)
 `
 
 func (q *Queries) CountBookmarkedQuestions(ctx context.Context, userID int64) (int64, error) {
@@ -59,7 +59,6 @@ const countQuestions = `-- name: CountQuestions :one
 SELECT COUNT(*) FROM questions
 WHERE ($1::text IS NULL OR questions.tags ILIKE $1)
     AND ($2::text != 'unanswered' OR questions.answer_count = 0)
-    AND questions.deleted_at IS NULL
 `
 
 type CountQuestionsParams struct {
@@ -77,7 +76,6 @@ func (q *Queries) CountQuestions(ctx context.Context, arg CountQuestionsParams) 
 const countSearchQuestions = `-- name: CountSearchQuestions :one
 SELECT COUNT(*) FROM questions
 WHERE (questions.title ILIKE $1 OR questions.body ILIKE $1 OR questions.tags ILIKE $1)
-    AND questions.deleted_at IS NULL
 `
 
 func (q *Queries) CountSearchQuestions(ctx context.Context, title string) (int64, error) {
@@ -88,7 +86,7 @@ func (q *Queries) CountSearchQuestions(ctx context.Context, title string) (int64
 }
 
 const countSolvedQuestions = `-- name: CountSolvedQuestions :one
-SELECT COUNT(*) FROM questions WHERE questions.is_solved = true AND questions.deleted_at IS NULL
+SELECT COUNT(*) FROM questions WHERE questions.is_solved = true
 `
 
 func (q *Queries) CountSolvedQuestions(ctx context.Context) (int64, error) {
@@ -99,7 +97,7 @@ func (q *Queries) CountSolvedQuestions(ctx context.Context) (int64, error) {
 }
 
 const countUnansweredQuestions = `-- name: CountUnansweredQuestions :one
-SELECT COUNT(*) FROM questions WHERE questions.answer_count = 0 AND questions.deleted_at IS NULL
+SELECT COUNT(*) FROM questions WHERE questions.answer_count = 0
 `
 
 func (q *Queries) CountUnansweredQuestions(ctx context.Context) (int64, error) {
@@ -114,7 +112,7 @@ INSERT INTO questions (
     user_id, title, body, tags, vote_count, answer_count, is_solved, created_at, updated_at
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, now(), now()
-) RETURNING id, user_id, title, body, tags, vote_count, answer_count, is_solved, created_at, updated_at, deleted_at
+) RETURNING id, user_id, title, body, tags, vote_count, answer_count, is_solved, created_at, updated_at
 `
 
 type CreateQuestionParams struct {
@@ -149,7 +147,6 @@ func (q *Queries) CreateQuestion(ctx context.Context, arg CreateQuestionParams) 
 		&i.IsSolved,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.DeletedAt,
 	)
 	return i, err
 }
@@ -194,10 +191,10 @@ func (q *Queries) CreateQuestionVote(ctx context.Context, arg CreateQuestionVote
 }
 
 const deleteQuestion = `-- name: DeleteQuestion :exec
-UPDATE questions SET deleted_at = now() WHERE questions.id = $1
+DELETE FROM questions WHERE questions.id = $1
 `
 
-// GORMのDelete（論理削除）に相当。
+// 依存する回答・投票・ブックマーク等はFKのON DELETE CASCADEでDBが自動的に削除する。
 func (q *Queries) DeleteQuestion(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, deleteQuestion, id)
 	return err
@@ -257,10 +254,10 @@ func (q *Queries) GetQuestionVoteByUserAndQuestion(ctx context.Context, arg GetQ
 }
 
 const getQuestionWithUserByID = `-- name: GetQuestionWithUserByID :one
-SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, questions.deleted_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM questions
 JOIN users ON users.id = questions.user_id
-WHERE questions.id = $1 AND questions.deleted_at IS NULL
+WHERE questions.id = $1
 `
 
 type GetQuestionWithUserByIDRow struct {
@@ -269,7 +266,6 @@ type GetQuestionWithUserByIDRow struct {
 }
 
 // GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
-// questionsは論理削除があるため、削除済みは除外する（GORM Firstの自動スコープ相当）。
 func (q *Queries) GetQuestionWithUserByID(ctx context.Context, id int64) (GetQuestionWithUserByIDRow, error) {
 	row := q.db.QueryRow(ctx, getQuestionWithUserByID, id)
 	var i GetQuestionWithUserByIDRow
@@ -284,7 +280,6 @@ func (q *Queries) GetQuestionWithUserByID(ctx context.Context, id int64) (GetQue
 		&i.Question.IsSolved,
 		&i.Question.CreatedAt,
 		&i.Question.UpdatedAt,
-		&i.Question.DeletedAt,
 		&i.User.ID,
 		&i.User.Username,
 		&i.User.Name,
@@ -316,12 +311,12 @@ func (q *Queries) GetQuestionWithUserByID(ctx context.Context, id int64) (GetQue
 }
 
 const listBookmarkedQuestionsWithUser = `-- name: ListBookmarkedQuestionsWithUser :many
-SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, questions.deleted_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM questions
 JOIN users ON users.id = questions.user_id
 WHERE questions.id IN (
     SELECT qb.question_id FROM question_bookmarks qb WHERE qb.user_id = $1
-) AND questions.deleted_at IS NULL
+)
 ORDER BY questions.created_at DESC
 LIMIT $2 OFFSET $3
 `
@@ -357,7 +352,6 @@ func (q *Queries) ListBookmarkedQuestionsWithUser(ctx context.Context, arg ListB
 			&i.Question.IsSolved,
 			&i.Question.CreatedAt,
 			&i.Question.UpdatedAt,
-			&i.Question.DeletedAt,
 			&i.User.ID,
 			&i.User.Username,
 			&i.User.Name,
@@ -396,8 +390,8 @@ func (q *Queries) ListBookmarkedQuestionsWithUser(ctx context.Context, arg ListB
 }
 
 const listQuestionsByUser = `-- name: ListQuestionsByUser :many
-SELECT id, user_id, title, body, tags, vote_count, answer_count, is_solved, created_at, updated_at, deleted_at FROM questions
-WHERE questions.user_id = $1 AND questions.deleted_at IS NULL
+SELECT id, user_id, title, body, tags, vote_count, answer_count, is_solved, created_at, updated_at FROM questions
+WHERE questions.user_id = $1
 ORDER BY questions.created_at DESC
 LIMIT $2 OFFSET $3
 `
@@ -429,7 +423,6 @@ func (q *Queries) ListQuestionsByUser(ctx context.Context, arg ListQuestionsByUs
 			&i.IsSolved,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.DeletedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -442,12 +435,11 @@ func (q *Queries) ListQuestionsByUser(ctx context.Context, arg ListQuestionsByUs
 }
 
 const listQuestionsWithUser = `-- name: ListQuestionsWithUser :many
-SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, questions.deleted_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM questions
 JOIN users ON users.id = questions.user_id
 WHERE ($3::text IS NULL OR questions.tags ILIKE $3)
     AND ($4::text != 'unanswered' OR questions.answer_count = 0)
-    AND questions.deleted_at IS NULL
 ORDER BY
     CASE WHEN $4::text = 'votes' THEN questions.vote_count END DESC,
     questions.created_at DESC
@@ -494,7 +486,6 @@ func (q *Queries) ListQuestionsWithUser(ctx context.Context, arg ListQuestionsWi
 			&i.Question.IsSolved,
 			&i.Question.CreatedAt,
 			&i.Question.UpdatedAt,
-			&i.Question.DeletedAt,
 			&i.User.ID,
 			&i.User.Username,
 			&i.User.Name,
@@ -533,10 +524,10 @@ func (q *Queries) ListQuestionsWithUser(ctx context.Context, arg ListQuestionsWi
 }
 
 const listSolvedQuestionsWithUser = `-- name: ListSolvedQuestionsWithUser :many
-SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, questions.deleted_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM questions
 JOIN users ON users.id = questions.user_id
-WHERE questions.is_solved = true AND questions.deleted_at IS NULL
+WHERE questions.is_solved = true
 ORDER BY questions.created_at DESC
 LIMIT $1 OFFSET $2
 `
@@ -571,7 +562,6 @@ func (q *Queries) ListSolvedQuestionsWithUser(ctx context.Context, arg ListSolve
 			&i.Question.IsSolved,
 			&i.Question.CreatedAt,
 			&i.Question.UpdatedAt,
-			&i.Question.DeletedAt,
 			&i.User.ID,
 			&i.User.Username,
 			&i.User.Name,
@@ -610,10 +600,10 @@ func (q *Queries) ListSolvedQuestionsWithUser(ctx context.Context, arg ListSolve
 }
 
 const listUnansweredQuestionsWithUser = `-- name: ListUnansweredQuestionsWithUser :many
-SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, questions.deleted_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM questions
 JOIN users ON users.id = questions.user_id
-WHERE questions.answer_count = 0 AND questions.deleted_at IS NULL
+WHERE questions.answer_count = 0
 ORDER BY questions.created_at DESC
 LIMIT $1 OFFSET $2
 `
@@ -648,7 +638,6 @@ func (q *Queries) ListUnansweredQuestionsWithUser(ctx context.Context, arg ListU
 			&i.Question.IsSolved,
 			&i.Question.CreatedAt,
 			&i.Question.UpdatedAt,
-			&i.Question.DeletedAt,
 			&i.User.ID,
 			&i.User.Username,
 			&i.User.Name,
@@ -687,11 +676,10 @@ func (q *Queries) ListUnansweredQuestionsWithUser(ctx context.Context, arg ListU
 }
 
 const searchQuestionsWithUser = `-- name: SearchQuestionsWithUser :many
-SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, questions.deleted_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM questions
 JOIN users ON users.id = questions.user_id
 WHERE (questions.title ILIKE $1 OR questions.body ILIKE $1 OR questions.tags ILIKE $1)
-    AND questions.deleted_at IS NULL
 ORDER BY questions.vote_count DESC, questions.created_at DESC
 LIMIT $2 OFFSET $3
 `
@@ -727,7 +715,6 @@ func (q *Queries) SearchQuestionsWithUser(ctx context.Context, arg SearchQuestio
 			&i.Question.IsSolved,
 			&i.Question.CreatedAt,
 			&i.Question.UpdatedAt,
-			&i.Question.DeletedAt,
 			&i.User.ID,
 			&i.User.Username,
 			&i.User.Name,
@@ -769,8 +756,8 @@ const updateQuestion = `-- name: UpdateQuestion :one
 UPDATE questions SET
     title = $2, body = $3, tags = $4, vote_count = $5, answer_count = $6, is_solved = $7,
     updated_at = now()
-WHERE questions.id = $1 AND questions.deleted_at IS NULL
-RETURNING id, user_id, title, body, tags, vote_count, answer_count, is_solved, created_at, updated_at, deleted_at
+WHERE questions.id = $1
+RETURNING id, user_id, title, body, tags, vote_count, answer_count, is_solved, created_at, updated_at
 `
 
 type UpdateQuestionParams struct {
@@ -783,8 +770,7 @@ type UpdateQuestionParams struct {
 	IsSolved    bool
 }
 
-// GORMのSave（全カラム上書き）に相当。questionsは論理削除があるため、GORMが自動付与する
-// deleted_at IS NULLスコープをUPDATEにも明示する。
+// GORMのSave（全カラム上書き）に相当。
 func (q *Queries) UpdateQuestion(ctx context.Context, arg UpdateQuestionParams) (Question, error) {
 	row := q.db.QueryRow(ctx, updateQuestion,
 		arg.ID,
@@ -807,7 +793,6 @@ func (q *Queries) UpdateQuestion(ctx context.Context, arg UpdateQuestionParams) 
 		&i.IsSolved,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.DeletedAt,
 	)
 	return i, err
 }

@@ -43,7 +43,7 @@ SELECT
 FROM notifications
 JOIN users actor ON actor.id = notifications.actor_id
 LEFT JOIN posts ON posts.id = notifications.post_id
-LEFT JOIN questions ON questions.id = notifications.question_id AND questions.deleted_at IS NULL
+LEFT JOIN questions ON questions.id = notifications.question_id
 WHERE notifications.user_id = $1
     AND (sqlc.narg('notification_type')::text IS NULL OR notifications.type = sqlc.narg('notification_type'))
 ORDER BY notifications.created_at DESC

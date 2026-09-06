@@ -25,7 +25,7 @@ func (q *Queries) AdjustAnswerVoteCount(ctx context.Context, arg AdjustAnswerVot
 
 const clearBestAnswer = `-- name: ClearBestAnswer :exec
 UPDATE answers SET is_best = false
-WHERE question_id = $1 AND is_best = true AND deleted_at IS NULL
+WHERE question_id = $1 AND is_best = true
 `
 
 func (q *Queries) ClearBestAnswer(ctx context.Context, questionID int64) error {
@@ -36,7 +36,7 @@ func (q *Queries) ClearBestAnswer(ctx context.Context, questionID int64) error {
 const createAnswer = `-- name: CreateAnswer :one
 INSERT INTO answers (user_id, question_id, body, vote_count, is_best, created_at, updated_at)
 VALUES ($1, $2, $3, $4, $5, now(), now())
-RETURNING id, user_id, question_id, body, vote_count, is_best, created_at, updated_at, deleted_at
+RETURNING id, user_id, question_id, body, vote_count, is_best, created_at, updated_at
 `
 
 type CreateAnswerParams struct {
@@ -65,7 +65,6 @@ func (q *Queries) CreateAnswer(ctx context.Context, arg CreateAnswerParams) (Ans
 		&i.IsBest,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.DeletedAt,
 	)
 	return i, err
 }
@@ -102,6 +101,16 @@ UPDATE questions SET answer_count = GREATEST(answer_count - 1, 0) WHERE id = $1
 // 0未満にはしない（GORMのGREATEST(answer_count - 1, 0)に相当）。
 func (q *Queries) DecrementQuestionAnswerCountFloored(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, decrementQuestionAnswerCountFloored, id)
+	return err
+}
+
+const deleteAnswer = `-- name: DeleteAnswer :exec
+DELETE FROM answers WHERE id = $1
+`
+
+// 依存する投票等はFKのON DELETE CASCADEでDBが自動的に削除する。
+func (q *Queries) DeleteAnswer(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deleteAnswer, id)
 	return err
 }
 
@@ -142,10 +151,10 @@ func (q *Queries) GetAnswerVoteByUserAndAnswer(ctx context.Context, arg GetAnswe
 }
 
 const getAnswerWithUserByID = `-- name: GetAnswerWithUserByID :one
-SELECT answers.id, answers.user_id, answers.question_id, answers.body, answers.vote_count, answers.is_best, answers.created_at, answers.updated_at, answers.deleted_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT answers.id, answers.user_id, answers.question_id, answers.body, answers.vote_count, answers.is_best, answers.created_at, answers.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM answers
 JOIN users ON users.id = answers.user_id
-WHERE answers.id = $1 AND answers.deleted_at IS NULL
+WHERE answers.id = $1
 `
 
 type GetAnswerWithUserByIDRow struct {
@@ -154,7 +163,6 @@ type GetAnswerWithUserByIDRow struct {
 }
 
 // GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
-// answersは論理削除があるため、削除済みは除外する（GORM Firstの自動スコープ相当）。
 func (q *Queries) GetAnswerWithUserByID(ctx context.Context, id int64) (GetAnswerWithUserByIDRow, error) {
 	row := q.db.QueryRow(ctx, getAnswerWithUserByID, id)
 	var i GetAnswerWithUserByIDRow
@@ -167,7 +175,6 @@ func (q *Queries) GetAnswerWithUserByID(ctx context.Context, id int64) (GetAnswe
 		&i.Answer.IsBest,
 		&i.Answer.CreatedAt,
 		&i.Answer.UpdatedAt,
-		&i.Answer.DeletedAt,
 		&i.User.ID,
 		&i.User.Username,
 		&i.User.Name,
@@ -208,10 +215,10 @@ func (q *Queries) IncrementQuestionAnswerCount(ctx context.Context, id int64) er
 }
 
 const listAnswersByQuestionID = `-- name: ListAnswersByQuestionID :many
-SELECT answers.id, answers.user_id, answers.question_id, answers.body, answers.vote_count, answers.is_best, answers.created_at, answers.updated_at, answers.deleted_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT answers.id, answers.user_id, answers.question_id, answers.body, answers.vote_count, answers.is_best, answers.created_at, answers.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM answers
 JOIN users ON users.id = answers.user_id
-WHERE answers.question_id = $1 AND answers.deleted_at IS NULL
+WHERE answers.question_id = $1
 ORDER BY answers.is_best DESC, answers.vote_count DESC, answers.created_at ASC
 `
 
@@ -239,7 +246,6 @@ func (q *Queries) ListAnswersByQuestionID(ctx context.Context, questionID int64)
 			&i.Answer.IsBest,
 			&i.Answer.CreatedAt,
 			&i.Answer.UpdatedAt,
-			&i.Answer.DeletedAt,
 			&i.User.ID,
 			&i.User.Username,
 			&i.User.Name,
@@ -278,11 +284,10 @@ func (q *Queries) ListAnswersByQuestionID(ctx context.Context, questionID int64)
 }
 
 const listAnswersByVoteRange = `-- name: ListAnswersByVoteRange :many
-SELECT answers.id, answers.user_id, answers.question_id, answers.body, answers.vote_count, answers.is_best, answers.created_at, answers.updated_at, answers.deleted_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT answers.id, answers.user_id, answers.question_id, answers.body, answers.vote_count, answers.is_best, answers.created_at, answers.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM answers
 JOIN users ON users.id = answers.user_id
 WHERE answers.question_id = $1 AND answers.vote_count >= $2 AND answers.vote_count <= $3
-    AND answers.deleted_at IS NULL
 ORDER BY answers.vote_count DESC, answers.created_at ASC
 `
 
@@ -316,7 +321,6 @@ func (q *Queries) ListAnswersByVoteRange(ctx context.Context, arg ListAnswersByV
 			&i.Answer.IsBest,
 			&i.Answer.CreatedAt,
 			&i.Answer.UpdatedAt,
-			&i.Answer.DeletedAt,
 			&i.User.ID,
 			&i.User.Username,
 			&i.User.Name,
@@ -355,11 +359,11 @@ func (q *Queries) ListAnswersByVoteRange(ctx context.Context, arg ListAnswersByV
 }
 
 const lockAnswerForVoteChange = `-- name: LockAnswerForVoteChange :one
-SELECT id FROM answers WHERE id = $1 AND deleted_at IS NULL FOR UPDATE
+SELECT id FROM answers WHERE id = $1 FOR UPDATE
 `
 
 // Vote/RemoveVoteでの差分計算が並行実行で古い値を読まないようにするための行ロック
-// （GORMの clause.Locking{Strength: "UPDATE"} に相当）。回答が存在しない/削除済みなら
+// （GORMの clause.Locking{Strength: "UPDATE"} に相当）。回答が存在しなければ
 // pgx.ErrNoRows を返し、呼び出し側のトランザクションを失敗させる。
 func (q *Queries) LockAnswerForVoteChange(ctx context.Context, id int64) (int64, error) {
 	row := q.db.QueryRow(ctx, lockAnswerForVoteChange, id)
@@ -369,11 +373,11 @@ func (q *Queries) LockAnswerForVoteChange(ctx context.Context, id int64) (int64,
 }
 
 const lockQuestionForAnswerChange = `-- name: LockQuestionForAnswerChange :one
-SELECT id FROM questions WHERE id = $1 AND deleted_at IS NULL FOR UPDATE
+SELECT id FROM questions WHERE id = $1 FOR UPDATE
 `
 
 // Delete/SetBestAnswerでのロック順序（質問→回答）をGORM実装と揃えるための行ロック
-// （GORMの clause.Locking{Strength: "UPDATE"} に相当）。質問が存在しない/削除済みなら
+// （GORMの clause.Locking{Strength: "UPDATE"} に相当）。質問が存在しなければ
 // pgx.ErrNoRows を返し、呼び出し側のトランザクションを失敗させる。
 func (q *Queries) LockQuestionForAnswerChange(ctx context.Context, id int64) (int64, error) {
 	row := q.db.QueryRow(ctx, lockQuestionForAnswerChange, id)
@@ -383,7 +387,7 @@ func (q *Queries) LockQuestionForAnswerChange(ctx context.Context, id int64) (in
 }
 
 const setAnswerBest = `-- name: SetAnswerBest :exec
-UPDATE answers SET is_best = true WHERE id = $1 AND deleted_at IS NULL
+UPDATE answers SET is_best = true WHERE id = $1
 `
 
 func (q *Queries) SetAnswerBest(ctx context.Context, id int64) error {
@@ -392,7 +396,7 @@ func (q *Queries) SetAnswerBest(ctx context.Context, id int64) error {
 }
 
 const setQuestionSolved = `-- name: SetQuestionSolved :exec
-UPDATE questions SET is_solved = true WHERE id = $1 AND deleted_at IS NULL
+UPDATE questions SET is_solved = true WHERE id = $1
 `
 
 func (q *Queries) SetQuestionSolved(ctx context.Context, id int64) error {
@@ -400,19 +404,10 @@ func (q *Queries) SetQuestionSolved(ctx context.Context, id int64) error {
 	return err
 }
 
-const softDeleteAnswer = `-- name: SoftDeleteAnswer :exec
-UPDATE answers SET deleted_at = now() WHERE id = $1
-`
-
-func (q *Queries) SoftDeleteAnswer(ctx context.Context, id int64) error {
-	_, err := q.db.Exec(ctx, softDeleteAnswer, id)
-	return err
-}
-
 const updateAnswer = `-- name: UpdateAnswer :one
 UPDATE answers SET body = $2, vote_count = $3, is_best = $4, updated_at = now()
-WHERE id = $1 AND deleted_at IS NULL
-RETURNING id, user_id, question_id, body, vote_count, is_best, created_at, updated_at, deleted_at
+WHERE id = $1
+RETURNING id, user_id, question_id, body, vote_count, is_best, created_at, updated_at
 `
 
 type UpdateAnswerParams struct {
@@ -422,8 +417,7 @@ type UpdateAnswerParams struct {
 	IsBest    bool
 }
 
-// GORMのSave（全カラム上書き）に相当。answersは論理削除があるため、GORMが自動付与する
-// deleted_at IS NULLスコープをUPDATEにも明示する。
+// GORMのSave（全カラム上書き）に相当。
 func (q *Queries) UpdateAnswer(ctx context.Context, arg UpdateAnswerParams) (Answer, error) {
 	row := q.db.QueryRow(ctx, updateAnswer,
 		arg.ID,
@@ -441,7 +435,6 @@ func (q *Queries) UpdateAnswer(ctx context.Context, arg UpdateAnswerParams) (Ans
 		&i.IsBest,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.DeletedAt,
 	)
 	return i, err
 }

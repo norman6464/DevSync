@@ -19,11 +19,11 @@ WHERE user_id = $1
     AND (sqlc.narg('status')::text IS NULL OR status = sqlc.narg('status'));
 
 -- name: ListResourceProgressByUser :many
--- GORMのPreload("Resource")に相当。resourceは論理削除（deleted_at）付きモデルのため、
--- ソフトデリート済みリソースはJOIN条件で除外しResourceがnilになるようLEFT JOINにする
--- （resource_idの列自体はNOT NULLだが、論理削除の有無でJOINの成否が変わるため）。
--- id を第2ソートキーにして、updated_at 同値の行でもページングが安定するようにする
--- （移行前のGORM実装と同じ）。
+-- GORMのPreload("Resource")に相当。resource_idはFKのON DELETE CASCADEにより、リソース削除時は
+-- resource_progresses自体も一緒に削除されるため、このLEFT JOINが実際にResource側NULLを
+-- 返すことはない想定だが、既存のGo側の型（Resourceがポインタ）をそのまま使えるようLEFT JOINの
+-- ままにしている。id を第2ソートキーにして、updated_at 同値の行でもページングが安定するように
+-- する（移行前のGORM実装と同じ）。
 SELECT sqlc.embed(resource_progresses),
     lr.id AS resource_id_2,
     lr.user_id AS resource_user_id,
@@ -40,7 +40,7 @@ SELECT sqlc.embed(resource_progresses),
     lr.created_at AS resource_created_at,
     lr.updated_at AS resource_updated_at
 FROM resource_progresses
-LEFT JOIN learning_resources lr ON lr.id = resource_progresses.resource_id AND lr.deleted_at IS NULL
+LEFT JOIN learning_resources lr ON lr.id = resource_progresses.resource_id
 WHERE resource_progresses.user_id = $1
     AND (sqlc.narg('status')::text IS NULL OR resource_progresses.status = sqlc.narg('status'))
 ORDER BY resource_progresses.updated_at DESC, resource_progresses.id DESC

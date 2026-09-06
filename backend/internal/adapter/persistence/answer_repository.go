@@ -94,9 +94,10 @@ func (r *answerRepository) Update(ctx context.Context, answer *model.Answer) err
 	return nil
 }
 
-// Delete は回答の論理削除と質問の回答数の減算（0 未満にはしない）を
-// 同一トランザクションで行う。SetBestAnswer とロック順序（質問 → 回答）を
-// 揃えるため、先に質問行を FOR UPDATE でロックしてデッドロックを防ぐ。
+// Delete は回答の削除と質問の回答数の減算（0 未満にはしない）を
+// 同一トランザクションで行う。依存する投票等はFKのON DELETE CASCADEでDBが自動的に削除する。
+// SetBestAnswer とロック順序（質問 → 回答）を揃えるため、先に質問行を FOR UPDATE で
+// ロックしてデッドロックを防ぐ。
 func (r *answerRepository) Delete(ctx context.Context, answer *model.Answer) error {
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
@@ -108,7 +109,7 @@ func (r *answerRepository) Delete(ctx context.Context, answer *model.Answer) err
 	if _, err := q.LockQuestionForAnswerChange(ctx, int64(answer.QuestionID)); err != nil {
 		return err
 	}
-	if err := q.SoftDeleteAnswer(ctx, int64(answer.ID)); err != nil {
+	if err := q.DeleteAnswer(ctx, int64(answer.ID)); err != nil {
 		return err
 	}
 	if err := q.DecrementQuestionAnswerCountFloored(ctx, int64(answer.QuestionID)); err != nil {

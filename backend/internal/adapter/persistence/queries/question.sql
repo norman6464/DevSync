@@ -7,24 +7,22 @@ INSERT INTO questions (
 
 -- name: GetQuestionWithUserByID :one
 -- GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
--- questionsは論理削除があるため、削除済みは除外する（GORM Firstの自動スコープ相当）。
 SELECT sqlc.embed(questions), sqlc.embed(users)
 FROM questions
 JOIN users ON users.id = questions.user_id
-WHERE questions.id = $1 AND questions.deleted_at IS NULL;
+WHERE questions.id = $1;
 
 -- name: UpdateQuestion :one
--- GORMのSave（全カラム上書き）に相当。questionsは論理削除があるため、GORMが自動付与する
--- deleted_at IS NULLスコープをUPDATEにも明示する。
+-- GORMのSave（全カラム上書き）に相当。
 UPDATE questions SET
     title = $2, body = $3, tags = $4, vote_count = $5, answer_count = $6, is_solved = $7,
     updated_at = now()
-WHERE questions.id = $1 AND questions.deleted_at IS NULL
+WHERE questions.id = $1
 RETURNING *;
 
 -- name: DeleteQuestion :exec
--- GORMのDelete（論理削除）に相当。
-UPDATE questions SET deleted_at = now() WHERE questions.id = $1;
+-- 依存する回答・投票・ブックマーク等はFKのON DELETE CASCADEでDBが自動的に削除する。
+DELETE FROM questions WHERE questions.id = $1;
 
 -- name: ListQuestionsWithUser :many
 -- GORMのPreload("User")に相当。tag_patternは呼び出し側で "%\"" + escapeLikeChars(tag) + "\"%"
@@ -35,7 +33,6 @@ FROM questions
 JOIN users ON users.id = questions.user_id
 WHERE (sqlc.narg('tag_pattern')::text IS NULL OR questions.tags ILIKE sqlc.narg('tag_pattern'))
     AND (sqlc.arg('sort')::text != 'unanswered' OR questions.answer_count = 0)
-    AND questions.deleted_at IS NULL
 ORDER BY
     CASE WHEN sqlc.arg('sort')::text = 'votes' THEN questions.vote_count END DESC,
     questions.created_at DESC
@@ -44,27 +41,24 @@ LIMIT $1 OFFSET $2;
 -- name: CountQuestions :one
 SELECT COUNT(*) FROM questions
 WHERE (sqlc.narg('tag_pattern')::text IS NULL OR questions.tags ILIKE sqlc.narg('tag_pattern'))
-    AND (sqlc.arg('sort')::text != 'unanswered' OR questions.answer_count = 0)
-    AND questions.deleted_at IS NULL;
+    AND (sqlc.arg('sort')::text != 'unanswered' OR questions.answer_count = 0);
 
 -- name: SearchQuestionsWithUser :many
 SELECT sqlc.embed(questions), sqlc.embed(users)
 FROM questions
 JOIN users ON users.id = questions.user_id
 WHERE (questions.title ILIKE $1 OR questions.body ILIKE $1 OR questions.tags ILIKE $1)
-    AND questions.deleted_at IS NULL
 ORDER BY questions.vote_count DESC, questions.created_at DESC
 LIMIT $2 OFFSET $3;
 
 -- name: CountSearchQuestions :one
 SELECT COUNT(*) FROM questions
-WHERE (questions.title ILIKE $1 OR questions.body ILIKE $1 OR questions.tags ILIKE $1)
-    AND questions.deleted_at IS NULL;
+WHERE (questions.title ILIKE $1 OR questions.body ILIKE $1 OR questions.tags ILIKE $1);
 
 -- name: ListQuestionsByUser :many
 -- Userは含めない（移行前からの挙動。一覧系の中でこれだけPreloadしない）。
 SELECT * FROM questions
-WHERE questions.user_id = $1 AND questions.deleted_at IS NULL
+WHERE questions.user_id = $1
 ORDER BY questions.created_at DESC
 LIMIT $2 OFFSET $3;
 
@@ -72,23 +66,23 @@ LIMIT $2 OFFSET $3;
 SELECT sqlc.embed(questions), sqlc.embed(users)
 FROM questions
 JOIN users ON users.id = questions.user_id
-WHERE questions.is_solved = true AND questions.deleted_at IS NULL
+WHERE questions.is_solved = true
 ORDER BY questions.created_at DESC
 LIMIT $1 OFFSET $2;
 
 -- name: CountSolvedQuestions :one
-SELECT COUNT(*) FROM questions WHERE questions.is_solved = true AND questions.deleted_at IS NULL;
+SELECT COUNT(*) FROM questions WHERE questions.is_solved = true;
 
 -- name: ListUnansweredQuestionsWithUser :many
 SELECT sqlc.embed(questions), sqlc.embed(users)
 FROM questions
 JOIN users ON users.id = questions.user_id
-WHERE questions.answer_count = 0 AND questions.deleted_at IS NULL
+WHERE questions.answer_count = 0
 ORDER BY questions.created_at DESC
 LIMIT $1 OFFSET $2;
 
 -- name: CountUnansweredQuestions :one
-SELECT COUNT(*) FROM questions WHERE questions.answer_count = 0 AND questions.deleted_at IS NULL;
+SELECT COUNT(*) FROM questions WHERE questions.answer_count = 0;
 
 -- name: ListBookmarkedQuestionsWithUser :many
 SELECT sqlc.embed(questions), sqlc.embed(users)
@@ -96,7 +90,7 @@ FROM questions
 JOIN users ON users.id = questions.user_id
 WHERE questions.id IN (
     SELECT qb.question_id FROM question_bookmarks qb WHERE qb.user_id = $1
-) AND questions.deleted_at IS NULL
+)
 ORDER BY questions.created_at DESC
 LIMIT $2 OFFSET $3;
 
@@ -104,7 +98,7 @@ LIMIT $2 OFFSET $3;
 SELECT COUNT(*) FROM questions
 WHERE questions.id IN (
     SELECT qb.question_id FROM question_bookmarks qb WHERE qb.user_id = $1
-) AND questions.deleted_at IS NULL;
+);
 
 -- name: GetQuestionVoteByUserAndQuestion :one
 SELECT * FROM question_votes

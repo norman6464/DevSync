@@ -10,8 +10,6 @@ import (
 )
 
 // projectRepository は [repository.ProjectRepository] の sqlc(pgx) 実装。
-// projects は論理削除を使うため、全クエリで deleted_at IS NULL を明示する
-// （GORM が自動的に付与していたスコープ相当）。
 type projectRepository struct {
 	q *sqlcgen.Queries
 }
@@ -100,7 +98,8 @@ func (r *projectRepository) Update(ctx context.Context, project *model.Project) 
 	return nil
 }
 
-// Delete はプロジェクトを削除する（モデルが論理削除を持つため soft delete になる）。
+// Delete はプロジェクトを削除する。依存するマイルストーン等はFKのON DELETE CASCADEで
+// DBが自動的に削除する。
 func (r *projectRepository) Delete(ctx context.Context, id uint) error {
 	return r.q.DeleteProject(ctx, int64(id))
 }
