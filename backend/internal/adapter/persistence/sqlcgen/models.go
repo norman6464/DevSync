@@ -650,7 +650,7 @@ type SpotifyRecentTrack struct {
 type StreakFreeze struct {
 	ID        int64
 	UserID    int64
-	UsedDate  string
+	UsedOn    pgtype.Date
 	Month     int64
 	Year      int64
 	CreatedAt pgtype.Timestamptz

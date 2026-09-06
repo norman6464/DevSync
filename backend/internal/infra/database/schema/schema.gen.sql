@@ -1120,7 +1120,7 @@ CREATE INDEX "idx_spotify_recent_tracks_user_id" ON "public"."spotify_recent_tra
 CREATE TABLE "public"."streak_freezes" (
   "id" bigserial NOT NULL,
   "user_id" bigint NOT NULL,
-  "used_date" character varying(10) NOT NULL,
+  "used_on" date NOT NULL,
   "month" bigint NOT NULL,
   "year" bigint NOT NULL,
   "created_at" timestamptz NOT NULL,
@@ -1130,7 +1130,7 @@ CREATE TABLE "public"."streak_freezes" (
 -- Create index "idx_streak_freezes_user_id" to table: "streak_freezes"
 CREATE INDEX "idx_streak_freezes_user_id" ON "public"."streak_freezes" ("user_id");
 -- Create index "uq_streak_freeze_user_date" to table: "streak_freezes"
-CREATE UNIQUE INDEX "uq_streak_freeze_user_date" ON "public"."streak_freezes" ("user_id", "used_date");
+CREATE UNIQUE INDEX "uq_streak_freeze_user_date" ON "public"."streak_freezes" ("user_id", "used_on");
 -- Create "study_circles" table
 CREATE TABLE "public"."study_circles" (
   "id" bigserial NOT NULL,

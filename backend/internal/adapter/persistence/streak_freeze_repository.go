@@ -30,7 +30,7 @@ func toModelStreakFreeze(row sqlcgen.StreakFreeze) model.StreakFreeze {
 	freeze := model.StreakFreeze{
 		ID:       uint(row.ID),
 		UserID:   uint(row.UserID),
-		UsedDate: row.UsedDate,
+		UsedDate: fromDateToDateString(row.UsedOn),
 		Month:    int(row.Month),
 		Year:     int(row.Year),
 	}
@@ -56,8 +56,8 @@ func (r *streakFreezeRepository) CreateWithinLimits(ctx context.Context, freeze 
 	}
 
 	dayCount, err := q.CountStreakFreezesOnDate(ctx, sqlcgen.CountStreakFreezesOnDateParams{
-		UserID:   int64(freeze.UserID),
-		UsedDate: freeze.UsedDate,
+		UserID: int64(freeze.UserID),
+		UsedOn: toDateFromDateString(freeze.UsedDate),
 	})
 	if err != nil {
 		return repository.FreezeUseCreated, err
@@ -79,10 +79,10 @@ func (r *streakFreezeRepository) CreateWithinLimits(ctx context.Context, freeze 
 	}
 
 	row, err := q.CreateStreakFreeze(ctx, sqlcgen.CreateStreakFreezeParams{
-		UserID:   int64(freeze.UserID),
-		UsedDate: freeze.UsedDate,
-		Month:    int64(freeze.Month),
-		Year:     int64(freeze.Year),
+		UserID: int64(freeze.UserID),
+		UsedOn: toDateFromDateString(freeze.UsedDate),
+		Month:  int64(freeze.Month),
+		Year:   int64(freeze.Year),
 	})
 	if err != nil {
 		return repository.FreezeUseCreated, err
@@ -111,7 +111,7 @@ func (r *streakFreezeRepository) GetByUserIDAndMonth(ctx context.Context, userID
 // HasFreezeOnDate は指定日にフリーズが使用されているかを返す。
 func (r *streakFreezeRepository) HasFreezeOnDate(ctx context.Context, userID uint, date string) (bool, error) {
 	return r.q.HasStreakFreezeOnDate(ctx, sqlcgen.HasStreakFreezeOnDateParams{
-		UserID:   int64(userID),
-		UsedDate: date,
+		UserID: int64(userID),
+		UsedOn: toDateFromDateString(date),
 	})
 }
