@@ -385,10 +385,19 @@ func (r *roadmapRepository) CreateStep(ctx context.Context, step *model.RoadmapS
 }
 
 // UpdateStep はステップを更新する。完了状態が変わった場合はroadmap_metrics.
-// completed_step_countも同一SQL文で加減算し、進捗が100%を跨いだ場合はロードマップの
-// ステータスも自動遷移させる。
+// completed_step_countも同一SQL文で加減算する。旧値の読み取り（GetRoadmapStepByIDForUpdate）
+// でFOR UPDATEにより対象行をロックし、そのままUPDATE・ステータス自動遷移まで
+// 1トランザクションで括ることで、同じステップへの同時更新がcompleted_step_countを
+// 二重に加減算したり、途中失敗でステータスだけ古いまま残ったりしないようにする。
 func (r *roadmapRepository) UpdateStep(ctx context.Context, step *model.RoadmapStep) error {
-	oldStepRow, err := r.q.GetRoadmapStepByID(ctx, int64(step.ID))
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	q := r.q.WithTx(tx)
+	oldStepRow, err := q.GetRoadmapStepByIDForUpdate(ctx, int64(step.ID))
 	if err != nil {
 		return err
 	}
@@ -402,7 +411,7 @@ func (r *roadmapRepository) UpdateStep(ctx context.Context, step *model.RoadmapS
 		completedDelta = -1
 	}
 
-	row, err := r.q.UpdateRoadmapStep(ctx, sqlcgen.UpdateRoadmapStepParams{
+	row, err := q.UpdateRoadmapStep(ctx, sqlcgen.UpdateRoadmapStepParams{
 		ID:             int64(step.ID),
 		Title:          step.Title,
 		Description:    &step.Description,
@@ -417,29 +426,20 @@ func (r *roadmapRepository) UpdateStep(ctx context.Context, step *model.RoadmapS
 	}
 	*step = toModelRoadmapStep(sqlcgen.RoadmapStep(row))
 
-	if completedDelta == 0 {
-		return nil
+	if completedDelta != 0 {
+		if err := recalcRoadmapStatusFromMetrics(ctx, q, step.RoadmapID); err != nil {
+			return err
+		}
 	}
-	return recalcRoadmapStatusFromMetrics(ctx, r.q, step.RoadmapID)
+	return tx.Commit(ctx)
 }
 
 // DeleteStep はステップを削除し、roadmap_metrics.step_count/completed_step_countを
-// 同一SQL文で調整する。削除では移行前と同じくステータスの自動遷移は行わない。
+// 同一SQL文で調整する（削除されたステップの完了状態はDELETEのRETURNING自体から
+// 取得するため、削除前の別読み取りは不要）。削除では移行前と同じくステータスの
+// 自動遷移は行わない。
 func (r *roadmapRepository) DeleteStep(ctx context.Context, stepID uint) error {
-	stepRow, err := r.q.GetRoadmapStepByID(ctx, int64(stepID))
-	if err != nil {
-		return err
-	}
-
-	var completedDelta int64
-	if stepRow.IsCompleted {
-		completedDelta = -1
-	}
-
-	return r.q.DeleteRoadmapStep(ctx, sqlcgen.DeleteRoadmapStepParams{
-		ID:             int64(stepID),
-		CompletedDelta: completedDelta,
-	})
+	return r.q.DeleteRoadmapStep(ctx, int64(stepID))
 }
 
 // recalcRoadmapStatusFromMetrics はroadmap_metricsから算出される進捗率が100%へ到達/
@@ -464,7 +464,7 @@ func recalcRoadmapStatusFromMetrics(ctx context.Context, q *sqlcgen.Queries, roa
 	activeStatus := string(model.RoadmapStatusActive)
 
 	switch {
-	case progress == 100 && status == model.RoadmapStatusActive:
+	case progress >= 100 && status == model.RoadmapStatusActive:
 		now := time.Now()
 		_, err = q.UpdateRoadmapStatus(ctx, sqlcgen.UpdateRoadmapStatusParams{
 			ID:          int64(roadmapID),

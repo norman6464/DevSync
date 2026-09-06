@@ -3427,6 +3427,9 @@ table "roadmap_metrics" {
     on_update   = NO_ACTION
     on_delete   = CASCADE
   }
+  check "ck_roadmap_metrics_non_negative" {
+    expr = "step_count >= 0 AND completed_step_count >= 0"
+  }
 }
 
 # =====================================================================

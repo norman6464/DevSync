@@ -148,25 +148,31 @@ func (q *Queries) DeleteRoadmap(ctx context.Context, id int64) error {
 const deleteRoadmapStep = `-- name: DeleteRoadmapStep :exec
 WITH deleted_step AS (
     DELETE FROM roadmap_steps WHERE roadmap_steps.id = $1
-    RETURNING roadmap_steps.roadmap_id AS deleted_roadmap_id
+    RETURNING roadmap_steps.roadmap_id AS deleted_roadmap_id, roadmap_steps.is_completed AS deleted_is_completed
 )
 INSERT INTO roadmap_metrics (roadmap_id, step_count, completed_step_count)
-SELECT deleted_roadmap_id, -1, $2::bigint FROM deleted_step
+SELECT
+    deleted_roadmap_id,
+    0,
+    GREATEST(CASE WHEN deleted_is_completed THEN -1 ELSE 0 END, 0)
+FROM deleted_step
 ON CONFLICT (roadmap_id) DO UPDATE SET
     step_count = GREATEST(roadmap_metrics.step_count - 1, 0),
-    completed_step_count = GREATEST(roadmap_metrics.completed_step_count + EXCLUDED.completed_step_count, 0)
+    completed_step_count = GREATEST(
+        roadmap_metrics.completed_step_count +
+        (SELECT CASE WHEN deleted_is_completed THEN -1 ELSE 0 END FROM deleted_step),
+        0
+    )
 `
 
-type DeleteRoadmapStepParams struct {
-	ID             int64
-	CompletedDelta int64
-}
-
 // roadmap_stepsの削除とroadmap_metrics.step_count/completed_step_countの減算を
-// 同一SQL文で行う（DEVSYNC-159）。completed_deltaは削除されたステップが完了済み
-// だったかどうかを呼び出し側（Go）が判定して渡す（0 または -1）。
-func (q *Queries) DeleteRoadmapStep(ctx context.Context, arg DeleteRoadmapStepParams) error {
-	_, err := q.db.Exec(ctx, deleteRoadmapStep, arg.ID, arg.CompletedDelta)
+// 同一SQL文で行う（DEVSYNC-159）。削除されたステップの完了状態はDELETEのRETURNING
+// 自体から取得するため、削除前に別途読み取る必要がなく、その間の競合状態も生じない。
+// INSERT文自身が提案する行（新規作成パス）は0/GREATESTで0未満にならないようにし、
+// DO UPDATE側はEXCLUDEDではなくdeleted_stepを再度参照して既存値への正しい加減算と
+// フロアを行う（理由はUpdateRoadmapStepのコメント参照）。
+func (q *Queries) DeleteRoadmapStep(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deleteRoadmapStep, id)
 	return err
 }
 
@@ -199,6 +205,32 @@ SELECT id, roadmap_id, title, description, order_index, is_completed, completed_
 
 func (q *Queries) GetRoadmapStepByID(ctx context.Context, id int64) (RoadmapStep, error) {
 	row := q.db.QueryRow(ctx, getRoadmapStepByID, id)
+	var i RoadmapStep
+	err := row.Scan(
+		&i.ID,
+		&i.RoadmapID,
+		&i.Title,
+		&i.Description,
+		&i.OrderIndex,
+		&i.IsCompleted,
+		&i.CompletedAt,
+		&i.ResourceUrl,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getRoadmapStepByIDForUpdate = `-- name: GetRoadmapStepByIDForUpdate :one
+SELECT id, roadmap_id, title, description, order_index, is_completed, completed_at, resource_url, created_at, updated_at FROM roadmap_steps WHERE roadmap_steps.id = $1 FOR UPDATE
+`
+
+// UpdateRoadmapStepの直前に呼び、対象行をロックした上でis_completedの新旧比較を行う
+// ための専用の読み取り（呼び出し側がこの行ロックと同一トランザクション内でUPDATEまで
+// 行うことで、同じステップへの同時更新がcompleted_step_countを二重に加減算しない
+// ようにする。DEVSYNC-159）。
+func (q *Queries) GetRoadmapStepByIDForUpdate(ctx context.Context, id int64) (RoadmapStep, error) {
+	row := q.db.QueryRow(ctx, getRoadmapStepByIDForUpdate, id)
 	var i RoadmapStep
 	err := row.Scan(
 		&i.ID,
@@ -654,11 +686,11 @@ WITH updated_step AS (
     RETURNING roadmap_steps.id, roadmap_steps.roadmap_id, roadmap_steps.title, roadmap_steps.description, roadmap_steps.order_index, roadmap_steps.is_completed, roadmap_steps.completed_at, roadmap_steps.resource_url, roadmap_steps.created_at, roadmap_steps.updated_at
 ), metrics_upsert AS (
     INSERT INTO roadmap_metrics (roadmap_id, completed_step_count)
-    SELECT updated_step.roadmap_id, $8::bigint
+    SELECT updated_step.roadmap_id, GREATEST($8::bigint, 0)
     FROM updated_step
     WHERE $8::bigint != 0
     ON CONFLICT (roadmap_id) DO UPDATE SET
-        completed_step_count = GREATEST(roadmap_metrics.completed_step_count + EXCLUDED.completed_step_count, 0)
+        completed_step_count = GREATEST(roadmap_metrics.completed_step_count + $8::bigint, 0)
 )
 SELECT updated_step.id, updated_step.roadmap_id, updated_step.title, updated_step.description, updated_step.order_index, updated_step.is_completed, updated_step.completed_at, updated_step.resource_url, updated_step.created_at, updated_step.updated_at FROM updated_step
 `
@@ -689,7 +721,15 @@ type UpdateRoadmapStepRow struct {
 
 // GORMのSave（全カラム上書き）に相当。completed_deltaが0でなければ
 // roadmap_metrics.completed_step_countも同一SQL文で加減算する（0未満にはしない）。
-// completed_deltaは呼び出し側（Go）が更新前後のis_completedを比較して算出する。
+// completed_deltaは呼び出し側（Go）がGetRoadmapStepByIDForUpdateで対象行をロックした
+// 上で新旧のis_completedを比較して算出し、この呼び出しと同一トランザクション内で渡す。
+// INSERT文自身が提案する行（roadmap_metrics行がまだ無い場合の新規作成パス）は
+// GREATEST(delta, 0)で0未満にならないようにする。CHECK制約はEXCLUDED経由の値ではなく
+// INSERT提案時点の生の値を検査するため、EXCLUDEDをそのままDO UPDATEへ渡すと
+// 通常の減算（0未満へのフロア）の前にCHECK違反になる。DO UPDATE側はEXCLUDEDではなく
+// completed_deltaそのもの（クエリ引数なのでCTEを介さず直接参照できる）を使い、
+// 既存値への正しい加減算とフロアを行う。実運用ではroadmap_metrics行はCreateRoadmapStep
+// の時点で必ず作成済みのため、この新規作成パス自体は通常到達しない。
 func (q *Queries) UpdateRoadmapStep(ctx context.Context, arg UpdateRoadmapStepParams) (UpdateRoadmapStepRow, error) {
 	row := q.db.QueryRow(ctx, updateRoadmapStep,
 		arg.ID,

@@ -1064,7 +1064,8 @@ CREATE TABLE "public"."roadmap_metrics" (
   "step_count" bigint NOT NULL DEFAULT 0,
   "completed_step_count" bigint NOT NULL DEFAULT 0,
   PRIMARY KEY ("roadmap_id"),
-  CONSTRAINT "fk_roadmap_metrics_roadmap" FOREIGN KEY ("roadmap_id") REFERENCES "public"."roadmaps" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
+  CONSTRAINT "fk_roadmap_metrics_roadmap" FOREIGN KEY ("roadmap_id") REFERENCES "public"."roadmaps" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
+  CONSTRAINT "ck_roadmap_metrics_non_negative" CHECK ((step_count >= 0) AND (completed_step_count >= 0))
 );
 -- Create "roadmap_steps" table
 CREATE TABLE "public"."roadmap_steps" (

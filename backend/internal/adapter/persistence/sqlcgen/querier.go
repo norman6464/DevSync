@@ -346,9 +346,12 @@ type Querier interface {
 	// roadmap_stepsはFKのON DELETE CASCADEでDBが自動的に削除する。
 	DeleteRoadmap(ctx context.Context, id int64) error
 	// roadmap_stepsの削除とroadmap_metrics.step_count/completed_step_countの減算を
-	// 同一SQL文で行う（DEVSYNC-159）。completed_deltaは削除されたステップが完了済み
-	// だったかどうかを呼び出し側（Go）が判定して渡す（0 または -1）。
-	DeleteRoadmapStep(ctx context.Context, arg DeleteRoadmapStepParams) error
+	// 同一SQL文で行う（DEVSYNC-159）。削除されたステップの完了状態はDELETEのRETURNING
+	// 自体から取得するため、削除前に別途読み取る必要がなく、その間の競合状態も生じない。
+	// INSERT文自身が提案する行（新規作成パス）は0/GREATESTで0未満にならないようにし、
+	// DO UPDATE側はEXCLUDEDではなくdeleted_stepを再度参照して既存値への正しい加減算と
+	// フロアを行う（理由はUpdateRoadmapStepのコメント参照）。
+	DeleteRoadmapStep(ctx context.Context, id int64) error
 	DeleteSnippetCommentByID(ctx context.Context, id int64) error
 	DeleteSnippetFavorite(ctx context.Context, arg DeleteSnippetFavoriteParams) error
 	DeleteSpotifyRecentTracksByUser(ctx context.Context, userID int64) error
@@ -466,6 +469,11 @@ type Querier interface {
 	// 現れないロードマップはGo側で0扱いにする（attachRoadmapMetrics参照）。
 	GetRoadmapMetricsByRoadmapIDs(ctx context.Context, dollar_1 []int64) ([]GetRoadmapMetricsByRoadmapIDsRow, error)
 	GetRoadmapStepByID(ctx context.Context, id int64) (RoadmapStep, error)
+	// UpdateRoadmapStepの直前に呼び、対象行をロックした上でis_completedの新旧比較を行う
+	// ための専用の読み取り（呼び出し側がこの行ロックと同一トランザクション内でUPDATEまで
+	// 行うことで、同じステップへの同時更新がcompleted_step_countを二重に加減算しない
+	// ようにする。DEVSYNC-159）。
+	GetRoadmapStepByIDForUpdate(ctx context.Context, id int64) (RoadmapStep, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	GetRoadmapWithUserByID(ctx context.Context, id int64) (GetRoadmapWithUserByIDRow, error)
 	GetSnippetCommentByID(ctx context.Context, id int64) (SnippetComment, error)
@@ -832,7 +840,15 @@ type Querier interface {
 	UpdateRoadmapStatus(ctx context.Context, arg UpdateRoadmapStatusParams) (Roadmap, error)
 	// GORMのSave（全カラム上書き）に相当。completed_deltaが0でなければ
 	// roadmap_metrics.completed_step_countも同一SQL文で加減算する（0未満にはしない）。
-	// completed_deltaは呼び出し側（Go）が更新前後のis_completedを比較して算出する。
+	// completed_deltaは呼び出し側（Go）がGetRoadmapStepByIDForUpdateで対象行をロックした
+	// 上で新旧のis_completedを比較して算出し、この呼び出しと同一トランザクション内で渡す。
+	// INSERT文自身が提案する行（roadmap_metrics行がまだ無い場合の新規作成パス）は
+	// GREATEST(delta, 0)で0未満にならないようにする。CHECK制約はEXCLUDED経由の値ではなく
+	// INSERT提案時点の生の値を検査するため、EXCLUDEDをそのままDO UPDATEへ渡すと
+	// 通常の減算（0未満へのフロア）の前にCHECK違反になる。DO UPDATE側はEXCLUDEDではなく
+	// completed_deltaそのもの（クエリ引数なのでCTEを介さず直接参照できる）を使い、
+	// 既存値への正しい加減算とフロアを行う。実運用ではroadmap_metrics行はCreateRoadmapStep
+	// の時点で必ず作成済みのため、この新規作成パス自体は通常到達しない。
 	UpdateRoadmapStep(ctx context.Context, arg UpdateRoadmapStepParams) (UpdateRoadmapStepRow, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateStudyCircle(ctx context.Context, arg UpdateStudyCircleParams) (StudyCircle, error)

@@ -102,6 +102,12 @@ func TestRoadmapMetrics_StepLifecycle_UpdatesInSameStatementAndAutoTransitionsSt
 	require.NoError(t, err)
 	assert.Equal(t, 100, afterDelete.Progress)
 	assert.Equal(t, model.RoadmapStatusActive, afterDelete.Status, "delete should not auto-transition status even at 100% progress")
+
+	// 残る唯一の完了済みステップ（step2）を削除する: completed_step_countが0まで
+	// 減り、0未満にはならない（roadmap_metrics行がまだ無い場合のCHECK制約と
+	// GREATESTフロアの整合を回帰させないための確認）。
+	require.NoError(t, repo.DeleteStep(ctx, step2.ID))
+	assertMetrics(0, 0)
 }
 
 // TestReconcileAllRoadmapMetrics_CorrectsDrift は、roadmap_stepsの直接操作等で
