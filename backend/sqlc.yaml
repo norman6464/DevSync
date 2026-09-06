@@ -1,13 +1,11 @@
 version: "2"
 sql:
   - engine: "postgresql"
-    # internal/infra/database/schema/*.hcl（Atlas の正）から `make db-schema-sql` で
-    # 書き出したSQL。手書きしない生成物のため .gitignore 済み。
+    # internal/infra/database/schema/schema.hcl（Atlas の正）から `make db-schema-sql` で
+    # 書き出したSQL。手書きしない生成物だがコミット対象（internal/infra/database/schema.go が
+    # go:embed してバイナリへ埋め込み、空DBへの起動時自己適用に使うため）。
     # sqlc はHCLを直接読めないための橋渡し。
-    # (schema/ ディレクトリ自体に置くと、Atlas がそのディレクトリをHCLソースとして
-    #  読む際にSQLファイルと衝突して "ambiguous schema" エラーになるため、
-    #  1つ上の internal/infra/database/ 直下に置く)
-    schema: "internal/infra/database/schema_generated.sql"
+    schema: "internal/infra/database/schema/schema.gen.sql"
     queries: "internal/adapter/persistence/queries"
     gen:
       go:

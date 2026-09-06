@@ -125,11 +125,14 @@ jobs:
         env:
           ATLAS_DB_URL: postgres://devsync:devsync@localhost:5432/devsync?sslmode=disable
 
-      - name: sqlc生成コードが queries と schema から再生成しても変わらないか検証
+      # schema.gen.sql（コミット対象。internal/infra/database/schema.goがgo:embedして
+      # 起動時の空DB自己適用に使う）とsqlc生成コードが、schema.hcl・queriesから
+      # 再生成しても変わらないか（drift）を検証する。
+      - name: schema.gen.sql・sqlc生成コードのdriftを検証
         run: |
           make db-schema-sql
           sqlc generate
-          git diff --exit-code -- internal/adapter/persistence/sqlcgen
+          git diff --exit-code -- internal/infra/database/schema/schema.gen.sql internal/adapter/persistence/sqlcgen
         working-directory: ./backend
 
       # race detectorで並行コードのデータ競合をCIで検出する。

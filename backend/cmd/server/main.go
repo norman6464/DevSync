@@ -1,6 +1,10 @@
 // Package main はDevSyncバックエンドアプリケーションのエントリーポイント。
 // DB接続・WebSocket Hub起動・HTTPサーバー起動を行う。
-// スキーマ管理は Atlas（internal/infra/database/schema/*.hcl の宣言的適用）に委譲しており、ここでは行わない。
+// スキーマ（テーブル・索引・外部キー）の正本は Atlas（internal/infra/database/schema/schema.hcl の
+// 宣言的適用）。既存DB・本番DBへの適用は `make db-schema-apply` を使う。
+// ここで呼ぶ database.ApplySchema は「まだ何も無い空のDB」にのみ適用する起動時の自己ブートストラップで、
+// ローカル初回起動時に `make db-schema-apply` を忘れても動かせるようにするための利便性であり、
+// 既存DBへのスキーマ変更適用の代わりにはならない。
 package main
 
 import (
@@ -13,6 +17,7 @@ import (
 	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
 	"github.com/norman6464/devsync/backend/internal/handler"
 	"github.com/norman6464/devsync/backend/internal/infra/config"
+	"github.com/norman6464/devsync/backend/internal/infra/database"
 	"github.com/norman6464/devsync/backend/internal/infra/ws"
 )
 
@@ -51,6 +56,11 @@ func main() {
 		log.Fatalf("failed to connect to database (pgx): %v", err)
 	}
 	defer sqlPool.Close()
+
+	// 空のDBにのみスキーマを自己適用する（既存DBには何もしない）
+	if err := database.ApplySchema(ctx, sqlPool); err != nil {
+		log.Fatalf("failed to apply schema: %v", err)
+	}
 
 	// テンプレート初期登録の二重加算で誤った step_count と進捗を補正する
 	fixRoadmapStepCounts(ctx, sqlPool)
