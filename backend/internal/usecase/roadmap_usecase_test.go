@@ -25,6 +25,10 @@ func (m *mockRoadmapRepo) Update(ctx context.Context, r *model.Roadmap) error {
 	return m.Called(ctx, r).Error(0)
 }
 
+func (m *mockRoadmapRepo) UpdateStatus(ctx context.Context, r *model.Roadmap) error {
+	return m.Called(ctx, r).Error(0)
+}
+
 func (m *mockRoadmapRepo) Delete(ctx context.Context, id uint) error {
 	return m.Called(ctx, id).Error(0)
 }
@@ -219,12 +223,24 @@ func TestUpdateRoadmapUseCase_Execute(t *testing.T) {
 		repo := new(mockRoadmapRepo)
 		repo.On("FindByID", mock.Anything, uint(1)).Return(newRoadmap(), nil)
 		repo.On("Update", mock.Anything, mock.AnythingOfType("*model.Roadmap")).Return(nil)
+		repo.On("UpdateStatus", mock.Anything, mock.AnythingOfType("*model.Roadmap")).Return(nil)
 		uc := usecase.NewUpdateRoadmapUseCase(repo)
 
 		got, err := uc.Execute(context.Background(), 1, 1, &model.Roadmap{Status: model.RoadmapStatusCompleted})
 		require.NoError(t, err)
 		assert.Equal(t, model.RoadmapStatusCompleted, got.Status)
 		assert.NotNil(t, got.CompletedAt)
+	})
+
+	t.Run("ステータス未指定ならUpdateStatusは呼ばない", func(t *testing.T) {
+		repo := new(mockRoadmapRepo)
+		repo.On("FindByID", mock.Anything, uint(1)).Return(newRoadmap(), nil)
+		repo.On("Update", mock.Anything, mock.AnythingOfType("*model.Roadmap")).Return(nil)
+		uc := usecase.NewUpdateRoadmapUseCase(repo)
+
+		_, err := uc.Execute(context.Background(), 1, 1, &model.Roadmap{Title: "新題"})
+		require.NoError(t, err)
+		repo.AssertNotCalled(t, "UpdateStatus", mock.Anything, mock.Anything)
 	})
 
 	t.Run("所有者でなければ 403", func(t *testing.T) {

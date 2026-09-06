@@ -3,19 +3,24 @@ package persistence
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
 )
 
 // noteTemplateRepository は [repository.NoteTemplateRepository] の sqlc(pgx) 実装。
+// デフォルト解除（ClearOtherNoteTemplateDefaults）とCreate/Updateを1トランザクションで
+// 行うため、Queries だけでなくトランザクションを開始できる *pgxpool.Pool を直接保持する。
 type noteTemplateRepository struct {
-	q *sqlcgen.Queries
+	pool *pgxpool.Pool
+	q    *sqlcgen.Queries
 }
 
 // NewNoteTemplateRepository は NoteTemplateRepository の sqlc(pgx) 実装を返す。
-func NewNoteTemplateRepository(q *sqlcgen.Queries) repository.NoteTemplateRepository {
-	return &noteTemplateRepository{q: q}
+func NewNoteTemplateRepository(pool *pgxpool.Pool) repository.NoteTemplateRepository {
+	return &noteTemplateRepository{pool: pool, q: sqlcgen.New(pool)}
 }
 
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
@@ -37,9 +42,29 @@ func toModelNoteTemplate(row sqlcgen.NoteTemplate) model.NoteTemplate {
 	}
 }
 
-// Create は新しいテンプレートを作成する。
+// Create は新しいテンプレートを作成する。is_default指定時は同一トランザクション内で
+// 先に他のデフォルトを解除してから作成する（2文に分ける理由はqueries/note_template.sqlの
+// ClearOtherNoteTemplateDefaultsのコメント参照）。それでも残る本当の並行トランザクション同士の
+// 衝突は部分UNIQUE索引（uq_note_templates_default）が食い止め、その生の制約違反は
+// domain.ErrConflictへ変換する（500として漏らさない）。
 func (r *noteTemplateRepository) Create(ctx context.Context, template *model.NoteTemplate) error {
-	row, err := r.q.CreateNoteTemplate(ctx, sqlcgen.CreateNoteTemplateParams{
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	q := r.q.WithTx(tx)
+
+	if template.IsDefault {
+		if err := q.ClearOtherNoteTemplateDefaults(ctx, sqlcgen.ClearOtherNoteTemplateDefaultsParams{
+			UserID: int64(template.UserID),
+			ID:     0,
+		}); err != nil {
+			return err
+		}
+	}
+
+	row, err := q.CreateNoteTemplate(ctx, sqlcgen.CreateNoteTemplateParams{
 		UserID:          int64(template.UserID),
 		Name:            template.Name,
 		Description:     &template.Description,
@@ -48,16 +73,35 @@ func (r *noteTemplateRepository) Create(ctx context.Context, template *model.Not
 		DefaultTags:     &template.DefaultTags,
 		IsDefault:       &template.IsDefault,
 	})
+	if isUniqueViolation(err) {
+		return domain.ErrConflict
+	}
 	if err != nil {
 		return err
 	}
 	*template = toModelNoteTemplate(row)
-	return nil
+	return tx.Commit(ctx)
 }
 
-// Update は既存のテンプレートを更新する。
+// Update は既存のテンプレートを更新する。衝突時の扱いはCreateと同じ。
 func (r *noteTemplateRepository) Update(ctx context.Context, template *model.NoteTemplate) error {
-	row, err := r.q.UpdateNoteTemplate(ctx, sqlcgen.UpdateNoteTemplateParams{
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	q := r.q.WithTx(tx)
+
+	if template.IsDefault {
+		if err := q.ClearOtherNoteTemplateDefaults(ctx, sqlcgen.ClearOtherNoteTemplateDefaultsParams{
+			UserID: int64(template.UserID),
+			ID:     int64(template.ID),
+		}); err != nil {
+			return err
+		}
+	}
+
+	row, err := q.UpdateNoteTemplate(ctx, sqlcgen.UpdateNoteTemplateParams{
 		ID:              int64(template.ID),
 		Name:            template.Name,
 		Description:     &template.Description,
@@ -66,11 +110,14 @@ func (r *noteTemplateRepository) Update(ctx context.Context, template *model.Not
 		DefaultTags:     &template.DefaultTags,
 		IsDefault:       &template.IsDefault,
 	})
+	if isUniqueViolation(err) {
+		return domain.ErrConflict
+	}
 	if err != nil {
 		return err
 	}
 	*template = toModelNoteTemplate(row)
-	return nil
+	return tx.Commit(ctx)
 }
 
 // Delete はテンプレートを削除する。
@@ -115,11 +162,6 @@ func (r *noteTemplateRepository) FindDefaultByUserID(ctx context.Context, userID
 	}
 	template := toModelNoteTemplate(row)
 	return &template, nil
-}
-
-// ClearDefaultFlag は指定ユーザーの全テンプレートのデフォルト指定を外す。
-func (r *noteTemplateRepository) ClearDefaultFlag(ctx context.Context, userID uint) error {
-	return r.q.ClearNoteTemplateDefaultFlag(ctx, int64(userID))
 }
 
 // CountByUserID は指定ユーザーのテンプレート総数を返す。

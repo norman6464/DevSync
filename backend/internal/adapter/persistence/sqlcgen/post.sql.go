@@ -90,158 +90,12 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 	return i, err
 }
 
-const deleteBookmarkCollectionItemsByPost = `-- name: DeleteBookmarkCollectionItemsByPost :exec
-DELETE FROM bookmark_collection_items WHERE post_id = $1
-`
-
-func (q *Queries) DeleteBookmarkCollectionItemsByPost(ctx context.Context, postID int64) error {
-	_, err := q.db.Exec(ctx, deleteBookmarkCollectionItemsByPost, postID)
-	return err
-}
-
-const deleteBookmarksByPost = `-- name: DeleteBookmarksByPost :exec
-DELETE FROM bookmarks WHERE post_id = $1
-`
-
-func (q *Queries) DeleteBookmarksByPost(ctx context.Context, postID int64) error {
-	_, err := q.db.Exec(ctx, deleteBookmarksByPost, postID)
-	return err
-}
-
-const deleteCodeSnippetsByPost = `-- name: DeleteCodeSnippetsByPost :exec
-DELETE FROM code_snippets WHERE post_id = $1
-`
-
-func (q *Queries) DeleteCodeSnippetsByPost(ctx context.Context, postID int64) error {
-	_, err := q.db.Exec(ctx, deleteCodeSnippetsByPost, postID)
-	return err
-}
-
-const deleteCommentLikesByPostComments = `-- name: DeleteCommentLikesByPostComments :exec
-DELETE FROM comment_likes WHERE comment_id IN (SELECT id FROM comments WHERE post_id = $1)
-`
-
-func (q *Queries) DeleteCommentLikesByPostComments(ctx context.Context, postID int64) error {
-	_, err := q.db.Exec(ctx, deleteCommentLikesByPostComments, postID)
-	return err
-}
-
-const deleteCommentsByPost = `-- name: DeleteCommentsByPost :exec
-DELETE FROM comments WHERE post_id = $1
-`
-
-func (q *Queries) DeleteCommentsByPost(ctx context.Context, postID int64) error {
-	_, err := q.db.Exec(ctx, deleteCommentsByPost, postID)
-	return err
-}
-
-const deleteLikesByPost = `-- name: DeleteLikesByPost :exec
-DELETE FROM likes WHERE post_id = $1
-`
-
-func (q *Queries) DeleteLikesByPost(ctx context.Context, postID int64) error {
-	_, err := q.db.Exec(ctx, deleteLikesByPost, postID)
-	return err
-}
-
-const deleteMentionsByPost = `-- name: DeleteMentionsByPost :exec
-DELETE FROM mentions WHERE post_id = $1
-`
-
-func (q *Queries) DeleteMentionsByPost(ctx context.Context, postID *int64) error {
-	_, err := q.db.Exec(ctx, deleteMentionsByPost, postID)
-	return err
-}
-
-const deleteMentionsByPostComments = `-- name: DeleteMentionsByPostComments :exec
-DELETE FROM mentions WHERE comment_id IN (SELECT c.id FROM comments c WHERE c.post_id = $1)
-`
-
-// mentions自身もpost_id列を持つため、サブクエリのcommentsを明示的にエイリアス修飾しないと
-// post_idの参照先が曖昧になる（PostgreSQLの相関サブクエリの解決規則による）。
-func (q *Queries) DeleteMentionsByPostComments(ctx context.Context, postID int64) error {
-	_, err := q.db.Exec(ctx, deleteMentionsByPostComments, postID)
-	return err
-}
-
-const deleteNotificationsByPost = `-- name: DeleteNotificationsByPost :exec
-DELETE FROM notifications WHERE post_id = $1
-`
-
-func (q *Queries) DeleteNotificationsByPost(ctx context.Context, postID *int64) error {
-	_, err := q.db.Exec(ctx, deleteNotificationsByPost, postID)
-	return err
-}
-
 const deletePost = `-- name: DeletePost :exec
 DELETE FROM posts WHERE id = $1
 `
 
 func (q *Queries) DeletePost(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, deletePost, id)
-	return err
-}
-
-const deletePostCollectionItemsByPost = `-- name: DeletePostCollectionItemsByPost :exec
-DELETE FROM post_collection_items WHERE post_id = $1
-`
-
-func (q *Queries) DeletePostCollectionItemsByPost(ctx context.Context, postID int64) error {
-	_, err := q.db.Exec(ctx, deletePostCollectionItemsByPost, postID)
-	return err
-}
-
-const deletePostPinsByPost = `-- name: DeletePostPinsByPost :exec
-DELETE FROM post_pins WHERE post_id = $1
-`
-
-func (q *Queries) DeletePostPinsByPost(ctx context.Context, postID int64) error {
-	_, err := q.db.Exec(ctx, deletePostPinsByPost, postID)
-	return err
-}
-
-const deletePostSeriesItemsByPost = `-- name: DeletePostSeriesItemsByPost :exec
-DELETE FROM post_series_items WHERE post_id = $1
-`
-
-func (q *Queries) DeletePostSeriesItemsByPost(ctx context.Context, postID int64) error {
-	_, err := q.db.Exec(ctx, deletePostSeriesItemsByPost, postID)
-	return err
-}
-
-const deletePostTagsByPost = `-- name: DeletePostTagsByPost :exec
-DELETE FROM post_tags WHERE post_id = $1
-`
-
-func (q *Queries) DeletePostTagsByPost(ctx context.Context, postID int64) error {
-	_, err := q.db.Exec(ctx, deletePostTagsByPost, postID)
-	return err
-}
-
-const deletePostViewsByPost = `-- name: DeletePostViewsByPost :exec
-DELETE FROM post_views WHERE post_id = $1
-`
-
-func (q *Queries) DeletePostViewsByPost(ctx context.Context, postID int64) error {
-	_, err := q.db.Exec(ctx, deletePostViewsByPost, postID)
-	return err
-}
-
-const deleteReactionsByPost = `-- name: DeleteReactionsByPost :exec
-DELETE FROM reactions WHERE post_id = $1
-`
-
-func (q *Queries) DeleteReactionsByPost(ctx context.Context, postID int64) error {
-	_, err := q.db.Exec(ctx, deleteReactionsByPost, postID)
-	return err
-}
-
-const deleteSnippetCommentsByPostSnippets = `-- name: DeleteSnippetCommentsByPostSnippets :exec
-DELETE FROM snippet_comments WHERE snippet_id IN (SELECT cs.id FROM code_snippets cs WHERE cs.post_id = $1)
-`
-
-func (q *Queries) DeleteSnippetCommentsByPostSnippets(ctx context.Context, postID int64) error {
-	_, err := q.db.Exec(ctx, deleteSnippetCommentsByPostSnippets, postID)
 	return err
 }
 
@@ -640,24 +494,10 @@ func (q *Queries) ListTimelinePostsWithUser(ctx context.Context, arg ListTimelin
 	return items, nil
 }
 
-const lockPostForDelete = `-- name: LockPostForDelete :one
-SELECT id FROM posts WHERE id = $1 FOR UPDATE
-`
-
-// 投稿削除の直列化のための行ロック（GORMの clause.Locking{Strength: "UPDATE"} に相当）。
-// 存在しなければ pgx.ErrNoRows を返し、呼び出し側で「既に無ければ何もしない（冪等）」を判定する。
-func (q *Queries) LockPostForDelete(ctx context.Context, id int64) (int64, error) {
-	row := q.db.QueryRow(ctx, lockPostForDelete, id)
-	var id_2 int64
-	err := row.Scan(&id_2)
-	return id_2, err
-}
-
 const updatePost = `-- name: UpdatePost :one
 UPDATE posts SET
-    title = $2, content = $3, image_urls = $4, is_draft = $5, like_count = $6,
-    comment_count = $7, bookmark_count = $8, view_count = $9, estimated_read_time = $10,
-    scheduled_at = $11, updated_at = now()
+    title = $2, content = $3, image_urls = $4, is_draft = $5,
+    estimated_read_time = $6, scheduled_at = $7, updated_at = now()
 WHERE id = $1
 RETURNING id, user_id, title, content, image_urls, is_draft, like_count, comment_count, bookmark_count, view_count, estimated_read_time, scheduled_at, created_at, updated_at
 `
@@ -668,15 +508,14 @@ type UpdatePostParams struct {
 	Content           string
 	ImageUrls         *string
 	IsDraft           *bool
-	LikeCount         *int64
-	CommentCount      *int64
-	BookmarkCount     *int64
-	ViewCount         *int64
 	EstimatedReadTime *int64
 	ScheduledAt       pgtype.Timestamptz
 }
 
-// GORMのSave（全カラム上書き）に相当。
+// GORMのSave（全カラム上書き）に相当。ただしlike_count/comment_count/bookmark_count/
+// view_countは対象外（Increment/Decrement系の専用クエリだけが更新する）。
+// ここに含めると、他リクエストによるカウンタ更新をこのUPDATEが読み取り時点の
+// 古い値で上書きする「ロストアップデート」を起こす。
 func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, error) {
 	row := q.db.QueryRow(ctx, updatePost,
 		arg.ID,
@@ -684,10 +523,6 @@ func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, e
 		arg.Content,
 		arg.ImageUrls,
 		arg.IsDraft,
-		arg.LikeCount,
-		arg.CommentCount,
-		arg.BookmarkCount,
-		arg.ViewCount,
 		arg.EstimatedReadTime,
 		arg.ScheduledAt,
 	)

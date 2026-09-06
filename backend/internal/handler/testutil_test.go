@@ -391,6 +391,10 @@ func (m *mockRoadmapRepo) Update(ctx context.Context, r *model.Roadmap) error {
 	return m.Called(ctx, r).Error(0)
 }
 
+func (m *mockRoadmapRepo) UpdateStatus(ctx context.Context, r *model.Roadmap) error {
+	return m.Called(ctx, r).Error(0)
+}
+
 func (m *mockRoadmapRepo) Delete(ctx context.Context, id uint) error {
 	return m.Called(ctx, id).Error(0)
 }

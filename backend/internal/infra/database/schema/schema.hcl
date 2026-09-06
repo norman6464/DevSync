@@ -952,9 +952,9 @@ table "git_hub_repositories" {
   primary_key {
     columns = [column.id]
   }
-  index "uq_git_hub_repositories_git_hub_repo_id" {
+  index "uq_git_hub_repositories_user_repo" {
     unique  = true
-    columns = [column.git_hub_repo_id]
+    columns = [column.user_id, column.git_hub_repo_id]
   }
   index "idx_git_hub_repositories_user_id" {
     columns = [column.user_id]
@@ -1190,6 +1190,11 @@ table "learning_log_templates" {
   }
   index "idx_log_templates_is_default" {
     columns = [column.is_default]
+  }
+  index "uq_learning_log_templates_default" {
+    unique  = true
+    columns = [column.user_id]
+    where   = "is_default"
   }
   foreign_key "fk_learning_log_templates_user" {
     columns     = [column.user_id]
@@ -1786,6 +1791,11 @@ table "note_templates" {
   }
   index "idx_note_templates_user_id" {
     columns = [column.user_id]
+  }
+  index "uq_note_templates_default" {
+    unique  = true
+    columns = [column.user_id]
+    where   = "is_default"
   }
   foreign_key "fk_note_templates_user" {
     columns     = [column.user_id]
@@ -2943,9 +2953,9 @@ table "qiita_articles" {
   primary_key {
     columns = [column.id]
   }
-  index "uq_qiita_articles_qiita_id" {
+  index "uq_qiita_articles_user_article" {
     unique  = true
-    columns = [column.qiita_id]
+    columns = [column.user_id, column.qiita_id]
   }
   index "idx_qiita_articles_user_id" {
     columns = [column.user_id]
@@ -4277,9 +4287,9 @@ table "zenn_articles" {
   index "idx_zenn_articles_user_id" {
     columns = [column.user_id]
   }
-  index "uq_zenn_articles_zenn_id" {
+  index "uq_zenn_articles_user_article" {
     unique  = true
-    columns = [column.zenn_id]
+    columns = [column.user_id, column.zenn_id]
   }
   foreign_key "fk_zenn_articles_user" {
     columns     = [column.user_id]

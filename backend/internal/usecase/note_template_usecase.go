@@ -54,11 +54,6 @@ func (uc *CreateNoteTemplateUseCase) Execute(ctx context.Context, tmpl *model.No
 		}
 	}
 
-	if tmpl.IsDefault {
-		if err := uc.templates.ClearDefaultFlag(ctx, tmpl.UserID); err != nil {
-			return err
-		}
-	}
 	return uc.templates.Create(ctx, tmpl)
 }
 
@@ -183,12 +178,6 @@ func (uc *UpdateNoteTemplateUseCase) Execute(ctx context.Context, in UpdateNoteT
 	}
 	if tmpl.DefaultTitle != "" {
 		if err := v.ValidateDefaultTitle(tmpl.DefaultTitle); err != nil {
-			return nil, err
-		}
-	}
-
-	if tmpl.IsDefault {
-		if err := uc.templates.ClearDefaultFlag(ctx, tmpl.UserID); err != nil {
 			return nil, err
 		}
 	}

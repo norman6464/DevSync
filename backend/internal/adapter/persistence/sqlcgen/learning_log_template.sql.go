@@ -9,12 +9,28 @@ import (
 	"context"
 )
 
-const clearLearningLogTemplateDefaultFlag = `-- name: ClearLearningLogTemplateDefaultFlag :exec
-UPDATE learning_log_templates SET is_default = false, updated_at = now() WHERE user_id = $1
+const clearOtherLearningLogTemplateDefaults = `-- name: ClearOtherLearningLogTemplateDefaults :exec
+UPDATE learning_log_templates SET is_default = false, updated_at = now()
+WHERE learning_log_templates.user_id = $1 AND learning_log_templates.is_default IS TRUE AND learning_log_templates.id != $2
 `
 
-func (q *Queries) ClearLearningLogTemplateDefaultFlag(ctx context.Context, userID int64) error {
-	_, err := q.db.Exec(ctx, clearLearningLogTemplateDefaultFlag, userID)
+type ClearOtherLearningLogTemplateDefaultsParams struct {
+	UserID int64
+	ID     int64
+}
+
+// 同一ユーザーの既存デフォルト（自分自身のid=$2は除く）を外す。Createからは
+// 存在しないid（0）を渡すことで全件が対象になる。呼び出し元（repository）が
+// 1つのトランザクション内でこのクエリの直後にCreate/Updateを実行することで、
+// 「解除」と「新しいデフォルトの確定」を1つの原子的な単位にする。
+// 【重要】1つのSQL文の中のCTEとしてUPDATE→INSERT/UPDATEを両方書く方式は使わない。
+// PostgreSQLのデータ変更CTEは主文と同一スナップショットで動作し、UPDATEによる解除の
+// 効果が同一文内の一意制約チェックに間に合わず、デフォルトが1件も無い状態からの
+// 切り替えでも毎回一意制約違反になることを確認済み（2文に分けて初めて正しく動く）。
+// uq_learning_log_templates_default（(user_id) WHERE is_default の部分UNIQUE索引）は
+// 本当に並行する別トランザクション同士の衝突に対する最終防衛。
+func (q *Queries) ClearOtherLearningLogTemplateDefaults(ctx context.Context, arg ClearOtherLearningLogTemplateDefaultsParams) error {
+	_, err := q.db.Exec(ctx, clearOtherLearningLogTemplateDefaults, arg.UserID, arg.ID)
 	return err
 }
 
@@ -168,7 +184,7 @@ UPDATE learning_log_templates SET
     default_duration = $6,
     is_default = $7,
     updated_at = now()
-WHERE id = $1
+WHERE learning_log_templates.id = $1
 RETURNING id, user_id, name, default_title, default_content, default_category, default_duration, is_default, created_at, updated_at
 `
 

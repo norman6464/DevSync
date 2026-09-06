@@ -46,10 +46,6 @@ func (m *mockLearningLogTemplateRepo) FindDefaultByUserID(ctx context.Context, u
 	return t, args.Error(1)
 }
 
-func (m *mockLearningLogTemplateRepo) ClearDefaultFlag(ctx context.Context, userID uint) error {
-	return m.Called(ctx, userID).Error(0)
-}
-
 func (m *mockLearningLogTemplateRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)
@@ -123,13 +119,12 @@ func TestLearningLogTemplateHandler_Create_TrimsWhitespace(t *testing.T) {
 	p.Templates.AssertExpectations(t)
 }
 
-// デフォルト指定つきの作成は、先に既存の指定を外してから書き込む。
+// デフォルト指定つきでも作成できる（デフォルトの排他はSQL側のCTE+部分UNIQUE索引が担保する）。
 func TestLearningLogTemplateHandler_Create_WithDefaultFlag(t *testing.T) {
 	h, p := newTestLearningLogTemplateHandler()
 	r := newRouter(1)
 	r.POST("/log-templates", h.Create)
 
-	p.Templates.On("ClearDefaultFlag", mock.Anything, uint(1)).Return(nil)
 	p.Templates.On("Create", mock.Anything, mock.Anything).Return(nil)
 
 	w := doRequest(r, http.MethodPost, "/log-templates", map[string]interface{}{
@@ -137,20 +132,6 @@ func TestLearningLogTemplateHandler_Create_WithDefaultFlag(t *testing.T) {
 	})
 	assertStatus(t, w, http.StatusCreated)
 	p.Templates.AssertExpectations(t)
-}
-
-func TestLearningLogTemplateHandler_Create_ClearDefaultFlagError(t *testing.T) {
-	h, p := newTestLearningLogTemplateHandler()
-	r := newRouter(1)
-	r.POST("/log-templates", h.Create)
-
-	p.Templates.On("ClearDefaultFlag", mock.Anything, uint(1)).Return(errors.New("db error"))
-
-	w := doRequest(r, http.MethodPost, "/log-templates", map[string]interface{}{
-		"name": "既定", "is_default": true,
-	})
-	assertStatus(t, w, http.StatusInternalServerError)
-	p.Templates.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 }
 
 // name は DTO の binding で必須。
@@ -353,14 +334,13 @@ func TestLearningLogTemplateHandler_Update(t *testing.T) {
 	p.Templates.AssertExpectations(t)
 }
 
-// デフォルト指定に true を渡したときだけ既存の指定を外す。
+// デフォルト指定に true を渡すと反映される（他テンプレートの解除はSQL側のCTEが担保する）。
 func TestLearningLogTemplateHandler_Update_WithDefaultFlag(t *testing.T) {
 	h, p := newTestLearningLogTemplateHandler()
 	r := newRouter(1)
 	r.PUT("/log-templates/:id", h.Update)
 
 	p.Templates.On("FindByID", mock.Anything, uint(1)).Return(logTemplateOwnedBy(1, 1), nil)
-	p.Templates.On("ClearDefaultFlag", mock.Anything, uint(1)).Return(nil)
 	p.Templates.On("Update", mock.Anything, mock.MatchedBy(func(tm *model.LearningLogTemplate) bool {
 		return tm.IsDefault
 	})).Return(nil)
@@ -384,7 +364,7 @@ func TestLearningLogTemplateHandler_Update_UnsetDefaultFlag(t *testing.T) {
 
 	w := doRequest(r, http.MethodPut, "/log-templates/1", map[string]interface{}{"is_default": false})
 	assertStatus(t, w, http.StatusOK)
-	p.Templates.AssertNotCalled(t, "ClearDefaultFlag", mock.Anything, mock.Anything)
+	p.Templates.AssertExpectations(t)
 }
 
 func TestLearningLogTemplateHandler_Update_Forbidden(t *testing.T) {

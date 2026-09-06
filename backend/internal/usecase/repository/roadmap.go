@@ -9,7 +9,12 @@ import (
 // RoadmapRepository は学習ロードマップの永続化に対する、usecase 側が要求する契約。
 type RoadmapRepository interface {
 	Create(ctx context.Context, roadmap *model.Roadmap) error
+	// Update はタイトル・説明・カテゴリ・公開設定・テンプレート設定を上書きする。
+	// status/completed_at は対象外（UpdateStatus を使う）。ステップ完了による
+	// 自動遷移（recalcRoadmapProgress）と経路を分け、ロストアップデートを防ぐため。
 	Update(ctx context.Context, roadmap *model.Roadmap) error
+	// UpdateStatus はユーザーによる明示的なステータス変更だけに使う専用の更新。
+	UpdateStatus(ctx context.Context, roadmap *model.Roadmap) error
 	Delete(ctx context.Context, id uint) error
 	// FindByID はステップ（表示順）とユーザーを含めてロードマップを返す。
 	// 不在の場合は「不在」を表す (nil, nil) を返し、DB 障害だけを error として返す。

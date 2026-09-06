@@ -57,8 +57,6 @@ func (r *learningResourceRepository) Update(ctx context.Context, resource *model
 		Tags:        &resource.Tags,
 		ImageUrl:    &resource.ImageURL,
 		IsPublic:    &resource.IsPublic,
-		LikeCount:   toInt64Ptr(resource.LikeCount),
-		SaveCount:   toInt64Ptr(resource.SaveCount),
 	})
 	if err != nil {
 		return err

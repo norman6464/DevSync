@@ -587,27 +587,25 @@ func (q *Queries) ReorderRoadmapStep(ctx context.Context, arg ReorderRoadmapStep
 const updateRoadmap = `-- name: UpdateRoadmap :one
 UPDATE roadmaps SET
     title = $2, description = $3, category = $4, is_public = $5, is_template = $6,
-    step_count = $7, completed_step_count = $8, progress = $9, status = $10,
-    completed_at = $11, updated_at = now()
+    updated_at = now()
 WHERE id = $1
 RETURNING id, user_id, title, description, category, is_public, is_template, step_count, completed_step_count, progress, status, created_at, updated_at, completed_at
 `
 
 type UpdateRoadmapParams struct {
-	ID                 int64
-	Title              string
-	Description        *string
-	Category           *string
-	IsPublic           *bool
-	IsTemplate         *bool
-	StepCount          *int64
-	CompletedStepCount *int64
-	Progress           *int64
-	Status             *string
-	CompletedAt        pgtype.Timestamptz
+	ID          int64
+	Title       string
+	Description *string
+	Category    *string
+	IsPublic    *bool
+	IsTemplate  *bool
 }
 
-// GORMのSave（全カラム上書き）に相当。
+// GORMのSave（全カラム上書き）に相当。ただしstep_count/completed_step_count/progress/
+// status/completed_atは対象外。step_count等はIncrement/Decrement系の専用クエリだけが
+// 更新する。status/completed_atはUpdateRoadmapStatusに分離した
+// （ステップ完了によるrecalcRoadmapProgressの自動遷移を、このUPDATEが読み取り時点の
+// 古いstatus/completed_atで上書きする「ロストアップデート」を防ぐため）。
 func (q *Queries) UpdateRoadmap(ctx context.Context, arg UpdateRoadmapParams) (Roadmap, error) {
 	row := q.db.QueryRow(ctx, updateRoadmap,
 		arg.ID,
@@ -616,11 +614,6 @@ func (q *Queries) UpdateRoadmap(ctx context.Context, arg UpdateRoadmapParams) (R
 		arg.Category,
 		arg.IsPublic,
 		arg.IsTemplate,
-		arg.StepCount,
-		arg.CompletedStepCount,
-		arg.Progress,
-		arg.Status,
-		arg.CompletedAt,
 	)
 	var i Roadmap
 	err := row.Scan(
@@ -684,6 +677,44 @@ type UpdateRoadmapProgressReactivatedParams struct {
 func (q *Queries) UpdateRoadmapProgressReactivated(ctx context.Context, arg UpdateRoadmapProgressReactivatedParams) error {
 	_, err := q.db.Exec(ctx, updateRoadmapProgressReactivated, arg.ID, arg.Progress)
 	return err
+}
+
+const updateRoadmapStatus = `-- name: UpdateRoadmapStatus :one
+UPDATE roadmaps SET
+    status = $2, completed_at = $3, updated_at = now()
+WHERE id = $1
+RETURNING id, user_id, title, description, category, is_public, is_template, step_count, completed_step_count, progress, status, created_at, updated_at, completed_at
+`
+
+type UpdateRoadmapStatusParams struct {
+	ID          int64
+	Status      *string
+	CompletedAt pgtype.Timestamptz
+}
+
+// ユーザーによる明示的なステータス変更専用（PUT /roadmaps/:id でstatus指定時のみ呼ぶ）。
+// 汎用UpdateRoadmapと経路を分けることで、status変更を伴わない更新がrecalcRoadmapProgress
+// による自動遷移を上書きしないようにする。
+func (q *Queries) UpdateRoadmapStatus(ctx context.Context, arg UpdateRoadmapStatusParams) (Roadmap, error) {
+	row := q.db.QueryRow(ctx, updateRoadmapStatus, arg.ID, arg.Status, arg.CompletedAt)
+	var i Roadmap
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Title,
+		&i.Description,
+		&i.Category,
+		&i.IsPublic,
+		&i.IsTemplate,
+		&i.StepCount,
+		&i.CompletedStepCount,
+		&i.Progress,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.CompletedAt,
+	)
+	return i, err
 }
 
 const updateRoadmapStep = `-- name: UpdateRoadmapStep :one

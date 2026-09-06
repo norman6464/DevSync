@@ -101,19 +101,30 @@ func (r *roadmapRepository) Create(ctx context.Context, roadmap *model.Roadmap) 
 }
 
 // Update は既存のロードマップを更新する（GORMのSave＝全カラム上書きに相当）。
+// status/completed_atは対象外（UpdateStatusを使う）。
 func (r *roadmapRepository) Update(ctx context.Context, roadmap *model.Roadmap) error {
 	row, err := r.q.UpdateRoadmap(ctx, sqlcgen.UpdateRoadmapParams{
-		ID:                 int64(roadmap.ID),
-		Title:              roadmap.Title,
-		Description:        &roadmap.Description,
-		Category:           (*string)(&roadmap.Category),
-		IsPublic:           &roadmap.IsPublic,
-		IsTemplate:         &roadmap.IsTemplate,
-		StepCount:          toInt64Ptr(roadmap.StepCount),
-		CompletedStepCount: toInt64Ptr(roadmap.CompletedStepCount),
-		Progress:           toInt64Ptr(roadmap.Progress),
-		Status:             (*string)(&roadmap.Status),
-		CompletedAt:        toTimestamptz(roadmap.CompletedAt),
+		ID:          int64(roadmap.ID),
+		Title:       roadmap.Title,
+		Description: &roadmap.Description,
+		Category:    (*string)(&roadmap.Category),
+		IsPublic:    &roadmap.IsPublic,
+		IsTemplate:  &roadmap.IsTemplate,
+	})
+	if err != nil {
+		return err
+	}
+	*roadmap = toModelRoadmap(row)
+	return nil
+}
+
+// UpdateStatus はステータスと完了日時だけを更新する
+// （ユーザーによる明示的なステータス変更専用。他のフィールドは触らない）。
+func (r *roadmapRepository) UpdateStatus(ctx context.Context, roadmap *model.Roadmap) error {
+	row, err := r.q.UpdateRoadmapStatus(ctx, sqlcgen.UpdateRoadmapStatusParams{
+		ID:          int64(roadmap.ID),
+		Status:      (*string)(&roadmap.Status),
+		CompletedAt: toTimestamptz(roadmap.CompletedAt),
 	})
 	if err != nil {
 		return err

@@ -9,9 +9,6 @@ RETURNING *;
 -- name: ListAllGitHubContributionsByUser :many
 SELECT * FROM git_hub_contributions WHERE user_id = $1 ORDER BY date ASC;
 
--- name: DeleteGitHubContributionsByUser :exec
-DELETE FROM git_hub_contributions WHERE user_id = $1;
-
 -- name: UpsertGitHubLanguageStat :one
 INSERT INTO git_hub_language_stats (user_id, language, bytes, repo_count, updated_at)
 VALUES ($1, $2, $3, $4, now())
@@ -24,13 +21,10 @@ RETURNING *;
 -- name: ListGitHubLanguageStatsByUser :many
 SELECT * FROM git_hub_language_stats WHERE user_id = $1 ORDER BY bytes DESC;
 
--- name: DeleteGitHubLanguageStatsByUser :exec
-DELETE FROM git_hub_language_stats WHERE user_id = $1;
-
 -- name: UpsertGitHubRepo :one
 INSERT INTO git_hub_repositories (user_id, git_hub_repo_id, name, full_name, description, language, stars, forks, is_private, updated_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, now())
-ON CONFLICT (git_hub_repo_id) DO UPDATE SET
+ON CONFLICT (user_id, git_hub_repo_id) DO UPDATE SET
     name = EXCLUDED.name,
     full_name = EXCLUDED.full_name,
     description = EXCLUDED.description,
@@ -43,6 +37,14 @@ RETURNING *;
 
 -- name: ListGitHubReposByUser :many
 SELECT * FROM git_hub_repositories WHERE user_id = $1 ORDER BY stars DESC;
+
+-- GitHub連携の「解除」（アカウント削除ではない）で使う。ユーザー本体は残るため
+-- FKのON DELETE CASCADEでは代替できない。GitHubRepository.DeleteUserDataから呼ばれる。
+-- name: DeleteGitHubContributionsByUser :exec
+DELETE FROM git_hub_contributions WHERE user_id = $1;
+
+-- name: DeleteGitHubLanguageStatsByUser :exec
+DELETE FROM git_hub_language_stats WHERE user_id = $1;
 
 -- name: DeleteGitHubReposByUser :exec
 DELETE FROM git_hub_repositories WHERE user_id = $1;

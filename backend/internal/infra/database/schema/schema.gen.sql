@@ -423,8 +423,8 @@ CREATE TABLE "public"."git_hub_repositories" (
 );
 -- Create index "idx_git_hub_repositories_user_id" to table: "git_hub_repositories"
 CREATE INDEX "idx_git_hub_repositories_user_id" ON "public"."git_hub_repositories" ("user_id");
--- Create index "uq_git_hub_repositories_git_hub_repo_id" to table: "git_hub_repositories"
-CREATE UNIQUE INDEX "uq_git_hub_repositories_git_hub_repo_id" ON "public"."git_hub_repositories" ("git_hub_repo_id");
+-- Create index "uq_git_hub_repositories_user_repo" to table: "git_hub_repositories"
+CREATE UNIQUE INDEX "uq_git_hub_repositories_user_repo" ON "public"."git_hub_repositories" ("user_id", "git_hub_repo_id");
 -- Create "group_messages" table
 CREATE TABLE "public"."group_messages" (
   "id" bigserial NOT NULL,
@@ -482,6 +482,8 @@ CREATE TABLE "public"."learning_log_templates" (
 CREATE INDEX "idx_learning_log_templates_user_id" ON "public"."learning_log_templates" ("user_id");
 -- Create index "idx_log_templates_is_default" to table: "learning_log_templates"
 CREATE INDEX "idx_log_templates_is_default" ON "public"."learning_log_templates" ("is_default");
+-- Create index "uq_learning_log_templates_default" to table: "learning_log_templates"
+CREATE UNIQUE INDEX "uq_learning_log_templates_default" ON "public"."learning_log_templates" ("user_id") WHERE is_default;
 -- Create "learning_logs" table
 CREATE TABLE "public"."learning_logs" (
   "id" bigserial NOT NULL,
@@ -658,6 +660,8 @@ CREATE TABLE "public"."note_templates" (
 CREATE INDEX "idx_note_templates_is_default" ON "public"."note_templates" ("is_default");
 -- Create index "idx_note_templates_user_id" to table: "note_templates"
 CREATE INDEX "idx_note_templates_user_id" ON "public"."note_templates" ("user_id");
+-- Create index "uq_note_templates_default" to table: "note_templates"
+CREATE UNIQUE INDEX "uq_note_templates_default" ON "public"."note_templates" ("user_id") WHERE is_default;
 -- Create "note_versions" table
 CREATE TABLE "public"."note_versions" (
   "id" bigserial NOT NULL,
@@ -912,8 +916,8 @@ CREATE TABLE "public"."qiita_articles" (
 );
 -- Create index "idx_qiita_articles_user_id" to table: "qiita_articles"
 CREATE INDEX "idx_qiita_articles_user_id" ON "public"."qiita_articles" ("user_id");
--- Create index "uq_qiita_articles_qiita_id" to table: "qiita_articles"
-CREATE UNIQUE INDEX "uq_qiita_articles_qiita_id" ON "public"."qiita_articles" ("qiita_id");
+-- Create index "uq_qiita_articles_user_article" to table: "qiita_articles"
+CREATE UNIQUE INDEX "uq_qiita_articles_user_article" ON "public"."qiita_articles" ("user_id", "qiita_id");
 -- Create "question_bookmarks" table
 CREATE TABLE "public"."question_bookmarks" (
   "id" bigserial NOT NULL,
@@ -1285,5 +1289,5 @@ CREATE TABLE "public"."zenn_articles" (
 );
 -- Create index "idx_zenn_articles_user_id" to table: "zenn_articles"
 CREATE INDEX "idx_zenn_articles_user_id" ON "public"."zenn_articles" ("user_id");
--- Create index "uq_zenn_articles_zenn_id" to table: "zenn_articles"
-CREATE UNIQUE INDEX "uq_zenn_articles_zenn_id" ON "public"."zenn_articles" ("zenn_id");
+-- Create index "uq_zenn_articles_user_article" to table: "zenn_articles"
+CREATE UNIQUE INDEX "uq_zenn_articles_user_article" ON "public"."zenn_articles" ("user_id", "zenn_id");

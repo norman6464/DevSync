@@ -172,9 +172,11 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 	// ノートフォルダはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	noteFolderRepo := persistence.NewNoteFolderRepository(sqlcgen.New(sqlPool))
 	// ノートテンプレートはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	noteTemplateRepo := persistence.NewNoteTemplateRepository(sqlcgen.New(sqlPool))
+	// デフォルト解除とCreate/Updateを1トランザクションで行うためPoolを直接渡す。
+	noteTemplateRepo := persistence.NewNoteTemplateRepository(sqlPool)
 	// 学習ログテンプレートはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
-	learningLogTemplateRepo := persistence.NewLearningLogTemplateRepository(sqlcgen.New(sqlPool))
+	// デフォルト解除とCreate/Updateを1トランザクションで行うためPoolを直接渡す。
+	learningLogTemplateRepo := persistence.NewLearningLogTemplateRepository(sqlPool)
 	// ノート間リンクはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	noteLinkRepo := persistence.NewNoteLinkRepository(sqlcgen.New(sqlPool))
 	noteReader := persistence.NewNoteReader(sqlcgen.New(sqlPool))
