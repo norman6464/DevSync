@@ -28,8 +28,8 @@ CREATE TABLE "public"."users" (
   "onboarding_completed" boolean NULL DEFAULT false,
   "email_weekly_report" boolean NULL DEFAULT true,
   "email_language" text NULL DEFAULT 'ja',
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "ck_users_email_language" CHECK (email_language = ANY (ARRAY['ja'::text, 'en'::text, 'ko'::text, 'zh-CN'::text, 'zh-TW'::text, 'es'::text, 'fr'::text, 'de'::text, 'pt'::text, 'ru'::text]))
 );
@@ -46,8 +46,8 @@ CREATE TABLE "public"."you_tube_search_caches" (
   "language" character varying(10) NULL DEFAULT 'ja',
   "video_ids" text NULL,
   "cache_expires" timestamptz NULL,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id")
 );
 -- Create index "idx_you_tube_search_caches_cache_expires" to table: "you_tube_search_caches"
@@ -64,8 +64,8 @@ CREATE TABLE "public"."you_tube_videos" (
   "channel_title" character varying(200) NULL,
   "thumbnail_url" character varying(500) NULL,
   "published_at" timestamptz NULL,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id")
 );
 -- Create index "uq_you_tube_videos_video_id" to table: "you_tube_videos"
@@ -82,8 +82,8 @@ CREATE TABLE "public"."ai_advices" (
   "action_url" text NULL,
   "is_read" boolean NULL DEFAULT false,
   "expires_at" timestamptz NULL,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_ai_advices_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "ck_ai_advices_priority" CHECK ((priority >= 1) AND (priority <= 5)),
@@ -96,8 +96,8 @@ CREATE TABLE "public"."ai_conversations" (
   "id" bigserial NOT NULL,
   "user_id" bigint NOT NULL,
   "title" character varying(200) NOT NULL,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_ai_conversations_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
@@ -110,7 +110,7 @@ CREATE TABLE "public"."ai_messages" (
   "role" text NOT NULL,
   "content" text NOT NULL,
   "tokens_used" bigint NULL DEFAULT 0,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_ai_conversations_messages" FOREIGN KEY ("conversation_id") REFERENCES "public"."ai_conversations" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "ck_ai_messages_role" CHECK (role = ANY (ARRAY['user'::text, 'assistant'::text, 'system'::text]))
@@ -127,8 +127,8 @@ CREATE TABLE "public"."questions" (
   "vote_count" bigint NULL DEFAULT 0,
   "answer_count" bigint NULL DEFAULT 0,
   "is_solved" boolean NULL DEFAULT false,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   "deleted_at" timestamptz NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_questions_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
@@ -145,8 +145,8 @@ CREATE TABLE "public"."answers" (
   "body" text NOT NULL,
   "vote_count" bigint NULL DEFAULT 0,
   "is_best" boolean NULL DEFAULT false,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   "deleted_at" timestamptz NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_answers_question" FOREIGN KEY ("question_id") REFERENCES "public"."questions" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
@@ -164,7 +164,7 @@ CREATE TABLE "public"."answer_votes" (
   "user_id" bigint NOT NULL,
   "answer_id" bigint NOT NULL,
   "value" bigint NOT NULL,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_answer_votes_answer" FOREIGN KEY ("answer_id") REFERENCES "public"."answers" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_answer_votes_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
@@ -186,8 +186,8 @@ CREATE TABLE "public"."book_reviews" (
   "image_url" character varying(2000) NULL,
   "status" text NULL DEFAULT 'not_started',
   "is_archived" boolean NULL DEFAULT false,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   "deleted_at" timestamptz NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_book_reviews_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
@@ -205,8 +205,8 @@ CREATE TABLE "public"."bookmark_collections" (
   "name" text NOT NULL,
   "description" text NULL,
   "color" text NULL DEFAULT 'blue',
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_bookmark_collections_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
@@ -226,8 +226,8 @@ CREATE TABLE "public"."posts" (
   "view_count" bigint NULL DEFAULT 0,
   "estimated_read_time" bigint NULL DEFAULT 0,
   "scheduled_at" timestamptz NULL,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_posts_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
@@ -242,7 +242,7 @@ CREATE TABLE "public"."bookmark_collection_items" (
   "id" bigserial NOT NULL,
   "collection_id" bigint NOT NULL,
   "post_id" bigint NOT NULL,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_bookmark_collection_items_collection" FOREIGN KEY ("collection_id") REFERENCES "public"."bookmark_collections" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_bookmark_collection_items_post" FOREIGN KEY ("post_id") REFERENCES "public"."posts" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
@@ -256,7 +256,7 @@ CREATE TABLE "public"."bookmarks" (
   "id" bigserial NOT NULL,
   "user_id" bigint NOT NULL,
   "post_id" bigint NOT NULL,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_bookmarks_post" FOREIGN KEY ("post_id") REFERENCES "public"."posts" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_bookmarks_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
@@ -271,8 +271,8 @@ CREATE TABLE "public"."chat_rooms" (
   "name" character varying(100) NOT NULL,
   "description" character varying(500) NULL,
   "owner_id" bigint NOT NULL,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_chat_rooms_owner" FOREIGN KEY ("owner_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
@@ -305,8 +305,8 @@ CREATE TABLE "public"."code_snippets" (
   "comment_count" bigint NULL DEFAULT 0,
   "forked_from_id" bigint NULL,
   "fork_count" bigint NULL DEFAULT 0,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_code_snippets_forked_from" FOREIGN KEY ("forked_from_id") REFERENCES "public"."code_snippets" ("id") ON UPDATE NO ACTION ON DELETE SET NULL,
   CONSTRAINT "fk_code_snippets_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
@@ -323,7 +323,7 @@ CREATE TABLE "public"."code_snippet_favorites" (
   "id" bigserial NOT NULL,
   "user_id" bigint NOT NULL,
   "snippet_id" bigint NOT NULL,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_code_snippet_favorites_snippet" FOREIGN KEY ("snippet_id") REFERENCES "public"."code_snippets" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_code_snippet_favorites_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
@@ -339,8 +339,8 @@ CREATE TABLE "public"."comments" (
   "content" text NOT NULL,
   "like_count" bigint NULL DEFAULT 0,
   "is_hidden" boolean NULL DEFAULT false,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_comments_post" FOREIGN KEY ("post_id") REFERENCES "public"."posts" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_comments_replies" FOREIGN KEY ("parent_id") REFERENCES "public"."comments" ("id") ON UPDATE NO ACTION ON DELETE SET NULL,
@@ -357,7 +357,7 @@ CREATE TABLE "public"."comment_likes" (
   "id" bigserial NOT NULL,
   "user_id" bigint NOT NULL,
   "comment_id" bigint NOT NULL,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_comment_likes_comment" FOREIGN KEY ("comment_id") REFERENCES "public"."comments" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_comment_likes_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
@@ -371,7 +371,7 @@ CREATE TABLE "public"."follows" (
   "id" bigserial NOT NULL,
   "follower_id" bigint NOT NULL,
   "followee_id" bigint NOT NULL,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_follows_followee" FOREIGN KEY ("followee_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_follows_follower" FOREIGN KEY ("follower_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
@@ -385,8 +385,8 @@ CREATE TABLE "public"."git_hub_contributions" (
   "user_id" bigint NOT NULL,
   "date" timestamptz NOT NULL,
   "count" bigint NOT NULL DEFAULT 0,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_git_hub_contributions_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
@@ -399,7 +399,7 @@ CREATE TABLE "public"."git_hub_language_stats" (
   "language" text NOT NULL,
   "bytes" bigint NOT NULL DEFAULT 0,
   "repo_count" bigint NOT NULL DEFAULT 0,
-  "updated_at" timestamptz NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_git_hub_language_stats_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
@@ -417,7 +417,7 @@ CREATE TABLE "public"."git_hub_repositories" (
   "stars" bigint NULL,
   "forks" bigint NULL,
   "is_private" boolean NULL,
-  "updated_at" timestamptz NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_git_hub_repositories_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
@@ -431,7 +431,7 @@ CREATE TABLE "public"."group_messages" (
   "chat_room_id" bigint NOT NULL,
   "sender_id" bigint NOT NULL,
   "content" text NOT NULL,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_group_messages_chat_room" FOREIGN KEY ("chat_room_id") REFERENCES "public"."chat_rooms" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_group_messages_sender" FOREIGN KEY ("sender_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
@@ -452,8 +452,8 @@ CREATE TABLE "public"."learning_goals" (
   "target_hours" bigint NULL DEFAULT 0,
   "status" text NULL DEFAULT 'active',
   "is_public" boolean NULL DEFAULT false,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   "completed_at" timestamptz NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_learning_goals_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
@@ -473,8 +473,8 @@ CREATE TABLE "public"."learning_log_templates" (
   "default_category" character varying(50) NULL DEFAULT 'other',
   "default_duration" bigint NULL DEFAULT 0,
   "is_default" boolean NULL DEFAULT false,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_learning_log_templates_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
@@ -495,8 +495,8 @@ CREATE TABLE "public"."learning_logs" (
   "goal_id" bigint NULL,
   "source" text NULL DEFAULT 'manual',
   "is_favorite" boolean NULL DEFAULT false,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_learning_logs_goal" FOREIGN KEY ("goal_id") REFERENCES "public"."learning_goals" ("id") ON UPDATE NO ACTION ON DELETE SET NULL,
   CONSTRAINT "fk_learning_logs_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
@@ -520,8 +520,8 @@ CREATE TABLE "public"."learning_resources" (
   "is_public" boolean NULL,
   "like_count" bigint NULL DEFAULT 0,
   "save_count" bigint NULL DEFAULT 0,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   "deleted_at" timestamptz NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_learning_resources_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
@@ -537,7 +537,7 @@ CREATE TABLE "public"."likes" (
   "id" bigserial NOT NULL,
   "user_id" bigint NOT NULL,
   "post_id" bigint NOT NULL,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_likes_post" FOREIGN KEY ("post_id") REFERENCES "public"."posts" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_likes_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
@@ -553,7 +553,7 @@ CREATE TABLE "public"."mentions" (
   "actor_id" bigint NOT NULL,
   "post_id" bigint NULL,
   "comment_id" bigint NULL,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_mentions_actor" FOREIGN KEY ("actor_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_mentions_comment" FOREIGN KEY ("comment_id") REFERENCES "public"."comments" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
@@ -578,7 +578,7 @@ CREATE TABLE "public"."messages" (
   "receiver_id" bigint NOT NULL,
   "content" text NOT NULL,
   "read" boolean NULL DEFAULT false,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_messages_receiver" FOREIGN KEY ("receiver_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_messages_sender" FOREIGN KEY ("sender_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
@@ -594,8 +594,8 @@ CREATE TABLE "public"."note_folders" (
   "user_id" bigint NOT NULL,
   "parent_id" bigint NULL,
   "name" text NOT NULL,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_note_folders_parent" FOREIGN KEY ("parent_id") REFERENCES "public"."note_folders" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_note_folders_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
@@ -614,8 +614,8 @@ CREATE TABLE "public"."notes" (
   "tags" text NULL,
   "is_favorite" boolean NULL DEFAULT false,
   "is_archived" boolean NULL DEFAULT false,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_notes_folder" FOREIGN KEY ("folder_id") REFERENCES "public"."note_folders" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_notes_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
@@ -629,7 +629,7 @@ CREATE TABLE "public"."note_links" (
   "id" bigserial NOT NULL,
   "source_note_id" bigint NOT NULL,
   "target_note_id" bigint NOT NULL,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_note_links_source_note" FOREIGN KEY ("source_note_id") REFERENCES "public"."notes" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_note_links_target_note" FOREIGN KEY ("target_note_id") REFERENCES "public"."notes" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
@@ -651,8 +651,8 @@ CREATE TABLE "public"."note_templates" (
   "content_template" text NOT NULL,
   "default_tags" character varying(255) NULL,
   "is_default" boolean NULL DEFAULT false,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_note_templates_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
@@ -670,7 +670,7 @@ CREATE TABLE "public"."note_versions" (
   "title" text NOT NULL,
   "content" text NULL,
   "tags" text NULL,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_note_versions_note" FOREIGN KEY ("note_id") REFERENCES "public"."notes" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
@@ -688,8 +688,8 @@ CREATE TABLE "public"."notification_settings" (
   "enable_web_push" boolean NULL DEFAULT true,
   "enable_email" boolean NULL DEFAULT true,
   "enable_sound" boolean NULL DEFAULT true,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_notification_settings_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
@@ -705,7 +705,7 @@ CREATE TABLE "public"."notifications" (
   "question_id" bigint NULL,
   "badge_id" character varying(50) NULL,
   "read" boolean NULL DEFAULT false,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_notifications_actor" FOREIGN KEY ("actor_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_notifications_post" FOREIGN KEY ("post_id") REFERENCES "public"."posts" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
@@ -725,7 +725,7 @@ CREATE TABLE "public"."password_reset_tokens" (
   "token" text NOT NULL,
   "expires_at" timestamptz NOT NULL,
   "used" boolean NULL DEFAULT false,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_password_reset_tokens_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
@@ -740,8 +740,8 @@ CREATE TABLE "public"."post_collections" (
   "title" text NOT NULL,
   "description" text NULL,
   "is_public" boolean NULL DEFAULT false,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_post_collections_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
@@ -754,7 +754,7 @@ CREATE TABLE "public"."post_collection_items" (
   "post_id" bigint NOT NULL,
   "note" text NULL,
   "order_index" bigint NOT NULL DEFAULT 0,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_post_collection_items_collection" FOREIGN KEY ("collection_id") REFERENCES "public"."post_collections" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_post_collection_items_post" FOREIGN KEY ("post_id") REFERENCES "public"."posts" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
@@ -771,7 +771,7 @@ CREATE TABLE "public"."post_pins" (
   "user_id" bigint NOT NULL,
   "post_id" bigint NOT NULL,
   "pin_order" bigint NOT NULL DEFAULT 0,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_post_pins_post" FOREIGN KEY ("post_id") REFERENCES "public"."posts" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_post_pins_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
@@ -788,8 +788,8 @@ CREATE TABLE "public"."post_series" (
   "user_id" bigint NOT NULL,
   "title" text NOT NULL,
   "description" text NULL,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_post_series_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
@@ -832,8 +832,8 @@ CREATE TABLE "public"."post_templates" (
   "name" character varying(100) NOT NULL,
   "title_template" character varying(200) NULL,
   "content_template" text NOT NULL,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_post_templates_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
@@ -844,7 +844,7 @@ CREATE TABLE "public"."post_views" (
   "id" bigserial NOT NULL,
   "user_id" bigint NOT NULL,
   "post_id" bigint NOT NULL,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_post_views_post" FOREIGN KEY ("post_id") REFERENCES "public"."posts" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_post_views_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
@@ -871,8 +871,8 @@ CREATE TABLE "public"."projects" (
   "featured" boolean NULL DEFAULT false,
   "is_archived" boolean NULL DEFAULT false,
   "github_repo_id" bigint NULL,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   "deleted_at" timestamptz NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_projects_github_repo" FOREIGN KEY ("github_repo_id") REFERENCES "public"."git_hub_repositories" ("id") ON UPDATE NO ACTION ON DELETE SET NULL,
@@ -891,8 +891,8 @@ CREATE TABLE "public"."project_milestones" (
   "status" character varying(20) NULL DEFAULT 'not_started',
   "due_date" timestamptz NULL,
   "completed_at" timestamptz NULL,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_project_milestones_project" FOREIGN KEY ("project_id") REFERENCES "public"."projects" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "ck_project_milestones_status" CHECK ((status)::text = ANY ((ARRAY['not_started'::character varying, 'in_progress'::character varying, 'completed'::character varying])::text[]))
@@ -910,7 +910,7 @@ CREATE TABLE "public"."qiita_articles" (
   "comments_count" bigint NULL DEFAULT 0,
   "tags" text NULL,
   "published_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_qiita_articles_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
@@ -923,7 +923,7 @@ CREATE TABLE "public"."question_bookmarks" (
   "id" bigserial NOT NULL,
   "user_id" bigint NOT NULL,
   "question_id" bigint NOT NULL,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_question_bookmarks_question" FOREIGN KEY ("question_id") REFERENCES "public"."questions" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_question_bookmarks_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
@@ -936,7 +936,7 @@ CREATE TABLE "public"."question_votes" (
   "user_id" bigint NOT NULL,
   "question_id" bigint NOT NULL,
   "value" bigint NOT NULL,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_question_votes_question" FOREIGN KEY ("question_id") REFERENCES "public"."questions" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_question_votes_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
@@ -950,7 +950,7 @@ CREATE TABLE "public"."reactions" (
   "user_id" bigint NOT NULL,
   "post_id" bigint NOT NULL,
   "emoji" character varying(10) NOT NULL,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_reactions_post" FOREIGN KEY ("post_id") REFERENCES "public"."posts" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_reactions_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
@@ -970,8 +970,8 @@ CREATE TABLE "public"."reminder_settings" (
   "enable_web" boolean NULL DEFAULT true,
   "enable_email" boolean NULL DEFAULT false,
   "last_reminded_at" timestamptz NULL,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_reminder_settings_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "ck_reminder_settings_frequency" CHECK (frequency = ANY (ARRAY['daily'::text, 'weekly'::text]))
@@ -983,7 +983,7 @@ CREATE TABLE "public"."resource_likes" (
   "id" bigserial NOT NULL,
   "user_id" bigint NOT NULL,
   "resource_id" bigint NOT NULL,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_resource_likes_resource" FOREIGN KEY ("resource_id") REFERENCES "public"."learning_resources" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_resource_likes_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
@@ -1000,8 +1000,8 @@ CREATE TABLE "public"."resource_progresses" (
   "note" text NULL,
   "started_at" timestamptz NULL,
   "completed_at" timestamptz NULL,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_resource_progresses_resource" FOREIGN KEY ("resource_id") REFERENCES "public"."learning_resources" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_resource_progresses_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
@@ -1016,8 +1016,8 @@ CREATE TABLE "public"."resource_reviews" (
   "resource_id" bigint NOT NULL,
   "rating" bigint NOT NULL,
   "comment" text NULL,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_resource_reviews_resource" FOREIGN KEY ("resource_id") REFERENCES "public"."learning_resources" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_resource_reviews_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
@@ -1032,7 +1032,7 @@ CREATE TABLE "public"."resource_saves" (
   "id" bigserial NOT NULL,
   "user_id" bigint NOT NULL,
   "resource_id" bigint NOT NULL,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_resource_saves_resource" FOREIGN KEY ("resource_id") REFERENCES "public"."learning_resources" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_resource_saves_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
@@ -1052,8 +1052,8 @@ CREATE TABLE "public"."roadmaps" (
   "completed_step_count" bigint NULL DEFAULT 0,
   "progress" bigint NULL DEFAULT 0,
   "status" text NULL DEFAULT 'active',
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   "completed_at" timestamptz NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_roadmaps_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
@@ -1076,8 +1076,8 @@ CREATE TABLE "public"."roadmap_steps" (
   "is_completed" boolean NULL DEFAULT false,
   "completed_at" timestamptz NULL,
   "resource_url" character varying(500) NULL,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_roadmaps_steps" FOREIGN KEY ("roadmap_id") REFERENCES "public"."roadmaps" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
@@ -1090,8 +1090,8 @@ CREATE TABLE "public"."snippet_comments" (
   "user_id" bigint NOT NULL,
   "line_number" bigint NOT NULL,
   "content" text NOT NULL,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_snippet_comments_snippet" FOREIGN KEY ("snippet_id") REFERENCES "public"."code_snippets" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_snippet_comments_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
@@ -1110,7 +1110,7 @@ CREATE TABLE "public"."spotify_recent_tracks" (
   "album_image" text NULL,
   "track_url" text NULL,
   "played_at" timestamptz NOT NULL,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_spotify_recent_tracks_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
@@ -1123,7 +1123,7 @@ CREATE TABLE "public"."streak_freezes" (
   "used_date" character varying(10) NOT NULL,
   "month" bigint NOT NULL,
   "year" bigint NOT NULL,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_streak_freezes_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
@@ -1140,8 +1140,8 @@ CREATE TABLE "public"."study_circles" (
   "owner_id" bigint NOT NULL,
   "max_members" bigint NOT NULL DEFAULT 5,
   "status" text NULL DEFAULT 'active',
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_study_circles_owner" FOREIGN KEY ("owner_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "ck_study_circles_status" CHECK (status = ANY (ARRAY['active'::text, 'completed'::text, 'archived'::text]))
@@ -1155,7 +1155,7 @@ CREATE TABLE "public"."study_circle_checkins" (
   "user_id" bigint NOT NULL,
   "date" character varying(10) NOT NULL,
   "content" text NOT NULL,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_study_circle_checkins_circle" FOREIGN KEY ("circle_id") REFERENCES "public"."study_circles" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_study_circle_checkins_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
@@ -1170,8 +1170,8 @@ CREATE TABLE "public"."study_circle_steps" (
   "description" text NULL,
   "order_index" bigint NULL DEFAULT 0,
   "resource_url" character varying(2000) NULL,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_study_circles_steps" FOREIGN KEY ("circle_id") REFERENCES "public"."study_circles" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
@@ -1214,7 +1214,7 @@ CREATE TABLE "public"."user_activities" (
   "target_type" character varying(50) NOT NULL,
   "target_id" bigint NOT NULL,
   "metadata" text NULL,
-  "created_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_user_activities_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "ck_user_activities_activity_type" CHECK ((activity_type)::text = ANY ((ARRAY['post_created'::character varying, 'comment_created'::character varying, 'resource_shared'::character varying, 'goal_completed'::character varying, 'project_created'::character varying, 'snippet_created'::character varying])::text[]))
@@ -1237,8 +1237,8 @@ CREATE TABLE "public"."weekly_challenges" (
   "current_value" bigint NULL DEFAULT 0,
   "is_completed" boolean NULL DEFAULT false,
   "completed_at" timestamptz NULL,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_weekly_challenges_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "ck_weekly_challenges_challenge_type" CHECK (challenge_type = ANY (ARRAY['duration_total'::text, 'streak_days'::text, 'category_count'::text, 'log_count'::text]))
@@ -1251,8 +1251,8 @@ CREATE TABLE "public"."weekly_goals" (
   "user_id" bigint NOT NULL,
   "category" text NOT NULL,
   "target_minutes" bigint NOT NULL DEFAULT 0,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_weekly_goals_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "ck_weekly_goals_category" CHECK (category = ANY (ARRAY['coding'::text, 'reading'::text, 'course'::text, 'meetup'::text, 'other'::text]))
@@ -1264,8 +1264,8 @@ CREATE TABLE "public"."widget_settings" (
   "id" bigserial NOT NULL,
   "user_id" bigint NOT NULL,
   "settings" text NOT NULL,
-  "created_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_widget_settings_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
@@ -1283,7 +1283,7 @@ CREATE TABLE "public"."zenn_articles" (
   "liked_count" bigint NULL DEFAULT 0,
   "comments_count" bigint NULL DEFAULT 0,
   "published_at" timestamptz NULL,
-  "updated_at" timestamptz NULL,
+  "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_zenn_articles_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );

@@ -61,11 +61,11 @@ table "ai_advices" {
     type = timestamptz
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -102,11 +102,11 @@ table "ai_conversations" {
     type = character_varying(200)
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -146,7 +146,7 @@ table "ai_messages" {
     default = 0
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -189,7 +189,7 @@ table "answer_votes" {
     type = bigint
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -244,11 +244,11 @@ table "answers" {
     default = false
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "deleted_at" {
@@ -340,11 +340,11 @@ table "book_reviews" {
     default = false
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "deleted_at" {
@@ -393,7 +393,7 @@ table "bookmark_collection_items" {
     type = bigint
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -443,11 +443,11 @@ table "bookmark_collections" {
     default = "blue"
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -531,11 +531,11 @@ table "chat_rooms" {
     type = bigint
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -570,7 +570,7 @@ table "group_messages" {
     type = text
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -615,7 +615,7 @@ table "code_snippet_favorites" {
     type = bigint
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -679,11 +679,11 @@ table "code_snippets" {
     default = 0
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -740,11 +740,11 @@ table "snippet_comments" {
     type = text
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -789,7 +789,7 @@ table "follows" {
     type = bigint
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -840,11 +840,11 @@ table "git_hub_contributions" {
     default = 0
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -886,7 +886,7 @@ table "git_hub_language_stats" {
     default = 0
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -946,7 +946,7 @@ table "git_hub_repositories" {
     type = boolean
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -1019,11 +1019,11 @@ table "learning_goals" {
     default = false
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "completed_at" {
@@ -1100,11 +1100,11 @@ table "learning_logs" {
     default = false
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -1175,11 +1175,11 @@ table "learning_log_templates" {
     default = false
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -1261,11 +1261,11 @@ table "learning_resources" {
     default = 0
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "deleted_at" {
@@ -1309,7 +1309,7 @@ table "resource_likes" {
     type = bigint
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -1355,11 +1355,11 @@ table "resource_reviews" {
     type = text
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -1403,7 +1403,7 @@ table "resource_saves" {
     type = bigint
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -1454,7 +1454,7 @@ table "mentions" {
     type = bigint
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -1536,7 +1536,7 @@ table "messages" {
     default = false
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -1588,11 +1588,11 @@ table "note_folders" {
     type = text
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -1654,11 +1654,11 @@ table "notes" {
     default = false
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -1703,7 +1703,7 @@ table "note_links" {
     type = bigint
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -1776,11 +1776,11 @@ table "note_templates" {
     default = false
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -1836,7 +1836,7 @@ table "note_versions" {
     type = text
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -1893,7 +1893,7 @@ table "notifications" {
     default = false
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -1989,11 +1989,11 @@ table "notification_settings" {
     default = true
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -2039,7 +2039,7 @@ table "password_reset_tokens" {
     default = false
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -2079,7 +2079,7 @@ table "bookmarks" {
     type = bigint
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -2120,7 +2120,7 @@ table "comment_likes" {
     type = bigint
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -2179,11 +2179,11 @@ table "comments" {
     default = false
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -2232,7 +2232,7 @@ table "likes" {
     type = bigint
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -2282,7 +2282,7 @@ table "post_collection_items" {
     default = 0
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -2335,11 +2335,11 @@ table "post_collections" {
     default = false
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -2375,7 +2375,7 @@ table "post_pins" {
     default = 0
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -2423,11 +2423,11 @@ table "post_series" {
     type = text
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -2537,7 +2537,7 @@ table "post_views" {
     type = bigint
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -2623,11 +2623,11 @@ table "posts" {
     type = timestamptz
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -2668,7 +2668,7 @@ table "reactions" {
     type = character_varying(10)
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -2722,11 +2722,11 @@ table "post_templates" {
     type = text
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -2808,11 +2808,11 @@ table "projects" {
     type = bigint
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "deleted_at" {
@@ -2878,11 +2878,11 @@ table "project_milestones" {
     type = timestamptz
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -2947,7 +2947,7 @@ table "qiita_articles" {
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -2987,7 +2987,7 @@ table "question_bookmarks" {
     type = bigint
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -3029,7 +3029,7 @@ table "question_votes" {
     type = bigint
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -3093,11 +3093,11 @@ table "questions" {
     default = false
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "deleted_at" {
@@ -3170,11 +3170,11 @@ table "reminder_settings" {
     type = timestamptz
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -3236,11 +3236,11 @@ table "resource_progresses" {
     type = timestamptz
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -3308,11 +3308,11 @@ table "roadmap_steps" {
     type = character_varying(500)
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -3382,11 +3382,11 @@ table "roadmaps" {
     default = "active"
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "completed_at" {
@@ -3458,7 +3458,7 @@ table "spotify_recent_tracks" {
     type = timestamptz
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -3502,7 +3502,7 @@ table "streak_freezes" {
     type = bigint
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -3550,7 +3550,7 @@ table "study_circle_checkins" {
     type = text
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -3700,11 +3700,11 @@ table "study_circle_steps" {
     type = character_varying(2000)
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -3753,11 +3753,11 @@ table "study_circles" {
     default = "active"
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -3885,11 +3885,11 @@ table "users" {
     default = "ja"
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -3944,7 +3944,7 @@ table "user_activities" {
     type = text
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -4019,11 +4019,11 @@ table "weekly_challenges" {
     type = timestamptz
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -4067,11 +4067,11 @@ table "weekly_goals" {
     default = 0
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -4111,11 +4111,11 @@ table "widget_settings" {
     type = text
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -4161,11 +4161,11 @@ table "you_tube_search_caches" {
     type = timestamptz
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -4213,11 +4213,11 @@ table "you_tube_videos" {
     type = timestamptz
   }
   column "created_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {
@@ -4278,7 +4278,7 @@ table "zenn_articles" {
     type = timestamptz
   }
   column "updated_at" {
-    null = true
+    null = false
     type = timestamptz
   }
   primary_key {

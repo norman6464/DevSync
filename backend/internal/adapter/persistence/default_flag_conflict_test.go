@@ -22,8 +22,8 @@ func TestNoteTemplateCreate_SwitchDefault_Succeeds(t *testing.T) {
 
 	var userID int64
 	err := pool.QueryRow(ctx, `
-		INSERT INTO users (username, name, email)
-		VALUES ('switch_default_user', 'Switch Default', 'switch_default@example.com')
+		INSERT INTO users (username, name, email, created_at, updated_at)
+		VALUES ('switch_default_user', 'Switch Default', 'switch_default@example.com', now(), now())
 		RETURNING id
 	`).Scan(&userID)
 	require.NoError(t, err)
@@ -69,8 +69,8 @@ func TestNoteTemplateDefaultUniqueIndex_ConcurrentTransactions_Conflicts(t *test
 
 	var userID int64
 	err := pool.QueryRow(ctx, `
-		INSERT INTO users (username, name, email)
-		VALUES ('conflict_user', 'Conflict User', 'conflict_user@example.com')
+		INSERT INTO users (username, name, email, created_at, updated_at)
+		VALUES ('conflict_user', 'Conflict User', 'conflict_user@example.com', now(), now())
 		RETURNING id
 	`).Scan(&userID)
 	require.NoError(t, err)
@@ -142,8 +142,8 @@ func TestLearningLogTemplateCreate_SwitchDefault_Succeeds(t *testing.T) {
 
 	var userID int64
 	err := pool.QueryRow(ctx, `
-		INSERT INTO users (username, name, email)
-		VALUES ('switch_default_log_user', 'Switch Default Log', 'switch_default_log@example.com')
+		INSERT INTO users (username, name, email, created_at, updated_at)
+		VALUES ('switch_default_log_user', 'Switch Default Log', 'switch_default_log@example.com', now(), now())
 		RETURNING id
 	`).Scan(&userID)
 	require.NoError(t, err)
@@ -178,8 +178,8 @@ func TestLearningLogTemplateDefaultUniqueIndex_ConcurrentTransactions_Conflicts(
 
 	var userID int64
 	err := pool.QueryRow(ctx, `
-		INSERT INTO users (username, name, email)
-		VALUES ('conflict_log_user', 'Conflict Log User', 'conflict_log_user@example.com')
+		INSERT INTO users (username, name, email, created_at, updated_at)
+		VALUES ('conflict_log_user', 'Conflict Log User', 'conflict_log_user@example.com', now(), now())
 		RETURNING id
 	`).Scan(&userID)
 	require.NoError(t, err)
