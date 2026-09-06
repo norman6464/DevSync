@@ -124,10 +124,10 @@ func (q *Queries) CountUserVisibleLearningResources(ctx context.Context, arg Cou
 const createLearningResource = `-- name: CreateLearningResource :one
 INSERT INTO learning_resources (
     user_id, title, description, url, category, difficulty, tags, image_url, is_public,
-    like_count, save_count, created_at, updated_at
+    created_at, updated_at
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, now(), now()
-) RETURNING id, user_id, title, description, url, category, difficulty, tags, image_url, is_public, like_count, save_count, created_at, updated_at
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, now(), now()
+) RETURNING id, user_id, title, description, url, category, difficulty, tags, image_url, is_public, created_at, updated_at
 `
 
 type CreateLearningResourceParams struct {
@@ -140,8 +140,6 @@ type CreateLearningResourceParams struct {
 	Tags        *string
 	ImageUrl    *string
 	IsPublic    bool
-	LikeCount   *int64
-	SaveCount   *int64
 }
 
 func (q *Queries) CreateLearningResource(ctx context.Context, arg CreateLearningResourceParams) (LearningResource, error) {
@@ -155,8 +153,6 @@ func (q *Queries) CreateLearningResource(ctx context.Context, arg CreateLearning
 		arg.Tags,
 		arg.ImageUrl,
 		arg.IsPublic,
-		arg.LikeCount,
-		arg.SaveCount,
 	)
 	var i LearningResource
 	err := row.Scan(
@@ -170,8 +166,6 @@ func (q *Queries) CreateLearningResource(ctx context.Context, arg CreateLearning
 		&i.Tags,
 		&i.ImageUrl,
 		&i.IsPublic,
-		&i.LikeCount,
-		&i.SaveCount,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -179,7 +173,13 @@ func (q *Queries) CreateLearningResource(ctx context.Context, arg CreateLearning
 }
 
 const createResourceLike = `-- name: CreateResourceLike :exec
-INSERT INTO resource_likes (user_id, resource_id, created_at) VALUES ($1, $2, now())
+WITH inserted AS (
+    INSERT INTO resource_likes (user_id, resource_id, created_at) VALUES ($1, $2, now())
+    RETURNING resource_likes.resource_id AS liked_resource_id
+)
+INSERT INTO learning_resource_metrics (resource_id, like_count)
+SELECT liked_resource_id, 1 FROM inserted
+ON CONFLICT (resource_id) DO UPDATE SET like_count = learning_resource_metrics.like_count + 1
 `
 
 type CreateResourceLikeParams struct {
@@ -187,13 +187,22 @@ type CreateResourceLikeParams struct {
 	ResourceID int64
 }
 
+// resource_likesへのINSERTとlearning_resource_metrics.like_countの加算を
+// 同一SQL文で行う（DEVSYNC-159）。CTEの出力列を別名にし、sqlcの列名衝突による
+// 誤検出を避ける。
 func (q *Queries) CreateResourceLike(ctx context.Context, arg CreateResourceLikeParams) error {
 	_, err := q.db.Exec(ctx, createResourceLike, arg.UserID, arg.ResourceID)
 	return err
 }
 
 const createResourceSave = `-- name: CreateResourceSave :exec
-INSERT INTO resource_saves (user_id, resource_id, created_at) VALUES ($1, $2, now())
+WITH inserted AS (
+    INSERT INTO resource_saves (user_id, resource_id, created_at) VALUES ($1, $2, now())
+    RETURNING resource_saves.resource_id AS saved_resource_id
+)
+INSERT INTO learning_resource_metrics (resource_id, save_count)
+SELECT saved_resource_id, 1 FROM inserted
+ON CONFLICT (resource_id) DO UPDATE SET save_count = learning_resource_metrics.save_count + 1
 `
 
 type CreateResourceSaveParams struct {
@@ -201,30 +210,9 @@ type CreateResourceSaveParams struct {
 	ResourceID int64
 }
 
+// resource_savesへのINSERTとlearning_resource_metrics.save_countの加算を同一SQL文で行う。
 func (q *Queries) CreateResourceSave(ctx context.Context, arg CreateResourceSaveParams) error {
 	_, err := q.db.Exec(ctx, createResourceSave, arg.UserID, arg.ResourceID)
-	return err
-}
-
-const decrementResourceLikeCountFloored = `-- name: DecrementResourceLikeCountFloored :exec
-UPDATE learning_resources SET like_count = GREATEST(like_count - 1, 0)
-WHERE learning_resources.id = $1
-`
-
-// 0未満にはしない（GORMのGREATEST(like_count - 1, 0)に相当）。
-func (q *Queries) DecrementResourceLikeCountFloored(ctx context.Context, id int64) error {
-	_, err := q.db.Exec(ctx, decrementResourceLikeCountFloored, id)
-	return err
-}
-
-const decrementResourceSaveCountFloored = `-- name: DecrementResourceSaveCountFloored :exec
-UPDATE learning_resources SET save_count = GREATEST(save_count - 1, 0)
-WHERE learning_resources.id = $1
-`
-
-// 0未満にはしない（GORMのGREATEST(save_count - 1, 0)に相当）。
-func (q *Queries) DecrementResourceSaveCountFloored(ctx context.Context, id int64) error {
-	_, err := q.db.Exec(ctx, decrementResourceSaveCountFloored, id)
 	return err
 }
 
@@ -238,9 +226,14 @@ func (q *Queries) DeleteLearningResource(ctx context.Context, id int64) error {
 	return err
 }
 
-const deleteResourceLike = `-- name: DeleteResourceLike :exec
-DELETE FROM resource_likes
-WHERE resource_likes.user_id = $1 AND resource_likes.resource_id = $2
+const deleteResourceLike = `-- name: DeleteResourceLike :execrows
+WITH deleted AS (
+    DELETE FROM resource_likes WHERE resource_likes.user_id = $1 AND resource_likes.resource_id = $2
+    RETURNING resource_likes.resource_id AS liked_resource_id
+)
+INSERT INTO learning_resource_metrics (resource_id, like_count)
+SELECT liked_resource_id, 0 FROM deleted
+ON CONFLICT (resource_id) DO UPDATE SET like_count = GREATEST(learning_resource_metrics.like_count - 1, 0)
 `
 
 type DeleteResourceLikeParams struct {
@@ -248,14 +241,25 @@ type DeleteResourceLikeParams struct {
 	ResourceID int64
 }
 
-func (q *Queries) DeleteResourceLike(ctx context.Context, arg DeleteResourceLikeParams) error {
-	_, err := q.db.Exec(ctx, deleteResourceLike, arg.UserID, arg.ResourceID)
-	return err
+// resource_likesの削除とlearning_resource_metrics.like_countの減算を同一SQL文で行う。
+// 実際に削除できた（＝deletedに1行ある）ときだけmetricsを更新するため、
+// rowsAffectedは従来どおり「実際にいいねを取り消せたか」を表す。
+func (q *Queries) DeleteResourceLike(ctx context.Context, arg DeleteResourceLikeParams) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteResourceLike, arg.UserID, arg.ResourceID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
-const deleteResourceSave = `-- name: DeleteResourceSave :exec
-DELETE FROM resource_saves
-WHERE resource_saves.user_id = $1 AND resource_saves.resource_id = $2
+const deleteResourceSave = `-- name: DeleteResourceSave :execrows
+WITH deleted AS (
+    DELETE FROM resource_saves WHERE resource_saves.user_id = $1 AND resource_saves.resource_id = $2
+    RETURNING resource_saves.resource_id AS saved_resource_id
+)
+INSERT INTO learning_resource_metrics (resource_id, save_count)
+SELECT saved_resource_id, 0 FROM deleted
+ON CONFLICT (resource_id) DO UPDATE SET save_count = GREATEST(learning_resource_metrics.save_count - 1, 0)
 `
 
 type DeleteResourceSaveParams struct {
@@ -263,13 +267,17 @@ type DeleteResourceSaveParams struct {
 	ResourceID int64
 }
 
-func (q *Queries) DeleteResourceSave(ctx context.Context, arg DeleteResourceSaveParams) error {
-	_, err := q.db.Exec(ctx, deleteResourceSave, arg.UserID, arg.ResourceID)
-	return err
+// resource_savesの削除とlearning_resource_metrics.save_countの減算を同一SQL文で行う。
+func (q *Queries) DeleteResourceSave(ctx context.Context, arg DeleteResourceSaveParams) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteResourceSave, arg.UserID, arg.ResourceID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const getLearningResourceWithUserByID = `-- name: GetLearningResourceWithUserByID :one
-SELECT learning_resources.id, learning_resources.user_id, learning_resources.title, learning_resources.description, learning_resources.url, learning_resources.category, learning_resources.difficulty, learning_resources.tags, learning_resources.image_url, learning_resources.is_public, learning_resources.like_count, learning_resources.save_count, learning_resources.created_at, learning_resources.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT learning_resources.id, learning_resources.user_id, learning_resources.title, learning_resources.description, learning_resources.url, learning_resources.category, learning_resources.difficulty, learning_resources.tags, learning_resources.image_url, learning_resources.is_public, learning_resources.created_at, learning_resources.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM learning_resources
 JOIN users ON users.id = learning_resources.user_id
 WHERE learning_resources.id = $1
@@ -295,8 +303,6 @@ func (q *Queries) GetLearningResourceWithUserByID(ctx context.Context, id int64)
 		&i.LearningResource.Tags,
 		&i.LearningResource.ImageUrl,
 		&i.LearningResource.IsPublic,
-		&i.LearningResource.LikeCount,
-		&i.LearningResource.SaveCount,
 		&i.LearningResource.CreatedAt,
 		&i.LearningResource.UpdatedAt,
 		&i.User.ID,
@@ -329,28 +335,8 @@ func (q *Queries) GetLearningResourceWithUserByID(ctx context.Context, id int64)
 	return i, err
 }
 
-const incrementResourceLikeCount = `-- name: IncrementResourceLikeCount :exec
-UPDATE learning_resources SET like_count = like_count + 1
-WHERE learning_resources.id = $1
-`
-
-func (q *Queries) IncrementResourceLikeCount(ctx context.Context, id int64) error {
-	_, err := q.db.Exec(ctx, incrementResourceLikeCount, id)
-	return err
-}
-
-const incrementResourceSaveCount = `-- name: IncrementResourceSaveCount :exec
-UPDATE learning_resources SET save_count = save_count + 1
-WHERE learning_resources.id = $1
-`
-
-func (q *Queries) IncrementResourceSaveCount(ctx context.Context, id int64) error {
-	_, err := q.db.Exec(ctx, incrementResourceSaveCount, id)
-	return err
-}
-
 const listLearningResourcesByDifficultyWithUser = `-- name: ListLearningResourcesByDifficultyWithUser :many
-SELECT learning_resources.id, learning_resources.user_id, learning_resources.title, learning_resources.description, learning_resources.url, learning_resources.category, learning_resources.difficulty, learning_resources.tags, learning_resources.image_url, learning_resources.is_public, learning_resources.like_count, learning_resources.save_count, learning_resources.created_at, learning_resources.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT learning_resources.id, learning_resources.user_id, learning_resources.title, learning_resources.description, learning_resources.url, learning_resources.category, learning_resources.difficulty, learning_resources.tags, learning_resources.image_url, learning_resources.is_public, learning_resources.created_at, learning_resources.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM learning_resources
 JOIN users ON users.id = learning_resources.user_id
 WHERE learning_resources.is_public = true AND learning_resources.difficulty = $1
@@ -389,8 +375,6 @@ func (q *Queries) ListLearningResourcesByDifficultyWithUser(ctx context.Context,
 			&i.LearningResource.Tags,
 			&i.LearningResource.ImageUrl,
 			&i.LearningResource.IsPublic,
-			&i.LearningResource.LikeCount,
-			&i.LearningResource.SaveCount,
 			&i.LearningResource.CreatedAt,
 			&i.LearningResource.UpdatedAt,
 			&i.User.ID,
@@ -431,7 +415,7 @@ func (q *Queries) ListLearningResourcesByDifficultyWithUser(ctx context.Context,
 }
 
 const listLearningResourcesByUser = `-- name: ListLearningResourcesByUser :many
-SELECT id, user_id, title, description, url, category, difficulty, tags, image_url, is_public, like_count, save_count, created_at, updated_at FROM learning_resources
+SELECT id, user_id, title, description, url, category, difficulty, tags, image_url, is_public, created_at, updated_at FROM learning_resources
 WHERE learning_resources.user_id = $1
     AND ($4::bool OR learning_resources.is_public = true)
 ORDER BY learning_resources.created_at DESC
@@ -472,8 +456,6 @@ func (q *Queries) ListLearningResourcesByUser(ctx context.Context, arg ListLearn
 			&i.Tags,
 			&i.ImageUrl,
 			&i.IsPublic,
-			&i.LikeCount,
-			&i.SaveCount,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -488,13 +470,14 @@ func (q *Queries) ListLearningResourcesByUser(ctx context.Context, arg ListLearn
 }
 
 const listPublicLearningResourcesWithUser = `-- name: ListPublicLearningResourcesWithUser :many
-SELECT learning_resources.id, learning_resources.user_id, learning_resources.title, learning_resources.description, learning_resources.url, learning_resources.category, learning_resources.difficulty, learning_resources.tags, learning_resources.image_url, learning_resources.is_public, learning_resources.like_count, learning_resources.save_count, learning_resources.created_at, learning_resources.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT learning_resources.id, learning_resources.user_id, learning_resources.title, learning_resources.description, learning_resources.url, learning_resources.category, learning_resources.difficulty, learning_resources.tags, learning_resources.image_url, learning_resources.is_public, learning_resources.created_at, learning_resources.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM learning_resources
 JOIN users ON users.id = learning_resources.user_id
+LEFT JOIN learning_resource_metrics lrm ON lrm.resource_id = learning_resources.id
 WHERE learning_resources.is_public = true
     AND ($3::text IS NULL OR learning_resources.category = $3)
     AND ($4::text IS NULL OR learning_resources.difficulty = $4)
-ORDER BY learning_resources.like_count DESC, learning_resources.created_at DESC
+ORDER BY COALESCE(lrm.like_count, 0) DESC, learning_resources.created_at DESC
 LIMIT $1 OFFSET $2
 `
 
@@ -511,6 +494,7 @@ type ListPublicLearningResourcesWithUserRow struct {
 }
 
 // GORMのPreload("User")に相当。categoryとdifficultyは空文字なら絞り込まない。
+// like_countはlearning_resource_metrics側（DEVSYNC-159）。LEFT JOIN + COALESCEで0扱いにする。
 func (q *Queries) ListPublicLearningResourcesWithUser(ctx context.Context, arg ListPublicLearningResourcesWithUserParams) ([]ListPublicLearningResourcesWithUserRow, error) {
 	rows, err := q.db.Query(ctx, listPublicLearningResourcesWithUser,
 		arg.Limit,
@@ -536,8 +520,6 @@ func (q *Queries) ListPublicLearningResourcesWithUser(ctx context.Context, arg L
 			&i.LearningResource.Tags,
 			&i.LearningResource.ImageUrl,
 			&i.LearningResource.IsPublic,
-			&i.LearningResource.LikeCount,
-			&i.LearningResource.SaveCount,
 			&i.LearningResource.CreatedAt,
 			&i.LearningResource.UpdatedAt,
 			&i.User.ID,
@@ -578,7 +560,7 @@ func (q *Queries) ListPublicLearningResourcesWithUser(ctx context.Context, arg L
 }
 
 const listSavedLearningResourcesWithUser = `-- name: ListSavedLearningResourcesWithUser :many
-SELECT learning_resources.id, learning_resources.user_id, learning_resources.title, learning_resources.description, learning_resources.url, learning_resources.category, learning_resources.difficulty, learning_resources.tags, learning_resources.image_url, learning_resources.is_public, learning_resources.like_count, learning_resources.save_count, learning_resources.created_at, learning_resources.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT learning_resources.id, learning_resources.user_id, learning_resources.title, learning_resources.description, learning_resources.url, learning_resources.category, learning_resources.difficulty, learning_resources.tags, learning_resources.image_url, learning_resources.is_public, learning_resources.created_at, learning_resources.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM learning_resources
 JOIN users ON users.id = learning_resources.user_id
 WHERE learning_resources.id IN (
@@ -619,8 +601,6 @@ func (q *Queries) ListSavedLearningResourcesWithUser(ctx context.Context, arg Li
 			&i.LearningResource.Tags,
 			&i.LearningResource.ImageUrl,
 			&i.LearningResource.IsPublic,
-			&i.LearningResource.LikeCount,
-			&i.LearningResource.SaveCount,
 			&i.LearningResource.CreatedAt,
 			&i.LearningResource.UpdatedAt,
 			&i.User.ID,
@@ -661,12 +641,13 @@ func (q *Queries) ListSavedLearningResourcesWithUser(ctx context.Context, arg Li
 }
 
 const searchLearningResourcesWithUser = `-- name: SearchLearningResourcesWithUser :many
-SELECT learning_resources.id, learning_resources.user_id, learning_resources.title, learning_resources.description, learning_resources.url, learning_resources.category, learning_resources.difficulty, learning_resources.tags, learning_resources.image_url, learning_resources.is_public, learning_resources.like_count, learning_resources.save_count, learning_resources.created_at, learning_resources.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT learning_resources.id, learning_resources.user_id, learning_resources.title, learning_resources.description, learning_resources.url, learning_resources.category, learning_resources.difficulty, learning_resources.tags, learning_resources.image_url, learning_resources.is_public, learning_resources.created_at, learning_resources.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM learning_resources
 JOIN users ON users.id = learning_resources.user_id
+LEFT JOIN learning_resource_metrics lrm ON lrm.resource_id = learning_resources.id
 WHERE learning_resources.is_public = true
     AND (learning_resources.title ILIKE $1 OR learning_resources.description ILIKE $1 OR learning_resources.tags ILIKE $1)
-ORDER BY learning_resources.like_count DESC, learning_resources.created_at DESC
+ORDER BY COALESCE(lrm.like_count, 0) DESC, learning_resources.created_at DESC
 LIMIT $2 OFFSET $3
 `
 
@@ -681,6 +662,7 @@ type SearchLearningResourcesWithUserRow struct {
 	User             User
 }
 
+// like_countはlearning_resource_metrics側（DEVSYNC-159）。LEFT JOIN + COALESCEで0扱いにする。
 func (q *Queries) SearchLearningResourcesWithUser(ctx context.Context, arg SearchLearningResourcesWithUserParams) ([]SearchLearningResourcesWithUserRow, error) {
 	rows, err := q.db.Query(ctx, searchLearningResourcesWithUser, arg.Title, arg.Limit, arg.Offset)
 	if err != nil {
@@ -701,8 +683,6 @@ func (q *Queries) SearchLearningResourcesWithUser(ctx context.Context, arg Searc
 			&i.LearningResource.Tags,
 			&i.LearningResource.ImageUrl,
 			&i.LearningResource.IsPublic,
-			&i.LearningResource.LikeCount,
-			&i.LearningResource.SaveCount,
 			&i.LearningResource.CreatedAt,
 			&i.LearningResource.UpdatedAt,
 			&i.User.ID,
@@ -747,7 +727,7 @@ UPDATE learning_resources SET
     title = $2, description = $3, url = $4, category = $5, difficulty = $6, tags = $7,
     image_url = $8, is_public = $9, updated_at = now()
 WHERE learning_resources.id = $1
-RETURNING id, user_id, title, description, url, category, difficulty, tags, image_url, is_public, like_count, save_count, created_at, updated_at
+RETURNING id, user_id, title, description, url, category, difficulty, tags, image_url, is_public, created_at, updated_at
 `
 
 type UpdateLearningResourceParams struct {
@@ -762,9 +742,8 @@ type UpdateLearningResourceParams struct {
 	IsPublic    bool
 }
 
-// GORMのSave（全カラム上書き）に相当。ただしlike_count/save_countは対象外
-// （Increment/Decrement系の専用クエリだけが更新する）。ここに含めると、他リクエストによる
-// カウンタ更新をこのUPDATEが読み取り時点の古い値で上書きする「ロストアップデート」を起こす。
+// GORMのSave（全カラム上書き）に相当。like_count/save_countはlearning_resources自体の
+// 列ではなくlearning_resource_metrics側（DEVSYNC-159）にあるため、ここには含まれない。
 func (q *Queries) UpdateLearningResource(ctx context.Context, arg UpdateLearningResourceParams) (LearningResource, error) {
 	row := q.db.QueryRow(ctx, updateLearningResource,
 		arg.ID,
@@ -789,8 +768,6 @@ func (q *Queries) UpdateLearningResource(ctx context.Context, arg UpdateLearning
 		&i.Tags,
 		&i.ImageUrl,
 		&i.IsPublic,
-		&i.LikeCount,
-		&i.SaveCount,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

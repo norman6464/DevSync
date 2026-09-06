@@ -1236,16 +1236,6 @@ table "learning_resources" {
     null = false
     type = boolean
   }
-  column "like_count" {
-    null    = true
-    type    = bigint
-    default = 0
-  }
-  column "save_count" {
-    null    = true
-    type    = bigint
-    default = 0
-  }
   column "created_at" {
     null = false
     type = timestamptz
@@ -1271,6 +1261,36 @@ table "learning_resources" {
   }
   check "ck_learning_resources_difficulty" {
     expr = "difficulty IN ('beginner', 'intermediate', 'advanced')"
+  }
+}
+table "learning_resource_metrics" {
+  schema = schema.public
+  # 一覧のORDER BYに使うlike_count/save_countだけをここへ出す（DEVSYNC-159、
+  # postsのpost_metricsと同じ設計）。ファクトのINSERT/DELETEと同一トランザクションの
+  # UPSERTで更新し、夜次reconcileジョブで実カウントとの乖離を補正する。行は
+  # 最初のいいね/保存で遅延生成される（読み取り側はLEFT JOIN + COALESCEで0扱いにする）。
+  column "resource_id" {
+    null = false
+    type = bigint
+  }
+  column "like_count" {
+    null    = false
+    type    = bigint
+    default = 0
+  }
+  column "save_count" {
+    null    = false
+    type    = bigint
+    default = 0
+  }
+  primary_key {
+    columns = [column.resource_id]
+  }
+  foreign_key "fk_learning_resource_metrics_resource" {
+    columns     = [column.resource_id]
+    ref_columns = [table.learning_resources.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 table "resource_likes" {

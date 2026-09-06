@@ -23,7 +23,8 @@ WHERE user_id = $1
 -- resource_progresses自体も一緒に削除されるため、このLEFT JOINが実際にResource側NULLを
 -- 返すことはない想定だが、既存のGo側の型（Resourceがポインタ）をそのまま使えるようLEFT JOINの
 -- ままにしている。id を第2ソートキーにして、updated_at 同値の行でもページングが安定するように
--- する（移行前のGORM実装と同じ）。
+-- する（移行前のGORM実装と同じ）。like_count/save_countはlearning_resource_metrics側
+-- （DEVSYNC-159）のためここには無く、Go側でattachLearningResourceMetricsを使って付与する。
 SELECT sqlc.embed(resource_progresses),
     lr.id AS resource_id_2,
     lr.user_id AS resource_user_id,
@@ -35,8 +36,6 @@ SELECT sqlc.embed(resource_progresses),
     lr.tags AS resource_tags,
     lr.image_url AS resource_image_url,
     lr.is_public AS resource_is_public,
-    lr.like_count AS resource_like_count,
-    lr.save_count AS resource_save_count,
     lr.created_at AS resource_created_at,
     lr.updated_at AS resource_updated_at
 FROM resource_progresses

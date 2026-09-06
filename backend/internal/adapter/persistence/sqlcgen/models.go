@@ -257,10 +257,14 @@ type LearningResource struct {
 	Tags        *string
 	ImageUrl    *string
 	IsPublic    bool
-	LikeCount   *int64
-	SaveCount   *int64
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz
+}
+
+type LearningResourceMetric struct {
+	ResourceID int64
+	LikeCount  int64
+	SaveCount  int64
 }
 
 type Like struct {

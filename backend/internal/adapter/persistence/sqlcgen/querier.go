@@ -245,8 +245,12 @@ type Querier interface {
 	CreateQuestionBookmark(ctx context.Context, arg CreateQuestionBookmarkParams) error
 	CreateQuestionVote(ctx context.Context, arg CreateQuestionVoteParams) (QuestionVote, error)
 	CreateReaction(ctx context.Context, arg CreateReactionParams) error
+	// resource_likesへのINSERTとlearning_resource_metrics.like_countの加算を
+	// 同一SQL文で行う（DEVSYNC-159）。CTEの出力列を別名にし、sqlcの列名衝突による
+	// 誤検出を避ける。
 	CreateResourceLike(ctx context.Context, arg CreateResourceLikeParams) error
 	CreateResourceReview(ctx context.Context, arg CreateResourceReviewParams) (ResourceReview, error)
+	// resource_savesへのINSERTとlearning_resource_metrics.save_countの加算を同一SQL文で行う。
 	CreateResourceSave(ctx context.Context, arg CreateResourceSaveParams) error
 	CreateRoadmap(ctx context.Context, arg CreateRoadmapParams) (Roadmap, error)
 	CreateRoadmapStep(ctx context.Context, arg CreateRoadmapStepParams) (RoadmapStep, error)
@@ -267,10 +271,6 @@ type Querier interface {
 	DecrementPostLikeMetric(ctx context.Context, postID int64) error
 	// 0未満にはしない（GORMのGREATEST(answer_count - 1, 0)に相当）。
 	DecrementQuestionAnswerCountFloored(ctx context.Context, id int64) error
-	// 0未満にはしない（GORMのGREATEST(like_count - 1, 0)に相当）。
-	DecrementResourceLikeCountFloored(ctx context.Context, id int64) error
-	// 0未満にはしない（GORMのGREATEST(save_count - 1, 0)に相当）。
-	DecrementResourceSaveCountFloored(ctx context.Context, id int64) error
 	DecrementRoadmapStepCount(ctx context.Context, id int64) error
 	// 0未満にはしない（GORMのGREATEST(comment_count - 1, 0)に相当）。
 	DecrementSnippetCommentCountFloored(ctx context.Context, id int64) error
@@ -335,9 +335,13 @@ type Querier interface {
 	DeleteQuestionBookmark(ctx context.Context, arg DeleteQuestionBookmarkParams) error
 	DeleteQuestionVote(ctx context.Context, arg DeleteQuestionVoteParams) error
 	DeleteReaction(ctx context.Context, arg DeleteReactionParams) error
-	DeleteResourceLike(ctx context.Context, arg DeleteResourceLikeParams) error
+	// resource_likesの削除とlearning_resource_metrics.like_countの減算を同一SQL文で行う。
+	// 実際に削除できた（＝deletedに1行ある）ときだけmetricsを更新するため、
+	// rowsAffectedは従来どおり「実際にいいねを取り消せたか」を表す。
+	DeleteResourceLike(ctx context.Context, arg DeleteResourceLikeParams) (int64, error)
 	DeleteResourceReview(ctx context.Context, id int64) error
-	DeleteResourceSave(ctx context.Context, arg DeleteResourceSaveParams) error
+	// resource_savesの削除とlearning_resource_metrics.save_countの減算を同一SQL文で行う。
+	DeleteResourceSave(ctx context.Context, arg DeleteResourceSaveParams) (int64, error)
 	// roadmap_stepsはFKのON DELETE CASCADEでDBが自動的に削除する。
 	DeleteRoadmap(ctx context.Context, id int64) error
 	DeleteRoadmapStep(ctx context.Context, id int64) error
@@ -394,6 +398,10 @@ type Querier interface {
 	GetLearningLogByID(ctx context.Context, id int64) (LearningLog, error)
 	GetLearningLogTemplateByID(ctx context.Context, id int64) (LearningLogTemplate, error)
 	GetLearningResourceByID(ctx context.Context, id int64) (LearningResource, error)
+	// リソース一覧へlike_count/save_countを付与するためのまとめ取り。1件もいいね/保存が
+	// 無いリソースはlearning_resource_metrics行が存在しない（遅延生成）ため、この結果に
+	// 現れないリソースはGo側で0扱いにする（attachLearningResourceMetrics参照）。
+	GetLearningResourceMetricsByResourceIDs(ctx context.Context, dollar_1 []int64) ([]LearningResourceMetric, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	GetLearningResourceWithUserByID(ctx context.Context, id int64) (GetLearningResourceWithUserByIDRow, error)
 	GetLearningWeeklyTrends(ctx context.Context, arg GetLearningWeeklyTrendsParams) ([]GetLearningWeeklyTrendsRow, error)
@@ -477,8 +485,6 @@ type Querier interface {
 	IncrementPostLikeMetric(ctx context.Context, postID int64) error
 	IncrementPostViewMetric(ctx context.Context, postID int64) error
 	IncrementQuestionAnswerCount(ctx context.Context, id int64) error
-	IncrementResourceLikeCount(ctx context.Context, id int64) error
-	IncrementResourceSaveCount(ctx context.Context, id int64) error
 	IncrementRoadmapStepCount(ctx context.Context, id int64) error
 	IncrementSnippetCommentCount(ctx context.Context, id int64) error
 	IncrementSnippetForkCount(ctx context.Context, id int64) error
@@ -609,6 +615,7 @@ type Querier interface {
 	ListPublicLearningGoals(ctx context.Context, arg ListPublicLearningGoalsParams) ([]LearningGoal, error)
 	ListPublicLearningGoalsByUser(ctx context.Context, arg ListPublicLearningGoalsByUserParams) ([]LearningGoal, error)
 	// GORMのPreload("User")に相当。categoryとdifficultyは空文字なら絞り込まない。
+	// like_countはlearning_resource_metrics側（DEVSYNC-159）。LEFT JOIN + COALESCEで0扱いにする。
 	ListPublicLearningResourcesWithUser(ctx context.Context, arg ListPublicLearningResourcesWithUserParams) ([]ListPublicLearningResourcesWithUserRow, error)
 	ListPublicPostCollectionsByUser(ctx context.Context, userID int64) ([]PostCollection, error)
 	// GORMのPreload("User")に相当（CodeSnippetsは別途post_bookmark.sqlのListCodeSnippetsByPostIDsで取得する）。
@@ -632,7 +639,8 @@ type Querier interface {
 	// resource_progresses自体も一緒に削除されるため、このLEFT JOINが実際にResource側NULLを
 	// 返すことはない想定だが、既存のGo側の型（Resourceがポインタ）をそのまま使えるようLEFT JOINの
 	// ままにしている。id を第2ソートキーにして、updated_at 同値の行でもページングが安定するように
-	// する（移行前のGORM実装と同じ）。
+	// する（移行前のGORM実装と同じ）。like_count/save_countはlearning_resource_metrics側
+	// （DEVSYNC-159）のためここには無く、Go側でattachLearningResourceMetricsを使って付与する。
 	ListResourceProgressByUser(ctx context.Context, arg ListResourceProgressByUserParams) ([]ListResourceProgressByUserRow, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	ListResourceReviewsByResource(ctx context.Context, arg ListResourceReviewsByResourceParams) ([]ListResourceReviewsByResourceRow, error)
@@ -673,7 +681,8 @@ type Querier interface {
 	// 無い投稿はpost_metrics行が遅延生成前のため、LEFT JOIN + COALESCEで0扱いにする。
 	ListTrendingPosts(ctx context.Context, arg ListTrendingPostsParams) ([]ListTrendingPostsRow, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
-	// learning_resourcesは論理削除があるため、削除済みは除外する。
+	// like_count/save_countはlearning_resource_metrics側（DEVSYNC-159）。
+	// LEFT JOIN + COALESCEで0扱いにする。
 	ListTrendingResources(ctx context.Context, arg ListTrendingResourcesParams) ([]ListTrendingResourcesRow, error)
 	ListUnansweredQuestionsWithUser(ctx context.Context, arg ListUnansweredQuestionsWithUserParams) ([]ListUnansweredQuestionsWithUserRow, error)
 	ListUnreadAIAdvicesByUser(ctx context.Context, userID int64) ([]AiAdvice, error)
@@ -702,6 +711,9 @@ type Querier interface {
 	MarkMessagesAsRead(ctx context.Context, arg MarkMessagesAsReadParams) error
 	MarkNotificationAsRead(ctx context.Context, arg MarkNotificationAsReadParams) error
 	MarkPasswordResetTokenAsUsed(ctx context.Context, id int64) error
+	// 夜次reconcileジョブ本体。resource_likes/resource_savesの実件数から
+	// learning_resource_metrics全件をまとめて補正する。
+	ReconcileAllLearningResourceMetrics(ctx context.Context) error
 	// 夜次reconcileジョブ本体。likes/comments/post_viewsの実件数からpost_metricsを
 	// 全件まとめて補正する。CASCADE削除等でIncrement/Decrementを経由しない変化を吸収する。
 	// 1件も無いカウンタは0で確定させる（COALESCE）。
@@ -713,6 +725,7 @@ type Querier interface {
 	// CodeSnippet は投稿者の ID しか持たず User の関連を張っていないため、Preload しない
 	// （移行前のGORM実装のコメントの通り、Preloadするとunsupported relationsで失敗する）。
 	SearchCodeSnippets(ctx context.Context, arg SearchCodeSnippetsParams) ([]CodeSnippet, error)
+	// like_countはlearning_resource_metrics側（DEVSYNC-159）。LEFT JOIN + COALESCEで0扱いにする。
 	SearchLearningResourcesWithUser(ctx context.Context, arg SearchLearningResourcesWithUserParams) ([]SearchLearningResourcesWithUserRow, error)
 	SearchNotes(ctx context.Context, arg SearchNotesParams) ([]SearchNotesRow, error)
 	// GORMのPreload("User")に相当（CodeSnippetsは別クエリで取得しGo側で結合する）。
@@ -738,6 +751,7 @@ type Querier interface {
 	SumLearningLogDurationByUser(ctx context.Context, userID int64) (int64, error)
 	SumLearningLogDurationByUserCategorySince(ctx context.Context, arg SumLearningLogDurationByUserCategorySinceParams) (int64, error)
 	SumLearningLogDurationSince(ctx context.Context, arg SumLearningLogDurationSinceParams) (int64, error)
+	// like_countはlearning_resource_metrics側（DEVSYNC-159）。LEFT JOIN + COALESCEで0扱いにする。
 	SumLearningResourceLikeCountByUser(ctx context.Context, userID int64) (int64, error)
 	SumLearningResourceSaveCountByUser(ctx context.Context, userID int64) (int64, error)
 	SumPostCommentsReceivedByUser(ctx context.Context, userID int64) (int64, error)
@@ -765,9 +779,8 @@ type Querier interface {
 	UpdateLearningLog(ctx context.Context, arg UpdateLearningLogParams) (LearningLog, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateLearningLogTemplate(ctx context.Context, arg UpdateLearningLogTemplateParams) (LearningLogTemplate, error)
-	// GORMのSave（全カラム上書き）に相当。ただしlike_count/save_countは対象外
-	// （Increment/Decrement系の専用クエリだけが更新する）。ここに含めると、他リクエストによる
-	// カウンタ更新をこのUPDATEが読み取り時点の古い値で上書きする「ロストアップデート」を起こす。
+	// GORMのSave（全カラム上書き）に相当。like_count/save_countはlearning_resources自体の
+	// 列ではなくlearning_resource_metrics側（DEVSYNC-159）にあるため、ここには含まれない。
 	UpdateLearningResource(ctx context.Context, arg UpdateLearningResourceParams) (LearningResource, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateNote(ctx context.Context, arg UpdateNoteParams) (Note, error)

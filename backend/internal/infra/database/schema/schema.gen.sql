@@ -505,8 +505,6 @@ CREATE TABLE "public"."learning_resources" (
   "tags" text NULL,
   "image_url" character varying(500) NULL,
   "is_public" boolean NOT NULL,
-  "like_count" bigint NULL DEFAULT 0,
-  "save_count" bigint NULL DEFAULT 0,
   "created_at" timestamptz NOT NULL,
   "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
@@ -516,6 +514,14 @@ CREATE TABLE "public"."learning_resources" (
 );
 -- Create index "idx_learning_resources_user_id" to table: "learning_resources"
 CREATE INDEX "idx_learning_resources_user_id" ON "public"."learning_resources" ("user_id");
+-- Create "learning_resource_metrics" table
+CREATE TABLE "public"."learning_resource_metrics" (
+  "resource_id" bigint NOT NULL,
+  "like_count" bigint NOT NULL DEFAULT 0,
+  "save_count" bigint NOT NULL DEFAULT 0,
+  PRIMARY KEY ("resource_id"),
+  CONSTRAINT "fk_learning_resource_metrics_resource" FOREIGN KEY ("resource_id") REFERENCES "public"."learning_resources" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
+);
 -- Create "likes" table
 CREATE TABLE "public"."likes" (
   "id" bigserial NOT NULL,

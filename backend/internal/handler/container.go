@@ -299,11 +299,17 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 	} else {
 		log.Println("SMTP未設定。ウィークリーレポートメールのスケジューラは無効です。")
 	}
-	// 投稿カウンタ（post_metrics）のreconcileはSMTP設定に関わらず常に有効。
-	// port は usecase/repository、sqlc(pgx) 実装は adapter/persistence。
+	// 各ドメインのカウンタ（post_metrics / learning_resource_metrics）のreconcileは
+	// SMTP設定に関わらず常に有効。port は usecase/repository、sqlc(pgx) 実装は
+	// adapter/persistence。ドメインが増えてもscheduler.Newへの登録ポイントは
+	// ReconcileAllMetricsUseCase 1つのままにするため、ここでまとめる。
 	postMetricsPort := persistence.NewPostMetricsRepository(sqlcgen.New(sqlPool))
-	reconcilePostMetrics := usecase.NewReconcilePostMetricsUseCase(postMetricsPort)
-	appScheduler := scheduler.New(sendWeeklyReports, reconcilePostMetrics)
+	learningResourceMetricsPort := persistence.NewLearningResourceMetricsRepository(sqlcgen.New(sqlPool))
+	reconcileAllMetrics := usecase.NewReconcileAllMetricsUseCase(
+		usecase.NewReconcilePostMetricsUseCase(postMetricsPort),
+		usecase.NewReconcileLearningResourceMetricsUseCase(learningResourceMetricsPort),
+	)
+	appScheduler := scheduler.New(sendWeeklyReports, reconcileAllMetrics)
 	go appScheduler.Start()
 
 	// ハンドラ

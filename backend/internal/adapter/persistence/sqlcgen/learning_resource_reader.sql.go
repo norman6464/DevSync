@@ -10,7 +10,7 @@ import (
 )
 
 const getLearningResourceByID = `-- name: GetLearningResourceByID :one
-SELECT id, user_id, title, description, url, category, difficulty, tags, image_url, is_public, like_count, save_count, created_at, updated_at FROM learning_resources WHERE id = $1
+SELECT id, user_id, title, description, url, category, difficulty, tags, image_url, is_public, created_at, updated_at FROM learning_resources WHERE id = $1
 `
 
 func (q *Queries) GetLearningResourceByID(ctx context.Context, id int64) (LearningResource, error) {
@@ -27,8 +27,6 @@ func (q *Queries) GetLearningResourceByID(ctx context.Context, id int64) (Learni
 		&i.Tags,
 		&i.ImageUrl,
 		&i.IsPublic,
-		&i.LikeCount,
-		&i.SaveCount,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
