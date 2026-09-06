@@ -19,28 +19,21 @@ func NewPostLikeRepository(q *sqlcgen.Queries) repository.PostLikeRepository {
 
 var _ repository.PostLikeRepository = (*postLikeRepository)(nil)
 
-// Like はいいねを追加し、投稿の like_count を加算する。
-// 移行前の GORM 実装と同じくトランザクションでは括らない（元実装も2つの独立した操作だったため）。
+// Like はいいねを追加し、post_metrics.like_count を加算する（同一SQL文、DEVSYNC-159）。
 func (r *postLikeRepository) Like(ctx context.Context, userID, postID uint) error {
-	if err := r.q.CreatePostLike(ctx, sqlcgen.CreatePostLikeParams{
-		UserID: int64(userID),
-		PostID: int64(postID),
-	}); err != nil {
-		return err
-	}
-	return r.q.IncrementPostLikeCount(ctx, int64(postID))
-}
-
-// Unlike はいいねを取り消し、実際に削除できたときだけ like_count をデクリメントする。
-// 移行前の GORM 実装と同じく、デクリメント自体のエラーは呼び出し元へ返さない。
-func (r *postLikeRepository) Unlike(ctx context.Context, userID, postID uint) error {
-	rowsAffected, err := r.q.DeletePostLike(ctx, sqlcgen.DeletePostLikeParams{
+	return r.q.CreatePostLike(ctx, sqlcgen.CreatePostLikeParams{
 		UserID: int64(userID),
 		PostID: int64(postID),
 	})
-	if rowsAffected > 0 {
-		_ = r.q.DecrementPostLikeCount(ctx, int64(postID))
-	}
+}
+
+// Unlike はいいねを取り消す。実際に削除できたときだけpost_metrics.like_countを
+// デクリメントする（同一SQL文、DEVSYNC-159）。
+func (r *postLikeRepository) Unlike(ctx context.Context, userID, postID uint) error {
+	_, err := r.q.DeletePostLike(ctx, sqlcgen.DeletePostLikeParams{
+		UserID: int64(userID),
+		PostID: int64(postID),
+	})
 	return err
 }
 

@@ -211,9 +211,6 @@ CREATE TABLE "public"."posts" (
   "content" text NOT NULL,
   "image_urls" text NULL,
   "is_draft" boolean NOT NULL DEFAULT false,
-  "like_count" bigint NULL DEFAULT 0,
-  "comment_count" bigint NULL DEFAULT 0,
-  "view_count" bigint NULL DEFAULT 0,
   "estimated_read_time" bigint NULL DEFAULT 0,
   "scheduled_at" timestamptz NULL,
   "created_at" timestamptz NOT NULL,
@@ -752,6 +749,15 @@ CREATE INDEX "idx_post_collection_items_collection_id" ON "public"."post_collect
 CREATE INDEX "idx_post_collection_items_post_id" ON "public"."post_collection_items" ("post_id");
 -- Create index "uq_post_collection_item" to table: "post_collection_items"
 CREATE UNIQUE INDEX "uq_post_collection_item" ON "public"."post_collection_items" ("collection_id", "post_id");
+-- Create "post_metrics" table
+CREATE TABLE "public"."post_metrics" (
+  "post_id" bigint NOT NULL,
+  "like_count" bigint NOT NULL DEFAULT 0,
+  "comment_count" bigint NOT NULL DEFAULT 0,
+  "view_count" bigint NOT NULL DEFAULT 0,
+  PRIMARY KEY ("post_id"),
+  CONSTRAINT "fk_post_metrics_post" FOREIGN KEY ("post_id") REFERENCES "public"."posts" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
+);
 -- Create "post_pins" table
 CREATE TABLE "public"."post_pins" (
   "id" bigserial NOT NULL,

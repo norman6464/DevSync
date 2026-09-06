@@ -16,11 +16,14 @@ WHERE NOT (id = ANY(sqlc.arg('exclude_ids')::bigint[]))
 -- name: ListTrendingPosts :many
 -- GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 -- CodeSnippetsは別途 ListCodeSnippetsByPostIDs（post_bookmark.sql）で取得しGo側で付与する。
+-- like_count/comment_countはpost_metrics側（DEVSYNC-159）。まだ1件もいいね/コメントが
+-- 無い投稿はpost_metrics行が遅延生成前のため、LEFT JOIN + COALESCEで0扱いにする。
 SELECT sqlc.embed(posts), sqlc.embed(users)
 FROM posts
 JOIN users ON users.id = posts.user_id
+LEFT JOIN post_metrics pm ON pm.post_id = posts.id
 WHERE posts.created_at > NOW() - INTERVAL '1 day' * sqlc.arg('days')::int
-ORDER BY (posts.like_count + posts.comment_count) DESC
+ORDER BY (COALESCE(pm.like_count, 0) + COALESCE(pm.comment_count, 0)) DESC
 LIMIT sqlc.arg('limit');
 
 -- name: ListTrendingResources :many

@@ -78,6 +78,12 @@ func (r *postSearchRepository) SearchWithFilter(ctx context.Context, params mode
 			posts[i].CodeSnippets = snippetsByPostID[posts[i].ID]
 		}
 	}
+	if err := attachBookmarkCountsToPosts(ctx, r.q, posts); err != nil {
+		return nil, 0, err
+	}
+	if err := attachMetricsToPosts(ctx, r.q, posts); err != nil {
+		return nil, 0, err
+	}
 
 	return posts, total, nil
 }

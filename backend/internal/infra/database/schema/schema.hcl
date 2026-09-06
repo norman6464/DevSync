@@ -2572,21 +2572,6 @@ table "posts" {
     type    = boolean
     default = false
   }
-  column "like_count" {
-    null    = true
-    type    = bigint
-    default = 0
-  }
-  column "comment_count" {
-    null    = true
-    type    = bigint
-    default = 0
-  }
-  column "view_count" {
-    null    = true
-    type    = bigint
-    default = 0
-  }
   column "estimated_read_time" {
     null    = true
     type    = bigint
@@ -2621,6 +2606,42 @@ table "posts" {
   }
   index "idx_posts_user_id" {
     columns = [column.user_id]
+  }
+}
+table "post_metrics" {
+  schema = schema.public
+  # 一覧のORDER BYに使うlike_count/comment_count/view_countだけをここへ出す
+  # （DEVSYNC-159）。ファクトのINSERT/DELETEと同一トランザクションのUPSERTで更新し、
+  # 夜次reconcileジョブ（ReconcileAllPostMetrics）で実カウントとの乖離を補正する。
+  # 行は投稿作成時ではなく最初のいいね/コメント/閲覧で遅延生成される
+  # （読み取り側は全てLEFT JOIN + COALESCEで0扱いにする）。
+  column "post_id" {
+    null = false
+    type = bigint
+  }
+  column "like_count" {
+    null    = false
+    type    = bigint
+    default = 0
+  }
+  column "comment_count" {
+    null    = false
+    type    = bigint
+    default = 0
+  }
+  column "view_count" {
+    null    = false
+    type    = bigint
+    default = 0
+  }
+  primary_key {
+    columns = [column.post_id]
+  }
+  foreign_key "fk_post_metrics_post" {
+    columns     = [column.post_id]
+    ref_columns = [table.posts.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 table "reactions" {

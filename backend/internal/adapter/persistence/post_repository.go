@@ -74,6 +74,35 @@ func attachBookmarkCountsToPosts(ctx context.Context, q *sqlcgen.Queries, posts 
 	return nil
 }
 
+// attachMetricsToPosts は複数の投稿へlike_count/comment_count/view_countをまとめて
+// 取得して付与する（DEVSYNC-159でpost_metrics側テーブルへ分離済み。1件もいいね/
+// コメント/閲覧が無い投稿はpost_metrics行が存在しないため0のまま）。
+func attachMetricsToPosts(ctx context.Context, q *sqlcgen.Queries, posts []model.Post) error {
+	if len(posts) == 0 {
+		return nil
+	}
+	postIDs := make([]int64, len(posts))
+	for i, post := range posts {
+		postIDs[i] = int64(post.ID)
+	}
+
+	metricsRows, err := q.GetPostMetricsByPostIDs(ctx, postIDs)
+	if err != nil {
+		return err
+	}
+	metricsByPostID := make(map[uint]sqlcgen.PostMetric, len(metricsRows))
+	for _, row := range metricsRows {
+		metricsByPostID[uint(row.PostID)] = row
+	}
+	for i := range posts {
+		m := metricsByPostID[posts[i].ID]
+		posts[i].LikeCount = int(m.LikeCount)
+		posts[i].CommentCount = int(m.CommentCount)
+		posts[i].ViewCount = int(m.ViewCount)
+	}
+	return nil
+}
+
 // Create は投稿を作成する。
 func (r *postRepository) Create(ctx context.Context, post *model.Post) error {
 	row, err := r.q.CreatePost(ctx, sqlcgen.CreatePostParams{
@@ -82,9 +111,6 @@ func (r *postRepository) Create(ctx context.Context, post *model.Post) error {
 		Content:           post.Content,
 		ImageUrls:         &post.ImageURLs,
 		IsDraft:           post.IsDraft,
-		LikeCount:         toInt64Ptr(post.LikeCount),
-		CommentCount:      toInt64Ptr(post.CommentCount),
-		ViewCount:         toInt64Ptr(post.ViewCount),
 		EstimatedReadTime: toInt64Ptr(post.EstimatedReadTime),
 		ScheduledAt:       toTimestamptz(post.ScheduledAt),
 	})
@@ -114,6 +140,9 @@ func (r *postRepository) FindByID(ctx context.Context, id uint) (*model.Post, er
 	if err := attachBookmarkCountsToPosts(ctx, r.q, posts); err != nil {
 		return nil, err
 	}
+	if err := attachMetricsToPosts(ctx, r.q, posts); err != nil {
+		return nil, err
+	}
 	return &posts[0], nil
 }
 
@@ -132,6 +161,14 @@ func (r *postRepository) Update(ctx context.Context, post *model.Post) error {
 		return err
 	}
 	*post = toModelPost(row)
+	posts := []model.Post{*post}
+	if err := attachBookmarkCountsToPosts(ctx, r.q, posts); err != nil {
+		return err
+	}
+	if err := attachMetricsToPosts(ctx, r.q, posts); err != nil {
+		return err
+	}
+	*post = posts[0]
 	return nil
 }
 
@@ -164,6 +201,9 @@ func (r *postRepository) FindAll(ctx context.Context, page, limit int) ([]model.
 		return nil, err
 	}
 	if err := attachBookmarkCountsToPosts(ctx, r.q, posts); err != nil {
+		return nil, err
+	}
+	if err := attachMetricsToPosts(ctx, r.q, posts); err != nil {
 		return nil, err
 	}
 	return posts, nil
@@ -201,6 +241,9 @@ func (r *postRepository) FindByUserID(ctx context.Context, userID uint, limit, o
 	if err := attachBookmarkCountsToPosts(ctx, r.q, posts); err != nil {
 		return nil, 0, err
 	}
+	if err := attachMetricsToPosts(ctx, r.q, posts); err != nil {
+		return nil, 0, err
+	}
 	return posts, total, nil
 }
 
@@ -222,6 +265,9 @@ func (r *postRepository) FindDraftsByUserID(ctx context.Context, userID uint) ([
 	if err := attachBookmarkCountsToPosts(ctx, r.q, posts); err != nil {
 		return nil, err
 	}
+	if err := attachMetricsToPosts(ctx, r.q, posts); err != nil {
+		return nil, err
+	}
 	return posts, nil
 }
 
@@ -241,6 +287,9 @@ func (r *postRepository) FindScheduledByUserID(ctx context.Context, userID uint)
 		return nil, err
 	}
 	if err := attachBookmarkCountsToPosts(ctx, r.q, posts); err != nil {
+		return nil, err
+	}
+	if err := attachMetricsToPosts(ctx, r.q, posts); err != nil {
 		return nil, err
 	}
 	return posts, nil
@@ -267,6 +316,9 @@ func (r *postRepository) Timeline(ctx context.Context, userID uint, page, limit 
 		return nil, err
 	}
 	if err := attachBookmarkCountsToPosts(ctx, r.q, posts); err != nil {
+		return nil, err
+	}
+	if err := attachMetricsToPosts(ctx, r.q, posts); err != nil {
 		return nil, err
 	}
 	return posts, nil

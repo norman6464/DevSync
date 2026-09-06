@@ -45,9 +45,10 @@ func (q *Queries) CountPostsWithFilter(ctx context.Context, arg CountPostsWithFi
 }
 
 const searchPostsWithFilter = `-- name: SearchPostsWithFilter :many
-SELECT posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.like_count, posts.comment_count, posts.view_count, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM posts
 JOIN users ON users.id = posts.user_id
+LEFT JOIN post_metrics pm ON pm.post_id = posts.id
 WHERE (posts.title LIKE $1 OR posts.content LIKE $1)
     AND posts.is_draft = false
     AND ($2::timestamptz IS NULL OR posts.created_at >= $2)
@@ -57,8 +58,8 @@ WHERE (posts.title LIKE $1 OR posts.content LIKE $1)
         WHERE pt.post_id = posts.id AND pt.tag = ANY($4::text[])
     ) = cardinality($4::text[])
 ORDER BY
-    CASE WHEN $5 = 'popular' THEN posts.like_count END DESC,
-    CASE WHEN $5 = 'views' THEN posts.view_count END DESC,
+    CASE WHEN $5 = 'popular' THEN COALESCE(pm.like_count, 0) END DESC,
+    CASE WHEN $5 = 'views' THEN COALESCE(pm.view_count, 0) END DESC,
     posts.created_at DESC
 LIMIT $7 OFFSET $6
 `
@@ -81,6 +82,7 @@ type SearchPostsWithFilterRow struct {
 // GORMのPreload("User")に相当（CodeSnippetsは別クエリで取得しGo側で結合する）。
 // ソート順はGoの動的Order()呼び出しの代わりに、sort_byごとのCASE式で切り替える
 // （sort_byはクエリ全体で単一の値のため、行ごとにNULLになったり値になったりはしない）。
+// like_count/view_countはpost_metrics側（DEVSYNC-159）。LEFT JOIN + COALESCEで0扱いにする。
 func (q *Queries) SearchPostsWithFilter(ctx context.Context, arg SearchPostsWithFilterParams) ([]SearchPostsWithFilterRow, error) {
 	rows, err := q.db.Query(ctx, searchPostsWithFilter,
 		arg.Title,
@@ -105,9 +107,6 @@ func (q *Queries) SearchPostsWithFilter(ctx context.Context, arg SearchPostsWith
 			&i.Post.Content,
 			&i.Post.ImageUrls,
 			&i.Post.IsDraft,
-			&i.Post.LikeCount,
-			&i.Post.CommentCount,
-			&i.Post.ViewCount,
 			&i.Post.EstimatedReadTime,
 			&i.Post.ScheduledAt,
 			&i.Post.CreatedAt,

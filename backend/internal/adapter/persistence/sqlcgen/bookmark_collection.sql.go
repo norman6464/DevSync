@@ -137,7 +137,7 @@ func (q *Queries) GetBookmarkCollectionByID(ctx context.Context, id int64) (Book
 }
 
 const listBookmarkCollectionItemsWithPostByCollection = `-- name: ListBookmarkCollectionItemsWithPostByCollection :many
-SELECT bookmark_collection_items.id, bookmark_collection_items.collection_id, bookmark_collection_items.post_id, bookmark_collection_items.created_at, posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.like_count, posts.comment_count, posts.view_count, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at
+SELECT bookmark_collection_items.id, bookmark_collection_items.collection_id, bookmark_collection_items.post_id, bookmark_collection_items.created_at, posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at
 FROM bookmark_collection_items
 JOIN posts ON posts.id = bookmark_collection_items.post_id
 WHERE bookmark_collection_items.collection_id = $1
@@ -178,9 +178,6 @@ func (q *Queries) ListBookmarkCollectionItemsWithPostByCollection(ctx context.Co
 			&i.Post.Content,
 			&i.Post.ImageUrls,
 			&i.Post.IsDraft,
-			&i.Post.LikeCount,
-			&i.Post.CommentCount,
-			&i.Post.ViewCount,
 			&i.Post.EstimatedReadTime,
 			&i.Post.ScheduledAt,
 			&i.Post.CreatedAt,

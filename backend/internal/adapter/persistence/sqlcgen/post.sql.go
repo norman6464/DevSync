@@ -35,11 +35,11 @@ func (q *Queries) CountScheduledPostsByUser(ctx context.Context, userID int64) (
 
 const createPost = `-- name: CreatePost :one
 INSERT INTO posts (
-    user_id, title, content, image_urls, is_draft, like_count, comment_count,
-    view_count, estimated_read_time, scheduled_at, created_at, updated_at
+    user_id, title, content, image_urls, is_draft,
+    estimated_read_time, scheduled_at, created_at, updated_at
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now(), now()
-) RETURNING id, user_id, title, content, image_urls, is_draft, like_count, comment_count, view_count, estimated_read_time, scheduled_at, created_at, updated_at
+    $1, $2, $3, $4, $5, $6, $7, now(), now()
+) RETURNING id, user_id, title, content, image_urls, is_draft, estimated_read_time, scheduled_at, created_at, updated_at
 `
 
 type CreatePostParams struct {
@@ -48,9 +48,6 @@ type CreatePostParams struct {
 	Content           string
 	ImageUrls         *string
 	IsDraft           bool
-	LikeCount         *int64
-	CommentCount      *int64
-	ViewCount         *int64
 	EstimatedReadTime *int64
 	ScheduledAt       pgtype.Timestamptz
 }
@@ -62,9 +59,6 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 		arg.Content,
 		arg.ImageUrls,
 		arg.IsDraft,
-		arg.LikeCount,
-		arg.CommentCount,
-		arg.ViewCount,
 		arg.EstimatedReadTime,
 		arg.ScheduledAt,
 	)
@@ -76,9 +70,6 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 		&i.Content,
 		&i.ImageUrls,
 		&i.IsDraft,
-		&i.LikeCount,
-		&i.CommentCount,
-		&i.ViewCount,
 		&i.EstimatedReadTime,
 		&i.ScheduledAt,
 		&i.CreatedAt,
@@ -97,7 +88,7 @@ func (q *Queries) DeletePost(ctx context.Context, id int64) error {
 }
 
 const listDraftPostsByUserWithUser = `-- name: ListDraftPostsByUserWithUser :many
-SELECT posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.like_count, posts.comment_count, posts.view_count, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM posts
 JOIN users ON users.id = posts.user_id
 WHERE posts.user_id = $1 AND posts.is_draft = true
@@ -125,9 +116,6 @@ func (q *Queries) ListDraftPostsByUserWithUser(ctx context.Context, userID int64
 			&i.Post.Content,
 			&i.Post.ImageUrls,
 			&i.Post.IsDraft,
-			&i.Post.LikeCount,
-			&i.Post.CommentCount,
-			&i.Post.ViewCount,
 			&i.Post.EstimatedReadTime,
 			&i.Post.ScheduledAt,
 			&i.Post.CreatedAt,
@@ -170,7 +158,7 @@ func (q *Queries) ListDraftPostsByUserWithUser(ctx context.Context, userID int64
 }
 
 const listPublicPostsWithUser = `-- name: ListPublicPostsWithUser :many
-SELECT posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.like_count, posts.comment_count, posts.view_count, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM posts
 JOIN users ON users.id = posts.user_id
 WHERE posts.is_draft = false
@@ -206,9 +194,6 @@ func (q *Queries) ListPublicPostsWithUser(ctx context.Context, arg ListPublicPos
 			&i.Post.Content,
 			&i.Post.ImageUrls,
 			&i.Post.IsDraft,
-			&i.Post.LikeCount,
-			&i.Post.CommentCount,
-			&i.Post.ViewCount,
 			&i.Post.EstimatedReadTime,
 			&i.Post.ScheduledAt,
 			&i.Post.CreatedAt,
@@ -251,7 +236,7 @@ func (q *Queries) ListPublicPostsWithUser(ctx context.Context, arg ListPublicPos
 }
 
 const listPublishedPostsByUserWithUser = `-- name: ListPublishedPostsByUserWithUser :many
-SELECT posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.like_count, posts.comment_count, posts.view_count, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM posts
 JOIN users ON users.id = posts.user_id
 WHERE posts.user_id = $1 AND posts.is_draft = false
@@ -287,9 +272,6 @@ func (q *Queries) ListPublishedPostsByUserWithUser(ctx context.Context, arg List
 			&i.Post.Content,
 			&i.Post.ImageUrls,
 			&i.Post.IsDraft,
-			&i.Post.LikeCount,
-			&i.Post.CommentCount,
-			&i.Post.ViewCount,
 			&i.Post.EstimatedReadTime,
 			&i.Post.ScheduledAt,
 			&i.Post.CreatedAt,
@@ -332,7 +314,7 @@ func (q *Queries) ListPublishedPostsByUserWithUser(ctx context.Context, arg List
 }
 
 const listScheduledPostsByUserWithUser = `-- name: ListScheduledPostsByUserWithUser :many
-SELECT posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.like_count, posts.comment_count, posts.view_count, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM posts
 JOIN users ON users.id = posts.user_id
 WHERE posts.user_id = $1 AND posts.is_draft = true AND posts.scheduled_at IS NOT NULL
@@ -360,9 +342,6 @@ func (q *Queries) ListScheduledPostsByUserWithUser(ctx context.Context, userID i
 			&i.Post.Content,
 			&i.Post.ImageUrls,
 			&i.Post.IsDraft,
-			&i.Post.LikeCount,
-			&i.Post.CommentCount,
-			&i.Post.ViewCount,
 			&i.Post.EstimatedReadTime,
 			&i.Post.ScheduledAt,
 			&i.Post.CreatedAt,
@@ -405,7 +384,7 @@ func (q *Queries) ListScheduledPostsByUserWithUser(ctx context.Context, userID i
 }
 
 const listTimelinePostsWithUser = `-- name: ListTimelinePostsWithUser :many
-SELECT posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.like_count, posts.comment_count, posts.view_count, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM posts
 JOIN users ON users.id = posts.user_id
 WHERE (posts.user_id IN (SELECT followee_id FROM follows WHERE follower_id = $1) OR posts.user_id = $1)
@@ -442,9 +421,6 @@ func (q *Queries) ListTimelinePostsWithUser(ctx context.Context, arg ListTimelin
 			&i.Post.Content,
 			&i.Post.ImageUrls,
 			&i.Post.IsDraft,
-			&i.Post.LikeCount,
-			&i.Post.CommentCount,
-			&i.Post.ViewCount,
 			&i.Post.EstimatedReadTime,
 			&i.Post.ScheduledAt,
 			&i.Post.CreatedAt,
@@ -491,7 +467,7 @@ UPDATE posts SET
     title = $2, content = $3, image_urls = $4, is_draft = $5,
     estimated_read_time = $6, scheduled_at = $7, updated_at = now()
 WHERE id = $1
-RETURNING id, user_id, title, content, image_urls, is_draft, like_count, comment_count, view_count, estimated_read_time, scheduled_at, created_at, updated_at
+RETURNING id, user_id, title, content, image_urls, is_draft, estimated_read_time, scheduled_at, created_at, updated_at
 `
 
 type UpdatePostParams struct {
@@ -504,10 +480,8 @@ type UpdatePostParams struct {
 	ScheduledAt       pgtype.Timestamptz
 }
 
-// GORMのSave（全カラム上書き）に相当。ただしlike_count/comment_count/bookmark_count/
-// view_countは対象外（Increment/Decrement系の専用クエリだけが更新する）。
-// ここに含めると、他リクエストによるカウンタ更新をこのUPDATEが読み取り時点の
-// 古い値で上書きする「ロストアップデート」を起こす。
+// GORMのSave（全カラム上書き）に相当。like_count/comment_count/view_countは
+// post_metrics側テーブルに分離済み（DEVSYNC-159）のためここには無い。
 func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, error) {
 	row := q.db.QueryRow(ctx, updatePost,
 		arg.ID,
@@ -526,9 +500,6 @@ func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, e
 		&i.Content,
 		&i.ImageUrls,
 		&i.IsDraft,
-		&i.LikeCount,
-		&i.CommentCount,
-		&i.ViewCount,
 		&i.EstimatedReadTime,
 		&i.ScheduledAt,
 		&i.CreatedAt,

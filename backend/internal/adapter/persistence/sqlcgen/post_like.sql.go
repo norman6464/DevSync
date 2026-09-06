@@ -10,7 +10,7 @@ import (
 )
 
 const countPostLikeByUserAndPost = `-- name: CountPostLikeByUserAndPost :one
-SELECT COUNT(*) FROM likes WHERE user_id = $1 AND post_id = $2
+SELECT COUNT(*) FROM likes WHERE likes.user_id = $1 AND likes.post_id = $2
 `
 
 type CountPostLikeByUserAndPostParams struct {
@@ -26,7 +26,13 @@ func (q *Queries) CountPostLikeByUserAndPost(ctx context.Context, arg CountPostL
 }
 
 const createPostLike = `-- name: CreatePostLike :exec
-INSERT INTO likes (user_id, post_id, created_at) VALUES ($1, $2, now())
+WITH inserted AS (
+    INSERT INTO likes (user_id, post_id, created_at) VALUES ($1, $2, now())
+    RETURNING likes.post_id AS liked_post_id
+)
+INSERT INTO post_metrics (post_id, like_count)
+SELECT liked_post_id, 1 FROM inserted
+ON CONFLICT (post_id) DO UPDATE SET like_count = post_metrics.like_count + 1
 `
 
 type CreatePostLikeParams struct {
@@ -34,22 +40,21 @@ type CreatePostLikeParams struct {
 	PostID int64
 }
 
+// likesへのINSERTとpost_metrics.like_countの加算を同一SQL文で行う（DEVSYNC-159）。
+// CTEの出力列をpost_metrics.post_idと別名にし、sqlcの列名衝突による誤検出を避ける。
 func (q *Queries) CreatePostLike(ctx context.Context, arg CreatePostLikeParams) error {
 	_, err := q.db.Exec(ctx, createPostLike, arg.UserID, arg.PostID)
 	return err
 }
 
-const decrementPostLikeCount = `-- name: DecrementPostLikeCount :exec
-UPDATE posts SET like_count = GREATEST(like_count - 1, 0) WHERE id = $1
-`
-
-func (q *Queries) DecrementPostLikeCount(ctx context.Context, id int64) error {
-	_, err := q.db.Exec(ctx, decrementPostLikeCount, id)
-	return err
-}
-
 const deletePostLike = `-- name: DeletePostLike :execrows
-DELETE FROM likes WHERE user_id = $1 AND post_id = $2
+WITH deleted AS (
+    DELETE FROM likes WHERE likes.user_id = $1 AND likes.post_id = $2
+    RETURNING likes.post_id AS liked_post_id
+)
+INSERT INTO post_metrics (post_id, like_count)
+SELECT liked_post_id, 0 FROM deleted
+ON CONFLICT (post_id) DO UPDATE SET like_count = GREATEST(post_metrics.like_count - 1, 0)
 `
 
 type DeletePostLikeParams struct {
@@ -57,19 +62,13 @@ type DeletePostLikeParams struct {
 	PostID int64
 }
 
+// likesの削除とpost_metrics.like_countの減算を同一SQL文で行う。実際に削除できた
+// （＝insertedに1行ある）ときだけpost_metricsを更新するため、rowsAffectedは
+// 従来どおり「実際にいいねを取り消せたか」を表す。
 func (q *Queries) DeletePostLike(ctx context.Context, arg DeletePostLikeParams) (int64, error) {
 	result, err := q.db.Exec(ctx, deletePostLike, arg.UserID, arg.PostID)
 	if err != nil {
 		return 0, err
 	}
 	return result.RowsAffected(), nil
-}
-
-const incrementPostLikeCount = `-- name: IncrementPostLikeCount :exec
-UPDATE posts SET like_count = like_count + 1 WHERE id = $1
-`
-
-func (q *Queries) IncrementPostLikeCount(ctx context.Context, id int64) error {
-	_, err := q.db.Exec(ctx, incrementPostLikeCount, id)
-	return err
 }

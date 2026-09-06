@@ -10,47 +10,31 @@ import (
 )
 
 // postViewRepository は [repository.PostViewRepository] の sqlc(pgx) 実装。
-// RecordViewIfAbsent は記録とカウンタ更新を1トランザクションで行うため、
-// Queries だけでなくトランザクションを開始できる *pgxpool.Pool を直接保持する。
 type postViewRepository struct {
-	pool *pgxpool.Pool
-	q    *sqlcgen.Queries
+	q *sqlcgen.Queries
 }
 
 // NewPostViewRepository は PostViewRepository の sqlc(pgx) 実装を返す。
 func NewPostViewRepository(pool *pgxpool.Pool) repository.PostViewRepository {
-	return &postViewRepository{pool: pool, q: sqlcgen.New(pool)}
+	return &postViewRepository{q: sqlcgen.New(pool)}
 }
 
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
 var _ repository.PostViewRepository = (*postViewRepository)(nil)
 
 // RecordViewIfAbsent は (user_id, post_id) のユニーク制約と ON CONFLICT DO NOTHING を用いて
-// 未閲覧のときだけ閲覧を記録し、実際に挿入できた場合のみ view_count を加算する。
-// 記録と加算を単一トランザクションで行い、並行リクエストによる二重記録・二重加算・重複エラーを防ぐ。
+// 未閲覧のときだけ閲覧を記録し、実際に挿入できた場合のみ post_metrics.view_count を加算する。
+// 記録と加算は同一SQL文（queries/post_view.sqlのCreatePostView）で行うため、
+// 並行リクエストによる二重記録・二重加算・重複エラーは起こらない。
 func (r *postViewRepository) RecordViewIfAbsent(ctx context.Context, view *model.PostView) (bool, error) {
-	tx, err := r.pool.Begin(ctx)
-	if err != nil {
-		return false, err
-	}
-	defer tx.Rollback(ctx)
-
-	q := r.q.WithTx(tx)
-	rowsAffected, err := q.CreatePostView(ctx, sqlcgen.CreatePostViewParams{
+	rowsAffected, err := r.q.CreatePostView(ctx, sqlcgen.CreatePostViewParams{
 		UserID: int64(view.UserID),
 		PostID: int64(view.PostID),
 	})
 	if err != nil {
 		return false, err
 	}
-	if rowsAffected == 0 {
-		// 既に閲覧済み（競合）→ 何もしない。
-		return false, tx.Commit(ctx)
-	}
-	if err := q.IncrementPostViewCount(ctx, int64(view.PostID)); err != nil {
-		return false, err
-	}
-	return true, tx.Commit(ctx)
+	return rowsAffected > 0, nil
 }
 
 // GetViewCount は投稿の閲覧数を返す。

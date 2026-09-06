@@ -67,7 +67,7 @@ func (q *Queries) DeletePostPin(ctx context.Context, arg DeletePostPinParams) er
 }
 
 const listPostPinsByUser = `-- name: ListPostPinsByUser :many
-SELECT post_pins.id, post_pins.user_id, post_pins.post_id, post_pins.pin_order, post_pins.created_at, posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.like_count, posts.comment_count, posts.view_count, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT post_pins.id, post_pins.user_id, post_pins.post_id, post_pins.pin_order, post_pins.created_at, posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM post_pins
 JOIN posts ON posts.id = post_pins.post_id
 JOIN users ON users.id = posts.user_id
@@ -103,9 +103,6 @@ func (q *Queries) ListPostPinsByUser(ctx context.Context, userID int64) ([]ListP
 			&i.Post.Content,
 			&i.Post.ImageUrls,
 			&i.Post.IsDraft,
-			&i.Post.LikeCount,
-			&i.Post.CommentCount,
-			&i.Post.ViewCount,
 			&i.Post.EstimatedReadTime,
 			&i.Post.ScheduledAt,
 			&i.Post.CreatedAt,

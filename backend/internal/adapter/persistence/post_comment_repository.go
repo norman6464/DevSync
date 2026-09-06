@@ -22,7 +22,7 @@ func NewPostCommentRepository(q *sqlcgen.Queries) repository.PostCommentReposito
 
 var _ repository.PostCommentRepository = (*postCommentRepository)(nil)
 
-// Create はコメントを作成し、投稿の comment_count を加算する。
+// Create はコメントを作成し、post_metrics.comment_count を加算する（同一SQL文、DEVSYNC-159）。
 func (r *postCommentRepository) Create(ctx context.Context, comment *model.Comment) error {
 	row, err := r.q.CreatePostComment(ctx, sqlcgen.CreatePostCommentParams{
 		UserID:   int64(comment.UserID),
@@ -33,8 +33,8 @@ func (r *postCommentRepository) Create(ctx context.Context, comment *model.Comme
 	if err != nil {
 		return err
 	}
-	*comment = toModelComment(row)
-	return r.q.IncrementPostCommentCount(ctx, int64(comment.PostID))
+	*comment = toModelComment(sqlcgen.Comment(row))
+	return nil
 }
 
 // Update はコメントを更新する。
@@ -52,16 +52,9 @@ func (r *postCommentRepository) Update(ctx context.Context, comment *model.Comme
 	return nil
 }
 
-// Delete はコメントを削除し、投稿の comment_count をデクリメントする。
+// Delete はコメントを削除し、post_metrics.comment_count をデクリメントする（同一SQL文、DEVSYNC-159）。
 // 所有権チェックは usecase 層で実施済みであること。
 func (r *postCommentRepository) Delete(ctx context.Context, id uint) error {
-	row, err := r.q.GetCommentByID(ctx, int64(id))
-	if err != nil {
-		return err
-	}
-	comment := toModelComment(row)
-	// 移行前の GORM 実装と同じく、カウンタ減算自体のエラーは呼び出し元へ返さない。
-	_ = r.q.DecrementPostCommentCount(ctx, int64(comment.PostID))
 	return r.q.DeletePostComment(ctx, int64(id))
 }
 

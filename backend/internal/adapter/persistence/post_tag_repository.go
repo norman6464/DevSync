@@ -82,6 +82,12 @@ func (r *postTagRepository) FindPostsByTag(ctx context.Context, tag string, limi
 		posts[i] = toModelPost(row.Post)
 		posts[i].User = toModelUser(row.User)
 	}
+	if err := attachBookmarkCountsToPosts(ctx, r.q, posts); err != nil {
+		return nil, 0, err
+	}
+	if err := attachMetricsToPosts(ctx, r.q, posts); err != nil {
+		return nil, 0, err
+	}
 	return posts, count, nil
 }
 
