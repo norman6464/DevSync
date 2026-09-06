@@ -74,6 +74,18 @@ table "ai_advices" {
   index "idx_ai_advices_user_id" {
     columns = [column.user_id]
   }
+  foreign_key "fk_ai_advices_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  check "ck_ai_advices_type" {
+    expr = "type IN ('streak_recovery', 'stalled_roadmap', 'goal_overdue', 'tech_suggestion', 'goal_suggestion', 'difficulty_up', 'praise', 'general')"
+  }
+  check "ck_ai_advices_priority" {
+    expr = "priority BETWEEN 1 AND 5"
+  }
 }
 table "ai_conversations" {
   schema = schema.public
@@ -102,6 +114,12 @@ table "ai_conversations" {
   }
   index "idx_ai_conversations_user_id" {
     columns = [column.user_id]
+  }
+  foreign_key "fk_ai_conversations_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 table "ai_messages" {
@@ -138,10 +156,13 @@ table "ai_messages" {
     columns     = [column.conversation_id]
     ref_columns = [table.ai_conversations.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_ai_messages_conversation_id" {
     columns = [column.conversation_id]
+  }
+  check "ck_ai_messages_role" {
+    expr = "role IN ('user', 'assistant', 'system')"
   }
 }
 
@@ -174,9 +195,24 @@ table "answer_votes" {
   primary_key {
     columns = [column.id]
   }
-  index "idx_answer_vote" {
+  index "uq_answer_vote" {
     unique  = true
     columns = [column.user_id, column.answer_id]
+  }
+  foreign_key "fk_answer_votes_answer" {
+    columns     = [column.answer_id]
+    ref_columns = [table.answers.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  foreign_key "fk_answer_votes_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  check "ck_answer_votes_value" {
+    expr = "value IN (1, -1)"
   }
 }
 table "answers" {
@@ -226,7 +262,7 @@ table "answers" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_answers_deleted_at" {
     columns = [column.deleted_at]
@@ -236,6 +272,12 @@ table "answers" {
   }
   index "idx_answers_user_id" {
     columns = [column.user_id]
+  }
+  foreign_key "fk_answers_question" {
+    columns     = [column.question_id]
+    ref_columns = [table.questions.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 
@@ -316,13 +358,19 @@ table "book_reviews" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_book_reviews_deleted_at" {
     columns = [column.deleted_at]
   }
   index "idx_book_reviews_user_id" {
     columns = [column.user_id]
+  }
+  check "ck_book_reviews_rating" {
+    expr = "rating BETWEEN 1 AND 5"
+  }
+  check "ck_book_reviews_status" {
+    expr = "status IN ('not_started', 'reading', 'completed')"
   }
 }
 
@@ -355,14 +403,20 @@ table "bookmark_collection_items" {
     columns     = [column.post_id]
     ref_columns = [table.posts.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_bookmark_collection_items_post_id" {
     columns = [column.post_id]
   }
-  index "idx_bookmark_collection_post" {
+  index "uq_bookmark_collection_post" {
     unique  = true
     columns = [column.collection_id, column.post_id]
+  }
+  foreign_key "fk_bookmark_collection_items_collection" {
+    columns     = [column.collection_id]
+    ref_columns = [table.bookmark_collections.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 table "bookmark_collections" {
@@ -402,6 +456,12 @@ table "bookmark_collections" {
   index "idx_bookmark_collections_user_id" {
     columns = [column.user_id]
   }
+  foreign_key "fk_bookmark_collections_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
 }
 
 # =====================================================================
@@ -433,13 +493,13 @@ table "chat_room_members" {
     columns     = [column.chat_room_id]
     ref_columns = [table.chat_rooms.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   foreign_key "fk_chat_room_members_user" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_chat_room_members_chat_room_id" {
     columns = [column.chat_room_id]
@@ -447,7 +507,7 @@ table "chat_room_members" {
   index "idx_chat_room_members_user_id" {
     columns = [column.user_id]
   }
-  index "idx_room_user" {
+  index "uq_room_user" {
     unique  = true
     columns = [column.chat_room_id, column.user_id]
   }
@@ -485,7 +545,7 @@ table "chat_rooms" {
     columns     = [column.owner_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_chat_rooms_owner_id" {
     columns = [column.owner_id]
@@ -520,13 +580,13 @@ table "group_messages" {
     columns     = [column.chat_room_id]
     ref_columns = [table.chat_rooms.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   foreign_key "fk_group_messages_sender" {
     columns     = [column.sender_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_group_messages_chat_room_id" {
     columns = [column.chat_room_id]
@@ -561,9 +621,21 @@ table "code_snippet_favorites" {
   primary_key {
     columns = [column.id]
   }
-  index "idx_snippet_favorite" {
+  index "uq_snippet_favorite" {
     unique  = true
     columns = [column.user_id, column.snippet_id]
+  }
+  foreign_key "fk_code_snippet_favorites_snippet" {
+    columns     = [column.snippet_id]
+    ref_columns = [table.code_snippets.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  foreign_key "fk_code_snippet_favorites_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 table "code_snippets" {
@@ -621,7 +693,7 @@ table "code_snippets" {
     columns     = [column.post_id]
     ref_columns = [table.posts.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_code_snippets_forked_from_id" {
     columns = [column.forked_from_id]
@@ -631,6 +703,18 @@ table "code_snippets" {
   }
   index "idx_code_snippets_user_id" {
     columns = [column.user_id]
+  }
+  foreign_key "fk_code_snippets_forked_from" {
+    columns     = [column.forked_from_id]
+    ref_columns = [table.code_snippets.column.id]
+    on_update   = NO_ACTION
+    on_delete   = SET_NULL
+  }
+  foreign_key "fk_code_snippets_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 table "snippet_comments" {
@@ -670,13 +754,19 @@ table "snippet_comments" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_snippet_comments_snippet_id" {
     columns = [column.snippet_id]
   }
   index "idx_snippet_comments_user_id" {
     columns = [column.user_id]
+  }
+  foreign_key "fk_snippet_comments_snippet" {
+    columns     = [column.snippet_id]
+    ref_columns = [table.code_snippets.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 
@@ -709,17 +799,20 @@ table "follows" {
     columns     = [column.followee_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   foreign_key "fk_follows_follower" {
     columns     = [column.follower_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
-  index "idx_follower_following" {
+  index "uq_follower_following" {
     unique  = true
     columns = [column.follower_id, column.followee_id]
+  }
+  check "ck_follows_not_self" {
+    expr = "follower_id <> followee_id"
   }
 }
 
@@ -757,9 +850,15 @@ table "git_hub_contributions" {
   primary_key {
     columns = [column.id]
   }
-  index "idx_user_date" {
+  index "uq_user_date" {
     unique  = true
     columns = [column.user_id, column.date]
+  }
+  foreign_key "fk_git_hub_contributions_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 table "git_hub_language_stats" {
@@ -793,9 +892,15 @@ table "git_hub_language_stats" {
   primary_key {
     columns = [column.id]
   }
-  index "idx_user_lang" {
+  index "uq_user_lang" {
     unique  = true
     columns = [column.user_id, column.language]
+  }
+  foreign_key "fk_git_hub_language_stats_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 table "git_hub_repositories" {
@@ -847,12 +952,18 @@ table "git_hub_repositories" {
   primary_key {
     columns = [column.id]
   }
-  index "idx_git_hub_repositories_git_hub_repo_id" {
+  index "uq_git_hub_repositories_git_hub_repo_id" {
     unique  = true
     columns = [column.git_hub_repo_id]
   }
   index "idx_git_hub_repositories_user_id" {
     columns = [column.user_id]
+  }
+  foreign_key "fk_git_hub_repositories_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 
@@ -925,6 +1036,21 @@ table "learning_goals" {
   index "idx_learning_goals_user_id" {
     columns = [column.user_id]
   }
+  foreign_key "fk_learning_goals_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  check "ck_learning_goals_progress" {
+    expr = "progress BETWEEN 0 AND 100"
+  }
+  check "ck_learning_goals_status" {
+    expr = "status IN ('active', 'completed', 'paused')"
+  }
+  check "ck_learning_goals_category" {
+    expr = "category IN ('language', 'framework', 'skill', 'project', 'other')"
+  }
 }
 
 # =====================================================================
@@ -990,6 +1116,21 @@ table "learning_logs" {
   index "idx_learning_logs_user_id" {
     columns = [column.user_id]
   }
+  foreign_key "fk_learning_logs_goal" {
+    columns     = [column.goal_id]
+    ref_columns = [table.learning_goals.column.id]
+    on_update   = NO_ACTION
+    on_delete   = SET_NULL
+  }
+  foreign_key "fk_learning_logs_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  check "ck_learning_logs_category" {
+    expr = "category IN ('coding', 'reading', 'course', 'meetup', 'other')"
+  }
 }
 
 # =====================================================================
@@ -1049,6 +1190,12 @@ table "learning_log_templates" {
   }
   index "idx_log_templates_is_default" {
     columns = [column.is_default]
+  }
+  foreign_key "fk_learning_log_templates_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 
@@ -1127,13 +1274,19 @@ table "learning_resources" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_learning_resources_deleted_at" {
     columns = [column.deleted_at]
   }
   index "idx_learning_resources_user_id" {
     columns = [column.user_id]
+  }
+  check "ck_learning_resources_category" {
+    expr = "category IN ('book', 'video', 'article', 'course', 'tutorial', 'podcast', 'tool', 'other')"
+  }
+  check "ck_learning_resources_difficulty" {
+    expr = "difficulty IN ('beginner', 'intermediate', 'advanced')"
   }
 }
 table "resource_likes" {
@@ -1157,9 +1310,21 @@ table "resource_likes" {
   primary_key {
     columns = [column.id]
   }
-  index "idx_resource_like" {
+  index "uq_resource_like" {
     unique  = true
     columns = [column.user_id, column.resource_id]
+  }
+  foreign_key "fk_resource_likes_resource" {
+    columns     = [column.resource_id]
+    ref_columns = [table.learning_resources.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  foreign_key "fk_resource_likes_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 table "resource_reviews" {
@@ -1199,14 +1364,23 @@ table "resource_reviews" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
-  index "idx_resource_review" {
+  index "uq_resource_review" {
     unique  = true
     columns = [column.user_id, column.resource_id]
   }
   index "idx_resource_reviews_resource_id" {
     columns = [column.resource_id]
+  }
+  foreign_key "fk_resource_reviews_resource" {
+    columns     = [column.resource_id]
+    ref_columns = [table.learning_resources.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  check "ck_resource_reviews_rating" {
+    expr = "rating BETWEEN 1 AND 5"
   }
 }
 table "resource_saves" {
@@ -1230,9 +1404,21 @@ table "resource_saves" {
   primary_key {
     columns = [column.id]
   }
-  index "idx_resource_save" {
+  index "uq_resource_save" {
     unique  = true
     columns = [column.user_id, column.resource_id]
+  }
+  foreign_key "fk_resource_saves_resource" {
+    columns     = [column.resource_id]
+    ref_columns = [table.learning_resources.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  foreign_key "fk_resource_saves_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 
@@ -1273,24 +1459,24 @@ table "mentions" {
     columns     = [column.actor_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   foreign_key "fk_mentions_post" {
     columns     = [column.post_id]
     ref_columns = [table.posts.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   foreign_key "fk_mentions_user" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_mentions_comment_id" {
     columns = [column.comment_id]
   }
-  index "idx_mentions_comment_user" {
+  index "uq_mentions_comment_user" {
     unique  = true
     columns = [column.comment_id, column.user_id]
     where   = "(comment_id IS NOT NULL)"
@@ -1298,13 +1484,22 @@ table "mentions" {
   index "idx_mentions_post_id" {
     columns = [column.post_id]
   }
-  index "idx_mentions_post_user" {
+  index "uq_mentions_post_user" {
     unique  = true
     columns = [column.post_id, column.user_id]
     where   = "((post_id IS NOT NULL) AND (comment_id IS NULL))"
   }
   index "idx_mentions_user_id" {
     columns = [column.user_id]
+  }
+  foreign_key "fk_mentions_comment" {
+    columns     = [column.comment_id]
+    ref_columns = [table.comments.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  check "ck_mentions_not_self" {
+    expr = "user_id <> actor_id"
   }
 }
 
@@ -1346,19 +1541,22 @@ table "messages" {
     columns     = [column.receiver_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   foreign_key "fk_messages_sender" {
     columns     = [column.sender_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_messages_receiver_id" {
     columns = [column.receiver_id]
   }
   index "idx_messages_sender_id" {
     columns = [column.sender_id]
+  }
+  check "ck_messages_not_self" {
+    expr = "sender_id <> receiver_id"
   }
 }
 
@@ -1399,13 +1597,13 @@ table "note_folders" {
     columns     = [column.parent_id]
     ref_columns = [table.note_folders.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   foreign_key "fk_note_folders_user" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_note_folders_parent_id" {
     columns = [column.parent_id]
@@ -1465,13 +1663,13 @@ table "notes" {
     columns     = [column.folder_id]
     ref_columns = [table.note_folders.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   foreign_key "fk_notes_user" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_notes_folder_id" {
     columns = [column.folder_id]
@@ -1510,15 +1708,15 @@ table "note_links" {
     columns     = [column.source_note_id]
     ref_columns = [table.notes.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   foreign_key "fk_note_links_target_note" {
     columns     = [column.target_note_id]
     ref_columns = [table.notes.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
-  index "idx_note_link_unique" {
+  index "uq_note_link_unique" {
     unique  = true
     columns = [column.source_note_id, column.target_note_id]
   }
@@ -1527,6 +1725,9 @@ table "note_links" {
   }
   index "idx_note_links_target_note_id" {
     columns = [column.target_note_id]
+  }
+  check "ck_note_links_not_self" {
+    expr = "source_note_id <> target_note_id"
   }
 }
 
@@ -1586,6 +1787,12 @@ table "note_templates" {
   index "idx_note_templates_user_id" {
     columns = [column.user_id]
   }
+  foreign_key "fk_note_templates_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
 }
 
 # =====================================================================
@@ -1627,6 +1834,12 @@ table "note_versions" {
   }
   index "idx_note_versions_note_id" {
     columns = [column.note_id]
+  }
+  foreign_key "fk_note_versions_note" {
+    columns     = [column.note_id]
+    ref_columns = [table.notes.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 
@@ -1680,25 +1893,25 @@ table "notifications" {
     columns     = [column.actor_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   foreign_key "fk_notifications_post" {
     columns     = [column.post_id]
     ref_columns = [table.posts.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   foreign_key "fk_notifications_question" {
     columns     = [column.question_id]
     ref_columns = [table.questions.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   foreign_key "fk_notifications_user" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_notifications_post_id" {
     columns = [column.post_id]
@@ -1780,9 +1993,9 @@ table "notification_settings" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
-  index "idx_notification_settings_user_id" {
+  index "uq_notification_settings_user_id" {
     unique  = true
     columns = [column.user_id]
   }
@@ -1826,9 +2039,9 @@ table "password_reset_tokens" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
-  index "idx_password_reset_tokens_token" {
+  index "uq_password_reset_tokens_token" {
     unique  = true
     columns = [column.token]
   }
@@ -1866,14 +2079,20 @@ table "bookmarks" {
     columns     = [column.post_id]
     ref_columns = [table.posts.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_bookmarks_post_id" {
     columns = [column.post_id]
   }
-  index "idx_user_post_bookmark" {
+  index "uq_user_post_bookmark" {
     unique  = true
     columns = [column.user_id, column.post_id]
+  }
+  foreign_key "fk_bookmarks_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 table "comment_likes" {
@@ -1900,9 +2119,21 @@ table "comment_likes" {
   index "idx_comment_likes_comment_id" {
     columns = [column.comment_id]
   }
-  index "idx_user_comment_like" {
+  index "uq_user_comment_like" {
     unique  = true
     columns = [column.user_id, column.comment_id]
+  }
+  foreign_key "fk_comment_likes_comment" {
+    columns     = [column.comment_id]
+    ref_columns = [table.comments.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  foreign_key "fk_comment_likes_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 table "comments" {
@@ -1952,13 +2183,13 @@ table "comments" {
     columns     = [column.parent_id]
     ref_columns = [table.comments.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = SET_NULL
   }
   foreign_key "fk_comments_user" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_comments_parent_id" {
     columns = [column.parent_id]
@@ -1968,6 +2199,12 @@ table "comments" {
   }
   index "idx_comments_user_id" {
     columns = [column.user_id]
+  }
+  foreign_key "fk_comments_post" {
+    columns     = [column.post_id]
+    ref_columns = [table.posts.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 table "likes" {
@@ -1994,9 +2231,21 @@ table "likes" {
   index "idx_likes_post_id" {
     columns = [column.post_id]
   }
-  index "idx_user_post_like" {
+  index "uq_user_post_like" {
     unique  = true
     columns = [column.user_id, column.post_id]
+  }
+  foreign_key "fk_likes_post" {
+    columns     = [column.post_id]
+    ref_columns = [table.posts.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  foreign_key "fk_likes_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 table "post_collection_items" {
@@ -2033,9 +2282,9 @@ table "post_collection_items" {
     columns     = [column.post_id]
     ref_columns = [table.posts.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
-  index "idx_post_collection_item" {
+  index "uq_post_collection_item" {
     unique  = true
     columns = [column.collection_id, column.post_id]
   }
@@ -2044,6 +2293,12 @@ table "post_collection_items" {
   }
   index "idx_post_collection_items_post_id" {
     columns = [column.post_id]
+  }
+  foreign_key "fk_post_collection_items_collection" {
+    columns     = [column.collection_id]
+    ref_columns = [table.post_collections.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 table "post_collections" {
@@ -2084,7 +2339,7 @@ table "post_collections" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_post_collections_user_id" {
     columns = [column.user_id]
@@ -2120,7 +2375,7 @@ table "post_pins" {
     columns     = [column.post_id]
     ref_columns = [table.posts.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_post_pins_post_id" {
     columns = [column.post_id]
@@ -2128,9 +2383,15 @@ table "post_pins" {
   index "idx_post_pins_user_id" {
     columns = [column.user_id]
   }
-  index "idx_user_post_pin" {
+  index "uq_user_post_pin" {
     unique  = true
     columns = [column.user_id, column.post_id]
+  }
+  foreign_key "fk_post_pins_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 table "post_series" {
@@ -2166,7 +2427,7 @@ table "post_series" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_post_series_user_id" {
     columns = [column.user_id]
@@ -2198,7 +2459,7 @@ table "post_series_items" {
     columns     = [column.post_id]
     ref_columns = [table.posts.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_post_series_items_post_id" {
     columns = [column.post_id]
@@ -2206,9 +2467,15 @@ table "post_series_items" {
   index "idx_post_series_items_series_id" {
     columns = [column.series_id]
   }
-  index "idx_series_post" {
+  index "uq_series_post" {
     unique  = true
     columns = [column.series_id, column.post_id]
+  }
+  foreign_key "fk_post_series_items_series" {
+    columns     = [column.series_id]
+    ref_columns = [table.post_series.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 table "post_tags" {
@@ -2228,7 +2495,7 @@ table "post_tags" {
   primary_key {
     columns = [column.id]
   }
-  index "idx_post_tag" {
+  index "uq_post_tag" {
     unique  = true
     columns = [column.post_id, column.tag]
   }
@@ -2237,6 +2504,12 @@ table "post_tags" {
   }
   index "idx_post_tags_tag" {
     columns = [column.tag]
+  }
+  foreign_key "fk_post_tags_post" {
+    columns     = [column.post_id]
+    ref_columns = [table.posts.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 table "post_views" {
@@ -2266,9 +2539,21 @@ table "post_views" {
   index "idx_post_views_user_id" {
     columns = [column.user_id]
   }
-  index "idx_user_post_view" {
+  index "uq_user_post_view" {
     unique  = true
     columns = [column.user_id, column.post_id]
+  }
+  foreign_key "fk_post_views_post" {
+    columns     = [column.post_id]
+    ref_columns = [table.posts.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  foreign_key "fk_post_views_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 table "posts" {
@@ -2342,7 +2627,7 @@ table "posts" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_posts_is_draft" {
     columns = [column.is_draft]
@@ -2382,9 +2667,21 @@ table "reactions" {
   index "idx_reactions_post_id" {
     columns = [column.post_id]
   }
-  index "idx_user_post_emoji" {
+  index "uq_user_post_emoji" {
     unique  = true
     columns = [column.user_id, column.post_id, column.emoji]
+  }
+  foreign_key "fk_reactions_post" {
+    columns     = [column.post_id]
+    ref_columns = [table.posts.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  foreign_key "fk_reactions_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 
@@ -2427,6 +2724,12 @@ table "post_templates" {
   }
   index "idx_post_templates_user_id" {
     columns = [column.user_id]
+  }
+  foreign_key "fk_post_templates_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 
@@ -2513,13 +2816,13 @@ table "projects" {
     columns     = [column.github_repo_id]
     ref_columns = [table.git_hub_repositories.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = SET_NULL
   }
   foreign_key "fk_projects_user" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_projects_deleted_at" {
     columns = [column.deleted_at]
@@ -2578,6 +2881,15 @@ table "project_milestones" {
   index "idx_project_milestones_project_id" {
     columns = [column.project_id]
   }
+  foreign_key "fk_project_milestones_project" {
+    columns     = [column.project_id]
+    ref_columns = [table.projects.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  check "ck_project_milestones_status" {
+    expr = "status IN ('not_started', 'in_progress', 'completed')"
+  }
 }
 
 # =====================================================================
@@ -2631,12 +2943,18 @@ table "qiita_articles" {
   primary_key {
     columns = [column.id]
   }
-  index "idx_qiita_articles_qiita_id" {
+  index "uq_qiita_articles_qiita_id" {
     unique  = true
     columns = [column.qiita_id]
   }
   index "idx_qiita_articles_user_id" {
     columns = [column.user_id]
+  }
+  foreign_key "fk_qiita_articles_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 
@@ -2669,11 +2987,17 @@ table "question_bookmarks" {
     columns     = [column.question_id]
     ref_columns = [table.questions.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
-  index "idx_question_bookmark" {
+  index "uq_question_bookmark" {
     unique  = true
     columns = [column.user_id, column.question_id]
+  }
+  foreign_key "fk_question_bookmarks_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 table "question_votes" {
@@ -2701,9 +3025,24 @@ table "question_votes" {
   primary_key {
     columns = [column.id]
   }
-  index "idx_question_vote" {
+  index "uq_question_vote" {
     unique  = true
     columns = [column.user_id, column.question_id]
+  }
+  foreign_key "fk_question_votes_question" {
+    columns     = [column.question_id]
+    ref_columns = [table.questions.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  foreign_key "fk_question_votes_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  check "ck_question_votes_value" {
+    expr = "value IN (1, -1)"
   }
 }
 table "questions" {
@@ -2762,7 +3101,7 @@ table "questions" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_questions_deleted_at" {
     columns = [column.deleted_at]
@@ -2835,11 +3174,14 @@ table "reminder_settings" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
-  index "idx_reminder_settings_user_id" {
+  index "uq_reminder_settings_user_id" {
     unique  = true
     columns = [column.user_id]
+  }
+  check "ck_reminder_settings_frequency" {
+    expr = "frequency IN ('daily', 'weekly')"
   }
 }
 
@@ -2898,11 +3240,20 @@ table "resource_progresses" {
     columns     = [column.resource_id]
     ref_columns = [table.learning_resources.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
-  index "idx_resource_progress" {
+  index "uq_resource_progress" {
     unique  = true
     columns = [column.user_id, column.resource_id]
+  }
+  foreign_key "fk_resource_progresses_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  check "ck_resource_progresses_status" {
+    expr = "status IN ('not_started', 'in_progress', 'completed')"
   }
 }
 
@@ -3039,7 +3390,7 @@ table "roadmaps" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_roadmaps_is_public" {
     columns = [column.is_public]
@@ -3049,6 +3400,12 @@ table "roadmaps" {
   }
   index "idx_roadmaps_user_id" {
     columns = [column.user_id]
+  }
+  check "ck_roadmaps_progress" {
+    expr = "progress BETWEEN 0 AND 100"
+  }
+  check "ck_roadmaps_status" {
+    expr = "status IN ('active', 'completed')"
   }
 }
 
@@ -3100,6 +3457,12 @@ table "spotify_recent_tracks" {
   index "idx_spotify_recent_tracks_user_id" {
     columns = [column.user_id]
   }
+  foreign_key "fk_spotify_recent_tracks_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
 }
 
 # =====================================================================
@@ -3135,12 +3498,18 @@ table "streak_freezes" {
   primary_key {
     columns = [column.id]
   }
-  index "idx_streak_freeze_user_date" {
+  index "uq_streak_freeze_user_date" {
     unique  = true
     columns = [column.user_id, column.used_date]
   }
   index "idx_streak_freezes_user_id" {
     columns = [column.user_id]
+  }
+  foreign_key "fk_streak_freezes_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 
@@ -3181,11 +3550,17 @@ table "study_circle_checkins" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
-  index "idx_checkin_unique" {
+  index "uq_checkin_unique" {
     unique  = true
     columns = [column.circle_id, column.user_id, column.date]
+  }
+  foreign_key "fk_study_circle_checkins_circle" {
+    columns     = [column.circle_id]
+    ref_columns = [table.study_circles.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 table "study_circle_member_progresses" {
@@ -3222,11 +3597,23 @@ table "study_circle_member_progresses" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
-  index "idx_circle_step_user" {
+  index "uq_circle_step_user" {
     unique  = true
     columns = [column.circle_id, column.step_id, column.user_id]
+  }
+  foreign_key "fk_study_circle_member_progresses_circle" {
+    columns     = [column.circle_id]
+    ref_columns = [table.study_circles.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  foreign_key "fk_study_circle_member_progresses_step" {
+    columns     = [column.step_id]
+    ref_columns = [table.study_circle_steps.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 table "study_circle_members" {
@@ -3259,7 +3646,7 @@ table "study_circle_members" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   foreign_key "fk_study_circles_members" {
     columns     = [column.circle_id]
@@ -3267,9 +3654,12 @@ table "study_circle_members" {
     on_update   = NO_ACTION
     on_delete   = CASCADE
   }
-  index "idx_circle_user" {
+  index "uq_circle_user" {
     unique  = true
     columns = [column.circle_id, column.user_id]
+  }
+  check "ck_study_circle_members_role" {
+    expr = "role IN ('owner', 'member')"
   }
 }
 table "study_circle_steps" {
@@ -3367,10 +3757,13 @@ table "study_circles" {
     columns     = [column.owner_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
   index "idx_study_circles_owner_id" {
     columns = [column.owner_id]
+  }
+  check "ck_study_circles_status" {
+    expr = "status IN ('active', 'completed', 'archived')"
   }
 }
 
@@ -3492,18 +3885,21 @@ table "users" {
   primary_key {
     columns = [column.id]
   }
-  index "idx_users_email" {
+  index "uq_users_email" {
     unique  = true
     columns = [column.email]
   }
-  index "idx_users_git_hub_id_linked" {
+  index "uq_users_git_hub_id_linked" {
     unique  = true
     columns = [column.git_hub_id]
     where   = "(git_hub_id <> 0)"
   }
-  index "idx_users_username" {
+  index "uq_users_username" {
     unique  = true
     columns = [column.username]
+  }
+  check "ck_users_email_language" {
+    expr = "email_language IN ('ja', 'en', 'ko', 'zh-CN', 'zh-TW', 'es', 'fr', 'de', 'pt', 'ru')"
   }
 }
 
@@ -3552,6 +3948,15 @@ table "user_activities" {
   }
   index "idx_user_activities_user_id" {
     columns = [column.user_id]
+  }
+  foreign_key "fk_user_activities_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  check "ck_user_activities_activity_type" {
+    expr = "activity_type IN ('post_created', 'comment_created', 'resource_shared', 'goal_completed', 'project_created', 'snippet_created')"
   }
 }
 
@@ -3617,6 +4022,15 @@ table "weekly_challenges" {
   index "idx_weekly_challenges_user_id" {
     columns = [column.user_id]
   }
+  foreign_key "fk_weekly_challenges_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  check "ck_weekly_challenges_challenge_type" {
+    expr = "challenge_type IN ('duration_total', 'streak_days', 'category_count', 'log_count')"
+  }
 }
 
 # =====================================================================
@@ -3653,9 +4067,18 @@ table "weekly_goals" {
   primary_key {
     columns = [column.id]
   }
-  index "idx_weekly_goal_unique" {
+  index "uq_weekly_goal_unique" {
     unique  = true
     columns = [column.user_id, column.category]
+  }
+  foreign_key "fk_weekly_goals_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  check "ck_weekly_goals_category" {
+    expr = "category IN ('coding', 'reading', 'course', 'meetup', 'other')"
   }
 }
 
@@ -3688,9 +4111,15 @@ table "widget_settings" {
   primary_key {
     columns = [column.id]
   }
-  index "idx_widget_settings_user_id" {
+  index "uq_widget_settings_user_id" {
     unique  = true
     columns = [column.user_id]
+  }
+  foreign_key "fk_widget_settings_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 
@@ -3784,7 +4213,7 @@ table "you_tube_videos" {
   primary_key {
     columns = [column.id]
   }
-  index "idx_you_tube_videos_video_id" {
+  index "uq_you_tube_videos_video_id" {
     unique  = true
     columns = [column.video_id]
   }
@@ -3848,9 +4277,15 @@ table "zenn_articles" {
   index "idx_zenn_articles_user_id" {
     columns = [column.user_id]
   }
-  index "idx_zenn_articles_zenn_id" {
+  index "uq_zenn_articles_zenn_id" {
     unique  = true
     columns = [column.zenn_id]
+  }
+  foreign_key "fk_zenn_articles_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 
