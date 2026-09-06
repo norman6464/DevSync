@@ -77,8 +77,8 @@ type CreateProjectParams struct {
 	Role         *string
 	StartDate    pgtype.Timestamptz
 	EndDate      pgtype.Timestamptz
-	Featured     *bool
-	IsArchived   *bool
+	Featured     bool
+	IsArchived   bool
 	GithubRepoID *int64
 }
 
@@ -644,7 +644,7 @@ UPDATE projects SET is_archived = $2 WHERE id = $1 AND deleted_at IS NULL
 
 type SetProjectArchivedParams struct {
 	ID         int64
-	IsArchived *bool
+	IsArchived bool
 }
 
 func (q *Queries) SetProjectArchived(ctx context.Context, arg SetProjectArchivedParams) error {
@@ -672,8 +672,8 @@ type UpdateProjectParams struct {
 	Role         *string
 	StartDate    pgtype.Timestamptz
 	EndDate      pgtype.Timestamptz
-	Featured     *bool
-	IsArchived   *bool
+	Featured     bool
+	IsArchived   bool
 	GithubRepoID *int64
 }
 

@@ -21,14 +21,14 @@ RETURNING id, user_id, enable_likes, enable_comments, enable_follows, enable_mes
 
 type CreateNotificationSettingsParams struct {
 	UserID         int64
-	EnableLikes    *bool
-	EnableComments *bool
-	EnableFollows  *bool
-	EnableMessages *bool
-	EnableMentions *bool
-	EnableWebPush  *bool
-	EnableEmail    *bool
-	EnableSound    *bool
+	EnableLikes    bool
+	EnableComments bool
+	EnableFollows  bool
+	EnableMessages bool
+	EnableMentions bool
+	EnableWebPush  bool
+	EnableEmail    bool
+	EnableSound    bool
 }
 
 func (q *Queries) CreateNotificationSettings(ctx context.Context, arg CreateNotificationSettingsParams) (NotificationSetting, error) {
@@ -103,14 +103,14 @@ RETURNING id, user_id, enable_likes, enable_comments, enable_follows, enable_mes
 
 type UpdateNotificationSettingsParams struct {
 	ID             int64
-	EnableLikes    *bool
-	EnableComments *bool
-	EnableFollows  *bool
-	EnableMessages *bool
-	EnableMentions *bool
-	EnableWebPush  *bool
-	EnableEmail    *bool
-	EnableSound    *bool
+	EnableLikes    bool
+	EnableComments bool
+	EnableFollows  bool
+	EnableMessages bool
+	EnableMentions bool
+	EnableWebPush  bool
+	EnableEmail    bool
+	EnableSound    bool
 }
 
 func (q *Queries) UpdateNotificationSettings(ctx context.Context, arg UpdateNotificationSettingsParams) (NotificationSetting, error) {

@@ -63,7 +63,7 @@ type CreateBookReviewParams struct {
 	CurrentPage *int64
 	ImageUrl    *string
 	Status      *string
-	IsArchived  *bool
+	IsArchived  bool
 }
 
 func (q *Queries) CreateBookReview(ctx context.Context, arg CreateBookReviewParams) (BookReview, error) {
@@ -457,7 +457,7 @@ type UpdateBookReviewParams struct {
 	CurrentPage *int64
 	ImageUrl    *string
 	Status      *string
-	IsArchived  *bool
+	IsArchived  bool
 }
 
 // GORMのSave（全カラム上書き）に相当。

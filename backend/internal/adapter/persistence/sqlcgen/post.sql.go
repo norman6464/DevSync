@@ -47,7 +47,7 @@ type CreatePostParams struct {
 	Title             string
 	Content           string
 	ImageUrls         *string
-	IsDraft           *bool
+	IsDraft           bool
 	LikeCount         *int64
 	CommentCount      *int64
 	BookmarkCount     *int64
@@ -507,7 +507,7 @@ type UpdatePostParams struct {
 	Title             string
 	Content           string
 	ImageUrls         *string
-	IsDraft           *bool
+	IsDraft           bool
 	EstimatedReadTime *int64
 	ScheduledAt       pgtype.Timestamptz
 }

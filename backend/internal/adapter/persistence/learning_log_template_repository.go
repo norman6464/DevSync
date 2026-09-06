@@ -36,7 +36,7 @@ func toModelLearningLogTemplate(row sqlcgen.LearningLogTemplate) model.LearningL
 		DefaultContent:  fromStringPtr(row.DefaultContent),
 		DefaultCategory: model.LogCategory(fromStringPtr(row.DefaultCategory)),
 		DefaultDuration: int(fromInt64PtrValue(row.DefaultDuration)),
-		IsDefault:       fromBoolPtr(row.IsDefault),
+		IsDefault:       row.IsDefault,
 		CreatedAt:       timeValue(fromTimestamptz(row.CreatedAt)),
 		UpdatedAt:       timeValue(fromTimestamptz(row.UpdatedAt)),
 	}
@@ -72,7 +72,7 @@ func (r *learningLogTemplateRepository) Create(ctx context.Context, template *mo
 		DefaultContent:  &template.DefaultContent,
 		DefaultCategory: &category,
 		DefaultDuration: toInt64Ptr(template.DefaultDuration),
-		IsDefault:       &template.IsDefault,
+		IsDefault:       template.IsDefault,
 	})
 	if isUniqueViolation(err) {
 		return domain.ErrConflict
@@ -111,7 +111,7 @@ func (r *learningLogTemplateRepository) Update(ctx context.Context, template *mo
 		DefaultContent:  &template.DefaultContent,
 		DefaultCategory: &category,
 		DefaultDuration: toInt64Ptr(template.DefaultDuration),
-		IsDefault:       &template.IsDefault,
+		IsDefault:       template.IsDefault,
 	})
 	if isUniqueViolation(err) {
 		return domain.ErrConflict

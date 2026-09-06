@@ -17,7 +17,7 @@ type AiAdvice struct {
 	MessageKey string
 	Params     *string
 	ActionUrl  *string
-	IsRead     *bool
+	IsRead     bool
 	ExpiresAt  pgtype.Timestamptz
 	CreatedAt  pgtype.Timestamptz
 	UpdatedAt  pgtype.Timestamptz
@@ -46,7 +46,7 @@ type Answer struct {
 	QuestionID int64
 	Body       string
 	VoteCount  *int64
-	IsBest     *bool
+	IsBest     bool
 	CreatedAt  pgtype.Timestamptz
 	UpdatedAt  pgtype.Timestamptz
 	DeletedAt  pgtype.Timestamptz
@@ -72,7 +72,7 @@ type BookReview struct {
 	CurrentPage *int64
 	ImageUrl    *string
 	Status      *string
-	IsArchived  *bool
+	IsArchived  bool
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz
 	DeletedAt   pgtype.Timestamptz
@@ -146,7 +146,7 @@ type Comment struct {
 	ParentID  *int64
 	Content   string
 	LikeCount *int64
-	IsHidden  *bool
+	IsHidden  bool
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
 }
@@ -193,7 +193,7 @@ type GitHubRepository struct {
 	Language     *string
 	Stars        *int64
 	Forks        *int64
-	IsPrivate    *bool
+	IsPrivate    bool
 	UpdatedAt    pgtype.Timestamptz
 }
 
@@ -215,7 +215,7 @@ type LearningGoal struct {
 	Progress    *int64
 	TargetHours *int64
 	Status      *string
-	IsPublic    *bool
+	IsPublic    bool
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz
 	CompletedAt pgtype.Timestamptz
@@ -230,7 +230,7 @@ type LearningLog struct {
 	Duration   *int64
 	GoalID     *int64
 	Source     *string
-	IsFavorite *bool
+	IsFavorite bool
 	CreatedAt  pgtype.Timestamptz
 	UpdatedAt  pgtype.Timestamptz
 }
@@ -243,7 +243,7 @@ type LearningLogTemplate struct {
 	DefaultContent  *string
 	DefaultCategory *string
 	DefaultDuration *int64
-	IsDefault       *bool
+	IsDefault       bool
 	CreatedAt       pgtype.Timestamptz
 	UpdatedAt       pgtype.Timestamptz
 }
@@ -258,7 +258,7 @@ type LearningResource struct {
 	Difficulty  *string
 	Tags        *string
 	ImageUrl    *string
-	IsPublic    *bool
+	IsPublic    bool
 	LikeCount   *int64
 	SaveCount   *int64
 	CreatedAt   pgtype.Timestamptz
@@ -287,7 +287,7 @@ type Message struct {
 	SenderID   int64
 	ReceiverID int64
 	Content    string
-	Read       *bool
+	Read       bool
 	CreatedAt  pgtype.Timestamptz
 }
 
@@ -298,8 +298,8 @@ type Note struct {
 	Title      string
 	Content    *string
 	Tags       *string
-	IsFavorite *bool
-	IsArchived *bool
+	IsFavorite bool
+	IsArchived bool
 	CreatedAt  pgtype.Timestamptz
 	UpdatedAt  pgtype.Timestamptz
 }
@@ -328,7 +328,7 @@ type NoteTemplate struct {
 	DefaultTitle    *string
 	ContentTemplate string
 	DefaultTags     *string
-	IsDefault       *bool
+	IsDefault       bool
 	CreatedAt       pgtype.Timestamptz
 	UpdatedAt       pgtype.Timestamptz
 }
@@ -351,21 +351,21 @@ type Notification struct {
 	PostID     *int64
 	QuestionID *int64
 	BadgeID    *string
-	Read       *bool
+	Read       bool
 	CreatedAt  pgtype.Timestamptz
 }
 
 type NotificationSetting struct {
 	ID             int64
 	UserID         int64
-	EnableLikes    *bool
-	EnableComments *bool
-	EnableFollows  *bool
-	EnableMessages *bool
-	EnableMentions *bool
-	EnableWebPush  *bool
-	EnableEmail    *bool
-	EnableSound    *bool
+	EnableLikes    bool
+	EnableComments bool
+	EnableFollows  bool
+	EnableMessages bool
+	EnableMentions bool
+	EnableWebPush  bool
+	EnableEmail    bool
+	EnableSound    bool
 	CreatedAt      pgtype.Timestamptz
 	UpdatedAt      pgtype.Timestamptz
 }
@@ -375,7 +375,7 @@ type PasswordResetToken struct {
 	UserID    int64
 	Token     string
 	ExpiresAt pgtype.Timestamptz
-	Used      *bool
+	Used      bool
 	CreatedAt pgtype.Timestamptz
 }
 
@@ -385,7 +385,7 @@ type Post struct {
 	Title             string
 	Content           string
 	ImageUrls         *string
-	IsDraft           *bool
+	IsDraft           bool
 	LikeCount         *int64
 	CommentCount      *int64
 	BookmarkCount     *int64
@@ -401,7 +401,7 @@ type PostCollection struct {
 	UserID      int64
 	Title       string
 	Description *string
-	IsPublic    *bool
+	IsPublic    bool
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz
 }
@@ -474,8 +474,8 @@ type Project struct {
 	Role         *string
 	StartDate    pgtype.Timestamptz
 	EndDate      pgtype.Timestamptz
-	Featured     *bool
-	IsArchived   *bool
+	Featured     bool
+	IsArchived   bool
 	GithubRepoID *int64
 	CreatedAt    pgtype.Timestamptz
 	UpdatedAt    pgtype.Timestamptz
@@ -515,7 +515,7 @@ type Question struct {
 	Tags        *string
 	VoteCount   *int64
 	AnswerCount *int64
-	IsSolved    *bool
+	IsSolved    bool
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz
 	DeletedAt   pgtype.Timestamptz
@@ -547,12 +547,12 @@ type Reaction struct {
 type ReminderSetting struct {
 	ID               int64
 	UserID           int64
-	Enabled          *bool
+	Enabled          bool
 	Frequency        *string
 	NotificationTime *string
 	InactiveDays     *int64
-	EnableWeb        *bool
-	EnableEmail      *bool
+	EnableWeb        bool
+	EnableEmail      bool
 	LastRemindedAt   pgtype.Timestamptz
 	CreatedAt        pgtype.Timestamptz
 	UpdatedAt        pgtype.Timestamptz
@@ -601,8 +601,8 @@ type Roadmap struct {
 	Title              string
 	Description        *string
 	Category           *string
-	IsPublic           *bool
-	IsTemplate         *bool
+	IsPublic           bool
+	IsTemplate         bool
 	StepCount          *int64
 	CompletedStepCount *int64
 	Progress           *int64
@@ -618,7 +618,7 @@ type RoadmapStep struct {
 	Title       string
 	Description *string
 	OrderIndex  int64
-	IsCompleted *bool
+	IsCompleted bool
 	CompletedAt pgtype.Timestamptz
 	ResourceUrl *string
 	CreatedAt   pgtype.Timestamptz
@@ -690,7 +690,7 @@ type StudyCircleMemberProgress struct {
 	CircleID    int64
 	StepID      int64
 	UserID      int64
-	IsCompleted *bool
+	IsCompleted bool
 	CompletedAt pgtype.Timestamptz
 }
 
@@ -716,8 +716,8 @@ type User struct {
 	GitHubID            *int64
 	GitHubUsername      *string
 	GitHubToken         *string
-	GitHubConnected     *bool
-	SpotifyConnected    *bool
+	GitHubConnected     bool
+	SpotifyConnected    bool
 	SpotifyToken        *string
 	SpotifyRefreshToken *string
 	SpotifyTokenExpiry  pgtype.Timestamptz
@@ -727,8 +727,8 @@ type User struct {
 	PaizaRank           *string
 	SkillsLanguages     *string
 	SkillsFrameworks    *string
-	OnboardingCompleted *bool
-	EmailWeeklyReport   *bool
+	OnboardingCompleted bool
+	EmailWeeklyReport   bool
 	EmailLanguage       *string
 	CreatedAt           pgtype.Timestamptz
 	UpdatedAt           pgtype.Timestamptz
@@ -753,7 +753,7 @@ type WeeklyChallenge struct {
 	Description   string
 	TargetValue   int64
 	CurrentValue  *int64
-	IsCompleted   *bool
+	IsCompleted   bool
 	CompletedAt   pgtype.Timestamptz
 	CreatedAt     pgtype.Timestamptz
 	UpdatedAt     pgtype.Timestamptz

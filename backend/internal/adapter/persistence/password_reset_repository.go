@@ -28,7 +28,7 @@ func toModelPasswordResetToken(row sqlcgen.PasswordResetToken) model.PasswordRes
 		UserID:    uint(row.UserID),
 		Token:     row.Token,
 		ExpiresAt: row.ExpiresAt.Time,
-		Used:      fromBoolPtr(row.Used),
+		Used:      row.Used,
 		CreatedAt: row.CreatedAt.Time,
 	}
 }
@@ -39,7 +39,7 @@ func (r *passwordResetRepository) Create(ctx context.Context, token *model.Passw
 		UserID:    int64(token.UserID),
 		Token:     token.Token,
 		ExpiresAt: toTimestamptzNotNull(token.ExpiresAt),
-		Used:      &token.Used,
+		Used:      token.Used,
 	})
 	if err != nil {
 		return err

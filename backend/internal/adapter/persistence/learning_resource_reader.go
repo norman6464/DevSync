@@ -42,7 +42,7 @@ func (r *learningResourceReader) FindByID(ctx context.Context, id uint) (*model.
 		Difficulty:  model.ResourceDifficulty(fromStringPtr(row.Difficulty)),
 		Tags:        fromStringPtr(row.Tags),
 		ImageURL:    fromStringPtr(row.ImageUrl),
-		IsPublic:    fromBoolPtr(row.IsPublic),
+		IsPublic:    row.IsPublic,
 		LikeCount:   int(fromInt64PtrValue(row.LikeCount)),
 		SaveCount:   int(fromInt64PtrValue(row.SaveCount)),
 		CreatedAt:   timeValue(fromTimestamptz(row.CreatedAt)),

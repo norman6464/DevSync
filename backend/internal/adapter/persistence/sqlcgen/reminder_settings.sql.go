@@ -23,12 +23,12 @@ RETURNING id, user_id, enabled, frequency, notification_time, inactive_days, ena
 
 type CreateDefaultReminderSettingsParams struct {
 	UserID           int64
-	Enabled          *bool
+	Enabled          bool
 	Frequency        *string
 	NotificationTime *string
 	InactiveDays     *int64
-	EnableWeb        *bool
-	EnableEmail      *bool
+	EnableWeb        bool
+	EnableEmail      bool
 }
 
 // 同時に複数リクエストが「不在」と判定してもuser_idの一意制約とDO NOTHINGで
@@ -113,12 +113,12 @@ RETURNING id, user_id, enabled, frequency, notification_time, inactive_days, ena
 
 type UpdateReminderSettingsParams struct {
 	ID               int64
-	Enabled          *bool
+	Enabled          bool
 	Frequency        *string
 	NotificationTime *string
 	InactiveDays     *int64
-	EnableWeb        *bool
-	EnableEmail      *bool
+	EnableWeb        bool
+	EnableEmail      bool
 	LastRemindedAt   pgtype.Timestamptz
 }
 

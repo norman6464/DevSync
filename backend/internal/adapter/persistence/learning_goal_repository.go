@@ -32,7 +32,7 @@ func toModelLearningGoal(row sqlcgen.LearningGoal) model.LearningGoal {
 		Progress:    int(fromInt64PtrValue(row.Progress)),
 		TargetHours: int(fromInt64PtrValue(row.TargetHours)),
 		Status:      model.GoalStatus(fromStringPtr(row.Status)),
-		IsPublic:    fromBoolPtr(row.IsPublic),
+		IsPublic:    row.IsPublic,
 		CreatedAt:   timeValue(fromTimestamptz(row.CreatedAt)),
 		UpdatedAt:   timeValue(fromTimestamptz(row.UpdatedAt)),
 		CompletedAt: fromTimestamptz(row.CompletedAt),
@@ -56,7 +56,7 @@ func (r *learningGoalRepository) Create(ctx context.Context, goal *model.Learnin
 		Progress:    toInt64Ptr(goal.Progress),
 		TargetHours: toInt64Ptr(goal.TargetHours),
 		Status:      (*string)(&status),
-		IsPublic:    &goal.IsPublic,
+		IsPublic:    goal.IsPublic,
 	})
 	if err != nil {
 		return err
@@ -76,7 +76,7 @@ func (r *learningGoalRepository) Update(ctx context.Context, goal *model.Learnin
 		Progress:    toInt64Ptr(goal.Progress),
 		TargetHours: toInt64Ptr(goal.TargetHours),
 		Status:      (*string)(&goal.Status),
-		IsPublic:    &goal.IsPublic,
+		IsPublic:    goal.IsPublic,
 		CompletedAt: toTimestamptz(goal.CompletedAt),
 	})
 	if err != nil {

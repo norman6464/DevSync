@@ -15,23 +15,20 @@ func TestToModelReminderSettings(t *testing.T) {
 	updatedAt := time.Date(2026, 8, 17, 10, 0, 0, 0, time.UTC)
 
 	t.Run("last_reminded_atありの設定を変換する", func(t *testing.T) {
-		enabled := true
 		frequency := "weekly"
 		notificationTime := "21:30"
 		inactiveDays := int64(7)
-		enableWeb := false
-		enableEmail := true
 		lastRemindedAt := time.Date(2026, 8, 15, 9, 0, 0, 0, time.UTC)
 
 		row := sqlcgen.ReminderSetting{
 			ID:               10,
 			UserID:           1,
-			Enabled:          &enabled,
+			Enabled:          true,
 			Frequency:        &frequency,
 			NotificationTime: &notificationTime,
 			InactiveDays:     &inactiveDays,
-			EnableWeb:        &enableWeb,
-			EnableEmail:      &enableEmail,
+			EnableWeb:        false,
+			EnableEmail:      true,
 			LastRemindedAt:   pgtype.Timestamptz{Time: lastRemindedAt, Valid: true},
 			CreatedAt:        pgtype.Timestamptz{Time: createdAt, Valid: true},
 			UpdatedAt:        pgtype.Timestamptz{Time: updatedAt, Valid: true},

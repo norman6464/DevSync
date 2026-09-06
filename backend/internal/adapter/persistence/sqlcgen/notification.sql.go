@@ -53,7 +53,7 @@ type CreateNotificationParams struct {
 	PostID     *int64
 	QuestionID *int64
 	BadgeID    *string
-	Read       *bool
+	Read       bool
 }
 
 func (q *Queries) CreateNotification(ctx context.Context, arg CreateNotificationParams) (Notification, error) {

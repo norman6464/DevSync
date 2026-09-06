@@ -34,8 +34,8 @@ type CreateUserParams struct {
 	GitHubID            *int64
 	GitHubUsername      *string
 	GitHubToken         *string
-	GitHubConnected     *bool
-	SpotifyConnected    *bool
+	GitHubConnected     bool
+	SpotifyConnected    bool
 	SpotifyToken        *string
 	SpotifyRefreshToken *string
 	SpotifyTokenExpiry  pgtype.Timestamptz
@@ -45,8 +45,8 @@ type CreateUserParams struct {
 	PaizaRank           *string
 	SkillsLanguages     *string
 	SkillsFrameworks    *string
-	OnboardingCompleted *bool
-	EmailWeeklyReport   *bool
+	OnboardingCompleted bool
+	EmailWeeklyReport   bool
 	EmailLanguage       *string
 }
 
@@ -399,8 +399,8 @@ type UpdateUserParams struct {
 	GitHubID            *int64
 	GitHubUsername      *string
 	GitHubToken         *string
-	GitHubConnected     *bool
-	SpotifyConnected    *bool
+	GitHubConnected     bool
+	SpotifyConnected    bool
 	SpotifyToken        *string
 	SpotifyRefreshToken *string
 	SpotifyTokenExpiry  pgtype.Timestamptz
@@ -410,8 +410,8 @@ type UpdateUserParams struct {
 	PaizaRank           *string
 	SkillsLanguages     *string
 	SkillsFrameworks    *string
-	OnboardingCompleted *bool
-	EmailWeeklyReport   *bool
+	OnboardingCompleted bool
+	EmailWeeklyReport   bool
 	EmailLanguage       *string
 }
 

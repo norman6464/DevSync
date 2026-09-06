@@ -74,7 +74,7 @@ type CreateLearningGoalParams struct {
 	Progress    *int64
 	TargetHours *int64
 	Status      *string
-	IsPublic    *bool
+	IsPublic    bool
 }
 
 func (q *Queries) CreateLearningGoal(ctx context.Context, arg CreateLearningGoalParams) (LearningGoal, error) {
@@ -441,7 +441,7 @@ type UpdateLearningGoalParams struct {
 	Progress    *int64
 	TargetHours *int64
 	Status      *string
-	IsPublic    *bool
+	IsPublic    bool
 	CompletedAt pgtype.Timestamptz
 }
 

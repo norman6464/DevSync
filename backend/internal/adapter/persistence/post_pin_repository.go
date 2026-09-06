@@ -32,7 +32,7 @@ func toModelPost(row sqlcgen.Post) model.Post {
 		Title:             row.Title,
 		Content:           row.Content,
 		ImageURLs:         fromStringPtr(row.ImageUrls),
-		IsDraft:           fromBoolPtr(row.IsDraft),
+		IsDraft:           row.IsDraft,
 		LikeCount:         int(fromInt64PtrValue(row.LikeCount)),
 		CommentCount:      int(fromInt64PtrValue(row.CommentCount)),
 		BookmarkCount:     int(fromInt64PtrValue(row.BookmarkCount)),

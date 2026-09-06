@@ -30,7 +30,7 @@ func toModelComment(row sqlcgen.Comment) model.Comment {
 		ParentID:  fromInt64PtrToUintPtr(row.ParentID),
 		Content:   row.Content,
 		LikeCount: int(fromInt64PtrValue(row.LikeCount)),
-		IsHidden:  fromBoolPtr(row.IsHidden),
+		IsHidden:  row.IsHidden,
 		CreatedAt: timeValue(fromTimestamptz(row.CreatedAt)),
 		UpdatedAt: timeValue(fromTimestamptz(row.UpdatedAt)),
 	}

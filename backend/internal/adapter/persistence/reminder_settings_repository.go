@@ -32,12 +32,12 @@ func toModelReminderSettings(row sqlcgen.ReminderSetting) model.ReminderSettings
 	return model.ReminderSettings{
 		ID:               uint(row.ID),
 		UserID:           uint(row.UserID),
-		Enabled:          fromBoolPtr(row.Enabled),
+		Enabled:          row.Enabled,
 		Frequency:        model.ReminderFrequency(fromStringPtr(row.Frequency)),
 		NotificationTime: fromStringPtr(row.NotificationTime),
 		InactiveDays:     fromInt64Ptr(row.InactiveDays),
-		EnableWeb:        fromBoolPtr(row.EnableWeb),
-		EnableEmail:      fromBoolPtr(row.EnableEmail),
+		EnableWeb:        row.EnableWeb,
+		EnableEmail:      row.EnableEmail,
 		LastRemindedAt:   fromTimestamptz(row.LastRemindedAt),
 		CreatedAt:        row.CreatedAt.Time,
 		UpdatedAt:        row.UpdatedAt.Time,
@@ -66,12 +66,12 @@ func (r *reminderSettingsRepository) GetOrCreateDefault(ctx context.Context, use
 	// 競合に負けた側は先に作られた行を読み直して返す（失敗させない）。
 	rows, err := r.q.CreateDefaultReminderSettings(ctx, sqlcgen.CreateDefaultReminderSettingsParams{
 		UserID:           int64(userID),
-		Enabled:          &enabled,
+		Enabled:          enabled,
 		Frequency:        &frequency,
 		NotificationTime: &notificationTime,
 		InactiveDays:     &inactiveDays,
-		EnableWeb:        &enableWeb,
-		EnableEmail:      &enableEmail,
+		EnableWeb:        enableWeb,
+		EnableEmail:      enableEmail,
 	})
 	if err != nil {
 		return nil, err
@@ -103,12 +103,12 @@ func (r *reminderSettingsRepository) Save(ctx context.Context, settings *model.R
 	frequency := string(settings.Frequency)
 	_, err := r.q.UpdateReminderSettings(ctx, sqlcgen.UpdateReminderSettingsParams{
 		ID:               int64(settings.ID),
-		Enabled:          &settings.Enabled,
+		Enabled:          settings.Enabled,
 		Frequency:        &frequency,
 		NotificationTime: &settings.NotificationTime,
 		InactiveDays:     toInt64Ptr(settings.InactiveDays),
-		EnableWeb:        &settings.EnableWeb,
-		EnableEmail:      &settings.EnableEmail,
+		EnableWeb:        settings.EnableWeb,
+		EnableEmail:      settings.EnableEmail,
 		LastRemindedAt:   toTimestamptz(settings.LastRemindedAt),
 	})
 	return err

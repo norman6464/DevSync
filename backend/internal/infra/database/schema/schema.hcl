@@ -52,7 +52,7 @@ table "ai_advices" {
     type = text
   }
   column "is_read" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
@@ -239,7 +239,7 @@ table "answers" {
     default = 0
   }
   column "is_best" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
@@ -335,7 +335,7 @@ table "book_reviews" {
     default = "not_started"
   }
   column "is_archived" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
@@ -942,7 +942,7 @@ table "git_hub_repositories" {
     type = bigint
   }
   column "is_private" {
-    null = true
+    null = false
     type = boolean
   }
   column "updated_at" {
@@ -1014,7 +1014,7 @@ table "learning_goals" {
     default = "active"
   }
   column "is_public" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
@@ -1095,7 +1095,7 @@ table "learning_logs" {
     default = "manual"
   }
   column "is_favorite" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
@@ -1170,7 +1170,7 @@ table "learning_log_templates" {
     default = 0
   }
   column "is_default" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
@@ -1247,7 +1247,7 @@ table "learning_resources" {
     type = character_varying(500)
   }
   column "is_public" {
-    null = true
+    null = false
     type = boolean
   }
   column "like_count" {
@@ -1531,7 +1531,7 @@ table "messages" {
     type = text
   }
   column "read" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
@@ -1644,12 +1644,12 @@ table "notes" {
     type = text
   }
   column "is_favorite" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
   column "is_archived" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
@@ -1771,7 +1771,7 @@ table "note_templates" {
     type = character_varying(255)
   }
   column "is_default" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
@@ -1888,7 +1888,7 @@ table "notifications" {
     type = character_varying(50)
   }
   column "read" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
@@ -1949,42 +1949,42 @@ table "notification_settings" {
     type = bigint
   }
   column "enable_likes" {
-    null    = true
+    null    = false
     type    = boolean
     default = true
   }
   column "enable_comments" {
-    null    = true
+    null    = false
     type    = boolean
     default = true
   }
   column "enable_follows" {
-    null    = true
+    null    = false
     type    = boolean
     default = true
   }
   column "enable_messages" {
-    null    = true
+    null    = false
     type    = boolean
     default = true
   }
   column "enable_mentions" {
-    null    = true
+    null    = false
     type    = boolean
     default = true
   }
   column "enable_web_push" {
-    null    = true
+    null    = false
     type    = boolean
     default = true
   }
   column "enable_email" {
-    null    = true
+    null    = false
     type    = boolean
     default = true
   }
   column "enable_sound" {
-    null    = true
+    null    = false
     type    = boolean
     default = true
   }
@@ -2034,7 +2034,7 @@ table "password_reset_tokens" {
     type = timestamptz
   }
   column "used" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
@@ -2174,7 +2174,7 @@ table "comments" {
     default = 0
   }
   column "is_hidden" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
@@ -2330,7 +2330,7 @@ table "post_collections" {
     type = text
   }
   column "is_public" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
@@ -2589,7 +2589,7 @@ table "posts" {
     type = text
   }
   column "is_draft" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
@@ -2794,12 +2794,12 @@ table "projects" {
     type = timestamptz
   }
   column "featured" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
   column "is_archived" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
@@ -3088,7 +3088,7 @@ table "questions" {
     default = 0
   }
   column "is_solved" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
@@ -3136,7 +3136,7 @@ table "reminder_settings" {
     type = bigint
   }
   column "enabled" {
-    null    = true
+    null    = false
     type    = boolean
     default = true
   }
@@ -3156,12 +3156,12 @@ table "reminder_settings" {
     default = 3
   }
   column "enable_web" {
-    null    = true
+    null    = false
     type    = boolean
     default = true
   }
   column "enable_email" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
@@ -3295,7 +3295,7 @@ table "roadmap_steps" {
     default = 0
   }
   column "is_completed" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
@@ -3352,12 +3352,12 @@ table "roadmaps" {
     default = "other"
   }
   column "is_public" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
   column "is_template" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
@@ -3592,7 +3592,7 @@ table "study_circle_member_progresses" {
     type = bigint
   }
   column "is_completed" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
@@ -3824,12 +3824,12 @@ table "users" {
     type = text
   }
   column "git_hub_connected" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
   column "spotify_connected" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
@@ -3870,12 +3870,12 @@ table "users" {
     type = text
   }
   column "onboarding_completed" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }
   column "email_weekly_report" {
-    null    = true
+    null    = false
     type    = boolean
     default = true
   }
@@ -4010,7 +4010,7 @@ table "weekly_challenges" {
     default = 0
   }
   column "is_completed" {
-    null    = true
+    null    = false
     type    = boolean
     default = false
   }

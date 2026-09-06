@@ -28,7 +28,7 @@ func toModelPostCollection(row sqlcgen.PostCollection) model.PostCollection {
 		UserID:      uint(row.UserID),
 		Title:       row.Title,
 		Description: fromStringPtr(row.Description),
-		IsPublic:    fromBoolPtr(row.IsPublic),
+		IsPublic:    row.IsPublic,
 		CreatedAt:   timeValue(fromTimestamptz(row.CreatedAt)),
 		UpdatedAt:   timeValue(fromTimestamptz(row.UpdatedAt)),
 	}
@@ -40,7 +40,7 @@ func (r *postCollectionRepository) Create(ctx context.Context, collection *model
 		UserID:      int64(collection.UserID),
 		Title:       collection.Title,
 		Description: &collection.Description,
-		IsPublic:    &collection.IsPublic,
+		IsPublic:    collection.IsPublic,
 	})
 	if err != nil {
 		return err
@@ -104,7 +104,7 @@ func (r *postCollectionRepository) Update(ctx context.Context, collection *model
 		ID:          int64(collection.ID),
 		Title:       collection.Title,
 		Description: &collection.Description,
-		IsPublic:    &collection.IsPublic,
+		IsPublic:    collection.IsPublic,
 	})
 	if err != nil {
 		return err

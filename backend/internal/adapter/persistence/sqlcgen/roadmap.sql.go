@@ -51,8 +51,8 @@ type CreateRoadmapParams struct {
 	Title              string
 	Description        *string
 	Category           *string
-	IsPublic           *bool
-	IsTemplate         *bool
+	IsPublic           bool
+	IsTemplate         bool
 	StepCount          *int64
 	CompletedStepCount *int64
 	Progress           *int64
@@ -106,7 +106,7 @@ type CreateRoadmapStepParams struct {
 	Title       string
 	Description *string
 	OrderIndex  int64
-	IsCompleted *bool
+	IsCompleted bool
 	CompletedAt pgtype.Timestamptz
 	ResourceUrl *string
 }
@@ -597,8 +597,8 @@ type UpdateRoadmapParams struct {
 	Title       string
 	Description *string
 	Category    *string
-	IsPublic    *bool
-	IsTemplate  *bool
+	IsPublic    bool
+	IsTemplate  bool
 }
 
 // GORMのSave（全カラム上書き）に相当。ただしstep_count/completed_step_count/progress/
@@ -730,7 +730,7 @@ type UpdateRoadmapStepParams struct {
 	Title       string
 	Description *string
 	OrderIndex  int64
-	IsCompleted *bool
+	IsCompleted bool
 	CompletedAt pgtype.Timestamptz
 	ResourceUrl *string
 }

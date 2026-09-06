@@ -16,7 +16,6 @@ func TestToModelWeeklyChallenge(t *testing.T) {
 	t.Run("完了済み（completed_atあり）を変換する", func(t *testing.T) {
 		completedAt := time.Date(2026, 8, 18, 9, 0, 0, 0, time.UTC)
 		currentValue := int64(300)
-		isCompleted := true
 		row := sqlcgen.WeeklyChallenge{
 			ID:            1,
 			UserID:        2,
@@ -26,7 +25,7 @@ func TestToModelWeeklyChallenge(t *testing.T) {
 			Description:   "weekly_duration_300",
 			TargetValue:   300,
 			CurrentValue:  &currentValue,
-			IsCompleted:   &isCompleted,
+			IsCompleted:   true,
 			CompletedAt:   pgtype.Timestamptz{Time: completedAt, Valid: true},
 			CreatedAt:     pgtype.Timestamptz{Time: createdAt, Valid: true},
 			UpdatedAt:     pgtype.Timestamptz{Time: updatedAt, Valid: true},
@@ -46,13 +45,13 @@ func TestToModelWeeklyChallenge(t *testing.T) {
 		assert.Equal(t, updatedAt, got.UpdatedAt)
 	})
 
-	t.Run("未完了（completed_at・current_value・is_completedがNULL）を変換する", func(t *testing.T) {
+	t.Run("未完了（completed_at・current_valueがNULL）を変換する", func(t *testing.T) {
 		row := sqlcgen.WeeklyChallenge{
 			ID:            1,
 			UserID:        2,
 			ChallengeType: "streak_days",
 			CurrentValue:  nil,
-			IsCompleted:   nil,
+			IsCompleted:   false,
 			CompletedAt:   pgtype.Timestamptz{},
 			CreatedAt:     pgtype.Timestamptz{Time: createdAt, Valid: true},
 			UpdatedAt:     pgtype.Timestamptz{Time: updatedAt, Valid: true},

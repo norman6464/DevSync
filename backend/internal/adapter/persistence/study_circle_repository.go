@@ -71,7 +71,7 @@ func toModelStudyCircleMemberProgress(row sqlcgen.StudyCircleMemberProgress) mod
 		CircleID:    uint(row.CircleID),
 		StepID:      uint(row.StepID),
 		UserID:      uint(row.UserID),
-		IsCompleted: fromBoolPtr(row.IsCompleted),
+		IsCompleted: row.IsCompleted,
 		CompletedAt: fromTimestamptz(row.CompletedAt),
 	}
 }
@@ -441,7 +441,7 @@ func (r *studyCircleRepository) UpsertProgress(ctx context.Context, progress *mo
 		CircleID:    int64(progress.CircleID),
 		StepID:      int64(progress.StepID),
 		UserID:      int64(progress.UserID),
-		IsCompleted: &progress.IsCompleted,
+		IsCompleted: progress.IsCompleted,
 		CompletedAt: toTimestamptz(progress.CompletedAt),
 	})
 	if err != nil {

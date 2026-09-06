@@ -985,7 +985,7 @@ type UpsertStudyCircleMemberProgressParams struct {
 	CircleID    int64
 	StepID      int64
 	UserID      int64
-	IsCompleted *bool
+	IsCompleted bool
 	CompletedAt pgtype.Timestamptz
 }
 

@@ -21,7 +21,7 @@ type CreatePasswordResetTokenParams struct {
 	UserID    int64
 	Token     string
 	ExpiresAt pgtype.Timestamptz
-	Used      *bool
+	Used      bool
 }
 
 func (q *Queries) CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) (PasswordResetToken, error) {

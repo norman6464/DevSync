@@ -29,8 +29,8 @@ func (r *noteUpdater) Update(ctx context.Context, note *model.Note) error {
 		Content:    &note.Content,
 		Tags:       &note.Tags,
 		FolderID:   toInt64PtrFromUintPtr(note.FolderID),
-		IsFavorite: &note.IsFavorite,
-		IsArchived: &note.IsArchived,
+		IsFavorite: note.IsFavorite,
+		IsArchived: note.IsArchived,
 	})
 	if err != nil {
 		return err

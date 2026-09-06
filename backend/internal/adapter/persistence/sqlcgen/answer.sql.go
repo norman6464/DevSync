@@ -44,7 +44,7 @@ type CreateAnswerParams struct {
 	QuestionID int64
 	Body       string
 	VoteCount  *int64
-	IsBest     *bool
+	IsBest     bool
 }
 
 func (q *Queries) CreateAnswer(ctx context.Context, arg CreateAnswerParams) (Answer, error) {
@@ -419,7 +419,7 @@ type UpdateAnswerParams struct {
 	ID        int64
 	Body      string
 	VoteCount *int64
-	IsBest    *bool
+	IsBest    bool
 }
 
 // GORMのSave（全カラム上書き）に相当。answersは論理削除があるため、GORMが自動付与する

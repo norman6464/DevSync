@@ -124,7 +124,7 @@ type CreateQuestionParams struct {
 	Tags        *string
 	VoteCount   *int64
 	AnswerCount *int64
-	IsSolved    *bool
+	IsSolved    bool
 }
 
 func (q *Queries) CreateQuestion(ctx context.Context, arg CreateQuestionParams) (Question, error) {
@@ -780,7 +780,7 @@ type UpdateQuestionParams struct {
 	Tags        *string
 	VoteCount   *int64
 	AnswerCount *int64
-	IsSolved    *bool
+	IsSolved    bool
 }
 
 // GORMのSave（全カラム上書き）に相当。questionsは論理削除があるため、GORMが自動付与する

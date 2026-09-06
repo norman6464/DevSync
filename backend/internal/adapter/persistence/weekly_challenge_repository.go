@@ -32,7 +32,7 @@ func toModelWeeklyChallenge(row sqlcgen.WeeklyChallenge) model.WeeklyChallenge {
 		Description:   row.Description,
 		TargetValue:   int(row.TargetValue),
 		CurrentValue:  fromInt64Ptr(row.CurrentValue),
-		IsCompleted:   fromBoolPtr(row.IsCompleted),
+		IsCompleted:   row.IsCompleted,
 		CompletedAt:   fromTimestamptz(row.CompletedAt),
 		CreatedAt:     row.CreatedAt.Time,
 		UpdatedAt:     row.UpdatedAt.Time,
@@ -49,7 +49,7 @@ func (r *weeklyChallengeRepository) Create(ctx context.Context, challenge *model
 		Description:   challenge.Description,
 		TargetValue:   int64(challenge.TargetValue),
 		CurrentValue:  toInt64Ptr(challenge.CurrentValue),
-		IsCompleted:   &challenge.IsCompleted,
+		IsCompleted:   challenge.IsCompleted,
 		CompletedAt:   toTimestamptz(challenge.CompletedAt),
 	})
 	if err != nil {
@@ -88,7 +88,7 @@ func (r *weeklyChallengeRepository) Update(ctx context.Context, challenge *model
 		Description:   challenge.Description,
 		TargetValue:   int64(challenge.TargetValue),
 		CurrentValue:  toInt64Ptr(challenge.CurrentValue),
-		IsCompleted:   &challenge.IsCompleted,
+		IsCompleted:   challenge.IsCompleted,
 		CompletedAt:   toTimestamptz(challenge.CompletedAt),
 	})
 	if err != nil {

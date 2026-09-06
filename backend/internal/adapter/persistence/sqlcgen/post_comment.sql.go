@@ -221,7 +221,7 @@ RETURNING id, user_id, post_id, parent_id, content, like_count, is_hidden, creat
 type UpdatePostCommentParams struct {
 	ID       int64
 	Content  string
-	IsHidden *bool
+	IsHidden bool
 }
 
 // GORMのSave（全カラム上書き）に相当。呼び出し側は必ずDBから読み込んだcommentの

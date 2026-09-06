@@ -55,7 +55,7 @@ func (r *postRepository) Create(ctx context.Context, post *model.Post) error {
 		Title:             post.Title,
 		Content:           post.Content,
 		ImageUrls:         &post.ImageURLs,
-		IsDraft:           &post.IsDraft,
+		IsDraft:           post.IsDraft,
 		LikeCount:         toInt64Ptr(post.LikeCount),
 		CommentCount:      toInt64Ptr(post.CommentCount),
 		BookmarkCount:     toInt64Ptr(post.BookmarkCount),
@@ -96,7 +96,7 @@ func (r *postRepository) Update(ctx context.Context, post *model.Post) error {
 		Title:             post.Title,
 		Content:           post.Content,
 		ImageUrls:         &post.ImageURLs,
-		IsDraft:           &post.IsDraft,
+		IsDraft:           post.IsDraft,
 		EstimatedReadTime: toInt64Ptr(post.EstimatedReadTime),
 		ScheduledAt:       toTimestamptz(post.ScheduledAt),
 	})
