@@ -7,32 +7,31 @@ INSERT INTO projects (
 ) RETURNING *;
 
 -- name: UpdateProject :one
--- GORMのSave（全カラム上書き）に相当。projectsは論理削除があるため、GORMが自動付与する
--- deleted_at IS NULLスコープをUPDATEにも明示する。
+-- GORMのSave（全カラム上書き）に相当。
 UPDATE projects SET
     title = $2, description = $3, tech_stack = $4, demo_url = $5, github_url = $6,
     image_url = $7, role = $8, start_date = $9, end_date = $10, featured = $11,
     is_archived = $12, github_repo_id = $13, updated_at = now()
-WHERE id = $1 AND deleted_at IS NULL
+WHERE id = $1
 RETURNING *;
 
 -- name: DeleteProject :exec
--- GORMのDelete（論理削除）に相当。
-UPDATE projects SET deleted_at = now() WHERE id = $1;
+-- 依存するマイルストーン等はFKのON DELETE CASCADEでDBが自動的に削除する。
+DELETE FROM projects WHERE id = $1;
 
 -- name: CountProjectsByUser :one
 -- 件数は FindByUserID の総数取得と CountByUserID(単体メソッド) の両方から利用する。
-SELECT COUNT(*) FROM projects WHERE user_id = $1 AND deleted_at IS NULL;
+SELECT COUNT(*) FROM projects WHERE user_id = $1;
 
 -- name: CountArchivedProjectsByUser :one
-SELECT COUNT(*) FROM projects WHERE user_id = $1 AND is_archived = true AND deleted_at IS NULL;
+SELECT COUNT(*) FROM projects WHERE user_id = $1 AND is_archived = true;
 
 -- name: CountAllProjects :one
-SELECT COUNT(*) FROM projects WHERE deleted_at IS NULL;
+SELECT COUNT(*) FROM projects;
 
 -- name: CountSearchProjects :one
 SELECT COUNT(*) FROM projects
-WHERE (title ILIKE $1 OR description ILIKE $1 OR tech_stack ILIKE $1) AND deleted_at IS NULL;
+WHERE (title ILIKE $1 OR description ILIKE $1 OR tech_stack ILIKE $1);
 
 -- name: ListProjectsByUserWithRepo :many
 -- GithubRepoのみPreloadする（Userは含めない。移行前のFindByUserIDと同じ挙動）。
@@ -52,7 +51,7 @@ SELECT sqlc.embed(projects),
     ghr.updated_at AS repo_updated_at
 FROM projects
 LEFT JOIN git_hub_repositories ghr ON ghr.id = projects.github_repo_id
-WHERE projects.user_id = $1 AND projects.deleted_at IS NULL
+WHERE projects.user_id = $1
 ORDER BY projects.featured DESC, projects.created_at DESC
 LIMIT $2 OFFSET $3;
 
@@ -72,7 +71,7 @@ SELECT sqlc.embed(projects),
     ghr.updated_at AS repo_updated_at
 FROM projects
 LEFT JOIN git_hub_repositories ghr ON ghr.id = projects.github_repo_id
-WHERE projects.user_id = $1 AND projects.is_archived = true AND projects.deleted_at IS NULL
+WHERE projects.user_id = $1 AND projects.is_archived = true
 ORDER BY projects.updated_at DESC
 LIMIT $2 OFFSET $3;
 
@@ -94,7 +93,6 @@ SELECT sqlc.embed(projects), sqlc.embed(users),
 FROM projects
 JOIN users ON users.id = projects.user_id
 LEFT JOIN git_hub_repositories ghr ON ghr.id = projects.github_repo_id
-WHERE projects.deleted_at IS NULL
 ORDER BY projects.created_at DESC
 LIMIT $1 OFFSET $2;
 
@@ -116,7 +114,6 @@ FROM projects
 JOIN users ON users.id = projects.user_id
 LEFT JOIN git_hub_repositories ghr ON ghr.id = projects.github_repo_id
 WHERE (projects.title ILIKE $1 OR projects.description ILIKE $1 OR projects.tech_stack ILIKE $1)
-    AND projects.deleted_at IS NULL
 ORDER BY projects.created_at DESC
 LIMIT $2 OFFSET $3;
 
@@ -136,8 +133,8 @@ SELECT sqlc.embed(projects),
     ghr.updated_at AS repo_updated_at
 FROM projects
 LEFT JOIN git_hub_repositories ghr ON ghr.id = projects.github_repo_id
-WHERE projects.user_id = $1 AND projects.featured = true AND projects.deleted_at IS NULL
+WHERE projects.user_id = $1 AND projects.featured = true
 ORDER BY projects.created_at DESC;
 
 -- name: SetProjectArchived :exec
-UPDATE projects SET is_archived = $2 WHERE id = $1 AND deleted_at IS NULL;
+UPDATE projects SET is_archived = $2 WHERE id = $1;

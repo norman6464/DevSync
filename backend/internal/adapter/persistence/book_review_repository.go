@@ -9,8 +9,6 @@ import (
 )
 
 // bookReviewRepository は [repository.BookReviewRepository] の sqlc(pgx) 実装。
-// BookReview は論理削除を使うため、全クエリで deleted_at IS NULL を明示する
-// （GORM が自動的に付与していたスコープ相当）。
 type bookReviewRepository struct {
 	q *sqlcgen.Queries
 }
@@ -195,7 +193,7 @@ func (r *bookReviewRepository) Update(ctx context.Context, review *model.BookRev
 	return nil
 }
 
-// Delete はレビューを削除する（論理削除）。
+// Delete はレビューを削除する。
 func (r *bookReviewRepository) Delete(ctx context.Context, id uint) error {
 	return r.q.DeleteBookReview(ctx, int64(id))
 }

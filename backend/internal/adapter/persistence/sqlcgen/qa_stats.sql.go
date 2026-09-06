@@ -11,7 +11,7 @@ import (
 
 const countAnswersByUser = `-- name: CountAnswersByUser :one
 SELECT count(*) FROM answers
-WHERE user_id = $1 AND deleted_at IS NULL
+WHERE user_id = $1
 `
 
 func (q *Queries) CountAnswersByUser(ctx context.Context, userID int64) (int64, error) {
@@ -23,7 +23,7 @@ func (q *Queries) CountAnswersByUser(ctx context.Context, userID int64) (int64, 
 
 const countBestAnswersByUser = `-- name: CountBestAnswersByUser :one
 SELECT count(*) FROM answers
-WHERE user_id = $1 AND is_best = true AND deleted_at IS NULL
+WHERE user_id = $1 AND is_best = true
 `
 
 func (q *Queries) CountBestAnswersByUser(ctx context.Context, userID int64) (int64, error) {
@@ -35,11 +35,9 @@ func (q *Queries) CountBestAnswersByUser(ctx context.Context, userID int64) (int
 
 const countQuestionsByUser = `-- name: CountQuestionsByUser :one
 SELECT count(*) FROM questions
-WHERE user_id = $1 AND deleted_at IS NULL
+WHERE user_id = $1
 `
 
-// questions/answers は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに
-// 合わせて deleted_at IS NULL を明示する（Unscoped() されていない全クエリと同じ挙動）。
 func (q *Queries) CountQuestionsByUser(ctx context.Context, userID int64) (int64, error) {
 	row := q.db.QueryRow(ctx, countQuestionsByUser, userID)
 	var count int64
@@ -49,7 +47,7 @@ func (q *Queries) CountQuestionsByUser(ctx context.Context, userID int64) (int64
 
 const sumAnswerVotesByUser = `-- name: SumAnswerVotesByUser :one
 SELECT COALESCE(SUM(vote_count), 0)::bigint FROM answers
-WHERE user_id = $1 AND deleted_at IS NULL
+WHERE user_id = $1
 `
 
 func (q *Queries) SumAnswerVotesByUser(ctx context.Context, userID int64) (int64, error) {
@@ -61,7 +59,7 @@ func (q *Queries) SumAnswerVotesByUser(ctx context.Context, userID int64) (int64
 
 const sumQuestionVotesByUser = `-- name: SumQuestionVotesByUser :one
 SELECT COALESCE(SUM(vote_count), 0)::bigint FROM questions
-WHERE user_id = $1 AND deleted_at IS NULL
+WHERE user_id = $1
 `
 
 func (q *Queries) SumQuestionVotesByUser(ctx context.Context, userID int64) (int64, error) {

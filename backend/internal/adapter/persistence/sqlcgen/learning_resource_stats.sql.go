@@ -11,7 +11,7 @@ import (
 
 const countLearningResourceCategoriesByUser = `-- name: CountLearningResourceCategoriesByUser :one
 SELECT count(DISTINCT category) FROM learning_resources
-WHERE user_id = $1 AND deleted_at IS NULL
+WHERE user_id = $1
 `
 
 func (q *Queries) CountLearningResourceCategoriesByUser(ctx context.Context, userID int64) (int64, error) {
@@ -23,11 +23,9 @@ func (q *Queries) CountLearningResourceCategoriesByUser(ctx context.Context, use
 
 const countLearningResourcesByUser = `-- name: CountLearningResourcesByUser :one
 SELECT count(*) FROM learning_resources
-WHERE user_id = $1 AND deleted_at IS NULL
+WHERE user_id = $1
 `
 
-// learning_resources は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに
-// 合わせて deleted_at IS NULL を明示する（Unscoped() されていない全クエリと同じ挙動）。
 func (q *Queries) CountLearningResourcesByUser(ctx context.Context, userID int64) (int64, error) {
 	row := q.db.QueryRow(ctx, countLearningResourcesByUser, userID)
 	var count int64
@@ -37,7 +35,7 @@ func (q *Queries) CountLearningResourcesByUser(ctx context.Context, userID int64
 
 const sumLearningResourceLikeCountByUser = `-- name: SumLearningResourceLikeCountByUser :one
 SELECT COALESCE(SUM(like_count), 0)::bigint FROM learning_resources
-WHERE user_id = $1 AND deleted_at IS NULL
+WHERE user_id = $1
 `
 
 func (q *Queries) SumLearningResourceLikeCountByUser(ctx context.Context, userID int64) (int64, error) {
@@ -49,7 +47,7 @@ func (q *Queries) SumLearningResourceLikeCountByUser(ctx context.Context, userID
 
 const sumLearningResourceSaveCountByUser = `-- name: SumLearningResourceSaveCountByUser :one
 SELECT COALESCE(SUM(save_count), 0)::bigint FROM learning_resources
-WHERE user_id = $1 AND deleted_at IS NULL
+WHERE user_id = $1
 `
 
 func (q *Queries) SumLearningResourceSaveCountByUser(ctx context.Context, userID int64) (int64, error) {

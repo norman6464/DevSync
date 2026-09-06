@@ -10,10 +10,9 @@ import (
 )
 
 const getLearningResourceByID = `-- name: GetLearningResourceByID :one
-SELECT id, user_id, title, description, url, category, difficulty, tags, image_url, is_public, like_count, save_count, created_at, updated_at, deleted_at FROM learning_resources WHERE id = $1 AND deleted_at IS NULL
+SELECT id, user_id, title, description, url, category, difficulty, tags, image_url, is_public, like_count, save_count, created_at, updated_at FROM learning_resources WHERE id = $1
 `
 
-// learning_resources は GORM の論理削除（deleted_at）付きモデルのため deleted_at IS NULL を明示する。
 func (q *Queries) GetLearningResourceByID(ctx context.Context, id int64) (LearningResource, error) {
 	row := q.db.QueryRow(ctx, getLearningResourceByID, id)
 	var i LearningResource
@@ -32,7 +31,6 @@ func (q *Queries) GetLearningResourceByID(ctx context.Context, id int64) (Learni
 		&i.SaveCount,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.DeletedAt,
 	)
 	return i, err
 }

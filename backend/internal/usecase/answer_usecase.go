@@ -102,7 +102,7 @@ func NewDeleteAnswerUseCase(answers repository.AnswerRepository) *DeleteAnswerUs
 	return &DeleteAnswerUseCase{answers: answers}
 }
 
-// Execute は回答を論理削除する。所有者のみ。
+// Execute は回答を削除する。所有者のみ。
 func (uc *DeleteAnswerUseCase) Execute(ctx context.Context, answerID, userID uint) error {
 	answer, err := ensureOwner(ctx, uc.answers.FindByID, answerID, userID,
 		func(a *model.Answer) uint { return a.UserID })

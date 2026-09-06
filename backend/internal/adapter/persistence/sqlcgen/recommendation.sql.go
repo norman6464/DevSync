@@ -181,12 +181,11 @@ func (q *Queries) ListTrendingPosts(ctx context.Context, arg ListTrendingPostsPa
 }
 
 const listTrendingResources = `-- name: ListTrendingResources :many
-SELECT learning_resources.id, learning_resources.user_id, learning_resources.title, learning_resources.description, learning_resources.url, learning_resources.category, learning_resources.difficulty, learning_resources.tags, learning_resources.image_url, learning_resources.is_public, learning_resources.like_count, learning_resources.save_count, learning_resources.created_at, learning_resources.updated_at, learning_resources.deleted_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT learning_resources.id, learning_resources.user_id, learning_resources.title, learning_resources.description, learning_resources.url, learning_resources.category, learning_resources.difficulty, learning_resources.tags, learning_resources.image_url, learning_resources.is_public, learning_resources.like_count, learning_resources.save_count, learning_resources.created_at, learning_resources.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM learning_resources
 JOIN users ON users.id = learning_resources.user_id
 WHERE learning_resources.is_public = true
     AND learning_resources.created_at > NOW() - INTERVAL '1 day' * $1::int
-    AND learning_resources.deleted_at IS NULL
 ORDER BY (learning_resources.like_count + learning_resources.save_count) DESC
 LIMIT $2
 `
@@ -227,7 +226,6 @@ func (q *Queries) ListTrendingResources(ctx context.Context, arg ListTrendingRes
 			&i.LearningResource.SaveCount,
 			&i.LearningResource.CreatedAt,
 			&i.LearningResource.UpdatedAt,
-			&i.LearningResource.DeletedAt,
 			&i.User.ID,
 			&i.User.Username,
 			&i.User.Name,

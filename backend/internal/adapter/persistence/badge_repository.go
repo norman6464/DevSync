@@ -52,7 +52,7 @@ func (r *badgeRepository) GetBadgeStats(ctx context.Context, userID uint) (*mode
 	if v, err := r.q.CountFollowingByUser(ctx, uid); err == nil {
 		stats.FollowingCount = int(v)
 	}
-	if v, err := r.q.CountAnswersByUserIncludingDeleted(ctx, uid); err == nil {
+	if v, err := r.q.CountAnswersByUser(ctx, uid); err == nil {
 		stats.QAAnswerCount = int(v)
 	}
 	completedStatus := learningGoalCompletedStatus

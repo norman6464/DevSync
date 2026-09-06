@@ -11,20 +11,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const countAnswersByUserIncludingDeleted = `-- name: CountAnswersByUserIncludingDeleted :one
-SELECT COUNT(*) FROM answers WHERE user_id = $1
-`
-
-// qa_stats.sql の CountAnswersByUser は deleted_at IS NULL で絞るが、
-// こちらは既存の GORM Raw SQL 実装（db.Raw、GORMのsoft-deleteスコープ非適用）と
-// 挙動を変えないため、論理削除された回答も含めてカウントする。
-func (q *Queries) CountAnswersByUserIncludingDeleted(ctx context.Context, userID int64) (int64, error) {
-	row := q.db.QueryRow(ctx, countAnswersByUserIncludingDeleted, userID)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
 const listGitHubContributionsByUser = `-- name: ListGitHubContributionsByUser :many
 SELECT contributed_on, count FROM git_hub_contributions
 WHERE user_id = $1 AND count > 0

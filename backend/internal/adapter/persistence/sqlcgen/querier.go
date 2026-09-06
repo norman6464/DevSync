@@ -44,10 +44,6 @@ type Querier interface {
 	CountAllBookReviews(ctx context.Context) (int64, error)
 	CountAllProjects(ctx context.Context) (int64, error)
 	CountAnswersByUser(ctx context.Context, userID int64) (int64, error)
-	// qa_stats.sql の CountAnswersByUser は deleted_at IS NULL で絞るが、
-	// こちらは既存の GORM Raw SQL 実装（db.Raw、GORMのsoft-deleteスコープ非適用）と
-	// 挙動を変えないため、論理削除された回答も含めてカウントする。
-	CountAnswersByUserIncludingDeleted(ctx context.Context, userID int64) (int64, error)
 	CountArchivedNotesByUser(ctx context.Context, userID int64) (int64, error)
 	CountArchivedProjectsByUser(ctx context.Context, userID int64) (int64, error)
 	CountBestAnswersByUser(ctx context.Context, userID int64) (int64, error)
@@ -92,8 +88,6 @@ type Querier interface {
 	CountLearningLogsByUserSince(ctx context.Context, arg CountLearningLogsByUserSinceParams) (int64, error)
 	CountLearningResourceCategoriesByUser(ctx context.Context, userID int64) (int64, error)
 	CountLearningResourcesByDifficulty(ctx context.Context, difficulty *string) (int64, error)
-	// learning_resources は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに
-	// 合わせて deleted_at IS NULL を明示する（Unscoped() されていない全クエリと同じ挙動）。
 	CountLearningResourcesByUser(ctx context.Context, userID int64) (int64, error)
 	CountLikesReceivedInRange(ctx context.Context, arg CountLikesReceivedInRangeParams) (int64, error)
 	CountMentionsMadeByUser(ctx context.Context, actorID int64) (int64, error)
@@ -145,8 +139,6 @@ type Querier interface {
 	CountPublishedPostsByUser(ctx context.Context, userID int64) (int64, error)
 	CountQuestionBookmark(ctx context.Context, arg CountQuestionBookmarkParams) (int64, error)
 	CountQuestions(ctx context.Context, arg CountQuestionsParams) (int64, error)
-	// questions/answers は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに
-	// 合わせて deleted_at IS NULL を明示する（Unscoped() されていない全クエリと同じ挙動）。
 	CountQuestionsByUser(ctx context.Context, userID int64) (int64, error)
 	CountReactionsReceivedByUser(ctx context.Context, userID int64) (int64, error)
 	CountReactionsReceivedByUserSince(ctx context.Context, arg CountReactionsReceivedByUserSinceParams) (int64, error)
@@ -265,11 +257,9 @@ type Querier interface {
 	DecrementPostLikeCount(ctx context.Context, id int64) error
 	// 0未満にはしない（GORMのGREATEST(answer_count - 1, 0)に相当）。
 	DecrementQuestionAnswerCountFloored(ctx context.Context, id int64) error
-	// 0未満にはしない（GORMのGREATEST(like_count - 1, 0)に相当）。deleted_at IS NULLの理由は
-	// IncrementResourceLikeCountと同じ。
+	// 0未満にはしない（GORMのGREATEST(like_count - 1, 0)に相当）。
 	DecrementResourceLikeCountFloored(ctx context.Context, id int64) error
-	// 0未満にはしない（GORMのGREATEST(save_count - 1, 0)に相当）。deleted_at IS NULLの理由は
-	// IncrementResourceLikeCountと同じ。
+	// 0未満にはしない（GORMのGREATEST(save_count - 1, 0)に相当）。
 	DecrementResourceSaveCountFloored(ctx context.Context, id int64) error
 	DecrementRoadmapStepCount(ctx context.Context, id int64) error
 	// 0未満にはしない（GORMのGREATEST(comment_count - 1, 0)に相当）。
@@ -277,8 +267,9 @@ type Querier interface {
 	DeleteAIAdvicesByUser(ctx context.Context, userID int64) error
 	DeleteAIConversation(ctx context.Context, id int64) error
 	DeleteAIMessagesByConversationID(ctx context.Context, conversationID int64) error
+	// 依存する投票等はFKのON DELETE CASCADEでDBが自動的に削除する。
+	DeleteAnswer(ctx context.Context, id int64) error
 	DeleteAnswerVote(ctx context.Context, arg DeleteAnswerVoteParams) error
-	// GORMのDelete（論理削除）に相当。
 	DeleteBookReview(ctx context.Context, id int64) error
 	DeleteBookmark(ctx context.Context, arg DeleteBookmarkParams) (int64, error)
 	DeleteBookmarkCollection(ctx context.Context, id int64) error
@@ -300,7 +291,7 @@ type Querier interface {
 	// 所有者本人のログだけを削除する。
 	DeleteLearningLog(ctx context.Context, arg DeleteLearningLogParams) error
 	DeleteLearningLogTemplate(ctx context.Context, id int64) error
-	// GORMのDelete（論理削除）に相当。
+	// 依存するいいね・保存等はFKのON DELETE CASCADEでDBが自動的に削除する。
 	DeleteLearningResource(ctx context.Context, id int64) error
 	DeleteMentionsByCommentID(ctx context.Context, commentID *int64) error
 	DeleteMentionsByPostID(ctx context.Context, postID *int64) error
@@ -321,11 +312,11 @@ type Querier interface {
 	DeletePostSeriesItemsBySeriesID(ctx context.Context, seriesID int64) error
 	DeletePostTagsByPostID(ctx context.Context, postID int64) error
 	DeletePostTemplate(ctx context.Context, id int64) error
-	// GORMのDelete（論理削除）に相当。
+	// 依存するマイルストーン等はFKのON DELETE CASCADEでDBが自動的に削除する。
 	DeleteProject(ctx context.Context, id int64) error
 	DeleteProjectMilestone(ctx context.Context, id int64) error
 	DeleteQiitaArticlesByUser(ctx context.Context, userID int64) error
-	// GORMのDelete（論理削除）に相当。
+	// 依存する回答・投票・ブックマーク等はFKのON DELETE CASCADEでDBが自動的に削除する。
 	DeleteQuestion(ctx context.Context, id int64) error
 	DeleteQuestionBookmark(ctx context.Context, arg DeleteQuestionBookmarkParams) error
 	DeleteQuestionVote(ctx context.Context, arg DeleteQuestionVoteParams) error
@@ -362,15 +353,12 @@ type Querier interface {
 	GetAIConversationByIDAndUser(ctx context.Context, arg GetAIConversationByIDAndUserParams) (AiConversation, error)
 	GetAnswerVoteByUserAndAnswer(ctx context.Context, arg GetAnswerVoteByUserAndAnswerParams) (AnswerVote, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
-	// answersは論理削除があるため、削除済みは除外する（GORM Firstの自動スコープ相当）。
 	GetAnswerWithUserByID(ctx context.Context, id int64) (GetAnswerWithUserByIDRow, error)
 	GetAverageActiveProgressByUser(ctx context.Context, userID int64) (float64, error)
-	// book_reviews は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
-	// deleted_at IS NULL を明示する。レビュー0件でもCOALESCEにより全項目0を返す
+	// レビュー0件でもCOALESCEにより全項目0を返す
 	// （GORM実装のtotal_reviews==0での早期returnと同じ結果になる）。
 	GetBookReviewStats(ctx context.Context, userID int64) (GetBookReviewStatsRow, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
-	// book_reviewsは論理削除があるため、削除済みは除外する（GORM Firstの自動スコープ相当）。
 	GetBookReviewWithUserByID(ctx context.Context, id int64) (GetBookReviewWithUserByIDRow, error)
 	GetBookmarkCollectionByID(ctx context.Context, id int64) (BookmarkCollection, error)
 	// GORMのPreload("Owner")に相当。owner_idはNOT NULLのためINNER JOINでよい。
@@ -392,7 +380,6 @@ type Querier interface {
 	GetLearningHeatmapData(ctx context.Context, userID int64) ([]GetLearningHeatmapDataRow, error)
 	GetLearningLogByID(ctx context.Context, id int64) (LearningLog, error)
 	GetLearningLogTemplateByID(ctx context.Context, id int64) (LearningLogTemplate, error)
-	// learning_resources は GORM の論理削除（deleted_at）付きモデルのため deleted_at IS NULL を明示する。
 	GetLearningResourceByID(ctx context.Context, id int64) (LearningResource, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	GetLearningResourceWithUserByID(ctx context.Context, id int64) (GetLearningResourceWithUserByIDRow, error)
@@ -422,11 +409,8 @@ type Querier interface {
 	// user_idはNOT NULLのためINNER JOINでよい。
 	GetPostWithUserByID(ctx context.Context, id int64) (GetPostWithUserByIDRow, error)
 	GetProjectMilestoneByID(ctx context.Context, id int64) (ProjectMilestone, error)
-	// projects は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
-	// deleted_at IS NULL を明示する（Unscoped() されていない全クエリと同じ挙動）。
 	GetProjectStats(ctx context.Context, userID int64) (GetProjectStatsRow, error)
 	// GORMのPreload("User").Preload("GithubRepo")に相当。
-	// projectsはGORMの論理削除（deleted_at）付きモデルのためdeleted_at IS NULLを明示する。
 	// github_repo_idはNULL許容のためLEFT JOIN。git_hub_repositoriesはsqlc.embedを使わず
 	// 個別カラム選択にすることで、sqlcのJOIN文脈依存のnull推論を効かせる
 	// （sqlc.embedは対象テーブル自身のスキーマ上のnull許容性をそのまま使ってしまい、
@@ -435,7 +419,6 @@ type Querier interface {
 	GetQiitaStatsByUser(ctx context.Context, userID int64) (GetQiitaStatsByUserRow, error)
 	GetQuestionVoteByUserAndQuestion(ctx context.Context, arg GetQuestionVoteByUserAndQuestionParams) (QuestionVote, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
-	// questionsは論理削除があるため、削除済みは除外する（GORM Firstの自動スコープ相当）。
 	GetQuestionWithUserByID(ctx context.Context, id int64) (GetQuestionWithUserByIDRow, error)
 	// スキルの部分一致で候補を絞り込む。パターンは呼び出し側で "%" + escapeLikeChars(skill) + "%" として
 	// 組み立て済みのものを配列で渡す（元のGo実装のエスケープ・ワイルドカード付与をそのまま踏襲するため）。
@@ -476,11 +459,7 @@ type Querier interface {
 	IncrementPostLikeCount(ctx context.Context, id int64) error
 	IncrementPostViewCount(ctx context.Context, id int64) error
 	IncrementQuestionAnswerCount(ctx context.Context, id int64) error
-	// deleted_at IS NULLを明示（GORMは論理削除モデルへのUPDATEにも自動でこのスコープを付与するため、
-	// Like/Unlikeがトランザクションで括られていない今の実装では、この条件がないと
-	// 削除確定後に届いた更新が論理削除済みの行を書き換えてしまう）。
 	IncrementResourceLikeCount(ctx context.Context, id int64) error
-	// deleted_at IS NULLを明示する理由はIncrementResourceLikeCountと同じ。
 	IncrementResourceSaveCount(ctx context.Context, id int64) error
 	IncrementRoadmapStepCount(ctx context.Context, id int64) error
 	IncrementSnippetCommentCount(ctx context.Context, id int64) error
@@ -631,11 +610,11 @@ type Querier interface {
 	ListReactionCountsByPost(ctx context.Context, postID int64) ([]ListReactionCountsByPostRow, error)
 	ListReactionCountsByPosts(ctx context.Context, dollar_1 []int64) ([]ListReactionCountsByPostsRow, error)
 	ListRecentLearningLogCategories(ctx context.Context, arg ListRecentLearningLogCategoriesParams) ([]*string, error)
-	// GORMのPreload("Resource")に相当。resourceは論理削除（deleted_at）付きモデルのため、
-	// ソフトデリート済みリソースはJOIN条件で除外しResourceがnilになるようLEFT JOINにする
-	// （resource_idの列自体はNOT NULLだが、論理削除の有無でJOINの成否が変わるため）。
-	// id を第2ソートキーにして、updated_at 同値の行でもページングが安定するようにする
-	// （移行前のGORM実装と同じ）。
+	// GORMのPreload("Resource")に相当。resource_idはFKのON DELETE CASCADEにより、リソース削除時は
+	// resource_progresses自体も一緒に削除されるため、このLEFT JOINが実際にResource側NULLを
+	// 返すことはない想定だが、既存のGo側の型（Resourceがポインタ）をそのまま使えるようLEFT JOINの
+	// ままにしている。id を第2ソートキーにして、updated_at 同値の行でもページングが安定するように
+	// する（移行前のGORM実装と同じ）。
 	ListResourceProgressByUser(ctx context.Context, arg ListResourceProgressByUserParams) ([]ListResourceProgressByUserRow, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	ListResourceReviewsByResource(ctx context.Context, arg ListResourceReviewsByResourceParams) ([]ListResourceReviewsByResourceRow, error)
@@ -686,11 +665,11 @@ type Querier interface {
 	ListYouTubeVideosByIDs(ctx context.Context, dollar_1 []string) ([]YouTubeVideo, error)
 	ListZennArticlesByUser(ctx context.Context, userID int64) ([]ZennArticle, error)
 	// Vote/RemoveVoteでの差分計算が並行実行で古い値を読まないようにするための行ロック
-	// （GORMの clause.Locking{Strength: "UPDATE"} に相当）。回答が存在しない/削除済みなら
+	// （GORMの clause.Locking{Strength: "UPDATE"} に相当）。回答が存在しなければ
 	// pgx.ErrNoRows を返し、呼び出し側のトランザクションを失敗させる。
 	LockAnswerForVoteChange(ctx context.Context, id int64) (int64, error)
 	// Delete/SetBestAnswerでのロック順序（質問→回答）をGORM実装と揃えるための行ロック
-	// （GORMの clause.Locking{Strength: "UPDATE"} に相当）。質問が存在しない/削除済みなら
+	// （GORMの clause.Locking{Strength: "UPDATE"} に相当）。質問が存在しなければ
 	// pgx.ErrNoRows を返し、呼び出し側のトランザクションを失敗させる。
 	LockQuestionForAnswerChange(ctx context.Context, id int64) (int64, error)
 	// 「数える→追加する」を同時実行しても上限を超えないようにするための行ロック
@@ -725,7 +704,6 @@ type Querier interface {
 	SetAnswerBest(ctx context.Context, id int64) error
 	SetProjectArchived(ctx context.Context, arg SetProjectArchivedParams) error
 	SetQuestionSolved(ctx context.Context, id int64) error
-	SoftDeleteAnswer(ctx context.Context, id int64) error
 	SumAnswerVotesByUser(ctx context.Context, userID int64) (int64, error)
 	SumCodeSnippetCommentCountByUser(ctx context.Context, userID int64) (int64, error)
 	// 期間の合計にも日別集計（開始日=当日0時、終了日=翌日0時）にも同じクエリを使う。
@@ -745,8 +723,7 @@ type Querier interface {
 	ToggleNoteFavorite(ctx context.Context, id int64) error
 	TouchAIConversation(ctx context.Context, arg TouchAIConversationParams) error
 	UnarchiveNote(ctx context.Context, id int64) error
-	// GORMのSave（全カラム上書き）に相当。answersは論理削除があるため、GORMが自動付与する
-	// deleted_at IS NULLスコープをUPDATEにも明示する。
+	// GORMのSave（全カラム上書き）に相当。
 	UpdateAnswer(ctx context.Context, arg UpdateAnswerParams) (Answer, error)
 	UpdateAnswerVoteValue(ctx context.Context, arg UpdateAnswerVoteValueParams) error
 	// GORMのSave（全カラム上書き）に相当。
@@ -763,11 +740,9 @@ type Querier interface {
 	UpdateLearningLog(ctx context.Context, arg UpdateLearningLogParams) (LearningLog, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateLearningLogTemplate(ctx context.Context, arg UpdateLearningLogTemplateParams) (LearningLogTemplate, error)
-	// GORMのSave（全カラム上書き）に相当。learning_resourcesは論理削除があるため、
-	// GORMが自動付与するdeleted_at IS NULLスコープをUPDATEにも明示する。
-	// ただしlike_count/save_countは対象外（Increment/Decrement系の専用クエリだけが
-	// 更新する）。ここに含めると、他リクエストによるカウンタ更新をこのUPDATEが
-	// 読み取り時点の古い値で上書きする「ロストアップデート」を起こす。
+	// GORMのSave（全カラム上書き）に相当。ただしlike_count/save_countは対象外
+	// （Increment/Decrement系の専用クエリだけが更新する）。ここに含めると、他リクエストによる
+	// カウンタ更新をこのUPDATEが読み取り時点の古い値で上書きする「ロストアップデート」を起こす。
 	UpdateLearningResource(ctx context.Context, arg UpdateLearningResourceParams) (LearningResource, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateNote(ctx context.Context, arg UpdateNoteParams) (Note, error)
@@ -788,12 +763,10 @@ type Querier interface {
 	// GORMのSave（全カラム上書き）に相当。
 	UpdatePostSeries(ctx context.Context, arg UpdatePostSeriesParams) (PostSeries, error)
 	UpdatePostTemplate(ctx context.Context, arg UpdatePostTemplateParams) (PostTemplate, error)
-	// GORMのSave（全カラム上書き）に相当。projectsは論理削除があるため、GORMが自動付与する
-	// deleted_at IS NULLスコープをUPDATEにも明示する。
+	// GORMのSave（全カラム上書き）に相当。
 	UpdateProject(ctx context.Context, arg UpdateProjectParams) (Project, error)
 	UpdateProjectMilestone(ctx context.Context, arg UpdateProjectMilestoneParams) (ProjectMilestone, error)
-	// GORMのSave（全カラム上書き）に相当。questionsは論理削除があるため、GORMが自動付与する
-	// deleted_at IS NULLスコープをUPDATEにも明示する。
+	// GORMのSave（全カラム上書き）に相当。
 	UpdateQuestion(ctx context.Context, arg UpdateQuestionParams) (Question, error)
 	UpdateQuestionVoteValue(ctx context.Context, arg UpdateQuestionVoteValueParams) error
 	UpdateReminderSettings(ctx context.Context, arg UpdateReminderSettingsParams) (ReminderSetting, error)

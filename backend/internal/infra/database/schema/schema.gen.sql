@@ -129,12 +129,9 @@ CREATE TABLE "public"."questions" (
   "is_solved" boolean NOT NULL DEFAULT false,
   "created_at" timestamptz NOT NULL,
   "updated_at" timestamptz NOT NULL,
-  "deleted_at" timestamptz NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_questions_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
--- Create index "idx_questions_deleted_at" to table: "questions"
-CREATE INDEX "idx_questions_deleted_at" ON "public"."questions" ("deleted_at");
 -- Create index "idx_questions_user_id" to table: "questions"
 CREATE INDEX "idx_questions_user_id" ON "public"."questions" ("user_id");
 -- Create "answers" table
@@ -147,13 +144,10 @@ CREATE TABLE "public"."answers" (
   "is_best" boolean NOT NULL DEFAULT false,
   "created_at" timestamptz NOT NULL,
   "updated_at" timestamptz NOT NULL,
-  "deleted_at" timestamptz NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_answers_question" FOREIGN KEY ("question_id") REFERENCES "public"."questions" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_answers_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
--- Create index "idx_answers_deleted_at" to table: "answers"
-CREATE INDEX "idx_answers_deleted_at" ON "public"."answers" ("deleted_at");
 -- Create index "idx_answers_question_id" to table: "answers"
 CREATE INDEX "idx_answers_question_id" ON "public"."answers" ("question_id");
 -- Create index "idx_answers_user_id" to table: "answers"
@@ -188,14 +182,11 @@ CREATE TABLE "public"."book_reviews" (
   "is_archived" boolean NOT NULL DEFAULT false,
   "created_at" timestamptz NOT NULL,
   "updated_at" timestamptz NOT NULL,
-  "deleted_at" timestamptz NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_book_reviews_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "ck_book_reviews_rating" CHECK ((rating >= 1) AND (rating <= 5)),
   CONSTRAINT "ck_book_reviews_status" CHECK (status = ANY (ARRAY['not_started'::text, 'reading'::text, 'completed'::text]))
 );
--- Create index "idx_book_reviews_deleted_at" to table: "book_reviews"
-CREATE INDEX "idx_book_reviews_deleted_at" ON "public"."book_reviews" ("deleted_at");
 -- Create index "idx_book_reviews_user_id" to table: "book_reviews"
 CREATE INDEX "idx_book_reviews_user_id" ON "public"."book_reviews" ("user_id");
 -- Create "bookmark_collections" table
@@ -522,14 +513,11 @@ CREATE TABLE "public"."learning_resources" (
   "save_count" bigint NULL DEFAULT 0,
   "created_at" timestamptz NOT NULL,
   "updated_at" timestamptz NOT NULL,
-  "deleted_at" timestamptz NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_learning_resources_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "ck_learning_resources_category" CHECK ((category)::text = ANY ((ARRAY['book'::character varying, 'video'::character varying, 'article'::character varying, 'course'::character varying, 'tutorial'::character varying, 'podcast'::character varying, 'tool'::character varying, 'other'::character varying])::text[])),
   CONSTRAINT "ck_learning_resources_difficulty" CHECK ((difficulty)::text = ANY ((ARRAY['beginner'::character varying, 'intermediate'::character varying, 'advanced'::character varying])::text[]))
 );
--- Create index "idx_learning_resources_deleted_at" to table: "learning_resources"
-CREATE INDEX "idx_learning_resources_deleted_at" ON "public"."learning_resources" ("deleted_at");
 -- Create index "idx_learning_resources_user_id" to table: "learning_resources"
 CREATE INDEX "idx_learning_resources_user_id" ON "public"."learning_resources" ("user_id");
 -- Create "likes" table
@@ -873,13 +861,10 @@ CREATE TABLE "public"."projects" (
   "github_repo_id" bigint NULL,
   "created_at" timestamptz NOT NULL,
   "updated_at" timestamptz NOT NULL,
-  "deleted_at" timestamptz NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_projects_github_repo" FOREIGN KEY ("github_repo_id") REFERENCES "public"."git_hub_repositories" ("id") ON UPDATE NO ACTION ON DELETE SET NULL,
   CONSTRAINT "fk_projects_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
--- Create index "idx_projects_deleted_at" to table: "projects"
-CREATE INDEX "idx_projects_deleted_at" ON "public"."projects" ("deleted_at");
 -- Create index "idx_projects_user_id" to table: "projects"
 CREATE INDEX "idx_projects_user_id" ON "public"."projects" ("user_id");
 -- Create "project_milestones" table

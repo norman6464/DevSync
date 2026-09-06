@@ -31,6 +31,5 @@ FROM learning_resources
 JOIN users ON users.id = learning_resources.user_id
 WHERE learning_resources.is_public = true
     AND learning_resources.created_at > NOW() - INTERVAL '1 day' * sqlc.arg('days')::int
-    AND learning_resources.deleted_at IS NULL
 ORDER BY (learning_resources.like_count + learning_resources.save_count) DESC
 LIMIT sqlc.arg('limit');

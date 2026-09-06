@@ -12,7 +12,7 @@ import (
 )
 
 const getProjectWithUserAndRepoByID = `-- name: GetProjectWithUserAndRepoByID :one
-SELECT projects.id, projects.user_id, projects.title, projects.description, projects.tech_stack, projects.demo_url, projects.github_url, projects.image_url, projects.role, projects.start_date, projects.end_date, projects.featured, projects.is_archived, projects.github_repo_id, projects.created_at, projects.updated_at, projects.deleted_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at,
+SELECT projects.id, projects.user_id, projects.title, projects.description, projects.tech_stack, projects.demo_url, projects.github_url, projects.image_url, projects.role, projects.start_date, projects.end_date, projects.featured, projects.is_archived, projects.github_repo_id, projects.created_at, projects.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at,
     ghr.id AS repo_id,
     ghr.user_id AS repo_user_id,
     ghr.git_hub_repo_id AS repo_git_hub_repo_id,
@@ -27,7 +27,7 @@ SELECT projects.id, projects.user_id, projects.title, projects.description, proj
 FROM projects
 JOIN users ON users.id = projects.user_id
 LEFT JOIN git_hub_repositories ghr ON ghr.id = projects.github_repo_id
-WHERE projects.id = $1 AND projects.deleted_at IS NULL
+WHERE projects.id = $1
 `
 
 type GetProjectWithUserAndRepoByIDRow struct {
@@ -47,7 +47,6 @@ type GetProjectWithUserAndRepoByIDRow struct {
 }
 
 // GORMのPreload("User").Preload("GithubRepo")に相当。
-// projectsはGORMの論理削除（deleted_at）付きモデルのためdeleted_at IS NULLを明示する。
 // github_repo_idはNULL許容のためLEFT JOIN。git_hub_repositoriesはsqlc.embedを使わず
 // 個別カラム選択にすることで、sqlcのJOIN文脈依存のnull推論を効かせる
 // （sqlc.embedは対象テーブル自身のスキーマ上のnull許容性をそのまま使ってしまい、
@@ -72,7 +71,6 @@ func (q *Queries) GetProjectWithUserAndRepoByID(ctx context.Context, id int64) (
 		&i.Project.GithubRepoID,
 		&i.Project.CreatedAt,
 		&i.Project.UpdatedAt,
-		&i.Project.DeletedAt,
 		&i.User.ID,
 		&i.User.Username,
 		&i.User.Name,

@@ -12,7 +12,7 @@ import (
 )
 
 const countAllProjects = `-- name: CountAllProjects :one
-SELECT COUNT(*) FROM projects WHERE deleted_at IS NULL
+SELECT COUNT(*) FROM projects
 `
 
 func (q *Queries) CountAllProjects(ctx context.Context) (int64, error) {
@@ -23,7 +23,7 @@ func (q *Queries) CountAllProjects(ctx context.Context) (int64, error) {
 }
 
 const countArchivedProjectsByUser = `-- name: CountArchivedProjectsByUser :one
-SELECT COUNT(*) FROM projects WHERE user_id = $1 AND is_archived = true AND deleted_at IS NULL
+SELECT COUNT(*) FROM projects WHERE user_id = $1 AND is_archived = true
 `
 
 func (q *Queries) CountArchivedProjectsByUser(ctx context.Context, userID int64) (int64, error) {
@@ -34,7 +34,7 @@ func (q *Queries) CountArchivedProjectsByUser(ctx context.Context, userID int64)
 }
 
 const countProjectsByUser = `-- name: CountProjectsByUser :one
-SELECT COUNT(*) FROM projects WHERE user_id = $1 AND deleted_at IS NULL
+SELECT COUNT(*) FROM projects WHERE user_id = $1
 `
 
 // 件数は FindByUserID の総数取得と CountByUserID(単体メソッド) の両方から利用する。
@@ -47,7 +47,7 @@ func (q *Queries) CountProjectsByUser(ctx context.Context, userID int64) (int64,
 
 const countSearchProjects = `-- name: CountSearchProjects :one
 SELECT COUNT(*) FROM projects
-WHERE (title ILIKE $1 OR description ILIKE $1 OR tech_stack ILIKE $1) AND deleted_at IS NULL
+WHERE (title ILIKE $1 OR description ILIKE $1 OR tech_stack ILIKE $1)
 `
 
 func (q *Queries) CountSearchProjects(ctx context.Context, title string) (int64, error) {
@@ -63,7 +63,7 @@ INSERT INTO projects (
     start_date, end_date, featured, is_archived, github_repo_id, created_at, updated_at
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, now(), now()
-) RETURNING id, user_id, title, description, tech_stack, demo_url, github_url, image_url, role, start_date, end_date, featured, is_archived, github_repo_id, created_at, updated_at, deleted_at
+) RETURNING id, user_id, title, description, tech_stack, demo_url, github_url, image_url, role, start_date, end_date, featured, is_archived, github_repo_id, created_at, updated_at
 `
 
 type CreateProjectParams struct {
@@ -116,23 +116,22 @@ func (q *Queries) CreateProject(ctx context.Context, arg CreateProjectParams) (P
 		&i.GithubRepoID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.DeletedAt,
 	)
 	return i, err
 }
 
 const deleteProject = `-- name: DeleteProject :exec
-UPDATE projects SET deleted_at = now() WHERE id = $1
+DELETE FROM projects WHERE id = $1
 `
 
-// GORMのDelete（論理削除）に相当。
+// 依存するマイルストーン等はFKのON DELETE CASCADEでDBが自動的に削除する。
 func (q *Queries) DeleteProject(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, deleteProject, id)
 	return err
 }
 
 const listAllProjectsWithUserAndRepo = `-- name: ListAllProjectsWithUserAndRepo :many
-SELECT projects.id, projects.user_id, projects.title, projects.description, projects.tech_stack, projects.demo_url, projects.github_url, projects.image_url, projects.role, projects.start_date, projects.end_date, projects.featured, projects.is_archived, projects.github_repo_id, projects.created_at, projects.updated_at, projects.deleted_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at,
+SELECT projects.id, projects.user_id, projects.title, projects.description, projects.tech_stack, projects.demo_url, projects.github_url, projects.image_url, projects.role, projects.start_date, projects.end_date, projects.featured, projects.is_archived, projects.github_repo_id, projects.created_at, projects.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at,
     ghr.id AS repo_id,
     ghr.user_id AS repo_user_id,
     ghr.git_hub_repo_id AS repo_git_hub_repo_id,
@@ -147,7 +146,6 @@ SELECT projects.id, projects.user_id, projects.title, projects.description, proj
 FROM projects
 JOIN users ON users.id = projects.user_id
 LEFT JOIN git_hub_repositories ghr ON ghr.id = projects.github_repo_id
-WHERE projects.deleted_at IS NULL
 ORDER BY projects.created_at DESC
 LIMIT $1 OFFSET $2
 `
@@ -201,7 +199,6 @@ func (q *Queries) ListAllProjectsWithUserAndRepo(ctx context.Context, arg ListAl
 			&i.Project.GithubRepoID,
 			&i.Project.CreatedAt,
 			&i.Project.UpdatedAt,
-			&i.Project.DeletedAt,
 			&i.User.ID,
 			&i.User.Username,
 			&i.User.Name,
@@ -251,7 +248,7 @@ func (q *Queries) ListAllProjectsWithUserAndRepo(ctx context.Context, arg ListAl
 }
 
 const listArchivedProjectsByUserWithRepo = `-- name: ListArchivedProjectsByUserWithRepo :many
-SELECT projects.id, projects.user_id, projects.title, projects.description, projects.tech_stack, projects.demo_url, projects.github_url, projects.image_url, projects.role, projects.start_date, projects.end_date, projects.featured, projects.is_archived, projects.github_repo_id, projects.created_at, projects.updated_at, projects.deleted_at,
+SELECT projects.id, projects.user_id, projects.title, projects.description, projects.tech_stack, projects.demo_url, projects.github_url, projects.image_url, projects.role, projects.start_date, projects.end_date, projects.featured, projects.is_archived, projects.github_repo_id, projects.created_at, projects.updated_at,
     ghr.id AS repo_id,
     ghr.user_id AS repo_user_id,
     ghr.git_hub_repo_id AS repo_git_hub_repo_id,
@@ -265,7 +262,7 @@ SELECT projects.id, projects.user_id, projects.title, projects.description, proj
     ghr.updated_at AS repo_updated_at
 FROM projects
 LEFT JOIN git_hub_repositories ghr ON ghr.id = projects.github_repo_id
-WHERE projects.user_id = $1 AND projects.is_archived = true AND projects.deleted_at IS NULL
+WHERE projects.user_id = $1 AND projects.is_archived = true
 ORDER BY projects.updated_at DESC
 LIMIT $2 OFFSET $3
 `
@@ -318,7 +315,6 @@ func (q *Queries) ListArchivedProjectsByUserWithRepo(ctx context.Context, arg Li
 			&i.Project.GithubRepoID,
 			&i.Project.CreatedAt,
 			&i.Project.UpdatedAt,
-			&i.Project.DeletedAt,
 			&i.RepoID,
 			&i.RepoUserID,
 			&i.RepoGitHubRepoID,
@@ -342,7 +338,7 @@ func (q *Queries) ListArchivedProjectsByUserWithRepo(ctx context.Context, arg Li
 }
 
 const listFeaturedProjectsByUserWithRepo = `-- name: ListFeaturedProjectsByUserWithRepo :many
-SELECT projects.id, projects.user_id, projects.title, projects.description, projects.tech_stack, projects.demo_url, projects.github_url, projects.image_url, projects.role, projects.start_date, projects.end_date, projects.featured, projects.is_archived, projects.github_repo_id, projects.created_at, projects.updated_at, projects.deleted_at,
+SELECT projects.id, projects.user_id, projects.title, projects.description, projects.tech_stack, projects.demo_url, projects.github_url, projects.image_url, projects.role, projects.start_date, projects.end_date, projects.featured, projects.is_archived, projects.github_repo_id, projects.created_at, projects.updated_at,
     ghr.id AS repo_id,
     ghr.user_id AS repo_user_id,
     ghr.git_hub_repo_id AS repo_git_hub_repo_id,
@@ -356,7 +352,7 @@ SELECT projects.id, projects.user_id, projects.title, projects.description, proj
     ghr.updated_at AS repo_updated_at
 FROM projects
 LEFT JOIN git_hub_repositories ghr ON ghr.id = projects.github_repo_id
-WHERE projects.user_id = $1 AND projects.featured = true AND projects.deleted_at IS NULL
+WHERE projects.user_id = $1 AND projects.featured = true
 ORDER BY projects.created_at DESC
 `
 
@@ -402,7 +398,6 @@ func (q *Queries) ListFeaturedProjectsByUserWithRepo(ctx context.Context, userID
 			&i.Project.GithubRepoID,
 			&i.Project.CreatedAt,
 			&i.Project.UpdatedAt,
-			&i.Project.DeletedAt,
 			&i.RepoID,
 			&i.RepoUserID,
 			&i.RepoGitHubRepoID,
@@ -426,7 +421,7 @@ func (q *Queries) ListFeaturedProjectsByUserWithRepo(ctx context.Context, userID
 }
 
 const listProjectsByUserWithRepo = `-- name: ListProjectsByUserWithRepo :many
-SELECT projects.id, projects.user_id, projects.title, projects.description, projects.tech_stack, projects.demo_url, projects.github_url, projects.image_url, projects.role, projects.start_date, projects.end_date, projects.featured, projects.is_archived, projects.github_repo_id, projects.created_at, projects.updated_at, projects.deleted_at,
+SELECT projects.id, projects.user_id, projects.title, projects.description, projects.tech_stack, projects.demo_url, projects.github_url, projects.image_url, projects.role, projects.start_date, projects.end_date, projects.featured, projects.is_archived, projects.github_repo_id, projects.created_at, projects.updated_at,
     ghr.id AS repo_id,
     ghr.user_id AS repo_user_id,
     ghr.git_hub_repo_id AS repo_git_hub_repo_id,
@@ -440,7 +435,7 @@ SELECT projects.id, projects.user_id, projects.title, projects.description, proj
     ghr.updated_at AS repo_updated_at
 FROM projects
 LEFT JOIN git_hub_repositories ghr ON ghr.id = projects.github_repo_id
-WHERE projects.user_id = $1 AND projects.deleted_at IS NULL
+WHERE projects.user_id = $1
 ORDER BY projects.featured DESC, projects.created_at DESC
 LIMIT $2 OFFSET $3
 `
@@ -495,7 +490,6 @@ func (q *Queries) ListProjectsByUserWithRepo(ctx context.Context, arg ListProjec
 			&i.Project.GithubRepoID,
 			&i.Project.CreatedAt,
 			&i.Project.UpdatedAt,
-			&i.Project.DeletedAt,
 			&i.RepoID,
 			&i.RepoUserID,
 			&i.RepoGitHubRepoID,
@@ -519,7 +513,7 @@ func (q *Queries) ListProjectsByUserWithRepo(ctx context.Context, arg ListProjec
 }
 
 const searchProjectsWithUserAndRepo = `-- name: SearchProjectsWithUserAndRepo :many
-SELECT projects.id, projects.user_id, projects.title, projects.description, projects.tech_stack, projects.demo_url, projects.github_url, projects.image_url, projects.role, projects.start_date, projects.end_date, projects.featured, projects.is_archived, projects.github_repo_id, projects.created_at, projects.updated_at, projects.deleted_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at,
+SELECT projects.id, projects.user_id, projects.title, projects.description, projects.tech_stack, projects.demo_url, projects.github_url, projects.image_url, projects.role, projects.start_date, projects.end_date, projects.featured, projects.is_archived, projects.github_repo_id, projects.created_at, projects.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at,
     ghr.id AS repo_id,
     ghr.user_id AS repo_user_id,
     ghr.git_hub_repo_id AS repo_git_hub_repo_id,
@@ -535,7 +529,6 @@ FROM projects
 JOIN users ON users.id = projects.user_id
 LEFT JOIN git_hub_repositories ghr ON ghr.id = projects.github_repo_id
 WHERE (projects.title ILIKE $1 OR projects.description ILIKE $1 OR projects.tech_stack ILIKE $1)
-    AND projects.deleted_at IS NULL
 ORDER BY projects.created_at DESC
 LIMIT $2 OFFSET $3
 `
@@ -589,7 +582,6 @@ func (q *Queries) SearchProjectsWithUserAndRepo(ctx context.Context, arg SearchP
 			&i.Project.GithubRepoID,
 			&i.Project.CreatedAt,
 			&i.Project.UpdatedAt,
-			&i.Project.DeletedAt,
 			&i.User.ID,
 			&i.User.Username,
 			&i.User.Name,
@@ -639,7 +631,7 @@ func (q *Queries) SearchProjectsWithUserAndRepo(ctx context.Context, arg SearchP
 }
 
 const setProjectArchived = `-- name: SetProjectArchived :exec
-UPDATE projects SET is_archived = $2 WHERE id = $1 AND deleted_at IS NULL
+UPDATE projects SET is_archived = $2 WHERE id = $1
 `
 
 type SetProjectArchivedParams struct {
@@ -657,8 +649,8 @@ UPDATE projects SET
     title = $2, description = $3, tech_stack = $4, demo_url = $5, github_url = $6,
     image_url = $7, role = $8, start_date = $9, end_date = $10, featured = $11,
     is_archived = $12, github_repo_id = $13, updated_at = now()
-WHERE id = $1 AND deleted_at IS NULL
-RETURNING id, user_id, title, description, tech_stack, demo_url, github_url, image_url, role, start_date, end_date, featured, is_archived, github_repo_id, created_at, updated_at, deleted_at
+WHERE id = $1
+RETURNING id, user_id, title, description, tech_stack, demo_url, github_url, image_url, role, start_date, end_date, featured, is_archived, github_repo_id, created_at, updated_at
 `
 
 type UpdateProjectParams struct {
@@ -677,8 +669,7 @@ type UpdateProjectParams struct {
 	GithubRepoID *int64
 }
 
-// GORMのSave（全カラム上書き）に相当。projectsは論理削除があるため、GORMが自動付与する
-// deleted_at IS NULLスコープをUPDATEにも明示する。
+// GORMのSave（全カラム上書き）に相当。
 func (q *Queries) UpdateProject(ctx context.Context, arg UpdateProjectParams) (Project, error) {
 	row := q.db.QueryRow(ctx, updateProject,
 		arg.ID,
@@ -713,7 +704,6 @@ func (q *Queries) UpdateProject(ctx context.Context, arg UpdateProjectParams) (P
 		&i.GithubRepoID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.DeletedAt,
 	)
 	return i, err
 }

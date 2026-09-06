@@ -17,7 +17,7 @@ SELECT
   COALESCE(MIN(rating), 0)::bigint AS min_rating,
   count(*) FILTER (WHERE rating = 5) AS five_star_count
 FROM book_reviews
-WHERE user_id = $1 AND deleted_at IS NULL
+WHERE user_id = $1
 `
 
 type GetBookReviewStatsRow struct {
@@ -28,8 +28,7 @@ type GetBookReviewStatsRow struct {
 	FiveStarCount int64
 }
 
-// book_reviews は GORM の論理削除（deleted_at）付きモデルのため、GORMの既定スコープに合わせて
-// deleted_at IS NULL を明示する。レビュー0件でもCOALESCEにより全項目0を返す
+// レビュー0件でもCOALESCEにより全項目0を返す
 // （GORM実装のtotal_reviews==0での早期returnと同じ結果になる）。
 func (q *Queries) GetBookReviewStats(ctx context.Context, userID int64) (GetBookReviewStatsRow, error) {
 	row := q.db.QueryRow(ctx, getBookReviewStats, userID)
