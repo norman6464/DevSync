@@ -1,13 +1,13 @@
 -- name: UpsertGitHubContribution :one
-INSERT INTO git_hub_contributions (user_id, date, count, created_at, updated_at)
+INSERT INTO git_hub_contributions (user_id, contributed_on, count, created_at, updated_at)
 VALUES ($1, $2, $3, now(), now())
-ON CONFLICT (user_id, date) DO UPDATE SET
+ON CONFLICT (user_id, contributed_on) DO UPDATE SET
     count = EXCLUDED.count,
     updated_at = EXCLUDED.updated_at
 RETURNING *;
 
 -- name: ListAllGitHubContributionsByUser :many
-SELECT * FROM git_hub_contributions WHERE user_id = $1 ORDER BY date ASC;
+SELECT * FROM git_hub_contributions WHERE user_id = $1 ORDER BY contributed_on ASC;
 
 -- name: UpsertGitHubLanguageStat :one
 INSERT INTO git_hub_language_stats (user_id, language, bytes, repo_count, updated_at)

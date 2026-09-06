@@ -28,7 +28,7 @@ func toModelGitHubContribution(row sqlcgen.GitHubContribution) model.GitHubContr
 	return model.GitHubContribution{
 		ID:        uint(row.ID),
 		UserID:    uint(row.UserID),
-		Date:      timeValue(fromTimestamptz(row.Date)),
+		Date:      fromDate(row.ContributedOn),
 		Count:     int(row.Count),
 		CreatedAt: timeValue(fromTimestamptz(row.CreatedAt)),
 		UpdatedAt: timeValue(fromTimestamptz(row.UpdatedAt)),
@@ -77,9 +77,9 @@ func (r *githubRepository) UpsertContributions(ctx context.Context, contribution
 	q := r.q.WithTx(tx)
 	for i, c := range contributions {
 		row, err := q.UpsertGitHubContribution(ctx, sqlcgen.UpsertGitHubContributionParams{
-			UserID: int64(c.UserID),
-			Date:   toTimestamptzNotNull(c.Date),
-			Count:  int64(c.Count),
+			UserID:        int64(c.UserID),
+			ContributedOn: toDateNotNull(c.Date),
+			Count:         int64(c.Count),
 		})
 		if err != nil {
 			return err

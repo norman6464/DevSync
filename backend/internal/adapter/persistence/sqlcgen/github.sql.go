@@ -41,7 +41,7 @@ func (q *Queries) DeleteGitHubReposByUser(ctx context.Context, userID int64) err
 }
 
 const listAllGitHubContributionsByUser = `-- name: ListAllGitHubContributionsByUser :many
-SELECT id, user_id, date, count, created_at, updated_at FROM git_hub_contributions WHERE user_id = $1 ORDER BY date ASC
+SELECT id, user_id, contributed_on, count, created_at, updated_at FROM git_hub_contributions WHERE user_id = $1 ORDER BY contributed_on ASC
 `
 
 func (q *Queries) ListAllGitHubContributionsByUser(ctx context.Context, userID int64) ([]GitHubContribution, error) {
@@ -56,7 +56,7 @@ func (q *Queries) ListAllGitHubContributionsByUser(ctx context.Context, userID i
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
-			&i.Date,
+			&i.ContributedOn,
 			&i.Count,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -139,27 +139,27 @@ func (q *Queries) ListGitHubReposByUser(ctx context.Context, userID int64) ([]Gi
 }
 
 const upsertGitHubContribution = `-- name: UpsertGitHubContribution :one
-INSERT INTO git_hub_contributions (user_id, date, count, created_at, updated_at)
+INSERT INTO git_hub_contributions (user_id, contributed_on, count, created_at, updated_at)
 VALUES ($1, $2, $3, now(), now())
-ON CONFLICT (user_id, date) DO UPDATE SET
+ON CONFLICT (user_id, contributed_on) DO UPDATE SET
     count = EXCLUDED.count,
     updated_at = EXCLUDED.updated_at
-RETURNING id, user_id, date, count, created_at, updated_at
+RETURNING id, user_id, contributed_on, count, created_at, updated_at
 `
 
 type UpsertGitHubContributionParams struct {
-	UserID int64
-	Date   pgtype.Timestamptz
-	Count  int64
+	UserID        int64
+	ContributedOn pgtype.Date
+	Count         int64
 }
 
 func (q *Queries) UpsertGitHubContribution(ctx context.Context, arg UpsertGitHubContributionParams) (GitHubContribution, error) {
-	row := q.db.QueryRow(ctx, upsertGitHubContribution, arg.UserID, arg.Date, arg.Count)
+	row := q.db.QueryRow(ctx, upsertGitHubContribution, arg.UserID, arg.ContributedOn, arg.Count)
 	var i GitHubContribution
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
-		&i.Date,
+		&i.ContributedOn,
 		&i.Count,
 		&i.CreatedAt,
 		&i.UpdatedAt,

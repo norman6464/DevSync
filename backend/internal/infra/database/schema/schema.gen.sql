@@ -383,15 +383,15 @@ CREATE UNIQUE INDEX "uq_follower_following" ON "public"."follows" ("follower_id"
 CREATE TABLE "public"."git_hub_contributions" (
   "id" bigserial NOT NULL,
   "user_id" bigint NOT NULL,
-  "date" timestamptz NOT NULL,
+  "contributed_on" date NOT NULL,
   "count" bigint NOT NULL DEFAULT 0,
   "created_at" timestamptz NOT NULL,
   "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_git_hub_contributions_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
--- Create index "uq_user_date" to table: "git_hub_contributions"
-CREATE UNIQUE INDEX "uq_user_date" ON "public"."git_hub_contributions" ("user_id", "date");
+-- Create index "uq_git_hub_contributions_user_date" to table: "git_hub_contributions"
+CREATE UNIQUE INDEX "uq_git_hub_contributions_user_date" ON "public"."git_hub_contributions" ("user_id", "contributed_on");
 -- Create "git_hub_language_stats" table
 CREATE TABLE "public"."git_hub_language_stats" (
   "id" bigserial NOT NULL,

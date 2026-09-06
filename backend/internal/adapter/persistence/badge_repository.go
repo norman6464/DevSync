@@ -82,14 +82,14 @@ func (r *badgeRepository) calculateGitHubStreak(ctx context.Context, userID uint
 	}
 
 	sort.Slice(rows, func(i, j int) bool {
-		return rows[i].Date.Time.After(rows[j].Date.Time)
+		return rows[i].ContributedOn.Time.After(rows[j].ContributedOn.Time)
 	})
 
 	streak := 0
 	today := normalizeToCalendarDay(time.Now())
 
 	for _, row := range rows {
-		cDate := normalizeToCalendarDay(row.Date.Time)
+		cDate := normalizeToCalendarDay(row.ContributedOn.Time)
 		// 期待日の当日または前日（開始が昨日でも連続とみなす従来仕様）
 		expectedDate := today.AddDate(0, 0, -streak)
 		if cDate.Equal(expectedDate) || cDate.Equal(expectedDate.AddDate(0, 0, -1)) {

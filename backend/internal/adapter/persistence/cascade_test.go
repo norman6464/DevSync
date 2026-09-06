@@ -103,7 +103,7 @@ func TestDeleteWithRelatedData_NoOrphans(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = pool.Exec(ctx, `
-		INSERT INTO git_hub_contributions (user_id, date, count, created_at, updated_at) VALUES ($1, now(), 3, now(), now())
+		INSERT INTO git_hub_contributions (user_id, contributed_on, count, created_at, updated_at) VALUES ($1, current_date, 3, now(), now())
 	`, targetID)
 	require.NoError(t, err)
 

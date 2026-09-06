@@ -39,7 +39,7 @@ func (q *Queries) CountCompletedLearningGoalsByUser(ctx context.Context, arg Cou
 }
 
 const countGitHubContributionDaysByUser = `-- name: CountGitHubContributionDaysByUser :one
-SELECT COUNT(DISTINCT date) FROM git_hub_contributions WHERE user_id = $1 AND count > 0
+SELECT COUNT(DISTINCT contributed_on) FROM git_hub_contributions WHERE user_id = $1 AND count > 0
 `
 
 func (q *Queries) CountGitHubContributionDaysByUser(ctx context.Context, userID int64) (int64, error) {

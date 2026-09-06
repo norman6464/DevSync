@@ -31,7 +31,7 @@ func (r *rankingRepository) ContributionRanking(ctx context.Context, period stri
 	}
 	since := time.Now().AddDate(0, 0, -days)
 
-	rows, err := r.q.GetContributionRanking(ctx, toTimestamptzNotNull(since))
+	rows, err := r.q.GetContributionRanking(ctx, toDateNotNull(since))
 	if err != nil {
 		return nil, err
 	}

@@ -26,14 +26,14 @@ func (q *Queries) CountAnswersByUserIncludingDeleted(ctx context.Context, userID
 }
 
 const listGitHubContributionsByUser = `-- name: ListGitHubContributionsByUser :many
-SELECT date, count FROM git_hub_contributions
+SELECT contributed_on, count FROM git_hub_contributions
 WHERE user_id = $1 AND count > 0
-ORDER BY date DESC
+ORDER BY contributed_on DESC
 `
 
 type ListGitHubContributionsByUserRow struct {
-	Date  pgtype.Timestamptz
-	Count int64
+	ContributedOn pgtype.Date
+	Count         int64
 }
 
 // GitHub連続コントリビューション日数の算出に使う（countが正の日のみ、新しい順）。
@@ -46,7 +46,7 @@ func (q *Queries) ListGitHubContributionsByUser(ctx context.Context, userID int6
 	var items []ListGitHubContributionsByUserRow
 	for rows.Next() {
 		var i ListGitHubContributionsByUserRow
-		if err := rows.Scan(&i.Date, &i.Count); err != nil {
+		if err := rows.Scan(&i.ContributedOn, &i.Count); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

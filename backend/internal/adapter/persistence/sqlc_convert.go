@@ -78,3 +78,13 @@ func fromTimestamptz(t pgtype.Timestamptz) *time.Time {
 	tm := t.Time
 	return &tm
 }
+
+// toDateNotNull は model の time.Time（NOT NULL カラム）を時刻情報を持たない日付へ変換する。
+func toDateNotNull(t time.Time) pgtype.Date {
+	return pgtype.Date{Time: t, Valid: true}
+}
+
+// fromDate は日付カラムを model の time.Time へ変換する。
+func fromDate(d pgtype.Date) time.Time {
+	return d.Time
+}

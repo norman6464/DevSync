@@ -4,7 +4,7 @@
 SELECT u.id AS user_id, u.username, u.name, u.avatar_url, COALESCE(SUM(gc.count), 0)::bigint AS score
 FROM users u
 JOIN git_hub_contributions gc ON gc.user_id = u.id
-WHERE gc.date >= $1
+WHERE gc.contributed_on >= $1
 GROUP BY u.id
 HAVING SUM(gc.count) > 0
 ORDER BY score DESC
@@ -37,7 +37,7 @@ SELECT * FROM (
         FROM posts GROUP BY user_id
     ) p ON p.user_id = u.id
     LEFT JOIN (
-        SELECT user_id, COUNT(DISTINCT date) * 5 AS xp
+        SELECT user_id, COUNT(DISTINCT contributed_on) * 5 AS xp
         FROM git_hub_contributions WHERE count > 0 GROUP BY user_id
     ) gh ON gh.user_id = u.id
     LEFT JOIN (
