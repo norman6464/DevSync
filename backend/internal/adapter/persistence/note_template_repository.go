@@ -36,7 +36,7 @@ func toModelNoteTemplate(row sqlcgen.NoteTemplate) model.NoteTemplate {
 		DefaultTitle:    fromStringPtr(row.DefaultTitle),
 		ContentTemplate: row.ContentTemplate,
 		DefaultTags:     fromStringPtr(row.DefaultTags),
-		IsDefault:       fromBoolPtr(row.IsDefault),
+		IsDefault:       row.IsDefault,
 		CreatedAt:       row.CreatedAt.Time,
 		UpdatedAt:       row.UpdatedAt.Time,
 	}
@@ -71,7 +71,7 @@ func (r *noteTemplateRepository) Create(ctx context.Context, template *model.Not
 		DefaultTitle:    &template.DefaultTitle,
 		ContentTemplate: template.ContentTemplate,
 		DefaultTags:     &template.DefaultTags,
-		IsDefault:       &template.IsDefault,
+		IsDefault:       template.IsDefault,
 	})
 	if isUniqueViolation(err) {
 		return domain.ErrConflict
@@ -108,7 +108,7 @@ func (r *noteTemplateRepository) Update(ctx context.Context, template *model.Not
 		DefaultTitle:    &template.DefaultTitle,
 		ContentTemplate: template.ContentTemplate,
 		DefaultTags:     &template.DefaultTags,
-		IsDefault:       &template.IsDefault,
+		IsDefault:       template.IsDefault,
 	})
 	if isUniqueViolation(err) {
 		return domain.ErrConflict

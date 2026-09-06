@@ -26,14 +26,14 @@ func toModelNotificationSettings(row sqlcgen.NotificationSetting) model.Notifica
 	return model.NotificationSettings{
 		ID:             uint(row.ID),
 		UserID:         uint(row.UserID),
-		EnableLikes:    fromBoolPtr(row.EnableLikes),
-		EnableComments: fromBoolPtr(row.EnableComments),
-		EnableFollows:  fromBoolPtr(row.EnableFollows),
-		EnableMessages: fromBoolPtr(row.EnableMessages),
-		EnableMentions: fromBoolPtr(row.EnableMentions),
-		EnableWebPush:  fromBoolPtr(row.EnableWebPush),
-		EnableEmail:    fromBoolPtr(row.EnableEmail),
-		EnableSound:    fromBoolPtr(row.EnableSound),
+		EnableLikes:    row.EnableLikes,
+		EnableComments: row.EnableComments,
+		EnableFollows:  row.EnableFollows,
+		EnableMessages: row.EnableMessages,
+		EnableMentions: row.EnableMentions,
+		EnableWebPush:  row.EnableWebPush,
+		EnableEmail:    row.EnableEmail,
+		EnableSound:    row.EnableSound,
 		CreatedAt:      row.CreatedAt.Time,
 		UpdatedAt:      row.UpdatedAt.Time,
 	}
@@ -53,14 +53,14 @@ func (r *notificationSettingsRepository) GetOrCreateDefault(ctx context.Context,
 	allEnabled := true
 	created, err := r.q.CreateNotificationSettings(ctx, sqlcgen.CreateNotificationSettingsParams{
 		UserID:         int64(userID),
-		EnableLikes:    &allEnabled,
-		EnableComments: &allEnabled,
-		EnableFollows:  &allEnabled,
-		EnableMessages: &allEnabled,
-		EnableMentions: &allEnabled,
-		EnableWebPush:  &allEnabled,
-		EnableEmail:    &allEnabled,
-		EnableSound:    &allEnabled,
+		EnableLikes:    allEnabled,
+		EnableComments: allEnabled,
+		EnableFollows:  allEnabled,
+		EnableMessages: allEnabled,
+		EnableMentions: allEnabled,
+		EnableWebPush:  allEnabled,
+		EnableEmail:    allEnabled,
+		EnableSound:    allEnabled,
 	})
 	if err != nil {
 		return nil, err
@@ -75,14 +75,14 @@ func (r *notificationSettingsRepository) GetOrCreateDefault(ctx context.Context,
 func (r *notificationSettingsRepository) Save(ctx context.Context, settings *model.NotificationSettings) error {
 	_, err := r.q.UpdateNotificationSettings(ctx, sqlcgen.UpdateNotificationSettingsParams{
 		ID:             int64(settings.ID),
-		EnableLikes:    &settings.EnableLikes,
-		EnableComments: &settings.EnableComments,
-		EnableFollows:  &settings.EnableFollows,
-		EnableMessages: &settings.EnableMessages,
-		EnableMentions: &settings.EnableMentions,
-		EnableWebPush:  &settings.EnableWebPush,
-		EnableEmail:    &settings.EnableEmail,
-		EnableSound:    &settings.EnableSound,
+		EnableLikes:    settings.EnableLikes,
+		EnableComments: settings.EnableComments,
+		EnableFollows:  settings.EnableFollows,
+		EnableMessages: settings.EnableMessages,
+		EnableMentions: settings.EnableMentions,
+		EnableWebPush:  settings.EnableWebPush,
+		EnableEmail:    settings.EnableEmail,
+		EnableSound:    settings.EnableSound,
 	})
 	return err
 }

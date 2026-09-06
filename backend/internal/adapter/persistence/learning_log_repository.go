@@ -37,7 +37,7 @@ func toModelLearningLog(row sqlcgen.LearningLog) model.LearningLog {
 		Duration:   int(fromInt64PtrValue(row.Duration)),
 		GoalID:     fromInt64PtrToUintPtr(row.GoalID),
 		Source:     model.LogSource(fromStringPtr(row.Source)),
-		IsFavorite: fromBoolPtr(row.IsFavorite),
+		IsFavorite: row.IsFavorite,
 		CreatedAt:  timeValue(fromTimestamptz(row.CreatedAt)),
 		UpdatedAt:  timeValue(fromTimestamptz(row.UpdatedAt)),
 	}
@@ -67,7 +67,7 @@ func createLearningLogWith(ctx context.Context, q *sqlcgen.Queries, log *model.L
 		Duration:   toInt64Ptr(log.Duration),
 		GoalID:     toInt64PtrFromUintPtr(log.GoalID),
 		Source:     (*string)(&source),
-		IsFavorite: &log.IsFavorite,
+		IsFavorite: log.IsFavorite,
 	})
 	if err != nil {
 		return err
@@ -114,7 +114,7 @@ func (r *learningLogRepository) Update(ctx context.Context, log *model.LearningL
 		Duration:   toInt64Ptr(log.Duration),
 		GoalID:     toInt64PtrFromUintPtr(log.GoalID),
 		Source:     (*string)(&log.Source),
-		IsFavorite: &log.IsFavorite,
+		IsFavorite: log.IsFavorite,
 	})
 	if err != nil {
 		return err

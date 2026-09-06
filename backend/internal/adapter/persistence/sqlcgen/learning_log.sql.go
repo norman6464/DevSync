@@ -50,7 +50,7 @@ type CreateLearningLogParams struct {
 	Duration   *int64
 	GoalID     *int64
 	Source     *string
-	IsFavorite *bool
+	IsFavorite bool
 }
 
 func (q *Queries) CreateLearningLog(ctx context.Context, arg CreateLearningLogParams) (LearningLog, error) {
@@ -536,7 +536,7 @@ type UpdateLearningLogParams struct {
 	Duration   *int64
 	GoalID     *int64
 	Source     *string
-	IsFavorite *bool
+	IsFavorite bool
 }
 
 // GORMのSave（全カラム上書き）に相当。

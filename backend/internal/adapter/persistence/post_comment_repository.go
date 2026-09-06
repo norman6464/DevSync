@@ -43,7 +43,7 @@ func (r *postCommentRepository) Update(ctx context.Context, comment *model.Comme
 	row, err := r.q.UpdatePostComment(ctx, sqlcgen.UpdatePostCommentParams{
 		ID:       int64(comment.ID),
 		Content:  comment.Content,
-		IsHidden: &isHidden,
+		IsHidden: isHidden,
 	})
 	if err != nil {
 		return err

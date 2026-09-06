@@ -33,8 +33,8 @@ func toModelRoadmap(row sqlcgen.Roadmap) model.Roadmap {
 		Title:              row.Title,
 		Description:        fromStringPtr(row.Description),
 		Category:           model.RoadmapCategory(fromStringPtr(row.Category)),
-		IsPublic:           fromBoolPtr(row.IsPublic),
-		IsTemplate:         fromBoolPtr(row.IsTemplate),
+		IsPublic:           row.IsPublic,
+		IsTemplate:         row.IsTemplate,
 		StepCount:          int(fromInt64PtrValue(row.StepCount)),
 		CompletedStepCount: int(fromInt64PtrValue(row.CompletedStepCount)),
 		Progress:           int(fromInt64PtrValue(row.Progress)),
@@ -52,7 +52,7 @@ func toModelRoadmapStep(row sqlcgen.RoadmapStep) model.RoadmapStep {
 		Title:       row.Title,
 		Description: fromStringPtr(row.Description),
 		OrderIndex:  int(row.OrderIndex),
-		IsCompleted: fromBoolPtr(row.IsCompleted),
+		IsCompleted: row.IsCompleted,
 		CompletedAt: fromTimestamptz(row.CompletedAt),
 		ResourceURL: fromStringPtr(row.ResourceUrl),
 		CreatedAt:   timeValue(fromTimestamptz(row.CreatedAt)),
@@ -86,8 +86,8 @@ func (r *roadmapRepository) Create(ctx context.Context, roadmap *model.Roadmap) 
 		Title:              roadmap.Title,
 		Description:        &roadmap.Description,
 		Category:           (*string)(&category),
-		IsPublic:           &roadmap.IsPublic,
-		IsTemplate:         &roadmap.IsTemplate,
+		IsPublic:           roadmap.IsPublic,
+		IsTemplate:         roadmap.IsTemplate,
 		StepCount:          toInt64Ptr(roadmap.StepCount),
 		CompletedStepCount: toInt64Ptr(roadmap.CompletedStepCount),
 		Progress:           toInt64Ptr(roadmap.Progress),
@@ -108,8 +108,8 @@ func (r *roadmapRepository) Update(ctx context.Context, roadmap *model.Roadmap) 
 		Title:       roadmap.Title,
 		Description: &roadmap.Description,
 		Category:    (*string)(&roadmap.Category),
-		IsPublic:    &roadmap.IsPublic,
-		IsTemplate:  &roadmap.IsTemplate,
+		IsPublic:    roadmap.IsPublic,
+		IsTemplate:  roadmap.IsTemplate,
 	})
 	if err != nil {
 		return err
@@ -284,8 +284,8 @@ func (r *roadmapRepository) CopyRoadmap(ctx context.Context, originalID, newUser
 		Title:       original.Title + " (コピー)",
 		Description: &original.Description,
 		Category:    (*string)(&original.Category),
-		IsPublic:    new(bool),
-		IsTemplate:  new(bool),
+		IsPublic:    false,
+		IsTemplate:  false,
 		StepCount:   toInt64Ptr(original.StepCount),
 		Status:      (*string)(&status),
 	})
@@ -327,7 +327,7 @@ func (r *roadmapRepository) CreateStep(ctx context.Context, step *model.RoadmapS
 		Title:       step.Title,
 		Description: &step.Description,
 		OrderIndex:  int64(step.OrderIndex),
-		IsCompleted: &step.IsCompleted,
+		IsCompleted: step.IsCompleted,
 		CompletedAt: toTimestamptz(step.CompletedAt),
 		ResourceUrl: &step.ResourceURL,
 	})
@@ -347,7 +347,7 @@ func (r *roadmapRepository) UpdateStep(ctx context.Context, step *model.RoadmapS
 	if err != nil {
 		return err
 	}
-	oldIsCompleted := fromBoolPtr(oldStepRow.IsCompleted)
+	oldIsCompleted := oldStepRow.IsCompleted
 
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
@@ -361,7 +361,7 @@ func (r *roadmapRepository) UpdateStep(ctx context.Context, step *model.RoadmapS
 		Title:       step.Title,
 		Description: &step.Description,
 		OrderIndex:  int64(step.OrderIndex),
-		IsCompleted: &step.IsCompleted,
+		IsCompleted: step.IsCompleted,
 		CompletedAt: toTimestamptz(step.CompletedAt),
 		ResourceUrl: &step.ResourceURL,
 	})
@@ -410,7 +410,7 @@ func (r *roadmapRepository) DeleteStep(ctx context.Context, stepID uint) error {
 	if err := q.DecrementRoadmapStepCount(ctx, stepRow.RoadmapID); err != nil {
 		return err
 	}
-	if fromBoolPtr(stepRow.IsCompleted) {
+	if stepRow.IsCompleted {
 		if err := q.AdjustRoadmapCompletedStepCount(ctx, sqlcgen.AdjustRoadmapCompletedStepCountParams{
 			ID:    stepRow.RoadmapID,
 			Delta: -1,

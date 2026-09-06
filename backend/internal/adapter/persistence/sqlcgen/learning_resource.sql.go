@@ -143,7 +143,7 @@ type CreateLearningResourceParams struct {
 	Difficulty  *string
 	Tags        *string
 	ImageUrl    *string
-	IsPublic    *bool
+	IsPublic    bool
 	LikeCount   *int64
 	SaveCount   *int64
 }
@@ -780,7 +780,7 @@ type UpdateLearningResourceParams struct {
 	Difficulty  *string
 	Tags        *string
 	ImageUrl    *string
-	IsPublic    *bool
+	IsPublic    bool
 }
 
 // GORMのSave（全カラム上書き）に相当。learning_resourcesは論理削除があるため、

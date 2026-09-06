@@ -28,7 +28,7 @@ func toModelMessage(row sqlcgen.Message) model.Message {
 		SenderID:   uint(row.SenderID),
 		ReceiverID: uint(row.ReceiverID),
 		Content:    row.Content,
-		Read:       fromBoolPtr(row.Read),
+		Read:       row.Read,
 		CreatedAt:  timeValue(fromTimestamptz(row.CreatedAt)),
 	}
 }

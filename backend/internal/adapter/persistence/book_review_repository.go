@@ -36,7 +36,7 @@ func toModelBookReview(row sqlcgen.BookReview) model.BookReview {
 		CurrentPage: int(fromInt64PtrValue(row.CurrentPage)),
 		ImageURL:    fromStringPtr(row.ImageUrl),
 		Status:      model.ReviewStatus(fromStringPtr(row.Status)),
-		IsArchived:  fromBoolPtr(row.IsArchived),
+		IsArchived:  row.IsArchived,
 		CreatedAt:   timeValue(fromTimestamptz(row.CreatedAt)),
 		UpdatedAt:   timeValue(fromTimestamptz(row.UpdatedAt)),
 	}
@@ -61,7 +61,7 @@ func (r *bookReviewRepository) Create(ctx context.Context, review *model.BookRev
 		CurrentPage: toInt64Ptr(review.CurrentPage),
 		ImageUrl:    &review.ImageURL,
 		Status:      (*string)(&status),
-		IsArchived:  &review.IsArchived,
+		IsArchived:  review.IsArchived,
 	})
 	if err != nil {
 		return err
@@ -186,7 +186,7 @@ func (r *bookReviewRepository) Update(ctx context.Context, review *model.BookRev
 		CurrentPage: toInt64Ptr(review.CurrentPage),
 		ImageUrl:    &review.ImageURL,
 		Status:      (*string)(&review.Status),
-		IsArchived:  &review.IsArchived,
+		IsArchived:  review.IsArchived,
 	})
 	if err != nil {
 		return err

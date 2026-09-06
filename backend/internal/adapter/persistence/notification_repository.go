@@ -60,7 +60,7 @@ func toModelNotification(row sqlcgen.Notification) model.Notification {
 		PostID:     fromInt64PtrToUintPtr(row.PostID),
 		QuestionID: fromInt64PtrToUintPtr(row.QuestionID),
 		BadgeID:    row.BadgeID,
-		Read:       fromBoolPtr(row.Read),
+		Read:       row.Read,
 		CreatedAt:  timeValue(fromTimestamptz(row.CreatedAt)),
 	}
 }
@@ -74,7 +74,7 @@ func (r *notificationRepository) Create(ctx context.Context, notification *model
 		PostID:     toInt64PtrFromUintPtr(notification.PostID),
 		QuestionID: toInt64PtrFromUintPtr(notification.QuestionID),
 		BadgeID:    notification.BadgeID,
-		Read:       &notification.Read,
+		Read:       notification.Read,
 	})
 	if err != nil {
 		return err
@@ -105,7 +105,7 @@ func (r *notificationRepository) CreateBatch(ctx context.Context, notifications 
 			PostID:     toInt64PtrFromUintPtr(notification.PostID),
 			QuestionID: toInt64PtrFromUintPtr(notification.QuestionID),
 			BadgeID:    notification.BadgeID,
-			Read:       &notification.Read,
+			Read:       notification.Read,
 		})
 		if err != nil {
 			return err

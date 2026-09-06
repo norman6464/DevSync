@@ -105,8 +105,8 @@ func (r *userRepository) Update(ctx context.Context, user *model.User) error {
 		GitHubID:            &user.GitHubID,
 		GitHubUsername:      &user.GitHubUsername,
 		GitHubToken:         &user.GitHubToken,
-		GitHubConnected:     &user.GitHubConnected,
-		SpotifyConnected:    &user.SpotifyConnected,
+		GitHubConnected:     user.GitHubConnected,
+		SpotifyConnected:    user.SpotifyConnected,
 		SpotifyToken:        &user.SpotifyToken,
 		SpotifyRefreshToken: &user.SpotifyRefreshToken,
 		SpotifyTokenExpiry:  toTimestamptz(&user.SpotifyTokenExpiry),
@@ -116,8 +116,8 @@ func (r *userRepository) Update(ctx context.Context, user *model.User) error {
 		PaizaRank:           &user.PaizaRank,
 		SkillsLanguages:     &user.SkillsLanguages,
 		SkillsFrameworks:    &user.SkillsFrameworks,
-		OnboardingCompleted: &user.OnboardingCompleted,
-		EmailWeeklyReport:   &user.EmailWeeklyReport,
+		OnboardingCompleted: user.OnboardingCompleted,
+		EmailWeeklyReport:   user.EmailWeeklyReport,
 		EmailLanguage:       &user.EmailLanguage,
 	})
 	if err != nil {
@@ -177,8 +177,8 @@ func (r *userRepository) Create(ctx context.Context, user *model.User) error {
 		GitHubID:            &user.GitHubID,
 		GitHubUsername:      &user.GitHubUsername,
 		GitHubToken:         &user.GitHubToken,
-		GitHubConnected:     &user.GitHubConnected,
-		SpotifyConnected:    &user.SpotifyConnected,
+		GitHubConnected:     user.GitHubConnected,
+		SpotifyConnected:    user.SpotifyConnected,
 		SpotifyToken:        &user.SpotifyToken,
 		SpotifyRefreshToken: &user.SpotifyRefreshToken,
 		SpotifyTokenExpiry:  toTimestamptz(&user.SpotifyTokenExpiry),
@@ -188,8 +188,8 @@ func (r *userRepository) Create(ctx context.Context, user *model.User) error {
 		PaizaRank:           &user.PaizaRank,
 		SkillsLanguages:     &user.SkillsLanguages,
 		SkillsFrameworks:    &user.SkillsFrameworks,
-		OnboardingCompleted: &user.OnboardingCompleted,
-		EmailWeeklyReport:   &emailWeeklyReport,
+		OnboardingCompleted: user.OnboardingCompleted,
+		EmailWeeklyReport:   emailWeeklyReport,
 		EmailLanguage:       &emailLanguage,
 	})
 	if err != nil {

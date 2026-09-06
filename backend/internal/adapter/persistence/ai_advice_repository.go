@@ -39,7 +39,7 @@ func toModelAIAdvice(row sqlcgen.AiAdvice) model.AIAdvice {
 		MessageKey: row.MessageKey,
 		Params:     fromStringPtr(row.Params),
 		ActionURL:  fromStringPtr(row.ActionUrl),
-		IsRead:     fromBoolPtr(row.IsRead),
+		IsRead:     row.IsRead,
 		ExpiresAt:  fromTimestamptz(row.ExpiresAt),
 		CreatedAt:  timeValue(fromTimestamptz(row.CreatedAt)),
 		UpdatedAt:  timeValue(fromTimestamptz(row.UpdatedAt)),

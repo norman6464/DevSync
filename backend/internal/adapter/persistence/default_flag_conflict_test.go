@@ -95,7 +95,7 @@ func TestNoteTemplateDefaultUniqueIndex_ConcurrentTransactions_Conflicts(t *test
 		UserID: userID, ID: 0,
 	}))
 	_, err = q1.CreateNoteTemplate(ctx, sqlcgen.CreateNoteTemplateParams{
-		UserID: userID, Name: "B", ContentTemplate: "本文", IsDefault: &isDefault,
+		UserID: userID, Name: "B", ContentTemplate: "本文", IsDefault: isDefault,
 	})
 	require.NoError(t, err, "Tx1のデフォルト作成自体は成功するはず")
 
@@ -119,7 +119,7 @@ func TestNoteTemplateDefaultUniqueIndex_ConcurrentTransactions_Conflicts(t *test
 			return
 		}
 		_, tx2Err = q2.CreateNoteTemplate(ctx, sqlcgen.CreateNoteTemplateParams{
-			UserID: userID, Name: "C", ContentTemplate: "本文", IsDefault: &isDefault,
+			UserID: userID, Name: "C", ContentTemplate: "本文", IsDefault: isDefault,
 		})
 		close(tx2Done)
 	}()
@@ -205,7 +205,7 @@ func TestLearningLogTemplateDefaultUniqueIndex_ConcurrentTransactions_Conflicts(
 		UserID: userID, ID: 0,
 	}))
 	_, err = q1.CreateLearningLogTemplate(ctx, sqlcgen.CreateLearningLogTemplateParams{
-		UserID: userID, Name: "B", DefaultCategory: &category, DefaultDuration: &duration, IsDefault: &isDefault,
+		UserID: userID, Name: "B", DefaultCategory: &category, DefaultDuration: &duration, IsDefault: isDefault,
 	})
 	require.NoError(t, err, "Tx1のデフォルト作成自体は成功するはず")
 
@@ -227,7 +227,7 @@ func TestLearningLogTemplateDefaultUniqueIndex_ConcurrentTransactions_Conflicts(
 			return
 		}
 		_, tx2Err = q2.CreateLearningLogTemplate(ctx, sqlcgen.CreateLearningLogTemplateParams{
-			UserID: userID, Name: "C", DefaultCategory: &category, DefaultDuration: &duration, IsDefault: &isDefault,
+			UserID: userID, Name: "C", DefaultCategory: &category, DefaultDuration: &duration, IsDefault: isDefault,
 		})
 		close(tx2Done)
 	}()

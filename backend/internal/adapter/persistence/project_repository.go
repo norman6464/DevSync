@@ -65,8 +65,8 @@ func (r *projectRepository) Create(ctx context.Context, project *model.Project) 
 		Role:         &project.Role,
 		StartDate:    toTimestamptz(project.StartDate),
 		EndDate:      toTimestamptz(project.EndDate),
-		Featured:     &project.Featured,
-		IsArchived:   &project.IsArchived,
+		Featured:     project.Featured,
+		IsArchived:   project.IsArchived,
 		GithubRepoID: toInt64PtrFromUintPtr(project.GithubRepoID),
 	})
 	if err != nil {
@@ -89,8 +89,8 @@ func (r *projectRepository) Update(ctx context.Context, project *model.Project) 
 		Role:         &project.Role,
 		StartDate:    toTimestamptz(project.StartDate),
 		EndDate:      toTimestamptz(project.EndDate),
-		Featured:     &project.Featured,
-		IsArchived:   &project.IsArchived,
+		Featured:     project.Featured,
+		IsArchived:   project.IsArchived,
 		GithubRepoID: toInt64PtrFromUintPtr(project.GithubRepoID),
 	})
 	if err != nil {
@@ -266,6 +266,6 @@ func (r *projectRepository) Unarchive(ctx context.Context, id uint) error {
 func (r *projectRepository) setArchived(ctx context.Context, id uint, archived bool) error {
 	return r.q.SetProjectArchived(ctx, sqlcgen.SetProjectArchivedParams{
 		ID:         int64(id),
-		IsArchived: &archived,
+		IsArchived: archived,
 	})
 }

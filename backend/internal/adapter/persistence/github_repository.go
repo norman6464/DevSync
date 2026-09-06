@@ -57,7 +57,7 @@ func toModelGitHubRepository(row sqlcgen.GitHubRepository) model.GitHubRepositor
 		Language:     fromStringPtr(row.Language),
 		Stars:        int(fromInt64PtrValue(row.Stars)),
 		Forks:        int(fromInt64PtrValue(row.Forks)),
-		IsPrivate:    fromBoolPtr(row.IsPrivate),
+		IsPrivate:    row.IsPrivate,
 		UpdatedAt:    timeValue(fromTimestamptz(row.UpdatedAt)),
 	}
 }
@@ -166,7 +166,7 @@ func (r *githubRepository) UpsertRepos(ctx context.Context, repos []model.GitHub
 			Language:     &repo.Language,
 			Stars:        toInt64Ptr(repo.Stars),
 			Forks:        toInt64Ptr(repo.Forks),
-			IsPrivate:    &repo.IsPrivate,
+			IsPrivate:    repo.IsPrivate,
 		})
 		if err != nil {
 			return err

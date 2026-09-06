@@ -36,8 +36,8 @@ func toModelUser(u sqlcgen.User) model.User {
 		GitHubID:            fromInt64PtrValue(u.GitHubID),
 		GitHubUsername:      fromStringPtr(u.GitHubUsername),
 		GitHubToken:         fromStringPtr(u.GitHubToken),
-		GitHubConnected:     fromBoolPtr(u.GitHubConnected),
-		SpotifyConnected:    fromBoolPtr(u.SpotifyConnected),
+		GitHubConnected:     u.GitHubConnected,
+		SpotifyConnected:    u.SpotifyConnected,
 		SpotifyToken:        fromStringPtr(u.SpotifyToken),
 		SpotifyRefreshToken: fromStringPtr(u.SpotifyRefreshToken),
 		SpotifyTokenExpiry:  timeValue(fromTimestamptz(u.SpotifyTokenExpiry)),
@@ -47,8 +47,8 @@ func toModelUser(u sqlcgen.User) model.User {
 		PaizaRank:           fromStringPtr(u.PaizaRank),
 		SkillsLanguages:     fromStringPtr(u.SkillsLanguages),
 		SkillsFrameworks:    fromStringPtr(u.SkillsFrameworks),
-		OnboardingCompleted: fromBoolPtr(u.OnboardingCompleted),
-		EmailWeeklyReport:   fromBoolPtr(u.EmailWeeklyReport),
+		OnboardingCompleted: u.OnboardingCompleted,
+		EmailWeeklyReport:   u.EmailWeeklyReport,
 		EmailLanguage:       fromStringPtr(u.EmailLanguage),
 		CreatedAt:           timeValue(fromTimestamptz(u.CreatedAt)),
 		UpdatedAt:           timeValue(fromTimestamptz(u.UpdatedAt)),
@@ -95,8 +95,8 @@ func (r *noteRepository) Create(ctx context.Context, note *model.Note) error {
 		Title:      note.Title,
 		Content:    &note.Content,
 		Tags:       &note.Tags,
-		IsFavorite: &note.IsFavorite,
-		IsArchived: &note.IsArchived,
+		IsFavorite: note.IsFavorite,
+		IsArchived: note.IsArchived,
 	})
 	if err != nil {
 		return err
@@ -113,8 +113,8 @@ func (r *noteRepository) Update(ctx context.Context, note *model.Note) error {
 		Content:    &note.Content,
 		Tags:       &note.Tags,
 		FolderID:   toInt64PtrFromUintPtr(note.FolderID),
-		IsFavorite: &note.IsFavorite,
-		IsArchived: &note.IsArchived,
+		IsFavorite: note.IsFavorite,
+		IsArchived: note.IsArchived,
 	})
 	if err != nil {
 		return err

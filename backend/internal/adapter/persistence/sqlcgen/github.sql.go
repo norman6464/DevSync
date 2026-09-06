@@ -227,7 +227,7 @@ type UpsertGitHubRepoParams struct {
 	Language     *string
 	Stars        *int64
 	Forks        *int64
-	IsPrivate    *bool
+	IsPrivate    bool
 }
 
 func (q *Queries) UpsertGitHubRepo(ctx context.Context, arg UpsertGitHubRepoParams) (GitHubRepository, error) {

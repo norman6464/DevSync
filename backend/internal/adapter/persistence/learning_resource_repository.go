@@ -34,7 +34,7 @@ func (r *learningResourceRepository) Create(ctx context.Context, resource *model
 		Difficulty:  (*string)(&resource.Difficulty),
 		Tags:        &resource.Tags,
 		ImageUrl:    &resource.ImageURL,
-		IsPublic:    &resource.IsPublic,
+		IsPublic:    resource.IsPublic,
 		LikeCount:   toInt64Ptr(resource.LikeCount),
 		SaveCount:   toInt64Ptr(resource.SaveCount),
 	})
@@ -56,7 +56,7 @@ func (r *learningResourceRepository) Update(ctx context.Context, resource *model
 		Difficulty:  (*string)(&resource.Difficulty),
 		Tags:        &resource.Tags,
 		ImageUrl:    &resource.ImageURL,
-		IsPublic:    &resource.IsPublic,
+		IsPublic:    resource.IsPublic,
 	})
 	if err != nil {
 		return err

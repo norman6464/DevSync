@@ -35,7 +35,7 @@ func toModelQuestion(row sqlcgen.Question) model.Question {
 		Tags:        fromStringPtr(row.Tags),
 		VoteCount:   int(fromInt64PtrValue(row.VoteCount)),
 		AnswerCount: int(fromInt64PtrValue(row.AnswerCount)),
-		IsSolved:    fromBoolPtr(row.IsSolved),
+		IsSolved:    row.IsSolved,
 		CreatedAt:   timeValue(fromTimestamptz(row.CreatedAt)),
 		UpdatedAt:   timeValue(fromTimestamptz(row.UpdatedAt)),
 	}
@@ -50,7 +50,7 @@ func (r *questionRepository) Create(ctx context.Context, question *model.Questio
 		Tags:        &question.Tags,
 		VoteCount:   toInt64Ptr(question.VoteCount),
 		AnswerCount: toInt64Ptr(question.AnswerCount),
-		IsSolved:    &question.IsSolved,
+		IsSolved:    question.IsSolved,
 	})
 	if err != nil {
 		return err
@@ -82,7 +82,7 @@ func (r *questionRepository) Update(ctx context.Context, question *model.Questio
 		Tags:        &question.Tags,
 		VoteCount:   toInt64Ptr(question.VoteCount),
 		AnswerCount: toInt64Ptr(question.AnswerCount),
-		IsSolved:    &question.IsSolved,
+		IsSolved:    question.IsSolved,
 	})
 	if err != nil {
 		return err

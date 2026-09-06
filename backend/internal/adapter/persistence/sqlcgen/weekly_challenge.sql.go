@@ -28,7 +28,7 @@ type CreateWeeklyChallengeParams struct {
 	Description   string
 	TargetValue   int64
 	CurrentValue  *int64
-	IsCompleted   *bool
+	IsCompleted   bool
 	CompletedAt   pgtype.Timestamptz
 }
 
@@ -120,7 +120,7 @@ type UpdateWeeklyChallengeParams struct {
 	Description   string
 	TargetValue   int64
 	CurrentValue  *int64
-	IsCompleted   *bool
+	IsCompleted   bool
 	CompletedAt   pgtype.Timestamptz
 }
 

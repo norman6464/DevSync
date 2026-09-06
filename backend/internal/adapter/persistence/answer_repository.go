@@ -33,7 +33,7 @@ func toModelAnswer(row sqlcgen.Answer) model.Answer {
 		QuestionID: uint(row.QuestionID),
 		Body:       row.Body,
 		VoteCount:  int(fromInt64PtrValue(row.VoteCount)),
-		IsBest:     fromBoolPtr(row.IsBest),
+		IsBest:     row.IsBest,
 		CreatedAt:  timeValue(fromTimestamptz(row.CreatedAt)),
 		UpdatedAt:  timeValue(fromTimestamptz(row.UpdatedAt)),
 	}
@@ -53,7 +53,7 @@ func (r *answerRepository) Create(ctx context.Context, answer *model.Answer) err
 		QuestionID: int64(answer.QuestionID),
 		Body:       answer.Body,
 		VoteCount:  toInt64Ptr(answer.VoteCount),
-		IsBest:     &answer.IsBest,
+		IsBest:     answer.IsBest,
 	})
 	if err != nil {
 		return err
@@ -85,7 +85,7 @@ func (r *answerRepository) Update(ctx context.Context, answer *model.Answer) err
 		ID:        int64(answer.ID),
 		Body:      answer.Body,
 		VoteCount: toInt64Ptr(answer.VoteCount),
-		IsBest:    &answer.IsBest,
+		IsBest:    answer.IsBest,
 	})
 	if err != nil {
 		return err

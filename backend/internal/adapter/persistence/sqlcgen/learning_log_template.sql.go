@@ -58,7 +58,7 @@ type CreateLearningLogTemplateParams struct {
 	DefaultContent  *string
 	DefaultCategory *string
 	DefaultDuration *int64
-	IsDefault       *bool
+	IsDefault       bool
 }
 
 func (q *Queries) CreateLearningLogTemplate(ctx context.Context, arg CreateLearningLogTemplateParams) (LearningLogTemplate, error) {
@@ -195,7 +195,7 @@ type UpdateLearningLogTemplateParams struct {
 	DefaultContent  *string
 	DefaultCategory *string
 	DefaultDuration *int64
-	IsDefault       *bool
+	IsDefault       bool
 }
 
 // GORMのSave（全カラム上書き）に相当。

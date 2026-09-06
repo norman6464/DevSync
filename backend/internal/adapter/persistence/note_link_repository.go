@@ -30,8 +30,8 @@ func toModelNote(row sqlcgen.Note) model.Note {
 		Title:      row.Title,
 		Content:    fromStringPtr(row.Content),
 		Tags:       fromStringPtr(row.Tags),
-		IsFavorite: fromBoolPtr(row.IsFavorite),
-		IsArchived: fromBoolPtr(row.IsArchived),
+		IsFavorite: row.IsFavorite,
+		IsArchived: row.IsArchived,
 		CreatedAt:  row.CreatedAt.Time,
 		UpdatedAt:  row.UpdatedAt.Time,
 	}

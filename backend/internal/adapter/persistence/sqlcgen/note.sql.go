@@ -62,8 +62,8 @@ type CreateNoteParams struct {
 	Title      string
 	Content    *string
 	Tags       *string
-	IsFavorite *bool
-	IsArchived *bool
+	IsFavorite bool
+	IsArchived bool
 }
 
 func (q *Queries) CreateNote(ctx context.Context, arg CreateNoteParams) (Note, error) {
@@ -534,8 +534,8 @@ type UpdateNoteParams struct {
 	Content    *string
 	Tags       *string
 	FolderID   *int64
-	IsFavorite *bool
-	IsArchived *bool
+	IsFavorite bool
+	IsArchived bool
 }
 
 // GORMのSave（全カラム上書き）に相当。

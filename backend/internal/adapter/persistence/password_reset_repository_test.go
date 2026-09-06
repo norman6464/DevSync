@@ -14,13 +14,12 @@ func TestToModelPasswordResetToken(t *testing.T) {
 	createdAt := time.Date(2026, 8, 16, 10, 0, 0, 0, time.UTC)
 
 	t.Run("used が true の場合を変換する", func(t *testing.T) {
-		used := true
 		row := sqlcgen.PasswordResetToken{
 			ID:        1,
 			UserID:    2,
 			Token:     "hashed-token",
 			ExpiresAt: pgtype.Timestamptz{Time: expiresAt, Valid: true},
-			Used:      &used,
+			Used:      true,
 			CreatedAt: pgtype.Timestamptz{Time: createdAt, Valid: true},
 		}
 
@@ -32,15 +31,5 @@ func TestToModelPasswordResetToken(t *testing.T) {
 		assert.Equal(t, expiresAt, got.ExpiresAt)
 		assert.True(t, got.Used)
 		assert.Equal(t, createdAt, got.CreatedAt)
-	})
-
-	t.Run("used が NULL の場合は false になる", func(t *testing.T) {
-		row := sqlcgen.PasswordResetToken{
-			Used: nil,
-		}
-
-		got := toModelPasswordResetToken(row)
-
-		assert.False(t, got.Used)
 	})
 }

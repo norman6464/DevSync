@@ -46,7 +46,7 @@ type CreatePostCollectionParams struct {
 	UserID      int64
 	Title       string
 	Description *string
-	IsPublic    *bool
+	IsPublic    bool
 }
 
 func (q *Queries) CreatePostCollection(ctx context.Context, arg CreatePostCollectionParams) (PostCollection, error) {
@@ -355,7 +355,7 @@ type UpdatePostCollectionParams struct {
 	ID          int64
 	Title       string
 	Description *string
-	IsPublic    *bool
+	IsPublic    bool
 }
 
 // GORMのSave（全カラム上書き）に相当。

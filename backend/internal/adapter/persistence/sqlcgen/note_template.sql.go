@@ -59,7 +59,7 @@ type CreateNoteTemplateParams struct {
 	DefaultTitle    *string
 	ContentTemplate string
 	DefaultTags     *string
-	IsDefault       *bool
+	IsDefault       bool
 }
 
 func (q *Queries) CreateNoteTemplate(ctx context.Context, arg CreateNoteTemplateParams) (NoteTemplate, error) {
@@ -203,7 +203,7 @@ type UpdateNoteTemplateParams struct {
 	DefaultTitle    *string
 	ContentTemplate string
 	DefaultTags     *string
-	IsDefault       *bool
+	IsDefault       bool
 }
 
 func (q *Queries) UpdateNoteTemplate(ctx context.Context, arg UpdateNoteTemplateParams) (NoteTemplate, error) {
