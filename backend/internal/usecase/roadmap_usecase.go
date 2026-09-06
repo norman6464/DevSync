@@ -152,6 +152,8 @@ func NewUpdateRoadmapUseCase(roadmaps repository.RoadmapRepository) *UpdateRoadm
 
 // Execute はタイトル・説明・カテゴリ・ステータスを部分更新する。所有者のみ。
 // 前後の空白を除いて空になった項目は「変更なし」として扱う。
+// ステータス変更はUpdateStatusという別経路に分ける（ステップ完了によるステータス自動遷移を
+// 読み取り時点の古い値で上書きしないようにするため。roadmap_repository.goのコメント参照）。
 func (uc *UpdateRoadmapUseCase) Execute(ctx context.Context, id, userID uint, updates *model.Roadmap) (*model.Roadmap, error) {
 	roadmap, err := ensureOwner(ctx, uc.roadmaps.FindByID, id, userID, ownerOfRoadmap)
 	if err != nil {
@@ -173,16 +175,20 @@ func (uc *UpdateRoadmapUseCase) Execute(ctx context.Context, id, userID uint, up
 	if strings.TrimSpace(string(updates.Category)) != "" {
 		roadmap.Category = updates.Category
 	}
+
+	if err := uc.roadmaps.Update(ctx, roadmap); err != nil {
+		return nil, err
+	}
+
 	if strings.TrimSpace(string(updates.Status)) != "" {
 		roadmap.Status = updates.Status
 		if roadmap.Status == model.RoadmapStatusCompleted && roadmap.CompletedAt == nil {
 			now := time.Now()
 			roadmap.CompletedAt = &now
 		}
-	}
-
-	if err := uc.roadmaps.Update(ctx, roadmap); err != nil {
-		return nil, err
+		if err := uc.roadmaps.UpdateStatus(ctx, roadmap); err != nil {
+			return nil, err
+		}
 	}
 	return roadmap, nil
 }

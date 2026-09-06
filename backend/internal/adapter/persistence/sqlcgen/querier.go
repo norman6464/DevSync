@@ -16,6 +16,28 @@ type Querier interface {
 	AdjustRoadmapCompletedStepCount(ctx context.Context, arg AdjustRoadmapCompletedStepCountParams) error
 	ArchiveNote(ctx context.Context, id int64) error
 	ClearBestAnswer(ctx context.Context, questionID int64) error
+	// 同一ユーザーの既存デフォルト（自分自身のid=$2は除く）を外す。Createからは
+	// 存在しないid（0）を渡すことで全件が対象になる。呼び出し元（repository）が
+	// 1つのトランザクション内でこのクエリの直後にCreate/Updateを実行することで、
+	// 「解除」と「新しいデフォルトの確定」を1つの原子的な単位にする。
+	// 【重要】1つのSQL文の中のCTEとしてUPDATE→INSERT/UPDATEを両方書く方式は使わない。
+	// PostgreSQLのデータ変更CTEは主文と同一スナップショットで動作し、UPDATEによる解除の
+	// 効果が同一文内の一意制約チェックに間に合わず、デフォルトが1件も無い状態からの
+	// 切り替えでも毎回一意制約違反になることを確認済み（2文に分けて初めて正しく動く）。
+	// uq_learning_log_templates_default（(user_id) WHERE is_default の部分UNIQUE索引）は
+	// 本当に並行する別トランザクション同士の衝突に対する最終防衛。
+	ClearOtherLearningLogTemplateDefaults(ctx context.Context, arg ClearOtherLearningLogTemplateDefaultsParams) error
+	// 同一ユーザーの既存デフォルト（自分自身のid=$2は除く）を外す。Createからは
+	// 存在しないid（0）を渡すことで全件が対象になる。呼び出し元（repository）が
+	// 1つのトランザクション内でこのクエリの直後にCreate/Updateを実行することで、
+	// 「解除」と「新しいデフォルトの確定」を1つの原子的な単位にする。
+	// 【重要】1つのSQL文の中のCTEとしてUPDATE→INSERT/UPDATEを両方書く方式は使わない。
+	// PostgreSQLのデータ変更CTEは主文と同一スナップショットで動作し、UPDATEによる解除の
+	// 効果が同一文内の一意制約チェックに間に合わず、デフォルトが1件も無い状態からの
+	// 切り替えでも毎回一意制約違反になることを確認済み（2文に分けて初めて正しく動く）。
+	// uq_note_templates_default（(user_id) WHERE is_default の部分UNIQUE索引）は
+	// 本当に並行する別トランザクション同士の衝突に対する最終防衛。
+	ClearOtherNoteTemplateDefaults(ctx context.Context, arg ClearOtherNoteTemplateDefaultsParams) error
 	CountActiveLearningGoalsByUser(ctx context.Context, userID int64) (int64, error)
 	// note_stats.sql の CountNotesByUser はアーカイブ済みも含めた全件数のため名前を分けている。
 	CountActiveNotesByUser(ctx context.Context, userID int64) (int64, error)
@@ -189,10 +211,6 @@ type Querier interface {
 	CreateGroupMessage(ctx context.Context, arg CreateGroupMessageParams) (GroupMessage, error)
 	CreateLearningGoal(ctx context.Context, arg CreateLearningGoalParams) (LearningGoal, error)
 	CreateLearningLog(ctx context.Context, arg CreateLearningLogParams) (LearningLog, error)
-	// 新しい行がis_default=trueの場合のみ、同一ユーザーの既存デフォルトを同一文で外す
-	// （$7=trueでなければ WHERE が一致せずclearedは0行、is_default IS TRUEでNULLを安全に除外）。
-	// uq_learning_log_templates_default（(user_id) WHERE is_default の部分UNIQUE索引）が
-	// 最終的な「ユーザーごとデフォルトは高々1件」を保証する安全網になる。
 	CreateLearningLogTemplate(ctx context.Context, arg CreateLearningLogTemplateParams) (LearningLogTemplate, error)
 	CreateLearningResource(ctx context.Context, arg CreateLearningResourceParams) (LearningResource, error)
 	// GORMの clause.OnConflict{DoNothing: true} に相当。衝突時は RETURNING 行が無くなるため
@@ -202,10 +220,6 @@ type Querier interface {
 	CreateNote(ctx context.Context, arg CreateNoteParams) (Note, error)
 	CreateNoteFolder(ctx context.Context, arg CreateNoteFolderParams) (NoteFolder, error)
 	CreateNoteLink(ctx context.Context, arg CreateNoteLinkParams) error
-	// 新しい行がis_default=trueの場合のみ、同一ユーザーの既存デフォルトを同一文で外す
-	// （$7=trueでなければ WHERE が一致せずclearedは0行、is_default IS TRUEでNULLを安全に除外）。
-	// uq_note_templates_default（(user_id) WHERE is_default の部分UNIQUE索引）が
-	// 最終的な「ユーザーごとデフォルトは高々1件」を保証する安全網になる。
 	CreateNoteTemplate(ctx context.Context, arg CreateNoteTemplateParams) (NoteTemplate, error)
 	CreateNoteVersion(ctx context.Context, arg CreateNoteVersionParams) (NoteVersion, error)
 	CreateNotification(ctx context.Context, arg CreateNotificationParams) (Notification, error)
@@ -785,17 +799,21 @@ type Querier interface {
 	UpdateReminderSettings(ctx context.Context, arg UpdateReminderSettingsParams) (ReminderSetting, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateResourceReview(ctx context.Context, arg UpdateResourceReviewParams) (ResourceReview, error)
-	// GORMのSave（全カラム上書き）に相当。ただしstep_count/completed_step_count/progressは
-	// 対象外（Increment/Decrement系の専用クエリだけが更新する）。ここに含めると、
-	// ステップ作成・削除による並行更新をこのUPDATEが読み取り時点の古い値で上書きする
-	// 「ロストアップデート」を起こす。status/completed_atはユーザーの単発操作
-	// （ステータス変更）であり並行カウンタ更新の対象ではないためここに残す。
+	// GORMのSave（全カラム上書き）に相当。ただしstep_count/completed_step_count/progress/
+	// status/completed_atは対象外。step_count等はIncrement/Decrement系の専用クエリだけが
+	// 更新する。status/completed_atはUpdateRoadmapStatusに分離した
+	// （ステップ完了によるrecalcRoadmapProgressの自動遷移を、このUPDATEが読み取り時点の
+	// 古いstatus/completed_atで上書きする「ロストアップデート」を防ぐため）。
 	UpdateRoadmap(ctx context.Context, arg UpdateRoadmapParams) (Roadmap, error)
 	UpdateRoadmapProgress(ctx context.Context, arg UpdateRoadmapProgressParams) error
 	// 進捗100%到達での自動完了（GORMのUpdates({"progress":...,"status":"completed","completed_at":now()})に相当）。
 	UpdateRoadmapProgressCompleted(ctx context.Context, arg UpdateRoadmapProgressCompletedParams) error
 	// 100%未満へ戻ったときのアクティブ復帰（GORMのUpdates({"progress":...,"status":"active","completed_at":nil})に相当）。
 	UpdateRoadmapProgressReactivated(ctx context.Context, arg UpdateRoadmapProgressReactivatedParams) error
+	// ユーザーによる明示的なステータス変更専用（PUT /roadmaps/:id でstatus指定時のみ呼ぶ）。
+	// 汎用UpdateRoadmapと経路を分けることで、status変更を伴わない更新がrecalcRoadmapProgress
+	// による自動遷移を上書きしないようにする。
+	UpdateRoadmapStatus(ctx context.Context, arg UpdateRoadmapStatusParams) (Roadmap, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateRoadmapStep(ctx context.Context, arg UpdateRoadmapStepParams) (RoadmapStep, error)
 	// GORMのSave（全カラム上書き）に相当。

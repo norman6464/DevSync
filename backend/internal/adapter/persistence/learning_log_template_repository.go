@@ -3,19 +3,24 @@ package persistence
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
 )
 
 // learningLogTemplateRepository は [repository.LearningLogTemplateRepository] の sqlc(pgx) 実装。
+// デフォルト解除（ClearOtherLearningLogTemplateDefaults）とCreate/Updateを1トランザクションで
+// 行うため、Queries だけでなくトランザクションを開始できる *pgxpool.Pool を直接保持する。
 type learningLogTemplateRepository struct {
-	q *sqlcgen.Queries
+	pool *pgxpool.Pool
+	q    *sqlcgen.Queries
 }
 
 // NewLearningLogTemplateRepository は LearningLogTemplateRepository の sqlc(pgx) 実装を返す。
-func NewLearningLogTemplateRepository(q *sqlcgen.Queries) repository.LearningLogTemplateRepository {
-	return &learningLogTemplateRepository{q: q}
+func NewLearningLogTemplateRepository(pool *pgxpool.Pool) repository.LearningLogTemplateRepository {
+	return &learningLogTemplateRepository{pool: pool, q: sqlcgen.New(pool)}
 }
 
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
@@ -37,10 +42,30 @@ func toModelLearningLogTemplate(row sqlcgen.LearningLogTemplate) model.LearningL
 	}
 }
 
-// Create は新しいテンプレートを作成する。
+// Create は新しいテンプレートを作成する。is_default指定時は同一トランザクション内で
+// 先に他のデフォルトを解除してから作成する（2文に分ける理由はqueries/learning_log_template.sqlの
+// ClearOtherLearningLogTemplateDefaultsのコメント参照）。それでも残る本当の並行トランザクション
+// 同士の衝突は部分UNIQUE索引（uq_learning_log_templates_default）が食い止め、その生の制約違反は
+// domain.ErrConflictへ変換する（500として漏らさない）。
 func (r *learningLogTemplateRepository) Create(ctx context.Context, template *model.LearningLogTemplate) error {
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	q := r.q.WithTx(tx)
+
+	if template.IsDefault {
+		if err := q.ClearOtherLearningLogTemplateDefaults(ctx, sqlcgen.ClearOtherLearningLogTemplateDefaultsParams{
+			UserID: int64(template.UserID),
+			ID:     0,
+		}); err != nil {
+			return err
+		}
+	}
+
 	category := string(template.DefaultCategory)
-	row, err := r.q.CreateLearningLogTemplate(ctx, sqlcgen.CreateLearningLogTemplateParams{
+	row, err := q.CreateLearningLogTemplate(ctx, sqlcgen.CreateLearningLogTemplateParams{
 		UserID:          int64(template.UserID),
 		Name:            template.Name,
 		DefaultTitle:    &template.DefaultTitle,
@@ -49,17 +74,37 @@ func (r *learningLogTemplateRepository) Create(ctx context.Context, template *mo
 		DefaultDuration: toInt64Ptr(template.DefaultDuration),
 		IsDefault:       &template.IsDefault,
 	})
+	if isUniqueViolation(err) {
+		return domain.ErrConflict
+	}
 	if err != nil {
 		return err
 	}
 	*template = toModelLearningLogTemplate(row)
-	return nil
+	return tx.Commit(ctx)
 }
 
 // Update は既存のテンプレートを更新する（GORMのSave＝全カラム上書きに相当）。
+// 衝突時の扱いはCreateと同じ。
 func (r *learningLogTemplateRepository) Update(ctx context.Context, template *model.LearningLogTemplate) error {
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	q := r.q.WithTx(tx)
+
+	if template.IsDefault {
+		if err := q.ClearOtherLearningLogTemplateDefaults(ctx, sqlcgen.ClearOtherLearningLogTemplateDefaultsParams{
+			UserID: int64(template.UserID),
+			ID:     int64(template.ID),
+		}); err != nil {
+			return err
+		}
+	}
+
 	category := string(template.DefaultCategory)
-	row, err := r.q.UpdateLearningLogTemplate(ctx, sqlcgen.UpdateLearningLogTemplateParams{
+	row, err := q.UpdateLearningLogTemplate(ctx, sqlcgen.UpdateLearningLogTemplateParams{
 		ID:              int64(template.ID),
 		Name:            template.Name,
 		DefaultTitle:    &template.DefaultTitle,
@@ -67,13 +112,15 @@ func (r *learningLogTemplateRepository) Update(ctx context.Context, template *mo
 		DefaultCategory: &category,
 		DefaultDuration: toInt64Ptr(template.DefaultDuration),
 		IsDefault:       &template.IsDefault,
-		UserID:          int64(template.UserID),
 	})
+	if isUniqueViolation(err) {
+		return domain.ErrConflict
+	}
 	if err != nil {
 		return err
 	}
 	*template = toModelLearningLogTemplate(row)
-	return nil
+	return tx.Commit(ctx)
 }
 
 // Delete はテンプレートを削除する。

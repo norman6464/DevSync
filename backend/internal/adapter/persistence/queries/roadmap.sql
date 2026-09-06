@@ -7,14 +7,23 @@ INSERT INTO roadmaps (
 ) RETURNING *;
 
 -- name: UpdateRoadmap :one
--- GORMのSave（全カラム上書き）に相当。ただしstep_count/completed_step_count/progressは
--- 対象外（Increment/Decrement系の専用クエリだけが更新する）。ここに含めると、
--- ステップ作成・削除による並行更新をこのUPDATEが読み取り時点の古い値で上書きする
--- 「ロストアップデート」を起こす。status/completed_atはユーザーの単発操作
--- （ステータス変更）であり並行カウンタ更新の対象ではないためここに残す。
+-- GORMのSave（全カラム上書き）に相当。ただしstep_count/completed_step_count/progress/
+-- status/completed_atは対象外。step_count等はIncrement/Decrement系の専用クエリだけが
+-- 更新する。status/completed_atはUpdateRoadmapStatusに分離した
+-- （ステップ完了によるrecalcRoadmapProgressの自動遷移を、このUPDATEが読み取り時点の
+-- 古いstatus/completed_atで上書きする「ロストアップデート」を防ぐため）。
 UPDATE roadmaps SET
     title = $2, description = $3, category = $4, is_public = $5, is_template = $6,
-    status = $7, completed_at = $8, updated_at = now()
+    updated_at = now()
+WHERE id = $1
+RETURNING *;
+
+-- name: UpdateRoadmapStatus :one
+-- ユーザーによる明示的なステータス変更専用（PUT /roadmaps/:id でstatus指定時のみ呼ぶ）。
+-- 汎用UpdateRoadmapと経路を分けることで、status変更を伴わない更新がrecalcRoadmapProgress
+-- による自動遷移を上書きしないようにする。
+UPDATE roadmaps SET
+    status = $2, completed_at = $3, updated_at = now()
 WHERE id = $1
 RETURNING *;
 

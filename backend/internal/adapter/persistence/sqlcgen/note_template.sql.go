@@ -9,6 +9,31 @@ import (
 	"context"
 )
 
+const clearOtherNoteTemplateDefaults = `-- name: ClearOtherNoteTemplateDefaults :exec
+UPDATE note_templates SET is_default = false, updated_at = now()
+WHERE note_templates.user_id = $1 AND note_templates.is_default IS TRUE AND note_templates.id != $2
+`
+
+type ClearOtherNoteTemplateDefaultsParams struct {
+	UserID int64
+	ID     int64
+}
+
+// 同一ユーザーの既存デフォルト（自分自身のid=$2は除く）を外す。Createからは
+// 存在しないid（0）を渡すことで全件が対象になる。呼び出し元（repository）が
+// 1つのトランザクション内でこのクエリの直後にCreate/Updateを実行することで、
+// 「解除」と「新しいデフォルトの確定」を1つの原子的な単位にする。
+// 【重要】1つのSQL文の中のCTEとしてUPDATE→INSERT/UPDATEを両方書く方式は使わない。
+// PostgreSQLのデータ変更CTEは主文と同一スナップショットで動作し、UPDATEによる解除の
+// 効果が同一文内の一意制約チェックに間に合わず、デフォルトが1件も無い状態からの
+// 切り替えでも毎回一意制約違反になることを確認済み（2文に分けて初めて正しく動く）。
+// uq_note_templates_default（(user_id) WHERE is_default の部分UNIQUE索引）は
+// 本当に並行する別トランザクション同士の衝突に対する最終防衛。
+func (q *Queries) ClearOtherNoteTemplateDefaults(ctx context.Context, arg ClearOtherNoteTemplateDefaultsParams) error {
+	_, err := q.db.Exec(ctx, clearOtherNoteTemplateDefaults, arg.UserID, arg.ID)
+	return err
+}
+
 const countNoteTemplatesByUser = `-- name: CountNoteTemplatesByUser :one
 SELECT count(*) FROM note_templates
 WHERE user_id = $1
@@ -22,10 +47,6 @@ func (q *Queries) CountNoteTemplatesByUser(ctx context.Context, userID int64) (i
 }
 
 const createNoteTemplate = `-- name: CreateNoteTemplate :one
-WITH cleared AS (
-    UPDATE note_templates SET is_default = false
-    WHERE note_templates.user_id = $1 AND note_templates.is_default IS TRUE AND $7 = true
-)
 INSERT INTO note_templates (user_id, name, description, default_title, content_template, default_tags, is_default, created_at, updated_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7, now(), now())
 RETURNING id, user_id, name, description, default_title, content_template, default_tags, is_default, created_at, updated_at
@@ -41,10 +62,6 @@ type CreateNoteTemplateParams struct {
 	IsDefault       *bool
 }
 
-// 新しい行がis_default=trueの場合のみ、同一ユーザーの既存デフォルトを同一文で外す
-// （$7=trueでなければ WHERE が一致せずclearedは0行、is_default IS TRUEでNULLを安全に除外）。
-// uq_note_templates_default（(user_id) WHERE is_default の部分UNIQUE索引）が
-// 最終的な「ユーザーごとデフォルトは高々1件」を保証する安全網になる。
 func (q *Queries) CreateNoteTemplate(ctx context.Context, arg CreateNoteTemplateParams) (NoteTemplate, error) {
 	row := q.db.QueryRow(ctx, createNoteTemplate,
 		arg.UserID,
@@ -167,10 +184,6 @@ func (q *Queries) ListNoteTemplatesByUser(ctx context.Context, userID int64) ([]
 }
 
 const updateNoteTemplate = `-- name: UpdateNoteTemplate :one
-WITH cleared AS (
-    UPDATE note_templates SET is_default = false
-    WHERE note_templates.user_id = $8 AND note_templates.is_default IS TRUE AND note_templates.id != $1 AND $7 = true
-)
 UPDATE note_templates
 SET name = $2,
     description = $3,
@@ -191,7 +204,6 @@ type UpdateNoteTemplateParams struct {
 	ContentTemplate string
 	DefaultTags     *string
 	IsDefault       *bool
-	UserID          int64
 }
 
 func (q *Queries) UpdateNoteTemplate(ctx context.Context, arg UpdateNoteTemplateParams) (NoteTemplate, error) {
@@ -203,7 +215,6 @@ func (q *Queries) UpdateNoteTemplate(ctx context.Context, arg UpdateNoteTemplate
 		arg.ContentTemplate,
 		arg.DefaultTags,
 		arg.IsDefault,
-		arg.UserID,
 	)
 	var i NoteTemplate
 	err := row.Scan(
