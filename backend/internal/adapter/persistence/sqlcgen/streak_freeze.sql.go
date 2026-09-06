@@ -7,6 +7,8 @@ package sqlcgen
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const countStreakFreezesInMonth = `-- name: CountStreakFreezesInMonth :one
@@ -27,38 +29,38 @@ func (q *Queries) CountStreakFreezesInMonth(ctx context.Context, arg CountStreak
 }
 
 const countStreakFreezesOnDate = `-- name: CountStreakFreezesOnDate :one
-SELECT COUNT(*) FROM streak_freezes WHERE user_id = $1 AND used_date = $2
+SELECT COUNT(*) FROM streak_freezes WHERE user_id = $1 AND used_on = $2
 `
 
 type CountStreakFreezesOnDateParams struct {
-	UserID   int64
-	UsedDate string
+	UserID int64
+	UsedOn pgtype.Date
 }
 
 func (q *Queries) CountStreakFreezesOnDate(ctx context.Context, arg CountStreakFreezesOnDateParams) (int64, error) {
-	row := q.db.QueryRow(ctx, countStreakFreezesOnDate, arg.UserID, arg.UsedDate)
+	row := q.db.QueryRow(ctx, countStreakFreezesOnDate, arg.UserID, arg.UsedOn)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
 }
 
 const createStreakFreeze = `-- name: CreateStreakFreeze :one
-INSERT INTO streak_freezes (user_id, used_date, month, year, created_at)
+INSERT INTO streak_freezes (user_id, used_on, month, year, created_at)
 VALUES ($1, $2, $3, $4, now())
-RETURNING id, user_id, used_date, month, year, created_at
+RETURNING id, user_id, used_on, month, year, created_at
 `
 
 type CreateStreakFreezeParams struct {
-	UserID   int64
-	UsedDate string
-	Month    int64
-	Year     int64
+	UserID int64
+	UsedOn pgtype.Date
+	Month  int64
+	Year   int64
 }
 
 func (q *Queries) CreateStreakFreeze(ctx context.Context, arg CreateStreakFreezeParams) (StreakFreeze, error) {
 	row := q.db.QueryRow(ctx, createStreakFreeze,
 		arg.UserID,
-		arg.UsedDate,
+		arg.UsedOn,
 		arg.Month,
 		arg.Year,
 	)
@@ -66,7 +68,7 @@ func (q *Queries) CreateStreakFreeze(ctx context.Context, arg CreateStreakFreeze
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
-		&i.UsedDate,
+		&i.UsedOn,
 		&i.Month,
 		&i.Year,
 		&i.CreatedAt,
@@ -75,25 +77,25 @@ func (q *Queries) CreateStreakFreeze(ctx context.Context, arg CreateStreakFreeze
 }
 
 const hasStreakFreezeOnDate = `-- name: HasStreakFreezeOnDate :one
-SELECT COUNT(*) > 0 FROM streak_freezes WHERE user_id = $1 AND used_date = $2
+SELECT COUNT(*) > 0 FROM streak_freezes WHERE user_id = $1 AND used_on = $2
 `
 
 type HasStreakFreezeOnDateParams struct {
-	UserID   int64
-	UsedDate string
+	UserID int64
+	UsedOn pgtype.Date
 }
 
 func (q *Queries) HasStreakFreezeOnDate(ctx context.Context, arg HasStreakFreezeOnDateParams) (bool, error) {
-	row := q.db.QueryRow(ctx, hasStreakFreezeOnDate, arg.UserID, arg.UsedDate)
+	row := q.db.QueryRow(ctx, hasStreakFreezeOnDate, arg.UserID, arg.UsedOn)
 	var column_1 bool
 	err := row.Scan(&column_1)
 	return column_1, err
 }
 
 const listStreakFreezesByUserAndMonth = `-- name: ListStreakFreezesByUserAndMonth :many
-SELECT id, user_id, used_date, month, year, created_at FROM streak_freezes
+SELECT id, user_id, used_on, month, year, created_at FROM streak_freezes
 WHERE user_id = $1 AND year = $2 AND month = $3
-ORDER BY used_date ASC
+ORDER BY used_on ASC
 `
 
 type ListStreakFreezesByUserAndMonthParams struct {
@@ -114,7 +116,7 @@ func (q *Queries) ListStreakFreezesByUserAndMonth(ctx context.Context, arg ListS
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
-			&i.UsedDate,
+			&i.UsedOn,
 			&i.Month,
 			&i.Year,
 			&i.CreatedAt,

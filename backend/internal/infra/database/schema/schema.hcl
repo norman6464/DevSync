@@ -3489,9 +3489,9 @@ table "streak_freezes" {
     null = false
     type = bigint
   }
-  column "used_date" {
+  column "used_on" {
     null = false
-    type = character_varying(10)
+    type = date
   }
   column "month" {
     null = false
@@ -3510,7 +3510,7 @@ table "streak_freezes" {
   }
   index "uq_streak_freeze_user_date" {
     unique  = true
-    columns = [column.user_id, column.used_date]
+    columns = [column.user_id, column.used_on]
   }
   index "idx_streak_freezes_user_id" {
     columns = [column.user_id]
