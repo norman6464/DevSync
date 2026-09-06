@@ -47,10 +47,6 @@ func (m *mockLearningLogTemplateRepo) FindDefaultByUserID(ctx context.Context, u
 	return t, args.Error(1)
 }
 
-func (m *mockLearningLogTemplateRepo) ClearDefaultFlag(ctx context.Context, userID uint) error {
-	return m.Called(ctx, userID).Error(0)
-}
-
 func (m *mockLearningLogTemplateRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)
@@ -95,30 +91,17 @@ func TestCreateLearningLogTemplateUseCase_Execute(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
-	t.Run("デフォルト指定つきは既存の指定を外してから作成する", func(t *testing.T) {
+	t.Run("デフォルト指定つきでも作成できる（デフォルトの排他はSQL側のCTE+部分UNIQUE索引が担保する）", func(t *testing.T) {
 		repo := new(mockLearningLogTemplateRepo)
-		cleared := false
-		repo.On("ClearDefaultFlag", mock.Anything, uint(7)).Run(func(mock.Arguments) { cleared = true }).Return(nil)
-		repo.On("Create", mock.Anything, mock.Anything).Run(func(mock.Arguments) {
-			assert.True(t, cleared, "ClearDefaultFlag より先に Create が呼ばれている")
-		}).Return(nil)
+		repo.On("Create", mock.Anything, mock.MatchedBy(func(tm *model.LearningLogTemplate) bool {
+			return tm.IsDefault
+		})).Return(nil)
 		uc := usecase.NewCreateLearningLogTemplateUseCase(repo)
 
 		err := uc.Execute(context.Background(), &model.LearningLogTemplate{UserID: 7, Name: "名前", IsDefault: true})
 
 		assert.NoError(t, err)
 		repo.AssertExpectations(t)
-	})
-
-	t.Run("デフォルト指定の解除に失敗したら作成しない", func(t *testing.T) {
-		repo := new(mockLearningLogTemplateRepo)
-		repo.On("ClearDefaultFlag", mock.Anything, uint(1)).Return(errors.New("db error"))
-		uc := usecase.NewCreateLearningLogTemplateUseCase(repo)
-
-		err := uc.Execute(context.Background(), &model.LearningLogTemplate{UserID: 1, Name: "名前", IsDefault: true})
-
-		assert.Error(t, err)
-		repo.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 	})
 
 	t.Run("検証エラーでは書き込まない", func(t *testing.T) {
@@ -295,7 +278,6 @@ func TestUpdateLearningLogTemplateUseCase_Execute(t *testing.T) {
 	t.Run("全フィールドを更新できる", func(t *testing.T) {
 		repo := new(mockLearningLogTemplateRepo)
 		repo.On("FindByID", mock.Anything, uint(1)).Return(ownedLearningLogTemplate(1, 5), nil)
-		repo.On("ClearDefaultFlag", mock.Anything, uint(5)).Return(nil)
 		repo.On("Update", mock.Anything, mock.Anything).Return(nil)
 		uc := usecase.NewUpdateLearningLogTemplateUseCase(repo)
 
@@ -360,22 +342,6 @@ func TestUpdateLearningLogTemplateUseCase_Execute(t *testing.T) {
 
 		require.NoError(t, err)
 		assert.False(t, tmpl.IsDefault)
-		repo.AssertNotCalled(t, "ClearDefaultFlag", mock.Anything, mock.Anything)
-	})
-
-	t.Run("デフォルト指定の解除に失敗したら更新しない", func(t *testing.T) {
-		repo := new(mockLearningLogTemplateRepo)
-		repo.On("FindByID", mock.Anything, uint(1)).Return(ownedLearningLogTemplate(1, 5), nil)
-		repo.On("ClearDefaultFlag", mock.Anything, uint(5)).Return(errors.New("db error"))
-		uc := usecase.NewUpdateLearningLogTemplateUseCase(repo)
-
-		isDefault := true
-		_, err := uc.Execute(context.Background(), usecase.UpdateLearningLogTemplateInput{
-			ID: 1, UserID: 5, IsDefault: &isDefault,
-		})
-
-		assert.Error(t, err)
-		repo.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
 	})
 
 	t.Run("他人のテンプレートは 403", func(t *testing.T) {

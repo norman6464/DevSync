@@ -103,17 +103,14 @@ func (r *roadmapRepository) Create(ctx context.Context, roadmap *model.Roadmap) 
 // Update は既存のロードマップを更新する（GORMのSave＝全カラム上書きに相当）。
 func (r *roadmapRepository) Update(ctx context.Context, roadmap *model.Roadmap) error {
 	row, err := r.q.UpdateRoadmap(ctx, sqlcgen.UpdateRoadmapParams{
-		ID:                 int64(roadmap.ID),
-		Title:              roadmap.Title,
-		Description:        &roadmap.Description,
-		Category:           (*string)(&roadmap.Category),
-		IsPublic:           &roadmap.IsPublic,
-		IsTemplate:         &roadmap.IsTemplate,
-		StepCount:          toInt64Ptr(roadmap.StepCount),
-		CompletedStepCount: toInt64Ptr(roadmap.CompletedStepCount),
-		Progress:           toInt64Ptr(roadmap.Progress),
-		Status:             (*string)(&roadmap.Status),
-		CompletedAt:        toTimestamptz(roadmap.CompletedAt),
+		ID:          int64(roadmap.ID),
+		Title:       roadmap.Title,
+		Description: &roadmap.Description,
+		Category:    (*string)(&roadmap.Category),
+		IsPublic:    &roadmap.IsPublic,
+		IsTemplate:  &roadmap.IsTemplate,
+		Status:      (*string)(&roadmap.Status),
+		CompletedAt: toTimestamptz(roadmap.CompletedAt),
 	})
 	if err != nil {
 		return err

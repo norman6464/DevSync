@@ -65,6 +65,7 @@ func (r *noteTemplateRepository) Update(ctx context.Context, template *model.Not
 		ContentTemplate: template.ContentTemplate,
 		DefaultTags:     &template.DefaultTags,
 		IsDefault:       &template.IsDefault,
+		UserID:          int64(template.UserID),
 	})
 	if err != nil {
 		return err
@@ -115,11 +116,6 @@ func (r *noteTemplateRepository) FindDefaultByUserID(ctx context.Context, userID
 	}
 	template := toModelNoteTemplate(row)
 	return &template, nil
-}
-
-// ClearDefaultFlag は指定ユーザーの全テンプレートのデフォルト指定を外す。
-func (r *noteTemplateRepository) ClearDefaultFlag(ctx context.Context, userID uint) error {
-	return r.q.ClearNoteTemplateDefaultFlag(ctx, int64(userID))
 }
 
 // CountByUserID は指定ユーザーのテンプレート総数を返す。

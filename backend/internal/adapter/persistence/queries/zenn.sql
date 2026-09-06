@@ -1,7 +1,7 @@
 -- name: UpsertZennArticle :one
 INSERT INTO zenn_articles (user_id, zenn_id, title, slug, emoji, article_type, liked_count, comments_count, published_at, updated_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, now())
-ON CONFLICT (zenn_id) DO UPDATE SET
+ON CONFLICT (user_id, zenn_id) DO UPDATE SET
     title = EXCLUDED.title,
     slug = EXCLUDED.slug,
     emoji = EXCLUDED.emoji,

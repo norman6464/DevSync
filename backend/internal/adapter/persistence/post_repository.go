@@ -10,16 +10,13 @@ import (
 )
 
 // postRepository は [repository.PostRepository] の sqlc(pgx) 実装。
-// Delete は投稿を参照する行ごとの削除を1トランザクションで行うため、
-// Queries だけでなくトランザクションを開始できる *pgxpool.Pool を直接保持する。
 type postRepository struct {
-	pool *pgxpool.Pool
-	q    *sqlcgen.Queries
+	q *sqlcgen.Queries
 }
 
 // NewPostRepository は PostRepository の sqlc(pgx) 実装を返す。
 func NewPostRepository(pool *pgxpool.Pool) repository.PostRepository {
-	return &postRepository{pool: pool, q: sqlcgen.New(pool)}
+	return &postRepository{q: sqlcgen.New(pool)}
 }
 
 var _ repository.PostRepository = (*postRepository)(nil)
@@ -100,10 +97,6 @@ func (r *postRepository) Update(ctx context.Context, post *model.Post) error {
 		Content:           post.Content,
 		ImageUrls:         &post.ImageURLs,
 		IsDraft:           &post.IsDraft,
-		LikeCount:         toInt64Ptr(post.LikeCount),
-		CommentCount:      toInt64Ptr(post.CommentCount),
-		BookmarkCount:     toInt64Ptr(post.BookmarkCount),
-		ViewCount:         toInt64Ptr(post.ViewCount),
 		EstimatedReadTime: toInt64Ptr(post.EstimatedReadTime),
 		ScheduledAt:       toTimestamptz(post.ScheduledAt),
 	})
@@ -114,88 +107,13 @@ func (r *postRepository) Update(ctx context.Context, post *model.Post) error {
 	return nil
 }
 
-// Delete は投稿を、投稿を参照する行ごとトランザクション内で削除する。
-// 参照する行（通知・ブックマーク・スニペット等）には外部キー制約があり、
-// 先に消さないと投稿本体の削除が拒否される。途中で失敗しても何も消えない。
+// Delete は投稿を削除する。投稿を参照する行（コメント・いいね・通知等）の削除は
+// FKのON DELETE CASCADE宣言（internal/infra/database/schema/schema.hcl）に委ねる
+// （DEVSYNC-156でFKを全テーブルへ投入済み）。かつては参照テーブルを1つずつ
+// 手書きで削除する16手順のトランザクションだったが、新しい参照テーブルを
+// 追加するたびにここへの追記が必要という壊れやすい運用だった。
 func (r *postRepository) Delete(ctx context.Context, id uint) error {
-	tx, err := r.pool.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback(ctx)
-
-	q := r.q.WithTx(tx)
-
-	// 先に投稿行を排他ロックする。FK 付きの参照行の挿入は親行への共有ロックを
-	// 要求するため、ここで直列化され、掃除の最中に新しい参照行が入り込んで
-	// 最後の本体削除が失敗することを防ぐ。既に無ければ何もしない（冪等）。
-	if _, err := q.LockPostForDelete(ctx, int64(id)); err != nil {
-		if isNoRows(err) {
-			return nil
-		}
-		return err
-	}
-
-	postID := int64(id)
-
-	// コメントに従属する行（コメントいいね・コメント由来のメンション）を先に消す
-	if err := q.DeleteCommentLikesByPostComments(ctx, postID); err != nil {
-		return err
-	}
-	if err := q.DeleteMentionsByPostComments(ctx, postID); err != nil {
-		return err
-	}
-	if err := q.DeleteCommentsByPost(ctx, postID); err != nil {
-		return err
-	}
-
-	// スニペットに従属する行を先に消す
-	if err := q.DeleteSnippetCommentsByPostSnippets(ctx, postID); err != nil {
-		return err
-	}
-	if err := q.DeleteCodeSnippetsByPost(ctx, postID); err != nil {
-		return err
-	}
-
-	// 投稿を直接参照する行を消す
-	if err := q.DeleteLikesByPost(ctx, postID); err != nil {
-		return err
-	}
-	if err := q.DeleteReactionsByPost(ctx, postID); err != nil {
-		return err
-	}
-	if err := q.DeleteBookmarksByPost(ctx, postID); err != nil {
-		return err
-	}
-	if err := q.DeleteBookmarkCollectionItemsByPost(ctx, postID); err != nil {
-		return err
-	}
-	if err := q.DeletePostSeriesItemsByPost(ctx, postID); err != nil {
-		return err
-	}
-	if err := q.DeletePostCollectionItemsByPost(ctx, postID); err != nil {
-		return err
-	}
-	if err := q.DeletePostTagsByPost(ctx, postID); err != nil {
-		return err
-	}
-	if err := q.DeletePostPinsByPost(ctx, postID); err != nil {
-		return err
-	}
-	if err := q.DeletePostViewsByPost(ctx, postID); err != nil {
-		return err
-	}
-	if err := q.DeleteNotificationsByPost(ctx, &postID); err != nil {
-		return err
-	}
-	if err := q.DeleteMentionsByPost(ctx, &postID); err != nil {
-		return err
-	}
-
-	if err := q.DeletePost(ctx, postID); err != nil {
-		return err
-	}
-	return tx.Commit(ctx)
+	return r.q.DeletePost(ctx, int64(id))
 }
 
 // FindAll は公開済み投稿をページネーション付きで取得する（新しい順）。

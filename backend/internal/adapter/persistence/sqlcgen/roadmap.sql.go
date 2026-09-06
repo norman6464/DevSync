@@ -587,27 +587,27 @@ func (q *Queries) ReorderRoadmapStep(ctx context.Context, arg ReorderRoadmapStep
 const updateRoadmap = `-- name: UpdateRoadmap :one
 UPDATE roadmaps SET
     title = $2, description = $3, category = $4, is_public = $5, is_template = $6,
-    step_count = $7, completed_step_count = $8, progress = $9, status = $10,
-    completed_at = $11, updated_at = now()
+    status = $7, completed_at = $8, updated_at = now()
 WHERE id = $1
 RETURNING id, user_id, title, description, category, is_public, is_template, step_count, completed_step_count, progress, status, created_at, updated_at, completed_at
 `
 
 type UpdateRoadmapParams struct {
-	ID                 int64
-	Title              string
-	Description        *string
-	Category           *string
-	IsPublic           *bool
-	IsTemplate         *bool
-	StepCount          *int64
-	CompletedStepCount *int64
-	Progress           *int64
-	Status             *string
-	CompletedAt        pgtype.Timestamptz
+	ID          int64
+	Title       string
+	Description *string
+	Category    *string
+	IsPublic    *bool
+	IsTemplate  *bool
+	Status      *string
+	CompletedAt pgtype.Timestamptz
 }
 
-// GORMのSave（全カラム上書き）に相当。
+// GORMのSave（全カラム上書き）に相当。ただしstep_count/completed_step_count/progressは
+// 対象外（Increment/Decrement系の専用クエリだけが更新する）。ここに含めると、
+// ステップ作成・削除による並行更新をこのUPDATEが読み取り時点の古い値で上書きする
+// 「ロストアップデート」を起こす。status/completed_atはユーザーの単発操作
+// （ステータス変更）であり並行カウンタ更新の対象ではないためここに残す。
 func (q *Queries) UpdateRoadmap(ctx context.Context, arg UpdateRoadmapParams) (Roadmap, error) {
 	row := q.db.QueryRow(ctx, updateRoadmap,
 		arg.ID,
@@ -616,9 +616,6 @@ func (q *Queries) UpdateRoadmap(ctx context.Context, arg UpdateRoadmapParams) (R
 		arg.Category,
 		arg.IsPublic,
 		arg.IsTemplate,
-		arg.StepCount,
-		arg.CompletedStepCount,
-		arg.Progress,
 		arg.Status,
 		arg.CompletedAt,
 	)

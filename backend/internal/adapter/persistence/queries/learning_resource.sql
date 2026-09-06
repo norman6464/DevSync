@@ -9,9 +9,12 @@ INSERT INTO learning_resources (
 -- name: UpdateLearningResource :one
 -- GORMのSave（全カラム上書き）に相当。learning_resourcesは論理削除があるため、
 -- GORMが自動付与するdeleted_at IS NULLスコープをUPDATEにも明示する。
+-- ただしlike_count/save_countは対象外（Increment/Decrement系の専用クエリだけが
+-- 更新する）。ここに含めると、他リクエストによるカウンタ更新をこのUPDATEが
+-- 読み取り時点の古い値で上書きする「ロストアップデート」を起こす。
 UPDATE learning_resources SET
     title = $2, description = $3, url = $4, category = $5, difficulty = $6, tags = $7,
-    image_url = $8, is_public = $9, like_count = $10, save_count = $11, updated_at = now()
+    image_url = $8, is_public = $9, updated_at = now()
 WHERE learning_resources.id = $1 AND learning_resources.deleted_at IS NULL
 RETURNING *;
 

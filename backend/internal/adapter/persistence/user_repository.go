@@ -13,16 +13,13 @@ import (
 const userSearchLimit = 50
 
 // userRepository は [repository.UserRepository] の sqlc(pgx) 実装。
-// DeleteWithRelatedData は多数のテーブルにまたがる削除を1トランザクションで行うため、
-// Queries だけでなくトランザクションを開始できる *pgxpool.Pool を直接保持する。
 type userRepository struct {
-	pool *pgxpool.Pool
-	q    *sqlcgen.Queries
+	q *sqlcgen.Queries
 }
 
 // NewUserRepository は UserRepository の sqlc(pgx) 実装を返す。
 func NewUserRepository(pool *pgxpool.Pool) repository.UserRepository {
-	return &userRepository{pool: pool, q: sqlcgen.New(pool)}
+	return &userRepository{q: sqlcgen.New(pool)}
 }
 
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
@@ -36,7 +33,7 @@ var _ repository.AuthUserRepository = (*userRepository)(nil)
 
 // NewAuthUserRepository は AuthUserRepository の sqlc(pgx) 実装を返す。
 func NewAuthUserRepository(pool *pgxpool.Pool) repository.AuthUserRepository {
-	return &userRepository{pool: pool, q: sqlcgen.New(pool)}
+	return &userRepository{q: sqlcgen.New(pool)}
 }
 
 // FindAll は全ユーザーを取得する。
@@ -210,105 +207,12 @@ func (r *userRepository) UpdatePassword(ctx context.Context, userID uint, hashed
 	})
 }
 
-// DeleteWithRelatedData はユーザーと関連データをトランザクション内で削除する。
-// 退会ユーザーの投稿に紐づく従属データ（他ユーザーのコメント・いいね等を含む）→
-// 通知・メッセージ・本人のコメント・いいね・投稿・フォロー・GitHub 連携データ・
-// パスワードリセットトークンの順に削除してから、最後にユーザー本体を削除する。
+// DeleteWithRelatedData はユーザーを削除する。関連データの削除はFKの
+// ON DELETE CASCADE宣言（internal/infra/database/schema/schema.hcl）に委ねる
+// （DEVSYNC-156でFKを全テーブルへ投入済み）。かつては削除順序を守るため
+// 約20本のクエリを手書きしていたが、新しいユーザー所有テーブルを追加するたびに
+// ここへの追記が必要という壊れやすい運用だった。追記漏れがあってもFKが無い側では
+// 検出できず孤児行が残るため、削除順序をコードで再現するのをやめ宣言に一本化する。
 func (r *userRepository) DeleteWithRelatedData(ctx context.Context, id uint) error {
-	tx, err := r.pool.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback(ctx)
-
-	q := r.q.WithTx(tx)
-	userID := int64(id)
-
-	// 退会ユーザーの投稿に紐づく従属データを先に消す。user_id 条件だけでは
-	// 他ユーザーが付けたコメント・いいね等が削除済み投稿を参照したまま残る。
-	// 対象テーブルは postRepository.Delete と同じ集合を退会者の全投稿へ広げたもの。
-
-	// コメントに従属する行（コメントいいね・コメント由来のメンション）を先に消す。
-	// 投稿配下のコメントに加え、退会者が他の投稿に書いたコメントの従属行も対象にする。
-	if err := q.DeleteCommentLikesByUserCommentsSet(ctx, userID); err != nil {
-		return err
-	}
-	if err := q.DeleteMentionsByUserCommentsSet(ctx, userID); err != nil {
-		return err
-	}
-	if err := q.DeleteCommentsByUserPostsAndSelf(ctx, userID); err != nil {
-		return err
-	}
-
-	// スニペットに従属する行を先に消す
-	if err := q.DeleteSnippetCommentsByUserPostSnippets(ctx, userID); err != nil {
-		return err
-	}
-	if err := q.DeleteCodeSnippetsByUserPosts(ctx, userID); err != nil {
-		return err
-	}
-
-	// 投稿を直接参照する行を消す（本人分は user_id でも消し、他ユーザー分は post_id で消す）
-	if err := q.DeleteLikesByUserPosts(ctx, userID); err != nil {
-		return err
-	}
-	if err := q.DeleteReactionsByUserPosts(ctx, userID); err != nil {
-		return err
-	}
-	if err := q.DeleteBookmarksByUserPosts(ctx, userID); err != nil {
-		return err
-	}
-	if err := q.DeleteBookmarkCollectionItemsByUserPosts(ctx, userID); err != nil {
-		return err
-	}
-	if err := q.DeletePostSeriesItemsByUserPosts(ctx, userID); err != nil {
-		return err
-	}
-	if err := q.DeletePostCollectionItemsByUserPosts(ctx, userID); err != nil {
-		return err
-	}
-	if err := q.DeletePostTagsByUserPosts(ctx, userID); err != nil {
-		return err
-	}
-	if err := q.DeletePostPinsByUserPosts(ctx, userID); err != nil {
-		return err
-	}
-	if err := q.DeletePostViewsByUserPosts(ctx, userID); err != nil {
-		return err
-	}
-	if err := q.DeleteMentionsByUserPosts(ctx, userID); err != nil {
-		return err
-	}
-
-	if err := q.DeleteNotificationsForUserDeletion(ctx, userID); err != nil {
-		return err
-	}
-	if err := q.DeleteMessagesByUser(ctx, userID); err != nil {
-		return err
-	}
-	if err := q.DeleteLikesByUser(ctx, userID); err != nil {
-		return err
-	}
-	if err := q.DeletePostsByUser(ctx, userID); err != nil {
-		return err
-	}
-	if err := q.DeleteFollowsByUser(ctx, userID); err != nil {
-		return err
-	}
-	if err := q.DeleteGitHubContributionsByUser(ctx, userID); err != nil {
-		return err
-	}
-	if err := q.DeleteGitHubLanguageStatsByUser(ctx, userID); err != nil {
-		return err
-	}
-	if err := q.DeleteGitHubReposByUser(ctx, userID); err != nil {
-		return err
-	}
-	if err := q.DeletePasswordResetTokensByUser(ctx, userID); err != nil {
-		return err
-	}
-	if err := q.DeleteUser(ctx, userID); err != nil {
-		return err
-	}
-	return tx.Commit(ctx)
+	return r.q.DeleteUser(ctx, int64(id))
 }

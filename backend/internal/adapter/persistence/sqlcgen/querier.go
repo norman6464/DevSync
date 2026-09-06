@@ -16,8 +16,6 @@ type Querier interface {
 	AdjustRoadmapCompletedStepCount(ctx context.Context, arg AdjustRoadmapCompletedStepCountParams) error
 	ArchiveNote(ctx context.Context, id int64) error
 	ClearBestAnswer(ctx context.Context, questionID int64) error
-	ClearLearningLogTemplateDefaultFlag(ctx context.Context, userID int64) error
-	ClearNoteTemplateDefaultFlag(ctx context.Context, userID int64) error
 	CountActiveLearningGoalsByUser(ctx context.Context, userID int64) (int64, error)
 	// note_stats.sql の CountNotesByUser はアーカイブ済みも含めた全件数のため名前を分けている。
 	CountActiveNotesByUser(ctx context.Context, userID int64) (int64, error)
@@ -191,6 +189,10 @@ type Querier interface {
 	CreateGroupMessage(ctx context.Context, arg CreateGroupMessageParams) (GroupMessage, error)
 	CreateLearningGoal(ctx context.Context, arg CreateLearningGoalParams) (LearningGoal, error)
 	CreateLearningLog(ctx context.Context, arg CreateLearningLogParams) (LearningLog, error)
+	// 新しい行がis_default=trueの場合のみ、同一ユーザーの既存デフォルトを同一文で外す
+	// （$7=trueでなければ WHERE が一致せずclearedは0行、is_default IS TRUEでNULLを安全に除外）。
+	// uq_learning_log_templates_default（(user_id) WHERE is_default の部分UNIQUE索引）が
+	// 最終的な「ユーザーごとデフォルトは高々1件」を保証する安全網になる。
 	CreateLearningLogTemplate(ctx context.Context, arg CreateLearningLogTemplateParams) (LearningLogTemplate, error)
 	CreateLearningResource(ctx context.Context, arg CreateLearningResourceParams) (LearningResource, error)
 	// GORMの clause.OnConflict{DoNothing: true} に相当。衝突時は RETURNING 行が無くなるため
@@ -200,6 +202,10 @@ type Querier interface {
 	CreateNote(ctx context.Context, arg CreateNoteParams) (Note, error)
 	CreateNoteFolder(ctx context.Context, arg CreateNoteFolderParams) (NoteFolder, error)
 	CreateNoteLink(ctx context.Context, arg CreateNoteLinkParams) error
+	// 新しい行がis_default=trueの場合のみ、同一ユーザーの既存デフォルトを同一文で外す
+	// （$7=trueでなければ WHERE が一致せずclearedは0行、is_default IS TRUEでNULLを安全に除外）。
+	// uq_note_templates_default（(user_id) WHERE is_default の部分UNIQUE索引）が
+	// 最終的な「ユーザーごとデフォルトは高々1件」を保証する安全網になる。
 	CreateNoteTemplate(ctx context.Context, arg CreateNoteTemplateParams) (NoteTemplate, error)
 	CreateNoteVersion(ctx context.Context, arg CreateNoteVersionParams) (NoteVersion, error)
 	CreateNotification(ctx context.Context, arg CreateNotificationParams) (Notification, error)
@@ -264,25 +270,14 @@ type Querier interface {
 	DeleteBookmarkCollection(ctx context.Context, id int64) error
 	DeleteBookmarkCollectionItem(ctx context.Context, arg DeleteBookmarkCollectionItemParams) error
 	DeleteBookmarkCollectionItemsByCollectionID(ctx context.Context, collectionID int64) error
-	DeleteBookmarkCollectionItemsByPost(ctx context.Context, postID int64) error
-	DeleteBookmarkCollectionItemsByUserPosts(ctx context.Context, userID int64) error
-	DeleteBookmarksByPost(ctx context.Context, postID int64) error
-	DeleteBookmarksByUserPosts(ctx context.Context, userID int64) error
 	DeleteChatRoom(ctx context.Context, id int64) error
 	DeleteChatRoomMember(ctx context.Context, arg DeleteChatRoomMemberParams) error
 	DeleteChatRoomMembersByRoom(ctx context.Context, chatRoomID int64) error
 	DeleteCodeSnippetByID(ctx context.Context, id int64) error
-	DeleteCodeSnippetsByPost(ctx context.Context, postID int64) error
-	DeleteCodeSnippetsByUserPosts(ctx context.Context, userID int64) error
 	DeleteCommentLike(ctx context.Context, arg DeleteCommentLikeParams) error
-	DeleteCommentLikesByPostComments(ctx context.Context, postID int64) error
-	// 退会者の投稿配下のコメント、および退会者自身が他の投稿へ書いたコメントの
-	// 従属行（コメントいいね）をまとめて消す。
-	DeleteCommentLikesByUserCommentsSet(ctx context.Context, userID int64) error
-	DeleteCommentsByPost(ctx context.Context, postID int64) error
-	DeleteCommentsByUserPostsAndSelf(ctx context.Context, userID int64) error
 	DeleteFollow(ctx context.Context, arg DeleteFollowParams) error
-	DeleteFollowsByUser(ctx context.Context, followerID int64) error
+	// GitHub連携の「解除」（アカウント削除ではない）で使う。ユーザー本体は残るため
+	// FKのON DELETE CASCADEでは代替できない。GitHubRepository.DeleteUserDataから呼ばれる。
 	DeleteGitHubContributionsByUser(ctx context.Context, userID int64) error
 	DeleteGitHubLanguageStatsByUser(ctx context.Context, userID int64) error
 	DeleteGitHubReposByUser(ctx context.Context, userID int64) error
@@ -293,51 +288,25 @@ type Querier interface {
 	DeleteLearningLogTemplate(ctx context.Context, id int64) error
 	// GORMのDelete（論理削除）に相当。
 	DeleteLearningResource(ctx context.Context, id int64) error
-	DeleteLikesByPost(ctx context.Context, postID int64) error
-	DeleteLikesByUser(ctx context.Context, userID int64) error
-	DeleteLikesByUserPosts(ctx context.Context, userID int64) error
 	DeleteMentionsByCommentID(ctx context.Context, commentID *int64) error
-	DeleteMentionsByPost(ctx context.Context, postID *int64) error
-	// mentions自身もpost_id列を持つため、サブクエリのcommentsを明示的にエイリアス修飾しないと
-	// post_idの参照先が曖昧になる（PostgreSQLの相関サブクエリの解決規則による）。
-	DeleteMentionsByPostComments(ctx context.Context, postID int64) error
 	DeleteMentionsByPostID(ctx context.Context, postID *int64) error
-	// mentions自身もpost_id列を持つため、サブクエリのcommentsを明示的にエイリアス修飾しないと
-	// post_idの参照先が曖昧になる（PostgreSQLの相関サブクエリの解決規則による）。
-	DeleteMentionsByUserCommentsSet(ctx context.Context, userID int64) error
-	DeleteMentionsByUserPosts(ctx context.Context, userID int64) error
-	DeleteMessagesByUser(ctx context.Context, senderID int64) error
 	DeleteNote(ctx context.Context, id int64) error
 	DeleteNoteFolder(ctx context.Context, id int64) error
 	DeleteNoteLink(ctx context.Context, arg DeleteNoteLinkParams) error
 	DeleteNoteTemplate(ctx context.Context, id int64) error
 	DeleteNotification(ctx context.Context, arg DeleteNotificationParams) error
-	DeleteNotificationsByPost(ctx context.Context, postID *int64) error
-	DeleteNotificationsForUserDeletion(ctx context.Context, userID int64) error
-	DeletePasswordResetTokensByUser(ctx context.Context, userID int64) error
 	DeletePost(ctx context.Context, id int64) error
 	DeletePostCollection(ctx context.Context, id int64) error
 	DeletePostCollectionItem(ctx context.Context, arg DeletePostCollectionItemParams) error
 	DeletePostCollectionItemsByCollectionID(ctx context.Context, collectionID int64) error
-	DeletePostCollectionItemsByPost(ctx context.Context, postID int64) error
-	DeletePostCollectionItemsByUserPosts(ctx context.Context, userID int64) error
 	DeletePostComment(ctx context.Context, id int64) error
 	DeletePostLike(ctx context.Context, arg DeletePostLikeParams) (int64, error)
 	DeletePostPin(ctx context.Context, arg DeletePostPinParams) error
-	DeletePostPinsByPost(ctx context.Context, postID int64) error
-	DeletePostPinsByUserPosts(ctx context.Context, userID int64) error
 	DeletePostSeries(ctx context.Context, id int64) error
 	DeletePostSeriesItem(ctx context.Context, arg DeletePostSeriesItemParams) error
-	DeletePostSeriesItemsByPost(ctx context.Context, postID int64) error
 	DeletePostSeriesItemsBySeriesID(ctx context.Context, seriesID int64) error
-	DeletePostSeriesItemsByUserPosts(ctx context.Context, userID int64) error
-	DeletePostTagsByPost(ctx context.Context, postID int64) error
 	DeletePostTagsByPostID(ctx context.Context, postID int64) error
-	DeletePostTagsByUserPosts(ctx context.Context, userID int64) error
 	DeletePostTemplate(ctx context.Context, id int64) error
-	DeletePostViewsByPost(ctx context.Context, postID int64) error
-	DeletePostViewsByUserPosts(ctx context.Context, userID int64) error
-	DeletePostsByUser(ctx context.Context, userID int64) error
 	// GORMのDelete（論理削除）に相当。
 	DeleteProject(ctx context.Context, id int64) error
 	DeleteProjectMilestone(ctx context.Context, id int64) error
@@ -347,8 +316,6 @@ type Querier interface {
 	DeleteQuestionBookmark(ctx context.Context, arg DeleteQuestionBookmarkParams) error
 	DeleteQuestionVote(ctx context.Context, arg DeleteQuestionVoteParams) error
 	DeleteReaction(ctx context.Context, arg DeleteReactionParams) error
-	DeleteReactionsByPost(ctx context.Context, postID int64) error
-	DeleteReactionsByUserPosts(ctx context.Context, userID int64) error
 	DeleteResourceLike(ctx context.Context, arg DeleteResourceLikeParams) error
 	DeleteResourceReview(ctx context.Context, id int64) error
 	DeleteResourceSave(ctx context.Context, arg DeleteResourceSaveParams) error
@@ -356,8 +323,6 @@ type Querier interface {
 	DeleteRoadmap(ctx context.Context, id int64) error
 	DeleteRoadmapStep(ctx context.Context, id int64) error
 	DeleteSnippetCommentByID(ctx context.Context, id int64) error
-	DeleteSnippetCommentsByPostSnippets(ctx context.Context, postID int64) error
-	DeleteSnippetCommentsByUserPostSnippets(ctx context.Context, userID int64) error
 	DeleteSnippetFavorite(ctx context.Context, arg DeleteSnippetFavoriteParams) error
 	DeleteSpotifyRecentTracksByUser(ctx context.Context, userID int64) error
 	DeleteStudyCircle(ctx context.Context, id int64) error
@@ -710,9 +675,6 @@ type Querier interface {
 	// （GORMの clause.Locking{Strength: "UPDATE"} に相当）。回答が存在しない/削除済みなら
 	// pgx.ErrNoRows を返し、呼び出し側のトランザクションを失敗させる。
 	LockAnswerForVoteChange(ctx context.Context, id int64) (int64, error)
-	// 投稿削除の直列化のための行ロック（GORMの clause.Locking{Strength: "UPDATE"} に相当）。
-	// 存在しなければ pgx.ErrNoRows を返し、呼び出し側で「既に無ければ何もしない（冪等）」を判定する。
-	LockPostForDelete(ctx context.Context, id int64) (int64, error)
 	// Delete/SetBestAnswerでのロック順序（質問→回答）をGORM実装と揃えるための行ロック
 	// （GORMの clause.Locking{Strength: "UPDATE"} に相当）。質問が存在しない/削除済みなら
 	// pgx.ErrNoRows を返し、呼び出し側のトランザクションを失敗させる。
@@ -789,13 +751,19 @@ type Querier interface {
 	UpdateLearningLogTemplate(ctx context.Context, arg UpdateLearningLogTemplateParams) (LearningLogTemplate, error)
 	// GORMのSave（全カラム上書き）に相当。learning_resourcesは論理削除があるため、
 	// GORMが自動付与するdeleted_at IS NULLスコープをUPDATEにも明示する。
+	// ただしlike_count/save_countは対象外（Increment/Decrement系の専用クエリだけが
+	// 更新する）。ここに含めると、他リクエストによるカウンタ更新をこのUPDATEが
+	// 読み取り時点の古い値で上書きする「ロストアップデート」を起こす。
 	UpdateLearningResource(ctx context.Context, arg UpdateLearningResourceParams) (LearningResource, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateNote(ctx context.Context, arg UpdateNoteParams) (Note, error)
 	UpdateNoteFolder(ctx context.Context, arg UpdateNoteFolderParams) (NoteFolder, error)
 	UpdateNoteTemplate(ctx context.Context, arg UpdateNoteTemplateParams) (NoteTemplate, error)
 	UpdateNotificationSettings(ctx context.Context, arg UpdateNotificationSettingsParams) (NotificationSetting, error)
-	// GORMのSave（全カラム上書き）に相当。
+	// GORMのSave（全カラム上書き）に相当。ただしlike_count/comment_count/bookmark_count/
+	// view_countは対象外（Increment/Decrement系の専用クエリだけが更新する）。
+	// ここに含めると、他リクエストによるカウンタ更新をこのUPDATEが読み取り時点の
+	// 古い値で上書きする「ロストアップデート」を起こす。
 	UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdatePostCollection(ctx context.Context, arg UpdatePostCollectionParams) (PostCollection, error)
@@ -817,7 +785,11 @@ type Querier interface {
 	UpdateReminderSettings(ctx context.Context, arg UpdateReminderSettingsParams) (ReminderSetting, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateResourceReview(ctx context.Context, arg UpdateResourceReviewParams) (ResourceReview, error)
-	// GORMのSave（全カラム上書き）に相当。
+	// GORMのSave（全カラム上書き）に相当。ただしstep_count/completed_step_count/progressは
+	// 対象外（Increment/Decrement系の専用クエリだけが更新する）。ここに含めると、
+	// ステップ作成・削除による並行更新をこのUPDATEが読み取り時点の古い値で上書きする
+	// 「ロストアップデート」を起こす。status/completed_atはユーザーの単発操作
+	// （ステータス変更）であり並行カウンタ更新の対象ではないためここに残す。
 	UpdateRoadmap(ctx context.Context, arg UpdateRoadmapParams) (Roadmap, error)
 	UpdateRoadmapProgress(ctx context.Context, arg UpdateRoadmapProgressParams) error
 	// 進捗100%到達での自動完了（GORMのUpdates({"progress":...,"status":"completed","completed_at":now()})に相当）。

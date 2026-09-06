@@ -46,10 +46,6 @@ func (m *mockNoteTemplateRepo) FindDefaultByUserID(ctx context.Context, userID u
 	return t, args.Error(1)
 }
 
-func (m *mockNoteTemplateRepo) ClearDefaultFlag(ctx context.Context, userID uint) error {
-	return m.Called(ctx, userID).Error(0)
-}
-
 func (m *mockNoteTemplateRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)
@@ -124,13 +120,12 @@ func TestNoteTemplateHandler_Create_TrimsWhitespace(t *testing.T) {
 	p.Templates.AssertExpectations(t)
 }
 
-// デフォルト指定つきの作成は、先に既存のデフォルト指定を外してから書き込む。
+// デフォルト指定つきでも作成できる（デフォルトの排他はSQL側のCTE+部分UNIQUE索引が担保する）。
 func TestNoteTemplateHandler_Create_WithDefaultFlag(t *testing.T) {
 	h, p := newTestNoteTemplateHandler()
 	r := newRouter(1)
 	r.POST("/note-templates", h.Create)
 
-	p.Templates.On("ClearDefaultFlag", mock.Anything, uint(1)).Return(nil)
 	p.Templates.On("Create", mock.Anything, mock.AnythingOfType("*model.NoteTemplate")).Return(nil)
 
 	w := doRequest(r, http.MethodPost, "/note-templates", map[string]interface{}{
@@ -138,21 +133,6 @@ func TestNoteTemplateHandler_Create_WithDefaultFlag(t *testing.T) {
 	})
 	assertStatus(t, w, http.StatusCreated)
 	p.Templates.AssertExpectations(t)
-}
-
-// デフォルト指定の解除に失敗したら作成しない。
-func TestNoteTemplateHandler_Create_ClearDefaultFlagError(t *testing.T) {
-	h, p := newTestNoteTemplateHandler()
-	r := newRouter(1)
-	r.POST("/note-templates", h.Create)
-
-	p.Templates.On("ClearDefaultFlag", mock.Anything, uint(1)).Return(errors.New("db error"))
-
-	w := doRequest(r, http.MethodPost, "/note-templates", map[string]interface{}{
-		"name": "既定", "content_template": "本文", "is_default": true,
-	})
-	assertStatus(t, w, http.StatusInternalServerError)
-	p.Templates.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 }
 
 // name / content_template は DTO の binding で必須。
@@ -363,14 +343,13 @@ func TestNoteTemplateHandler_Update(t *testing.T) {
 	p.Templates.AssertExpectations(t)
 }
 
-// デフォルト指定つきの更新は、書き込み前に既存のデフォルト指定を外す。
+// デフォルト指定に true を渡すと反映される（他テンプレートの解除はSQL側のCTEが担保する）。
 func TestNoteTemplateHandler_Update_WithDefaultFlag(t *testing.T) {
 	h, p := newTestNoteTemplateHandler()
 	r := newRouter(1)
 	r.PUT("/note-templates/:id", h.Update)
 
 	p.Templates.On("FindByID", mock.Anything, uint(1)).Return(templateOwnedBy(1, 1), nil)
-	p.Templates.On("ClearDefaultFlag", mock.Anything, uint(1)).Return(nil)
 	p.Templates.On("Update", mock.Anything, mock.MatchedBy(func(tmpl *model.NoteTemplate) bool {
 		return tmpl.IsDefault
 	})).Return(nil)

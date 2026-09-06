@@ -47,10 +47,6 @@ func (m *mockNoteTemplateRepo) FindDefaultByUserID(ctx context.Context, userID u
 	return t, args.Error(1)
 }
 
-func (m *mockNoteTemplateRepo) ClearDefaultFlag(ctx context.Context, userID uint) error {
-	return m.Called(ctx, userID).Error(0)
-}
-
 func (m *mockNoteTemplateRepo) CountByUserID(ctx context.Context, userID uint) (int64, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).(int64), args.Error(1)
@@ -100,16 +96,11 @@ func TestCreateNoteTemplateUseCase_Execute(t *testing.T) {
 		repo.AssertExpectations(t)
 	})
 
-	t.Run("デフォルト指定つきは既存の指定を外してから作成する", func(t *testing.T) {
+	t.Run("デフォルト指定つきでも作成できる（デフォルトの排他はSQL側のCTE+部分UNIQUE索引が担保する）", func(t *testing.T) {
 		repo := new(mockNoteTemplateRepo)
-		cleared := false
-		repo.On("ClearDefaultFlag", mock.Anything, uint(7)).Run(func(mock.Arguments) {
-			cleared = true
-		}).Return(nil)
-		repo.On("Create", mock.Anything, mock.AnythingOfType("*model.NoteTemplate")).
-			Run(func(mock.Arguments) {
-				assert.True(t, cleared, "ClearDefaultFlag より先に Create が呼ばれている")
-			}).Return(nil)
+		repo.On("Create", mock.Anything, mock.MatchedBy(func(tm *model.NoteTemplate) bool {
+			return tm.IsDefault
+		})).Return(nil)
 		uc := usecase.NewCreateNoteTemplateUseCase(repo)
 
 		err := uc.Execute(context.Background(), &model.NoteTemplate{
@@ -118,19 +109,6 @@ func TestCreateNoteTemplateUseCase_Execute(t *testing.T) {
 
 		assert.NoError(t, err)
 		repo.AssertExpectations(t)
-	})
-
-	t.Run("デフォルト指定の解除に失敗したら作成しない", func(t *testing.T) {
-		repo := new(mockNoteTemplateRepo)
-		repo.On("ClearDefaultFlag", mock.Anything, uint(1)).Return(errors.New("db error"))
-		uc := usecase.NewCreateNoteTemplateUseCase(repo)
-
-		err := uc.Execute(context.Background(), &model.NoteTemplate{
-			UserID: 1, Name: "名前", ContentTemplate: "本文", IsDefault: true,
-		})
-
-		assert.Error(t, err)
-		repo.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 	})
 
 	t.Run("検証エラーでは書き込まない", func(t *testing.T) {
@@ -328,7 +306,6 @@ func TestUpdateNoteTemplateUseCase_Execute(t *testing.T) {
 	t.Run("全フィールドを更新できる", func(t *testing.T) {
 		repo := new(mockNoteTemplateRepo)
 		repo.On("FindByID", mock.Anything, uint(1)).Return(ownedNoteTemplate(1, 5), nil)
-		repo.On("ClearDefaultFlag", mock.Anything, uint(5)).Return(nil)
 		repo.On("Update", mock.Anything, mock.AnythingOfType("*model.NoteTemplate")).Return(nil)
 		uc := usecase.NewUpdateNoteTemplateUseCase(repo)
 
@@ -380,22 +357,6 @@ func TestUpdateNoteTemplateUseCase_Execute(t *testing.T) {
 
 		require.NoError(t, err)
 		assert.False(t, tmpl.IsDefault)
-		repo.AssertNotCalled(t, "ClearDefaultFlag", mock.Anything, mock.Anything)
-	})
-
-	t.Run("デフォルト指定の解除に失敗したら更新しない", func(t *testing.T) {
-		repo := new(mockNoteTemplateRepo)
-		repo.On("FindByID", mock.Anything, uint(1)).Return(ownedNoteTemplate(1, 5), nil)
-		repo.On("ClearDefaultFlag", mock.Anything, uint(5)).Return(errors.New("db error"))
-		uc := usecase.NewUpdateNoteTemplateUseCase(repo)
-
-		isDefault := true
-		_, err := uc.Execute(context.Background(), usecase.UpdateNoteTemplateInput{
-			ID: 1, UserID: 5, IsDefault: &isDefault,
-		})
-
-		assert.Error(t, err)
-		repo.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
 	})
 
 	t.Run("他人のテンプレートは 403", func(t *testing.T) {

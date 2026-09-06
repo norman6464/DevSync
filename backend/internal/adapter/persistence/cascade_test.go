@@ -47,7 +47,7 @@ func TestDeleteWithRelatedData_NoOrphans(t *testing.T) {
 	// NewUserRepository は参照系ポート repository.UserRepository を返すため、
 	// DeleteWithRelatedData（repository.AuthUserRepository 側の契約）を呼ぶには
 	// 具象型 *userRepository を直接構築する。
-	repo := &userRepository{pool: pool, q: sqlcgen.New(pool)}
+	repo := &userRepository{q: sqlcgen.New(pool)}
 
 	// 退会対象ユーザー
 	var targetID int64

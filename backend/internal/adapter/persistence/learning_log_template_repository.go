@@ -67,6 +67,7 @@ func (r *learningLogTemplateRepository) Update(ctx context.Context, template *mo
 		DefaultCategory: &category,
 		DefaultDuration: toInt64Ptr(template.DefaultDuration),
 		IsDefault:       &template.IsDefault,
+		UserID:          int64(template.UserID),
 	})
 	if err != nil {
 		return err
@@ -117,11 +118,6 @@ func (r *learningLogTemplateRepository) FindDefaultByUserID(ctx context.Context,
 	}
 	template := toModelLearningLogTemplate(row)
 	return &template, nil
-}
-
-// ClearDefaultFlag は指定ユーザーの全テンプレートのデフォルト指定を外す。
-func (r *learningLogTemplateRepository) ClearDefaultFlag(ctx context.Context, userID uint) error {
-	return r.q.ClearLearningLogTemplateDefaultFlag(ctx, int64(userID))
 }
 
 // CountByUserID は指定ユーザーのテンプレート総数を返す。

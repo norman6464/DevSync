@@ -21,7 +21,5 @@ type NoteTemplateRepository interface {
 	// 未設定の場合は「不在」を表す (nil, nil) を返す。
 	FindDefaultByUserID(ctx context.Context, userID uint) (*model.NoteTemplate, error)
 
-	// ClearDefaultFlag は指定ユーザーの全テンプレートのデフォルト指定を外す。
-	ClearDefaultFlag(ctx context.Context, userID uint) error
 	CountByUserID(ctx context.Context, userID uint) (int64, error)
 }

@@ -70,11 +70,6 @@ func (uc *CreateLearningLogTemplateUseCase) Execute(ctx context.Context, tmpl *m
 		return err
 	}
 
-	if tmpl.IsDefault {
-		if err := uc.templates.ClearDefaultFlag(ctx, tmpl.UserID); err != nil {
-			return err
-		}
-	}
 	return uc.templates.Create(ctx, tmpl)
 }
 
@@ -194,11 +189,6 @@ func (uc *UpdateLearningLogTemplateUseCase) Execute(ctx context.Context, in Upda
 	}
 	if in.IsDefault != nil {
 		tmpl.IsDefault = *in.IsDefault
-		if *in.IsDefault {
-			if err := uc.templates.ClearDefaultFlag(ctx, tmpl.UserID); err != nil {
-				return nil, err
-			}
-		}
 	}
 
 	if err := uc.templates.Update(ctx, tmpl); err != nil {

@@ -7,68 +7,15 @@ INSERT INTO posts (
 ) RETURNING *;
 
 -- name: UpdatePost :one
--- GORMのSave（全カラム上書き）に相当。
+-- GORMのSave（全カラム上書き）に相当。ただしlike_count/comment_count/bookmark_count/
+-- view_countは対象外（Increment/Decrement系の専用クエリだけが更新する）。
+-- ここに含めると、他リクエストによるカウンタ更新をこのUPDATEが読み取り時点の
+-- 古い値で上書きする「ロストアップデート」を起こす。
 UPDATE posts SET
-    title = $2, content = $3, image_urls = $4, is_draft = $5, like_count = $6,
-    comment_count = $7, bookmark_count = $8, view_count = $9, estimated_read_time = $10,
-    scheduled_at = $11, updated_at = now()
+    title = $2, content = $3, image_urls = $4, is_draft = $5,
+    estimated_read_time = $6, scheduled_at = $7, updated_at = now()
 WHERE id = $1
 RETURNING *;
-
--- name: LockPostForDelete :one
--- 投稿削除の直列化のための行ロック（GORMの clause.Locking{Strength: "UPDATE"} に相当）。
--- 存在しなければ pgx.ErrNoRows を返し、呼び出し側で「既に無ければ何もしない（冪等）」を判定する。
-SELECT id FROM posts WHERE id = $1 FOR UPDATE;
-
--- name: DeleteCommentLikesByPostComments :exec
-DELETE FROM comment_likes WHERE comment_id IN (SELECT id FROM comments WHERE post_id = $1);
-
--- name: DeleteMentionsByPostComments :exec
--- mentions自身もpost_id列を持つため、サブクエリのcommentsを明示的にエイリアス修飾しないと
--- post_idの参照先が曖昧になる（PostgreSQLの相関サブクエリの解決規則による）。
-DELETE FROM mentions WHERE comment_id IN (SELECT c.id FROM comments c WHERE c.post_id = $1);
-
--- name: DeleteCommentsByPost :exec
-DELETE FROM comments WHERE post_id = $1;
-
--- name: DeleteSnippetCommentsByPostSnippets :exec
-DELETE FROM snippet_comments WHERE snippet_id IN (SELECT cs.id FROM code_snippets cs WHERE cs.post_id = $1);
-
--- name: DeleteCodeSnippetsByPost :exec
-DELETE FROM code_snippets WHERE post_id = $1;
-
--- name: DeleteLikesByPost :exec
-DELETE FROM likes WHERE post_id = $1;
-
--- name: DeleteReactionsByPost :exec
-DELETE FROM reactions WHERE post_id = $1;
-
--- name: DeleteBookmarksByPost :exec
-DELETE FROM bookmarks WHERE post_id = $1;
-
--- name: DeleteBookmarkCollectionItemsByPost :exec
-DELETE FROM bookmark_collection_items WHERE post_id = $1;
-
--- name: DeletePostSeriesItemsByPost :exec
-DELETE FROM post_series_items WHERE post_id = $1;
-
--- name: DeletePostCollectionItemsByPost :exec
-DELETE FROM post_collection_items WHERE post_id = $1;
-
--- name: DeletePostTagsByPost :exec
-DELETE FROM post_tags WHERE post_id = $1;
-
--- name: DeletePostPinsByPost :exec
-DELETE FROM post_pins WHERE post_id = $1;
-
--- name: DeletePostViewsByPost :exec
-DELETE FROM post_views WHERE post_id = $1;
-
--- name: DeleteNotificationsByPost :exec
-DELETE FROM notifications WHERE post_id = $1;
-
--- name: DeleteMentionsByPost :exec
-DELETE FROM mentions WHERE post_id = $1;
 
 -- name: DeletePost :exec
 DELETE FROM posts WHERE id = $1;
