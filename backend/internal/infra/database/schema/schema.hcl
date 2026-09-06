@@ -2582,11 +2582,6 @@ table "posts" {
     type    = bigint
     default = 0
   }
-  column "bookmark_count" {
-    null    = true
-    type    = bigint
-    default = 0
-  }
   column "view_count" {
     null    = true
     type    = bigint

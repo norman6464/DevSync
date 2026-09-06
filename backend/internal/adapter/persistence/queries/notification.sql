@@ -12,7 +12,6 @@ SELECT follower_id FROM follows WHERE followee_id = $1;
 -- actor_idはNOT NULLのためINNER JOINでよいが、post_id/question_idはNULL許容のためLEFT JOIN。
 -- LEFT JOIN側のpost/questionはsqlc.embedを使わず個別カラム選択にすることで、
 -- テーブル自体のスキーマではなくJOINコンテキストからNULL許容性を正しく推論させる。
--- questionsは論理削除があるため、削除済みはJOIN条件で除外する（GORM Preloadの自動スコープ相当）。
 SELECT
     sqlc.embed(notifications),
     sqlc.embed(actor),
@@ -24,7 +23,7 @@ SELECT
     posts.is_draft AS post_is_draft,
     posts.like_count AS post_like_count,
     posts.comment_count AS post_comment_count,
-    posts.bookmark_count AS post_bookmark_count,
+    (SELECT COUNT(*) FROM bookmarks WHERE bookmarks.post_id = posts.id) AS post_bookmark_count,
     posts.view_count AS post_view_count,
     posts.estimated_read_time AS post_estimated_read_time,
     posts.scheduled_at AS post_scheduled_at,

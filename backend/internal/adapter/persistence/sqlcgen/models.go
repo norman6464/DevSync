@@ -385,7 +385,6 @@ type Post struct {
 	IsDraft           bool
 	LikeCount         *int64
 	CommentCount      *int64
-	BookmarkCount     *int64
 	ViewCount         *int64
 	EstimatedReadTime *int64
 	ScheduledAt       pgtype.Timestamptz

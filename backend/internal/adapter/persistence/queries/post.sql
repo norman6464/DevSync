@@ -1,9 +1,9 @@
 -- name: CreatePost :one
 INSERT INTO posts (
     user_id, title, content, image_urls, is_draft, like_count, comment_count,
-    bookmark_count, view_count, estimated_read_time, scheduled_at, created_at, updated_at
+    view_count, estimated_read_time, scheduled_at, created_at, updated_at
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, now(), now()
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now(), now()
 ) RETURNING *;
 
 -- name: UpdatePost :one

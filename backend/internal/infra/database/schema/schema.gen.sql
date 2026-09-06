@@ -213,7 +213,6 @@ CREATE TABLE "public"."posts" (
   "is_draft" boolean NOT NULL DEFAULT false,
   "like_count" bigint NULL DEFAULT 0,
   "comment_count" bigint NULL DEFAULT 0,
-  "bookmark_count" bigint NULL DEFAULT 0,
   "view_count" bigint NULL DEFAULT 0,
   "estimated_read_time" bigint NULL DEFAULT 0,
   "scheduled_at" timestamptz NULL,

@@ -37,28 +37,21 @@ func toModelCodeSnippet(row sqlcgen.CodeSnippet) model.CodeSnippet {
 	}
 }
 
-// Bookmark は投稿をブックマークし、投稿の bookmark_count を加算する。
-// 移行前の GORM 実装と同じくトランザクションでは括らない（元実装も2つの独立した操作だったため）。
+// Bookmark は投稿をブックマークする。bookmark_countという列は持たず、
+// 表示時にbookmarksをCOUNT(*)する（attachBookmarkCountsToPosts参照）。
 func (r *postBookmarkRepository) Bookmark(ctx context.Context, userID, postID uint) error {
-	if err := r.q.CreateBookmark(ctx, sqlcgen.CreateBookmarkParams{
-		UserID: int64(userID),
-		PostID: int64(postID),
-	}); err != nil {
-		return err
-	}
-	return r.q.IncrementPostBookmarkCount(ctx, int64(postID))
-}
-
-// Unbookmark はブックマークを解除し、実際に削除できたときだけ bookmark_count をデクリメントする。
-// 移行前の GORM 実装と同じく、デクリメント自体のエラーは呼び出し元へ返さない。
-func (r *postBookmarkRepository) Unbookmark(ctx context.Context, userID, postID uint) error {
-	rowsAffected, err := r.q.DeleteBookmark(ctx, sqlcgen.DeleteBookmarkParams{
+	return r.q.CreateBookmark(ctx, sqlcgen.CreateBookmarkParams{
 		UserID: int64(userID),
 		PostID: int64(postID),
 	})
-	if rowsAffected > 0 {
-		_ = r.q.DecrementPostBookmarkCount(ctx, int64(postID))
-	}
+}
+
+// Unbookmark はブックマークを解除する。
+func (r *postBookmarkRepository) Unbookmark(ctx context.Context, userID, postID uint) error {
+	_, err := r.q.DeleteBookmark(ctx, sqlcgen.DeleteBookmarkParams{
+		UserID: int64(userID),
+		PostID: int64(postID),
+	})
 	return err
 }
 
@@ -113,6 +106,9 @@ func (r *postBookmarkRepository) FindBookmarkedByUserID(ctx context.Context, use
 		for i := range posts {
 			posts[i].CodeSnippets = snippetsByPostID[posts[i].ID]
 		}
+	}
+	if err := attachBookmarkCountsToPosts(ctx, r.q, posts); err != nil {
+		return nil, 0, err
 	}
 
 	return posts, total, nil

@@ -48,6 +48,32 @@ func attachCodeSnippetsToPosts(ctx context.Context, q *sqlcgen.Queries, posts []
 	return nil
 }
 
+// attachBookmarkCountsToPosts は複数の投稿へブックマーク数をまとめて取得して付与する。
+// bookmark_countはORDER BYに使われない表示専用の値のため列として持たず、都度
+// bookmarksからCOUNT(*)する（queries/post_bookmark.sqlのCountBookmarksByPostIDs参照）。
+func attachBookmarkCountsToPosts(ctx context.Context, q *sqlcgen.Queries, posts []model.Post) error {
+	if len(posts) == 0 {
+		return nil
+	}
+	postIDs := make([]int64, len(posts))
+	for i, post := range posts {
+		postIDs[i] = int64(post.ID)
+	}
+
+	countRows, err := q.CountBookmarksByPostIDs(ctx, postIDs)
+	if err != nil {
+		return err
+	}
+	countByPostID := make(map[uint]int, len(countRows))
+	for _, row := range countRows {
+		countByPostID[uint(row.PostID)] = int(row.BookmarkCount)
+	}
+	for i := range posts {
+		posts[i].BookmarkCount = countByPostID[posts[i].ID]
+	}
+	return nil
+}
+
 // Create は投稿を作成する。
 func (r *postRepository) Create(ctx context.Context, post *model.Post) error {
 	row, err := r.q.CreatePost(ctx, sqlcgen.CreatePostParams{
@@ -58,7 +84,6 @@ func (r *postRepository) Create(ctx context.Context, post *model.Post) error {
 		IsDraft:           post.IsDraft,
 		LikeCount:         toInt64Ptr(post.LikeCount),
 		CommentCount:      toInt64Ptr(post.CommentCount),
-		BookmarkCount:     toInt64Ptr(post.BookmarkCount),
 		ViewCount:         toInt64Ptr(post.ViewCount),
 		EstimatedReadTime: toInt64Ptr(post.EstimatedReadTime),
 		ScheduledAt:       toTimestamptz(post.ScheduledAt),
@@ -84,6 +109,9 @@ func (r *postRepository) FindByID(ctx context.Context, id uint) (*model.Post, er
 
 	posts := []model.Post{post}
 	if err := attachCodeSnippetsToPosts(ctx, r.q, posts); err != nil {
+		return nil, err
+	}
+	if err := attachBookmarkCountsToPosts(ctx, r.q, posts); err != nil {
 		return nil, err
 	}
 	return &posts[0], nil
@@ -135,6 +163,9 @@ func (r *postRepository) FindAll(ctx context.Context, page, limit int) ([]model.
 	if err := attachCodeSnippetsToPosts(ctx, r.q, posts); err != nil {
 		return nil, err
 	}
+	if err := attachBookmarkCountsToPosts(ctx, r.q, posts); err != nil {
+		return nil, err
+	}
 	return posts, nil
 }
 
@@ -167,6 +198,9 @@ func (r *postRepository) FindByUserID(ctx context.Context, userID uint, limit, o
 	if err := attachCodeSnippetsToPosts(ctx, r.q, posts); err != nil {
 		return nil, 0, err
 	}
+	if err := attachBookmarkCountsToPosts(ctx, r.q, posts); err != nil {
+		return nil, 0, err
+	}
 	return posts, total, nil
 }
 
@@ -185,6 +219,9 @@ func (r *postRepository) FindDraftsByUserID(ctx context.Context, userID uint) ([
 	if err := attachCodeSnippetsToPosts(ctx, r.q, posts); err != nil {
 		return nil, err
 	}
+	if err := attachBookmarkCountsToPosts(ctx, r.q, posts); err != nil {
+		return nil, err
+	}
 	return posts, nil
 }
 
@@ -201,6 +238,9 @@ func (r *postRepository) FindScheduledByUserID(ctx context.Context, userID uint)
 		posts[i].User = toModelUser(row.User)
 	}
 	if err := attachCodeSnippetsToPosts(ctx, r.q, posts); err != nil {
+		return nil, err
+	}
+	if err := attachBookmarkCountsToPosts(ctx, r.q, posts); err != nil {
 		return nil, err
 	}
 	return posts, nil
@@ -224,6 +264,9 @@ func (r *postRepository) Timeline(ctx context.Context, userID uint, page, limit 
 		posts[i].User = toModelUser(row.User)
 	}
 	if err := attachCodeSnippetsToPosts(ctx, r.q, posts); err != nil {
+		return nil, err
+	}
+	if err := attachBookmarkCountsToPosts(ctx, r.q, posts); err != nil {
 		return nil, err
 	}
 	return posts, nil
