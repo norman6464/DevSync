@@ -34,10 +34,13 @@ func (q *Queries) CountLearningResourcesByUser(ctx context.Context, userID int64
 }
 
 const sumLearningResourceLikeCountByUser = `-- name: SumLearningResourceLikeCountByUser :one
-SELECT COALESCE(SUM(like_count), 0)::bigint FROM learning_resources
-WHERE user_id = $1
+SELECT COALESCE(SUM(lrm.like_count), 0)::bigint
+FROM learning_resources lr
+LEFT JOIN learning_resource_metrics lrm ON lrm.resource_id = lr.id
+WHERE lr.user_id = $1
 `
 
+// like_countはlearning_resource_metrics側（DEVSYNC-159）。LEFT JOIN + COALESCEで0扱いにする。
 func (q *Queries) SumLearningResourceLikeCountByUser(ctx context.Context, userID int64) (int64, error) {
 	row := q.db.QueryRow(ctx, sumLearningResourceLikeCountByUser, userID)
 	var column_1 int64
@@ -46,8 +49,10 @@ func (q *Queries) SumLearningResourceLikeCountByUser(ctx context.Context, userID
 }
 
 const sumLearningResourceSaveCountByUser = `-- name: SumLearningResourceSaveCountByUser :one
-SELECT COALESCE(SUM(save_count), 0)::bigint FROM learning_resources
-WHERE user_id = $1
+SELECT COALESCE(SUM(lrm.save_count), 0)::bigint
+FROM learning_resources lr
+LEFT JOIN learning_resource_metrics lrm ON lrm.resource_id = lr.id
+WHERE lr.user_id = $1
 `
 
 func (q *Queries) SumLearningResourceSaveCountByUser(ctx context.Context, userID int64) (int64, error) {

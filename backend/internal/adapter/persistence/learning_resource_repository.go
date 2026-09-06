@@ -21,6 +21,34 @@ func NewLearningResourceRepository(q *sqlcgen.Queries) repository.LearningResour
 // コンパイル時に port を満たすことを保証する（メソッド追加漏れをビルドで検出）。
 var _ repository.LearningResourceRepository = (*learningResourceRepository)(nil)
 
+// attachLearningResourceMetrics は複数の学習リソースへlike_count/save_countをまとめて
+// 取得して付与する（DEVSYNC-159でlearning_resource_metrics側テーブルへ分離済み。1件も
+// いいね/保存が無いリソースはlearning_resource_metrics行が存在しないため0のまま）。
+func attachLearningResourceMetrics(ctx context.Context, q *sqlcgen.Queries, resources []model.LearningResource) error {
+	if len(resources) == 0 {
+		return nil
+	}
+	resourceIDs := make([]int64, len(resources))
+	for i, resource := range resources {
+		resourceIDs[i] = int64(resource.ID)
+	}
+
+	metricsRows, err := q.GetLearningResourceMetricsByResourceIDs(ctx, resourceIDs)
+	if err != nil {
+		return err
+	}
+	metricsByResourceID := make(map[uint]sqlcgen.LearningResourceMetric, len(metricsRows))
+	for _, row := range metricsRows {
+		metricsByResourceID[uint(row.ResourceID)] = row
+	}
+	for i := range resources {
+		m := metricsByResourceID[resources[i].ID]
+		resources[i].LikeCount = int(m.LikeCount)
+		resources[i].SaveCount = int(m.SaveCount)
+	}
+	return nil
+}
+
 // Create は新しい学習リソースを作成する。
 func (r *learningResourceRepository) Create(ctx context.Context, resource *model.LearningResource) error {
 	row, err := r.q.CreateLearningResource(ctx, sqlcgen.CreateLearningResourceParams{
@@ -33,8 +61,6 @@ func (r *learningResourceRepository) Create(ctx context.Context, resource *model
 		Tags:        &resource.Tags,
 		ImageUrl:    &resource.ImageURL,
 		IsPublic:    resource.IsPublic,
-		LikeCount:   toInt64Ptr(resource.LikeCount),
-		SaveCount:   toInt64Ptr(resource.SaveCount),
 	})
 	if err != nil {
 		return err
@@ -60,6 +86,11 @@ func (r *learningResourceRepository) Update(ctx context.Context, resource *model
 		return err
 	}
 	*resource = toModelLearningResource(row)
+	resources := []model.LearningResource{*resource}
+	if err := attachLearningResourceMetrics(ctx, r.q, resources); err != nil {
+		return err
+	}
+	*resource = resources[0]
 	return nil
 }
 
@@ -80,7 +111,11 @@ func (r *learningResourceRepository) FindByID(ctx context.Context, id uint) (*mo
 	}
 	resource := toModelLearningResource(row.LearningResource)
 	resource.User = toModelUser(row.User)
-	return &resource, nil
+	resources := []model.LearningResource{resource}
+	if err := attachLearningResourceMetrics(ctx, r.q, resources); err != nil {
+		return nil, err
+	}
+	return &resources[0], nil
 }
 
 // FindByUserID は指定ユーザーのリソースを取得する（新しい順）。
@@ -107,6 +142,9 @@ func (r *learningResourceRepository) FindByUserID(ctx context.Context, userID ui
 	resources := make([]model.LearningResource, len(rows))
 	for i, row := range rows {
 		resources[i] = toModelLearningResource(row)
+	}
+	if err := attachLearningResourceMetrics(ctx, r.q, resources); err != nil {
+		return nil, 0, err
 	}
 	return resources, total, nil
 }
@@ -136,6 +174,9 @@ func (r *learningResourceRepository) FindPublic(ctx context.Context, limit, offs
 		resources[i] = toModelLearningResource(row.LearningResource)
 		resources[i].User = toModelUser(row.User)
 	}
+	if err := attachLearningResourceMetrics(ctx, r.q, resources); err != nil {
+		return nil, 0, err
+	}
 	return resources, total, nil
 }
 
@@ -159,6 +200,9 @@ func (r *learningResourceRepository) FindByDifficulty(ctx context.Context, diffi
 	for i, row := range rows {
 		resources[i] = toModelLearningResource(row.LearningResource)
 		resources[i].User = toModelUser(row.User)
+	}
+	if err := attachLearningResourceMetrics(ctx, r.q, resources); err != nil {
+		return nil, 0, err
 	}
 	return resources, total, nil
 }
@@ -186,6 +230,9 @@ func (r *learningResourceRepository) Search(ctx context.Context, query string, l
 		resources[i] = toModelLearningResource(row.LearningResource)
 		resources[i].User = toModelUser(row.User)
 	}
+	if err := attachLearningResourceMetrics(ctx, r.q, resources); err != nil {
+		return nil, 0, err
+	}
 	return resources, total, nil
 }
 
@@ -210,6 +257,9 @@ func (r *learningResourceRepository) FindSavedByUserID(ctx context.Context, user
 		resources[i] = toModelLearningResource(row.LearningResource)
 		resources[i].User = toModelUser(row.User)
 	}
+	if err := attachLearningResourceMetrics(ctx, r.q, resources); err != nil {
+		return nil, 0, err
+	}
 	return resources, total, nil
 }
 
@@ -218,27 +268,22 @@ func (r *learningResourceRepository) CountByUserID(ctx context.Context, userID u
 	return r.q.CountLearningResourcesByUser(ctx, int64(userID))
 }
 
-// Like はいいねを追加し、リソースのいいね数を 1 増やす。
-// 移行前の GORM 実装と同じくトランザクションでは括らない（元実装も2つの独立した操作だったため）。
+// Like はいいねを追加し、learning_resource_metrics.like_count を加算する（同一SQL文、DEVSYNC-159）。
 func (r *learningResourceRepository) Like(ctx context.Context, userID, resourceID uint) error {
-	if err := r.q.CreateResourceLike(ctx, sqlcgen.CreateResourceLikeParams{
+	return r.q.CreateResourceLike(ctx, sqlcgen.CreateResourceLikeParams{
 		UserID:     int64(userID),
 		ResourceID: int64(resourceID),
-	}); err != nil {
-		return err
-	}
-	return r.q.IncrementResourceLikeCount(ctx, int64(resourceID))
+	})
 }
 
-// Unlike はいいねを取り消し、リソースのいいね数を 1 減らす（0 未満にはしない）。
+// Unlike はいいねを取り消す。実際に削除できたときだけlearning_resource_metrics.like_count
+// をデクリメントする（同一SQL文、DEVSYNC-159）。
 func (r *learningResourceRepository) Unlike(ctx context.Context, userID, resourceID uint) error {
-	if err := r.q.DeleteResourceLike(ctx, sqlcgen.DeleteResourceLikeParams{
+	_, err := r.q.DeleteResourceLike(ctx, sqlcgen.DeleteResourceLikeParams{
 		UserID:     int64(userID),
 		ResourceID: int64(resourceID),
-	}); err != nil {
-		return err
-	}
-	return r.q.DecrementResourceLikeCountFloored(ctx, int64(resourceID))
+	})
+	return err
 }
 
 // HasLiked は指定ユーザーがいいね済みかを返す。
@@ -250,26 +295,22 @@ func (r *learningResourceRepository) HasLiked(ctx context.Context, userID, resou
 	return count > 0, err
 }
 
-// Save は保存を追加し、リソースの保存数を 1 増やす。
+// Save は保存を追加し、learning_resource_metrics.save_count を加算する（同一SQL文、DEVSYNC-159）。
 func (r *learningResourceRepository) Save(ctx context.Context, userID, resourceID uint) error {
-	if err := r.q.CreateResourceSave(ctx, sqlcgen.CreateResourceSaveParams{
+	return r.q.CreateResourceSave(ctx, sqlcgen.CreateResourceSaveParams{
 		UserID:     int64(userID),
 		ResourceID: int64(resourceID),
-	}); err != nil {
-		return err
-	}
-	return r.q.IncrementResourceSaveCount(ctx, int64(resourceID))
+	})
 }
 
-// Unsave は保存を取り消し、リソースの保存数を 1 減らす（0 未満にはしない）。
+// Unsave は保存を取り消す。実際に削除できたときだけlearning_resource_metrics.save_count
+// をデクリメントする（同一SQL文、DEVSYNC-159）。
 func (r *learningResourceRepository) Unsave(ctx context.Context, userID, resourceID uint) error {
-	if err := r.q.DeleteResourceSave(ctx, sqlcgen.DeleteResourceSaveParams{
+	_, err := r.q.DeleteResourceSave(ctx, sqlcgen.DeleteResourceSaveParams{
 		UserID:     int64(userID),
 		ResourceID: int64(resourceID),
-	}); err != nil {
-		return err
-	}
-	return r.q.DecrementResourceSaveCountFloored(ctx, int64(resourceID))
+	})
+	return err
 }
 
 // HasSaved は指定ユーザーが保存済みかを返す。

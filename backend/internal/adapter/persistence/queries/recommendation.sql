@@ -28,11 +28,13 @@ LIMIT sqlc.arg('limit');
 
 -- name: ListTrendingResources :many
 -- GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
--- learning_resourcesは論理削除があるため、削除済みは除外する。
+-- like_count/save_countはlearning_resource_metrics側（DEVSYNC-159）。
+-- LEFT JOIN + COALESCEで0扱いにする。
 SELECT sqlc.embed(learning_resources), sqlc.embed(users)
 FROM learning_resources
 JOIN users ON users.id = learning_resources.user_id
+LEFT JOIN learning_resource_metrics lrm ON lrm.resource_id = learning_resources.id
 WHERE learning_resources.is_public = true
     AND learning_resources.created_at > NOW() - INTERVAL '1 day' * sqlc.arg('days')::int
-ORDER BY (learning_resources.like_count + learning_resources.save_count) DESC
+ORDER BY (COALESCE(lrm.like_count, 0) + COALESCE(lrm.save_count, 0)) DESC
 LIMIT sqlc.arg('limit');

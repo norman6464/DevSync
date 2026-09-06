@@ -95,10 +95,12 @@ func (r *resourceProgressRepository) FindByUserID(ctx context.Context, userID ui
 	}
 
 	progresses := make([]model.ResourceProgress, len(rows))
+	var resourceIndexes []int
+	var resources []model.LearningResource
 	for i, row := range rows {
 		progresses[i] = toModelResourceProgress(row.ResourceProgress)
 		if row.ResourceID2 != nil {
-			progresses[i].Resource = &model.LearningResource{
+			resources = append(resources, model.LearningResource{
 				ID:          uint(*row.ResourceID2),
 				UserID:      uint(fromInt64PtrValue(row.ResourceUserID)),
 				Title:       fromStringPtr(row.ResourceTitle),
@@ -109,12 +111,20 @@ func (r *resourceProgressRepository) FindByUserID(ctx context.Context, userID ui
 				Tags:        fromStringPtr(row.ResourceTags),
 				ImageURL:    fromStringPtr(row.ResourceImageUrl),
 				IsPublic:    fromBoolPtr(row.ResourceIsPublic),
-				LikeCount:   int(fromInt64PtrValue(row.ResourceLikeCount)),
-				SaveCount:   int(fromInt64PtrValue(row.ResourceSaveCount)),
 				CreatedAt:   timeValue(fromTimestamptz(row.ResourceCreatedAt)),
 				UpdatedAt:   timeValue(fromTimestamptz(row.ResourceUpdatedAt)),
-			}
+			})
+			resourceIndexes = append(resourceIndexes, i)
 		}
+	}
+	// like_count/save_countはlearning_resource_metrics側（DEVSYNC-159）のため、
+	// 埋め込みJOINの結果には含まれず、ここでまとめて取得して付与する。
+	if err := attachLearningResourceMetrics(ctx, r.q, resources); err != nil {
+		return nil, 0, err
+	}
+	for j, idx := range resourceIndexes {
+		resource := resources[j]
+		progresses[idx].Resource = &resource
 	}
 	return progresses, total, nil
 }

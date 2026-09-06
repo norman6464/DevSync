@@ -43,8 +43,6 @@ func (r *learningResourceReader) FindByID(ctx context.Context, id uint) (*model.
 		Tags:        fromStringPtr(row.Tags),
 		ImageURL:    fromStringPtr(row.ImageUrl),
 		IsPublic:    row.IsPublic,
-		LikeCount:   int(fromInt64PtrValue(row.LikeCount)),
-		SaveCount:   int(fromInt64PtrValue(row.SaveCount)),
 		CreatedAt:   timeValue(fromTimestamptz(row.CreatedAt)),
 		UpdatedAt:   timeValue(fromTimestamptz(row.UpdatedAt)),
 	}, nil

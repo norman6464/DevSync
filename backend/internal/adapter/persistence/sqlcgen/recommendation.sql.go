@@ -180,12 +180,13 @@ func (q *Queries) ListTrendingPosts(ctx context.Context, arg ListTrendingPostsPa
 }
 
 const listTrendingResources = `-- name: ListTrendingResources :many
-SELECT learning_resources.id, learning_resources.user_id, learning_resources.title, learning_resources.description, learning_resources.url, learning_resources.category, learning_resources.difficulty, learning_resources.tags, learning_resources.image_url, learning_resources.is_public, learning_resources.like_count, learning_resources.save_count, learning_resources.created_at, learning_resources.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT learning_resources.id, learning_resources.user_id, learning_resources.title, learning_resources.description, learning_resources.url, learning_resources.category, learning_resources.difficulty, learning_resources.tags, learning_resources.image_url, learning_resources.is_public, learning_resources.created_at, learning_resources.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM learning_resources
 JOIN users ON users.id = learning_resources.user_id
+LEFT JOIN learning_resource_metrics lrm ON lrm.resource_id = learning_resources.id
 WHERE learning_resources.is_public = true
     AND learning_resources.created_at > NOW() - INTERVAL '1 day' * $1::int
-ORDER BY (learning_resources.like_count + learning_resources.save_count) DESC
+ORDER BY (COALESCE(lrm.like_count, 0) + COALESCE(lrm.save_count, 0)) DESC
 LIMIT $2
 `
 
@@ -200,7 +201,8 @@ type ListTrendingResourcesRow struct {
 }
 
 // GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
-// learning_resourcesは論理削除があるため、削除済みは除外する。
+// like_count/save_countはlearning_resource_metrics側（DEVSYNC-159）。
+// LEFT JOIN + COALESCEで0扱いにする。
 func (q *Queries) ListTrendingResources(ctx context.Context, arg ListTrendingResourcesParams) ([]ListTrendingResourcesRow, error) {
 	rows, err := q.db.Query(ctx, listTrendingResources, arg.Days, arg.Limit)
 	if err != nil {
@@ -221,8 +223,6 @@ func (q *Queries) ListTrendingResources(ctx context.Context, arg ListTrendingRes
 			&i.LearningResource.Tags,
 			&i.LearningResource.ImageUrl,
 			&i.LearningResource.IsPublic,
-			&i.LearningResource.LikeCount,
-			&i.LearningResource.SaveCount,
 			&i.LearningResource.CreatedAt,
 			&i.LearningResource.UpdatedAt,
 			&i.User.ID,
