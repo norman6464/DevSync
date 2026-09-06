@@ -685,6 +685,11 @@ CREATE TABLE "public"."notification_settings" (
 );
 -- Create index "uq_notification_settings_user_id" to table: "notification_settings"
 CREATE UNIQUE INDEX "uq_notification_settings_user_id" ON "public"."notification_settings" ("user_id");
+-- Create "notification_verbs" table
+CREATE TABLE "public"."notification_verbs" (
+  "code" text NOT NULL,
+  PRIMARY KEY ("code")
+);
 -- Create "notifications" table
 CREATE TABLE "public"."notifications" (
   "id" bigserial NOT NULL,
@@ -700,7 +705,9 @@ CREATE TABLE "public"."notifications" (
   CONSTRAINT "fk_notifications_actor" FOREIGN KEY ("actor_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_notifications_post" FOREIGN KEY ("post_id") REFERENCES "public"."posts" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "fk_notifications_question" FOREIGN KEY ("question_id") REFERENCES "public"."questions" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
-  CONSTRAINT "fk_notifications_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
+  CONSTRAINT "fk_notifications_type" FOREIGN KEY ("type") REFERENCES "public"."notification_verbs" ("code") ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT "fk_notifications_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
+  CONSTRAINT "ck_notifications_exclusive_target" CHECK (num_nonnulls(post_id, question_id, badge_id) <= 1)
 );
 -- Create index "idx_notifications_post_id" to table: "notifications"
 CREATE INDEX "idx_notifications_post_id" ON "public"."notifications" ("post_id");

@@ -3,9 +3,21 @@ package usecase
 import (
 	"context"
 
+	"github.com/norman6464/devsync/backend/internal/domain"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase/repository"
 )
+
+// validBadgeIDs はEvaluateBadgesが返しうるバッジIDの集合。統計値には依存しないため
+// ゼロ値のBadgeStatsで評価して抽出する。クライアントから届くbadge_idがこの集合に
+// 含まれない場合は不正な値として拒否する（無検証保存の防止）。
+var validBadgeIDs = func() map[string]bool {
+	ids := make(map[string]bool)
+	for _, badge := range EvaluateBadges(&model.BadgeStats{}) {
+		ids[badge.ID] = true
+	}
+	return ids
+}()
 
 // GetUserBadgesUseCase は指定ユーザーの全バッジと獲得状況を返す。
 type GetUserBadgesUseCase struct {
@@ -36,8 +48,12 @@ func NewNotifyBadgeEarnedUseCase(notifications repository.NotificationCreator) *
 	return &NotifyBadgeEarnedUseCase{notifications: notifications}
 }
 
-// Execute は本人宛のバッジ獲得通知を作成する。
+// Execute は本人宛のバッジ獲得通知を作成する。badgeIDはクライアントから届く値のため、
+// EvaluateBadgesが定義する既知のバッジID集合に含まれるものだけを受け付ける。
 func (uc *NotifyBadgeEarnedUseCase) Execute(ctx context.Context, userID uint, badgeID string) error {
+	if !validBadgeIDs[badgeID] {
+		return domain.NewError(domain.ErrCodeBadRequest, "不明なバッジIDです", nil)
+	}
 	return uc.notifications.Create(ctx, &model.Notification{
 		UserID:  userID,
 		Type:    model.NotificationTypeBadge,

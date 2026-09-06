@@ -1922,6 +1922,12 @@ table "notifications" {
     on_update   = NO_ACTION
     on_delete   = CASCADE
   }
+  foreign_key "fk_notifications_type" {
+    columns     = [column.type]
+    ref_columns = [table.notification_verbs.column.code]
+    on_update   = NO_ACTION
+    on_delete   = NO_ACTION
+  }
   index "idx_notifications_post_id" {
     columns = [column.post_id]
   }
@@ -1930,6 +1936,20 @@ table "notifications" {
   }
   index "idx_notifications_user_id" {
     columns = [column.user_id]
+  }
+  check "ck_notifications_exclusive_target" {
+    expr = "num_nonnulls(post_id, question_id, badge_id) <= 1"
+  }
+}
+
+table "notification_verbs" {
+  schema = schema.public
+  column "code" {
+    null = false
+    type = text
+  }
+  primary_key {
+    columns = [column.code]
   }
 }
 

@@ -24,6 +24,17 @@ func cascadeTestDB(t *testing.T) *pgxpool.Pool {
 	pool, err := pgxpool.New(context.Background(), url)
 	require.NoError(t, err)
 	t.Cleanup(pool.Close)
+
+	// notifications.typeはnotification_verbsをFK参照する（DEVSYNC-159）。本番では
+	// NewContainerが起動時に同期的にシードするが、結合テストはコンテナを経由しない
+	// ため、ここで同じ既知コード一覧を冪等に登録しておく。
+	_, err = pool.Exec(context.Background(), `
+		INSERT INTO notification_verbs (code)
+		VALUES ('post'), ('message'), ('like'), ('comment'), ('follow'), ('answer'), ('badge'), ('level_up'), ('mention')
+		ON CONFLICT (code) DO NOTHING
+	`)
+	require.NoError(t, err)
+
 	return pool
 }
 
