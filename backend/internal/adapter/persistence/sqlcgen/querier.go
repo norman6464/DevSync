@@ -379,7 +379,7 @@ type Querier interface {
 	GetCommentByID(ctx context.Context, id int64) (Comment, error)
 	// 指定期間（weekly/monthly）のGitHubコントリビューションランキング。
 	// コントリビューション数の合計で降順ソートし、上位50件を返す。
-	GetContributionRanking(ctx context.Context, date pgtype.Timestamptz) ([]GetContributionRankingRow, error)
+	GetContributionRanking(ctx context.Context, contributedOn pgtype.Date) ([]GetContributionRankingRow, error)
 	GetDefaultLearningLogTemplateByUser(ctx context.Context, userID int64) (LearningLogTemplate, error)
 	GetDefaultNoteTemplateByUser(ctx context.Context, userID int64) (NoteTemplate, error)
 	GetEmojiBreakdownByUser(ctx context.Context, userID int64) ([]GetEmojiBreakdownByUserRow, error)

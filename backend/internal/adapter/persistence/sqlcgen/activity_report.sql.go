@@ -142,18 +142,18 @@ func (q *Queries) CountPostsInRange(ctx context.Context, arg CountPostsInRangePa
 
 const sumContributionsInRange = `-- name: SumContributionsInRange :one
 SELECT COALESCE(SUM(count), 0)::bigint FROM git_hub_contributions
-WHERE user_id = $1 AND date >= $2 AND date < $3
+WHERE user_id = $1 AND contributed_on >= $2 AND contributed_on < $3
 `
 
 type SumContributionsInRangeParams struct {
-	UserID int64
-	Date   pgtype.Timestamptz
-	Date_2 pgtype.Timestamptz
+	UserID          int64
+	ContributedOn   pgtype.Date
+	ContributedOn_2 pgtype.Date
 }
 
 // 期間の合計にも日別集計（開始日=当日0時、終了日=翌日0時）にも同じクエリを使う。
 func (q *Queries) SumContributionsInRange(ctx context.Context, arg SumContributionsInRangeParams) (int64, error) {
-	row := q.db.QueryRow(ctx, sumContributionsInRange, arg.UserID, arg.Date, arg.Date_2)
+	row := q.db.QueryRow(ctx, sumContributionsInRange, arg.UserID, arg.ContributedOn, arg.ContributedOn_2)
 	var column_1 int64
 	err := row.Scan(&column_1)
 	return column_1, err

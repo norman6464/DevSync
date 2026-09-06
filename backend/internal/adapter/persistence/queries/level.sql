@@ -5,7 +5,7 @@ SELECT COUNT(*) FROM posts WHERE user_id = $1;
 SELECT COALESCE(SUM(like_count), 0)::bigint FROM posts WHERE user_id = $1;
 
 -- name: CountGitHubContributionDaysByUser :one
-SELECT COUNT(DISTINCT date) FROM git_hub_contributions WHERE user_id = $1 AND count > 0;
+SELECT COUNT(DISTINCT contributed_on) FROM git_hub_contributions WHERE user_id = $1 AND count > 0;
 
 -- name: CountCompletedLearningGoalsByUser :one
 SELECT COUNT(*) FROM learning_goals WHERE user_id = $1 AND status = $2;

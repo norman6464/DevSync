@@ -1,7 +1,7 @@
 -- name: SumContributionsInRange :one
 -- 期間の合計にも日別集計（開始日=当日0時、終了日=翌日0時）にも同じクエリを使う。
 SELECT COALESCE(SUM(count), 0)::bigint FROM git_hub_contributions
-WHERE user_id = $1 AND date >= $2 AND date < $3;
+WHERE user_id = $1 AND contributed_on >= $2 AND contributed_on < $3;
 
 -- name: CountPostsInRange :one
 -- 期間の合計にも日別集計にも同じクエリを使う。

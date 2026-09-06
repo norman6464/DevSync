@@ -166,12 +166,12 @@ type Follow struct {
 }
 
 type GitHubContribution struct {
-	ID        int64
-	UserID    int64
-	Date      pgtype.Timestamptz
-	Count     int64
-	CreatedAt pgtype.Timestamptz
-	UpdatedAt pgtype.Timestamptz
+	ID            int64
+	UserID        int64
+	ContributedOn pgtype.Date
+	Count         int64
+	CreatedAt     pgtype.Timestamptz
+	UpdatedAt     pgtype.Timestamptz
 }
 
 type GitHubLanguageStat struct {

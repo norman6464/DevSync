@@ -61,7 +61,7 @@ func (r *activityReportRepository) generateReport(ctx context.Context, userID ui
 
 	// 期間内のGitHubコントリビューション合計を取得
 	totalContributions, err := r.q.SumContributionsInRange(ctx, sqlcgen.SumContributionsInRangeParams{
-		UserID: int64(userID), Date: start, Date_2: end,
+		UserID: int64(userID), ContributedOn: toDateNotNull(startDate), ContributedOn_2: toDateNotNull(endDate),
 	})
 	if err != nil {
 		return nil, err
@@ -168,12 +168,9 @@ func (r *activityReportRepository) getDailyActivity(ctx context.Context, userID 
 			Date: dateStr,
 		}
 
-		// 当日のGitHubコントリビューション数を取得
-		// date は timestamptz なので、文字列の日付と等値比較すると DB セッションの
-		// タイムゾーンで 0 時に解釈され、書き込み側のローカル 0 時とずれて一致しない。
-		// 投稿・コメントと同じく、その日の 0 時以上・翌日 0 時未満の範囲で数える。
+		// 当日のGitHubコントリビューション数を取得（contributed_onはdate型なのでタイムゾーンの影響を受けない）
 		contributions, err := r.q.SumContributionsInRange(ctx, sqlcgen.SumContributionsInRangeParams{
-			UserID: int64(userID), Date: dStart, Date_2: dEnd,
+			UserID: int64(userID), ContributedOn: toDateNotNull(d), ContributedOn_2: toDateNotNull(nextDay),
 		})
 		if err != nil {
 			return nil, err

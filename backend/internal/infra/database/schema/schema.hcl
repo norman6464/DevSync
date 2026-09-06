@@ -830,9 +830,9 @@ table "git_hub_contributions" {
     null = false
     type = bigint
   }
-  column "date" {
+  column "contributed_on" {
     null = false
-    type = timestamptz
+    type = date
   }
   column "count" {
     null    = false
@@ -850,9 +850,9 @@ table "git_hub_contributions" {
   primary_key {
     columns = [column.id]
   }
-  index "uq_user_date" {
+  index "uq_git_hub_contributions_user_date" {
     unique  = true
-    columns = [column.user_id, column.date]
+    columns = [column.user_id, column.contributed_on]
   }
   foreign_key "fk_git_hub_contributions_user" {
     columns     = [column.user_id]
