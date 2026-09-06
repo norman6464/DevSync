@@ -10,7 +10,7 @@ import (
 )
 
 const countPostViewsByPost = `-- name: CountPostViewsByPost :one
-SELECT COUNT(*) FROM post_views WHERE post_id = $1
+SELECT COUNT(*) FROM post_views WHERE post_views.post_id = $1
 `
 
 func (q *Queries) CountPostViewsByPost(ctx context.Context, postID int64) (int64, error) {
@@ -21,9 +21,15 @@ func (q *Queries) CountPostViewsByPost(ctx context.Context, postID int64) (int64
 }
 
 const createPostView = `-- name: CreatePostView :execrows
-INSERT INTO post_views (user_id, post_id, created_at)
-VALUES ($1, $2, now())
-ON CONFLICT DO NOTHING
+WITH inserted AS (
+    INSERT INTO post_views (user_id, post_id, created_at)
+    VALUES ($1, $2, now())
+    ON CONFLICT DO NOTHING
+    RETURNING post_views.post_id
+)
+INSERT INTO post_metrics (post_id, view_count)
+SELECT inserted.post_id, 1 FROM inserted
+ON CONFLICT (post_id) DO UPDATE SET view_count = post_metrics.view_count + 1
 `
 
 type CreatePostViewParams struct {
@@ -31,8 +37,10 @@ type CreatePostViewParams struct {
 	PostID int64
 }
 
-// GORMの clause.OnConflict{DoNothing: true} に相当。実際に挿入できた行数を返し、
-// 呼び出し側で「既に閲覧済みだったか」を判定する。
+// GORMの clause.OnConflict{DoNothing: true} に相当。post_viewsへの記録と
+// post_metrics.view_countの加算を同一SQL文で行う（DEVSYNC-159）。既に閲覧済み
+// （ON CONFLICT DO NOTHINGでinsertedが0行）のときはpost_metricsも更新されず、
+// rowsAffectedは従来どおり「実際に新規閲覧として記録できたか」を表す。
 func (q *Queries) CreatePostView(ctx context.Context, arg CreatePostViewParams) (int64, error) {
 	result, err := q.db.Exec(ctx, createPostView, arg.UserID, arg.PostID)
 	if err != nil {
@@ -41,18 +49,9 @@ func (q *Queries) CreatePostView(ctx context.Context, arg CreatePostViewParams) 
 	return result.RowsAffected(), nil
 }
 
-const incrementPostViewCount = `-- name: IncrementPostViewCount :exec
-UPDATE posts SET view_count = view_count + 1 WHERE id = $1
-`
-
-func (q *Queries) IncrementPostViewCount(ctx context.Context, id int64) error {
-	_, err := q.db.Exec(ctx, incrementPostViewCount, id)
-	return err
-}
-
 const listMostViewedPosts = `-- name: ListMostViewedPosts :many
-SELECT post_id, COUNT(*)::bigint AS view_count FROM post_views
-GROUP BY post_id
+SELECT post_views.post_id, COUNT(*)::bigint AS view_count FROM post_views
+GROUP BY post_views.post_id
 ORDER BY view_count DESC
 LIMIT $1
 `

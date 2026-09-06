@@ -224,15 +224,20 @@ type Querier interface {
 	CreatePost(ctx context.Context, arg CreatePostParams) (Post, error)
 	CreatePostCollection(ctx context.Context, arg CreatePostCollectionParams) (PostCollection, error)
 	CreatePostCollectionItem(ctx context.Context, arg CreatePostCollectionItemParams) (PostCollectionItem, error)
-	CreatePostComment(ctx context.Context, arg CreatePostCommentParams) (Comment, error)
+	// commentsへのINSERTとpost_metrics.comment_countの加算を同一SQL文で行う（DEVSYNC-159）。
+	CreatePostComment(ctx context.Context, arg CreatePostCommentParams) (CreatePostCommentRow, error)
+	// likesへのINSERTとpost_metrics.like_countの加算を同一SQL文で行う（DEVSYNC-159）。
+	// CTEの出力列をpost_metrics.post_idと別名にし、sqlcの列名衝突による誤検出を避ける。
 	CreatePostLike(ctx context.Context, arg CreatePostLikeParams) error
 	CreatePostPin(ctx context.Context, arg CreatePostPinParams) error
 	CreatePostSeries(ctx context.Context, arg CreatePostSeriesParams) (PostSeries, error)
 	CreatePostSeriesItem(ctx context.Context, arg CreatePostSeriesItemParams) (PostSeriesItem, error)
 	CreatePostTag(ctx context.Context, arg CreatePostTagParams) error
 	CreatePostTemplate(ctx context.Context, arg CreatePostTemplateParams) (PostTemplate, error)
-	// GORMの clause.OnConflict{DoNothing: true} に相当。実際に挿入できた行数を返し、
-	// 呼び出し側で「既に閲覧済みだったか」を判定する。
+	// GORMの clause.OnConflict{DoNothing: true} に相当。post_viewsへの記録と
+	// post_metrics.view_countの加算を同一SQL文で行う（DEVSYNC-159）。既に閲覧済み
+	// （ON CONFLICT DO NOTHINGでinsertedが0行）のときはpost_metricsも更新されず、
+	// rowsAffectedは従来どおり「実際に新規閲覧として記録できたか」を表す。
 	CreatePostView(ctx context.Context, arg CreatePostViewParams) (int64, error)
 	CreateProject(ctx context.Context, arg CreateProjectParams) (Project, error)
 	CreateProjectMilestone(ctx context.Context, arg CreateProjectMilestoneParams) (ProjectMilestone, error)
@@ -256,8 +261,10 @@ type Querier interface {
 	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
 	CreateYouTubeSearchCache(ctx context.Context, arg CreateYouTubeSearchCacheParams) (YouTubeSearchCach, error)
 	DecrementCommentLikeCount(ctx context.Context, id int64) error
-	DecrementPostCommentCount(ctx context.Context, id int64) error
-	DecrementPostLikeCount(ctx context.Context, id int64) error
+	DecrementPostCommentMetric(ctx context.Context, postID int64) error
+	// 0未満にはしない。post_metrics行がまだ無い場合（理論上は起こらないが防御的に）は
+	// 0のまま新規作成する。
+	DecrementPostLikeMetric(ctx context.Context, postID int64) error
 	// 0未満にはしない（GORMのGREATEST(answer_count - 1, 0)に相当）。
 	DecrementQuestionAnswerCountFloored(ctx context.Context, id int64) error
 	// 0未満にはしない（GORMのGREATEST(like_count - 1, 0)に相当）。
@@ -307,7 +314,11 @@ type Querier interface {
 	DeletePostCollection(ctx context.Context, id int64) error
 	DeletePostCollectionItem(ctx context.Context, arg DeletePostCollectionItemParams) error
 	DeletePostCollectionItemsByCollectionID(ctx context.Context, collectionID int64) error
+	// commentsの削除とpost_metrics.comment_countの減算を同一SQL文で行う。
 	DeletePostComment(ctx context.Context, id int64) error
+	// likesの削除とpost_metrics.like_countの減算を同一SQL文で行う。実際に削除できた
+	// （＝insertedに1行ある）ときだけpost_metricsを更新するため、rowsAffectedは
+	// 従来どおり「実際にいいねを取り消せたか」を表す。
 	DeletePostLike(ctx context.Context, arg DeletePostLikeParams) (int64, error)
 	DeletePostPin(ctx context.Context, arg DeletePostPinParams) error
 	DeletePostSeries(ctx context.Context, id int64) error
@@ -404,6 +415,10 @@ type Querier interface {
 	GetPostAuthorID(ctx context.Context, id int64) (int64, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	GetPostCollectionWithUserByID(ctx context.Context, id int64) (GetPostCollectionWithUserByIDRow, error)
+	// 投稿一覧へlike_count/comment_count/view_countを付与するためのまとめ取り。
+	// 1件もいいね/コメント/閲覧が無い投稿はpost_metrics行が存在しない（遅延生成）ため、
+	// この結果に現れない投稿はGo側で0扱いにする（attachMetricsToPosts参照）。
+	GetPostMetricsByPostIDs(ctx context.Context, dollar_1 []int64) ([]PostMetric, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	GetPostSeriesWithUserByID(ctx context.Context, id int64) (GetPostSeriesWithUserByIDRow, error)
 	GetPostTemplateByID(ctx context.Context, id int64) (PostTemplate, error)
@@ -456,9 +471,11 @@ type Querier interface {
 	GetZennStatsByUser(ctx context.Context, userID int64) (GetZennStatsByUserRow, error)
 	HasStreakFreezeOnDate(ctx context.Context, arg HasStreakFreezeOnDateParams) (bool, error)
 	IncrementCommentLikeCount(ctx context.Context, id int64) error
-	IncrementPostCommentCount(ctx context.Context, id int64) error
-	IncrementPostLikeCount(ctx context.Context, id int64) error
-	IncrementPostViewCount(ctx context.Context, id int64) error
+	IncrementPostCommentMetric(ctx context.Context, postID int64) error
+	// likesへのINSERTと同じ呼び出し元から同一トランザクション相当で呼ぶ。post_metrics行が
+	// 無ければ1から作る（遅延生成）。
+	IncrementPostLikeMetric(ctx context.Context, postID int64) error
+	IncrementPostViewMetric(ctx context.Context, postID int64) error
 	IncrementQuestionAnswerCount(ctx context.Context, id int64) error
 	IncrementResourceLikeCount(ctx context.Context, id int64) error
 	IncrementResourceSaveCount(ctx context.Context, id int64) error
@@ -652,6 +669,8 @@ type Querier interface {
 	ListTopLevelCommentsByPost(ctx context.Context, postID int64) ([]ListTopLevelCommentsByPostRow, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	// CodeSnippetsは別途 ListCodeSnippetsByPostIDs（post_bookmark.sql）で取得しGo側で付与する。
+	// like_count/comment_countはpost_metrics側（DEVSYNC-159）。まだ1件もいいね/コメントが
+	// 無い投稿はpost_metrics行が遅延生成前のため、LEFT JOIN + COALESCEで0扱いにする。
 	ListTrendingPosts(ctx context.Context, arg ListTrendingPostsParams) ([]ListTrendingPostsRow, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	// learning_resourcesは論理削除があるため、削除済みは除外する。
@@ -683,6 +702,10 @@ type Querier interface {
 	MarkMessagesAsRead(ctx context.Context, arg MarkMessagesAsReadParams) error
 	MarkNotificationAsRead(ctx context.Context, arg MarkNotificationAsReadParams) error
 	MarkPasswordResetTokenAsUsed(ctx context.Context, id int64) error
+	// 夜次reconcileジョブ本体。likes/comments/post_viewsの実件数からpost_metricsを
+	// 全件まとめて補正する。CASCADE削除等でIncrement/Decrementを経由しない変化を吸収する。
+	// 1件も無いカウンタは0で確定させる（COALESCE）。
+	ReconcileAllPostMetrics(ctx context.Context) error
 	ReorderRoadmapStep(ctx context.Context, arg ReorderRoadmapStepParams) error
 	ReorderStudyCircleStep(ctx context.Context, arg ReorderStudyCircleStepParams) error
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
@@ -695,6 +718,7 @@ type Querier interface {
 	// GORMのPreload("User")に相当（CodeSnippetsは別クエリで取得しGo側で結合する）。
 	// ソート順はGoの動的Order()呼び出しの代わりに、sort_byごとのCASE式で切り替える
 	// （sort_byはクエリ全体で単一の値のため、行ごとにNULLになったり値になったりはしない）。
+	// like_count/view_countはpost_metrics側（DEVSYNC-159）。LEFT JOIN + COALESCEで0扱いにする。
 	SearchPostsWithFilter(ctx context.Context, arg SearchPostsWithFilterParams) ([]SearchPostsWithFilterRow, error)
 	// GORMのPreload("User").Preload("GithubRepo")に相当（移行前のSearchと同じ挙動）。
 	SearchProjectsWithUserAndRepo(ctx context.Context, arg SearchProjectsWithUserAndRepoParams) ([]SearchProjectsWithUserAndRepoRow, error)
@@ -750,10 +774,8 @@ type Querier interface {
 	UpdateNoteFolder(ctx context.Context, arg UpdateNoteFolderParams) (NoteFolder, error)
 	UpdateNoteTemplate(ctx context.Context, arg UpdateNoteTemplateParams) (NoteTemplate, error)
 	UpdateNotificationSettings(ctx context.Context, arg UpdateNotificationSettingsParams) (NotificationSetting, error)
-	// GORMのSave（全カラム上書き）に相当。ただしlike_count/comment_count/bookmark_count/
-	// view_countは対象外（Increment/Decrement系の専用クエリだけが更新する）。
-	// ここに含めると、他リクエストによるカウンタ更新をこのUPDATEが読み取り時点の
-	// 古い値で上書きする「ロストアップデート」を起こす。
+	// GORMのSave（全カラム上書き）に相当。like_count/comment_count/view_countは
+	// post_metrics側テーブルに分離済み（DEVSYNC-159）のためここには無い。
 	UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdatePostCollection(ctx context.Context, arg UpdatePostCollectionParams) (PostCollection, error)

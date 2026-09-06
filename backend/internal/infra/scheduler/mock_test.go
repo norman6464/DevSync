@@ -38,3 +38,14 @@ var _ WeeklyReportSender = (*MockWeeklyReportSender)(nil)
 func (m *MockWeeklyReportSender) Execute(ctx context.Context) error {
 	return m.Called(ctx).Error(0)
 }
+
+// MockMetricsReconciler は MetricsReconciler のテスト用モック実装。
+type MockMetricsReconciler struct {
+	mock.Mock
+}
+
+var _ MetricsReconciler = (*MockMetricsReconciler)(nil)
+
+func (m *MockMetricsReconciler) Execute(ctx context.Context) error {
+	return m.Called(ctx).Error(0)
+}

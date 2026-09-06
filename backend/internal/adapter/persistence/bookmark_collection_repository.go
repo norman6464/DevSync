@@ -139,6 +139,12 @@ func (r *bookmarkCollectionRepository) GetPosts(ctx context.Context, collectionI
 	for _, row := range rows {
 		posts = append(posts, toModelPost(row.Post))
 	}
+	if err := attachBookmarkCountsToPosts(ctx, r.q, posts); err != nil {
+		return nil, 0, err
+	}
+	if err := attachMetricsToPosts(ctx, r.q, posts); err != nil {
+		return nil, 0, err
+	}
 	return posts, total, nil
 }
 

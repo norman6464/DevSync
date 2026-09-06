@@ -110,6 +110,9 @@ func (r *postBookmarkRepository) FindBookmarkedByUserID(ctx context.Context, use
 	if err := attachBookmarkCountsToPosts(ctx, r.q, posts); err != nil {
 		return nil, 0, err
 	}
+	if err := attachMetricsToPosts(ctx, r.q, posts); err != nil {
+		return nil, 0, err
+	}
 
 	return posts, total, nil
 }

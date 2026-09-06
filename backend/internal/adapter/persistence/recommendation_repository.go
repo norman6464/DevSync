@@ -141,6 +141,12 @@ func (r *recommendationRepository) GetTrendingPosts(ctx context.Context, limit, 
 			posts[i].CodeSnippets = snippetsByPostID[posts[i].ID]
 		}
 	}
+	if err := attachBookmarkCountsToPosts(ctx, r.q, posts); err != nil {
+		return nil, err
+	}
+	if err := attachMetricsToPosts(ctx, r.q, posts); err != nil {
+		return nil, err
+	}
 
 	return posts, nil
 }

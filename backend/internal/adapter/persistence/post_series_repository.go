@@ -148,15 +148,25 @@ func (r *postSeriesRepository) GetPostsBySeriesID(ctx context.Context, seriesID 
 	if err != nil {
 		return nil, err
 	}
+	posts := make([]model.Post, len(rows))
+	for i, row := range rows {
+		posts[i] = toModelPost(row.Post)
+		posts[i].User = toModelUser(row.User)
+	}
+	if err := attachBookmarkCountsToPosts(ctx, r.q, posts); err != nil {
+		return nil, err
+	}
+	if err := attachMetricsToPosts(ctx, r.q, posts); err != nil {
+		return nil, err
+	}
+
 	items := make([]model.PostSeriesItem, len(rows))
 	for i, row := range rows {
-		post := toModelPost(row.Post)
-		post.User = toModelUser(row.User)
 		items[i] = model.PostSeriesItem{
 			ID:         uint(row.PostSeriesItem.ID),
 			SeriesID:   uint(row.PostSeriesItem.SeriesID),
 			PostID:     uint(row.PostSeriesItem.PostID),
-			Post:       post,
+			Post:       posts[i],
 			OrderIndex: int(row.PostSeriesItem.OrderIndex),
 		}
 	}

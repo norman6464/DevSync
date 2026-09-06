@@ -25,6 +25,8 @@ func NewPostPinRepository(pool *pgxpool.Pool) repository.PostPinRepository {
 var _ repository.PostPinRepository = (*postPinRepository)(nil)
 
 // toModelPost は sqlc の生成行を model.Post へ変換する（Post.User の Preload 相当分のみ）。
+// LikeCount/CommentCount/ViewCount/BookmarkCountはpost.postsに列を持たないため、
+// 呼び出し側でattachMetricsToPosts/attachBookmarkCountsToPostsを使って別途付与する。
 func toModelPost(row sqlcgen.Post) model.Post {
 	return model.Post{
 		ID:                uint(row.ID),
@@ -33,9 +35,6 @@ func toModelPost(row sqlcgen.Post) model.Post {
 		Content:           row.Content,
 		ImageURLs:         fromStringPtr(row.ImageUrls),
 		IsDraft:           row.IsDraft,
-		LikeCount:         int(fromInt64PtrValue(row.LikeCount)),
-		CommentCount:      int(fromInt64PtrValue(row.CommentCount)),
-		ViewCount:         int(fromInt64PtrValue(row.ViewCount)),
 		EstimatedReadTime: int(fromInt64PtrValue(row.EstimatedReadTime)),
 		ScheduledAt:       fromTimestamptz(row.ScheduledAt),
 		CreatedAt:         timeValue(fromTimestamptz(row.CreatedAt)),
@@ -69,6 +68,9 @@ func (r *postPinRepository) GetByUserID(ctx context.Context, userID uint) ([]mod
 		posts[i].User = toModelUser(row.User)
 	}
 	if err := attachBookmarkCountsToPosts(ctx, r.q, posts); err != nil {
+		return nil, err
+	}
+	if err := attachMetricsToPosts(ctx, r.q, posts); err != nil {
 		return nil, err
 	}
 

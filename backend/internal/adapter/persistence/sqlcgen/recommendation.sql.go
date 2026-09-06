@@ -99,11 +99,12 @@ func (q *Queries) ListFolloweeIDs(ctx context.Context, followerID int64) ([]int6
 }
 
 const listTrendingPosts = `-- name: ListTrendingPosts :many
-SELECT posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.like_count, posts.comment_count, posts.view_count, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM posts
 JOIN users ON users.id = posts.user_id
+LEFT JOIN post_metrics pm ON pm.post_id = posts.id
 WHERE posts.created_at > NOW() - INTERVAL '1 day' * $1::int
-ORDER BY (posts.like_count + posts.comment_count) DESC
+ORDER BY (COALESCE(pm.like_count, 0) + COALESCE(pm.comment_count, 0)) DESC
 LIMIT $2
 `
 
@@ -119,6 +120,8 @@ type ListTrendingPostsRow struct {
 
 // GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 // CodeSnippetsは別途 ListCodeSnippetsByPostIDs（post_bookmark.sql）で取得しGo側で付与する。
+// like_count/comment_countはpost_metrics側（DEVSYNC-159）。まだ1件もいいね/コメントが
+// 無い投稿はpost_metrics行が遅延生成前のため、LEFT JOIN + COALESCEで0扱いにする。
 func (q *Queries) ListTrendingPosts(ctx context.Context, arg ListTrendingPostsParams) ([]ListTrendingPostsRow, error) {
 	rows, err := q.db.Query(ctx, listTrendingPosts, arg.Days, arg.Limit)
 	if err != nil {
@@ -135,9 +138,6 @@ func (q *Queries) ListTrendingPosts(ctx context.Context, arg ListTrendingPostsPa
 			&i.Post.Content,
 			&i.Post.ImageUrls,
 			&i.Post.IsDraft,
-			&i.Post.LikeCount,
-			&i.Post.CommentCount,
-			&i.Post.ViewCount,
 			&i.Post.EstimatedReadTime,
 			&i.Post.ScheduledAt,
 			&i.Post.CreatedAt,

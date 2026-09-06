@@ -166,15 +166,25 @@ func (r *postCollectionRepository) GetPostsByCollectionID(ctx context.Context, c
 	if err != nil {
 		return nil, err
 	}
+	posts := make([]model.Post, len(rows))
+	for i, row := range rows {
+		posts[i] = toModelPost(row.Post)
+		posts[i].User = toModelUser(row.User)
+	}
+	if err := attachBookmarkCountsToPosts(ctx, r.q, posts); err != nil {
+		return nil, err
+	}
+	if err := attachMetricsToPosts(ctx, r.q, posts); err != nil {
+		return nil, err
+	}
+
 	items := make([]model.PostCollectionItem, len(rows))
 	for i, row := range rows {
-		post := toModelPost(row.Post)
-		post.User = toModelUser(row.User)
 		items[i] = model.PostCollectionItem{
 			ID:           uint(row.PostCollectionItem.ID),
 			CollectionID: uint(row.PostCollectionItem.CollectionID),
 			PostID:       uint(row.PostCollectionItem.PostID),
-			Post:         post,
+			Post:         posts[i],
 			Note:         fromStringPtr(row.PostCollectionItem.Note),
 			OrderIndex:   int(row.PostCollectionItem.OrderIndex),
 			CreatedAt:    timeValue(fromTimestamptz(row.PostCollectionItem.CreatedAt)),

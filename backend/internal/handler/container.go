@@ -284,19 +284,27 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 
 	// ウィークリーレポートメールはクリーンアーキテクチャ（DIP）へ移行済み。
 	// port は usecase/repository、SMTP 実装は adapter/external。
-	// SMTP 未設定のときはスケジューラを起動しないため送信 usecase も組み立てない。
+	// SMTP 未設定のときは送信 usecase を組み立てず nil のままにする
+	// （scheduler.Start は emailSvc が nil ならそのジョブだけ登録しない）。
+	// scheduler.WeeklyReportSender インターフェース型で宣言する（具象型の nil ポインタを
+	// インターフェースへ代入すると非 nil インターフェースになりパニックの原因になるため）。
+	var sendWeeklyReports scheduler.WeeklyReportSender
 	if cfg.SMTPHost != "" {
 		log.Println("SMTP設定が検出されました。メール機能が有効です。")
-		sendWeeklyReports := usecase.NewSendAllWeeklyReportsUseCase(
+		sendWeeklyReports = usecase.NewSendAllWeeklyReportsUseCase(
 			userPort,
 			activityReportRepo,
 			usecase.NewSendWeeklyReportUseCase(external.NewSMTPEmailSender(cfg), cfg.AppURL),
 		)
-		weeklyScheduler := scheduler.New(sendWeeklyReports)
-		go weeklyScheduler.Start()
 	} else {
 		log.Println("SMTP未設定。ウィークリーレポートメールのスケジューラは無効です。")
 	}
+	// 投稿カウンタ（post_metrics）のreconcileはSMTP設定に関わらず常に有効。
+	// port は usecase/repository、sqlc(pgx) 実装は adapter/persistence。
+	postMetricsPort := persistence.NewPostMetricsRepository(sqlcgen.New(sqlPool))
+	reconcilePostMetrics := usecase.NewReconcilePostMetricsUseCase(postMetricsPort)
+	appScheduler := scheduler.New(sendWeeklyReports, reconcilePostMetrics)
+	go appScheduler.Start()
 
 	// ハンドラ
 	origins := cfg.CORSOrigins

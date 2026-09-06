@@ -7,12 +7,21 @@ package sqlcgen
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createPostComment = `-- name: CreatePostComment :one
-INSERT INTO comments (user_id, post_id, parent_id, content, like_count, is_hidden, created_at, updated_at)
-VALUES ($1, $2, $3, $4, 0, false, now(), now())
-RETURNING id, user_id, post_id, parent_id, content, like_count, is_hidden, created_at, updated_at
+WITH inserted_comment AS (
+    INSERT INTO comments (user_id, post_id, parent_id, content, like_count, is_hidden, created_at, updated_at)
+    VALUES ($1, $2, $3, $4, 0, false, now(), now())
+    RETURNING id, user_id, post_id, parent_id, content, like_count, is_hidden, created_at, updated_at
+), metric_upsert AS (
+    INSERT INTO post_metrics (post_id, comment_count)
+    SELECT inserted_comment.post_id, 1 FROM inserted_comment
+    ON CONFLICT (post_id) DO UPDATE SET comment_count = post_metrics.comment_count + 1
+)
+SELECT id, user_id, post_id, parent_id, content, like_count, is_hidden, created_at, updated_at FROM inserted_comment
 `
 
 type CreatePostCommentParams struct {
@@ -22,14 +31,27 @@ type CreatePostCommentParams struct {
 	Content  string
 }
 
-func (q *Queries) CreatePostComment(ctx context.Context, arg CreatePostCommentParams) (Comment, error) {
+type CreatePostCommentRow struct {
+	ID        int64
+	UserID    int64
+	PostID    int64
+	ParentID  *int64
+	Content   string
+	LikeCount *int64
+	IsHidden  bool
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
+}
+
+// commentsへのINSERTとpost_metrics.comment_countの加算を同一SQL文で行う（DEVSYNC-159）。
+func (q *Queries) CreatePostComment(ctx context.Context, arg CreatePostCommentParams) (CreatePostCommentRow, error) {
 	row := q.db.QueryRow(ctx, createPostComment,
 		arg.UserID,
 		arg.PostID,
 		arg.ParentID,
 		arg.Content,
 	)
-	var i Comment
+	var i CreatePostCommentRow
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
@@ -44,30 +66,19 @@ func (q *Queries) CreatePostComment(ctx context.Context, arg CreatePostCommentPa
 	return i, err
 }
 
-const decrementPostCommentCount = `-- name: DecrementPostCommentCount :exec
-UPDATE posts SET comment_count = GREATEST(comment_count - 1, 0) WHERE id = $1
-`
-
-func (q *Queries) DecrementPostCommentCount(ctx context.Context, id int64) error {
-	_, err := q.db.Exec(ctx, decrementPostCommentCount, id)
-	return err
-}
-
 const deletePostComment = `-- name: DeletePostComment :exec
-DELETE FROM comments WHERE id = $1
+WITH deleted AS (
+    DELETE FROM comments WHERE comments.id = $1
+    RETURNING comments.post_id
+)
+INSERT INTO post_metrics (post_id, comment_count)
+SELECT deleted.post_id, 0 FROM deleted
+ON CONFLICT (post_id) DO UPDATE SET comment_count = GREATEST(post_metrics.comment_count - 1, 0)
 `
 
+// commentsの削除とpost_metrics.comment_countの減算を同一SQL文で行う。
 func (q *Queries) DeletePostComment(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, deletePostComment, id)
-	return err
-}
-
-const incrementPostCommentCount = `-- name: IncrementPostCommentCount :exec
-UPDATE posts SET comment_count = comment_count + 1 WHERE id = $1
-`
-
-func (q *Queries) IncrementPostCommentCount(ctx context.Context, id int64) error {
-	_, err := q.db.Exec(ctx, incrementPostCommentCount, id)
 	return err
 }
 
@@ -214,7 +225,7 @@ func (q *Queries) ListTopLevelCommentsByPost(ctx context.Context, postID int64) 
 
 const updatePostComment = `-- name: UpdatePostComment :one
 UPDATE comments SET content = $2, is_hidden = $3, updated_at = now()
-WHERE id = $1
+WHERE comments.id = $1
 RETURNING id, user_id, post_id, parent_id, content, like_count, is_hidden, created_at, updated_at
 `
 

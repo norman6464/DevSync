@@ -383,9 +383,6 @@ type Post struct {
 	Content           string
 	ImageUrls         *string
 	IsDraft           bool
-	LikeCount         *int64
-	CommentCount      *int64
-	ViewCount         *int64
 	EstimatedReadTime *int64
 	ScheduledAt       pgtype.Timestamptz
 	CreatedAt         pgtype.Timestamptz
@@ -409,6 +406,13 @@ type PostCollectionItem struct {
 	Note         *string
 	OrderIndex   int64
 	CreatedAt    pgtype.Timestamptz
+}
+
+type PostMetric struct {
+	PostID       int64
+	LikeCount    int64
+	CommentCount int64
+	ViewCount    int64
 }
 
 type PostPin struct {

@@ -1,16 +1,14 @@
 -- name: CreatePost :one
 INSERT INTO posts (
-    user_id, title, content, image_urls, is_draft, like_count, comment_count,
-    view_count, estimated_read_time, scheduled_at, created_at, updated_at
+    user_id, title, content, image_urls, is_draft,
+    estimated_read_time, scheduled_at, created_at, updated_at
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now(), now()
+    $1, $2, $3, $4, $5, $6, $7, now(), now()
 ) RETURNING *;
 
 -- name: UpdatePost :one
--- GORMのSave（全カラム上書き）に相当。ただしlike_count/comment_count/bookmark_count/
--- view_countは対象外（Increment/Decrement系の専用クエリだけが更新する）。
--- ここに含めると、他リクエストによるカウンタ更新をこのUPDATEが読み取り時点の
--- 古い値で上書きする「ロストアップデート」を起こす。
+-- GORMのSave（全カラム上書き）に相当。like_count/comment_count/view_countは
+-- post_metrics側テーブルに分離済み（DEVSYNC-159）のためここには無い。
 UPDATE posts SET
     title = $2, content = $3, image_urls = $4, is_draft = $5,
     estimated_read_time = $6, scheduled_at = $7, updated_at = now()
