@@ -138,7 +138,7 @@ JOIN users ON users.id = study_circle_member_progresses.user_id
 WHERE study_circle_member_progresses.circle_id = $1;
 
 -- name: CreateStudyCircleCheckin :one
-INSERT INTO study_circle_checkins (circle_id, user_id, date, content, created_at)
+INSERT INTO study_circle_checkins (circle_id, user_id, checked_on, content, created_at)
 VALUES ($1, $2, $3, $4, now())
 RETURNING *;
 
@@ -152,11 +152,11 @@ ORDER BY study_circle_checkins.created_at DESC;
 
 -- name: CountStudyCircleCheckinsToday :one
 SELECT COUNT(*) FROM study_circle_checkins
-WHERE circle_id = $1 AND user_id = $2 AND date = $3;
+WHERE circle_id = $1 AND user_id = $2 AND checked_on = $3;
 
 -- name: ListStudyCircleCheckinDatesByCircle :many
 -- GetStreakRankingのN+1回避のため、サークル分のチェックインをまとめて取得し、
--- Go側でuser_idごとにグルーピングする。dateの降順はcalculateCheckinStreakの前提。
-SELECT user_id, date FROM study_circle_checkins
+-- Go側でuser_idごとにグルーピングする。checked_onの降順はcalculateCheckinStreakの前提。
+SELECT user_id, checked_on FROM study_circle_checkins
 WHERE circle_id = $1
-ORDER BY date DESC;
+ORDER BY checked_on DESC;

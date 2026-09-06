@@ -88,3 +88,24 @@ func toDateNotNull(t time.Time) pgtype.Date {
 func fromDate(d pgtype.Date) time.Time {
 	return d.Time
 }
+
+// dateStringLayout は model.StudyCircleCheckin.Date 等、APIでは "YYYY-MM-DD" の
+// 文字列として扱う日付のレイアウト。
+const dateStringLayout = "2006-01-02"
+
+// toDateFromDateString は "YYYY-MM-DD" 形式の文字列（model側の表現）を日付カラムへ変換する。
+func toDateFromDateString(s string) pgtype.Date {
+	t, err := time.Parse(dateStringLayout, s)
+	if err != nil {
+		return pgtype.Date{}
+	}
+	return pgtype.Date{Time: t, Valid: true}
+}
+
+// fromDateToDateString は日付カラムを "YYYY-MM-DD" 形式の文字列（model側の表現）へ変換する。
+func fromDateToDateString(d pgtype.Date) string {
+	if !d.Valid {
+		return ""
+	}
+	return d.Time.Format(dateStringLayout)
+}

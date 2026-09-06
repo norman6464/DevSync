@@ -672,7 +672,7 @@ type StudyCircleCheckin struct {
 	ID        int64
 	CircleID  int64
 	UserID    int64
-	Date      string
+	CheckedOn pgtype.Date
 	Content   string
 	CreatedAt pgtype.Timestamptz
 }

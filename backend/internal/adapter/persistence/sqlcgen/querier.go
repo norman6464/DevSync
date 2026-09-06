@@ -651,7 +651,7 @@ type Querier interface {
 	ListSolvedQuestionsWithUser(ctx context.Context, arg ListSolvedQuestionsWithUserParams) ([]ListSolvedQuestionsWithUserRow, error)
 	ListStreakFreezesByUserAndMonth(ctx context.Context, arg ListStreakFreezesByUserAndMonthParams) ([]StreakFreeze, error)
 	// GetStreakRankingのN+1回避のため、サークル分のチェックインをまとめて取得し、
-	// Go側でuser_idごとにグルーピングする。dateの降順はcalculateCheckinStreakの前提。
+	// Go側でuser_idごとにグルーピングする。checked_onの降順はcalculateCheckinStreakの前提。
 	ListStudyCircleCheckinDatesByCircle(ctx context.Context, circleID int64) ([]ListStudyCircleCheckinDatesByCircleRow, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	ListStudyCircleCheckinsWithUser(ctx context.Context, circleID int64) ([]ListStudyCircleCheckinsWithUserRow, error)

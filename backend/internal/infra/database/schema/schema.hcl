@@ -3541,9 +3541,9 @@ table "study_circle_checkins" {
     null = false
     type = bigint
   }
-  column "date" {
+  column "checked_on" {
     null = false
-    type = character_varying(10)
+    type = date
   }
   column "content" {
     null = false
@@ -3564,7 +3564,7 @@ table "study_circle_checkins" {
   }
   index "uq_checkin_unique" {
     unique  = true
-    columns = [column.circle_id, column.user_id, column.date]
+    columns = [column.circle_id, column.user_id, column.checked_on]
   }
   foreign_key "fk_study_circle_checkins_circle" {
     columns     = [column.circle_id]
