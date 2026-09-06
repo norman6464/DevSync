@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/dto"
+	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
@@ -22,6 +22,14 @@ func NewNoteVersionHandler(
 	return &NoteVersionHandler{list: list, get: get, restore: restore}
 }
 
+// noteVersionListResponse はノートバージョン一覧レスポンス（ページネーション付き）。
+type noteVersionListResponse struct {
+	Versions []model.NoteVersion `json:"versions"`
+	Total    int64               `json:"total"`
+	Limit    int                 `json:"limit"`
+	Offset   int                 `json:"offset"`
+}
+
 // GetVersions はノートのバージョン履歴一覧を返す。
 func (h *NoteVersionHandler) GetVersions(c *gin.Context) {
 	noteID, ok := parseID(c, "id")
@@ -36,7 +44,7 @@ func (h *NoteVersionHandler) GetVersions(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.NoteVersionListResponse{
+	respondOK(c, noteVersionListResponse{
 		Versions: ensureSlice(versions),
 		Total:    total,
 		Limit:    limit,

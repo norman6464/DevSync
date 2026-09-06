@@ -5,9 +5,9 @@ import (
 	"os"
 
 	"github.com/norman6464/devsync/backend/internal/domain"
+	"github.com/norman6464/devsync/backend/internal/model"
 
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
@@ -64,9 +64,23 @@ func clearAuthCookie(c *gin.Context) {
 	c.SetCookie("token", "", -1, "/", "", secure, true)
 }
 
+// userResponse はユーザー情報レスポンス（認証後のレスポンスで使用）
+type userResponse struct {
+	User model.User `json:"user"`
+}
+
+// registerRequest は新規ユーザー登録リクエスト
+type registerRequest struct {
+	Name            string `json:"name" binding:"required,max=50" validate:"required,max=50"`
+	Username        string `json:"username" binding:"required,max=30" validate:"required,max=30"`
+	Email           string `json:"email" binding:"required,email,max=255" validate:"required,email,max=255"`
+	Password        string `json:"password" binding:"required,min=8" validate:"required,min=8"`
+	ConfirmPassword string `json:"confirm_password" binding:"required" validate:"required"`
+}
+
 // Register はユーザー新規登録を処理する。
 func (h *AuthHandler) Register(c *gin.Context) {
-	req := bindJSON[dto.RegisterRequest](c)
+	req := bindJSON[registerRequest](c)
 	if req == nil {
 		return
 	}
@@ -86,12 +100,18 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	}
 
 	setAuthCookie(c, resp.Token)
-	respondCreated(c, dto.UserResponse{User: resp.User})
+	respondCreated(c, userResponse{User: resp.User})
+}
+
+// loginRequest はログインリクエスト
+type loginRequest struct {
+	Email    string `json:"email" binding:"required,email,max=255" validate:"required,email,max=255"`
+	Password string `json:"password" binding:"required" validate:"required"`
 }
 
 // Login はメール・パスワードによるログインを処理する。
 func (h *AuthHandler) Login(c *gin.Context) {
-	req := bindJSON[dto.LoginRequest](c)
+	req := bindJSON[loginRequest](c)
 	if req == nil {
 		return
 	}
@@ -109,7 +129,12 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	setAuthCookie(c, resp.Token)
-	respondOK(c, dto.UserResponse{User: resp.User})
+	respondOK(c, userResponse{User: resp.User})
+}
+
+// urlResponse はURLを返すレスポンス（OAuth等で使用）。
+type urlResponse struct {
+	URL string `json:"url"`
 }
 
 // GitHubLogin はGitHub OAuthログインのURLを生成して返す。
@@ -120,7 +145,7 @@ func (h *AuthHandler) GitHubLogin(c *gin.Context) {
 		return
 	}
 	url := h.github.LoginURL.Execute(state)
-	respondOK(c, dto.URLResponse{URL: url})
+	respondOK(c, urlResponse{URL: url})
 }
 
 // GitHubLoginCallback はGitHub OAuthコールバックを処理する。
@@ -162,7 +187,7 @@ func (h *AuthHandler) GitHubLoginCallback(c *gin.Context) {
 	h.github.Sync.SyncInBackground(c.Request.Context(), resp.User.ID)
 
 	setAuthCookie(c, resp.Token)
-	respondOK(c, dto.UserResponse{User: resp.User})
+	respondOK(c, userResponse{User: resp.User})
 }
 
 // Me は認証済みユーザーの情報を返す。
@@ -177,10 +202,20 @@ func (h *AuthHandler) Me(c *gin.Context) {
 	respondOK(c, user)
 }
 
+// passwordResetRequest はパスワードリセットリクエスト
+type passwordResetRequest struct {
+	Email string `json:"email" binding:"required,email,max=255" validate:"required,email,max=255"`
+}
+
+// messageResponse は汎用メッセージレスポンス
+type messageResponse struct {
+	Message string `json:"message"`
+}
+
 // RequestPasswordReset はパスワードリセットトークンを生成する。
 // 本番環境ではメール送信を行うべきだが、デモ用にトークンを直接返す。
 func (h *AuthHandler) RequestPasswordReset(c *gin.Context) {
-	req := bindJSON[dto.PasswordResetRequest](c)
+	req := bindJSON[passwordResetRequest](c)
 	if req == nil {
 		return
 	}
@@ -195,12 +230,18 @@ func (h *AuthHandler) RequestPasswordReset(c *gin.Context) {
 	// 本番ではここでメール送信を行う
 	// token変数はメール送信時に使用する（レスポンスには含めない）
 	_ = token
-	respondOK(c, dto.MessageResponse{Message: "メールアドレスが登録されている場合、リセットリンクを送信しました"})
+	respondOK(c, messageResponse{Message: "メールアドレスが登録されている場合、リセットリンクを送信しました"})
+}
+
+// resetPasswordRequest はトークンによるパスワードリセットリクエスト
+type resetPasswordRequest struct {
+	Token       string `json:"token" binding:"required" validate:"required"`
+	NewPassword string `json:"new_password" binding:"required,min=8" validate:"required,min=8"`
 }
 
 // ResetPassword はトークンを使ってパスワードをリセットする。
 func (h *AuthHandler) ResetPassword(c *gin.Context) {
-	req := bindJSON[dto.ResetPasswordRequest](c)
+	req := bindJSON[resetPasswordRequest](c)
 	if req == nil {
 		return
 	}
@@ -210,13 +251,18 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.MessageResponse{Message: "パスワードをリセットしました"})
+	respondOK(c, messageResponse{Message: "パスワードをリセットしました"})
 }
 
 // Logout はユーザーのログアウトを処理し、認証Cookieをクリアする。
 func (h *AuthHandler) Logout(c *gin.Context) {
 	clearAuthCookie(c)
-	respondOK(c, dto.MessageResponse{Message: "ログアウトしました"})
+	respondOK(c, messageResponse{Message: "ログアウトしました"})
+}
+
+// deleteAccountRequest はアカウント削除リクエスト
+type deleteAccountRequest struct {
+	Password string `json:"password" binding:"required" validate:"required"`
 }
 
 // DeleteAccount はユーザーアカウントを完全に削除する。
@@ -224,7 +270,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 func (h *AuthHandler) DeleteAccount(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	req := bindJSON[dto.DeleteAccountRequest](c)
+	req := bindJSON[deleteAccountRequest](c)
 	if req == nil {
 		return
 	}
@@ -234,5 +280,5 @@ func (h *AuthHandler) DeleteAccount(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.MessageResponse{Message: "アカウントを削除しました"})
+	respondOK(c, messageResponse{Message: "アカウントを削除しました"})
 }

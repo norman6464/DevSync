@@ -37,7 +37,6 @@ import (
 const (
 	layerDomain      = "domain"
 	layerModel       = "model"
-	layerDTO         = "dto"
 	layerUsecase     = "usecase"
 	layerUsecaseRepo = "usecase/repository"
 	layerHandler     = "handler"
@@ -57,7 +56,6 @@ var rules = map[string]map[string]string{
 		layerUsecaseRepo: "domain は usecase/repository を import できません（domain は他層に依存しない）",
 		layerAdapter:     "domain は adapter を import できません（domain は他層に依存しない）",
 		layerInfra:       "domain は infra を import できません（domain は他層に依存しない）",
-		layerDTO:         "domain は dto を import できません（API の入出力形式に依存しない）",
 		targetGin:        "domain は gin を import できません",
 		targetNetHTTP:    "domain は net/http を import できません",
 	},
@@ -67,24 +65,14 @@ var rules = map[string]map[string]string{
 		layerUsecaseRepo: "model は usecase/repository を import できません（エンティティは他層に依存しない）",
 		layerAdapter:     "model は adapter を import できません（エンティティは他層に依存しない）",
 		layerInfra:       "model は infra を import できません（エンティティは他層に依存しない）",
-		layerDTO:         "model は dto を import できません（API の入出力形式に依存しない）",
 		targetGin:        "model は gin を import できません",
 		targetNetHTTP:    "model は net/http を import できません",
-	},
-	layerDTO: {
-		layerHandler:     "dto は handler を import できません",
-		layerUsecase:     "dto は usecase を import できません",
-		layerUsecaseRepo: "dto は usecase/repository を import できません",
-		layerAdapter:     "dto は adapter を import できません",
-		layerInfra:       "dto は infra を import できません",
-		targetGin:        "dto は gin を import できません（入出力の構造体定義に HTTP 実装を持ち込まない）",
 	},
 	layerUsecaseRepo: {
 		layerHandler:  "usecase/repository(port) は handler を import できません",
 		layerUsecase:  "usecase/repository(port) は usecase 本体を import できません（port は model / domain のみに依存）",
 		layerAdapter:  "usecase/repository(port) は adapter を import できません（DIP 違反: 実装に依存しない）",
 		layerInfra:    "usecase/repository(port) は infra を import できません",
-		layerDTO:      "usecase/repository(port) は dto を import できません",
 		targetGin:     "usecase/repository(port) は gin を import できません",
 		targetNetHTTP: "usecase/repository(port) は net/http を import できません",
 		targetGORM:    "usecase/repository(port) は gorm を import できません（永続化の実装詳細を port に持ち込まない）",
@@ -93,14 +81,12 @@ var rules = map[string]map[string]string{
 		layerHandler:  "usecase は handler を import できません（依存方向違反）",
 		layerAdapter:  "usecase は adapter を import できません（port = usecase/repository に依存すること: DIP）",
 		layerInfra:    "usecase は infra を import できません（外部との接続は port 経由にする）",
-		layerDTO:      "usecase は dto を import できません（HTTP の入出力形式に依存しない）",
 		targetGin:     "usecase は gin を import できません（*gin.Context など HTTP 層の型を参照しない）",
 		targetNetHTTP: "usecase は net/http を import できません（HTTP 層の型を参照しない）",
 	},
 	layerAdapter: {
 		layerHandler: "adapter は handler を import できません",
 		layerUsecase: "adapter は usecase 本体を import できません（依存先は port = usecase/repository だけ）",
-		layerDTO:     "adapter は dto を import できません",
 		targetGin:    "adapter は gin を import できません",
 	},
 	layerInfra: {
@@ -108,7 +94,6 @@ var rules = map[string]map[string]string{
 		layerUsecase:     "infra は usecase を import できません",
 		layerUsecaseRepo: "infra は usecase/repository を import できません（必要な契約は infra 側で宣言する）",
 		layerAdapter:     "infra は adapter を import できません",
-		layerDTO:         "infra は dto を import できません",
 		targetGin:        "infra は gin を import できません",
 	},
 	layerHandler: {
@@ -304,8 +289,6 @@ func classifyRel(rel string) string {
 		return layerDomain
 	case matches(rel, layerModel):
 		return layerModel
-	case matches(rel, layerDTO):
-		return layerDTO
 	case matches(rel, layerHandler):
 		return layerHandler
 	case matches(rel, layerAdapter):

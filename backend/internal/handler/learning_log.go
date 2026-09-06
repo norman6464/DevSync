@@ -7,7 +7,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
@@ -78,11 +77,21 @@ func NewLearningLogHandler(
 	}
 }
 
+// createLearningLogRequest は学習ログ作成リクエスト。
+type createLearningLogRequest struct {
+	Title    string `json:"title" binding:"required,min=1,max=200" validate:"required,min=1,max=200"`
+	Content  string `json:"content" binding:"required,min=1,max=50000" validate:"required,min=1,max=50000"`
+	Category string `json:"category" binding:"omitempty,max=100"`
+	Duration int    `json:"duration" binding:"omitempty,min=0,max=1440"`
+	Source   string `json:"source" binding:"omitempty,max=500"`
+	GoalID   *uint  `json:"goal_id" binding:"omitempty"`
+}
+
 // Create は新しい学習ログを作成する。
 func (h *LearningLogHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.CreateLearningLogRequest](c)
+	input := bindJSON[createLearningLogRequest](c)
 	if input == nil {
 		return
 	}
@@ -118,11 +127,16 @@ func (h *LearningLogHandler) GetMyCount(c *gin.Context) {
 	respondOK(c, gin.H{"count": count})
 }
 
+// batchCreateLearningLogRequest は学習ログ一括作成リクエスト。
+type batchCreateLearningLogRequest struct {
+	Logs []createLearningLogRequest `json:"logs" binding:"required,min=1,max=50,dive"`
+}
+
 // BatchCreate は複数の学習ログを一括作成する。
 func (h *LearningLogHandler) BatchCreate(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.BatchCreateLearningLogRequest](c)
+	input := bindJSON[batchCreateLearningLogRequest](c)
 	if input == nil {
 		return
 	}
@@ -147,6 +161,14 @@ func (h *LearningLogHandler) BatchCreate(c *gin.Context) {
 	respondCreated(c, results)
 }
 
+// updateLearningLogRequest は学習ログ更新リクエスト。
+type updateLearningLogRequest struct {
+	Title    *string `json:"title" binding:"omitempty,max=200"`
+	Content  *string `json:"content" binding:"omitempty,max=50000"`
+	Category *string `json:"category" binding:"omitempty,max=100"`
+	Duration *int    `json:"duration" binding:"omitempty,min=0,max=1440"`
+}
+
 // Update は指定された学習ログを更新する。
 func (h *LearningLogHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -155,7 +177,7 @@ func (h *LearningLogHandler) Update(c *gin.Context) {
 		return
 	}
 
-	input := bindJSON[dto.UpdateLearningLogRequest](c)
+	input := bindJSON[updateLearningLogRequest](c)
 	if input == nil {
 		return
 	}
@@ -212,6 +234,14 @@ func (h *LearningLogHandler) GetByUserID(c *gin.Context) {
 	h.respondLogList(c, userID)
 }
 
+// learningLogListResponse は学習ログ一覧レスポンス（ページネーション付き）。
+type learningLogListResponse struct {
+	Logs   []model.LearningLog `json:"logs"`
+	Total  int64               `json:"total"`
+	Limit  int                 `json:"limit"`
+	Offset int                 `json:"offset"`
+}
+
 // respondLogList は学習ログ一覧をページネーション付きで返す共通処理。
 func (h *LearningLogHandler) respondLogList(c *gin.Context, userID uint) {
 	limit, offset := parseLimitOffset(c)
@@ -222,7 +252,7 @@ func (h *LearningLogHandler) respondLogList(c *gin.Context, userID uint) {
 		return
 	}
 
-	respondOK(c, dto.LearningLogListResponse{
+	respondOK(c, learningLogListResponse{
 		Logs:   logs,
 		Total:  total,
 		Limit:  limit,
@@ -333,6 +363,11 @@ func (h *LearningLogHandler) ExportLogs(c *gin.Context) {
 	}
 }
 
+// weeklyDurationResponse は週間学習時間レスポンス。
+type weeklyDurationResponse struct {
+	Duration int `json:"duration"`
+}
+
 // GetWeeklyDuration は指定ユーザーの過去7日間の学習時間合計を返す。
 func (h *LearningLogHandler) GetWeeklyDuration(c *gin.Context) {
 	userID, ok := parseID(c, "userId")
@@ -346,7 +381,7 @@ func (h *LearningLogHandler) GetWeeklyDuration(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.WeeklyDurationResponse{Duration: duration})
+	respondOK(c, weeklyDurationResponse{Duration: duration})
 }
 
 // GetMonthlySummary は指定ユーザーの月別学習サマリーを返す。
@@ -407,7 +442,7 @@ func (h *LearningLogHandler) GetFavorites(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.LearningLogListResponse{
+	respondOK(c, learningLogListResponse{
 		Logs:   logs,
 		Total:  total,
 		Limit:  limit,
@@ -429,6 +464,12 @@ func (h *LearningLogHandler) Unfavorite(c *gin.Context) {
 	}
 
 	respondOK(c, domain.NewMessageResponse("学習ログのお気に入りを解除しました"))
+}
+
+// importCSVResponse はCSVインポートレスポンス。
+type importCSVResponse struct {
+	Imported int                 `json:"imported"`
+	Logs     []model.LearningLog `json:"logs"`
 }
 
 // ImportCSV はCSVファイルから学習ログを一括インポートする。
@@ -466,7 +507,7 @@ func (h *LearningLogHandler) ImportCSV(c *gin.Context) {
 		return
 	}
 
-	respondCreated(c, dto.ImportCSVResponse{
+	respondCreated(c, importCSVResponse{
 		Imported: len(logs),
 		Logs:     logs,
 	})
@@ -487,7 +528,7 @@ func (h *LearningLogHandler) GetLinkedLogs(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.LearningLogListResponse{
+	respondOK(c, learningLogListResponse{
 		Logs:   logs,
 		Total:  total,
 		Limit:  limit,
@@ -548,5 +589,5 @@ func (h *LearningLogHandler) GetMyWeeklyDuration(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.WeeklyDurationResponse{Duration: duration})
+	respondOK(c, weeklyDurationResponse{Duration: duration})
 }

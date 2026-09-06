@@ -3,7 +3,6 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
@@ -36,7 +35,7 @@ func (h *SpotifyHandler) Connect(c *gin.Context) {
 		return
 	}
 	url := h.uc.OAuthURL.Execute(state)
-	respondOK(c, dto.URLResponse{URL: url})
+	respondOK(c, urlResponse{URL: url})
 }
 
 // Callback はSpotify OAuthコールバックを処理する。

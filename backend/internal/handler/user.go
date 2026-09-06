@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
@@ -79,6 +78,18 @@ func (h *UserHandler) GetByUsername(c *gin.Context) {
 	respondOK(c, user)
 }
 
+// updateUserRequest はユーザープロフィール更新リクエスト。
+type updateUserRequest struct {
+	Name                string  `json:"name" binding:"omitempty,max=200"`
+	Bio                 string  `json:"bio" binding:"omitempty,max=500"`
+	AvatarURL           string  `json:"avatar_url" binding:"omitempty,max=2000"`
+	SkillsLanguages     *string `json:"skills_languages" binding:"omitempty,max=1000"`
+	SkillsFrameworks    *string `json:"skills_frameworks" binding:"omitempty,max=1000"`
+	AtCoderUsername     *string `json:"atcoder_username" binding:"omitempty,max=100"`
+	PaizaRank           *string `json:"paiza_rank" binding:"omitempty,max=20"`
+	OnboardingCompleted *bool   `json:"onboarding_completed"`
+}
+
 // Update はユーザープロフィールを更新する。
 // 所有権チェック・フィールドマッピング・バリデーションはService層で実施する。
 func (h *UserHandler) Update(c *gin.Context) {
@@ -88,7 +99,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.UpdateUserRequest](c)
+	input := bindJSON[updateUserRequest](c)
 	if input == nil {
 		return
 	}

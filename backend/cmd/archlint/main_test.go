@@ -25,7 +25,6 @@ func TestClassifyRel(t *testing.T) {
 		{"domain", layerDomain},
 		{"domain/validator", layerDomain},
 		{"model", layerModel},
-		{"dto", layerDTO},
 		{"usecase", layerUsecase},
 		{"usecase/repository", layerUsecaseRepo},
 		{"usecase/repository/sub", layerUsecaseRepo},

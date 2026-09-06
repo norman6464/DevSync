@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
@@ -47,7 +46,7 @@ func (h *AtCoderHandler) GetRating(c *gin.Context) {
 func (h *AtCoderHandler) Connect(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.ConnectUsernameRequest](c)
+	input := bindJSON[connectUsernameRequest](c)
 	if input == nil {
 		return
 	}

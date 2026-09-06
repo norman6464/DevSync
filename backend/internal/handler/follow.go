@@ -3,7 +3,7 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/dto"
+	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
@@ -59,6 +59,14 @@ func (h *FollowHandler) Unfollow(c *gin.Context) {
 	respondOK(c, domain.NewMessageResponse("unfollowed"))
 }
 
+// followListResponse はフォロワー/フォロー中一覧レスポンス（ページネーション付き）。
+type followListResponse struct {
+	Users  []model.User `json:"users"`
+	Total  int64        `json:"total"`
+	Limit  int          `json:"limit"`
+	Offset int          `json:"offset"`
+}
+
 // GetFollowers は指定ユーザーのフォロワー一覧をページネーション付きで返す。
 func (h *FollowHandler) GetFollowers(c *gin.Context) {
 	id, ok := parseID(c, "id")
@@ -71,7 +79,7 @@ func (h *FollowHandler) GetFollowers(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, dto.FollowListResponse{
+	respondOK(c, followListResponse{
 		Users:  ensureSlice(users),
 		Total:  total,
 		Limit:  limit,
@@ -91,7 +99,7 @@ func (h *FollowHandler) GetFollowing(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, dto.FollowListResponse{
+	respondOK(c, followListResponse{
 		Users:  ensureSlice(users),
 		Total:  total,
 		Limit:  limit,

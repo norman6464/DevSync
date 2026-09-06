@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
@@ -62,6 +61,12 @@ func (h *ResourceReviewHandler) Create(c *gin.Context) {
 	respondCreated(c, review)
 }
 
+// resourceReviewListResponse はリソースレビュー一覧レスポンス。
+type resourceReviewListResponse struct {
+	Reviews []model.ResourceReview `json:"reviews"`
+	Total   int64                  `json:"total"`
+}
+
 // GetByResourceID は指定リソースのレビュー一覧を取得する。
 func (h *ResourceReviewHandler) GetByResourceID(c *gin.Context) {
 	resourceID, ok := parseID(c, "id")
@@ -77,7 +82,7 @@ func (h *ResourceReviewHandler) GetByResourceID(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.ResourceReviewListResponse{
+	respondOK(c, resourceReviewListResponse{
 		Reviews: ensureSlice(reviews),
 		Total:   total,
 	})

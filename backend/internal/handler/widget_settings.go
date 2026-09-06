@@ -1,9 +1,10 @@
 package handler
 
 import (
+	"encoding/json"
+
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
@@ -34,11 +35,16 @@ func (h *WidgetSettingsHandler) GetSettings(c *gin.Context) {
 	respondOK(c, settings)
 }
 
+// updateWidgetSettingsRequest はウィジェット設定更新リクエスト。
+type updateWidgetSettingsRequest struct {
+	Settings json.RawMessage `json:"settings" binding:"required"`
+}
+
 // UpdateSettings は認証ユーザーのウィジェット設定を更新する。
 func (h *WidgetSettingsHandler) UpdateSettings(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.UpdateWidgetSettingsRequest](c)
+	input := bindJSON[updateWidgetSettingsRequest](c)
 	if input == nil {
 		return
 	}

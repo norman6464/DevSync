@@ -3,7 +3,6 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
@@ -25,6 +24,11 @@ func NewPostTagHandler(
 	return &PostTagHandler{setTags: setTags, getTags: getTags, findByTag: findByTag, popularTags: popularTags}
 }
 
+// setTagsRequest はタグ設定のリクエストボディ。
+type setTagsRequest struct {
+	Tags []string `json:"tags"`
+}
+
 // SetTags は投稿のタグを設定する。
 func (h *PostTagHandler) SetTags(c *gin.Context) {
 	postID, ok := parseID(c, "postId")
@@ -32,7 +36,7 @@ func (h *PostTagHandler) SetTags(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[dto.SetTagsRequest](c)
+	req := bindJSON[setTagsRequest](c)
 	if req == nil {
 		return
 	}
@@ -42,6 +46,11 @@ func (h *PostTagHandler) SetTags(c *gin.Context) {
 		return
 	}
 	respondOK(c, domain.NewMessageResponse("タグを更新しました"))
+}
+
+// tagsResponse はタグ一覧レスポンス
+type tagsResponse struct {
+	Tags interface{} `json:"tags"`
 }
 
 // GetByPostID は投稿のタグ一覧を取得する。
@@ -56,7 +65,7 @@ func (h *PostTagHandler) GetByPostID(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, dto.TagsResponse{Tags: tags})
+	respondOK(c, tagsResponse{Tags: tags})
 }
 
 // FindPostsByTag はタグで投稿を検索する。
@@ -89,5 +98,5 @@ func (h *PostTagHandler) GetPopularTags(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, dto.TagsResponse{Tags: tags})
+	respondOK(c, tagsResponse{Tags: tags})
 }

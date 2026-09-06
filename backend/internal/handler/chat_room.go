@@ -3,7 +3,6 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
@@ -53,11 +52,18 @@ func NewChatRoomHandler(
 	}
 }
 
+// createChatRoomRequest はチャットルーム作成リクエスト。
+type createChatRoomRequest struct {
+	Name        string `json:"name" binding:"required,max=200" validate:"required,max=200"`
+	Description string `json:"description" binding:"omitempty,max=2000"`
+	MemberIDs   []uint `json:"member_ids" binding:"omitempty,max=100"`
+}
+
 // Create は新しいチャットルームを作成する。
 func (h *ChatRoomHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.CreateChatRoomRequest](c)
+	input := bindJSON[createChatRoomRequest](c)
 	if input == nil {
 		return
 	}
@@ -76,6 +82,14 @@ func (h *ChatRoomHandler) Create(c *gin.Context) {
 	respondCreated(c, created)
 }
 
+// chatRoomListResponse はチャットルーム一覧レスポンス（ページネーション付き）。
+type chatRoomListResponse struct {
+	Rooms  []model.ChatRoom `json:"rooms"`
+	Total  int64            `json:"total"`
+	Limit  int              `json:"limit"`
+	Offset int              `json:"offset"`
+}
+
 // GetMyRooms は現在のユーザーが参加しているチャットルーム一覧を取得する。
 func (h *ChatRoomHandler) GetMyRooms(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -85,7 +99,7 @@ func (h *ChatRoomHandler) GetMyRooms(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, dto.ChatRoomListResponse{
+	respondOK(c, chatRoomListResponse{
 		Rooms:  ensureSlice(rooms),
 		Total:  total,
 		Limit:  limit,
@@ -100,6 +114,12 @@ func (h *ChatRoomHandler) GetByID(c *gin.Context) {
 	})
 }
 
+// updateChatRoomRequest はチャットルーム更新リクエスト。
+type updateChatRoomRequest struct {
+	Name        string `json:"name" binding:"omitempty,max=200"`
+	Description string `json:"description" binding:"omitempty,max=2000"`
+}
+
 // Update は指定IDのチャットルーム情報を更新する。
 func (h *ChatRoomHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -108,7 +128,7 @@ func (h *ChatRoomHandler) Update(c *gin.Context) {
 		return
 	}
 
-	input := bindJSON[dto.UpdateChatRoomRequest](c)
+	input := bindJSON[updateChatRoomRequest](c)
 	if input == nil {
 		return
 	}
@@ -144,6 +164,11 @@ func (h *ChatRoomHandler) GetMembers(c *gin.Context) {
 	respondOK(c, members)
 }
 
+// addChatRoomMemberRequest はメンバー追加リクエスト。
+type addChatRoomMemberRequest struct {
+	UserID uint `json:"user_id" binding:"required" validate:"required"`
+}
+
 // AddMember はチャットルームに新しいメンバーを追加する。
 func (h *ChatRoomHandler) AddMember(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -152,7 +177,7 @@ func (h *ChatRoomHandler) AddMember(c *gin.Context) {
 		return
 	}
 
-	input := bindJSON[dto.AddChatRoomMemberRequest](c)
+	input := bindJSON[addChatRoomMemberRequest](c)
 	if input == nil {
 		return
 	}
@@ -201,6 +226,11 @@ func (h *ChatRoomHandler) GetMessages(c *gin.Context) {
 	respondOK(c, ensureSlice(messages))
 }
 
+// sendChatRoomMessageRequest はチャットルームメッセージ送信リクエスト。
+type sendChatRoomMessageRequest struct {
+	Content string `json:"content" binding:"required,max=5000" validate:"required,max=5000"`
+}
+
 // SendMessage は指定チャットルームにメッセージを送信する。
 func (h *ChatRoomHandler) SendMessage(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -209,7 +239,7 @@ func (h *ChatRoomHandler) SendMessage(c *gin.Context) {
 		return
 	}
 
-	input := bindJSON[dto.SendChatRoomMessageRequest](c)
+	input := bindJSON[sendChatRoomMessageRequest](c)
 	if input == nil {
 		return
 	}

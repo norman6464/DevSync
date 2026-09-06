@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/dto"
+	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
@@ -14,6 +14,14 @@ type UserActivityHandler struct {
 // NewUserActivityHandler は UserActivityHandler を生成する。
 func NewUserActivityHandler(getTimeline *usecase.GetActivityTimelineUseCase) *UserActivityHandler {
 	return &UserActivityHandler{getTimeline: getTimeline}
+}
+
+// userActivityListResponse はアクティビティタイムラインレスポンス。
+type userActivityListResponse struct {
+	Activities []model.UserActivity `json:"activities"`
+	Total      int64                `json:"total"`
+	Limit      int                  `json:"limit"`
+	Offset     int                  `json:"offset"`
 }
 
 // GetTimeline はユーザーのアクティビティタイムラインを取得する。
@@ -32,7 +40,7 @@ func (h *UserActivityHandler) GetTimeline(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.UserActivityListResponse{
+	respondOK(c, userActivityListResponse{
 		Activities: ensureSlice(activities),
 		Total:      total,
 		Limit:      limit,

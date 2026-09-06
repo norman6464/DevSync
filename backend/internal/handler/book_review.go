@@ -3,7 +3,6 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
@@ -47,11 +46,22 @@ func NewBookReviewHandler(
 	}
 }
 
+// createBookReviewRequest は書籍レビュー作成のリクエストボディ。
+type createBookReviewRequest struct {
+	Title      string `json:"title" binding:"required,min=1,max=300" validate:"required,min=1,max=300"`
+	Author     string `json:"author" binding:"max=200" validate:"max=200"`
+	ISBN       string `json:"isbn" binding:"max=20" validate:"max=20"`
+	Rating     int    `json:"rating" binding:"required,min=1,max=5" validate:"required,min=1,max=5"`
+	Review     string `json:"review" binding:"omitempty,max=5000"`
+	ImageURL   string `json:"image_url" binding:"omitempty,http_url,max=2000"`
+	TotalPages *int   `json:"total_pages" binding:"omitempty,min=0"`
+}
+
 // Create は新しい書籍レビューを作成する。
 func (h *BookReviewHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	req := bindJSON[dto.CreateBookReviewRequest](c)
+	req := bindJSON[createBookReviewRequest](c)
 	if req == nil {
 		return
 	}
@@ -84,6 +94,14 @@ func (h *BookReviewHandler) GetByID(c *gin.Context) {
 	})
 }
 
+// bookReviewListResponse は書籍レビュー一覧レスポンス。
+type bookReviewListResponse struct {
+	Reviews []model.BookReview `json:"reviews"`
+	Total   int64              `json:"total"`
+	Limit   int                `json:"limit"`
+	Offset  int                `json:"offset"`
+}
+
 // GetByUserID は指定ユーザーの書籍レビュー一覧をページネーション付きで取得する。
 func (h *BookReviewHandler) GetByUserID(c *gin.Context) {
 	userID, ok := parseID(c, "userId")
@@ -99,7 +117,7 @@ func (h *BookReviewHandler) GetByUserID(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.BookReviewListResponse{
+	respondOK(c, bookReviewListResponse{
 		Reviews: reviews,
 		Total:   total,
 		Limit:   limit,
@@ -119,7 +137,7 @@ func (h *BookReviewHandler) GetMyReviews(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.BookReviewListResponse{
+	respondOK(c, bookReviewListResponse{
 		Reviews: reviews,
 		Total:   total,
 		Limit:   limit,
@@ -137,12 +155,22 @@ func (h *BookReviewHandler) GetAll(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.BookReviewListResponse{
+	respondOK(c, bookReviewListResponse{
 		Reviews: reviews,
 		Total:   total,
 		Limit:   limit,
 		Offset:  offset,
 	})
+}
+
+// updateBookReviewRequest は書籍レビュー更新のリクエストボディ。
+type updateBookReviewRequest struct {
+	Title    string `json:"title" binding:"omitempty,min=1,max=300" validate:"omitempty,min=1,max=300"`
+	Author   string `json:"author" binding:"omitempty,max=200" validate:"omitempty,max=200"`
+	ISBN     string `json:"isbn" binding:"omitempty,max=20" validate:"omitempty,max=20"`
+	Rating   *int   `json:"rating" binding:"omitempty,min=1,max=5" validate:"omitempty,min=1,max=5"`
+	Review   string `json:"review" binding:"omitempty,min=1,max=5000"`
+	ImageURL string `json:"image_url" binding:"omitempty,http_url,max=2000"`
 }
 
 // Update は指定IDの書籍レビューを更新する。
@@ -153,7 +181,7 @@ func (h *BookReviewHandler) Update(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[dto.UpdateBookReviewRequest](c)
+	req := bindJSON[updateBookReviewRequest](c)
 	if req == nil {
 		return
 	}
@@ -224,6 +252,11 @@ func (h *BookReviewHandler) Unarchive(c *gin.Context) {
 	}, "書籍レビューのアーカイブを解除しました")
 }
 
+// updateBookReviewStatusRequest は書籍レビューの読書状態更新リクエスト。
+type updateBookReviewStatusRequest struct {
+	Status string `json:"status" binding:"required"`
+}
+
 // UpdateStatus は書籍レビューの読書状態を更新する。
 func (h *BookReviewHandler) UpdateStatus(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -232,7 +265,7 @@ func (h *BookReviewHandler) UpdateStatus(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[dto.UpdateBookReviewStatusRequest](c)
+	req := bindJSON[updateBookReviewStatusRequest](c)
 	if req == nil {
 		return
 	}
@@ -245,6 +278,11 @@ func (h *BookReviewHandler) UpdateStatus(c *gin.Context) {
 	respondOK(c, domain.NewMessageResponse("読書状態を更新しました"))
 }
 
+// updateReadingProgressRequest は読書進捗更新リクエスト。
+type updateReadingProgressRequest struct {
+	CurrentPage int `json:"current_page" binding:"required,min=0"`
+}
+
 // UpdateProgress は書籍レビューの読書進捗を更新する。
 func (h *BookReviewHandler) UpdateProgress(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -253,7 +291,7 @@ func (h *BookReviewHandler) UpdateProgress(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[dto.UpdateReadingProgressRequest](c)
+	req := bindJSON[updateReadingProgressRequest](c)
 	if req == nil {
 		return
 	}
@@ -281,7 +319,7 @@ func (h *BookReviewHandler) Search(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.BookReviewListResponse{
+	respondOK(c, bookReviewListResponse{
 		Reviews: reviews,
 		Total:   total,
 		Limit:   limit,

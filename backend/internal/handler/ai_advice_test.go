@@ -366,3 +366,45 @@ func TestAIAdviceGetUnreadAdvice_RepositoryError(t *testing.T) {
 	assertStatus(t, w, http.StatusInternalServerError)
 	ports.Advices.AssertExpectations(t)
 }
+
+func TestAIChatRequest_Validation(t *testing.T) {
+	tests := []struct {
+		name    string
+		request aiChatRequest
+		wantErr bool
+	}{
+		{
+			name: "有効なリクエスト（新規会話）",
+			request: aiChatRequest{
+				Message: "Go言語について教えてください",
+			},
+			wantErr: false,
+		},
+		{
+			name: "有効なリクエスト（既存会話）",
+			request: aiChatRequest{
+				Message:        "続きを教えてください",
+				ConversationID: 42,
+			},
+			wantErr: false,
+		},
+		{
+			name: "メッセージが空",
+			request: aiChatRequest{
+				Message: "",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validate.Struct(tt.request)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}

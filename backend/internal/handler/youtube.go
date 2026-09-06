@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/dto"
+	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
@@ -22,6 +22,14 @@ func NewYouTubeHandler(
 	return &YouTubeHandler{search: search, recommend: recommend, availability: availability}
 }
 
+// youTubeSearchResponse はYouTube動画検索のレスポンス。
+type youTubeSearchResponse struct {
+	Videos []model.YouTubeVideo `json:"videos"`
+	Query  string               `json:"query"`
+	Cached bool                 `json:"cached"`
+	Total  int                  `json:"total"`
+}
+
 // Search はキーワードでYouTube動画を検索する。
 func (h *YouTubeHandler) Search(c *gin.Context) {
 	query := c.Query("q")
@@ -38,12 +46,19 @@ func (h *YouTubeHandler) Search(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.YouTubeSearchResponse{
+	respondOK(c, youTubeSearchResponse{
 		Videos: ensureSlice(videos),
 		Query:  query,
 		Cached: cached,
 		Total:  len(videos),
 	})
+}
+
+// youTubeRecommendResponse はおすすめ動画のレスポンス。
+type youTubeRecommendResponse struct {
+	Videos    []model.YouTubeVideo `json:"videos"`
+	Skills    []string             `json:"skills"`
+	Available bool                 `json:"available"`
 }
 
 // Recommend はユーザーのスキルに基づくおすすめ動画を返す。
@@ -56,14 +71,19 @@ func (h *YouTubeHandler) Recommend(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.YouTubeRecommendResponse{
+	respondOK(c, youTubeRecommendResponse{
 		Videos:    ensureSlice(videos),
 		Skills:    ensureSlice(skills),
 		Available: h.availability.Execute(),
 	})
 }
 
+// availabilityResponse は利用可能状態レスポンス
+type availabilityResponse struct {
+	Available bool `json:"available"`
+}
+
 // Status はYouTube API機能の利用可能状態を返す。
 func (h *YouTubeHandler) Status(c *gin.Context) {
-	respondOK(c, dto.AvailabilityResponse{Available: h.availability.Execute()})
+	respondOK(c, availabilityResponse{Available: h.availability.Execute()})
 }

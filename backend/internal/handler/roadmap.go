@@ -3,7 +3,6 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
@@ -66,11 +65,19 @@ func NewRoadmapHandler(
 
 // === ロードマップエンドポイント ===
 
+// createRoadmapRequest はロードマップ作成リクエストのDTO。
+type createRoadmapRequest struct {
+	Title       string `json:"title" binding:"required,max=200"`
+	Description string `json:"description" binding:"omitempty,max=2000"`
+	Category    string `json:"category" binding:"omitempty,max=100"`
+	IsPublic    bool   `json:"is_public"`
+}
+
 // Create は新しいロードマップを作成する。
 func (h *RoadmapHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.CreateRoadmapRequest](c)
+	input := bindJSON[createRoadmapRequest](c)
 	if input == nil {
 		return
 	}
@@ -96,6 +103,14 @@ func (h *RoadmapHandler) Create(c *gin.Context) {
 	respondCreated(c, roadmap)
 }
 
+// roadmapListResponse はロードマップ一覧レスポンス。
+type roadmapListResponse struct {
+	Roadmaps []model.Roadmap `json:"roadmaps"`
+	Total    int64           `json:"total"`
+	Limit    int             `json:"limit"`
+	Offset   int             `json:"offset"`
+}
+
 // GetMyRoadmaps は現在のユーザーのロードマップ一覧を取得する。
 func (h *RoadmapHandler) GetMyRoadmaps(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -107,7 +122,7 @@ func (h *RoadmapHandler) GetMyRoadmaps(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.RoadmapListResponse{
+	respondOK(c, roadmapListResponse{
 		Roadmaps: roadmaps,
 		Total:    total,
 		Limit:    limit,
@@ -138,7 +153,7 @@ func (h *RoadmapHandler) GetPublicRoadmaps(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.RoadmapListResponse{
+	respondOK(c, roadmapListResponse{
 		Roadmaps: roadmaps,
 		Total:    total,
 		Limit:    limit,
@@ -153,6 +168,15 @@ func (h *RoadmapHandler) GetByID(c *gin.Context) {
 	})
 }
 
+// updateRoadmapRequest はロードマップ更新リクエストのDTO。
+type updateRoadmapRequest struct {
+	Title       *string `json:"title" binding:"omitempty,max=200"`
+	Description *string `json:"description" binding:"omitempty,max=2000"`
+	Category    *string `json:"category" binding:"omitempty,max=100"`
+	IsPublic    *bool   `json:"is_public"`
+	Status      *string `json:"status" binding:"omitempty,max=50"`
+}
+
 // Update は指定IDのロードマップを更新する。
 func (h *RoadmapHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -161,7 +185,7 @@ func (h *RoadmapHandler) Update(c *gin.Context) {
 		return
 	}
 
-	input := bindJSON[dto.UpdateRoadmapRequest](c)
+	input := bindJSON[updateRoadmapRequest](c)
 	if input == nil {
 		return
 	}
@@ -251,6 +275,14 @@ func (h *RoadmapHandler) CreateFromTemplate(c *gin.Context) {
 
 // === ロードマップステップエンドポイント ===
 
+// createRoadmapStepRequest はロードマップステップ作成リクエストのDTO。
+type createRoadmapStepRequest struct {
+	Title       string `json:"title" binding:"required,max=200"`
+	Description string `json:"description" binding:"omitempty,max=2000"`
+	ResourceURL string `json:"resource_url" binding:"omitempty,max=2000"`
+	OrderIndex  *int   `json:"order_index" binding:"omitempty,min=0"`
+}
+
 // CreateStep はロードマップに新しいステップを作成する。
 func (h *RoadmapHandler) CreateStep(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -259,7 +291,7 @@ func (h *RoadmapHandler) CreateStep(c *gin.Context) {
 		return
 	}
 
-	input := bindJSON[dto.CreateRoadmapStepRequest](c)
+	input := bindJSON[createRoadmapStepRequest](c)
 	if input == nil {
 		return
 	}
@@ -281,6 +313,14 @@ func (h *RoadmapHandler) CreateStep(c *gin.Context) {
 	respondCreated(c, step)
 }
 
+// updateRoadmapStepRequest はロードマップステップ更新リクエストのDTO。
+type updateRoadmapStepRequest struct {
+	Title       *string `json:"title" binding:"omitempty,max=200"`
+	Description *string `json:"description" binding:"omitempty,max=2000"`
+	ResourceURL *string `json:"resource_url" binding:"omitempty,max=2000"`
+	IsCompleted *bool   `json:"is_completed"`
+}
+
 // UpdateStep はロードマップのステップを更新する。
 func (h *RoadmapHandler) UpdateStep(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -293,7 +333,7 @@ func (h *RoadmapHandler) UpdateStep(c *gin.Context) {
 		return
 	}
 
-	input := bindJSON[dto.UpdateRoadmapStepRequest](c)
+	input := bindJSON[updateRoadmapStepRequest](c)
 	if input == nil {
 		return
 	}
@@ -332,6 +372,11 @@ func (h *RoadmapHandler) UpdateStep(c *gin.Context) {
 	respondOK(c, step)
 }
 
+// batchCompleteStepsRequest はステップ一括完了リクエストのDTO。
+type batchCompleteStepsRequest struct {
+	StepIDs []uint `json:"step_ids" binding:"required,min=1"`
+}
+
 // BatchCompleteSteps はロードマップの複数ステップを一括で完了にする。
 func (h *RoadmapHandler) BatchCompleteSteps(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -340,7 +385,7 @@ func (h *RoadmapHandler) BatchCompleteSteps(c *gin.Context) {
 		return
 	}
 
-	input := bindJSON[dto.BatchCompleteStepsRequest](c)
+	input := bindJSON[batchCompleteStepsRequest](c)
 	if input == nil {
 		return
 	}
@@ -374,6 +419,11 @@ func (h *RoadmapHandler) DeleteStep(c *gin.Context) {
 	respondDeleted(c)
 }
 
+// reorderRoadmapStepsRequest はロードマップステップ並べ替えリクエストのDTO。
+type reorderRoadmapStepsRequest struct {
+	Orders []model.StepOrder `json:"orders" binding:"required"`
+}
+
 // ReorderSteps はロードマップ内のステップの並び順を変更する。
 func (h *RoadmapHandler) ReorderSteps(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -382,7 +432,7 @@ func (h *RoadmapHandler) ReorderSteps(c *gin.Context) {
 		return
 	}
 
-	input := bindJSON[dto.ReorderRoadmapStepsRequest](c)
+	input := bindJSON[reorderRoadmapStepsRequest](c)
 	if input == nil {
 		return
 	}

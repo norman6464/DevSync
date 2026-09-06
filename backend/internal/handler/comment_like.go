@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
@@ -41,6 +40,12 @@ func (h *CommentLikeHandler) Unlike(c *gin.Context) {
 	}, "いいねを取り消しました")
 }
 
+// likeStatusResponse はいいね状態レスポンス
+type likeStatusResponse struct {
+	Liked bool  `json:"liked"`
+	Count int64 `json:"count"`
+}
+
 // GetStatus はコメントのいいね状態（いいねしているか・いいね数）を返す。
 func (h *CommentLikeHandler) GetStatus(c *gin.Context) {
 	commentID, ok := parseID(c, "id")
@@ -54,5 +59,5 @@ func (h *CommentLikeHandler) GetStatus(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, dto.LikeStatusResponse{Liked: liked, Count: count})
+	respondOK(c, likeStatusResponse{Liked: liked, Count: count})
 }

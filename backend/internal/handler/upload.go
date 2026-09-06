@@ -12,7 +12,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/norman6464/devsync/backend/internal/dto"
 )
 
 const (
@@ -63,6 +62,12 @@ func NewUploadHandler() (*UploadHandler, error) {
 	}
 
 	return &UploadHandler{uploadDir: uploadDir}, nil
+}
+
+// uploadResponse は単一ファイルアップロードレスポンス。
+type uploadResponse struct {
+	URL      string `json:"url"`
+	Filename string `json:"filename"`
 }
 
 // UploadImage は単一の画像ファイルをアップロードする。
@@ -138,10 +143,15 @@ func (h *UploadHandler) UploadImage(c *gin.Context) {
 
 	// URLパスを返す
 	urlPath := fmt.Sprintf("/uploads/%s/%s", dateDir, filename)
-	respondOK(c, dto.UploadResponse{
+	respondOK(c, uploadResponse{
 		URL:      urlPath,
 		Filename: filename,
 	})
+}
+
+// uploadMultipleResponse は複数ファイルアップロードレスポンス。
+type uploadMultipleResponse struct {
+	URLs []string `json:"urls"`
 }
 
 // UploadMultipleImages は複数の画像ファイルを一括アップロードする。
@@ -229,5 +239,5 @@ func (h *UploadHandler) UploadMultipleImages(c *gin.Context) {
 		urls = append(urls, fmt.Sprintf("/uploads/%s/%s", dateDir, filename))
 	}
 
-	respondOK(c, dto.UploadMultipleResponse{URLs: urls})
+	respondOK(c, uploadMultipleResponse{URLs: urls})
 }

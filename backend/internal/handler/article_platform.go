@@ -5,7 +5,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/dto"
 )
 
 // ArticlePlatformOps は記事プラットフォーム（Qiita/Zenn等）連携ハンドラーが呼び出す操作の集合。
@@ -30,11 +29,24 @@ func NewArticlePlatformHandler[A any, S any](name string, ops ArticlePlatformOps
 	return &ArticlePlatformHandler[A, S]{ops: ops, name: name}
 }
 
+// connectSyncResponse は外部サービス接続・同期のレスポンス。
+// Qiita・Zennで共通使用する。
+type connectSyncResponse struct {
+	Message       string `json:"message"`
+	ArticlesCount int    `json:"articles_count"`
+}
+
+// connectUsernameRequest は外部サービスのユーザー名接続リクエスト。
+// AtCoder・Zenn・Qiitaなど共通で使用する。
+type connectUsernameRequest struct {
+	Username string `json:"username" binding:"required,max=100" validate:"required,max=100"`
+}
+
 // Connect はプラットフォームのユーザー名を設定し、記事を同期する。
 func (h *ArticlePlatformHandler[A, S]) Connect(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.ConnectUsernameRequest](c)
+	input := bindJSON[connectUsernameRequest](c)
 	if input == nil {
 		return
 	}
@@ -45,7 +57,7 @@ func (h *ArticlePlatformHandler[A, S]) Connect(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.ConnectSyncResponse{
+	respondOK(c, connectSyncResponse{
 		Message:       h.name + " connected successfully",
 		ArticlesCount: count,
 	})
@@ -73,7 +85,7 @@ func (h *ArticlePlatformHandler[A, S]) Sync(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.ConnectSyncResponse{
+	respondOK(c, connectSyncResponse{
 		Message:       h.name + " synced successfully",
 		ArticlesCount: count,
 	})

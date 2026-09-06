@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
@@ -75,6 +74,11 @@ func (h *MessageHandler) MarkAsRead(c *gin.Context) {
 	respondOK(c, gin.H{"message": "既読にしました"})
 }
 
+// sendMessageRequest はDMメッセージ送信リクエスト。
+type sendMessageRequest struct {
+	Content string `json:"content" binding:"required,min=1,max=5000" validate:"required,min=1,max=5000"`
+}
+
 // SendMessage は指定ユーザーにDMを送信する。
 func (h *MessageHandler) SendMessage(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -83,7 +87,7 @@ func (h *MessageHandler) SendMessage(c *gin.Context) {
 		return
 	}
 
-	input := bindJSON[dto.SendMessageRequest](c)
+	input := bindJSON[sendMessageRequest](c)
 	if input == nil {
 		return
 	}

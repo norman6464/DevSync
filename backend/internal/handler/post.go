@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
@@ -80,10 +79,19 @@ func (h *PostHandler) SetAutoTagsUseCase(autoTags *usecase.SetAutoPostTagsUseCas
 	h.autoTags = autoTags
 }
 
+// createPostRequest は投稿作成リクエスト。
+type createPostRequest struct {
+	Title        string             `json:"title" binding:"required,min=1,max=200"`
+	Content      string             `json:"content" binding:"required,min=1,max=50000"`
+	ImageURLs    string             `json:"image_urls" binding:"omitempty,max=2000"`
+	IsDraft      bool               `json:"is_draft"`
+	CodeSnippets []codeSnippetInput `json:"code_snippets" binding:"omitempty,max=20"`
+}
+
 // Create は新しい投稿を作成する。
 func (h *PostHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
-	input := bindJSON[dto.CreatePostRequest](c)
+	input := bindJSON[createPostRequest](c)
 	if input == nil {
 		return
 	}
@@ -181,6 +189,13 @@ func (h *PostHandler) GetAll(c *gin.Context) {
 	respondPaginated(c, posts, total, page, limit)
 }
 
+// postDetailResponse は投稿詳細レスポンス（いいね済み・ブックマーク済みフラグ付き）。
+type postDetailResponse struct {
+	model.Post
+	Liked      bool `json:"liked"`
+	Bookmarked bool `json:"bookmarked"`
+}
+
 // GetByID は指定IDの投稿を返す。いいね済みフラグも付与する。
 func (h *PostHandler) GetByID(c *gin.Context) {
 	id, ok := parseID(c, "id")
@@ -195,11 +210,18 @@ func (h *PostHandler) GetByID(c *gin.Context) {
 	}
 
 	userID := c.GetUint("userID")
-	respondOK(c, dto.PostDetailResponse{
+	respondOK(c, postDetailResponse{
 		Post:       *post,
 		Liked:      h.hasLiked(c, userID, post.ID),
 		Bookmarked: h.isBookmarked(c, userID, post.ID),
 	})
+}
+
+// updatePostRequest は投稿更新リクエスト。
+type updatePostRequest struct {
+	Title     string `json:"title" binding:"omitempty,min=1,max=200"`
+	Content   string `json:"content" binding:"omitempty,min=1,max=50000"`
+	ImageURLs string `json:"image_urls" binding:"omitempty,max=2000"`
 }
 
 // Update は投稿を更新する。所有者のみ更新可能。
@@ -210,7 +232,7 @@ func (h *PostHandler) Update(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.UpdatePostRequest](c)
+	input := bindJSON[updatePostRequest](c)
 	if input == nil {
 		return
 	}
@@ -253,6 +275,14 @@ func (h *PostHandler) Timeline(c *gin.Context) {
 	respondOK(c, ensureSlice(posts))
 }
 
+// postListResponse は投稿一覧レスポンス（ページネーション付き）。
+type postListResponse struct {
+	Posts  []model.Post `json:"posts"`
+	Total  int64        `json:"total"`
+	Limit  int          `json:"limit"`
+	Offset int          `json:"offset"`
+}
+
 // GetUserPosts は指定ユーザーの投稿一覧をページネーション付きで返す。
 func (h *PostHandler) GetUserPosts(c *gin.Context) {
 	id, ok := parseID(c, "id")
@@ -267,7 +297,7 @@ func (h *PostHandler) GetUserPosts(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.PostListResponse{
+	respondOK(c, postListResponse{
 		Posts:  ensureSlice(posts),
 		Total:  total,
 		Limit:  limit,
@@ -286,7 +316,7 @@ func (h *PostHandler) GetMyPosts(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.PostListResponse{
+	respondOK(c, postListResponse{
 		Posts:  ensureSlice(posts),
 		Total:  total,
 		Limit:  limit,
@@ -362,6 +392,13 @@ func (h *PostHandler) GetComments(c *gin.Context) {
 	respondOK(c, ensureSlice(comments))
 }
 
+// createCommentRequest はコメント作成リクエスト。
+// ParentIDが指定された場合は返信コメントとして作成する。
+type createCommentRequest struct {
+	Content  string `json:"content" binding:"required,min=1,max=5000"`
+	ParentID *uint  `json:"parent_id,omitempty"`
+}
+
 // CreateComment は投稿にコメントを作成する。
 func (h *PostHandler) CreateComment(c *gin.Context) {
 	id, ok := parseID(c, "id")
@@ -370,7 +407,7 @@ func (h *PostHandler) CreateComment(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.CreateCommentRequest](c)
+	input := bindJSON[createCommentRequest](c)
 	if input == nil {
 		return
 	}
@@ -401,6 +438,11 @@ func (h *PostHandler) GetReplies(c *gin.Context) {
 	respondOK(c, ensureSlice(replies))
 }
 
+// updateCommentRequest はコメント編集リクエスト。
+type updateCommentRequest struct {
+	Content string `json:"content" binding:"required,min=1,max=5000"`
+}
+
 // EditComment はコメントを編集する。所有者のみ編集可能。
 func (h *PostHandler) EditComment(c *gin.Context) {
 	commentID, ok := parseID(c, "commentId")
@@ -409,7 +451,7 @@ func (h *PostHandler) EditComment(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.UpdateCommentRequest](c)
+	input := bindJSON[updateCommentRequest](c)
 	if input == nil {
 		return
 	}
@@ -564,7 +606,7 @@ func (h *PostHandler) GetBookmarks(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, dto.PostListResponse{
+	respondOK(c, postListResponse{
 		Posts:  ensureSlice(posts),
 		Total:  total,
 		Limit:  limit,
@@ -585,6 +627,11 @@ func (h *PostHandler) GetBookmarksCount(c *gin.Context) {
 	respondOK(c, gin.H{"count": count})
 }
 
+// reactionRequest はリアクション追加/削除リクエスト。
+type reactionRequest struct {
+	Emoji string `json:"emoji" binding:"required,max=10"`
+}
+
 // AddReaction は投稿にリアクション（絵文字）を追加する。
 func (h *PostHandler) AddReaction(c *gin.Context) {
 	id, ok := parseID(c, "id")
@@ -593,7 +640,7 @@ func (h *PostHandler) AddReaction(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.ReactionRequest](c)
+	input := bindJSON[reactionRequest](c)
 	if input == nil {
 		return
 	}
@@ -613,7 +660,7 @@ func (h *PostHandler) RemoveReaction(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.ReactionRequest](c)
+	input := bindJSON[reactionRequest](c)
 	if input == nil {
 		return
 	}
@@ -623,6 +670,12 @@ func (h *PostHandler) RemoveReaction(c *gin.Context) {
 		return
 	}
 	respondOK(c, domain.NewMessageResponse("reaction_removed"))
+}
+
+// reactionResponse はリアクション一覧レスポンス。
+type reactionResponse struct {
+	Reactions     []model.ReactionCount `json:"reactions"`
+	UserReactions []string              `json:"user_reactions"`
 }
 
 // GetReactions は投稿のリアクション一覧を返す。
@@ -639,10 +692,15 @@ func (h *PostHandler) GetReactions(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.ReactionResponse{
+	respondOK(c, reactionResponse{
 		Reactions:     reactions,
 		UserReactions: userReactions,
 	})
+}
+
+// schedulePublishRequest はスケジュール公開リクエスト。
+type schedulePublishRequest struct {
+	ScheduledAt string `json:"scheduled_at" binding:"required"`
 }
 
 // SchedulePublish は投稿のスケジュール公開日時を設定する。
@@ -653,7 +711,7 @@ func (h *PostHandler) SchedulePublish(c *gin.Context) {
 		return
 	}
 
-	input := bindJSON[dto.SchedulePublishRequest](c)
+	input := bindJSON[schedulePublishRequest](c)
 	if input == nil {
 		return
 	}
@@ -703,11 +761,26 @@ func (h *PostHandler) GetScheduled(c *gin.Context) {
 	respondOK(c, ensureSlice(posts))
 }
 
+// autoSaveDraftRequest は下書き自動保存リクエスト。
+// IDが0の場合は新規作成、0以外の場合は既存下書きの更新。
+type autoSaveDraftRequest struct {
+	ID        uint   `json:"id"`
+	Title     string `json:"title" binding:"omitempty,max=200"`
+	Content   string `json:"content" binding:"omitempty,max=50000"`
+	ImageURLs string `json:"image_urls" binding:"omitempty,max=2000"`
+}
+
+// autoSaveDraftResponse は下書き自動保存レスポンス。
+type autoSaveDraftResponse struct {
+	ID        uint   `json:"id"`
+	UpdatedAt string `json:"updated_at"`
+}
+
 // AutoSaveDraft は下書きをサーバーサイドで自動保存する。
 func (h *PostHandler) AutoSaveDraft(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	req := bindJSON[dto.AutoSaveDraftRequest](c)
+	req := bindJSON[autoSaveDraftRequest](c)
 	if req == nil {
 		return
 	}
@@ -718,17 +791,27 @@ func (h *PostHandler) AutoSaveDraft(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.AutoSaveDraftResponse{
+	respondOK(c, autoSaveDraftResponse{
 		ID:        result.ID,
 		UpdatedAt: result.UpdatedAt.Format(time.RFC3339),
 	})
+}
+
+// batchReactionRequest はリアクション一括取得リクエスト。
+type batchReactionRequest struct {
+	PostIDs []uint `json:"post_ids" binding:"required"`
+}
+
+// batchReactionResponse はリアクション一括取得レスポンス。
+type batchReactionResponse struct {
+	Reactions map[uint]reactionResponse `json:"reactions"`
 }
 
 // GetReactionsBatch は複数投稿のリアクション情報を一括取得する。
 func (h *PostHandler) GetReactionsBatch(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.BatchReactionRequest](c)
+	input := bindJSON[batchReactionRequest](c)
 	if input == nil {
 		return
 	}
@@ -739,13 +822,20 @@ func (h *PostHandler) GetReactionsBatch(c *gin.Context) {
 		return
 	}
 
-	result := make(map[uint]dto.ReactionResponse, len(input.PostIDs))
+	result := make(map[uint]reactionResponse, len(input.PostIDs))
 	for _, id := range input.PostIDs {
-		result[id] = dto.ReactionResponse{
+		result[id] = reactionResponse{
 			Reactions:     reactions[id],
 			UserReactions: userReactions[id],
 		}
 	}
 
-	respondOK(c, dto.BatchReactionResponse{Reactions: result})
+	respondOK(c, batchReactionResponse{Reactions: result})
+}
+
+// codeSnippetInput はコードスニペットの入力データ。
+type codeSnippetInput struct {
+	Language string `json:"language" binding:"omitempty,max=100"`
+	FileName string `json:"file_name" binding:"omitempty,max=255"`
+	Code     string `json:"code" binding:"omitempty,max=50000"`
 }

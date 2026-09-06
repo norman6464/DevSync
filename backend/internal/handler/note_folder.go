@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
@@ -43,9 +42,15 @@ func NewNoteFolderHandler(
 	}
 }
 
+// createNoteFolderRequest はフォルダ作成リクエスト。
+type createNoteFolderRequest struct {
+	Name     string `json:"name" binding:"required"`
+	ParentID *uint  `json:"parent_id"`
+}
+
 // Create は新しいノートフォルダを作成する。
 func (h *NoteFolderHandler) Create(c *gin.Context) {
-	input := bindJSON[dto.CreateNoteFolderRequest](c)
+	input := bindJSON[createNoteFolderRequest](c)
 	if input == nil {
 		return
 	}
@@ -71,6 +76,14 @@ func (h *NoteFolderHandler) GetByID(c *gin.Context) {
 	})
 }
 
+// noteFolderListResponse はフォルダ一覧レスポンス（ページネーション付き）。
+type noteFolderListResponse struct {
+	Folders []model.NoteFolder `json:"folders"`
+	Total   int64              `json:"total"`
+	Limit   int                `json:"limit"`
+	Offset  int                `json:"offset"`
+}
+
 // GetByUserID は現在のユーザーのフォルダ一覧をページネーション付きで取得する。
 func (h *NoteFolderHandler) GetByUserID(c *gin.Context) {
 	limit, offset := parseLimitOffset(c)
@@ -81,7 +94,7 @@ func (h *NoteFolderHandler) GetByUserID(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.NoteFolderListResponse{
+	respondOK(c, noteFolderListResponse{
 		Folders: ensureSlice(folders),
 		Total:   total,
 		Limit:   limit,
@@ -116,6 +129,12 @@ func (h *NoteFolderHandler) GetRootFolders(c *gin.Context) {
 	respondOK(c, ensureSlice(folders))
 }
 
+// updateNoteFolderRequest はフォルダ更新リクエスト。
+type updateNoteFolderRequest struct {
+	Name     string `json:"name"`
+	ParentID *uint  `json:"parent_id"`
+}
+
 // Update はフォルダを更新する。
 func (h *NoteFolderHandler) Update(c *gin.Context) {
 	id, ok := parseID(c, "id")
@@ -123,7 +142,7 @@ func (h *NoteFolderHandler) Update(c *gin.Context) {
 		return
 	}
 
-	input := bindJSON[dto.UpdateNoteFolderRequest](c)
+	input := bindJSON[updateNoteFolderRequest](c)
 	if input == nil {
 		return
 	}

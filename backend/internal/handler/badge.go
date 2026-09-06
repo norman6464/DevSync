@@ -3,7 +3,7 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/dto"
+	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
@@ -22,6 +22,11 @@ func NewBadgeHandler(
 	return &BadgeHandler{getBadges: getBadges, notify: notify}
 }
 
+// badgesResponse はバッジ一覧レスポンス
+type badgesResponse struct {
+	Badges []model.BadgeResult `json:"badges"`
+}
+
 // GetUserBadges は指定ユーザーの全バッジを獲得状況付きで返す。
 func (h *BadgeHandler) GetUserBadges(c *gin.Context) {
 	userID, ok := parseID(c, "userId")
@@ -35,14 +40,19 @@ func (h *BadgeHandler) GetUserBadges(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.BadgesResponse{Badges: badges})
+	respondOK(c, badgesResponse{Badges: badges})
+}
+
+// notifyBadgeEarnedRequest はバッジ獲得通知リクエスト。
+type notifyBadgeEarnedRequest struct {
+	BadgeID string `json:"badge_id" binding:"required" validate:"required"`
 }
 
 // NotifyBadgeEarned は新しく獲得したバッジの通知を作成する。
 func (h *BadgeHandler) NotifyBadgeEarned(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.NotifyBadgeEarnedRequest](c)
+	input := bindJSON[notifyBadgeEarnedRequest](c)
 	if input == nil {
 		return
 	}

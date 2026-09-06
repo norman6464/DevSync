@@ -3,7 +3,7 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/dto"
+	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
 
@@ -34,6 +34,14 @@ func NewNotificationHandler(
 	}
 }
 
+// notificationListResponse は通知一覧レスポンス
+type notificationListResponse struct {
+	Notifications []model.Notification `json:"notifications"`
+	Total         int64                `json:"total"`
+	Page          int                  `json:"page"`
+	Limit         int                  `json:"limit"`
+}
+
 // GetAll は認証ユーザーの通知一覧をページネーション付きで取得する。
 func (h *NotificationHandler) GetAll(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -46,12 +54,17 @@ func (h *NotificationHandler) GetAll(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.NotificationListResponse{
+	respondOK(c, notificationListResponse{
 		Notifications: notifications,
 		Total:         total,
 		Page:          page,
 		Limit:         limit,
 	})
+}
+
+// countResponse はカウントレスポンス
+type countResponse struct {
+	Count int64 `json:"count"`
 }
 
 // GetUnreadCount は認証ユーザーの未読通知数を取得する。
@@ -63,7 +76,7 @@ func (h *NotificationHandler) GetUnreadCount(c *gin.Context) {
 		respondError(c, err)
 		return
 	}
-	respondOK(c, dto.CountResponse{Count: count})
+	respondOK(c, countResponse{Count: count})
 }
 
 // MarkAsRead は指定された通知を既読にする。

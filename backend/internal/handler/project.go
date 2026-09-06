@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
@@ -50,11 +49,26 @@ func NewProjectHandler(
 	}
 }
 
+// createProjectRequest はプロジェクト作成のリクエストボディ。
+type createProjectRequest struct {
+	Title        string `json:"title" binding:"required,max=200" validate:"required,max=200"`
+	Description  string `json:"description" binding:"omitempty,max=5000"`
+	TechStack    string `json:"tech_stack" binding:"omitempty,max=500"`
+	DemoURL      string `json:"demo_url" binding:"omitempty,http_url,max=2000"`
+	GithubURL    string `json:"github_url" binding:"omitempty,http_url,max=2000"`
+	ImageURL     string `json:"image_url" binding:"omitempty,http_url,max=2000"`
+	Role         string `json:"role" binding:"omitempty,max=200"`
+	StartDate    string `json:"start_date" binding:"omitempty,max=20"`
+	EndDate      string `json:"end_date" binding:"omitempty,max=20"`
+	Featured     bool   `json:"featured"`
+	GithubRepoID *uint  `json:"github_repo_id"`
+}
+
 // Create は新しいプロジェクトを作成する。
 func (h *ProjectHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	req := bindJSON[dto.CreateProjectRequest](c)
+	req := bindJSON[createProjectRequest](c)
 	if req == nil {
 		return
 	}
@@ -94,6 +108,14 @@ func (h *ProjectHandler) GetByID(c *gin.Context) {
 	})
 }
 
+// projectListResponse はプロジェクト一覧レスポンス。
+type projectListResponse struct {
+	Projects []model.Project `json:"projects"`
+	Total    int64           `json:"total"`
+	Limit    int             `json:"limit"`
+	Offset   int             `json:"offset"`
+}
+
 // GetByUserID は指定ユーザーのプロジェクト一覧をページネーション付きで取得する。
 func (h *ProjectHandler) GetByUserID(c *gin.Context) {
 	userID, ok := parseID(c, "userId")
@@ -109,7 +131,7 @@ func (h *ProjectHandler) GetByUserID(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.ProjectListResponse{
+	respondOK(c, projectListResponse{
 		Projects: projects,
 		Total:    total,
 		Limit:    limit,
@@ -129,7 +151,7 @@ func (h *ProjectHandler) GetMyProjects(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.ProjectListResponse{
+	respondOK(c, projectListResponse{
 		Projects: projects,
 		Total:    total,
 		Limit:    limit,
@@ -153,6 +175,21 @@ func (h *ProjectHandler) GetFeatured(c *gin.Context) {
 	respondOK(c, ensureSlice(projects))
 }
 
+// updateProjectRequest はプロジェクト更新のリクエストボディ。
+type updateProjectRequest struct {
+	Title        string `json:"title" binding:"omitempty,max=200" validate:"omitempty,max=200"`
+	Description  string `json:"description" binding:"omitempty,max=5000"`
+	TechStack    string `json:"tech_stack" binding:"omitempty,max=500"`
+	DemoURL      string `json:"demo_url" binding:"omitempty,http_url,max=2000"`
+	GithubURL    string `json:"github_url" binding:"omitempty,http_url,max=2000"`
+	ImageURL     string `json:"image_url" binding:"omitempty,http_url,max=2000"`
+	Role         string `json:"role" binding:"omitempty,max=200"`
+	StartDate    string `json:"start_date" binding:"omitempty,max=20"`
+	EndDate      string `json:"end_date" binding:"omitempty,max=20"`
+	Featured     *bool  `json:"featured"`
+	GithubRepoID *uint  `json:"github_repo_id"`
+}
+
 // Update は指定IDのプロジェクトを更新する。
 func (h *ProjectHandler) Update(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -161,7 +198,7 @@ func (h *ProjectHandler) Update(c *gin.Context) {
 		return
 	}
 
-	req := bindJSON[dto.UpdateProjectRequest](c)
+	req := bindJSON[updateProjectRequest](c)
 	if req == nil {
 		return
 	}
@@ -248,7 +285,7 @@ func (h *ProjectHandler) GetArchived(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.ProjectListResponse{
+	respondOK(c, projectListResponse{
 		Projects: projects,
 		Total:    total,
 		Limit:    limit,
@@ -271,7 +308,7 @@ func (h *ProjectHandler) Search(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.ProjectListResponse{
+	respondOK(c, projectListResponse{
 		Projects: projects,
 		Total:    total,
 		Limit:    limit,
@@ -302,7 +339,7 @@ func (h *ProjectHandler) GetAll(c *gin.Context) {
 		return
 	}
 
-	respondOK(c, dto.ProjectListResponse{
+	respondOK(c, projectListResponse{
 		Projects: projects,
 		Total:    total,
 		Limit:    limit,

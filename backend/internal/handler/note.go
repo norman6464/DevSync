@@ -5,7 +5,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/norman6464/devsync/backend/internal/domain"
-	"github.com/norman6464/devsync/backend/internal/dto"
 	"github.com/norman6464/devsync/backend/internal/model"
 	"github.com/norman6464/devsync/backend/internal/usecase"
 )
@@ -63,10 +62,18 @@ func NewNoteHandler(
 	}
 }
 
+// createNoteRequest はノート作成リクエスト。
+type createNoteRequest struct {
+	Title    string `json:"title" binding:"required,min=1,max=200"`
+	Content  string `json:"content" binding:"required,min=1,max=50000"`
+	Tags     string `json:"tags"`
+	FolderID *uint  `json:"folder_id"`
+}
+
 // Create は新しいノートを作成する。
 func (h *NoteHandler) Create(c *gin.Context) {
 	userID := c.GetUint("userID")
-	input := bindJSON[dto.CreateNoteRequest](c)
+	input := bindJSON[createNoteRequest](c)
 	if input == nil {
 		return
 	}
@@ -144,6 +151,14 @@ func (h *NoteHandler) GetByFolderID(c *gin.Context) {
 	respondOK(c, ensureSlice(notes))
 }
 
+// updateNoteRequest はノート更新リクエスト。
+type updateNoteRequest struct {
+	Title    string `json:"title" binding:"omitempty,min=1,max=200"`
+	Content  string `json:"content" binding:"omitempty,min=1,max=50000"`
+	Tags     string `json:"tags"`
+	FolderID *uint  `json:"folder_id"`
+}
+
 // Update はノートを更新する。
 func (h *NoteHandler) Update(c *gin.Context) {
 	id, ok := parseID(c, "id")
@@ -152,7 +167,7 @@ func (h *NoteHandler) Update(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 
-	input := bindJSON[dto.UpdateNoteRequest](c)
+	input := bindJSON[updateNoteRequest](c)
 	if input == nil {
 		return
 	}
