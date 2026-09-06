@@ -120,6 +120,16 @@ type Container struct {
 func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Container {
 	c := &Container{Hub: hub}
 
+	// notification_verbsのシードはnotifications.typeのFK制約（DEVSYNC-159）を満たすための
+	// 前提条件のため、テンプレートロードマップ等のシードと違い非同期にしない
+	// （サーバーがリクエストを受け付け始める前に完了させ、起動直後の通知作成がFK違反に
+	// なるレースを避ける）。
+	if err := usecase.NewSeedNotificationVerbsUseCase(
+		persistence.NewNotificationVerbRepository(sqlcgen.New(sqlPool)),
+	).Execute(context.Background()); err != nil {
+		log.Printf("通知種別シード失敗: %v", err)
+	}
+
 	// follow はクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。
 	followRepo := persistence.NewFollowRepository(sqlcgen.New(sqlPool))
 	// ダイレクトメッセージはクリーンアーキテクチャ（DIP）へ移行済み。port は usecase/repository、実装は adapter/persistence。

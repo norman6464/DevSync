@@ -758,6 +758,9 @@ type Querier interface {
 	// GORMのPreload("Owner").Preload("Members").Preload("Members.User")に相当。
 	SearchStudyCircles(ctx context.Context, arg SearchStudyCirclesParams) ([]SearchStudyCirclesRow, error)
 	SearchUsers(ctx context.Context, arg SearchUsersParams) ([]User, error)
+	// notifications.typeのFK制約（fk_notifications_type、DEVSYNC-159）を満たすため、
+	// アプリ起動時に既知の通知種別コードをまとめて登録する（冪等。既存分はスキップ）。
+	SeedNotificationVerbs(ctx context.Context, dollar_1 []string) error
 	SetAnswerBest(ctx context.Context, id int64) error
 	SetProjectArchived(ctx context.Context, arg SetProjectArchivedParams) error
 	SetQuestionSolved(ctx context.Context, id int64) error

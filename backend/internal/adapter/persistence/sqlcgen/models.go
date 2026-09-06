@@ -371,6 +371,10 @@ type NotificationSetting struct {
 	UpdatedAt      pgtype.Timestamptz
 }
 
+type NotificationVerb struct {
+	Code string
+}
+
 type PasswordResetToken struct {
 	ID        int64
 	UserID    int64
