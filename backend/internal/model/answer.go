@@ -7,13 +7,13 @@ import (
 // Answer はQ&A機能における質問への回答を表す。
 // IsBest がtrueの場合、その回答は質問投稿者によってベストアンサーに選ばれたことを示す。
 type Answer struct {
-	ID         uint      `json:"id" gorm:"primaryKey"`
-	UserID     uint      `json:"user_id" gorm:"not null;index"`
-	User       User      `json:"user,omitempty" gorm:"foreignKey:UserID"`
-	QuestionID uint      `json:"question_id" gorm:"not null;index"` // 回答先の質問ID
-	Body       string    `json:"body" gorm:"type:text;not null"`    // 回答本文
-	VoteCount  int       `json:"vote_count" gorm:"default:0"`       // 投票数（賛成−反対の合計）
-	IsBest     bool      `json:"is_best" gorm:"default:false"`      // ベストアンサーフラグ
+	ID         uint      `json:"id"`
+	UserID     uint      `json:"user_id"`
+	User       User      `json:"user,omitempty"`
+	QuestionID uint      `json:"question_id"` // 回答先の質問ID
+	Body       string    `json:"body"`        // 回答本文
+	VoteCount  int       `json:"vote_count"`  // 投票数（賛成−反対の合計）
+	IsBest     bool      `json:"is_best"`     // ベストアンサーフラグ
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 }
@@ -22,9 +22,9 @@ type Answer struct {
 // Value は +1（賛成）または -1（反対）の値を取る。
 // ユーザーと回答の組み合わせでユニークインデックスを持つ。
 type AnswerVote struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	UserID    uint      `json:"user_id" gorm:"not null;uniqueIndex:idx_answer_vote"`
-	AnswerID  uint      `json:"answer_id" gorm:"not null;uniqueIndex:idx_answer_vote"`
-	Value     int       `json:"value" gorm:"not null"` // +1（賛成）または -1（反対）
+	ID        uint      `json:"id"`
+	UserID    uint      `json:"user_id"`
+	AnswerID  uint      `json:"answer_id"`
+	Value     int       `json:"value"` // +1（賛成）または -1（反対）
 	CreatedAt time.Time `json:"created_at"`
 }

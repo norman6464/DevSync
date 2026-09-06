@@ -21,62 +21,62 @@ const (
 
 // StudyCircle はスタディサークル（学習グループ）を表す。
 type StudyCircle struct {
-	ID          uint              `json:"id" gorm:"primaryKey"`
-	Name        string            `json:"name" gorm:"size:200;not null"`
-	Topic       string            `json:"topic" gorm:"size:200;not null"`
-	Description string            `json:"description" gorm:"type:text"`
-	OwnerID     uint              `json:"owner_id" gorm:"not null;index"`
-	Owner       *User             `json:"owner,omitempty" gorm:"foreignKey:OwnerID"`
-	MaxMembers  int               `json:"max_members" gorm:"default:5;not null"`
-	Status      StudyCircleStatus `json:"status" gorm:"default:'active'"`
+	ID          uint              `json:"id"`
+	Name        string            `json:"name"`
+	Topic       string            `json:"topic"`
+	Description string            `json:"description"`
+	OwnerID     uint              `json:"owner_id"`
+	Owner       *User             `json:"owner,omitempty"`
+	MaxMembers  int               `json:"max_members"`
+	Status      StudyCircleStatus `json:"status"`
 	CreatedAt   time.Time         `json:"created_at"`
 	UpdatedAt   time.Time         `json:"updated_at"`
 
-	Steps   []StudyCircleStep   `json:"steps,omitempty" gorm:"foreignKey:CircleID;constraint:OnDelete:CASCADE"`
-	Members []StudyCircleMember `json:"members,omitempty" gorm:"foreignKey:CircleID;constraint:OnDelete:CASCADE"`
+	Steps   []StudyCircleStep   `json:"steps,omitempty"`
+	Members []StudyCircleMember `json:"members,omitempty"`
 }
 
 // StudyCircleMember はサークルのメンバーシップを表す。
 type StudyCircleMember struct {
-	ID       uint                  `json:"id" gorm:"primaryKey"`
-	CircleID uint                  `json:"circle_id" gorm:"not null;uniqueIndex:idx_circle_user"`
-	UserID   uint                  `json:"user_id" gorm:"not null;uniqueIndex:idx_circle_user"`
-	User     *User                 `json:"user,omitempty" gorm:"foreignKey:UserID"`
-	Role     StudyCircleMemberRole `json:"role" gorm:"default:'member'"`
+	ID       uint                  `json:"id"`
+	CircleID uint                  `json:"circle_id"`
+	UserID   uint                  `json:"user_id"`
+	User     *User                 `json:"user,omitempty"`
+	Role     StudyCircleMemberRole `json:"role"`
 	JoinedAt time.Time             `json:"joined_at"`
 }
 
 // StudyCircleStep はサークルの共有ロードマップのステップを表す。
 type StudyCircleStep struct {
-	ID          uint      `json:"id" gorm:"primaryKey"`
-	CircleID    uint      `json:"circle_id" gorm:"not null;index"`
-	Title       string    `json:"title" gorm:"size:200;not null"`
-	Description string    `json:"description" gorm:"type:text"`
-	OrderIndex  int       `json:"order_index" gorm:"default:0"`
-	ResourceURL string    `json:"resource_url" gorm:"size:2000"`
+	ID          uint      `json:"id"`
+	CircleID    uint      `json:"circle_id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	OrderIndex  int       `json:"order_index"`
+	ResourceURL string    `json:"resource_url"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 // StudyCircleMemberProgress はメンバー別のステップ進捗を表す。
 type StudyCircleMemberProgress struct {
-	ID          uint       `json:"id" gorm:"primaryKey"`
-	CircleID    uint       `json:"circle_id" gorm:"not null;uniqueIndex:idx_circle_step_user"`
-	StepID      uint       `json:"step_id" gorm:"not null;uniqueIndex:idx_circle_step_user"`
-	UserID      uint       `json:"user_id" gorm:"not null;uniqueIndex:idx_circle_step_user"`
-	User        *User      `json:"user,omitempty" gorm:"foreignKey:UserID"`
-	IsCompleted bool       `json:"is_completed" gorm:"default:false"`
+	ID          uint       `json:"id"`
+	CircleID    uint       `json:"circle_id"`
+	StepID      uint       `json:"step_id"`
+	UserID      uint       `json:"user_id"`
+	User        *User      `json:"user,omitempty"`
+	IsCompleted bool       `json:"is_completed"`
 	CompletedAt *time.Time `json:"completed_at"`
 }
 
 // StudyCircleCheckin は日次チェックインを表す。
 type StudyCircleCheckin struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	CircleID  uint      `json:"circle_id" gorm:"not null;uniqueIndex:idx_checkin_unique"`
-	UserID    uint      `json:"user_id" gorm:"not null;uniqueIndex:idx_checkin_unique"`
-	User      *User     `json:"user,omitempty" gorm:"foreignKey:UserID"`
-	Date      string    `json:"date" gorm:"size:10;not null;uniqueIndex:idx_checkin_unique"`
-	Content   string    `json:"content" gorm:"type:text;not null"`
+	ID        uint      `json:"id"`
+	CircleID  uint      `json:"circle_id"`
+	UserID    uint      `json:"user_id"`
+	User      *User     `json:"user,omitempty"`
+	Date      string    `json:"date"`
+	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
 }
 

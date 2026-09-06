@@ -23,19 +23,19 @@ var ValidReviewStatuses = map[ReviewStatus]bool{
 // BookReview はユーザーが投稿した書籍レビューを表す。
 // Rating は1〜5の整数で評価を表し、Review にレビュー本文を格納する。
 type BookReview struct {
-	ID          uint         `json:"id" gorm:"primaryKey"`
-	UserID      uint         `json:"user_id" gorm:"not null;index"`
-	User        User         `json:"user,omitempty" gorm:"foreignKey:UserID"`
-	Title       string       `json:"title" gorm:"not null;size:300"`      // 書籍タイトル
-	Author      string       `json:"author" gorm:"size:200"`              // 書籍の著者名
-	ISBN        string       `json:"isbn" gorm:"size:20"`                 // ISBNコード
-	Rating      int          `json:"rating" gorm:"not null"`              // 評価（1〜5の整数）
-	Review      string       `json:"review" gorm:"type:text"`             // レビュー本文
-	TotalPages  int          `json:"total_pages" gorm:"default:0"`        // 総ページ数
-	CurrentPage int          `json:"current_page" gorm:"default:0"`       // 現在の読書ページ
-	ImageURL    string       `json:"image_url" gorm:"size:2000"`          // 書籍カバー画像URL
-	Status      ReviewStatus `json:"status" gorm:"default:'not_started'"` // 読書状態
-	IsArchived  bool         `json:"is_archived" gorm:"default:false"`    // アーカイブ済みフラグ
+	ID          uint         `json:"id"`
+	UserID      uint         `json:"user_id"`
+	User        User         `json:"user,omitempty"`
+	Title       string       `json:"title"`        // 書籍タイトル
+	Author      string       `json:"author"`       // 書籍の著者名
+	ISBN        string       `json:"isbn"`         // ISBNコード
+	Rating      int          `json:"rating"`       // 評価（1〜5の整数）
+	Review      string       `json:"review"`       // レビュー本文
+	TotalPages  int          `json:"total_pages"`  // 総ページ数
+	CurrentPage int          `json:"current_page"` // 現在の読書ページ
+	ImageURL    string       `json:"image_url"`    // 書籍カバー画像URL
+	Status      ReviewStatus `json:"status"`       // 読書状態
+	IsArchived  bool         `json:"is_archived"`  // アーカイブ済みフラグ
 	CreatedAt   time.Time    `json:"created_at"`
 	UpdatedAt   time.Time    `json:"updated_at"`
 }

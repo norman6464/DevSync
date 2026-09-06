@@ -33,15 +33,15 @@ const (
 // TitleKey/MessageKeyはi18nキーで、フロントエンドで翻訳される。
 // Paramsはテンプレート補間用のJSONパラメータ。
 type AIAdvice struct {
-	ID         uint           `json:"id" gorm:"primaryKey"`
-	UserID     uint           `json:"user_id" gorm:"not null;index"`
-	Type       AdviceType     `json:"type" gorm:"not null"`
-	Priority   AdvicePriority `json:"priority" gorm:"not null;default:3"`
-	TitleKey   string         `json:"title_key" gorm:"not null"`
-	MessageKey string         `json:"message_key" gorm:"not null"`
-	Params     string         `json:"params" gorm:"type:text"`
+	ID         uint           `json:"id"`
+	UserID     uint           `json:"user_id"`
+	Type       AdviceType     `json:"type"`
+	Priority   AdvicePriority `json:"priority"`
+	TitleKey   string         `json:"title_key"`
+	MessageKey string         `json:"message_key"`
+	Params     string         `json:"params"`
 	ActionURL  string         `json:"action_url"`
-	IsRead     bool           `json:"is_read" gorm:"default:false"`
+	IsRead     bool           `json:"is_read"`
 	ExpiresAt  *time.Time     `json:"expires_at"`
 	CreatedAt  time.Time      `json:"created_at"`
 	UpdatedAt  time.Time      `json:"updated_at"`
@@ -59,21 +59,21 @@ const (
 
 // AIConversation はユーザーとLLMの会話セッションを表す。
 type AIConversation struct {
-	ID        uint        `json:"id" gorm:"primaryKey"`
-	UserID    uint        `json:"user_id" gorm:"not null;index"`
-	Title     string      `json:"title" gorm:"not null;size:200"`
+	ID        uint        `json:"id"`
+	UserID    uint        `json:"user_id"`
+	Title     string      `json:"title"`
 	CreatedAt time.Time   `json:"created_at"`
 	UpdatedAt time.Time   `json:"updated_at"`
-	Messages  []AIMessage `json:"messages,omitempty" gorm:"foreignKey:ConversationID"`
+	Messages  []AIMessage `json:"messages,omitempty"`
 }
 
 // AIMessage はAI会話内の個別メッセージを表す。
 type AIMessage struct {
-	ID             uint          `json:"id" gorm:"primaryKey"`
-	ConversationID uint          `json:"conversation_id" gorm:"not null;index"`
-	Role           AIMessageRole `json:"role" gorm:"not null"`
-	Content        string        `json:"content" gorm:"type:text;not null"`
-	TokensUsed     int           `json:"tokens_used" gorm:"default:0"`
+	ID             uint          `json:"id"`
+	ConversationID uint          `json:"conversation_id"`
+	Role           AIMessageRole `json:"role"`
+	Content        string        `json:"content"`
+	TokensUsed     int           `json:"tokens_used"`
 	CreatedAt      time.Time     `json:"created_at"`
 }
 
