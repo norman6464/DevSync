@@ -111,8 +111,16 @@ jobs:
         run: go run ./cmd/archlint .
         working-directory: ./backend
 
-      - name: internal/infra/database/schema/*.hcl が素のDBへエラーなく適用できるか検証
-        run: atlas schema apply --env local --auto-approve
+      # atlas.hclは持たず、Makefile同様に --url/--to/--dev-url を都度指定する
+      # （db-schema-applyターゲットはローカルでの対話承認を前提としており--auto-approveを
+      # 持たないため、CIではatlasを直接呼ぶ）。
+      - name: internal/infra/database/schema/schema.hcl が素のDBへエラーなく適用できるか検証
+        run: |
+          atlas schema apply \
+            --url "$ATLAS_DB_URL" \
+            --to "file://internal/infra/database/schema/schema.hcl" \
+            --dev-url "docker://postgres/18.4/dev" \
+            --auto-approve
         working-directory: ./backend
         env:
           ATLAS_DB_URL: postgres://devsync:devsync@localhost:5432/devsync?sslmode=disable
