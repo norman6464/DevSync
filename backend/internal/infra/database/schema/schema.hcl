@@ -3362,21 +3362,6 @@ table "roadmaps" {
     type    = boolean
     default = false
   }
-  column "step_count" {
-    null    = true
-    type    = bigint
-    default = 0
-  }
-  column "completed_step_count" {
-    null    = true
-    type    = bigint
-    default = 0
-  }
-  column "progress" {
-    null    = true
-    type    = bigint
-    default = 0
-  }
   column "status" {
     null    = true
     type    = text
@@ -3412,11 +3397,38 @@ table "roadmaps" {
   index "idx_roadmaps_user_id" {
     columns = [column.user_id]
   }
-  check "ck_roadmaps_progress" {
-    expr = "progress BETWEEN 0 AND 100"
-  }
   check "ck_roadmaps_status" {
     expr = "status IN ('active', 'completed')"
+  }
+}
+
+table "roadmap_metrics" {
+  schema = schema.public
+  column "roadmap_id" {
+    null = false
+    type = bigint
+  }
+  column "step_count" {
+    null    = false
+    type    = bigint
+    default = 0
+  }
+  column "completed_step_count" {
+    null    = false
+    type    = bigint
+    default = 0
+  }
+  primary_key {
+    columns = [column.roadmap_id]
+  }
+  foreign_key "fk_roadmap_metrics_roadmap" {
+    columns     = [column.roadmap_id]
+    ref_columns = [table.roadmaps.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  check "ck_roadmap_metrics_non_negative" {
+    expr = "step_count >= 0 AND completed_step_count >= 0"
   }
 }
 

@@ -1044,16 +1044,12 @@ CREATE TABLE "public"."roadmaps" (
   "category" text NULL DEFAULT 'other',
   "is_public" boolean NOT NULL DEFAULT false,
   "is_template" boolean NOT NULL DEFAULT false,
-  "step_count" bigint NULL DEFAULT 0,
-  "completed_step_count" bigint NULL DEFAULT 0,
-  "progress" bigint NULL DEFAULT 0,
   "status" text NULL DEFAULT 'active',
   "created_at" timestamptz NOT NULL,
   "updated_at" timestamptz NOT NULL,
   "completed_at" timestamptz NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_roadmaps_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
-  CONSTRAINT "ck_roadmaps_progress" CHECK ((progress >= 0) AND (progress <= 100)),
   CONSTRAINT "ck_roadmaps_status" CHECK (status = ANY (ARRAY['active'::text, 'completed'::text]))
 );
 -- Create index "idx_roadmaps_is_public" to table: "roadmaps"
@@ -1062,6 +1058,15 @@ CREATE INDEX "idx_roadmaps_is_public" ON "public"."roadmaps" ("is_public");
 CREATE INDEX "idx_roadmaps_is_template" ON "public"."roadmaps" ("is_template");
 -- Create index "idx_roadmaps_user_id" to table: "roadmaps"
 CREATE INDEX "idx_roadmaps_user_id" ON "public"."roadmaps" ("user_id");
+-- Create "roadmap_metrics" table
+CREATE TABLE "public"."roadmap_metrics" (
+  "roadmap_id" bigint NOT NULL,
+  "step_count" bigint NOT NULL DEFAULT 0,
+  "completed_step_count" bigint NOT NULL DEFAULT 0,
+  PRIMARY KEY ("roadmap_id"),
+  CONSTRAINT "fk_roadmap_metrics_roadmap" FOREIGN KEY ("roadmap_id") REFERENCES "public"."roadmaps" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
+  CONSTRAINT "ck_roadmap_metrics_non_negative" CHECK ((step_count >= 0) AND (completed_step_count >= 0))
+);
 -- Create "roadmap_steps" table
 CREATE TABLE "public"."roadmap_steps" (
   "id" bigserial NOT NULL,

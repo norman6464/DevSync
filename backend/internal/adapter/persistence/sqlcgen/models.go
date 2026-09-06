@@ -598,20 +598,23 @@ type ResourceSafe struct {
 }
 
 type Roadmap struct {
-	ID                 int64
-	UserID             int64
-	Title              string
-	Description        *string
-	Category           *string
-	IsPublic           bool
-	IsTemplate         bool
-	StepCount          *int64
-	CompletedStepCount *int64
-	Progress           *int64
-	Status             *string
-	CreatedAt          pgtype.Timestamptz
-	UpdatedAt          pgtype.Timestamptz
-	CompletedAt        pgtype.Timestamptz
+	ID          int64
+	UserID      int64
+	Title       string
+	Description *string
+	Category    *string
+	IsPublic    bool
+	IsTemplate  bool
+	Status      *string
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+	CompletedAt pgtype.Timestamptz
+}
+
+type RoadmapMetric struct {
+	RoadmapID          int64
+	StepCount          int64
+	CompletedStepCount int64
 }
 
 type RoadmapStep struct {

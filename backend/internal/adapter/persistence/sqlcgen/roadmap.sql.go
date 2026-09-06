@@ -11,23 +11,8 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const adjustRoadmapCompletedStepCount = `-- name: AdjustRoadmapCompletedStepCount :exec
-UPDATE roadmaps SET completed_step_count = completed_step_count + $1::bigint
-WHERE id = $2
-`
-
-type AdjustRoadmapCompletedStepCountParams struct {
-	Delta int64
-	ID    int64
-}
-
-func (q *Queries) AdjustRoadmapCompletedStepCount(ctx context.Context, arg AdjustRoadmapCompletedStepCountParams) error {
-	_, err := q.db.Exec(ctx, adjustRoadmapCompletedStepCount, arg.Delta, arg.ID)
-	return err
-}
-
 const countPublicRoadmaps = `-- name: CountPublicRoadmaps :one
-SELECT COUNT(*) FROM roadmaps WHERE is_public = true
+SELECT COUNT(*) FROM roadmaps WHERE roadmaps.is_public = true
 `
 
 func (q *Queries) CountPublicRoadmaps(ctx context.Context) (int64, error) {
@@ -39,24 +24,20 @@ func (q *Queries) CountPublicRoadmaps(ctx context.Context) (int64, error) {
 
 const createRoadmap = `-- name: CreateRoadmap :one
 INSERT INTO roadmaps (
-    user_id, title, description, category, is_public, is_template, step_count,
-    completed_step_count, progress, status, created_at, updated_at
+    user_id, title, description, category, is_public, is_template, status, created_at, updated_at
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now(), now()
-) RETURNING id, user_id, title, description, category, is_public, is_template, step_count, completed_step_count, progress, status, created_at, updated_at, completed_at
+    $1, $2, $3, $4, $5, $6, $7, now(), now()
+) RETURNING id, user_id, title, description, category, is_public, is_template, status, created_at, updated_at, completed_at
 `
 
 type CreateRoadmapParams struct {
-	UserID             int64
-	Title              string
-	Description        *string
-	Category           *string
-	IsPublic           bool
-	IsTemplate         bool
-	StepCount          *int64
-	CompletedStepCount *int64
-	Progress           *int64
-	Status             *string
+	UserID      int64
+	Title       string
+	Description *string
+	Category    *string
+	IsPublic    bool
+	IsTemplate  bool
+	Status      *string
 }
 
 func (q *Queries) CreateRoadmap(ctx context.Context, arg CreateRoadmapParams) (Roadmap, error) {
@@ -67,9 +48,6 @@ func (q *Queries) CreateRoadmap(ctx context.Context, arg CreateRoadmapParams) (R
 		arg.Category,
 		arg.IsPublic,
 		arg.IsTemplate,
-		arg.StepCount,
-		arg.CompletedStepCount,
-		arg.Progress,
 		arg.Status,
 	)
 	var i Roadmap
@@ -81,9 +59,6 @@ func (q *Queries) CreateRoadmap(ctx context.Context, arg CreateRoadmapParams) (R
 		&i.Category,
 		&i.IsPublic,
 		&i.IsTemplate,
-		&i.StepCount,
-		&i.CompletedStepCount,
-		&i.Progress,
 		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -93,12 +68,19 @@ func (q *Queries) CreateRoadmap(ctx context.Context, arg CreateRoadmapParams) (R
 }
 
 const createRoadmapStep = `-- name: CreateRoadmapStep :one
-INSERT INTO roadmap_steps (
-    roadmap_id, title, description, order_index, is_completed, completed_at, resource_url,
-    created_at, updated_at
-) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, now(), now()
-) RETURNING id, roadmap_id, title, description, order_index, is_completed, completed_at, resource_url, created_at, updated_at
+WITH inserted_step AS (
+    INSERT INTO roadmap_steps (
+        roadmap_id, title, description, order_index, is_completed, completed_at, resource_url,
+        created_at, updated_at
+    ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7, now(), now()
+    ) RETURNING roadmap_steps.id, roadmap_steps.roadmap_id, roadmap_steps.title, roadmap_steps.description, roadmap_steps.order_index, roadmap_steps.is_completed, roadmap_steps.completed_at, roadmap_steps.resource_url, roadmap_steps.created_at, roadmap_steps.updated_at
+), metrics_upsert AS (
+    INSERT INTO roadmap_metrics (roadmap_id, step_count)
+    SELECT inserted_step.roadmap_id, 1 FROM inserted_step
+    ON CONFLICT (roadmap_id) DO UPDATE SET step_count = roadmap_metrics.step_count + 1
+)
+SELECT inserted_step.id, inserted_step.roadmap_id, inserted_step.title, inserted_step.description, inserted_step.order_index, inserted_step.is_completed, inserted_step.completed_at, inserted_step.resource_url, inserted_step.created_at, inserted_step.updated_at FROM inserted_step
 `
 
 type CreateRoadmapStepParams struct {
@@ -111,7 +93,23 @@ type CreateRoadmapStepParams struct {
 	ResourceUrl *string
 }
 
-func (q *Queries) CreateRoadmapStep(ctx context.Context, arg CreateRoadmapStepParams) (RoadmapStep, error) {
+type CreateRoadmapStepRow struct {
+	ID          int64
+	RoadmapID   int64
+	Title       string
+	Description *string
+	OrderIndex  int64
+	IsCompleted bool
+	CompletedAt pgtype.Timestamptz
+	ResourceUrl *string
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+}
+
+// roadmap_stepsへのINSERTとroadmap_metrics.step_countの加算を同一SQL文で行う
+// （DEVSYNC-159）。metrics_upsertの結果自体は読まないが、データ変更を伴うCTEは
+// 参照の有無に関わらず必ず実行されるため、確実にstep_countへ反映される。
+func (q *Queries) CreateRoadmapStep(ctx context.Context, arg CreateRoadmapStepParams) (CreateRoadmapStepRow, error) {
 	row := q.db.QueryRow(ctx, createRoadmapStep,
 		arg.RoadmapID,
 		arg.Title,
@@ -121,7 +119,7 @@ func (q *Queries) CreateRoadmapStep(ctx context.Context, arg CreateRoadmapStepPa
 		arg.CompletedAt,
 		arg.ResourceUrl,
 	)
-	var i RoadmapStep
+	var i CreateRoadmapStepRow
 	err := row.Scan(
 		&i.ID,
 		&i.RoadmapID,
@@ -137,17 +135,8 @@ func (q *Queries) CreateRoadmapStep(ctx context.Context, arg CreateRoadmapStepPa
 	return i, err
 }
 
-const decrementRoadmapStepCount = `-- name: DecrementRoadmapStepCount :exec
-UPDATE roadmaps SET step_count = step_count - 1 WHERE id = $1
-`
-
-func (q *Queries) DecrementRoadmapStepCount(ctx context.Context, id int64) error {
-	_, err := q.db.Exec(ctx, decrementRoadmapStepCount, id)
-	return err
-}
-
 const deleteRoadmap = `-- name: DeleteRoadmap :exec
-DELETE FROM roadmaps WHERE id = $1
+DELETE FROM roadmaps WHERE roadmaps.id = $1
 `
 
 // roadmap_stepsはFKのON DELETE CASCADEでDBが自動的に削除する。
@@ -157,16 +146,38 @@ func (q *Queries) DeleteRoadmap(ctx context.Context, id int64) error {
 }
 
 const deleteRoadmapStep = `-- name: DeleteRoadmapStep :exec
-DELETE FROM roadmap_steps WHERE id = $1
+WITH deleted_step AS (
+    DELETE FROM roadmap_steps WHERE roadmap_steps.id = $1
+    RETURNING roadmap_steps.roadmap_id AS deleted_roadmap_id, roadmap_steps.is_completed AS deleted_is_completed
+)
+INSERT INTO roadmap_metrics (roadmap_id, step_count, completed_step_count)
+SELECT
+    deleted_roadmap_id,
+    0,
+    GREATEST(CASE WHEN deleted_is_completed THEN -1 ELSE 0 END, 0)
+FROM deleted_step
+ON CONFLICT (roadmap_id) DO UPDATE SET
+    step_count = GREATEST(roadmap_metrics.step_count - 1, 0),
+    completed_step_count = GREATEST(
+        roadmap_metrics.completed_step_count +
+        (SELECT CASE WHEN deleted_is_completed THEN -1 ELSE 0 END FROM deleted_step),
+        0
+    )
 `
 
+// roadmap_stepsの削除とroadmap_metrics.step_count/completed_step_countの減算を
+// 同一SQL文で行う（DEVSYNC-159）。削除されたステップの完了状態はDELETEのRETURNING
+// 自体から取得するため、削除前に別途読み取る必要がなく、その間の競合状態も生じない。
+// INSERT文自身が提案する行（新規作成パス）は0/GREATESTで0未満にならないようにし、
+// DO UPDATE側はEXCLUDEDではなくdeleted_stepを再度参照して既存値への正しい加減算と
+// フロアを行う（理由はUpdateRoadmapStepのコメント参照）。
 func (q *Queries) DeleteRoadmapStep(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, deleteRoadmapStep, id)
 	return err
 }
 
 const getRoadmapByID = `-- name: GetRoadmapByID :one
-SELECT id, user_id, title, description, category, is_public, is_template, step_count, completed_step_count, progress, status, created_at, updated_at, completed_at FROM roadmaps WHERE id = $1
+SELECT id, user_id, title, description, category, is_public, is_template, status, created_at, updated_at, completed_at FROM roadmaps WHERE roadmaps.id = $1
 `
 
 func (q *Queries) GetRoadmapByID(ctx context.Context, id int64) (Roadmap, error) {
@@ -180,9 +191,6 @@ func (q *Queries) GetRoadmapByID(ctx context.Context, id int64) (Roadmap, error)
 		&i.Category,
 		&i.IsPublic,
 		&i.IsTemplate,
-		&i.StepCount,
-		&i.CompletedStepCount,
-		&i.Progress,
 		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -192,7 +200,7 @@ func (q *Queries) GetRoadmapByID(ctx context.Context, id int64) (Roadmap, error)
 }
 
 const getRoadmapStepByID = `-- name: GetRoadmapStepByID :one
-SELECT id, roadmap_id, title, description, order_index, is_completed, completed_at, resource_url, created_at, updated_at FROM roadmap_steps WHERE id = $1
+SELECT id, roadmap_id, title, description, order_index, is_completed, completed_at, resource_url, created_at, updated_at FROM roadmap_steps WHERE roadmap_steps.id = $1
 `
 
 func (q *Queries) GetRoadmapStepByID(ctx context.Context, id int64) (RoadmapStep, error) {
@@ -213,8 +221,34 @@ func (q *Queries) GetRoadmapStepByID(ctx context.Context, id int64) (RoadmapStep
 	return i, err
 }
 
+const getRoadmapStepByIDForUpdate = `-- name: GetRoadmapStepByIDForUpdate :one
+SELECT id, roadmap_id, title, description, order_index, is_completed, completed_at, resource_url, created_at, updated_at FROM roadmap_steps WHERE roadmap_steps.id = $1 FOR UPDATE
+`
+
+// UpdateRoadmapStepの直前に呼び、対象行をロックした上でis_completedの新旧比較を行う
+// ための専用の読み取り（呼び出し側がこの行ロックと同一トランザクション内でUPDATEまで
+// 行うことで、同じステップへの同時更新がcompleted_step_countを二重に加減算しない
+// ようにする。DEVSYNC-159）。
+func (q *Queries) GetRoadmapStepByIDForUpdate(ctx context.Context, id int64) (RoadmapStep, error) {
+	row := q.db.QueryRow(ctx, getRoadmapStepByIDForUpdate, id)
+	var i RoadmapStep
+	err := row.Scan(
+		&i.ID,
+		&i.RoadmapID,
+		&i.Title,
+		&i.Description,
+		&i.OrderIndex,
+		&i.IsCompleted,
+		&i.CompletedAt,
+		&i.ResourceUrl,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getRoadmapWithUserByID = `-- name: GetRoadmapWithUserByID :one
-SELECT roadmaps.id, roadmaps.user_id, roadmaps.title, roadmaps.description, roadmaps.category, roadmaps.is_public, roadmaps.is_template, roadmaps.step_count, roadmaps.completed_step_count, roadmaps.progress, roadmaps.status, roadmaps.created_at, roadmaps.updated_at, roadmaps.completed_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT roadmaps.id, roadmaps.user_id, roadmaps.title, roadmaps.description, roadmaps.category, roadmaps.is_public, roadmaps.is_template, roadmaps.status, roadmaps.created_at, roadmaps.updated_at, roadmaps.completed_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM roadmaps
 JOIN users ON users.id = roadmaps.user_id
 WHERE roadmaps.id = $1
@@ -237,9 +271,6 @@ func (q *Queries) GetRoadmapWithUserByID(ctx context.Context, id int64) (GetRoad
 		&i.Roadmap.Category,
 		&i.Roadmap.IsPublic,
 		&i.Roadmap.IsTemplate,
-		&i.Roadmap.StepCount,
-		&i.Roadmap.CompletedStepCount,
-		&i.Roadmap.Progress,
 		&i.Roadmap.Status,
 		&i.Roadmap.CreatedAt,
 		&i.Roadmap.UpdatedAt,
@@ -274,17 +305,8 @@ func (q *Queries) GetRoadmapWithUserByID(ctx context.Context, id int64) (GetRoad
 	return i, err
 }
 
-const incrementRoadmapStepCount = `-- name: IncrementRoadmapStepCount :exec
-UPDATE roadmaps SET step_count = step_count + 1 WHERE id = $1
-`
-
-func (q *Queries) IncrementRoadmapStepCount(ctx context.Context, id int64) error {
-	_, err := q.db.Exec(ctx, incrementRoadmapStepCount, id)
-	return err
-}
-
 const listPublicRoadmapsWithUser = `-- name: ListPublicRoadmapsWithUser :many
-SELECT roadmaps.id, roadmaps.user_id, roadmaps.title, roadmaps.description, roadmaps.category, roadmaps.is_public, roadmaps.is_template, roadmaps.step_count, roadmaps.completed_step_count, roadmaps.progress, roadmaps.status, roadmaps.created_at, roadmaps.updated_at, roadmaps.completed_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT roadmaps.id, roadmaps.user_id, roadmaps.title, roadmaps.description, roadmaps.category, roadmaps.is_public, roadmaps.is_template, roadmaps.status, roadmaps.created_at, roadmaps.updated_at, roadmaps.completed_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM roadmaps
 JOIN users ON users.id = roadmaps.user_id
 WHERE roadmaps.is_public = true
@@ -320,9 +342,6 @@ func (q *Queries) ListPublicRoadmapsWithUser(ctx context.Context, arg ListPublic
 			&i.Roadmap.Category,
 			&i.Roadmap.IsPublic,
 			&i.Roadmap.IsTemplate,
-			&i.Roadmap.StepCount,
-			&i.Roadmap.CompletedStepCount,
-			&i.Roadmap.Progress,
 			&i.Roadmap.Status,
 			&i.Roadmap.CreatedAt,
 			&i.Roadmap.UpdatedAt,
@@ -365,7 +384,7 @@ func (q *Queries) ListPublicRoadmapsWithUser(ctx context.Context, arg ListPublic
 }
 
 const listRoadmapStepsByRoadmap = `-- name: ListRoadmapStepsByRoadmap :many
-SELECT id, roadmap_id, title, description, order_index, is_completed, completed_at, resource_url, created_at, updated_at FROM roadmap_steps WHERE roadmap_id = $1 ORDER BY order_index ASC
+SELECT id, roadmap_id, title, description, order_index, is_completed, completed_at, resource_url, created_at, updated_at FROM roadmap_steps WHERE roadmap_steps.roadmap_id = $1 ORDER BY roadmap_steps.order_index ASC
 `
 
 // GORMのPreload("Steps", order_index ASC)に相当。単一ロードマップのステップ一覧。
@@ -401,7 +420,7 @@ func (q *Queries) ListRoadmapStepsByRoadmap(ctx context.Context, roadmapID int64
 }
 
 const listRoadmapStepsByRoadmapIDs = `-- name: ListRoadmapStepsByRoadmapIDs :many
-SELECT id, roadmap_id, title, description, order_index, is_completed, completed_at, resource_url, created_at, updated_at FROM roadmap_steps WHERE roadmap_id = ANY($1::bigint[]) ORDER BY roadmap_id, order_index ASC
+SELECT id, roadmap_id, title, description, order_index, is_completed, completed_at, resource_url, created_at, updated_at FROM roadmap_steps WHERE roadmap_steps.roadmap_id = ANY($1::bigint[]) ORDER BY roadmap_steps.roadmap_id, roadmap_steps.order_index ASC
 `
 
 // GetTemplatesなど複数ロードマップ分のステップをまとめ取りし、Go側でグルーピングする。
@@ -437,9 +456,9 @@ func (q *Queries) ListRoadmapStepsByRoadmapIDs(ctx context.Context, dollar_1 []i
 }
 
 const listRoadmapsByStatus = `-- name: ListRoadmapsByStatus :many
-SELECT id, user_id, title, description, category, is_public, is_template, step_count, completed_step_count, progress, status, created_at, updated_at, completed_at FROM roadmaps
-WHERE user_id = $1 AND status = $2
-ORDER BY created_at DESC
+SELECT id, user_id, title, description, category, is_public, is_template, status, created_at, updated_at, completed_at FROM roadmaps
+WHERE roadmaps.user_id = $1 AND roadmaps.status = $2
+ORDER BY roadmaps.created_at DESC
 `
 
 type ListRoadmapsByStatusParams struct {
@@ -464,9 +483,6 @@ func (q *Queries) ListRoadmapsByStatus(ctx context.Context, arg ListRoadmapsBySt
 			&i.Category,
 			&i.IsPublic,
 			&i.IsTemplate,
-			&i.StepCount,
-			&i.CompletedStepCount,
-			&i.Progress,
 			&i.Status,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -483,9 +499,9 @@ func (q *Queries) ListRoadmapsByStatus(ctx context.Context, arg ListRoadmapsBySt
 }
 
 const listRoadmapsByUser = `-- name: ListRoadmapsByUser :many
-SELECT id, user_id, title, description, category, is_public, is_template, step_count, completed_step_count, progress, status, created_at, updated_at, completed_at FROM roadmaps
-WHERE user_id = $1
-ORDER BY created_at DESC
+SELECT id, user_id, title, description, category, is_public, is_template, status, created_at, updated_at, completed_at FROM roadmaps
+WHERE roadmaps.user_id = $1
+ORDER BY roadmaps.created_at DESC
 LIMIT $2 OFFSET $3
 `
 
@@ -512,9 +528,6 @@ func (q *Queries) ListRoadmapsByUser(ctx context.Context, arg ListRoadmapsByUser
 			&i.Category,
 			&i.IsPublic,
 			&i.IsTemplate,
-			&i.StepCount,
-			&i.CompletedStepCount,
-			&i.Progress,
 			&i.Status,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -531,7 +544,7 @@ func (q *Queries) ListRoadmapsByUser(ctx context.Context, arg ListRoadmapsByUser
 }
 
 const listTemplateRoadmaps = `-- name: ListTemplateRoadmaps :many
-SELECT id, user_id, title, description, category, is_public, is_template, step_count, completed_step_count, progress, status, created_at, updated_at, completed_at FROM roadmaps WHERE is_template = true ORDER BY created_at ASC
+SELECT id, user_id, title, description, category, is_public, is_template, status, created_at, updated_at, completed_at FROM roadmaps WHERE roadmaps.is_template = true ORDER BY roadmaps.created_at ASC
 `
 
 func (q *Queries) ListTemplateRoadmaps(ctx context.Context) ([]Roadmap, error) {
@@ -551,9 +564,6 @@ func (q *Queries) ListTemplateRoadmaps(ctx context.Context) ([]Roadmap, error) {
 			&i.Category,
 			&i.IsPublic,
 			&i.IsTemplate,
-			&i.StepCount,
-			&i.CompletedStepCount,
-			&i.Progress,
 			&i.Status,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -570,7 +580,7 @@ func (q *Queries) ListTemplateRoadmaps(ctx context.Context) ([]Roadmap, error) {
 }
 
 const reorderRoadmapStep = `-- name: ReorderRoadmapStep :exec
-UPDATE roadmap_steps SET order_index = $3 WHERE id = $1 AND roadmap_id = $2
+UPDATE roadmap_steps SET order_index = $3 WHERE roadmap_steps.id = $1 AND roadmap_steps.roadmap_id = $2
 `
 
 type ReorderRoadmapStepParams struct {
@@ -588,8 +598,8 @@ const updateRoadmap = `-- name: UpdateRoadmap :one
 UPDATE roadmaps SET
     title = $2, description = $3, category = $4, is_public = $5, is_template = $6,
     updated_at = now()
-WHERE id = $1
-RETURNING id, user_id, title, description, category, is_public, is_template, step_count, completed_step_count, progress, status, created_at, updated_at, completed_at
+WHERE roadmaps.id = $1
+RETURNING id, user_id, title, description, category, is_public, is_template, status, created_at, updated_at, completed_at
 `
 
 type UpdateRoadmapParams struct {
@@ -601,11 +611,11 @@ type UpdateRoadmapParams struct {
 	IsTemplate  bool
 }
 
-// GORMのSave（全カラム上書き）に相当。ただしstep_count/completed_step_count/progress/
-// status/completed_atは対象外。step_count等はIncrement/Decrement系の専用クエリだけが
-// 更新する。status/completed_atはUpdateRoadmapStatusに分離した
-// （ステップ完了によるrecalcRoadmapProgressの自動遷移を、このUPDATEが読み取り時点の
-// 古いstatus/completed_atで上書きする「ロストアップデート」を防ぐため）。
+// GORMのSave（全カラム上書き）に相当。ただしstatus/completed_atは対象外
+// （UpdateRoadmapStatusに分離済み。ステップ完了によるステータス自動遷移を、この
+// UPDATEが読み取り時点の古いstatus/completed_atで上書きする「ロストアップデート」を
+// 防ぐため）。step_count/completed_step_count/progressはroadmaps自体の列ではなく
+// roadmap_metrics側（DEVSYNC-159。progressはSELECT側の算出式）にあるため対象外。
 func (q *Queries) UpdateRoadmap(ctx context.Context, arg UpdateRoadmapParams) (Roadmap, error) {
 	row := q.db.QueryRow(ctx, updateRoadmap,
 		arg.ID,
@@ -624,9 +634,6 @@ func (q *Queries) UpdateRoadmap(ctx context.Context, arg UpdateRoadmapParams) (R
 		&i.Category,
 		&i.IsPublic,
 		&i.IsTemplate,
-		&i.StepCount,
-		&i.CompletedStepCount,
-		&i.Progress,
 		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -635,55 +642,11 @@ func (q *Queries) UpdateRoadmap(ctx context.Context, arg UpdateRoadmapParams) (R
 	return i, err
 }
 
-const updateRoadmapProgress = `-- name: UpdateRoadmapProgress :exec
-UPDATE roadmaps SET progress = $2 WHERE id = $1
-`
-
-type UpdateRoadmapProgressParams struct {
-	ID       int64
-	Progress *int64
-}
-
-func (q *Queries) UpdateRoadmapProgress(ctx context.Context, arg UpdateRoadmapProgressParams) error {
-	_, err := q.db.Exec(ctx, updateRoadmapProgress, arg.ID, arg.Progress)
-	return err
-}
-
-const updateRoadmapProgressCompleted = `-- name: UpdateRoadmapProgressCompleted :exec
-UPDATE roadmaps SET progress = $2, status = 'completed', completed_at = now() WHERE id = $1
-`
-
-type UpdateRoadmapProgressCompletedParams struct {
-	ID       int64
-	Progress *int64
-}
-
-// 進捗100%到達での自動完了（GORMのUpdates({"progress":...,"status":"completed","completed_at":now()})に相当）。
-func (q *Queries) UpdateRoadmapProgressCompleted(ctx context.Context, arg UpdateRoadmapProgressCompletedParams) error {
-	_, err := q.db.Exec(ctx, updateRoadmapProgressCompleted, arg.ID, arg.Progress)
-	return err
-}
-
-const updateRoadmapProgressReactivated = `-- name: UpdateRoadmapProgressReactivated :exec
-UPDATE roadmaps SET progress = $2, status = 'active', completed_at = NULL WHERE id = $1
-`
-
-type UpdateRoadmapProgressReactivatedParams struct {
-	ID       int64
-	Progress *int64
-}
-
-// 100%未満へ戻ったときのアクティブ復帰（GORMのUpdates({"progress":...,"status":"active","completed_at":nil})に相当）。
-func (q *Queries) UpdateRoadmapProgressReactivated(ctx context.Context, arg UpdateRoadmapProgressReactivatedParams) error {
-	_, err := q.db.Exec(ctx, updateRoadmapProgressReactivated, arg.ID, arg.Progress)
-	return err
-}
-
 const updateRoadmapStatus = `-- name: UpdateRoadmapStatus :one
 UPDATE roadmaps SET
     status = $2, completed_at = $3, updated_at = now()
-WHERE id = $1
-RETURNING id, user_id, title, description, category, is_public, is_template, step_count, completed_step_count, progress, status, created_at, updated_at, completed_at
+WHERE roadmaps.id = $1
+RETURNING id, user_id, title, description, category, is_public, is_template, status, created_at, updated_at, completed_at
 `
 
 type UpdateRoadmapStatusParams struct {
@@ -693,8 +656,8 @@ type UpdateRoadmapStatusParams struct {
 }
 
 // ユーザーによる明示的なステータス変更専用（PUT /roadmaps/:id でstatus指定時のみ呼ぶ）。
-// 汎用UpdateRoadmapと経路を分けることで、status変更を伴わない更新がrecalcRoadmapProgress
-// による自動遷移を上書きしないようにする。
+// 汎用UpdateRoadmapと経路を分けることで、status変更を伴わない更新がステップ完了による
+// ステータス自動遷移を上書きしないようにする。
 func (q *Queries) UpdateRoadmapStatus(ctx context.Context, arg UpdateRoadmapStatusParams) (Roadmap, error) {
 	row := q.db.QueryRow(ctx, updateRoadmapStatus, arg.ID, arg.Status, arg.CompletedAt)
 	var i Roadmap
@@ -706,9 +669,6 @@ func (q *Queries) UpdateRoadmapStatus(ctx context.Context, arg UpdateRoadmapStat
 		&i.Category,
 		&i.IsPublic,
 		&i.IsTemplate,
-		&i.StepCount,
-		&i.CompletedStepCount,
-		&i.Progress,
 		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -718,25 +678,59 @@ func (q *Queries) UpdateRoadmapStatus(ctx context.Context, arg UpdateRoadmapStat
 }
 
 const updateRoadmapStep = `-- name: UpdateRoadmapStep :one
-UPDATE roadmap_steps SET
-    title = $2, description = $3, order_index = $4, is_completed = $5, completed_at = $6,
-    resource_url = $7, updated_at = now()
-WHERE id = $1
-RETURNING id, roadmap_id, title, description, order_index, is_completed, completed_at, resource_url, created_at, updated_at
+WITH updated_step AS (
+    UPDATE roadmap_steps SET
+        title = $2, description = $3, order_index = $4, is_completed = $5, completed_at = $6,
+        resource_url = $7, updated_at = now()
+    WHERE roadmap_steps.id = $1
+    RETURNING roadmap_steps.id, roadmap_steps.roadmap_id, roadmap_steps.title, roadmap_steps.description, roadmap_steps.order_index, roadmap_steps.is_completed, roadmap_steps.completed_at, roadmap_steps.resource_url, roadmap_steps.created_at, roadmap_steps.updated_at
+), metrics_upsert AS (
+    INSERT INTO roadmap_metrics (roadmap_id, completed_step_count)
+    SELECT updated_step.roadmap_id, GREATEST($8::bigint, 0)
+    FROM updated_step
+    WHERE $8::bigint != 0
+    ON CONFLICT (roadmap_id) DO UPDATE SET
+        completed_step_count = GREATEST(roadmap_metrics.completed_step_count + $8::bigint, 0)
+)
+SELECT updated_step.id, updated_step.roadmap_id, updated_step.title, updated_step.description, updated_step.order_index, updated_step.is_completed, updated_step.completed_at, updated_step.resource_url, updated_step.created_at, updated_step.updated_at FROM updated_step
 `
 
 type UpdateRoadmapStepParams struct {
+	ID             int64
+	Title          string
+	Description    *string
+	OrderIndex     int64
+	IsCompleted    bool
+	CompletedAt    pgtype.Timestamptz
+	ResourceUrl    *string
+	CompletedDelta int64
+}
+
+type UpdateRoadmapStepRow struct {
 	ID          int64
+	RoadmapID   int64
 	Title       string
 	Description *string
 	OrderIndex  int64
 	IsCompleted bool
 	CompletedAt pgtype.Timestamptz
 	ResourceUrl *string
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
 }
 
-// GORMのSave（全カラム上書き）に相当。
-func (q *Queries) UpdateRoadmapStep(ctx context.Context, arg UpdateRoadmapStepParams) (RoadmapStep, error) {
+// GORMのSave（全カラム上書き）に相当。completed_deltaが0でなければ
+// roadmap_metrics.completed_step_countも同一SQL文で加減算する（0未満にはしない）。
+// completed_deltaは呼び出し側（Go）がGetRoadmapStepByIDForUpdateで対象行をロックした
+// 上で新旧のis_completedを比較して算出し、この呼び出しと同一トランザクション内で渡す。
+// INSERT文自身が提案する行（roadmap_metrics行がまだ無い場合の新規作成パス）は
+// GREATEST(delta, 0)で0未満にならないようにする。CHECK制約はEXCLUDED経由の値ではなく
+// INSERT提案時点の生の値を検査するため、EXCLUDEDをそのままDO UPDATEへ渡すと
+// 通常の減算（0未満へのフロア）の前にCHECK違反になる。DO UPDATE側はEXCLUDEDではなく
+// completed_deltaそのもの（クエリ引数なのでCTEを介さず直接参照できる）を使い、
+// 既存値への正しい加減算とフロアを行う。実運用ではroadmap_metrics行はCreateRoadmapStep
+// の時点で必ず作成済みのため、この新規作成パス自体は通常到達しない。
+func (q *Queries) UpdateRoadmapStep(ctx context.Context, arg UpdateRoadmapStepParams) (UpdateRoadmapStepRow, error) {
 	row := q.db.QueryRow(ctx, updateRoadmapStep,
 		arg.ID,
 		arg.Title,
@@ -745,8 +739,9 @@ func (q *Queries) UpdateRoadmapStep(ctx context.Context, arg UpdateRoadmapStepPa
 		arg.IsCompleted,
 		arg.CompletedAt,
 		arg.ResourceUrl,
+		arg.CompletedDelta,
 	)
-	var i RoadmapStep
+	var i UpdateRoadmapStepRow
 	err := row.Scan(
 		&i.ID,
 		&i.RoadmapID,
