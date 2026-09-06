@@ -14,15 +14,15 @@ const (
 
 // WeeklyChallenge はウィークリーチャレンジを表す。
 type WeeklyChallenge struct {
-	ID            uint          `json:"id" gorm:"primaryKey"`
-	UserID        uint          `json:"user_id" gorm:"not null;index"`
-	Year          int           `json:"year" gorm:"not null"`
-	Week          int           `json:"week" gorm:"not null"`
-	ChallengeType ChallengeType `json:"challenge_type" gorm:"not null"`
-	Description   string        `json:"description" gorm:"not null"`
-	TargetValue   int           `json:"target_value" gorm:"not null"`
-	CurrentValue  int           `json:"current_value" gorm:"default:0"`
-	IsCompleted   bool          `json:"is_completed" gorm:"default:false"`
+	ID            uint          `json:"id"`
+	UserID        uint          `json:"user_id"`
+	Year          int           `json:"year"`
+	Week          int           `json:"week"`
+	ChallengeType ChallengeType `json:"challenge_type"`
+	Description   string        `json:"description"`
+	TargetValue   int           `json:"target_value"`
+	CurrentValue  int           `json:"current_value"`
+	IsCompleted   bool          `json:"is_completed"`
 	CompletedAt   *time.Time    `json:"completed_at,omitempty"`
 	CreatedAt     time.Time     `json:"created_at"`
 	UpdatedAt     time.Time     `json:"updated_at"`

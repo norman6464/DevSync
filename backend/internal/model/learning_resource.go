@@ -32,48 +32,48 @@ const (
 // LearningResource はユーザーが登録した学習リソースを表す。
 // IsPublic フラグで公開/非公開を制御する。
 type LearningResource struct {
-	ID          uint               `json:"id" gorm:"primaryKey"`
-	UserID      uint               `json:"user_id" gorm:"not null;index"`
-	User        User               `json:"user,omitempty" gorm:"foreignKey:UserID"`
-	Title       string             `json:"title" gorm:"not null;size:300"`
-	Description string             `json:"description" gorm:"type:text"`
-	URL         string             `json:"url" gorm:"size:500"`
-	Category    ResourceCategory   `json:"category" gorm:"size:50;not null"`
-	Difficulty  ResourceDifficulty `json:"difficulty" gorm:"size:50"`
-	Tags        string             `json:"tags" gorm:"type:text"` // JSON配列形式のタグ
-	ImageURL    string             `json:"image_url" gorm:"size:500"`
+	ID          uint               `json:"id"`
+	UserID      uint               `json:"user_id"`
+	User        User               `json:"user,omitempty"`
+	Title       string             `json:"title"`
+	Description string             `json:"description"`
+	URL         string             `json:"url"`
+	Category    ResourceCategory   `json:"category"`
+	Difficulty  ResourceDifficulty `json:"difficulty"`
+	Tags        string             `json:"tags"` // JSON配列形式のタグ
+	ImageURL    string             `json:"image_url"`
 	IsPublic    bool               `json:"is_public"` // 他ユーザーに公開するか
-	LikeCount   int                `json:"like_count" gorm:"default:0"`
-	SaveCount   int                `json:"save_count" gorm:"default:0"`
+	LikeCount   int                `json:"like_count"`
+	SaveCount   int                `json:"save_count"`
 	CreatedAt   time.Time          `json:"created_at"`
 	UpdatedAt   time.Time          `json:"updated_at"`
 }
 
 // ResourceLike は学習リソースへの「いいね」を記録する。
 type ResourceLike struct {
-	ID         uint      `json:"id" gorm:"primaryKey"`
-	UserID     uint      `json:"user_id" gorm:"not null;uniqueIndex:idx_resource_like"`
-	ResourceID uint      `json:"resource_id" gorm:"not null;uniqueIndex:idx_resource_like"`
+	ID         uint      `json:"id"`
+	UserID     uint      `json:"user_id"`
+	ResourceID uint      `json:"resource_id"`
 	CreatedAt  time.Time `json:"created_at"`
 }
 
 // ResourceSave は学習リソースのブックマーク（保存）を記録する。
 type ResourceSave struct {
-	ID         uint      `json:"id" gorm:"primaryKey"`
-	UserID     uint      `json:"user_id" gorm:"not null;uniqueIndex:idx_resource_save"`
-	ResourceID uint      `json:"resource_id" gorm:"not null;uniqueIndex:idx_resource_save"`
+	ID         uint      `json:"id"`
+	UserID     uint      `json:"user_id"`
+	ResourceID uint      `json:"resource_id"`
 	CreatedAt  time.Time `json:"created_at"`
 }
 
 // ResourceReview は学習リソースへのレビュー（評価＋コメント）を記録する。
 // ユーザーとリソースの組み合わせでユニーク（1リソースにつき1レビュー）。
 type ResourceReview struct {
-	ID         uint      `json:"id" gorm:"primaryKey"`
-	UserID     uint      `json:"user_id" gorm:"not null;uniqueIndex:idx_resource_review"`
-	User       User      `json:"user,omitempty" gorm:"foreignKey:UserID"`
-	ResourceID uint      `json:"resource_id" gorm:"not null;uniqueIndex:idx_resource_review;index"`
-	Rating     int       `json:"rating" gorm:"not null"`   // 1-5の評価
-	Comment    string    `json:"comment" gorm:"type:text"` // レビューコメント
+	ID         uint      `json:"id"`
+	UserID     uint      `json:"user_id"`
+	User       User      `json:"user,omitempty"`
+	ResourceID uint      `json:"resource_id"`
+	Rating     int       `json:"rating"`  // 1-5の評価
+	Comment    string    `json:"comment"` // レビューコメント
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 }

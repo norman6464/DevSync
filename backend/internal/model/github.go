@@ -5,30 +5,30 @@ import "time"
 // GitHubContribution はGitHubから同期した日別コントリビューション（草）データを表す。
 // uniqueIndex制約でユーザーごとに1日1レコードを保証する。
 type GitHubContribution struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	UserID    uint      `json:"user_id" gorm:"not null;uniqueIndex:idx_user_date"`
-	Date      time.Time `json:"date" gorm:"not null;uniqueIndex:idx_user_date"` // コントリビューション日
-	Count     int       `json:"count" gorm:"not null;default:0"`                // その日のコントリビューション数
+	ID        uint      `json:"id"`
+	UserID    uint      `json:"user_id"`
+	Date      time.Time `json:"date"`  // コントリビューション日
+	Count     int       `json:"count"` // その日のコントリビューション数
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // GitHubLanguageStat はGitHubリポジトリの言語別統計データを表す。
 type GitHubLanguageStat struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	UserID    uint      `json:"user_id" gorm:"not null;uniqueIndex:idx_user_lang"`
-	Language  string    `json:"language" gorm:"not null;uniqueIndex:idx_user_lang"` // プログラミング言語名
-	Bytes     int64     `json:"bytes" gorm:"not null;default:0"`                    // 使用バイト数
-	RepoCount int       `json:"repo_count" gorm:"not null;default:0"`               // 使用リポジトリ数
+	ID        uint      `json:"id"`
+	UserID    uint      `json:"user_id"`
+	Language  string    `json:"language"`   // プログラミング言語名
+	Bytes     int64     `json:"bytes"`      // 使用バイト数
+	RepoCount int       `json:"repo_count"` // 使用リポジトリ数
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // GitHubRepository はGitHubから同期したリポジトリ情報を表す。
 type GitHubRepository struct {
-	ID           uint      `json:"id" gorm:"primaryKey"`
-	UserID       uint      `json:"user_id" gorm:"not null;index"`
-	GitHubRepoID int64     `json:"github_repo_id" gorm:"not null;uniqueIndex"` // GitHub側のリポジトリID
-	Name         string    `json:"name" gorm:"not null"`
+	ID           uint      `json:"id"`
+	UserID       uint      `json:"user_id"`
+	GitHubRepoID int64     `json:"github_repo_id"` // GitHub側のリポジトリID
+	Name         string    `json:"name"`
 	FullName     string    `json:"full_name"` // "owner/repo" 形式
 	Description  string    `json:"description"`
 	Language     string    `json:"language"` // メイン言語

@@ -16,11 +16,11 @@ const (
 
 // UserActivity はユーザーのアクティビティログを表す。
 type UserActivity struct {
-	ID           uint         `json:"id" gorm:"primaryKey"`
-	UserID       uint         `json:"user_id" gorm:"not null;index"`
-	ActivityType ActivityType `json:"activity_type" gorm:"size:50;not null;index"`
-	TargetType   string       `json:"target_type" gorm:"size:50;not null"`
-	TargetID     uint         `json:"target_id" gorm:"not null"`
-	Metadata     string       `json:"metadata" gorm:"type:text"`
-	CreatedAt    time.Time    `json:"created_at" gorm:"index"`
+	ID           uint         `json:"id"`
+	UserID       uint         `json:"user_id"`
+	ActivityType ActivityType `json:"activity_type"`
+	TargetType   string       `json:"target_type"`
+	TargetID     uint         `json:"target_id"`
+	Metadata     string       `json:"metadata"`
+	CreatedAt    time.Time    `json:"created_at"`
 }

@@ -27,16 +27,16 @@ const (
 // LearningGoal はユーザーの学習目標を表す。
 // Progress が100%に達すると、Serviceが自動的にStatusをcompletedに変更する。
 type LearningGoal struct {
-	ID          uint         `json:"id" gorm:"primaryKey"`
-	UserID      uint         `json:"user_id" gorm:"not null;index"`
-	Title       string       `json:"title" gorm:"not null"`
+	ID          uint         `json:"id"`
+	UserID      uint         `json:"user_id"`
+	Title       string       `json:"title"`
 	Description string       `json:"description"`
-	Category    GoalCategory `json:"category" gorm:"default:'other'"`
-	TargetDate  *time.Time   `json:"target_date"`                   // 目標達成予定日
-	Progress    int          `json:"progress" gorm:"default:0"`     // 0〜100の達成率
-	TargetHours int          `json:"target_hours" gorm:"default:0"` // 目標学習時間（時間単位、0=未設定）
-	Status      GoalStatus   `json:"status" gorm:"default:'active'"`
-	IsPublic    bool         `json:"is_public" gorm:"default:false"`
+	Category    GoalCategory `json:"category"`
+	TargetDate  *time.Time   `json:"target_date"`  // 目標達成予定日
+	Progress    int          `json:"progress"`     // 0〜100の達成率
+	TargetHours int          `json:"target_hours"` // 目標学習時間（時間単位、0=未設定）
+	Status      GoalStatus   `json:"status"`
+	IsPublic    bool         `json:"is_public"`
 	CreatedAt   time.Time    `json:"created_at"`
 	UpdatedAt   time.Time    `json:"updated_at"`
 	CompletedAt *time.Time   `json:"completed_at"` // 完了日時（完了時に自動設定）

@@ -4,13 +4,13 @@ import "time"
 
 // YouTubeVideo はYouTube動画のキャッシュデータを表す。
 type YouTubeVideo struct {
-	ID           uint      `json:"id" gorm:"primaryKey"`
-	VideoID      string    `json:"video_id" gorm:"uniqueIndex;not null;size:20"`
-	Title        string    `json:"title" gorm:"not null;size:500"`
-	Description  string    `json:"description" gorm:"type:text"`
-	ChannelID    string    `json:"channel_id" gorm:"size:50"`
-	ChannelTitle string    `json:"channel_title" gorm:"size:200"`
-	ThumbnailURL string    `json:"thumbnail_url" gorm:"size:500"`
+	ID           uint      `json:"id"`
+	VideoID      string    `json:"video_id"`
+	Title        string    `json:"title"`
+	Description  string    `json:"description"`
+	ChannelID    string    `json:"channel_id"`
+	ChannelTitle string    `json:"channel_title"`
+	ThumbnailURL string    `json:"thumbnail_url"`
 	PublishedAt  time.Time `json:"published_at"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
@@ -18,11 +18,11 @@ type YouTubeVideo struct {
 
 // YouTubeSearchCache は検索クエリごとのキャッシュを表す。
 type YouTubeSearchCache struct {
-	ID           uint      `json:"id" gorm:"primaryKey"`
-	Query        string    `json:"query" gorm:"index;not null;size:500"`
-	Language     string    `json:"language" gorm:"size:10;default:'ja'"`
-	VideoIDs     string    `json:"video_ids" gorm:"type:text"`
-	CacheExpires time.Time `json:"cache_expires" gorm:"index"`
+	ID           uint      `json:"id"`
+	Query        string    `json:"query"`
+	Language     string    `json:"language"`
+	VideoIDs     string    `json:"video_ids"`
+	CacheExpires time.Time `json:"cache_expires"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }

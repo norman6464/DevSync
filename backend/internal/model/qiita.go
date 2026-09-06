@@ -4,13 +4,13 @@ import "time"
 
 // QiitaArticle はQiitaから同期した記事データを表す。
 type QiitaArticle struct {
-	ID            uint      `json:"id" gorm:"primaryKey"`
-	UserID        uint      `json:"user_id" gorm:"not null;index"`
-	QiitaID       string    `json:"qiita_id" gorm:"not null;uniqueIndex"` // Qiita側の記事ID
-	Title         string    `json:"title" gorm:"not null"`
-	URL           string    `json:"url" gorm:"not null"` // 記事のURL
-	LikesCount    int       `json:"likes_count" gorm:"default:0"`
-	CommentsCount int       `json:"comments_count" gorm:"default:0"`
+	ID            uint      `json:"id"`
+	UserID        uint      `json:"user_id"`
+	QiitaID       string    `json:"qiita_id"` // Qiita側の記事ID
+	Title         string    `json:"title"`
+	URL           string    `json:"url"` // 記事のURL
+	LikesCount    int       `json:"likes_count"`
+	CommentsCount int       `json:"comments_count"`
 	Tags          string    `json:"tags"` // カンマ区切りのタグ名
 	PublishedAt   time.Time `json:"published_at"`
 	UpdatedAt     time.Time `json:"updated_at"`

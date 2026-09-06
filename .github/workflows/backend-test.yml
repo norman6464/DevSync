@@ -125,6 +125,17 @@ jobs:
         env:
           ATLAS_DB_URL: postgres://devsync:devsync@localhost:5432/devsync?sslmode=disable
 
+      # archlintがGoのimport方向を静的検証するのに対し、schemalintは適用済みの
+      # 実PostgreSQLへ接続しpg_catalog/information_schemaからDB設計規約
+      # （FK・索引・命名）の逸脱を検出する（DEVSYNC-155）。
+      # Phase 0時点では全ルールがwarnのためexit codeは常に0。DEVSYNC-156以降で
+      # ルールを1本ずつerrorへ昇格させる。
+      - name: DBスキーマ規約をチェック（schemalint）
+        run: go run ./cmd/schemalint
+        working-directory: ./backend
+        env:
+          ATLAS_DB_URL: postgres://devsync:devsync@localhost:5432/devsync?sslmode=disable
+
       # schema.gen.sql（コミット対象。internal/infra/database/schema.goがgo:embedして
       # 起動時の空DB自己適用に使う）とsqlc生成コードが、schema.hcl・queriesから
       # 再生成しても変わらないか（drift）を検証する。
@@ -135,10 +146,18 @@ jobs:
           git diff --exit-code -- internal/infra/database/schema/schema.gen.sql internal/adapter/persistence/sqlcgen
         working-directory: ./backend
 
+      # sqlc vet: sqlc.yaml末尾のrules（mutation-requires-where等）を全クエリへ当てる静的検査。
+      - name: sqlc vet
+        run: sqlc vet
+        working-directory: ./backend
+
       # race detectorで並行コードのデータ競合をCIで検出する。
+      # ATLAS_DB_URLはcascade_test.go（退会結合テスト）が実PostgreSQLへ接続するために使う。
       - name: ユニットテストを実行（race + カバレッジ）
         run: go test -race ./... -cover -coverprofile=coverage.out
         working-directory: ./backend
+        env:
+          ATLAS_DB_URL: postgres://devsync:devsync@localhost:5432/devsync?sslmode=disable
 
       - name: カバレッジレポートをアップロード
         uses: actions/upload-artifact@v4

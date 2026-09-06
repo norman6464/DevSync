@@ -34,37 +34,37 @@ const (
 // 複数の RoadmapStep を持ち、Progress は全ステップの完了率から自動計算される。
 // IsPublic がtrueの場合、他のユーザーにも公開される。
 type Roadmap struct {
-	ID                 uint            `json:"id" gorm:"primaryKey"`
-	UserID             uint            `json:"user_id" gorm:"not null;index"`
-	User               User            `json:"user,omitempty" gorm:"foreignKey:UserID"`
-	Title              string          `json:"title" gorm:"not null;size:200"`
-	Description        string          `json:"description" gorm:"type:text"`
-	Category           RoadmapCategory `json:"category" gorm:"default:'other'"`
-	IsPublic           bool            `json:"is_public" gorm:"default:false;index"`   // 公開フラグ
-	IsTemplate         bool            `json:"is_template" gorm:"default:false;index"` // テンプレートフラグ
-	StepCount          int             `json:"step_count" gorm:"default:0"`            // 全ステップ数
-	CompletedStepCount int             `json:"completed_step_count" gorm:"default:0"`  // 完了済みステップ数
-	Progress           int             `json:"progress" gorm:"default:0"`              // 進捗率（0〜100、自動計算）
-	Status             RoadmapStatus   `json:"status" gorm:"default:'active'"`
+	ID                 uint            `json:"id"`
+	UserID             uint            `json:"user_id"`
+	User               User            `json:"user,omitempty"`
+	Title              string          `json:"title"`
+	Description        string          `json:"description"`
+	Category           RoadmapCategory `json:"category"`
+	IsPublic           bool            `json:"is_public"`            // 公開フラグ
+	IsTemplate         bool            `json:"is_template"`          // テンプレートフラグ
+	StepCount          int             `json:"step_count"`           // 全ステップ数
+	CompletedStepCount int             `json:"completed_step_count"` // 完了済みステップ数
+	Progress           int             `json:"progress"`             // 進捗率（0〜100、自動計算）
+	Status             RoadmapStatus   `json:"status"`
 	CreatedAt          time.Time       `json:"created_at"`
 	UpdatedAt          time.Time       `json:"updated_at"`
 	CompletedAt        *time.Time      `json:"completed_at"` // 完了日時（完了時に自動設定）
 
 	// リレーション
-	Steps []RoadmapStep `json:"steps,omitempty" gorm:"foreignKey:RoadmapID;constraint:OnDelete:CASCADE"`
+	Steps []RoadmapStep `json:"steps,omitempty"`
 }
 
 // RoadmapStep は学習ロードマップ内の個別ステップを表す。
 // OrderIndex で表示順序を管理し、IsCompleted で完了状態を追跡する。
 type RoadmapStep struct {
-	ID          uint       `json:"id" gorm:"primaryKey"`
-	RoadmapID   uint       `json:"roadmap_id" gorm:"not null;index"` // 所属するロードマップのID
-	Title       string     `json:"title" gorm:"not null;size:200"`
-	Description string     `json:"description" gorm:"type:text"`
-	OrderIndex  int        `json:"order_index" gorm:"not null;default:0"` // 表示順序（0始まり）
-	IsCompleted bool       `json:"is_completed" gorm:"default:false"`     // 完了フラグ
-	CompletedAt *time.Time `json:"completed_at"`                          // 完了日時
-	ResourceURL string     `json:"resource_url" gorm:"size:500"`          // 参考リソースのURL
+	ID          uint       `json:"id"`
+	RoadmapID   uint       `json:"roadmap_id"` // 所属するロードマップのID
+	Title       string     `json:"title"`
+	Description string     `json:"description"`
+	OrderIndex  int        `json:"order_index"`  // 表示順序（0始まり）
+	IsCompleted bool       `json:"is_completed"` // 完了フラグ
+	CompletedAt *time.Time `json:"completed_at"` // 完了日時
+	ResourceURL string     `json:"resource_url"` // 参考リソースのURL
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
 }

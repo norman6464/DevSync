@@ -5,11 +5,11 @@ import "time"
 // StreakFreeze は学習ストリークのフリーズ（保護）を表す。
 // ユーザーが忙しい日にストリークを守るために使用する。
 type StreakFreeze struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	UserID    uint      `json:"user_id" gorm:"not null;index;uniqueIndex:idx_streak_freeze_user_date"`
-	UsedDate  string    `json:"used_date" gorm:"not null;type:varchar(10);uniqueIndex:idx_streak_freeze_user_date"` // "YYYY-MM-DD" 形式
-	Month     int       `json:"month" gorm:"not null"`                                                              // 使用月（1-12）
-	Year      int       `json:"year" gorm:"not null"`                                                               // 使用年
+	ID        uint      `json:"id"`
+	UserID    uint      `json:"user_id"`
+	UsedDate  string    `json:"used_date"` // "YYYY-MM-DD" 形式
+	Month     int       `json:"month"`     // 使用月（1-12）
+	Year      int       `json:"year"`      // 使用年
 	CreatedAt time.Time `json:"created_at"`
 }
 

@@ -4,10 +4,10 @@ import "time"
 
 // WeeklyGoal はカテゴリ別の週間学習時間目標を表す。
 type WeeklyGoal struct {
-	ID            uint        `json:"id" gorm:"primaryKey"`
-	UserID        uint        `json:"user_id" gorm:"not null;uniqueIndex:idx_weekly_goal_unique"`
-	Category      LogCategory `json:"category" gorm:"not null;uniqueIndex:idx_weekly_goal_unique"`
-	TargetMinutes int         `json:"target_minutes" gorm:"not null;default:0"` // 目標学習時間（分）
+	ID            uint        `json:"id"`
+	UserID        uint        `json:"user_id"`
+	Category      LogCategory `json:"category"`
+	TargetMinutes int         `json:"target_minutes"` // 目標学習時間（分）
 	CreatedAt     time.Time   `json:"created_at"`
 	UpdatedAt     time.Time   `json:"updated_at"`
 }
