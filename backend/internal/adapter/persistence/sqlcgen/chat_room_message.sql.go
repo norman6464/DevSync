@@ -35,7 +35,7 @@ func (q *Queries) CreateGroupMessage(ctx context.Context, arg CreateGroupMessage
 }
 
 const getUserByIDForChatSender = `-- name: GetUserByIDForChatSender :one
-SELECT id, username, name, email, password, avatar_url, bio, git_hub_id, git_hub_username, git_hub_token, git_hub_connected, spotify_connected, spotify_token, spotify_refresh_token, spotify_token_expiry, zenn_username, qiita_username, at_coder_username, paiza_rank, skills_languages, skills_frameworks, onboarding_completed, email_weekly_report, email_language, created_at, updated_at FROM users WHERE id = $1
+SELECT id, username, name, email, avatar_url, bio, git_hub_id, git_hub_username, git_hub_token, git_hub_connected, spotify_connected, spotify_token, spotify_refresh_token, spotify_token_expiry, zenn_username, qiita_username, at_coder_username, paiza_rank, skills_languages, skills_frameworks, onboarding_completed, email_weekly_report, email_language, created_at, updated_at FROM users WHERE id = $1
 `
 
 func (q *Queries) GetUserByIDForChatSender(ctx context.Context, id int64) (User, error) {
@@ -46,7 +46,6 @@ func (q *Queries) GetUserByIDForChatSender(ctx context.Context, id int64) (User,
 		&i.Username,
 		&i.Name,
 		&i.Email,
-		&i.Password,
 		&i.AvatarUrl,
 		&i.Bio,
 		&i.GitHubID,
@@ -73,7 +72,7 @@ func (q *Queries) GetUserByIDForChatSender(ctx context.Context, id int64) (User,
 }
 
 const listGroupMessagesByRoom = `-- name: ListGroupMessagesByRoom :many
-SELECT group_messages.id, group_messages.chat_room_id, group_messages.sender_id, group_messages.content, group_messages.created_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT group_messages.id, group_messages.chat_room_id, group_messages.sender_id, group_messages.content, group_messages.created_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM group_messages
 JOIN users ON users.id = group_messages.sender_id
 WHERE group_messages.chat_room_id = $1
@@ -112,7 +111,6 @@ func (q *Queries) ListGroupMessagesByRoom(ctx context.Context, arg ListGroupMess
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,

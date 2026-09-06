@@ -299,7 +299,7 @@ func (q *Queries) GetStudyCircleStepByID(ctx context.Context, id int64) (StudyCi
 }
 
 const getStudyCircleWithOwnerByID = `-- name: GetStudyCircleWithOwnerByID :one
-SELECT study_circles.id, study_circles.name, study_circles.topic, study_circles.description, study_circles.owner_id, study_circles.max_members, study_circles.status, study_circles.created_at, study_circles.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT study_circles.id, study_circles.name, study_circles.topic, study_circles.description, study_circles.owner_id, study_circles.max_members, study_circles.status, study_circles.created_at, study_circles.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM study_circles
 JOIN users ON users.id = study_circles.owner_id
 WHERE study_circles.id = $1
@@ -328,7 +328,6 @@ func (q *Queries) GetStudyCircleWithOwnerByID(ctx context.Context, id int64) (Ge
 		&i.User.Username,
 		&i.User.Name,
 		&i.User.Email,
-		&i.User.Password,
 		&i.User.AvatarUrl,
 		&i.User.Bio,
 		&i.User.GitHubID,
@@ -388,7 +387,7 @@ func (q *Queries) ListStudyCircleCheckinDatesByCircle(ctx context.Context, circl
 }
 
 const listStudyCircleCheckinsWithUser = `-- name: ListStudyCircleCheckinsWithUser :many
-SELECT study_circle_checkins.id, study_circle_checkins.circle_id, study_circle_checkins.user_id, study_circle_checkins.checked_on, study_circle_checkins.content, study_circle_checkins.created_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT study_circle_checkins.id, study_circle_checkins.circle_id, study_circle_checkins.user_id, study_circle_checkins.checked_on, study_circle_checkins.content, study_circle_checkins.created_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM study_circle_checkins
 JOIN users ON users.id = study_circle_checkins.user_id
 WHERE study_circle_checkins.circle_id = $1
@@ -421,7 +420,6 @@ func (q *Queries) ListStudyCircleCheckinsWithUser(ctx context.Context, circleID 
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,
@@ -455,7 +453,7 @@ func (q *Queries) ListStudyCircleCheckinsWithUser(ctx context.Context, circleID 
 }
 
 const listStudyCircleMemberProgressWithUser = `-- name: ListStudyCircleMemberProgressWithUser :many
-SELECT study_circle_member_progresses.id, study_circle_member_progresses.circle_id, study_circle_member_progresses.step_id, study_circle_member_progresses.user_id, study_circle_member_progresses.is_completed, study_circle_member_progresses.completed_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT study_circle_member_progresses.id, study_circle_member_progresses.circle_id, study_circle_member_progresses.step_id, study_circle_member_progresses.user_id, study_circle_member_progresses.is_completed, study_circle_member_progresses.completed_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM study_circle_member_progresses
 JOIN users ON users.id = study_circle_member_progresses.user_id
 WHERE study_circle_member_progresses.circle_id = $1
@@ -487,7 +485,6 @@ func (q *Queries) ListStudyCircleMemberProgressWithUser(ctx context.Context, cir
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,
@@ -521,7 +518,7 @@ func (q *Queries) ListStudyCircleMemberProgressWithUser(ctx context.Context, cir
 }
 
 const listStudyCircleMembersWithUserByCircle = `-- name: ListStudyCircleMembersWithUserByCircle :many
-SELECT study_circle_members.id, study_circle_members.circle_id, study_circle_members.user_id, study_circle_members.role, study_circle_members.joined_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT study_circle_members.id, study_circle_members.circle_id, study_circle_members.user_id, study_circle_members.role, study_circle_members.joined_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM study_circle_members
 JOIN users ON users.id = study_circle_members.user_id
 WHERE study_circle_members.circle_id = $1
@@ -552,7 +549,6 @@ func (q *Queries) ListStudyCircleMembersWithUserByCircle(ctx context.Context, ci
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,
@@ -620,7 +616,7 @@ func (q *Queries) ListStudyCircleStepsByCircle(ctx context.Context, circleID int
 }
 
 const listStudyCirclesByUser = `-- name: ListStudyCirclesByUser :many
-SELECT study_circles.id, study_circles.name, study_circles.topic, study_circles.description, study_circles.owner_id, study_circles.max_members, study_circles.status, study_circles.created_at, study_circles.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT study_circles.id, study_circles.name, study_circles.topic, study_circles.description, study_circles.owner_id, study_circles.max_members, study_circles.status, study_circles.created_at, study_circles.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM study_circles
 JOIN study_circle_members ON study_circle_members.circle_id = study_circles.id
 JOIN users ON users.id = study_circles.owner_id
@@ -664,7 +660,6 @@ func (q *Queries) ListStudyCirclesByUser(ctx context.Context, arg ListStudyCircl
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,
@@ -698,7 +693,7 @@ func (q *Queries) ListStudyCirclesByUser(ctx context.Context, arg ListStudyCircl
 }
 
 const listStudyCirclesByUserAndStatus = `-- name: ListStudyCirclesByUserAndStatus :many
-SELECT study_circles.id, study_circles.name, study_circles.topic, study_circles.description, study_circles.owner_id, study_circles.max_members, study_circles.status, study_circles.created_at, study_circles.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT study_circles.id, study_circles.name, study_circles.topic, study_circles.description, study_circles.owner_id, study_circles.max_members, study_circles.status, study_circles.created_at, study_circles.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM study_circles
 JOIN study_circle_members ON study_circle_members.circle_id = study_circles.id
 JOIN users ON users.id = study_circles.owner_id
@@ -740,7 +735,6 @@ func (q *Queries) ListStudyCirclesByUserAndStatus(ctx context.Context, arg ListS
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,
@@ -802,7 +796,7 @@ func (q *Queries) ReorderStudyCircleStep(ctx context.Context, arg ReorderStudyCi
 }
 
 const searchStudyCircles = `-- name: SearchStudyCircles :many
-SELECT study_circles.id, study_circles.name, study_circles.topic, study_circles.description, study_circles.owner_id, study_circles.max_members, study_circles.status, study_circles.created_at, study_circles.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT study_circles.id, study_circles.name, study_circles.topic, study_circles.description, study_circles.owner_id, study_circles.max_members, study_circles.status, study_circles.created_at, study_circles.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM study_circles
 JOIN users ON users.id = study_circles.owner_id
 WHERE study_circles.name ILIKE $1 OR study_circles.topic ILIKE $1 OR study_circles.description ILIKE $1
@@ -845,7 +839,6 @@ func (q *Queries) SearchStudyCircles(ctx context.Context, arg SearchStudyCircles
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,

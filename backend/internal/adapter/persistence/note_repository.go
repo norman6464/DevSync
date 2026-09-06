@@ -24,13 +24,15 @@ func NewNoteRepository(q *sqlcgen.Queries) repository.NoteRepository {
 var _ repository.NoteRepository = (*noteRepository)(nil)
 
 // toModelUser は sqlc の生成行を model.User へ変換する（Note.User の Preload 相当分のみ）。
+// Passwordはuser_credentials側（DEVSYNC-159）にあり通常のusers読み取りには含まれない
+// ため、ここでは設定しない。ログイン・退会等の認証操作だけが個別にpassword_hashを
+// 取得して設定する（user_repository.goのFindByEmail/FindByGitHubID/FindByIDWithPassword参照）。
 func toModelUser(u sqlcgen.User) model.User {
 	return model.User{
 		ID:                  uint(u.ID),
 		Username:            u.Username,
 		Name:                u.Name,
 		Email:               u.Email,
-		Password:            fromStringPtr(u.Password),
 		AvatarURL:           fromStringPtr(u.AvatarUrl),
 		Bio:                 fromStringPtr(u.Bio),
 		GitHubID:            fromInt64PtrValue(u.GitHubID),

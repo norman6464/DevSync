@@ -248,7 +248,7 @@ func (q *Queries) GetRoadmapStepByIDForUpdate(ctx context.Context, id int64) (Ro
 }
 
 const getRoadmapWithUserByID = `-- name: GetRoadmapWithUserByID :one
-SELECT roadmaps.id, roadmaps.user_id, roadmaps.title, roadmaps.description, roadmaps.category, roadmaps.is_public, roadmaps.is_template, roadmaps.status, roadmaps.created_at, roadmaps.updated_at, roadmaps.completed_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT roadmaps.id, roadmaps.user_id, roadmaps.title, roadmaps.description, roadmaps.category, roadmaps.is_public, roadmaps.is_template, roadmaps.status, roadmaps.created_at, roadmaps.updated_at, roadmaps.completed_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM roadmaps
 JOIN users ON users.id = roadmaps.user_id
 WHERE roadmaps.id = $1
@@ -279,7 +279,6 @@ func (q *Queries) GetRoadmapWithUserByID(ctx context.Context, id int64) (GetRoad
 		&i.User.Username,
 		&i.User.Name,
 		&i.User.Email,
-		&i.User.Password,
 		&i.User.AvatarUrl,
 		&i.User.Bio,
 		&i.User.GitHubID,
@@ -306,7 +305,7 @@ func (q *Queries) GetRoadmapWithUserByID(ctx context.Context, id int64) (GetRoad
 }
 
 const listPublicRoadmapsWithUser = `-- name: ListPublicRoadmapsWithUser :many
-SELECT roadmaps.id, roadmaps.user_id, roadmaps.title, roadmaps.description, roadmaps.category, roadmaps.is_public, roadmaps.is_template, roadmaps.status, roadmaps.created_at, roadmaps.updated_at, roadmaps.completed_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT roadmaps.id, roadmaps.user_id, roadmaps.title, roadmaps.description, roadmaps.category, roadmaps.is_public, roadmaps.is_template, roadmaps.status, roadmaps.created_at, roadmaps.updated_at, roadmaps.completed_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM roadmaps
 JOIN users ON users.id = roadmaps.user_id
 WHERE roadmaps.is_public = true
@@ -350,7 +349,6 @@ func (q *Queries) ListPublicRoadmapsWithUser(ctx context.Context, arg ListPublic
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,

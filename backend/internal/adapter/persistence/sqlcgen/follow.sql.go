@@ -39,7 +39,7 @@ func (q *Queries) DeleteFollow(ctx context.Context, arg DeleteFollowParams) erro
 }
 
 const listFollowers = `-- name: ListFollowers :many
-SELECT u.id, u.username, u.name, u.email, u.password, u.avatar_url, u.bio, u.git_hub_id, u.git_hub_username, u.git_hub_token, u.git_hub_connected, u.spotify_connected, u.spotify_token, u.spotify_refresh_token, u.spotify_token_expiry, u.zenn_username, u.qiita_username, u.at_coder_username, u.paiza_rank, u.skills_languages, u.skills_frameworks, u.onboarding_completed, u.email_weekly_report, u.email_language, u.created_at, u.updated_at FROM users u
+SELECT u.id, u.username, u.name, u.email, u.avatar_url, u.bio, u.git_hub_id, u.git_hub_username, u.git_hub_token, u.git_hub_connected, u.spotify_connected, u.spotify_token, u.spotify_refresh_token, u.spotify_token_expiry, u.zenn_username, u.qiita_username, u.at_coder_username, u.paiza_rank, u.skills_languages, u.skills_frameworks, u.onboarding_completed, u.email_weekly_report, u.email_language, u.created_at, u.updated_at FROM users u
 JOIN follows f ON f.follower_id = u.id
 WHERE f.followee_id = $1
 ORDER BY f.created_at DESC
@@ -67,7 +67,6 @@ func (q *Queries) ListFollowers(ctx context.Context, arg ListFollowersParams) ([
 			&i.Username,
 			&i.Name,
 			&i.Email,
-			&i.Password,
 			&i.AvatarUrl,
 			&i.Bio,
 			&i.GitHubID,
@@ -101,7 +100,7 @@ func (q *Queries) ListFollowers(ctx context.Context, arg ListFollowersParams) ([
 }
 
 const listFollowing = `-- name: ListFollowing :many
-SELECT u.id, u.username, u.name, u.email, u.password, u.avatar_url, u.bio, u.git_hub_id, u.git_hub_username, u.git_hub_token, u.git_hub_connected, u.spotify_connected, u.spotify_token, u.spotify_refresh_token, u.spotify_token_expiry, u.zenn_username, u.qiita_username, u.at_coder_username, u.paiza_rank, u.skills_languages, u.skills_frameworks, u.onboarding_completed, u.email_weekly_report, u.email_language, u.created_at, u.updated_at FROM users u
+SELECT u.id, u.username, u.name, u.email, u.avatar_url, u.bio, u.git_hub_id, u.git_hub_username, u.git_hub_token, u.git_hub_connected, u.spotify_connected, u.spotify_token, u.spotify_refresh_token, u.spotify_token_expiry, u.zenn_username, u.qiita_username, u.at_coder_username, u.paiza_rank, u.skills_languages, u.skills_frameworks, u.onboarding_completed, u.email_weekly_report, u.email_language, u.created_at, u.updated_at FROM users u
 JOIN follows f ON f.followee_id = u.id
 WHERE f.follower_id = $1
 ORDER BY f.created_at DESC
@@ -129,7 +128,6 @@ func (q *Queries) ListFollowing(ctx context.Context, arg ListFollowingParams) ([
 			&i.Username,
 			&i.Name,
 			&i.Email,
-			&i.Password,
 			&i.AvatarUrl,
 			&i.Bio,
 			&i.GitHubID,

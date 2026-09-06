@@ -10,7 +10,7 @@ import (
 )
 
 const getRecommendedUserCandidates = `-- name: GetRecommendedUserCandidates :many
-SELECT id, username, name, email, password, avatar_url, bio, git_hub_id, git_hub_username, git_hub_token, git_hub_connected, spotify_connected, spotify_token, spotify_refresh_token, spotify_token_expiry, zenn_username, qiita_username, at_coder_username, paiza_rank, skills_languages, skills_frameworks, onboarding_completed, email_weekly_report, email_language, created_at, updated_at FROM users
+SELECT id, username, name, email, avatar_url, bio, git_hub_id, git_hub_username, git_hub_token, git_hub_connected, spotify_connected, spotify_token, spotify_refresh_token, spotify_token_expiry, zenn_username, qiita_username, at_coder_username, paiza_rank, skills_languages, skills_frameworks, onboarding_completed, email_weekly_report, email_language, created_at, updated_at FROM users
 WHERE NOT (id = ANY($1::bigint[]))
     AND EXISTS (
         SELECT 1 FROM unnest($2::text[]) AS pattern
@@ -40,7 +40,6 @@ func (q *Queries) GetRecommendedUserCandidates(ctx context.Context, arg GetRecom
 			&i.Username,
 			&i.Name,
 			&i.Email,
-			&i.Password,
 			&i.AvatarUrl,
 			&i.Bio,
 			&i.GitHubID,
@@ -99,7 +98,7 @@ func (q *Queries) ListFolloweeIDs(ctx context.Context, followerID int64) ([]int6
 }
 
 const listTrendingPosts = `-- name: ListTrendingPosts :many
-SELECT posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM posts
 JOIN users ON users.id = posts.user_id
 LEFT JOIN post_metrics pm ON pm.post_id = posts.id
@@ -146,7 +145,6 @@ func (q *Queries) ListTrendingPosts(ctx context.Context, arg ListTrendingPostsPa
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,
@@ -180,7 +178,7 @@ func (q *Queries) ListTrendingPosts(ctx context.Context, arg ListTrendingPostsPa
 }
 
 const listTrendingResources = `-- name: ListTrendingResources :many
-SELECT learning_resources.id, learning_resources.user_id, learning_resources.title, learning_resources.description, learning_resources.url, learning_resources.category, learning_resources.difficulty, learning_resources.tags, learning_resources.image_url, learning_resources.is_public, learning_resources.created_at, learning_resources.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT learning_resources.id, learning_resources.user_id, learning_resources.title, learning_resources.description, learning_resources.url, learning_resources.category, learning_resources.difficulty, learning_resources.tags, learning_resources.image_url, learning_resources.is_public, learning_resources.created_at, learning_resources.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM learning_resources
 JOIN users ON users.id = learning_resources.user_id
 LEFT JOIN learning_resource_metrics lrm ON lrm.resource_id = learning_resources.id
@@ -229,7 +227,6 @@ func (q *Queries) ListTrendingResources(ctx context.Context, arg ListTrendingRes
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,

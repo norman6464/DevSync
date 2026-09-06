@@ -12,23 +12,30 @@ import (
 )
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (
-    username, name, email, password, avatar_url, bio, git_hub_id, git_hub_username,
-    git_hub_token, git_hub_connected, spotify_connected, spotify_token, spotify_refresh_token,
-    spotify_token_expiry, zenn_username, qiita_username, at_coder_username, paiza_rank,
-    skills_languages, skills_frameworks, onboarding_completed, email_weekly_report,
-    email_language, created_at, updated_at
-) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,
-    $19, $20, $21, $22, $23, now(), now()
-) RETURNING id, username, name, email, password, avatar_url, bio, git_hub_id, git_hub_username, git_hub_token, git_hub_connected, spotify_connected, spotify_token, spotify_refresh_token, spotify_token_expiry, zenn_username, qiita_username, at_coder_username, paiza_rank, skills_languages, skills_frameworks, onboarding_completed, email_weekly_report, email_language, created_at, updated_at
+WITH inserted_user AS (
+    INSERT INTO users (
+        username, name, email, avatar_url, bio, git_hub_id, git_hub_username,
+        git_hub_token, git_hub_connected, spotify_connected, spotify_token, spotify_refresh_token,
+        spotify_token_expiry, zenn_username, qiita_username, at_coder_username, paiza_rank,
+        skills_languages, skills_frameworks, onboarding_completed, email_weekly_report,
+        email_language, created_at, updated_at
+    ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17,
+        $18, $19, $20, $21, $22, now(), now()
+    ) RETURNING users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+), credential_insert AS (
+    INSERT INTO user_credentials (user_id, password_hash)
+    SELECT inserted_user.id, $23::text
+    FROM inserted_user
+    WHERE $23::text != ''
+)
+SELECT inserted_user.id, inserted_user.username, inserted_user.name, inserted_user.email, inserted_user.avatar_url, inserted_user.bio, inserted_user.git_hub_id, inserted_user.git_hub_username, inserted_user.git_hub_token, inserted_user.git_hub_connected, inserted_user.spotify_connected, inserted_user.spotify_token, inserted_user.spotify_refresh_token, inserted_user.spotify_token_expiry, inserted_user.zenn_username, inserted_user.qiita_username, inserted_user.at_coder_username, inserted_user.paiza_rank, inserted_user.skills_languages, inserted_user.skills_frameworks, inserted_user.onboarding_completed, inserted_user.email_weekly_report, inserted_user.email_language, inserted_user.created_at, inserted_user.updated_at FROM inserted_user
 `
 
 type CreateUserParams struct {
 	Username            string
 	Name                string
 	Email               string
-	Password            *string
 	AvatarUrl           *string
 	Bio                 *string
 	GitHubID            *int64
@@ -48,14 +55,44 @@ type CreateUserParams struct {
 	OnboardingCompleted bool
 	EmailWeeklyReport   bool
 	EmailLanguage       *string
+	PasswordHash        string
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+type CreateUserRow struct {
+	ID                  int64
+	Username            string
+	Name                string
+	Email               string
+	AvatarUrl           *string
+	Bio                 *string
+	GitHubID            *int64
+	GitHubUsername      *string
+	GitHubToken         *string
+	GitHubConnected     bool
+	SpotifyConnected    bool
+	SpotifyToken        *string
+	SpotifyRefreshToken *string
+	SpotifyTokenExpiry  pgtype.Timestamptz
+	ZennUsername        *string
+	QiitaUsername       *string
+	AtCoderUsername     *string
+	PaizaRank           *string
+	SkillsLanguages     *string
+	SkillsFrameworks    *string
+	OnboardingCompleted bool
+	EmailWeeklyReport   bool
+	EmailLanguage       *string
+	CreatedAt           pgtype.Timestamptz
+	UpdatedAt           pgtype.Timestamptz
+}
+
+// パスワードハッシュが空文字でなければ同一SQL文でuser_credentialsへ登録する
+// （GitHub認証のみのユーザーはuser_credentials行を持たない。DEVSYNC-159でusersから分離）。
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
 	row := q.db.QueryRow(ctx, createUser,
 		arg.Username,
 		arg.Name,
 		arg.Email,
-		arg.Password,
 		arg.AvatarUrl,
 		arg.Bio,
 		arg.GitHubID,
@@ -75,14 +112,14 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.OnboardingCompleted,
 		arg.EmailWeeklyReport,
 		arg.EmailLanguage,
+		arg.PasswordHash,
 	)
-	var i User
+	var i CreateUserRow
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
 		&i.Name,
 		&i.Email,
-		&i.Password,
 		&i.AvatarUrl,
 		&i.Bio,
 		&i.GitHubID,
@@ -112,13 +149,14 @@ const deleteUser = `-- name: DeleteUser :exec
 DELETE FROM users WHERE users.id = $1
 `
 
+// user_credentialsはFKのON DELETE CASCADEでDBが自動的に削除する。
 func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, deleteUser, id)
 	return err
 }
 
 const findAllUsers = `-- name: FindAllUsers :many
-SELECT id, username, name, email, password, avatar_url, bio, git_hub_id, git_hub_username, git_hub_token, git_hub_connected, spotify_connected, spotify_token, spotify_refresh_token, spotify_token_expiry, zenn_username, qiita_username, at_coder_username, paiza_rank, skills_languages, skills_frameworks, onboarding_completed, email_weekly_report, email_language, created_at, updated_at FROM users
+SELECT id, username, name, email, avatar_url, bio, git_hub_id, git_hub_username, git_hub_token, git_hub_connected, spotify_connected, spotify_token, spotify_refresh_token, spotify_token_expiry, zenn_username, qiita_username, at_coder_username, paiza_rank, skills_languages, skills_frameworks, onboarding_completed, email_weekly_report, email_language, created_at, updated_at FROM users
 `
 
 func (q *Queries) FindAllUsers(ctx context.Context) ([]User, error) {
@@ -135,7 +173,6 @@ func (q *Queries) FindAllUsers(ctx context.Context) ([]User, error) {
 			&i.Username,
 			&i.Name,
 			&i.Email,
-			&i.Password,
 			&i.AvatarUrl,
 			&i.Bio,
 			&i.GitHubID,
@@ -169,83 +206,102 @@ func (q *Queries) FindAllUsers(ctx context.Context) ([]User, error) {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, username, name, email, password, avatar_url, bio, git_hub_id, git_hub_username, git_hub_token, git_hub_connected, spotify_connected, spotify_token, spotify_refresh_token, spotify_token_expiry, zenn_username, qiita_username, at_coder_username, paiza_rank, skills_languages, skills_frameworks, onboarding_completed, email_weekly_report, email_language, created_at, updated_at FROM users WHERE users.email = $1
+SELECT users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at, user_credentials.password_hash
+FROM users
+LEFT JOIN user_credentials ON user_credentials.user_id = users.id
+WHERE users.email = $1
 `
 
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+type GetUserByEmailRow struct {
+	User         User
+	PasswordHash *string
+}
+
+// パスワードハッシュも返す（ログイン処理での照合に使うため）。user_credentials行を
+// 持たないユーザー（GitHub認証のみ）はpassword_hashがNULLになる。
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
 	row := q.db.QueryRow(ctx, getUserByEmail, email)
-	var i User
+	var i GetUserByEmailRow
 	err := row.Scan(
-		&i.ID,
-		&i.Username,
-		&i.Name,
-		&i.Email,
-		&i.Password,
-		&i.AvatarUrl,
-		&i.Bio,
-		&i.GitHubID,
-		&i.GitHubUsername,
-		&i.GitHubToken,
-		&i.GitHubConnected,
-		&i.SpotifyConnected,
-		&i.SpotifyToken,
-		&i.SpotifyRefreshToken,
-		&i.SpotifyTokenExpiry,
-		&i.ZennUsername,
-		&i.QiitaUsername,
-		&i.AtCoderUsername,
-		&i.PaizaRank,
-		&i.SkillsLanguages,
-		&i.SkillsFrameworks,
-		&i.OnboardingCompleted,
-		&i.EmailWeeklyReport,
-		&i.EmailLanguage,
-		&i.CreatedAt,
-		&i.UpdatedAt,
+		&i.User.ID,
+		&i.User.Username,
+		&i.User.Name,
+		&i.User.Email,
+		&i.User.AvatarUrl,
+		&i.User.Bio,
+		&i.User.GitHubID,
+		&i.User.GitHubUsername,
+		&i.User.GitHubToken,
+		&i.User.GitHubConnected,
+		&i.User.SpotifyConnected,
+		&i.User.SpotifyToken,
+		&i.User.SpotifyRefreshToken,
+		&i.User.SpotifyTokenExpiry,
+		&i.User.ZennUsername,
+		&i.User.QiitaUsername,
+		&i.User.AtCoderUsername,
+		&i.User.PaizaRank,
+		&i.User.SkillsLanguages,
+		&i.User.SkillsFrameworks,
+		&i.User.OnboardingCompleted,
+		&i.User.EmailWeeklyReport,
+		&i.User.EmailLanguage,
+		&i.User.CreatedAt,
+		&i.User.UpdatedAt,
+		&i.PasswordHash,
 	)
 	return i, err
 }
 
 const getUserByGitHubID = `-- name: GetUserByGitHubID :one
-SELECT id, username, name, email, password, avatar_url, bio, git_hub_id, git_hub_username, git_hub_token, git_hub_connected, spotify_connected, spotify_token, spotify_refresh_token, spotify_token_expiry, zenn_username, qiita_username, at_coder_username, paiza_rank, skills_languages, skills_frameworks, onboarding_completed, email_weekly_report, email_language, created_at, updated_at FROM users WHERE users.git_hub_id = $1
+SELECT users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at, user_credentials.password_hash
+FROM users
+LEFT JOIN user_credentials ON user_credentials.user_id = users.id
+WHERE users.git_hub_id = $1
 `
 
-func (q *Queries) GetUserByGitHubID(ctx context.Context, gitHubID *int64) (User, error) {
+type GetUserByGitHubIDRow struct {
+	User         User
+	PasswordHash *string
+}
+
+// パスワードハッシュも返す（GitHub連携済みでもパスワードを別途設定している場合があるため）。
+func (q *Queries) GetUserByGitHubID(ctx context.Context, gitHubID *int64) (GetUserByGitHubIDRow, error) {
 	row := q.db.QueryRow(ctx, getUserByGitHubID, gitHubID)
-	var i User
+	var i GetUserByGitHubIDRow
 	err := row.Scan(
-		&i.ID,
-		&i.Username,
-		&i.Name,
-		&i.Email,
-		&i.Password,
-		&i.AvatarUrl,
-		&i.Bio,
-		&i.GitHubID,
-		&i.GitHubUsername,
-		&i.GitHubToken,
-		&i.GitHubConnected,
-		&i.SpotifyConnected,
-		&i.SpotifyToken,
-		&i.SpotifyRefreshToken,
-		&i.SpotifyTokenExpiry,
-		&i.ZennUsername,
-		&i.QiitaUsername,
-		&i.AtCoderUsername,
-		&i.PaizaRank,
-		&i.SkillsLanguages,
-		&i.SkillsFrameworks,
-		&i.OnboardingCompleted,
-		&i.EmailWeeklyReport,
-		&i.EmailLanguage,
-		&i.CreatedAt,
-		&i.UpdatedAt,
+		&i.User.ID,
+		&i.User.Username,
+		&i.User.Name,
+		&i.User.Email,
+		&i.User.AvatarUrl,
+		&i.User.Bio,
+		&i.User.GitHubID,
+		&i.User.GitHubUsername,
+		&i.User.GitHubToken,
+		&i.User.GitHubConnected,
+		&i.User.SpotifyConnected,
+		&i.User.SpotifyToken,
+		&i.User.SpotifyRefreshToken,
+		&i.User.SpotifyTokenExpiry,
+		&i.User.ZennUsername,
+		&i.User.QiitaUsername,
+		&i.User.AtCoderUsername,
+		&i.User.PaizaRank,
+		&i.User.SkillsLanguages,
+		&i.User.SkillsFrameworks,
+		&i.User.OnboardingCompleted,
+		&i.User.EmailWeeklyReport,
+		&i.User.EmailLanguage,
+		&i.User.CreatedAt,
+		&i.User.UpdatedAt,
+		&i.PasswordHash,
 	)
 	return i, err
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, username, name, email, password, avatar_url, bio, git_hub_id, git_hub_username, git_hub_token, git_hub_connected, spotify_connected, spotify_token, spotify_refresh_token, spotify_token_expiry, zenn_username, qiita_username, at_coder_username, paiza_rank, skills_languages, skills_frameworks, onboarding_completed, email_weekly_report, email_language, created_at, updated_at FROM users WHERE users.id = $1
+SELECT id, username, name, email, avatar_url, bio, git_hub_id, git_hub_username, git_hub_token, git_hub_connected, spotify_connected, spotify_token, spotify_refresh_token, spotify_token_expiry, zenn_username, qiita_username, at_coder_username, paiza_rank, skills_languages, skills_frameworks, onboarding_completed, email_weekly_report, email_language, created_at, updated_at FROM users WHERE users.id = $1
 `
 
 func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
@@ -256,7 +312,6 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.Username,
 		&i.Name,
 		&i.Email,
-		&i.Password,
 		&i.AvatarUrl,
 		&i.Bio,
 		&i.GitHubID,
@@ -282,8 +337,55 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 	return i, err
 }
 
+const getUserByIDWithPassword = `-- name: GetUserByIDWithPassword :one
+SELECT users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at, user_credentials.password_hash
+FROM users
+LEFT JOIN user_credentials ON user_credentials.user_id = users.id
+WHERE users.id = $1
+`
+
+type GetUserByIDWithPasswordRow struct {
+	User         User
+	PasswordHash *string
+}
+
+// パスワードハッシュも返す（退会時の本人確認に使うため）。
+func (q *Queries) GetUserByIDWithPassword(ctx context.Context, id int64) (GetUserByIDWithPasswordRow, error) {
+	row := q.db.QueryRow(ctx, getUserByIDWithPassword, id)
+	var i GetUserByIDWithPasswordRow
+	err := row.Scan(
+		&i.User.ID,
+		&i.User.Username,
+		&i.User.Name,
+		&i.User.Email,
+		&i.User.AvatarUrl,
+		&i.User.Bio,
+		&i.User.GitHubID,
+		&i.User.GitHubUsername,
+		&i.User.GitHubToken,
+		&i.User.GitHubConnected,
+		&i.User.SpotifyConnected,
+		&i.User.SpotifyToken,
+		&i.User.SpotifyRefreshToken,
+		&i.User.SpotifyTokenExpiry,
+		&i.User.ZennUsername,
+		&i.User.QiitaUsername,
+		&i.User.AtCoderUsername,
+		&i.User.PaizaRank,
+		&i.User.SkillsLanguages,
+		&i.User.SkillsFrameworks,
+		&i.User.OnboardingCompleted,
+		&i.User.EmailWeeklyReport,
+		&i.User.EmailLanguage,
+		&i.User.CreatedAt,
+		&i.User.UpdatedAt,
+		&i.PasswordHash,
+	)
+	return i, err
+}
+
 const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT id, username, name, email, password, avatar_url, bio, git_hub_id, git_hub_username, git_hub_token, git_hub_connected, spotify_connected, spotify_token, spotify_refresh_token, spotify_token_expiry, zenn_username, qiita_username, at_coder_username, paiza_rank, skills_languages, skills_frameworks, onboarding_completed, email_weekly_report, email_language, created_at, updated_at FROM users WHERE users.username = $1
+SELECT id, username, name, email, avatar_url, bio, git_hub_id, git_hub_username, git_hub_token, git_hub_connected, spotify_connected, spotify_token, spotify_refresh_token, spotify_token_expiry, zenn_username, qiita_username, at_coder_username, paiza_rank, skills_languages, skills_frameworks, onboarding_completed, email_weekly_report, email_language, created_at, updated_at FROM users WHERE users.username = $1
 `
 
 func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
@@ -294,7 +396,6 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.Username,
 		&i.Name,
 		&i.Email,
-		&i.Password,
 		&i.AvatarUrl,
 		&i.Bio,
 		&i.GitHubID,
@@ -321,7 +422,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 }
 
 const searchUsers = `-- name: SearchUsers :many
-SELECT id, username, name, email, password, avatar_url, bio, git_hub_id, git_hub_username, git_hub_token, git_hub_connected, spotify_connected, spotify_token, spotify_refresh_token, spotify_token_expiry, zenn_username, qiita_username, at_coder_username, paiza_rank, skills_languages, skills_frameworks, onboarding_completed, email_weekly_report, email_language, created_at, updated_at FROM users WHERE users.name ILIKE $1 OR users.email ILIKE $1 LIMIT $2
+SELECT id, username, name, email, avatar_url, bio, git_hub_id, git_hub_username, git_hub_token, git_hub_connected, spotify_connected, spotify_token, spotify_refresh_token, spotify_token_expiry, zenn_username, qiita_username, at_coder_username, paiza_rank, skills_languages, skills_frameworks, onboarding_completed, email_weekly_report, email_language, created_at, updated_at FROM users WHERE users.name ILIKE $1 OR users.email ILIKE $1 LIMIT $2
 `
 
 type SearchUsersParams struct {
@@ -343,7 +444,6 @@ func (q *Queries) SearchUsers(ctx context.Context, arg SearchUsersParams) ([]Use
 			&i.Username,
 			&i.Name,
 			&i.Email,
-			&i.Password,
 			&i.AvatarUrl,
 			&i.Bio,
 			&i.GitHubID,
@@ -378,14 +478,14 @@ func (q *Queries) SearchUsers(ctx context.Context, arg SearchUsersParams) ([]Use
 
 const updateUser = `-- name: UpdateUser :one
 UPDATE users SET
-    username = $2, name = $3, email = $4, password = $5, avatar_url = $6, bio = $7,
-    git_hub_id = $8, git_hub_username = $9, git_hub_token = $10, git_hub_connected = $11,
-    spotify_connected = $12, spotify_token = $13, spotify_refresh_token = $14,
-    spotify_token_expiry = $15, zenn_username = $16, qiita_username = $17,
-    at_coder_username = $18, paiza_rank = $19, skills_languages = $20, skills_frameworks = $21,
-    onboarding_completed = $22, email_weekly_report = $23, email_language = $24, updated_at = now()
+    username = $2, name = $3, email = $4, avatar_url = $5, bio = $6,
+    git_hub_id = $7, git_hub_username = $8, git_hub_token = $9, git_hub_connected = $10,
+    spotify_connected = $11, spotify_token = $12, spotify_refresh_token = $13,
+    spotify_token_expiry = $14, zenn_username = $15, qiita_username = $16,
+    at_coder_username = $17, paiza_rank = $18, skills_languages = $19, skills_frameworks = $20,
+    onboarding_completed = $21, email_weekly_report = $22, email_language = $23, updated_at = now()
 WHERE users.id = $1
-RETURNING id, username, name, email, password, avatar_url, bio, git_hub_id, git_hub_username, git_hub_token, git_hub_connected, spotify_connected, spotify_token, spotify_refresh_token, spotify_token_expiry, zenn_username, qiita_username, at_coder_username, paiza_rank, skills_languages, skills_frameworks, onboarding_completed, email_weekly_report, email_language, created_at, updated_at
+RETURNING id, username, name, email, avatar_url, bio, git_hub_id, git_hub_username, git_hub_token, git_hub_connected, spotify_connected, spotify_token, spotify_refresh_token, spotify_token_expiry, zenn_username, qiita_username, at_coder_username, paiza_rank, skills_languages, skills_frameworks, onboarding_completed, email_weekly_report, email_language, created_at, updated_at
 `
 
 type UpdateUserParams struct {
@@ -393,7 +493,6 @@ type UpdateUserParams struct {
 	Username            string
 	Name                string
 	Email               string
-	Password            *string
 	AvatarUrl           *string
 	Bio                 *string
 	GitHubID            *int64
@@ -415,14 +514,14 @@ type UpdateUserParams struct {
 	EmailLanguage       *string
 }
 
-// GORMのSave（全カラム上書き）に相当。
+// GORMのSave（全カラム上書き）に相当。passwordは対象外（UpdateUserPasswordを使う。
+// user_credentials側にありusersの列でもないため、そもそも対象にできない。DEVSYNC-159）。
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
 	row := q.db.QueryRow(ctx, updateUser,
 		arg.ID,
 		arg.Username,
 		arg.Name,
 		arg.Email,
-		arg.Password,
 		arg.AvatarUrl,
 		arg.Bio,
 		arg.GitHubID,
@@ -449,7 +548,6 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.Username,
 		&i.Name,
 		&i.Email,
-		&i.Password,
 		&i.AvatarUrl,
 		&i.Bio,
 		&i.GitHubID,
@@ -476,15 +574,19 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 }
 
 const updateUserPassword = `-- name: UpdateUserPassword :exec
-UPDATE users SET password = $2 WHERE users.id = $1
+INSERT INTO user_credentials (user_id, password_hash)
+VALUES ($1, $2)
+ON CONFLICT (user_id) DO UPDATE SET password_hash = EXCLUDED.password_hash
 `
 
 type UpdateUserPasswordParams struct {
-	ID       int64
-	Password *string
+	UserID       int64
+	PasswordHash string
 }
 
+// user_credentials行が無ければ新規作成し、あれば上書きする
+// （GitHubのみで登録したユーザーが後からパスワードを設定する場合に備える）。
 func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
-	_, err := q.db.Exec(ctx, updateUserPassword, arg.ID, arg.Password)
+	_, err := q.db.Exec(ctx, updateUserPassword, arg.UserID, arg.PasswordHash)
 	return err
 }

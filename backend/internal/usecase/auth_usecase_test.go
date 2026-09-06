@@ -28,6 +28,12 @@ func (m *mockAuthUsers) FindByID(ctx context.Context, id uint) (*model.User, err
 	return u, args.Error(1)
 }
 
+func (m *mockAuthUsers) FindByIDWithPassword(ctx context.Context, id uint) (*model.User, error) {
+	args := m.Called(ctx, id)
+	u, _ := args.Get(0).(*model.User)
+	return u, args.Error(1)
+}
+
 func (m *mockAuthUsers) FindByEmail(ctx context.Context, email string) (*model.User, error) {
 	args := m.Called(ctx, email)
 	u, _ := args.Get(0).(*model.User)
@@ -362,7 +368,7 @@ func TestDeleteAccountUseCase(t *testing.T) {
 
 	t.Run("パスワードが一致すれば削除する", func(t *testing.T) {
 		users := new(mockAuthUsers)
-		users.On("FindByID", mock.Anything, uint(1)).Return(&model.User{ID: 1, Password: authHashed("password123")}, nil)
+		users.On("FindByIDWithPassword", mock.Anything, uint(1)).Return(&model.User{ID: 1, Password: authHashed("password123")}, nil)
 		users.On("DeleteWithRelatedData", mock.Anything, uint(1)).Return(nil)
 
 		require.NoError(t, usecase.NewDeleteAccountUseCase(users).Execute(ctx, 1, "password123"))
@@ -372,7 +378,7 @@ func TestDeleteAccountUseCase(t *testing.T) {
 	// GitHub のみで登録したユーザーはパスワードを持たないため検証を省略する。
 	t.Run("パスワード未設定のユーザーは検証をスキップする", func(t *testing.T) {
 		users := new(mockAuthUsers)
-		users.On("FindByID", mock.Anything, uint(1)).Return(&model.User{ID: 1}, nil)
+		users.On("FindByIDWithPassword", mock.Anything, uint(1)).Return(&model.User{ID: 1}, nil)
 		users.On("DeleteWithRelatedData", mock.Anything, uint(1)).Return(nil)
 
 		require.NoError(t, usecase.NewDeleteAccountUseCase(users).Execute(ctx, 1, ""))
@@ -381,7 +387,7 @@ func TestDeleteAccountUseCase(t *testing.T) {
 
 	t.Run("パスワードが違えば 403", func(t *testing.T) {
 		users := new(mockAuthUsers)
-		users.On("FindByID", mock.Anything, uint(1)).Return(&model.User{ID: 1, Password: authHashed("password123")}, nil)
+		users.On("FindByIDWithPassword", mock.Anything, uint(1)).Return(&model.User{ID: 1, Password: authHashed("password123")}, nil)
 
 		err := usecase.NewDeleteAccountUseCase(users).Execute(ctx, 1, "wrong")
 		var domainErr *domain.DomainError
@@ -392,7 +398,7 @@ func TestDeleteAccountUseCase(t *testing.T) {
 
 	t.Run("パスワード設定済みで未入力なら 400", func(t *testing.T) {
 		users := new(mockAuthUsers)
-		users.On("FindByID", mock.Anything, uint(1)).Return(&model.User{ID: 1, Password: authHashed("password123")}, nil)
+		users.On("FindByIDWithPassword", mock.Anything, uint(1)).Return(&model.User{ID: 1, Password: authHashed("password123")}, nil)
 
 		err := usecase.NewDeleteAccountUseCase(users).Execute(ctx, 1, "")
 		var domainErr *domain.DomainError
@@ -402,7 +408,7 @@ func TestDeleteAccountUseCase(t *testing.T) {
 
 	t.Run("ユーザーが存在しなければ 404", func(t *testing.T) {
 		users := new(mockAuthUsers)
-		users.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
+		users.On("FindByIDWithPassword", mock.Anything, uint(1)).Return(nil, nil)
 
 		err := usecase.NewDeleteAccountUseCase(users).Execute(ctx, 1, "password123")
 		var domainErr *domain.DomainError

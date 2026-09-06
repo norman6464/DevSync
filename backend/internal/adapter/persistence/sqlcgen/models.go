@@ -719,7 +719,6 @@ type User struct {
 	Username            string
 	Name                string
 	Email               string
-	Password            *string
 	AvatarUrl           *string
 	Bio                 *string
 	GitHubID            *int64
@@ -751,6 +750,11 @@ type UserActivity struct {
 	TargetID     int64
 	Metadata     *string
 	CreatedAt    pgtype.Timestamptz
+}
+
+type UserCredential struct {
+	UserID       int64
+	PasswordHash string
 }
 
 type WeeklyChallenge struct {

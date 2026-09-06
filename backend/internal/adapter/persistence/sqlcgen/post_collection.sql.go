@@ -134,7 +134,7 @@ func (q *Queries) DeletePostCollectionItemsByCollectionID(ctx context.Context, c
 }
 
 const getPostCollectionWithUserByID = `-- name: GetPostCollectionWithUserByID :one
-SELECT post_collections.id, post_collections.user_id, post_collections.title, post_collections.description, post_collections.is_public, post_collections.created_at, post_collections.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT post_collections.id, post_collections.user_id, post_collections.title, post_collections.description, post_collections.is_public, post_collections.created_at, post_collections.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM post_collections
 JOIN users ON users.id = post_collections.user_id
 WHERE post_collections.id = $1
@@ -161,7 +161,6 @@ func (q *Queries) GetPostCollectionWithUserByID(ctx context.Context, id int64) (
 		&i.User.Username,
 		&i.User.Name,
 		&i.User.Email,
-		&i.User.Password,
 		&i.User.AvatarUrl,
 		&i.User.Bio,
 		&i.User.GitHubID,
@@ -188,7 +187,7 @@ func (q *Queries) GetPostCollectionWithUserByID(ctx context.Context, id int64) (
 }
 
 const listPostCollectionItemsWithPostByCollectionID = `-- name: ListPostCollectionItemsWithPostByCollectionID :many
-SELECT post_collection_items.id, post_collection_items.collection_id, post_collection_items.post_id, post_collection_items.note, post_collection_items.order_index, post_collection_items.created_at, posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT post_collection_items.id, post_collection_items.collection_id, post_collection_items.post_id, post_collection_items.note, post_collection_items.order_index, post_collection_items.created_at, posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM post_collection_items
 JOIN posts ON posts.id = post_collection_items.post_id
 JOIN users ON users.id = posts.user_id
@@ -233,7 +232,6 @@ func (q *Queries) ListPostCollectionItemsWithPostByCollectionID(ctx context.Cont
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,

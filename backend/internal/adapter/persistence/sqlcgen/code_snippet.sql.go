@@ -276,7 +276,7 @@ func (q *Queries) GetSnippetCommentByID(ctx context.Context, id int64) (SnippetC
 }
 
 const getSnippetCommentsWithUser = `-- name: GetSnippetCommentsWithUser :many
-SELECT snippet_comments.id, snippet_comments.snippet_id, snippet_comments.user_id, snippet_comments.line_number, snippet_comments.content, snippet_comments.created_at, snippet_comments.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT snippet_comments.id, snippet_comments.snippet_id, snippet_comments.user_id, snippet_comments.line_number, snippet_comments.content, snippet_comments.created_at, snippet_comments.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM snippet_comments
 JOIN users ON users.id = snippet_comments.user_id
 WHERE snippet_comments.snippet_id = $1
@@ -310,7 +310,6 @@ func (q *Queries) GetSnippetCommentsWithUser(ctx context.Context, snippetID int6
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,

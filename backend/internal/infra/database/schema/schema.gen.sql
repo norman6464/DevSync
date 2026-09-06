@@ -8,7 +8,6 @@ CREATE TABLE "public"."users" (
   "username" text NOT NULL,
   "name" text NOT NULL,
   "email" text NOT NULL,
-  "password" text NULL,
   "avatar_url" text NULL,
   "bio" text NULL,
   "git_hub_id" bigint NULL,
@@ -1233,6 +1232,13 @@ CREATE INDEX "idx_user_activities_activity_type" ON "public"."user_activities" (
 CREATE INDEX "idx_user_activities_created_at" ON "public"."user_activities" ("created_at");
 -- Create index "idx_user_activities_user_id" to table: "user_activities"
 CREATE INDEX "idx_user_activities_user_id" ON "public"."user_activities" ("user_id");
+-- Create "user_credentials" table
+CREATE TABLE "public"."user_credentials" (
+  "user_id" bigint NOT NULL,
+  "password_hash" text NOT NULL,
+  PRIMARY KEY ("user_id"),
+  CONSTRAINT "fk_user_credentials_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
+);
 -- Create "weekly_challenges" table
 CREATE TABLE "public"."weekly_challenges" (
   "id" bigserial NOT NULL,

@@ -119,7 +119,7 @@ func (q *Queries) DeletePostSeriesItemsBySeriesID(ctx context.Context, seriesID 
 }
 
 const getPostSeriesWithUserByID = `-- name: GetPostSeriesWithUserByID :one
-SELECT post_series.id, post_series.user_id, post_series.title, post_series.description, post_series.created_at, post_series.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT post_series.id, post_series.user_id, post_series.title, post_series.description, post_series.created_at, post_series.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM post_series
 JOIN users ON users.id = post_series.user_id
 WHERE post_series.id = $1
@@ -145,7 +145,6 @@ func (q *Queries) GetPostSeriesWithUserByID(ctx context.Context, id int64) (GetP
 		&i.User.Username,
 		&i.User.Name,
 		&i.User.Email,
-		&i.User.Password,
 		&i.User.AvatarUrl,
 		&i.User.Bio,
 		&i.User.GitHubID,
@@ -212,7 +211,7 @@ func (q *Queries) ListPostSeriesByUser(ctx context.Context, arg ListPostSeriesBy
 }
 
 const listPostSeriesItemsWithPostBySeriesID = `-- name: ListPostSeriesItemsWithPostBySeriesID :many
-SELECT post_series_items.id, post_series_items.series_id, post_series_items.post_id, post_series_items.order_index, posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT post_series_items.id, post_series_items.series_id, post_series_items.post_id, post_series_items.order_index, posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM post_series_items
 JOIN posts ON posts.id = post_series_items.post_id
 JOIN users ON users.id = posts.user_id
@@ -255,7 +254,6 @@ func (q *Queries) ListPostSeriesItemsWithPostBySeriesID(ctx context.Context, ser
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,

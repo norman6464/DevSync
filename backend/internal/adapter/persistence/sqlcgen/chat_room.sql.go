@@ -123,7 +123,7 @@ func (q *Queries) DeleteGroupMessagesByRoom(ctx context.Context, chatRoomID int6
 }
 
 const getChatRoomWithOwnerByID = `-- name: GetChatRoomWithOwnerByID :one
-SELECT chat_rooms.id, chat_rooms.name, chat_rooms.description, chat_rooms.owner_id, chat_rooms.created_at, chat_rooms.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT chat_rooms.id, chat_rooms.name, chat_rooms.description, chat_rooms.owner_id, chat_rooms.created_at, chat_rooms.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM chat_rooms
 JOIN users ON users.id = chat_rooms.owner_id
 WHERE chat_rooms.id = $1
@@ -149,7 +149,6 @@ func (q *Queries) GetChatRoomWithOwnerByID(ctx context.Context, id int64) (GetCh
 		&i.User.Username,
 		&i.User.Name,
 		&i.User.Email,
-		&i.User.Password,
 		&i.User.AvatarUrl,
 		&i.User.Bio,
 		&i.User.GitHubID,
@@ -176,7 +175,7 @@ func (q *Queries) GetChatRoomWithOwnerByID(ctx context.Context, id int64) (GetCh
 }
 
 const listChatRoomMembersWithUser = `-- name: ListChatRoomMembersWithUser :many
-SELECT chat_room_members.id, chat_room_members.chat_room_id, chat_room_members.user_id, chat_room_members.joined_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT chat_room_members.id, chat_room_members.chat_room_id, chat_room_members.user_id, chat_room_members.joined_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM chat_room_members
 JOIN users ON users.id = chat_room_members.user_id
 WHERE chat_room_members.chat_room_id = $1
@@ -206,7 +205,6 @@ func (q *Queries) ListChatRoomMembersWithUser(ctx context.Context, chatRoomID in
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,
@@ -240,7 +238,7 @@ func (q *Queries) ListChatRoomMembersWithUser(ctx context.Context, chatRoomID in
 }
 
 const listChatRoomsByUser = `-- name: ListChatRoomsByUser :many
-SELECT chat_rooms.id, chat_rooms.name, chat_rooms.description, chat_rooms.owner_id, chat_rooms.created_at, chat_rooms.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT chat_rooms.id, chat_rooms.name, chat_rooms.description, chat_rooms.owner_id, chat_rooms.created_at, chat_rooms.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM chat_rooms
 JOIN chat_room_members ON chat_room_members.chat_room_id = chat_rooms.id
 JOIN users ON users.id = chat_rooms.owner_id
@@ -281,7 +279,6 @@ func (q *Queries) ListChatRoomsByUser(ctx context.Context, arg ListChatRoomsByUs
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,
