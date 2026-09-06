@@ -52,8 +52,8 @@ func TestDeleteWithRelatedData_NoOrphans(t *testing.T) {
 	// 退会対象ユーザー
 	var targetID int64
 	err := pool.QueryRow(ctx, `
-		INSERT INTO users (username, name, email)
-		VALUES ('cascade_target', 'Cascade Target', 'cascade_target@example.com')
+		INSERT INTO users (username, name, email, created_at, updated_at)
+		VALUES ('cascade_target', 'Cascade Target', 'cascade_target@example.com', now(), now())
 		RETURNING id
 	`).Scan(&targetID)
 	require.NoError(t, err)
@@ -61,8 +61,8 @@ func TestDeleteWithRelatedData_NoOrphans(t *testing.T) {
 	// 他ユーザー（退会対象の投稿へコメント・いいね・フォローする側）
 	var otherID int64
 	err = pool.QueryRow(ctx, `
-		INSERT INTO users (username, name, email)
-		VALUES ('cascade_other', 'Cascade Other', 'cascade_other@example.com')
+		INSERT INTO users (username, name, email, created_at, updated_at)
+		VALUES ('cascade_other', 'Cascade Other', 'cascade_other@example.com', now(), now())
 		RETURNING id
 	`).Scan(&otherID)
 	require.NoError(t, err)
@@ -75,33 +75,35 @@ func TestDeleteWithRelatedData_NoOrphans(t *testing.T) {
 	// 退会対象が投稿し、他ユーザーがそれにコメント・いいねする
 	var postID int64
 	err = pool.QueryRow(ctx, `
-		INSERT INTO posts (user_id, title, content) VALUES ($1, 'title', 'content') RETURNING id
+		INSERT INTO posts (user_id, title, content, created_at, updated_at)
+		VALUES ($1, 'title', 'content', now(), now()) RETURNING id
 	`, targetID).Scan(&postID)
 	require.NoError(t, err)
 
 	var commentID int64
 	err = pool.QueryRow(ctx, `
-		INSERT INTO comments (user_id, post_id, content) VALUES ($1, $2, 'nice post') RETURNING id
+		INSERT INTO comments (user_id, post_id, content, created_at, updated_at)
+		VALUES ($1, $2, 'nice post', now(), now()) RETURNING id
 	`, otherID, postID).Scan(&commentID)
 	require.NoError(t, err)
 
-	_, err = pool.Exec(ctx, `INSERT INTO likes (user_id, post_id) VALUES ($1, $2)`, otherID, postID)
+	_, err = pool.Exec(ctx, `INSERT INTO likes (user_id, post_id, created_at) VALUES ($1, $2, now())`, otherID, postID)
 	require.NoError(t, err)
 
 	// 相互フォロー（follower/followeeの両方向を1本のクエリで消せているか検証するため双方向作る）
-	_, err = pool.Exec(ctx, `INSERT INTO follows (follower_id, followee_id) VALUES ($1, $2)`, targetID, otherID)
+	_, err = pool.Exec(ctx, `INSERT INTO follows (follower_id, followee_id, created_at) VALUES ($1, $2, now())`, targetID, otherID)
 	require.NoError(t, err)
-	_, err = pool.Exec(ctx, `INSERT INTO follows (follower_id, followee_id) VALUES ($1, $2)`, otherID, targetID)
+	_, err = pool.Exec(ctx, `INSERT INTO follows (follower_id, followee_id, created_at) VALUES ($1, $2, now())`, otherID, targetID)
 	require.NoError(t, err)
 
 	_, err = pool.Exec(ctx, `
-		INSERT INTO password_reset_tokens (user_id, token, expires_at)
-		VALUES ($1, 'tok', $2)
+		INSERT INTO password_reset_tokens (user_id, token, expires_at, created_at)
+		VALUES ($1, 'tok', $2, now())
 	`, targetID, time.Now().Add(time.Hour))
 	require.NoError(t, err)
 
 	_, err = pool.Exec(ctx, `
-		INSERT INTO git_hub_contributions (user_id, date, count) VALUES ($1, now(), 3)
+		INSERT INTO git_hub_contributions (user_id, date, count, created_at, updated_at) VALUES ($1, now(), 3, now(), now())
 	`, targetID)
 	require.NoError(t, err)
 
