@@ -13,7 +13,6 @@ import (
 type Querier interface {
 	AdjustAnswerVoteCount(ctx context.Context, arg AdjustAnswerVoteCountParams) error
 	AdjustQuestionVoteCount(ctx context.Context, arg AdjustQuestionVoteCountParams) error
-	AdjustRoadmapCompletedStepCount(ctx context.Context, arg AdjustRoadmapCompletedStepCountParams) error
 	ArchiveNote(ctx context.Context, id int64) error
 	ClearBestAnswer(ctx context.Context, questionID int64) error
 	// 同一ユーザーの既存デフォルト（自分自身のid=$2は除く）を外す。Createからは
@@ -253,7 +252,10 @@ type Querier interface {
 	// resource_savesへのINSERTとlearning_resource_metrics.save_countの加算を同一SQL文で行う。
 	CreateResourceSave(ctx context.Context, arg CreateResourceSaveParams) error
 	CreateRoadmap(ctx context.Context, arg CreateRoadmapParams) (Roadmap, error)
-	CreateRoadmapStep(ctx context.Context, arg CreateRoadmapStepParams) (RoadmapStep, error)
+	// roadmap_stepsへのINSERTとroadmap_metrics.step_countの加算を同一SQL文で行う
+	// （DEVSYNC-159）。metrics_upsertの結果自体は読まないが、データ変更を伴うCTEは
+	// 参照の有無に関わらず必ず実行されるため、確実にstep_countへ反映される。
+	CreateRoadmapStep(ctx context.Context, arg CreateRoadmapStepParams) (CreateRoadmapStepRow, error)
 	CreateSnippetComment(ctx context.Context, arg CreateSnippetCommentParams) (SnippetComment, error)
 	CreateSnippetFavorite(ctx context.Context, arg CreateSnippetFavoriteParams) error
 	CreateStreakFreeze(ctx context.Context, arg CreateStreakFreezeParams) (StreakFreeze, error)
@@ -271,7 +273,6 @@ type Querier interface {
 	DecrementPostLikeMetric(ctx context.Context, postID int64) error
 	// 0未満にはしない（GORMのGREATEST(answer_count - 1, 0)に相当）。
 	DecrementQuestionAnswerCountFloored(ctx context.Context, id int64) error
-	DecrementRoadmapStepCount(ctx context.Context, id int64) error
 	// 0未満にはしない（GORMのGREATEST(comment_count - 1, 0)に相当）。
 	DecrementSnippetCommentCountFloored(ctx context.Context, id int64) error
 	DeleteAIAdvicesByUser(ctx context.Context, userID int64) error
@@ -344,7 +345,10 @@ type Querier interface {
 	DeleteResourceSave(ctx context.Context, arg DeleteResourceSaveParams) (int64, error)
 	// roadmap_stepsはFKのON DELETE CASCADEでDBが自動的に削除する。
 	DeleteRoadmap(ctx context.Context, id int64) error
-	DeleteRoadmapStep(ctx context.Context, id int64) error
+	// roadmap_stepsの削除とroadmap_metrics.step_count/completed_step_countの減算を
+	// 同一SQL文で行う（DEVSYNC-159）。completed_deltaは削除されたステップが完了済み
+	// だったかどうかを呼び出し側（Go）が判定して渡す（0 または -1）。
+	DeleteRoadmapStep(ctx context.Context, arg DeleteRoadmapStepParams) error
 	DeleteSnippetCommentByID(ctx context.Context, id int64) error
 	DeleteSnippetFavorite(ctx context.Context, arg DeleteSnippetFavoriteParams) error
 	DeleteSpotifyRecentTracksByUser(ctx context.Context, userID int64) error
@@ -455,6 +459,12 @@ type Querier interface {
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	GetResourceReviewWithUserByID(ctx context.Context, id int64) (GetResourceReviewWithUserByIDRow, error)
 	GetRoadmapByID(ctx context.Context, id int64) (Roadmap, error)
+	// ロードマップ一覧へstep_count/completed_step_count/progressを付与するためのまとめ取り。
+	// progressは列として持たず、ここでSELECT側の算出式として都度計算する（生成列にすると
+	// 既存のUPDATE系クエリを壊すため不採用。DEVSYNC-159）。1件もステップが無い
+	// ロードマップはroadmap_metrics行が存在しない（遅延生成）ため、この結果に
+	// 現れないロードマップはGo側で0扱いにする（attachRoadmapMetrics参照）。
+	GetRoadmapMetricsByRoadmapIDs(ctx context.Context, dollar_1 []int64) ([]GetRoadmapMetricsByRoadmapIDsRow, error)
 	GetRoadmapStepByID(ctx context.Context, id int64) (RoadmapStep, error)
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
 	GetRoadmapWithUserByID(ctx context.Context, id int64) (GetRoadmapWithUserByIDRow, error)
@@ -485,7 +495,6 @@ type Querier interface {
 	IncrementPostLikeMetric(ctx context.Context, postID int64) error
 	IncrementPostViewMetric(ctx context.Context, postID int64) error
 	IncrementQuestionAnswerCount(ctx context.Context, id int64) error
-	IncrementRoadmapStepCount(ctx context.Context, id int64) error
 	IncrementSnippetCommentCount(ctx context.Context, id int64) error
 	IncrementSnippetForkCount(ctx context.Context, id int64) error
 	InvalidateUserPasswordResetTokens(ctx context.Context, userID int64) error
@@ -718,6 +727,8 @@ type Querier interface {
 	// 全件まとめて補正する。CASCADE削除等でIncrement/Decrementを経由しない変化を吸収する。
 	// 1件も無いカウンタは0で確定させる（COALESCE）。
 	ReconcileAllPostMetrics(ctx context.Context) error
+	// 夜次reconcileジョブ本体。roadmap_stepsの実件数からroadmap_metrics全件を補正する。
+	ReconcileAllRoadmapMetrics(ctx context.Context) error
 	ReorderRoadmapStep(ctx context.Context, arg ReorderRoadmapStepParams) error
 	ReorderStudyCircleStep(ctx context.Context, arg ReorderStudyCircleStepParams) error
 	// GORMのPreload("User")に相当。user_idはNOT NULLのためINNER JOINでよい。
@@ -758,6 +769,7 @@ type Querier interface {
 	SumPostLikesReceivedByUser(ctx context.Context, userID int64) (int64, error)
 	SumQuestionVotesByUser(ctx context.Context, userID int64) (int64, error)
 	SumRoadmapCompletedStepCountByUser(ctx context.Context, userID int64) (int64, error)
+	// step_countはroadmap_metrics側（DEVSYNC-159）。LEFT JOIN + COALESCEで0扱いにする。
 	SumRoadmapStepCountByUser(ctx context.Context, userID int64) (int64, error)
 	ToggleNoteFavorite(ctx context.Context, id int64) error
 	TouchAIConversation(ctx context.Context, arg TouchAIConversationParams) error
@@ -808,23 +820,20 @@ type Querier interface {
 	UpdateReminderSettings(ctx context.Context, arg UpdateReminderSettingsParams) (ReminderSetting, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateResourceReview(ctx context.Context, arg UpdateResourceReviewParams) (ResourceReview, error)
-	// GORMのSave（全カラム上書き）に相当。ただしstep_count/completed_step_count/progress/
-	// status/completed_atは対象外。step_count等はIncrement/Decrement系の専用クエリだけが
-	// 更新する。status/completed_atはUpdateRoadmapStatusに分離した
-	// （ステップ完了によるrecalcRoadmapProgressの自動遷移を、このUPDATEが読み取り時点の
-	// 古いstatus/completed_atで上書きする「ロストアップデート」を防ぐため）。
+	// GORMのSave（全カラム上書き）に相当。ただしstatus/completed_atは対象外
+	// （UpdateRoadmapStatusに分離済み。ステップ完了によるステータス自動遷移を、この
+	// UPDATEが読み取り時点の古いstatus/completed_atで上書きする「ロストアップデート」を
+	// 防ぐため）。step_count/completed_step_count/progressはroadmaps自体の列ではなく
+	// roadmap_metrics側（DEVSYNC-159。progressはSELECT側の算出式）にあるため対象外。
 	UpdateRoadmap(ctx context.Context, arg UpdateRoadmapParams) (Roadmap, error)
-	UpdateRoadmapProgress(ctx context.Context, arg UpdateRoadmapProgressParams) error
-	// 進捗100%到達での自動完了（GORMのUpdates({"progress":...,"status":"completed","completed_at":now()})に相当）。
-	UpdateRoadmapProgressCompleted(ctx context.Context, arg UpdateRoadmapProgressCompletedParams) error
-	// 100%未満へ戻ったときのアクティブ復帰（GORMのUpdates({"progress":...,"status":"active","completed_at":nil})に相当）。
-	UpdateRoadmapProgressReactivated(ctx context.Context, arg UpdateRoadmapProgressReactivatedParams) error
 	// ユーザーによる明示的なステータス変更専用（PUT /roadmaps/:id でstatus指定時のみ呼ぶ）。
-	// 汎用UpdateRoadmapと経路を分けることで、status変更を伴わない更新がrecalcRoadmapProgress
-	// による自動遷移を上書きしないようにする。
+	// 汎用UpdateRoadmapと経路を分けることで、status変更を伴わない更新がステップ完了による
+	// ステータス自動遷移を上書きしないようにする。
 	UpdateRoadmapStatus(ctx context.Context, arg UpdateRoadmapStatusParams) (Roadmap, error)
-	// GORMのSave（全カラム上書き）に相当。
-	UpdateRoadmapStep(ctx context.Context, arg UpdateRoadmapStepParams) (RoadmapStep, error)
+	// GORMのSave（全カラム上書き）に相当。completed_deltaが0でなければ
+	// roadmap_metrics.completed_step_countも同一SQL文で加減算する（0未満にはしない）。
+	// completed_deltaは呼び出し側（Go）が更新前後のis_completedを比較して算出する。
+	UpdateRoadmapStep(ctx context.Context, arg UpdateRoadmapStepParams) (UpdateRoadmapStepRow, error)
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateStudyCircle(ctx context.Context, arg UpdateStudyCircleParams) (StudyCircle, error)
 	UpdateStudyCircleMemberRole(ctx context.Context, arg UpdateStudyCircleMemberRoleParams) error

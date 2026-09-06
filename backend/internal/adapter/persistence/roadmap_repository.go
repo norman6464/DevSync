@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"context"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/norman6464/devsync/backend/internal/adapter/persistence/sqlcgen"
@@ -10,9 +11,8 @@ import (
 )
 
 // roadmapRepository は [repository.RoadmapRepository] の sqlc(pgx) 実装。
-// CopyRoadmap（ロードマップ＋ステップの複製）や CreateStep/UpdateStep/DeleteStep/
-// ReorderSteps（ステップ変更とロードマップ集計列の同時更新）を1トランザクションで
-// 行うため、Queries だけでなくトランザクションを開始できる *pgxpool.Pool を直接保持する。
+// CopyRoadmap（ロードマップ＋ステップの複製）を1トランザクションで行うため、
+// Queries だけでなくトランザクションを開始できる *pgxpool.Pool を直接保持する。
 type roadmapRepository struct {
 	pool *pgxpool.Pool
 	q    *sqlcgen.Queries
@@ -28,20 +28,17 @@ var _ repository.RoadmapRepository = (*roadmapRepository)(nil)
 
 func toModelRoadmap(row sqlcgen.Roadmap) model.Roadmap {
 	return model.Roadmap{
-		ID:                 uint(row.ID),
-		UserID:             uint(row.UserID),
-		Title:              row.Title,
-		Description:        fromStringPtr(row.Description),
-		Category:           model.RoadmapCategory(fromStringPtr(row.Category)),
-		IsPublic:           row.IsPublic,
-		IsTemplate:         row.IsTemplate,
-		StepCount:          int(fromInt64PtrValue(row.StepCount)),
-		CompletedStepCount: int(fromInt64PtrValue(row.CompletedStepCount)),
-		Progress:           int(fromInt64PtrValue(row.Progress)),
-		Status:             model.RoadmapStatus(fromStringPtr(row.Status)),
-		CreatedAt:          timeValue(fromTimestamptz(row.CreatedAt)),
-		UpdatedAt:          timeValue(fromTimestamptz(row.UpdatedAt)),
-		CompletedAt:        fromTimestamptz(row.CompletedAt),
+		ID:          uint(row.ID),
+		UserID:      uint(row.UserID),
+		Title:       row.Title,
+		Description: fromStringPtr(row.Description),
+		Category:    model.RoadmapCategory(fromStringPtr(row.Category)),
+		IsPublic:    row.IsPublic,
+		IsTemplate:  row.IsTemplate,
+		Status:      model.RoadmapStatus(fromStringPtr(row.Status)),
+		CreatedAt:   timeValue(fromTimestamptz(row.CreatedAt)),
+		UpdatedAt:   timeValue(fromTimestamptz(row.UpdatedAt)),
+		CompletedAt: fromTimestamptz(row.CompletedAt),
 	}
 }
 
@@ -68,6 +65,37 @@ func toModelRoadmapSteps(rows []sqlcgen.RoadmapStep) []model.RoadmapStep {
 	return steps
 }
 
+// attachRoadmapMetrics は複数のロードマップへstep_count/completed_step_count/progressを
+// まとめて取得して付与する（DEVSYNC-159でroadmap_metrics側テーブルへ分離済み）。
+// progressは列として持たず、GetRoadmapMetricsByRoadmapIDsのSELECT側の算出式で都度
+// 計算される。1件もステップが無いロードマップはroadmap_metrics行が存在しないため
+// （遅延生成）0のまま。
+func attachRoadmapMetrics(ctx context.Context, q *sqlcgen.Queries, roadmaps []model.Roadmap) error {
+	if len(roadmaps) == 0 {
+		return nil
+	}
+	roadmapIDs := make([]int64, len(roadmaps))
+	for i, roadmap := range roadmaps {
+		roadmapIDs[i] = int64(roadmap.ID)
+	}
+
+	metricsRows, err := q.GetRoadmapMetricsByRoadmapIDs(ctx, roadmapIDs)
+	if err != nil {
+		return err
+	}
+	metricsByRoadmapID := make(map[uint]sqlcgen.GetRoadmapMetricsByRoadmapIDsRow, len(metricsRows))
+	for _, row := range metricsRows {
+		metricsByRoadmapID[uint(row.RoadmapID)] = row
+	}
+	for i := range roadmaps {
+		m := metricsByRoadmapID[roadmaps[i].ID]
+		roadmaps[i].StepCount = int(m.StepCount)
+		roadmaps[i].CompletedStepCount = int(m.CompletedStepCount)
+		roadmaps[i].Progress = int(m.Progress)
+	}
+	return nil
+}
+
 // Create は新しいロードマップを作成する。
 // Category/Statusは移行前のGORMの `gorm:"default:..."` に相当し、
 // 未指定（ゼロ値）ならそれぞれ other / active を補う。
@@ -82,16 +110,13 @@ func (r *roadmapRepository) Create(ctx context.Context, roadmap *model.Roadmap) 
 	}
 
 	row, err := r.q.CreateRoadmap(ctx, sqlcgen.CreateRoadmapParams{
-		UserID:             int64(roadmap.UserID),
-		Title:              roadmap.Title,
-		Description:        &roadmap.Description,
-		Category:           (*string)(&category),
-		IsPublic:           roadmap.IsPublic,
-		IsTemplate:         roadmap.IsTemplate,
-		StepCount:          toInt64Ptr(roadmap.StepCount),
-		CompletedStepCount: toInt64Ptr(roadmap.CompletedStepCount),
-		Progress:           toInt64Ptr(roadmap.Progress),
-		Status:             (*string)(&status),
+		UserID:      int64(roadmap.UserID),
+		Title:       roadmap.Title,
+		Description: &roadmap.Description,
+		Category:    (*string)(&category),
+		IsPublic:    roadmap.IsPublic,
+		IsTemplate:  roadmap.IsTemplate,
+		Status:      (*string)(&status),
 	})
 	if err != nil {
 		return err
@@ -115,6 +140,11 @@ func (r *roadmapRepository) Update(ctx context.Context, roadmap *model.Roadmap) 
 		return err
 	}
 	*roadmap = toModelRoadmap(row)
+	roadmaps := []model.Roadmap{*roadmap}
+	if err := attachRoadmapMetrics(ctx, r.q, roadmaps); err != nil {
+		return err
+	}
+	*roadmap = roadmaps[0]
 	return nil
 }
 
@@ -130,6 +160,11 @@ func (r *roadmapRepository) UpdateStatus(ctx context.Context, roadmap *model.Roa
 		return err
 	}
 	*roadmap = toModelRoadmap(row)
+	roadmaps := []model.Roadmap{*roadmap}
+	if err := attachRoadmapMetrics(ctx, r.q, roadmaps); err != nil {
+		return err
+	}
+	*roadmap = roadmaps[0]
 	return nil
 }
 
@@ -157,7 +192,11 @@ func (r *roadmapRepository) FindByID(ctx context.Context, id uint) (*model.Roadm
 	}
 	roadmap.Steps = toModelRoadmapSteps(steps)
 
-	return &roadmap, nil
+	roadmaps := []model.Roadmap{roadmap}
+	if err := attachRoadmapMetrics(ctx, r.q, roadmaps); err != nil {
+		return nil, err
+	}
+	return &roadmaps[0], nil
 }
 
 // GetByUserID は指定ユーザーのロードマップをページネーション付きで取得する（新しい順・ステップなし）。
@@ -178,6 +217,9 @@ func (r *roadmapRepository) GetByUserID(ctx context.Context, userID uint, limit,
 	for i, row := range rows {
 		roadmaps[i] = toModelRoadmap(row)
 	}
+	if err := attachRoadmapMetrics(ctx, r.q, roadmaps); err != nil {
+		return nil, 0, err
+	}
 	return roadmaps, total, nil
 }
 
@@ -193,6 +235,9 @@ func (r *roadmapRepository) GetByStatus(ctx context.Context, userID uint, status
 	roadmaps := make([]model.Roadmap, len(rows))
 	for i, row := range rows {
 		roadmaps[i] = toModelRoadmap(row)
+	}
+	if err := attachRoadmapMetrics(ctx, r.q, roadmaps); err != nil {
+		return nil, err
 	}
 	return roadmaps, nil
 }
@@ -214,6 +259,9 @@ func (r *roadmapRepository) GetPublicRoadmaps(ctx context.Context, limit, offset
 	for i, row := range rows {
 		roadmaps[i] = toModelRoadmap(row.Roadmap)
 		roadmaps[i].User = toModelUser(row.User)
+	}
+	if err := attachRoadmapMetrics(ctx, r.q, roadmaps); err != nil {
+		return nil, 0, err
 	}
 	return roadmaps, total, nil
 }
@@ -247,6 +295,9 @@ func (r *roadmapRepository) GetTemplates(ctx context.Context) ([]model.Roadmap, 
 		}
 	}
 
+	if err := attachRoadmapMetrics(ctx, r.q, roadmaps); err != nil {
+		return nil, err
+	}
 	return roadmaps, nil
 }
 
@@ -260,6 +311,8 @@ func (r *roadmapRepository) CountByUserID(ctx context.Context, userID uint) (int
 // 途中で失敗したときに不完全な複製が残らないようにする
 // （移行前のGORM実装はトランザクションで括っていなかったが、複数行の作成が
 // 部分的に失敗すると不整合な複製が残るため、安全側に倒して括った）。
+// CreateRoadmapStepは1呼び出しごとにroadmap_metrics.step_countを加算するCTEを含むため
+// （DEVSYNC-159）、ここでstep_countを別途シードする必要はない。
 func (r *roadmapRepository) CopyRoadmap(ctx context.Context, originalID, newUserID uint) (*model.Roadmap, error) {
 	original, err := r.FindByID(ctx, originalID)
 	if err != nil {
@@ -286,7 +339,6 @@ func (r *roadmapRepository) CopyRoadmap(ctx context.Context, originalID, newUser
 		Category:    (*string)(&original.Category),
 		IsPublic:    false,
 		IsTemplate:  false,
-		StepCount:   toInt64Ptr(original.StepCount),
 		Status:      (*string)(&status),
 	})
 	if err != nil {
@@ -313,16 +365,10 @@ func (r *roadmapRepository) CopyRoadmap(ctx context.Context, originalID, newUser
 	return r.FindByID(ctx, uint(newRoadmapID))
 }
 
-// CreateStep はステップを追加し、ロードマップのステップ数を 1 増やす。
+// CreateStep はステップを追加し、roadmap_metrics.step_countを加算する
+// （同一SQL文、DEVSYNC-159）。
 func (r *roadmapRepository) CreateStep(ctx context.Context, step *model.RoadmapStep) error {
-	tx, err := r.pool.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback(ctx)
-
-	q := r.q.WithTx(tx)
-	row, err := q.CreateRoadmapStep(ctx, sqlcgen.CreateRoadmapStepParams{
+	row, err := r.q.CreateRoadmapStep(ctx, sqlcgen.CreateRoadmapStepParams{
 		RoadmapID:   int64(step.RoadmapID),
 		Title:       step.Title,
 		Description: &step.Description,
@@ -334,14 +380,13 @@ func (r *roadmapRepository) CreateStep(ctx context.Context, step *model.RoadmapS
 	if err != nil {
 		return err
 	}
-	if err := q.IncrementRoadmapStepCount(ctx, int64(step.RoadmapID)); err != nil {
-		return err
-	}
-	*step = toModelRoadmapStep(row)
-	return tx.Commit(ctx)
+	*step = toModelRoadmapStep(sqlcgen.RoadmapStep(row))
+	return nil
 }
 
-// UpdateStep はステップを更新する。完了状態が変わった場合は進捗も再計算する。
+// UpdateStep はステップを更新する。完了状態が変わった場合はroadmap_metrics.
+// completed_step_countも同一SQL文で加減算し、進捗が100%を跨いだ場合はロードマップの
+// ステータスも自動遷移させる。
 func (r *roadmapRepository) UpdateStep(ctx context.Context, step *model.RoadmapStep) error {
 	oldStepRow, err := r.q.GetRoadmapStepByID(ctx, int64(step.ID))
 	if err != nil {
@@ -349,122 +394,91 @@ func (r *roadmapRepository) UpdateStep(ctx context.Context, step *model.RoadmapS
 	}
 	oldIsCompleted := oldStepRow.IsCompleted
 
-	tx, err := r.pool.Begin(ctx)
-	if err != nil {
-		return err
+	var completedDelta int64
+	switch {
+	case step.IsCompleted && !oldIsCompleted:
+		completedDelta = 1
+	case !step.IsCompleted && oldIsCompleted:
+		completedDelta = -1
 	}
-	defer tx.Rollback(ctx)
 
-	q := r.q.WithTx(tx)
-	row, err := q.UpdateRoadmapStep(ctx, sqlcgen.UpdateRoadmapStepParams{
-		ID:          int64(step.ID),
-		Title:       step.Title,
-		Description: &step.Description,
-		OrderIndex:  int64(step.OrderIndex),
-		IsCompleted: step.IsCompleted,
-		CompletedAt: toTimestamptz(step.CompletedAt),
-		ResourceUrl: &step.ResourceURL,
+	row, err := r.q.UpdateRoadmapStep(ctx, sqlcgen.UpdateRoadmapStepParams{
+		ID:             int64(step.ID),
+		Title:          step.Title,
+		Description:    &step.Description,
+		OrderIndex:     int64(step.OrderIndex),
+		IsCompleted:    step.IsCompleted,
+		CompletedAt:    toTimestamptz(step.CompletedAt),
+		ResourceUrl:    &step.ResourceURL,
+		CompletedDelta: completedDelta,
 	})
 	if err != nil {
 		return err
 	}
-	*step = toModelRoadmapStep(row)
+	*step = toModelRoadmapStep(sqlcgen.RoadmapStep(row))
 
-	if oldIsCompleted == step.IsCompleted {
-		return tx.Commit(ctx)
+	if completedDelta == 0 {
+		return nil
 	}
-
-	delta := int64(1)
-	if !step.IsCompleted {
-		delta = -1
-	}
-	if err := q.AdjustRoadmapCompletedStepCount(ctx, sqlcgen.AdjustRoadmapCompletedStepCountParams{
-		ID:    int64(step.RoadmapID),
-		Delta: delta,
-	}); err != nil {
-		return err
-	}
-	if err := recalcRoadmapProgress(ctx, q, int64(step.RoadmapID), true); err != nil {
-		return err
-	}
-	return tx.Commit(ctx)
+	return recalcRoadmapStatusFromMetrics(ctx, r.q, step.RoadmapID)
 }
 
-// DeleteStep はステップを削除し、ステップ数・完了ステップ数・進捗率を再計算する。
+// DeleteStep はステップを削除し、roadmap_metrics.step_count/completed_step_countを
+// 同一SQL文で調整する。削除では移行前と同じくステータスの自動遷移は行わない。
 func (r *roadmapRepository) DeleteStep(ctx context.Context, stepID uint) error {
 	stepRow, err := r.q.GetRoadmapStepByID(ctx, int64(stepID))
 	if err != nil {
 		return err
 	}
 
-	tx, err := r.pool.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback(ctx)
-
-	q := r.q.WithTx(tx)
-	if err := q.DeleteRoadmapStep(ctx, int64(stepID)); err != nil {
-		return err
-	}
-	if err := q.DecrementRoadmapStepCount(ctx, stepRow.RoadmapID); err != nil {
-		return err
-	}
+	var completedDelta int64
 	if stepRow.IsCompleted {
-		if err := q.AdjustRoadmapCompletedStepCount(ctx, sqlcgen.AdjustRoadmapCompletedStepCountParams{
-			ID:    stepRow.RoadmapID,
-			Delta: -1,
-		}); err != nil {
-			return err
-		}
+		completedDelta = -1
 	}
-	if err := recalcRoadmapProgress(ctx, q, stepRow.RoadmapID, false); err != nil {
-		return err
-	}
-	return tx.Commit(ctx)
+
+	return r.q.DeleteRoadmapStep(ctx, sqlcgen.DeleteRoadmapStepParams{
+		ID:             int64(stepID),
+		CompletedDelta: completedDelta,
+	})
 }
 
-// recalcRoadmapProgress は進捗率を再計算して保存する。
-// withStatus が true のときは 100% 到達での自動完了と、100% 未満へ戻ったときの
-// アクティブ復帰も行う（ステップ更新のみが対象で、削除時は進捗率だけを更新する）。
-func recalcRoadmapProgress(ctx context.Context, q *sqlcgen.Queries, roadmapID int64, withStatus bool) error {
-	roadmapRow, err := q.GetRoadmapByID(ctx, roadmapID)
+// recalcRoadmapStatusFromMetrics はroadmap_metricsから算出される進捗率が100%へ到達/
+// 未達に変化したときにステータスを自動遷移させる（進捗率が列でなくなった後も、移行前の
+// GORM実装が持っていた自動完了・アクティブ復帰の挙動を再現するため）。
+func recalcRoadmapStatusFromMetrics(ctx context.Context, q *sqlcgen.Queries, roadmapID uint) error {
+	roadmapRow, err := q.GetRoadmapByID(ctx, int64(roadmapID))
 	if err != nil {
 		return err
 	}
-	stepCount := fromInt64PtrValue(roadmapRow.StepCount)
-	completedStepCount := fromInt64PtrValue(roadmapRow.CompletedStepCount)
-
-	progress := int64(0)
-	if stepCount > 0 {
-		progress = (completedStepCount * 100) / stepCount
+	metricsRows, err := q.GetRoadmapMetricsByRoadmapIDs(ctx, []int64{int64(roadmapID)})
+	if err != nil {
+		return err
 	}
-
-	if !withStatus {
-		return q.UpdateRoadmapProgress(ctx, sqlcgen.UpdateRoadmapProgressParams{
-			ID:       roadmapID,
-			Progress: &progress,
-		})
+	var progress int64
+	if len(metricsRows) > 0 {
+		progress = metricsRows[0].Progress
 	}
 
 	status := model.RoadmapStatus(fromStringPtr(roadmapRow.Status))
+	completedStatus := string(model.RoadmapStatusCompleted)
+	activeStatus := string(model.RoadmapStatusActive)
+
 	switch {
 	case progress == 100 && status == model.RoadmapStatusActive:
-		return q.UpdateRoadmapProgressCompleted(ctx, sqlcgen.UpdateRoadmapProgressCompletedParams{
-			ID:       roadmapID,
-			Progress: &progress,
+		now := time.Now()
+		_, err = q.UpdateRoadmapStatus(ctx, sqlcgen.UpdateRoadmapStatusParams{
+			ID:          int64(roadmapID),
+			Status:      &completedStatus,
+			CompletedAt: toTimestamptz(&now),
 		})
 	case progress < 100 && status == model.RoadmapStatusCompleted:
-		return q.UpdateRoadmapProgressReactivated(ctx, sqlcgen.UpdateRoadmapProgressReactivatedParams{
-			ID:       roadmapID,
-			Progress: &progress,
-		})
-	default:
-		return q.UpdateRoadmapProgress(ctx, sqlcgen.UpdateRoadmapProgressParams{
-			ID:       roadmapID,
-			Progress: &progress,
+		_, err = q.UpdateRoadmapStatus(ctx, sqlcgen.UpdateRoadmapStatusParams{
+			ID:          int64(roadmapID),
+			Status:      &activeStatus,
+			CompletedAt: toTimestamptz(nil),
 		})
 	}
+	return err
 }
 
 // FindStepByID は指定 ID のステップを取得する。不在の場合は (nil, nil) を返す。

@@ -11,7 +11,7 @@ type RoadmapRepository interface {
 	Create(ctx context.Context, roadmap *model.Roadmap) error
 	// Update はタイトル・説明・カテゴリ・公開設定・テンプレート設定を上書きする。
 	// status/completed_at は対象外（UpdateStatus を使う）。ステップ完了による
-	// 自動遷移（recalcRoadmapProgress）と経路を分け、ロストアップデートを防ぐため。
+	// 自動遷移（recalcRoadmapStatusFromMetrics）と経路を分け、ロストアップデートを防ぐため。
 	Update(ctx context.Context, roadmap *model.Roadmap) error
 	// UpdateStatus はユーザーによる明示的なステータス変更だけに使う専用の更新。
 	UpdateStatus(ctx context.Context, roadmap *model.Roadmap) error
@@ -32,10 +32,12 @@ type RoadmapRepository interface {
 
 	// CreateStep はステップを追加し、ロードマップのステップ数を 1 増やす。
 	CreateStep(ctx context.Context, step *model.RoadmapStep) error
-	// UpdateStep はステップを更新する。完了状態が変わった場合は
-	// ロードマップの完了ステップ数・進捗率・ステータスも再計算する。
+	// UpdateStep はステップを更新する。完了状態が変わった場合はロードマップの完了
+	// ステップ数を増減し、進捗率（ステップ数から都度算出される）が100%を跨いだときは
+	// ステータスも自動遷移させる。
 	UpdateStep(ctx context.Context, step *model.RoadmapStep) error
-	// DeleteStep はステップを削除し、ロードマップのステップ数・完了ステップ数・進捗率を再計算する。
+	// DeleteStep はステップを削除し、ロードマップのステップ数・完了ステップ数を
+	// 増減する。UpdateStepと異なりステータスの自動遷移は行わない。
 	DeleteStep(ctx context.Context, stepID uint) error
 	// FindStepByID は指定 ID のステップを返す。不在の場合は (nil, nil) を返す。
 	FindStepByID(ctx context.Context, stepID uint) (*model.RoadmapStep, error)

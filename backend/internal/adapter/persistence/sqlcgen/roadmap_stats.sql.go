@@ -39,8 +39,10 @@ func (q *Queries) CountRoadmapsByUserAndStatus(ctx context.Context, arg CountRoa
 }
 
 const sumRoadmapCompletedStepCountByUser = `-- name: SumRoadmapCompletedStepCountByUser :one
-SELECT COALESCE(SUM(completed_step_count), 0)::bigint FROM roadmaps
-WHERE user_id = $1
+SELECT COALESCE(SUM(rm.completed_step_count), 0)::bigint
+FROM roadmaps r
+LEFT JOIN roadmap_metrics rm ON rm.roadmap_id = r.id
+WHERE r.user_id = $1
 `
 
 func (q *Queries) SumRoadmapCompletedStepCountByUser(ctx context.Context, userID int64) (int64, error) {
@@ -51,10 +53,13 @@ func (q *Queries) SumRoadmapCompletedStepCountByUser(ctx context.Context, userID
 }
 
 const sumRoadmapStepCountByUser = `-- name: SumRoadmapStepCountByUser :one
-SELECT COALESCE(SUM(step_count), 0)::bigint FROM roadmaps
-WHERE user_id = $1
+SELECT COALESCE(SUM(rm.step_count), 0)::bigint
+FROM roadmaps r
+LEFT JOIN roadmap_metrics rm ON rm.roadmap_id = r.id
+WHERE r.user_id = $1
 `
 
+// step_countはroadmap_metrics側（DEVSYNC-159）。LEFT JOIN + COALESCEで0扱いにする。
 func (q *Queries) SumRoadmapStepCountByUser(ctx context.Context, userID int64) (int64, error) {
 	row := q.db.QueryRow(ctx, sumRoadmapStepCountByUser, userID)
 	var column_1 int64

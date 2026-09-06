@@ -305,9 +305,11 @@ func NewContainer(sqlPool *pgxpool.Pool, cfg *config.Config, hub *ws.Hub) *Conta
 	// ReconcileAllMetricsUseCase 1つのままにするため、ここでまとめる。
 	postMetricsPort := persistence.NewPostMetricsRepository(sqlcgen.New(sqlPool))
 	learningResourceMetricsPort := persistence.NewLearningResourceMetricsRepository(sqlcgen.New(sqlPool))
+	roadmapMetricsPort := persistence.NewRoadmapMetricsRepository(sqlcgen.New(sqlPool))
 	reconcileAllMetrics := usecase.NewReconcileAllMetricsUseCase(
 		usecase.NewReconcilePostMetricsUseCase(postMetricsPort),
 		usecase.NewReconcileLearningResourceMetricsUseCase(learningResourceMetricsPort),
+		usecase.NewReconcileRoadmapMetricsUseCase(roadmapMetricsPort),
 	)
 	appScheduler := scheduler.New(sendWeeklyReports, reconcileAllMetrics)
 	go appScheduler.Start()
