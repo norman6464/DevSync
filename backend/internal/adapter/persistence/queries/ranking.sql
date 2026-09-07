@@ -49,8 +49,11 @@ SELECT * FROM (
         FROM comments GROUP BY user_id
     ) c ON c.user_id = u.id
     LEFT JOIN (
-        SELECT user_id, COALESCE(SUM(like_count), 0)::bigint * 3 AS xp
-        FROM posts GROUP BY user_id
+        -- like_countはpost_metrics側（DEVSYNC-159）。
+        SELECT p.user_id, COALESCE(SUM(pm.like_count), 0)::bigint * 3 AS xp
+        FROM posts p
+        LEFT JOIN post_metrics pm ON pm.post_id = p.id
+        GROUP BY p.user_id
     ) lk ON lk.user_id = u.id
 ) ranked
 WHERE score > 0
