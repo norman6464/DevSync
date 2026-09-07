@@ -88,9 +88,13 @@ func (q *Queries) ListLearningLogDatesByUser(ctx context.Context, userID int64) 
 }
 
 const sumPostLikesReceivedByUser = `-- name: SumPostLikesReceivedByUser :one
-SELECT COALESCE(SUM(like_count), 0)::bigint FROM posts WHERE user_id = $1
+SELECT COALESCE(SUM(pm.like_count), 0)::bigint
+FROM posts p
+LEFT JOIN post_metrics pm ON pm.post_id = p.id
+WHERE p.user_id = $1
 `
 
+// like_countはpost_metrics側（DEVSYNC-159）。LEFT JOIN + COALESCEで0扱いにする。
 func (q *Queries) SumPostLikesReceivedByUser(ctx context.Context, userID int64) (int64, error) {
 	row := q.db.QueryRow(ctx, sumPostLikesReceivedByUser, userID)
 	var column_1 int64
