@@ -1,4 +1,4 @@
 -- name: CountPostViewsReceivedByUser :one
-SELECT COUNT(*) FROM post_views
-JOIN posts ON posts.id = post_views.post_id
-WHERE posts.user_id = $1;
+SELECT COUNT(*) FROM post_reactions
+JOIN posts ON posts.id = post_reactions.post_id
+WHERE posts.user_id = $1 AND post_reactions.kind = 'view';

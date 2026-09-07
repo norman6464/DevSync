@@ -10,7 +10,7 @@ import (
 )
 
 const countPostPinsByUser = `-- name: CountPostPinsByUser :one
-SELECT COUNT(*) FROM post_pins WHERE user_id = $1
+SELECT COUNT(*) FROM post_reactions WHERE user_id = $1 AND kind = 'pin'
 `
 
 func (q *Queries) CountPostPinsByUser(ctx context.Context, userID int64) (int64, error) {
@@ -21,7 +21,7 @@ func (q *Queries) CountPostPinsByUser(ctx context.Context, userID int64) (int64,
 }
 
 const countPostPinsByUserAndPost = `-- name: CountPostPinsByUserAndPost :one
-SELECT COUNT(*) FROM post_pins WHERE user_id = $1 AND post_id = $2
+SELECT COUNT(*) FROM post_reactions WHERE user_id = $1 AND post_id = $2 AND kind = 'pin'
 `
 
 type CountPostPinsByUserAndPostParams struct {
@@ -37,14 +37,14 @@ func (q *Queries) CountPostPinsByUserAndPost(ctx context.Context, arg CountPostP
 }
 
 const createPostPin = `-- name: CreatePostPin :exec
-INSERT INTO post_pins (user_id, post_id, pin_order, created_at)
-VALUES ($1, $2, $3, now())
+INSERT INTO post_reactions (user_id, post_id, kind, pin_order, created_at)
+VALUES ($1, $2, 'pin', $3, now())
 `
 
 type CreatePostPinParams struct {
 	UserID   int64
 	PostID   int64
-	PinOrder int64
+	PinOrder *int64
 }
 
 func (q *Queries) CreatePostPin(ctx context.Context, arg CreatePostPinParams) error {
@@ -53,7 +53,8 @@ func (q *Queries) CreatePostPin(ctx context.Context, arg CreatePostPinParams) er
 }
 
 const deletePostPin = `-- name: DeletePostPin :exec
-DELETE FROM post_pins WHERE user_id = $1 AND post_id = $2
+DELETE FROM post_reactions
+WHERE post_reactions.user_id = $1 AND post_reactions.post_id = $2 AND post_reactions.kind = 'pin'
 `
 
 type DeletePostPinParams struct {
@@ -67,18 +68,18 @@ func (q *Queries) DeletePostPin(ctx context.Context, arg DeletePostPinParams) er
 }
 
 const listPostPinsByUser = `-- name: ListPostPinsByUser :many
-SELECT post_pins.id, post_pins.user_id, post_pins.post_id, post_pins.pin_order, post_pins.created_at, posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
-FROM post_pins
-JOIN posts ON posts.id = post_pins.post_id
+SELECT post_reactions.id, post_reactions.user_id, post_reactions.post_id, post_reactions.kind, post_reactions.value, post_reactions.pin_order, post_reactions.created_at, posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+FROM post_reactions
+JOIN posts ON posts.id = post_reactions.post_id
 JOIN users ON users.id = posts.user_id
-WHERE post_pins.user_id = $1
-ORDER BY post_pins.pin_order ASC
+WHERE post_reactions.user_id = $1 AND post_reactions.kind = 'pin'
+ORDER BY post_reactions.pin_order ASC
 `
 
 type ListPostPinsByUserRow struct {
-	PostPin PostPin
-	Post    Post
-	User    User
+	PostReaction PostReaction
+	Post         Post
+	User         User
 }
 
 // GORMのPreload("Post").Preload("Post.User")に相当。user_id/post_idともにNOT NULLのためINNER JOINでよい。
@@ -92,11 +93,13 @@ func (q *Queries) ListPostPinsByUser(ctx context.Context, userID int64) ([]ListP
 	for rows.Next() {
 		var i ListPostPinsByUserRow
 		if err := rows.Scan(
-			&i.PostPin.ID,
-			&i.PostPin.UserID,
-			&i.PostPin.PostID,
-			&i.PostPin.PinOrder,
-			&i.PostPin.CreatedAt,
+			&i.PostReaction.ID,
+			&i.PostReaction.UserID,
+			&i.PostReaction.PostID,
+			&i.PostReaction.Kind,
+			&i.PostReaction.Value,
+			&i.PostReaction.PinOrder,
+			&i.PostReaction.CreatedAt,
 			&i.Post.ID,
 			&i.Post.UserID,
 			&i.Post.Title,
@@ -144,13 +147,14 @@ func (q *Queries) ListPostPinsByUser(ctx context.Context, userID int64) ([]ListP
 }
 
 const updatePostPinOrder = `-- name: UpdatePostPinOrder :exec
-UPDATE post_pins SET pin_order = $3 WHERE user_id = $1 AND post_id = $2
+UPDATE post_reactions SET pin_order = $3
+WHERE post_reactions.user_id = $1 AND post_reactions.post_id = $2 AND post_reactions.kind = 'pin'
 `
 
 type UpdatePostPinOrderParams struct {
 	UserID   int64
 	PostID   int64
-	PinOrder int64
+	PinOrder *int64
 }
 
 func (q *Queries) UpdatePostPinOrder(ctx context.Context, arg UpdatePostPinOrderParams) error {

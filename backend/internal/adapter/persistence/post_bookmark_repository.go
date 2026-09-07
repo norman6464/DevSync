@@ -38,7 +38,7 @@ func toModelCodeSnippet(row sqlcgen.CodeSnippet) model.CodeSnippet {
 }
 
 // Bookmark は投稿をブックマークする。bookmark_countという列は持たず、
-// 表示時にbookmarksをCOUNT(*)する（attachBookmarkCountsToPosts参照）。
+// 表示時にpost_reactions（kind='bookmark'）をCOUNT(*)する（attachBookmarkCountsToPosts参照）。
 func (r *postBookmarkRepository) Bookmark(ctx context.Context, userID, postID uint) error {
 	return r.q.CreateBookmark(ctx, sqlcgen.CreateBookmarkParams{
 		UserID: int64(userID),

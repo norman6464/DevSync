@@ -10,7 +10,8 @@ import (
 )
 
 const countBookmarkByUserAndPost = `-- name: CountBookmarkByUserAndPost :one
-SELECT COUNT(*) FROM bookmarks WHERE user_id = $1 AND post_id = $2
+SELECT COUNT(*) FROM post_reactions
+WHERE post_reactions.user_id = $1 AND post_reactions.post_id = $2 AND post_reactions.kind = 'bookmark'
 `
 
 type CountBookmarkByUserAndPostParams struct {
@@ -27,8 +28,8 @@ func (q *Queries) CountBookmarkByUserAndPost(ctx context.Context, arg CountBookm
 
 const countBookmarksByPostIDs = `-- name: CountBookmarksByPostIDs :many
 SELECT post_id, COUNT(*)::bigint AS bookmark_count
-FROM bookmarks
-WHERE post_id = ANY($1::bigint[])
+FROM post_reactions
+WHERE post_id = ANY($1::bigint[]) AND kind = 'bookmark'
 GROUP BY post_id
 `
 
@@ -38,7 +39,7 @@ type CountBookmarksByPostIDsRow struct {
 }
 
 // post.bookmark_countはORDER BYに使われない表示専用の値だったため列として持たず、
-// 都度bookmarksからCOUNT(*)する。投稿IDのまとめ取りとGo側でのグルーピングで
+// 都度post_reactionsからCOUNT(*)する。投稿IDのまとめ取りとGo側でのグルーピングで
 // ListCodeSnippetsByPostIDsと同じ形にする。ブックマーク0件の投稿はこの結果に現れない。
 func (q *Queries) CountBookmarksByPostIDs(ctx context.Context, dollar_1 []int64) ([]CountBookmarksByPostIDsRow, error) {
 	rows, err := q.db.Query(ctx, countBookmarksByPostIDs, dollar_1)
@@ -61,7 +62,7 @@ func (q *Queries) CountBookmarksByPostIDs(ctx context.Context, dollar_1 []int64)
 }
 
 const createBookmark = `-- name: CreateBookmark :exec
-INSERT INTO bookmarks (user_id, post_id, created_at) VALUES ($1, $2, now())
+INSERT INTO post_reactions (user_id, post_id, kind, created_at) VALUES ($1, $2, 'bookmark', now())
 `
 
 type CreateBookmarkParams struct {
@@ -75,7 +76,8 @@ func (q *Queries) CreateBookmark(ctx context.Context, arg CreateBookmarkParams) 
 }
 
 const deleteBookmark = `-- name: DeleteBookmark :execrows
-DELETE FROM bookmarks WHERE user_id = $1 AND post_id = $2
+DELETE FROM post_reactions
+WHERE post_reactions.user_id = $1 AND post_reactions.post_id = $2 AND post_reactions.kind = 'bookmark'
 `
 
 type DeleteBookmarkParams struct {
@@ -94,9 +96,9 @@ func (q *Queries) DeleteBookmark(ctx context.Context, arg DeleteBookmarkParams) 
 const listBookmarkedPostsByUser = `-- name: ListBookmarkedPostsByUser :many
 SELECT posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM posts
-JOIN bookmarks ON bookmarks.post_id = posts.id
+JOIN post_reactions ON post_reactions.post_id = posts.id AND post_reactions.kind = 'bookmark'
 JOIN users ON users.id = posts.user_id
-WHERE bookmarks.user_id = $1
+WHERE post_reactions.user_id = $1
 ORDER BY posts.created_at DESC
 LIMIT $2 OFFSET $3
 `

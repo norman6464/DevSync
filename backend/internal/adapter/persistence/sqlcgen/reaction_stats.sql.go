@@ -12,9 +12,9 @@ import (
 )
 
 const countReactionsReceivedByUser = `-- name: CountReactionsReceivedByUser :one
-SELECT count(*) FROM reactions
-JOIN posts ON posts.id = reactions.post_id
-WHERE posts.user_id = $1
+SELECT count(*) FROM post_reactions
+JOIN posts ON posts.id = post_reactions.post_id
+WHERE posts.user_id = $1 AND post_reactions.kind = 'emoji'
 `
 
 func (q *Queries) CountReactionsReceivedByUser(ctx context.Context, userID int64) (int64, error) {
@@ -25,9 +25,9 @@ func (q *Queries) CountReactionsReceivedByUser(ctx context.Context, userID int64
 }
 
 const countReactionsReceivedByUserSince = `-- name: CountReactionsReceivedByUserSince :one
-SELECT count(*) FROM reactions
-JOIN posts ON posts.id = reactions.post_id
-WHERE posts.user_id = $1 AND reactions.created_at >= $2
+SELECT count(*) FROM post_reactions
+JOIN posts ON posts.id = post_reactions.post_id
+WHERE posts.user_id = $1 AND post_reactions.kind = 'emoji' AND post_reactions.created_at >= $2
 `
 
 type CountReactionsReceivedByUserSinceParams struct {
@@ -43,9 +43,9 @@ func (q *Queries) CountReactionsReceivedByUserSince(ctx context.Context, arg Cou
 }
 
 const countUniqueReactorsByUser = `-- name: CountUniqueReactorsByUser :one
-SELECT count(DISTINCT reactions.user_id) FROM reactions
-JOIN posts ON posts.id = reactions.post_id
-WHERE posts.user_id = $1
+SELECT count(DISTINCT post_reactions.user_id) FROM post_reactions
+JOIN posts ON posts.id = post_reactions.post_id
+WHERE posts.user_id = $1 AND post_reactions.kind = 'emoji'
 `
 
 func (q *Queries) CountUniqueReactorsByUser(ctx context.Context, userID int64) (int64, error) {
@@ -56,12 +56,12 @@ func (q *Queries) CountUniqueReactorsByUser(ctx context.Context, userID int64) (
 }
 
 const getEmojiBreakdownByUser = `-- name: GetEmojiBreakdownByUser :many
-SELECT reactions.emoji AS emoji, count(*) AS count
-FROM reactions
-JOIN posts ON posts.id = reactions.post_id
-WHERE posts.user_id = $1
-GROUP BY reactions.emoji
-ORDER BY count DESC, reactions.emoji ASC
+SELECT post_reactions.value AS emoji, count(*) AS count
+FROM post_reactions
+JOIN posts ON posts.id = post_reactions.post_id
+WHERE posts.user_id = $1 AND post_reactions.kind = 'emoji'
+GROUP BY post_reactions.value
+ORDER BY count DESC, post_reactions.value ASC
 `
 
 type GetEmojiBreakdownByUserRow struct {
@@ -91,9 +91,9 @@ func (q *Queries) GetEmojiBreakdownByUser(ctx context.Context, userID int64) ([]
 
 const getTopReactedPostsByUser = `-- name: GetTopReactedPostsByUser :many
 SELECT posts.id AS id, posts.title AS title, count(*) AS reaction_count
-FROM reactions
-JOIN posts ON posts.id = reactions.post_id
-WHERE posts.user_id = $1
+FROM post_reactions
+JOIN posts ON posts.id = post_reactions.post_id
+WHERE posts.user_id = $1 AND post_reactions.kind = 'emoji'
 GROUP BY posts.id, posts.title
 ORDER BY reaction_count DESC, posts.id DESC
 LIMIT $2

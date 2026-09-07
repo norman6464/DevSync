@@ -44,7 +44,7 @@ func (r *postReactionRepository) AddReaction(ctx context.Context, userID, postID
 	return r.q.CreateReaction(ctx, sqlcgen.CreateReactionParams{
 		UserID: int64(userID),
 		PostID: int64(postID),
-		Emoji:  emoji,
+		Value:  emoji,
 	})
 }
 
@@ -53,7 +53,7 @@ func (r *postReactionRepository) RemoveReaction(ctx context.Context, userID, pos
 	return r.q.DeleteReaction(ctx, sqlcgen.DeleteReactionParams{
 		UserID: int64(userID),
 		PostID: int64(postID),
-		Emoji:  emoji,
+		Value:  emoji,
 	})
 }
 

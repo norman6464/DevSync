@@ -98,7 +98,13 @@ func TestDeleteWithRelatedData_NoOrphans(t *testing.T) {
 	`, otherID, postID).Scan(&commentID)
 	require.NoError(t, err)
 
-	_, err = pool.Exec(ctx, `INSERT INTO likes (user_id, post_id, created_at) VALUES ($1, $2, now())`, otherID, postID)
+	// post_reactionsはDEVSYNC-160でlikes/bookmarks/post_pins/post_views/reactionsを
+	// 統合した単一テーブルのため、5種のkindすべてを1件ずつ作って孤児行を確認する。
+	for _, kind := range []string{"like", "bookmark", "pin", "view"} {
+		_, err = pool.Exec(ctx, `INSERT INTO post_reactions (user_id, post_id, kind, created_at) VALUES ($1, $2, $3, now())`, otherID, postID, kind)
+		require.NoError(t, err)
+	}
+	_, err = pool.Exec(ctx, `INSERT INTO post_reactions (user_id, post_id, kind, value, created_at) VALUES ($1, $2, 'emoji', '👍', now())`, otherID, postID)
 	require.NoError(t, err)
 
 	// 相互フォロー（follower/followeeの両方向を1本のクエリで消せているか検証するため双方向作る）
@@ -126,7 +132,7 @@ func TestDeleteWithRelatedData_NoOrphans(t *testing.T) {
 	assertZero(t, ctx, pool, `SELECT count(*) FROM users WHERE id = $1`, targetID)
 	assertZero(t, ctx, pool, `SELECT count(*) FROM posts WHERE user_id = $1`, targetID)
 	assertZero(t, ctx, pool, `SELECT count(*) FROM comments WHERE id = $1`, commentID)
-	assertZero(t, ctx, pool, `SELECT count(*) FROM likes WHERE post_id = $1`, postID)
+	assertZero(t, ctx, pool, `SELECT count(*) FROM post_reactions WHERE post_id = $1`, postID)
 	assertZero(t, ctx, pool, `SELECT count(*) FROM follows WHERE follower_id = $1 OR followee_id = $1`, targetID)
 	assertZero(t, ctx, pool, `SELECT count(*) FROM password_reset_tokens WHERE user_id = $1`, targetID)
 	assertZero(t, ctx, pool, `SELECT count(*) FROM git_hub_contributions WHERE user_id = $1`, targetID)

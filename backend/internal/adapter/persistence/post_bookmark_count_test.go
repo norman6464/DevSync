@@ -10,7 +10,8 @@ import (
 )
 
 // TestFindAll_AttachesAccurateBookmarkCounts は、posts.bookmark_count列を撤去した後、
-// attachBookmarkCountsToPostsがbookmarksテーブルから実際の件数を正しく集計することを検証する
+// attachBookmarkCountsToPostsがpost_reactions（kind='bookmark'、DEVSYNC-160で
+// bookmarks単独テーブルから統合）から実際の件数を正しく集計することを検証する
 // （ブックマーク0件の投稿がGROUP BYの結果に現れなくても0になることを含む）。
 func TestFindAll_AttachesAccurateBookmarkCounts(t *testing.T) {
 	pool := cascadeTestDB(t)
@@ -50,7 +51,7 @@ func TestFindAll_AttachesAccurateBookmarkCounts(t *testing.T) {
 		{bookmarker2ID, int64(postTwoBookmarks.ID)},
 		{bookmarker1ID, int64(postOneBookmark.ID)},
 	} {
-		_, err := pool.Exec(ctx, `INSERT INTO bookmarks (user_id, post_id, created_at) VALUES ($1, $2, now())`, b.userID, b.postID)
+		_, err := pool.Exec(ctx, `INSERT INTO post_reactions (user_id, post_id, kind, created_at) VALUES ($1, $2, 'bookmark', now())`, b.userID, b.postID)
 		require.NoError(t, err)
 	}
 

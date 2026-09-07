@@ -12,8 +12,8 @@ import (
 )
 
 const countBookmarksMadeByUser = `-- name: CountBookmarksMadeByUser :one
-SELECT count(*) FROM bookmarks
-WHERE user_id = $1
+SELECT count(*) FROM post_reactions
+WHERE user_id = $1 AND kind = 'bookmark'
 `
 
 func (q *Queries) CountBookmarksMadeByUser(ctx context.Context, userID int64) (int64, error) {
@@ -24,8 +24,8 @@ func (q *Queries) CountBookmarksMadeByUser(ctx context.Context, userID int64) (i
 }
 
 const countBookmarksMadeByUserSince = `-- name: CountBookmarksMadeByUserSince :one
-SELECT count(*) FROM bookmarks
-WHERE user_id = $1 AND created_at >= $2
+SELECT count(*) FROM post_reactions
+WHERE user_id = $1 AND kind = 'bookmark' AND created_at >= $2
 `
 
 type CountBookmarksMadeByUserSinceParams struct {
@@ -41,9 +41,9 @@ func (q *Queries) CountBookmarksMadeByUserSince(ctx context.Context, arg CountBo
 }
 
 const countBookmarksReceivedByUser = `-- name: CountBookmarksReceivedByUser :one
-SELECT count(*) FROM bookmarks
-JOIN posts ON posts.id = bookmarks.post_id
-WHERE posts.user_id = $1
+SELECT count(*) FROM post_reactions
+JOIN posts ON posts.id = post_reactions.post_id
+WHERE posts.user_id = $1 AND post_reactions.kind = 'bookmark'
 `
 
 func (q *Queries) CountBookmarksReceivedByUser(ctx context.Context, userID int64) (int64, error) {

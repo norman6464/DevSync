@@ -2083,47 +2083,6 @@ table "password_reset_tokens" {
 # post
 # =====================================================================
 
-table "bookmarks" {
-  schema = schema.public
-  column "id" {
-    null = false
-    type = bigserial
-  }
-  column "user_id" {
-    null = false
-    type = bigint
-  }
-  column "post_id" {
-    null = false
-    type = bigint
-  }
-  column "created_at" {
-    null = false
-    type = timestamptz
-  }
-  primary_key {
-    columns = [column.id]
-  }
-  foreign_key "fk_bookmarks_post" {
-    columns     = [column.post_id]
-    ref_columns = [table.posts.column.id]
-    on_update   = NO_ACTION
-    on_delete   = CASCADE
-  }
-  index "idx_bookmarks_post_id" {
-    columns = [column.post_id]
-  }
-  index "uq_user_post_bookmark" {
-    unique  = true
-    columns = [column.user_id, column.post_id]
-  }
-  foreign_key "fk_bookmarks_user" {
-    columns     = [column.user_id]
-    ref_columns = [table.users.column.id]
-    on_update   = NO_ACTION
-    on_delete   = CASCADE
-  }
-}
 table "comment_likes" {
   schema = schema.public
   column "id" {
@@ -2236,7 +2195,7 @@ table "comments" {
     on_delete   = CASCADE
   }
 }
-table "likes" {
+table "post_reactions" {
   schema = schema.public
   column "id" {
     null = false
@@ -2250,6 +2209,19 @@ table "likes" {
     null = false
     type = bigint
   }
+  column "kind" {
+    null = false
+    type = text
+  }
+  column "value" {
+    null    = false
+    type    = text
+    default = ""
+  }
+  column "pin_order" {
+    null = true
+    type = bigint
+  }
   column "created_at" {
     null = false
     type = timestamptz
@@ -2257,24 +2229,30 @@ table "likes" {
   primary_key {
     columns = [column.id]
   }
-  index "idx_likes_post_id" {
+  index "idx_post_reactions_post_id" {
     columns = [column.post_id]
   }
-  index "uq_user_post_like" {
-    unique  = true
-    columns = [column.user_id, column.post_id]
+  index "idx_post_reactions_user_id" {
+    columns = [column.user_id]
   }
-  foreign_key "fk_likes_post" {
+  index "uq_post_reactions_user_post_kind_value" {
+    unique  = true
+    columns = [column.user_id, column.post_id, column.kind, column.value]
+  }
+  foreign_key "fk_post_reactions_post" {
     columns     = [column.post_id]
     ref_columns = [table.posts.column.id]
     on_update   = NO_ACTION
     on_delete   = CASCADE
   }
-  foreign_key "fk_likes_user" {
+  foreign_key "fk_post_reactions_user" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_update   = NO_ACTION
     on_delete   = CASCADE
+  }
+  check "ck_post_reactions_kind" {
+    expr = "kind IN ('like', 'bookmark', 'pin', 'view', 'emoji')"
   }
 }
 table "post_collection_items" {
@@ -2372,55 +2350,6 @@ table "post_collections" {
   }
   index "idx_post_collections_user_id" {
     columns = [column.user_id]
-  }
-}
-table "post_pins" {
-  schema = schema.public
-  column "id" {
-    null = false
-    type = bigserial
-  }
-  column "user_id" {
-    null = false
-    type = bigint
-  }
-  column "post_id" {
-    null = false
-    type = bigint
-  }
-  column "pin_order" {
-    null    = false
-    type    = bigint
-    default = 0
-  }
-  column "created_at" {
-    null = false
-    type = timestamptz
-  }
-  primary_key {
-    columns = [column.id]
-  }
-  foreign_key "fk_post_pins_post" {
-    columns     = [column.post_id]
-    ref_columns = [table.posts.column.id]
-    on_update   = NO_ACTION
-    on_delete   = CASCADE
-  }
-  index "idx_post_pins_post_id" {
-    columns = [column.post_id]
-  }
-  index "idx_post_pins_user_id" {
-    columns = [column.user_id]
-  }
-  index "uq_user_post_pin" {
-    unique  = true
-    columns = [column.user_id, column.post_id]
-  }
-  foreign_key "fk_post_pins_user" {
-    columns     = [column.user_id]
-    ref_columns = [table.users.column.id]
-    on_update   = NO_ACTION
-    on_delete   = CASCADE
   }
 }
 table "post_series" {
@@ -2541,50 +2470,6 @@ table "post_tags" {
     on_delete   = CASCADE
   }
 }
-table "post_views" {
-  schema = schema.public
-  column "id" {
-    null = false
-    type = bigserial
-  }
-  column "user_id" {
-    null = false
-    type = bigint
-  }
-  column "post_id" {
-    null = false
-    type = bigint
-  }
-  column "created_at" {
-    null = false
-    type = timestamptz
-  }
-  primary_key {
-    columns = [column.id]
-  }
-  index "idx_post_views_post_id" {
-    columns = [column.post_id]
-  }
-  index "idx_post_views_user_id" {
-    columns = [column.user_id]
-  }
-  index "uq_user_post_view" {
-    unique  = true
-    columns = [column.user_id, column.post_id]
-  }
-  foreign_key "fk_post_views_post" {
-    columns     = [column.post_id]
-    ref_columns = [table.posts.column.id]
-    on_update   = NO_ACTION
-    on_delete   = CASCADE
-  }
-  foreign_key "fk_post_views_user" {
-    columns     = [column.user_id]
-    ref_columns = [table.users.column.id]
-    on_update   = NO_ACTION
-    on_delete   = CASCADE
-  }
-}
 table "posts" {
   schema = schema.public
   column "id" {
@@ -2684,52 +2569,6 @@ table "post_metrics" {
     on_delete   = CASCADE
   }
 }
-table "reactions" {
-  schema = schema.public
-  column "id" {
-    null = false
-    type = bigserial
-  }
-  column "user_id" {
-    null = false
-    type = bigint
-  }
-  column "post_id" {
-    null = false
-    type = bigint
-  }
-  column "emoji" {
-    null = false
-    type = character_varying(10)
-  }
-  column "created_at" {
-    null = false
-    type = timestamptz
-  }
-  primary_key {
-    columns = [column.id]
-  }
-  index "idx_reactions_post_id" {
-    columns = [column.post_id]
-  }
-  index "uq_user_post_emoji" {
-    unique  = true
-    columns = [column.user_id, column.post_id, column.emoji]
-  }
-  foreign_key "fk_reactions_post" {
-    columns     = [column.post_id]
-    ref_columns = [table.posts.column.id]
-    on_update   = NO_ACTION
-    on_delete   = CASCADE
-  }
-  foreign_key "fk_reactions_user" {
-    columns     = [column.user_id]
-    ref_columns = [table.users.column.id]
-    on_update   = NO_ACTION
-    on_delete   = CASCADE
-  }
-}
-
 # =====================================================================
 # post_template
 # =====================================================================

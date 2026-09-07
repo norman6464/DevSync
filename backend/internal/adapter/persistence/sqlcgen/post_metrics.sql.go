@@ -105,18 +105,18 @@ SELECT
     COALESCE(c.cnt, 0),
     COALESCE(v.cnt, 0)
 FROM posts p
-LEFT JOIN (SELECT post_id, COUNT(*) AS cnt FROM likes GROUP BY post_id) l ON l.post_id = p.id
+LEFT JOIN (SELECT post_id, COUNT(*) AS cnt FROM post_reactions WHERE kind = 'like' GROUP BY post_id) l ON l.post_id = p.id
 LEFT JOIN (SELECT post_id, COUNT(*) AS cnt FROM comments GROUP BY post_id) c ON c.post_id = p.id
-LEFT JOIN (SELECT post_id, COUNT(*) AS cnt FROM post_views GROUP BY post_id) v ON v.post_id = p.id
+LEFT JOIN (SELECT post_id, COUNT(*) AS cnt FROM post_reactions WHERE kind = 'view' GROUP BY post_id) v ON v.post_id = p.id
 ON CONFLICT (post_id) DO UPDATE SET
     like_count = EXCLUDED.like_count,
     comment_count = EXCLUDED.comment_count,
     view_count = EXCLUDED.view_count
 `
 
-// 夜次reconcileジョブ本体。likes/comments/post_viewsの実件数からpost_metricsを
-// 全件まとめて補正する。CASCADE削除等でIncrement/Decrementを経由しない変化を吸収する。
-// 1件も無いカウンタは0で確定させる（COALESCE）。
+// 夜次reconcileジョブ本体。post_reactions(kind='like'/'view')/commentsの実件数から
+// post_metricsを全件まとめて補正する。CASCADE削除等でIncrement/Decrementを経由しない
+// 変化を吸収する。1件も無いカウンタは0で確定させる（COALESCE）。
 func (q *Queries) ReconcileAllPostMetrics(ctx context.Context) error {
 	_, err := q.db.Exec(ctx, reconcileAllPostMetrics)
 	return err

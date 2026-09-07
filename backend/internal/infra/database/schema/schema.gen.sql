@@ -237,20 +237,6 @@ CREATE TABLE "public"."bookmark_collection_items" (
 CREATE INDEX "idx_bookmark_collection_items_post_id" ON "public"."bookmark_collection_items" ("post_id");
 -- Create index "uq_bookmark_collection_post" to table: "bookmark_collection_items"
 CREATE UNIQUE INDEX "uq_bookmark_collection_post" ON "public"."bookmark_collection_items" ("collection_id", "post_id");
--- Create "bookmarks" table
-CREATE TABLE "public"."bookmarks" (
-  "id" bigserial NOT NULL,
-  "user_id" bigint NOT NULL,
-  "post_id" bigint NOT NULL,
-  "created_at" timestamptz NOT NULL,
-  PRIMARY KEY ("id"),
-  CONSTRAINT "fk_bookmarks_post" FOREIGN KEY ("post_id") REFERENCES "public"."posts" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
-  CONSTRAINT "fk_bookmarks_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
-);
--- Create index "idx_bookmarks_post_id" to table: "bookmarks"
-CREATE INDEX "idx_bookmarks_post_id" ON "public"."bookmarks" ("post_id");
--- Create index "uq_user_post_bookmark" to table: "bookmarks"
-CREATE UNIQUE INDEX "uq_user_post_bookmark" ON "public"."bookmarks" ("user_id", "post_id");
 -- Create "chat_rooms" table
 CREATE TABLE "public"."chat_rooms" (
   "id" bigserial NOT NULL,
@@ -521,20 +507,6 @@ CREATE TABLE "public"."learning_resource_metrics" (
   PRIMARY KEY ("resource_id"),
   CONSTRAINT "fk_learning_resource_metrics_resource" FOREIGN KEY ("resource_id") REFERENCES "public"."learning_resources" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
--- Create "likes" table
-CREATE TABLE "public"."likes" (
-  "id" bigserial NOT NULL,
-  "user_id" bigint NOT NULL,
-  "post_id" bigint NOT NULL,
-  "created_at" timestamptz NOT NULL,
-  PRIMARY KEY ("id"),
-  CONSTRAINT "fk_likes_post" FOREIGN KEY ("post_id") REFERENCES "public"."posts" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
-  CONSTRAINT "fk_likes_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
-);
--- Create index "idx_likes_post_id" to table: "likes"
-CREATE INDEX "idx_likes_post_id" ON "public"."likes" ("post_id");
--- Create index "uq_user_post_like" to table: "likes"
-CREATE UNIQUE INDEX "uq_user_post_like" ON "public"."likes" ("user_id", "post_id");
 -- Create "mentions" table
 CREATE TABLE "public"."mentions" (
   "id" bigserial NOT NULL,
@@ -770,23 +742,26 @@ CREATE TABLE "public"."post_metrics" (
   PRIMARY KEY ("post_id"),
   CONSTRAINT "fk_post_metrics_post" FOREIGN KEY ("post_id") REFERENCES "public"."posts" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
--- Create "post_pins" table
-CREATE TABLE "public"."post_pins" (
+-- Create "post_reactions" table
+CREATE TABLE "public"."post_reactions" (
   "id" bigserial NOT NULL,
   "user_id" bigint NOT NULL,
   "post_id" bigint NOT NULL,
-  "pin_order" bigint NOT NULL DEFAULT 0,
+  "kind" text NOT NULL,
+  "value" text NOT NULL DEFAULT '',
+  "pin_order" bigint NULL,
   "created_at" timestamptz NOT NULL,
   PRIMARY KEY ("id"),
-  CONSTRAINT "fk_post_pins_post" FOREIGN KEY ("post_id") REFERENCES "public"."posts" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
-  CONSTRAINT "fk_post_pins_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
+  CONSTRAINT "fk_post_reactions_post" FOREIGN KEY ("post_id") REFERENCES "public"."posts" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
+  CONSTRAINT "fk_post_reactions_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
+  CONSTRAINT "ck_post_reactions_kind" CHECK (kind = ANY (ARRAY['like'::text, 'bookmark'::text, 'pin'::text, 'view'::text, 'emoji'::text]))
 );
--- Create index "idx_post_pins_post_id" to table: "post_pins"
-CREATE INDEX "idx_post_pins_post_id" ON "public"."post_pins" ("post_id");
--- Create index "idx_post_pins_user_id" to table: "post_pins"
-CREATE INDEX "idx_post_pins_user_id" ON "public"."post_pins" ("user_id");
--- Create index "uq_user_post_pin" to table: "post_pins"
-CREATE UNIQUE INDEX "uq_user_post_pin" ON "public"."post_pins" ("user_id", "post_id");
+-- Create index "idx_post_reactions_post_id" to table: "post_reactions"
+CREATE INDEX "idx_post_reactions_post_id" ON "public"."post_reactions" ("post_id");
+-- Create index "idx_post_reactions_user_id" to table: "post_reactions"
+CREATE INDEX "idx_post_reactions_user_id" ON "public"."post_reactions" ("user_id");
+-- Create index "uq_post_reactions_user_post_kind_value" to table: "post_reactions"
+CREATE UNIQUE INDEX "uq_post_reactions_user_post_kind_value" ON "public"."post_reactions" ("user_id", "post_id", "kind", "value");
 -- Create "post_series" table
 CREATE TABLE "public"."post_series" (
   "id" bigserial NOT NULL,
@@ -844,22 +819,6 @@ CREATE TABLE "public"."post_templates" (
 );
 -- Create index "idx_post_templates_user_id" to table: "post_templates"
 CREATE INDEX "idx_post_templates_user_id" ON "public"."post_templates" ("user_id");
--- Create "post_views" table
-CREATE TABLE "public"."post_views" (
-  "id" bigserial NOT NULL,
-  "user_id" bigint NOT NULL,
-  "post_id" bigint NOT NULL,
-  "created_at" timestamptz NOT NULL,
-  PRIMARY KEY ("id"),
-  CONSTRAINT "fk_post_views_post" FOREIGN KEY ("post_id") REFERENCES "public"."posts" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
-  CONSTRAINT "fk_post_views_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
-);
--- Create index "idx_post_views_post_id" to table: "post_views"
-CREATE INDEX "idx_post_views_post_id" ON "public"."post_views" ("post_id");
--- Create index "idx_post_views_user_id" to table: "post_views"
-CREATE INDEX "idx_post_views_user_id" ON "public"."post_views" ("user_id");
--- Create index "uq_user_post_view" to table: "post_views"
-CREATE UNIQUE INDEX "uq_user_post_view" ON "public"."post_views" ("user_id", "post_id");
 -- Create "projects" table
 CREATE TABLE "public"."projects" (
   "id" bigserial NOT NULL,
@@ -946,21 +905,6 @@ CREATE TABLE "public"."question_votes" (
 );
 -- Create index "uq_question_vote" to table: "question_votes"
 CREATE UNIQUE INDEX "uq_question_vote" ON "public"."question_votes" ("user_id", "question_id");
--- Create "reactions" table
-CREATE TABLE "public"."reactions" (
-  "id" bigserial NOT NULL,
-  "user_id" bigint NOT NULL,
-  "post_id" bigint NOT NULL,
-  "emoji" character varying(10) NOT NULL,
-  "created_at" timestamptz NOT NULL,
-  PRIMARY KEY ("id"),
-  CONSTRAINT "fk_reactions_post" FOREIGN KEY ("post_id") REFERENCES "public"."posts" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
-  CONSTRAINT "fk_reactions_user" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
-);
--- Create index "idx_reactions_post_id" to table: "reactions"
-CREATE INDEX "idx_reactions_post_id" ON "public"."reactions" ("post_id");
--- Create index "uq_user_post_emoji" to table: "reactions"
-CREATE UNIQUE INDEX "uq_user_post_emoji" ON "public"."reactions" ("user_id", "post_id", "emoji");
 -- Create "reminder_settings" table
 CREATE TABLE "public"."reminder_settings" (
   "id" bigserial NOT NULL,
