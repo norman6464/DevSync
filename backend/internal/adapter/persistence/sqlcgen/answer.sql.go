@@ -151,7 +151,7 @@ func (q *Queries) GetAnswerVoteByUserAndAnswer(ctx context.Context, arg GetAnswe
 }
 
 const getAnswerWithUserByID = `-- name: GetAnswerWithUserByID :one
-SELECT answers.id, answers.user_id, answers.question_id, answers.body, answers.vote_count, answers.is_best, answers.created_at, answers.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT answers.id, answers.user_id, answers.question_id, answers.body, answers.vote_count, answers.is_best, answers.created_at, answers.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM answers
 JOIN users ON users.id = answers.user_id
 WHERE answers.id = $1
@@ -179,7 +179,6 @@ func (q *Queries) GetAnswerWithUserByID(ctx context.Context, id int64) (GetAnswe
 		&i.User.Username,
 		&i.User.Name,
 		&i.User.Email,
-		&i.User.Password,
 		&i.User.AvatarUrl,
 		&i.User.Bio,
 		&i.User.GitHubID,
@@ -215,7 +214,7 @@ func (q *Queries) IncrementQuestionAnswerCount(ctx context.Context, id int64) er
 }
 
 const listAnswersByQuestionID = `-- name: ListAnswersByQuestionID :many
-SELECT answers.id, answers.user_id, answers.question_id, answers.body, answers.vote_count, answers.is_best, answers.created_at, answers.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT answers.id, answers.user_id, answers.question_id, answers.body, answers.vote_count, answers.is_best, answers.created_at, answers.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM answers
 JOIN users ON users.id = answers.user_id
 WHERE answers.question_id = $1
@@ -250,7 +249,6 @@ func (q *Queries) ListAnswersByQuestionID(ctx context.Context, questionID int64)
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,
@@ -284,7 +282,7 @@ func (q *Queries) ListAnswersByQuestionID(ctx context.Context, questionID int64)
 }
 
 const listAnswersByVoteRange = `-- name: ListAnswersByVoteRange :many
-SELECT answers.id, answers.user_id, answers.question_id, answers.body, answers.vote_count, answers.is_best, answers.created_at, answers.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT answers.id, answers.user_id, answers.question_id, answers.body, answers.vote_count, answers.is_best, answers.created_at, answers.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM answers
 JOIN users ON users.id = answers.user_id
 WHERE answers.question_id = $1 AND answers.vote_count >= $2 AND answers.vote_count <= $3
@@ -325,7 +323,6 @@ func (q *Queries) ListAnswersByVoteRange(ctx context.Context, arg ListAnswersByV
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,

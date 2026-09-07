@@ -110,7 +110,7 @@ func (q *Queries) DeleteBookReview(ctx context.Context, id int64) error {
 }
 
 const getBookReviewWithUserByID = `-- name: GetBookReviewWithUserByID :one
-SELECT book_reviews.id, book_reviews.user_id, book_reviews.title, book_reviews.author, book_reviews.isbn, book_reviews.rating, book_reviews.review, book_reviews.total_pages, book_reviews.current_page, book_reviews.image_url, book_reviews.status, book_reviews.is_archived, book_reviews.created_at, book_reviews.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT book_reviews.id, book_reviews.user_id, book_reviews.title, book_reviews.author, book_reviews.isbn, book_reviews.rating, book_reviews.review, book_reviews.total_pages, book_reviews.current_page, book_reviews.image_url, book_reviews.status, book_reviews.is_archived, book_reviews.created_at, book_reviews.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM book_reviews
 JOIN users ON users.id = book_reviews.user_id
 WHERE book_reviews.id = $1
@@ -144,7 +144,6 @@ func (q *Queries) GetBookReviewWithUserByID(ctx context.Context, id int64) (GetB
 		&i.User.Username,
 		&i.User.Name,
 		&i.User.Email,
-		&i.User.Password,
 		&i.User.AvatarUrl,
 		&i.User.Bio,
 		&i.User.GitHubID,
@@ -171,7 +170,7 @@ func (q *Queries) GetBookReviewWithUserByID(ctx context.Context, id int64) (GetB
 }
 
 const listAllBookReviewsWithUser = `-- name: ListAllBookReviewsWithUser :many
-SELECT book_reviews.id, book_reviews.user_id, book_reviews.title, book_reviews.author, book_reviews.isbn, book_reviews.rating, book_reviews.review, book_reviews.total_pages, book_reviews.current_page, book_reviews.image_url, book_reviews.status, book_reviews.is_archived, book_reviews.created_at, book_reviews.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT book_reviews.id, book_reviews.user_id, book_reviews.title, book_reviews.author, book_reviews.isbn, book_reviews.rating, book_reviews.review, book_reviews.total_pages, book_reviews.current_page, book_reviews.image_url, book_reviews.status, book_reviews.is_archived, book_reviews.created_at, book_reviews.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM book_reviews
 JOIN users ON users.id = book_reviews.user_id
 ORDER BY book_reviews.created_at DESC
@@ -217,7 +216,6 @@ func (q *Queries) ListAllBookReviewsWithUser(ctx context.Context, arg ListAllBoo
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,
@@ -346,7 +344,7 @@ func (q *Queries) ListBookReviewsByUser(ctx context.Context, arg ListBookReviews
 }
 
 const searchBookReviews = `-- name: SearchBookReviews :many
-SELECT book_reviews.id, book_reviews.user_id, book_reviews.title, book_reviews.author, book_reviews.isbn, book_reviews.rating, book_reviews.review, book_reviews.total_pages, book_reviews.current_page, book_reviews.image_url, book_reviews.status, book_reviews.is_archived, book_reviews.created_at, book_reviews.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT book_reviews.id, book_reviews.user_id, book_reviews.title, book_reviews.author, book_reviews.isbn, book_reviews.rating, book_reviews.review, book_reviews.total_pages, book_reviews.current_page, book_reviews.image_url, book_reviews.status, book_reviews.is_archived, book_reviews.created_at, book_reviews.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM book_reviews
 JOIN users ON users.id = book_reviews.user_id
 WHERE (book_reviews.title ILIKE $1 OR book_reviews.author ILIKE $1 OR book_reviews.isbn ILIKE $1)
@@ -394,7 +392,6 @@ func (q *Queries) SearchBookReviews(ctx context.Context, arg SearchBookReviewsPa
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,

@@ -63,7 +63,7 @@ func (q *Queries) DeleteMentionsByPostID(ctx context.Context, postID *int64) err
 }
 
 const listMentionsByCommentID = `-- name: ListMentionsByCommentID :many
-SELECT mentions.id, mentions.user_id, mentions.actor_id, mentions.post_id, mentions.comment_id, mentions.created_at, mention_user.id, mention_user.username, mention_user.name, mention_user.email, mention_user.password, mention_user.avatar_url, mention_user.bio, mention_user.git_hub_id, mention_user.git_hub_username, mention_user.git_hub_token, mention_user.git_hub_connected, mention_user.spotify_connected, mention_user.spotify_token, mention_user.spotify_refresh_token, mention_user.spotify_token_expiry, mention_user.zenn_username, mention_user.qiita_username, mention_user.at_coder_username, mention_user.paiza_rank, mention_user.skills_languages, mention_user.skills_frameworks, mention_user.onboarding_completed, mention_user.email_weekly_report, mention_user.email_language, mention_user.created_at, mention_user.updated_at, actor.id, actor.username, actor.name, actor.email, actor.password, actor.avatar_url, actor.bio, actor.git_hub_id, actor.git_hub_username, actor.git_hub_token, actor.git_hub_connected, actor.spotify_connected, actor.spotify_token, actor.spotify_refresh_token, actor.spotify_token_expiry, actor.zenn_username, actor.qiita_username, actor.at_coder_username, actor.paiza_rank, actor.skills_languages, actor.skills_frameworks, actor.onboarding_completed, actor.email_weekly_report, actor.email_language, actor.created_at, actor.updated_at
+SELECT mentions.id, mentions.user_id, mentions.actor_id, mentions.post_id, mentions.comment_id, mentions.created_at, mention_user.id, mention_user.username, mention_user.name, mention_user.email, mention_user.avatar_url, mention_user.bio, mention_user.git_hub_id, mention_user.git_hub_username, mention_user.git_hub_token, mention_user.git_hub_connected, mention_user.spotify_connected, mention_user.spotify_token, mention_user.spotify_refresh_token, mention_user.spotify_token_expiry, mention_user.zenn_username, mention_user.qiita_username, mention_user.at_coder_username, mention_user.paiza_rank, mention_user.skills_languages, mention_user.skills_frameworks, mention_user.onboarding_completed, mention_user.email_weekly_report, mention_user.email_language, mention_user.created_at, mention_user.updated_at, actor.id, actor.username, actor.name, actor.email, actor.avatar_url, actor.bio, actor.git_hub_id, actor.git_hub_username, actor.git_hub_token, actor.git_hub_connected, actor.spotify_connected, actor.spotify_token, actor.spotify_refresh_token, actor.spotify_token_expiry, actor.zenn_username, actor.qiita_username, actor.at_coder_username, actor.paiza_rank, actor.skills_languages, actor.skills_frameworks, actor.onboarding_completed, actor.email_weekly_report, actor.email_language, actor.created_at, actor.updated_at
 FROM mentions
 JOIN users mention_user ON mention_user.id = mentions.user_id
 JOIN users actor ON actor.id = mentions.actor_id
@@ -96,7 +96,6 @@ func (q *Queries) ListMentionsByCommentID(ctx context.Context, commentID *int64)
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,
@@ -122,7 +121,6 @@ func (q *Queries) ListMentionsByCommentID(ctx context.Context, commentID *int64)
 			&i.User_2.Username,
 			&i.User_2.Name,
 			&i.User_2.Email,
-			&i.User_2.Password,
 			&i.User_2.AvatarUrl,
 			&i.User_2.Bio,
 			&i.User_2.GitHubID,
@@ -156,7 +154,7 @@ func (q *Queries) ListMentionsByCommentID(ctx context.Context, commentID *int64)
 }
 
 const listMentionsByPostID = `-- name: ListMentionsByPostID :many
-SELECT mentions.id, mentions.user_id, mentions.actor_id, mentions.post_id, mentions.comment_id, mentions.created_at, mention_user.id, mention_user.username, mention_user.name, mention_user.email, mention_user.password, mention_user.avatar_url, mention_user.bio, mention_user.git_hub_id, mention_user.git_hub_username, mention_user.git_hub_token, mention_user.git_hub_connected, mention_user.spotify_connected, mention_user.spotify_token, mention_user.spotify_refresh_token, mention_user.spotify_token_expiry, mention_user.zenn_username, mention_user.qiita_username, mention_user.at_coder_username, mention_user.paiza_rank, mention_user.skills_languages, mention_user.skills_frameworks, mention_user.onboarding_completed, mention_user.email_weekly_report, mention_user.email_language, mention_user.created_at, mention_user.updated_at, actor.id, actor.username, actor.name, actor.email, actor.password, actor.avatar_url, actor.bio, actor.git_hub_id, actor.git_hub_username, actor.git_hub_token, actor.git_hub_connected, actor.spotify_connected, actor.spotify_token, actor.spotify_refresh_token, actor.spotify_token_expiry, actor.zenn_username, actor.qiita_username, actor.at_coder_username, actor.paiza_rank, actor.skills_languages, actor.skills_frameworks, actor.onboarding_completed, actor.email_weekly_report, actor.email_language, actor.created_at, actor.updated_at
+SELECT mentions.id, mentions.user_id, mentions.actor_id, mentions.post_id, mentions.comment_id, mentions.created_at, mention_user.id, mention_user.username, mention_user.name, mention_user.email, mention_user.avatar_url, mention_user.bio, mention_user.git_hub_id, mention_user.git_hub_username, mention_user.git_hub_token, mention_user.git_hub_connected, mention_user.spotify_connected, mention_user.spotify_token, mention_user.spotify_refresh_token, mention_user.spotify_token_expiry, mention_user.zenn_username, mention_user.qiita_username, mention_user.at_coder_username, mention_user.paiza_rank, mention_user.skills_languages, mention_user.skills_frameworks, mention_user.onboarding_completed, mention_user.email_weekly_report, mention_user.email_language, mention_user.created_at, mention_user.updated_at, actor.id, actor.username, actor.name, actor.email, actor.avatar_url, actor.bio, actor.git_hub_id, actor.git_hub_username, actor.git_hub_token, actor.git_hub_connected, actor.spotify_connected, actor.spotify_token, actor.spotify_refresh_token, actor.spotify_token_expiry, actor.zenn_username, actor.qiita_username, actor.at_coder_username, actor.paiza_rank, actor.skills_languages, actor.skills_frameworks, actor.onboarding_completed, actor.email_weekly_report, actor.email_language, actor.created_at, actor.updated_at
 FROM mentions
 JOIN users mention_user ON mention_user.id = mentions.user_id
 JOIN users actor ON actor.id = mentions.actor_id
@@ -190,7 +188,6 @@ func (q *Queries) ListMentionsByPostID(ctx context.Context, postID *int64) ([]Li
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,
@@ -216,7 +213,6 @@ func (q *Queries) ListMentionsByPostID(ctx context.Context, postID *int64) ([]Li
 			&i.User_2.Username,
 			&i.User_2.Name,
 			&i.User_2.Email,
-			&i.User_2.Password,
 			&i.User_2.AvatarUrl,
 			&i.User_2.Bio,
 			&i.User_2.GitHubID,
@@ -250,7 +246,7 @@ func (q *Queries) ListMentionsByPostID(ctx context.Context, postID *int64) ([]Li
 }
 
 const listMentionsByUser = `-- name: ListMentionsByUser :many
-SELECT mentions.id, mentions.user_id, mentions.actor_id, mentions.post_id, mentions.comment_id, mentions.created_at, actor.id, actor.username, actor.name, actor.email, actor.password, actor.avatar_url, actor.bio, actor.git_hub_id, actor.git_hub_username, actor.git_hub_token, actor.git_hub_connected, actor.spotify_connected, actor.spotify_token, actor.spotify_refresh_token, actor.spotify_token_expiry, actor.zenn_username, actor.qiita_username, actor.at_coder_username, actor.paiza_rank, actor.skills_languages, actor.skills_frameworks, actor.onboarding_completed, actor.email_weekly_report, actor.email_language, actor.created_at, actor.updated_at
+SELECT mentions.id, mentions.user_id, mentions.actor_id, mentions.post_id, mentions.comment_id, mentions.created_at, actor.id, actor.username, actor.name, actor.email, actor.avatar_url, actor.bio, actor.git_hub_id, actor.git_hub_username, actor.git_hub_token, actor.git_hub_connected, actor.spotify_connected, actor.spotify_token, actor.spotify_refresh_token, actor.spotify_token_expiry, actor.zenn_username, actor.qiita_username, actor.at_coder_username, actor.paiza_rank, actor.skills_languages, actor.skills_frameworks, actor.onboarding_completed, actor.email_weekly_report, actor.email_language, actor.created_at, actor.updated_at
 FROM mentions
 JOIN users actor ON actor.id = mentions.actor_id
 WHERE mentions.user_id = $1
@@ -290,7 +286,6 @@ func (q *Queries) ListMentionsByUser(ctx context.Context, arg ListMentionsByUser
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,

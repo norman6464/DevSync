@@ -3832,10 +3832,6 @@ table "users" {
     null = false
     type = text
   }
-  column "password" {
-    null = true
-    type = text
-  }
   column "avatar_url" {
     null = true
     type = text
@@ -3943,6 +3939,27 @@ table "users" {
   }
   check "ck_users_email_language" {
     expr = "email_language IN ('ja', 'en', 'ko', 'zh-CN', 'zh-TW', 'es', 'fr', 'de', 'pt', 'ru')"
+  }
+}
+
+table "user_credentials" {
+  schema = schema.public
+  column "user_id" {
+    null = false
+    type = bigint
+  }
+  column "password_hash" {
+    null = false
+    type = text
+  }
+  primary_key {
+    columns = [column.user_id]
+  }
+  foreign_key "fk_user_credentials_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_update   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 

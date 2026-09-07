@@ -12,7 +12,7 @@ import (
 )
 
 const getProjectWithUserAndRepoByID = `-- name: GetProjectWithUserAndRepoByID :one
-SELECT projects.id, projects.user_id, projects.title, projects.description, projects.tech_stack, projects.demo_url, projects.github_url, projects.image_url, projects.role, projects.start_date, projects.end_date, projects.featured, projects.is_archived, projects.github_repo_id, projects.created_at, projects.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at,
+SELECT projects.id, projects.user_id, projects.title, projects.description, projects.tech_stack, projects.demo_url, projects.github_url, projects.image_url, projects.role, projects.start_date, projects.end_date, projects.featured, projects.is_archived, projects.github_repo_id, projects.created_at, projects.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at,
     ghr.id AS repo_id,
     ghr.user_id AS repo_user_id,
     ghr.git_hub_repo_id AS repo_git_hub_repo_id,
@@ -75,7 +75,6 @@ func (q *Queries) GetProjectWithUserAndRepoByID(ctx context.Context, id int64) (
 		&i.User.Username,
 		&i.User.Name,
 		&i.User.Email,
-		&i.User.Password,
 		&i.User.AvatarUrl,
 		&i.User.Bio,
 		&i.User.GitHubID,

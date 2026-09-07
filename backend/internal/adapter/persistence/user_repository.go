@@ -93,13 +93,14 @@ func (r *userRepository) Search(ctx context.Context, query string) ([]model.User
 }
 
 // Update はユーザー情報を更新する（GORMのSave＝全カラム上書きに相当）。
+// passwordは対象外（UpdateUserPasswordを使う。user_credentials側にありusersの列でも
+// ないため、そもそも対象にできない。DEVSYNC-159）。
 func (r *userRepository) Update(ctx context.Context, user *model.User) error {
 	row, err := r.q.UpdateUser(ctx, sqlcgen.UpdateUserParams{
 		ID:                  int64(user.ID),
 		Username:            user.Username,
 		Name:                user.Name,
 		Email:               user.Email,
-		Password:            &user.Password,
 		AvatarUrl:           &user.AvatarURL,
 		Bio:                 &user.Bio,
 		GitHubID:            &user.GitHubID,
@@ -127,7 +128,8 @@ func (r *userRepository) Update(ctx context.Context, user *model.User) error {
 	return nil
 }
 
-// FindByEmail はメールアドレスでユーザーを取得する。不在の場合は (nil, nil) を返す。
+// FindByEmail はメールアドレスでユーザーを取得する。パスワードハッシュも含めて返す
+// （ログイン処理での照合に使うため）。不在の場合は (nil, nil) を返す。
 func (r *userRepository) FindByEmail(ctx context.Context, email string) (*model.User, error) {
 	row, err := r.q.GetUserByEmail(ctx, email)
 	if isNoRows(err) {
@@ -136,11 +138,12 @@ func (r *userRepository) FindByEmail(ctx context.Context, email string) (*model.
 	if err != nil {
 		return nil, err
 	}
-	user := toModelUser(row)
+	user := toModelUser(row.User)
+	user.Password = fromStringPtr(row.PasswordHash)
 	return &user, nil
 }
 
-// FindByGitHubID は GitHub の ID でユーザーを取得する。不在の場合は (nil, nil) を返す。
+// FindByGitHubID は GitHub の ID でユーザーを取得する。パスワードハッシュも含めて返す。
 // 0 は「GitHub 未連携」を表す値で特定のユーザーを指さないため、常に不在として扱う。
 func (r *userRepository) FindByGitHubID(ctx context.Context, githubID int64) (*model.User, error) {
 	if githubID == 0 {
@@ -153,25 +156,42 @@ func (r *userRepository) FindByGitHubID(ctx context.Context, githubID int64) (*m
 	if err != nil {
 		return nil, err
 	}
-	user := toModelUser(row)
+	user := toModelUser(row.User)
+	user.Password = fromStringPtr(row.PasswordHash)
+	return &user, nil
+}
+
+// FindByIDWithPassword はIDでユーザーを取得する。パスワードハッシュも含めて返す
+// （退会時の本人確認に使うため）。不在の場合は (nil, nil) を返す。
+func (r *userRepository) FindByIDWithPassword(ctx context.Context, id uint) (*model.User, error) {
+	row, err := r.q.GetUserByIDWithPassword(ctx, int64(id))
+	if isNoRows(err) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	user := toModelUser(row.User)
+	user.Password = fromStringPtr(row.PasswordHash)
 	return &user, nil
 }
 
 // Create はユーザーを作成する。
 // EmailWeeklyReport/EmailLanguageはGORMの `gorm:"default:..."` に相当し、
 // Goのゼロ値のときはDBデフォルト（true / "ja"）を補う。
+// パスワードが空文字でなければuser_credentialsへも同一SQL文で登録する（DEVSYNC-159）。
 func (r *userRepository) Create(ctx context.Context, user *model.User) error {
 	emailLanguage := user.EmailLanguage
 	if emailLanguage == "" {
 		emailLanguage = "ja"
 	}
 	emailWeeklyReport := true
+	password := user.Password
 
 	row, err := r.q.CreateUser(ctx, sqlcgen.CreateUserParams{
 		Username:            user.Username,
 		Name:                user.Name,
 		Email:               user.Email,
-		Password:            &user.Password,
 		AvatarUrl:           &user.AvatarURL,
 		Bio:                 &user.Bio,
 		GitHubID:            &user.GitHubID,
@@ -191,19 +211,22 @@ func (r *userRepository) Create(ctx context.Context, user *model.User) error {
 		OnboardingCompleted: user.OnboardingCompleted,
 		EmailWeeklyReport:   emailWeeklyReport,
 		EmailLanguage:       &emailLanguage,
+		PasswordHash:        password,
 	})
 	if err != nil {
 		return err
 	}
-	*user = toModelUser(row)
+	*user = toModelUser(sqlcgen.User(row))
+	user.Password = password
 	return nil
 }
 
-// UpdatePassword はパスワードハッシュだけを更新する。
+// UpdatePassword はパスワードハッシュだけを更新する（user_credentialsへupsertする。
+// GitHubのみで登録したユーザーが後からパスワードを設定する場合、行がまだ無いため）。
 func (r *userRepository) UpdatePassword(ctx context.Context, userID uint, hashedPassword string) error {
 	return r.q.UpdateUserPassword(ctx, sqlcgen.UpdateUserPasswordParams{
-		ID:       int64(userID),
-		Password: &hashedPassword,
+		UserID:       int64(userID),
+		PasswordHash: hashedPassword,
 	})
 }
 

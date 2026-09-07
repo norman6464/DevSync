@@ -254,7 +254,7 @@ func (q *Queries) GetQuestionVoteByUserAndQuestion(ctx context.Context, arg GetQ
 }
 
 const getQuestionWithUserByID = `-- name: GetQuestionWithUserByID :one
-SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM questions
 JOIN users ON users.id = questions.user_id
 WHERE questions.id = $1
@@ -284,7 +284,6 @@ func (q *Queries) GetQuestionWithUserByID(ctx context.Context, id int64) (GetQue
 		&i.User.Username,
 		&i.User.Name,
 		&i.User.Email,
-		&i.User.Password,
 		&i.User.AvatarUrl,
 		&i.User.Bio,
 		&i.User.GitHubID,
@@ -311,7 +310,7 @@ func (q *Queries) GetQuestionWithUserByID(ctx context.Context, id int64) (GetQue
 }
 
 const listBookmarkedQuestionsWithUser = `-- name: ListBookmarkedQuestionsWithUser :many
-SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM questions
 JOIN users ON users.id = questions.user_id
 WHERE questions.id IN (
@@ -356,7 +355,6 @@ func (q *Queries) ListBookmarkedQuestionsWithUser(ctx context.Context, arg ListB
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,
@@ -435,7 +433,7 @@ func (q *Queries) ListQuestionsByUser(ctx context.Context, arg ListQuestionsByUs
 }
 
 const listQuestionsWithUser = `-- name: ListQuestionsWithUser :many
-SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM questions
 JOIN users ON users.id = questions.user_id
 WHERE ($3::text IS NULL OR questions.tags ILIKE $3)
@@ -490,7 +488,6 @@ func (q *Queries) ListQuestionsWithUser(ctx context.Context, arg ListQuestionsWi
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,
@@ -524,7 +521,7 @@ func (q *Queries) ListQuestionsWithUser(ctx context.Context, arg ListQuestionsWi
 }
 
 const listSolvedQuestionsWithUser = `-- name: ListSolvedQuestionsWithUser :many
-SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM questions
 JOIN users ON users.id = questions.user_id
 WHERE questions.is_solved = true
@@ -566,7 +563,6 @@ func (q *Queries) ListSolvedQuestionsWithUser(ctx context.Context, arg ListSolve
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,
@@ -600,7 +596,7 @@ func (q *Queries) ListSolvedQuestionsWithUser(ctx context.Context, arg ListSolve
 }
 
 const listUnansweredQuestionsWithUser = `-- name: ListUnansweredQuestionsWithUser :many
-SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM questions
 JOIN users ON users.id = questions.user_id
 WHERE questions.answer_count = 0
@@ -642,7 +638,6 @@ func (q *Queries) ListUnansweredQuestionsWithUser(ctx context.Context, arg ListU
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,
@@ -676,7 +671,7 @@ func (q *Queries) ListUnansweredQuestionsWithUser(ctx context.Context, arg ListU
 }
 
 const searchQuestionsWithUser = `-- name: SearchQuestionsWithUser :many
-SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT questions.id, questions.user_id, questions.title, questions.body, questions.tags, questions.vote_count, questions.answer_count, questions.is_solved, questions.created_at, questions.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM questions
 JOIN users ON users.id = questions.user_id
 WHERE (questions.title ILIKE $1 OR questions.body ILIKE $1 OR questions.tags ILIKE $1)
@@ -719,7 +714,6 @@ func (q *Queries) SearchQuestionsWithUser(ctx context.Context, arg SearchQuestio
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,

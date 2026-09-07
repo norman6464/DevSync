@@ -36,7 +36,7 @@ func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (M
 }
 
 const listConversationMessages = `-- name: ListConversationMessages :many
-SELECT messages.id, messages.sender_id, messages.receiver_id, messages.content, messages.read, messages.created_at, sender.id, sender.username, sender.name, sender.email, sender.password, sender.avatar_url, sender.bio, sender.git_hub_id, sender.git_hub_username, sender.git_hub_token, sender.git_hub_connected, sender.spotify_connected, sender.spotify_token, sender.spotify_refresh_token, sender.spotify_token_expiry, sender.zenn_username, sender.qiita_username, sender.at_coder_username, sender.paiza_rank, sender.skills_languages, sender.skills_frameworks, sender.onboarding_completed, sender.email_weekly_report, sender.email_language, sender.created_at, sender.updated_at, receiver.id, receiver.username, receiver.name, receiver.email, receiver.password, receiver.avatar_url, receiver.bio, receiver.git_hub_id, receiver.git_hub_username, receiver.git_hub_token, receiver.git_hub_connected, receiver.spotify_connected, receiver.spotify_token, receiver.spotify_refresh_token, receiver.spotify_token_expiry, receiver.zenn_username, receiver.qiita_username, receiver.at_coder_username, receiver.paiza_rank, receiver.skills_languages, receiver.skills_frameworks, receiver.onboarding_completed, receiver.email_weekly_report, receiver.email_language, receiver.created_at, receiver.updated_at
+SELECT messages.id, messages.sender_id, messages.receiver_id, messages.content, messages.read, messages.created_at, sender.id, sender.username, sender.name, sender.email, sender.avatar_url, sender.bio, sender.git_hub_id, sender.git_hub_username, sender.git_hub_token, sender.git_hub_connected, sender.spotify_connected, sender.spotify_token, sender.spotify_refresh_token, sender.spotify_token_expiry, sender.zenn_username, sender.qiita_username, sender.at_coder_username, sender.paiza_rank, sender.skills_languages, sender.skills_frameworks, sender.onboarding_completed, sender.email_weekly_report, sender.email_language, sender.created_at, sender.updated_at, receiver.id, receiver.username, receiver.name, receiver.email, receiver.avatar_url, receiver.bio, receiver.git_hub_id, receiver.git_hub_username, receiver.git_hub_token, receiver.git_hub_connected, receiver.spotify_connected, receiver.spotify_token, receiver.spotify_refresh_token, receiver.spotify_token_expiry, receiver.zenn_username, receiver.qiita_username, receiver.at_coder_username, receiver.paiza_rank, receiver.skills_languages, receiver.skills_frameworks, receiver.onboarding_completed, receiver.email_weekly_report, receiver.email_language, receiver.created_at, receiver.updated_at
 FROM messages
 JOIN users sender ON sender.id = messages.sender_id
 JOIN users receiver ON receiver.id = messages.receiver_id
@@ -86,7 +86,6 @@ func (q *Queries) ListConversationMessages(ctx context.Context, arg ListConversa
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,
@@ -112,7 +111,6 @@ func (q *Queries) ListConversationMessages(ctx context.Context, arg ListConversa
 			&i.User_2.Username,
 			&i.User_2.Name,
 			&i.User_2.Email,
-			&i.User_2.Password,
 			&i.User_2.AvatarUrl,
 			&i.User_2.Bio,
 			&i.User_2.GitHubID,

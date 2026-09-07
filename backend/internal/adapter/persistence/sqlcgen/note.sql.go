@@ -102,7 +102,7 @@ func (q *Queries) DeleteNote(ctx context.Context, id int64) error {
 }
 
 const getNoteByID = `-- name: GetNoteByID :one
-SELECT notes.id, notes.user_id, notes.folder_id, notes.title, notes.content, notes.tags, notes.is_favorite, notes.is_archived, notes.created_at, notes.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at,
+SELECT notes.id, notes.user_id, notes.folder_id, notes.title, notes.content, notes.tags, notes.is_favorite, notes.is_archived, notes.created_at, notes.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at,
     note_folders.id AS folder_id_2,
     note_folders.user_id AS folder_user_id,
     note_folders.parent_id AS folder_parent_id,
@@ -149,7 +149,6 @@ func (q *Queries) GetNoteByID(ctx context.Context, id int64) (GetNoteByIDRow, er
 		&i.User.Username,
 		&i.User.Name,
 		&i.User.Email,
-		&i.User.Password,
 		&i.User.AvatarUrl,
 		&i.User.Bio,
 		&i.User.GitHubID,

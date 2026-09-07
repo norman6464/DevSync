@@ -263,7 +263,9 @@ type Querier interface {
 	CreateStudyCircleCheckin(ctx context.Context, arg CreateStudyCircleCheckinParams) (StudyCircleCheckin, error)
 	CreateStudyCircleMember(ctx context.Context, arg CreateStudyCircleMemberParams) error
 	CreateStudyCircleStep(ctx context.Context, arg CreateStudyCircleStepParams) (StudyCircleStep, error)
-	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	// パスワードハッシュが空文字でなければ同一SQL文でuser_credentialsへ登録する
+	// （GitHub認証のみのユーザーはuser_credentials行を持たない。DEVSYNC-159でusersから分離）。
+	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
 	CreateWeeklyChallenge(ctx context.Context, arg CreateWeeklyChallengeParams) (WeeklyChallenge, error)
 	CreateYouTubeSearchCache(ctx context.Context, arg CreateYouTubeSearchCacheParams) (YouTubeSearchCach, error)
 	DecrementCommentLikeCount(ctx context.Context, id int64) error
@@ -362,6 +364,7 @@ type Querier interface {
 	DeleteStudyCircleMembersByCircle(ctx context.Context, circleID int64) error
 	DeleteStudyCircleStep(ctx context.Context, id int64) error
 	DeleteStudyCircleStepsByCircle(ctx context.Context, circleID int64) error
+	// user_credentialsはFKのON DELETE CASCADEでDBが自動的に削除する。
 	DeleteUser(ctx context.Context, id int64) error
 	DeleteZennArticlesByUser(ctx context.Context, userID int64) error
 	FindAllUsers(ctx context.Context) ([]User, error)
@@ -483,10 +486,15 @@ type Querier interface {
 	// GORMのPreload("Owner")に相当。owner_idはNOT NULLのためINNER JOINでよい。
 	GetStudyCircleWithOwnerByID(ctx context.Context, id int64) (GetStudyCircleWithOwnerByIDRow, error)
 	GetTopReactedPostsByUser(ctx context.Context, arg GetTopReactedPostsByUserParams) ([]GetTopReactedPostsByUserRow, error)
-	GetUserByEmail(ctx context.Context, email string) (User, error)
-	GetUserByGitHubID(ctx context.Context, gitHubID *int64) (User, error)
+	// パスワードハッシュも返す（ログイン処理での照合に使うため）。user_credentials行を
+	// 持たないユーザー（GitHub認証のみ）はpassword_hashがNULLになる。
+	GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error)
+	// パスワードハッシュも返す（GitHub連携済みでもパスワードを別途設定している場合があるため）。
+	GetUserByGitHubID(ctx context.Context, gitHubID *int64) (GetUserByGitHubIDRow, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	GetUserByIDForChatSender(ctx context.Context, id int64) (User, error)
+	// パスワードハッシュも返す（退会時の本人確認に使うため）。
+	GetUserByIDWithPassword(ctx context.Context, id int64) (GetUserByIDWithPasswordRow, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
 	GetWeeklyChallengeByUserAndWeek(ctx context.Context, arg GetWeeklyChallengeByUserAndWeekParams) (WeeklyChallenge, error)
 	GetWidgetSettingsByUserID(ctx context.Context, userID int64) (WidgetSetting, error)
@@ -858,8 +866,11 @@ type Querier interface {
 	UpdateStudyCircleMemberRole(ctx context.Context, arg UpdateStudyCircleMemberRoleParams) error
 	// GORMのSave（全カラム上書き）に相当。
 	UpdateStudyCircleStep(ctx context.Context, arg UpdateStudyCircleStepParams) (StudyCircleStep, error)
-	// GORMのSave（全カラム上書き）に相当。
+	// GORMのSave（全カラム上書き）に相当。passwordは対象外（UpdateUserPasswordを使う。
+	// user_credentials側にありusersの列でもないため、そもそも対象にできない。DEVSYNC-159）。
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
+	// user_credentials行が無ければ新規作成し、あれば上書きする
+	// （GitHubのみで登録したユーザーが後からパスワードを設定する場合に備える）。
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	UpdateWeeklyChallenge(ctx context.Context, arg UpdateWeeklyChallengeParams) (WeeklyChallenge, error)
 	UpdateYouTubeSearchCache(ctx context.Context, arg UpdateYouTubeSearchCacheParams) (YouTubeSearchCach, error)

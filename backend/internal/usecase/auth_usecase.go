@@ -434,7 +434,7 @@ func NewDeleteAccountUseCase(users repository.AuthUserRepository) *DeleteAccount
 // Execute はパスワードを検証したうえでアカウントを削除する。
 // GitHub のみで登録したユーザー（パスワード未設定）は検証をスキップする。
 func (uc *DeleteAccountUseCase) Execute(ctx context.Context, userID uint, password string) error {
-	user, err := uc.users.FindByID(ctx, userID)
+	user, err := uc.users.FindByIDWithPassword(ctx, userID)
 	if err != nil || user == nil {
 		return domain.NewError(domain.ErrCodeNotFound, "ユーザーが見つかりません", err)
 	}

@@ -123,7 +123,7 @@ func (q *Queries) FindFollowerIDsByFollowee(ctx context.Context, followeeID int6
 const findNotificationsByUserID = `-- name: FindNotificationsByUserID :many
 SELECT
     notifications.id, notifications.user_id, notifications.type, notifications.actor_id, notifications.post_id, notifications.question_id, notifications.badge_id, notifications.read, notifications.created_at,
-    actor.id, actor.username, actor.name, actor.email, actor.password, actor.avatar_url, actor.bio, actor.git_hub_id, actor.git_hub_username, actor.git_hub_token, actor.git_hub_connected, actor.spotify_connected, actor.spotify_token, actor.spotify_refresh_token, actor.spotify_token_expiry, actor.zenn_username, actor.qiita_username, actor.at_coder_username, actor.paiza_rank, actor.skills_languages, actor.skills_frameworks, actor.onboarding_completed, actor.email_weekly_report, actor.email_language, actor.created_at, actor.updated_at,
+    actor.id, actor.username, actor.name, actor.email, actor.avatar_url, actor.bio, actor.git_hub_id, actor.git_hub_username, actor.git_hub_token, actor.git_hub_connected, actor.spotify_connected, actor.spotify_token, actor.spotify_refresh_token, actor.spotify_token_expiry, actor.zenn_username, actor.qiita_username, actor.at_coder_username, actor.paiza_rank, actor.skills_languages, actor.skills_frameworks, actor.onboarding_completed, actor.email_weekly_report, actor.email_language, actor.created_at, actor.updated_at,
     posts.id AS post_id_2,
     posts.user_id AS post_user_id,
     posts.title AS post_title,
@@ -226,7 +226,6 @@ func (q *Queries) FindNotificationsByUserID(ctx context.Context, arg FindNotific
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,

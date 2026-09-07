@@ -29,6 +29,12 @@ func (m *mockAuthUserRepo) FindByID(ctx context.Context, id uint) (*model.User, 
 	return u, args.Error(1)
 }
 
+func (m *mockAuthUserRepo) FindByIDWithPassword(ctx context.Context, id uint) (*model.User, error) {
+	args := m.Called(ctx, id)
+	u, _ := args.Get(0).(*model.User)
+	return u, args.Error(1)
+}
+
 func (m *mockAuthUserRepo) FindByEmail(ctx context.Context, email string) (*model.User, error) {
 	args := m.Called(ctx, email)
 	u, _ := args.Get(0).(*model.User)
@@ -319,7 +325,7 @@ func TestMe_UserNotFound(t *testing.T) {
 
 func TestDeleteAccount_Success(t *testing.T) {
 	r, _, ports := setupAuthHandler()
-	ports.Users.On("FindByID", mock.Anything, uint(1)).
+	ports.Users.On("FindByIDWithPassword", mock.Anything, uint(1)).
 		Return(&model.User{ID: 1, Password: hashedPassword("password123")}, nil)
 	ports.Users.On("DeleteWithRelatedData", mock.Anything, uint(1)).Return(nil)
 
@@ -330,7 +336,7 @@ func TestDeleteAccount_Success(t *testing.T) {
 
 func TestDeleteAccount_WrongPassword(t *testing.T) {
 	r, _, ports := setupAuthHandler()
-	ports.Users.On("FindByID", mock.Anything, uint(1)).
+	ports.Users.On("FindByIDWithPassword", mock.Anything, uint(1)).
 		Return(&model.User{ID: 1, Password: hashedPassword("password123")}, nil)
 
 	w := doRequest(r, http.MethodDelete, "/auth/account", map[string]string{"password": "wrong"})
@@ -350,7 +356,7 @@ func TestDeleteAccount_EmptyPassword(t *testing.T) {
 
 func TestDeleteAccount_UserNotFound(t *testing.T) {
 	r, _, ports := setupAuthHandler()
-	ports.Users.On("FindByID", mock.Anything, uint(1)).Return(nil, nil)
+	ports.Users.On("FindByIDWithPassword", mock.Anything, uint(1)).Return(nil, nil)
 
 	w := doRequest(r, http.MethodDelete, "/auth/account", map[string]string{"password": "password123"})
 	assertStatus(t, w, http.StatusNotFound)

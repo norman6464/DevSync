@@ -87,7 +87,7 @@ func (q *Queries) GetResourceReviewByUserAndResource(ctx context.Context, arg Ge
 }
 
 const getResourceReviewWithUserByID = `-- name: GetResourceReviewWithUserByID :one
-SELECT resource_reviews.id, resource_reviews.user_id, resource_reviews.resource_id, resource_reviews.rating, resource_reviews.comment, resource_reviews.created_at, resource_reviews.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT resource_reviews.id, resource_reviews.user_id, resource_reviews.resource_id, resource_reviews.rating, resource_reviews.comment, resource_reviews.created_at, resource_reviews.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM resource_reviews
 JOIN users ON users.id = resource_reviews.user_id
 WHERE resource_reviews.id = $1
@@ -114,7 +114,6 @@ func (q *Queries) GetResourceReviewWithUserByID(ctx context.Context, id int64) (
 		&i.User.Username,
 		&i.User.Name,
 		&i.User.Email,
-		&i.User.Password,
 		&i.User.AvatarUrl,
 		&i.User.Bio,
 		&i.User.GitHubID,
@@ -141,7 +140,7 @@ func (q *Queries) GetResourceReviewWithUserByID(ctx context.Context, id int64) (
 }
 
 const listResourceReviewsByResource = `-- name: ListResourceReviewsByResource :many
-SELECT resource_reviews.id, resource_reviews.user_id, resource_reviews.resource_id, resource_reviews.rating, resource_reviews.comment, resource_reviews.created_at, resource_reviews.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT resource_reviews.id, resource_reviews.user_id, resource_reviews.resource_id, resource_reviews.rating, resource_reviews.comment, resource_reviews.created_at, resource_reviews.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM resource_reviews
 JOIN users ON users.id = resource_reviews.user_id
 WHERE resource_reviews.resource_id = $1
@@ -182,7 +181,6 @@ func (q *Queries) ListResourceReviewsByResource(ctx context.Context, arg ListRes
 			&i.User.Username,
 			&i.User.Name,
 			&i.User.Email,
-			&i.User.Password,
 			&i.User.AvatarUrl,
 			&i.User.Bio,
 			&i.User.GitHubID,

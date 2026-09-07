@@ -10,7 +10,7 @@ import (
 )
 
 const getPostWithUserByID = `-- name: GetPostWithUserByID :one
-SELECT posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.password, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
+SELECT posts.id, posts.user_id, posts.title, posts.content, posts.image_urls, posts.is_draft, posts.estimated_read_time, posts.scheduled_at, posts.created_at, posts.updated_at, users.id, users.username, users.name, users.email, users.avatar_url, users.bio, users.git_hub_id, users.git_hub_username, users.git_hub_token, users.git_hub_connected, users.spotify_connected, users.spotify_token, users.spotify_refresh_token, users.spotify_token_expiry, users.zenn_username, users.qiita_username, users.at_coder_username, users.paiza_rank, users.skills_languages, users.skills_frameworks, users.onboarding_completed, users.email_weekly_report, users.email_language, users.created_at, users.updated_at
 FROM posts
 JOIN users ON users.id = posts.user_id
 WHERE posts.id = $1
@@ -41,7 +41,6 @@ func (q *Queries) GetPostWithUserByID(ctx context.Context, id int64) (GetPostWit
 		&i.User.Username,
 		&i.User.Name,
 		&i.User.Email,
-		&i.User.Password,
 		&i.User.AvatarUrl,
 		&i.User.Bio,
 		&i.User.GitHubID,
