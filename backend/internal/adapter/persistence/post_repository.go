@@ -50,7 +50,8 @@ func attachCodeSnippetsToPosts(ctx context.Context, q *sqlcgen.Queries, posts []
 
 // attachBookmarkCountsToPosts は複数の投稿へブックマーク数をまとめて取得して付与する。
 // bookmark_countはORDER BYに使われない表示専用の値のため列として持たず、都度
-// bookmarksからCOUNT(*)する（queries/post_bookmark.sqlのCountBookmarksByPostIDs参照）。
+// post_reactions（kind='bookmark'）からCOUNT(*)する
+// （queries/post_bookmark.sqlのCountBookmarksByPostIDs参照）。
 func attachBookmarkCountsToPosts(ctx context.Context, q *sqlcgen.Queries, posts []model.Post) error {
 	if len(posts) == 0 {
 		return nil

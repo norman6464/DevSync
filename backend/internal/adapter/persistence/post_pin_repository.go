@@ -43,10 +43,11 @@ func toModelPost(row sqlcgen.Post) model.Post {
 }
 
 func (r *postPinRepository) Pin(ctx context.Context, pin *model.PostPin) error {
+	pinOrder := int64(pin.PinOrder)
 	return r.q.CreatePostPin(ctx, sqlcgen.CreatePostPinParams{
 		UserID:   int64(pin.UserID),
 		PostID:   int64(pin.PostID),
-		PinOrder: int64(pin.PinOrder),
+		PinOrder: &pinOrder,
 	})
 }
 
@@ -77,12 +78,12 @@ func (r *postPinRepository) GetByUserID(ctx context.Context, userID uint) ([]mod
 	pins := make([]model.PostPin, len(rows))
 	for i, row := range rows {
 		pins[i] = model.PostPin{
-			ID:        uint(row.PostPin.ID),
-			UserID:    uint(row.PostPin.UserID),
-			PostID:    uint(row.PostPin.PostID),
+			ID:        uint(row.PostReaction.ID),
+			UserID:    uint(row.PostReaction.UserID),
+			PostID:    uint(row.PostReaction.PostID),
 			Post:      posts[i],
-			PinOrder:  int(row.PostPin.PinOrder),
-			CreatedAt: timeValue(fromTimestamptz(row.PostPin.CreatedAt)),
+			PinOrder:  int(fromInt64PtrValue(row.PostReaction.PinOrder)),
+			CreatedAt: timeValue(fromTimestamptz(row.PostReaction.CreatedAt)),
 		}
 	}
 	return pins, nil
@@ -112,10 +113,11 @@ func (r *postPinRepository) UpdateOrder(ctx context.Context, userID uint, postID
 
 	q := r.q.WithTx(tx)
 	for i, postID := range postIDs {
+		pinOrder := int64(i)
 		if err := q.UpdatePostPinOrder(ctx, sqlcgen.UpdatePostPinOrderParams{
 			UserID:   int64(userID),
 			PostID:   int64(postID),
-			PinOrder: int64(i),
+			PinOrder: &pinOrder,
 		}); err != nil {
 			return err
 		}

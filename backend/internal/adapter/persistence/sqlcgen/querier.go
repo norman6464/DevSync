@@ -52,7 +52,7 @@ type Querier interface {
 	CountBookmarkCollectionsByUser(ctx context.Context, userID int64) (int64, error)
 	CountBookmarkedQuestions(ctx context.Context, userID int64) (int64, error)
 	// post.bookmark_countはORDER BYに使われない表示専用の値だったため列として持たず、
-	// 都度bookmarksからCOUNT(*)する。投稿IDのまとめ取りとGo側でのグルーピングで
+	// 都度post_reactionsからCOUNT(*)する。投稿IDのまとめ取りとGo側でのグルーピングで
 	// ListCodeSnippetsByPostIDsと同じ形にする。ブックマーク0件の投稿はこの結果に現れない。
 	CountBookmarksByPostIDs(ctx context.Context, dollar_1 []int64) ([]CountBookmarksByPostIDsRow, error)
 	CountBookmarksMadeByUser(ctx context.Context, userID int64) (int64, error)
@@ -225,18 +225,20 @@ type Querier interface {
 	CreatePostCollectionItem(ctx context.Context, arg CreatePostCollectionItemParams) (PostCollectionItem, error)
 	// commentsへのINSERTとpost_metrics.comment_countの加算を同一SQL文で行う（DEVSYNC-159）。
 	CreatePostComment(ctx context.Context, arg CreatePostCommentParams) (CreatePostCommentRow, error)
-	// likesへのINSERTとpost_metrics.like_countの加算を同一SQL文で行う（DEVSYNC-159）。
-	// CTEの出力列をpost_metrics.post_idと別名にし、sqlcの列名衝突による誤検出を避ける。
+	// post_reactions(kind='like')へのINSERTとpost_metrics.like_countの加算を同一SQL文で
+	// 行う（DEVSYNC-159）。CTEの出力列をpost_metrics.post_idと別名にし、sqlcの列名衝突による
+	// 誤検出を避ける。DEVSYNC-160でlikes単独テーブルからpost_reactionsへ統合。
 	CreatePostLike(ctx context.Context, arg CreatePostLikeParams) error
 	CreatePostPin(ctx context.Context, arg CreatePostPinParams) error
 	CreatePostSeries(ctx context.Context, arg CreatePostSeriesParams) (PostSeries, error)
 	CreatePostSeriesItem(ctx context.Context, arg CreatePostSeriesItemParams) (PostSeriesItem, error)
 	CreatePostTag(ctx context.Context, arg CreatePostTagParams) error
 	CreatePostTemplate(ctx context.Context, arg CreatePostTemplateParams) (PostTemplate, error)
-	// GORMの clause.OnConflict{DoNothing: true} に相当。post_viewsへの記録と
+	// GORMの clause.OnConflict{DoNothing: true} に相当。post_reactions(kind='view')への記録と
 	// post_metrics.view_countの加算を同一SQL文で行う（DEVSYNC-159）。既に閲覧済み
 	// （ON CONFLICT DO NOTHINGでinsertedが0行）のときはpost_metricsも更新されず、
 	// rowsAffectedは従来どおり「実際に新規閲覧として記録できたか」を表す。
+	// DEVSYNC-160でpost_views単独テーブルからpost_reactionsへ統合。
 	CreatePostView(ctx context.Context, arg CreatePostViewParams) (int64, error)
 	CreateProject(ctx context.Context, arg CreateProjectParams) (Project, error)
 	CreateProjectMilestone(ctx context.Context, arg CreateProjectMilestoneParams) (ProjectMilestone, error)
@@ -319,9 +321,9 @@ type Querier interface {
 	DeletePostCollectionItemsByCollectionID(ctx context.Context, collectionID int64) error
 	// commentsの削除とpost_metrics.comment_countの減算を同一SQL文で行う。
 	DeletePostComment(ctx context.Context, id int64) error
-	// likesの削除とpost_metrics.like_countの減算を同一SQL文で行う。実際に削除できた
-	// （＝insertedに1行ある）ときだけpost_metricsを更新するため、rowsAffectedは
-	// 従来どおり「実際にいいねを取り消せたか」を表す。
+	// post_reactions(kind='like')の削除とpost_metrics.like_countの減算を同一SQL文で行う。
+	// 実際に削除できた（＝insertedに1行ある）ときだけpost_metricsを更新するため、
+	// rowsAffectedは従来どおり「実際にいいねを取り消せたか」を表す。
 	DeletePostLike(ctx context.Context, arg DeletePostLikeParams) (int64, error)
 	DeletePostPin(ctx context.Context, arg DeletePostPinParams) error
 	DeletePostSeries(ctx context.Context, id int64) error
@@ -739,9 +741,9 @@ type Querier interface {
 	// 夜次reconcileジョブ本体。resource_likes/resource_savesの実件数から
 	// learning_resource_metrics全件をまとめて補正する。
 	ReconcileAllLearningResourceMetrics(ctx context.Context) error
-	// 夜次reconcileジョブ本体。likes/comments/post_viewsの実件数からpost_metricsを
-	// 全件まとめて補正する。CASCADE削除等でIncrement/Decrementを経由しない変化を吸収する。
-	// 1件も無いカウンタは0で確定させる（COALESCE）。
+	// 夜次reconcileジョブ本体。post_reactions(kind='like'/'view')/commentsの実件数から
+	// post_metricsを全件まとめて補正する。CASCADE削除等でIncrement/Decrementを経由しない
+	// 変化を吸収する。1件も無いカウンタは0で確定させる（COALESCE）。
 	ReconcileAllPostMetrics(ctx context.Context) error
 	// 夜次reconcileジョブ本体。roadmap_stepsの実件数からroadmap_metrics全件を補正する。
 	ReconcileAllRoadmapMetrics(ctx context.Context) error

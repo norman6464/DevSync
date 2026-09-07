@@ -76,13 +76,6 @@ type BookReview struct {
 	UpdatedAt   pgtype.Timestamptz
 }
 
-type Bookmark struct {
-	ID        int64
-	UserID    int64
-	PostID    int64
-	CreatedAt pgtype.Timestamptz
-}
-
 type BookmarkCollection struct {
 	ID          int64
 	UserID      int64
@@ -267,13 +260,6 @@ type LearningResourceMetric struct {
 	SaveCount  int64
 }
 
-type Like struct {
-	ID        int64
-	UserID    int64
-	PostID    int64
-	CreatedAt pgtype.Timestamptz
-}
-
 type Mention struct {
 	ID        int64
 	UserID    int64
@@ -423,11 +409,13 @@ type PostMetric struct {
 	ViewCount    int64
 }
 
-type PostPin struct {
+type PostReaction struct {
 	ID        int64
 	UserID    int64
 	PostID    int64
-	PinOrder  int64
+	Kind      string
+	Value     string
+	PinOrder  *int64
 	CreatedAt pgtype.Timestamptz
 }
 
@@ -461,13 +449,6 @@ type PostTemplate struct {
 	ContentTemplate string
 	CreatedAt       pgtype.Timestamptz
 	UpdatedAt       pgtype.Timestamptz
-}
-
-type PostView struct {
-	ID        int64
-	UserID    int64
-	PostID    int64
-	CreatedAt pgtype.Timestamptz
 }
 
 type Project struct {
@@ -540,14 +521,6 @@ type QuestionVote struct {
 	QuestionID int64
 	Value      int64
 	CreatedAt  pgtype.Timestamptz
-}
-
-type Reaction struct {
-	ID        int64
-	UserID    int64
-	PostID    int64
-	Emoji     string
-	CreatedAt pgtype.Timestamptz
 }
 
 type ReminderSetting struct {

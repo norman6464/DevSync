@@ -1,20 +1,22 @@
 -- name: CreateBookmark :exec
-INSERT INTO bookmarks (user_id, post_id, created_at) VALUES ($1, $2, now());
+INSERT INTO post_reactions (user_id, post_id, kind, created_at) VALUES ($1, $2, 'bookmark', now());
 
 -- name: DeleteBookmark :execrows
-DELETE FROM bookmarks WHERE user_id = $1 AND post_id = $2;
+DELETE FROM post_reactions
+WHERE post_reactions.user_id = $1 AND post_reactions.post_id = $2 AND post_reactions.kind = 'bookmark';
 
 -- name: CountBookmarkByUserAndPost :one
-SELECT COUNT(*) FROM bookmarks WHERE user_id = $1 AND post_id = $2;
+SELECT COUNT(*) FROM post_reactions
+WHERE post_reactions.user_id = $1 AND post_reactions.post_id = $2 AND post_reactions.kind = 'bookmark';
 
 -- name: ListBookmarkedPostsByUser :many
 -- GORMのPreload("User")に相当（CodeSnippetsは別クエリで取得しGo側で結合する）。
 -- user_id/post_idともにNOT NULLのためINNER JOINでよい。
 SELECT sqlc.embed(posts), sqlc.embed(users)
 FROM posts
-JOIN bookmarks ON bookmarks.post_id = posts.id
+JOIN post_reactions ON post_reactions.post_id = posts.id AND post_reactions.kind = 'bookmark'
 JOIN users ON users.id = posts.user_id
-WHERE bookmarks.user_id = $1
+WHERE post_reactions.user_id = $1
 ORDER BY posts.created_at DESC
 LIMIT $2 OFFSET $3;
 
@@ -24,9 +26,9 @@ SELECT * FROM code_snippets WHERE post_id = ANY($1::bigint[]) ORDER BY created_a
 
 -- name: CountBookmarksByPostIDs :many
 -- post.bookmark_countはORDER BYに使われない表示専用の値だったため列として持たず、
--- 都度bookmarksからCOUNT(*)する。投稿IDのまとめ取りとGo側でのグルーピングで
+-- 都度post_reactionsからCOUNT(*)する。投稿IDのまとめ取りとGo側でのグルーピングで
 -- ListCodeSnippetsByPostIDsと同じ形にする。ブックマーク0件の投稿はこの結果に現れない。
 SELECT post_id, COUNT(*)::bigint AS bookmark_count
-FROM bookmarks
-WHERE post_id = ANY($1::bigint[])
+FROM post_reactions
+WHERE post_id = ANY($1::bigint[]) AND kind = 'bookmark'
 GROUP BY post_id;

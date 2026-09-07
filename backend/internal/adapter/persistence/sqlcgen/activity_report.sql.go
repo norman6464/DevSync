@@ -49,9 +49,10 @@ func (q *Queries) CountCompletedGoalsInRange(ctx context.Context, arg CountCompl
 }
 
 const countLikesReceivedInRange = `-- name: CountLikesReceivedInRange :one
-SELECT COUNT(*) FROM likes
-JOIN posts ON likes.post_id = posts.id
-WHERE posts.user_id = $1 AND likes.created_at >= $2 AND likes.created_at < $3
+SELECT COUNT(*) FROM post_reactions
+JOIN posts ON post_reactions.post_id = posts.id
+WHERE posts.user_id = $1 AND post_reactions.kind = 'like'
+    AND post_reactions.created_at >= $2 AND post_reactions.created_at < $3
 `
 
 type CountLikesReceivedInRangeParams struct {

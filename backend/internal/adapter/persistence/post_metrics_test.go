@@ -149,10 +149,11 @@ func TestReconcileAllPostMetrics_CorrectsDrift(t *testing.T) {
 	require.EqualValues(t, 2, likeCount)
 
 	// 意図的にpost_metricsをずらす（CASCADE削除等でIncrement/Decrementを経由しない
-	// 変化が起きたケースを再現する。実際にはlikesの行を直接消してもFKのCASCADEは
-	// post_metrics側では発生しないため、これはユーザー削除カスケードで likes が
-	// 消えたのにpost_metricsだけ古い値のまま残る、という実際に起こりうる状況を模している）。
-	_, err = pool.Exec(ctx, `DELETE FROM likes WHERE user_id = $1 AND post_id = $2`, liker1ID, postID)
+	// 変化が起きたケースを再現する。実際にはpost_reactions(kind='like')の行を直接消しても
+	// FKのCASCADEはpost_metrics側では発生しないため、これはユーザー削除カスケードで
+	// いいねが消えたのにpost_metricsだけ古い値のまま残る、という実際に起こりうる状況を
+	// 模している）。
+	_, err = pool.Exec(ctx, `DELETE FROM post_reactions WHERE user_id = $1 AND post_id = $2 AND kind = 'like'`, liker1ID, postID)
 	require.NoError(t, err)
 	_, err = pool.Exec(ctx, `UPDATE post_metrics SET like_count = 999 WHERE post_id = $1`, postID)
 	require.NoError(t, err)
@@ -163,5 +164,5 @@ func TestReconcileAllPostMetrics_CorrectsDrift(t *testing.T) {
 	require.NoError(t, metricsRepo.Reconcile(ctx))
 
 	require.NoError(t, pool.QueryRow(ctx, `SELECT like_count FROM post_metrics WHERE post_id = $1`, postID).Scan(&likeCount))
-	assert.EqualValues(t, 1, likeCount, "reconcile should correct like_count back to the real likes row count")
+	assert.EqualValues(t, 1, likeCount, "reconcile should correct like_count back to the real post_reactions row count")
 }
